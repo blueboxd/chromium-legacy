@@ -64,14 +64,15 @@ bool VerifyInitiatorOrigin(int process_id,
 
 }  // namespace
 
-bool VerifyDownloadUrlParams(int process_id,
+bool VerifyDownloadUrlParams(SiteInstance* site_instance,
                              const FrameHostMsg_DownloadUrl_Params& params,
                              mojo::PendingRemote<blink::mojom::BlobURLToken>*
                                  out_blob_url_token_remote) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(site_instance);
   DCHECK(out_blob_url_token_remote);
+  RenderProcessHost* process = site_instance->GetProcess();
+  int process_id = process->GetID();
 
   // Verify |params.blob_url_token| and populate |out_blob_url_token_remote|.
   if (!VerifyBlobToken(process_id, params.blob_url_token, params.url,

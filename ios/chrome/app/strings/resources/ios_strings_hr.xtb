@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Uredi oznaku</translation>
 <translation id="2179182049312275900">Sinkronizaciju možete uvijek uključiti u postavkama.</translation>
 <translation id="2198757192731523470">Google može upotrebljavati vašu povijest za prilagodbu Pretraživanja, oglasa i drugih Googleovih usluga.</translation>
-<translation id="2207590065820824892">Nepročitanih članaka na popisu za čitanje: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Web-stranica učitana</translation>
 <translation id="2239626343334228536">Brisanje podataka o pregledavanju...</translation>
 <translation id="2267753748892043616">Dodaj račun</translation>
@@ -265,7 +264,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju. Unesite je da biste
 
 Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizaciju<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Nevažeći broj kartice</translation>
-<translation id="4807020197310989387">Jedan nepročitani članak na popisu za čitanje.</translation>
 <translation id="4818522717893377262">Dodaj jezik...</translation>
 <translation id="481968316161811770">Kolačići, podaci web-lokacije</translation>
 <translation id="4833786495304741580">Automatski šalje Googleu statistiku upotrebe i izvješća o padu programa.</translation>
@@ -414,6 +412,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="6858855187367714033">Skenirano</translation>
 <translation id="6859944681507688231">Da biste skenirali QR kôd ili kreditnu karticu, omogućite kameru u postavkama.</translation>
 <translation id="6873263987691478642">Podijeljeni prikaz</translation>
+<translation id="6888009575607455378">Jeste li sigurni da želite odbaciti promjene?</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
 <translation id="6903907808598579934">Uključi sinkronizaciju</translation>
 <translation id="6914583639806229067">Pretraživanje slike koju ste kopirali</translation>

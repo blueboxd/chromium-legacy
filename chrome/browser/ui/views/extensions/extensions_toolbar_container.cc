@@ -13,8 +13,6 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "ui/views/layout/animating_layout_manager.h"
-#include "ui/views/layout/flex_layout.h"
-#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget_observer.h"
 
 struct ExtensionsToolbarContainer::DropInfo {
@@ -38,15 +36,6 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
       model_(ToolbarActionsModel::Get(browser_->profile())),
       model_observer_(this),
       extensions_button_(new ExtensionsToolbarButton(browser_, this)) {
-  animating_layout_ =
-      SetLayoutManager(std::make_unique<views::AnimatingLayoutManager>());
-  animating_layout_->SetShouldAnimateBounds(true);
-  auto* flex_layout = animating_layout_->SetTargetLayoutManager(
-      std::make_unique<views::FlexLayout>());
-  flex_layout->SetCollapseMargins(true)
-      .SetIgnoreDefaultMainAxisMargins(true)
-      .SetDefault(views::kMarginsKey,
-                  gfx::Insets(0, GetLayoutConstant(TOOLBAR_ELEMENT_PADDING)));
   model_observer_.Add(model_);
   // Do not flip the Extensions icon in RTL.
   extensions_button_->EnableCanvasFlippingForRTLUI(false);
@@ -140,7 +129,8 @@ void ExtensionsToolbarContainer::PopOutAction(
   popped_out_action_ = action;
   icons_[popped_out_action_->GetId()]->SetVisible(true);
   ReorderViews();
-  animating_layout_->RunOrQueueAction(closure);
+  static_cast<views::AnimatingLayoutManager*>(GetLayoutManager())
+      ->RunOrQueueAction(closure);
 }
 
 void ExtensionsToolbarContainer::ShowToolbarActionBubble(
@@ -153,10 +143,11 @@ void ExtensionsToolbarContainer::ShowToolbarActionBubble(
 
   anchor_view->SetVisible(true);
 
-  animating_layout_->RunOrQueueAction(
-      base::BindOnce(&ExtensionsToolbarContainer::ShowActiveBubble,
-                     weak_ptr_factory_.GetWeakPtr(), anchor_view,
-                     base::Passed(std::move(controller))));
+  static_cast<views::AnimatingLayoutManager*>(GetLayoutManager())
+      ->RunOrQueueAction(
+          base::BindOnce(&ExtensionsToolbarContainer::ShowActiveBubble,
+                         weak_ptr_factory_.GetWeakPtr(), anchor_view,
+                         base::Passed(std::move(controller))));
 }
 
 void ExtensionsToolbarContainer::ShowToolbarActionBubbleAsync(

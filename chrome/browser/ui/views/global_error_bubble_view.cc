@@ -78,6 +78,9 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
     : BubbleDialogDelegateView(anchor_view, arrow),
       browser_(browser),
       error_(error) {
+  if (error_)
+    DialogDelegate::set_default_button(error_->GetDefaultDialogButton());
+
   if (!anchor_view) {
     SetAnchorRect(anchor_rect);
     set_parent_window(
@@ -184,12 +187,6 @@ int GlobalErrorBubbleView::GetDialogButtons() const {
                   error_->GetBubbleViewCancelButtonLabel().empty()
               ? 0
               : ui::DIALOG_BUTTON_CANCEL);
-}
-
-int GlobalErrorBubbleView::GetDefaultDialogButton() const {
-  if (!error_)
-    return views::BubbleDialogDelegateView::GetDefaultDialogButton();
-  return error_->GetDefaultDialogButton();
 }
 
 std::unique_ptr<views::View> GlobalErrorBubbleView::CreateExtraView() {

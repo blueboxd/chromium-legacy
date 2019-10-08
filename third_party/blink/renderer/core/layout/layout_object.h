@@ -2432,11 +2432,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return context && !context->ShouldLayout(target);
   }
 
-  bool DisplayLockInducesSizeContainment() const {
-    auto* context = GetDisplayLockContext();
-    return context && context->IsLocked();
-  }
-
   bool PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget target) const {
     auto* context = GetDisplayLockContext();
     return context && !context->ShouldPrePaint(target);

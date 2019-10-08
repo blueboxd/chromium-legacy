@@ -22,7 +22,7 @@ class COMPONENTS_PREFS_EXPORT PrefFilter {
  public:
   // A pair of pre-write and post-write callbacks.
   using OnWriteCallbackPair =
-      std::pair<base::Closure, base::Callback<void(bool success)>>;
+      std::pair<base::OnceClosure, base::OnceCallback<void(bool success)>>;
 
   // A callback to be invoked when |prefs| have been read (and possibly
   // pre-modified) and are now ready to be handed back to this callback's

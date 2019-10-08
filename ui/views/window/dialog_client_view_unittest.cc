@@ -79,10 +79,6 @@ class DialogClientViewTest : public test::WidgetTest,
   }
 
   int GetDialogButtons() const override { return dialog_buttons_; }
-  int GetDefaultDialogButton() const override {
-    return default_button_.value_or(
-        DialogDelegateView::GetDefaultDialogButton());
-  }
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override {
     return button == ui::DIALOG_BUTTON_CANCEL && !cancel_label_.empty()
                ? cancel_label_
@@ -152,8 +148,6 @@ class DialogClientViewTest : public test::WidgetTest,
     cancel_label_ = base::ASCIIToUTF16("Cancel Cancel Cancel");
   }
 
-  void set_default_button(int button) { default_button_ = button; }
-
   DialogClientView* client_view() { return client_view_; }
 
   Widget* widget() { return widget_; }
@@ -178,7 +172,6 @@ class DialogClientViewTest : public test::WidgetTest,
   gfx::Size max_size_;
 
   base::string16 cancel_label_;  // If set, the label for the Cancel button.
-  base::Optional<int> default_button_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogClientViewTest);
 };

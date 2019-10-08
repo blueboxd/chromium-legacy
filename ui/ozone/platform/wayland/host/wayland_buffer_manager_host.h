@@ -101,6 +101,11 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   // destroyed.
   void OnChannelDestroyed();
 
+  // Returns supported buffer formats either from zwp_linux_dmabuf or wl_drm.
+  wl::BufferFormatsWithModifiersMap GetSupportedBufferFormats() const;
+
+  bool SupportsDmabuf() const;
+
   // ozone::mojom::WaylandBufferManagerHost overrides:
   //
   // These overridden methods below are invoked by the GPU when hardware

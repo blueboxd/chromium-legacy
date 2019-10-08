@@ -319,6 +319,7 @@
 <translation id="1470811252759861213">Para obter as suas extensões em todos os computadores, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1470967055429794975">Isto apaga todos os dados na chave de segurança, incluindo o respetivo PIN</translation>
 <translation id="1475502736924165259">Tem certificados em arquivo que não encaixam em nenhuma das restantes categorias</translation>
+<translation id="1476088332184200792">Copiar para o dispositivo</translation>
 <translation id="1476607407192946488">&amp;Definições de idioma</translation>
 <translation id="1478340334823509079">Detalhes: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">A instalação não está ativada.</translation>
@@ -951,7 +952,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2379281330731083556">Imprimir utilizando a caixa de diálogo do sistema... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Perguntar antes de enviar (recomendado)</translation>
 <translation id="2384436799579181135">Ocorreu um erro. Verifique a impressora e tente novamente.</translation>
-<translation id="2386926718981642523">Aceda ao Assistente sempre que disser "Ok Google"</translation>
 <translation id="2387458720915042159">Tipo de ligação proxy</translation>
 <translation id="2391419135980381625">Tipo de letra padrão</translation>
 <translation id="2392369802118427583">Ativar</translation>
@@ -1340,6 +1340,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2941112035454246133">Baixa</translation>
 <translation id="2942560570858569904">A aguardar...</translation>
 <translation id="2942581856830209953">Personalizar esta página</translation>
+<translation id="294308617863380348">Incluindo cookies de terceiros</translation>
 <translation id="2944060181911631861">Envie dados de utilização e diagnóstico. Ajude a melhorar a experiência Android ao enviar automaticamente dados de diagnóstico, de utilização do dispositivo e das aplicações para a Google. Deste modo, ajudará a melhorar a estabilidade das aplicações e do sistema, entre outras melhorias. Alguns dados agregados também ajudarão as aplicações e os parceiros Google, como os programadores Android. Se a definição Atividade da Web e de aplicações adicional estiver ativada, estes dados podem ser guardados na sua Conta Google. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="2946119680249604491">Adicionar ligação</translation>
 <translation id="2948300991547862301">Aceder a <ph name="PAGE_TITLE" /></translation>
@@ -1355,7 +1356,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2963151496262057773">O seguinte plug-in está sem resposta: <ph name="PLUGIN_NAME" />
 Pretende pará-lo?</translation>
 <translation id="2966937470348689686">Gerir as preferências do Android</translation>
-<translation id="2972557485845626008">Firmware</translation>
 <translation id="2972581237482394796">&amp;Repetir</translation>
 <translation id="2973324205039581528">Desativar som do site</translation>
 <translation id="2977480621796371840">Remover do grupo</translation>
@@ -1613,7 +1613,6 @@ Pretende pará-lo?</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separador</translation>
 <translation id="3387614642886316601">Utilizar a verificação ortográfica avançada</translation>
-<translation id="3393352139658145068">Ativa o Assistente quando alguém diz "Ok Google”. Para poupar bateria, a funcionalidade "Ok Google" só é ativada quando o dispositivo estiver ligado a uma fonte de alimentação.</translation>
 <translation id="3396800784455899911">Ao clicar no botão "Aceitar e continuar", está a aceitar o processamento descrito acima para estes serviços Google.</translation>
 <translation id="3399432415385675819">As notificações serão desativadas</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> hertz) – entrelaçado</translation>
@@ -1774,6 +1773,7 @@ Pretende pará-lo?</translation>
 <translation id="3613134908380545408">Mostrar <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Abrir num novo separador</translation>
 <translation id="3615073365085224194">Toque no sensor de impressões digitais com o dedo.</translation>
+<translation id="3615579745882581859">O ficheiro <ph name="FILE_NAME" /> está a ser analisado.</translation>
 <translation id="3616741288025931835">&amp;Limpar Dados de Navegação...</translation>
 <translation id="3617891479562106823">Os fundos não estão disponíveis. Tente novamente mais tarde.</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
@@ -1888,7 +1888,6 @@ Pretende pará-lo?</translation>
 <translation id="3759933321830434300">Bloquear partes de páginas Web</translation>
 <translation id="3760460896538743390">Inspecionar Página de Fundo</translation>
 <translation id="37613671848467444">Abrir na Janela de &amp;Navegação Anónima</translation>
-<translation id="3764314093345384080">Informações de compilação detalhadas</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Comunicar com um dispositivo USB}other{Comunicar com # dispositivos USB}}</translation>
 <translation id="3765246971671567135">Não foi possível ler a política do modo de demonstração offline.</translation>
 <translation id="3768037234834996183">A sincronizar as preferências...</translation>
@@ -2169,7 +2168,6 @@ Pretende pará-lo?</translation>
 <translation id="4138267921960073861">Mostrar nomes de utilizador e fotos no ecrã de início de sessão</translation>
 <translation id="4142052906269098341">Desbloqueie o dispositivo <ph name="DEVICE_TYPE" /> com o seu telemóvel. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">Obtenha uma melhor qualidade de vídeo e poupe autonomia da bateria. O vídeo é reproduzido apenas no seu ecrã compatível com o Cast.</translation>
-<translation id="4145922204387553806">Permitir que o Assistente mostre informações relacionadas com o que está a ser apresentado no ecrã</translation>
 <translation id="4146026355784316281">Abrir sempre com o visualizador do sistema</translation>
 <translation id="4146785383423576110">Repor e limpar</translation>
 <translation id="4147911968024186208">Tente novamente. Se vir novamente este erro, contacte o seu representante do apoio técnico.</translation>
@@ -2256,6 +2254,7 @@ Pretende pará-lo?</translation>
 <translation id="4297322094678649474">Alterar idiomas</translation>
 <translation id="4301671483919369635">Esta página tem autorização para editar ficheiros</translation>
 <translation id="4303079906735388947">Configure um novo PIN para a sua chave de segurança.</translation>
+<translation id="4305402730127028764">Copiar para <ph name="DEVICE_NAME" /></translation>
 <translation id="4306119971288449206">As aplicações têm de ser publicadas com o tipo de conteúdo "<ph name="CONTENT_TYPE" />".</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K em directo)</translation>
 <translation id="4310139701823742692">O ficheiro tem o formato errado. Verifique o ficheiro PPD e tente novamente.</translation>
@@ -2391,7 +2390,6 @@ Pretende pará-lo?</translation>
 <translation id="4534661889221639075">Tente novamente.</translation>
 <translation id="4535127706710932914">Perfil Predefinido</translation>
 <translation id="4535767533210902251">O sensor de impressões digitais é a tecla superior direita no seu teclado. Toque levemente no mesmo com qualquer dedo.</translation>
-<translation id="4538417792467843292">Eliminar palavra</translation>
 <translation id="4538684596480161368">Bloquear sempre plug-ins sem isolamento de processos em <ph name="HOST" /></translation>
 <translation id="4538792345715658285">Instalada pela política da empresa.</translation>
 <translation id="4542520061254486227">Ler os seus dados em <ph name="WEBSITE_1" /> e <ph name="WEBSITE_2" /></translation>
@@ -2935,6 +2933,7 @@ Certifique-se de que confia neste site antes de entrar na RV.</translation>
 <translation id="5367091008316207019">A ler ficheiro...</translation>
 <translation id="5368720394188453070">O seu telemóvel está bloqueado. Desbloqueie-o para introduzir.</translation>
 <translation id="5368779022775404937">Iniciar sessão em <ph name="REALM" /></translation>
+<translation id="5369491905435686894">Ativar aceleração do rato</translation>
 <translation id="5370819323174483825">&amp;Recarregar</translation>
 <translation id="5372529912055771682">O modo de inscrição fornecido não é suportado por esta versão do sistema operativo. Certifique-se de que está a executar a versão mais recente e tente novamente.</translation>
 <translation id="5372579129492968947">Soltar extensão</translation>
@@ -3007,6 +3006,7 @@ Certifique-se de que confia neste site antes de entrar na RV.</translation>
 <translation id="5464632865477611176">Executar desta vez</translation>
 <translation id="5464660706533281090">Esta definição não pode ser alterada por um utilizador secundário.</translation>
 <translation id="5466374726908360271">Co&amp;lar e pesquisar "<ph name="SEARCH_TERMS" />"</translation>
+<translation id="5468173180030470402">À procura de partilhas de ficheiros…</translation>
 <translation id="5471768120198416576">Olá! Sou a sua voz para a síntese de voz.</translation>
 <translation id="5473333559083690127">Voltar a introduzir o PIN novo</translation>
 <translation id="5481941284378890518">Adicionar impressoras próximas</translation>
@@ -3543,6 +3543,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6233154960150021497">Predefinir para utilizar a voz em vez do teclado</translation>
 <translation id="6234474535228214774">Instalação pendente</translation>
 <translation id="6237816943013845465">Permite-lhe ajustar a resolução do ecrã</translation>
+<translation id="6238767809035845642">Texto partilhado de outro dispositivo</translation>
 <translation id="6238923052227198598">Manter a nota mais recente no ecrã de bloqueio</translation>
 <translation id="6239558157302047471">Atualizar &amp;frame</translation>
 <translation id="6241530762627360640">Aceder às informações acerca dos dispositivos Bluetooth sincronizados com o seu sistema e descobrir dispositivos Bluetooth nas proximidades.</translation>
@@ -3769,7 +3770,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6577284282025554716">Transferência cancelada: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Encriptar as palavras-passe sincronizadas com o seu nome de utilizador e palavra-passe Google</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> – conteúdo do ambiente de trabalho partilhado.</translation>
-<translation id="6580151766480067746">Versão do ARC</translation>
 <translation id="6582080224869403177">Efetue a reposição do dispositivo <ph name="DEVICE_TYPE" /> para atualizar a sua segurança.</translation>
 <translation id="6584878029876017575">Assinatura vitalícia Microsoft</translation>
 <translation id="6586451623538375658">Trocar botão principal do rato</translation>
@@ -4374,6 +4374,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7487141338393529395">Ative a verificação ortográfica avançada</translation>
 <translation id="7487969577036436319">Não existem componentes instalados</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Abrir todos}=1{&amp;Abrir marcador}other{&amp;Abrir todos (#)}}</translation>
+<translation id="7489761397368794366">Ligar a partir do seu dispositivo</translation>
 <translation id="749028671485790643">Pessoa <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">Endereço MAC</translation>
 <translation id="7493386493263658176">A extensão <ph name="EXTENSION_NAME" /> pode recolher todo o texto que escrever, incluindo dados pessoais como palavras-passe e números de cartões de crédito. Pretende utilizar esta extensão?</translation>
@@ -4393,6 +4394,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7508054832109420082">Dar acesso a impressoras</translation>
 <translation id="7510943789645525906">Avisa se uma palavra-passe que utiliza esteve envolvida numa violação de dados.</translation>
 <translation id="7513029293694390567">Inicie sessão automaticamente nos Sites com as credenciais armazenadas. Se esta funcionalidade estiver desativada, é-lhe pedida sempre uma confirmação antes de iniciar sessão num Website.</translation>
+<translation id="7514239104543605883">Copiar para o dispositivo</translation>
 <translation id="7514365320538308">Transferir</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Diga "Ok Google"</translation>
@@ -4948,6 +4950,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8274332263553132018">Transmitir ficheiro</translation>
 <translation id="8274924778568117936">Não desligue ou feche o <ph name="DEVICE_TYPE" /> até a atualização terminar. O <ph name="DEVICE_TYPE" /> será reiniciado quando a instalação estiver concluída.</translation>
 <translation id="8275038454117074363">Importar</translation>
+<translation id="8275080796245127762">Ligar a partir do seu dispositivo</translation>
 <translation id="8276560076771292512">Esvaziar cache e recarregamento forçado</translation>
 <translation id="8281886186245836920">Ignorar</translation>
 <translation id="8282947398454257691">Saber o identificador único do seu dispositivo</translation>
@@ -5268,6 +5271,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8758418656925882523">Ativar o ditado (falar para escrever)</translation>
 <translation id="8759408218731716181">Não é possível configurar o início de sessão integrado</translation>
 <translation id="8759753423332885148">Saiba mais.</translation>
+<translation id="8761945298804995673">Este utilizador já existe.</translation>
 <translation id="8762886931014513155">O seu <ph name="DEVICE_TYPE" /> precisa de ser atualizado</translation>
 <translation id="8763927697961133303">Dispositivo USB</translation>
 <translation id="8767621466733104912">Atualizar automaticamente o Chrome para todos os utilizadores</translation>
@@ -5356,6 +5360,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8879284080359814990">Mo&amp;strar Como Separador</translation>
 <translation id="8879921471468674457">Memorizar informações de início de sessão</translation>
 <translation id="8881020143150461183">Tente novamente. Para obter apoio técnico, contacte o operador <ph name="CARRIER_NAME" />.</translation>
+<translation id="8883273463630735858">Ativar aceleração do touchpad</translation>
 <translation id="8884570509232205463">Agora, o seu dispositivo será bloqueado à(s) <ph name="UNLOCK_TIME" />.</translation>
 <translation id="8885197664446363138">Smart Lock não disponível</translation>
 <translation id="8888253246822647887">A aplicação será aberta quando a atualização estiver concluída. As atualizações podem demorar alguns minutos.</translation>

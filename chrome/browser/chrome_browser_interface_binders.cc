@@ -23,9 +23,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
-#if defined(BROWSER_MEDIA_CONTROLS_MENU)
-#include "third_party/blink/public/mojom/media_controls/touchless/media_controls.mojom.h"
-#endif
 #if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
 #include "third_party/blink/public/mojom/page/spatial_navigation.mojom.h"
 #endif
@@ -75,10 +72,6 @@ void PopulateChromeFrameBinders(
 #if defined(OS_ANDROID)
   map->Add<blink::mojom::InstalledAppProvider>(base::BindRepeating(
       &ForwardToJavaFrameRegistry<blink::mojom::InstalledAppProvider>));
-#if defined(BROWSER_MEDIA_CONTROLS_MENU)
-  map->Add<blink::mojom::MediaControlsMenuHost>(base::BindRepeating(
-      &ForwardToJavaFrameRegistry<blink::mojom::MediaControlsMenuHost>));
-#endif
   if (base::FeatureList::IsEnabled(features::kWebPayments)) {
     map->Add<payments::mojom::PaymentRequest>(base::BindRepeating(
         &ForwardToJavaFrameRegistry<payments::mojom::PaymentRequest>));

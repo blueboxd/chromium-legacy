@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Измените обележивач</translation>
 <translation id="2179182049312275900">Можете да укључите синхронизацију у подешавањима у било ком тренутку.</translation>
 <translation id="2198757192731523470">Google може да користи историју за персонализацију Претраге, огласа и других Google услуга.</translation>
-<translation id="2207590065820824892">Непрочитани чланци на листи за читање: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Веб-страница је учитана</translation>
 <translation id="2239626343334228536">Бришу се подаци прегледања...</translation>
 <translation id="2267753748892043616">Додај налог</translation>
@@ -265,7 +264,6 @@
 
 Да бисте променили ово подешавање, <ph name="BEGIN_LINK" />ресетујте синхронизацију<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Неважећи број картице</translation>
-<translation id="4807020197310989387">1 непрочитан чланак на листи за читање.</translation>
 <translation id="4818522717893377262">Додајте језик…</translation>
 <translation id="481968316161811770">Колачићи, подаци о сајтовима</translation>
 <translation id="4833786495304741580">Аутоматски шаље Google-у статистику коришћења и извештаје о отказивању.</translation>
@@ -414,6 +412,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6858855187367714033">Скенирано</translation>
 <translation id="6859944681507688231">Да бисте скенирали QR кôд или кредитну картицу, омогућите камеру у подешавањима.</translation>
 <translation id="6873263987691478642">Подељени приказ</translation>
+<translation id="6888009575607455378">Желите ли стварно да одбаците промене?</translation>
 <translation id="6896758677409633944">Копирај</translation>
 <translation id="6903907808598579934">Укључи синхронизацију</translation>
 <translation id="6914583639806229067">Потражите слику коју сте копирали</translation>

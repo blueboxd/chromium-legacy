@@ -86,10 +86,10 @@ class PendingAppInstallTask {
                          const AppId& app_id,
                          InstallResultCode code);
 
-  Profile* profile_;
-  AppRegistrar* registrar_;
-  InstallFinalizer* install_finalizer_;
-  WebAppUiManager* ui_manager_;
+  Profile* const profile_;
+  AppRegistrar* const registrar_;
+  InstallFinalizer* const install_finalizer_;
+  WebAppUiManager* const ui_manager_;
 
   ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 

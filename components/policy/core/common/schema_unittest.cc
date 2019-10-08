@@ -787,7 +787,6 @@ TEST(SchemaTest, Validate) {
   // Unknown top level property.
   bundle.SetString("boom", "bang");
   TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
-  TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, true);
   TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_UNKNOWN, true);
   TestSchemaValidationWithPath(schema, bundle, "");
   bundle.Remove("boom", nullptr);
@@ -795,7 +794,6 @@ TEST(SchemaTest, Validate) {
   // Invalid top level property.
   bundle.SetInteger("Boolean", 12345);
   TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
-  TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
   TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_INVALID, true);
   TestSchemaValidationWithPath(schema, bundle, "Boolean");
   bundle.SetBoolean("Boolean", true);
@@ -809,9 +807,7 @@ TEST(SchemaTest, Validate) {
     // Unknown property.
     root.SetBoolean("Object.three", false);
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
     TestSchemaValidationWithPath(subschema, root, "Object");
     root.Remove("Object.three", nullptr);
@@ -819,9 +815,7 @@ TEST(SchemaTest, Validate) {
     // Invalid property.
     root.SetInteger("Object.one", 12345);
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
     TestSchemaValidationWithPath(subschema, root, "Object.one");
     root.Remove("Object.one", nullptr);
@@ -839,9 +833,7 @@ TEST(SchemaTest, Validate) {
     dict_value->SetBoolean("three", true);
     root.Append(std::move(dict_value));
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
     TestSchemaValidationWithPath(subschema, root, "items[0]");
     root.Remove(root.GetSize() - 1, nullptr);
@@ -851,9 +843,7 @@ TEST(SchemaTest, Validate) {
     dict_value->SetBoolean("two", true);
     root.Append(std::move(dict_value));
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
     TestSchemaValidationWithPath(subschema, root, "items[0].two");
     root.Remove(root.GetSize() - 1, nullptr);
@@ -871,17 +861,13 @@ TEST(SchemaTest, Validate) {
     // Test that there are not errors here.
     list_value->AppendInteger(12345);
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, true);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
 
     // Invalid list item.
     list_value->AppendString("blabla");
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
     TestSchemaValidationWithPath(subschema, root, "List.items[1]");
   }
@@ -900,17 +886,13 @@ TEST(SchemaTest, Validate) {
     // Test that there are not errors here.
     list_value->AppendString("blabla");
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, true);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
 
     // Invalid list item.
     list_value->AppendInteger(12345);
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
     TestSchemaValidationWithPath(subschema, root, "items[0].List.items[1]");
   }
@@ -989,17 +971,13 @@ TEST(SchemaTest, Validate) {
     root.SetInteger("Integer", 1);
     root.SetDouble("Number", 3.14);
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, false);
 
     // Invalid required property.
     root.SetInteger("String", 123);
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, false);
     root.SetString("String", "a string");
 
@@ -1012,16 +990,12 @@ TEST(SchemaTest, Validate) {
     // required properties is invalid.
     root.SetInteger("Integer", 2);
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, false);
 
     root.SetInteger("Integer", 3);
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
-    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, false);
   }
 

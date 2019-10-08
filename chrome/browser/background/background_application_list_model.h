@@ -101,9 +101,7 @@ class BackgroundApplicationListModel
   }
 
   // Returns true if all startup notifications have already been issued.
-  bool is_ready() const {
-    return ready_;
-  }
+  bool startup_done() const { return startup_done_; }
 
  private:
   // Contains data associated with a background application that is not
@@ -167,7 +165,7 @@ class BackgroundApplicationListModel
   base::ObserverList<Observer, true>::Unchecked observers_;
   Profile* const profile_;
   content::NotificationRegistrar registrar_;
-  bool ready_{false};
+  bool startup_done_ = false;
 
   // Listens to extension load, unload notifications.
   ScopedObserver<extensions::ExtensionRegistry,

@@ -1462,19 +1462,14 @@ const char kWebRtcEventLogCollectionAllowed[] = "webrtc.event_logs_collection";
 #if !defined(OS_ANDROID)
 // Whether or not this profile has been shown the Welcome page.
 const char kHasSeenWelcomePage[] = "browser.has_seen_welcome_page";
-
-// A boolean specifying whether the default search shortcut should be shown on
-// the New Tab Page after it has been initialized during first run.
-const char kShowFirstRunDefaultSearchShortcut[] =
-    "profile.show_first_run_default_search_shortcut";
 #endif
 
-#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if defined(OS_WIN)
 // Put the user into an onboarding group that's decided when they go through
 // the first run onboarding experience. Only users in a group will have their
 // finch group pinged to keep track of them for the experiment.
 const char kNaviOnboardGroup[] = "browser.navi_onboard_group";
-#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // defined(OS_WIN)
 
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
@@ -2588,7 +2583,6 @@ const char kDSEWasDisabledByPolicy[] = "dse_was_disabled_by_policy";
 const char kWebShareVisitedTargets[] = "profile.web_share.visited_targets";
 
 #if defined(OS_WIN)
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Acts as a cache to remember incompatible applications through restarts. Used
 // for the Incompatible Applications Warning feature.
 const char kIncompatibleApplications[] = "incompatible_applications";
@@ -2601,7 +2595,6 @@ const char kModuleBlacklistCacheMD5Digest[] =
 // A boolean value, controlling whether third party software is allowed to
 // inject into Chrome's processes.
 const char kThirdPartyBlockingEnabled[] = "third_party_blocking_enabled";
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN)

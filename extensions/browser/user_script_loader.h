@@ -16,8 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_process_host_creation_observer.h"
 #include "extensions/common/host_id.h"
 #include "extensions/common/user_script.h"
 
@@ -39,7 +38,7 @@ namespace extensions {
 // of this class are embedded within classes with names ending in
 // UserScriptMaster. These "master" classes implement the strategy for which
 // scripts to load/unload on this logical unit of scripts.
-class UserScriptLoader : public content::NotificationObserver {
+class UserScriptLoader : public content::RenderProcessHostCreationObserver {
  public:
   using LoadScriptsCallback =
       base::OnceCallback<void(std::unique_ptr<UserScriptList>,
@@ -113,10 +112,9 @@ class UserScriptLoader : public content::NotificationObserver {
   const HostID& host_id() const { return host_id_; }
 
  private:
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // content::RenderProcessHostCreationObserver:
+  void OnRenderProcessHostCreated(
+      content::RenderProcessHost* process_host) override;
 
   // Returns whether or not it is possible that calls to AddScripts(),
   // RemoveScripts(), and/or ClearScripts() have caused any real change in the
@@ -142,9 +140,6 @@ class UserScriptLoader : public content::NotificationObserver {
     // |loaded_scripts_| is reset when loading.
     return loaded_scripts_.get() == nullptr;
   }
-
-  // Manages our notification registrations.
-  content::NotificationRegistrar registrar_;
 
   // Contains the scripts that were found the last time scripts were updated.
   base::ReadOnlySharedMemoryRegion shared_memory_;

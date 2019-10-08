@@ -231,6 +231,7 @@
 <translation id="4279490309300973883">미러링</translation>
 <translation id="4281007048406351813">타이머에 1분 추가</translation>
 <translation id="4296136865091727875">알림 <ph name="COUNT" />개 모두 지우기</translation>
+<translation id="4303223480529385476">상태 영역 확장</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">고대비 단축키를 누르셨습니다. 사용 설정할까요?</translation>
 <translation id="4331809312908958774">크롬 OS</translation>
@@ -406,6 +407,7 @@
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" />에 다시 사용해 주세요.</translation>
 <translation id="7025533177575372252">휴대전화와 <ph name="DEVICE_NAME" /> 연결</translation>
 <translation id="7029814467594812963">세션 종료</translation>
+<translation id="7042322267639375032">상태 영역 접기</translation>
 <translation id="7066646422045619941">관리자가 사용 중지한 네트워크입니다.</translation>
 <translation id="7067196344162293536">자동 회전</translation>
 <translation id="7068360136237591149">파일을 열어 줘</translation>

@@ -339,10 +339,10 @@ void SafeBrowsingPrivateEventRouter::SetCloudPolicyClientForTesting(
 
 void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
 #if !defined(OS_CHROMEOS)
-  // This method is not compiled on chromeos because
-  // MachineLevelUserCloudPolicyController does not exist.  Also,
-  // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() does return a
-  // valid token either.  Once these are fixed the #if !define can be removed.
+  // This method is not compiled on Chrome OS because
+  // MachineLevelUserCloudPolicyController does not exist. Also,
+  // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() doesn't return a
+  // valid token either. Once these are fixed the #if !defined can be removed.
 
   if (!policy::MachineLevelUserCloudPolicyController::
           IsMachineLevelUserCloudPolicyEnabled()) {

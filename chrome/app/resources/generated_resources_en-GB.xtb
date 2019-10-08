@@ -319,6 +319,7 @@
 <translation id="1470811252759861213">To get your extensions on all your computers, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1470967055429794975">This will erase all data on the security key, including its PIN</translation>
 <translation id="1475502736924165259">You have certificates on file that do not fit into any of the other categories</translation>
+<translation id="1476088332184200792">Copy to Your Device</translation>
 <translation id="1476607407192946488">&amp;Language Settings</translation>
 <translation id="1478340334823509079">Details: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Installation is not enabled</translation>
@@ -951,7 +952,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2379281330731083556">Print using system dialogue... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Ask before sending (recommended)</translation>
 <translation id="2384436799579181135">An error has occurred. Please check your printer and try again.</translation>
-<translation id="2386926718981642523">Access your Assistant any time that you say "Ok Google"</translation>
 <translation id="2387458720915042159">Proxy connection type</translation>
 <translation id="2391419135980381625">Standard font</translation>
 <translation id="2392369802118427583">Activate</translation>
@@ -1341,6 +1341,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2941112035454246133">Low</translation>
 <translation id="2942560570858569904">Waiting...</translation>
 <translation id="2942581856830209953">Customise this page</translation>
+<translation id="294308617863380348">Including third-party cookies</translation>
 <translation id="2944060181911631861">Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="2946119680249604491">Add connection</translation>
 <translation id="2948300991547862301">Go to <ph name="PAGE_TITLE" /></translation>
@@ -1355,7 +1356,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2961695502793809356">Click to go forward, hold to see history</translation>
 <translation id="2963151496262057773">The following plug-in is unresponsive: <ph name="PLUGIN_NAME" />Would you like to stop it?</translation>
 <translation id="2966937470348689686">Manage Android preferences</translation>
-<translation id="2972557485845626008">Firmware</translation>
 <translation id="2972581237482394796">&amp;Redo</translation>
 <translation id="2973324205039581528">Mute Site</translation>
 <translation id="2977480621796371840">Remove from group</translation>
@@ -1613,7 +1613,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separator</translation>
 <translation id="3387614642886316601">Use enhanced spell check</translation>
-<translation id="3393352139658145068">Activate the Assistant when anyone says “Ok Google”. To save battery, “Ok Google” is on only when your device is connected to a power source.</translation>
 <translation id="3396800784455899911">By clicking the 'Accept and continue' button, you agree to the processing described above for these Google services.</translation>
 <translation id="3399432415385675819">Notifications will be disabled</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hertz) – interlaced</translation>
@@ -1774,6 +1773,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3613134908380545408">Show <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Open in new tab</translation>
 <translation id="3615073365085224194">Touch the fingerprint sensor with your finger</translation>
+<translation id="3615579745882581859"><ph name="FILE_NAME" /> is being scanned.</translation>
 <translation id="3616741288025931835">&amp;Clear Browsing Data...</translation>
 <translation id="3617891479562106823">Backgrounds are unavailable. Try again later.</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
@@ -1888,7 +1888,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3759933321830434300">Block parts of web pages</translation>
 <translation id="3760460896538743390">Inspect &amp;Background Page</translation>
 <translation id="37613671848467444">Open in &amp;Incognito Window</translation>
-<translation id="3764314093345384080">Detailed build information</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Communicate with a USB device}other{Communicate with # USB devices}}</translation>
 <translation id="3765246971671567135">Could not read offline demo mode policy.</translation>
 <translation id="3768037234834996183">Syncing your preferences...</translation>
@@ -2169,7 +2168,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4138267921960073861">Show usernames and photos on the sign-in screen</translation>
 <translation id="4142052906269098341">Unlock your <ph name="DEVICE_TYPE" /> with your phone. <ph name="LINK_BEGIN" />Learn more<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">Get better quality video and save battery life. Video will play only on your Cast-enabled screen.</translation>
-<translation id="4145922204387553806">Let the Assistant show you info related to what's on your screen</translation>
 <translation id="4146026355784316281">Always Open With System Viewer</translation>
 <translation id="4146785383423576110">Reset and clean up</translation>
 <translation id="4147911968024186208">Please retry. If you see this error again, please contact your support representative.</translation>
@@ -2256,6 +2254,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4297322094678649474">Change Languages</translation>
 <translation id="4301671483919369635">This page is allowed to edit files</translation>
 <translation id="4303079906735388947">Set up a new PIN for your security key</translation>
+<translation id="4305402730127028764">Copy to <ph name="DEVICE_NAME" /></translation>
 <translation id="4306119971288449206">Apps must be served with content-type '<ph name="CONTENT_TYPE" />'</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K live)</translation>
 <translation id="4310139701823742692">File is in the wrong format. Check the PPD file and try again.</translation>
@@ -2391,7 +2390,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4534661889221639075">Try again.</translation>
 <translation id="4535127706710932914">Default Profile</translation>
 <translation id="4535767533210902251">The fingerprint sensor is the top-right key on your keyboard. Touch it lightly with any finger.</translation>
-<translation id="4538417792467843292">Delete word</translation>
 <translation id="4538684596480161368">Always block unsandboxed plug-ins on <ph name="HOST" /></translation>
 <translation id="4538792345715658285">Installed by enterprise policy.</translation>
 <translation id="4542520061254486227">Read your data on <ph name="WEBSITE_1" /> and <ph name="WEBSITE_2" /></translation>
@@ -2935,6 +2933,7 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="5367091008316207019">Reading file..</translation>
 <translation id="5368720394188453070">Your phone is locked. Unlock it to enter.</translation>
 <translation id="5368779022775404937">Sign in to <ph name="REALM" /></translation>
+<translation id="5369491905435686894">Enable mouse acceleration</translation>
 <translation id="5370819323174483825">&amp;Reload</translation>
 <translation id="5372529912055771682">The supplied enrolment mode is not supported by this version of the operating system. Please make sure you are running the newest version and try again.</translation>
 <translation id="5372579129492968947">Unpin extension</translation>
@@ -3007,6 +3006,7 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="5464632865477611176">Run this time</translation>
 <translation id="5464660706533281090">This setting can't be changed by a child user.</translation>
 <translation id="5466374726908360271">Paste and search for '<ph name="SEARCH_TERMS" />'</translation>
+<translation id="5468173180030470402">Looking for file shares</translation>
 <translation id="5471768120198416576">Hi there! I'm your text-to-speech voice.</translation>
 <translation id="5473333559083690127">Re-enter new PIN</translation>
 <translation id="5481941284378890518">Add Nearby Printers</translation>
@@ -3542,6 +3542,7 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="6233154960150021497">Default to using voice instead of keyboard</translation>
 <translation id="6234474535228214774">Install pending</translation>
 <translation id="6237816943013845465">Allows you to adjust your screen resolution</translation>
+<translation id="6238767809035845642">Text shared from other device</translation>
 <translation id="6238923052227198598">Keep latest note on lock screen</translation>
 <translation id="6239558157302047471">Reload &amp;frame</translation>
 <translation id="6241530762627360640">Access information about Bluetooth devices paired with your system and discover nearby Bluetooth devices.</translation>
@@ -3768,7 +3769,6 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="6577284282025554716">Download cancelled: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Encrypt synced passwords with your Google username and password</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> – Desktop content shared</translation>
-<translation id="6580151766480067746">ARC Version</translation>
 <translation id="6582080224869403177">Reset your <ph name="DEVICE_TYPE" /> to upgrade your security.</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
 <translation id="6586451623538375658">Swap the primary mouse button</translation>
@@ -4373,6 +4373,7 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="7487141338393529395">Turn on Enhanced Spell Check</translation>
 <translation id="7487969577036436319">No components are installed</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Open all}=1{&amp;Open bookmark}other{&amp;Open all (#)}}</translation>
+<translation id="7489761397368794366">Call from your device</translation>
 <translation id="749028671485790643">Person <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC address</translation>
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> extension may collect all the text you type, including personal data like passwords and credit card numbers. Do you want to use this extension?</translation>
@@ -4392,6 +4393,7 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="7508054832109420082">Give access to printers</translation>
 <translation id="7510943789645525906">Warns you if a password that you used was part of a data breach</translation>
 <translation id="7513029293694390567">Automatically sign in to websites using stored credentials. If disabled, you will be asked for confirmation every time before signing in to a website.</translation>
+<translation id="7514239104543605883">Copy to your device</translation>
 <translation id="7514365320538308">Download</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Say 'Ok Google'</translation>
@@ -4948,6 +4950,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8274332263553132018">Cast file</translation>
 <translation id="8274924778568117936">Don’t turn off or close your <ph name="DEVICE_TYPE" /> until the update finishes. Your <ph name="DEVICE_TYPE" /> will restart after installation completes.</translation>
 <translation id="8275038454117074363">Import</translation>
+<translation id="8275080796245127762">Call from Your Device</translation>
 <translation id="8276560076771292512">Empty Cache and Hard Reload</translation>
 <translation id="8281886186245836920">Skip</translation>
 <translation id="8282947398454257691">Know your unique device identifier</translation>
@@ -5268,6 +5271,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8758418656925882523">Enable dictation (speak to type)</translation>
 <translation id="8759408218731716181">Can't set up multiple sign-in</translation>
 <translation id="8759753423332885148">Learn more.</translation>
+<translation id="8761945298804995673">This user already exists</translation>
 <translation id="8762886931014513155">Your <ph name="DEVICE_TYPE" /> needs an update</translation>
 <translation id="8763927697961133303">USB device</translation>
 <translation id="8767621466733104912">Automatically update Chrome for all users</translation>
@@ -5356,6 +5360,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8879284080359814990">&amp;Show As Tab</translation>
 <translation id="8879921471468674457">Remember sign-in info</translation>
 <translation id="8881020143150461183">Please try again. For technical support, contact <ph name="CARRIER_NAME" />.</translation>
+<translation id="8883273463630735858">Enable touchpad acceleration</translation>
 <translation id="8884570509232205463">Your device now locks at <ph name="UNLOCK_TIME" />.</translation>
 <translation id="8885197664446363138">Smart Lock is unavailable</translation>
 <translation id="8888253246822647887">Your app will open when the upgrade is finished. Upgrades can take a few minutes.</translation>

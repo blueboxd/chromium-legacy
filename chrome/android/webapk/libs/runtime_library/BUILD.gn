@@ -58,15 +58,15 @@ proguarded_dist_dex("webapk_runtime_library") {
     "//base/android/proguard/chromium_code.flags",
     "//base/android/proguard/chromium_apk.flags",
   ]
-  output = "$target_gen_dir/$runtime_library_dex_asset_name"
+  output = "$target_out_dir/$runtime_library_dex_asset_name"
 }
 
 android_assets("runtime_library_assets") {
   write_file("$target_gen_dir/webapk_dex_version.txt", runtime_library_version)
 
   sources = [
-    "$target_gen_dir/$runtime_library_dex_asset_name",
     "$target_gen_dir/webapk_dex_version.txt",
+    "$target_out_dir/$runtime_library_dex_asset_name",
   ]
 
   deps = [

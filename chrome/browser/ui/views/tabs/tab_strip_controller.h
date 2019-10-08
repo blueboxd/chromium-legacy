@@ -78,6 +78,10 @@ class TabStripController {
   // Closes the tab at the specified index in the model.
   virtual void CloseTab(int index, CloseTabSource source) = 0;
 
+  // Moves the tab at |start_index| so that it is now at |final_index|, sliding
+  // any tabs in between left or right as appropriate.
+  virtual void MoveTab(int start_index, int final_index) = 0;
+
   // Shows a context menu for the tab at the specified point in screen coords.
   virtual void ShowContextMenuForTab(Tab* tab,
                                      const gfx::Point& p,

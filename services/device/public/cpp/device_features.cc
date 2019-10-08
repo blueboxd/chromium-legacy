@@ -14,5 +14,9 @@ const base::Feature kGenericSensorExtraClasses{
 // backend instead of the ISensor API on Windows.
 const base::Feature kWinrtSensorsImplementation{
     "WinrtSensorsImplementation", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables usage of the Windows.Devices.Geolocation WinRT API for the
+// LocationProvider instead of the NetworkLocationProvider on Windows.
+const base::Feature kWinrtGeolocationImplementation{
+    "WinrtGeolocationImplementation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features

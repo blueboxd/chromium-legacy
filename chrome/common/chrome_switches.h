@@ -127,7 +127,6 @@ extern const char kMonitoringDestinationID[];
 extern const char kNativeMessagingConnectHost[];
 extern const char kNativeMessagingConnectExtension[];
 extern const char kNativeMessagingConnectId[];
-extern const char kNewNetErrorPageUI[];
 extern const char kNoDefaultBrowserCheck[];
 extern const char kNoExperiments[];
 extern const char kNoFirstRun[];

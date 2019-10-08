@@ -24,6 +24,7 @@ extern const char kFetchHintsOverrideTimer[];
 extern const char kOptimizationGuideServiceURL[];
 extern const char kOptimizationGuideServiceAPIKey[];
 extern const char kPurgeHintCacheStore[];
+extern const char kDisableFetchingHintsAtNavigationStartForTesting[];
 
 // Returns whether the hint component should be processed.
 // Available hint components are only processed if a proto override isn't being
@@ -49,6 +50,10 @@ bool ShouldOverrideFetchHintsTimer();
 // nullptr is returned.
 std::unique_ptr<optimization_guide::proto::Configuration>
 ParseComponentConfigFromCommandLine();
+
+// Returns true if fetching of hints in real-time at the time of navigation
+// start should be disabled. Returns true only in tests.
+bool DisableFetchingHintsAtNavigationStartForTesting();
 
 }  // namespace switches
 }  // namespace optimization_guide

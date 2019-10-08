@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -17,6 +19,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -132,6 +135,32 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
             mTabGridIphItemCoordinator = new TabGridIphItemCoordinator(
                     context, mTabListCoordinator.getContainerView(), container);
             mMediator.setIphProvider(mTabGridIphItemCoordinator.getIphProvider());
+        }
+
+        if (mode == TabListCoordinator.TabListMode.GRID) {
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)) {
+                mTabListCoordinator.registerItemType(TabProperties.UiType.SUGGESTION, () -> {
+                    return (ViewGroup) LayoutInflater.from(context).inflate(
+                            R.layout.tab_suggestion_card_item, container, false);
+                }, TabGridMessageCardViewBinder::bind);
+            }
+
+            assert mTabListCoordinator.getContainerView().getLayoutManager()
+                            instanceof GridLayoutManager;
+
+            // TODO(1004570): Have a flexible approach for span size look up for each UiType.
+            ((GridLayoutManager) mTabListCoordinator.getContainerView().getLayoutManager())
+                    .setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                        @Override
+                        public int getSpanSize(int position) {
+                            int itemType = mTabListCoordinator.getContainerView()
+                                                   .getAdapter()
+                                                   .getItemViewType(position);
+
+                            if (itemType == TabProperties.UiType.SUGGESTION) return 2;
+                            return 1;
+                        }
+                    });
         }
 
         mMenuOrKeyboardActionController = menuOrKeyboardActionController;

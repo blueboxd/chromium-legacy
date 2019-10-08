@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.Tru
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
+import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -33,6 +34,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
     private final TrustedWebActivityVerifier mVerifier;
     private final CustomTabToolbarCoordinator mToolbarCoordinator;
     private final CustomTabStatusBarColorProvider mStatusBarColorProvider;
+    private final Lazy<ImmersiveModeController> mImmersiveModeController;
 
     private boolean mInTwaMode = true;
 
@@ -48,15 +50,16 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
             TrustedWebActivityUmaRecorder umaRecorder,
             CustomTabStatusBarColorProvider statusBarColorProvider,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            CustomTabToolbarCoordinator toolbarCoordinator) {
+            CustomTabToolbarCoordinator toolbarCoordinator,
+            Lazy<ImmersiveModeController> immersiveModeController) {
         // We don't need to do anything with most of the classes above, we just need to resolve them
         // so they start working.
         mVerifier = verifier;
         mToolbarCoordinator = toolbarCoordinator;
         mStatusBarColorProvider = statusBarColorProvider;
+        mImmersiveModeController = immersiveModeController;
 
         navigationController.setLandingPageOnCloseCriterion(verifier::isPageOnVerifiedOrigin);
-
         initSplashScreen(splashController, intentDataProvider, umaRecorder);
 
         verifier.addVerificationObserver(this::onVerificationUpdate);
@@ -64,7 +67,11 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
     }
 
     @Override
-    public void onPreInflationStartup() {}
+    public void onPreInflationStartup() {
+        if (mVerifier.getState() == null) {
+            updateImmersiveMode(true); // Set immersive mode ASAP, before layout inflation.
+        }
+    }
 
     @Override
     public void onPostInflationStartup() {
@@ -97,6 +104,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
     }
 
     private void updateUi(boolean inTwaMode) {
+        updateImmersiveMode(inTwaMode);
         mToolbarCoordinator.setToolbarHidden(inTwaMode);
         mStatusBarColorProvider.setUseTabThemeColor(inTwaMode);
 
@@ -104,5 +112,9 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
             // Force showing the controls for a bit when leaving Trusted Web Activity mode.
             mToolbarCoordinator.showToolbarTemporarily();
         }
+    }
+
+    private void updateImmersiveMode(boolean inTwaMode) {
+        // TODO(pshmakov): implement this once we can depend on tip-of-tree of androidx-browser.
     }
 }

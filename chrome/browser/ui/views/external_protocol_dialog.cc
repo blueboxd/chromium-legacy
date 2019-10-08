@@ -57,10 +57,6 @@ bool ExternalProtocolDialog::ShouldShowCloseButton() const {
   return false;
 }
 
-int ExternalProtocolDialog::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_CANCEL;
-}
-
 base::string16 ExternalProtocolDialog::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return delegate_->GetDialogButtonLabel(button);
@@ -107,8 +103,10 @@ ExternalProtocolDialog::ExternalProtocolDialog(
     std::unique_ptr<const ProtocolDialogDelegate> delegate,
     WebContents* web_contents)
     : delegate_(std::move(delegate)), creation_time_(base::TimeTicks::Now()) {
+  DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
   views::MessageBoxView::InitParams params(delegate_->GetMessageText());
   message_box_view_ = new views::MessageBoxView(params);
+
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   set_margins(
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));

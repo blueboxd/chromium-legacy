@@ -54,8 +54,8 @@ bool WebDialogDelegate::HandleOpenURLFromTab(
   return false;
 }
 
-bool WebDialogDelegate::HandleShouldOverrideWebContentsCreation() {
-  return false;
+bool WebDialogDelegate::HandleShouldCreateWebContents() {
+  return true;
 }
 
 std::vector<Accelerator> WebDialogDelegate::GetAccelerators() {

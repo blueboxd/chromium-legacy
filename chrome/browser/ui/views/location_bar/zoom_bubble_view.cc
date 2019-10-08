@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 
 #include <cmath>
+#include <memory>
 
 #include "base/auto_reset.h"
 #include "base/i18n/number_formatting.h"
@@ -44,6 +45,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -62,18 +64,32 @@ constexpr base::TimeDelta kBubbleCloseDelayDefault =
 constexpr base::TimeDelta kBubbleCloseDelayLong =
     base::TimeDelta::FromMilliseconds(5000);
 
-// Creates an ImageButton using vector |icon|, sets a tooltip with |tooltip_id|.
-// Returns the button.
-std::unique_ptr<views::Button> CreateZoomButton(views::ButtonListener* listener,
-                                                const gfx::VectorIcon& icon,
-                                                int tooltip_id) {
-  std::unique_ptr<views::ImageButton> button(
-      views::CreateVectorImageButton(listener));
-  views::SetImageFromVectorIcon(button.get(), icon);
-  button->SetFocusForPlatform();
-  button->SetTooltipText(l10n_util::GetStringUTF16(tooltip_id));
-  return std::move(button);
-}
+class ZoomButtonHighlightPathGenerator : public views::HighlightPathGenerator {
+ public:
+  ZoomButtonHighlightPathGenerator() = default;
+
+  SkPath GetHighlightPath(const views::View* view) override {
+    constexpr int kCircleRadiusDp = 24 / 2;
+    const gfx::Point center = view->GetLocalBounds().CenterPoint();
+    return SkPath().addCircle(center.x(), center.y(), kCircleRadiusDp);
+  }
+};
+
+class ZoomButton : public views::ImageButton {
+ public:
+  explicit ZoomButton(views::ButtonListener* listener,
+                      const gfx::VectorIcon& icon,
+                      int tooltip_id)
+      : ImageButton(listener) {
+    views::ConfigureVectorImageButton(this);
+    views::SetImageFromVectorIcon(this, icon);
+    SetFocusForPlatform();
+    SetTooltipText(l10n_util::GetStringUTF16(tooltip_id));
+    views::HighlightPathGenerator::Install(
+        this, std::make_unique<ZoomButtonHighlightPathGenerator>());
+  }
+  ~ZoomButton() override = default;
+};
 
 class ZoomValue : public views::Label {
  public:
@@ -349,6 +365,7 @@ void ZoomBubbleView::OnMouseExited(const ui::MouseEvent& event) {
 
 void ZoomBubbleView::Init() {
   // Set up the layout of the zoom bubble.
+  constexpr int kPercentLabelPadding = 64;
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int spacing =
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
@@ -364,9 +381,9 @@ void ZoomBubbleView::Init() {
   // Calculate child views margins in |this| client view.
   const int label_vertical_spacing =
       provider->GetDistanceMetric(DISTANCE_TOAST_LABEL_VERTICAL);
-  const gfx::Insets label_vertical_margin(
-      label_vertical_spacing - margins().top(), 0,
-      label_vertical_spacing - margins().bottom(), 0);
+  const gfx::Insets label_margin(label_vertical_spacing - margins().top(), 0,
+                                 label_vertical_spacing - margins().bottom(),
+                                 kPercentLabelPadding - spacing);
 
   // Account for the apparent margins that vector buttons have around icons.
   const int control_vertical_spacing =
@@ -381,43 +398,33 @@ void ZoomBubbleView::Init() {
   // If this zoom change was initiated by an extension, that extension will be
   // attributed by showing its icon in the zoom bubble.
   if (extension_info_.icon_image) {
-    image_button_ = new views::ImageButton(this);
-    image_button_->SetTooltipText(
+    auto image_button = std::make_unique<views::ImageButton>(this);
+    image_button->SetTooltipText(
         l10n_util::GetStringFUTF16(IDS_TOOLTIP_ZOOM_EXTENSION_ICON,
                                    base::UTF8ToUTF16(extension_info_.name)));
-    image_button_->SetImage(views::Button::STATE_NORMAL,
-                            &extension_info_.icon_image->image_skia());
-    AddChildView(image_button_);
+    image_button->SetImage(views::Button::STATE_NORMAL,
+                           &extension_info_.icon_image->image_skia());
+    image_button_ = AddChildView(std::move(image_button));
   }
 
   // Add zoom label with the new zoom percent.
-  label_ = new ZoomValue(web_contents());
+  auto label = std::make_unique<ZoomValue>(web_contents());
+  label->SetProperty(views::kMarginsKey, gfx::Insets(label_margin));
+  label_ = label.get();
   UpdateZoomPercent();
-  label_->SetProperty(views::kMarginsKey, gfx::Insets(label_vertical_margin));
-  AddChildView(label_);
-
-  // Add extra padding between the zoom percent label and the buttons.
-  constexpr int kPercentLabelPadding = 64;
-  auto* label_padding_view = new views::View();
-  label_padding_view->SetPreferredSize(gfx::Size(
-      kPercentLabelPadding - spacing * 2, label_->GetPreferredSize().height()));
-  AddChildView(label_padding_view);
+  AddChildView(std::move(label));
 
   // Add Zoom Out ("-") button.
-  std::unique_ptr<views::Button> zoom_out_button =
-      CreateZoomButton(this, kRemoveIcon, IDS_ACCNAME_ZOOM_MINUS2);
-  zoom_out_button_ = zoom_out_button.get();
+  zoom_out_button_ = AddChildView(
+      std::make_unique<ZoomButton>(this, kRemoveIcon, IDS_ACCNAME_ZOOM_MINUS2));
   zoom_out_button_->SetProperty(views::kMarginsKey,
                                 gfx::Insets(vector_button_margin));
-  AddChildView(zoom_out_button.release());
 
   // Add Zoom In ("+") button.
-  std::unique_ptr<views::Button> zoom_in_button =
-      CreateZoomButton(this, kAddIcon, IDS_ACCNAME_ZOOM_PLUS2);
-  zoom_in_button_ = zoom_in_button.get();
+  zoom_in_button_ = AddChildView(
+      std::make_unique<ZoomButton>(this, kAddIcon, IDS_ACCNAME_ZOOM_PLUS2));
   zoom_in_button_->SetProperty(views::kMarginsKey,
                                gfx::Insets(vector_button_margin));
-  AddChildView(zoom_in_button.release());
 
   // Add "Reset" button.
   auto reset_button = views::MdTextButton::CreateSecondaryUiButton(
@@ -452,21 +459,6 @@ void ZoomBubbleView::CloseBubble() {
   // this. Additionally web_contents() may have been destroyed.
   zoom_bubble_ = nullptr;
   LocationBarBubbleDelegateView::CloseBubble();
-}
-
-void ZoomBubbleView::Layout() {
-  View::Layout();
-
-  for (auto* button : {zoom_in_button_, zoom_out_button_}) {
-    constexpr int kCircleDiameterDp = 24;
-    auto highlight_path = std::make_unique<SkPath>();
-    // Use a centered circular shape for inkdrops and focus rings.
-    gfx::Rect circle_rect(button->GetLocalBounds());
-    circle_rect.ClampToCenteredSize(
-        gfx::Size(kCircleDiameterDp, kCircleDiameterDp));
-    highlight_path->addOval(gfx::RectToSkRect(circle_rect));
-    button->SetProperty(views::kHighlightPathKey, highlight_path.release());
-  }
 }
 
 void ZoomBubbleView::ButtonPressed(views::Button* sender,

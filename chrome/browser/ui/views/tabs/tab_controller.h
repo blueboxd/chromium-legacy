@@ -55,6 +55,25 @@ class TabController {
   // Closes the tab.
   virtual void CloseTab(Tab* tab, CloseTabSource source) = 0;
 
+  // Attempts to move the specified tab to the right.
+  virtual void MoveTabRight(Tab* tab) = 0;
+
+  // Attempts to move the specified tab to the left.
+  virtual void MoveTabLeft(Tab* tab) = 0;
+
+  // Attempts to move the specified tab to the beginning of the tabstrip (or the
+  // beginning of the unpinned tab region if the tab is not pinned).
+  virtual void MoveTabFirst(Tab* tab) = 0;
+
+  // Attempts to move the specified tab to the end of the tabstrip (or the end
+  // of the pinned tab region if the tab is pinned).
+  virtual void MoveTabLast(Tab* tab) = 0;
+
+  // Shows a context menu for the tab at the specified point in screen coords.
+  virtual void ShowContextMenuForTab(Tab* tab,
+                                     const gfx::Point& p,
+                                     ui::MenuSourceType source_type) = 0;
+
   // Returns whether |tab| is the active tab. The active tab is the one whose
   // content is shown in the browser.
   virtual bool IsActiveTab(const Tab* tab) const = 0;

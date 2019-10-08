@@ -327,6 +327,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="3241052487511142956">Link visitado anterior</translation>
 <translation id="3241638166094654466">Células em cada linha:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">Item semelhante anterior</translation>
 <translation id="3286372614333682499">retrato</translation>
 <translation id="3286390186030710347">Controlo de deslize</translation>
 <translation id="3299925995433437805">Não existe nenhum link visitado seguinte.</translation>
@@ -509,6 +510,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4517854969512651305">Aumentar valor</translation>
 <translation id="4529987814483543472">Mapa de teclas clássico</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra}other{# barras}}</translation>
+<translation id="4537277403911487429">Item semelhante seguinte</translation>
 <translation id="4547556996012970016">Título de nível 5 seguinte</translation>
 <translation id="4562381607973973258">Cabeçalho</translation>
 <translation id="4569941707103739422">Prima a seta para cima ou para baixo para navegar. Prima Enter para ativar.</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1181037720776840403">Poista</translation>
 <translation id="125153950246128346">Näytä toinen välilehti napauttamalla</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> välilehti}other{<ph name="TABS_COUNT_MANY" /> välilehteä}}</translation>
 <translation id="257674075312929031">Ryhmä</translation>

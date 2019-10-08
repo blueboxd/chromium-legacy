@@ -190,8 +190,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 
   // assistant_client::DeviceStateListener overrides:
   void OnStartFinished() override;
-  void OnTimerSoundingStarted() override;
-  void OnTimerSoundingFinished() override;
 
   // mojom::AppListEventSubscriber overrides:
   void OnAndroidAppListRefreshed(

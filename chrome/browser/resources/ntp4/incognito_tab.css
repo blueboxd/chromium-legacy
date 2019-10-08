@@ -96,11 +96,28 @@ em {
   }
 }
 
-/** Third-Party Cookie Blocking Box ----------------------------------------- */
+/** Cookie Controls --------------------------------------------------------- */
 
 #cookie-controls {
+  align-items: center;
   background-color: rgb(60, 64, 67); /* --google-grey-800 */
+  border-radius: 4px;
   box-sizing: border-box;
+  display: flex;
+  padding: 12px 20px;
+}
+
+#cookie-controls-description {
+  flex: 1;
+  padding-inline-end: 20px;
+}
+
+#cookie-controls-description em {
+  display: block;
+}
+
+#cookie-controls-toggle {
+  flex: none;
 }
 
 /** Layout ------------------------------------------------------------------ */
@@ -162,15 +179,6 @@ h1 {
   padding-inline-start: 16px;
 }
 
-#cookie-controls {
-  margin-bottom: 1.5rem;
-  padding: 1.5rem;
-}
-
-#cookie-controls-description {
-  margin-top: 0.5rem;
-}
-
 /* Wide screens. */
 @media (min-width: 720px) {
   .icon,
@@ -183,7 +191,8 @@ h1 {
   .icon,
   h1,
   #subtitle,
-  .bulletpoints {
+  .bulletpoints,
+  #cookie-controls {
     margin-bottom: 1.5rem;
   }
 
@@ -225,7 +234,8 @@ h1 {
 
     .learn-more-button,
     .bulletpoints,
-    .icon {
+    .icon,
+    #cookie-controls {
       margin-bottom: 16px;
     }
   }
@@ -246,7 +256,8 @@ h1 {
   }
 
   .bulletpoints,
-  .learn-more-button {
+  .learn-more-button,
+  #cookie-controls {
     margin-bottom: 1.5rem;
   }
 
@@ -264,7 +275,8 @@ h1 {
     }
 
     .bulletpoints,
-    .learn-more-button {
+    .learn-more-button,
+    #cookie-controls {
       margin-bottom: 1rem;
     }
   }

@@ -6,8 +6,10 @@
 
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -181,6 +183,15 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
   if (layer.CompositingContainer() &&
       layer.CompositingContainer()->GetLayoutObject().IsVideo())
     direct_reasons |= CompositingReason::kVideoOverlay;
+
+  // Special case for immersive-ar DOM overlay mode, see also
+  // PaintLayerCompositor::ApplyXrImmersiveDomOverlayIfNeeded()
+  if (const Node* node = layer.GetLayoutObject().GetNode()) {
+    if (node->IsElementNode() && node->GetDocument().IsImmersiveArOverlay() &&
+        node == Fullscreen::FullscreenElementFrom(node->GetDocument())) {
+      direct_reasons |= CompositingReason::kImmersiveArOverlay;
+    }
+  }
 
   if (layer.IsRootLayer() &&
       (RequiresCompositingForScrollableFrame(*layout_object.View()) ||

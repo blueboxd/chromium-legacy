@@ -49,10 +49,15 @@ bool StyleRecalcRoot::IsDirty(const Node& node) const {
 }
 
 void StyleRecalcRoot::ClearChildDirtyForAncestors(ContainerNode& parent) const {
-  for (ContainerNode* ancestor = &parent; ancestor;
-       ancestor = ancestor->GetStyleRecalcParent()) {
-    ancestor->ClearChildNeedsStyleRecalc();
+  ContainerNode* ancestor = &parent;
+  if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled() &&
+      !parent.IsElementNode()) {
+    ancestor = parent.ParentOrShadowHostElement();
+  }
+  for (; ancestor; ancestor = ancestor->GetStyleRecalcParent()) {
+    DCHECK(ancestor->ChildNeedsStyleRecalc());
     DCHECK(!ancestor->NeedsStyleRecalc());
+    ancestor->ClearChildNeedsStyleRecalc();
   }
 }
 

@@ -23,6 +23,7 @@ class ListValue;
 struct TemplateURLData {
   TemplateURLData();
   TemplateURLData(const TemplateURLData& other);
+  TemplateURLData& operator=(const TemplateURLData& other);
 
   // Creates a TemplateURLData suitable for prepopulated engines.
   // Note that unlike in the default constructor, |safe_for_autoreplace| will

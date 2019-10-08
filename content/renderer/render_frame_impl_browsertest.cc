@@ -320,7 +320,7 @@ TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
 
   FrameHostMsg_SaveImageFromDataURL::Param param1;
   FrameHostMsg_SaveImageFromDataURL::Read(msg2, &param1);
-  EXPECT_EQ(std::get<2>(param1), image_data_url);
+  EXPECT_EQ(std::get<0>(param1), image_data_url);
 
   base::RunLoop().RunUntilIdle();
   render_thread_->sink().ClearMessages();
@@ -335,7 +335,7 @@ TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
 
   FrameHostMsg_SaveImageFromDataURL::Param param2;
   FrameHostMsg_SaveImageFromDataURL::Read(msg3, &param2);
-  EXPECT_EQ(std::get<2>(param2), large_data_url);
+  EXPECT_EQ(std::get<0>(param2), large_data_url);
 
   base::RunLoop().RunUntilIdle();
   render_thread_->sink().ClearMessages();
@@ -670,7 +670,7 @@ class TestSimpleDocumentInterfaceBrokerImpl
  public:
   using BinderCallback = base::RepeatingCallback<void(
       mojo::PendingReceiver<blink::mojom::FrameHostTestInterface>)>;
-  TestSimpleDocumentInterfaceBrokerImpl(BinderCallback binder_callback)
+  explicit TestSimpleDocumentInterfaceBrokerImpl(BinderCallback binder_callback)
       : binder_callback_(binder_callback) {}
   void BindAndFlush(
       mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker> receiver) {

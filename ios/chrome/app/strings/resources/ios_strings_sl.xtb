@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Uredi zaznamek</translation>
 <translation id="2179182049312275900">Sinhronizacijo lahko kadarkoli vklopite v nastavitvah.</translation>
 <translation id="2198757192731523470">Google lahko vašo zgodovino uporabi za prilagajanje Iskanja Google, oglasov in drugih Googlovih storitev.</translation>
-<translation id="2207590065820824892">Št. neprebranih člankov s seznama za branje: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Spletna stran je naložena</translation>
 <translation id="2239626343334228536">Brisanje podatkov brskanja …</translation>
 <translation id="2267753748892043616">Dodaj račun</translation>
@@ -265,7 +264,6 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 
 Če želite spremeniti to nastavitev, <ph name="BEGIN_LINK" />ponastavite sinhronizacijo<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Neveljavna številka kartice</translation>
-<translation id="4807020197310989387">1 neprebran članek s seznama za branje.</translation>
 <translation id="4818522717893377262">Dodaj jezik …</translation>
 <translation id="481968316161811770">Cookies, Site Data</translation>
 <translation id="4833786495304741580">Samodejno pošilja statistične podatke o uporabi in poročila o zrušitvah Googlu.</translation>
@@ -414,6 +412,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="6858855187367714033">Optično prebrano</translation>
 <translation id="6859944681507688231">Če želite optično prebrati kodo QR ali kreditno kartico, v nastavitvah omogočite fotoaparat.</translation>
 <translation id="6873263987691478642">Razdeljeni pogled</translation>
+<translation id="6888009575607455378">Ali ste prepričani, da želite zavreči spremembe?</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
 <translation id="6903907808598579934">Vklopi sinhronizacijo</translation>
 <translation id="6914583639806229067">Iskanje slike, ki ste jo kopirali</translation>

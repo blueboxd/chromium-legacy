@@ -9,6 +9,7 @@
 #include <presentation-time-client-protocol.h>
 #include <text-input-unstable-v1-client-protocol.h>
 #include <wayland-client.h>
+#include <wayland-drm-client-protocol.h>
 #include <xdg-shell-unstable-v5-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
 
@@ -107,6 +108,9 @@ const wl_interface* ObjectTraits<wl_data_source>::interface =
     &wl_data_source_interface;
 void (*ObjectTraits<wl_data_source>::deleter)(wl_data_source*) =
     &wl_data_source_destroy;
+
+const wl_interface* ObjectTraits<wl_drm>::interface = &wl_drm_interface;
+void (*ObjectTraits<wl_drm>::deleter)(wl_drm*) = &wl_drm_destroy;
 
 const wl_interface* ObjectTraits<wl_display>::interface = &wl_display_interface;
 void (*ObjectTraits<wl_display>::deleter)(wl_display*) = &wl_display_disconnect;

@@ -326,6 +326,7 @@
 <translation id="3241052487511142956">സന്ദർശിച്ച മുമ്പത്തെ ലിങ്ക്</translation>
 <translation id="3241638166094654466">ഓരോ വരിയിലെയും കളങ്ങൾ:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">സമാനമായ മുമ്പത്തെ ഇനം</translation>
 <translation id="3286372614333682499">പോർട്രെയ്‌റ്റ്</translation>
 <translation id="3286390186030710347">സ്ലൈഡർ</translation>
 <translation id="3299925995433437805">സന്ദർശിച്ച അടുത്ത ലിങ്കൊന്നുമില്ല.</translation>
@@ -508,6 +509,7 @@
 <translation id="4517854969512651305">മൂല്യം കൂട്ടുക</translation>
 <translation id="4529987814483543472">ക്ലാസിക്ക് കീമാപ്പ്</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{സ്ലാഷ്}other{# സ്ലാഷുകൾ}}</translation>
+<translation id="4537277403911487429">സമാനമായ അടുത്ത ഇനം</translation>
 <translation id="4547556996012970016">അടുത്ത നില 5 ശീർഷകം</translation>
 <translation id="4562381607973973258">ശീർഷകം</translation>
 <translation id="4569941707103739422">നാവിഗേറ്റ് ചെയ്യാൻ മുകളിലേക്കോ താഴേക്കോ ഉള്ള അമ്പടയാള കീകൾ അമർത്തുക; സജീവമാക്കാൻ എന്റർ അമർത്തുക.</translation>
@@ -720,7 +722,7 @@
 <translation id="5937336320314038555">{COUNT,plural, =1{സമചിഹ്നം}other{# സമചിഹ്നങ്ങൾ}}</translation>
 <translation id="5939518447894949180">വീണ്ടും സജ്ജീകരിക്കുക</translation>
 <translation id="5948123859135882163">ഘടനാപരമായതിനും സെമാന്റിക്കിനുമിടയിൽ മാത്ത് എക്‌സ്‌പ്രഷനുകളുടെ വ്യാഖ്യാനം ടോഗിൾ ചെയ്യുക</translation>
-<translation id="5955304353782037793">app</translation>
+<translation id="5955304353782037793">ആപ്പ്</translation>
 <translation id="5956928062748260866">ഡയലോഗ്</translation>
 <translation id="5963413905009737549">വിഭാഗം</translation>
 <translation id="5968607524793740041">സന്ദർഭ മെനു കാണിക്കുക</translation>
@@ -893,7 +895,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="72393384879519786">ശീർഷകം</translation>
 <translation id="7240858705033280249">വിശദാംശങ്ങളിലേക്ക് പോവുക</translation>
 <translation id="7241683698754534149">ദൈർഘ്യമേറിയ വിവരണം പുതിയ ടാബിൽ തുറക്കുക</translation>
-<translation id="7248671827512403053">അപ്ലിക്കേഷന്‍</translation>
+<translation id="7248671827512403053">ആപ്പ്</translation>
 <translation id="725969808843520477">അടുത്ത റേഡിയോ ബട്ടൺ</translation>
 <translation id="7261612856573623172">സിസ്‌റ്റം ടെക്‌സ്‌റ്റ്-ടു-സ്‌പീച്ച് ശബ്‌ദം</translation>
 <translation id="7269119382257320590">ചിഹ്നനങ്ങളൊന്നുമില്ല</translation>

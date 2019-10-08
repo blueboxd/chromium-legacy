@@ -107,6 +107,10 @@ class TextPaintTimingDetectorTest : public testing::Test {
     GetPaintTimingDetector().NotifyInputEvent(WebInputEvent::Type::kMouseDown);
   }
 
+  void SimulateScroll() {
+    GetPaintTimingDetector().NotifyScroll(ScrollType::kUserScroll);
+  }
+
   void InvokeCallback() {
     DCHECK_GT(mock_callback_manager_->CountCallbacks(), 0u);
     InvokeSwapTimeCallback(mock_callback_manager_);
@@ -737,6 +741,32 @@ TEST_F(TextPaintTimingDetectorTest, SameSizeShouldNotBeIgnored) {
   )HTML");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
   EXPECT_EQ(CountRankingSetSize(), 4u);
+}
+
+TEST_F(TextPaintTimingDetectorTest, VisibleTextAfterUserInput) {
+  SetBodyInnerHTML(R"HTML(
+  )HTML");
+  AppendDivElementToBody("text");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(CountVisibleTexts(), 1u);
+  EXPECT_TRUE(GetLargestTextPaintManager());
+
+  SimulateInputEvent();
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(CountVisibleTexts(), 1u);
+}
+
+TEST_F(TextPaintTimingDetectorTest, VisibleTextAfterUserScroll) {
+  SetBodyInnerHTML(R"HTML(
+  )HTML");
+  AppendDivElementToBody("text");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(CountVisibleTexts(), 1u);
+  EXPECT_TRUE(GetLargestTextPaintManager());
+
+  SimulateScroll();
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(CountVisibleTexts(), 1u);
 }
 
 }  // namespace blink

@@ -29,12 +29,10 @@ const bool kAlwaysOpenIncognitoWindow = false;
 const bool kAlwaysCreateTabbedBrowserOnSessionRestore = true;
 #endif
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #if defined(OS_CHROMEOS)
 const bool kShowHelpMenuItemIcon = true;
 #else
 const bool kShowHelpMenuItemIcon = false;
-#endif
 #endif
 
 const bool kDownloadPageHasShowInFolder = true;

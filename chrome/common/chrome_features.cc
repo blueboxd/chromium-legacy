@@ -513,13 +513,6 @@ const base::Feature kNativeNotifications{"NativeNotifications",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 
-#if defined(OS_ANDROID)
-// Changes the net error page UI by adding suggested offline content
-// on the dino page.
-const base::Feature kNewNetErrorPageUI{"NewNetErrorPageUI",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // OS_ANDROID
-
 // When kNoReferrers is enabled, most HTTP requests will provide empty
 // referrers instead of their ordinary behavior.
 const base::Feature kNoReferrers{"NoReferrers",

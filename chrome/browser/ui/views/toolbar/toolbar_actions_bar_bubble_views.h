@@ -47,7 +47,6 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
   bool Accept() override;
   bool Close() override;
   int GetDialogButtons() const override;
-  int GetDefaultDialogButton() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void Init() override;
 

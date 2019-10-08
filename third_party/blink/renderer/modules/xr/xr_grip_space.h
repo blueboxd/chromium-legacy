@@ -13,9 +13,11 @@ namespace blink {
 
 class XRGripSpace : public XRSpace {
  public:
-  XRGripSpace(XRSession*, XRInputSource*);
+  XRGripSpace(XRSession* session, XRInputSource* input_source);
   XRPose* getPose(XRSpace* other_space,
                   const TransformationMatrix* base_pose_matrix) override;
+
+  base::Optional<XRNativeOriginInformation> NativeOrigin() const override;
 
   void Trace(blink::Visitor*) override;
 

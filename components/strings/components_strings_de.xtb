@@ -202,6 +202,7 @@
 <translation id="187918866476621466">"Beim Start"-Seiten öffnen</translation>
 <translation id="1883255238294161206">Liste ausblenden</translation>
 <translation id="1898423065542865115">Filtern</translation>
+<translation id="1901443836186977402">{1,plural, =1{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat ist in den letzten 24 Stunden abgelaufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt. Die Uhr Ihres Computers ist derzeit auf <ph name="CURRENT_DATE" /> eingestellt. Ist das korrekt? Falls nicht, stellen Sie die Uhr Ihres Systems richtig ein und aktualisieren Sie anschließend diese Seite.}other{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat ist vor # Tagen abgelaufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt. Die Uhr Ihres Computers ist momentan auf <ph name="CURRENT_DATE" /> eingestellt. Ist das richtig? Wenn nicht, korrigieren Sie die Uhrzeit Ihres Systems und aktualisieren Sie dann diese Seite.}}</translation>
 <translation id="1914326953223720820">Dienst entpacken</translation>
 <translation id="1915697529809968049">Touch ID anstelle des CVCs verwenden?</translation>
 <translation id="1916770123977586577">Laden Sie diese Seite neu, um die aktualisierten Einstellungen für diese Website zu übernehmen</translation>
@@ -439,6 +440,7 @@
 <translation id="3116158981186517402">Laminieren</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Versuchen Sie, die Verbindungsdiagnose auszuführen.<ph name="END_LINK" /></translation>
+<translation id="3121994479408824897">Zu <ph name="DOMAIN" /> wechseln</translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Keine}=1{Anmeldedaten für 1 Konto}other{Anmeldedaten für # Konten}}</translation>
 <translation id="3145945101586104090">Fehler beim Dekodieren der Antwort</translation>
 <translation id="3150653042067488994">Vorübergehender Serverfehler</translation>
@@ -818,6 +820,7 @@
 <translation id="5043480802608081735">Von Ihnen kopierter Link</translation>
 <translation id="5045550434625856497">Falsches Passwort</translation>
 <translation id="5056549851600133418">Artikel für mich</translation>
+<translation id="5061227663725596739">Meinten Sie <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 wird verwendet)}other{(# werden verwendet)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Proxyadresse prüfen<ph name="END_LINK" /></translation>
@@ -871,6 +874,7 @@
 <translation id="5284909709419567258">Netzwerkadressen</translation>
 <translation id="5285570108065881030">Alle gespeicherten Passwörter anzeigen</translation>
 <translation id="5287240709317226393">Cookies anzeigen</translation>
+<translation id="5287456746628258573">Diese Website nutzt eine veraltete Sicherheitskonfiguration. Hierdurch können Informationen wie etwa Passwörter oder Kreditkartennummern, die an diese Website gesendet werden, in die Hände Unbefugter gelangen.</translation>
 <translation id="5288108484102287882">Die Validierung der Richtlinienwerte hat Warnungen ergeben</translation>
 <translation id="5299298092464848405">Fehler beim Parsen der Richtlinie</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
@@ -998,6 +1002,7 @@
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> wird geöffnet…</translation>
 <translation id="5947933617628957894">Ja, hinzufügen</translation>
 <translation id="5951495562196540101">Registrierung mit Kundenkonto nicht möglich (Paketlizenz verfügbar).</translation>
+<translation id="5966900314707961320">Bei Aktivierung der Funktion können Websites keine Cookies verwenden, die Sie im gesamten Web nachverfolgen</translation>
 <translation id="5967592137238574583">Kontaktdaten bearbeiten</translation>
 <translation id="5967867314010545767">Aus Verlauf entfernen</translation>
 <translation id="5975083100439434680">Verkleinern</translation>
@@ -1080,6 +1085,7 @@
 <translation id="6383221683286411806">Warnung vor möglichen Kosten.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 weiterer Vorschlag}other{# weitere Vorschläge}}</translation>
 <translation id="6387754724289022810">Damit Zahlungen zukünftig schneller abgewickelt werden können, speichern Sie Ihre Kreditkartendaten und Ihre Rechnungsadresse in Ihrem Google-Konto und auf diesem Gerät.</translation>
+<translation id="6389470377220713856">Name auf Karte</translation>
 <translation id="6390200185239044127">Halbierte Z-Faltung</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Diese Richtlinie ist veraltet. Verwenden Sie stattdessen die Richtlinie "<ph name="NEW_POLICY" />".</translation>
@@ -1258,7 +1264,6 @@ Weitere Details:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Ist verknüpft:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Diese Website verlassen</translation>
 <translation id="7353601530677266744">Befehlszeile</translation>
 <translation id="7372973238305370288">Suchergebnis</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1431,6 +1436,7 @@ Weitere Details:
 <translation id="8131740175452115882">Bestätigen</translation>
 <translation id="8149426793427495338">Ihr Computer ist im Ruhemodus.</translation>
 <translation id="8150722005171944719">Die Datei unter <ph name="URL" /> kann nicht gelesen werden. Sie wurde möglicherweise entfernt oder verschoben oder die Dateiberechtigungen verhindern den Zugriff.</translation>
+<translation id="8157295877370077682">Website verlassen</translation>
 <translation id="8163866351304776260">Vierfache Lochung links</translation>
 <translation id="8175796834047840627">Chrome bietet Ihnen die Möglichkeit, die Karten in Ihrem Google-Konto zu speichern, weil Sie angemeldet sind. Sie können dies in den Einstellungen ändern.</translation>
 <translation id="8184538546369750125">Globalen Standard verwenden (Zulassen)</translation>

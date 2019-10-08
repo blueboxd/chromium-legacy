@@ -350,8 +350,8 @@
       <include name="IDR_USB_DEVICE_MANAGER_TEST_MOJOM_LITE_JS" file="${root_gen_dir}\services\device\public\mojom\usb_manager_test.mojom-lite.js" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_USB_DEVICE_MOJOM_LITE_JS" file="${root_gen_dir}\services\device\public\mojom\usb_device.mojom-lite.js" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_WEB_FOOTER_EXPERIMENT_HTML" file="resources\web_footer_experiment\index.html" type="BINDATA" />
-      <include name="IDR_WEBRTC_LOGS_HTML" file="resources\media\webrtc_logs.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_WEBRTC_LOGS_JS" file="resources\media\webrtc_logs.js" type="BINDATA" />
+      <include name="IDR_WEBRTC_LOGS_HTML" file="resources\media\webrtc_logs.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="brotli" />
+      <include name="IDR_WEBRTC_LOGS_JS" file="resources\media\webrtc_logs.js" type="BINDATA" compress="brotli" />
       <include name="IDR_WEBSTORE_MANIFEST" file="resources\webstore_app\manifest.json" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_MANIFEST" file="resources\cryptotoken\manifest.json" type="BINDATA" />
       <if expr="chromeos">

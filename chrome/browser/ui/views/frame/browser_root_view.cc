@@ -106,7 +106,14 @@ BrowserRootView::BrowserRootView(BrowserView* browser_view,
                                  views::Widget* widget)
     : views::internal::RootView(widget), browser_view_(browser_view) {}
 
-BrowserRootView::~BrowserRootView() = default;
+BrowserRootView::~BrowserRootView() {
+  // It's possible to destroy the browser while a drop is active.  In this case,
+  // |drop_info_| will be non-null, but its |target| likely points to an
+  // already-deleted child.  Clear the target so ~DropInfo() will not try and
+  // notify it of the drag ending. http://crbug.com/1001942
+  if (drop_info_)
+    drop_info_->target = nullptr;
+}
 
 bool BrowserRootView::GetDropFormats(
     int* formats,

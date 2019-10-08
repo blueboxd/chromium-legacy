@@ -16,6 +16,7 @@ namespace payments {
 mojom::PaymentMethodChangeResponsePtr
 PaymentDetailsConverter::ConvertToPaymentMethodChangeResponse(
     const mojom::PaymentDetailsPtr& details,
+    bool handles_shipping,
     const MethodChecker& method_checker) {
   DCHECK(details);
 
@@ -23,7 +24,7 @@ PaymentDetailsConverter::ConvertToPaymentMethodChangeResponse(
   response->error = details->error;
   response->stringified_payment_method_errors =
       details->stringified_payment_method_errors;
-  if (details->shipping_address_errors) {
+  if (handles_shipping && details->shipping_address_errors) {
     response->shipping_address_errors =
         details->shipping_address_errors.Clone();
   }
@@ -54,7 +55,7 @@ PaymentDetailsConverter::ConvertToPaymentMethodChangeResponse(
     }
   }
 
-  if (details->shipping_options) {
+  if (handles_shipping && details->shipping_options) {
     response->shipping_options = std::vector<mojom::PaymentShippingOptionPtr>();
     for (const auto& option : *details->shipping_options)
       response->shipping_options->emplace_back(option.Clone());

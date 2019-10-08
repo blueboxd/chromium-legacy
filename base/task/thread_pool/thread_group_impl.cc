@@ -482,10 +482,6 @@ void ThreadGroupImpl::WaitForWorkersCleanedUpForTesting(size_t n) {
 }
 
 void ThreadGroupImpl::JoinForTesting() {
-#if DCHECK_IS_ON()
-  join_for_testing_started_.Set();
-#endif
-
   decltype(workers_) workers_copy;
   {
     CheckedAutoLock auto_lock(lock_);
@@ -493,6 +489,8 @@ void ThreadGroupImpl::JoinForTesting() {
 
     DCHECK_GT(workers_.size(), size_t(0))
         << "Joined an unstarted thread group.";
+
+    join_for_testing_started_ = true;
 
     // Ensure WorkerThreads in |workers_| do not attempt to cleanup while
     // being joined.
@@ -711,6 +709,7 @@ bool ThreadGroupImpl::WorkerThreadDelegateImpl::CanCleanupLockRequired(
 
 void ThreadGroupImpl::WorkerThreadDelegateImpl::CleanupLockRequired(
     WorkerThread* worker) {
+  DCHECK(!outer_->join_for_testing_started_);
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
 
   if (outer_->num_tasks_before_detach_histogram_) {
@@ -759,7 +758,7 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainExit(
     // |workers_| by the time the thread is about to exit. (except in the cases
     // where the thread group is no longer going to be used - in which case,
     // it's fine for there to be invalid workers in the thread group.
-    if (!shutdown_complete && !outer_->join_for_testing_started_.IsSet()) {
+    if (!shutdown_complete && !outer_->join_for_testing_started_) {
       DCHECK(!outer_->idle_workers_stack_.Contains(worker));
       DCHECK(!ContainsWorker(outer_->workers_, worker));
     }
@@ -947,6 +946,7 @@ void ThreadGroupImpl::MaintainAtLeastOneIdleWorkerLockRequired(
 scoped_refptr<WorkerThread>
 ThreadGroupImpl::CreateAndRegisterWorkerLockRequired(
     ScopedWorkersExecutor* executor) {
+  DCHECK(!join_for_testing_started_);
   DCHECK_LT(workers_.size(), max_tasks_);
   DCHECK_LT(workers_.size(), kMaxNumberOfWorkers);
   DCHECK(idle_workers_stack_.IsEmpty());
@@ -1016,7 +1016,7 @@ void ThreadGroupImpl::DidUpdateCanRunPolicy() {
 void ThreadGroupImpl::EnsureEnoughWorkersLockRequired(
     BaseScopedWorkersExecutor* base_executor) {
   // Don't do anything if the thread group isn't started.
-  if (max_tasks_ == 0)
+  if (max_tasks_ == 0 || UNLIKELY(join_for_testing_started_))
     return;
 
   ScopedWorkersExecutor* executor =

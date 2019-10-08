@@ -73,7 +73,7 @@ class InterceptingPrefFilter : public PrefFilter {
   void FilterUpdate(const std::string& path) override {}
   OnWriteCallbackPair FilterSerializeData(
       base::DictionaryValue* pref_store_contents) override {
-    return on_write_callback_pair_;
+    return std::move(on_write_callback_pair_);
   }
   void OnStoreDeletionFromDisk() override {}
 
@@ -95,7 +95,7 @@ InterceptingPrefFilter::InterceptingPrefFilter() {}
 
 InterceptingPrefFilter::InterceptingPrefFilter(
     OnWriteCallbackPair callback_pair) {
-  on_write_callback_pair_ = callback_pair;
+  on_write_callback_pair_ = std::move(callback_pair);
 }
 
 InterceptingPrefFilter::~InterceptingPrefFilter() {}

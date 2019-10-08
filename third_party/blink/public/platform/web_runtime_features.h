@@ -62,6 +62,9 @@ class WebRuntimeFeatures {
       const std::string& name,
       bool enable);
 
+  BLINK_PLATFORM_EXPORT static void EnableForcedColors(bool);
+  BLINK_PLATFORM_EXPORT static bool IsForcedColorsEnabled();
+
   BLINK_PLATFORM_EXPORT static void EnableFractionalScrollOffsets(bool);
   BLINK_PLATFORM_EXPORT static bool IsFractionalScrollOffsetsEnabled();
 
@@ -150,7 +153,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnablePrintBrowser(bool);
   BLINK_PLATFORM_EXPORT static void EnablePresentationAPI(bool);
   BLINK_PLATFORM_EXPORT static void EnablePushMessaging(bool);
-  BLINK_PLATFORM_EXPORT static void EnableRasterInducingScroll(bool);
   BLINK_PLATFORM_EXPORT static void EnableReducedReferrerGranularity(bool);
   BLINK_PLATFORM_EXPORT static void EnableRemotePlaybackAPI(bool);
   BLINK_PLATFORM_EXPORT static void EnableResourceLoadScheduler(bool);

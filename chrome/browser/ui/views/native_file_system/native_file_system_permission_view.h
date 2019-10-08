@@ -46,7 +46,6 @@ class NativeFileSystemPermissionView : public views::DialogDelegateView {
 
   // views::DialogDelegateView:
   base::string16 GetWindowTitle() const override;
-  int GetDefaultDialogButton() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool ShouldShowCloseButton() const override;
   bool Accept() override;

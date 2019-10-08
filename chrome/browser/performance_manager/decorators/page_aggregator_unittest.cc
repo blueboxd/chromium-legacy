@@ -4,11 +4,11 @@
 
 #include "chrome/browser/performance_manager/decorators/page_aggregator.h"
 
-#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/public/graph/page_node.h"
-#include "chrome/browser/performance_manager/test_support/graph_test_harness.h"
+#include "components/performance_manager/graph/frame_node_impl.h"
+#include "components/performance_manager/graph/graph_impl_operations.h"
+#include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/public/graph/page_node.h"
+#include "components/performance_manager/test_support/graph_test_harness.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -185,10 +185,8 @@ TEST_F(PageAggregatorTest, InitialOriginTrialFreezingPolicy) {
 // Test changing the Origin Trial Freezing policy of a frame after it becomes
 // current.
 TEST_F(PageAggregatorTest, OriginTrialFreezingPolicyChanges) {
-  TestNodeWrapper<ProcessNodeImpl> process =
-      TestNodeWrapper<ProcessNodeImpl>::Create(graph());
-  TestNodeWrapper<PageNodeImpl> page =
-      TestNodeWrapper<PageNodeImpl>::Create(graph());
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
   TestNodeWrapper<FrameNodeImpl> frame =
       graph()->CreateFrameNodeAutoId(process.get(), page.get());
   frame->SetIsCurrent(true);
@@ -202,6 +200,69 @@ TEST_F(PageAggregatorTest, OriginTrialFreezingPolicyChanges) {
   EXPECT_EQ(InterventionPolicy::kDefault, page->origin_trial_freeze_policy());
   frame->SetOriginTrialFreezePolicy(InterventionPolicy::kUnknown);
   EXPECT_EQ(InterventionPolicy::kUnknown, page->origin_trial_freeze_policy());
+}
+
+TEST_F(PageAggregatorTest, WebLocksAggregation) {
+  // Creates a page containing 2 frames.
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  TestNodeWrapper<FrameNodeImpl> frame_0 =
+      graph()->CreateFrameNodeAutoId(process.get(), page.get());
+  TestNodeWrapper<FrameNodeImpl> frame_1 =
+      graph()->CreateFrameNodeAutoId(process.get(), page.get());
+
+  // By default the page shouldn't hold any WebLock.
+  EXPECT_FALSE(page->is_holding_weblock());
+
+  // |frame_0| now holds a WebLock, the corresponding property should be set on
+  // the page node.
+  frame_0->SetIsHoldingWebLock(true);
+  EXPECT_TRUE(page->is_holding_weblock());
+
+  // |frame_1| also holding a WebLock shouldn't affect the page property.
+  frame_1->SetIsHoldingWebLock(true);
+  EXPECT_TRUE(page->is_holding_weblock());
+
+  // |frame_1| still holds a WebLock after this.
+  frame_0->SetIsHoldingWebLock(false);
+  EXPECT_TRUE(page->is_holding_weblock());
+
+  // Destroying |frame_1| without explicitly releasing the WebLock it's
+  // holding should update the corresponding page property.
+  frame_1.reset();
+  EXPECT_FALSE(page->is_holding_weblock());
+}
+
+TEST_F(PageAggregatorTest, IndexedDBLocksAggregation) {
+  // Creates a page containing 2 frames.
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  TestNodeWrapper<FrameNodeImpl> frame_0 =
+      graph()->CreateFrameNodeAutoId(process.get(), page.get());
+  TestNodeWrapper<FrameNodeImpl> frame_1 =
+      graph()->CreateFrameNodeAutoId(process.get(), page.get());
+
+  // By default the page shouldn't hold any IndexedDB lock.
+  EXPECT_FALSE(page->is_holding_indexeddb_lock());
+
+  // |frame_0| now holds an IndexedDB lock, the corresponding property should be
+  // set on the page node.
+  frame_0->SetIsHoldingIndexedDBLock(true);
+  EXPECT_TRUE(page->is_holding_indexeddb_lock());
+
+  // |frame_1| also holding an IndexedDB lock shouldn't affect the page
+  // property.
+  frame_1->SetIsHoldingIndexedDBLock(true);
+  EXPECT_TRUE(page->is_holding_indexeddb_lock());
+
+  // |frame_1| still holds an IndexedDB lock after this.
+  frame_0->SetIsHoldingIndexedDBLock(false);
+  EXPECT_TRUE(page->is_holding_indexeddb_lock());
+
+  // Destroying |frame_1| without explicitly releasing the IndexedDB lock it's
+  // holding should update the corresponding page property.
+  frame_1.reset();
+  EXPECT_FALSE(page->is_holding_indexeddb_lock());
 }
 
 }  // namespace performance_manager

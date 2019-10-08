@@ -192,7 +192,7 @@ cr.define('serviceworker', function() {
     }
   }
 
-  function onRunningStateChanged(partition_id, version_id) {
+  function onRunningStateChanged() {
     update();
   }
 

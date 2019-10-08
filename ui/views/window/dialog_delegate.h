@@ -35,6 +35,12 @@ class LabelButton;
 ///////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
  public:
+  struct Params {
+    Params();
+    ~Params();
+    base::Optional<int> default_button = base::nullopt;
+  };
+
   DialogDelegate();
 
   // Creates a widget at a default location.
@@ -63,7 +69,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // behavior is to return ui::DIALOG_BUTTON_OK or
   // ui::DIALOG_BUTTON_CANCEL (in that order) if they are
   // present, ui::DIALOG_BUTTON_NONE otherwise.
-  virtual int GetDefaultDialogButton() const;
+  int GetDefaultDialogButton() const;
 
   // Returns the label of the specified dialog button.
   virtual base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
@@ -150,6 +156,8 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // Notifies observers when the result of the DialogModel overrides changes.
   void DialogModelChanged();
 
+  void set_default_button(int button) { params_.default_button = button; }
+
  protected:
   ~DialogDelegate() override;
 
@@ -169,6 +177,9 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   // The time the dialog is created.
   base::TimeTicks creation_time_;
+
+  // Dialog parameters for this dialog.
+  Params params_;
 
   // Observers for DialogModel changes.
   base::ObserverList<DialogObserver>::Unchecked observer_list_;

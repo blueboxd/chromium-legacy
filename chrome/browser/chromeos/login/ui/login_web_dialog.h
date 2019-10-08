@@ -81,7 +81,7 @@ class LoginWebDialog : public ui::WebDialogDelegate {
   bool HandleOpenURLFromTab(content::WebContents* source,
                             const content::OpenURLParams& params,
                             content::WebContents** out_new_contents) override;
-  bool HandleShouldOverrideWebContentsCreation() override;
+  bool HandleShouldCreateWebContents() override;
   std::vector<ui::Accelerator> GetAccelerators() override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 

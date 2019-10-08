@@ -206,7 +206,7 @@ BackgroundModeManager::BackgroundModeData::GetNewBackgroundApps() {
       current_extensions_.insert(id);
       // If this application has been newly loaded after the initial startup,
       // notify the user.
-      if (applications_->is_ready())
+      if (applications_->startup_done())
         new_apps.insert(application.get());
     }
   }
@@ -744,6 +744,7 @@ void BackgroundModeManager::OnBackgroundClientInstalled(
   EnableBackgroundMode();
   ResumeBackgroundMode();
 
+  ++client_installed_notifications_;
   // Notify the user that a background client has been installed.
   DisplayClientInstalledNotification(name);
 }

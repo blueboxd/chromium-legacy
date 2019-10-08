@@ -48,10 +48,6 @@ base::string16 RequestFileSystemDialogView::GetAccessibleWindowTitle() const {
       IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_TITLE);
 }
 
-int RequestFileSystemDialogView::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_CANCEL;
-}
-
 base::string16 RequestFileSystemDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   switch (button) {
@@ -92,6 +88,7 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
     bool writable,
     const base::Callback<void(ui::DialogButton)>& callback)
     : callback_(callback) {
+  DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
   DCHECK(!callback_.is_null());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));

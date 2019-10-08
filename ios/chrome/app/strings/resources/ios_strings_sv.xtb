@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Redigera bokmärke</translation>
 <translation id="2179182049312275900">Du kan när som helst inaktivera synkroniseringen i inställningarna.</translation>
 <translation id="2198757192731523470">Google kan anpassa Sök, annonser och andra Google-tjänster utifrån historiken.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> olästa artiklar i läslistan.</translation>
 <translation id="2230173723195178503">Webbsidan har lästs in</translation>
 <translation id="2239626343334228536">Tar bort webbinformation …</translation>
 <translation id="2267753748892043616">Lägg till konto</translation>
@@ -265,7 +264,6 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 
 <ph name="BEGIN_LINK" />Återställ synkroniseringen<ph name="END_LINK" /> om du vill ändra den här inställningen.</translation>
 <translation id="4805759445554688327">Ogiltigt kortnummer</translation>
-<translation id="4807020197310989387">1 oläst artikel i läslistan.</translation>
 <translation id="4818522717893377262">Lägg till språk …</translation>
 <translation id="481968316161811770">Cookies, webbplatsdata</translation>
 <translation id="4833786495304741580">Skickar användningsstatistik och felrapporter till Google automatiskt.</translation>
@@ -414,6 +412,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="6858855187367714033">Skannat</translation>
 <translation id="6859944681507688231">Aktivera kameran i inställningarna om du vill skanna en QR-kod eller ett kreditkort.</translation>
 <translation id="6873263987691478642">Delad vy</translation>
+<translation id="6888009575607455378">Vill du ignorera ändringarna?</translation>
 <translation id="6896758677409633944">Kopiera</translation>
 <translation id="6903907808598579934">Aktivera synkronisering</translation>
 <translation id="6914583639806229067">Sök efter kopierad bild</translation>

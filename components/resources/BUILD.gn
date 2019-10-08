@@ -39,13 +39,6 @@ grit("components_resources") {
     "enable_print_preview=$enable_print_preview",
   ]
 
-  if (is_android && notouch_build) {
-    defines += [
-      "HIDE_ERROR_MESSAGE_FOR_DINO_PAGE",
-      "SHOW_INSTRUCTIONS_FOR_DINO_PAGE",
-    ]
-  }
-
   deps = [
     ":about_credits",
   ]

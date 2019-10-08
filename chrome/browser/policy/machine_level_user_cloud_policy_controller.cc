@@ -24,7 +24,7 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
-#include "chrome/browser/policy/cloud/machine_level_user_cloud_policy_helper.h"
+#include "chrome/browser/policy/cloud/chrome_browser_cloud_management_helper.h"
 #include "chrome/browser/policy/machine_level_user_cloud_policy_register_watcher.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -196,8 +196,9 @@ void MachineLevelUserCloudPolicyController::Init(
   DCHECK(!enrollment_token.empty());
   DCHECK(!client_id.empty());
 
-  policy_registrar_ = std::make_unique<MachineLevelUserCloudPolicyRegistrar>(
-      device_management_service, url_loader_factory);
+  cloud_management_registrar_ =
+      std::make_unique<ChromeBrowserCloudManagementRegistrar>(
+          device_management_service, url_loader_factory);
   policy_fetcher_ = std::make_unique<MachineLevelUserCloudPolicyFetcher>(
       policy_manager, local_state, device_management_service,
       url_loader_factory);
@@ -209,10 +210,10 @@ void MachineLevelUserCloudPolicyController::Init(
     enrollment_start_time_ = base::Time::Now();
 
     // Not registered already, so do it now.
-    policy_registrar_->RegisterForPolicyWithEnrollmentToken(
+    cloud_management_registrar_->RegisterForCloudManagementWithEnrollmentToken(
         enrollment_token, client_id,
         base::Bind(&MachineLevelUserCloudPolicyController::
-                       RegisterForPolicyWithEnrollmentTokenCallback,
+                       RegisterForCloudManagementWithEnrollmentTokenCallback,
                    base::Unretained(this)));
 #if defined(OS_WIN)
     // This metric is only published on Windows to indicate how many user level
@@ -285,8 +286,9 @@ bool MachineLevelUserCloudPolicyController::GetEnrollmentTokenAndClientId(
 }
 
 void MachineLevelUserCloudPolicyController::
-    RegisterForPolicyWithEnrollmentTokenCallback(const std::string& dm_token,
-                                                 const std::string& client_id) {
+    RegisterForCloudManagementWithEnrollmentTokenCallback(
+        const std::string& dm_token,
+        const std::string& client_id) {
   base::TimeDelta enrollment_time = base::Time::Now() - enrollment_start_time_;
 
   if (dm_token.empty()) {

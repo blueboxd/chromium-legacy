@@ -14,19 +14,13 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/safe_browsing/incident_reporting/download_metadata_manager.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class Profile;
-
-namespace content {
-class NotificationDetails;
-class NotificationSource;
-}
 
 namespace safe_browsing {
 
@@ -36,7 +30,7 @@ class ClientIncidentReport_NonBinaryDownloadDetails;
 // Finds the most recent executable download and non-executable download by
 // any on-the-record profile with history that participates in safe browsing
 // extended reporting.
-class LastDownloadFinder : public content::NotificationObserver,
+class LastDownloadFinder : public ProfileManagerObserver,
                            public history::HistoryServiceObserver {
  public:
   typedef base::Callback<void(
@@ -75,7 +69,6 @@ class LastDownloadFinder : public content::NotificationObserver,
   };
 
   LastDownloadFinder(const DownloadDetailsGetter& download_details_getter,
-                     const std::vector<Profile*>& profiles,
                      const LastDownloadCallback& callback);
 
   // Adds |profile| to the set of profiles to be searched if it is an
@@ -91,10 +84,6 @@ class LastDownloadFinder : public content::NotificationObserver,
       Profile* profile,
       std::unique_ptr<ClientIncidentReport_DownloadDetails> details);
 
-  // Abandons the search for downloads in |profile|, reporting results if there
-  // are no more pending queries.
-  void AbandonSearchInProfile(Profile* profile);
-
   // HistoryService::DownloadQueryCallback. Retrieves the most recent completed
   // executable download from |downloads| and reports results if there are no
   // more pending queries.
@@ -109,10 +98,8 @@ class LastDownloadFinder : public content::NotificationObserver,
   // Invokes the caller-supplied callback with the download found.
   void ReportResults();
 
-  // content::NotificationObserver methods.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // ProfileManagerObserver:
+  void OnProfileAdded(Profile* profile) override;
 
   // history::HistoryServiceObserver:
   void OnHistoryServiceLoaded(history::HistoryService* service) override;
@@ -130,9 +117,6 @@ class LastDownloadFinder : public content::NotificationObserver,
   // A mapping of profiles for which a download query is pending to their
   // respective states.
   std::map<Profile*, ProfileWaitState> profile_states_;
-
-  // Registrar for observing profile lifecycle notifications.
-  content::NotificationRegistrar notification_registrar_;
 
   // The most interesting download details retrieved from download metadata.
   std::unique_ptr<ClientIncidentReport_DownloadDetails> details_;

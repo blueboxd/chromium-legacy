@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Editar marcador</translation>
 <translation id="2179182049312275900">Puedes activar la sincronización en la configuración en cualquier momento.</translation>
 <translation id="2198757192731523470">Es posible que Google use tu historial para personalizar la Búsqueda, los anuncios y otros servicios de Google.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artículos sin leer en tu lista de lectura</translation>
 <translation id="2230173723195178503">Se cargó la página web</translation>
 <translation id="2239626343334228536">Borrando datos de navegación…</translation>
 <translation id="2267753748892043616">Agregar cuenta</translation>
@@ -265,7 +264,6 @@ Tus datos están encriptados con tu frase de contraseña para sincronización. D
 
 Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">El número de la tarjeta no es válido</translation>
-<translation id="4807020197310989387">1 artículo sin leer en tu lista de lectura</translation>
 <translation id="4818522717893377262">Agregar idioma…</translation>
 <translation id="481968316161811770">Cookies, datos del sitio</translation>
 <translation id="4833786495304741580">Envía automáticamente informes de fallas y estadísticas de uso a Google.</translation>
@@ -414,6 +412,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6858855187367714033">Escaneado</translation>
 <translation id="6859944681507688231">Para escanear un código QR o una tarjeta de crédito, habilita la cámara desde la configuración.</translation>
 <translation id="6873263987691478642">Vista dividida</translation>
+<translation id="6888009575607455378">¿Confirmas que quieres descartar los cambios?</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Activar la sincronización</translation>
 <translation id="6914583639806229067">Buscar la imagen que copiaste</translation>

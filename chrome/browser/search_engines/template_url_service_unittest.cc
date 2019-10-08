@@ -708,8 +708,8 @@ TEST_F(TemplateURLServiceTest, Reset) {
 
   // Make sure the mappings in the model were updated.
   ASSERT_EQ(t_url, model()->GetTemplateURLForKeyword(new_keyword));
-  ASSERT_TRUE(
-      model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword")) == NULL);
+  ASSERT_EQ(nullptr,
+            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword")));
 
   std::unique_ptr<TemplateURL> cloned_url(
       std::make_unique<TemplateURL>(t_url->data()));
@@ -721,6 +721,83 @@ TEST_F(TemplateURLServiceTest, Reset) {
   ASSERT_TRUE(read_url);
   AssertEquals(*cloned_url, *read_url);
   AssertTimesEqual(now, read_url->last_modified());
+}
+
+TEST_F(TemplateURLServiceTest, CreateFromPlayAPI) {
+  test_util()->VerifyLoad();
+  const size_t initial_count = model()->GetTemplateURLs().size();
+
+  const base::string16 short_name = ASCIIToUTF16("google");
+  const base::string16 keyword = ASCIIToUTF16("keyword");
+  const std::string search_url = "http://www.google.com/foo/bar";
+  const std::string favicon_url = "http://favicon.url";
+  TemplateURL* t_url = model()->CreateOrUpdateTemplateURLFromPlayAPIData(
+      short_name, keyword, search_url, favicon_url);
+  ASSERT_EQ(short_name, t_url->short_name());
+  ASSERT_EQ(keyword, t_url->keyword());
+  ASSERT_EQ(search_url, t_url->url());
+  ASSERT_EQ(GURL(favicon_url), t_url->favicon_url());
+  ASSERT_TRUE(t_url->created_from_play_api());
+  ASSERT_EQ(t_url, model()->GetTemplateURLForKeyword(keyword));
+
+  auto cloned_url = std::make_unique<TemplateURL>(t_url->data());
+
+  // Reload the model from the database and make sure the change took.
+  test_util()->ResetModel(true);
+  EXPECT_EQ(initial_count + 1, model()->GetTemplateURLs().size());
+  const TemplateURL* read_url = model()->GetTemplateURLForKeyword(keyword);
+  ASSERT_TRUE(read_url);
+  AssertEquals(*cloned_url, *read_url);
+}
+
+TEST_F(TemplateURLServiceTest, UpdateFromPlayAPI) {
+  base::string16 keyword = ASCIIToUTF16("keyword");
+
+  // Add a new TemplateURL.
+  test_util()->VerifyLoad();
+  const size_t initial_count = model()->GetTemplateURLs().size();
+  TemplateURLData data;
+  data.SetShortName(ASCIIToUTF16("google"));
+  data.SetKeyword(keyword);
+  data.SetURL("http://www.google.com/foo/bar");
+  data.favicon_url = GURL("http://favicon.url");
+  data.date_created = Time::FromTimeT(100);
+  data.last_modified = Time::FromTimeT(100);
+  data.last_visited = Time::FromTimeT(100);
+  TemplateURL* t_url = model()->Add(std::make_unique<TemplateURL>(data));
+
+  VerifyObserverCount(1);
+  base::RunLoop().RunUntilIdle();
+
+  Time now = Time::Now();
+  auto clock = std::make_unique<base::SimpleTestClock>();
+  clock->SetNow(now);
+  model()->set_clock(std::move(clock));
+
+  // Reset the short name and url and make sure it takes.
+  const base::string16 new_short_name = ASCIIToUTF16("new_name");
+  const std::string new_search_url = "new_url";
+  const std::string new_favicon_url = "new_favicon_url";
+  TemplateURL* updated_turl = model()->CreateOrUpdateTemplateURLFromPlayAPIData(
+      new_short_name, keyword, new_search_url, new_favicon_url);
+  ASSERT_EQ(t_url, updated_turl);
+  ASSERT_EQ(new_short_name, t_url->short_name());
+  ASSERT_EQ(keyword, t_url->keyword());
+  ASSERT_EQ(new_search_url, t_url->url());
+  ASSERT_EQ(GURL(new_favicon_url), t_url->favicon_url());
+  ASSERT_TRUE(t_url->created_from_play_api());
+
+  // Make sure the mappings in the model were updated.
+  ASSERT_EQ(t_url, model()->GetTemplateURLForKeyword(keyword));
+
+  auto cloned_url = std::make_unique<TemplateURL>(t_url->data());
+
+  // Reload the model from the database and make sure the change took.
+  test_util()->ResetModel(true);
+  EXPECT_EQ(initial_count + 1, model()->GetTemplateURLs().size());
+  const TemplateURL* read_url = model()->GetTemplateURLForKeyword(keyword);
+  ASSERT_TRUE(read_url);
+  AssertEquals(*cloned_url, *read_url);
 }
 
 TEST_F(TemplateURLServiceTest, DefaultSearchProvider) {

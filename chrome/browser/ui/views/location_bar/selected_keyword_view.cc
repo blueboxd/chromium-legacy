@@ -40,6 +40,10 @@ void SelectedKeywordView::ResetImage() {
                                  GetTextColor()));
 }
 
+void SelectedKeywordView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  SetLabelForCurrentWidth();
+}
+
 SkColor SelectedKeywordView::GetTextColor() const {
   return location_bar_->GetColor(OmniboxPart::LOCATION_BAR_SELECTED_KEYWORD);
 }
@@ -56,18 +60,6 @@ gfx::Size SelectedKeywordView::CalculatePreferredSize() const {
 gfx::Size SelectedKeywordView::GetMinimumSize() const {
   // Height will be ignored by the LocationBarView.
   return GetSizeForLabelWidth(0);
-}
-
-void SelectedKeywordView::Layout() {
-  // Keep showing the full label as long as there's more than enough width for
-  // the partial label. Otherwise there will be empty space displayed next to
-  // the partial label.
-  bool use_full_label =
-      width() >
-      GetSizeForLabelWidth(partial_label_.GetPreferredSize().width()).width();
-  SetLabel(use_full_label ? full_label_.GetText() : partial_label_.GetText());
-
-  IconLabelBubbleView::Layout();
 }
 
 void SelectedKeywordView::SetKeyword(const base::string16& keyword) {
@@ -88,13 +80,12 @@ void SelectedKeywordView::SetKeyword(const base::string16& keyword) {
           ? short_name
           : l10n_util::GetStringFUTF16(IDS_OMNIBOX_KEYWORD_TEXT_MD, short_name);
   full_label_.SetText(full_name);
-
   partial_label_.SetText(short_name);
 
   // Update the label now so ShouldShowLabel() works correctly when the parent
   // class is calculating the preferred size. It will be updated again in
   // Layout(), taking into account how much space has actually been allotted.
-  SetLabel(full_name);
+  SetLabelForCurrentWidth();
 }
 
 int SelectedKeywordView::GetExtraInternalSpacing() const {
@@ -104,4 +95,14 @@ int SelectedKeywordView::GetExtraInternalSpacing() const {
 
 const char* SelectedKeywordView::GetClassName() const {
   return "SelectedKeywordView";
+}
+
+void SelectedKeywordView::SetLabelForCurrentWidth() {
+  // Keep showing the full label as long as there's more than enough width for
+  // the partial label. Otherwise there will be empty space displayed next to
+  // the partial label.
+  bool use_full_label =
+      width() >
+      GetSizeForLabelWidth(partial_label_.GetPreferredSize().width()).width();
+  SetLabel(use_full_label ? full_label_.GetText() : partial_label_.GetText());
 }

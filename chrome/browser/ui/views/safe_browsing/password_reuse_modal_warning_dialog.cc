@@ -124,10 +124,6 @@ bool PasswordReuseModalWarningDialog::Close() {
   return true;
 }
 
-int PasswordReuseModalWarningDialog::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
 base::string16 PasswordReuseModalWarningDialog::GetDialogButtonLabel(
     ui::DialogButton button) const {
   switch (button) {

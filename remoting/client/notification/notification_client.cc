@@ -76,7 +76,7 @@ bool FindKeyAndGet(const base::Value& dict,
                    const std::string& type_name) {
   const base::Value* value = dict.FindKey(key);
   if (!value) {
-    LOG(ERROR) << "|" << key << "| not found in dictionary.";
+    LOG(WARNING) << "|" << key << "| not found in dictionary.";
     return false;
   }
   if (!(value->*is_t_checker)()) {
@@ -314,6 +314,8 @@ base::Optional<NotificationMessage> NotificationClient::ParseAndMatchRule(
   }
   message->message_id = message_id;
   message->link_url = link_url;
+  message->allow_dont_show_again = false;
+  FindKeyAndGet(rule, "allow_dont_show_again", &message->allow_dont_show_again);
   *out_message_text_filename = message_text_filename;
   *out_link_text_filename = link_text_filename;
   return message;

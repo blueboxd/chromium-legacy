@@ -29,9 +29,6 @@ rel_blink_core_gen_dir = rebase_path(blink_core_output_dir, root_build_dir)
 # Config for code that builds as part of core.
 config("config") {
   defines = [ "BLINK_CORE_IMPLEMENTATION=1" ]
-  if (is_android && notouch_build) {
-    defines += [ "ENABLE_TOUCHLESS_UASTYLE_THEME" ]
-  }
 }
 
 config("core_include_dirs") {

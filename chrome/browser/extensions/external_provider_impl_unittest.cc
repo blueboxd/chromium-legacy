@@ -44,15 +44,9 @@
 #include "components/user_manager/scoped_user_manager.h"
 #endif
 
-using ::testing::NotNull;
-using ::testing::Return;
-using ::testing::_;
-
 namespace extensions {
 
 namespace {
-
-using namespace net::test_server;
 
 const char kManifestPath[] = "/update_manifest";
 const char kAppPath[] = "/app.crx";
@@ -99,7 +93,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
   // ExtensionServiceTestBase overrides:
   void SetUp() override {
     ExtensionServiceTestBase::SetUp();
-    test_server_.reset(new EmbeddedTestServer());
+    test_server_ = std::make_unique<net::test_server::EmbeddedTestServer>();
 
     test_server_->RegisterRequestHandler(
         base::Bind(&ExternalProviderImplTest::HandleRequest,
@@ -113,10 +107,11 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
   }
 
  private:
-  std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) {
     GURL url = test_server_->GetURL(request.relative_url);
     if (url.path() == kManifestPath) {
-      std::unique_ptr<BasicHttpResponse> response(new BasicHttpResponse);
+      auto response = std::make_unique<net::test_server::BasicHttpResponse>();
       response->set_code(net::HTTP_OK);
       response->set_content(base::StringPrintf(
           "<?xml version='1.0' encoding='UTF-8'?>\n"
@@ -138,7 +133,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
       base::ReadFileToString(
           test_data_dir.AppendASCII("extensions/dummyiap.crx"),
           &contents);
-      std::unique_ptr<BasicHttpResponse> response(new BasicHttpResponse);
+      auto response = std::make_unique<net::test_server::BasicHttpResponse>();
       response->set_code(net::HTTP_OK);
       response->set_content(contents);
       return std::move(response);
@@ -147,7 +142,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
     return nullptr;
   }
 
-  std::unique_ptr<EmbeddedTestServer> test_server_;
+  std::unique_ptr<net::test_server::EmbeddedTestServer> test_server_;
   std::unique_ptr<ExtensionCacheFake> test_extension_cache_;
 
 #if defined(OS_CHROMEOS)

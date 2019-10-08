@@ -84,7 +84,6 @@ class PermissionsBubbleDialogDelegateView
   bool Accept() override;
   bool Close() override;
   void AddedToWidget() override;
-  int GetDefaultDialogButton() const override;
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void SizeToContents() override;
@@ -105,6 +104,10 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
     const std::vector<PermissionRequest*>& requests,
     const PermissionPrompt::DisplayNameOrOrigin& name_or_origin)
     : owner_(owner), name_or_origin_(name_or_origin) {
+  // To prevent permissions being accepted accidentally, and as a security
+  // measure against crbug.com/619429, permission prompts should not be accepted
+  // as the default action.
+  DialogDelegate::set_default_button(ui::DIALOG_BUTTON_NONE);
   DCHECK(!requests.empty());
 
   set_close_on_deactivate(false);
@@ -177,13 +180,6 @@ void PermissionsBubbleDialogDelegateView::OnWidgetDestroying(
     owner_->Closing();
     owner_ = nullptr;
   }
-}
-
-int PermissionsBubbleDialogDelegateView::GetDefaultDialogButton() const {
-  // To prevent permissions being accepted accidentally, and as a security
-  // measure against crbug.com/619429, permission prompts should not be accepted
-  // as the default action.
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 int PermissionsBubbleDialogDelegateView::GetDialogButtons() const {

@@ -711,15 +711,14 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(
 
 void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   const bool tabstrip_visible = browser_view()->IsTabStripVisible();
-  gfx::Rect client_bounds =
+  const gfx::Rect client_bounds =
       layout_->CalculateClientAreaBounds(width(), height());
   int y = client_bounds.y();
   // If the toolbar isn't going to draw a top edge for us, draw one ourselves.
   if (!tabstrip_visible) {
-    const gfx::Rect line_bounds(client_bounds.x(), client_bounds.y() - 1,
-                                client_bounds.width(), 1);
-    BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
-                                        line_bounds, true);
+    canvas->DrawLine(gfx::Point(client_bounds.x(), client_bounds.y() - 1),
+                     gfx::Point(client_bounds.right(), client_bounds.y() - 1),
+                     GetToolbarTopSeparatorColor());
   }
 
   // In maximized mode, the only edge to draw is the top one, so we're done.
@@ -733,7 +732,7 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   }
 
   // For popup windows, draw location bar sides.
-  SkColor location_bar_border_color =
+  const SkColor location_bar_border_color =
       browser_view()->toolbar()->location_bar()->GetOpaqueBorderColor(
           browser_view()->IsIncognito());
   if (!tabstrip_visible && IsToolbarVisible()) {

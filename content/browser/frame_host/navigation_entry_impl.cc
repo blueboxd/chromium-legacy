@@ -66,10 +66,6 @@ void RecursivelyGenerateFrameEntries(
   EncodePageState(page_state, &data);
   DCHECK(!data.empty()) << "Shouldn't generate an empty PageState.";
 
-  // TODO(lukasza): https://crbug.com/976055: |initiator_origin| should be
-  // persisted across session restore.
-  base::Optional<url::Origin> initiator_origin = base::nullopt;
-
   node->frame_entry = base::MakeRefCounted<FrameNavigationEntry>(
       UTF16ToUTF8(state.target.value_or(base::string16())),
       state.item_sequence_number, state.document_sequence_number, nullptr,
@@ -79,7 +75,7 @@ void RecursivelyGenerateFrameEntries(
       nullptr /* origin */,
       Referrer(GURL(state.referrer.value_or(base::string16())),
                state.referrer_policy),
-      initiator_origin, std::vector<GURL>(),
+      state.initiator_origin, std::vector<GURL>(),
       PageState::CreateFromEncodedData(data), "GET", -1,
       nullptr /* blob_url_loader_factory */);
 
@@ -145,8 +141,7 @@ void RecursivelyGenerateFrameState(
   state->item_sequence_number = node->frame_entry->item_sequence_number();
   state->document_sequence_number =
       node->frame_entry->document_sequence_number();
-  // TODO(lukasza): https://crbug.com/976055: Persist |initiator_origin| in
-  // the ExplodedFrameState.
+  state->initiator_origin = node->frame_entry->initiator_origin();
 
   // Copy the frame's files into the PageState's |referenced_files|.
   referenced_files->reserve(referenced_files->size() +

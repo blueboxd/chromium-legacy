@@ -28,6 +28,8 @@ class XRAnchor : public ScriptWrappable {
            const device::mojom::blink::XRAnchorDataPtr& anchor_data,
            double timestamp);
 
+  uint32_t id() const;
+
   XRSpace* anchorSpace() const;
 
   TransformationMatrix poseMatrix() const;

@@ -154,6 +154,11 @@ class OutputMailbox {
   DISALLOW_COPY_AND_ASSIGN(OutputMailbox);
 };
 
+struct InputDecoderPacket {
+  StreamProcessorHelper::IoPacket packet;
+  bool used_for_current_stream = true;
+};
+
 }  // namespace
 
 class FuchsiaVideoDecoder : public VideoDecoder,
@@ -277,8 +282,7 @@ class FuchsiaVideoDecoder : public VideoDecoder,
   std::unique_ptr<SysmemBufferPool::Creator> input_buffer_collection_creator_;
   std::unique_ptr<SysmemBufferPool> input_buffer_collection_;
   size_t num_input_buffers_ = 0;
-  base::flat_map<size_t, StreamProcessorHelper::IoPacket>
-      in_flight_input_packets_;
+  base::flat_map<size_t, InputDecoderPacket> in_flight_input_packets_;
 
   // Output buffers for |decoder_|.
   fuchsia::media::VideoUncompressedFormat output_format_;
@@ -339,7 +343,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   output_cb_ = output_cb;
   container_pixel_aspect_ratio_ = config.GetPixelAspectRatio();
 
-  // If we already have |decoder_| that was initializes for the same codec then
+  // If we already have |decoder_| that was initialized for the same codec then
   // keep using it.
   if (decoder_ && current_codec_ == config.codec()) {
     bool have_decryptor = decryptor_ != nullptr;
@@ -515,6 +519,7 @@ void FuchsiaVideoDecoder::OnDecryptorEndOfStreamPacket() {
 void FuchsiaVideoDecoder::OnDecryptorError() {
   OnError();
 }
+
 void FuchsiaVideoDecoder::OnDecryptorNoKey() {
   NOTIMPLEMENTED();
   OnError();
@@ -638,7 +643,8 @@ void FuchsiaVideoDecoder::SendInputPacket(
 
   DCHECK(in_flight_input_packets_.find(packet.index()) ==
          in_flight_input_packets_.end());
-  in_flight_input_packets_.insert_or_assign(packet.index(), std::move(packet));
+  in_flight_input_packets_.insert_or_assign(
+      packet.index(), InputDecoderPacket{std::move(packet)});
 }
 
 void FuchsiaVideoDecoder::ProcessEndOfStream() {
@@ -668,15 +674,17 @@ void FuchsiaVideoDecoder::OnFreeInputPacket(
     return;
   }
 
-  // Call DecodeCB if this was a last packet for a Decode request.
-  bool call_decode_callback = it->second.unit_end();
+  // Call DecodeCB if this was a last packet for a Decode() request. Ignore
+  // packets from a previous stream.
+  bool call_decode_callback =
+      it->second.packet.unit_end() && it->second.used_for_current_stream;
 
   {
     // The packet should be destroyed only after it's removed from
     // |in_flight_input_packets_|. Otherwise SysmemBufferWriter may call
     // SendInputPacket() while the packet is still in
     // |in_flight_input_packets_|.
-    auto packet = std::move(it->second);
+    auto packet = std::move(it->second.packet);
     in_flight_input_packets_.erase(it);
   }
 
@@ -955,7 +963,9 @@ bool FuchsiaVideoDecoder::DropInputQueue(DecodeStatus status) {
   if (decryptor_)
     decryptor_->Reset();
 
-  in_flight_input_packets_.clear();
+  for (auto& packet : in_flight_input_packets_) {
+    packet.second.used_for_current_stream = false;
+  }
 
   auto weak_this = weak_this_;
 
@@ -1019,6 +1029,7 @@ void FuchsiaVideoDecoder::InitializeOutputBufferCollection(
 }
 
 void FuchsiaVideoDecoder::ReleaseInputBuffers() {
+  in_flight_input_packets_.clear();
   input_writer_queue_.ResetBuffers();
   input_buffer_collection_creator_.reset();
   input_buffer_collection_.reset();

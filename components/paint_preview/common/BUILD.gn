@@ -11,6 +11,8 @@ if (!is_ios) {
       "file_stream.h",
       "glyph_usage.cc",
       "glyph_usage.h",
+      "paint_preview_tracker.cc",
+      "paint_preview_tracker.h",
       "serial_utils.cc",
       "serial_utils.h",
       "subset_font.cc",
@@ -21,6 +23,11 @@ if (!is_ios) {
       "//base",
       "//skia",
       "//third_party:freetype_harfbuzz",
+      "//ui/gfx/geometry",
+    ]
+
+    public_deps = [
+      "//components/paint_preview/common/proto",
     ]
   }
 
@@ -30,6 +37,7 @@ if (!is_ios) {
     sources = [
       "file_stream_unittest.cc",
       "glyph_usage_unittest.cc",
+      "paint_preview_tracker_unittest.cc",
       "serial_utils_unittest.cc",
       "subset_font_unittest.cc",
     ]
@@ -42,6 +50,7 @@ if (!is_ios) {
       "//testing/gmock",
       "//testing/gtest",
       "//third_party:freetype_harfbuzz",
+      "//ui/gfx/geometry",
     ]
   }
 

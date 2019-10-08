@@ -35,6 +35,7 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(
     : download_count_(download_count),
       app_modal_(app_modal),
       callback_(callback) {
+  DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
@@ -73,10 +74,6 @@ gfx::Size DownloadInProgressDialogView::CalculatePreferredSize() const {
                         DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
-}
-
-int DownloadInProgressDialogView::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_CANCEL;
 }
 
 base::string16 DownloadInProgressDialogView::GetDialogButtonLabel(

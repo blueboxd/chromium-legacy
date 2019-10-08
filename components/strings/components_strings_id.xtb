@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Buka halaman awal</translation>
 <translation id="1883255238294161206">Ciutkan daftar</translation>
 <translation id="1898423065542865115">Pemfilteran</translation>
+<translation id="1901443836186977402">{1,plural, =1{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; masa berlaku sertifikat keamanannya telah habis beberapa hari yang lalu. Hal ini mungkin disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang menginterupsi sambungan Anda. Saat ini jam komputer Anda disetel ke <ph name="CURRENT_DATE" />. Apakah sudah sesuai? Jika belum, sebaiknya perbaiki jam sistem dan muat ulang halaman ini.}other{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; masa berlaku sertifikat keamanannya telah habis # hari yang lalu. Hal ini mungkin disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang menginterupsi sambungan Anda. Saat ini jam komputer Anda disetel ke <ph name="CURRENT_DATE" />. Apakah sudah benar? Jika belum, sebaiknya perbaiki jam sistem dan muat ulang halaman ini.}}</translation>
 <translation id="1914326953223720820">Layanan Ekstraksi File</translation>
 <translation id="1915697529809968049">Gunakan Touch ID dan bukan CVC?</translation>
 <translation id="1916770123977586577">Untuk menerapkan setelan yang telah diupdate pada situs ini, muat ulang halaman ini</translation>
@@ -445,6 +446,7 @@
 <translation id="3116158981186517402">Laminasi</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Coba jalankan Diagnostik Konektivitas<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Buka <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Tidak ada}=1{data login untuk 1 akun}other{data login untuk # akun}}</translation>
 <translation id="3145945101586104090">Gagal mendekodekan tanggapan</translation>
 <translation id="3150653042067488994">Kesalahan server sementara</translation>
@@ -828,6 +830,7 @@
 <translation id="5043480802608081735">Link yang Anda Salin</translation>
 <translation id="5045550434625856497">Sandi salah</translation>
 <translation id="5056549851600133418">Artikel untuk Anda</translation>
+<translation id="5061227663725596739">Mungkin maksud Anda <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 terpakai)}other{(# terpakai)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Periksa alamat proxy<ph name="END_LINK" /></translation>
@@ -881,6 +884,7 @@
 <translation id="5284909709419567258">Alamat jaringan</translation>
 <translation id="5285570108065881030">Tampilkan semua sandi tersimpan</translation>
 <translation id="5287240709317226393">Tampilkan cookie</translation>
+<translation id="5287456746628258573">Situs ini menggunakan konfigurasi keamanan yang telah habis masa berlakunya, yang dapat mengekspos informasi Anda (misalnya, sandi atau nomor kartu kredit) saat dikirimkan ke situs ini.</translation>
 <translation id="5288108484102287882">Validasi nilai kebijakan telah memunculkan peringatan</translation>
 <translation id="5299298092464848405">Kebijakan kesalahan penguraian</translation>
 <translation id="5300589172476337783">Tampilkan</translation>
@@ -1009,6 +1013,7 @@
 <translation id="5946937721014915347">Membuka <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Ya, tambahkan</translation>
 <translation id="5951495562196540101">Tidak dapat mendaftar dengan akun konsumen (tersedia paket lisensi).</translation>
+<translation id="5966900314707961320">Saat diaktifkan, situs tidak dapat menggunakan cookie yang akan memantau Anda di seluruh web</translation>
 <translation id="5967592137238574583">Edit Info Kontak</translation>
 <translation id="5967867314010545767">Hapus dari histori</translation>
 <translation id="5975083100439434680">Perkecil</translation>
@@ -1091,6 +1096,7 @@
 <translation id="6383221683286411806">Kemungkinan mengenakan tagihan di awal.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 saran lain}other{# saran lain}}</translation>
 <translation id="6387754724289022810">Untuk membayar lebih cepat di pembelian berikutnya, simpan kartu dan alamat penagihan ke akun Google Anda.</translation>
+<translation id="6389470377220713856">Nama di Kartu</translation>
 <translation id="6390200185239044127">Lipatan Z setengah</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Kebijakan ini tidak digunakan lagi. Sebaiknya Anda menggunakan kebijakan <ph name="NEW_POLICY" />.</translation>
@@ -1267,7 +1273,6 @@
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Berafiliasi:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Keluar dari situs ini</translation>
 <translation id="7353601530677266744">Baris Perintah</translation>
 <translation id="7372973238305370288">hasil penelusuran</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1440,6 +1445,7 @@
 <translation id="8131740175452115882">Konfirmasi</translation>
 <translation id="8149426793427495338">Komputer Anda sedang dalam mode tidur.</translation>
 <translation id="8150722005171944719">File pada <ph name="URL" /> tidak dapat dibaca.  File mungkin telah dihapus, dipindahkan, atau izin file mungkin mencegah akses.</translation>
+<translation id="8157295877370077682">Keluar dari situs</translation>
 <translation id="8163866351304776260">Empat lubang di kiri</translation>
 <translation id="8175796834047840627">Chrome menawarkan untuk menyimpan informasi kartu ke Akun Google Anda karena Anda sedang login. Anda dapat mengubah perilaku ini di setelan.</translation>
 <translation id="8184538546369750125">Gunakan default global (Izinkan)</translation>

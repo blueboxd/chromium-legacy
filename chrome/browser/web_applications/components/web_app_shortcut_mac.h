@@ -148,10 +148,10 @@ class WebAppShortcutCreator {
 
   // Path to the data directory for this app. For example:
   // ~/Library/Application Support/Chromium/Default/Web Applications/_crx_abc/
-  base::FilePath app_data_dir_;
+  const base::FilePath app_data_dir_;
 
   // Information about the app. Owned by the caller of the constructor.
-  const ShortcutInfo* info_;
+  const ShortcutInfo* const info_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppShortcutCreator);
 };

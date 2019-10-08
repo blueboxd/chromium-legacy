@@ -36,11 +36,7 @@ by a child template that "extends" this file.
     <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_ADMIN"/>
     <uses-permission-sdk-23 android:name="android.permission.READ_CONTACTS"/>
     <uses-permission-sdk-23 android:name="android.permission.REORDER_TASKS"/>
-    <!-- notouch build doesn't support downloads home and shouldn't need this permission -->
-    {% set notouch_build = notouch_build|default(0) %}
-    {% if notouch_build == "false" %}
-        <uses-permission-sdk-23 android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
-    {% endif %}
+    <uses-permission-sdk-23 android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
@@ -505,22 +501,13 @@ by a child template that "extends" this file.
         <!-- ChromeTabbedActivity related -->
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity"
             android:theme="@style/Theme.Chromium.TabbedMode"
-            {% if notouch_build == "true" %}
-            android:exported="false"
-            {% else %}
             android:exported="true"
-            {% endif %}
             android:launchMode="singleTask"
             {# We can only use blocks once in Jinja, for future substitutions we use
             self.supports_video_persistence(). #}
             {% block supports_video_persistence %}
-            {% if notouch_build == "true" %}
-            android:supportsPictureInPicture="false"
-            android:resizeableActivity="false"
-            {% else %}
             android:supportsPictureInPicture="true"
             android:resizeableActivity="true"
-            {% endif %}
             {% endblock %}
             {% block chrome_activity_common %}
             android:windowSoftInputMode="adjustResize"

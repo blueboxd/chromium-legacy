@@ -64,6 +64,14 @@ void WebRuntimeFeatures::EnableFeatureFromString(const std::string& name,
   RuntimeEnabledFeatures::SetFeatureEnabledFromString(name, enable);
 }
 
+void WebRuntimeFeatures::EnableForcedColors(bool enable) {
+  RuntimeEnabledFeatures::SetForcedColorsEnabled(enable);
+}
+
+bool WebRuntimeFeatures::IsForcedColorsEnabled() {
+  return RuntimeEnabledFeatures::ForcedColorsEnabled();
+}
+
 void WebRuntimeFeatures::EnableFractionalScrollOffsets(bool enable) {
   RuntimeEnabledFeatures::SetFractionalScrollOffsetsEnabled(enable);
 }
@@ -351,10 +359,6 @@ void WebRuntimeFeatures::EnablePointerLockOptions(bool enable) {
 
 void WebRuntimeFeatures::EnablePortals(bool enable) {
   RuntimeEnabledFeatures::SetPortalsEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableRasterInducingScroll(bool enable) {
-  RuntimeEnabledFeatures::SetRasterInducingScrollEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableScriptedSpeechRecognition(bool enable) {

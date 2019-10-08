@@ -343,12 +343,6 @@ views::View* DesktopMediaPickerDialogView::GetInitiallyFocusedView() {
   return GetDialogClientView()->cancel_button();
 }
 
-int DesktopMediaPickerDialogView::GetDefaultDialogButton() const {
-  // OK button will be active only when there is a selection by user. So it's OK
-  // to set it as the primary.
-  return ui::DIALOG_BUTTON_OK;
-}
-
 base::string16 DesktopMediaPickerDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK

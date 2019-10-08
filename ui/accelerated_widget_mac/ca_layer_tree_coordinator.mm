@@ -8,7 +8,6 @@
 
 #include "base/mac/mac_util.h"
 #include "base/trace_event/trace_event.h"
-#include "ui/accelerated_widget_mac/availability_macros.h"
 #include "ui/base/cocoa/animation_utils.h"
 
 namespace ui {

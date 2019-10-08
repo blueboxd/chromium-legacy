@@ -47,6 +47,10 @@ XRPose* XRGripSpace::getPose(XRSpace* other_space,
                                       input_source_->emulatedPosition());
 }
 
+base::Optional<XRNativeOriginInformation> XRGripSpace::NativeOrigin() const {
+  return input_source_->nativeOrigin();
+}
+
 void XRGripSpace::Trace(blink::Visitor* visitor) {
   visitor->Trace(input_source_);
   XRSpace::Trace(visitor);

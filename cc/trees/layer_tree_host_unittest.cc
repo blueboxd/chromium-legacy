@@ -641,13 +641,13 @@ MULTI_THREAD_TEST_F(
 class LayerTreeHostFreeContextResourcesOnDestroy
     : public LayerTreeHostContextCacheTest {
  public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // TODO(crbug.com/985009): Fix test with surface sync enabled.
-    settings->enable_surface_synchronization = false;
-  }
-
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
                                   const viz::BeginFrameArgs& args) override {
+    if (!first_will_begin_impl_frame_)
+      return;
+
+    first_will_begin_impl_frame_ = false;
+
     // Ensure that our initialization expectations have completed.
     Mock::VerifyAndClearExpectations(mock_main_context_support_);
     Mock::VerifyAndClearExpectations(mock_worker_context_support_);
@@ -659,6 +659,9 @@ class LayerTreeHostFreeContextResourcesOnDestroy
                 SetAggressivelyFreeResources(true));
     EndTest();
   }
+
+ private:
+  bool first_will_begin_impl_frame_ = true;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostFreeContextResourcesOnDestroy);
@@ -1776,22 +1779,28 @@ SINGLE_THREAD_TEST_F(LayerTreeHostTestAnimationOpacityMutatedUsingLayerLists);
 class LayerTreeHostTestAnimationTransformMutatedNotUsingLayerLists
     : public LayerTreeHostTest {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // TODO(crbug.com/985009): Fix test with surface sync enabled.
-    settings->enable_surface_synchronization = false;
+  void SetupTree() override {
+    root_ = Layer::Create();
+    child_ = Layer::Create();
+    root_->AddChild(child_);
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeHostTest::SetupTree();
   }
 
   void BeginTest() override {
-    Layer* root = layer_tree_host()->root_layer();
-    EXPECT_EQ(gfx::Transform(), root->transform());
+    EXPECT_EQ(gfx::Transform(), child_->transform());
     gfx::Transform expected_transform;
     expected_transform.Translate(42, 42);
     layer_tree_host()->SetElementTransformMutated(
-        root->element_id(), ElementListType::ACTIVE, expected_transform);
+        child_->element_id(), ElementListType::ACTIVE, expected_transform);
     // When not using layer lists, transform is stored on the layer.
-    EXPECT_EQ(expected_transform, root->transform());
+    EXPECT_EQ(expected_transform, child_->transform());
     EndTest();
   }
+
+ private:
+  scoped_refptr<Layer> root_;
+  scoped_refptr<Layer> child_;
 };
 
 SINGLE_THREAD_TEST_F(

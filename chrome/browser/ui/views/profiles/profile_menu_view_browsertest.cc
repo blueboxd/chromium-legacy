@@ -27,7 +27,9 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
+#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -39,6 +41,7 @@
 #include "chrome/browser/ui/views/profiles/profile_menu_view.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -49,6 +52,7 @@
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -601,11 +605,22 @@ INSTANTIATE_TEST_SUITE_P(,
 //   ProfileMenuClickTest_WithPrimaryAccount,
 //   ::testing::Range(0, num_of_actionable_items));
 //
-class ProfileMenuClickTest : public InProcessBrowserTest,
+class ProfileMenuClickTest : public SyncTest,
                              public testing::WithParamInterface<size_t> {
  public:
-  ProfileMenuClickTest() {
+  ProfileMenuClickTest() : SyncTest(SINGLE_CLIENT) {
     scoped_feature_list_.InitAndEnableFeature(features::kProfileMenuRevamp);
+  }
+
+  void SetUpOnMainThread() override {
+    SyncTest::SetUpOnMainThread();
+
+    sync_service()->OverrideNetworkResourcesForTest(
+        std::make_unique<fake_server::FakeServerNetworkResources>(
+            GetFakeServer()->AsWeakPtr()));
+    sync_harness_ = ProfileSyncServiceHarness::Create(
+        browser()->profile(), "user@example.com", "password",
+        ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
   }
 
   virtual ProfileMenuView::ActionableItem GetExpectedActionableItemAtIndex(
@@ -629,9 +644,12 @@ class ProfileMenuClickTest : public InProcessBrowserTest,
     return IdentityManagerFactory::GetForProfile(browser()->profile());
   }
 
-  syncer::SyncService* sync_service() {
-    return ProfileSyncServiceFactory::GetForProfile(browser()->profile());
+  syncer::ProfileSyncService* sync_service() {
+    return ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
+        browser()->profile());
   }
+
+  ProfileSyncServiceHarness* sync_harness() { return sync_harness_.get(); }
 
  private:
   void OpenProfileMenu() {
@@ -676,6 +694,7 @@ class ProfileMenuClickTest : public InProcessBrowserTest,
   base::HistogramTester histogram_tester_;
 
   Browser* target_browser_ = nullptr;
+  std::unique_ptr<ProfileSyncServiceHarness> sync_harness_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickTest);
 };
@@ -758,17 +777,10 @@ class ProfileMenuClickTest_SyncEnabled : public ProfileMenuClickTest {
 constexpr ProfileMenuView::ActionableItem
     ProfileMenuClickTest_SyncEnabled::kOrderedActionableItems[];
 
-IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_SyncEnabled,
-                       DISABLED_SetupAndRunTest) {
-  // Set primary account.
-  ASSERT_FALSE(identity_manager()->HasPrimaryAccount());
-  signin::MakePrimaryAccountAvailable(identity_manager(),
-                                      "primary@example.com");
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_SyncEnabled, SetupAndRunTest) {
+  ASSERT_TRUE(sync_harness()->SetupSync());
+  // Check that the sync setup was successful.
   ASSERT_TRUE(identity_manager()->HasPrimaryAccount());
-  // Start sync.
-  sync_service()->GetUserSettings()->SetSyncRequested(true);
-  sync_service()->GetUserSettings()->SetFirstSetupComplete(
-      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
   ASSERT_TRUE(sync_service()->IsSyncFeatureEnabled());
 
   RunTest();
@@ -812,12 +824,9 @@ class ProfileMenuClickTest_SyncError : public ProfileMenuClickTest {
 constexpr ProfileMenuView::ActionableItem
     ProfileMenuClickTest_SyncError::kOrderedActionableItems[];
 
-IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_SyncError,
-                       DISABLED_SetupAndRunTest) {
-  // Set primary account without setting up sync.
-  ASSERT_FALSE(identity_manager()->HasPrimaryAccount());
-  signin::MakePrimaryAccountAvailable(identity_manager(),
-                                      "primary@example.com");
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_SyncError, SetupAndRunTest) {
+  ASSERT_TRUE(sync_harness()->SignInPrimaryAccount());
+  // Check that the setup was successful.
   ASSERT_TRUE(identity_manager()->HasPrimaryAccount());
   ASSERT_FALSE(sync_service()->IsSyncFeatureEnabled());
 
@@ -852,30 +861,10 @@ class ProfileMenuClickTest_WithUnconsentedPrimaryAccount
 
   ProfileMenuClickTest_WithUnconsentedPrimaryAccount() = default;
 
-  void SetUpInProcessBrowserTestFixture() override {
-    // This is required to support (fake) secondary-account-signin (based on
-    // cookies) in tests. Without this, the real GaiaCookieManagerService would
-    // try talking to Google servers which of course wouldn't work in tests.
-    test_signin_client_factory_ =
-        secondary_account_helper::SetUpSigninClient(&test_url_loader_factory_);
-    ProfileMenuClickTest::SetUpInProcessBrowserTestFixture();
-  }
-
   ProfileMenuView::ActionableItem GetExpectedActionableItemAtIndex(
       size_t index) override {
     return kOrderedActionableItems[index];
   }
-
-  void SetUnconsentedPrimaryAccount() {
-    signin::MakeAccountAvailableWithCookies(
-        IdentityManagerFactory::GetForProfile(browser()->profile()),
-        &test_url_loader_factory_, "account@example.com", "dummyId");
-  }
-
- private:
-  secondary_account_helper::ScopedSigninClientFactory
-      test_signin_client_factory_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickTest_WithUnconsentedPrimaryAccount);
 };
@@ -887,15 +876,23 @@ constexpr ProfileMenuView::ActionableItem
 
 IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_WithUnconsentedPrimaryAccount,
                        SetupAndRunTest) {
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(browser()->profile());
-
-  ASSERT_FALSE(identity_manager->HasUnconsentedPrimaryAccount());
-  SetUnconsentedPrimaryAccount();
-  ASSERT_FALSE(identity_manager->HasPrimaryAccount());
-  ASSERT_TRUE(identity_manager->HasUnconsentedPrimaryAccount());
+  signin::MakeAccountAvailableWithCookies(identity_manager(),
+                                          &test_url_loader_factory_,
+                                          "user@example.com", "gaia_id");
+  // Check that the setup was successful.
+  ASSERT_FALSE(identity_manager()->HasPrimaryAccount());
+  ASSERT_TRUE(identity_manager()->HasUnconsentedPrimaryAccount());
 
   RunTest();
+
+  if (GetExpectedActionableItemAtIndex(GetParam()) ==
+      ProfileMenuView::ActionableItem::kSigninAccountButton) {
+    // The sync confirmation dialog was opened after clicking the signin button
+    // in the profile menu. It needs to be manually dismissed to not cause any
+    // crashes during shutdown.
+    EXPECT_TRUE(login_ui_test_utils::DismissSyncConfirmationDialog(
+        browser(), base::TimeDelta::FromSeconds(30)));
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(

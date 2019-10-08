@@ -1063,33 +1063,9 @@ bool DrawingBuffer::ResizeDefaultFramebuffer(const IntSize& size) {
   AttachColorBufferToReadFramebuffer();
 
   if (WantExplicitResolve()) {
-    state_restorer_->SetFramebufferBindingDirty();
-    state_restorer_->SetRenderbufferBindingDirty();
-    gl_->BindFramebuffer(GL_FRAMEBUFFER, multisample_fbo_);
-    gl_->BindRenderbuffer(GL_RENDERBUFFER, multisample_renderbuffer_);
-    // Note that the multisample rendertarget will allocate an alpha channel
-    // based on |have_alpha_channel_|, not |allocate_alpha_channel_|, since it
-    // will resolve into the ColorBuffer.
-    GLenum internal_format = have_alpha_channel_ ? GL_RGBA8_OES : GL_RGB8_OES;
-    if (use_half_float_storage_) {
-      DCHECK(want_alpha_channel_);
-      internal_format = GL_RGBA16F_EXT;
-    }
-    if (has_eqaa_support) {
-      gl_->RenderbufferStorageMultisampleAdvancedAMD(
-          GL_RENDERBUFFER, sample_count_, eqaa_storage_sample_count_,
-          internal_format, size.Width(), size.Height());
-    } else {
-      gl_->RenderbufferStorageMultisampleCHROMIUM(
-          GL_RENDERBUFFER, sample_count_, internal_format, size.Width(),
-          size.Height());
-    }
-
-    if (gl_->GetError() == GL_OUT_OF_MEMORY)
+    if (!ReallocateMultisampleRenderbuffer(size)) {
       return false;
-
-    gl_->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                 GL_RENDERBUFFER, multisample_renderbuffer_);
+    }
   }
 
   if (WantDepthOrStencil()) {
@@ -1271,8 +1247,44 @@ void DrawingBuffer::ResolveIfNeeded() {
 
   auto* gl = ContextProvider()->ContextGL();
   if (gl->DidGpuSwitch() == GL_TRUE) {
-    // TODO(crbug.com/681341): reallocate multi-sampled render buffer.
+    // TODO(crbug.com/681341): handle preserveDrawingBuffer:true, and
+    // user-allocated multisampled renderbuffers, by dispatching a context lost
+    // event.
+    if (WantExplicitResolve()) {
+      ReallocateMultisampleRenderbuffer(size_);
+    }
   }
+}
+
+bool DrawingBuffer::ReallocateMultisampleRenderbuffer(const IntSize& size) {
+  state_restorer_->SetFramebufferBindingDirty();
+  state_restorer_->SetRenderbufferBindingDirty();
+  gl_->BindFramebuffer(GL_FRAMEBUFFER, multisample_fbo_);
+  gl_->BindRenderbuffer(GL_RENDERBUFFER, multisample_renderbuffer_);
+  // Note that the multisample rendertarget will allocate an alpha channel
+  // based on |have_alpha_channel_|, not |allocate_alpha_channel_|, since it
+  // will resolve into the ColorBuffer.
+  GLenum internal_format = have_alpha_channel_ ? GL_RGBA8_OES : GL_RGB8_OES;
+  if (use_half_float_storage_) {
+    DCHECK(want_alpha_channel_);
+    internal_format = GL_RGBA16F_EXT;
+  }
+  if (has_eqaa_support) {
+    gl_->RenderbufferStorageMultisampleAdvancedAMD(
+        GL_RENDERBUFFER, sample_count_, eqaa_storage_sample_count_,
+        internal_format, size.Width(), size.Height());
+  } else {
+    gl_->RenderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, sample_count_,
+                                                internal_format, size.Width(),
+                                                size.Height());
+  }
+
+  if (gl_->GetError() == GL_OUT_OF_MEMORY)
+    return false;
+
+  gl_->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_RENDERBUFFER, multisample_renderbuffer_);
+  return true;
 }
 
 void DrawingBuffer::RestoreFramebufferBindings() {

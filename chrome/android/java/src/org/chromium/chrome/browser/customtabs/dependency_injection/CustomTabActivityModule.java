@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabNightModeStateController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandlingStrategy;
 import org.chromium.chrome.browser.customtabs.content.DefaultCustomTabIntentHandlingStrategy;
+import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.webapps.WebApkPostShareTargetNavigator;
 
 import dagger.Lazy;
@@ -26,13 +27,16 @@ public class CustomTabActivityModule {
     private final CustomTabIntentDataProvider mIntentDataProvider;
     private final CustomTabNightModeStateController mNightModeController;
     private final IntentIgnoringCriterion mIntentIgnoringCriterion;
+    private final StartupTabPreloader mStartupTabPreloader;
 
     public CustomTabActivityModule(CustomTabIntentDataProvider intentDataProvider,
             CustomTabNightModeStateController nightModeController,
-            IntentIgnoringCriterion intentIgnoringCriterion) {
+            IntentIgnoringCriterion intentIgnoringCriterion,
+            StartupTabPreloader startupTabPreloader) {
         mIntentDataProvider = intentDataProvider;
         mNightModeController = nightModeController;
         mIntentIgnoringCriterion = intentIgnoringCriterion;
+        mStartupTabPreloader = startupTabPreloader;
     }
 
     @Provides
@@ -66,5 +70,10 @@ public class CustomTabActivityModule {
     @Reusable
     public WebApkPostShareTargetNavigator providePostShareTargetNavigator() {
         return new WebApkPostShareTargetNavigator();
+    }
+
+    @Provides
+    public StartupTabPreloader provideStartupTabPreloader() {
+        return mStartupTabPreloader;
     }
 }

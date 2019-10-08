@@ -219,11 +219,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           let pose = frame.getPose(inputSource.targetRaySpace, refSpace);
           if (pose) {
             let targetRay = new XRRay(pose.transform);
-            if (inputSource.targetRayMode == 'tracked-pointer') {
+            if (inputSource.targetRayMode == 'tracked-pointer' &&
+                !pose.emulatedPosition) {
               // If we have a pointer matrix and the pointer origin is the users
               // hand (as opposed to their head or the screen) use it to render
               // a ray coming out of the input device to indicate the pointer
               // direction.
+              // Only show the laser when the position is not emulated, so that
+              // it's easy to know that value while still in VR.
               scene.inputRenderer.addLaserPointer(targetRay);
             }
 

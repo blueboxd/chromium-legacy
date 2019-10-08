@@ -40,7 +40,8 @@
 
 namespace {
 
-constexpr int kBorderThicknessDp = 1;
+constexpr int kBorderThicknessDpWithLabel = 1;
+constexpr int kBorderThicknessDpWithoutLabel = 2;
 
 SkColor GetDefaultTextColor(const ui::ThemeProvider* theme_provider) {
   DCHECK(theme_provider);
@@ -159,12 +160,15 @@ void ToolbarButton::UpdateColorsAndInsets() {
   if (!border() || new_insets != border()->GetInsets() ||
       last_border_color_ != border_color) {
     if (border_color) {
+      int border_thickness_dp = GetText().empty()
+                                    ? kBorderThicknessDpWithoutLabel
+                                    : kBorderThicknessDpWithLabel;
       // Create a border with insets equal to |new_insets|, just split into a
       // solid border and padding.
       SetBorder(views::CreatePaddedBorder(
-          views::CreateRoundedRectBorder(kBorderThicknessDp, highlight_radius,
+          views::CreateRoundedRectBorder(border_thickness_dp, highlight_radius,
                                          *border_color),
-          new_insets - gfx::Insets(kBorderThicknessDp)));
+          new_insets - gfx::Insets(border_thickness_dp)));
     } else {
       SetBorder(views::CreateEmptyBorder(new_insets));
     }

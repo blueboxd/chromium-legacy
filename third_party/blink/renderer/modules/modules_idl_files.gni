@@ -857,7 +857,7 @@ modules_dictionary_idl_files =
           "webgpu/gpu_origin_3d_dict.idl",
           "webgpu/gpu_pipeline_descriptor_base.idl",
           "webgpu/gpu_pipeline_layout_descriptor.idl",
-          "webgpu/gpu_pipeline_stage_descriptor.idl",
+          "webgpu/gpu_programmable_stage_descriptor.idl",
           "webgpu/gpu_rasterization_state_descriptor.idl",
           "webgpu/gpu_render_bundle_descriptor.idl",
           "webgpu/gpu_render_bundle_encoder_descriptor.idl",

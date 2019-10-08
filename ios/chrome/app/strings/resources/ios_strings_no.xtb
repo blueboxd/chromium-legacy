@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Rediger bokmerke</translation>
 <translation id="2179182049312275900">Du kan når som helst slå på synkronisering i innstillingene.</translation>
 <translation id="2198757192731523470">Google kan bruke loggen din for å gi Søk, annonser og andre Google-tjenester et personlig preg.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> uleste leselisteartikler.</translation>
 <translation id="2230173723195178503">Nettsiden er lastet inn</translation>
 <translation id="2239626343334228536">Sletter nettlesingsdata …</translation>
 <translation id="2267753748892043616">Legg til konto</translation>
@@ -265,7 +264,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering. Skriv den inn
 
 For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Ugyldig kortnummer</translation>
-<translation id="4807020197310989387">1 ulest leselisteartikkel.</translation>
 <translation id="4818522717893377262">Legg til språk...</translation>
 <translation id="481968316161811770">Informasjonskapsler og nettstedsdata</translation>
 <translation id="4833786495304741580">Sender automatisk bruksstatistikk og programstopprapporter til Google.</translation>
@@ -414,6 +412,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="6858855187367714033">Skannet</translation>
 <translation id="6859944681507688231">For å skanne QR-koder eller kredittkort, slå på kameraet i innstillingene.</translation>
 <translation id="6873263987691478642">Delt visning</translation>
+<translation id="6888009575607455378">Er du sikker på at du vil forkaste endringene?</translation>
 <translation id="6896758677409633944">Kopiér</translation>
 <translation id="6903907808598579934">Slå på synkronisering</translation>
 <translation id="6914583639806229067">Søk etter bildet du kopierte</translation>

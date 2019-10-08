@@ -11,6 +11,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
@@ -26,6 +27,10 @@ import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties.UiType;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.ui.modelutil.MVCListAdapter;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
@@ -59,6 +64,7 @@ public class TabListCoordinator implements Destroyable {
     static final int GRID_LAYOUT_SPAN_COUNT_LANDSCAPE = 3;
     private final TabListMediator mMediator;
     private final TabListRecyclerView mRecyclerView;
+    private final SimpleRecyclerViewAdapter mAdapter;
     private final @TabListMode int mMode;
     private final Rect mThumbnailLocationOfCurrentTab = new Rect();
 
@@ -100,15 +106,15 @@ public class TabListCoordinator implements Destroyable {
             boolean attachToParent, String componentName) {
         mMode = mode;
         TabListModel modelList = new TabListModel();
-        SimpleRecyclerViewAdapter adapter = new SimpleRecyclerViewAdapter(modelList);
+        mAdapter = new SimpleRecyclerViewAdapter(modelList);
         RecyclerView.RecyclerListener recyclerListener = null;
         if (mMode == TabListMode.GRID || mMode == TabListMode.CAROUSEL) {
-            adapter.registerType(UiType.SELECTABLE, () -> {
+            mAdapter.registerType(UiType.SELECTABLE, () -> {
                 return (ViewGroup) LayoutInflater.from(context).inflate(
                         R.layout.selectable_tab_grid_card_item, parentView, false);
             }, TabGridViewBinder::bindSelectableTab);
 
-            adapter.registerType(UiType.CLOSABLE, () -> {
+            mAdapter.registerType(UiType.CLOSABLE, () -> {
                 ViewGroup group = (ViewGroup) LayoutInflater.from(context).inflate(
                         R.layout.closable_tab_grid_card_item, parentView, false);
                 if (mMode == TabListMode.CAROUSEL) {
@@ -126,7 +132,7 @@ public class TabListCoordinator implements Destroyable {
                 thumbnail.setMinimumHeight(thumbnail.getWidth());
             };
         } else if (mMode == TabListMode.STRIP) {
-            adapter.registerType(UiType.STRIP, () -> {
+            mAdapter.registerType(UiType.STRIP, () -> {
                 return (ViewGroup) LayoutInflater.from(context).inflate(
                         R.layout.tab_strip_item, parentView, false);
             }, TabStripViewBinder::bind);
@@ -153,7 +159,7 @@ public class TabListCoordinator implements Destroyable {
                     context.getResources().getDimensionPixelSize(R.dimen.tab_carousel_height);
         }
 
-        mRecyclerView.setAdapter(adapter);
+        mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setHasFixedSize(true);
         if (recyclerListener != null) mRecyclerView.setRecyclerListener(recyclerListener);
 
@@ -276,5 +282,16 @@ public class TabListCoordinator implements Destroyable {
 
     long getLastDirtyTimeForTesting() {
         return mRecyclerView.getLastDirtyTimeForTesting();
+    }
+
+    /**
+     * Register a new view type for the component.
+     * @see MVCListAdapter#registerType(int, MVCListAdapter.ViewBuilder,
+     *         PropertyModelChangeProcessor.ViewBinder).
+     */
+    <T extends View> void registerItemType(@UiType int typeId,
+            MVCListAdapter.ViewBuilder<T> builder,
+            PropertyModelChangeProcessor.ViewBinder<PropertyModel, T, PropertyKey> binder) {
+        mAdapter.registerType(typeId, builder, binder);
     }
 }

@@ -36,7 +36,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
-#include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -45,7 +45,7 @@
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
-#include "ui/accessibility/ax_enums.mojom-blink.h"
+#include "ui/accessibility/ax_enums.mojom-blink-forward.h"
 
 namespace blink {
 

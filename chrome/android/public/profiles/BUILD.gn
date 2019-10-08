@@ -19,6 +19,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/cookies/CookiesFetcher.java",
     "java/src/org/chromium/chrome/browser/profiles/Profile.java",
     "java/src/org/chromium/chrome/browser/profiles/ProfileKey.java",
+    "java/src/org/chromium/chrome/browser/profiles/ProfileManager.java",
     "java/src/org/chromium/chrome/browser/profiles/ProfileManagerUtils.java",
   ]
 }
@@ -28,6 +29,7 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chrome/browser/cookies/CookiesFetcher.java",
     "java/src/org/chromium/chrome/browser/profiles/Profile.java",
     "java/src/org/chromium/chrome/browser/profiles/ProfileKey.java",
+    "java/src/org/chromium/chrome/browser/profiles/ProfileManager.java",
     "java/src/org/chromium/chrome/browser/profiles/ProfileManagerUtils.java",
   ]
 }

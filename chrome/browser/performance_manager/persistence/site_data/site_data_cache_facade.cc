@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "chrome/browser/performance_manager/performance_manager_impl.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_impl.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "components/performance_manager/performance_manager_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 

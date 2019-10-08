@@ -781,7 +781,7 @@ void PaintLayerPainter::PaintForegroundForFragments(
           local_painting_info, paint_flags);
     }
 
-    if (RuntimeEnabledFeatures::ForcedColorsEnabled()) {
+    if (paint_layer_.GetLayoutObject().GetDocument().InForcedColorsMode()) {
       PaintForegroundForFragmentsWithPhase(
           PaintPhase::kForcedColorsModeBackplate, layer_fragments, context,
           local_painting_info, paint_flags);

@@ -374,13 +374,17 @@ class NavigationController {
   // explicitly requested using SetNeedsReload().
   virtual void LoadIfNecessary() = 0;
 
-  // Navigates directly to an error page, with |error_page_html| as the
-  // contents, and |url| as the url. |error| is the code that will be used
-  // when triggering the error page.
-  virtual void LoadErrorPage(RenderFrameHost* render_frame_host,
-                             const GURL& url,
-                             const std::string& error_page_html,
-                             net::Error error) = 0;
+  // Navigates directly to an error page in response to an event on the last
+  // committed page (e.g., triggered by a subresource), with |error_page_html|
+  // as the contents and |url| as the URL.
+
+  // The error page will create a NavigationEntry that temporarily replaces the
+  // original page's entry. The original entry will be put back into the entry
+  // list after any other navigation.
+  virtual void LoadPostCommitErrorPage(RenderFrameHost* render_frame_host,
+                                       const GURL& url,
+                                       const std::string& error_page_html,
+                                       net::Error error) = 0;
 
   // Renavigation --------------------------------------------------------------
 

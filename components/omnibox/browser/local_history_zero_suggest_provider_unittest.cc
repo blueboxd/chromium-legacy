@@ -56,25 +56,30 @@ class LocalHistoryZeroSuggestProviderTest
     : public testing::Test,
       public AutocompleteProviderListener {
  public:
-  LocalHistoryZeroSuggestProviderTest()
-      : client_(std::make_unique<FakeAutocompleteProviderClient>()),
-        provider_(base::WrapRefCounted(
-            LocalHistoryZeroSuggestProvider::Create(client_.get(), this))) {
-    SetZeroSuggestVariant(
-        metrics::OmniboxEventProto::NTP_REALBOX,
-        LocalHistoryZeroSuggestProvider::kZeroSuggestLocalVariant);
-  }
-  ~LocalHistoryZeroSuggestProviderTest() override {}
+  LocalHistoryZeroSuggestProviderTest() = default;
+  ~LocalHistoryZeroSuggestProviderTest() override = default;
 
  protected:
   // testing::Test
   void SetUp() override {
+    client_ = std::make_unique<FakeAutocompleteProviderClient>();
+    provider_ = base::WrapRefCounted(
+        LocalHistoryZeroSuggestProvider::Create(client_.get(), this));
+
+    SetZeroSuggestVariant(
+        metrics::OmniboxEventProto::NTP_REALBOX,
+        LocalHistoryZeroSuggestProvider::kZeroSuggestLocalVariant);
+
     // Verify that Google is the default search provider.
     ASSERT_EQ(SEARCH_ENGINE_GOOGLE,
               default_search_provider()->GetEngineType(
                   client_->GetTemplateURLService()->search_terms_data()));
   }
-  void TearDown() override { task_environment_.RunUntilIdle(); }
+  void TearDown() override {
+    provider_ = nullptr;
+    client_.reset();
+    task_environment_.RunUntilIdle();
+  }
 
   // AutocompleteProviderListener
   void OnProviderUpdate(bool updated_matches) override;

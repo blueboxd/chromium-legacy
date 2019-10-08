@@ -98,9 +98,9 @@ class InfoBarView : public infobars::InfoBar,
   // Returns whether this infobar should draw a 1 px separator at its top.
   bool ShouldDrawSeparator() const;
 
-  // Returns how many DIPs the container should reserve for a separator between
+  // Returns how much space the container should reserve for a separator between
   // infobars, in addition to the height of the infobars themselves.
-  int GetSeparatorHeightDip() const;
+  int GetSeparatorHeight() const;
 
   // Returns the current color for the theme property |id|.  Will return the
   // wrong value if no theme provider is available.

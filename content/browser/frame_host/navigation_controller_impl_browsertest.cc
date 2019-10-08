@@ -8478,10 +8478,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(url1, shell()->web_contents()->GetLastCommittedURL());
 }
 
-// Test to verify that LoadErrorPage loads an error page even with a
+// Test to verify that LoadPostCommitErrorPage loads an error page even with a
 // valid URL.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       BrowserInitiatedLoadErrorPage) {
+                       BrowserInitiatedLoadPostCommitErrorPage) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
 
@@ -8493,7 +8493,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   std::string error_html = "Error page";
   TestNavigationObserver error_observer(shell()->web_contents());
-  controller.LoadErrorPage(root, url, error_html, net::ERR_BLOCKED_BY_CLIENT);
+  controller.LoadPostCommitErrorPage(root, url, error_html,
+                                     net::ERR_BLOCKED_BY_CLIENT);
   error_observer.Wait();
 
   scoped_refptr<SiteInstance> error_site_instance =
@@ -8521,10 +8522,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
             policy->GetOriginLock(error_site_instance->GetProcess()->GetID()));
 }
 
-// Test to verify that LoadErrorPage loads an error page in a subframe
+// Test to verify that LoadPostCommitErrorPage loads an error page in a subframe
 // correctly.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       BrowserInitiatedLoadErrorPageForSubframe) {
+                       BrowserInitiatedLoadPostCommitErrorPageForSubframe) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
 
@@ -8539,7 +8540,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   std::string error_html = "Error page";
   TestNavigationObserver error_observer(shell()->web_contents());
-  controller.LoadErrorPage(child, url, error_html, net::ERR_BLOCKED_BY_CLIENT);
+  controller.LoadPostCommitErrorPage(child, url, error_html,
+                                     net::ERR_BLOCKED_BY_CLIENT);
   error_observer.Wait();
 
   EXPECT_FALSE(error_observer.last_navigation_succeeded());
@@ -8554,10 +8556,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_NE(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
 }
 
-// Test to verify that LoadErrorPage works correctly when supplied with an
-// about:blank url for the error page.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       BrowserInitiatedLoadErrorPageWithAboutBlankUrl) {
+// Test to verify that LoadPostCommitErrorPage works correctly when supplied
+// with an about:blank url for the error page.
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerBrowserTest,
+    BrowserInitiatedLoadPostCommitErrorPageWithAboutBlankUrl) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
 
@@ -8573,8 +8576,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   std::string error_html = "Error page";
   GURL error_url("about:blank#error");
   TestNavigationObserver error_observer(shell()->web_contents());
-  controller.LoadErrorPage(child, error_url, error_html,
-                           net::ERR_BLOCKED_BY_CLIENT);
+  controller.LoadPostCommitErrorPage(child, error_url, error_html,
+                                     net::ERR_BLOCKED_BY_CLIENT);
   error_observer.Wait();
 
   EXPECT_FALSE(error_observer.last_navigation_succeeded());
@@ -8604,6 +8607,138 @@ class NavigationControllerDisableHistoryIntervention
  private:
   base::test::ScopedFeatureList feature_list_;
 };
+
+// Test to verify that after loading a post-commit error page, back is treated
+// as navigating to the entry prior to the page that was active when the
+// post-commit error page was triggered.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       BackOnBrowserInitiatedErrorPageNavigation) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  GURL url1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url2(embedded_test_server()->GetURL("/title2.html"));
+
+  // Navigate to a valid page.
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  int initial_entry_index = controller.GetLastCommittedEntryIndex();
+
+  // Navigate to a different page.
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+
+  // Trigger a post-commit error page navigation.
+  TestNavigationObserver error_observer(shell()->web_contents());
+  controller.LoadPostCommitErrorPage(shell()->web_contents()->GetMainFrame(),
+                                     url2, "Error Page",
+                                     net::ERR_BLOCKED_BY_CLIENT);
+  error_observer.Wait();
+  EXPECT_EQ(PAGE_TYPE_ERROR, controller.GetLastCommittedEntry()->GetPageType());
+  EXPECT_EQ(2, controller.GetEntryCount());
+
+  // Make sure back is treated as going back from the page that was visible when
+  // the post-commit error page was loaded.
+  controller.GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(initial_entry_index, controller.GetLastCommittedEntryIndex());
+  // Check that the next forward entry has been replaced with the original visit
+  // to the site (i.e. it shouldn't be the error page).
+  EXPECT_EQ(PAGE_TYPE_NORMAL, controller.GetEntryAtOffset(1)->GetPageType());
+  EXPECT_EQ(url2, controller.GetEntryAtOffset(1)->GetURL());
+}
+
+// Test to verify that after loading a post-commit error page, reload
+// triggers a navigation to the previous page (the page that was active when
+// the navigation to an error was triggered).
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       ReloadOnBrowserInitiatedErrorPageNavigation) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+
+  // Navigate to a valid page.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  int initial_entry_index = controller.GetLastCommittedEntryIndex();
+  int initial_entry_id = controller.GetLastCommittedEntry()->GetUniqueID();
+
+  // Trigger a post-commit error page navigation.
+  TestNavigationObserver error_observer(shell()->web_contents());
+  controller.LoadPostCommitErrorPage(shell()->web_contents()->GetMainFrame(),
+                                     url, "Error Page",
+                                     net::ERR_BLOCKED_BY_CLIENT);
+  error_observer.Wait();
+  EXPECT_EQ(PAGE_TYPE_ERROR, controller.GetLastCommittedEntry()->GetPageType());
+  EXPECT_EQ(1, controller.GetEntryCount());
+
+  // Make sure reload triggers a reload of the original page, not the error,
+  // and that we get back to the original entry.
+  controller.Reload(ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(initial_entry_index, controller.GetLastCommittedEntryIndex());
+
+  // We should be in the initial entry and no longer be in an error page.
+  EXPECT_EQ(initial_entry_id,
+            controller.GetLastCommittedEntry()->GetUniqueID());
+  EXPECT_EQ(PAGE_TYPE_NORMAL,
+            controller.GetLastCommittedEntry()->GetPageType());
+
+  // The error page entry shouldn't be available as a forward navigation.
+  EXPECT_FALSE(controller.CanGoForward());
+  EXPECT_EQ(1, controller.GetEntryCount());
+}
+
+// Test clone behavior of post-commit error page navigations.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       CloneOnBrowserInitiatedErrorPageNavigation) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  GURL url(embedded_test_server()->GetURL("/title2.html"));
+
+  // Navigate to a valid page.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  int initial_entry_id = controller.GetLastCommittedEntry()->GetUniqueID();
+  base::string16 initial_title = controller.GetLastCommittedEntry()->GetTitle();
+  // Trigger a post-commit error page navigation.
+  TestNavigationObserver error_observer(shell()->web_contents());
+  controller.LoadPostCommitErrorPage(shell()->web_contents()->GetMainFrame(),
+                                     url, "Error Page",
+                                     net::ERR_BLOCKED_BY_CLIENT);
+  error_observer.Wait();
+  EXPECT_EQ(PAGE_TYPE_ERROR, controller.GetLastCommittedEntry()->GetPageType());
+  EXPECT_EQ(1, controller.GetEntryCount());
+
+  // Clone the tab and load the entry.
+  std::unique_ptr<WebContents> new_tab = shell()->web_contents()->Clone();
+  WebContentsImpl* new_tab_impl = static_cast<WebContentsImpl*>(new_tab.get());
+  NavigationController& new_controller = new_tab_impl->GetController();
+  EXPECT_TRUE(new_controller.IsInitialNavigation());
+  EXPECT_TRUE(new_controller.NeedsReload());
+  // TODO(carlosil): Before we load, the entry on the new controller is a clone
+  // of the post commit error page entry. This is mostly ok since after the load
+  // we end up in the right page, but causes navigation state to be lost,
+  // ideally we should clone the entry replaced by the error page instead.
+  EXPECT_EQ(PAGE_TYPE_ERROR,
+            new_controller.GetLastCommittedEntry()->GetPageType());
+  {
+    TestNavigationObserver clone_observer(new_tab.get());
+    new_controller.LoadIfNecessary();
+    clone_observer.Wait();
+  }
+  // The entry on the new controller should be a new one.
+  EXPECT_NE(initial_entry_id,
+            new_controller.GetLastCommittedEntry()->GetUniqueID());
+  // The new entry should keep the URL from the initial navigation, which means
+  // after the load it should navigate to the initial page, not to the error.
+  EXPECT_EQ(url, new_controller.GetLastCommittedEntry()->GetURL());
+  EXPECT_EQ(initial_title, new_controller.GetLastCommittedEntry()->GetTitle());
+  EXPECT_EQ(PAGE_TYPE_NORMAL,
+            new_controller.GetLastCommittedEntry()->GetPageType());
+
+  // Only one entry should exist in the controller of the cloned tab.
+  EXPECT_EQ(1, new_controller.GetEntryCount());
+}
 
 // Tests that the navigation entry is marked as skippable on back/forward button
 // if it does a renderer initiated navigation without ever getting a user

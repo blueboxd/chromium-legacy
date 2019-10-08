@@ -1118,11 +1118,12 @@ void NavigationRequest::BeginNavigation() {
     return;
   }
 
-  if (!error_page_html_.empty()) {
-    OnRequestFailedInternal(network::URLLoaderCompletionStatus(net_error_),
-                            true /* skip_throttles  */,
-                            error_page_html_ /* error_page_content */,
-                            false /* collapse_frame */);
+  if (!post_commit_error_page_html_.empty()) {
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(net_error_),
+        true /* skip_throttles  */,
+        post_commit_error_page_html_ /* error_page_content */,
+        false /* collapse_frame */);
     // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
     // has destroyed the NavigationRequest.
     return;

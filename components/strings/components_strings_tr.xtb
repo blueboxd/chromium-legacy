@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Başlangıç sayfalarını aç</translation>
 <translation id="1883255238294161206">Listeyi daralt</translation>
 <translation id="1898423065542865115">Filtreleme</translation>
+<translation id="1901443836186977402">{1,plural, =1{Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikasının süresi son bir gün içinde sona ermiş. Bu durum, yanlış yapılandırmadan veya bağlantınıza müdahale eden bir saldırgandan kaynaklanıyor olabilir. Bilgisayarınızın saati şu anda <ph name="CURRENT_DATE" /> olarak ayarlanmış. Doğru görünüyor mu? Görünmüyorsa sisteminizin saatini düzeltip ardından bu sayfayı yenilemelisiniz.}other{Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikasının süresi # gün önce sona ermiş. Bu durum, yanlış yapılandırmadan veya bağlantınıza müdahale eden bir saldırgandan kaynaklanıyor olabilir. Bilgisayarınızın saati şu anda <ph name="CURRENT_DATE" /> olarak ayarlanmış. Doğru görünüyor mu? Görünmüyorsa sisteminizin saatini düzeltmeli ve sonra bu sayfayı yenilemelisiniz.}}</translation>
 <translation id="1914326953223720820">Sıkıştırma Açma Hizmeti</translation>
 <translation id="1915697529809968049">CVC yerine Touch ID kullanılsın mı?</translation>
 <translation id="1916770123977586577">Güncellenen ayarlarınızı bu siteye uygulamak için sayfayı yeniden yükleyin</translation>
@@ -441,6 +442,7 @@
 <translation id="3116158981186517402">Lamine</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Bağlantı Teşhislerini çalıştırmayı deneyin<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Şuraya git: <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Yok}=1{1 hesaba ait oturum açma verileri}other{# hesaba ait oturum açma verileri}}</translation>
 <translation id="3145945101586104090">Yanıtın kodu çözülemedi</translation>
 <translation id="3150653042067488994">Geçici sunucu hatası</translation>
@@ -824,6 +826,7 @@
 <translation id="5043480802608081735">Kopyalanan Bağlantı</translation>
 <translation id="5045550434625856497">Hatalı parola</translation>
 <translation id="5056549851600133418">Size uygun makaleler</translation>
+<translation id="5061227663725596739">Şunu mu demek istediniz: <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 çerez kullanımda)}other{(# çerez kullanımda)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Proxy adresini kontrol etme<ph name="END_LINK" /></translation>
@@ -877,6 +880,7 @@
 <translation id="5284909709419567258">Ağ adresleri</translation>
 <translation id="5285570108065881030">Tüm kayıtlı şifreleri göster</translation>
 <translation id="5287240709317226393">Çerezleri göster</translation>
+<translation id="5287456746628258573">Bu site, eski bir güvenlik yapılandırması kullanıyor. Bu siteye gönderildiğinde bilgileriniz (ör. şifreler veya kredi kartı numaraları) gösterilebilir.</translation>
 <translation id="5288108484102287882">Politika değerlerini doğrulama işlemi uyarılarla sonuçlandı</translation>
 <translation id="5299298092464848405">Politika ayrıştırma hatası</translation>
 <translation id="5300589172476337783">Göster</translation>
@@ -1005,6 +1009,7 @@
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> açılıyor…</translation>
 <translation id="5947933617628957894">Evet, ekle</translation>
 <translation id="5951495562196540101">Tüketici hesabına kaydedilemiyor (paket lisans mevcut).</translation>
+<translation id="5966900314707961320">Etkinleştirildiğinde, siteler sizi web'de takip eden çerezler kullanamaz</translation>
 <translation id="5967592137238574583">İletişim Bilgilerini Düzenleyin</translation>
 <translation id="5967867314010545767">Geçmişten kaldır.</translation>
 <translation id="5975083100439434680">Uzaklaştır</translation>
@@ -1087,6 +1092,7 @@
 <translation id="6383221683286411806">Devam etmeniz halinde ödeme yapmanız gerekebilir.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 öneri daha}other{# öneri daha}}</translation>
 <translation id="6387754724289022810">Gelecek sefer daha hızlı ödeme yapabilmek için kartınızı ve fatura adresinizi Google hesabınıza kaydedin.</translation>
+<translation id="6389470377220713856">Karttaki Ad</translation>
 <translation id="6390200185239044127">Yarım Z katlama</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Bu politika kullanımdan kaldırılmıştır. Onun yerine <ph name="NEW_POLICY" /> politikasını kullanmalısınız.</translation>
@@ -1265,7 +1271,6 @@ Ek ayrıntılar:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">İlişkili olma durumu:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Bu siteden ayrıl</translation>
 <translation id="7353601530677266744">Komut Satırı</translation>
 <translation id="7372973238305370288">arama sonucu</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1438,6 +1443,7 @@ Ek ayrıntılar:
 <translation id="8131740175452115882">Onayla</translation>
 <translation id="8149426793427495338">Bilgisayarınız uyku moduna geçti.</translation>
 <translation id="8150722005171944719"><ph name="URL" /> konumundaki dosya okunamıyor. Kaldırılmış ya da taşınmış olabilir veya dosya izinleri erişimi önlüyordur.</translation>
+<translation id="8157295877370077682">Siteden çık</translation>
 <translation id="8163866351304776260">Solda dörtlü delik</translation>
 <translation id="8175796834047840627">Chrome, oturumunuz açık olduğu için kartlarınızı Google Hesabınıza kaydetmeyi öneriyor. Bu davranışı ayarlardan değiştirebilirsiniz.</translation>
 <translation id="8184538546369750125">Genel varsayılanı kullan (İzin ver)</translation>

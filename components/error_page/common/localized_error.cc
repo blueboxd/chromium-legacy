@@ -1036,7 +1036,7 @@ LocalizedError::PageState LocalizedError::GetPageState(
   if (!is_post && !result.reload_button_shown && !is_incognito &&
       failed_url.is_valid() && failed_url.SchemeIsHTTPOrHTTPS() &&
       IsOfflineError(error_domain, error_code)) {
-    if (!auto_fetch_feature_enabled && offline_pages::IsOfflinePagesEnabled()) {
+    if (!auto_fetch_feature_enabled) {
       result.download_button_shown = true;
       result.strings.SetPath({"downloadButton", "msg"},
                              base::Value(l10n_util::GetStringUTF16(

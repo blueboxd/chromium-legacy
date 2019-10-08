@@ -217,7 +217,8 @@ std::vector<uintptr_t*> SuspendableThreadDelegateWin::GetRegistersToRewrite(
     &thread_context->X19, &thread_context->X20, &thread_context->X21,
         &thread_context->X22, &thread_context->X23, &thread_context->X24,
         &thread_context->X25, &thread_context->X26, &thread_context->X27,
-        &thread_context->X28, &thread_context->Fp, &thread_context->Lr
+        &thread_context->X28, &thread_context->Fp, &thread_context->Lr,
+        &thread_context->Sp
 #endif
   };
 }

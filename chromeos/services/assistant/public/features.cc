@@ -55,18 +55,9 @@ const base::Feature kEnableDspHotword{"EnableDspHotword",
 const base::Feature kEnableStereoAudioInput{"AssistantEnableStereoAudioInput",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kTimerNotification{"ChromeOSAssistantTimerNotification",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kEnableTextQueriesWithClientDiscourseContext{
     "AssistantEnableTextQueriesWithClientDiscourseContext",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kTimerTicks{"ChromeOSAssistantTimerTicks",
-                                base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kEnableAssistantAlarmTimerManager{
-    "EnableAssistantAlarmTimerManager", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnablePowerManager{"ChromeOSAssistantEnablePowerManager",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -92,10 +83,6 @@ std::string GetProactiveSuggestionsServerExperimentIds() {
 base::TimeDelta GetProactiveSuggestionsTimeoutThreshold() {
   return base::TimeDelta::FromMilliseconds(
       kAssistantProactiveSuggestionsTimeoutThresholdMillis.Get());
-}
-
-bool IsAlarmTimerManagerEnabled() {
-  return base::FeatureList::IsEnabled(kEnableAssistantAlarmTimerManager);
 }
 
 bool IsAppSupportEnabled() {
@@ -151,17 +138,6 @@ bool IsStereoAudioInputEnabled() {
   return base::FeatureList::IsEnabled(kEnableStereoAudioInput) ||
          // Audio eraser requires 2 channel input.
          base::FeatureList::IsEnabled(kAssistantAudioEraser);
-}
-
-bool IsTimerNotificationEnabled() {
-  return base::FeatureList::IsEnabled(kTimerNotification);
-}
-
-bool IsTimerTicksEnabled() {
-  // The timer ticks feature is dependent on new notification add/remove logic
-  // that is tied to new events delivered from the AlarmTimerManager API.
-  return IsAlarmTimerManagerEnabled() &&
-         base::FeatureList::IsEnabled(kTimerTicks);
 }
 
 bool IsWarmerWelcomeEnabled() {

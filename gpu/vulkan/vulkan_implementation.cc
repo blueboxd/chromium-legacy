@@ -32,7 +32,7 @@ std::unique_ptr<VulkanDeviceQueue> CreateVulkanDeviceQueue(
   std::vector<const char*> required_extensions =
       vulkan_implementation->GetRequiredDeviceExtensions();
   if (!device_queue->Initialize(
-          option, vulkan_implementation->GetVulkanInstance()->api_version(),
+          option, vulkan_implementation->GetVulkanInstance()->vulkan_info(),
           std::move(required_extensions),
           vulkan_implementation->allow_protected_memory(), callback)) {
     device_queue->Destroy();

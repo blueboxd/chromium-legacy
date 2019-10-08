@@ -583,6 +583,8 @@ void HTMLCanvasElement::Reset() {
   if (had_resource_provider && old_size == new_size && Is2d()) {
     if (!canvas_is_clear_) {
       canvas_is_clear_ = true;
+      if (canvas2d_bridge_)
+        canvas2d_bridge_->ClearFrame();
       context_->ClearRect(0, 0, width(), height());
     }
     return;

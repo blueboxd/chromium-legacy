@@ -101,38 +101,6 @@ blink_modules_sources("media_controls") {
     ":media_controls_resources",
     "//services/service_manager/public/cpp",
   ]
-
-  if (is_android && notouch_build) {
-    sources += [
-      "touchless/elements/media_controls_touchless_bottom_container_element.cc",
-      "touchless/elements/media_controls_touchless_bottom_container_element.h",
-      "touchless/elements/media_controls_touchless_element.cc",
-      "touchless/elements/media_controls_touchless_element.h",
-      "touchless/elements/media_controls_touchless_overlay_element.cc",
-      "touchless/elements/media_controls_touchless_overlay_element.h",
-      "touchless/elements/media_controls_touchless_play_button_element.cc",
-      "touchless/elements/media_controls_touchless_play_button_element.h",
-      "touchless/elements/media_controls_touchless_seek_button_element.cc",
-      "touchless/elements/media_controls_touchless_seek_button_element.h",
-      "touchless/elements/media_controls_touchless_time_display_element.cc",
-      "touchless/elements/media_controls_touchless_time_display_element.h",
-      "touchless/elements/media_controls_touchless_timeline_element.cc",
-      "touchless/elements/media_controls_touchless_timeline_element.h",
-      "touchless/elements/media_controls_touchless_volume_button_element.cc",
-      "touchless/elements/media_controls_touchless_volume_button_element.h",
-      "touchless/elements/media_controls_touchless_volume_container_element.cc",
-      "touchless/elements/media_controls_touchless_volume_container_element.h",
-      "touchless/media_controls_touchless_impl.cc",
-      "touchless/media_controls_touchless_impl.h",
-      "touchless/media_controls_touchless_media_event_listener.cc",
-      "touchless/media_controls_touchless_media_event_listener.h",
-      "touchless/media_controls_touchless_media_event_listener_observer.h",
-      "touchless/media_controls_touchless_resource_loader.cc",
-      "touchless/media_controls_touchless_resource_loader.h",
-    ]
-
-    deps += [ ":media_controls_touchless_resources" ]
-  }
 }
 
 grit("media_controls_resources") {
@@ -143,15 +111,4 @@ grit("media_controls_resources") {
     "media_controls_resources_100_percent.pak",
     "media_controls_resources_200_percent.pak",
   ]
-}
-
-if (is_android && notouch_build) {
-  grit("media_controls_touchless_resources") {
-    output_dir = "$blink_modules_output_dir/media_controls/touchless/resources/"
-    source = "touchless/resources/media_controls_touchless_resources.grd"
-    outputs = [
-      "grit/media_controls_touchless_resources.h",
-      "media_controls_touchless_resources.pak",
-    ]
-  }
 }

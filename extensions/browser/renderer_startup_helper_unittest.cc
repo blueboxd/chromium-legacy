@@ -6,8 +6,6 @@
 
 #include "base/stl_util.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -46,17 +44,11 @@ class RendererStartupHelperTest : public ExtensionsTest {
 
  protected:
   void SimulateRenderProcessCreated(content::RenderProcessHost* rph) {
-    content::NotificationService::current()->Notify(
-        content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-        content::Source<content::RenderProcessHost>(rph),
-        content::NotificationService::NoDetails());
+    helper_->OnRenderProcessHostCreated(rph);
   }
 
   void SimulateRenderProcessTerminated(content::RenderProcessHost* rph) {
-    content::NotificationService::current()->Notify(
-        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        content::Source<content::RenderProcessHost>(rph),
-        content::NotificationService::NoDetails());
+    helper_->RenderProcessHostDestroyed(rph);
   }
 
   scoped_refptr<const Extension> CreateExtension(const std::string& id_input) {

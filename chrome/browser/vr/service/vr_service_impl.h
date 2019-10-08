@@ -157,6 +157,8 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
   content::RenderFrameHost* render_frame_host_;
   mojo::SelfOwnedReceiverRef<VRService> receiver_;
   InterfaceSet<device::mojom::XRSessionControllerPtr> magic_window_controllers_;
+  device::mojom::XRVisibilityState visibility_state_ =
+      device::mojom::XRVisibilityState::VISIBLE;
 
   // List of callbacks to run when initialization is completed.
   std::vector<base::OnceCallback<void()>> pending_requests_;

@@ -1442,12 +1442,6 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
-
-  // Put us in kIdle to allow further event processing.
-  // ProcessPendingEventsIfNeeded() will put us back into kDecoding after all
-  // other pending events are processed successfully.
-  state_ = kIdle;
-  ProcessPendingEventsIfNeeded();
 }
 
 void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
@@ -1612,6 +1606,18 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
       return;
   }
   DCHECK_EQ(gl_image_size_.width(), adjusted_coded_width);
+
+  // Put us in kIdle to allow further event processing.
+  // ProcessPendingEventsIfNeeded() will put us back into kDecoding after all
+  // other pending events are processed successfully.
+  if (state_ == kAwaitingPictureBuffers) {
+    state_ = kIdle;
+    decoder_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &V4L2SliceVideoDecodeAccelerator::ProcessPendingEventsIfNeeded,
+            base::Unretained(this)));
+  }
 
   // If in import mode, build output_frame from the passed DMABUF FDs.
   if (output_mode_ == Config::OutputMode::IMPORT) {

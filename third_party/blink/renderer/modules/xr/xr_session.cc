@@ -29,6 +29,8 @@
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
 #include "third_party/blink/renderer/modules/xr/xr_hit_result.h"
+#include "third_party/blink/renderer/modules/xr/xr_hit_test_options.h"
+#include "third_party/blink/renderer/modules/xr/xr_hit_test_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_sources_change_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_plane.h"
@@ -71,8 +73,6 @@ const char kAnchorsNotSupported[] = "Device does not support anchors!";
 
 const char kDeviceDisconnected[] = "The XR device has been disconnected.";
 
-const char kNotImplemented[] = "The operation has not been implemented yet.";
-
 const char kNonInvertibleMatrix[] =
     "The operation encountered non-invertible matrix and could not be "
     "completed.";
@@ -80,6 +80,12 @@ const char kNonInvertibleMatrix[] =
 const char kUnableToDecomposeMatrix[] =
     "The operation was unable to decompose a matrix and could not be "
     "completed.";
+
+const char kUnableToRetrieveNativeOrigin[] =
+    "The operation was unable to retrieve the native origin from XRSpace and "
+    "could not be completed.";
+
+const char kHitTestSubscriptionFailed[] = "Hit test subscription failed.";
 
 const double kDegToRad = M_PI / 180.0;
 
@@ -496,7 +502,7 @@ ScriptPromise XRSession::createAnchor(ScriptState* script_state,
 }
 
 int XRSession::requestAnimationFrame(V8XRFrameRequestCallback* callback) {
-  TRACE_EVENT0("gpu", __FUNCTION__);
+  TRACE_EVENT0("gpu", __func__);
   // Don't allow any new frame requests once the session is ended.
   if (ended_)
     return 0;
@@ -526,6 +532,8 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
                                         XRRay* ray,
                                         XRSpace* space,
                                         ExceptionState& exception_state) {
+  DVLOG(2) << __func__;
+
   if (ended_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kSessionEnded);
@@ -565,12 +573,63 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise XRSession::requestHitTestSource(ScriptState* script_state,
-                                              XRHitTestOptionsInit* options,
-                                              ExceptionState& exception_state) {
-  exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                    kNotImplemented);
-  return ScriptPromise();
+ScriptPromise XRSession::requestHitTestSource(
+    ScriptState* script_state,
+    XRHitTestOptionsInit* options_init,
+    ExceptionState& exception_state) {
+  DVLOG(2) << __func__;
+
+  DCHECK(options_init);  // is this enforced by generated bindings?
+
+  XRHitTestOptions* options =
+      MakeGarbageCollected<XRHitTestOptions>(options_init);
+
+  // 1. Grab the native origin from the passed in XRSpace.
+  base::Optional<XRNativeOriginInformation> maybe_native_origin =
+      options->space()->NativeOrigin();
+
+  if (!maybe_native_origin) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kUnableToRetrieveNativeOrigin);
+    return {};
+  }
+
+  // 2. Convert the XRRay to be expressed in terms of passed in XRSpace. This
+  // should only matter for spaces whose transforms are not fully known on the
+  // device (for example any space containing origin-offset).
+  TransformationMatrix origin_from_space =
+      options->space()->OriginOffsetMatrix();
+
+  DVLOG(3) << __func__
+           << ": origin_from_space = " << origin_from_space.ToString(true);
+
+  // Transformation from passed in pose to |space|.
+  auto space_from_ray = options->offsetRay()->RawMatrix();
+  auto origin_from_ray = origin_from_space * space_from_ray;
+
+  DVLOG(3) << __func__
+           << ": space_from_ray = " << space_from_ray.ToString(true);
+
+  DVLOG(3) << __func__
+           << ": origin_from_ray = " << origin_from_ray.ToString(true);
+
+  device::mojom::blink::XRRayPtr ray_mojo = device::mojom::blink::XRRay::New();
+
+  ray_mojo->origin = WebFloatPoint3D(origin_from_ray.MapPoint({0, 0, 0}));
+
+  // Zero out the translation of origin_from_ray matrix to correctly map a 3D
+  // vector.
+  origin_from_ray.Translate3d(-origin_from_ray.M41(), -origin_from_ray.M42(),
+                              -origin_from_ray.M43());
+
+  auto direction = origin_from_ray.MapPoint({0, 0, -1});
+  ray_mojo->direction = {direction.X(), direction.Y(), direction.Z()};
+
+  // TODO(https://crbug.com/997369): Actually issue a call to the device once
+  // mojo interfaces land.
+  exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                    kHitTestSubscriptionFailed);
+  return {};
 }
 
 void XRSession::OnHitTestResults(
@@ -631,12 +690,19 @@ void XRSession::OnEnvironmentProviderError() {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, kDeviceDisconnected));
   }
+
+  HeapHashSet<Member<ScriptPromiseResolver>> request_hit_test_source_promises;
+  request_hit_test_source_promises_.swap(request_hit_test_source_promises);
+  for (ScriptPromiseResolver* resolver : request_hit_test_source_promises) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError, kDeviceDisconnected));
+  }
 }
 
 void XRSession::ProcessAnchorsData(
     const device::mojom::blink::XRAnchorsDataPtr& tracked_anchors_data,
     double timestamp) {
-  TRACE_EVENT0("xr", __FUNCTION__);
+  TRACE_EVENT0("xr", __func__);
 
   if (!tracked_anchors_data) {
     DVLOG(3) << __func__ << ": tracked_anchors_data is null";
@@ -926,15 +992,15 @@ void XRSession::UpdatePresentationFrameState(
     std::unique_ptr<TransformationMatrix> mojo_from_viewer,
     const device::mojom::blink::XRFrameDataPtr& frame_data,
     bool emulated_position) {
-  TRACE_EVENT0("gpu", __FUNCTION__);
-  DVLOG(2) << __FUNCTION__ << " : frame_data valid? "
+  TRACE_EVENT0("gpu", __func__);
+  DVLOG(2) << __func__ << " : frame_data valid? "
            << (frame_data ? true : false);
   // Don't process any outstanding frames once the session is ended.
   if (ended_)
     return;
 
   mojo_from_viewer_ = std::move(mojo_from_viewer);
-  DVLOG(2) << __FUNCTION__ << " : mojo_from_viewer_ valid? "
+  DVLOG(2) << __func__ << " : mojo_from_viewer_ valid? "
            << (mojo_from_viewer_ ? true : false);
 
   emulated_position_ = emulated_position;
@@ -944,17 +1010,23 @@ void XRSession::UpdatePresentationFrameState(
     world_information_->ProcessPlaneInformation(
         frame_data->detected_planes_data, timestamp);
     ProcessAnchorsData(frame_data->anchors_data, timestamp);
+    // TODO(https://crbug.com/997369): Implement processing hit test data once
+    // mojo change lands.
+    // ProcessHitTestData(frame_data->hit_test_subscription_results);
   } else {
     world_information_->ProcessPlaneInformation(nullptr, timestamp);
     ProcessAnchorsData(nullptr, timestamp);
+    // TODO(https://crbug.com/997369): Implement processing hit test data once
+    // mojo change lands.
+    // ProcessHitTestData(nullptr);
   }
 }
 
 void XRSession::OnFrame(
     double timestamp,
     const base::Optional<gpu::MailboxHolder>& output_mailbox_holder) {
-  TRACE_EVENT0("gpu", __FUNCTION__);
-  DVLOG(2) << __FUNCTION__;
+  TRACE_EVENT0("gpu", __func__);
+  DVLOG(2) << __func__;
   // Don't process any outstanding frames once the session is ended.
   if (ended_)
     return;
@@ -1080,7 +1152,7 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
 
   if (orientation) {
     output_angle = orientation->angle();
-    DVLOG(2) << __FUNCTION__ << ": got angle=" << output_angle;
+    DVLOG(2) << __func__ << ": got angle=" << output_angle;
   }
 
   if (render_state_->baseLayer()) {
@@ -1225,6 +1297,21 @@ void XRSession::OnExitPresent() {
   }
 }
 
+bool XRSession::ValidateHitTestSourceExists(XRHitTestSource* hit_test_source) {
+  auto it =
+      hit_test_source_ids_to_hit_test_sources_.find(hit_test_source->id());
+  if (it == hit_test_source_ids_to_hit_test_sources_.end()) {
+    return false;
+  }
+
+  if (!it->value) {
+    hit_test_source_ids_to_hit_test_sources_.erase(it);
+    return false;
+  }
+
+  return true;
+}
+
 void XRSession::SetXRDisplayInfo(
     device::mojom::blink::VRDisplayInfoPtr display_info) {
   // We don't necessarily trust the backend to only send us display info changes
@@ -1329,9 +1416,11 @@ void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(callback_collection_);
   visitor->Trace(hit_test_promises_);
   visitor->Trace(create_anchor_promises_);
+  visitor->Trace(request_hit_test_source_promises_);
   visitor->Trace(reference_spaces_);
   visitor->Trace(anchor_ids_to_anchors_);
   visitor->Trace(prev_base_layer_);
+  visitor->Trace(hit_test_source_ids_to_hit_test_sources_);
   EventTargetWithInlineData::Trace(visitor);
 }
 

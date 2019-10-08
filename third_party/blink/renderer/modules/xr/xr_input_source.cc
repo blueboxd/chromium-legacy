@@ -211,6 +211,10 @@ void XRInputSource::UpdateGamepad(
   }
 }
 
+base::Optional<XRNativeOriginInformation> XRInputSource::nativeOrigin() const {
+  return XRNativeOriginInformation::Create(this);
+}
+
 void XRInputSource::OnSelectStart() {
   // Discard duplicate events and ones after the session has ended.
   if (state_.primary_input_pressed || session_->ended())

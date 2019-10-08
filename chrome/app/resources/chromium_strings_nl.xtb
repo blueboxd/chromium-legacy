@@ -7,22 +7,16 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1104942323762546749">Chromium wil je wachtwoorden exporteren. Geef je Windows-wachtwoord op om dit toe te staan.</translation>
 <translation id="1115445892567829615">Chromium kan je gegevens niet synchroniseren. Update je synchronisatiewachtwoord.</translation>
 <translation id="113122355610423240">Chromium is je standaardbrowser</translation>
-<translation id="1170115874949214249">Installeer Chromium op je telefoon. We sturen een sms naar het hersteltelefoonnummer voor je account.</translation>
-<translation id="1174473354587728743">Deel je een computer? Je kunt Chromium nu precies instellen zoals jij dat wilt.</translation>
 <translation id="1185134272377778587">Over Chromium</translation>
-<translation id="1298199220304005244">Hulp bij het gebruik van Chromium OS</translation>
 <translation id="1396446129537741364">Chromium probeert wachtwoorden weer te geven.</translation>
 <translation id="1414495520565016063">Je bent ingelogd bij Chromium.</translation>
 <translation id="151962892725702025">Chromium OS kan je gegevens niet synchroniseren omdat synchronisatie niet beschikbaar is voor je domein.</translation>
 <translation id="1524282610922162960">Een Chromium-tabblad delen</translation>
-<translation id="1668054258064581266">Nadat je je account uit Chromium hebt verwijderd, moet je je geopende tabbladen mogelijk opnieuw laden om de wijzigingen door te voeren.</translation>
-<translation id="1688750314291223739">Stel synchronisatie in om je persoonlijke browserfuncties online op te slaan en toegang te hebben tot deze functies via Chromium, vanaf elke computer.</translation>
 <translation id="1708666629004767631">Er is een nieuwe, veiligere versie van Chromium beschikbaar.</translation>
 <translation id="1766096484055239003">Je beheerder vereist dat je Chromium opnieuw start om een update toe te passen</translation>
 <translation id="1774152462503052664">Chromium laten uitvoeren op de achtergrond</translation>
 <translation id="1779356040007214683">Om Chromium veiliger te maken, hebben we een aantal extensies uitgeschakeld die niet worden vermeld in de <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> en mogelijk zonder je medeweten zijn geïnstalleerd.</translation>
 <translation id="1808667845054772817">Chromium opnieuw installeren</translation>
-<translation id="1869480248812203386">Je kunt helpen Chromium veiliger en gebruiksvriendelijker te maken door automatisch informatie over mogelijke beveiligingsincidenten aan Google te melden.</translation>
 <translation id="1881322772814446296">Je logt in op een beheerd account waarmee de eigenaar van dat account beheer krijgt over je Chromium-profiel. Je Chromium-gegevens zoals je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden permanent gekoppeld aan <ph name="USER_NAME" />. Je kunt deze gegevens verwijderen via het Google Accounts Dashboard, maar je kunt deze gegevens niet koppelen aan een ander account. Je kunt een nieuw profiel maken om je bestaande Chromium-gegevens apart te houden. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">Als je dit uitschakelt, kun je inloggen bij Google-sites zoals Gmail zonder in te loggen bij Chromium</translation>
 <translation id="1929939181775079593">Chromium reageert niet. Nu opnieuw starten?</translation>
@@ -31,7 +25,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2117378023188580026">Je beheerder vraagt je Chromium opnieuw te starten om deze update toe te passen</translation>
 <translation id="2119636228670142020">Over &amp;Chromium OS</translation>
 <translation id="2241627712206172106">Als je een computer deelt, kunnen vrienden en familie afzonderlijk surfen en Chromium configureren zoals zij dat willen.</translation>
-<translation id="2265088490657775772">Download Chromium naar je iPhone</translation>
 <translation id="2347108572062610441">Deze extensie heeft gewijzigd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
 <translation id="2396765026452590966">De extensie '<ph name="EXTENSION_NAME" />' heeft gewijzigd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
 <translation id="2483889755041906834">In Chromium</translation>
@@ -50,11 +43,9 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2838154144102149890">Chromium moet worden gestopt op deze computer om een update uit te voeren. Hierdoor kunnen andere gebruikers die bij deze computer zijn ingelogd, niet-opgeslagen wijzigingen kwijtraken.</translation>
 <translation id="2847479871509788944">Verwijderen uit Chromium…</translation>
 <translation id="2886012850691518054">Optioneel: help Chromium beter te maken door automatisch gebruiksstatistieken en crashmeldingen naar Google te verzenden.</translation>
-<translation id="2898082584336937987">Installeer Chromium op je telefoon. We sturen een sms naar je telefoon: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Over &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium is up-to-date</translation>
 <translation id="3032787606318309379">Toevoegen aan Chromium...</translation>
-<translation id="3046695367536568084">Je moet zijn ingelogd bij Chromium om apps te gebruiken. Hierdoor kan Chromium je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen op verschillende apparaten synchroniseren.</translation>
 <translation id="3068515742935458733">Help ons Chromium te verbeteren door crashrapporten en <ph name="UMA_LINK" /> naar Google te verzenden</translation>
 <translation id="3103660991484857065">Het installatieprogramma kan het archief niet uitpakken. Download Chromium opnieuw.</translation>
 <translation id="3130323860337406239">Chromium gebruikt je microfoon.</translation>
@@ -62,7 +53,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3179665906251668410">Link openen in een Chromium-inco&amp;gnitovenster</translation>
 <translation id="3190315855212034486">Chromium is gecrasht. Nu opnieuw starten?</translation>
 <translation id="3229526316128325841">Chromium wil je wachtwoorden exporteren.</translation>
-<translation id="3256316712990552818">Gekopieerd naar Chromium</translation>
 <translation id="3258596308407688501">Chrome kan niet lezen van en schrijven naar de eigen gegevensdirectory :
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -86,7 +76,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4050175100176540509">Er zijn belangrijke beveiligingsverbeteringen en nieuwe functies beschikbaar in de nieuwste versie.</translation>
 <translation id="421369550622382712">Ontdek fantastische apps, games, extensies en thema's voor Chromium.</translation>
 <translation id="4216212958613226427">Deze taal wordt gebruikt om de Chromium-UI weer te geven</translation>
-<translation id="4222580632002216401">Je bent nu ingelogd bij Chromium! Synchronisatie is uitgeschakeld door je beheerder.</translation>
 <translation id="4230135487732243613">Wil je je Chromium-gegevens aan dit account koppelen?</translation>
 <translation id="4271805377592243930">Hulp bij Chromium</translation>
 <translation id="4285930937574705105">De installatie is mislukt wegens een onbekende fout. Als Chromium momenteel actief is, moet je Chromium sluiten en het opnieuw proberen.</translation>
@@ -108,7 +97,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4943838377383847465">Chromium bevindt zich in de achtergrondmodus.</translation>
 <translation id="4987820182225656817">Gasten kunnen Chromium gebruiken zonder iets achter te laten.</translation>
 <translation id="4994636714258228724">Jezelf toevoegen aan Chromium</translation>
-<translation id="5181952534059945058">Omdat deze pagina te veel geheugen gebruikt, heeft Chromium wat content verwijderd.</translation>
 <translation id="5277894862589591112">Als je de wijzigingen wilt toepassen, start je Chromium opnieuw</translation>
 <translation id="5358375970380395591">Je logt in op een beheerd account waarmee de eigenaar van dat account beheer krijgt over je Chromium-profiel. Je Chromium-gegevens zoals je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden permanent gekoppeld aan <ph name="USER_NAME" />. Je kunt deze gegevens verwijderen via het Google Accounts Dashboard, maar je kunt deze gegevens niet koppelen aan een ander account.<ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium updaten (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -131,7 +119,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5895138241574237353">Opnieuw starten</translation>
 <translation id="5987687638152509985">Chromium updaten om de synchronisatie te starten</translation>
 <translation id="6013050204643758987">Chromium OS wordt mogelijk gemaakt door aanvullende <ph name="BEGIN_LINK_CROS_OSS" />open-sourcesoftware<ph name="END_LINK_CROS_OSS" />, net als <ph name="BEGIN_LINK_LINUX_OSS" />Linux (bèta)<ph name="END_LINK_LINUX_OSS" />.</translation>
-<translation id="6040143037577758943">Sluiten</translation>
 <translation id="6055895534982063517">Er is een nieuwe versie van Chromium beschikbaar, en deze is sneller dan ooit.</translation>
 <translation id="6063093106622310249">&amp;Openen in Chromium</translation>
 <translation id="6072279588547424923"><ph name="EXTENSION_NAME" /> is toegevoegd aan Chromium</translation>
@@ -153,7 +140,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="6434250628340475518">Chromium OS-systeem</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium wordt over één seconde opnieuw gestart}other{Chromium wordt over # seconden opnieuw gestart}}</translation>
 <translation id="6475912303565314141">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
-<translation id="6485906693002546646">Je gebruikt <ph name="PROFILE_EMAIL" /> om je Chromium-bestanden te synchroniseren. Als je je synchronisatievoorkeur wilt bijwerken of Chromium zonder een Google-account wilt gebruiken, ga je naar '<ph name="SETTINGS_LINK" />'.</translation>
 <translation id="6510925080656968729">Chromium verwijderen</translation>
 <translation id="6570579332384693436">Chromium verzendt de tekst die je in tekstvelden typt naar Google om spelfouten te corrigeren</translation>
 <translation id="6598877126913850652">Ga naar instellingen voor Chromium-meldingen</translation>
@@ -163,7 +149,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirectory op of gebruik een recentere versie van Chromium.</translation>
 <translation id="6734080038664603509">&amp;Chromium updaten</translation>
 <translation id="6734291798041940871">Chromium is al geïnstalleerd voor alle gebruikers op je computer.</translation>
-<translation id="6810143991807788455">Help Chromium beter te maken door de huidige instellingen te melden</translation>
 <translation id="6847869444787758381">Chromium laat het je weten als je wachtwoorden mogelijk niet veilig meer zijn</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (gekopieerd naar Chromium)</translation>
@@ -182,7 +167,6 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="7318036098707714271">Je bestand met voorkeuren is beschadigd of ongeldig.
 
 Chromium kan je instellingen niet herstellen.</translation>
-<translation id="7331920710658926971">Installeer Chromium op je telefoon. We sturen een sms naar je telefoon.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Nieuw venster</translation>
 <translation id="734373864078049451">Hier vind je internet, bladwijzers en andere Chromium-instellingen.</translation>
@@ -213,16 +197,13 @@ Chromium kan je instellingen niet herstellen.</translation>
 <translation id="7979877361127045932">Verbergen in Chromium-menu</translation>
 <translation id="8013436988911883588">Zodra Chromium toegang heeft, kunnen websites je om toegang vragen.</translation>
 <translation id="81770708095080097">Dit bestand is gevaarlijk en is daarom door Chromium geblokkeerd.</translation>
-<translation id="8222496066431494154">Installeer Chromium op je telefoon. We sturen een sms naar het hersteltelefoonnummer voor je account: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8248265253516264921">Als een afbeelding geen nuttige beschrijving bevat, probeert Chromium je er een te geven. Afbeeldingen worden naar Google verzonden om beschrijvingen te maken. Je kunt dit op elk gewenst moment uitschakelen in Instellingen.</translation>
-<translation id="8269379391216269538">Help ons Chromium beter te maken</translation>
 <translation id="8290862415967981663">Dit bestand kan gevaarlijk zijn en is daarom door Chromium geblokkeerd.</translation>
 <translation id="8330519371938183845">Log in om Chromium op al je apparaten te synchroniseren en te personaliseren</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> maakte eerder gebruik van Chromium</translation>
 <translation id="8417404458978023919">{0,plural, =1{Start Chromium binnen een dag opnieuw}other{Start Chromium binnen # dagen opnieuw}}</translation>
 <translation id="8453117565092476964">Het archief van het installatieprogramma is beschadigd of ongeldig. Download Chromium opnieuw.</translation>
 <translation id="8493179195440786826">Chromium is verouderd</translation>
-<translation id="85843667276690461">Hulp bij het gebruik van Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> De auteurs van Chromium. Alle rechten voorbehouden.</translation>
 <translation id="8619360774459241877">Chromium starten…</translation>
 <translation id="8621669128220841554">De installatie is mislukt wegens een onbekende fout. Download Chromium opnieuw.</translation>
@@ -239,21 +220,14 @@ Chromium kan je instellingen niet herstellen.</translation>
 <translation id="8907580949721785412">Chromium probeert wachtwoorden weer te geven. Geef je Windows-wachtwoord op om dit toe te staan.</translation>
 <translation id="8941642502866065432">Kan Chromium niet updaten</translation>
 <translation id="8974095189086268230">Chromium OS wordt mogelijk gemaakt door aanvullende <ph name="BEGIN_LINK_CROS_OSS" />open source-software<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="8985587603644336029">Iemand is eerder op deze computer ingelogd bij Chromium als <ph name="ACCOUNT_EMAIL_LAST" />. Als dit niet je account is, maak je een nieuwe Chromium-gebruiker om je gegevens gescheiden te houden.
-
-Als je toch inlogt, worden Chromium-gegevens zoals bladwijzers, geschiedenis en andere instellingen samengevoegd met <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="9019929317751753759">We hebben de volgende extensie uitgeschakeld die niet wordt vermeld in de <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> en mogelijk zonder je medeweten is toegevoegd. We doen dit om Chromium veiliger te maken.</translation>
 <translation id="9022552996538154597">Inloggen bij Chromium</translation>
-<translation id="9025992965467895364">Omdat deze pagina te veel geheugen gebruikt, heeft Chromium de pagina onderbroken.</translation>
-<translation id="9036189287518468038">App-opstartprogramma van Chromium</translation>
 <translation id="9089354809943900324">Chromium is verouderd</translation>
 <translation id="9093206154853821181">{0,plural, =1{Chromium wordt over een uur opnieuw gestart}other{Chromium wordt over # uur opnieuw gestart}}</translation>
 <translation id="91086099826398415">Link openen op een nieuw Chromium-&amp;tabblad</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="9158494823179993217">Je systeembeheerder heeft geconfigureerd dat Chromium een alternatieve browser opent voor toegang tot <ph name="TARGET_URL_HOSTNAME" />.</translation>
-<translation id="918373042641772655">Als je de verbinding met <ph name="USERNAME" /> verbreekt, worden je geschiedenis, bladwijzers, instellingen en andere Chromium-gegevens die op dit apparaat zijn opgeslagen, gewist. Gegevens die zijn opgeslagen in je Google-account worden niet gewist en kunnen worden beheerd via <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9197815481970649201">Je bent nu ingelogd bij Chromium</translation>
 <translation id="93478295209880648">Chromium werkt mogelijk niet naar behoren omdat dit niet langer wordt ondersteund op Windows XP en Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> vereist dat je de volgende Servicevoorwaarden leest en accepteert voordat je dit apparaat gebruikt. Deze voorwaarden zijn geen uitbreiding, aanpassing of beperking van de Voorwaarden van Chromium OS.</translation>
 <translation id="985602178874221306">De auteurs van Chromium</translation>

@@ -171,7 +171,7 @@ class WebAppInstallTask : content::WebContentsObserver {
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
 
   InstallFinalizer* install_finalizer_;
-  Profile* profile_;
+  Profile* const profile_;
 
   base::WeakPtrFactory<WebAppInstallTask> weak_ptr_factory_{this};
 

@@ -141,11 +141,6 @@ static_library("switches") {
     "//base",
     "//components/version_info",
   ]
-
-  defines = []
-  if (defined(notouch_build) && notouch_build) {
-    defines += [ "DISABLE_OFFLINE_PAGES_TOUCHLESS" ]
-  }
 }
 
 source_set("unit_tests") {

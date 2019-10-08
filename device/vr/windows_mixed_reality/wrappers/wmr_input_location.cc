@@ -83,4 +83,15 @@ bool WMRInputLocationImpl::TryGetAngularVelocity(
   return TryGetValue(ref, angular_velocity);
 }
 
+bool WMRInputLocationImpl::TryGetPositionAccuracy(
+    ABI::Windows::UI::Input::Spatial::SpatialInteractionSourcePositionAccuracy*
+        position_accuracy) const {
+  DCHECK(position_accuracy);
+  if (!location3_)
+    return false;
+  HRESULT hr = location3_->get_PositionAccuracy(position_accuracy);
+  DCHECK(SUCCEEDED(hr));
+  return true;
+}
+
 }  // namespace device

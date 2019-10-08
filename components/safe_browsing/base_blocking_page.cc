@@ -54,7 +54,8 @@ BaseBlockingPage::BaseBlockingPage(
       ui_manager_(ui_manager),
       main_frame_url_(main_frame_url),
       navigation_entry_index_to_remove_(
-          IsMainPageLoadBlocked(unsafe_resources)
+          IsMainPageLoadBlocked(unsafe_resources) ||
+                  base::FeatureList::IsEnabled(kCommittedSBInterstitials)
               ? -1
               : web_contents->GetController().GetLastCommittedEntryIndex()),
       unsafe_resources_(unsafe_resources),

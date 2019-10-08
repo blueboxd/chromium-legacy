@@ -92,7 +92,8 @@ class UIControlsDesktopX11 : public UIControlsAura {
 
     aura::WindowTreeHost* host = window->GetHost();
 
-    XEvent xevent = {0};
+    XEvent xevent;
+    xevent.xkey = {};
     xevent.xkey.type = KeyPress;
     if (control) {
       SetKeycodeAndSendThenMask(host, &xevent, XK_Control_L, ControlMask);
@@ -152,7 +153,8 @@ class UIControlsDesktopX11 : public UIControlsAura {
       // current mouse position as a result of XGrabPointer()
       root_window->MoveCursorTo(root_location);
     } else {
-      XEvent xevent = {0};
+      XEvent xevent;
+      xevent.xmotion = {};
       XMotionEvent* xmotion = &xevent.xmotion;
       xmotion->type = MotionNotify;
       xmotion->x = root_location.x();
@@ -175,7 +177,8 @@ class UIControlsDesktopX11 : public UIControlsAura {
                                      int button_state,
                                      base::OnceClosure closure,
                                      int accelerator_state) override {
-    XEvent xevent = {0};
+    XEvent xevent;
+    xevent.xbutton = {};
     XButtonEvent* xbutton = &xevent.xbutton;
     gfx::Point mouse_loc = aura::Env::GetInstance()->last_mouse_location();
     aura::Window* root_window = RootWindowForPoint(mouse_loc);

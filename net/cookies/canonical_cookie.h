@@ -174,7 +174,9 @@ class NET_EXPORT CanonicalCookie {
   // method does not check whether a cookie is expired or not!
   CookieInclusionStatus IncludeForRequestURL(
       const GURL& url,
-      const CookieOptions& options) const;
+      const CookieOptions& options,
+      CookieAccessSemantics access_semantics =
+          CookieAccessSemantics::UNKNOWN) const;
 
   // Returns if the cookie with given attributes can be set in context described
   // by |options|, and if no, describes why.
@@ -182,7 +184,9 @@ class NET_EXPORT CanonicalCookie {
   // a secure schema, since whether the schema is secure isn't part of
   // |options|.
   CookieInclusionStatus IsSetPermittedInContext(
-      const CookieOptions& options) const;
+      const CookieOptions& options,
+      CookieAccessSemantics access_semantics =
+          CookieAccessSemantics::UNKNOWN) const;
 
   std::string DebugString() const;
 
@@ -218,9 +222,12 @@ class NET_EXPORT CanonicalCookie {
 
   // Returns whether the effective SameSite mode is SameSite=None (i.e. no
   // SameSite restrictions).
-  bool IsEffectivelySameSiteNone() const;
+  bool IsEffectivelySameSiteNone(CookieAccessSemantics access_semantics =
+                                     CookieAccessSemantics::UNKNOWN) const;
 
-  CookieEffectiveSameSite GetEffectiveSameSiteForTesting() const;
+  CookieEffectiveSameSite GetEffectiveSameSiteForTesting(
+      CookieAccessSemantics access_semantics =
+          CookieAccessSemantics::UNKNOWN) const;
 
   // Returns the cookie line (e.g. "cookie1=value1; cookie2=value2") represented
   // by |cookies|. The string is built in the same order as the given list.
@@ -263,13 +270,15 @@ class NET_EXPORT CanonicalCookie {
 
   // Returns the effective SameSite mode to apply to this cookie. Depends on the
   // value of the given SameSite attribute and whether the
-  // SameSiteByDefaultCookies feature is enabled.
+  // SameSiteByDefaultCookies feature is enabled, as well as the access
+  // semantics of the cookie.
   // Note: If you are converting to a different representation of a cookie, you
   // probably want to use SameSite() instead of this method. Otherwise, if you
   // are considering using this method, consider whether you should use
   // IncludeForRequestURL() or IsSetPermittedInContext() instead of doing the
   // SameSite computation yourself.
-  CookieEffectiveSameSite GetEffectiveSameSite() const;
+  CookieEffectiveSameSite GetEffectiveSameSite(
+      CookieAccessSemantics access_semantics) const;
 
   // Returns whether the cookie was created at most |age_threshold| ago.
   bool IsRecentlyCreated(base::TimeDelta age_threshold) const;

@@ -38,6 +38,7 @@
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
 #include "third_party/blink/renderer/core/dom/context_features.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
@@ -66,6 +67,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
@@ -406,11 +408,25 @@ WebInputEventResult WebPagePopupImpl::HandleKeyEvent(
     const WebKeyboardEvent& event) {
   if (closing_)
     return WebInputEventResult::kNotHandled;
+
+  if (WebInputEvent::kRawKeyDown == event.GetType()) {
+    Element* focused_element = FocusedElement();
+    if (focused_element && focused_element->IsKeyboardFocusable() &&
+        event.windows_key_code == VKEY_TAB) {
+      // If the tab key is pressed while a keyboard focusable element is
+      // focused, we should not send a corresponding keypress event.
+      suppress_next_keypress_event_ = true;
+    }
+  }
   return MainFrame().GetEventHandler().KeyEvent(event);
 }
 
 WebInputEventResult WebPagePopupImpl::HandleCharEvent(
     const WebKeyboardEvent& event) {
+  if (suppress_next_keypress_event_) {
+    suppress_next_keypress_event_ = false;
+    return WebInputEventResult::kHandledSuppressed;
+  }
   return HandleKeyEvent(event);
 }
 
@@ -453,6 +469,21 @@ LocalFrame& WebPagePopupImpl::MainFrame() const {
   DCHECK(page_);
   // The main frame for a popup will never be out-of-process.
   return *To<LocalFrame>(page_->MainFrame());
+}
+
+Element* WebPagePopupImpl::FocusedElement() const {
+  if (!page_)
+    return nullptr;
+
+  LocalFrame* frame = page_->GetFocusController().FocusedFrame();
+  if (!frame)
+    return nullptr;
+
+  Document* document = frame->GetDocument();
+  if (!document)
+    return nullptr;
+
+  return document->FocusedElement();
 }
 
 bool WebPagePopupImpl::IsViewportPointInWindow(int x, int y) {

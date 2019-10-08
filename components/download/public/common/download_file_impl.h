@@ -60,8 +60,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
                   const DownloadItem::ReceivedSlices& received_slices,
                   bool is_parallelizable) override;
   void AddInputStream(std::unique_ptr<InputStream> stream,
-                      int64_t offset,
-                      int64_t length) override;
+                      int64_t offset) override;
   void RenameAndUniquify(const base::FilePath& full_path,
                          const RenameCompletionCallback& callback) override;
   void RenameAndAnnotate(
@@ -102,7 +101,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   class COMPONENTS_DOWNLOAD_EXPORT SourceStream {
    public:
     SourceStream(int64_t offset,
-                 int64_t length,
                  int64_t starting_file_write_offset,
                  std::unique_ptr<InputStream> stream);
     ~SourceStream();

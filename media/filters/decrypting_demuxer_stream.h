@@ -40,7 +40,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   // Cancels all pending operations immediately and fires all pending callbacks.
   ~DecryptingDemuxerStream() override;
 
-  // |steram| must be encrypted and |cdm_context| must be non-null.
+  // |stream| must be encrypted and |cdm_context| must be non-null.
   void Initialize(DemuxerStream* stream,
                   CdmContext* cdm_context,
                   const PipelineStatusCB& status_cb);

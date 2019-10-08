@@ -1984,7 +1984,9 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     richerPicker.classList.add(customize.CLASSES.MOUSE_NAV);
   };
   richerPicker.onkeydown = function(event) {
-    richerPicker.classList.remove(customize.CLASSES.MOUSE_NAV);
+    if (Object.values(customize.KEYCODES).includes(event.keyCode)) {
+      richerPicker.classList.remove(customize.CLASSES.MOUSE_NAV);
+    }
 
     if (event.keyCode === customize.KEYCODES.BACKSPACE &&
         customize.richerPicker_selectedSubmenu.menu.id ===

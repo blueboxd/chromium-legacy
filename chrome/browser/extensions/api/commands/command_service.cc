@@ -552,7 +552,6 @@ bool CommandService::CanAutoAssign(const Command &command,
     return true;
 
   if (command.global()) {
-    using namespace extensions;
     if (command.command_name() == manifest_values::kBrowserActionCommandEvent ||
         command.command_name() == manifest_values::kPageActionCommandEvent)
       return false;  // Browser and page actions are not global in nature.

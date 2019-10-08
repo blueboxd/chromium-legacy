@@ -232,13 +232,6 @@ public class OfflinePageUtils {
     }
 
     /**
-     * Returns false if offline pages features should be disabled.
-     */
-    public static boolean isEnabled() {
-        return org.chromium.chrome.browser.BuildConfig.ENABLE_OFFLINE_PAGES;
-    }
-
-    /**
      * Returns the number of free bytes on the storage.
      */
     public static long getFreeSpaceInBytes() {
@@ -512,8 +505,9 @@ public class OfflinePageUtils {
 
         // If the scheme is not one we recognize, return false.
         if (!TextUtils.equals(uri.getScheme(), UrlConstants.HTTP_SCHEME)
-                && !TextUtils.equals(uri.getScheme(), UrlConstants.HTTPS_SCHEME))
+                && !TextUtils.equals(uri.getScheme(), UrlConstants.HTTPS_SCHEME)) {
             return false;
+        }
 
         // If we have a http or https page with no file path, we cannot share it.
         if (offlinePath.isEmpty()) {
@@ -531,7 +525,6 @@ public class OfflinePageUtils {
 
         return isContentScheme || isFileScheme;
     }
-
 
     /**
      * For internal pages, we must publish them, then share them.

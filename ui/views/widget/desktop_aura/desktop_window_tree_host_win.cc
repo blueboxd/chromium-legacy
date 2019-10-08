@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/win/win_util.h"
+#include "base/win/windows_version.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/aura_constants.h"
@@ -166,7 +167,10 @@ void DesktopWindowTreeHostWin::OnActiveWindowChanged(bool active) {}
 void DesktopWindowTreeHostWin::OnWidgetInitDone() {}
 
 std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostWin::CreateTooltip() {
-  if (base::FeatureList::IsEnabled(features::kEnableAuraTooltipsOnWindows))
+  bool force_legacy_tooltips =
+      (base::win::GetVersion() < base::win::Version::WIN8);
+  if (base::FeatureList::IsEnabled(features::kEnableAuraTooltipsOnWindows) &&
+      !force_legacy_tooltips)
     return std::make_unique<corewm::TooltipAura>();
 
   DCHECK(!tooltip_);

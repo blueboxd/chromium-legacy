@@ -250,12 +250,28 @@ class ServiceWorkerInternalsUI::PartitionObserver
       : partition_id_(partition_id), web_ui_(web_ui) {}
   ~PartitionObserver() override {}
   // ServiceWorkerContextCoreObserver overrides:
-  void OnRunningStateChanged(int64_t version_id,
-                             EmbeddedWorkerStatus) override {
+  void OnStarting(int64_t version_id) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunctionUnsafe(
-        "serviceworker.onRunningStateChanged", Value(partition_id_),
-        Value(base::NumberToString(version_id)));
+        "serviceworker.onRunningStateChanged");
+  }
+  void OnStarted(int64_t version_id,
+                 const GURL& scope,
+                 int process_id,
+                 const GURL& script_url) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    web_ui_->CallJavascriptFunctionUnsafe(
+        "serviceworker.onRunningStateChanged");
+  }
+  void OnStopping(int64_t version_id) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    web_ui_->CallJavascriptFunctionUnsafe(
+        "serviceworker.onRunningStateChanged");
+  }
+  void OnStopped(int64_t version_id) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    web_ui_->CallJavascriptFunctionUnsafe(
+        "serviceworker.onRunningStateChanged");
   }
   void OnVersionStateChanged(int64_t version_id,
                              const GURL& scope,

@@ -266,6 +266,12 @@ bool LitePageRedirectShouldProbeOrigin() {
       features::kLitePageServerPreviews, "should_probe_origin", false);
 }
 
+bool LitePageRedirectTriggerOnAPITransition() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kLitePageServerPreviews, "should_trigger_on_api_transitions",
+      false);
+}
+
 base::TimeDelta LitePageRedirectPreviewOriginProbeTimeout() {
   return base::TimeDelta::FromMilliseconds(
       base::GetFieldTrialParamByFeatureAsInt(features::kLitePageServerPreviews,

@@ -36,6 +36,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
@@ -77,10 +78,7 @@ std::unique_ptr<views::ImageButton> CreateCloseButton(
       gfx::Insets(GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING))));
   close_button->SizeToPreferredSize();
 
-  // Use a circular ink drop.
-  auto highlight_path = std::make_unique<SkPath>();
-  highlight_path->addOval(gfx::RectToSkRect(gfx::Rect(close_button->size())));
-  close_button->SetProperty(views::kHighlightPathKey, highlight_path.release());
+  views::InstallCircleHighlightPathGenerator(close_button.get());
 
   return close_button;
 }

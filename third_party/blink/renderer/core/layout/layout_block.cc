@@ -1453,11 +1453,6 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
           ContentLogicalWidthForSizeContainment() + LayoutUnit(scrollbar_width);
       return;
     }
-  } else if (DisplayLockInducesSizeContainment()) {
-    min_logical_width = max_logical_width =
-        LayoutUnit(scrollbar_width) +
-        GetDisplayLockContext()->GetLockedContentLogicalWidth();
-    return;
   }
 
   if (ChildrenInline()) {

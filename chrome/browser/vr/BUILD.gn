@@ -194,7 +194,7 @@ component("vr_ui") {
     "//skia",
   ]
 
-  if (use_native_modules && modularize_vr_native) {
+  if (use_native_partitions) {
     # Mark symbols in this library as belonging to the VR partition. Only
     # exported symbols (module entrypoints) are affected.
     cflags = [ "-fsymbol-partition=libvr.so" ]

@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">編輯書籤</translation>
 <translation id="2179182049312275900">你隨時可以在設定中開啟同步功能。</translation>
 <translation id="2198757192731523470">Google 可能會使用你的歷史記錄，為你提供個人化的搜尋服務、廣告內容和其他各項 Google 服務。</translation>
-<translation id="2207590065820824892">閱讀清單中有 <ph name="UNREAD_COUNT" /> 篇未讀文章。</translation>
 <translation id="2230173723195178503">已載入網頁</translation>
 <translation id="2239626343334228536">正在清除瀏覽資料...</translation>
 <translation id="2267753748892043616">新增帳戶</translation>
@@ -265,7 +264,6 @@
 
 如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">卡號無效</translation>
-<translation id="4807020197310989387">閱讀清單中有 1 篇未讀文章。</translation>
 <translation id="4818522717893377262">新增語言...</translation>
 <translation id="481968316161811770">Cookie、網站資料</translation>
 <translation id="4833786495304741580">自動將使用統計資料和當機報告傳送給 Google。</translation>
@@ -414,6 +412,7 @@
 <translation id="6858855187367714033">已掃描</translation>
 <translation id="6859944681507688231">如要掃描 QR 圖碼或信用卡，請在設定中啟用相機。</translation>
 <translation id="6873263987691478642">分割檢視</translation>
+<translation id="6888009575607455378">確定要捨棄變更嗎？</translation>
 <translation id="6896758677409633944">複製</translation>
 <translation id="6903907808598579934">開啟同步處理功能</translation>
 <translation id="6914583639806229067">搜尋你複製的圖片</translation>

@@ -32,7 +32,7 @@ def get_chromium_version():
     for line in f.readlines():
       key, value = line.strip().split('=')
       if key == 'MAJOR':
-        return value
+        return int(value)
   return None
 
 

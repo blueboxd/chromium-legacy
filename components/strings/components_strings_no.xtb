@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Åpne oppstartssidene</translation>
 <translation id="1883255238294161206">Skjul liste</translation>
 <translation id="1898423065542865115">Filtrering</translation>
+<translation id="1901443836186977402">{1,plural, =1{Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat har utløpt i løpet av det siste døgnet. Dette kan skyldes en feilkonfigurering eller at en angriper avskjærer tilkoblingen din. Klokken på datamaskinen er stilt til <ph name="CURRENT_DATE" />. Ser det riktig ut? Hvis ikke bør du stille klokken på systemet og laste inn denne siden på nytt.}other{Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat har utløpt for # dager siden. Dette kan skyldes en feilkonfigurering eller at en angriper avskjærer tilkoblingen din. Klokken på datamaskinen er stilt til <ph name="CURRENT_DATE" />. Ser det riktig ut? Hvis ikke bør du stille klokken på systemet og laste inn denne siden på nytt.}}</translation>
 <translation id="1914326953223720820">Utpakkingstjeneste</translation>
 <translation id="1915697529809968049">Vil du bruke Touch ID i stedet for CVC?</translation>
 <translation id="1916770123977586577">Last inn denne siden på nytt for å ta i bruk de oppdaterte innstillingene dine på dette nettstedet.</translation>
@@ -445,6 +446,7 @@ brukere av denne nettleseren.</translation>
 <translation id="3116158981186517402">Laminer</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Prøv å kjøre Tilkoblingsdiagnostikk<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Gå til <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Ingen}=1{påloggingsdata for 1 konto}other{påloggingsdata for # kontoer}}</translation>
 <translation id="3145945101586104090">Kunne ikke avkode responsen</translation>
 <translation id="3150653042067488994">Midlertidig tjenerfeil</translation>
@@ -829,6 +831,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5043480802608081735">Linken du kopierte</translation>
 <translation id="5045550434625856497">Feil passord</translation>
 <translation id="5056549851600133418">Artikler for deg</translation>
+<translation id="5061227663725596739">Mente du <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 i bruk)}other{(# i bruk)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Sjekk proxy-tjeneradressen<ph name="END_LINK" /></translation>
@@ -882,6 +885,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5284909709419567258">Nettverksadresser</translation>
 <translation id="5285570108065881030">Vis alle lagrede passord</translation>
 <translation id="5287240709317226393">Vis informasjonskapsler</translation>
+<translation id="5287456746628258573">Dette nettstedet bruker en utdatert sikkerhetskonfigurasjon, som betyr at informasjonen din (for eksempel passord eller kredittkortnumre) kan bli avslørt når den sendes til dette nettstedet.</translation>
 <translation id="5288108484102287882">Det har oppstått advarsler under validering av regelverdier</translation>
 <translation id="5299298092464848405">Feil under analysen av enhetsinnstillingene</translation>
 <translation id="5300589172476337783">Vis</translation>
@@ -1010,6 +1014,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5946937721014915347">Åpner <ph name="SITE_NAME" /> …</translation>
 <translation id="5947933617628957894">Ja, legg til</translation>
 <translation id="5951495562196540101">Kan ikke registrere med en forbrukerkonto (medfølgende lisens er tilgjengelig).</translation>
+<translation id="5966900314707961320">Når dette er påslått, kan ikke nettsteder bruke informasjonskapsler som sporer deg overalt på nettet</translation>
 <translation id="5967592137238574583">Endre kontaktinformasjonen</translation>
 <translation id="5967867314010545767">Fjern fra loggen</translation>
 <translation id="5975083100439434680">Zoom ut</translation>
@@ -1092,6 +1097,7 @@ brukere av denne nettleseren.</translation>
 <translation id="6383221683286411806">Potensielle gebyrer i sikte.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 annet forslag}other{# andre forslag}}</translation>
 <translation id="6387754724289022810">For å betale raskere neste gang, lagre kortet ditt og faktureringsadressen i Google-kontoen din og på denne enheten.</translation>
+<translation id="6389470377220713856">Navn som er oppført på kortet</translation>
 <translation id="6390200185239044127">Halv Z-fals</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Denne regelen er avviklet. Du bør bruke den nye regelen <ph name="NEW_POLICY" /> i stedet.</translation>
@@ -1269,7 +1275,6 @@ brukere av denne nettleseren.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Er tilknyttet:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Forlat dette nettstedet</translation>
 <translation id="7353601530677266744">Kommandolinje </translation>
 <translation id="7372973238305370288">søkeresultat</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
@@ -1442,6 +1447,7 @@ brukere av denne nettleseren.</translation>
 <translation id="8131740175452115882">Bekreft</translation>
 <translation id="8149426793427495338">Datamaskinen din gikk inn i hvilemodus.</translation>
 <translation id="8150722005171944719">Kunne ikke lese filen på <ph name="URL" /> Den kan ha blitt fjernet eller flyttet. Det kan også være filtillatelser som forhindrer tilgang.</translation>
+<translation id="8157295877370077682">Forlat nettstedet</translation>
 <translation id="8163866351304776260">Fire hull venstre</translation>
 <translation id="8175796834047840627">Chrome tilbyr å lagre kort i Google-kontoen din fordi du er logget på. Du kan endre dette i innstillingene.</translation>
 <translation id="8184538546369750125">Bruk global standardinnstilling (Tillat)</translation>

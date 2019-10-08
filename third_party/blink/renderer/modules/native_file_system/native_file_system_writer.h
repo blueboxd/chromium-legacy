@@ -5,11 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_WRITER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_WRITER_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_file_writer.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 
 namespace blink {
 
@@ -22,12 +23,15 @@ class ScriptPromiseResolver;
 class ScriptState;
 class NativeFileSystemFileHandle;
 
-class NativeFileSystemWriter final : public ScriptWrappable {
+class NativeFileSystemWriter final : public ScriptWrappable,
+                                     public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(NativeFileSystemWriter);
 
  public:
-  explicit NativeFileSystemWriter(
-      RevocableInterfacePtr<mojom::blink::NativeFileSystemFileWriter>);
+  NativeFileSystemWriter(
+      ExecutionContext* context,
+      mojo::PendingRemote<mojom::blink::NativeFileSystemFileWriter>);
 
   ScriptPromise write(ScriptState*,
                       uint64_t position,
@@ -37,6 +41,7 @@ class NativeFileSystemWriter final : public ScriptWrappable {
   ScriptPromise close(ScriptState*);
 
   void Trace(Visitor*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
  private:
   class StreamWriterClient;
@@ -52,7 +57,7 @@ class NativeFileSystemWriter final : public ScriptWrappable {
   void TruncateComplete(mojom::blink::NativeFileSystemErrorPtr result);
   void CloseComplete(mojom::blink::NativeFileSystemErrorPtr result);
 
-  RevocableInterfacePtr<mojom::blink::NativeFileSystemFileWriter> mojo_ptr_;
+  mojo::Remote<mojom::blink::NativeFileSystemFileWriter> writer_remote_;
   Member<NativeFileSystemFileHandle> file_;
 
   Member<ScriptPromiseResolver> pending_operation_;

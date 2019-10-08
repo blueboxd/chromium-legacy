@@ -45,18 +45,24 @@ VulkanInProcessContextProvider::~VulkanInProcessContextProvider() {
 
 bool VulkanInProcessContextProvider::Initialize() {
   DCHECK(!device_queue_);
-  const gfx::ExtensionSet& extensions =
-      vulkan_implementation_->GetVulkanInstance()->enabled_extensions();
-  bool support_surface =
-      gfx::HasExtension(extensions, VK_KHR_SURFACE_EXTENSION_NAME);
+
+  const auto& instance_extensions = vulkan_implementation_->GetVulkanInstance()
+                                        ->vulkan_info()
+                                        .enabled_instance_extensions;
+
   uint32_t flags = gpu::VulkanDeviceQueue::GRAPHICS_QUEUE_FLAG;
-  if (support_surface)
-    flags |= gpu::VulkanDeviceQueue::PRESENTATION_SUPPORT_QUEUE_FLAG;
-  std::unique_ptr<gpu::VulkanDeviceQueue> device_queue =
-      gpu::CreateVulkanDeviceQueue(vulkan_implementation_, flags);
-  if (!device_queue)
+  constexpr base::StringPiece surface_extension_name(
+      VK_KHR_SURFACE_EXTENSION_NAME);
+  for (const auto* extension : instance_extensions) {
+    if (surface_extension_name == extension) {
+      flags |= gpu::VulkanDeviceQueue::PRESENTATION_SUPPORT_QUEUE_FLAG;
+      break;
+    }
+  }
+
+  device_queue_ = gpu::CreateVulkanDeviceQueue(vulkan_implementation_, flags);
+  if (!device_queue_)
     return false;
-  device_queue_ = std::move(device_queue);
 
   GrVkBackendContext backend_context;
   backend_context.fInstance = device_queue_->GetVulkanInstance();
@@ -64,8 +70,9 @@ bool VulkanInProcessContextProvider::Initialize() {
   backend_context.fDevice = device_queue_->GetVulkanDevice();
   backend_context.fQueue = device_queue_->GetVulkanQueue();
   backend_context.fGraphicsQueueIndex = device_queue_->GetVulkanQueueIndex();
-  backend_context.fMaxAPIVersion =
-      vulkan_implementation_->GetVulkanInstance()->api_version();
+  backend_context.fMaxAPIVersion = vulkan_implementation_->GetVulkanInstance()
+                                       ->vulkan_info()
+                                       .used_api_version;
 
   gpu::VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
@@ -73,11 +80,7 @@ bool VulkanInProcessContextProvider::Initialize() {
       make_unified_getter(vulkan_function_pointers->vkGetInstanceProcAddrFn,
                           vulkan_function_pointers->vkGetDeviceProcAddrFn);
 
-  std::vector<const char*> instance_extensions;
   std::vector<const char*> device_extensions;
-  instance_extensions.reserve(extensions.size());
-  for (const auto& extension : extensions)
-    instance_extensions.push_back(extension.data());
   device_extensions.reserve(device_queue_->enabled_extensions().size());
   for (const auto& extension : device_queue_->enabled_extensions())
     device_extensions.push_back(extension.data());

@@ -2932,10 +2932,6 @@ void LayoutBox::ComputeLogicalWidth(
     computed_values.extent_ = ContentLogicalWidthForSizeContainment() +
                               BorderAndPaddingLogicalWidth() +
                               ScrollbarLogicalWidth();
-  } else if (DisplayLockInducesSizeContainment()) {
-    computed_values.extent_ =
-        BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth() +
-        GetDisplayLockContext()->GetLockedContentLogicalWidth();
   } else {
     computed_values.extent_ = LogicalWidth();
   }
@@ -3438,9 +3434,6 @@ void LayoutBox::ComputeLogicalHeight(
   if (ShouldApplySizeContainment() && !IsLayoutGrid()) {
     height = ContentLogicalHeightForSizeContainment() +
              BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
-  } else if (DisplayLockInducesSizeContainment()) {
-    height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight() +
-             GetDisplayLockContext()->GetLockedContentLogicalHeight();
   } else {
     height = LogicalHeight();
   }
@@ -3578,17 +3571,10 @@ void LayoutBox::ComputeLogicalHeight(
 LayoutUnit LayoutBox::ComputeLogicalHeightWithoutLayout() const {
   LogicalExtentComputedValues computed_values;
 
-  if (!SelfNeedsLayout()) {
-    if (ShouldApplySizeContainment()) {
-      ComputeLogicalHeight(ContentLogicalHeightForSizeContainment() +
-                               BorderAndPaddingLogicalHeight(),
-                           LayoutUnit(), computed_values);
-    } else if (DisplayLockInducesSizeContainment()) {
-      ComputeLogicalHeight(
-          BorderAndPaddingLogicalHeight() +
-              GetDisplayLockContext()->GetLockedContentLogicalHeight(),
-          LayoutUnit(), computed_values);
-    }
+  if (!SelfNeedsLayout() && ShouldApplySizeContainment()) {
+    ComputeLogicalHeight(ContentLogicalHeightForSizeContainment() +
+                             BorderAndPaddingLogicalHeight(),
+                         LayoutUnit(), computed_values);
   } else {
     // TODO(cbiesinger): We should probably return something other than just
     // border + padding, but for now we have no good way to do anything else
@@ -5760,8 +5746,7 @@ LayoutBox::PaginationBreakability LayoutBox::GetPaginationBreakability() const {
       (Parent() && IsWritingModeRoot()) ||
       (IsOutOfFlowPositioned() &&
        StyleRef().GetPosition() == EPosition::kFixed) ||
-      ShouldApplySizeContainment() || DisplayLockInducesSizeContainment() ||
-      IsFrameSet())
+      ShouldApplySizeContainment() || IsFrameSet())
     return kForbidBreaks;
 
   EBreakInside break_value = BreakInside();

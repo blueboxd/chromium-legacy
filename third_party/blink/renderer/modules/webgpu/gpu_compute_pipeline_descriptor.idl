@@ -5,5 +5,5 @@
 // https://gpuweb.github.io/gpuweb/
 
 dictionary GPUComputePipelineDescriptor : GPUPipelineDescriptorBase {
-    required GPUPipelineStageDescriptor computeStage;
+    required GPUProgrammableStageDescriptor computeStage;
 };

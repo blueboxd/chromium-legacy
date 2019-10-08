@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Otvori polazne stranice</translation>
 <translation id="1883255238294161206">Sažmi popis</translation>
 <translation id="1898423065542865115">Filtriranje</translation>
+<translation id="1901443836186977402">{1,plural, =1{Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat istekao je od jučer. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_DATE" />. Je li to u redu? Ako nije, ispravite vrijeme na satu sustava, a zatim osvježite ovu stranicu.}one{Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat istekao je prije # dan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_DATE" />. Je li to točno? Ako nije, postavite sat sustava na točno vrijeme i osvježite stranicu.}few{Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat istekao je prije # dana. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_DATE" />. Je li to točno? Ako nije, postavite sat sustava na točno vrijeme i osvježite stranicu.}other{Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat istekao je prije # dana. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_DATE" />. Je li to točno? Ako nije, postavite sat sustava na točno vrijeme i osvježite stranicu.}}</translation>
 <translation id="1914326953223720820">Usluga raspakiravanja</translation>
 <translation id="1915697529809968049">Želite li koristiti Touch ID umjesto CVC-a?</translation>
 <translation id="1916770123977586577">Ponovo učitajte stranicu da bi se ažurirane postavke primijenile na ovu web-lokaciju</translation>
@@ -445,6 +446,7 @@
 <translation id="3116158981186517402">Laminiranje</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Pokušajte pokrenuti Dijagnostiku povezivosti<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Otvorite <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Nijedan}=1{podaci o prijavi za jedan račun}one{podaci o prijavi za # račun}few{podaci o prijavi za # računa}other{podaci o prijavi za # računa}}</translation>
 <translation id="3145945101586104090">Dekodiranje odgovora nije uspjelo</translation>
 <translation id="3150653042067488994">Privremena pogreška poslužitelja</translation>
@@ -828,6 +830,7 @@
 <translation id="5043480802608081735">Veza koju ste kopirali</translation>
 <translation id="5045550434625856497">Pogrešna zaporka</translation>
 <translation id="5056549851600133418">Preporučeni članci</translation>
+<translation id="5061227663725596739">Jeste li mislili <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(jedan u upotrebi)}one{(# u upotrebi)}few{(# u upotrebi)}other{(# u upotrebi)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />provjerite proxy adresu<ph name="END_LINK" /></translation>
@@ -881,6 +884,7 @@
 <translation id="5284909709419567258">Mrežne adrese</translation>
 <translation id="5285570108065881030">Prikaži sve spremljene zaporke</translation>
 <translation id="5287240709317226393">Pokaži kolačiće</translation>
+<translation id="5287456746628258573">Ta web-lokacija upotrebljava zastarjelu sigurnosnu konfiguraciju, pa bi vaši podaci (na primjer zaporke ili brojevi kreditnih kartica) mogli biti otkriveni kad se šalju na nju.</translation>
 <translation id="5288108484102287882">Potvrđivanje vrijednosti pravila rezultiralo je upozorenjima</translation>
 <translation id="5299298092464848405">Pogreška u pravilu analize</translation>
 <translation id="5300589172476337783">Prikaži</translation>
@@ -1009,6 +1013,7 @@
 <translation id="5946937721014915347">Otvaranje web-lokacije <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Da, dodaj</translation>
 <translation id="5951495562196540101">Prijava s računom potrošača nije moguća (dostupna je paketna licenca).</translation>
+<translation id="5966900314707961320">Kad je ta značajka uključena, web-lokacije ne mogu upotrebljavati kolačiće koji vas prate na webu</translation>
 <translation id="5967592137238574583">Uredite podatke za kontakt</translation>
 <translation id="5967867314010545767">Ukloni iz povijesti</translation>
 <translation id="5975083100439434680">Smanji</translation>
@@ -1091,6 +1096,7 @@
 <translation id="6383221683286411806">Ako nastavite, moguća je naplata.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 drugi prijedlog}one{# drugi prijedlog}few{# druga prijedloga}other{# drugih prijedloga}}</translation>
 <translation id="6387754724289022810">Da biste sljedeći put platili brže, karticu i adresu za naplatu spremite na svoj Google račun i na ovaj uređaj.</translation>
+<translation id="6389470377220713856">Ime na kartici</translation>
 <translation id="6390200185239044127">Cik-cak presavijanje napola</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Pravilo je ukinuto. Trebali biste koristiti pravilo <ph name="NEW_POLICY" />.</translation>
@@ -1269,7 +1275,6 @@ Dodatne pojedinosti:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Korisnik je povezan:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Napusti ovu web-lokaciju</translation>
 <translation id="7353601530677266744">Naredbeni redak</translation>
 <translation id="7372973238305370288">rezultat pretraživanja</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1442,6 +1447,7 @@ Dodatne pojedinosti:
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8149426793427495338">Računalo je u stanju mirovanja.</translation>
 <translation id="8150722005171944719">Datoteka na adresi <ph name="URL" /> nije čitljiva. Možda je uklonjena ili premještena ili dozvole datoteka sprječavaju pristup.</translation>
+<translation id="8157295877370077682">Napusti web-lokaciju</translation>
 <translation id="8163866351304776260">Četverostruko bušenje s lijeve strane</translation>
 <translation id="8175796834047840627">Chrome vam nudi spremanje vaših kartica na vaš Google račun jer ste prijavljeni. To ponašanje možete promijeniti u postavkama.</translation>
 <translation id="8184538546369750125">Upotrijebi globalnu zadanu vrijednost (dopusti)</translation>

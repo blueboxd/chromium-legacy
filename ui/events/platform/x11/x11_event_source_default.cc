@@ -79,7 +79,8 @@ std::unique_ptr<ui::Event> TranslateXI2EventToEvent(const XEvent& xev) {
   switch (event_type) {
     case ET_KEY_PRESSED:
     case ET_KEY_RELEASED: {
-      XEvent xkeyevent = {0};
+      XEvent xkeyevent;
+      xkeyevent.xkey = {};
       InitXKeyEventFromXIDeviceEvent(xev, &xkeyevent);
       return CreateKeyEvent(xkeyevent);
     }

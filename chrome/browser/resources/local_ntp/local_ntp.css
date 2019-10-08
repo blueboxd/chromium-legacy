@@ -945,7 +945,6 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   font-size: 14px;
   height: 32px;
   left: 0;
-  line-height: 32px;
   margin-bottom: 16px;
   outline: none;
   text-align: start;

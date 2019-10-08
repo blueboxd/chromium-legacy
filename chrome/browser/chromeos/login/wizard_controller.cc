@@ -708,6 +708,10 @@ void WizardController::SkipToLoginForTesting(
     const LoginScreenContext& context) {
   VLOG(1) << "SkipToLoginForTesting.";
   StartupUtils::MarkEulaAccepted();
+  ChangeMetricsReportingStateWithReply(
+      true,
+      base::BindRepeating(&WizardController::OnChangedMetricsReportingState,
+                          weak_factory_.GetWeakPtr()));
   PerformPostEulaActions();
   OnDeviceDisabledChecked(false /* device_disabled */);
 }

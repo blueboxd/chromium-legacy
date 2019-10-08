@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Odpiranje strani ob zagonu</translation>
 <translation id="1883255238294161206">Strni seznam</translation>
 <translation id="1898423065542865115">Filtriranje</translation>
+<translation id="1901443836186977402">{1,plural, =1{Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo potrdilo je poteklo v preteklem dnevu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}one{Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevom. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura v računalniku je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to pravilno? Če ni, popravite uro v sistemu in osvežite stran.}two{Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevoma. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura v računalniku je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to pravilno? Če ni, popravite uro v sistemu in osvežite stran.}few{Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevi. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura v računalniku je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to pravilno? Če ni, popravite uro v sistemu in osvežite stran.}other{Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevi. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura v računalniku je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to pravilno? Če ni, popravite uro v sistemu in osvežite stran.}}</translation>
 <translation id="1914326953223720820">Storitev razširjanja datotek</translation>
 <translation id="1915697529809968049">Želite namesto kode CVC uporabiti Touch ID?</translation>
 <translation id="1916770123977586577">Če želite uporabiti posodobljene nastavitve za to spletno mesto, znova naložite to stran</translation>
@@ -445,6 +446,7 @@
 <translation id="3116158981186517402">Laminiranje</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Poskušajte zagnati orodje Diagnostika povezljivosti<ph name="END_LINK" /></translation>
+<translation id="3121994479408824897">Odpri <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Nič}=1{podatki za prijavo za 1 račun}one{podatki za prijavo za # račun}two{podatki za prijavo za # računa}few{podatki za prijavo za # račune}other{podatki za prijavo za # računov}}</translation>
 <translation id="3145945101586104090">Dekodiranje odziva ni uspelo</translation>
 <translation id="3150653042067488994">Začasna napaka strežnika</translation>
@@ -829,6 +831,7 @@
 <translation id="5043480802608081735">Povezava, ki ste jo kopirali</translation>
 <translation id="5045550434625856497">Nepravilno geslo</translation>
 <translation id="5056549851600133418">Članki za vas</translation>
+<translation id="5061227663725596739">Ali ste mislili <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 v uporabi)}one{(# v uporabi)}two{(# v uporabi)}few{(# v uporabi)}other{(# v uporabi)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />preveriti naslov strežnika proxy<ph name="END_LINK" /></translation>
@@ -882,6 +885,7 @@
 <translation id="5284909709419567258">Omrežni naslovi</translation>
 <translation id="5285570108065881030">Prikaži vsa shranjena gesla</translation>
 <translation id="5287240709317226393">Pokaži piškotke</translation>
+<translation id="5287456746628258573">To spletno mesto uporablja zastarelo varnostno konfiguracijo, zaradi česar so lahko vaši podatki ob pošiljanju temu spletnemu mestu izpostavljeni (npr. gesla ali številke kreditnih kartic).</translation>
 <translation id="5288108484102287882">Preverjanje vrednosti pravilnika je aktiviralo opozorila</translation>
 <translation id="5299298092464848405">Napaka pri razčlenjevanju pravilnika</translation>
 <translation id="5300589172476337783">Pokaži</translation>
@@ -1010,6 +1014,7 @@
 <translation id="5946937721014915347">Odpiranje spletnega mesta <ph name="SITE_NAME" /> …</translation>
 <translation id="5947933617628957894">Da, dodaj</translation>
 <translation id="5951495562196540101">S potrošniškim računom se ni mogoče včlaniti (na voljo je pridružena licenca).</translation>
+<translation id="5966900314707961320">Ko je to omogočeno, vam spletna mesta ne morejo slediti po spletu na podlagi piškotkov</translation>
 <translation id="5967592137238574583">Urejanje podatkov o stiku</translation>
 <translation id="5967867314010545767">Odstrani iz zgodovine</translation>
 <translation id="5975083100439434680">Pomanjšaj</translation>
@@ -1092,6 +1097,7 @@
 <translation id="6383221683286411806">Morda bo prišlo do bremenitev.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{in še 1 predlog}one{in še # predlog}two{in še # predloga}few{in še # predlogi}other{in še # predlogov}}</translation>
 <translation id="6387754724289022810">Če želite naslednjič hitreje plačati, shranite kartico in naslov za izstavitev računa v Google Računu in v tej napravi.</translation>
+<translation id="6389470377220713856">Name on Card</translation>
 <translation id="6390200185239044127">Cikcakasto prepogibanje napol</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Ta pravilnik je zastarel. Uporabite pravilnik <ph name="NEW_POLICY" />.</translation>
@@ -1270,7 +1276,6 @@ Dodatne podrobnosti:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Je povezan:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Zapusti to spletno mesto</translation>
 <translation id="7353601530677266744">Ukazna vrstica</translation>
 <translation id="7372973238305370288">rezultat iskanja</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
@@ -1443,6 +1448,7 @@ Dodatne podrobnosti:
 <translation id="8131740175452115882">Potrdi</translation>
 <translation id="8149426793427495338">Računalnik je preklopil v stanje pripravljenosti.</translation>
 <translation id="8150722005171944719">Datoteke na <ph name="URL" /> ni mogoče prebrati. Morda je odstranjena, premaknjena ali pa dostop preprečujejo dovoljenja za datoteke.</translation>
+<translation id="8157295877370077682">Zapusti spletno mesto</translation>
 <translation id="8163866351304776260">Četverno luknjanje na levi</translation>
 <translation id="8175796834047840627">Chrome ponuja shranjevanje kartic v račun Google, ker ste prijavljeni. To lahko spremenite v nastavitvah.</translation>
 <translation id="8184538546369750125">Uporabi globalno privzeto (Dovoli)</translation>

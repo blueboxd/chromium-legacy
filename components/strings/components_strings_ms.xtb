@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Buka halaman permulaan</translation>
 <translation id="1883255238294161206">Runtuhkan senarai</translation>
 <translation id="1898423065542865115">Penapisan</translation>
+<translation id="1901443836186977402">{1,plural, =1{Pelayan ini tidak dapat membuktikan bahawa itu ialah <ph name="DOMAIN" />; sijil keselamatan domain itu tamat tempoh sehari yang lalu. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang memintas sambungan anda. Jam komputer anda ditetapkan kepada <ph name="CURRENT_DATE" /> pada masa ini. Adakah itu betul? Jika tidak, anda perlu membetulkan jam sistem anda dan kemudian muatkan semula halaman ini.}other{Pelayan ini tidak dapat membuktikan bahawa itu ialah <ph name="DOMAIN" />; sijil keselamatan domain itu tamat tempoh # hari yang lalu. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang memintas sambungan anda. Jam komputer anda buat masa ini ditetapkan kepada <ph name="CURRENT_DATE" />. Adakah itu betul? Jika tidak, anda perlu membetulkan jam sistem anda dan kemudian muatkan semula halaman ini.}}</translation>
 <translation id="1914326953223720820">Perkhidmatan Nyahzip</translation>
 <translation id="1915697529809968049">Gunakan Touch ID dan bukan CVC?</translation>
 <translation id="1916770123977586577">Untuk menerapkan tetapan anda yang dikemas kini pada tapak ini, muatkan semula halaman ini</translation>
@@ -445,6 +446,7 @@
 <translation id="3116158981186517402">Lamina</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Cuba jalankan Diagnostik Sambungan<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Pergi ke <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Tiada}=1{data log masuk untuk 1 akaun}other{data log masuk untuk # akaun}}</translation>
 <translation id="3145945101586104090">Gagal menyahkod balasan</translation>
 <translation id="3150653042067488994">Ralat pelayan sementara</translation>
@@ -830,6 +832,7 @@
 <translation id="5043480802608081735">Pautan yang Anda Salin</translation>
 <translation id="5045550434625856497">Kata laluan tidak sah</translation>
 <translation id="5056549851600133418">Artikel untuk anda</translation>
+<translation id="5061227663725596739">Adakah anda maksudkan <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 sedang digunakan)}other{(# sedang digunakan)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Menyemak alamat proksi<ph name="END_LINK" /></translation>
@@ -883,6 +886,7 @@
 <translation id="5284909709419567258">Alamat rangkaian</translation>
 <translation id="5285570108065881030">Tunjukkan semua kata laluan yang disimpan</translation>
 <translation id="5287240709317226393">Tunjukkan kuki</translation>
+<translation id="5287456746628258573">Tapak ini menggunakan konfigurasi keselamatan yang sudah lapuk, yang mungkin mendedahkan maklumat anda (contohnya, kata laluan atau nombor kad kredit) apabila dihantar ke tapak ini.</translation>
 <translation id="5288108484102287882">Pengesahan nilai dasar telah menimbulkan amaran</translation>
 <translation id="5299298092464848405">Ralat semasa menghuraikan dasar</translation>
 <translation id="5300589172476337783">Paparkan</translation>
@@ -1011,6 +1015,7 @@
 <translation id="5946937721014915347">Membuka <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Ya, tambahkan</translation>
 <translation id="5951495562196540101">Tidak dapat mendaftar dengan akaun pengguna (lesen berpakej tersedia).</translation>
+<translation id="5966900314707961320">Apabila dihidupkan, tapak tidak dapat menggunakan kuki yang menjejaki anda di seluruh web</translation>
 <translation id="5967592137238574583">Edit Maklumat Hubungan</translation>
 <translation id="5967867314010545767">Buang daripada sejarah</translation>
 <translation id="5975083100439434680">Zum keluar</translation>
@@ -1093,6 +1098,7 @@
 <translation id="6383221683286411806">Caj mungkin dikenakan nanti.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 cadangan lain}other{# cadangan lain}}</translation>
 <translation id="6387754724289022810">Untuk membayar dengan lebih cepat selepas ini, simpan kad dan alamat pengebilan anda ke Akaun Google dan ke peranti ini.</translation>
+<translation id="6389470377220713856">Nama pada Kad</translation>
 <translation id="6390200185239044127">Lipat dua Z</translation>
 <translation id="6390662030813198813">Kejuruteraan-E</translation>
 <translation id="6401136357288658127">Dasar ini telah ditamatkan. Anda harus menggunakan dasar <ph name="NEW_POLICY" /> sebagai ganti.</translation>
@@ -1271,7 +1277,6 @@ Butiran tambahan:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Ialah ahli gabungan:</translation>
 <translation id="7349430561505560861">A4-Ekstra</translation>
-<translation id="7352902249897488700">Tinggalkan tapak ini</translation>
 <translation id="7353601530677266744">Baris Perintah</translation>
 <translation id="7372973238305370288">hasil carian</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1444,6 +1449,7 @@ Butiran tambahan:
 <translation id="8131740175452115882">Sahkan</translation>
 <translation id="8149426793427495338">Komputer anda dalam mod tidur.</translation>
 <translation id="8150722005171944719">Fail di <ph name="URL" /> tidak boleh dibaca.  Fail mungkin telah dialih keluar, dipindahkan atau kebenaran fail mungkin menghalang akses.</translation>
+<translation id="8157295877370077682">Tinggalkan tapak</translation>
 <translation id="8163866351304776260">Empat tebukan kiri</translation>
 <translation id="8175796834047840627">Chrome menawarkan penyimpanan kad dalam Akaun Google anda kerana anda log masuk. Anda boleh menukar gelagat ini dalam tetapan.</translation>
 <translation id="8184538546369750125">Gunakan lalai global (Benarkan)</translation>

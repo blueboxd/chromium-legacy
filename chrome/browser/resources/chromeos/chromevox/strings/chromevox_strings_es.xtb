@@ -327,6 +327,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="3241052487511142956">Anterior enlace visitado</translation>
 <translation id="3241638166094654466">Celdas en cada línea:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">Elemento similar anterior</translation>
 <translation id="3286372614333682499">vertical</translation>
 <translation id="3286390186030710347">Control deslizante</translation>
 <translation id="3299925995433437805">No hay ningún enlace siguiente visitado.</translation>
@@ -509,6 +510,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="4517854969512651305">Aumentar el valor</translation>
 <translation id="4529987814483543472">Mapa de teclado clásico</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra}other{# barras}}</translation>
+<translation id="4537277403911487429">Siguiente elemento similar</translation>
 <translation id="4547556996012970016">Siguiente encabezado de nivel 5</translation>
 <translation id="4562381607973973258">Etiqueta de encabezado</translation>
 <translation id="4569941707103739422">Pulsa la flecha hacia arriba o hacia abajo para desplazarte, y la tecla Intro para activar la opción.</translation>

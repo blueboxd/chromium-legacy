@@ -208,6 +208,7 @@
 <translation id="2498359688066513246">सहायता और फ़ीडबैक</translation>
 <translation id="2501278716633472235">वापस जाएं</translation>
 <translation id="2513403576141822879">निजता, सुरक्षा और डेटा इकट्ठा करने से जुड़ी ज़्यादा सेटिंग के लिए, <ph name="BEGIN_LINK" />सिंक और Google सेवाएं<ph name="END_LINK" /> देखें</translation>
+<translation id="2518590038762162553">Chrome, लाइट मोड में पेजों को ज़्यादा तेज़ी से लोड करता है और 60 प्रतिशत तक कम डेटा इस्तेमाल करता है. जिन पेजों पर आप जाते हैं उनको ऑप्टिमाइज़ करने के लिए Chrome आपके वेब ट्रैफ़िक की जानकारी Google को भेजता है. <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">आप जिन पेजों पर जाते हैं उनके यूआरएल Google को भेजती है</translation>
 <translation id="2532336938189706096">वेब व्यू</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> आइटम मिटाए गए</translation>
@@ -673,6 +674,7 @@
 <translation id="5962718611393537961">छोटा करने के लिए टैप करें</translation>
 <translation id="6000066717592683814">Google को डिफ़ॉल्ट बनाए रखें</translation>
 <translation id="6005538289190791541">सुझाया गया पासवर्ड</translation>
+<translation id="6036057147555329831">कुछ और ICU</translation>
 <translation id="6039379616847168523">सीधे अगले टैब पर जाएं</translation>
 <translation id="6040143037577758943">बंद करें</translation>
 <translation id="6042308850641462728">और ज़्यादा</translation>

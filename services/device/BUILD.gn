@@ -274,6 +274,7 @@ source_set("tests") {
     sources += [
       "generic_sensor/platform_sensor_provider_winrt_unittest.cc",
       "generic_sensor/platform_sensor_reader_winrt_unittests.cc",
+      "geolocation/location_provider_winrt_unittest.cc",
     ]
 
     # Needed for "generic_sensor/platform_sensor_and_provider_unittest_win.cc"

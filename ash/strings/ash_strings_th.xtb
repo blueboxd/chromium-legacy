@@ -231,6 +231,7 @@
 <translation id="4279490309300973883">กำลังแสดงผล</translation>
 <translation id="4281007048406351813">เพิ่มเวลาตัวจับเวลาอีก 1 นาที</translation>
 <translation id="4296136865091727875">ล้างการแจ้งเตือนทั้งหมด <ph name="COUNT" /> รายการ</translation>
+<translation id="4303223480529385476">ขยายพื้นที่แสดงสถานะ</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">คุณกดแป้นพิมพ์ลัดสำหรับคอนทราสต์สูง จะเปิดคอนทราสต์สูงไหม</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -406,6 +407,7 @@
 <translation id="7015766095477679451">กลับมาเมื่อถึงเวลา <ph name="COME_BACK_TIME" /></translation>
 <translation id="7025533177575372252">เชื่อมต่อ <ph name="DEVICE_NAME" /> กับโทรศัพท์</translation>
 <translation id="7029814467594812963">ออกจากเซสชัน</translation>
+<translation id="7042322267639375032">ยุบพื้นที่แสดงสถานะ</translation>
 <translation id="7066646422045619941">ผู้ดูแลระบบปิดใช้เครือข่ายนี้</translation>
 <translation id="7067196344162293536">หมุนอัตโนมัติ</translation>
 <translation id="7068360136237591149">เปิดไฟล์</translation>

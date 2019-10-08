@@ -2,39 +2,61 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
+#include "components/performance_manager/public/render_process_host_proxy.h"
 
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/test/bind_test_util.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager_test_harness.h"
-#include "chrome/browser/performance_manager/public/graph/process_node.h"
-#include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
-#include "chrome/browser/performance_manager/render_process_user_data.h"
+// TODO(https://crbug.com/953031): Remove these dependencies and move this
+//     test to the component directory.
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/performance_manager_tab_helper.h"
+#include "components/performance_manager/public/graph/process_node.h"
+#include "components/performance_manager/public/render_process_host_proxy.h"
+#include "components/performance_manager/render_process_user_data.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
 
-class RenderProcessHostProxyTest
-    : public performance_manager::PerformanceManagerTestHarness {
+class RenderProcessHostProxyTest : public ChromeRenderViewHostTestHarness {
  protected:
   RenderProcessHostProxyTest() {}
   ~RenderProcessHostProxyTest() override {}
 
-  void SetUp() override { PerformanceManagerTestHarness::SetUp(); }
-  void TearDown() override { PerformanceManagerTestHarness::TearDown(); }
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+    perf_man_ = PerformanceManagerImpl::Create(base::DoNothing());
+  }
+  void TearDown() override {
+    // Have the performance manager destroy itself.
+    PerformanceManagerImpl::Destroy(std::move(perf_man_));
+    task_environment()->RunUntilIdle();
+
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
+
+  std::unique_ptr<content::WebContents> CreateTestWebContents() {
+    std::unique_ptr<content::WebContents> contents =
+        ChromeRenderViewHostTestHarness::CreateTestWebContents();
+    PerformanceManagerTabHelper::CreateForWebContents(contents.get());
+    return contents;
+  }
 
  private:
+  std::unique_ptr<PerformanceManagerImpl> perf_man_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostProxyTest);
 };
 

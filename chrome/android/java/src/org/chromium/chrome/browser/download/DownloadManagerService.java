@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.download.DownloadState;
@@ -89,7 +90,7 @@ import java.util.concurrent.RejectedExecutionException;
 public class DownloadManagerService
         implements DownloadController.DownloadNotificationService,
                    NetworkChangeNotifierAutoDetect.Observer, DownloadServiceDelegate,
-                   BackendProvider.DownloadDelegate, BrowserStartupController.StartupCallback {
+                   BackendProvider.DownloadDelegate, ProfileManager.Observer {
     // Download status.
     @IntDef({DownloadStatus.IN_PROGRESS, DownloadStatus.COMPLETE, DownloadStatus.FAILED,
             DownloadStatus.CANCELLED, DownloadStatus.INTERRUPTED})
@@ -1216,30 +1217,20 @@ public class DownloadManagerService
      */
     private long getNativeDownloadManagerService() {
         if (mNativeDownloadManagerService == 0) {
-            boolean startupCompleted =
-                    BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                            .isFullBrowserStarted();
+            boolean startupCompleted = ProfileManager.isInitialized();
             mNativeDownloadManagerService = DownloadManagerServiceJni.get().init(
                     DownloadManagerService.this, startupCompleted);
-            if (!startupCompleted) {
-                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .addStartupCompletedObserver(this);
-            }
+            if (!startupCompleted) ProfileManager.addObserver(this);
         }
         return mNativeDownloadManagerService;
     }
 
     @Override
-    public void onSuccess() {
-        if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isFullBrowserStarted()) {
-            DownloadManagerServiceJni.get().onFullBrowserStarted(
-                    mNativeDownloadManagerService, DownloadManagerService.this);
-        }
+    public void onProfileCreated(Profile profile) {
+        ProfileManager.removeObserver(this);
+        DownloadManagerServiceJni.get().onProfileCreated(
+                mNativeDownloadManagerService, DownloadManagerService.this);
     }
-
-    @Override
-    public void onFailure() {}
 
     @CalledByNative
     void onResumptionFailed(String downloadGuid) {
@@ -2095,7 +2086,7 @@ public class DownloadManagerService
     interface Natives {
         boolean isSupportedMimeType(String mimeType);
         int getAutoResumptionLimit();
-        long init(DownloadManagerService caller, boolean isFullBrowserStarted);
+        long init(DownloadManagerService caller, boolean isProfileCreated);
         void openDownload(long nativeDownloadManagerService, DownloadManagerService caller,
                 String downloadGuid, boolean isOffTheRecord, int source);
         void resumeDownload(long nativeDownloadManagerService, DownloadManagerService caller,
@@ -2117,7 +2108,7 @@ public class DownloadManagerService
                 DownloadManagerService caller, boolean isOffTheRecord);
         void updateLastAccessTime(long nativeDownloadManagerService, DownloadManagerService caller,
                 String downloadGuid, boolean isOffTheRecord);
-        void onFullBrowserStarted(long nativeDownloadManagerService, DownloadManagerService caller);
+        void onProfileCreated(long nativeDownloadManagerService, DownloadManagerService caller);
         void createInterruptedDownloadForTest(long nativeDownloadManagerService,
                 DownloadManagerService caller, String url, String guid, String targetPath);
         void recordFirstBackgroundInterruptReason(long nativeDownloadManagerService,

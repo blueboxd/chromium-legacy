@@ -1980,14 +1980,8 @@ This file contains the strings for ash.
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_BUTTON" desc="Label for button to add 1 minute to timer in Assistant timer notification.">
         Add 1 min
       </message>
-      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_QUERY" desc="Query to issue to add 1 minute to an Assistant timer.">
-        Add 1 min to timer
-      </message>
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_BUTTON" desc="Label for stop button in Assistant timer notification.">
         Stop
-      </message>
-      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_QUERY" desc="Query to issue to stop Assistant timer.">
-        Stop timer
       </message>
       <message name="IDS_ASSISTANT_CREATE_REMINDER_QUERY" desc="Query to issue to create reminder.">
         Create reminder

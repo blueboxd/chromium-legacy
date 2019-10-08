@@ -202,6 +202,7 @@
 <translation id="187918866476621466">打开启动页</translation>
 <translation id="1883255238294161206">收起列表</translation>
 <translation id="1898423065542865115">过滤</translation>
+<translation id="1901443836186977402">{1,plural, =1{此服务器无法证明其所在网域是 <ph name="DOMAIN" />；其安全证书已在昨天过期。出现此问题的原因可能是配置有误，或是有攻击者拦截您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}other{此服务器无法证明其所在网域是 <ph name="DOMAIN" />；其安全证书已在 # 天前过期。出现此问题的原因可能是配置有误，或是有攻击者拦截您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}}</translation>
 <translation id="1914326953223720820">解压缩服务</translation>
 <translation id="1915697529809968049">要改用 Touch ID 来取代银行卡验证码 (CVC) 吗？</translation>
 <translation id="1916770123977586577">要将您更新后的设置应用到此网站，请重新加载此页面</translation>
@@ -435,6 +436,7 @@
 <translation id="3116158981186517402">粘合</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />尝试运行网络连接诊断<ph name="END_LINK" />。</translation>
+<translation id="3121994479408824897">前往 <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{无}=1{1 个帐号的登录数据}other{# 个帐号的登录数据}}</translation>
 <translation id="3145945101586104090">无法对响应解码</translation>
 <translation id="3150653042067488994">服务器临时错误</translation>
@@ -809,6 +811,7 @@
 <translation id="5043480802608081735">您复制的链接</translation>
 <translation id="5045550434625856497">密码不正确</translation>
 <translation id="5056549851600133418">为您推荐的文章</translation>
+<translation id="5061227663725596739">您是不是要前往 <ph name="LOOKALIKE_DOMAIN" />？</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{（使用了 1 个）}other{（使用了 # 个）}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />检查代理服务器地址<ph name="END_LINK" /></translation>
@@ -862,6 +865,7 @@
 <translation id="5284909709419567258">网络地址</translation>
 <translation id="5285570108065881030">显示所有已保存的密码</translation>
 <translation id="5287240709317226393">显示 Cookie</translation>
+<translation id="5287456746628258573">此网站使用的安全性配置已过期，这可能会导致您的信息（例如密码或信用卡卡号）在发送至此网站时出现泄露。</translation>
 <translation id="5288108484102287882">政策值验证引发了警告</translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
 <translation id="5300589172476337783">显示</translation>
@@ -989,6 +993,7 @@
 <translation id="5946937721014915347">正在打开 <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">添加</translation>
 <translation id="5951495562196540101">无法通过消费者帐号注册（有封装的许可）。</translation>
+<translation id="5966900314707961320">此项处于开启状态时，网站无法使用 Cookie 来跟踪您在网上的活动</translation>
 <translation id="5967592137238574583">修改联系信息</translation>
 <translation id="5967867314010545767">从历史记录中移除</translation>
 <translation id="5975083100439434680">缩小</translation>
@@ -1070,6 +1075,7 @@
 <translation id="6383221683286411806">可能产生费用。</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 条其他建议}other{# 条其他建议}}</translation>
 <translation id="6387754724289022810">只要将您的付款卡信息和帐单邮寄地址保存到您的 Google 帐号和此设备，下次即可更便捷地完成付款。</translation>
+<translation id="6389470377220713856">持卡人姓名</translation>
 <translation id="6390200185239044127">Z 型对折</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">此政策已被弃用。您应改用 <ph name="NEW_POLICY" /> 政策。</translation>
@@ -1248,7 +1254,6 @@
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">有无关联：</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">离开此网站</translation>
 <translation id="7353601530677266744">命令行</translation>
 <translation id="7372973238305370288">搜索结果</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1421,6 +1426,7 @@
 <translation id="8131740175452115882">确认</translation>
 <translation id="8149426793427495338">您的计算机已进入休眠模式。</translation>
 <translation id="8150722005171944719">无法读取 <ph name="URL" /> 上的文件。该文件可能已遭到删除、移动，或者文件权限不允许进行访问。</translation>
+<translation id="8157295877370077682">离开网站</translation>
 <translation id="8163866351304776260">四孔（左侧）</translation>
 <translation id="8175796834047840627">Chrome 会主动询问是否要将您的卡保存到您的 Google 帐号中，因为您已登录。您可在“设置”中更改此行为。</translation>
 <translation id="8184538546369750125">使用全局默认设置（允许）</translation>

@@ -20,7 +20,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
-#include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/thread_pool/task.h"
@@ -329,10 +328,8 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   std::unique_ptr<ConditionVariable> num_workers_cleaned_up_for_testing_cv_
       GUARDED_BY(lock_);
 
-#if DCHECK_IS_ON()
   // Set at the start of JoinForTesting().
-  AtomicFlag join_for_testing_started_;
-#endif
+  bool join_for_testing_started_ GUARDED_BY(lock_) = false;
 
   // ThreadPool.DetachDuration.[thread group name] histogram. Intentionally
   // leaked.

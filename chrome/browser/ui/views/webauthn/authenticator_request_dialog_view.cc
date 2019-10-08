@@ -149,13 +149,6 @@ int AuthenticatorRequestDialogView::GetDialogButtons() const {
   return button_mask;
 }
 
-int AuthenticatorRequestDialogView::GetDefaultDialogButton() const {
-  // The default button is either the `Ok` button or nothing.
-  if (sheet()->model()->IsAcceptButtonVisible())
-    return ui::DIALOG_BUTTON_OK;
-  return ui::DIALOG_BUTTON_NONE;
-}
-
 base::string16 AuthenticatorRequestDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   switch (button) {
@@ -330,6 +323,9 @@ void AuthenticatorRequestDialogView::UpdateUIForCurrentSheet() {
   DCHECK(sheet_);
 
   sheet_->ReInitChildViews();
+  DialogDelegate::set_default_button(sheet_->model()->IsAcceptButtonVisible()
+                                         ? ui::DIALOG_BUTTON_OK
+                                         : ui::DIALOG_BUTTON_NONE);
 
   // Whether to show the `Choose another option` button, or other dialog
   // configuration is delegated to the |sheet_|, and the new sheet likely wants

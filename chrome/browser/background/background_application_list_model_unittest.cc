@@ -156,7 +156,7 @@ TEST_F(BackgroundApplicationListModelTest, DISABLED_ExplicitTest) {
   service()->Init();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(service()->is_ready());
-  ASSERT_TRUE(model()->is_ready());
+  ASSERT_TRUE(model()->startup_done());
 
   ASSERT_TRUE(registry()->enabled_extensions().is_empty());
   ASSERT_EQ(0U, model()->size());
@@ -296,11 +296,11 @@ TEST_F(BackgroundApplicationListModelTest, ExtensionLoadAndUnload) {
 
 TEST_F(BackgroundApplicationListModelTest, LateExtensionSystemReady) {
   ASSERT_FALSE(service()->is_ready());
-  ASSERT_FALSE(model()->is_ready());
+  ASSERT_FALSE(model()->startup_done());
   service()->Init();
   // Model is not ready yet since ExtensionSystem::ready() is dispatched using
   // PostTask to UI Thread. and OnExtensionSystemReady is not called yet.
-  ASSERT_FALSE(model()->is_ready());
+  ASSERT_FALSE(model()->startup_done());
 
   scoped_refptr<Extension> bgapp =
       CreateExtension("background_application", true);
@@ -314,13 +314,13 @@ TEST_F(BackgroundApplicationListModelTest, LateExtensionSystemReady) {
   service()->AddExtension(bgapp.get());
   load_observer.WaitForExtensionLoaded();
   EXPECT_EQ(1U, registry()->enabled_extensions().size());
-  // Model still has 0 item. since OnExtensionSystemReady is not called yet.
+  // Model still has 0 items since OnExtensionSystemReady is not called yet.
   EXPECT_EQ(0U, model()->size());
 
   // Wait Until OnExtensionSystemReady called.
   base::RunLoop().RunUntilIdle();
   // Make sure background model holds extensions.
-  EXPECT_TRUE(model()->is_ready());
+  EXPECT_TRUE(model()->startup_done());
   EXPECT_EQ(1U, model()->size());
 }
 

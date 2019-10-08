@@ -343,12 +343,16 @@ BrowserThread::ID ServiceWorkerContext::GetCoreThreadId() {
 void ServiceWorkerContextWrapper::OnRegistrationCompleted(
     int64_t registration_id,
     const GURL& scope) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   for (auto& observer : observer_list_)
     observer.OnRegistrationCompleted(scope);
 }
 
 void ServiceWorkerContextWrapper::OnRegistrationStored(int64_t registration_id,
                                                        const GURL& scope) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   for (auto& observer : observer_list_)
     observer.OnRegistrationStored(registration_id, scope);
 }
@@ -356,61 +360,51 @@ void ServiceWorkerContextWrapper::OnRegistrationStored(int64_t registration_id,
 void ServiceWorkerContextWrapper::OnReportConsoleMessage(
     int64_t version_id,
     const ConsoleMessage& message) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   for (auto& observer : observer_list_)
     observer.OnReportConsoleMessage(version_id, message);
 }
 
 void ServiceWorkerContextWrapper::OnNoControllees(int64_t version_id,
                                                   const GURL& scope) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   for (auto& observer : observer_list_)
     observer.OnNoControllees(version_id, scope);
 }
 
-void ServiceWorkerContextWrapper::OnRunningStateChanged(
-    int64_t version_id,
-    EmbeddedWorkerStatus running_status) {
+void ServiceWorkerContextWrapper::OnStarted(int64_t version_id,
+                                            const GURL& scope,
+                                            int process_id,
+                                            const GURL& script_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // When |running_status| is RUNNING/STOPPING, the service
-  // worker is doing some actual tasks, so we consider the service worker is
-  // in a running status.
-  //
-  // Although the service work does have some tasks being processed in the stage
-  // of STARTING, some resources of it may have not been allocated yet,
-  // e.g. process id. If STARTING is considered as running, then the observer of
-  // ServiceWorkerContextWrapper may get the unexpected information of this
-  // service worker after being notified due to the absence of the resoureces.
-  //
-  // TODO(minggang): Create a new observer to listen to the events when the
-  // process of the service worker is allocated/released, instead of using the
-  // running status of the embedded worker.
-  if (running_status == EmbeddedWorkerStatus::RUNNING) {
-    bool inserted = running_service_workers_.emplace(version_id).second;
-    DCHECK(inserted);
-    for (auto& observer : observer_list_) {
-      observer.OnVersionRunningStatusChanged(this, version_id,
-                                             true /* is_running */);
-    }
-    return;
+  bool inserted = running_service_workers_.emplace(version_id).second;
+  DCHECK(inserted);
+  for (auto& observer : observer_list_) {
+    observer.OnVersionStartedRunning(this, version_id, scope, process_id,
+                                     script_url);
   }
+}
 
-  if (running_service_workers_.find(version_id) !=
-          running_service_workers_.end() &&
-      running_status == EmbeddedWorkerStatus::STOPPED) {
-    size_t removed = running_service_workers_.erase(version_id);
-    DCHECK_EQ(removed, 1u);
-    for (auto& observer : observer_list_) {
-      observer.OnVersionRunningStatusChanged(this, version_id,
-                                             false /* is_running */);
-    }
+void ServiceWorkerContextWrapper::OnStopped(int64_t version_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  auto it = running_service_workers_.find(version_id);
+  if (it != running_service_workers_.end()) {
+    running_service_workers_.erase(it);
+    for (auto& observer : observer_list_)
+      observer.OnVersionStoppedRunning(this, version_id);
   }
 }
 
 void ServiceWorkerContextWrapper::OnDeleteAndStartOver() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   for (int version_id : running_service_workers_) {
     for (auto& observer : observer_list_) {
-      observer.OnVersionRunningStatusChanged(this, version_id,
-                                             false /* is_running */);
+      observer.OnVersionStoppedRunning(this, version_id);
     }
   }
   running_service_workers_.clear();
@@ -420,6 +414,8 @@ void ServiceWorkerContextWrapper::OnVersionStateChanged(
     int64_t version_id,
     const GURL& scope,
     ServiceWorkerVersion::Status status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   if (status == ServiceWorkerVersion::Status::ACTIVATED) {
     for (auto& observer : observer_list_)
       observer.OnVersionActivated(version_id, scope);
@@ -431,11 +427,15 @@ void ServiceWorkerContextWrapper::OnVersionStateChanged(
 
 void ServiceWorkerContextWrapper::AddObserver(
     ServiceWorkerContextObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   observer_list_.AddObserver(observer);
 }
 
 void ServiceWorkerContextWrapper::RemoveObserver(
     ServiceWorkerContextObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   observer_list_.RemoveObserver(observer);
 }
 
@@ -1451,6 +1451,8 @@ void ServiceWorkerContextWrapper::RemoveObserver(
 }
 
 ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   for (auto& observer : observer_list_)
     observer.OnDestruct(static_cast<ServiceWorkerContext*>(this));
 

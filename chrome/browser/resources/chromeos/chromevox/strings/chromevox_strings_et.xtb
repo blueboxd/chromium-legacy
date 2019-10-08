@@ -327,6 +327,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="3241052487511142956">Eelmine külastatud link</translation>
 <translation id="3241638166094654466">Igal real olevad lahtrid:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">Eelmine sarnane üksus</translation>
 <translation id="3286372614333682499">vertikaalpaigutus</translation>
 <translation id="3286390186030710347">Liugur</translation>
 <translation id="3299925995433437805">Järgmist külastatud linki pole.</translation>
@@ -509,6 +510,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="4517854969512651305">Väärtuse suurendamine</translation>
 <translation id="4529987814483543472">Klassikaline klahvitabel</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{kaldkriips}other{# kaldkriipsu}}</translation>
+<translation id="4537277403911487429">Järgmine sarnane üksus</translation>
 <translation id="4547556996012970016">Järgmine 5. taseme pealkiri</translation>
 <translation id="4562381607973973258">Päis</translation>
 <translation id="4569941707103739422">Navigeerimiseks vajutage üles- või allanoolt, aktiveerimiseks vajutage sisestusklahvi.</translation>

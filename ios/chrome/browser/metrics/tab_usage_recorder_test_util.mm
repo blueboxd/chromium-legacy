@@ -78,6 +78,28 @@ bool OpenNewIncognitoTabUsingUIAndEvictMainTabs() {
   return true;
 }
 
+bool RemoveBrowsingCacheForMainTabs() {
+  __block BOOL caches_cleared = NO;
+  [chrome_test_util::GetMainController()
+      removeBrowsingDataForBrowserState:chrome_test_util::
+                                            GetOriginalBrowserState()
+                             timePeriod:browsing_data::TimePeriod::ALL_TIME
+                             removeMask:BrowsingDataRemoveMask::
+                                            REMOVE_CACHE_STORAGE
+                        completionBlock:^{
+                          caches_cleared = YES;
+                        }];
+
+  GREYCondition* condition =
+      [GREYCondition conditionWithName:@"Wait for clearing caches."
+                                 block:^BOOL {
+                                   return caches_cleared;
+                                 }];
+  GREYAssert([condition waitWithTimeout:20], @"Caches were not cleared.");
+
+  return true;
+}
+
 void SwitchToNormalMode() {
   GREYAssertTrue([ChromeEarlGrey isIncognitoMode],
                  @"Switching to normal mode is only allowed from Incognito.");

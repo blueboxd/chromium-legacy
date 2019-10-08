@@ -43,7 +43,7 @@
 <translation id="1436290164580597469">സമന്വയം ആരംഭിക്കാൻ പാസ്‌ഫ്രെയ്‌സ് നൽകുക.</translation>
 <translation id="1449835205994625556">പാസ്‍വേഡ് അദൃശ്യമാക്കുക</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> ഇനങ്ങൾ</translation>
-<translation id="1491277525950327607">ക്രമീകരണം മാറ്റാൻ ഡബിൾ ടാപ്പ് ചെയ്യുക</translation>
+<translation id="1491277525950327607">ക്രമീകരണം മാറ്റാൻ രണ്ടുതവണ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="1509486075633541495">വെബ്‌സൈറ്റിലേക്ക് സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="152234381334907219">ഒരിക്കലും സംരക്ഷിച്ചില്ല</translation>
 <translation id="1540800554400757039">വിലാസം 1</translation>
@@ -63,7 +63,7 @@
 <translation id="1690731385917361335">ഇനങ്ങളൊന്നുമില്ല</translation>
 <translation id="1692118695553449118">സമന്വയം ഓണാണ്</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> തിരഞ്ഞെടുത്തു</translation>
-<translation id="1740468249224277719">ഇൻസ്‌റ്റാൾ ചെയ്യാൻ ഡബിൾ ടാപ്പ് ചെയ്യുക.</translation>
+<translation id="1740468249224277719">ഇൻസ്‌റ്റാൾ ചെയ്യാൻ രണ്ടുതവണ ടാപ്പ് ചെയ്യുക.</translation>
 <translation id="1746815479209538200">വെബ് ബ്രൗസ് ചെയ്യാൻ, ഒരു പുതിയ ടാബ് ചേർക്കുക.</translation>
 <translation id="1752547299766512813">സംരക്ഷിത പാസ്‌വേഡുകള്‍</translation>
 <translation id="1753905327828125965">കൂടുതൽ‍ സന്ദര്‍ശിച്ചത്</translation>
@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">ബുക്മാര്‍ക്ക് എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="2179182049312275900">നിങ്ങൾക്ക് എപ്പോഴും ക്രമീകരണത്തിൽ സമന്വയം ഓണാക്കാവുന്നതാണ്.</translation>
 <translation id="2198757192731523470">തിരയലും പരസ്യങ്ങളും മറ്റ് Google സേവനങ്ങളും വ്യക്തിപരമാക്കാൻ, Google നിങ്ങളുടെ ചരിത്രം ഉപയോഗിച്ചേക്കാം.</translation>
-<translation id="2207590065820824892">വായനാ ലിസ്‌റ്റിലുള്ള, വായിക്കാത്ത <ph name="UNREAD_COUNT" /> ലേഖനങ്ങൾ.</translation>
 <translation id="2230173723195178503">വെബ്‌പേജ് ലോഡ് ചെയ്‌തു</translation>
 <translation id="2239626343334228536">ബ്രൗസിംഗ് ഡാറ്റ മായ്‌ക്കുന്നു...</translation>
 <translation id="2267753748892043616">അക്കൗണ്ട് ചേർക്കുക</translation>
@@ -200,7 +199,7 @@
 <translation id="3775743491439407556">സമന്വയം പ്രവർത്തിക്കുന്നില്ല</translation>
 <translation id="3779810277399252432">ഇന്റർനെറ്റ് കണക്ഷനില്ല.</translation>
 <translation id="3783017676699494206">ഇമേജ് സംരക്ഷിക്കുക</translation>
-<translation id="3789841737615482174">ഇന്‍സ്റ്റാളുചെയ്യുക</translation>
+<translation id="3789841737615482174">ഇന്‍സ്റ്റാൾ ചെയ്യുക</translation>
 <translation id="385051799172605136">പിന്നോട്ട്</translation>
 <translation id="3897092660631435901">മെനു</translation>
 <translation id="3915450441834151894">സൈറ്റ് വിവരങ്ങള്‍</translation>
@@ -222,7 +221,7 @@
 <translation id="408404951701638773">തിരയൽ ബാറിൽ എത്താൻ ഇപ്പോൾ എളുപ്പമാണ്</translation>
 <translation id="411254640334432676">ഡൗൺലോഡ് പരാജയപ്പെട്ടു.</translation>
 <translation id="4112644173421521737">തിരയുക</translation>
-<translation id="4121993058175073134">നെറ്റ്-എക്‌സ്‌പോർട്ട് ഡാറ്റ അയയ്‌ക്കുന്നതിന്, ക്രമീകരണങ്ങളുടെ അപ്ലിക്കേഷനിൽ നിങ്ങളുടെ ഇമെയിൽ അക്കൗണ്ട് കോൺഫിഗർ ചെയ്യുക.</translation>
+<translation id="4121993058175073134">നെറ്റ്-എക്‌സ്‌പോർട്ട് ഡാറ്റ അയയ്‌ക്കുന്നതിന്, ക്രമീകരണങ്ങളുടെ ആപ്പിൽ നിങ്ങളുടെ ഇമെയിൽ അക്കൗൺറ്റ് കോൺഫിഗർ ചെയ്യുക.</translation>
 <translation id="4124987746317609294">സമയ ശ്രേണി</translation>
 <translation id="4172051516777682613">എല്ലായ്പ്പോഴും ദൃശ്യമാക്കുക</translation>
 <translation id="418156467088430727">പുതിയ ടാബിൽ ഓഫ്‌ലൈൻ പതിപ്പ് കാണുക</translation>
@@ -234,7 +233,7 @@
 <translation id="430793432425771671">എല്ലാം സമന്വയിപ്പിക്കുക</translation>
 <translation id="430967081421617822">എല്ലാ സമയവും</translation>
 <translation id="4338650699862464074">നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകളുടെ URL-കൾ Google-ലേക്ക് അയയ്‌ക്കുന്നു.</translation>
-<translation id="4359125752503270327">ഈ പേജ് മറ്റൊരു അപ്ലിക്കേഷനിൽ തുറക്കും.</translation>
+<translation id="4359125752503270327">ഈ പേജ് മറ്റൊരു ആപ്പിൽ തുറക്കും.</translation>
 <translation id="4375040482473363939">QR കോഡ് തിരയൽ</translation>
 <translation id="4378154925671717803">ഫോൺ</translation>
 <translation id="441868831736628555">സ്വകാര്യത അറിയിപ്പ്</translation>
@@ -265,7 +264,6 @@
 
 ഈ ക്രമീകരണം മാറ്റാൻ, <ph name="BEGIN_LINK" />സമന്വയം പുനഃക്രമീകരിക്കുക<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">കാർഡ് നമ്പർ അസാധുവാണ്</translation>
-<translation id="4807020197310989387">വായനാ ലിസ്‌റ്റിലുള്ള, വായിക്കാത്ത ഒരു ലേഖനം.</translation>
 <translation id="4818522717893377262">ഭാഷ ചേർക്കുക...</translation>
 <translation id="481968316161811770">കുക്കികളും സൈറ്റ് ഡാറ്റയും</translation>
 <translation id="4833786495304741580">Google-ലേക്ക് സ്വയമേവ ഉപയോഗ സ്ഥിതിവിവരക്കണക്കുകളും ക്രാഷ് റിപ്പോർട്ടുകളും അയയ്ക്കുന്നു.</translation>
@@ -282,7 +280,7 @@
 <translation id="5010803260590204777">വെബ് സ്വകാര്യമായി ബ്രൗസ് ചെയ്യാൻ ഒരു അദൃശ്യ ടാബ് തുറക്കുക.</translation>
 <translation id="5039804452771397117">അനുവദിക്കൂ</translation>
 <translation id="5059136629401106827">ശരി</translation>
-<translation id="5062321486222145940">Google ഡ്രൈവ് ഇൻസ്‌റ്റാളുചെയ്യുക</translation>
+<translation id="5062321486222145940">Google ഡ്രൈവ് ഇൻസ്‌റ്റാൾ ചെയ്യുക</translation>
 <translation id="5083464117946352670">ഫയൽ വലുപ്പം നിർണ്ണയിക്കാനാവില്ല.</translation>
 <translation id="5094827893301452931">Tweet പങ്കിടൽ പൂർത്തിയായി.</translation>
 <translation id="5127805178023152808">സമന്വയം ഓഫാണ്</translation>
@@ -414,6 +412,7 @@
 <translation id="6858855187367714033">സ്‌കാൻ ചെയ്‌തു</translation>
 <translation id="6859944681507688231">QR കോഡോ ക്രെഡിറ്റ് കാര്‍ഡോ സ്‌കാൻ ചെയ്യാൻ, ക്രമീകരണത്തിൽ ക്യാമറ പ്രവർത്തനക്ഷമമാക്കുക.</translation>
 <translation id="6873263987691478642">വിഭജിത കാഴ്‌ച</translation>
+<translation id="6888009575607455378">നിങ്ങളുടെ മാറ്റങ്ങൾ റദ്ദാക്കണമെന്ന് തീർച്ചയാണോ?</translation>
 <translation id="6896758677409633944">പകര്‍ത്തുക</translation>
 <translation id="6903907808598579934">സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
 <translation id="6914583639806229067">നിങ്ങൾ പകർത്തിയ ചിത്രം തിരയുക</translation>
@@ -465,7 +464,7 @@
 <translation id="7638584964844754484">പാസ്‌ഫ്രെയ്‌സ് തെറ്റാണ്</translation>
 <translation id="7658239707568436148">റദ്ദാക്കൂ</translation>
 <translation id="766891008101699113">വെബ് സ്വകാര്യമായി ബ്രൗസ് ചെയ്യാൻ, ഒരു പുതിയ ടാബ് ചേർക്കുക.</translation>
-<translation id="7671141431838911305">ഇൻസ്റ്റാളുചെയ്യുക</translation>
+<translation id="7671141431838911305">ഇൻസ്റ്റാൾ ചെയ്യുക</translation>
 <translation id="7765158879357617694">നീക്കുക</translation>
 <translation id="7772032839648071052">പാസ്ഫ്രേസ് സ്ഥിരീകരിക്കുക</translation>
 <translation id="7781829728241885113">ഇന്നലെ</translation>

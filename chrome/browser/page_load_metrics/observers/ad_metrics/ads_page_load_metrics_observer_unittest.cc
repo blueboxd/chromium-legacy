@@ -80,11 +80,6 @@ const char kAdUrl[] = "https://ads.com/ad/disallowed.html";
 const char kNonAdUrl[] = "https://foo.com/";
 const char kNonAdUrlSameOrigin[] = "https://ads.com/foo";
 
-const int kMaxHeavyAdNetworkBytes =
-    heavy_ad_thresholds::kMaxNetworkBytes +
-    AdsPageLoadMetricsObserver::HeavyAdThresholdNoiseProvider::
-        kMaxNetworkThresholdNoiseBytes;
-
 // Asynchronously cancels the navigation at WillProcessResponse. Before
 // cancelling, simulates loading a main frame resource.
 class ResourceLoadingCancellingThrottle
@@ -138,21 +133,6 @@ class ResourceLoadingCancellingThrottle
   }
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingCancellingThrottle);
-};
-
-// Mock noise provider which always gives a supplied value of noise for the
-// heavy ad intervention thresholds.
-class MockNoiseProvider
-    : public AdsPageLoadMetricsObserver::HeavyAdThresholdNoiseProvider {
- public:
-  explicit MockNoiseProvider(int noise)
-      : HeavyAdThresholdNoiseProvider(), noise_(noise) {}
-  ~MockNoiseProvider() override = default;
-
-  int GetNetworkThresholdNoiseForFrame() const override { return noise_; }
-
- private:
-  int noise_;
 };
 
 std::string SuffixedHistogram(const std::string& suffix) {
@@ -424,12 +404,6 @@ class AdsPageLoadMetricsObserverTest
     clock_->SetNowTicks(base::TimeTicks::Now());
   }
 
-  void OverrideHeavyAdNoiseProvider(
-      std::unique_ptr<MockNoiseProvider> noise_provider) {
-    ads_observer_->SetHeavyAdThresholdNoiseProviderForTesting(
-        std::move(noise_provider));
-  }
-
   // Given the prefix of the CPU histogram to check, either "Cpu.FullPage" or
   // "Cpu.AdFrames.PerFrame", as well as the type, one of "" (for "FullPage"),
   // "Activated", or "Unactivated", along with the total pre and post cpu time
@@ -483,10 +457,8 @@ class AdsPageLoadMetricsObserverTest
   base::HistogramTester histogram_tester_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
   std::unique_ptr<page_load_metrics::PageLoadMetricsObserverTester> tester_;
-
   // The clock used by the ui::ScopedVisibilityTracker, assigned if non-null.
   std::unique_ptr<base::SimpleTestTickClock> clock_;
-
   // A pointer to the AdsPageLoadMetricsObserver used by the tests.
   AdsPageLoadMetricsObserver* ads_observer_ = nullptr;
 
@@ -1546,10 +1518,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdFeatureOff_UMARecorded) {
   OverrideVisibilityTrackerWithMockClock();
 
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-
-  OverrideHeavyAdNoiseProvider(
-      std::make_unique<MockNoiseProvider>(0 /* network noise */));
-
   RenderFrameHost* ad_frame_none =
       CreateAndNavigateSubFrame(kAdUrl, main_frame);
   RenderFrameHost* ad_frame_net = CreateAndNavigateSubFrame(kAdUrl, main_frame);
@@ -1591,22 +1559,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdFeatureOff_UMARecorded) {
   histogram_tester().ExpectBucketCount(
       SuffixedHistogram("HeavyAds.ComputedType2"),
       FrameData::HeavyAdStatus::kTotalCpu, 1);
-
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.ComputedTypeWithThresholdNoise"), 4);
-  histogram_tester().ExpectBucketCount(
-      SuffixedHistogram("HeavyAds.ComputedTypeWithThresholdNoise"),
-      FrameData::HeavyAdStatus::kNone, 1);
-  histogram_tester().ExpectBucketCount(
-      SuffixedHistogram("HeavyAds.ComputedTypeWithThresholdNoise"),
-      FrameData::HeavyAdStatus::kNetwork, 1);
-  histogram_tester().ExpectBucketCount(
-      SuffixedHistogram("HeavyAds.ComputedTypeWithThresholdNoise"),
-      FrameData::HeavyAdStatus::kPeakCpu, 1);
-  histogram_tester().ExpectBucketCount(
-      SuffixedHistogram("HeavyAds.ComputedTypeWithThresholdNoise"),
-      FrameData::HeavyAdStatus::kTotalCpu, 1);
-
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("HeavyAds.InterventionType2"), 0);
 }
@@ -1614,11 +1566,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdFeatureOff_UMARecorded) {
 TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdNetworkUsage_InterventionFired) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
+  OverrideVisibilityTrackerWithMockClock();
 
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-
-  OverrideHeavyAdNoiseProvider(
-      std::make_unique<MockNoiseProvider>(0 /* network noise */));
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
 
   // Load just under the threshold amount of bytes.
@@ -1633,94 +1583,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdNetworkUsage_InterventionFired) {
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("HeavyAds.InterventionType2"),
       FrameData::HeavyAdStatus::kNetwork, 1);
-}
-
-TEST_F(AdsPageLoadMetricsObserverTest,
-       HeavyAdNetworkUsageWithNoise_InterventionFired) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
-
-  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-
-  OverrideHeavyAdNoiseProvider(
-      std::make_unique<MockNoiseProvider>(2048 /* network noise */));
-  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
-
-  // Load just under the threshold amount of bytes with noise included.
-  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED,
-                     (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
-
-  // Load enough bytes to meet the noised threshold criteria.
-  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED, 1);
-
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("HeavyAds.InterventionType2"),
-      FrameData::HeavyAdStatus::kNetwork, 1);
-}
-
-TEST_F(AdsPageLoadMetricsObserverTest,
-       HeavyAdNetworkUsageLessThanNoisedThreshold_NotFired) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
-
-  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-
-  OverrideHeavyAdNoiseProvider(
-      std::make_unique<MockNoiseProvider>(2048 /* network noise */));
-  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
-
-  // Load network bytes that trip the heavy ad threshold without noise.
-  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED,
-                     heavy_ad_thresholds::kMaxNetworkBytes / 1024 + 1);
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
-
-  // Navigate again to trigger histograms.
-  NavigateFrame(kNonAdUrl, main_frame);
-
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("HeavyAds.ComputedType2"),
-      FrameData::HeavyAdStatus::kNetwork, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("HeavyAds.ComputedTypeWithThresholdNoise"),
-      FrameData::HeavyAdStatus::kNone, 1);
-}
-
-TEST_F(AdsPageLoadMetricsObserverTest,
-       HeavyAdNetworkUsageLessThanNoisedThreshold_CpuTriggers) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
-  OverrideVisibilityTrackerWithMockClock();
-
-  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-
-  OverrideHeavyAdNoiseProvider(
-      std::make_unique<MockNoiseProvider>(2048 /* network noise */));
-  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
-
-  // Load network bytes that trip the heavy ad threshold without noise.
-  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED,
-                     heavy_ad_thresholds::kMaxNetworkBytes / 1024 + 1);
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
-
-  // Verify the frame can still trip the CPU threshold.
-  UseCpuTimeUnderThreshold(ad_frame, base::TimeDelta::FromMilliseconds(
-                                         heavy_ad_thresholds::kMaxCpuTime + 1));
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType2"), 1);
-
-  // Navigate again to trigger histograms.
-  NavigateFrame(kNonAdUrl, main_frame);
-
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("HeavyAds.ComputedType2"),
-      FrameData::HeavyAdStatus::kNetwork, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("HeavyAds.ComputedTypeWithThresholdNoise"),
-      FrameData::HeavyAdStatus::kTotalCpu, 1);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdTotalCpuUsage_InterventionFired) {
@@ -1787,7 +1649,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdFeatureDisabled_NotFired) {
 
   // Add enough data to trigger the intervention.
   ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED,
-                     (kMaxHeavyAdNetworkBytes / 1024) + 1);
+                     (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
 
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("HeavyAds.InterventionType2"), 0);
@@ -1851,9 +1713,6 @@ TEST_F(AdsPageLoadMetricsObserverTest,
     blocklist()->AddEntry(GURL(kNonAdUrl).host(), true, 0);
 
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-
-  OverrideHeavyAdNoiseProvider(
-      std::make_unique<MockNoiseProvider>(0 /* network noise */));
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
 
   // Add enough data to trigger the intervention.
@@ -1874,9 +1733,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdBlocklist_InterventionReported) {
     blocklist()->AddEntry(GURL(kNonAdUrl).host(), true, 0);
 
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-
-  OverrideHeavyAdNoiseProvider(
-      std::make_unique<MockNoiseProvider>(0 /* network noise */));
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
 
   // Add enough data to trigger the intervention.

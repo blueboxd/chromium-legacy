@@ -474,7 +474,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     private class TabbedModeTabCreator extends ChromeTabCreator {
         public TabbedModeTabCreator(
                 ChromeTabbedActivity activity, WindowAndroid nativeWindow, boolean incognito) {
-            super(activity, nativeWindow, incognito);
+            super(activity, nativeWindow, getStartupTabPreloader(), incognito);
         }
 
         @Override
@@ -1131,7 +1131,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     private boolean maybeLaunchNtpOrResetBottomSheetFromMainIntent(Intent intent) {
         assert isMainIntentFromLauncher(intent);
 
-        if (!mIntentHandler.isIntentUserVisible()) return false;
+        if (!IntentHandler.isIntentUserVisible()) return false;
 
         if (!mInactivityTracker.inactivityThresholdPassed()) return false;
 
@@ -1219,7 +1219,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                     LAST_BACKGROUNDED_TIME_MS_PREF, this.getLifecycleDispatcher());
             mIntentWithEffect = false;
             if (getSavedInstanceState() == null && intent != null) {
-                if (!mIntentHandler.shouldIgnoreIntent(intent)) {
+                if (!IntentHandler.shouldIgnoreIntent(intent)) {
                     mIntentWithEffect = mIntentHandler.onNewIntent(intent);
                 }
 

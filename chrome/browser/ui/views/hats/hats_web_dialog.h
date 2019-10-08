@@ -56,6 +56,8 @@ class HatsWebDialog : public ui::WebDialogDelegate {
   bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
                          const content::ContextMenuParams& params) override;
   void OnWebContentsFinishedLoad() override;
+  void OnMainFrameResourceLoadComplete(
+      const content::mojom::ResourceLoadInfo& resource_load_info) override;
 
   // These are virtual for tests.
   virtual void OnLoadTimedOut();
@@ -80,6 +82,9 @@ class HatsWebDialog : public ui::WebDialogDelegate {
   // The widget created for preloading. It is owned by us until it is shown to
   // user.
   views::Widget* preloading_widget_{nullptr};
+
+  // Indicate whether HaTS resources were loaded successfully.
+  bool resource_loaded_{false};
 
   base::WeakPtrFactory<HatsWebDialog> weak_factory_{this};
 

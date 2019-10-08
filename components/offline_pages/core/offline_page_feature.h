@@ -101,9 +101,6 @@ bool IsOfflineIndicatorAlwaysHttpProbeEnabled();
 // calculating their content digests in one step.
 bool IsOnTheFlyMhtmlHashComputationEnabled();
 
-// Returns true if offline pages as a whole is enabled.
-bool IsOfflinePagesEnabled();
-
 }  // namespace offline_pages
 
 #endif  // COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_FEATURE_H_

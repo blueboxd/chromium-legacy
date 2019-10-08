@@ -60,14 +60,6 @@ class ServicesDelegateAndroid : public ServicesDelegate {
 
   std::string GetSafetyNetId() const override;
 
-  // Reports the current extended reporting level. Note that this is an
-  // estimation and may not always be correct. It is possible that the
-  // estimation finds both Scout and legacy extended reporting to be enabled.
-  // This can happen, for instance, if one profile has Scout enabled and another
-  // has legacy extended reporting enabled. In such a case, this method reports
-  // LEGACY as the current level.
-  ExtendedReportingLevel GetEstimatedExtendedReportingLevel() const;
-
   // The telemetry service tied to the current profile.
   std::unique_ptr<AndroidTelemetryService> telemetry_service_;
 

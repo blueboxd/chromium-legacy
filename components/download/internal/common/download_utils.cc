@@ -177,15 +177,8 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
     return result;
 
   // The caller is expecting a partial response.
-  if (save_info && (save_info->offset > 0 || save_info->length > 0)) {
+  if (save_info && save_info->offset > 0) {
     if (http_headers.response_code() != net::HTTP_PARTIAL_CONTENT) {
-      // Server should send partial content when "If-Match" or
-      // "If-Unmodified-Since" check passes, and the range request header has
-      // last byte position. e.g. "Range:bytes=50-99".
-      if (save_info->length != DownloadSaveInfo::kLengthFullContent &&
-          !fetch_error_body)
-        return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
-
       // Requested a partial range, but received the entire response, when
       // the range request header is "Range:bytes={offset}-".
       // The response can be HTTP 200 or other error code when
@@ -204,9 +197,7 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
       return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
     DCHECK_GE(first_byte, 0);
 
-    if (first_byte != save_info->offset ||
-        (save_info->length > 0 &&
-         last_byte != save_info->offset + save_info->length - 1)) {
+    if (first_byte != save_info->offset) {
       // The server returned a different range than the one we requested. Assume
       // the server doesn't support range request.
       return DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
@@ -337,8 +328,7 @@ int GetLoadFlags(DownloadUrlParameters* params, bool has_upload_data) {
 std::unique_ptr<net::HttpRequestHeaders> GetAdditionalRequestHeaders(
     DownloadUrlParameters* params) {
   auto headers = std::make_unique<net::HttpRequestHeaders>();
-  if (params->offset() == 0 &&
-      params->length() == DownloadSaveInfo::kLengthFullContent) {
+  if (params->offset() == 0) {
     AppendExtraHeaders(headers.get(), params);
     return headers;
   }
@@ -361,10 +351,7 @@ std::unique_ptr<net::HttpRequestHeaders> GetAdditionalRequestHeaders(
 
   // Add "Range" header.
   std::string range_header =
-      (params->length() == DownloadSaveInfo::kLengthFullContent)
-          ? base::StringPrintf("bytes=%" PRId64 "-", params->offset())
-          : base::StringPrintf("bytes=%" PRId64 "-%" PRId64, params->offset(),
-                               params->offset() + params->length() - 1);
+      base::StringPrintf("bytes=%" PRId64 "-", params->offset());
   headers->SetHeader(net::HttpRequestHeaders::kRange, range_header);
 
   // Add "If-Range" headers.

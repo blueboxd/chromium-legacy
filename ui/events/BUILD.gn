@@ -585,9 +585,6 @@ if (!is_ios) {
     if (is_android) {
       sources += [ "android/motion_event_android_unittest.cc" ]
       deps += [ "//ui/android:ui_full_java" ]
-      if (notouch_build) {
-        defines += [ "NOTOUCH_BUILD" ]
-      }
     } else {
       data_deps = [
         "//third_party/mesa_headers",

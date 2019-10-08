@@ -4,19 +4,12 @@
 
 package org.chromium.chrome.modules.test_dummy;
 
-import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.module_installer.engine.InstallListener;
 
 /** Installs and loads the test dummy module. */
-@JNINamespace("test_dummy")
 public class TestDummyModuleProvider {
-    private static boolean sIsModuleLoaded;
-
     /** Returns true if the module is installed. */
     public static boolean isModuleInstalled() {
-        ThreadUtils.assertOnUiThread();
         return TestDummyModule.isInstalled();
     }
 
@@ -25,11 +18,10 @@ public class TestDummyModuleProvider {
      *
      * Can only be called if the module is not installed.
      *
-     * @param onFinished Called when the install has finished.
+     * @param listener Called when the install has finished.
      */
-    public static void installModule(InstallListener onFinished) {
-        ThreadUtils.assertOnUiThread();
-        TestDummyModule.install(onFinished);
+    public static void installModule(InstallListener listener) {
+        TestDummyModule.install(listener);
     }
 
     /**
@@ -39,17 +31,6 @@ public class TestDummyModuleProvider {
      * call.
      */
     public static TestDummyProvider getTestDummyProvider() {
-        ThreadUtils.assertOnUiThread();
-        assert isModuleInstalled();
-        if (!sIsModuleLoaded) {
-            TestDummyModuleProviderJni.get().loadNative();
-            sIsModuleLoaded = true;
-        }
         return TestDummyModule.getImpl();
-    }
-
-    @NativeMethods
-    interface Natives {
-        void loadNative();
     }
 }

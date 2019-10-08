@@ -92,6 +92,7 @@ python_library("test_runner_py") {
   if (build_with_chromium) {
     data += [
       "//third_party/android_build_tools/bundletool/bundletool-all-0.10.3.jar",
+      "//tools/android/avd/proto/",
     ]
     data_deps +=
         [ "//third_party/android_platform/development/scripts:stack_py" ]

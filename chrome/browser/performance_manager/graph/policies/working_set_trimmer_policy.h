@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/performance_manager/public/graph/graph.h"
-#include "chrome/browser/performance_manager/public/graph/node_attached_data.h"
-#include "chrome/browser/performance_manager/public/graph/process_node.h"
+#include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/node_attached_data.h"
+#include "components/performance_manager/public/graph/process_node.h"
 
 namespace performance_manager {
 namespace policies {

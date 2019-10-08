@@ -66,6 +66,7 @@ jumbo_component("libgtkui") {
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//build:branding_buildflags",
     "//build/config/linux/gtk",
     "//build/config/linux/gtk:gtkprint",
     "//cc/paint",

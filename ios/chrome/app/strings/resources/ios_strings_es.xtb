@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Editar marcador</translation>
 <translation id="2179182049312275900">Puedes activar la sincronización en cualquier momento desde la configuración.</translation>
 <translation id="2198757192731523470">Es posible que se utilice tu historial para personalizar la Búsqueda, los anuncios y otros servicios de Google.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artículos de la lista de lectura no leídos.</translation>
 <translation id="2230173723195178503">Página web cargada</translation>
 <translation id="2239626343334228536">Borrando datos de navegación...</translation>
 <translation id="2267753748892043616">Añadir cuenta</translation>
@@ -265,7 +264,6 @@ Tus datos se han cifrado con tu frase de contraseña de sincronización. Introd�
 
 Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" />.</translation>
 <translation id="4805759445554688327">El número de tarjeta no es válido</translation>
-<translation id="4807020197310989387">1 artículo de la lista de lectura no leído.</translation>
 <translation id="4818522717893377262">Añadir idioma...</translation>
 <translation id="481968316161811770">Cookies y datos de sitios web</translation>
 <translation id="4833786495304741580">Envía automáticamente estadísticas de uso e informes sobre fallos a Google.</translation>
@@ -414,6 +412,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="6858855187367714033">Escaneado</translation>
 <translation id="6859944681507688231">Para escanear un código QR o una tarjeta de crédito, habilita la cámara en la configuración.</translation>
 <translation id="6873263987691478642">Vista dividida</translation>
+<translation id="6888009575607455378">¿Seguro que quieres descartar los cambios?</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Activar sincronización</translation>
 <translation id="6914583639806229067">Buscar la imagen que has copiado</translation>

@@ -686,7 +686,6 @@ void PaintFillLayerBackground(GraphicsContext& context,
                  inspector_paint_image_event::Data(
                      node, *info.image, FloatRect(image->Rect()),
                      FloatRect(scrolled_paint_rect)));
-
     DrawTiledBackground(
         context, image, FloatSize(geometry.UnsnappedDestRect().size),
         FloatRect(geometry.SnappedDestRect()), geometry.Phase(),

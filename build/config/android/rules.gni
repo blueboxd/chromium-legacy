@@ -2144,8 +2144,8 @@ if (enable_java_templates) {
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
     assert(defined(invoker.android_manifest))
-    _gen_dir = "$target_gen_dir/$target_name"
-    _base_path = "$_gen_dir/$target_name"
+    _out_dir = "$target_out_dir/$target_name"
+    _base_path = "$_out_dir/$target_name"
     _build_config = "$target_gen_dir/$target_name.build_config"
     _build_config_target = "$target_name$build_config_target_suffix"
 
@@ -2161,7 +2161,6 @@ if (enable_java_templates) {
     # JUnit tests use resource zip files. These must not be put in gen/
     # directory or they will not be available to tester bots.
     _jar_path = "$_base_path.jar"
-    _lib_dex_path = "$_base_path.dex.jar"
     _template_name = target_name
 
     _is_bundle_module =
@@ -2173,7 +2172,7 @@ if (enable_java_templates) {
 
     _enable_multidex =
         !defined(invoker.enable_multidex) || invoker.enable_multidex
-    _final_dex_path = "$_gen_dir/classes.dex.zip"
+    _final_dex_path = "$_out_dir/classes.dex.zip"
 
     if (!_is_bundle_module) {
       _final_apk_path = invoker.final_apk_path
@@ -2372,7 +2371,7 @@ if (enable_java_templates) {
         defined(invoker.static_library_dependent_targets) && _proguard_enabled
     if (_is_static_library_provider) {
       _static_library_sync_dex_path =
-          "$_gen_dir/static_library_synchronized_proguard.classes.dex.zip"
+          "$_out_dir/static_library_synchronized_proguard.classes.dex.zip"
       _resource_ids_provider_deps = []
       foreach(_target, invoker.static_library_dependent_targets) {
         if (_target.is_resource_ids_provider) {
@@ -2813,7 +2812,6 @@ if (enable_java_templates) {
       deps = _deps
       srcjar_deps = _srcjar_deps
       final_jar_path = _jar_path
-      dex_path = _lib_dex_path
       final_dex_path = _final_dex_path
 
       if (_is_bundle_module) {
@@ -2919,8 +2917,8 @@ if (enable_java_templates) {
           deps += _deps + [ ":$_compile_resources_target" ]
           proguard_mapping_path = _proguard_mapping_path
         } else {
-          input_dex_jars = [ _lib_dex_path ]
-          input_dex_filearg = "@FileArg(${_rebased_build_config}:final_dex:dependency_dex_files)"
+          input_dex_filearg =
+              "@FileArg(${_rebased_build_config}:final_dex:all_dex_files)"
           if (_enable_main_dex_list) {
             main_dex_list_input_classes_filearg = "@FileArg(${_rebased_build_config}:deps_info:java_runtime_classpath)"
           }
@@ -3207,13 +3205,10 @@ if (enable_java_templates) {
             rebase_path(_final_apk_path_no_ext, root_build_dir)
         _rebased_incremental_install_json_path =
             rebase_path(_incremental_install_json_path, root_build_dir)
-        _rebased_lib_dex_path = rebase_path(_lib_dex_path, root_build_dir)
-        _dex_arg_key = "${_rebased_build_config}:final_dex:dependency_dex_files"
         args = [
           "--apk-path=${_rebased_apk_path_no_ext}_incremental.apk",
           "--output-path=$_rebased_incremental_install_json_path",
-          "--dex-file=$_rebased_lib_dex_path",
-          "--dex-file-list=@FileArg($_dex_arg_key)",
+          "--dex-file=@FileArg($_rebased_build_config:final_dex:all_dex_files)",
         ]
         if (_proguard_enabled) {
           args += [ "--show-proguard-warning" ]

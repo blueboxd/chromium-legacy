@@ -533,6 +533,11 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   bool HasCookieableScheme(const GURL& url);
 
+  // Get the cookie's access semantics (LEGACY or NONLEGACY) from the cookie
+  // access delegate, if it is non-null. Otherwise return UNKNOWN.
+  CookieAccessSemantics GetAccessSemanticsForCookie(
+      const CanonicalCookie& cookie) const;
+
   // Statistics support
 
   // This function should be called repeatedly, and will record
@@ -625,7 +630,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // Used to determine whether a particular cookie should be subject to legacy
   // or non-legacy access semantics.
-  // TODO(chlily): Hook up to CanonicalCookie::GetEffectiveSameSite.
   std::unique_ptr<CookieAccessDelegate> cookie_access_delegate_;
 
   base::ThreadChecker thread_checker_;

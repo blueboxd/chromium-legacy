@@ -34,13 +34,10 @@ class SelectedKeywordView : public IconLabelBubbleView {
   void ResetImage();
 
   // IconLabelBubbleView:
-  SkColor GetTextColor() const override;
-  SkColor GetInkDropBaseColor() const override;
-
-  // views::View:
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
-  void Layout() override;
+  SkColor GetTextColor() const override;
+  SkColor GetInkDropBaseColor() const override;
 
   // The current keyword, or an empty string if no keyword is displayed.
   void SetKeyword(const base::string16& keyword);
@@ -50,8 +47,11 @@ class SelectedKeywordView : public IconLabelBubbleView {
 
  private:
   // IconLabelBubbleView:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   int GetExtraInternalSpacing() const override;
   const char* GetClassName() const override;
+
+  void SetLabelForCurrentWidth();
 
   LocationBarView* location_bar_;
 

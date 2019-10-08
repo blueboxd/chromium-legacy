@@ -253,6 +253,7 @@ body {
   .month-button.selected,
   .week-number-cell.selected {
     background-color: Highlight;
+    color: Window;
   }
 
   .day-cell.highlighted.today,
@@ -260,6 +261,7 @@ body {
   .month-button.today {
     background-color: Highlight;
     border: 2px solid Window !important;
+    color: Window;
   }
 
   .day-cell.selected.today,

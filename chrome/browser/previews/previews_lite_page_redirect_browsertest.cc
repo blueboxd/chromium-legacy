@@ -1134,6 +1134,16 @@ IN_PROC_BROWSER_TEST_P(
         &result));
     EXPECT_EQ(kSubframeTitle, base::ASCIIToUTF16(result));
   }
+
+  {
+    base::HistogramTester histogram_tester;
+    NavigateParams params(browser(), https_url(), ui::PAGE_TRANSITION_FROM_API);
+    ui_test_utils::NavigateToURL(&params);
+    VerifyPreviewNotLoaded();
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.IneligibleReasons",
+        previews::LitePageRedirectIneligibleReason::kAPIPageTransition, 1);
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(

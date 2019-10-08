@@ -327,6 +327,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3241052487511142956">Previous visited link</translation>
 <translation id="3241638166094654466">Cells in each line:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">Previous similar item</translation>
 <translation id="3286372614333682499">portrait</translation>
 <translation id="3286390186030710347">Slider</translation>
 <translation id="3299925995433437805">No next visited link.</translation>
@@ -509,6 +510,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4517854969512651305">Increase value</translation>
 <translation id="4529987814483543472">Classic keymap</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{slash}other{# slashes}}</translation>
+<translation id="4537277403911487429">Next similar item</translation>
 <translation id="4547556996012970016">Next level 5 heading</translation>
 <translation id="4562381607973973258">Header</translation>
 <translation id="4569941707103739422">Press up or down arrow to navigate; enter to activate.</translation>

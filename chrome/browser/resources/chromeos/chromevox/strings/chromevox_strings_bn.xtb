@@ -327,6 +327,7 @@
 <translation id="3241052487511142956">আগে ঘুরে দেখা লিঙ্ক</translation>
 <translation id="3241638166094654466">প্রতিটি লাইনে কক্ষের সংখ্যা:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">এই রকমের আগের আইটেম</translation>
 <translation id="3286372614333682499">পোর্ট্রেট</translation>
 <translation id="3286390186030710347">স্লাইডার</translation>
 <translation id="3299925995433437805">কোনও পরবর্তী ঘুরে দেখা লিঙ্ক নেই</translation>
@@ -509,6 +510,7 @@
 <translation id="4517854969512651305">বাড়ান</translation>
 <translation id="4529987814483543472">ক্লাসিক কীম্যাপ</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{স্ল্যাশ}one{#টি স্ল্যাশ}other{#টি স্ল্যাশ}}</translation>
+<translation id="4537277403911487429">এই রকমের পরের আইটেম</translation>
 <translation id="4547556996012970016">পরবর্তী স্তর ৫ শিরোনাম</translation>
 <translation id="4562381607973973258">শিরোনাম</translation>
 <translation id="4569941707103739422">নেভিগেট করতে উপরের অথবা নিচের তীরচিহ্ন, চালু করতে এন্টার টিপুন।</translation>

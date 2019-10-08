@@ -59,8 +59,8 @@ IN_PROC_BROWSER_TEST_F(HeavyAdHelperBrowserTest,
   web_contents->SetDelegate(&console_delegate);
 
   content::TestNavigationObserver error_observer(web_contents);
-  controller.LoadErrorPage(child, url, heavy_ads::PrepareHeavyAdPage(),
-                           net::ERR_BLOCKED_BY_CLIENT);
+  controller.LoadPostCommitErrorPage(
+      child, url, heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
   error_observer.Wait();
 
   EXPECT_TRUE(console_delegate.messages().empty());
@@ -81,8 +81,8 @@ IN_PROC_BROWSER_TEST_F(HeavyAdHelperBrowserTest,
       ChildFrameAt(web_contents->GetMainFrame(), 0);
 
   content::TestNavigationObserver error_observer(web_contents);
-  controller.LoadErrorPage(child, url, heavy_ads::PrepareHeavyAdPage(),
-                           net::ERR_BLOCKED_BY_CLIENT);
+  controller.LoadPostCommitErrorPage(
+      child, url, heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
   error_observer.Wait();
 
   EXPECT_TRUE(IsContentInDocument(

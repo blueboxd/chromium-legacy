@@ -42,7 +42,6 @@ class PasswordReuseModalWarningDialog
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;
-  int GetDefaultDialogButton() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   // ChromePasswordProtectionService::Observer:

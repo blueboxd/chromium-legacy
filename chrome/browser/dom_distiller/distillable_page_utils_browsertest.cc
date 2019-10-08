@@ -33,10 +33,6 @@ using ::testing::Field;
 using ::testing::Not;
 using ::testing::Optional;
 
-// This is essentially an "enum" with human-readable strings (e.g. "adaboost",
-// "none") as values.
-using namespace switches::reader_mode_heuristics;  // NOLINT
-
 const char kSimpleArticlePath[] = "/dom_distiller/simple_article.html";
 const char kSimpleArticleIFramePath[] =
     "/dom_distiller/simple_article_iframe.html";
@@ -68,7 +64,7 @@ const auto kWaitNoExpectedCall = base::TimeDelta::FromSeconds(1);
 }  // namespace
 
 template <const char Option[]>
-class DistillablePageUtilsBrowserTestOption : public InProcessBrowserTest {
+class TestOption : public InProcessBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnableDomDistiller);
@@ -130,15 +126,14 @@ MATCHER(IsMobileFriendly,
 }
 
 using DistillablePageUtilsBrowserTestAlways =
-    DistillablePageUtilsBrowserTestOption<kAlwaysTrue>;
+    TestOption<switches::reader_mode_heuristics::kAlwaysTrue>;
 
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAlways,
                        AllRealPathsCallObserverOnceWithIsDistillable) {
   for (unsigned i = 0; i < sizeof(kAllPaths) / sizeof(kAllPaths[0]); ++i) {
     testing::InSequence dummy;
     EXPECT_CALL(holder_, OnResult(AllOf(IsDistillable(), IsLast())))
-        .WillOnce(testing::InvokeWithoutArgs(
-            this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
+        .WillOnce(testing::InvokeWithoutArgs(this, &TestOption::QuitSoon));
     NavigateAndWait(kAllPaths[i], base::TimeDelta());
     EXPECT_THAT(GetLatestResult(web_contents_),
                 Optional(AllOf(IsDistillable(), IsLast())));
@@ -153,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAlways,
 }
 
 using DistillablePageUtilsBrowserTestNone =
-    DistillablePageUtilsBrowserTestOption<kNone>;
+    TestOption<switches::reader_mode_heuristics::kNone>;
 
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestNone, NeverCallObserver) {
   EXPECT_CALL(holder_, OnResult(_)).Times(0);
@@ -162,13 +157,12 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestNone, NeverCallObserver) {
 }
 
 using DistillablePageUtilsBrowserTestOGArticle =
-    DistillablePageUtilsBrowserTestOption<kOGArticle>;
+    TestOption<switches::reader_mode_heuristics::kOGArticle>;
 
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestOGArticle,
                        ArticlesCallObserverOnceWithIsDistillable) {
   EXPECT_CALL(holder_, OnResult(AllOf(IsDistillable(), IsLast())))
-      .WillOnce(testing::InvokeWithoutArgs(
-          this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
+      .WillOnce(testing::InvokeWithoutArgs(this, &TestOption::QuitSoon));
   NavigateAndWait(kArticlePath, base::TimeDelta());
   EXPECT_THAT(GetLatestResult(web_contents_),
               Optional(AllOf(IsDistillable(), IsLast())));
@@ -177,15 +171,14 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestOGArticle,
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestOGArticle,
                        NonArticleCallsObserverOnceWithIsNotDistillable) {
   EXPECT_CALL(holder_, OnResult(AllOf(Not(IsDistillable()), IsLast())))
-      .WillOnce(testing::InvokeWithoutArgs(
-          this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
+      .WillOnce(testing::InvokeWithoutArgs(this, &TestOption::QuitSoon));
   NavigateAndWait(kNonArticlePath, base::TimeDelta());
   EXPECT_THAT(GetLatestResult(web_contents_),
               Optional(AllOf(Not(IsDistillable()), IsLast())));
 }
 
 using DistillablePageUtilsBrowserTestAdaboost =
-    DistillablePageUtilsBrowserTestOption<kAdaBoost>;
+    TestOption<switches::reader_mode_heuristics::kAdaBoost>;
 
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAdaboost,
                        SimpleArticlesCallObserverTwiceWithIsDistillable) {
@@ -197,8 +190,7 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAdaboost,
         .Times(1);
     EXPECT_CALL(holder_, OnResult(AllOf(IsDistillable(), IsLast(),
                                         Not(IsMobileFriendly()))))
-        .WillOnce(testing::InvokeWithoutArgs(
-            this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
+        .WillOnce(testing::InvokeWithoutArgs(this, &TestOption::QuitSoon));
     NavigateAndWait(paths[i], base::TimeDelta());
 
     EXPECT_THAT(
@@ -215,8 +207,7 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAdaboost,
       .Times(1);
   EXPECT_CALL(holder_, OnResult(AllOf(Not(IsDistillable()), IsLast(),
                                       Not(IsMobileFriendly()))))
-      .WillOnce(testing::InvokeWithoutArgs(
-          this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
+      .WillOnce(testing::InvokeWithoutArgs(this, &TestOption::QuitSoon));
   NavigateAndWait(kNonArticlePath, base::TimeDelta());
   EXPECT_THAT(
       GetLatestResult(web_contents_),
@@ -224,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAdaboost,
 }
 
 using DistillablePageUtilsBrowserTestAllArticles =
-    DistillablePageUtilsBrowserTestOption<kAllArticles>;
+    TestOption<switches::reader_mode_heuristics::kAllArticles>;
 
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAllArticles,
                        SimpleArticlesCallObserverTwiceWithIsDistillable) {
@@ -236,8 +227,7 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAllArticles,
         .Times(1);
     EXPECT_CALL(holder_, OnResult(AllOf(IsDistillable(), IsLast(),
                                         Not(IsMobileFriendly()))))
-        .WillOnce(testing::InvokeWithoutArgs(
-            this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
+        .WillOnce(testing::InvokeWithoutArgs(this, &TestOption::QuitSoon));
     NavigateAndWait(paths[i], base::TimeDelta());
     EXPECT_THAT(
         GetLatestResult(web_contents_),
@@ -253,8 +243,7 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAllArticles,
       .Times(1);
   EXPECT_CALL(holder_, OnResult(AllOf(Not(IsDistillable()), IsLast(),
                                       Not(IsMobileFriendly()))))
-      .WillOnce(testing::InvokeWithoutArgs(
-          this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
+      .WillOnce(testing::InvokeWithoutArgs(this, &TestOption::QuitSoon));
   NavigateAndWait(kNonArticlePath, base::TimeDelta());
   EXPECT_THAT(
       GetLatestResult(web_contents_),

@@ -231,6 +231,7 @@
 <translation id="4279490309300973883">ミラーリング</translation>
 <translation id="4281007048406351813">タイマーに 1 分追加</translation>
 <translation id="4296136865091727875"><ph name="COUNT" /> 件の通知をすべて消去</translation>
+<translation id="4303223480529385476">ステータス領域を表示</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">ハイ コントラストのキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -406,6 +407,7 @@
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> になったら利用を再開できます。</translation>
 <translation id="7025533177575372252">スマートフォンを使って <ph name="DEVICE_NAME" /> を接続する</translation>
 <translation id="7029814467594812963">セッションを終了</translation>
+<translation id="7042322267639375032">ステータス領域を表示しない</translation>
 <translation id="7066646422045619941">このネットワークは管理者によって無効にされています。</translation>
 <translation id="7067196344162293536">自動回転</translation>
 <translation id="7068360136237591149">ファイルを開いて</translation>

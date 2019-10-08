@@ -175,7 +175,7 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
         SafeBrowsingBlockingPage::CreateBlockingPage(this, contents,
                                                      blocked_url, resource);
     SafeBrowsingSubresourceTabHelper::CreateForWebContents(contents);
-    contents->GetController().LoadErrorPage(
+    contents->GetController().LoadPostCommitErrorPage(
         contents->GetMainFrame(), blocked_url, blocking_page->GetHTMLContents(),
         net::ERR_BLOCKED_BY_CLIENT);
     delete blocking_page;

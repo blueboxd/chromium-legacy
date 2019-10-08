@@ -1095,6 +1095,7 @@ Del</translation>
 <translation id="6383221683286411806">ייתכנו חיובים באתר.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{הצעה אחת נוספת}two{שתי הצעות נוספות}many{# הצעות נוספות}other{# הצעות נוספות}}</translation>
 <translation id="6387754724289022810">‏כדי לשלם מהר יותר בפעם הבאה, אפשר לשמור בחשבון Google ובמכשיר הזה את פרטי הכרטיס ואת הכתובת לחיוב.</translation>
+<translation id="6389470377220713856">שם על הכרטיס</translation>
 <translation id="6390200185239044127">‏קיפול Z עד האמצע</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">המדיניות הזו הוצאה משימוש. במקומה יש להשתמש במדיניות <ph name="NEW_POLICY" />.</translation>
@@ -1273,7 +1274,6 @@ Del</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">משויך:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">יציאה מהאתר הזה</translation>
 <translation id="7353601530677266744">שורת פקודה </translation>
 <translation id="7372973238305370288">תוצאת חיפוש</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>

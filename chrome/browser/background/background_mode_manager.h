@@ -108,6 +108,10 @@ class BackgroundModeManager : public content::NotificationObserver,
   // For testing purposes.
   size_t NumberOfBackgroundModeData();
 
+  int client_installed_notifications_for_test() {
+    return client_installed_notifications_;
+  }
+
  private:
   friend class AppBackgroundPageApiTest;
   friend class BackgroundModeManagerTest;
@@ -394,6 +398,10 @@ class BackgroundModeManager : public content::NotificationObserver,
   // (used for testing background mode without having to install a background
   // app).
   bool keep_alive_for_test_ = false;
+
+  // Tracks the number of "background app installed" notifications shown to the
+  // user. Used for testing.
+  int client_installed_notifications_ = 0;
 
   // Set to true when background mode is suspended.
   bool background_mode_suspended_ = false;

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_DECORATORS_FROZEN_FRAME_AGGREGATOR_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_DECORATORS_FROZEN_FRAME_AGGREGATOR_H_
 
-#include "chrome/browser/performance_manager/public/graph/frame_node.h"
-#include "chrome/browser/performance_manager/public/graph/graph.h"
-#include "chrome/browser/performance_manager/public/graph/page_node.h"
-#include "chrome/browser/performance_manager/public/graph/process_node.h"
+#include "components/performance_manager/public/graph/frame_node.h"
+#include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/page_node.h"
+#include "components/performance_manager/public/graph/process_node.h"
 
 namespace performance_manager {
 

@@ -147,9 +147,6 @@ BackgroundApplicationListModel::~BackgroundApplicationListModel() = default;
 BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
     : profile_(profile) {
   DCHECK(profile_);
-  background_contents_service_observer_.Add(
-      BackgroundContentsServiceFactory::GetForProfile(profile));
-
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
                  content::Source<Profile>(profile));
@@ -309,7 +306,6 @@ void BackgroundApplicationListModel::OnExtensionUnloaded(
 }
 
 void BackgroundApplicationListModel::OnExtensionSystemReady() {
-  ready_ = true;
   // All initial extensions will be loaded when extension system ready. So we
   // can get everything here.
   Update();
@@ -321,6 +317,11 @@ void BackgroundApplicationListModel::OnExtensionSystemReady() {
   // for the extension system, which isn't a guarantee. Thus, register here and
   // associate all initial extensions.
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
+
+  background_contents_service_observer_.Add(
+      BackgroundContentsServiceFactory::GetForProfile(profile_));
+
+  startup_done_ = true;
 }
 
 void BackgroundApplicationListModel::OnShutdown(ExtensionRegistry* registry) {
@@ -367,11 +368,9 @@ void BackgroundApplicationListModel::RemoveObserver(Observer* observer) {
 // differs from the old list, it generates OnApplicationListChanged events for
 // each observer.
 void BackgroundApplicationListModel::Update() {
-  if (!ready_)
-    return;
-
   extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(service->is_ready());
 
   // Discover current background applications, compare with previous list, which
   // is consistently sorted, and notify observers if they differ.

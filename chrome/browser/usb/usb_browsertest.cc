@@ -187,34 +187,24 @@ IN_PROC_BROWSER_TEST_F(WebUsbTest, RequestAndGetDevices) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  int int_result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      web_contents,
-      "navigator.usb.getDevices()"
-      "    .then(devices => {"
-      "        domAutomationController.send(devices.length);"
-      "    });",
-      &int_result));
-  EXPECT_EQ(0, int_result);
+  EXPECT_EQ(content::ListValueOf(), content::EvalJs(web_contents,
+                                                    R"((async () => {
+        let devices = await navigator.usb.getDevices();
+        return devices.map(device => device.serialNumber);
+      })())"));
 
-  std::string result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents,
-      "navigator.usb.requestDevice({ filters: [ { vendorId: 0 } ] })"
-      "    .then(device => {"
-      "        domAutomationController.send(device.serialNumber);"
-      "    });",
-      &result));
-  EXPECT_EQ("123456", result);
+  EXPECT_EQ("123456", content::EvalJs(web_contents,
+                                      R"((async () => {
+        let device =
+            await navigator.usb.requestDevice({ filters: [{ vendorId: 0 }] });
+        return device.serialNumber;
+      })())"));
 
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      web_contents,
-      "navigator.usb.getDevices()"
-      "    .then(devices => {"
-      "        domAutomationController.send(devices.length);"
-      "    });",
-      &int_result));
-  EXPECT_EQ(1, int_result);
+  EXPECT_EQ(content::ListValueOf("123456"), content::EvalJs(web_contents,
+                                                            R"((async () => {
+        let devices = await navigator.usb.getDevices();
+        return devices.map(device => device.serialNumber);
+      })())"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUsbTest, RequestDeviceWithGuardBlocked) {
@@ -227,68 +217,52 @@ IN_PROC_BROWSER_TEST_F(WebUsbTest, RequestDeviceWithGuardBlocked) {
                                      CONTENT_SETTINGS_TYPE_USB_GUARD,
                                      std::string(), CONTENT_SETTING_BLOCK);
 
-  std::string result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents,
-      "navigator.usb.requestDevice({ filters: [ { vendorId: 0 } ] })"
-      "    .then(device => {"
-      "      domAutomationController.send('failed');"
-      "    }, error => {"
-      "      domAutomationController.send(error.name + ': ' + error.message);"
-      "    });",
-      &result));
-  EXPECT_EQ("NotFoundError: No device selected.", result);
+  EXPECT_EQ("NotFoundError: No device selected.",
+            content::EvalJs(web_contents,
+                            R"((async () => {
+            try {
+              await navigator.usb.requestDevice({ filters: [{ vendorId: 0 }] });
+              return "Expected error, got success.";
+            } catch (e) {
+              return `${e.name}: ${e.message}`;
+            }
+          })())"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUsbTest, AddRemoveDevice) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  std::string result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents,
-      "navigator.usb.requestDevice({ filters: [ { vendorId: 0 } ] })"
-      "    .then(device => {"
-      "        domAutomationController.send(device.serialNumber);"
-      "    });"
+  EXPECT_EQ("123456", content::EvalJs(web_contents,
+                                      R"((async () => {
+        let device =
+            await navigator.usb.requestDevice({ filters: [{ vendorId: 0 }] });
+        return device.serialNumber;
+      })())"));
 
-      "var deviceAdded = null;"
-      "navigator.usb.addEventListener('connect', e => {"
-      "    deviceAdded = e.device;"
-      "});"
-
-      "var deviceRemoved = null;"
-      "navigator.usb.addEventListener('disconnect', e => {"
-      "    deviceRemoved = e.device;"
-      "});",
-      &result));
-  EXPECT_EQ("123456", result);
+  EXPECT_TRUE(content::ExecJs(web_contents,
+                              R"(
+        var removedPromise = new Promise(resolve => {
+          navigator.usb.addEventListener('disconnect', e => {
+            resolve(e.device.serialNumber);
+          }, { once: true });
+        });
+      )"));
 
   RemoveFakeDevice();
-  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ("123456", content::EvalJs(web_contents, "removedPromise"));
 
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents,
-      "if (deviceRemoved === null) {"
-      "  domAutomationController.send('null');"
-      "} else {"
-      "  domAutomationController.send(deviceRemoved.serialNumber);"
-      "}",
-      &result));
-  EXPECT_EQ("123456", result);
+  EXPECT_TRUE(content::ExecJs(web_contents,
+                              R"(
+        var addedPromise = new Promise(resolve => {
+          navigator.usb.addEventListener('connect', e => {
+            resolve(e.device.serialNumber);
+          }, { once: true });
+        });
+      )"));
 
   AddFakeDevice("123456");
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents,
-      "if (deviceAdded === null) {"
-      "  domAutomationController.send('null');"
-      "} else {"
-      "  domAutomationController.send(deviceAdded.serialNumber);"
-      "}",
-      &result));
-  EXPECT_EQ("123456", result);
+  EXPECT_EQ("123456", content::EvalJs(web_contents, "addedPromise"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUsbTest, AddRemoveDeviceEphemeral) {
@@ -298,35 +272,25 @@ IN_PROC_BROWSER_TEST_F(WebUsbTest, AddRemoveDeviceEphemeral) {
   // Replace the default mock device with one that has no serial number.
   RemoveFakeDevice();
   AddFakeDevice("");
-  base::RunLoop().RunUntilIdle();
 
-  std::string result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents,
-      "navigator.usb.requestDevice({ filters: [ { vendorId: 0 } ] })"
-      "    .then(device => {"
-      "        domAutomationController.send(device.serialNumber);"
-      "    });"
+  EXPECT_EQ("", content::EvalJs(web_contents,
+                                R"((async () => {
+        let device =
+            await navigator.usb.requestDevice({ filters: [{ vendorId: 0 }] });
+        return device.serialNumber;
+      })())"));
 
-      "var deviceRemoved = null;"
-      "navigator.usb.addEventListener('disconnect', e => {"
-      "    deviceRemoved = e.device;"
-      "});",
-      &result));
-  EXPECT_EQ("", result);
+  EXPECT_TRUE(content::ExecJs(web_contents,
+                              R"(
+        var removedPromise = new Promise(resolve => {
+          navigator.usb.addEventListener('disconnect', e => {
+            resolve(e.device.serialNumber);
+          }, { once: true });
+        });
+      )"));
 
   RemoveFakeDevice();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents,
-      "if (deviceRemoved === null) {"
-      "  domAutomationController.send('null');"
-      "} else {"
-      "  domAutomationController.send(deviceRemoved.serialNumber);"
-      "}",
-      &result));
-  EXPECT_EQ("", result);
+  EXPECT_EQ("", content::EvalJs(web_contents, "removedPromise"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUsbTest, NavigateWithChooserCrossOrigin) {
@@ -338,10 +302,11 @@ IN_PROC_BROWSER_TEST_F(WebUsbTest, NavigateWithChooserCrossOrigin) {
       web_contents, 1 /* number_of_navigations */,
       content::MessageLoopRunner::QuitMode::DEFERRED);
 
-  EXPECT_TRUE(content::ExecuteScript(
-      web_contents,
-      "navigator.usb.requestDevice({ filters: [] });"
-      "document.location.href = \"https://google.com\";"));
+  EXPECT_TRUE(content::ExecJs(web_contents,
+                              R"(
+        navigator.usb.requestDevice({ filters: [] });
+        document.location.href = "https://google.com";
+      )"));
 
   observer.Wait();
   EXPECT_EQ(0u, browser()->GetBubbleManager()->GetBubbleCountForTesting());

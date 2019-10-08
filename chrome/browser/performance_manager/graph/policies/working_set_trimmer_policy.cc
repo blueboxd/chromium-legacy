@@ -7,9 +7,9 @@
 #include "build/build_config.h"
 
 #include "chrome/browser/performance_manager/mechanisms/working_set_trimmer.h"
-#include "chrome/browser/performance_manager/public/graph/graph.h"
-#include "chrome/browser/performance_manager/public/graph/node_attached_data.h"
-#include "chrome/browser/performance_manager/public/graph/process_node.h"
+#include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/node_attached_data.h"
+#include "components/performance_manager/public/graph/process_node.h"
 #if defined(OS_WIN)
 #include "chrome/browser/performance_manager/graph/policies/working_set_trimmer_policy_win.h"
 #elif defined(OS_CHROMEOS)

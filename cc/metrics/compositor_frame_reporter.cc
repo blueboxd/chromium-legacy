@@ -170,12 +170,16 @@ void CompositorFrameReporter::TerminateReporter() {
       termination_status_str = "presented_frame";
       break;
     case FrameTerminationStatus::kDidNotPresentFrame:
+      report_latency = true;
+      MissedSubmittedFrame();
       termination_status_str = "did_not_present_frame";
       break;
     case FrameTerminationStatus::kMainFrameAborted:
       termination_status_str = "main_frame_aborted";
       break;
     case FrameTerminationStatus::kReplacedByNewReporter:
+      report_latency = true;
+      MissedSubmittedFrame();
       termination_status_str = "replaced_by_new_reporter_at_same_stage";
       break;
     case FrameTerminationStatus::kDidNotProduceFrame:

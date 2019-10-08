@@ -606,15 +606,18 @@ void ServiceWorkerContextCore::AddLiveVersion(ServiceWorkerVersion* version) {
 }
 
 void ServiceWorkerContextCore::RemoveLiveVersion(int64_t id) {
-  if (live_versions_[id]->running_status() != EmbeddedWorkerStatus::STOPPED) {
+  auto it = live_versions_.find(id);
+  DCHECK(it != live_versions_.end());
+  ServiceWorkerVersion* version = it->second;
+
+  if (version->running_status() != EmbeddedWorkerStatus::STOPPED) {
     // Notify all observers that this live version is stopped, as it will
     // be removed from |live_versions_|.
-    observer_list_->Notify(
-        FROM_HERE, &ServiceWorkerContextCoreObserver::OnRunningStateChanged, id,
-        EmbeddedWorkerStatus::STOPPED);
+    observer_list_->Notify(FROM_HERE,
+                           &ServiceWorkerContextCoreObserver::OnStopped, id);
   }
 
-  live_versions_.erase(id);
+  live_versions_.erase(it);
 }
 
 std::vector<ServiceWorkerRegistrationInfo>
@@ -750,9 +753,29 @@ void ServiceWorkerContextCore::OnRunningStateChanged(
   if (!version->context())
     return;
 
-  observer_list_->Notify(
-      FROM_HERE, &ServiceWorkerContextCoreObserver::OnRunningStateChanged,
-      version->version_id(), version->running_status());
+  switch (version->running_status()) {
+    case EmbeddedWorkerStatus::STOPPED:
+      observer_list_->Notify(FROM_HERE,
+                             &ServiceWorkerContextCoreObserver::OnStopped,
+                             version->version_id());
+      break;
+    case EmbeddedWorkerStatus::STARTING:
+      observer_list_->Notify(FROM_HERE,
+                             &ServiceWorkerContextCoreObserver::OnStarting,
+                             version->version_id());
+      break;
+    case EmbeddedWorkerStatus::RUNNING:
+      observer_list_->Notify(
+          FROM_HERE, &ServiceWorkerContextCoreObserver::OnStarted,
+          version->version_id(), version->scope(),
+          version->embedded_worker()->process_id(), version->script_url());
+      break;
+    case EmbeddedWorkerStatus::STOPPING:
+      observer_list_->Notify(FROM_HERE,
+                             &ServiceWorkerContextCoreObserver::OnStopping,
+                             version->version_id());
+      break;
+  }
 }
 
 void ServiceWorkerContextCore::OnVersionStateChanged(

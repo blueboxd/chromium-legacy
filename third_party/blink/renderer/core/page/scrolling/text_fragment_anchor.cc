@@ -25,8 +25,8 @@ namespace blink {
 
 namespace {
 
-bool ParseTargetTextIdentifier(const String& fragment,
-                               Vector<TextFragmentSelector>* out_selectors) {
+bool ParseTextDirective(const String& fragment,
+                        Vector<TextFragmentSelector>* out_selectors) {
   DCHECK(out_selectors);
 
   size_t start_pos = 0;
@@ -74,22 +74,6 @@ bool CheckSecurityRestrictions(LocalFrame& frame,
 
 }  // namespace
 
-TextFragmentAnchor* TextFragmentAnchor::TryCreate(
-    const KURL& url,
-    LocalFrame& frame,
-    bool same_document_navigation) {
-  if (!CheckSecurityRestrictions(frame, same_document_navigation))
-    return nullptr;
-
-  Vector<TextFragmentSelector> selectors;
-
-  if (!ParseTargetTextIdentifier(url.FragmentIdentifier(), &selectors))
-    return nullptr;
-
-  return MakeGarbageCollected<TextFragmentAnchor>(
-      selectors, frame, TextFragmentFormat::PlainFragment);
-}
-
 TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
     const KURL& url,
     LocalFrame& frame,
@@ -105,23 +89,20 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
 
   Vector<TextFragmentSelector> selectors;
 
-  if (!ParseTargetTextIdentifier(frame.GetDocument()->GetFragmentDirective(),
-                                 &selectors)) {
+  if (!ParseTextDirective(frame.GetDocument()->GetFragmentDirective(),
+                          &selectors)) {
     UseCounter::Count(frame.GetDocument(),
                       WebFeature::kInvalidFragmentDirective);
     return nullptr;
   }
 
-  return MakeGarbageCollected<TextFragmentAnchor>(
-      selectors, frame, TextFragmentFormat::FragmentDirective);
+  return MakeGarbageCollected<TextFragmentAnchor>(selectors, frame);
 }
 
 TextFragmentAnchor::TextFragmentAnchor(
     const Vector<TextFragmentSelector>& text_fragment_selectors,
-    LocalFrame& frame,
-    const TextFragmentFormat fragment_format)
+    LocalFrame& frame)
     : frame_(&frame),
-      fragment_format_(fragment_format),
       metrics_(MakeGarbageCollected<TextFragmentAnchorMetrics>(
           frame_->GetDocument())) {
   DCHECK(!text_fragment_selectors.IsEmpty());
@@ -278,11 +259,9 @@ void TextFragmentAnchor::DidFinishSearch() {
 
   metrics_->ReportMetrics();
 
-  if (!did_find_match_)
+  if (!did_find_match_) {
     dismissed_ = true;
 
-  if (!did_find_match_ &&
-      fragment_format_ == TextFragmentFormat::FragmentDirective) {
     DCHECK(!element_fragment_anchor_);
     element_fragment_anchor_ =
         ElementFragmentAnchor::TryCreate(frame_->GetDocument()->Url(), *frame_);

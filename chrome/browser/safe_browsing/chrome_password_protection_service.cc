@@ -1450,7 +1450,11 @@ MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle) {
 PasswordProtectionTrigger
 ChromePasswordProtectionService::GetPasswordProtectionWarningTriggerPref(
     ReusedPasswordAccountType password_type) const {
-  if (password_type.account_type() == ReusedPasswordAccountType::GMAIL)
+  if (password_type.account_type() == ReusedPasswordAccountType::GMAIL ||
+      (password_type.account_type() ==
+           ReusedPasswordAccountType::SAVED_PASSWORD &&
+       base::FeatureList::IsEnabled(
+           safe_browsing::kPasswordProtectionForSavedPasswords)))
     return PHISHING_REUSE;
 
   bool is_policy_managed = profile_->GetPrefs()->HasPrefPath(

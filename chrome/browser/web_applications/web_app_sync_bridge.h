@@ -89,7 +89,7 @@ class WebAppSyncBridge : public AppRegistryController,
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
   std::unique_ptr<WebAppDatabase> database_;
-  WebAppRegistrarMutable* registrar_;
+  WebAppRegistrarMutable* const registrar_;
 
   bool is_in_update_ = false;
 

@@ -172,14 +172,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
 
   // If |offset| is non-zero, then a byte range request will be issued to fetch
   // the range of bytes starting at |offset|.
-  // Use |set_length| to specify the last byte position, or the range
-  // request will be "Range:bytes={offset}-" to retrieve the rest of the file.
   void set_offset(int64_t offset) { save_info_.offset = offset; }
-
-  // When |length| > 0, the range of bytes will be from
-  // |save_info_.offset| to |save_info_.offset| + |length| - 1.
-  // See |DownloadSaveInfo.length|.
-  void set_length(int64_t length) { save_info_.length = length; }
 
   // Sets the offset to start writing to the file. If set, The data received
   // before |file_offset| are discarded or are used for validation purpose.
@@ -302,7 +295,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
     return save_info_.suggested_name;
   }
   int64_t offset() const { return save_info_.offset; }
-  int64_t length() const { return save_info_.length; }
   const std::string& hash_of_partial_file() const {
     return save_info_.hash_of_partial_file;
   }

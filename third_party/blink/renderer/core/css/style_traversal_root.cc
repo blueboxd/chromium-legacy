@@ -55,10 +55,6 @@ void StyleTraversalRoot::Update(ContainerNode* common_ancestor,
 void StyleTraversalRoot::ChildrenRemoved(ContainerNode& parent) {
   if (!root_node_ || root_node_->isConnected())
     return;
-#if DCHECK_IS_ON()
-  DCHECK(IsChildDirty(parent));
-  DCHECK(!IsDirty(parent));
-#endif  // DCHECK_IS_ON()
   ClearChildDirtyForAncestors(parent);
   Clear();
 }

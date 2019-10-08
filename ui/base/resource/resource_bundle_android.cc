@@ -192,6 +192,14 @@ void LoadAndroidDevUiPackFile(const char* path_within_apk,
   }
 }
 
+void LoadPackFileFromApk(const std::string& path) {
+  base::MemoryMappedFile::Region region;
+  int fd = base::android::OpenApkAsset(path, &region);
+  CHECK_GE(fd, 0) << "Could not find " << path << " in APK.";
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
+      base::File(fd), region, ui::SCALE_FACTOR_NONE);
+}
+
 int GetMainAndroidPackFd(base::MemoryMappedFile::Region* out_region) {
   DCHECK_GE(g_resources_pack_fd, 0);
   *out_region = g_resources_pack_region;

@@ -232,7 +232,7 @@ bool PolicyWatcher::NormalizePolicies(base::DictionaryValue* policy_dict) {
   // 3) policies not supported on all OS-s (i.e. RemoteAccessHostMatchUsername
   //    is not supported on Windows and therefore policy_templates.json omits
   //    schema for this policy on this particular platform).
-  auto strategy = policy::SCHEMA_ALLOW_UNKNOWN_TOPLEVEL;
+  auto strategy = policy::SCHEMA_ALLOW_UNKNOWN;
 
   std::string path;
   std::string error;

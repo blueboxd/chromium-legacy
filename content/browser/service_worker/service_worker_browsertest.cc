@@ -3007,16 +3007,16 @@ class WorkerRunningStatusObserver : public ServiceWorkerContextObserver {
       run_loop_.Run();
   }
 
-  void OnVersionRunningStatusChanged(content::ServiceWorkerContext* context,
-                                     int64_t version_id,
-                                     bool is_running) override {
-    if (is_running) {
-      EXPECT_EQ(context_, context);
-      version_id_ = version_id;
+  void OnVersionStartedRunning(content::ServiceWorkerContext* context,
+                               int64_t version_id,
+                               const GURL& scope,
+                               int process_id,
+                               const GURL& script_url) override {
+    EXPECT_EQ(context_, context);
+    version_id_ = version_id;
 
-      if (run_loop_.running())
-        run_loop_.Quit();
-    }
+    if (run_loop_.running())
+      run_loop_.Quit();
   }
 
  private:

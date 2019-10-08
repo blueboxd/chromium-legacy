@@ -43,6 +43,8 @@ using Handedness =
 using PressKind = ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind;
 using SourceKind =
     ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceKind;
+using PositionAccuracy =
+    ABI::Windows::UI::Input::Spatial::SpatialInteractionSourcePositionAccuracy;
 
 ParsedInputState::ParsedInputState() = default;
 ParsedInputState::~ParsedInputState() = default;
@@ -503,6 +505,7 @@ ParsedInputState MixedRealityInputHelper::ParseWindowsSourceState(
   // Voice input is always untracked.
   gfx::Transform origin_from_grip;
   bool is_tracked = false;
+  bool emulated_position = false;
   if (is_controller) {
     input_state.button_data = ParseButtonState(state);
     std::unique_ptr<WMRInputLocation> location_in_origin =
@@ -514,6 +517,15 @@ ParsedInputState MixedRealityInputHelper::ParseWindowsSourceState(
         origin_from_grip =
             CreateTransform(gamepad_pose.position, gamepad_pose.orientation);
         is_tracked = true;
+      }
+
+      PositionAccuracy position_accuracy;
+      if (location_in_origin->TryGetPositionAccuracy(&position_accuracy) &&
+          (position_accuracy ==
+           PositionAccuracy::
+               SpatialInteractionSourcePositionAccuracy_Approximate)) {
+        // Controller lost precise tracking or has its position estimated.
+        emulated_position = true;
       }
 
       input_state.gamepad_pose = gamepad_pose;
@@ -552,8 +564,7 @@ ParsedInputState MixedRealityInputHelper::ParseWindowsSourceState(
   device::mojom::XRInputSourceDescriptionPtr description =
       device::mojom::XRInputSourceDescription::New();
 
-  // If we've gotten this far we've gotten the real position.
-  source_state->emulated_position = false;
+  source_state->emulated_position = emulated_position;
   description->pointer_offset = grip_from_pointer;
 
   if (is_voice) {

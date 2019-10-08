@@ -10,7 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/accelerated_widget_mac/availability_macros.h"
 #include "ui/accelerated_widget_mac/ca_renderer_layer_tree.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/mac/io_surface.h"

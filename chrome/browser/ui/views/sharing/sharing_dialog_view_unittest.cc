@@ -25,8 +25,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
 
-using namespace testing;
-
 namespace {
 
 class ClickToCallUiControllerMock : public ClickToCallUiController {

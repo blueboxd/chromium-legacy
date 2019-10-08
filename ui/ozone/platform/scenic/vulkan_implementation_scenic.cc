@@ -81,7 +81,7 @@ VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
   constexpr base::StringPiece image_pipe_swapchain(
       "VK_LAYER_FUCHSIA_imagepipe_swapchain");
   for (const VkLayerProperties& layer_property :
-       vulkan_instance_.layer_properties()) {
+       vulkan_instance_.vulkan_info().instance_layers) {
     if (image_pipe_swapchain != layer_property.layerName)
       continue;
     image_pipe_swapchain_implementation_version =

@@ -207,29 +207,24 @@ bool ExtensionOptionsGuest::HandleContextMenu(
   return extension_options_guest_delegate_->HandleContextMenu(params);
 }
 
-bool ExtensionOptionsGuest::IsWebContentsCreationOverridden(
-    content::SiteInstance* source_site_instance,
-    content::mojom::WindowContainerType window_container_type,
-    const GURL& opener_url,
-    const std::string& frame_name,
-    const GURL& target_url) {
-  // This method handles opening links from within the guest. Since this guest
-  // view is used for displaying embedded extension options, we want any
-  // external links to be opened in a new tab, not in a new guest view so we
-  // override creation.
-  return true;
-}
-
-WebContents* ExtensionOptionsGuest::CreateCustomWebContents(
+bool ExtensionOptionsGuest::ShouldCreateWebContents(
+    content::WebContents* web_contents,
     content::RenderFrameHost* opener,
     content::SiteInstance* source_site_instance,
-    bool is_renderer_initiated,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
+    content::mojom::WindowContainerType window_container_type,
     const GURL& opener_url,
     const std::string& frame_name,
     const GURL& target_url,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
-  // To get links out of the guest view, we just open the URL in a new tab.
+  // This method handles opening links from within the guest. Since this guest
+  // view is used for displaying embedded extension options, we want any
+  // external links to be opened in a new tab, not in a new guest view.
+  // Therefore we just open the URL in a new tab, and since we aren't handling
+  // the new web contents, we return false.
   // TODO(ericzeng): Open the tab in the background if the click was a
   //   ctrl-click or middle mouse button click
   if (extension_options_guest_delegate_) {
@@ -238,11 +233,7 @@ WebContents* ExtensionOptionsGuest::CreateCustomWebContents(
                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                ui::PAGE_TRANSITION_LINK, false));
   }
-
-  // Returning nullptr here ensures that the guest-view can never get a
-  // reference to the new WebContents. It effectively forces a new browsing
-  // instance for all popups from an extensions guest.
-  return nullptr;
+  return false;
 }
 
 void ExtensionOptionsGuest::DidFinishNavigation(

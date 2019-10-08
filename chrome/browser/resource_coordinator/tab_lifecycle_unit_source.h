@@ -154,6 +154,11 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   static void OnOriginTrialFreezePolicyChanged(
       content::WebContents* web_contents,
       mojom::InterventionPolicy policy);
+  static void OnIsHoldingWebLockChanged(content::WebContents* web_contents,
+                                        bool is_holding_weblock);
+  static void OnIsHoldingIndexedDBLockChanged(
+      content::WebContents* web_contents,
+      bool is_holding_indexeddb_lock);
 
   // Callback for TabLifecyclesEnterprisePreferenceMonitor.
   void SetTabLifecyclesEnterprisePolicy(bool enabled);

@@ -215,10 +215,10 @@ GPURenderPipeline* GPURenderPipeline::Create(
     dawn_desc.label = webgpu_desc->label().Utf8().data();
   }
 
-  OwnedPipelineStageDescriptor vertex_stage_info =
+  OwnedProgrammableStageDescriptor vertex_stage_info =
       AsDawnType(webgpu_desc->vertexStage());
   dawn_desc.vertexStage = std::get<0>(vertex_stage_info);
-  OwnedPipelineStageDescriptor fragment_stage_info;
+  OwnedProgrammableStageDescriptor fragment_stage_info;
   if (webgpu_desc->hasFragmentStage()) {
     fragment_stage_info = AsDawnType(webgpu_desc->fragmentStage());
     dawn_desc.fragmentStage = &std::get<0>(fragment_stage_info);

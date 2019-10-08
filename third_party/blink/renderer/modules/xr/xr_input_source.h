@@ -7,6 +7,7 @@
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad.h"
+#include "third_party/blink/renderer/modules/xr/xr_native_origin_information.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -80,6 +81,8 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   const TransformationMatrix* InputFromPointer() const {
     return input_from_pointer_.get();
   }
+
+  base::Optional<XRNativeOriginInformation> nativeOrigin() const;
 
   void OnSelectStart();
   void OnSelectEnd(UserActivation user_activation);

@@ -511,6 +511,8 @@
         'JavaScriptBlockedForUrls',
         'KeygenAllowedForUrls',
         'KeygenBlockedForUrls',
+        'LegacySameSiteCookieBehaviorEnabled',
+        'LegacySameSiteCookieBehaviorEnabledForDomainList',
         'PluginsAllowedForUrls',
         'PluginsBlockedForUrls',
         'PopupsAllowedForUrls',
@@ -5447,6 +5449,72 @@
       'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to use key generation. If a url pattern is in 'KeygenAllowedForUrls', this policy overrides these exceptions.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set, or the user's personal configuration otherwise.''',
+    },
+    {
+      'name': 'LegacySameSiteCookieBehaviorEnabled',
+      'future': True,
+      'owners': [ 'chlily@chromium.org', ],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 1, 2, ],
+      },
+      'items': [
+        {
+          'name': 'DefaultToLegacySameSiteCookieBehavior',
+          'value': 1,
+          'caption': '''Revert to legacy <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> behavior for cookies on all sites''',
+        },
+        {
+          'name': 'DefaultToSameSiteByDefaultCookieBehavior',
+          'value': 2,
+          'caption': '''Use <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES">SameSite-by-default</ph> behavior for cookies on all sites''',
+        },
+      ],
+      'supported_on': [
+        'chrome.*:79-',
+        'chrome_os:79-',
+        'android:79-',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 1,
+      'id': 623,
+      'caption': '''Default legacy <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> cookie behavior setting''',
+      'tags': [],
+      'desc': '''Allows you to revert all cookies to legacy <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> behavior. Reverting to legacy behavior causes cookies that don't specify a <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> attribute to be treated as if they were "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE">SameSite=None</ph>", and removes the requirement for "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE">SameSite=None</ph>" cookies to carry the "<ph name="ATTRIBUTE_SECURE_NAME">Secure</ph>" attribute. See https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies for full description.
+
+          When this policy is not set, the default <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> behavior for cookies that don't specify a <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> attribute will depend on the user's personal configuration for the <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES">SameSite-by-default</ph> feature, which may be set by a field trial or by enabling or disabling the flag <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES">same-site-by-default-cookies</ph> flag.''',
+    },
+    {
+      'name': 'LegacySameSiteCookieBehaviorEnabledForDomainList',
+      'future': True,
+      'owners': [ 'chlily@chromium.org', ],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': [
+        'chrome.*:79-',
+        'chrome_os:79-',
+        'android:79-',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['www.example.com', '[*.]example.edu'],
+      'id': 624,
+      'caption': '''Revert to legacy <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> behavior for cookies on these sites''',
+      'tags': [],
+      'desc': '''Cookies set for domains matching these patterns will revert to legacy <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> behavior. Reverting to legacy behavior causes cookies that don't specify a <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> attribute to be treated as if they were "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE">SameSite=None</ph>", and removes the requirement for "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE">SameSite=None</ph>" cookies to carry the "<ph name="ATTRIBUTE_SECURE_NAME">Secure</ph>" attribute. See https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies for full description.
+
+          For cookies on domains not covered by the patterns specified here, or for all cookies if this policy is not set, the global default value will be used either from the <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME">LegacySameSiteCookieBehaviorEnabled</ph> policy, if it is set, or the user's personal configuration otherwise.
+
+          Note that patterns you list here are treated as domains, not URLs, so you should not specify a scheme or port.''',
     },
     {
       'name': 'PluginsAllowedForUrls',
@@ -16899,7 +16967,7 @@
       },
       'example_value': False,
       'id': 538,
-      'caption': '''Enable power peak shift''',
+      'caption': '''Enable peak shift power management''',
       'tags': [],
       'desc': '''Enable the power peak shift power management policy.
 
@@ -19035,9 +19103,18 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'DeviceAuthDataCacheLifetime',
       ]
     },
+    {
+      'id': 38,
+      'name': 'LegacySameSiteCookieBehaviorSettings',
+      'caption': '''Legacy <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> cookie behavior settings''',
+      'policies': [
+        'LegacySameSiteCookieBehaviorEnabled',
+        'LegacySameSiteCookieBehaviorEnabledForDomainList',
+      ],
+    },
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 622,
-  'highest_atomic_group_id_currently_used': 37
+  'highest_id_currently_used': 624,
+  'highest_atomic_group_id_currently_used': 38
 }

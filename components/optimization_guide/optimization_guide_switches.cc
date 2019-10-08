@@ -43,6 +43,9 @@ const char kOptimizationGuideServiceAPIKey[] =
 // fresh data.
 const char kPurgeHintCacheStore[] = "purge_hint_cache_store";
 
+const char kDisableFetchingHintsAtNavigationStartForTesting[] =
+    "disable-fetching-hints-at-navigation-start";
+
 bool IsHintComponentProcessingDisabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kHintsProtoOverride);
 }
@@ -103,6 +106,12 @@ ParseComponentConfigFromCommandLine() {
   }
 
   return proto_configuration;
+}
+
+bool DisableFetchingHintsAtNavigationStartForTesting() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(
+      switches::kDisableFetchingHintsAtNavigationStartForTesting);
 }
 
 }  // namespace switches

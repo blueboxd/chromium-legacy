@@ -18,6 +18,9 @@ static NSString* const kHostSettingsKey = @"kHostSettingsKey";
 static NSString* const kFlagKey = @"kFlagKey";
 
 RemotingFlag const RemotingFlagUseWebRTC = @"UseWebRTC";
+RemotingFlag const RemotingFlagLastSeenNotificationMessageId =
+    @"LastSeenNotificationMessageId";
+RemotingFlag const RemotingFlagNotificationUiState = @"NotificationUiState";
 
 static NSString* KeyWithPrefix(NSString* prefix, NSString* key) {
   return [NSString stringWithFormat:@"%@-%@", prefix, key];

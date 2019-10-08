@@ -141,7 +141,7 @@ class MetadataBoxController {
       this.setDirectorySize_(directory, isSameEntry);
     } else if (item.size) {
       this.metadataBox_.size =
-          this.fileMetadataFormatter_.formatSize(item.size, item.hosted);
+          this.fileMetadataFormatter_.formatSize(item.size, item.hosted, true);
       this.metadataBox_.metadataRendered('size');
     }
 
@@ -274,7 +274,7 @@ class MetadataBoxController {
       }
 
       this.metadataBox_.size =
-          this.fileMetadataFormatter_.formatSize(size, true);
+          this.fileMetadataFormatter_.formatSize(size, true, true);
       this.metadataBox_.isSizeLoading = false;
       this.metadataBox_.metadataRendered('size');
     });

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 690 tests; 656 PASS, 34 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 690 tests; 657 PASS, 33 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testInterpolation function
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with linear easing
@@ -251,7 +251,7 @@ PASS filter: percentage or numeric-specifiable functions (number value)
 PASS filter: percentage or numeric-specifiable functions (percentage value)
 PASS filter: interpolate different length of filter-function-list with function which lacuna value is 1
 PASS filter: interpolate different length of filter-function-list with function which lacuna value is 0
-FAIL filter: interpolate different length of filter-function-list with drop-shadow function assert_equals: The value should be blur(5px) drop-shadow(rgba(0, 0, 255, 0.4) 5px 5px 5px at 500ms expected "blur(5px) drop-shadow(rgba(0, 0, 255, 0.4) 5px 5px 5px" but got "blur(5px) drop-shadow(rgba(0, 0, 255, 0.4) 5px 5px 5px)"
+PASS filter: interpolate different length of filter-function-list with drop-shadow function
 PASS filter: interpolate from none
 PASS filter: url function (interpoalte as discrete)
 PASS flex-basis (type: lengthPercentageOrCalc) has testInterpolation function

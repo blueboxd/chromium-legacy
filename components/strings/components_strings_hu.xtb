@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Kezdőoldalak megnyitása</translation>
 <translation id="1883255238294161206">Lista bezárása</translation>
 <translation id="1898423065542865115">Szűrés</translation>
+<translation id="1901443836186977402">{1,plural, =1{A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; a biztonsági tanúsítványa a tegnapi nappal lejárt. Ezt okozhatja konfigurációs hiba, vagy az, hogy egy támadó eltérítette az Ön kapcsolatát. Számítógépének órája jelenleg a következőre van állítva: <ph name="CURRENT_DATE" />. Ez megfelelőnek tűnik? Ha nem, állítsa be megfelelően a rendszer óráját, majd frissítse az oldalt.}other{A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa lejárt # nappal ezelőtt. Ezt okozhatja konfigurációs hiba, vagy az, hogy egy támadó eltérítette el az Ön kapcsolatát. Számítógépének órája jelenleg a következőre van állítva: <ph name="CURRENT_DATE" />. Ez megfelelőnek tűnik? Ha nem, állítsa be megfelelően a rendszer óráját, majd frissítse az oldalt.}}</translation>
 <translation id="1914326953223720820">Kicsomagolási szolgáltatás</translation>
 <translation id="1915697529809968049">A Touch ID funkciót szeretné használni a CVC helyett?</translation>
 <translation id="1916770123977586577">A frissített beállításoknak a webhelyen történő alkalmazásához töltse be újra az oldalt</translation>
@@ -443,6 +444,7 @@
 <translation id="3116158981186517402">Laminálás</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Próbálkozzon a kapcsolódási diagnosztika futtatásával<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Ugrás ide: <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Nincs}=1{bejelentkezési adat 1 fiókhoz}other{bejelentkezési adat # fiókhoz}}</translation>
 <translation id="3145945101586104090">Nem sikerült dekódolni a választ</translation>
 <translation id="3150653042067488994">Átmeneti szerverhiba</translation>
@@ -825,6 +827,7 @@
 <translation id="5043480802608081735">Vágólapra másolt link</translation>
 <translation id="5045550434625856497">Helytelen jelszó</translation>
 <translation id="5056549851600133418">Cikkek Önnek</translation>
+<translation id="5061227663725596739">Erre gondolt: <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 van használatban)}other{(# van használatban)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />A proxy címének ellenőrzése<ph name="END_LINK" /></translation>
@@ -878,6 +881,7 @@
 <translation id="5284909709419567258">Hálózati címek</translation>
 <translation id="5285570108065881030">Az összes mentett jelszó megjelenítése</translation>
 <translation id="5287240709317226393">Cookie-k megjelenítése</translation>
+<translation id="5287456746628258573">Ez a webhely elavult biztonsági konfigurációt használ, ezért előfordulhat, hogy mások látják az Ön adatait (például jelszavait vagy hitelkártyaszámait), amikor elküldi őket a webhelynek.</translation>
 <translation id="5288108484102287882">A házirendértékek ellenőrzése során figyelmeztetések merültek fel</translation>
 <translation id="5299298092464848405">Irányelv-előfeldolgozási hiba</translation>
 <translation id="5300589172476337783">Megjelenítés</translation>
@@ -1005,6 +1009,7 @@
 <translation id="5946937721014915347">A(z) <ph name="SITE_NAME" /> megnyitása…</translation>
 <translation id="5947933617628957894">Igen, hozzáadom</translation>
 <translation id="5951495562196540101">Fogyasztói fiókkal nem lehet regisztrálni (a csomaghoz tartozik licenc is).</translation>
+<translation id="5966900314707961320">Bekapcsolt állapotban a webhelyek nem tudnak cookie-kat használni, amelyek nyomon követik tevékenységeit az interneten</translation>
 <translation id="5967592137238574583">Kapcsolattartási adatok szerkesztése</translation>
 <translation id="5967867314010545767">Eltávolítás az előzmények közül</translation>
 <translation id="5975083100439434680">Kicsinyítés</translation>
@@ -1087,6 +1092,7 @@
 <translation id="6383221683286411806">Itt fizetésre próbálhatják rávenni.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 egyéb javaslat}other{# egyéb javaslat}}</translation>
 <translation id="6387754724289022810">A következő alkalommal gyorsabban fizethet, ha kártyáját és számlázási címét elmenti Google-fiókjába és az eszközre.</translation>
+<translation id="6389470377220713856">A kártyán szereplő név</translation>
 <translation id="6390200185239044127">Félbehajtás Z-hajtással</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Ez a házirend megszűnt. Használja helyette a(z) <ph name="NEW_POLICY" /> házirendet.</translation>
@@ -1265,7 +1271,6 @@ További részletek:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Társult felhasználó:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Webhely elhagyása</translation>
 <translation id="7353601530677266744">Parancssor</translation>
 <translation id="7372973238305370288">keresési találat</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1438,6 +1443,7 @@ További részletek:
 <translation id="8131740175452115882">Megerősítés</translation>
 <translation id="8149426793427495338">Számítógépe alvó üzemmódba váltott.</translation>
 <translation id="8150722005171944719">A fájl (<ph name="URL" />) nem olvasható. Lehet, hogy eltávolították, áthelyezték, vagy a fájlengedélyek megakadályozzák a hozzáférést.</translation>
+<translation id="8157295877370077682">Webhely elhagyása</translation>
 <translation id="8163866351304776260">Négy lyuk a bal oldalon</translation>
 <translation id="8175796834047840627">A Chrome felajánlja a kártyák mentését az Ön Google-fiókjába, mert be van jelentkezve. A beállítások között ezt bármikor módosíthatja.</translation>
 <translation id="8184538546369750125">Globális alapértelmezés használata (Engedélyezés)</translation>

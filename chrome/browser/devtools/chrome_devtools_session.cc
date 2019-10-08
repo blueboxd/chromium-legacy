@@ -9,6 +9,7 @@
 #include "chrome/browser/devtools/protocol/browser_handler.h"
 #include "chrome/browser/devtools/protocol/cast_handler.h"
 #include "chrome/browser/devtools/protocol/page_handler.h"
+#include "chrome/browser/devtools/protocol/security_handler.h"
 #include "chrome/browser/devtools/protocol/target_handler.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
@@ -64,6 +65,8 @@ ChromeDevToolsSession::ChromeDevToolsSession(
       agent_host->GetType() == content::DevToolsAgentHost::kTypePage) {
     page_handler_ = std::make_unique<PageHandler>(agent_host->GetWebContents(),
                                                   dispatcher_.get());
+    security_handler_ = std::make_unique<SecurityHandler>(
+        agent_host->GetWebContents(), dispatcher_.get());
     if (client->MayAttachToBrowser()) {
       cast_handler_ = std::make_unique<CastHandler>(
           agent_host->GetWebContents(), dispatcher_.get());

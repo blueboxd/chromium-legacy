@@ -164,7 +164,6 @@ static_library("test_support") {
 
     #"//chrome/app/theme:theme_resources",
     "//chrome/browser:test_support",
-    "//chrome/browser/performance_manager/test_support",
     "//chrome/child",
     "//chrome/common:test_support",
     "//chrome/renderer",
@@ -185,6 +184,7 @@ static_library("test_support") {
     "//components/omnibox/browser:test_support",
     "//components/password_manager/core/browser:test_support",
     "//components/payments/core:test_support",
+    "//components/performance_manager/test_support",
     "//components/prefs:test_support",
     "//components/rappor:test_support",
     "//components/safe_browsing/db:v4_test_util",
@@ -653,6 +653,7 @@ if (!is_android) {
       "//base",
       "//base:i18n",
       "//base/test:test_support",
+      "//base/util/memory_pressure:test_support",
       "//build:branding_buildflags",
       "//chrome:browser_tests_pak",
       "//chrome:packed_resources",
@@ -872,6 +873,7 @@ if (!is_android) {
       "../browser/devtools/device/usb/android_usb_browsertest.cc",
       "../browser/devtools/devtools_sanity_browsertest.cc",
       "../browser/devtools/global_confirm_info_bar_browsertest.cc",
+      "../browser/devtools/protocol/devtools_protocol_browsertest.cc",
       "../browser/dom_distiller/distillable_page_utils_browsertest.cc",
       "../browser/dom_distiller/dom_distiller_viewer_source_browsertest.cc",
       "../browser/dom_distiller/tab_utils_browsertest.cc",
@@ -3093,32 +3095,12 @@ test("unit_tests") {
     "../browser/performance_manager/decorators/page_aggregator_unittest.cc",
     "../browser/performance_manager/decorators/page_almost_idle_decorator_unittest.cc",
     "../browser/performance_manager/decorators/process_metrics_decorator_unittest.cc",
-    "../browser/performance_manager/frame_priority/frame_priority_unittest.cc",
-    "../browser/performance_manager/frame_priority/max_vote_aggregator_unittest.cc",
-    "../browser/performance_manager/frame_priority/override_vote_aggregator_unittest.cc",
-    "../browser/performance_manager/frame_priority/unittest_util.cc",
-    "../browser/performance_manager/frame_priority/unittest_util.h",
-    "../browser/performance_manager/graph/frame_node_impl_unittest.cc",
-    "../browser/performance_manager/graph/graph_impl_operations_unittest.cc",
-    "../browser/performance_manager/graph/graph_impl_unittest.cc",
-    "../browser/performance_manager/graph/graph_operations_unittest.cc",
-    "../browser/performance_manager/graph/node_attached_data_unittest.cc",
-    "../browser/performance_manager/graph/node_base_unittest.cc",
-    "../browser/performance_manager/graph/page_node_impl_unittest.cc",
     "../browser/performance_manager/graph/policies/dynamic_tcmalloc_policy_linux_unittest.cc",
     "../browser/performance_manager/graph/policies/working_set_trimmer_policy_chromeos_unittest.cc",
     "../browser/performance_manager/graph/policies/working_set_trimmer_policy_unittest.cc",
-    "../browser/performance_manager/graph/process_node_impl_unittest.cc",
-    "../browser/performance_manager/graph/properties_unittest.cc",
-    "../browser/performance_manager/graph/system_node_impl_unittest.cc",
-    "../browser/performance_manager/graph/worker_node_impl_unittest.cc",
     "../browser/performance_manager/mechanisms/working_set_trimmer_win_unittest.cc",
     "../browser/performance_manager/observers/isolation_context_metrics_unittest.cc",
     "../browser/performance_manager/observers/metrics_collector_unittest.cc",
-    "../browser/performance_manager/performance_manager_impl_unittest.cc",
-    "../browser/performance_manager/performance_manager_tab_helper_unittest.cc",
-    "../browser/performance_manager/performance_manager_test_harness.cc",
-    "../browser/performance_manager/performance_manager_test_harness.h",
     "../browser/performance_manager/persistence/site_data/exponential_moving_average_unittest.cc",
     "../browser/performance_manager/persistence/site_data/leveldb_site_data_store_unittest.cc",
     "../browser/performance_manager/persistence/site_data/non_recording_site_data_cache_unittest.cc",
@@ -3131,7 +3113,6 @@ test("unit_tests") {
     "../browser/performance_manager/persistence/site_data/unittest_utils.cc",
     "../browser/performance_manager/persistence/site_data/unittest_utils.h",
     "../browser/performance_manager/render_process_host_proxy_unittest.cc",
-    "../browser/performance_manager/web_contents_proxy_unittest.cc",
     "../browser/performance_monitor/metric_evaluator_helper_win_unittest.cc",
     "../browser/performance_monitor/system_monitor_unittest.cc",
     "../browser/permissions/chooser_context_base_mock_permission_observer.cc",
@@ -3464,6 +3445,7 @@ test("unit_tests") {
     ":test_support_unit",
     "//base:base_stack_sampling_profiler_test_util",
     "//base/test:test_support",
+    "//base/util/memory_pressure:test_support",
     "//chrome:browser_dependencies",
     "//chrome:child_dependencies",
     "//chrome:resources",
@@ -3601,15 +3583,11 @@ test("unit_tests") {
       "//components/offline_pages/core/background:test_support",
       "//components/offline_pages/core/prefetch:test_support",
     ]
-    if (defined(notouch_build) && notouch_build) {
-      defines += [ "DISABLE_OFFLINE_PAGES_TOUCHLESS" ]
-    } else {
-      sources += [
-        "../browser/offline_pages/offline_page_request_handler_unittest.cc",
-        "../browser/offline_pages/offline_page_utils_unittest.cc",
-        "../browser/offline_pages/prefetch/prefetch_instance_id_proxy_unittest.cc",
-      ]
-    }
+    sources += [
+      "../browser/offline_pages/offline_page_request_handler_unittest.cc",
+      "../browser/offline_pages/offline_page_utils_unittest.cc",
+      "../browser/offline_pages/prefetch/prefetch_instance_id_proxy_unittest.cc",
+    ]
   }
 
   if (enable_feed_in_chrome) {

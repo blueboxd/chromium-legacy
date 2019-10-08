@@ -64,13 +64,9 @@ void SpeechRecognition::start(ExceptionState& exception_state) {
   receiver_.set_disconnect_handler(WTF::Bind(
       &SpeechRecognition::OnConnectionError, WrapWeakPersistent(this)));
 
-  mojo::PendingReceiver<mojom::blink::SpeechRecognitionSession>
-      session_receiver = MakeRequest(
-          &session_, GetExecutionContext()->GetInterfaceInvalidator());
-
-  controller_->Start(std::move(session_receiver), std::move(session_client),
-                     *grammars_, lang_, continuous_, interim_results_,
-                     max_alternatives_);
+  controller_->Start(session_.BindNewPipeAndPassReceiver(),
+                     std::move(session_client), *grammars_, lang_, continuous_,
+                     interim_results_, max_alternatives_);
   started_ = true;
 }
 
@@ -189,6 +185,7 @@ ExecutionContext* SpeechRecognition::GetExecutionContext() const {
 void SpeechRecognition::ContextDestroyed(ExecutionContext*) {
   controller_ = nullptr;
   receiver_.reset();
+  session_.reset();
 }
 
 bool SpeechRecognition::HasPendingActivity() const {

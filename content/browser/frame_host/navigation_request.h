@@ -421,8 +421,13 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   }
 #endif
 
-  void set_error_page_html(const std::string& error_page_html) {
-    error_page_html_ = error_page_html;
+  const std::string& post_commit_error_page_html() {
+    return post_commit_error_page_html_;
+  }
+
+  void set_post_commit_error_page_html(
+      const std::string& post_commit_error_page_html) {
+    post_commit_error_page_html_ = post_commit_error_page_html;
   }
 
   void set_from_download_cross_origin_redirect(
@@ -1015,7 +1020,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
 
   // If set, starting the navigation will immediately result in an error page
   // with this html as content and |net_error| as the network error.
-  std::string error_page_html_;
+  std::string post_commit_error_page_html_;
 
   // This callback will be run when all throttle checks have been performed.
   // TODO(zetamoo): This can be removed once the navigation states are merged.

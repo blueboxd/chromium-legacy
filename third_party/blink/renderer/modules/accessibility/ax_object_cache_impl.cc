@@ -1184,8 +1184,11 @@ void AXObjectCacheImpl::HandleAriaSelectedChangedWithCleanLayout(Node* node) {
   PostNotification(obj, ax::mojom::Event::kCheckedStateChanged);
 
   AXObject* listbox = obj->ParentObjectUnignored();
-  if (listbox && listbox->RoleValue() == ax::mojom::Role::kListBox)
+  if (listbox && listbox->RoleValue() == ax::mojom::Role::kListBox) {
+    // Ensure listbox options are in sync as selection status may have changed
+    MarkAXObjectDirty(listbox, true);
     PostNotification(listbox, ax::mojom::Event::kSelectedChildrenChanged);
+  }
 }
 
 void AXObjectCacheImpl::HandleNodeLostFocusWithCleanLayout(Node* node) {

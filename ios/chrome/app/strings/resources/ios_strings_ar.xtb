@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">تعديل الإشارة</translation>
 <translation id="2179182049312275900">يمكنك تفعيل المزامنة في أي وقت في الإعدادات.</translation>
 <translation id="2198757192731523470">‏قد تستخدم Google السجلّ لتخصيص "بحث Google" والإعلانات وخدمات Google الأخرى.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> من مقالات "قائمة القراءة" غير المقروءة.</translation>
 <translation id="2230173723195178503">تم تحميل الصفحة المطلوبة</translation>
 <translation id="2239626343334228536">جارٍ محو بيانات التصفُّح...</translation>
 <translation id="2267753748892043616">إضافة حساب</translation>
@@ -265,7 +264,6 @@
 
 لتغيير هذا الإعداد، يُرجى <ph name="BEGIN_LINK" />إعادة ضبط المزامنة<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">رقم البطاقة غير صحيح</translation>
-<translation id="4807020197310989387">مقالة "قائمة قراءة" واحدة غير مقروءة.</translation>
 <translation id="4818522717893377262">إضافة لغة...</translation>
 <translation id="481968316161811770">ملفات تعريف الارتباط، وبيانات موقع الويب</translation>
 <translation id="4833786495304741580">‏إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا</translation>
@@ -414,6 +412,7 @@
 <translation id="6858855187367714033">تم مسحه ضوئيًا.</translation>
 <translation id="6859944681507688231">لمسح رمز الاستجابة السريعة أو بطاقة ائتمان ضوئيًا، يمكنك تشغيل الكاميرا من الإعدادات.</translation>
 <translation id="6873263987691478642">وضع تقسيم العرض</translation>
+<translation id="6888009575607455378">هل تريد فعلًا تجاهل التغييرات؟</translation>
 <translation id="6896758677409633944">نسخ</translation>
 <translation id="6903907808598579934">تشغيل المزامنة</translation>
 <translation id="6914583639806229067">البحث عن الصورة التي نسختها</translation>
@@ -500,7 +499,7 @@
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8281781826761538115">التلقائي - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">بحث جديد</translation>
-<translation id="8323906514956095947">اللمس مع الاستمرار لعرض المزيد من الخيارات</translation>
+<translation id="8323906514956095947">اللمس مع الاستمرار لعرض المزيد من خيارات علامات التبويب</translation>
 <translation id="8328777765163860529">إغلاق الكل</translation>
 <translation id="8407669440184693619">لم يتم العثور على كلمات مرور لهذا الموقع الإلكتروني</translation>
 <translation id="842017693807136194">تم تسجيل الدخول باستخدام</translation>

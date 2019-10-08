@@ -18,6 +18,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
@@ -60,7 +61,8 @@ class Profile;
 
 class OptimizationGuideHintsManager
     : public optimization_guide::OptimizationGuideServiceObserver,
-      public network::NetworkQualityTracker::EffectiveConnectionTypeObserver {
+      public network::NetworkQualityTracker::EffectiveConnectionTypeObserver,
+      public NavigationPredictorKeyedService::Observer {
  public:
   OptimizationGuideHintsManager(
       optimization_guide::OptimizationGuideService* optimization_guide_service,
@@ -139,6 +141,17 @@ class OptimizationGuideHintsManager
                                    base::OnceClosure callback);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest, IsGoogleURL);
+  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest,
+                           HintsFetched_AtSRP_ECT_SLOW_2G);
+  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest,
+                           HintsFetched_AtSRP_ECT_4G);
+  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest,
+                           HintsFetched_AtNonSRP_ECT_SLOW_2G);
+  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest,
+                           HintsFetched_AtSRP_ECT_SLOW_2G_DuplicatesRemoved);
+  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest,
+                           HintsFetched_AtSRP_ECT_SLOW_2G_InsecureHostsRemoved);
   // Processes the hints component.
   //
   // Should always be called on the thread that belongs to
@@ -240,11 +253,20 @@ class OptimizationGuideHintsManager
   void LoadHintForNavigation(content::NavigationHandle* navigation_handle,
                              base::OnceClosure callback);
 
-  // Loads the hint for |url| if available.
+  // Loads the hint for |host| if available.
   // |callback| is run when the request has finished regardless of whether there
-  // was actually a hint for that |url| or not. The callback can be used as a
+  // was actually a hint for that |host| or not. The callback can be used as a
   // signal for tests.
-  void LoadHintForURL(const GURL& url, base::OnceClosure callback);
+  void LoadHintForHost(const std::string& host, base::OnceClosure callback);
+
+  // Returns true if the hostname for |url| matches the host of google web
+  // search results page (www.google.*).
+  bool IsGoogleURL(const GURL& url) const;
+
+  // NavigationPredictorKeyedService::Observer:
+  void OnPredictionUpdated(
+      const base::Optional<NavigationPredictorKeyedService::Prediction>&
+          prediction) override;
 
   // The OptimizationGuideService that this guide is listening to. Not owned.
   optimization_guide::OptimizationGuideService* const
@@ -314,8 +336,8 @@ class OptimizationGuideHintsManager
   // Used in testing to subscribe to an update event in this class.
   base::OnceClosure next_update_closure_;
 
-  // URLs for which hints were last fetched in the real-time.
-  std::vector<GURL> navigation_urls_last_fetched_real_time_;
+  // Hosts for which hints were last fetched in the real-time.
+  std::vector<std::string> navigation_hosts_last_fetched_real_time_;
 
   // Used to get |weak_ptr_| to self on the UI thread.
   base::WeakPtrFactory<OptimizationGuideHintsManager> ui_weak_ptr_factory_{

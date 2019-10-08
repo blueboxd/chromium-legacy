@@ -383,6 +383,7 @@ jumbo_split_static_library("ui") {
     "//base",
     "//base:i18n",
     "//base/allocator:buildflags",
+    "//build:branding_buildflags",
     "//cc/paint",
     "//chrome:extra_resources",
     "//chrome:resources",
@@ -469,6 +470,7 @@ jumbo_split_static_library("ui") {
     "//components/payments/content/icon",
     "//components/payments/core:error_strings",
     "//components/pdf/browser",
+    "//components/performance_manager",
     "//components/policy/core/browser",
     "//components/pref_registry",
     "//components/previews/content",
@@ -1357,7 +1359,6 @@ jumbo_split_static_library("ui") {
     ]
     deps += [
       "//base/util/values:values_util",
-      "//build:branding_buildflags",
       "//chrome/app/vector_icons",
       "//chrome/browser:theme_properties",
       "//chrome/browser/media/router",
@@ -1912,7 +1913,6 @@ jumbo_split_static_library("ui") {
       "//ash/public/cpp",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/public/cpp/vector_icons",
-      "//build:branding_buildflags",
       "//chrome/browser/chromeos",
       "//chrome/browser/chromeos:backdrop_wallpaper_proto",
       "//chrome/browser/resources/chromeos:camera_resources",
@@ -3236,7 +3236,6 @@ jumbo_split_static_library("ui") {
       "webauthn/transport_utils.h",
     ]
     deps += [
-      "//build:branding_buildflags",
       "//chrome/browser/ui/views",
       "//components/constrained_window",
       "//components/media_message_center",

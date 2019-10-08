@@ -227,12 +227,15 @@ template("write_build_config") {
       args += [ "--annotation-processor-configs=$_rebased_processor_configs" ]
     }
 
+    # Dex path for library targets, or the the intermediate library for apks.
     if (defined(invoker.dex_path)) {
       args += [
         "--dex-path",
         rebase_path(invoker.dex_path, root_build_dir),
       ]
     }
+
+    # Dex path for the final apk.
     if (defined(invoker.final_dex_path)) {
       args += [
         "--final-dex-path",
@@ -1143,7 +1146,6 @@ if (enable_java_templates) {
     }
 
     assert(!_proguard_enabled || !(defined(invoker.input_dex_filearg) ||
-                                       defined(invoker.input_dex_jars) ||
                                        defined(invoker.input_classes_filearg) ||
                                        defined(invoker.input_class_jars)),
            "Cannot explicitly set inputs when proguarding a dex.")
@@ -1374,12 +1376,6 @@ if (enable_java_templates) {
         if (defined(invoker.input_dex_filearg)) {
           inputs += [ invoker.build_config ]
           args += [ "--dex-inputs-filearg=${invoker.input_dex_filearg}" ]
-        }
-        if (defined(invoker.input_dex_jars) && invoker.input_dex_jars != []) {
-          inputs += invoker.input_dex_jars
-          _rebased_input_dex_jars =
-              rebase_path(invoker.input_dex_jars, root_build_dir)
-          args += [ "--dex-inputs=${_rebased_input_dex_jars}" ]
         }
         if (defined(invoker.input_classes_filearg)) {
           inputs += [ invoker.build_config ]
@@ -2818,7 +2814,7 @@ if (enable_java_templates) {
 
         if (defined(_dex_path)) {
           dex_path =
-              get_label_info(_dex_target, "target_gen_dir") + "/bootstrap.dex"
+              get_label_info(_dex_target, "target_out_dir") + "/bootstrap.dex"
         }
 
         native_libs = _native_libs_even_when_incremental
@@ -3286,7 +3282,7 @@ if (enable_java_templates) {
       }
 
       if (_supports_android) {
-        _dex_path = "$target_gen_dir/$_main_target_name.dex.jar"
+        _dex_path = "$target_out_dir/$_main_target_name.dex.jar"
         if (defined(invoker.dex_path)) {
           _dex_path = invoker.dex_path
         }

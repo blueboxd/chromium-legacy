@@ -494,7 +494,9 @@ base::string16 AXPlatformNodeBase::GetRangeValueText() const {
   return value;
 }
 
-base::string16 AXPlatformNodeBase::GetRoleDescription() const {
+base::string16
+AXPlatformNodeBase::GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute()
+    const {
   if (GetData().GetImageAnnotationStatus() ==
           ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation ||
       GetData().GetImageAnnotationStatus() ==
@@ -502,8 +504,13 @@ base::string16 AXPlatformNodeBase::GetRoleDescription() const {
     return GetDelegate()->GetLocalizedRoleDescriptionForUnlabeledImage();
   }
 
+  return GetString16Attribute(ax::mojom::StringAttribute::kRoleDescription);
+}
+
+base::string16 AXPlatformNodeBase::GetRoleDescription() const {
   base::string16 role_description =
-      GetString16Attribute(ax::mojom::StringAttribute::kRoleDescription);
+      GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute();
+
   if (!role_description.empty()) {
     return role_description;
   }
@@ -813,7 +820,8 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
     AddAttributeToList("autocomplete", "list", attributes);
   }
 
-  base::string16 role_description = GetRoleDescription();
+  base::string16 role_description =
+      GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute();
   if (!role_description.empty() ||
       HasStringAttribute(ax::mojom::StringAttribute::kRoleDescription)) {
     AddAttributeToList("roledescription", base::UTF16ToUTF8(role_description),

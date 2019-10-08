@@ -59,11 +59,10 @@ const int kUnknownContentLength = -1;
 
 DownloadFileImpl::SourceStream::SourceStream(
     int64_t offset,
-    int64_t length,
     int64_t starting_file_write_offset,
     std::unique_ptr<InputStream> stream)
     : offset_(offset),
-      length_(length),
+      length_(DownloadSaveInfo::kLengthFullContent),
       starting_file_write_offset_(starting_file_write_offset),
       bytes_read_(0),
       bytes_written_(0),
@@ -72,11 +71,6 @@ DownloadFileImpl::SourceStream::SourceStream(
       input_stream_(std::move(stream)) {
   CHECK_LE(offset_, starting_file_write_offset_);
   CHECK_GE(offset_, 0);
-  DCHECK(length <= 0 || length >= starting_file_write_offset - offset)
-      << "Not enough for content validation. offset = " << offset
-      << ", length = " << length
-      << " , starting_file_write_offset = " << starting_file_write_offset
-      << ".";
 }
 
 DownloadFileImpl::SourceStream::~SourceStream() = default;
@@ -176,8 +170,8 @@ DownloadFileImpl::DownloadFileImpl(
                                     download_id);
 
   source_streams_[save_info_->offset] = std::make_unique<SourceStream>(
-      save_info_->offset, save_info_->length,
-      save_info_->GetStartingFileWriteOffset(), std::move(stream));
+      save_info_->offset, save_info_->GetStartingFileWriteOffset(),
+      std::move(stream));
 
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -243,8 +237,7 @@ void DownloadFileImpl::Initialize(
 }
 
 void DownloadFileImpl::AddInputStream(std::unique_ptr<InputStream> stream,
-                                      int64_t offset,
-                                      int64_t length) {
+                                      int64_t offset) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // UI thread may not be notified about completion and detach download file,
@@ -255,7 +248,7 @@ void DownloadFileImpl::AddInputStream(std::unique_ptr<InputStream> stream,
   }
   DCHECK(source_streams_.find(offset) == source_streams_.end());
   source_streams_[offset] =
-      std::make_unique<SourceStream>(offset, length, offset, std::move(stream));
+      std::make_unique<SourceStream>(offset, offset, std::move(stream));
   OnSourceStreamAdded(source_streams_[offset].get());
 }
 

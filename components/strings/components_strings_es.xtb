@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Abrir páginas de inicio</translation>
 <translation id="1883255238294161206">Contraer lista</translation>
 <translation id="1898423065542865115">Filtrado</translation>
+<translation id="1901443836186977402">{1,plural, =1{Este servidor no ha podido demostrar que es <ph name="DOMAIN" />; su certificado de seguridad caducó en el último día. Este problema puede deberse a una configuración incorrecta o a que un atacante ha interceptado la conexión. El reloj de tu ordenador está establecido actualmente en las <ph name="CURRENT_DATE" />. ¿Es correcto? Si no lo es, corrige el reloj del sistema y, a continuación, actualiza esta página.}other{Este servidor no ha podido demostrar que es <ph name="DOMAIN" />; su certificado de seguridad caducó hace # días. Este problema puede deberse a una configuración incorrecta o a que un atacante ha interceptado la conexión. El reloj de tu ordenador está establecido actualmente en las <ph name="CURRENT_DATE" />. ¿Es correcto? Si no lo es, corrige el reloj del sistema y, a continuación, actualiza esta página.}}</translation>
 <translation id="1914326953223720820">Servicio de descompresión</translation>
 <translation id="1915697529809968049">¿Usar Touch ID en lugar de CVC?</translation>
 <translation id="1916770123977586577">Vuelve a cargar esta página para aplicar la configuración actualizada a este sitio web</translation>
@@ -445,6 +446,7 @@
 <translation id="3116158981186517402">Plastificar</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Prueba a ejecutar Diagnóstico de conectividad<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Ir a <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Ninguno}=1{datos de inicio de sesión para 1 cuenta}other{datos de inicio de sesión para # cuentas}}</translation>
 <translation id="3145945101586104090">Error al decodificar respuesta</translation>
 <translation id="3150653042067488994">Error de servidor temporal</translation>
@@ -829,6 +831,7 @@
 <translation id="5043480802608081735">Enlace copiado</translation>
 <translation id="5045550434625856497">Contraseña incorrecta</translation>
 <translation id="5056549851600133418">Artículos recomendados para ti</translation>
+<translation id="5061227663725596739">¿Querías decir <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 en uso)}other{(# en uso)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Comprobar la dirección del proxy<ph name="END_LINK" /></translation>
@@ -882,6 +885,7 @@
 <translation id="5284909709419567258">Direcciones de red</translation>
 <translation id="5285570108065881030">Mostrar todas las contraseñas guardadas</translation>
 <translation id="5287240709317226393">Mostrar cookies</translation>
+<translation id="5287456746628258573">Este sitio web usa una configuración de seguridad obsoleta y puede que exponga tu información (por ejemplo, las contraseñas o los números de las tarjetas de crédito) cuando se envíe a este sitio web.</translation>
 <translation id="5288108484102287882">La validación de los valores de las políticas ha generado advertencias</translation>
 <translation id="5299298092464848405">Error al analizar la política</translation>
 <translation id="5300589172476337783">Mostrar</translation>
@@ -1010,6 +1014,7 @@
 <translation id="5946937721014915347">Abriendo <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Sí, añadir</translation>
 <translation id="5951495562196540101">No te puedes registrar con una cuenta de consumidor (hay una licencia asociada disponible).</translation>
+<translation id="5966900314707961320">Si activas esta opción, los sitios web no podrán usar cookies para hacer un seguimiento de tu actividad en la web</translation>
 <translation id="5967592137238574583">Edita la información de contacto</translation>
 <translation id="5967867314010545767">Eliminar del historial</translation>
 <translation id="5975083100439434680">Reducir</translation>
@@ -1092,6 +1097,7 @@
 <translation id="6383221683286411806">Es posible que se cobren cargos en el futuro.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{Una sugerencia más}other{# sugerencias más}}</translation>
 <translation id="6387754724289022810">Para pagar más rápido la próxima vez, guarda tu tarjeta y tu dirección de facturación en tu cuenta de Google y en este dispositivo.</translation>
+<translation id="6389470377220713856">Nombre de la tarjeta</translation>
 <translation id="6390200185239044127">Plegado al medio en Z</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Esta política está obsoleta. Deberías usar la política <ph name="NEW_POLICY" /> en su lugar.</translation>
@@ -1270,7 +1276,6 @@ Más información:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Se ha afiliado:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Salir de este sitio web</translation>
 <translation id="7353601530677266744">Línea de comandos</translation>
 <translation id="7372973238305370288">resultado de búsqueda</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1443,6 +1448,7 @@ Más información:
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8149426793427495338">El ordenador se ha suspendido.</translation>
 <translation id="8150722005171944719">El archivo que se encuentra en <ph name="URL" /> no se puede leer. Puede que se haya eliminado o movido o que los permisos del archivo impidan acceder a él.</translation>
+<translation id="8157295877370077682">Salir del sitio web</translation>
 <translation id="8163866351304776260">Perforado cuádruple en la parte izquierda</translation>
 <translation id="8175796834047840627">Chrome te ofrece guardar las tarjetas en tu cuenta de Google porque has iniciado sesión. Puedes cambiar esta opción en los ajustes.</translation>
 <translation id="8184538546369750125">Utilizar valor predeterminado global (Permitir)</translation>

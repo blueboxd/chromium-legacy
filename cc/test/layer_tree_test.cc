@@ -848,12 +848,10 @@ void LayerTreeTest::DoBeginTest() {
   beginning_ = true;
   SetupTree();
   WillBeginTest();
-  bool allocate_local_surface_id = !skip_allocate_initial_local_surface_id_ &&
-                                   settings_.enable_surface_synchronization;
-  if (allocate_local_surface_id)
+  if (!skip_allocate_initial_local_surface_id_)
     GenerateNewLocalSurfaceId();
   BeginTest();
-  if (allocate_local_surface_id) {
+  if (!skip_allocate_initial_local_surface_id_) {
     PostSetLocalSurfaceIdAllocationToMainThread(
         GetCurrentLocalSurfaceIdAllocation());
   }

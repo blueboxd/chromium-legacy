@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Muuda järjehoidjat</translation>
 <translation id="2179182049312275900">Saate sünkroonimise seadetes alati sisse lülitada.</translation>
 <translation id="2198757192731523470">Google võib kasutada teie ajalugu otsingu, reklaamide ja muude Google'i teenuste isikupärastamiseks.</translation>
-<translation id="2207590065820824892">Lugemisloendis on <ph name="UNREAD_COUNT" /> lugemata artiklit.</translation>
 <translation id="2230173723195178503">Veebileht laaditi</translation>
 <translation id="2239626343334228536">Sirvimisandmete kustutamine …</translation>
 <translation id="2267753748892043616">Lisa konto</translation>
@@ -265,7 +264,6 @@ Teie andmed on krüpteeritud teie sünkroonimisparooliga. Sisestage see sünkroo
 
 Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Sobimatu kaardinumber</translation>
-<translation id="4807020197310989387">Lugemisloendis on 1 lugemata artikkel.</translation>
 <translation id="4818522717893377262">Lisa keel …</translation>
 <translation id="481968316161811770">Küpsis., saidi andm.</translation>
 <translation id="4833786495304741580">Google'ile saadetakse automaatselt kasutusstatistikat ja krahhiaruandeid.</translation>
@@ -414,6 +412,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="6858855187367714033">Skannitud</translation>
 <translation id="6859944681507688231">QR-koodi või krediitkaardi skannimiseks lubage seadetes kaamera.</translation>
 <translation id="6873263987691478642">Poolitatud vaade</translation>
+<translation id="6888009575607455378">Kas soovite kindlasti muudatustest loobuda?</translation>
 <translation id="6896758677409633944">Kopeeri</translation>
 <translation id="6903907808598579934">Lülita sünkroonimine sisse</translation>
 <translation id="6914583639806229067">Otsi kopeeritud pilti</translation>

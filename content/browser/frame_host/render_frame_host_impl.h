@@ -33,6 +33,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_interface_broker_impl.h"
+#include "content/browser/can_commit_status.h"
 #include "content/browser/renderer_host/media/old_render_frame_audio_input_stream_factory.h"
 #include "content/browser/renderer_host/media/old_render_frame_audio_output_stream_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
@@ -121,6 +122,7 @@ class GURL;
 struct AccessibilityHostMsg_EventBundleParams;
 struct AccessibilityHostMsg_FindInPageResultParams;
 struct AccessibilityHostMsg_LocationChangeParams;
+struct FrameHostMsg_DownloadUrl_Params;
 struct FrameHostMsg_OpenURL_Params;
 struct FrameMsg_TextTrackSettings_Params;
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
@@ -1389,6 +1391,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       ui::input_types::ScrollGranularity granularity);
   void OnFrameDidCallFocus();
   void OnRenderFallbackContentInParentProcess();
+  void OnDownloadUrl(const FrameHostMsg_DownloadUrl_Params& params);
+  void OnSaveImageFromDataURL(const std::string& url_str);
 
   // To be called by ComputeSiteForCookiesForNavigation() and
   // ComputeSiteForCookies().
@@ -1499,11 +1503,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // in cases where it is applicable. This is a more conservative check than
   // RenderProcessHost::FilterURL, since it will be used to kill processes that
   // commit unauthorized origins.
-  enum class CanCommitStatus {
-    CAN_COMMIT_ORIGIN_AND_URL,
-    CANNOT_COMMIT_ORIGIN,
-    CANNOT_COMMIT_URL
-  };
   CanCommitStatus CanCommitOriginAndUrl(const url::Origin& origin,
                                         const GURL& url);
 
@@ -1901,6 +1900,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns the BackForwardCacheMetrics associated with the last
   // NavigationEntry this RenderFrameHostImpl committed.
   BackForwardCacheMetrics* GetBackForwardCacheMetrics();
+
+  // Helper for handling download-related IPCs.
+  void DownloadUrl(
+      const GURL& url,
+      const Referrer& referrer,
+      const url::Origin& initiator,
+      const base::string16& suggested_name,
+      const bool use_prompt,
+      const bool follow_cross_origin_redirects,
+      mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token);
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //

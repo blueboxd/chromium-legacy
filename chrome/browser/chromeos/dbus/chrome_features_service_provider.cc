@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_features.h"
 #include "components/prefs/pref_service.h"
 #include "dbus/bus.h"
@@ -116,13 +117,14 @@ void ChromeFeaturesServiceProvider::IsFeatureEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   static const base::Feature constexpr* kFeatureLookup[] = {
-      &features::kUsbbouncer,
-      &features::kUsbguard,
+      &::features::kUsbbouncer,
+      &::features::kUsbguard,
       &arc::kBootCompletedBroadcastFeature,
       &arc::kCustomTabsExperimentFeature,
       &arc::kFilePickerExperimentFeature,
       &arc::kNativeBridgeToggleFeature,
       &arc::kPrintSpoolerExperimentFeature,
+      &features::kSessionManagerLongKillTimeout,
   };
 
   dbus::MessageReader reader(method_call);
@@ -173,7 +175,7 @@ void ChromeFeaturesServiceProvider::IsUsbguardEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   SendResponse(method_call, response_sender,
-               base::FeatureList::IsEnabled(features::kUsbguard));
+               base::FeatureList::IsEnabled(::features::kUsbguard));
 }
 
 void ChromeFeaturesServiceProvider::IsVmManagementCliAllowed(
@@ -182,7 +184,8 @@ void ChromeFeaturesServiceProvider::IsVmManagementCliAllowed(
   bool is_allowed = true;
   // The policy is experimental; check that the corresponding feature flag
   // is enabled.
-  if (base::FeatureList::IsEnabled(features::kCrostiniAdvancedAccessControls)) {
+  if (base::FeatureList::IsEnabled(
+          ::features::kCrostiniAdvancedAccessControls)) {
     Profile* profile = GetSenderProfile(method_call, response_sender);
     is_allowed = profile->GetPrefs()->GetBoolean(
         crostini::prefs::kVmManagementCliAllowedByPolicy);

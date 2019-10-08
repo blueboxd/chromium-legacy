@@ -23,12 +23,13 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class TabProperties {
     /** IDs for possible types of UI in the tab list. */
-    @IntDef({UiType.SELECTABLE, UiType.CLOSABLE, UiType.STRIP})
+    @IntDef({UiType.SELECTABLE, UiType.CLOSABLE, UiType.STRIP, UiType.SUGGESTION})
     @Retention(RetentionPolicy.SOURCE)
     public @interface UiType {
         int SELECTABLE = 0;
         int CLOSABLE = 1;
         int STRIP = 2;
+        int SUGGESTION = 3;
     }
 
     public static final PropertyModel.WritableIntPropertyKey TAB_ID =

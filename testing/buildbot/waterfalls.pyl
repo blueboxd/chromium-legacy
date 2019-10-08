@@ -670,7 +670,7 @@
           'walleye',
         ],
         'test_suites': {
-          'gtest_tests': 'webview_cts_tests_gtest',
+          'isolated_scripts': 'android_wpt_scripts',
         },
         'use_swarming': True,
         'os_type': 'android',

@@ -7,12 +7,10 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/telemetry/android/android_telemetry_service.h"
 #include "chrome/browser/safe_browsing/telemetry/telemetry_service.h"
 #include "components/safe_browsing/android/remote_database_manager.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/db/v4_local_database_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
@@ -55,22 +53,9 @@ ServicesDelegateAndroid::database_manager() const {
 
 void ServicesDelegateAndroid::Initialize() {
   if (!database_manager_set_for_tests_) {
-#if BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
     database_manager_ =
         base::WrapRefCounted(new RemoteSafeBrowsingDatabaseManager());
-#else
-    database_manager_ = V4LocalDatabaseManager::Create(
-        SafeBrowsingService::GetBaseFilename(),
-        base::BindRepeating(
-            &ServicesDelegateAndroid::GetEstimatedExtendedReportingLevel,
-            base::Unretained(this)));
-#endif
   }
-}
-
-ExtendedReportingLevel
-ServicesDelegateAndroid::GetEstimatedExtendedReportingLevel() const {
-  return safe_browsing_service_->estimated_extended_reporting_by_prefs();
 }
 
 void ServicesDelegateAndroid::SetDatabaseManagerForTest(

@@ -304,6 +304,10 @@ void AddCrashKey(v8::CrashKeyId id, const std::string& value) {
                                      bd::CrashKeySize::Size32);
       bd::SetCrashKeyString(code_space_firstpage_address, value);
       break;
+    default:
+      // Doing nothing for new keys is a valid option. Having this case allows
+      // to introduce new CrashKeyId's without triggering a build break.
+      break;
   }
 }
 

@@ -11,6 +11,7 @@
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -20,11 +21,14 @@ namespace blink {
 class ExecutionContext;
 class FileSystemHandlePermissionDescriptor;
 
-class NativeFileSystemHandle : public ScriptWrappable {
+class NativeFileSystemHandle : public ScriptWrappable,
+                               public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(NativeFileSystemHandle);
 
  public:
-  explicit NativeFileSystemHandle(const String& name);
+  NativeFileSystemHandle(ExecutionContext* execution_context,
+                         const String& name);
   static NativeFileSystemHandle* CreateFromMojoEntry(
       mojom::blink::NativeFileSystemEntryPtr,
       ExecutionContext* execution_context);
@@ -40,6 +44,8 @@ class NativeFileSystemHandle : public ScriptWrappable {
 
   virtual mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>
   Transfer() = 0;
+
+  void Trace(Visitor*) override;
 
  private:
   virtual void QueryPermissionImpl(

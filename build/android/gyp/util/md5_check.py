@@ -20,9 +20,14 @@ PRINT_EXPLANATIONS = int(os.environ.get('PRINT_BUILD_EXPLANATIONS', 0))
 _FORCE_REBUILD = int(os.environ.get('FORCE_REBUILD', 0))
 
 
-def CallAndRecordIfStale(
-    function, record_path=None, input_paths=None, input_strings=None,
-    output_paths=None, force=False, pass_changes=False):
+def CallAndRecordIfStale(function,
+                         record_path=None,
+                         input_paths=None,
+                         input_strings=None,
+                         output_paths=None,
+                         force=False,
+                         pass_changes=False,
+                         track_subpaths_whitelist=None):
   """Calls function if outputs are stale.
 
   Outputs are considered stale if:
@@ -43,6 +48,8 @@ def CallAndRecordIfStale(
     force: Whether to treat outputs as missing regardless of whether they
       actually are.
     pass_changes: Whether to pass a Changes instance to |function|.
+    track_subpaths_whitelist: Relevant only when pass_changes=True. List of .zip
+      files from |input_paths| to make subpath information available for.
   """
   assert record_path or output_paths
   input_paths = input_paths or []
@@ -57,10 +64,11 @@ def CallAndRecordIfStale(
   new_metadata = _Metadata(track_entries=pass_changes or PRINT_EXPLANATIONS)
   new_metadata.AddStrings(input_strings)
 
+  zip_whitelist = set(track_subpaths_whitelist or [])
   for path in input_paths:
     # It's faster to md5 an entire zip file than it is to just locate & hash
     # its central directory (which is what this used to do).
-    if pass_changes and _IsZipFile(path):
+    if path in zip_whitelist:
       entries = _ExtractZipEntries(path)
       new_metadata.AddZipFile(path, entries)
     else:
@@ -389,14 +397,6 @@ def _ComputeInlineMd5(iterable):
   for item in iterable:
     md5.update(str(item))
   return md5.hexdigest()
-
-
-def _IsZipFile(path):
-  """Returns whether to treat the given file as a zip file."""
-  # ijar doesn't set the CRC32 field.
-  if path.endswith('.interface.jar'):
-    return False
-  return path[-4:] in ('.zip', '.apk', '.jar') or path.endswith('.srcjar')
 
 
 def _ExtractZipEntries(path):

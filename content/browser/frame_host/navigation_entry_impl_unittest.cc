@@ -306,9 +306,8 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   // SetPageState/GetPageState last.
   PageState test_page_state = CreateTestPageState();
   entry2_->SetPageState(test_page_state);
-  // TODO(lukasza): https://crbug.com/976055: Once |initiator_origin| is
-  // persisted across session restore, the test here should verify that
-  // SetPageState round-trips via GetPageState.
+  EXPECT_EQ(test_page_state.ToEncodedData(),
+            entry2_->GetPageState().ToEncodedData());
 }
 
 // Test basic Clone behavior.

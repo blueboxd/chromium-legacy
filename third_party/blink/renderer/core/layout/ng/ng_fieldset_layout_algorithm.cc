@@ -130,8 +130,7 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   // Note that in size containment, we have to consider sizing as if we have no
   // contents, with the conjecture being that legend is part of the contents.
   // Thus, only do this adjustment if we do not contain size.
-  if (!Node().ShouldApplySizeContainment() &&
-      !Node().DisplayLockInducesSizeContainment()) {
+  if (!Node().ShouldApplySizeContainment()) {
     LayoutUnit minimum_border_box_block_size =
         borders_with_legend.BlockSum() + padding.BlockSum();
     border_box_size.block_size =
@@ -154,14 +153,10 @@ base::Optional<MinMaxSize> NGFieldsetLayoutAlgorithm::ComputeMinMaxSize(
   MinMaxSize sizes;
 
   bool apply_size_containment = node_.ShouldApplySizeContainment();
+  // TODO(crbug.com/1011842): Need to consider content-size here.
   if (apply_size_containment) {
     if (input.size_type == NGMinMaxSizeType::kContentBoxSize)
       return sizes;
-  } else if (node_.DisplayLockInducesSizeContainment()) {
-    sizes = node_.GetDisplayLockContext().GetLockedContentLogicalWidth();
-    if (input.size_type == NGMinMaxSizeType::kContentBoxSize)
-      return sizes;
-    apply_size_containment = true;
   }
 
   // Size containment does not consider the legend for sizing.

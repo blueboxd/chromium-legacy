@@ -749,12 +749,13 @@ cr.define('settings', function() {
      * Initialize the route and query params from the URL.
      */
     initializeRouteFromUrl() {
-      this.recordMetrics(window.location.pathname);
-
       assert(!this.initializeRouteFromUrlCalled_);
       this.initializeRouteFromUrlCalled_ = true;
 
       const route = this.getRouteForPath(window.location.pathname);
+      if (route) {
+        this.recordMetrics(window.location.pathname);
+      }
       // Never allow direct navigation to ADVANCED.
       if (route && route != this.routes_.ADVANCED) {
         this.currentRoute = route;
@@ -773,6 +774,7 @@ cr.define('settings', function() {
       assert(!urlPath.startsWith('chrome://'));
       assert(!urlPath.startsWith('settings'));
       assert(urlPath.startsWith('/'));
+      assert(!urlPath.match(/\?/g));
       chrome.metricsPrivate.recordSparseHashable(
           'WebUI.Settings.PathVisited', urlPath);
     }

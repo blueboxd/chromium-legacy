@@ -184,10 +184,22 @@ void MergeIntoPrepopulatedEngineData(const TemplateURL* original_turl,
                                      TemplateURLData* prepopulated_url) {
   DCHECK(original_turl->prepopulate_id() == 0 ||
          original_turl->prepopulate_id() == prepopulated_url->prepopulate_id);
-  if (!original_turl->safe_for_autoreplace()) {
-    prepopulated_url->safe_for_autoreplace = false;
-    prepopulated_url->SetKeyword(original_turl->keyword());
+  // When the user modified search engine's properties or search engine is
+  // imported from Play API data we need to preserve certain search engine
+  // properties from overriding with prepopulated data.
+  if (!original_turl->safe_for_autoreplace() ||
+      original_turl->created_from_play_api()) {
+    prepopulated_url->safe_for_autoreplace =
+        original_turl->safe_for_autoreplace();
     prepopulated_url->SetShortName(original_turl->short_name());
+    prepopulated_url->SetKeyword(original_turl->keyword());
+    if (original_turl->created_from_play_api()) {
+      // TODO(crbug/1002271): Search url from Play API might contain attribution
+      // info and therefore should be preserved through prepopulated data
+      // update. In the future we might decide to take different approach to
+      // pass attribution info to search providers.
+      prepopulated_url->SetURL(original_turl->url());
+    }
   }
   prepopulated_url->id = original_turl->id();
   prepopulated_url->sync_guid = original_turl->sync_guid();

@@ -319,6 +319,7 @@
 <translation id="1470811252759861213"><ph name="SIGN_IN_LINK" /> om du vill få tillgång till samma tillägg på alla dina datorer.</translation>
 <translation id="1470967055429794975">All data på säkerhetsnyckeln raderas, inklusive pinkoden</translation>
 <translation id="1475502736924165259">Du har certifikat i din dator som inte passar i några av de andra kategorierna</translation>
+<translation id="1476088332184200792">Kopiera till din enhet</translation>
 <translation id="1476607407192946488">&amp;Språkinställningar</translation>
 <translation id="1478340334823509079">Detaljer: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Installationen är inte aktiverad</translation>
@@ -951,7 +952,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2379281330731083556">Skriv ut via systemets dialogruta ... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Fråga innan något skickas (rekommenderas)</translation>
 <translation id="2384436799579181135">Ett fel uppstod. Kontrollera skrivaren och försök igen.</translation>
-<translation id="2386926718981642523">Starta assistenten när du säger ”Ok Google”</translation>
 <translation id="2387458720915042159">Proxyanslutningstyp</translation>
 <translation id="2391419135980381625">Standardteckensnitt</translation>
 <translation id="2392369802118427583">Aktivera</translation>
@@ -1341,6 +1341,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2941112035454246133">Låg</translation>
 <translation id="2942560570858569904">Väntar …</translation>
 <translation id="2942581856830209953">Anpassa den här sidan</translation>
+<translation id="294308617863380348">Inklusive cookies från tredje part</translation>
 <translation id="2944060181911631861">Skicka diagnostik- och användningsdata. Hjälp till att göra Android bättre genom att skicka diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera. Viss samlad data används även till att förbättra appar från Google och partner, till exempel Android-utvecklare. Om ytterligare webb- och appaktivitet har aktiverats kan denna data sparas i Google-kontot. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="2946119680249604491">Lägg till anslutning</translation>
 <translation id="2948300991547862301">Öppna <ph name="PAGE_TITLE" /></translation>
@@ -1355,7 +1356,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2961695502793809356">Klicka för att fortsätta, håll ned för att se historik</translation>
 <translation id="2963151496262057773">Följande pluginprogram svarar inte: <ph name="PLUGIN_NAME" />. Vill du stoppa det?</translation>
 <translation id="2966937470348689686">Hantera Android-inställningar</translation>
-<translation id="2972557485845626008">Fast programvara</translation>
 <translation id="2972581237482394796">&amp;Upprepa</translation>
 <translation id="2973324205039581528">Stäng av webbplatsens ljud</translation>
 <translation id="2977480621796371840">Ta bort från gruppen</translation>
@@ -1613,7 +1613,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" /> %</translation>
 <translation id="338583716107319301">Avgränsare</translation>
 <translation id="3387614642886316601">Använd förbättrad stavningskontroll</translation>
-<translation id="3393352139658145068">Aktivera assistenten när någon säger ”Ok Google”. För att spara batteri är ”Ok Google” bara aktiverat när enheten är ansluten till en extern strömkälla.</translation>
 <translation id="3396800784455899911">När du klickar på Godkänn och fortsätt samtycker du till att dessa tjänster från Google får bearbeta data enligt beskrivningen ovan.</translation>
 <translation id="3399432415385675819">Aviseringar inaktiveras</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hertz) – flätade</translation>
@@ -1774,6 +1773,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3613134908380545408">Visa <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Öppna i ny flik</translation>
 <translation id="3615073365085224194">Tryck på fingeravtryckssensorn med fingret.</translation>
+<translation id="3615579745882581859"><ph name="FILE_NAME" /> genomsöks.</translation>
 <translation id="3616741288025931835">&amp;Rensa webbinformation...</translation>
 <translation id="3617891479562106823">Inga bakgrunder är tillgängliga. Försök igen senare.</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
@@ -1888,7 +1888,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3759933321830434300">Blockera delar av webbsidor</translation>
 <translation id="3760460896538743390">Kontrollera &amp;bakgrundssida</translation>
 <translation id="37613671848467444">Öppna i &amp;inkognitofönster</translation>
-<translation id="3764314093345384080">Detaljerad versionsinformation</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Kommunicera med en USB-enhet}other{Kommunicera med # USB-enheter}}</translation>
 <translation id="3765246971671567135">Det gick inte att läsa in offlinepolicyn för demoläge.</translation>
 <translation id="3768037234834996183">Inställningarna synkroniseras ...</translation>
@@ -2169,7 +2168,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4138267921960073861">Visa användarnamn och foton på inloggningssidan</translation>
 <translation id="4142052906269098341">Lås upp <ph name="DEVICE_TYPE" /> med telefonen. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">Få bättre videokvalitet och spara på batteriet. Videor spelas bara upp på den Cast-kompatibla skärmen.</translation>
-<translation id="4145922204387553806">Tillåt att assistenten ger information utifrån vad som visas på skärmen</translation>
 <translation id="4146026355784316281">Öppna alltid med systemets visningsprogram</translation>
 <translation id="4146785383423576110">Återställ och rensa</translation>
 <translation id="4147911968024186208">Försök igen. Kontakta supporten om det här felet återkommer.</translation>
@@ -2256,6 +2254,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4297322094678649474">Ändra språk</translation>
 <translation id="4301671483919369635">Sidan har redigeringsbehörighet till filer</translation>
 <translation id="4303079906735388947">Ange en ny pinkod för säkerhetsnyckeln</translation>
+<translation id="4305402730127028764">Kopiera till <ph name="DEVICE_NAME" /></translation>
 <translation id="4306119971288449206">Apparna måste visas med content-type <ph name="CONTENT_TYPE" /></translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K aktiva)</translation>
 <translation id="4310139701823742692">Filen har fel format. Kontrollera PPD-filen och försök igen.</translation>
@@ -2391,7 +2390,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4534661889221639075">Försök igen.</translation>
 <translation id="4535127706710932914">Standardprofil</translation>
 <translation id="4535767533210902251">Fingeravtryckssensorn är tangenten högst upp till höger på tangentbordet. Tryck lätt på den med valfritt finger.</translation>
-<translation id="4538417792467843292">Ta bort ord</translation>
 <translation id="4538684596480161368">Blockera alltid plugin-program som inte är i sandlådeläge på <ph name="HOST" /></translation>
 <translation id="4538792345715658285">Installerad på grund av företagets principer.</translation>
 <translation id="4542520061254486227">Läsa din data på <ph name="WEBSITE_1" /> och <ph name="WEBSITE_2" /></translation>
@@ -2935,6 +2933,7 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="5367091008316207019">Läser fil ...</translation>
 <translation id="5368720394188453070">Din mobil är låst. Lås upp den.</translation>
 <translation id="5368779022775404937">Logga in på <ph name="REALM" /></translation>
+<translation id="5369491905435686894">Aktivera musacceleration</translation>
 <translation id="5370819323174483825">&amp;Läs in igen</translation>
 <translation id="5372529912055771682">Det angivna registreringsläget stöds inte av den här versionen av operativsystemet. Kontrollera att du har den senaste versionen och försök igen.</translation>
 <translation id="5372579129492968947">Lossa tillägg</translation>
@@ -3007,6 +3006,7 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="5464632865477611176">Kör den här gången</translation>
 <translation id="5464660706533281090">Inställningen kan inte ändras av barn.</translation>
 <translation id="5466374726908360271">Kli&amp;stra in och sök efter <ph name="SEARCH_TERMS" /></translation>
+<translation id="5468173180030470402">Söker efter filresurser</translation>
 <translation id="5471768120198416576">Hejsan! Nu används min röst för text till tal.</translation>
 <translation id="5473333559083690127">Ange ny pinkod igen</translation>
 <translation id="5481941284378890518">Lägg till skrivare i närheten</translation>
@@ -3542,6 +3542,7 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="6233154960150021497">Använd rösten i stället för tangentbordet som standard</translation>
 <translation id="6234474535228214774">Väntar på att installeras</translation>
 <translation id="6237816943013845465">Ger möjlighet att ändra skärmupplösningen</translation>
+<translation id="6238767809035845642">Text delad från annan enhet</translation>
 <translation id="6238923052227198598">Behåll den senaste anteckningen på låsskärmen</translation>
 <translation id="6239558157302047471">Läs in &amp;ram igen</translation>
 <translation id="6241530762627360640">Få åtkomst till information om Bluetooth-enheter som är kopplade till ditt system och upptäck Bluetooth-enheter i närheten.</translation>
@@ -3768,7 +3769,6 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="6577284282025554716">Nedladdningen avbröts: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Kryptera synkroniserade lösenord med ditt användarnamn och lösenord på Google</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> – skrivbordet delas</translation>
-<translation id="6580151766480067746">ARC-version</translation>
 <translation id="6582080224869403177">Du måste återställa <ph name="DEVICE_TYPE" /> för att uppgradera säkerheten.</translation>
 <translation id="6584878029876017575">Microsofts Livstids signering</translation>
 <translation id="6586451623538375658">Byt primär musknapp</translation>
@@ -4373,6 +4373,7 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="7487141338393529395">Aktivera förbättrad stavningskontroll</translation>
 <translation id="7487969577036436319">Det finns inga installerade komponenter</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Öppna alla}=1{&amp;Öppna bokmärke}other{&amp;Öppna alla (#)}}</translation>
+<translation id="7489761397368794366">Ring från din enhet</translation>
 <translation id="749028671485790643">Person <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC-adress</translation>
 <translation id="7493386493263658176">Tillägget <ph name="EXTENSION_NAME" /> kan samla in all text du skriver, inklusive personlig information som lösenord och kreditkortsnummer. Vill du fortsätta att använda tillägget?</translation>
@@ -4392,6 +4393,7 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="7508054832109420082">Ge åtkomst till skrivare</translation>
 <translation id="7510943789645525906">Varnar om ett lösenord du använder har identifierats i samband med ett dataintrång</translation>
 <translation id="7513029293694390567">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du bekräfta inloggningen varje gång du besöker en webbplats.</translation>
+<translation id="7514239104543605883">Kopiera till din enhet</translation>
 <translation id="7514365320538308">Ladda ned</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Säg ”Ok Google”</translation>
@@ -4948,6 +4950,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8274332263553132018">Casta fil</translation>
 <translation id="8274924778568117936">Stäng inte av eller stäng <ph name="DEVICE_TYPE" /> förrän uppdateringen har slutförts. <ph name="DEVICE_TYPE" /> startas om när installationen är slutförd.</translation>
 <translation id="8275038454117074363">Importera</translation>
+<translation id="8275080796245127762">Ring från din enhet</translation>
 <translation id="8276560076771292512">Töm cacheminne och gör hård inläsning</translation>
 <translation id="8281886186245836920">Hoppa över</translation>
 <translation id="8282947398454257691">Veta din unika enhetsidentifierare</translation>
@@ -5268,6 +5271,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8758418656925882523">Aktivera diktering (skriv genom att tala)</translation>
 <translation id="8759408218731716181">Det går inte att starta multiinloggning</translation>
 <translation id="8759753423332885148">Läs mer.</translation>
+<translation id="8761945298804995673">Användaren finns redan</translation>
 <translation id="8762886931014513155"><ph name="DEVICE_TYPE" /> behöver uppdateras</translation>
 <translation id="8763927697961133303">USB-enhet</translation>
 <translation id="8767621466733104912">Uppdatera Chrome automatiskt för alla användare</translation>
@@ -5356,6 +5360,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8879284080359814990">&amp;Visa som flik</translation>
 <translation id="8879921471468674457">Kom ihåg inloggningsuppgifter</translation>
 <translation id="8881020143150461183">Försök igen. Kontakta <ph name="CARRIER_NAME" /> om du behöver teknisk support.</translation>
+<translation id="8883273463630735858">Aktivera styrplatteacceleration</translation>
 <translation id="8884570509232205463">Nu låses enheten klockan <ph name="UNLOCK_TIME" />.</translation>
 <translation id="8885197664446363138">Smart Lock är inte tillgängligt</translation>
 <translation id="8888253246822647887">Appen öppnas när uppgraderingen är klar. Uppgraderingen kan ta några minuter.</translation>

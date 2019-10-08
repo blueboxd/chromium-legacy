@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "components/search_engines/keyword_table.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/webdata/common/web_data_results.h"
@@ -152,8 +153,16 @@ void KeywordWebDataService::AdjustBatchModeLevel(bool entering_batch_mode) {
     DCHECK(batch_mode_level_);
     --batch_mode_level_;
     if (!batch_mode_level_ && !queued_keyword_operations_.empty() &&
-        !timer_.IsRunning())
+        !timer_.IsRunning()) {
+      // When killing an app on Android/iOS, shutdown isn't guaranteed to be
+      // called. Finishing this task immediately ensures the table is fully
+      // populated even if the app is killed before the timer expires.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+      CommitQueuedOperations();
+#else
       timer_.Reset();
+#endif
+    }
   }
 }
 

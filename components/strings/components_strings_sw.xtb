@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Fungua kurasa zinazoanza</translation>
 <translation id="1883255238294161206">Kunja orodha</translation>
 <translation id="1898423065542865115">Kuchuja</translation>
+<translation id="1901443836186977402">{1,plural, =1{Seva hii imeshindwa kuthibitisha kuwa ni <ph name="DOMAIN" />; muda wa kutumia cheti chake cha usalama uliisha siku iliyopita. Huenda hali hii imetokana na mipangilio isiyofaa au mdukuzi kuingilia muunganisho wako. Kwa sasa, saa ya kompyuta yako imewekwa kuwa <ph name="CURRENT_DATE" />. Je, ni sahihi? Ikiwa si sahihi, rekebisha saa ya mfumo wako kisha uonyeshe upya ukurasa huu.}other{Seva hii imeshindwa kuthibitisha kuwa ni <ph name="DOMAIN" />; muda wa kutumia cheti chake cha usalama uliisha siku # zilizopita. Hali hii inaweza kusababishwa na mipangilio isiyofaa au mdukuzi kuingilia muunganisho wako. Saa ya kompyuta yako imewekwa kuwa <ph name="CURRENT_DATE" />. Je, ni sahihi? Ikiwa si sahihi, unapaswa kurekebisha mfumo wako wa saa kisha uonyeshe upya ukurasa huu?}}</translation>
 <translation id="1914326953223720820">Huduma ya Kufungua Faili za Zip</translation>
 <translation id="1915697529809968049">Ungependa kutumia Touch ID badala ya CVC?</translation>
 <translation id="1916770123977586577">Pakia upya ukurasa huu ili mipangilio iliyosasishwa itumike katika tovuti hii</translation>
@@ -441,6 +442,7 @@
 <translation id="3116158981186517402">Funika kwa tabaka</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Jaribu kutumia zana ya Kuchunguza Muunganisho<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Nenda kwenye <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Hamna}=1{data ya kuingia katika akaunti 1}other{data ya kuingia katika akaunti #}}</translation>
 <translation id="3145945101586104090">Imeshindwa kusimbua jibu</translation>
 <translation id="3150653042067488994">Hitilfau ya muda ya seva</translation>
@@ -823,6 +825,7 @@
 <translation id="5043480802608081735">Kiungo Ulichonakili</translation>
 <translation id="5045550434625856497">Nenosiri lisilo sahihi</translation>
 <translation id="5056549851600133418">Makala kwa ajili yako</translation>
+<translation id="5061227663725596739">Je, ulimaanisha <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 kinatumika)}other{(# vinatumika)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Kuangalia anwani mbadala<ph name="END_LINK" /></translation>
@@ -876,6 +879,7 @@
 <translation id="5284909709419567258">Anwani za mtandao</translation>
 <translation id="5285570108065881030">Onyesha manenosiri yote yaliyohifadhiwa</translation>
 <translation id="5287240709317226393">Onyesha vidakuzi</translation>
+<translation id="5287456746628258573">Tovuti hii inatumia mipangilio ya usalama iliyopitwa na wakati, hali ambayo inaweza kuonyesha taarifa zako (kwa mfano, manenosiri, au nambari za kadi za mikopo) zikitumwa kwenye tovuti hii.</translation>
 <translation id="5288108484102287882">Imethibitisha thamani za sera na kutoa maonyo</translation>
 <translation id="5299298092464848405">Hitilafu wakati wa kuchanganua sera</translation>
 <translation id="5300589172476337783">Onyesha</translation>
@@ -1004,6 +1008,7 @@
 <translation id="5946937721014915347">Inafungua <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Ndiyo, Ongeza</translation>
 <translation id="5951495562196540101">Huwezi kujiandikisha ukitumia akaunti ya mteja (ina leseni ya kifurushi).</translation>
+<translation id="5966900314707961320">Ikiwashwa, tovuti haziwezi kutumia vidakuzi vinavyokufuatilia kwenye wavuti</translation>
 <translation id="5967592137238574583">Badilisha Maelezo ya Mawasiliano</translation>
 <translation id="5967867314010545767">Ondoa kwenye historia</translation>
 <translation id="5975083100439434680">Fifiza</translation>
@@ -1086,6 +1091,7 @@
 <translation id="6383221683286411806">Huenda ukatozwa gharama.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{Pendekezo jingine 1}other{Mapendekezo mengine #}}</translation>
 <translation id="6387754724289022810">Ili ulipe kwa haraka wakati ujao, hifadhi anwani ya kutuma bili na maelezo ya kadi yako kwenye Akaunti yako ya Google na kwenye kifaa hiki.</translation>
+<translation id="6389470377220713856">Jina lilio kwenye Kadi</translation>
 <translation id="6390200185239044127">Mkunjo wa Z nusu</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Sera hii imeacha kuendesha huduma. Ni sharti utumie sera ya <ph name="NEW_POLICY" /> badala yake.</translation>
@@ -1262,7 +1268,6 @@
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Ni mshirika:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Ondoka kwenye tovuti hii</translation>
 <translation id="7353601530677266744">Mbinu ya Amri</translation>
 <translation id="7372973238305370288">matokeo ya utafutaji</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1435,6 +1440,7 @@
 <translation id="8131740175452115882">Thibitisha</translation>
 <translation id="8149426793427495338">Kompyuta yako iko katika hali tuli.</translation>
 <translation id="8150722005171944719">Faili katika <ph name="URL" /> haisomeki. Huenda imeondolewa, kusogezwa, au idhini za faili huenda zinazuia ufikiaji.</translation>
+<translation id="8157295877370077682">Funga tovuti</translation>
 <translation id="8163866351304776260">Toboa mara nne kushoto</translation>
 <translation id="8175796834047840627">Chrome ina huduma ya kuhifadhi kadi zako kwenye Akaunti yako ya Google kwa sababu umeingia katika akaunti. Unaweza kubadilisha hali hii katika mipangilio.</translation>
 <translation id="8184538546369750125">Tumia chaguomsingi la duniani (Ruhusu)</translation>

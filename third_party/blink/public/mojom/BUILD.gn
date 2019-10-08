@@ -229,9 +229,6 @@ mojom("android_mojo_bindings") {
     "webauthn/internal_authenticator.mojom",
     "webshare/webshare.mojom",
   ]
-  if (is_android && notouch_build) {
-    sources += [ "media_controls/touchless/media_controls.mojom" ]
-  }
   public_deps = [
     "//components/payments/mojom",
     "//mojo/public/mojom/base",

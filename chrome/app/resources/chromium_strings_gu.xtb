@@ -7,22 +7,16 @@
 <translation id="1104942323762546749">Chromium તમારા પાસવર્ડની નિકાસ કરવા માગે છે. આને મંજૂરી આપવા માટે તમારો Windows પાસવર્ડ ટાઇપ કરો.</translation>
 <translation id="1115445892567829615">Chromium તમારા ડેટાને સમન્વયિત કરી શક્યું નથી. કૃપા કરીને તમારા સમન્વયન પાસફ્રેઝને અપડેટ કરો.</translation>
 <translation id="113122355610423240">Chromium તમારું ડિફૉલ્ટ બ્રાઉઝર છે</translation>
-<translation id="1170115874949214249">તમારા ફોન પર Chromium ઇન્સ્ટૉલ કરો. અમે તમારા એકાઉન્ટને પાછું મેળવવા ફોન નંબર પર એક SMS મોકલીશું.</translation>
-<translation id="1174473354587728743">કમ્પ્યુટર શેર કરીએ? હવે તમે તમને ગમે તે રીતે Chromiumને સેટ કરી શકો છો.</translation>
 <translation id="1185134272377778587">Chromium વિશે</translation>
-<translation id="1298199220304005244">Chromium OSનો ઉપયોગ કરવા સહાય મેળવો</translation>
 <translation id="1396446129537741364">Chromium પાસવર્ડ્સ બતાવવાનો પ્રયાસ કરી રહ્યું છે.</translation>
 <translation id="1414495520565016063">તમે Chromium માં સાઇન ઇન કર્યું છે!</translation>
 <translation id="151962892725702025">Chromium OS તમારા ડેટાને સિંક કરી શક્યું નથી, કારણ કે તમારા ડોમેન માટે સિંક ઉપલબ્ધ નથી.</translation>
 <translation id="1524282610922162960">Chromium ટૅબ શેર કરો</translation>
-<translation id="1668054258064581266">તમારા એકાઉન્ટને Chromiumમાંથી દૂર કર્યાં પછી, અમલમાં લાવવા માટે તમારે તમારા ટૅબને ફરીથી લોડ કરવાની જરૂર પડી શકે છે.</translation>
-<translation id="1688750314291223739">તમારી વેબ પરની વ્યક્તિગત કરેલી બ્રાઉઝર સુવિધાઓને સાચવવા અને તેમને કોઈ પણ કમ્પ્યુટર પર Chromium માંથી ઍક્સેસ કરવા માટે સમન્વયન સેટ કરો.</translation>
 <translation id="1708666629004767631">Chromiumનું નવું, સુરક્ષિત વર્ઝન ઉપલબ્ધ છે.</translation>
 <translation id="1766096484055239003">અપડેટ લાગુ કરવા માટે તમે Chromiumને ફરીથી લૉન્ચ કરો તે તમારા વ્યવસ્થાપક માટે જરૂરી છે</translation>
 <translation id="1774152462503052664">Chromium ને પૃષ્ઠભૂમિમાં ચાલવા દો</translation>
 <translation id="1779356040007214683">Chromium ને સુરક્ષિત બનાવવા માટે, અમે <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> માં સૂચિબદ્ધ નથી અને તમારી જાણ વિના ઉમેરવામાં આવ્યાં હોઈ શકે છે તેવા કેટલાક એક્સ્ટેન્શન્સને અક્ષમ કર્યા છે.</translation>
 <translation id="1808667845054772817">Chromium ફરીથી ઇન્સ્ટોલ કરો</translation>
-<translation id="1869480248812203386">તમે Google ને સંભવિત સુરક્ષા ઘટનાઓની વિગતોની જાણ આપમેળે કરીને Chromium ને વધુ સલામત અને ઉપયોગમાં વધુ સરળ બનાવવામાં સહાય કરી શકો છો.</translation>
 <translation id="1881322772814446296">તમે મેનેજ કરેલા એકાઉન્ટ સાથે સાઇન ઇન કરી રહ્યાં છો અને તમારી Chromium પ્રોફાઇલ પર એનું એડમિન નિયંત્રણ આપી રહ્યાં છો. તમારો Chromium ડેટા, જેમ કે ઍપ, બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને બીજા સેટિંગ, કાયમ માટે <ph name="USER_NAME" /> થી બંધાયેલ રહેશે. તમે Google એકાઉન્ટ ડૅશબોર્ડથી આ ડેટાને કાઢી શકશો, પરંતુ તમે આ ડેટાને બીજા એકાઉન્ટ સાથે સાંકળી શકશો નહિ. તમે અસ્તિત્વમાં છે તે Chromium ડેટાને અલગ રાખવા માટે વૈકલ્પિક રૂપે એક નવી પ્રોફાઇલ બનાવી શકો છો. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">આને બંધ કરવાથી, તમે Chromiumમાં સાઇન ઇન કર્યા સિવાય Gmail જેવી Googleની સાઇટમાં સાઇન ઇન કરી શકશો</translation>
 <translation id="1929939181775079593">Chromium પ્રતિસાદ આપતું નથી. હવે ફરીથી લોંચ કરીએ?</translation>
@@ -31,7 +25,6 @@
 <translation id="2117378023188580026">તમારા વ્યવસ્થાપક કહે છે કે આ અપડેટ લાગુ કરવા માટે Chromium ફરીથી લૉન્ચ કરો</translation>
 <translation id="2119636228670142020">&amp;Chromium OS વિશે</translation>
 <translation id="2241627712206172106">જો તમે કમ્પ્યુટરને શેર કરો છો, તો મિત્રો અને કુટુંબીજનો અલગ-અલગ બ્રાઉઝ કરી અને તેમને જોઇએ તેમ Chromium ને સેટ કરી શકે છે.</translation>
-<translation id="2265088490657775772">તમારા iPhone પર Chromium મેળવો</translation>
 <translation id="2347108572062610441">જ્યારે તમે Chromium શરૂ કરો છો ત્યારે જે પૃષ્ઠ દર્શાવવામાં આવે છે તે આ એક્સટેન્શને બદલ્યું છે.</translation>
 <translation id="2396765026452590966">જ્યારે તમે Chromium શરૂ કરો છો ત્યારે જે પૃષ્ઠ દર્શાવવામાં આવે છે તે <ph name="EXTENSION_NAME" /> એક્સટેન્શને બદલ્યું છે.</translation>
 <translation id="2483889755041906834">Chromium માં</translation>
@@ -50,11 +43,9 @@
 <translation id="2838154144102149890">અપડેટ થવા માટે, આ કમ્પ્યુટર પર Chromium ચાલતું બંધ થવું જરૂરી છે. આના કારણે, આ કમ્પ્યુટરમાં લૉગ ઇન થયેલા બીજા વપરાશકર્તાઓના સાચવ્યા વિનાના ફેરફારો ગુમ થઈ શકે છે.</translation>
 <translation id="2847479871509788944">Chromium માંથી દૂર કરો...</translation>
 <translation id="2886012850691518054">વૈકલ્પિક: ઉપયોગનાં આંકડાઓ અને ક્રૅશ રીપોર્ટ્સ ઑટોમૅટિક રીતે Googleને મોકલીને Chromium ને વધુ સારું બનાવવમાં સહાય કરો.</translation>
-<translation id="2898082584336937987">તમારા ફોન પર Chromium ઇન્સ્ટૉલ કરો. અમે તમારા ફોન પર એક SMS મોકલીશું: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">&amp;Chromium વિશે</translation>
 <translation id="2977470724722393594">Chromium અપ ટૂ ડેટ છે</translation>
 <translation id="3032787606318309379">Chromium માં ઉમેરી રહ્યું છે...</translation>
-<translation id="3046695367536568084">ઍપ્લિકેશનોનો ઉપયોગ કરવા માટે તમારે Chromium માં સાઇન ઇન કરવાની જરૂર છે. આ Chromium ને તમારી ઍપ્લિકેશનો, બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને સમગ્ર ઉપકરણો પર અન્ય સેટિંગ્સને સમન્વયિત કરવાની મંજૂરી આપે છે.</translation>
 <translation id="3068515742935458733">ક્રૅશ રિપોર્ટ અને <ph name="UMA_LINK" /> Googleને મોકલીને Chromium ને વધુ સારું બનાવવામાં મદદ કરો.</translation>
 <translation id="3103660991484857065">ઇન્સ્ટૉલર આર્કાઇવને અનકોમ્પ્રેસ કરવામાં નિષ્ફળ. કૃપા કરીને Chromium ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="3130323860337406239">Chromium તમારા માઇક્રોફોનનો ઉપયોગ કરી રહ્યું છે.</translation>
@@ -62,7 +53,6 @@
 <translation id="3179665906251668410">Chromium છુ&amp;પી વિંડોમાં લિંક ખોલો</translation>
 <translation id="3190315855212034486">ઓહ! Chromium ક્રેશ થઈ ગયું. હમણાં ફરીથી લોંચ કરીએ?</translation>
 <translation id="3229526316128325841">Chromium તમારા પાસવર્ડની નિકાસ કરવા માગે છે.</translation>
-<translation id="3256316712990552818">Chromium પર કૉપી કરી</translation>
 <translation id="3258596308407688501">Chromium એની ડેટા ડિરેક્ટરી વાંચી અથવા લખી શકતુંં નથી:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -86,7 +76,6 @@
 <translation id="4050175100176540509">નવીનતમ વર્ઝનમાં મહત્ત્વપૂર્ણ સુરક્ષા સુધારણાઓ અને નવી સુવિધાઓ ઉપલબ્ધ છે.</translation>
 <translation id="421369550622382712">Chromium માટે શ્રેષ્ઠ એપ્લીકેશન્સ, રમતો, એક્સટેન્શન્સ અને થીમ્સ શોધો.</translation>
 <translation id="4216212958613226427">આ ભાષાનો ઉપયોગ Chromium UI પ્રદર્શિત કરવા માટે થાય છે</translation>
-<translation id="4222580632002216401">તમે હવે Chromium માં સાઇન ઇન છો! સમન્વયન તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરેલું છે.</translation>
 <translation id="4230135487732243613">તમારા Chromium ડેટાને આ એકાઉન્ટ સાથે લિંક કરીએ?</translation>
 <translation id="4271805377592243930">Chromium સાથે સહાય મેળવો</translation>
 <translation id="4285930937574705105">અમઉલ્લેખિત ભૂલને કારણે ઇન્સ્ટોલેશન નિષ્ફળ થયું. જો Chromium હાલમાં ચાલી રહ્યું હોય, તો તેને બંધ કરો અને ફરી પ્રયાસ કરો.</translation>
@@ -109,7 +98,6 @@
 <translation id="4943838377383847465">Chromium પૃષ્ઠભૂમિ મોડમાં છે.</translation>
 <translation id="4987820182225656817">અતિથિઓ કંઈપણ પાછળ છોડ્યાં વિના Chromium નો ઉપયોગ કરી શકે છે.</translation>
 <translation id="4994636714258228724">સ્વયંને Chromium માં ઉમેરો</translation>
-<translation id="5181952534059945058">આ પેજ મેમરીનો બહુ ઉપયોગ કરે છે, તેથી Chromiumએ કેટલુંક કન્ટેન્ટ કાઢી નાખ્યું છે.</translation>
 <translation id="5277894862589591112">તમારા ફેરફારો લાગુ કરવા માટે, Chromiumને ફરી લૉન્ચ કરો</translation>
 <translation id="5358375970380395591">તમે મેનેજ કરેલા એકાઉન્ટ સાથે સાઇન ઇન કરી રહ્યાં છો અને તમારી Chromium પ્રોફાઇલ પર એનું એડમિન નિયંત્રણ આપી રહ્યાં છો. તમારો Chromium ડેટા, જેમ કે ઍપ, બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને બીજા સેટિંગ, કાયમ માટે <ph name="USER_NAME" /> થી બંધાયેલ રહેશે. તમે Google એકાઉન્ટ ડૅશબોર્ડથી આ ડેટાને કાઢી શકશો, પરંતુ તમે આ ડેટાને બીજા એકાઉન્ટ સાથે સાંકળી શકશો નહિ. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium અપડેટ થઈ રહ્યું છે (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -132,7 +120,6 @@
 <translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
 <translation id="5987687638152509985">સમન્વયનને પ્રારંભ કરવા માટે Chromium ને અપડેટ કરો</translation>
 <translation id="6013050204643758987"><ph name="BEGIN_LINK_LINUX_OSS" />Linux (બીટા)<ph name="END_LINK_LINUX_OSS" />ની જેમ, Chromium OS વધારાના <ph name="BEGIN_LINK_CROS_OSS" />ઓપન સૉર્સ સૉફ્ટવેર<ph name="END_LINK_CROS_OSS" /> દ્વારા શક્ય બન્યું છે.</translation>
-<translation id="6040143037577758943">બંધ કરો</translation>
 <translation id="6055895534982063517">Chromiumનું એક નવું વર્ઝન ઉપલબ્ધ છે અને તે પહેલાં કરતાંય વધુ ઝડપી છે.</translation>
 <translation id="6063093106622310249">અને Chromiumમાં ખોલો</translation>
 <translation id="6072279588547424923"><ph name="EXTENSION_NAME" />ને Chromiumમાં ઉમેરવામાં આવ્યું છે</translation>
@@ -154,7 +141,6 @@
 <translation id="6434250628340475518">Chromium OS સિસ્ટમ</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium 1 સેકન્ડમાં ફરી શરૂ થશે}one{Chromium # સેકન્ડમાં ફરી શરૂ થશે}other{Chromium # સેકન્ડમાં ફરી શરૂ થશે}}</translation>
 <translation id="6475912303565314141">જ્યારે તમે Chromium શરૂ કરો ત્યારે કયું પૃષ્ઠ બતાવવામાં આવે તે તેનું પણ નિયંત્રણ કરે છે.</translation>
-<translation id="6485906693002546646">તમે તમારી Chromium સામગ્રીનું સિંક કરવા માટે <ph name="PROFILE_EMAIL" /> નો ઉપયોગ કરી રહ્યાં છો. તમારી સિંક પસંદગીને અપડેટ કરવા માટે અથવા Chromium ને Google એકાઉન્ટ વગર ઉપયોગ કરવા માટે, <ph name="SETTINGS_LINK" /> ની મુલાકાત લો.</translation>
 <translation id="6510925080656968729">Chromium ને અનઇન્સ્ટૉલ કરો</translation>
 <translation id="6570579332384693436">જોડણીની ભૂલો સુધારવા માટે, Chromium તમે ટેક્સ્ટ ફીલ્ડમાં ટાઇપ કરો તે ટેક્સ્ટ Googleને મોકલે છે</translation>
 <translation id="6598877126913850652">Chromiumની નોટિફિકેશનની સેટિંગ પર જાઓ</translation>
@@ -164,7 +150,6 @@
 કેટલીક સુવિધાઓ ઉપલબ્ધ થઈ શકે છે. કૃપા કરીને અલગ પ્રોફાઇલ ડિરેક્ટરીનો ઉલ્લેખ કરો અથવા Chromiumના નવા વર્ઝનનો ઉપયોગ કરો.</translation>
 <translation id="6734080038664603509">&amp;Chromium ને અપડેટ કરો</translation>
 <translation id="6734291798041940871">Chromium, તમારા કમ્પ્યુટર પર તમામ વપરાશકર્તાઓ માટે પહેલાંથી ઇન્સ્ટૉલ કરેલ છે.</translation>
-<translation id="6810143991807788455">વર્તમાન સેટિંગ્સની જાણ કરીને Chromium ને વધુ સારું બનાવવામાં સહાય કરો</translation>
 <translation id="6847869444787758381">Chromium વડે તમે તમારા પાસવર્ડમાં ક્યારેક ચેડાં થાય તો તેના વિશે જાણકારી મેળવી શકો છો</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium પર કૉપિ કરેલું છે)</translation>
@@ -183,7 +168,6 @@
 <translation id="7318036098707714271">તમારી પસંદગીઓ ફાઇલ દૂષિત અથવા અમાન્ય છે.
 
 Chromium તમારી સેટિંગ્સને પુનઃપ્રાપ્ત કરવામાં અક્ષમ છે.</translation>
-<translation id="7331920710658926971">તમારા ફોન પર Chromium ઇન્સ્ટૉલ કરો. અમે તમારા ફોન પર એક SMS મોકલીશું.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">નવી વિંડો</translation>
 <translation id="734373864078049451">તમારું વેબ, બુકમાર્ક્સ, અને અન્ય Chromium સામગ્રી અહીં રહે છે.</translation>
@@ -215,16 +199,13 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="7979877361127045932">Chromium મેનૂમાં છુપાવો</translation>
 <translation id="8013436988911883588">એકવાર Chromiumને ઍક્સેસ મળે, તે પછી વેબસાઇટ તમારી પાસે ઍક્સેસ માગી શકશે.</translation>
 <translation id="81770708095080097">આ ફાઇલ જોખમી છે, તેથી Chromium એ તેને અવરોધિત કરેલ છે.</translation>
-<translation id="8222496066431494154">તમારા ફોન પર Chromium ઇન્સ્ટૉલ કરો. અમે તમારા એકાઉન્ટને પાછું મેળવવા ફોન નંબર પર એક SMS મોકલીશું: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8248265253516264921">જો છબીમાં ઉપયોગી વર્ણન ન હોય, તો Chromium તમને વર્ણન પૂરું પાડવાનો પ્રયાસ કરશે. વર્ણન બનાવવા માટે, Googleને છબીઓ મોકલવામાં આવે છે. તમે આને કોઈપણ સમયે સેટિંગમાં જઈને બંધ કરી શકો છો.</translation>
-<translation id="8269379391216269538">Chromium ને બહેતર બનાવવામાં સહાય કરો</translation>
 <translation id="8290862415967981663">આ ફાઇલ જોખમી હોઈ શકે છે, તેથી Chromium એ તેને અવરોધિત કરેલ છે.</translation>
 <translation id="8330519371938183845">તમારા બધા ડિવાઇસ પર Chromiumને સિંક કરો અને મનગમતું બનાવવા માટે સાઇન ઇન કરો</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" />, પહેલાં Chromium નો ઉપયોગ કરી રહ્યાં હતાં</translation>
 <translation id="8417404458978023919">{0,plural, =1{એક દિવસની અંદર Chromiumને ફરીથી લૉન્ચ કરો}one{# દિવસની અંદર Chromiumને ફરીથી લૉન્ચ કરો}other{# દિવસની અંદર Chromiumને ફરીથી લૉન્ચ કરો}}</translation>
 <translation id="8453117565092476964">ઇન્સ્ટૉલર આર્કાઇવ ખરાબ અથવા અમાન્ય છે. કૃપા કરીને Chromium ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="8493179195440786826">Chromium જૂનું થઈ ગયું છે</translation>
-<translation id="85843667276690461">Chromium નો ઉપયોગ કરવા સહાય મેળવો</translation>
 <translation id="8586442755830160949">કોપિરાઇટ <ph name="YEAR" /> The Chromium Authors. સર્વાધિકાર સુરક્ષિત.</translation>
 <translation id="8619360774459241877">Chromium લૉન્ચ કરી રહ્યાં છીએ…</translation>
 <translation id="8621669128220841554">અનુલ્લેખિત ભૂલને કારણે ઇન્સ્ટોલેશન નિષ્ફળ રહ્યું. કૃપા કરીને Chromium ફરીથી ડાઉનલોડ કરો.</translation>
@@ -242,21 +223,14 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="8907580949721785412">Chromium પાસવર્ડ્સ બતાવવાનો પ્રયાસ કરી રહ્યું છે. આની મંજૂરી આપવા માટે તમારો Windows પાસવર્ડ લખો.</translation>
 <translation id="8941642502866065432">Chromium અપડેટ કરી શકતાં નથી</translation>
 <translation id="8974095189086268230">Chromium OSએ વધારાનાં <ph name="BEGIN_LINK_CROS_OSS" />ઓપન સ્રોત સૉફ્ટવેર<ph name="END_LINK_CROS_OSS" /> દ્વારા શક્ય બનાવ્યું છે.</translation>
-<translation id="8985587603644336029">કોઈએ પહેલાં Chromiumમાં આ કમ્પ્યુટર પર <ph name="ACCOUNT_EMAIL_LAST" /> તરીકે સાઇન ઇન કર્યું છે. જો એ તમારું એકાઉન્ટ નથી, તો તમારી માહિતીને અલગ રાખવા માટે નવો Chromium વપરાશકર્તા બનાવો.
-
-કોઈ પણ રીતે સાઇન ઇન કરવું બુકમાર્ક, ઇતિહાસ, અને બીજા સેટિંગ જેવી Chromium માહિતીને <ph name="ACCOUNT_EMAIL_NEW" />માં મર્જ કરશે.</translation>
 <translation id="9019929317751753759">Chromium ને સુરક્ષિત બનાવવા માટે, અમે નીચેના એક્સ્ટેન્શનને અક્ષમ કર્યું છે કે જે <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> માં સૂચિબદ્ધ નથી અને તમારી જાણ વિના ઉમેરવામાં આવ્યું હોઈ શકે છે.</translation>
 <translation id="9022552996538154597">Chromium માં સાઇન ઇન કરો</translation>
-<translation id="9025992965467895364">આ પેજ ઘણી વધુ મેમરીનો ઉપયોગ કરે છે, તેથી Chromiumએ તેને થોભાવ્યું છે.</translation>
-<translation id="9036189287518468038">Chromium ઍપ્લિકેશન લૉંચર</translation>
 <translation id="9089354809943900324">Chromium જૂનું થઈ ગયું છે</translation>
 <translation id="9093206154853821181">{0,plural, =1{Chromium એક કલાકમાં ફરીથી લૉન્ચ થશે}one{Chromium # કલાકમાં ફરીથી લૉન્ચ થશે}other{Chromium # કલાકમાં ફરીથી લૉન્ચ થશે}}</translation>
 <translation id="91086099826398415">નવા Chromium &amp;ટૅબમાં લિંક ખોલો</translation>
 <translation id="911206726377975832">તમારો બ્રાઉઝિંગ ડેટા પણ ડિલીટ કરી દઈએ?</translation>
 <translation id="9158494823179993217">તમારા સિસ્ટમ વ્યવસ્થાપકે <ph name="TARGET_URL_HOSTNAME" />ને ઍક્સેસ કરવા Chromiumને વૈકલ્પિક બ્રાઉઝર ખોલવા માટે ગોઠવેલું છે.</translation>
-<translation id="918373042641772655"><ph name="USERNAME" />ને ડિસ્કનેક્ટ કરવું આ ડિવાઇસ પર સ્ટોર તમારા ઇતિહાસ, બુકમાર્ક, સેટિંગ અને બીજા Chromium ડેટાને કાઢી નાંખશે. તમારા Google એકાઉન્ટમાં સ્ટોર કરેલો ડેટા કાઢી નંખાશે નહિ અને તે <ph name="GOOGLE_DASHBOARD_LINK" />Google ડૅશબોર્ડ<ph name="END_GOOGLE_DASHBOARD_LINK" /> પર મેનેજ કરી શકાય છે.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9197815481970649201">તમે હમણાં Chromium માં સાઇન ઇન કર્યું છે</translation>
 <translation id="93478295209880648">Chromium યોગ્ય રીતે કાર્ય ન કરે તેવું બની શકે કારણ કે તે હવેથી Windows XP અથવા Windows Vista પર સમર્થિત નથી</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> માટે જરૂરી છે કે તમે આ ડિવાઇસનો ઉપયોગ કરતાં પહેલાં નીચેની સેવાની શરતોને વાંચો અને સ્વીકારો. આ શરતો Chromium OS શરતોને વિસ્તૃત, સંશોધિત અથવા મર્યાદિત કરતી નથી.</translation>
 <translation id="985602178874221306">Chromium લેખકો</translation>

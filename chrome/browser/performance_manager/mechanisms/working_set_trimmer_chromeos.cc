@@ -8,7 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/performance_manager/public/graph/process_node.h"
+#include "components/performance_manager/public/graph/process_node.h"
 
 namespace performance_manager {
 namespace mechanism {

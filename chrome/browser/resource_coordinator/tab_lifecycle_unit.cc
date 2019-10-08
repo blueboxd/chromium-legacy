@@ -423,6 +423,16 @@ void TabLifecycleUnitSource::TabLifecycleUnit::UpdateOriginTrialFreezePolicy(
   origin_trial_freeze_policy_ = policy;
 }
 
+void TabLifecycleUnitSource::TabLifecycleUnit::SetIsHoldingWebLock(
+    bool is_holding_weblock) {
+  is_holding_weblock_ = is_holding_weblock;
+}
+
+void TabLifecycleUnitSource::TabLifecycleUnit::SetIsHoldingIndexedDBLock(
+    bool is_holding_indexeddb_lock) {
+  is_holding_indexeddb_lock_ = is_holding_indexeddb_lock;
+}
+
 void TabLifecycleUnitSource::TabLifecycleUnit::RequestFreezeForDiscard(
     LifecycleUnitDiscardReason reason) {
   DCHECK_EQ(reason, LifecycleUnitDiscardReason::PROACTIVE);

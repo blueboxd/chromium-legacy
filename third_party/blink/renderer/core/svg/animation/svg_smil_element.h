@@ -87,13 +87,15 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   bool CurrentIntervalIsActive(SMILTime elapsed);
   void UpdateInterval(SMILTime presentation_time);
   void UpdateActiveState(SMILTime elapsed);
+  void UpdateProgressState(SMILTime presentation_time);
   bool IsHigherPriorityThan(const SVGSMILElement* other,
                             SMILTime presentation_time) const;
 
   SMILTime NextInterestingTime(SMILTime elapsed) const;
   SMILTime NextProgressTime(SMILTime elapsed) const;
   void UpdateAnimatedValue(SVGSMILElement* result_element) {
-    UpdateAnimation(last_percent_, last_repeat_, result_element);
+    UpdateAnimation(last_progress_.progress, last_progress_.repeat,
+                    result_element);
   }
 
   void Reset();
@@ -277,8 +279,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   unsigned active_state_ : 2;
   unsigned restart_ : 2;
   unsigned fill_ : 1;
-  float last_percent_;
-  unsigned last_repeat_;
+  ProgressState last_progress_;
 
   Member<SMILTimeContainer> time_container_;
   unsigned document_order_index_;

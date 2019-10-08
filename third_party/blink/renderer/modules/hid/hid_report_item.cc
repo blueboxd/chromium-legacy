@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/hid/hid_report_item.h"
 
+#include "services/device/public/mojom/hid.mojom-blink.h"
+
 namespace blink {
 
 namespace {

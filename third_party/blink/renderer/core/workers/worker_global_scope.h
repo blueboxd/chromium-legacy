@@ -29,11 +29,11 @@
 
 #include <memory>
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom-blink-forward.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"

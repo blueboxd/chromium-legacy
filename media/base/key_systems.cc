@@ -686,9 +686,9 @@ EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
       return EmeConfigRule::NOT_SUPPORTED;
     }
 
-    // Check whether the codec supports a hardware-secure mode. The goal is to
-    // prevent mixing of non-hardware-secure codecs with hardware-secure codecs,
-    // since the mode is fixed at CDM creation.
+    // Check whether the codec supports a hardware-secure mode (any level). The
+    // goal is to prevent mixing of non-hardware-secure codecs with
+    // hardware-secure codecs, since the mode is fixed at CDM creation.
     //
     // Because the check for regular codec support is early-exit, we don't have
     // to consider codecs that are only supported in hardware-secure mode. We

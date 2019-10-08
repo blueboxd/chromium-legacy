@@ -121,6 +121,12 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
     }
   }
 
+  if (!previews::params::LitePageRedirectTriggerOnAPITransition() &&
+      navigation_handle->GetPageTransition() & ui::PAGE_TRANSITION_FROM_API) {
+    ineligible_reasons.push_back(
+        previews::LitePageRedirectIneligibleReason::kAPIPageTransition);
+  }
+
   // Record UMA.
   for (previews::LitePageRedirectIneligibleReason reason : ineligible_reasons) {
     previews::LogLitePageRedirectIneligibleReason(reason);

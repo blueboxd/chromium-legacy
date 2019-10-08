@@ -42,7 +42,6 @@ class JavaScriptDialogViews : public JavaScriptDialog,
   base::string16 GetUserInput() override;
 
   // views::DialogDelegate:
-  int GetDefaultDialogButton() const override;
   int GetDialogButtons() const override;
   base::string16 GetWindowTitle() const override;
   bool Cancel() override;

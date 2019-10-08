@@ -83,11 +83,6 @@ class LayerTreeHostProxyTestSetNeedsAnimate : public LayerTreeHostProxyTest {
   LayerTreeHostProxyTestSetNeedsAnimate& operator=(
       const LayerTreeHostProxyTestSetNeedsAnimate&) = delete;
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // TODO(crbug.com/985009): Fix test with surface sync enabled.
-    settings->enable_surface_synchronization = false;
-  }
-
   void BeginTest() override {
     EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
               GetProxyMain()->max_requested_pipeline_stage());
@@ -103,10 +98,6 @@ class LayerTreeHostProxyTestSetNeedsAnimate : public LayerTreeHostProxyTest {
               GetProxyMain()->max_requested_pipeline_stage());
     EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
               GetProxyMain()->current_pipeline_stage());
-  }
-
-  void DidCommit() override {
-    EXPECT_EQ(0, update_check_layer()->update_count());
     EndTest();
   }
 };
@@ -161,14 +152,12 @@ class LayerTreeHostProxyTestSetNeedsUpdateLayersWhileAnimating
   LayerTreeHostProxyTestSetNeedsUpdateLayersWhileAnimating& operator=(
       const LayerTreeHostProxyTestSetNeedsUpdateLayersWhileAnimating&) = delete;
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // TODO(crbug.com/985009): Fix test with surface sync enabled.
-    settings->enable_surface_synchronization = false;
-  }
-
-  void BeginTest() override { proxy()->SetNeedsAnimate(); }
+  void BeginTest() override {}
 
   void WillBeginMainFrame() override {
+    if (layer_tree_host()->SourceFrameNumber() != 1)
+      return;
+
     EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
               GetProxyMain()->max_requested_pipeline_stage());
     EXPECT_EQ(ProxyMain::ANIMATE_PIPELINE_STAGE,
@@ -185,6 +174,9 @@ class LayerTreeHostProxyTestSetNeedsUpdateLayersWhileAnimating
   }
 
   void DidBeginMainFrame() override {
+    if (layer_tree_host()->SourceFrameNumber() != 2)
+      return;
+
     EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
               GetProxyMain()->max_requested_pipeline_stage());
     EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
@@ -192,8 +184,19 @@ class LayerTreeHostProxyTestSetNeedsUpdateLayersWhileAnimating
   }
 
   void DidCommit() override {
-    EXPECT_EQ(1, update_check_layer()->update_count());
-    EndTest();
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 1:
+        EXPECT_EQ(1, update_check_layer()->update_count());
+
+        // Wait until the first frame is committed and we enter the desired
+        // state to start the test.
+        proxy()->SetNeedsAnimate();
+        break;
+      case 2:
+        EXPECT_EQ(2, update_check_layer()->update_count());
+        EndTest();
+        break;
+    }
   }
 };
 
@@ -210,14 +213,12 @@ class LayerTreeHostProxyTestSetNeedsCommitWhileAnimating
   LayerTreeHostProxyTestSetNeedsCommitWhileAnimating& operator=(
       const LayerTreeHostProxyTestSetNeedsCommitWhileAnimating&) = delete;
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // TODO(crbug.com/985009): Fix test with surface sync enabled.
-    settings->enable_surface_synchronization = false;
-  }
-
-  void BeginTest() override { proxy()->SetNeedsAnimate(); }
+  void BeginTest() override {}
 
   void WillBeginMainFrame() override {
+    if (layer_tree_host()->SourceFrameNumber() != 1)
+      return;
+
     EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
               GetProxyMain()->max_requested_pipeline_stage());
     EXPECT_EQ(ProxyMain::ANIMATE_PIPELINE_STAGE,
@@ -234,6 +235,9 @@ class LayerTreeHostProxyTestSetNeedsCommitWhileAnimating
   }
 
   void DidBeginMainFrame() override {
+    if (layer_tree_host()->SourceFrameNumber() != 2)
+      return;
+
     EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
               GetProxyMain()->max_requested_pipeline_stage());
     EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
@@ -241,8 +245,19 @@ class LayerTreeHostProxyTestSetNeedsCommitWhileAnimating
   }
 
   void DidCommit() override {
-    EXPECT_EQ(1, update_check_layer()->update_count());
-    EndTest();
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 1:
+        EXPECT_EQ(1, update_check_layer()->update_count());
+
+        // Wait until the first frame is committed and we enter the desired
+        // state to start the test.
+        proxy()->SetNeedsAnimate();
+        break;
+      case 2:
+        EXPECT_EQ(2, update_check_layer()->update_count());
+        EndTest();
+        break;
+    }
   }
 };
 

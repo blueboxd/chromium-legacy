@@ -47,7 +47,7 @@ class AppRegistryController {
   Profile* profile() const { return profile_; }
 
  private:
-  Profile* profile_;
+  Profile* const profile_;
 };
 
 }  // namespace web_app

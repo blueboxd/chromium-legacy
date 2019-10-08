@@ -1234,14 +1234,6 @@ LayoutUnit ClampIntrinsicBlockSize(const NGBlockNode& node,
     return node.ContentBlockSizeForSizeContainment() +
            border_scrollbar_padding.BlockSum();
   }
-
-  // If display locking induces size containment, then we replace its content
-  // size with the locked content size.
-  if (node.DisplayLockInducesSizeContainment()) {
-    return node.GetDisplayLockContext().GetLockedContentLogicalHeight() +
-           border_scrollbar_padding.BlockSum();
-  }
-
   return current_intrinsic_block_size;
 }
 
@@ -1256,14 +1248,6 @@ base::Optional<MinMaxSize> CalculateMinMaxSizesIgnoringChildren(
   // Size contained elements don't consider children for intrinsic sizing.
   if (node.ShouldApplySizeContainment()) {
     sizes += node.ContentInlineSizeForSizeContainment();
-    return sizes;
-  }
-
-  // Display locked elements override the content size, without considering
-  // children. Note that contain: size (above) takes precedence over display
-  // locking.
-  if (node.DisplayLockInducesSizeContainment()) {
-    sizes += node.GetDisplayLockContext().GetLockedContentLogicalWidth();
     return sizes;
   }
 

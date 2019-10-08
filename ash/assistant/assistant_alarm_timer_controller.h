@@ -52,8 +52,6 @@ class AssistantAlarmTimerController
   void RemoveModelObserver(AssistantAlarmTimerModelObserver* observer);
 
   // mojom::AssistantAlarmTimerController:
-  void OnTimerSoundingStarted() override;
-  void OnTimerSoundingFinished() override;
   void OnAlarmTimerStateChanged(
       mojom::AssistantAlarmTimerEventPtr event) override;
 
@@ -97,8 +95,6 @@ class AssistantAlarmTimerController
 
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_;
-
-  int next_timer_id_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantAlarmTimerController);
 };

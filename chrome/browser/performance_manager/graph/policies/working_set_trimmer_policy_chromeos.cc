@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "chrome/browser/performance_manager/graph/policies/policy_features.h"
 #include "chrome/browser/performance_manager/mechanisms/working_set_trimmer.h"
-#include "chrome/browser/performance_manager/performance_manager_impl.h"
-#include "chrome/browser/performance_manager/public/graph/frame_node.h"
-#include "chrome/browser/performance_manager/public/graph/graph.h"
-#include "chrome/browser/performance_manager/public/graph/page_node.h"
+#include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/public/graph/frame_node.h"
+#include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/page_node.h"
 #include "url/gurl.h"
 
 namespace performance_manager {

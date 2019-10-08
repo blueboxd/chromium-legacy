@@ -18,15 +18,13 @@
 
 namespace enterprise_reporting {
 
-using namespace policy;
-
 namespace {
 
 em::Policy_PolicyLevel GetLevel(const base::Value& policy) {
-  switch (static_cast<PolicyLevel>(*policy.FindIntKey("level"))) {
-    case POLICY_LEVEL_RECOMMENDED:
+  switch (static_cast<policy::PolicyLevel>(*policy.FindIntKey("level"))) {
+    case policy::POLICY_LEVEL_RECOMMENDED:
       return em::Policy_PolicyLevel_LEVEL_RECOMMENDED;
-    case POLICY_LEVEL_MANDATORY:
+    case policy::POLICY_LEVEL_MANDATORY:
       return em::Policy_PolicyLevel_LEVEL_MANDATORY;
   }
   NOTREACHED() << "Invalid policy level: " << *policy.FindIntKey("level");
@@ -34,10 +32,10 @@ em::Policy_PolicyLevel GetLevel(const base::Value& policy) {
 }
 
 em::Policy_PolicyScope GetScope(const base::Value& policy) {
-  switch (static_cast<PolicyScope>(*policy.FindIntKey("scope"))) {
-    case POLICY_SCOPE_USER:
+  switch (static_cast<policy::PolicyScope>(*policy.FindIntKey("scope"))) {
+    case policy::POLICY_SCOPE_USER:
       return em::Policy_PolicyScope_SCOPE_USER;
-    case POLICY_SCOPE_MACHINE:
+    case policy::POLICY_SCOPE_MACHINE:
       return em::Policy_PolicyScope_SCOPE_MACHINE;
   }
   NOTREACHED() << "Invalid policy scope: " << *policy.FindIntKey("scope");
@@ -45,22 +43,22 @@ em::Policy_PolicyScope GetScope(const base::Value& policy) {
 }
 
 em::Policy_PolicySource GetSource(const base::Value& policy) {
-  switch (static_cast<PolicySource>(*policy.FindIntKey("source"))) {
-    case POLICY_SOURCE_ENTERPRISE_DEFAULT:
+  switch (static_cast<policy::PolicySource>(*policy.FindIntKey("source"))) {
+    case policy::POLICY_SOURCE_ENTERPRISE_DEFAULT:
       return em::Policy_PolicySource_SOURCE_ENTERPRISE_DEFAULT;
-    case POLICY_SOURCE_CLOUD:
+    case policy::POLICY_SOURCE_CLOUD:
       return em::Policy_PolicySource_SOURCE_CLOUD;
-    case POLICY_SOURCE_ACTIVE_DIRECTORY:
+    case policy::POLICY_SOURCE_ACTIVE_DIRECTORY:
       return em::Policy_PolicySource_SOURCE_ACTIVE_DIRECTORY;
-    case POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE:
+    case policy::POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE:
       return em::Policy_PolicySource_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE;
-    case POLICY_SOURCE_PLATFORM:
+    case policy::POLICY_SOURCE_PLATFORM:
       return em::Policy_PolicySource_SOURCE_PLATFORM;
-    case POLICY_SOURCE_PRIORITY_CLOUD:
+    case policy::POLICY_SOURCE_PRIORITY_CLOUD:
       return em::Policy_PolicySource_SOURCE_PRIORITY_CLOUD;
-    case POLICY_SOURCE_MERGED:
+    case policy::POLICY_SOURCE_MERGED:
       return em::Policy_PolicySource_SOURCE_MERGED;
-    case POLICY_SOURCE_COUNT:
+    case policy::POLICY_SOURCE_COUNT:
       NOTREACHED();
       return em::Policy_PolicySource_SOURCE_UNKNOWN;
   }
@@ -114,13 +112,14 @@ void AppendExtensionPolicyInfoIntoProfileReport(
 void AppendMachineLevelUserCloudPolicyFetchTimestamp(
     em::ChromeUserProfileInfo* profile_info) {
 #if !defined(OS_CHROMEOS)
-  MachineLevelUserCloudPolicyManager* manager =
+  policy::MachineLevelUserCloudPolicyManager* manager =
       g_browser_process->browser_policy_connector()
           ->machine_level_user_cloud_policy_manager();
   if (!manager || !manager->IsClientRegistered())
     return;
   auto* timestamp = profile_info->add_policy_fetched_timestamps();
-  timestamp->set_type(dm_protocol::kChromeMachineLevelExtensionCloudPolicyType);
+  timestamp->set_type(
+      policy::dm_protocol::kChromeMachineLevelExtensionCloudPolicyType);
   timestamp->set_timestamp(
       manager->core()->client()->last_policy_timestamp().ToJavaTime());
 #endif

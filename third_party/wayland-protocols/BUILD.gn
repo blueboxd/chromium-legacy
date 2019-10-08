@@ -142,3 +142,9 @@ wayland_protocol("linux_explicit_synchronization_protocol") {
     "src/unstable/linux-explicit-synchronization/linux-explicit-synchronization-unstable-v1.xml",
   ]
 }
+
+wayland_protocol("wayland_drm_protocol") {
+  sources = [
+    "mesa/wayland-drm/wayland-drm.xml",
+  ]
+}

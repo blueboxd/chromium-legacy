@@ -17,7 +17,7 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache.h"
-#include "chrome/browser/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/graph.h"
 #include "content/public/browser/browser_context.h"
 
 namespace content {

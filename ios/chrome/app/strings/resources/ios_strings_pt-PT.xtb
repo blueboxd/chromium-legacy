@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Editar marcador</translation>
 <translation id="2179182049312275900">Pode ativar a sincronização em qualquer altura nas definições.</translation>
 <translation id="2198757192731523470">A Google pode utilizar o seu histórico para personalizar a Pesquisa, os anúncios e outros serviços Google.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artigos não lidos na Lista de leitura.</translation>
 <translation id="2230173723195178503">Página Web carregada</translation>
 <translation id="2239626343334228536">A limpar os dados de navegação…</translation>
 <translation id="2267753748892043616">Adicionar conta</translation>
@@ -265,7 +264,6 @@ Os dados estão encriptados com a sua frase de acesso de sincronização. Introd
 
 Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" />.</translation>
 <translation id="4805759445554688327">Número de cartão inválido</translation>
-<translation id="4807020197310989387">1 artigo não lido na Lista de leitura.</translation>
 <translation id="4818522717893377262">Adicionar idioma…</translation>
 <translation id="481968316161811770">Cookies, dados de sites</translation>
 <translation id="4833786495304741580">Envia automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
@@ -414,6 +412,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="6858855187367714033">Lido</translation>
 <translation id="6859944681507688231">Para ler um código QR ou um cartão de crédito, ative a câmara nas definições.</translation>
 <translation id="6873263987691478642">Vista dividida</translation>
+<translation id="6888009575607455378">Tem a certeza de que pretende rejeitar as alterações?</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Ativar sincronização</translation>
 <translation id="6914583639806229067">Pesquisar imagem que copiou</translation>

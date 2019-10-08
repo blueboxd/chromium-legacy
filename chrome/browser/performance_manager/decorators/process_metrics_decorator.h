@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/graph.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 
 namespace performance_manager {

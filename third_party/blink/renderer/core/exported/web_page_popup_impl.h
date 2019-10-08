@@ -44,6 +44,7 @@ class Layer;
 }
 
 namespace blink {
+class Element;
 class Page;
 class PagePopupChromeClient;
 class PagePopupClient;
@@ -138,6 +139,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   // This may only be called if page_ is non-null.
   LocalFrame& MainFrame() const;
 
+  Element* FocusedElement() const;
+
   bool IsViewportPointInWindow(int x, int y);
 
   // PagePopup function
@@ -166,6 +169,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   scoped_refptr<cc::Layer> root_layer_;
   base::TimeTicks raf_aligned_input_start_time_;
   bool is_accelerated_compositing_active_ = false;
+
+  bool suppress_next_keypress_event_ = false;
 
   friend class WebPagePopup;
   friend class PagePopupChromeClient;

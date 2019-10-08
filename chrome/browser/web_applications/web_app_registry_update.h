@@ -58,7 +58,7 @@ class WebAppRegistryUpdate {
 
  private:
   std::unique_ptr<RegistryUpdateData> update_data_;
-  WebAppRegistrarMutable* mutable_registrar_;
+  WebAppRegistrarMutable* const mutable_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppRegistryUpdate);
 };
@@ -74,7 +74,7 @@ class ScopedRegistryUpdate {
 
  private:
   std::unique_ptr<WebAppRegistryUpdate> update_;
-  WebAppSyncBridge* sync_bridge_;
+  WebAppSyncBridge* const sync_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedRegistryUpdate);
 };

@@ -13,13 +13,13 @@
 #include "ui/base/models/table_model.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
 
+class BluetoothStatusContainer;
 namespace views {
+class Label;
 class LabelButton;
-class StyledLabel;
 class TableView;
 class TableViewObserver;
 class Throbber;
@@ -40,7 +40,6 @@ class DeviceChooserContentView : public views::View,
 
   // views::View:
   gfx::Size GetMinimumSize() const override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   // ui::TableModel:
   int RowCount() override;
@@ -73,39 +72,23 @@ class DeviceChooserContentView : public views::View,
   void Close();
   void UpdateTableView();
 
+  // Test-only accessors to children.
+  views::TableView* table_view_for_testing() { return table_view_; }
+  views::LabelButton* ReScanButtonForTesting();
+  views::Throbber* ThrobberForTesting();
+  views::Label* ScanningLabelForTesting();
+
  private:
-  friend class ChooserDialogViewTest;
   friend class DeviceChooserContentViewTest;
-  FRIEND_TEST_ALL_PREFIXES(DeviceChooserContentViewTest, ClickRescanLink);
-  FRIEND_TEST_ALL_PREFIXES(DeviceChooserContentViewTest, ClickGetHelpLink);
-
-  class BluetoothStatusContainer : public views::View {
-   public:
-    explicit BluetoothStatusContainer(views::ButtonListener* listener);
-
-    void ShowScanningLabelAndThrobber();
-    void ShowReScanButton(bool enabled);
-
-    views::LabelButton* re_scan_button() { return re_scan_button_; }
-    views::Throbber* throbber() { return throbber_; }
-    views::Label* scanning_label() { return scanning_label_; }
-
-   private:
-    views::LabelButton* re_scan_button_;
-    views::Throbber* throbber_;
-    views::Label* scanning_label_;
-
-    DISALLOW_COPY_AND_ASSIGN(BluetoothStatusContainer);
-  };
 
   std::unique_ptr<ChooserController> chooser_controller_;
 
   bool adapter_enabled_ = true;
 
-  views::TableView* table_view_ = nullptr;
   views::View* table_parent_ = nullptr;
-  views::Label* no_options_help_ = nullptr;
-  views::StyledLabel* adapter_off_help_ = nullptr;
+  views::TableView* table_view_ = nullptr;
+  views::View* no_options_view_ = nullptr;
+  views::View* adapter_off_view_ = nullptr;
   BluetoothStatusContainer* bluetooth_status_container_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceChooserContentView);

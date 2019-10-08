@@ -38,15 +38,21 @@ class ServiceWorkerContextObserver {
   // Called when the service worker with id |version_id| starts or stops
   // running.
   //
-  // This function is currently only called after a worker finishes
+  // These functions are currently only called after a worker finishes
   // starting/stopping or the version is destroyed before finishing
   // stopping. That is, a worker in the process of starting is not yet
-  // considered running, even if it's executing JavaScript. See TODO in
-  // ServiceWorkerContextWrapper::OnRunningStateChanged.
-  virtual void OnVersionRunningStatusChanged(
-      content::ServiceWorkerContext* context,
-      int64_t version_id,
-      bool is_running) {}
+  // considered running, even if it's executing JavaScript.
+  //
+  // TODO(minggang): Create a new observer to listen to the events when the
+  // process of the service worker is allocated/released, instead of using the
+  // running status of the embedded worker.
+  virtual void OnVersionStartedRunning(ServiceWorkerContext* context,
+                                       int64_t version_id,
+                                       const GURL& scope,
+                                       int process_id,
+                                       const GURL& script_url) {}
+  virtual void OnVersionStoppedRunning(ServiceWorkerContext* context,
+                                       int64_t version_id) {}
 
   // Called when there are no more controllees for the service worker with id
   // |version_id|.
@@ -58,7 +64,7 @@ class ServiceWorkerContextObserver {
                                       const ConsoleMessage& message) {}
 
   // Called when |context| is destroyed. Observers must no longer use |context|.
-  virtual void OnDestruct(content::ServiceWorkerContext* context) {}
+  virtual void OnDestruct(ServiceWorkerContext* context) {}
 
  protected:
   virtual ~ServiceWorkerContextObserver() {}

@@ -10,12 +10,12 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/fake_memory_pressure_monitor.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/timer/mock_timer.h"
+#include "base/util/memory_pressure/fake_memory_pressure_monitor.h"
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
 #include "chrome/browser/task_manager/test_task_manager.h"
 #include "content/public/test/browser_task_environment.h"
@@ -140,12 +140,12 @@ class ResourceReporterTest : public testing::Test {
     return ResourceReporter::GetInstance();
   }
 
-  base::test::FakeMemoryPressureMonitor* monitor() { return &monitor_; }
+  util::test::FakeMemoryPressureMonitor* monitor() { return &monitor_; }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
 
-  base::test::FakeMemoryPressureMonitor monitor_;
+  util::test::FakeMemoryPressureMonitor monitor_;
 
   DummyTaskManager task_manager_;
 

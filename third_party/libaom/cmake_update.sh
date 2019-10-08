@@ -129,6 +129,7 @@ all_platforms+=" -DCONFIG_AV1_ENCODER=0"
 all_platforms+=" -DCONFIG_LOWBITDEPTH=1"
 all_platforms+=" -DCONFIG_MAX_DECODE_PROFILE=0"
 all_platforms+=" -DCONFIG_NORMAL_TILE_MODE=1"
+all_platforms+=" -DCONFIG_LIBYUV=0"
 # avx2 optimizations account for ~0.3mb of the decoder.
 #all_platforms+=" -DENABLE_AVX2=0"
 toolchain="-DCMAKE_TOOLCHAIN_FILE=${SRC}/build/cmake/toolchains"

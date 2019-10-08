@@ -48,10 +48,9 @@ class TextFragmentAnchorMetricsTest : public SimTest {
 
 // Test UMA metrics collection
 TEST_F(TextFragmentAnchorMetricsTest, UMAMetricsCollected) {
-  SimRequest request(
-      "https://example.com/test.html#targetText=test&targetText=cat",
-      "text/html");
-  LoadURL("https://example.com/test.html#targetText=test&targetText=cat");
+  SimRequest request("https://example.com/test.html#:~:text=test&text=cat",
+                     "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test&text=cat");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -95,9 +94,8 @@ TEST_F(TextFragmentAnchorMetricsTest, UMAMetricsCollected) {
 
 // Test UMA metrics collection when there is no match found
 TEST_F(TextFragmentAnchorMetricsTest, NoMatchFound) {
-  SimRequest request("https://example.com/test.html#targetText=cat",
-                     "text/html");
-  LoadURL("https://example.com/test.html#targetText=cat");
+  SimRequest request("https://example.com/test.html#:~:text=cat", "text/html");
+  LoadURL("https://example.com/test.html#:~:text=cat");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -136,7 +134,7 @@ TEST_F(TextFragmentAnchorMetricsTest, NoMatchFound) {
                                      0);
 }
 
-// Test that we don't collect any metrics when there is no targetText
+// Test that we don't collect any metrics when there is no text directive
 TEST_F(TextFragmentAnchorMetricsTest, NoTextFragmentAnchor) {
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -165,9 +163,8 @@ TEST_F(TextFragmentAnchorMetricsTest, NoTextFragmentAnchor) {
 // Test that the correct metrics are collected when we found a match but didn't
 // need to scroll.
 TEST_F(TextFragmentAnchorMetricsTest, MatchFoundNoScroll) {
-  SimRequest request("https://example.com/test.html#targetText=test",
-                     "text/html");
-  LoadURL("https://example.com/test.html#targetText=test");
+  SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <p>This is a test page</p>
@@ -202,10 +199,9 @@ TEST_F(TextFragmentAnchorMetricsTest, MatchFoundNoScroll) {
 // Test that the ScrollCancelled metric gets reported when a user scroll cancels
 // the scroll into view.
 TEST_F(TextFragmentAnchorMetricsTest, ScrollCancelled) {
-  SimRequest request("https://example.com/test.html#targetText=test",
-                     "text/html");
+  SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
   SimSubresourceRequest css_request("https://example.com/test.css", "text/css");
-  LoadURL("https://example.com/test.html#targetText=test");
+  LoadURL("https://example.com/test.html#:~:text=test");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -257,9 +253,9 @@ TEST_F(TextFragmentAnchorMetricsTest, ScrollCancelled) {
 // Test that the TapToDismiss feature gets use counted when the user taps to
 // dismiss the text highlight
 TEST_F(TextFragmentAnchorMetricsTest, TapToDismiss) {
-  SimRequest request("https://example.com/test.html#targetText=test%20page",
+  SimRequest request("https://example.com/test.html#:~:text=test%20page",
                      "text/html");
-  LoadURL("https://example.com/test.html#targetText=test%20page");
+  LoadURL("https://example.com/test.html#:~:text=test%20page");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -300,10 +296,10 @@ TEST_F(TextFragmentAnchorMetricsTest, InvalidFragmentDirective) {
       {"#:~:element", kCounted},
       {"#element:~:", kCounted},
       {"#foo:~:bar", kCounted},
-      {"#:~:utargetText=foo", kCounted},
-      {"#:~:targetText=foo", kUncounted},
-      {"#:~:targetText=foo&invalid", kCounted},
-      {"#foo:~:targetText=foo", kUncounted}};
+      {"#:~:utext=foo", kCounted},
+      {"#:~:text=foo", kUncounted},
+      {"#:~:text=foo&invalid", kCounted},
+      {"#foo:~:text=foo", kUncounted}};
 
   for (auto test_case : test_cases) {
     String url = "https://example.com/test.html" + test_case.first;
@@ -345,37 +341,37 @@ INSTANTIATE_TEST_SUITE_P(,
                          testing::Values(false, true));
 
 // Test that we correctly track failed vs. successful element-id lookups. We
-// only count these in cases where we don't have a targetText, when the REF is
-// enabled.
+// only count these in cases where we don't have a text directive, when the REF
+// is enabled.
 TEST_P(TextFragmentRelatedMetricTest, ElementIdSuccessFailureCounts) {
   const int kUncounted = 0;
   const int kFound = 1;
   const int kNotFound = 2;
 
   // When the TextFragmentAnchors feature is on, we should avoid counting the
-  // result of the element-id fragment if a targetText is successfully parsed.
-  // If the feature is off we treat the targetText as an element-id and should
-  // count the result.
+  // result of the element-id fragment if a text directive is successfully
+  // parsed. If the feature is off we treat the text directive as an element-id
+  // and should count the result.
   const int kUncountedOrNotFound = GetParam() ? kUncounted : kNotFound;
   const int kUncountedOrFound = GetParam() ? kUncounted : kFound;
 
   // When the TextFragmentAnchors feature is on, we'll strip the fragment
-  // directive (i.e. anything after ##) leaving just the element anchor.
+  // directive (i.e. anything after :~:) leaving just the element anchor.
   const int kFoundIfDirectiveStripped = GetParam() ? kFound : kNotFound;
 
   Vector<std::pair<String, int>> test_cases = {
       {"", kUncounted},
       {"#element", kFound},
       {"#doesntExist", kNotFound},
-      {"#element##foo", kFoundIfDirectiveStripped},
-      {"#doesntexist##foo", kNotFound},
-      {"##element", kUncountedOrNotFound},
-      {"#element##targetText=doesntexist", kUncountedOrNotFound},
-      {"#element##targetText=page", kUncountedOrNotFound},
-      {"#targetText=doesntexist", kUncountedOrNotFound},
-      {"#targetText=page", kUncountedOrNotFound},
-      {"#targetText=name", kUncountedOrFound},
-      {"#element##targetText=name", kUncountedOrFound}};
+      {"#element:~:foo", kFoundIfDirectiveStripped},
+      {"#doesntexist:~:foo", kNotFound},
+      {"##element", kNotFound},
+      {"#element:~:text=doesntexist", kUncountedOrNotFound},
+      {"#element:~:text=page", kUncountedOrNotFound},
+      {"#:~:text=doesntexist", kUncountedOrNotFound},
+      {"#:~:text=page", kUncountedOrNotFound},
+      {"#:~:text=name", kUncountedOrFound},
+      {"#element:~:text=name", kUncountedOrFound}};
 
   const int kNotFoundSample = 0;
   const int kFoundSample = 1;
@@ -395,8 +391,8 @@ TEST_P(TextFragmentRelatedMetricTest, ElementIdSuccessFailureCounts) {
     request.Complete(R"HTML(
       <!DOCTYPE html>
       <p id="element">This is a test page</p>
-      <p id="targetText=name">This is a test page</p>
-      <p id="element##targetText=name">This is a test page</p>
+      <p id=":~:text=name">This is a test page</p>
+      <p id="element:~:text=name">This is a test page</p>
     )HTML");
     Compositor().BeginFrame();
 
@@ -439,79 +435,19 @@ TEST_P(TextFragmentRelatedMetricTest, ElementIdSuccessFailureCounts) {
   }
 }
 
-// Test that we correctly UseCount when we see a pound character '#' in the
-// fragment. We exclude the case where we see a ##targetText format
-// TextFragment so that we don't count it in uses of our own feature.
-TEST_P(TextFragmentRelatedMetricTest, DoubleHashUseCounter) {
-  const int kUncounted = 0;
-  const int kCounted = 1;
-
-  // When the TextFragmentAnchors feature is on, the fragment directive is
-  // stripped and we won't count it as a double-hash use case. When it's
-  // off, we expect to count it.
-  const int kCountedOnlyIfDisabled = GetParam() ? kUncounted : kCounted;
-
-  Vector<std::pair<String, int>> test_cases = {
-      {"", kUncounted},
-      {"#element", kUncounted},
-      {"#doesntExist", kUncounted},
-      {"#element##foo", kCountedOnlyIfDisabled},
-      {"#doesntexist##foo", kCountedOnlyIfDisabled},
-      {"##element", kCountedOnlyIfDisabled},
-      {"#element#", kCounted},
-      {"#foo#bar#", kCounted},
-      {"#foo%23", kUncounted},
-      {"#element##targetText=doesntexist", kUncounted},
-      {"#element##targetText=doesntexist#", kUncounted},
-      {"#element##targetText=page", kUncounted},
-      {"#element##targetText=page#", kUncounted},
-      {"##targetText=doesntexist", kUncounted},
-      {"##targetText=doesntexist#", kUncounted},
-      {"##targetText=page", kUncounted},
-      {"##targetText=page#", kUncounted},
-      {"#targetText=doesntexist", kUncounted},
-      {"#targetText=page", kUncounted}};
-
-  for (auto test_case : test_cases) {
-    String url = "https://example.com/test.html" + test_case.first;
-    SimRequest request(url, "text/html");
-    LoadURL(url);
-    request.Complete(R"HTML(
-      <!DOCTYPE html>
-      <p id="element">This is a test page</p>
-    )HTML");
-    Compositor().BeginFrame();
-
-    RunAsyncMatchingTasks();
-
-    bool is_use_counted =
-        GetDocument().IsUseCounted(WebFeature::kFragmentDoubleHash);
-    if (test_case.second == kCounted) {
-      EXPECT_TRUE(is_use_counted)
-          << "Expected to count double-hash but didn't in case: "
-          << test_case.first;
-    } else {
-      EXPECT_FALSE(is_use_counted)
-          << "Expected not to count double-hash but did in case: "
-          << test_case.first;
-    }
-  }
-}
-
 // Test counting occurrences of ~&~ in the URL fragment. Used for potentially
 // using ~&~ as a delimiter. Can be removed once the feature ships.
 TEST_P(TextFragmentRelatedMetricTest, TildeAmpersandTildeUseCounter) {
   const int kUncounted = 0;
   const int kCounted = 1;
 
-  Vector<std::pair<String, int>> test_cases = {
-      {"", kUncounted},
-      {"#element", kUncounted},
-      {"#doesntExist", kUncounted},
-      {"#~&~element", kCounted},
-      {"#element~&~", kCounted},
-      {"#foo~&~bar", kCounted},
-      {"#foo~&~targetText=foo", kCounted}};
+  Vector<std::pair<String, int>> test_cases = {{"", kUncounted},
+                                               {"#element", kUncounted},
+                                               {"#doesntExist", kUncounted},
+                                               {"#~&~element", kCounted},
+                                               {"#element~&~", kCounted},
+                                               {"#foo~&~bar", kCounted},
+                                               {"#foo~&~text=foo", kCounted}};
 
   for (auto test_case : test_cases) {
     String url = "https://example.com/test.html" + test_case.first;
@@ -543,14 +479,13 @@ TEST_P(TextFragmentRelatedMetricTest, TildeAtTildeUseCounter) {
   const int kUncounted = 0;
   const int kCounted = 1;
 
-  Vector<std::pair<String, int>> test_cases = {
-      {"", kUncounted},
-      {"#element", kUncounted},
-      {"#doesntExist", kUncounted},
-      {"#~@~element", kCounted},
-      {"#element~@~", kCounted},
-      {"#foo~@~bar", kCounted},
-      {"#foo~@~targetText=foo", kCounted}};
+  Vector<std::pair<String, int>> test_cases = {{"", kUncounted},
+                                               {"#element", kUncounted},
+                                               {"#doesntExist", kUncounted},
+                                               {"#~@~element", kCounted},
+                                               {"#element~@~", kCounted},
+                                               {"#foo~@~bar", kCounted},
+                                               {"#foo~@~text=foo", kCounted}};
 
   for (auto test_case : test_cases) {
     String url = "https://example.com/test.html" + test_case.first;
@@ -590,7 +525,7 @@ TEST_P(TextFragmentRelatedMetricTest, AmpersandDelimiterQuestionUseCounter) {
       {"#&delimiter?element", kCounted},
       {"#element&delimiter?", kCounted},
       {"#foo&delimiter?bar", kCounted},
-      {"#foo&delimiter?targetText=foo", kCounted}};
+      {"#foo&delimiter?text=foo", kCounted}};
 
   for (auto test_case : test_cases) {
     String url = "https://example.com/test.html" + test_case.first;
@@ -618,22 +553,21 @@ TEST_P(TextFragmentRelatedMetricTest, AmpersandDelimiterQuestionUseCounter) {
   }
 }
 
-// Test counting occurrences of non-targetText :~: in the URL fragment. Used to
+// Test counting occurrences of non-directive :~: in the URL fragment. Used to
 // ensure :~: is web-compatible; can be removed once the feature ships.
 TEST_P(TextFragmentRelatedMetricTest, NewDelimiterUseCounter) {
   const int kUncounted = 0;
   const int kCounted = 1;
 
-  Vector<std::pair<String, int>> test_cases = {
-      {"", kUncounted},
-      {"#element", kUncounted},
-      {"#doesntExist", kUncounted},
-      {"#:~:element", kCounted},
-      {"#element:~:", kCounted},
-      {"#foo:~:bar", kCounted},
-      {"#:~:utargetText=foo", kCounted},
-      {"#:~:targetText=foo", kUncounted},
-      {"#foo:~:targetText=foo", kUncounted}};
+  Vector<std::pair<String, int>> test_cases = {{"", kUncounted},
+                                               {"#element", kUncounted},
+                                               {"#doesntExist", kUncounted},
+                                               {"#:~:element", kCounted},
+                                               {"#element:~:", kCounted},
+                                               {"#foo:~:bar", kCounted},
+                                               {"#:~:utext=foo", kCounted},
+                                               {"#:~:text=foo", kUncounted},
+                                               {"#foo:~:text=foo", kUncounted}};
 
   for (auto test_case : test_cases) {
     String url = "https://example.com/test.html" + test_case.first;

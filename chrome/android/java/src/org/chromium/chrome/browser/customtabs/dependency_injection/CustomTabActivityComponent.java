@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvid
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleToolbarController;
+import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
@@ -51,6 +52,7 @@ public interface CustomTabActivityComponent extends ChromeActivityComponent {
     CustomTabSessionHandler resolveSessionHandler();
     CustomTabActivityClientConnectionKeeper resolveConnectionKeeper();
     TwaFinishHandler resolveTwaFinishHandler();
+    ImmersiveModeController resolveImmersiveModeController();
 
     CustomTabTabPersistencePolicy resolveTabPersistencePolicy(); // For testing
 }

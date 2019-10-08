@@ -764,15 +764,41 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
     RegisterContentSchemes(delegate_->ShouldLockSchemeRegistry());
 
 #if defined(OS_ANDROID) && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
-    int icudata_fd = g_fds->MaybeGet(kAndroidICUDataDescriptor);
-    if (icudata_fd != -1) {
-      auto icudata_region = g_fds->GetRegion(kAndroidICUDataDescriptor);
-      if (!base::i18n::InitializeICUWithFileDescriptor(icudata_fd,
-                                                       icudata_region))
+    // On Android, we have two ICU data files. A main one with most languages
+    // that is expected to always be available and an extra one that is
+    // installed separately via a dynamic feature module. If the extra ICU data
+    // file is available we have to apply it _before_ the main ICU data file.
+    // Otherwise, the languages of the extra ICU file will be overridden.
+    if (process_type.empty()) {
+      // In browser process load ICU data files from disk.
+      if (GetContentClient()->browser()->ShouldLoadExtraIcuDataFile()) {
+        if (!base::i18n::InitializeExtraICU()) {
+          return TerminateForFatalInitializationError();
+        }
+      }
+      if (!base::i18n::InitializeICU()) {
         return TerminateForFatalInitializationError();
+      }
     } else {
-      if (!base::i18n::InitializeICU())
+      // In child process map ICU data files loaded by browser process.
+      int icu_extra_data_fd = g_fds->MaybeGet(kAndroidICUExtraDataDescriptor);
+      if (icu_extra_data_fd != -1) {
+        auto icu_extra_data_region =
+            g_fds->GetRegion(kAndroidICUExtraDataDescriptor);
+        if (!base::i18n::InitializeExtraICUWithFileDescriptor(
+                icu_extra_data_fd, icu_extra_data_region)) {
+          return TerminateForFatalInitializationError();
+        }
+      }
+      int icu_data_fd = g_fds->MaybeGet(kAndroidICUDataDescriptor);
+      if (icu_data_fd == -1) {
         return TerminateForFatalInitializationError();
+      }
+      auto icu_data_region = g_fds->GetRegion(kAndroidICUDataDescriptor);
+      if (!base::i18n::InitializeICUWithFileDescriptor(icu_data_fd,
+                                                       icu_data_region)) {
+        return TerminateForFatalInitializationError();
+      }
     }
 #else
     if (!base::i18n::InitializeICU())

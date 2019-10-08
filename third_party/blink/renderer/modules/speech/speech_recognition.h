@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_H_
 
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/speech/speech_recognizer.mojom-blink.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -37,7 +38,6 @@
 #include "third_party/blink/renderer/modules/speech/speech_grammar_list.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_result.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -136,7 +136,7 @@ class MODULES_EXPORT SpeechRecognition final
   bool stopping_;
   HeapVector<Member<SpeechRecognitionResult>> final_results_;
   mojo::Receiver<mojom::blink::SpeechRecognitionSessionClient> receiver_;
-  RevocableInterfacePtr<mojom::blink::SpeechRecognitionSession> session_;
+  mojo::Remote<mojom::blink::SpeechRecognitionSession> session_;
 };
 
 }  // namespace blink

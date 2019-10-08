@@ -231,7 +231,7 @@ bool MixedRealityRenderLoop::StartRuntime() {
       holographic_space_->AddUserPresenceChangedCallback(
           base::BindRepeating(&MixedRealityRenderLoop::OnUserPresenceChanged,
                               base::Unretained(this)));
-  UpdateVisiblityState();
+  UpdateVisibilityState();
 
   input_helper_ = std::make_unique<MixedRealityInputHelper>(
       window_->hwnd(), weak_ptr_factory_.GetWeakPtr());
@@ -410,39 +410,30 @@ void MixedRealityRenderLoop::OnUserPresenceChanged() {
   task_runner()->PostTask(FROM_HERE,
                           base::BindOnce(
                               [](MixedRealityRenderLoop* render_loop) {
-                                render_loop->UpdateVisiblityState();
+                                render_loop->UpdateVisibilityState();
                               },
                               base::Unretained(this)));
 }
 
-void MixedRealityRenderLoop::UpdateVisiblityState() {
-  HolographicSpaceUserPresence user_presence =
-      holographic_space_->UserPresence();
-
-  device::mojom::XRVisibilityState new_state;
-  switch (user_presence) {
+void MixedRealityRenderLoop::UpdateVisibilityState() {
+  switch (holographic_space_->UserPresence()) {
     // Indicates that the browsers immersive content is visible in the headset
     // receiving input, and the headset is being worn.
     case HolographicSpaceUserPresence::
         HolographicSpaceUserPresence_PresentActive:
-      new_state = device::mojom::XRVisibilityState::VISIBLE;
-      break;
+      SetVisibilityState(device::mojom::XRVisibilityState::VISIBLE);
+      return;
     // Indicates that the browsers immersive content is visible in the headset
     // and the headset is being worn, but a modal dialog is capturing input.
     case HolographicSpaceUserPresence::
         HolographicSpaceUserPresence_PresentPassive:
-      new_state = device::mojom::XRVisibilityState::VISIBLE_BLURRED;
-      break;
+      SetVisibilityState(device::mojom::XRVisibilityState::VISIBLE_BLURRED);
+      return;
     // Indicates that the browsers immersive content is not visible in the
     // headset or the user is not wearing the headset.
     case HolographicSpaceUserPresence::HolographicSpaceUserPresence_Absent:
-      new_state = device::mojom::XRVisibilityState::HIDDEN;
-      break;
-  }
-
-  if (visibility_state != new_state) {
-    visibility_state = new_state;
-    VisibilityStateChanged(visibility_state);
+      SetVisibilityState(device::mojom::XRVisibilityState::HIDDEN);
+      return;
   }
 }
 
@@ -808,12 +799,6 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
   // Once we have a prediction, we can generate a frame data.
   mojom::XRFrameDataPtr ret =
       CreateDefaultFrameData(timestamp_.get(), next_frame_id_);
-
-  // If the device isn't currently showing content from this render loop, don't
-  // deliver complete frame data.
-  if (visibility_state == device::mojom::XRVisibilityState::HIDDEN) {
-    return ret;
-  }
 
   if ((!attached_ && !anchor_origin_) || !pose_) {
     TRACE_EVENT_INSTANT0("xr", "No origin or no pose",

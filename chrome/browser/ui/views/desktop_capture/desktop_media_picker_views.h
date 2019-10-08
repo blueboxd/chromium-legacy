@@ -51,7 +51,6 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   base::string16 GetWindowTitle() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   views::View* GetInitiallyFocusedView() override;
-  int GetDefaultDialogButton() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   std::unique_ptr<views::View> CreateExtraView() override;
   bool Accept() override;

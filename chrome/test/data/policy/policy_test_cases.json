@@ -1599,6 +1599,22 @@
     "note": "This policy is retired, see https://crbug.com/568184."
   },
 
+  "LegacySameSiteCookieBehaviorEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "LegacySameSiteCookieBehaviorEnabled": 1 },
+    "pref_mappings": [
+      { "pref": "profile.managed_default_content_settings.legacy_cookie_access" }
+    ]
+  },
+
+  "LegacySameSiteCookieBehaviorEnabledForDomainList": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "LegacySameSiteCookieBehaviorEnabledForDomainList": ["[*.]google.com"] },
+    "pref_mappings": [
+      { "pref": "profile.managed_legacy_cookie_access_allowed_for_domains" }
+    ]
+  },
+
   "DefaultPluginsSetting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultPluginsSetting": 2 },

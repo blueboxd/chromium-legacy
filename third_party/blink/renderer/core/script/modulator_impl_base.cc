@@ -192,8 +192,8 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
   base::Optional<KURL> mapped_url;
   if (import_map_) {
     String import_map_debug_message;
-    mapped_url = import_map_->ResolveImportsMatch(parsed_specifier,
-                                                  &import_map_debug_message);
+    mapped_url = import_map_->Resolve(parsed_specifier, base_url,
+                                      &import_map_debug_message);
 
     // Output the resolution log. This is too verbose to be always shown, but
     // will be helpful for Web developers (and also Chromium developers) for

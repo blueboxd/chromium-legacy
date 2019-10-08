@@ -384,8 +384,8 @@ class AccessibilityManager
   void OnFocusHighlightChanged();
   void OnTapDraggingChanged();
   void OnSelectToSpeakChanged();
-  void UpdateSwitchAccessFromPref();
   void OnAutoclickChanged();
+  void OnSwitchAccessChanged();
 
   void CheckBrailleState();
   void ReceiveBrailleDisplayState(

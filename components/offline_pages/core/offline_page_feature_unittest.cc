@@ -44,8 +44,7 @@ TEST(OfflinePageFeatureTest, OfflinePagesLoadSignalCollecting) {
 
 TEST(OfflinePageFeatureTest, OfflinePagesPrefetching) {
   // Enabled by default.
-  EXPECT_EQ(offline_pages::IsOfflinePagesEnabled(),
-            offline_pages::IsPrefetchingOfflinePagesEnabled());
+  EXPECT_TRUE(offline_pages::IsPrefetchingOfflinePagesEnabled());
 
   // Check if helper method works correctly when the features is disabled.
   base::test::ScopedFeatureList scoped_feature_list;

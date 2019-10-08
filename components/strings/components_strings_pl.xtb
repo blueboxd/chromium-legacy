@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Otwórz strony startowe</translation>
 <translation id="1883255238294161206">Zwiń listę</translation>
 <translation id="1898423065542865115">Filtrowanie</translation>
+<translation id="1901443836186977402">{1,plural, =1{Ten serwer nie może udowodnić, że należy do domeny <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł wczoraj. Może to wynikać z błędnej konfiguracji lub przechwycenia połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, popraw zegar systemowy, a potem odśwież tę stronę.}few{Ten serwer nie może udowodnić, że należy do domeny <ph name="DOMAIN" />. Jego certyfikat wygasł # dni temu. Może to wynikać z błędnej konfiguracji lub przechwycenia połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, popraw zegar systemowy, a potem odśwież tę stronę.}many{Ten serwer nie może udowodnić, że należy do domeny <ph name="DOMAIN" />. Jego certyfikat wygasł # dni temu. Może to wynikać z błędnej konfiguracji lub przechwycenia połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, popraw zegar systemowy, a potem odśwież tę stronę.}other{Ten serwer nie może udowodnić, że należy do domeny <ph name="DOMAIN" />. Jego certyfikat wygasł # dnia temu. Może to wynikać z błędnej konfiguracji lub przechwycenia połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, popraw zegar systemowy, a potem odśwież tę stronę.}}</translation>
 <translation id="1914326953223720820">Usługa rozpakowywania</translation>
 <translation id="1915697529809968049">Używać Touch ID zamiast kodu CVC?</translation>
 <translation id="1916770123977586577">Załaduj stronę ponownie, by zastosować na niej zaktualizowane ustawienia</translation>
@@ -445,6 +446,7 @@
 <translation id="3116158981186517402">Laminowanie</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Uruchom diagnostykę połączeń<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Wejdź na <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Brak}=1{dane logowania dla 1 konta}few{dane logowania dla # kont}many{dane logowania dla # kont}other{dane logowania dla # konta}}</translation>
 <translation id="3145945101586104090">Dekodowanie odpowiedzi nie powiodło się</translation>
 <translation id="3150653042067488994">Tymczasowy błąd serwera</translation>
@@ -612,7 +614,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Brak}=1{Z 1 witryny }few{Z # witryn }many{Z # witryn }other{Z # witryny }}</translation>
 <translation id="397105322502079400">Obliczanie...</translation>
 <translation id="3973234410852337861">Strona <ph name="HOST_NAME" /> jest zablokowana</translation>
-<translation id="3981540111851280311">Domena <ph name="ENROLLMENT_DOMAIN" /> włączyła w Twojej przeglądarce usługę ochrony Chrome Enterprise. Ma ona dostęp do niektórych Twoich danych.</translation>
+<translation id="3981540111851280311">Domena <ph name="ENROLLMENT_DOMAIN" /> włączyła w Twojej przeglądarce dostępną w Chrome ochronę przed zagrożeniami dla firm. Ta funkcja ma dostęp do niektórych Twoich danych.</translation>
 <translation id="3987940399970879459">Mniej niż 1 MB</translation>
 <translation id="3990250421422698716">Odsunięcie poszczególnych kopii</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 strona w pobliżu}few{# strony w pobliżu}many{# stron w pobliżu}other{# strony w pobliżu}}</translation>
@@ -829,6 +831,7 @@
 <translation id="5043480802608081735">Skopiowany link</translation>
 <translation id="5045550434625856497">Nieprawidłowe hasło</translation>
 <translation id="5056549851600133418">Artykuły dla Ciebie</translation>
+<translation id="5061227663725596739">Czy chodziło Ci o <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(w użyciu: 1)}few{(w użyciu: #)}many{(w użyciu: #)}other{(w użyciu: #)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Sprawdź adres serwera proxy<ph name="END_LINK" /></translation>
@@ -882,6 +885,7 @@
 <translation id="5284909709419567258">Adresy sieciowe</translation>
 <translation id="5285570108065881030">Pokaż wszystkie zapisane hasła</translation>
 <translation id="5287240709317226393">Pokaż pliki cookie</translation>
+<translation id="5287456746628258573">Ta strona używa nieaktualnej konfiguracji zabezpieczeń, co oznacza, że Twoje dane (np. hasła i numery kart kredytowych) mogą być zagrożone podczas przesyłania na tę stronę.</translation>
 <translation id="5288108484102287882">Weryfikacja wartości zasad zakończyła się z ostrzeżeniami</translation>
 <translation id="5299298092464848405">Podczas przetwarzania zasady wystąpił błąd</translation>
 <translation id="5300589172476337783">Pokaż</translation>
@@ -1010,6 +1014,7 @@
 <translation id="5946937721014915347">Otwieram <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Tak, dodaj</translation>
 <translation id="5951495562196540101">Nie można zarejestrować się przy użyciu konta klienta (w pakiecie dostępna jest licencja).</translation>
+<translation id="5966900314707961320">Gdy to ustawienie jest włączone, witryny nie mogą używać plików cookie, które śledzą Twoje działania w sieci</translation>
 <translation id="5967592137238574583">Edytuj dane kontaktowe</translation>
 <translation id="5967867314010545767">Usuń z historii</translation>
 <translation id="5975083100439434680">Pomniejsz</translation>
@@ -1092,6 +1097,7 @@
 <translation id="6383221683286411806">Uważaj na możliwe opłaty.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 inna podpowiedź}few{# inne podpowiedzi}many{# innych podpowiedzi}other{# innej podpowiedzi}}</translation>
 <translation id="6387754724289022810">Aby następnym razem zapłacić szybciej, zapisz kartę i adres rozliczeniowy na swoim koncie Google i na tym urządzeniu.</translation>
+<translation id="6389470377220713856">Imię i nazwisko na karcie</translation>
 <translation id="6390200185239044127">Składanie w połowie, a następnie składanie typu Z</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Ta zasada została wycofana. Zalecamy używanie zasady <ph name="NEW_POLICY" />.</translation>
@@ -1104,7 +1110,7 @@
 <translation id="6433490469411711332">Edytuj dane kontaktowe</translation>
 <translation id="6433595998831338502">Serwer <ph name="HOST_NAME" /> odrzucił połączenie.</translation>
 <translation id="6434309073475700221">Przerwij</translation>
-<translation id="6435221585574090192">Udostępniaj administratorowi dane na temat zdarzeń związanych z bezpieczeństwem zgłoszonych przez usługę ochrony Chrome Enterprise. Dane te mogą obejmować adresy URL stron, nazwę i metadane pliku oraz nazwę użytkownika urządzenia i Chrome.</translation>
+<translation id="6435221585574090192">Udostępniaj administratorowi dane na temat zdarzeń związanych z bezpieczeństwem zgłoszonych przez dostępną w Chrome ochronę przed zagrożeniami dla firm. Dane te mogą obejmować adresy URL stron, nazwę i metadane pliku oraz nazwę użytkownika urządzenia i Chrome.</translation>
 <translation id="6440503408713884761">Ignorowany</translation>
 <translation id="6446163441502663861">Kahu (koperta)</translation>
 <translation id="6446608382365791566">Dodaj więcej informacji</translation>
@@ -1270,7 +1276,6 @@ Dodatkowe informacje:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Jest w tej samej domenie:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Opuść tę stronę</translation>
 <translation id="7353601530677266744">Wiersz poleceń</translation>
 <translation id="7372973238305370288">wynik wyszukiwania</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
@@ -1336,7 +1341,7 @@ Dodatkowe informacje:
 <translation id="7610193165460212391">Wartość spoza zakresu (<ph name="VALUE" />)</translation>
 <translation id="7613889955535752492">Wygasa: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Masz już dane zaszyfrowane przy użyciu innej wersji hasła konta Google. Wpisz je poniżej.</translation>
-<translation id="7625784245512586808">Usługa ochrony Chrome Enterprise</translation>
+<translation id="7625784245512586808">Dostępna w Chrome ochrona przed zagrożeniami dla firm</translation>
 <translation id="7633909222644580952">Dane o wydajności i raporty o awariach</translation>
 <translation id="7637571805876720304">Usunąć tę kartę kredytową z Chromium?</translation>
 <translation id="7638605456503525968">Porty szeregowe</translation>
@@ -1443,6 +1448,7 @@ Dodatkowe informacje:
 <translation id="8131740175452115882">Potwierdź</translation>
 <translation id="8149426793427495338">Twój komputer przeszedł w tryb uśpienia.</translation>
 <translation id="8150722005171944719">Nie można odczytać pliku <ph name="URL" />. Być może został usunięty lub uprawnienia dostępu uniemożliwiają jego odczyt.</translation>
+<translation id="8157295877370077682">Wyjdź</translation>
 <translation id="8163866351304776260">Cztery otwory po lewej</translation>
 <translation id="8175796834047840627">Jako zalogowany użytkownik możesz zapisać karty na Twoim koncie Google w Chrome. Możesz to zmienić w ustawieniach.</translation>
 <translation id="8184538546369750125">Użyj globalnej wartości domyślnej (Zezwalaj)</translation>
@@ -1611,7 +1617,7 @@ Dodatkowe informacje:
 <translation id="9080712759204168376">Podsumowanie zamówienia</translation>
 <translation id="9089260154716455634">Zasada „po godzinach”:</translation>
 <translation id="9095388113577226029">Więcej języków…</translation>
-<translation id="9098981495403789647">Twój administrator włączył w przeglądarce usługę ochrony Chrome Enterprise. Ma ona dostęp do niektórych Twoich danych.</translation>
+<translation id="9098981495403789647">Twój administrator włączył w przeglądarce dostępną w Chrome ochronę przed zagrożeniami dla firm. Ta funkcja ma dostęp do niektórych Twoich danych.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> zazwyczaj używa szyfrowania do ochrony Twoich informacji. Gdy tym razem przeglądarka Chromium próbowała połączyć się ze stroną <ph name="SITE" />, odesłała ona nietypowe i nieprawidłowe dane logowania. Może się tak zdarzyć, gdy pod stronę <ph name="SITE" /> podszywa się osoba atakująca albo gdy ekran logowania do sieci Wi-Fi przerwie połączenie. Twoje informacje są nadal bezpieczne, bo połączenie w Chromium zakończyło się przed wymianą jakichkolwiek danych.</translation>
 <translation id="9106062320799175032">Dodaj adres rozliczeniowy</translation>
 <translation id="9114524666733003316">Sprawdzam kartę…</translation>

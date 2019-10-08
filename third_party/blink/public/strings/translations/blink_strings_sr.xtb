@@ -134,6 +134,7 @@
 <translation id="5516424706154626233">бирач датума</translation>
 <translation id="5537725057119320332">Пребацуј</translation>
 <translation id="5546461542133609677">укључите звук</translation>
+<translation id="5608153257855394627">истакнуто</translation>
 <translation id="561939826962581046">време</translation>
 <translation id="5630795885300617244">Двапут додирните лево или десно да бисте прескочили 10 сек</translation>
 <translation id="5631759159893697722">сажетак</translation>
@@ -226,6 +227,7 @@
 <translation id="8208673686607688524">бирач локалног датума и времена</translation>
 <translation id="8261464734335370856">Нетачан правопис</translation>
 <translation id="8284326494547611709">Титл</translation>
+<translation id="8346634859695247203">одељак</translation>
 <translation id="835897206747267392">Неважећа вредност.</translation>
 <translation id="8403857369060869934">протекло време: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">део</translation>
@@ -247,7 +249,7 @@
 <translation id="8711688047404765493">излаз</translation>
 <translation id="8750798805984357768">Изаберите неку од ових опција.</translation>
 <translation id="8808573423886751634">поглавље</translation>
-<translation id="8822203815165896261">информације о прављењу садржаја</translation>
+<translation id="8822203815165896261">информације о ауторству</translation>
 <translation id="8845239796550121995">Тренутно се пребацује на ТВ</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8875657656876809964">Грешка при пуштању видео снимка</translation>

@@ -36,10 +36,11 @@ const int kDefaultHatsDialogHeight = 440;
 // Placeholder string in html file to be replaced when the file is loaded.
 constexpr char kScriptSrcReplacementToken[] = "scriptSrc";
 
+// Google consumer survey host site.
+constexpr char kSurveyHost[] =
+    "https://www.google.com/insights/consumersurveys";
 // Base URL to fetch the Google consumer survey script.
-constexpr char kBaseFormatUrl[] =
-    "https://www.google.com/insights/consumersurveys/"
-    "async_survey?site=%s&force_https=1&sc=%s";
+constexpr char kBaseFormatUrl[] = "%s/async_survey?site=%s&force_https=1&sc=%s";
 
 // Returns the local HaTS HTML file as a string with the correct Hats script
 // URL.
@@ -53,8 +54,8 @@ std::string LoadLocalHtmlAsString(const std::string& site_id,
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_DESKTOP_HATS_HTML);
   ui::TemplateReplacements replacements;
-  replacements[kScriptSrcReplacementToken] =
-      base::StringPrintf(kBaseFormatUrl, site_id.c_str(), site_context.c_str());
+  replacements[kScriptSrcReplacementToken] = base::StringPrintf(
+      kBaseFormatUrl, kSurveyHost, site_id.c_str(), site_context.c_str());
   return ui::ReplaceTemplateExpressions(raw_html, replacements);
 }
 
@@ -148,9 +149,36 @@ void HatsWebDialog::OnWebContentsFinishedLoad() {
     return;
   loading_timer_.Stop();
 
-  HatsBubbleView::Show(
-      browser_, base::BindOnce(&HatsWebDialog::Show, weak_factory_.GetWeakPtr(),
-                               preloading_widget_));
+  if (resource_loaded_) {
+    // Only after the confirmation that we have already loaded the resource, we
+    // will proceed with showing the bubble.
+    HatsBubbleView::Show(browser_, base::BindOnce(&HatsWebDialog::Show,
+                                                  weak_factory_.GetWeakPtr(),
+                                                  preloading_widget_));
+  } else {
+    preloading_widget_->Close();
+  }
+}
+
+void HatsWebDialog::OnMainFrameResourceLoadComplete(
+    const content::mojom::ResourceLoadInfo& resource_load_info) {
+  // Due to https://crbug.com/1011433, we don't always get called due to failed
+  // loading for javascript resource. So, We monitor all the resource load,
+  // and explicitly HaTS library code. We only claim |resource_loaded_| is true
+  // if HaTS library code is loaded successfully, thus this function is called,
+  // and there isn't any error for loading other resources.
+  // TODO(weili): once the bug is fixed, we no longer need this check nor
+  // |resource_loaded_|, remove them then.
+  if (resource_load_info.net_error == net::Error::OK) {
+    if (resource_load_info.url.spec().find(kSurveyHost) == 0) {
+      // The resource from survey host is loaded successfully.
+      resource_loaded_ = true;
+    }
+  } else {
+    // Any error indicates some resource failed to load. Exit early.
+    loading_timer_.Stop();
+    preloading_widget_->Close();
+  }
 }
 
 void HatsWebDialog::OnLoadTimedOut() {

@@ -187,40 +187,16 @@ class CallbackAndContext : public base::RefCounted<CallbackAndContext> {
   DISALLOW_COPY_AND_ASSIGN(CallbackAndContext);
 };
 
+// This class is a mostly unnecessary helper class. It extracts some commonly
+// used objects from RenderFrameImpl.
 class GpuBenchmarkingContext {
  public:
-  GpuBenchmarkingContext() = default;
-
-  bool Init(bool init_compositor) {
-    web_frame_ = WebLocalFrame::FrameForCurrentContext();
-    if (!web_frame_)
-      return false;
-
+  explicit GpuBenchmarkingContext(RenderFrameImpl* frame) {
+    web_frame_ = frame->GetWebFrame();
     web_view_ = web_frame_->View();
-    if (!web_view_) {
-      web_frame_ = nullptr;
-      return false;
-    }
-
     render_view_impl_ = RenderViewImpl::FromWebView(web_view_);
-    if (!render_view_impl_) {
-      web_frame_ = nullptr;
-      web_view_ = nullptr;
-      return false;
-    }
-
-    if (!init_compositor)
-      return true;
-
-    layer_tree_host_ = render_view_impl_->GetWidget()->layer_tree_host();
-    if (!layer_tree_host_) {
-      web_frame_ = nullptr;
-      web_view_ = nullptr;
-      render_view_impl_ = nullptr;
-      return false;
-    }
-
-    return true;
+    render_widget_ = frame->GetLocalRootRenderWidget();
+    layer_tree_host_ = render_widget_->layer_tree_host();
   }
 
   WebLocalFrame* web_frame() const {
@@ -235,6 +211,7 @@ class GpuBenchmarkingContext {
     DCHECK(render_view_impl_ != nullptr);
     return render_view_impl_;
   }
+  RenderWidget* render_widget() const { return render_widget_; }
   cc::LayerTreeHost* layer_tree_host() const {
     DCHECK(layer_tree_host_ != nullptr);
     return layer_tree_host_;
@@ -244,6 +221,7 @@ class GpuBenchmarkingContext {
   WebLocalFrame* web_frame_ = nullptr;
   WebView* web_view_ = nullptr;
   RenderViewImpl* render_view_impl_ = nullptr;
+  RenderWidget* render_widget_ = nullptr;
   cc::LayerTreeHost* layer_tree_host_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GpuBenchmarkingContext);
@@ -287,7 +265,7 @@ bool ThrowIfPointOutOfBounds(GpuBenchmarkingContext* context,
                              gin::Arguments* args,
                              const gfx::Point& point,
                              const std::string& message) {
-  gfx::Rect rect = context->render_view_impl()->GetWidget()->ViewRect();
+  gfx::Rect rect = context->render_widget()->ViewRect();
   rect -= rect.OffsetFromOrigin();
 
   // If the bounds are not available here, as is the case with an OOPIF,
@@ -483,10 +461,9 @@ static void PrintDocument(blink::WebLocalFrame* frame, SkDocument* doc) {
 
 static void PrintDocumentTofile(v8::Isolate* isolate,
                                 const std::string& filename,
-                                sk_sp<SkDocument> (*make_doc)(SkWStream*)) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(true))
-    return;
+                                sk_sp<SkDocument> (*make_doc)(SkWStream*),
+                                RenderFrameImpl* render_frame) {
+  GpuBenchmarkingContext context(render_frame);
 
   base::FilePath path = base::FilePath::FromUTF8Unsafe(filename);
   if (!base::PathIsWritable(path.DirName())) {
@@ -630,18 +607,12 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
 }
 
 void GpuBenchmarking::SetNeedsDisplayOnAllLayers() {
-  GpuBenchmarkingContext context;
-  if (!context.Init(true))
-    return;
-
+  GpuBenchmarkingContext context(render_frame_);
   context.layer_tree_host()->SetNeedsDisplayOnAllLayers();
 }
 
 void GpuBenchmarking::SetRasterizeOnlyVisibleContent() {
-  GpuBenchmarkingContext context;
-  if (!context.Init(true))
-    return;
-
+  GpuBenchmarkingContext context(render_frame_);
   cc::LayerTreeDebugState current = context.layer_tree_host()->GetDebugState();
   current.rasterize_only_visible_content = true;
   context.layer_tree_host()->SetDebugState(current);
@@ -654,13 +625,14 @@ sk_sp<SkDocument> make_multipicturedocument(SkWStream* stream) {
 }  // namespace
 void GpuBenchmarking::PrintPagesToSkPictures(v8::Isolate* isolate,
                                              const std::string& filename) {
-  PrintDocumentTofile(isolate, filename, &make_multipicturedocument);
+  PrintDocumentTofile(isolate, filename, &make_multipicturedocument,
+                      render_frame_);
 }
 
 void GpuBenchmarking::PrintPagesToXPS(v8::Isolate* isolate,
                                       const std::string& filename) {
 #if defined(OS_WIN) && !defined(NDEBUG)
-  PrintDocumentTofile(isolate, filename, &MakeXPSDocument);
+  PrintDocumentTofile(isolate, filename, &MakeXPSDocument, render_frame_);
 #else
   std::string msg("PrintPagesToXPS is unsupported.");
   isolate->ThrowException(v8::Exception::Error(
@@ -672,9 +644,7 @@ void GpuBenchmarking::PrintPagesToXPS(v8::Isolate* isolate,
 
 void GpuBenchmarking::PrintToSkPicture(v8::Isolate* isolate,
                                        const std::string& dirname) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(true))
-    return;
+  GpuBenchmarkingContext context(render_frame_);
 
   const cc::Layer* root_layer = context.layer_tree_host()->root_layer();
   if (!root_layer)
@@ -707,11 +677,8 @@ bool GpuBenchmarking::GestureSourceTypeSupported(int gesture_source_type) {
 }
 
 bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(true))
-    return false;
-
-  blink::WebRect rect = context.render_view_impl()->GetWidget()->ViewRect();
+  GpuBenchmarkingContext context(render_frame_);
+  blink::WebRect rect = context.render_widget()->ViewRect();
 
   float pixels_to_scroll = 0;
   v8::Local<v8::Function> callback;
@@ -751,10 +718,7 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
 }
 
 bool GpuBenchmarking::SmoothDrag(gin::Arguments* args) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(true))
-    return false;
-
+  GpuBenchmarkingContext context(render_frame_);
   float start_x;
   float start_y;
   float end_x;
@@ -778,11 +742,8 @@ bool GpuBenchmarking::SmoothDrag(gin::Arguments* args) {
 }
 
 bool GpuBenchmarking::Swipe(gin::Arguments* args) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(true))
-    return false;
-
-  blink::WebRect rect = context.render_view_impl()->GetWidget()->ViewRect();
+  GpuBenchmarkingContext context(render_frame_);
+  blink::WebRect rect = context.render_widget()->ViewRect();
 
   std::string direction = "up";
   float pixels_to_scroll = 0;
@@ -819,12 +780,8 @@ bool GpuBenchmarking::Swipe(gin::Arguments* args) {
 }
 
 bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(false))
-    return false;
-
-  blink::WebRect content_rect =
-      context.render_view_impl()->GetWidget()->ViewRect();
+  GpuBenchmarkingContext context(render_frame_);
+  blink::WebRect content_rect = context.render_widget()->ViewRect();
 
   std::string direction = "down";
   float distance_length = 0;
@@ -891,9 +848,7 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
 }
 
 bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(false))
-    return false;
+  GpuBenchmarkingContext context(render_frame_);
 
   float scale_factor;
   float anchor_x;
@@ -954,23 +909,17 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
 }
 
 float GpuBenchmarking::PageScaleFactor() {
-  GpuBenchmarkingContext context;
-  if (!context.Init(false))
-    return 0.0;
+  GpuBenchmarkingContext context(render_frame_);
   return context.web_view()->PageScaleFactor();
 }
 
 void GpuBenchmarking::SetPageScaleFactor(float scale) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(false))
-    return;
+  GpuBenchmarkingContext context(render_frame_);
   context.web_view()->SetPageScaleFactor(scale);
 }
 
 void GpuBenchmarking::SetBrowserControlsShown(bool show) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(true))
-    return;
+  GpuBenchmarkingContext context(render_frame_);
   context.layer_tree_host()->UpdateBrowserControlsState(
       cc::BrowserControlsState::kBoth,
       show ? cc::BrowserControlsState::kShown
@@ -979,49 +928,39 @@ void GpuBenchmarking::SetBrowserControlsShown(bool show) {
 }
 
 float GpuBenchmarking::VisualViewportY() {
-  GpuBenchmarkingContext context;
-  if (!context.Init(false))
-    return 0.0;
+  GpuBenchmarkingContext context(render_frame_);
   float y = context.web_view()->VisualViewportOffset().y;
   blink::WebRect rect(0, y, 0, 0);
-  context.render_view_impl()->GetWidget()->ConvertViewportToWindow(&rect);
+  context.render_widget()->ConvertViewportToWindow(&rect);
   return rect.y;
 }
 
 float GpuBenchmarking::VisualViewportX() {
-  GpuBenchmarkingContext context;
-  if (!context.Init(false))
-    return 0.0;
+  GpuBenchmarkingContext context(render_frame_);
   float x = context.web_view()->VisualViewportOffset().x;
   blink::WebRect rect(x, 0, 0, 0);
-  context.render_view_impl()->GetWidget()->ConvertViewportToWindow(&rect);
+  context.render_widget()->ConvertViewportToWindow(&rect);
   return rect.x;
 }
 
 float GpuBenchmarking::VisualViewportHeight() {
-  GpuBenchmarkingContext context;
-  if (!context.Init(false))
-    return 0.0;
+  GpuBenchmarkingContext context(render_frame_);
   float height = context.web_view()->VisualViewportSize().height;
   blink::WebRect rect(0, 0, 0, height);
-  context.render_view_impl()->GetWidget()->ConvertViewportToWindow(&rect);
+  context.render_widget()->ConvertViewportToWindow(&rect);
   return rect.height;
 }
 
 float GpuBenchmarking::VisualViewportWidth() {
-  GpuBenchmarkingContext context;
-  if (!context.Init(false))
-    return 0.0;
+  GpuBenchmarkingContext context(render_frame_);
   float width = context.web_view()->VisualViewportSize().width;
   blink::WebRect rect(0, 0, width, 0);
-  context.render_view_impl()->GetWidget()->ConvertViewportToWindow(&rect);
+  context.render_widget()->ConvertViewportToWindow(&rect);
   return rect.width;
 }
 
 bool GpuBenchmarking::Tap(gin::Arguments* args) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(false))
-    return false;
+  GpuBenchmarkingContext context(render_frame_);
 
   float position_x;
   float position_y;
@@ -1066,9 +1005,7 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
 }
 
 bool GpuBenchmarking::PointerActionSequence(gin::Arguments* args) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(false))
-    return false;
+  GpuBenchmarkingContext context(render_frame_);
 
   v8::Local<v8::Function> callback;
 
@@ -1122,9 +1059,7 @@ void GpuBenchmarking::ClearImageCache() {
 }
 
 int GpuBenchmarking::RunMicroBenchmark(gin::Arguments* args) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(true))
-    return 0;
+  GpuBenchmarkingContext context(render_frame_);
 
   std::string name;
   v8::Local<v8::Function> callback;
@@ -1152,9 +1087,7 @@ int GpuBenchmarking::RunMicroBenchmark(gin::Arguments* args) {
 bool GpuBenchmarking::SendMessageToMicroBenchmark(
     int id,
     v8::Local<v8::Object> message) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(true))
-    return false;
+  GpuBenchmarkingContext context(render_frame_);
 
   v8::Local<v8::Context> v8_context =
       context.web_frame()->MainWorldScriptContext();
@@ -1239,9 +1172,7 @@ void GpuBenchmarking::StopProfiling() {
 }
 
 void GpuBenchmarking::Freeze() {
-  GpuBenchmarkingContext context;
-  if (!context.Init(true))
-    return;
+  GpuBenchmarkingContext context(render_frame_);
   // TODO(fmeawad): Instead of forcing a visibility change, only allow
   // freezing a page if it was already hidden.
   context.web_view()->SetIsHidden(/*hidden=*/true,
@@ -1253,16 +1184,11 @@ bool GpuBenchmarking::AddSwapCompletionEventListener(gin::Arguments* args) {
   v8::Local<v8::Function> callback;
   if (!GetArg(args, &callback))
     return false;
-  if (!render_frame_)
-    return false;
-  RenderWidget* render_widget = render_frame_->GetLocalRootRenderWidget();
-  GpuBenchmarkingContext context;
-  if (!context.Init(true))
-    return false;
+  GpuBenchmarkingContext context(render_frame_);
 
   auto callback_and_context = base::MakeRefCounted<CallbackAndContext>(
       args->isolate(), callback, context.web_frame()->MainWorldScriptContext());
-  render_widget->NotifySwapTime(base::BindOnce(
+  context.render_widget()->NotifySwapTime(base::BindOnce(
       &OnSwapCompletedHelper, base::RetainedRef(callback_and_context)));
   return true;
 }

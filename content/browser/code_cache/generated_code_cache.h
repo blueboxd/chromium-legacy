@@ -122,7 +122,7 @@ class CONTENT_EXPORT GeneratedCodeCache {
   enum Operation { kFetch, kWrite, kDelete, kGetBackend };
 
   // Data streams corresponding to each entry.
-  enum { kSmallDataStream = 0, kLargeDataStream = 1 };
+  enum { kResponseTimeStream = 0, kDataStream = 1 };
 
   // Creates a simple_disk_cache backend.
   void CreateBackend();
@@ -138,15 +138,15 @@ class CONTENT_EXPORT GeneratedCodeCache {
   void WriteEntryImpl(PendingOperation* op);
   void OpenCompleteForWrite(PendingOperation* op,
                             disk_cache::EntryResult result);
-  void WriteSmallBufferComplete(PendingOperation* op, int rv);
-  void WriteLargeBufferComplete(PendingOperation* op, int rv);
+  void WriteResponseTimeComplete(PendingOperation* op, int rv);
+  void WriteDataComplete(PendingOperation* op, int rv);
 
   // Fetches entry from cache.
   void FetchEntryImpl(PendingOperation* op);
   void OpenCompleteForRead(PendingOperation* op,
                            disk_cache::EntryResult result);
-  void ReadSmallBufferComplete(PendingOperation* op, int rv);
-  void ReadLargeBufferComplete(PendingOperation* op, int rv);
+  void ReadResponseTimeComplete(PendingOperation* op, int rv);
+  void ReadDataComplete(PendingOperation* op, int rv);
 
   // Deletes entry from cache.
   void DeleteEntryImpl(PendingOperation* op);

@@ -2857,17 +2857,18 @@
     "GwpAsanAndroid": [
         {
             "platforms": [
-                "android"
+                "android",
+                "android_webview"
             ],
             "experiments": [
                 {
                     "name": "Enabled",
                     "params": {
-                        "AllocationSamplingRange": "64",
-                        "MaxAllocations": "35",
-                        "MaxMetadata": "150",
+                        "AllocationSamplingRange": "16",
+                        "MaxAllocations": "70",
+                        "MaxMetadata": "255",
                         "ProcessSamplingBoost2": "10",
-                        "ProcessSamplingProbability": "0.01"
+                        "ProcessSamplingProbability": "0.015"
                     },
                     "enable_features": [
                         "GwpAsanMalloc",

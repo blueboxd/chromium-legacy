@@ -466,9 +466,7 @@ TEST_P(ThreadPoolImplTestAllTraitsExecutionModes,
 
 // Verify that posting tasks after the thread pool was destroyed fails but
 // doesn't crash.
-// crbug.com/1010145: disabled due to failure.
-TEST_P(ThreadPoolImplTestAllTraitsExecutionModes,
-       DISABLED_PostTaskAfterDestroy) {
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, PostTaskAfterDestroy) {
   StartThreadPool();
 
   auto task_runner = CreateTaskRunnerAndExecutionMode(

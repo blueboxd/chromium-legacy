@@ -133,7 +133,6 @@ public class WebappDisplayModeTest {
 
     private static boolean isFullscreen(WebappActivity activity) {
         int systemUiVisibility = activity.getWindow().getDecorView().getSystemUiVisibility();
-        return (systemUiVisibility & WebappActivity.IMMERSIVE_MODE_UI_FLAGS)
-                == WebappActivity.IMMERSIVE_MODE_UI_FLAGS;
+        return (systemUiVisibility & View.SYSTEM_UI_FLAG_IMMERSIVE) != 0;
     }
 }

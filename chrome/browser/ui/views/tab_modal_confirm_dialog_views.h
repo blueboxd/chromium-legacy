@@ -65,7 +65,6 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  int GetDefaultDialogButton() const override;
   views::View* GetInitiallyFocusedView() override;
 
   std::unique_ptr<TabModalConfirmDialogDelegate> delegate_;

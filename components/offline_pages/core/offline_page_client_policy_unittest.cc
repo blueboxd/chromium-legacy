@@ -173,7 +173,7 @@ TEST_F(ClientPolicyTest, CheckSuggestedArticlesDefined) {
   EXPECT_EQ(policy.name_space, kSuggestedArticlesNamespace);
   EXPECT_TRUE(isTemporary(policy));
   ExpectTemporary(kSuggestedArticlesNamespace);
-  ExpectDownloadSupport(kSuggestedArticlesNamespace, IsOfflinePagesEnabled());
+  ExpectDownloadSupport(kSuggestedArticlesNamespace, true);
   ExpectRestrictedToTabFromClientId(kSuggestedArticlesNamespace, false);
   ExpectRequiresSpecificUserSettings(kSuggestedArticlesNamespace, false);
 }

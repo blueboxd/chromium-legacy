@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/prefs/pref_watcher.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_font_webkit_names.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_names_util.h"
@@ -352,7 +353,9 @@ void PrefsTabHelper::RegisterProfilePrefs(
                                 pref_defaults.tabs_to_links);
   registry->RegisterBooleanPref(prefs::kWebKitAllowRunningInsecureContent,
                                 false);
-  registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
+  registry->RegisterBooleanPref(
+      prefs::kEnableReferrers,
+      !base::FeatureList::IsEnabled(features::kNoReferrers));
   registry->RegisterBooleanPref(prefs::kEnableEncryptedMedia, true);
 #if defined(OS_ANDROID)
   registry->RegisterDoublePref(prefs::kWebKitFontScaleFactor, 1.0);

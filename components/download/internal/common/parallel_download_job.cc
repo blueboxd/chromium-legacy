@@ -128,8 +128,8 @@ void ParallelDownloadJob::OnInputStreamReady(
   // If server returns a wrong range, abort the parallel request.
   bool success = download_create_info->offset == worker->offset();
   if (success) {
-    success = DownloadJob::AddInputStream(std::move(input_stream),
-                                          worker->offset(), worker->length());
+    success =
+        DownloadJob::AddInputStream(std::move(input_stream), worker->offset());
   }
 
   RecordParallelDownloadAddStreamSuccess(
@@ -236,15 +236,14 @@ void ParallelDownloadJob::ForkSubRequests(
     // All parallel requests are half open, which sends request headers like
     // "Range:50-".
     // If server rejects a certain request, others should take over.
-    CreateRequest(it->offset, DownloadSaveInfo::kLengthFullContent);
+    CreateRequest(it->offset);
   }
 }
 
-void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
+void ParallelDownloadJob::CreateRequest(int64_t offset) {
   DCHECK(download_item_);
-  DCHECK_EQ(DownloadSaveInfo::kLengthFullContent, length);
 
-  auto worker = std::make_unique<DownloadWorker>(this, offset, length);
+  auto worker = std::make_unique<DownloadWorker>(this, offset);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("parallel_download_job", R"(
@@ -276,10 +275,6 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
   download_params->set_last_modified(download_item_->GetLastModifiedTime());
   download_params->set_etag(download_item_->GetETag());
   download_params->set_offset(offset);
-
-  // Setting the length will result in range request to fetch a slice of the
-  // file.
-  download_params->set_length(length);
 
   // Subsequent range requests don't need the "If-Range" header.
   download_params->set_use_if_range(false);

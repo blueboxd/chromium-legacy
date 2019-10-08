@@ -80,7 +80,7 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   void OnCurrentStageChanged();
 
   void OnUserPresenceChanged();
-  void UpdateVisiblityState();
+  void UpdateVisibilityState();
 
   // Will try to update the stage bounds if the following are true:
   // 1) We have a spatial_stage.
@@ -127,9 +127,6 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
 
   std::vector<gfx::Point3F> bounds_;
   bool bounds_updated_ = false;
-
-  device::mojom::XRVisibilityState visibility_state =
-      device::mojom::XRVisibilityState::HIDDEN;
 
   // This must be the last member
   base::WeakPtrFactory<MixedRealityRenderLoop> weak_ptr_factory_{this};

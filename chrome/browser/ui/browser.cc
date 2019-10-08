@@ -1428,9 +1428,6 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
   nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
   if (params.user_gesture)
     nav_params.window_action = NavigateParams::SHOW_WINDOW;
-  nav_params.user_gesture = params.user_gesture;
-  nav_params.blob_url_loader_factory = params.blob_url_loader_factory;
-  nav_params.href_translate = params.href_translate;
   bool is_popup = source && ConsiderForPopupBlocking(params.disposition);
   if (is_popup && MaybeBlockPopup(source, nullptr, &nav_params, &params,
                                   blink::mojom::WindowFeatures())) {
@@ -1611,34 +1608,30 @@ void Browser::ShowRepostFormWarningDialog(WebContents* source) {
       std::make_unique<RepostFormWarningController>(source), source);
 }
 
-bool Browser::IsWebContentsCreationOverridden(
-    content::SiteInstance* source_site_instance,
-    content::mojom::WindowContainerType window_container_type,
-    const GURL& opener_url,
-    const std::string& frame_name,
-    const GURL& target_url) {
-  return window_container_type ==
-             content::mojom::WindowContainerType::BACKGROUND &&
-         ShouldCreateBackgroundContents(source_site_instance, opener_url,
-                                        frame_name);
-}
-
-WebContents* Browser::CreateCustomWebContents(
+bool Browser::ShouldCreateWebContents(
+    content::WebContents* web_contents,
     content::RenderFrameHost* opener,
     content::SiteInstance* source_site_instance,
-    bool is_new_browsing_instance,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
+    content::mojom::WindowContainerType window_container_type,
     const GURL& opener_url,
     const std::string& frame_name,
     const GURL& target_url,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
-  BackgroundContents* background_contents = CreateBackgroundContents(
-      source_site_instance, opener, opener_url, is_new_browsing_instance,
-      frame_name, target_url, partition_id, session_storage_namespace);
-  if (background_contents) {
-    return background_contents->web_contents();
-  }
-  return nullptr;
+  if ((window_container_type !=
+       content::mojom::WindowContainerType::BACKGROUND) ||
+      !ShouldCreateBackgroundContents(source_site_instance, opener_url,
+                                      frame_name))
+    return true;
+
+  CreateBackgroundContents(source_site_instance, opener, opener_url, route_id,
+                           main_frame_route_id, main_frame_widget_route_id,
+                           frame_name, target_url, partition_id,
+                           session_storage_namespace);
+  return false;
 }
 
 void Browser::WebContentsCreated(WebContents* source_contents,
@@ -2450,6 +2443,9 @@ void Browser::ConfigureTabGroupForNavigation(content::WebContents* source,
   if (!source)
     return;
 
+  if (!SupportsWindowFeature(WindowFeature::FEATURE_TABSTRIP))
+    return;
+
   const int source_index = tab_strip_model_->GetIndexOfWebContents(source);
 
   // If the source tab is pinned, don't create a group.
@@ -2857,7 +2853,9 @@ BackgroundContents* Browser::CreateBackgroundContents(
     content::SiteInstance* source_site_instance,
     content::RenderFrameHost* opener,
     const GURL& opener_url,
-    bool is_new_browsing_instance,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
     const std::string& frame_name,
     const GURL& target_url,
     const std::string& partition_id,
@@ -2879,14 +2877,15 @@ BackgroundContents* Browser::CreateBackgroundContents(
       return nullptr;
     // For scriptable background pages, if one already exists, close it (even
     // if it was specified in the manifest).
-    delete existing;
+    service->DeleteBackgroundContents(existing);
   }
 
   // Passed all the checks, so this should be created as a BackgroundContents.
   if (allow_js_access) {
     return service->CreateBackgroundContents(
-        source_site_instance, opener, is_new_browsing_instance, frame_name,
-        extension->id(), partition_id, session_storage_namespace);
+        source_site_instance, opener, route_id, main_frame_route_id,
+        main_frame_widget_route_id, frame_name, extension->id(), partition_id,
+        session_storage_namespace);
   }
 
   // If script access is not allowed, create the the background contents in a
@@ -2895,8 +2894,8 @@ BackgroundContents* Browser::CreateBackgroundContents(
   // process.
   BackgroundContents* contents = service->CreateBackgroundContents(
       content::SiteInstance::Create(source_site_instance->GetBrowserContext()),
-      nullptr, is_new_browsing_instance, frame_name, extension->id(),
-      partition_id, session_storage_namespace);
+      nullptr, MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE, frame_name,
+      extension->id(), partition_id, session_storage_namespace);
 
   // When a separate process is used, the original renderer cannot access the
   // new window later, thus we need to navigate the window now.

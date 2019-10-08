@@ -950,6 +950,9 @@ int SSLClientSocketImpl::DoHandshake() {
 }
 
 int SSLClientSocketImpl::DoHandshakeComplete(int result) {
+  if (in_confirm_handshake_)
+    MaybeRecordEarlyDataResult();
+
   if (result < 0)
     return result;
 
@@ -1378,6 +1381,8 @@ int SSLClientSocketImpl::DoPayloadRead(IOBuffer* buf, int buf_len) {
       DCHECK_NE(kSSLClientSocketNoPendingResult, signature_result_);
       pending_read_error_ = ERR_IO_PENDING;
     } else {
+      if (pending_read_ssl_error_ == SSL_ERROR_EARLY_DATA_REJECTED)
+        MaybeRecordEarlyDataResult();
       pending_read_error_ = MapLastOpenSSLError(
           pending_read_ssl_error_, err_tracer, &pending_read_error_info_);
     }
@@ -1394,6 +1399,8 @@ int SSLClientSocketImpl::DoPayloadRead(IOBuffer* buf, int buf_len) {
     // Return any bytes read to the caller. The error will be deferred to the
     // next call of DoPayloadRead.
     rv = total_bytes_read;
+
+    MaybeRecordEarlyDataResult();
 
     // Do not treat insufficient data as an error to return in the next call to
     // DoPayloadRead() - instead, let the call fall through to check SSL_read()
@@ -1817,6 +1824,22 @@ void SSLClientSocketImpl::LogConnectEndEvent(int rv) {
 void SSLClientSocketImpl::RecordNegotiatedProtocol() const {
   UMA_HISTOGRAM_ENUMERATION("Net.SSLNegotiatedAlpnProtocol",
                             negotiated_protocol_, kProtoLast + 1);
+}
+
+void SSLClientSocketImpl::MaybeRecordEarlyDataResult() {
+  DCHECK(ssl_);
+  if (!ssl_config_.early_data_enabled || recorded_early_data_result_)
+    return;
+
+  recorded_early_data_result_ = true;
+  // Since the two-parameter version of the macro (which asks for a max
+  // value) requires that the max value sentinel be named |kMaxValue|,
+  // transform the max-value sentinel into a one-past-the-end ("boundary")
+  // sentinel by adding 1, in order to be able to use the three-parameter
+  // macro.
+  UMA_HISTOGRAM_ENUMERATION("Net.SSLHandshakeEarlyDataReason",
+                            SSL_get_early_data_reason(ssl_.get()),
+                            ssl_early_data_reason_max_value + 1);
 }
 
 int SSLClientSocketImpl::MapLastOpenSSLError(

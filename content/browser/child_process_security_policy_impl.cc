@@ -1226,6 +1226,30 @@ bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(
   return state->second->HasPermissionsForFile(file, permissions);
 }
 
+CanCommitStatus ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl(
+    int child_id,
+    const url::Origin& origin,
+    const GURL& url) {
+  // TODO(nasko): This check should be updated to apply to all URLs, not just
+  // standard ones.
+  if (url.IsStandard() && !CanAccessDataForOrigin(child_id, url))
+    return CanCommitStatus::CANNOT_COMMIT_URL;
+
+  // It is safe to commit into a opaque origin, regardless of the URL, as it is
+  // restricted from accessing other origins.
+  if (origin.opaque())
+    return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
+
+  // Standard URLs must match the reported origin.
+  if (url.IsStandard() && !origin.IsSameOriginWith(url::Origin::Create(url)))
+    return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
+
+  if (!CanAccessDataForOrigin(child_id, origin))
+    return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
+
+  return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
+}
+
 bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
     int child_id,
     const url::Origin& origin) {

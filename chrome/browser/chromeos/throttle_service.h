@@ -33,6 +33,7 @@ class ThrottleService {
   void NotifyObserverStateChangedForTesting();
   void SetObserversForTesting(
       std::vector<std::unique_ptr<ThrottleObserver>> observers);
+  void set_level_for_testing(ThrottleObserver::PriorityLevel level);
 
  protected:
   void AddObserver(std::unique_ptr<ThrottleObserver> observer);

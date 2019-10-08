@@ -345,9 +345,10 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
       payment_handler_host_.is_changing()) {
     payment_handler_host_.UpdateWith(
         PaymentDetailsConverter::ConvertToPaymentMethodChangeResponse(
-            details, base::BindRepeating(
-                         &PaymentInstrument::IsValidForPaymentMethodIdentifier,
-                         state()->selected_instrument()->AsWeakPtr())));
+            details, state()->selected_instrument()->HandlesShippingAddress(),
+            base::BindRepeating(
+                &PaymentInstrument::IsValidForPaymentMethodIdentifier,
+                state()->selected_instrument()->AsWeakPtr())));
   }
 
   bool is_resolving_promise_passed_into_show_method = !spec_->IsInitialized();

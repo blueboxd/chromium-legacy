@@ -34,7 +34,7 @@ ServiceWorkerContextWatcher::ServiceWorkerContextWatcher(
     WorkerRegistrationUpdatedCallback registration_callback,
     WorkerVersionUpdatedCallback version_callback,
     WorkerErrorReportedCallback error_callback)
-    : context_(context),
+    : context_(std::move(context)),
       registration_callback_(std::move(registration_callback)),
       version_callback_(std::move(version_callback)),
       error_callback_(std::move(error_callback)) {
@@ -233,20 +233,23 @@ void ServiceWorkerContextWatcher::OnNewLiveVersion(
     version_info_map_[version_id] = std::move(version);
 }
 
-void ServiceWorkerContextWatcher::OnRunningStateChanged(
-    int64_t version_id,
-    content::EmbeddedWorkerStatus running_status) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  auto it = version_info_map_.find(version_id);
-  if (it == version_info_map_.end())
-    return;
-  ServiceWorkerVersionInfo* version = it->second.get();
-  if (version->running_status == running_status)
-    return;
-  version->running_status = running_status;
-  SendVersionInfo(*version);
-  if (IsStoppedAndRedundant(*version))
-    version_info_map_.erase(version_id);
+void ServiceWorkerContextWatcher::OnStarting(int64_t version_id) {
+  OnRunningStateChanged(version_id, EmbeddedWorkerStatus::STARTING);
+}
+
+void ServiceWorkerContextWatcher::OnStarted(int64_t version_id,
+                                            const GURL& scope,
+                                            int process_id,
+                                            const GURL& script_url) {
+  OnRunningStateChanged(version_id, EmbeddedWorkerStatus::RUNNING);
+}
+
+void ServiceWorkerContextWatcher::OnStopping(int64_t version_id) {
+  OnRunningStateChanged(version_id, EmbeddedWorkerStatus::STOPPING);
+}
+
+void ServiceWorkerContextWatcher::OnStopped(int64_t version_id) {
+  OnRunningStateChanged(version_id, EmbeddedWorkerStatus::STOPPED);
 }
 
 void ServiceWorkerContextWatcher::OnVersionStateChanged(
@@ -373,6 +376,22 @@ void ServiceWorkerContextWatcher::OnRegistrationDeleted(int64_t registration_id,
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   SendRegistrationInfo(registration_id, scope,
                        ServiceWorkerRegistrationInfo::IS_DELETED);
+}
+
+void ServiceWorkerContextWatcher::OnRunningStateChanged(
+    int64_t version_id,
+    EmbeddedWorkerStatus running_status) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  auto it = version_info_map_.find(version_id);
+  if (it == version_info_map_.end())
+    return;
+  ServiceWorkerVersionInfo* version = it->second.get();
+  if (version->running_status == running_status)
+    return;
+  version->running_status = running_status;
+  SendVersionInfo(*version);
+  if (IsStoppedAndRedundant(*version))
+    version_info_map_.erase(version_id);
 }
 
 }  // namespace content

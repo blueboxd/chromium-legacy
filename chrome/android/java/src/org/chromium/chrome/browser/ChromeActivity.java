@@ -99,6 +99,7 @@ import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
+import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponent;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponentFactory;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -337,6 +338,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     private RootUiCoordinator mRootUiCoordinator;
 
+    @Nullable
+    private StartupTabPreloader mStartupTabPreloader;
+
     // TODO(972867): Pull MenuOrKeyboardActionController out of ChromeActivity.
     private List<MenuOrKeyboardActionController.MenuOrKeyboardActionHandler> mMenuActionHandlers =
             new ArrayList<>();
@@ -501,7 +505,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     protected void initializeStartupMetrics() {
-        mActivityTabStartupMetricsTracker = new ActivityTabStartupMetricsTracker(this);
+        mActivityTabStartupMetricsTracker =
+                new ActivityTabStartupMetricsTracker(mTabModelSelectorSupplier);
     }
 
     protected ActivityTabStartupMetricsTracker getActivityTabStartupMetricsTracker() {
@@ -702,6 +707,18 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         mTabModelsInitialized = true;
+    }
+
+    /**
+     * @return The {@link StartupTabPreloader} associated with this ChromeActivity. If there isn't
+     *         one it creates it.
+     */
+    protected StartupTabPreloader getStartupTabPreloader() {
+        if (mStartupTabPreloader == null) {
+            mStartupTabPreloader = new StartupTabPreloader(
+                    this::getIntent, getLifecycleDispatcher(), getWindowAndroid(), this);
+        }
+        return mStartupTabPreloader;
     }
 
     /**
@@ -1016,7 +1033,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         super.onNewIntentWithNative(intent);
-        if (mIntentHandler.shouldIgnoreIntent(intent)) return;
+        if (IntentHandler.shouldIgnoreIntent(intent)) return;
 
         // We send this intent so that we can enter WebVr presentation mode if needed. This
         // call doesn't consume the intent because it also has the url that we need to load.

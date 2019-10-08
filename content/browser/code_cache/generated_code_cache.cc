@@ -68,37 +68,6 @@ std::string GetCacheKey(const GURL& resource_url, const GURL& origin_lock) {
 }
 
 constexpr int kResponseTimeSizeInBytes = sizeof(int64_t);
-constexpr int kDataSizeInBytes = sizeof(uint32_t);
-constexpr int kHeaderSizeInBytes = kResponseTimeSizeInBytes + kDataSizeInBytes;
-// This is the threshold for storing the header and cached code in stream 0,
-// which is read into memory on opening an entry. JavaScript code caching stores
-// time stamps with no data, or timestamps with just a tag, and we observe many
-// 8 and 16 byte reads and writes. Make the threshold larger to speed up many
-// code entries too.
-constexpr int kSmallDataLimit = 4096;
-
-void WriteSmallDataHeader(scoped_refptr<net::IOBufferWithSize> buffer,
-                          const base::Time& response_time,
-                          uint32_t data_size) {
-  DCHECK_LE(kHeaderSizeInBytes, buffer->size());
-  int64_t serialized_time =
-      response_time.ToDeltaSinceWindowsEpoch().InMicroseconds();
-  memcpy(buffer->data(), &serialized_time, kResponseTimeSizeInBytes);
-  // Copy size to small data buffer.
-  memcpy(buffer->data() + kResponseTimeSizeInBytes, &data_size,
-         kDataSizeInBytes);
-}
-
-void ReadSmallDataHeader(scoped_refptr<net::IOBufferWithSize> buffer,
-                         base::Time* response_time,
-                         uint32_t* data_size) {
-  DCHECK_LE(kHeaderSizeInBytes, buffer->size());
-  int64_t raw_response_time = *(reinterpret_cast<int64_t*>(buffer->data()));
-  *response_time = base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(raw_response_time));
-  *data_size =
-      *(reinterpret_cast<uint32_t*>(buffer->data() + kResponseTimeSizeInBytes));
-}
 
 static_assert(mojo_base::BigBuffer::kMaxInlineBytes <=
                   std::numeric_limits<int>::max(),
@@ -112,6 +81,7 @@ class BigIOBuffer : public net::IOBufferWithSize {
       : net::IOBufferWithSize(nullptr, buffer.size()),
         buffer_(std::move(buffer)) {
     data_ = reinterpret_cast<char*>(buffer_.data());
+    DCHECK(data_);
   }
   explicit BigIOBuffer(size_t size) : net::IOBufferWithSize(nullptr, size) {
     buffer_ = mojo_base::BigBuffer(size);
@@ -165,12 +135,12 @@ class GeneratedCodeCache::PendingOperation {
  public:
   PendingOperation(Operation op,
                    const std::string& key,
-                   scoped_refptr<net::IOBufferWithSize> small_buffer,
-                   scoped_refptr<BigIOBuffer> large_buffer)
+                   scoped_refptr<net::IOBufferWithSize> time_buffer,
+                   scoped_refptr<BigIOBuffer> data_buffer)
       : op_(op),
         key_(key),
-        small_buffer_(small_buffer),
-        large_buffer_(large_buffer) {
+        time_buffer_(time_buffer),
+        data_buffer_(data_buffer) {
     DCHECK_EQ(Operation::kWrite, op_);
   }
 
@@ -194,24 +164,24 @@ class GeneratedCodeCache::PendingOperation {
 
   Operation operation() const { return op_; }
   const std::string& key() const { return key_; }
-  scoped_refptr<net::IOBufferWithSize> small_buffer() { return small_buffer_; }
-  scoped_refptr<BigIOBuffer> large_buffer() { return large_buffer_; }
+  scoped_refptr<net::IOBufferWithSize> time_buffer() { return time_buffer_; }
+  scoped_refptr<BigIOBuffer> data_buffer() { return data_buffer_; }
   ReadDataCallback TakeReadCallback() { return std::move(read_callback_); }
   GetBackendCallback TakeBackendCallback() {
     return std::move(backend_callback_);
   }
 
-  // These are called by Fetch operations to hold the buffers we create once the
+  // These are used by Fetch operations to hold the buffers we create once the
   // entry is opened.
-  void set_small_buffer(scoped_refptr<net::IOBufferWithSize> small_buffer) {
+  void set_time_buffer(scoped_refptr<net::IOBufferWithSize> time_buffer) {
     DCHECK_EQ(Operation::kFetch, op_);
-    small_buffer_ = small_buffer;
+    time_buffer_ = time_buffer;
   }
-  void set_large_buffer(scoped_refptr<BigIOBuffer> large_buffer) {
+  // Save fetched data until we can run the callback.
+  void set_data_buffer(scoped_refptr<BigIOBuffer> data_buffer) {
     DCHECK_EQ(Operation::kFetch, op_);
-    large_buffer_ = large_buffer;
+    data_buffer_ = data_buffer;
   }
-
   // Verifies that Write/Fetch callbacks are received in the order we expect.
   void VerifyCompletions(int expected) {
 #if DCHECK_IS_ON()
@@ -223,8 +193,8 @@ class GeneratedCodeCache::PendingOperation {
  private:
   const Operation op_;
   const std::string key_;
-  scoped_refptr<net::IOBufferWithSize> small_buffer_;
-  scoped_refptr<BigIOBuffer> large_buffer_;
+  scoped_refptr<net::IOBufferWithSize> time_buffer_;
+  scoped_refptr<BigIOBuffer> data_buffer_;
   ReadDataCallback read_callback_;
   GetBackendCallback backend_callback_;
 #if DCHECK_IS_ON()
@@ -271,28 +241,19 @@ void GeneratedCodeCache::WriteEntry(const GURL& url,
     return;
   }
 
-  // If data is small, combine the header and data into a single write.
-  scoped_refptr<net::IOBufferWithSize> small_buffer;
-  scoped_refptr<BigIOBuffer> large_buffer;
-  uint32_t data_size = static_cast<uint32_t>(data.size());
-  if (data_size <= kSmallDataLimit) {
-    small_buffer = base::MakeRefCounted<net::IOBufferWithSize>(
-        kHeaderSizeInBytes + data.size());
-    // Copy |data| into the small buffer.
-    memcpy(small_buffer->data() + kHeaderSizeInBytes, data.data(), data.size());
-    // We write 0 bytes and truncate stream 1 to clear any stale data.
-    large_buffer = base::MakeRefCounted<BigIOBuffer>(mojo_base::BigBuffer());
-  } else {
-    small_buffer =
-        base::MakeRefCounted<net::IOBufferWithSize>(kHeaderSizeInBytes);
-    large_buffer = base::MakeRefCounted<BigIOBuffer>(std::move(data));
-  }
-  WriteSmallDataHeader(small_buffer, response_time, data_size);
-
+  // Response time and data are written separately, to avoid a copy. We need
+  // two IOBuffers, one for the time and one for the BigBuffer.
+  scoped_refptr<net::IOBufferWithSize> time_buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(kResponseTimeSizeInBytes);
+  int64_t serialized_time =
+      response_time.ToDeltaSinceWindowsEpoch().InMicroseconds();
+  memcpy(time_buffer->data(), &serialized_time, kResponseTimeSizeInBytes);
+  scoped_refptr<BigIOBuffer> data_buffer =
+      base::MakeRefCounted<BigIOBuffer>(std::move(data));
   // Create the write operation.
   std::string key = GetCacheKey(url, origin_lock);
   auto op = std::make_unique<PendingOperation>(Operation::kWrite, key,
-                                               small_buffer, large_buffer);
+                                               time_buffer, data_buffer);
 
   if (backend_state_ != kInitialized) {
     // Insert it into the list of pending operations while the backend is
@@ -455,48 +416,47 @@ void GeneratedCodeCache::OpenCompleteForWrite(
   // There should be a valid entry if the open was successful.
   DCHECK(entry);
 
-  // Write the small data first, truncating.
-  auto small_buffer = op->small_buffer();
+  // The response time must be written first, truncating the data.
+  auto time_buffer = op->time_buffer();
   int result = entry->WriteData(
-      kSmallDataStream, 0, small_buffer.get(), small_buffer->size(),
-      base::BindOnce(&GeneratedCodeCache::WriteSmallBufferComplete,
+      kResponseTimeStream, 0, time_buffer.get(), kResponseTimeSizeInBytes,
+      base::BindOnce(&GeneratedCodeCache::WriteResponseTimeComplete,
                      weak_ptr_factory_.GetWeakPtr(), op),
       true);
 
   if (result != net::ERR_IO_PENDING) {
-    WriteSmallBufferComplete(op, result);
+    WriteResponseTimeComplete(op, result);
   }
 
-  // Write the large data, truncating.
-  auto large_buffer = op->large_buffer();
-  result = entry->WriteData(
-      kLargeDataStream, 0, large_buffer.get(), large_buffer->size(),
-      base::BindOnce(&GeneratedCodeCache::WriteLargeBufferComplete,
-                     weak_ptr_factory_.GetWeakPtr(), op),
-      true);
+  // Write the data after the response time, truncating the data.
+  auto data_buffer = op->data_buffer();
+  result =
+      entry->WriteData(kDataStream, 0, data_buffer.get(), data_buffer->size(),
+                       base::BindOnce(&GeneratedCodeCache::WriteDataComplete,
+                                      weak_ptr_factory_.GetWeakPtr(), op),
+                       true);
 
   if (result != net::ERR_IO_PENDING) {
-    WriteLargeBufferComplete(op, result);
+    WriteDataComplete(op, result);
   }
 }
 
-void GeneratedCodeCache::WriteSmallBufferComplete(PendingOperation* op,
-                                                  int rv) {
+void GeneratedCodeCache::WriteResponseTimeComplete(PendingOperation* op,
+                                                   int rv) {
   DCHECK_EQ(Operation::kWrite, op->operation());
-  op->VerifyCompletions(0);  // WriteLargeBufferComplete did not run.
-  if (rv != op->small_buffer()->size()) {
-    // The small data write failed; release the small buffer to signal that
+  op->VerifyCompletions(0);  // WriteDataComplete did not run.
+  if (rv != kResponseTimeSizeInBytes) {
+    // The response time write failed; release the time buffer to signal that
     // the overall request should also fail.
-    op->set_small_buffer(nullptr);
+    op->set_time_buffer(nullptr);
   }
-  // |WriteLargeBufferComplete| must run and call CloseOperationAndIssueNext.
+  // |WriteDataComplete| needs to run and call CloseOperationAndIssueNext.
 }
 
-void GeneratedCodeCache::WriteLargeBufferComplete(PendingOperation* op,
-                                                  int rv) {
+void GeneratedCodeCache::WriteDataComplete(PendingOperation* op, int rv) {
   DCHECK_EQ(Operation::kWrite, op->operation());
-  op->VerifyCompletions(1);  // WriteSmallBufferComplete ran.
-  if (rv != op->large_buffer()->size() || !op->small_buffer()) {
+  op->VerifyCompletions(1);  // WriteResponseTimeComplete ran.
+  if (rv != op->data_buffer()->size() || !op->time_buffer()) {
     // The write failed; record the failure and doom the entry here.
     CollectStatistics(CacheEntryStatus::kWriteFailed);
     DoomEntry(op);
@@ -537,79 +497,66 @@ void GeneratedCodeCache::OpenCompleteForRead(
   // There should be a valid entry if the open was successful.
   DCHECK(entry);
 
-  int small_size = entry->GetDataSize(kSmallDataStream);
-  scoped_refptr<net::IOBufferWithSize> small_buffer =
-      base::MakeRefCounted<net::IOBufferWithSize>(small_size);
-  op->set_small_buffer(small_buffer);
-  int large_size = entry->GetDataSize(kLargeDataStream);
-  scoped_refptr<BigIOBuffer> large_buffer =
-      base::MakeRefCounted<BigIOBuffer>(large_size);
-  op->set_large_buffer(large_buffer);
+  // To avoid a copying the data, we read it in two parts, response time and
+  // code. Create the buffers and pass them to |op|.
+  scoped_refptr<net::IOBufferWithSize> time_buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(kResponseTimeSizeInBytes);
+  op->set_time_buffer(time_buffer);
+  int data_size = entry->GetDataSize(kDataStream);
+  scoped_refptr<BigIOBuffer> data_buffer =
+      base::MakeRefCounted<BigIOBuffer>(data_size);
+  op->set_data_buffer(data_buffer);
 
-  // Read the small data first.
+  // We must read response time first.
   int result = entry->ReadData(
-      kSmallDataStream, 0, small_buffer.get(), small_buffer->size(),
-      base::BindOnce(&GeneratedCodeCache::ReadSmallBufferComplete,
+      kResponseTimeStream, 0, time_buffer.get(), kResponseTimeSizeInBytes,
+      base::BindOnce(&GeneratedCodeCache::ReadResponseTimeComplete,
                      weak_ptr_factory_.GetWeakPtr(), op));
 
   if (result != net::ERR_IO_PENDING) {
-    ReadSmallBufferComplete(op, result);
+    ReadResponseTimeComplete(op, result);
   }
 
-  // Skip the large read if data is in the small read.
-  if (large_size == 0)
-    return;
-
-  // Read the large data.
-  result = entry->ReadData(
-      kLargeDataStream, 0, large_buffer.get(), large_buffer->size(),
-      base::BindOnce(&GeneratedCodeCache::ReadLargeBufferComplete,
-                     weak_ptr_factory_.GetWeakPtr(), op));
+  // Read the data after the response time.
+  result =
+      entry->ReadData(kDataStream, 0, data_buffer.get(), data_buffer->size(),
+                      base::BindOnce(&GeneratedCodeCache::ReadDataComplete,
+                                     weak_ptr_factory_.GetWeakPtr(), op));
   if (result != net::ERR_IO_PENDING) {
-    ReadLargeBufferComplete(op, result);
+    ReadDataComplete(op, result);
   }
 }
 
-void GeneratedCodeCache::ReadSmallBufferComplete(PendingOperation* op, int rv) {
+void GeneratedCodeCache::ReadResponseTimeComplete(PendingOperation* op,
+                                                  int rv) {
   DCHECK_EQ(Operation::kFetch, op->operation());
-  op->VerifyCompletions(0);  // ReadLargeBufferComplete did not run.
-  if (rv != op->small_buffer()->size() || rv < kHeaderSizeInBytes) {
+  op->VerifyCompletions(0);  // ReadDataComplete did not run.
+  if (rv != kResponseTimeSizeInBytes) {
     CollectStatistics(CacheEntryStatus::kMiss);
-    // The small data stream read failed or is incomplete; release the buffer
-    // to signal that the overall request should also fail.
-    op->set_small_buffer(nullptr);
-  } else {
-    // This is considered a cache hit, since the small data was read.
-    CollectStatistics(CacheEntryStatus::kHit);
+    // The response time read failed; release the time buffer to signal that
+    // the overall request should also fail.
+    op->set_time_buffer(nullptr);
+    return;
   }
-  // Small reads must finish now since no large read is pending.
-  if (op->large_buffer()->size() == 0)
-    ReadLargeBufferComplete(op, 0);
+  // This is considered a cache hit, since response time was read.
+  CollectStatistics(CacheEntryStatus::kHit);
+  // |ReadDataComplete| needs to run and call CloseOperationAndIssueNext.
 }
 
-void GeneratedCodeCache::ReadLargeBufferComplete(PendingOperation* op, int rv) {
+void GeneratedCodeCache::ReadDataComplete(PendingOperation* op, int rv) {
   DCHECK_EQ(Operation::kFetch, op->operation());
-  op->VerifyCompletions(1);  // ReadSmallBufferComplete ran.
+  op->VerifyCompletions(1);  // ReadResponseTimeComplete ran.
   // Fail the request if either read failed.
-  if (rv != op->large_buffer()->size() || !op->small_buffer()) {
+  if (rv != op->data_buffer()->size() || !op->time_buffer()) {
     op->TakeReadCallback().Run(base::Time(), mojo_base::BigBuffer());
     // Doom this entry since it is inaccessible.
     DoomEntry(op);
   } else {
-    base::Time response_time;
-    uint32_t data_size = 0;
-    ReadSmallDataHeader(op->small_buffer(), &response_time, &data_size);
-    if (data_size <= kSmallDataLimit) {
-      // Small data, copy the data from the small buffer.
-      DCHECK_EQ(0, op->large_buffer()->size());
-      mojo_base::BigBuffer data(data_size);
-      memcpy(data.data(), op->small_buffer()->data() + kHeaderSizeInBytes,
-             data_size);
-      op->TakeReadCallback().Run(response_time, std::move(data));
-    } else {
-      op->TakeReadCallback().Run(response_time,
-                                 op->large_buffer()->TakeBuffer());
-    }
+    int64_t raw_response_time =
+        *(reinterpret_cast<int64_t*>(op->time_buffer()->data()));
+    base::Time response_time = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromMicroseconds(raw_response_time));
+    op->TakeReadCallback().Run(response_time, op->data_buffer()->TakeBuffer());
   }
   CloseOperationAndIssueNext(op);
 }

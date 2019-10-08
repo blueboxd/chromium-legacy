@@ -908,7 +908,7 @@ bool AccessibilityManager::IsSwitchAccessEnabled() const {
   return switch_access_enabled_;
 }
 
-void AccessibilityManager::UpdateSwitchAccessFromPref() {
+void AccessibilityManager::OnSwitchAccessChanged() {
   if (!profile_)
     return;
 
@@ -1115,7 +1115,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilitySwitchAccessEnabled,
-        base::Bind(&AccessibilityManager::UpdateSwitchAccessFromPref,
+        base::Bind(&AccessibilityManager::OnSwitchAccessChanged,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityAutoclickEnabled,
@@ -1150,11 +1150,11 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   else
     UpdateBrailleImeState();
   UpdateAlwaysShowMenuFromPref();
-  UpdateSwitchAccessFromPref();
 
   // TODO(warx): reconcile to ash once the prefs registration above is moved to
   // ash.
   OnSpokenFeedbackChanged();
+  OnSwitchAccessChanged();
   OnSelectToSpeakChanged();
   OnAutoclickChanged();
 }

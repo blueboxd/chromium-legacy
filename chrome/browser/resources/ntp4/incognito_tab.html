@@ -31,15 +31,11 @@ document.write('<link id="incognitothemecss" rel="stylesheet" ' +
     <div class="bulletpoints">$i18nRaw{incognitoTabWarning}</div>
   </div>
   <div id="cookie-controls" $i18n{hiddenIfCookieControlsDisabled}>
-    <div>
-      <cr-toggle id="cookie-controls-toggle"></cr-toggle>
-    </div>
-    <div>
-      <em>$i18n{cookieControlsTitle}</em>
-    </div>
     <div id="cookie-controls-description">
+      <em>$i18n{cookieControlsTitle}</em>
       $i18n{cookieControlsDescription}
     </div>
+    <cr-toggle id="cookie-controls-toggle" dark></cr-toggle>
   </div>
   <a class="learn-more-button" href="$i18n{learnMoreLink}">$i18n{learnMore}</a>
 </div>

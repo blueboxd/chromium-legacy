@@ -513,9 +513,12 @@ void SMILTimeContainer::UpdateAnimationTimings(SMILTime presentation_time) {
 
   while (latest_update_time_ < presentation_time) {
     const SMILTime interesting_time = NextInterestingTime(latest_update_time_);
-    latest_update_time_ = std::min(presentation_time, interesting_time);
-
-    UpdateIntervals(latest_update_time_);
+    if (interesting_time <= presentation_time) {
+      latest_update_time_ = interesting_time;
+      UpdateIntervals(latest_update_time_);
+    } else {
+      latest_update_time_ = presentation_time;
+    }
   }
 }
 

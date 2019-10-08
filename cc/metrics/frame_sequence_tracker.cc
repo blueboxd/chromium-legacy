@@ -227,7 +227,7 @@ void FrameSequenceTracker::ReportMetrics() {
   base::Optional<ThroughputData> slower_throughput;
   if (impl_throughput_percent &&
       (!main_throughput_percent ||
-       impl_throughput_percent.value() < main_throughput_percent.value())) {
+       impl_throughput_percent.value() <= main_throughput_percent.value())) {
     slower_throughput = impl_throughput_;
   }
   if (main_throughput_percent &&

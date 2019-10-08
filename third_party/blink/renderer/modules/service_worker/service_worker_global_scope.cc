@@ -1398,11 +1398,8 @@ void ServiceWorkerGlobalScope::DispatchFetchEventInternal(
 void ServiceWorkerGlobalScope::SetFetchHandlerExistence(
     FetchHandlerExistence fetch_handler_existence) {
   DCHECK(IsContextThread());
-  if (fetch_handler_existence == FetchHandlerExistence::EXISTS &&
-      base::FeatureList::IsEnabled(
-          features::kServiceWorkerIsolateInForeground)) {
+  if (fetch_handler_existence == FetchHandlerExistence::EXISTS)
     GetThread()->GetIsolate()->IsolateInForegroundNotification();
-  }
 }
 
 void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(

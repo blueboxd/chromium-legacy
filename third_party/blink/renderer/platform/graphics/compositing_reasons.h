@@ -27,6 +27,7 @@ using CompositingReasons = uint64_t;
   V(ActiveOpacityAnimation)                                                   \
   V(ActiveFilterAnimation)                                                    \
   V(ActiveBackdropFilterAnimation)                                            \
+  V(ImmersiveArOverlay)                                                       \
   V(ScrollDependentPosition)                                                  \
   V(OverflowScrollingTouch)                                                   \
   V(OverflowScrollingParent)                                                  \
@@ -127,8 +128,8 @@ class PLATFORM_EXPORT CompositingReason {
 
     kComboAllDirectNonStyleDeterminedReasons =
         kVideo | kCanvas | kPlugin | kIFrame | kOverflowScrollingParent |
-        kOutOfFlowClipping | kVideoOverlay | kRoot | kRootScroller |
-        kScrollDependentPosition,
+        kOutOfFlowClipping | kVideoOverlay | kImmersiveArOverlay | kRoot |
+        kRootScroller | kScrollDependentPosition,
 
     kComboAllDirectReasons = kComboAllDirectStyleDeterminedReasons |
                              kComboAllDirectNonStyleDeterminedReasons,

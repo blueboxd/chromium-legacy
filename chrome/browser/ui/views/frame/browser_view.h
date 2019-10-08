@@ -126,14 +126,6 @@ class BrowserView : public BrowserWindow,
   // Returns the BrowserView used for the specified Browser.
   static BrowserView* GetBrowserViewForBrowser(const Browser* browser);
 
-  // Paints a 1 device-pixel-thick horizontal line (regardless of device scale
-  // factor) at either the very bottom or very top of the interior of |bounds|,
-  // depending on |at_bottom|.
-  static void Paint1pxHorizontalLine(gfx::Canvas* canvas,
-                                     SkColor color,
-                                     const gfx::Rect& bounds,
-                                     bool at_bottom);
-
   // After calling RevealTabStripIfNeeded(), there is normally a delay before
   // the tabstrip is hidden. Tests can use this function to disable that delay
   // (and hide immediately).

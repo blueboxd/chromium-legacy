@@ -25,6 +25,7 @@
 namespace content {
 class BrowserContext;
 class RenderFrameHost;
+struct GlobalRequestID;
 }
 
 namespace views {
@@ -39,6 +40,10 @@ class ObservableWebView : public WebView {
   // content::WebContentsObserver
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
+  void ResourceLoadComplete(
+      content::RenderFrameHost* render_frame_host,
+      const content::GlobalRequestID& request_id,
+      const content::mojom::ResourceLoadInfo& resource_load_info) override;
 
  private:
   ui::WebDialogDelegate* delegate_;
@@ -140,12 +145,19 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   void BeforeUnloadFired(content::WebContents* tab,
                          bool proceed,
                          bool* proceed_to_fire_unload) override;
-  bool IsWebContentsCreationOverridden(
+  bool ShouldCreateWebContents(
+      content::WebContents* web_contents,
+      content::RenderFrameHost* opener,
       content::SiteInstance* source_site_instance,
+      int32_t route_id,
+      int32_t main_frame_route_id,
+      int32_t main_frame_widget_route_id,
       content::mojom::WindowContainerType window_container_type,
       const GURL& opener_url,
       const std::string& frame_name,
-      const GURL& target_url) override;
+      const GURL& target_url,
+      const std::string& partition_id,
+      content::SessionStorageNamespace* session_storage_namespace) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebDialogBrowserTest, WebContentRendered);

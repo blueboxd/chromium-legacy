@@ -39,12 +39,7 @@ class IncognitoModePrefs {
     AVAILABILITY_NUM_TYPES
   };
 
-  static constexpr Availability kDefaultAvailability =
-#if defined(INCOGNITO_DEFAULT_DISABLED)
-      DISABLED;
-#else
-      ENABLED;
-#endif
+  static constexpr Availability kDefaultAvailability = ENABLED;
 
   // Register incognito related preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

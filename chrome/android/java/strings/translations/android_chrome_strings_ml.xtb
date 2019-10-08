@@ -164,7 +164,7 @@
 <translation id="2131665479022868825"><ph name="DATA" /> ലാഭിച്ചു</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> അടച്ചു</translation>
 <translation id="2139186145475833000">ഹോംസ്‌ക്രീനിൽ ചേർക്കുക</translation>
-<translation id="2146738493024040262">തൽക്ഷണ ആപ്പ് തുറക്കുക</translation>
+<translation id="2146738493024040262">ഇൻസ്റ്റന്‍റ് ആപ്പ് തുറക്കുക</translation>
 <translation id="2148716181193084225">ഇന്ന്</translation>
 <translation id="2154484045852737596">കാർഡ് എഡിറ്റുചെയ്യുക</translation>
 <translation id="2154710561487035718">URL പകര്‍ത്തുക</translation>
@@ -208,6 +208,7 @@
 <translation id="2498359688066513246">സഹായവും ഫീഡ്ബാക്കും</translation>
 <translation id="2501278716633472235">പിന്നോട്ട് പോകുക</translation>
 <translation id="2513403576141822879">സ്വകാര്യത, സുരക്ഷ, ഡാറ്റാ ശേഖരണം എന്നിവയുമായി ബന്ധപ്പെട്ട കൂടുതൽ ക്രമീകരണത്തിന്, <ph name="BEGIN_LINK" />സമന്വയവും Google സേവനങ്ങളും<ph name="END_LINK" /> കാണുക</translation>
+<translation id="2518590038762162553">ലൈറ്റ് മോഡിൽ Chrome, പേജുകൾ വേഗത്തിൽ ലോഡ് ചെയ്യുകയും 60 ശതമാനം വരെ കുറവ് ഡാറ്റ ഉപയോഗിക്കുകയും ചെയ്യുന്നു. നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകൾ ഓപ്‌റ്റിമൈസ് ചെയ്യാൻ Chrome നിങ്ങളുടെ വെബ് ട്രാഫിക് Google-ന് അയയ്ക്കുന്നു. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Google-ൽ നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകളുടെ URL-കൾ അയയ്ക്കുന്നു</translation>
 <translation id="2532336938189706096">വെബ് കാഴ്‌ച</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> ഇനങ്ങൾ ഇല്ലാതാക്കി</translation>
@@ -364,7 +365,7 @@
 <translation id="3773755127849930740">ജോടിയാക്കാൻ, <ph name="BEGIN_LINK" />Bluetooth ഓണാക്കുക<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">നിങ്ങളുടെ ഉപകരണങ്ങളിലേക്ക് അയയ്‌ക്കുക</translation>
 <translation id="3778956594442850293">ഹോം സ്‌ക്രീനിലേക്ക് ചേർത്തു</translation>
-<translation id="3789841737615482174">ഇന്‍സ്റ്റാളുചെയ്യുക</translation>
+<translation id="3789841737615482174">ഇന്‍സ്റ്റാൾ ചെയ്യുക</translation>
 <translation id="3810838688059735925">വീഡിയോ</translation>
 <translation id="3810973564298564668">മാനേജ് ചെയ്യുക</translation>
 <translation id="381841723434055211">ഫോൺ നമ്പറുകൾ</translation>
@@ -449,7 +450,7 @@
 <translation id="447252321002412580">Chrome-ന്റെ ഫീച്ചറുകളും പ്രകടനവും മെച്ചപ്പെടുത്താൻ സഹായിക്കുക</translation>
 <translation id="4479647676395637221">നിങ്ങളുടെ ക്യാമറ ഉപയോഗിക്കാൻ സൈറ്റുകളെ അനുവദിക്കുന്നതിന് മുമ്പ് ആദ്യം ചോദിക്കുക (ശുപാർശചെയ്‌തിരിക്കുന്നു)</translation>
 <translation id="4479972344484327217">Chrome-നുള്ള <ph name="MODULE" /> ഇൻസ്‌റ്റാൾ ചെയ്യുന്നു…</translation>
-<translation id="4487967297491345095">Chrome-ന്റെ എല്ലാ ആപ്പ് വിവരങ്ങളും ശാശ്വതമായി ഇല്ലാതാക്കും. ഇതിൽ എല്ലാ ഫയലുകളും ക്രമീകരണവും അക്കൗണ്ടുകളും ഡാറ്റാബേസുകളും മറ്റും ഉൾപ്പെടുന്നു.</translation>
+<translation id="4487967297491345095">Chrome-ന്‍റെ എല്ലാ ആപ്പ് വിവരങ്ങളും ശാശ്വതമായി ഇല്ലാതാക്കും. ഇതിൽ എല്ലാ ഫയലുകളും ക്രമീകരണവും അക്കൗണ്ടുകളും ഡാറ്റാബേസുകളും മറ്റും ഉൾപ്പെടുന്നു.</translation>
 <translation id="4493497663118223949">ലൈറ്റ് മോഡ് ഓണാണ്</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# ദിവസം മുമ്പ്}other{# ദിവസം മുമ്പ്}}</translation>
 <translation id="451872707440238414">നിങ്ങളുടെ ബുക്ക്‌മാർക്കുകൾ തിരയുക</translation>
@@ -543,7 +544,7 @@ VR-ൽ പ്രവേശിക്കുന്നതിന് മുമ്പ്
 <translation id="510275257476243843">ഒരു മണിക്കൂർ ശേഷിക്കുന്നു</translation>
 <translation id="5123685120097942451">അദൃശ്യ ടാബ്</translation>
 <translation id="5127805178023152808">സമന്വയം ഓഫാണ്</translation>
-<translation id="5129038482087801250">വെബ് ആപ്പ് ഇൻസ്‌റ്റാൾ ചെയ്യുക</translation>
+<translation id="5129038482087801250">വെബ്ആപ്പ് ഇൻസ്‌റ്റാൾചെയ്യുക</translation>
 <translation id="5132942445612118989">നിങ്ങളുടെ പാസ്‌വേഡുകളും ചരിത്രവും മറ്റും എല്ലാ ഉപകരണങ്ങളിലും സമന്വയിപ്പിക്കുക</translation>
 <translation id="5139940364318403933">Google ഡ്രൈവ് എങ്ങനെ ഉപയോഗിക്കണമെന്ന് അറിയുക</translation>
 <translation id="515227803646670480">സംഭരിച്ച വിവരം മായ്‌ക്കുക</translation>
@@ -579,7 +580,7 @@ VR-ൽ പ്രവേശിക്കുന്നതിന് മുമ്പ്
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ടാബ് തുറന്നിരിക്കുന്നു, ടാബുകൾ മാറാനായി ടാപ്പ് ചെയ്യുക}other{<ph name="OPEN_TABS_MANY" /> ടാബുകൾ തുറന്നിരിക്കുന്നു, മാറാനായി ടാപ്പ് ചെയ്യുക}}</translation>
 <translation id="5391532827096253100">ഈ സൈറ്റിലേക്കുള്ള നിങ്ങളുടെ കണക്ഷൻ സുരക്ഷിതമല്ല. സൈറ്റ് വിവരങ്ങള്‍</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ ഒരെണ്ണം കൂടി)}other{(+ # എണ്ണം കൂടി)}}</translation>
-<translation id="5400569084694353794">ഈ അപ്ലിക്കേഷൻ ഉപയോഗിക്കുന്നതിലൂടെ, നിങ്ങൾ Chrome-ന്റെ <ph name="BEGIN_LINK1" />സേവന നിബന്ധനകളും<ph name="END_LINK1" /> <ph name="BEGIN_LINK2" />സ്വകാര്യതാ അറിയിപ്പും<ph name="END_LINK2" /> അംഗീകരിക്കുന്നു.</translation>
+<translation id="5400569084694353794">ഈ ആപ്പ് ഉപയോഗിക്കുന്നതിലൂടെ, നിങ്ങൾ Chrome-ന്റെ <ph name="BEGIN_LINK1" />സേവന നിബന്ധനകളും<ph name="END_LINK1" /> <ph name="BEGIN_LINK2" />സ്വകാര്യതാ അറിയിപ്പും<ph name="END_LINK2" /> അംഗീകരിക്കുന്നു.</translation>
 <translation id="5403592356182871684">പേരുകൾ</translation>
 <translation id="5403644198645076998">ചില സൈറ്റുകളെ മാത്രം അനുവദിക്കുക</translation>
 <translation id="5414836363063783498">പരിശോധിച്ചുറപ്പിക്കുന്നു...</translation>
@@ -974,7 +975,7 @@ VR-ൽ പ്രവേശിക്കുന്നതിന് മുമ്പ്
 <translation id="8168435359814927499">ഉള്ളടക്കം</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> ഫയലുകൾ ശേഷിക്കുന്നു</translation>
 <translation id="8190358571722158785">ഒരു ദിവസം ശേഷിക്കുന്നു</translation>
-<translation id="8200772114523450471">തുടരൂ</translation>
+<translation id="8200772114523450471">പുനരാരംഭിക്കുക</translation>
 <translation id="8209050860603202033">ചിത്രം തുറക്കുക</translation>
 <translation id="8218622182176210845">നിങ്ങളുടെ അക്കൗണ്ട് മാനേജ് ചെയ്യുക</translation>
 <translation id="8224471946457685718">വൈഫൈ ഉപയോഗിച്ച് നിങ്ങൾക്കായി ലേഖനങ്ങൾ ഡൗൺലോഡ് ചെയ്യുക</translation>

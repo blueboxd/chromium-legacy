@@ -123,6 +123,7 @@ void SMILAnimationSandwich::UpdateActiveAnimationStack(
   for (auto& animation : sandwich_) {
     if (!animation->IsContributing(presentation_time))
       continue;
+    animation->UpdateProgressState(presentation_time);
     active_.push_back(animation);
   }
   // If we switched result element, clear the old one.

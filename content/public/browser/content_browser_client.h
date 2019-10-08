@@ -1682,6 +1682,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void BlockBluetoothScanning(content::BrowserContext* browser_context,
                                       const url::Origin& requesting_origin,
                                       const url::Origin& embedding_origin);
+
+  // Returns true if the extra ICU data file is available and should be used to
+  // initialize ICU.
+  virtual bool ShouldLoadExtraIcuDataFile();
 };
 
 }  // namespace content

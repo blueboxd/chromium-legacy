@@ -142,6 +142,9 @@ bool LitePageRedirectPreviewIgnoresOptimizationGuideFilter();
 // successfully.
 bool LitePageRedirectOnlyTriggerOnSuccessfulProbe();
 
+// Whether the preview should trigger on API page transitions.
+bool LitePageRedirectTriggerOnAPITransition();
+
 // The URL to probe on the lite pages server.
 GURL LitePageRedirectProbeURL();
 

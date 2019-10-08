@@ -59,6 +59,10 @@ body {
   font-weight: bold;
 }
 
+.time-column:focus .time-cell.selected {
+  outline: auto 1px -webkit-focus-ring-color;
+}
+
 .submission-controls {
   align-items: center;
   border-top: 1px solid #CECECE;

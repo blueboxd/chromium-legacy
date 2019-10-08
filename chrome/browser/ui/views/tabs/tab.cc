@@ -412,6 +412,29 @@ bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
     return true;
   }
 
+  if (event.type() == ui::ET_KEY_PRESSED &&
+      (event.flags() & ui::EF_CONTROL_DOWN)) {
+    if (event.flags() & ui::EF_SHIFT_DOWN) {
+      if (event.key_code() == ui::VKEY_RIGHT) {
+        controller()->MoveTabLast(this);
+        return true;
+      }
+      if (event.key_code() == ui::VKEY_LEFT) {
+        controller()->MoveTabFirst(this);
+        return true;
+      }
+    } else {
+      if (event.key_code() == ui::VKEY_RIGHT) {
+        controller()->MoveTabRight(this);
+        return true;
+      }
+      if (event.key_code() == ui::VKEY_LEFT) {
+        controller()->MoveTabLeft(this);
+        return true;
+      }
+    }
+  }
+
   return false;
 }
 

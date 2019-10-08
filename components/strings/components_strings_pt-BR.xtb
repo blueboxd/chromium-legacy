@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Abrir páginas de inicialização</translation>
 <translation id="1883255238294161206">Recolher lista</translation>
 <translation id="1898423065542865115">Filtragem</translation>
+<translation id="1901443836186977402">{1,plural, =1{Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança dele expirou no último dia. Isso pode ser causado por uma configuração incorreta ou por um invasor que tenha interceptado sua conexão. O relógio do seu computador está definido para <ph name="CURRENT_DATE" />. Essa data está correta? Caso não esteja, corrija o relógio do sistema e atualize esta página.}one{Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança dele expirou # dia atrás. Isso pode ser causado por uma configuração incorreta ou por um invasor que tenha interceptado sua conexão. O relógio do seu computador está definido para <ph name="CURRENT_DATE" />. Essa data está correta? Caso não esteja, corrija o relógio do sistema e atualize esta página.}other{Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança dele expirou # dias atrás. Isso pode ser causado por uma configuração incorreta ou por um invasor que tenha interceptado sua conexão. O relógio do seu computador está definido para <ph name="CURRENT_DATE" />. Essa data está correta? Caso não esteja, corrija o relógio do sistema e atualize esta página.}}</translation>
 <translation id="1914326953223720820">Serviço Descompactar</translation>
 <translation id="1915697529809968049">Usar o Touch ID em vez do CVC?</translation>
 <translation id="1916770123977586577">Para aplicar as configurações atualizadas a este site, recarregue a página</translation>
@@ -435,6 +436,7 @@
 <translation id="3116158981186517402">Laminar</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Tente executar o Diagnóstico de Conectividade<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Ir para <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Nenhum}=1{dados de login para 1 conta}one{dados de login para # conta}other{dados de login para # contas}}</translation>
 <translation id="3145945101586104090">Falha ao decodificar resposta</translation>
 <translation id="3150653042067488994">Erro temporário do servidor</translation>
@@ -813,6 +815,7 @@
 <translation id="5043480802608081735">Link que você copiou</translation>
 <translation id="5045550434625856497">Senha incorreta</translation>
 <translation id="5056549851600133418">Artigos para você</translation>
+<translation id="5061227663725596739">Você quis dizer "<ph name="LOOKALIKE_DOMAIN" />"?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 em uso)}one{(# em uso)}other{(# em uso)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Verificar o endereço do proxy<ph name="END_LINK" /></translation>
@@ -866,6 +869,7 @@
 <translation id="5284909709419567258">Endereços de rede</translation>
 <translation id="5285570108065881030">Mostrar todas as senhas salvas</translation>
 <translation id="5287240709317226393">Mostrar cookies</translation>
+<translation id="5287456746628258573">Este site usa uma configuração de segurança desatualizada que pode expor suas informações, como senhas ou números de cartão de crédito, quando elas forem enviadas para o site.</translation>
 <translation id="5288108484102287882">A validação dos valores da política gerou alguns avisos</translation>
 <translation id="5299298092464848405">Política de análise de erros</translation>
 <translation id="5300589172476337783">Mostrar</translation>
@@ -993,6 +997,7 @@
 <translation id="5946937721014915347">Abrindo <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Sim, adicionar</translation>
 <translation id="5951495562196540101">Não é possível fazer a inscrição com a conta pessoal (pacote de licença disponível).</translation>
+<translation id="5966900314707961320">Quando ativado, os sites não podem usar cookies que rastreiem você pela Web</translation>
 <translation id="5967592137238574583">Edite as Informações de Contato</translation>
 <translation id="5967867314010545767">Remover do histórico</translation>
 <translation id="5975083100439434680">Diminuir zoom</translation>
@@ -1075,6 +1080,7 @@
 <translation id="6383221683286411806">Acesso sujeito a cobranças.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 outra sugestão}one{# outra sugestão}other{# outras sugestões}}</translation>
 <translation id="6387754724289022810">Para agilizar o pagamento na próxima vez, salve o cartão e o endereço de faturamento na sua Conta do Google e neste dispositivo.</translation>
+<translation id="6389470377220713856">Nome no cartão</translation>
 <translation id="6390200185239044127">Dobra sanfona simples</translation>
 <translation id="6390662030813198813">Engineering E</translation>
 <translation id="6401136357288658127">Essa política está obsoleta. Use a política <ph name="NEW_POLICY" />.</translation>
@@ -1253,7 +1259,6 @@ Mais detalhes:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">O usuário é afiliado:</translation>
 <translation id="7349430561505560861">A4 Extra</translation>
-<translation id="7352902249897488700">Sair deste site</translation>
 <translation id="7353601530677266744">Linha de comando</translation>
 <translation id="7372973238305370288">resultado da pesquisa</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1426,6 +1431,7 @@ Mais detalhes:
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8149426793427495338">Seu computador entrou em modo de suspensão.</translation>
 <translation id="8150722005171944719">O arquivo em <ph name="URL" /> não está legível. Ele pode ter sido removido ou movido, ou as permissões do arquivo podem estar impedindo o acesso.</translation>
+<translation id="8157295877370077682">Sair do site</translation>
 <translation id="8163866351304776260">Perfuração quádrupla no lado esquerdo</translation>
 <translation id="8175796834047840627">A opção de salvar seus cartões na Conta do Google está disponível no Chrome porque você fez login. É possível alterar esse comportamento nas configurações.</translation>
 <translation id="8184538546369750125">Usar padrão global (Permitir)</translation>

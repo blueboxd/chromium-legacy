@@ -10,6 +10,7 @@
 #include <fuchsia/web/cpp/fidl.h>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
@@ -55,6 +56,10 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
       const base::RepeatingCallback<content::WebContents*()>& wc_getter,
       content::NavigationUIData* navigation_ui_data,
       int frame_tree_node_id) final;
+  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
+      content::BrowserContext* context,
+      bool in_memory,
+      const base::FilePath& relative_partition_path) override;
 
  private:
   fidl::InterfaceRequest<fuchsia::web::Context> request_;

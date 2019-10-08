@@ -13,9 +13,11 @@ namespace blink {
 
 class XRTargetRaySpace : public XRSpace {
  public:
-  XRTargetRaySpace(XRSession*, XRInputSource*);
+  XRTargetRaySpace(XRSession* session, XRInputSource* input_space);
   XRPose* getPose(XRSpace* other_space,
                   const TransformationMatrix* base_pose_matrix) override;
+
+  base::Optional<XRNativeOriginInformation> NativeOrigin() const override;
 
   void Trace(blink::Visitor*) override;
 

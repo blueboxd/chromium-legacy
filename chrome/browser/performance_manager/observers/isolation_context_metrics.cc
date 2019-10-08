@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/performance_manager/public/graph/node_attached_data.h"
+#include "components/performance_manager/public/graph/node_attached_data.h"
 
 namespace performance_manager {
 

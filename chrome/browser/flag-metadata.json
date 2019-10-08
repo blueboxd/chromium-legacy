@@ -2021,6 +2021,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-winrt-geolocation-implementation",
+    "owners": [ "pelavall@microsoft.com" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "enable-winrt-sensor-implementation",
     "owners": [ "wensh@microsoft.com" ],
     "expiry_milestone": 80
@@ -2194,6 +2199,11 @@
      // This is required by test teams to verify functionality on devices which
     // have no access to commandline flags.
     "expiry_milestone": -1
+  },
+  {
+    "name": "forced-colors",
+    "owners": [ "weblayout@microsoft.com" ],
+    "expiry_milestone": 82
   },
   {
     "name": "form-controls-refresh",

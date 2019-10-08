@@ -240,6 +240,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       scroll_view_(nullptr),
       handled_result_(false),
       install_button_enabled_(false) {
+  DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
   set_close_on_deactivate(false);
   CreateContents();
 
@@ -408,10 +409,6 @@ int ExtensionInstallDialogView::GetDialogButtons() const {
   // GetDialogButtons in dialog_delegate.h for reasons.
   DCHECK_GT(buttons & ui::DIALOG_BUTTON_CANCEL, 0);
   return buttons;
-}
-
-int ExtensionInstallDialogView::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_CANCEL;
 }
 
 base::string16 ExtensionInstallDialogView::GetDialogButtonLabel(

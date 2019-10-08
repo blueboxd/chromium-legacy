@@ -36,9 +36,8 @@ class AnimatingLayoutWaiter : public views::AnimatingLayoutManager::Observer {
   explicit AnimatingLayoutWaiter(
       views::AnimatingLayoutManager* animating_layout)
       : animating_layout_(animating_layout) {
-    animating_layout_->AddObserver(this);
+    observer_.Add(animating_layout_);
   }
-  ~AnimatingLayoutWaiter() override { animating_layout_->RemoveObserver(this); }
 
   void Wait() {
     if (!animating_layout_->is_animating())
@@ -55,6 +54,9 @@ class AnimatingLayoutWaiter : public views::AnimatingLayoutManager::Observer {
 
  private:
   views::AnimatingLayoutManager* const animating_layout_;
+  ScopedObserver<views::AnimatingLayoutManager,
+                 views::AnimatingLayoutManager::Observer>
+      observer_{this};
   base::RunLoop run_loop_;
 };
 
@@ -120,11 +122,11 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
         ->primary_action_button_for_testing()
         ->button_controller()
         ->OnMouseReleased(click_event);
-    AnimatingLayoutWaiter waiter(
+    AnimatingLayoutWaiter waiter(static_cast<views::AnimatingLayoutManager*>(
         BrowserView::GetBrowserViewForBrowser(browser())
             ->toolbar()
             ->extensions_container()
-            ->animating_layout_for_testing());
+            ->GetLayoutManager()));
     waiter.Wait();
   }
 

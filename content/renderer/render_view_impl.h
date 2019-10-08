@@ -328,6 +328,12 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // be able to specify |initial_setting| where IPC handlers do not.
   void ApplyPageHidden(bool hidden, bool initial_setting);
 
+  // These functions take the main frame's RenderWidget and to make it
+  // inaccessible for out-of-process main frames and then brings it back
+  // if the main frame comes back into the current process.
+  void MakeMainFrameRenderWidgetUndead();
+  void ReviveUndeadMainFrameRenderWidget();
+
  private:
   // For unit tests.
   friend class DevToolsAgentTest;
@@ -558,7 +564,22 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // fullscreen widgets are never contained by this pointer. Child frame
   // local roots are owned by a RenderFrame. The others are owned by the IPC
   // system.
+  //
+  // Note that when the main frame moves out of process, |render_widget_|
+  // is moved in to |undead_render_widget_|. In the future, the
+  // |render_widget_| should just be deleted and recreated. However, this
+  // requires reattached various objects browser process so it cannot be
+  // done yet.
   std::unique_ptr<RenderWidget> render_widget_;
+
+  // This is purely used as storage for a |render_widget_| instance when the
+  // main frame has moved out of process. It is a transitional construct
+  // to help figure out many things access |render_widget_| while the main
+  // frame remote. Almost no code should ever follow this pointer.
+  //
+  // TODO(crbug.com/419087): Remove this once RenderWidgets are owned by the
+  // main frame.
+  std::unique_ptr<RenderWidget> undead_render_widget_;
 
   // Routing ID that allows us to communicate with the corresponding
   // RenderViewHost in the parent browser process.

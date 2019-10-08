@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Yer İşaretini Düzenle</translation>
 <translation id="2179182049312275900">Senkronizasyonu istediğiniz zaman ayarlardan açabilirsiniz</translation>
 <translation id="2198757192731523470">Google; Arama, reklamlar ve diğer Google hizmetlerini kişiselleştirmek için geçmişinizi kullanabilir</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> okunmamış Okuma Listesi makalesi.</translation>
 <translation id="2230173723195178503">Web sayfası yüklendi</translation>
 <translation id="2239626343334228536">Göz atma verileri temizleniyor...</translation>
 <translation id="2267753748892043616">Hesap Ekle</translation>
@@ -265,7 +264,6 @@ Verileriniz senkronizasyon parolanızla şifrelendi. Senkronizasyonu başlatmak 
 
 Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Geçersiz Kart Numarası</translation>
-<translation id="4807020197310989387">1 okunmamış Okuma Listesi makalesi.</translation>
 <translation id="4818522717893377262">Dil Ekle...</translation>
 <translation id="481968316161811770">Çerezler, Site Verileri</translation>
 <translation id="4833786495304741580">Kullanım istatistiklerini ve kilitlenme raporlarını Google'a otomatik olarak gönderir.</translation>
@@ -414,6 +412,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="6858855187367714033">Tarandı</translation>
 <translation id="6859944681507688231">QR kodunu veya kredi kartını taramak için ayarlardan kamerayı etkinleştirin.</translation>
 <translation id="6873263987691478642">Bölünmüş Görünüm</translation>
+<translation id="6888009575607455378">Değişikliklerinizi iptal etmek istediğinizden emin misiniz?</translation>
 <translation id="6896758677409633944">Kopyala</translation>
 <translation id="6903907808598579934">Senkronizasyonu aç</translation>
 <translation id="6914583639806229067">Kopyalanan Metni Ara</translation>

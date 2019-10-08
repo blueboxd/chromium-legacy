@@ -13,15 +13,16 @@
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
-#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 using mojom::blink::NativeFileSystemEntryPtr;
 using mojom::blink::NativeFileSystemErrorPtr;
 
-NativeFileSystemHandle::NativeFileSystemHandle(const String& name)
-    : name_(name) {}
+NativeFileSystemHandle::NativeFileSystemHandle(
+    ExecutionContext* execution_context,
+    const String& name)
+    : ContextLifecycleObserver(execution_context), name_(name) {}
 
 // static
 NativeFileSystemHandle* NativeFileSystemHandle::CreateFromMojoEntry(
@@ -29,18 +30,10 @@ NativeFileSystemHandle* NativeFileSystemHandle::CreateFromMojoEntry(
     ExecutionContext* execution_context) {
   if (e->entry_handle->is_file()) {
     return MakeGarbageCollected<NativeFileSystemFileHandle>(
-        e->name,
-        RevocableInterfacePtr<mojom::blink::NativeFileSystemFileHandle>(
-            std::move(e->entry_handle->get_file()),
-            execution_context->GetInterfaceInvalidator(),
-            execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+        execution_context, e->name, std::move(e->entry_handle->get_file()));
   }
   return MakeGarbageCollected<NativeFileSystemDirectoryHandle>(
-      e->name,
-      RevocableInterfacePtr<mojom::blink::NativeFileSystemDirectoryHandle>(
-          std::move(e->entry_handle->get_directory()),
-          execution_context->GetInterfaceInvalidator(),
-          execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+      execution_context, e->name, std::move(e->entry_handle->get_directory()));
 }
 
 namespace {
@@ -96,6 +89,11 @@ ScriptPromise NativeFileSystemHandle::requestPermission(
           WrapPersistent(resolver)));
 
   return result;
+}
+
+void NativeFileSystemHandle::Trace(Visitor* visitor) {
+  ScriptWrappable::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

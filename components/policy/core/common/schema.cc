@@ -221,26 +221,12 @@ bool SchemaTypeToValueType(const std::string& schema_type,
                                  kSchemaTypesToValueTypesEnd, value_type);
 }
 
-bool StrategyAllowInvalidOnTopLevel(SchemaOnErrorStrategy strategy) {
-  return strategy == SCHEMA_ALLOW_INVALID ||
-         strategy == SCHEMA_ALLOW_INVALID_TOPLEVEL ||
-         strategy == SCHEMA_ALLOW_INVALID_TOPLEVEL_AND_ALLOW_UNKNOWN;
+bool StrategyAllowInvalid(SchemaOnErrorStrategy strategy) {
+  return strategy == SCHEMA_ALLOW_INVALID;
 }
 
-bool StrategyAllowUnknownOnTopLevel(SchemaOnErrorStrategy strategy) {
+bool StrategyAllowUnknown(SchemaOnErrorStrategy strategy) {
   return strategy != SCHEMA_STRICT;
-}
-
-SchemaOnErrorStrategy StrategyForNextLevel(SchemaOnErrorStrategy strategy) {
-  static SchemaOnErrorStrategy next_level_strategy[] = {
-      SCHEMA_STRICT,         // SCHEMA_STRICT
-      SCHEMA_STRICT,         // SCHEMA_ALLOW_UNKNOWN_TOPLEVEL
-      SCHEMA_ALLOW_UNKNOWN,  // SCHEMA_ALLOW_UNKNOWN
-      SCHEMA_STRICT,         // SCHEMA_ALLOW_INVALID_TOPLEVEL
-      SCHEMA_ALLOW_UNKNOWN,  // SCHEMA_ALLOW_INVALID_TOPLEVEL_AND_ALLOW_UNKNOWN
-      SCHEMA_ALLOW_INVALID,  // SCHEMA_ALLOW_INVALID
-  };
-  return next_level_strategy[static_cast<int>(strategy)];
 }
 
 void SchemaErrorFound(std::string* error_path,
@@ -1230,15 +1216,14 @@ bool Schema::Validate(const base::Value& value,
         // Unknown property was detected.
         SchemaErrorFound(error_path, error,
                          "Unknown property: " + dict_item.first);
-        if (!StrategyAllowUnknownOnTopLevel(strategy))
+        if (!StrategyAllowUnknown(strategy))
           return false;
       } else {
         bool all_subschemas_are_valid = true;
         for (const auto& subschema : schema_list) {
           std::string new_error;
           const bool validation_result = subschema.Validate(
-              dict_item.second, StrategyForNextLevel(strategy), error_path,
-              &new_error);
+              dict_item.second, strategy, error_path, &new_error);
           if (!new_error.empty()) {
             AddDictKeyPrefixToPath(dict_item.first, error_path);
             *error = std::move(new_error);
@@ -1246,7 +1231,7 @@ bool Schema::Validate(const base::Value& value,
           if (!validation_result) {
             // Invalid property was detected.
             all_subschemas_are_valid = false;
-            if (!StrategyAllowInvalidOnTopLevel(strategy))
+            if (!StrategyAllowInvalid(strategy))
               return false;
           }
         }
@@ -1268,13 +1253,13 @@ bool Schema::Validate(const base::Value& value,
     for (size_t index = 0; index < value.GetList().size(); ++index) {
       const base::Value& list_item = value.GetList()[index];
       std::string new_error;
-      const bool validation_result = GetItems().Validate(
-          list_item, StrategyForNextLevel(strategy), error_path, &new_error);
+      const bool validation_result =
+          GetItems().Validate(list_item, strategy, error_path, &new_error);
       if (!new_error.empty()) {
         AddListIndexPrefixToPath(index, error_path);
         *error = std::move(new_error);
       }
-      if (!validation_result && !StrategyAllowInvalidOnTopLevel(strategy))
+      if (!validation_result && !StrategyAllowInvalid(strategy))
         return false;  // Invalid list item was detected.
     }
   } else if (value.is_int()) {
@@ -1325,7 +1310,7 @@ bool Schema::Normalize(base::Value* value,
         // Unknown property was detected.
         SchemaErrorFound(error_path, error,
                          "Unknown property: " + dict_item.first);
-        if (!StrategyAllowUnknownOnTopLevel(strategy))
+        if (!StrategyAllowUnknown(strategy))
           return false;
         drop_list.push_back(dict_item.first);
       } else {
@@ -1333,8 +1318,7 @@ bool Schema::Normalize(base::Value* value,
         for (const auto& subschema : schema_list) {
           std::string new_error;
           const bool normalization_result = subschema.Normalize(
-              &dict_item.second, StrategyForNextLevel(strategy), error_path,
-              &new_error, changed);
+              &dict_item.second, strategy, error_path, &new_error, changed);
           if (!new_error.empty()) {
             AddDictKeyPrefixToPath(dict_item.first, error_path);
             *error = std::move(new_error);
@@ -1342,7 +1326,7 @@ bool Schema::Normalize(base::Value* value,
           if (!normalization_result) {
             // Invalid property was detected.
             all_subschemas_are_valid = false;
-            if (!StrategyAllowInvalidOnTopLevel(strategy))
+            if (!StrategyAllowInvalid(strategy))
               return false;
             drop_list.push_back(dict_item.first);
             break;
@@ -1378,16 +1362,15 @@ bool Schema::Normalize(base::Value* value,
     for (size_t index = 0; index < list.size(); ++index) {
       base::Value& list_item = list[index];
       std::string new_error;
-      const bool normalization_result =
-          GetItems().Normalize(&list_item, StrategyForNextLevel(strategy),
-                               error_path, &new_error, changed);
+      const bool normalization_result = GetItems().Normalize(
+          &list_item, strategy, error_path, &new_error, changed);
       if (!new_error.empty()) {
         AddListIndexPrefixToPath(index, error_path);
         *error = new_error;
       }
       if (!normalization_result) {
         // Invalid list item was detected.
-        if (!StrategyAllowInvalidOnTopLevel(strategy))
+        if (!StrategyAllowInvalid(strategy))
           return false;
       } else {
         if (write_index != index)

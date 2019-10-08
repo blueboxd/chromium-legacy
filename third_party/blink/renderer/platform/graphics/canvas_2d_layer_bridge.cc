@@ -575,9 +575,10 @@ void Canvas2DLayerBridge::FlushRecording() {
     cc::PaintCanvas* canvas = ResourceProvider()->Canvas();
     last_recording_ = recorder_->finishRecordingAsPicture();
     canvas->drawPicture(last_recording_);
-    if (!resource_host_ || !resource_host_->IsPrinting() ||
+    if (!clear_frame_ || !resource_host_ || !resource_host_->IsPrinting() ||
         !is_deferral_enabled_) {
       last_recording_ = nullptr;
+      clear_frame_ = false;
     }
     ResourceProvider()->FlushSkia();
   }

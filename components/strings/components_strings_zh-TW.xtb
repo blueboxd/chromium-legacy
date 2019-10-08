@@ -202,6 +202,7 @@
 <translation id="187918866476621466">開啟起始網頁</translation>
 <translation id="1883255238294161206">收合清單</translation>
 <translation id="1898423065542865115">篩選</translation>
+<translation id="1901443836186977402">{1,plural, =1{伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證已在昨天到期。這可能是因為設定錯誤，或是有攻擊者攔截你的連線。這台電腦的時鐘目前設為 <ph name="CURRENT_DATE" />，這是正確的時間嗎？如果不是的話，請更新系統時鐘，然後重新整理這個網頁。}other{伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證已在 # 天前到期。這可能是因為設定錯誤，或有攻擊者攔截你的連線。這台電腦的時鐘目前設為 <ph name="CURRENT_DATE" />，這是正確的時間嗎？如果不是的話，請更新系統時鐘，然後重新整理這個網頁。}}</translation>
 <translation id="1914326953223720820">解壓縮服務</translation>
 <translation id="1915697529809968049">要使用 Touch ID 取代信用卡安全碼嗎？</translation>
 <translation id="1916770123977586577">如要將你更新過的設定套用到這個網站，請重新載入這個網頁</translation>
@@ -435,6 +436,7 @@
 <translation id="3116158981186517402">裱貼</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />嘗試執行連線診斷<ph name="END_LINK" />。</translation>
+<translation id="3121994479408824897">前往 <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{無}=1{1 個帳戶的登入資料}other{# 個帳戶的登入資料}}</translation>
 <translation id="3145945101586104090">無法將回應解碼</translation>
 <translation id="3150653042067488994">伺服器暫時發生錯誤</translation>
@@ -813,6 +815,7 @@
 <translation id="5043480802608081735">你複製的連結</translation>
 <translation id="5045550434625856497">密碼不正確</translation>
 <translation id="5056549851600133418">推薦給你的文章</translation>
+<translation id="5061227663725596739">你是不是要前往 <ph name="LOOKALIKE_DOMAIN" />？</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(目前使用 1 個 Cookie)}other{(目前使用 # 個 Cookie)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />檢查 Proxy 位址<ph name="END_LINK" /></translation>
@@ -866,6 +869,7 @@
 <translation id="5284909709419567258">網路位址</translation>
 <translation id="5285570108065881030">顯示所有已儲存的密碼</translation>
 <translation id="5287240709317226393">顯示 Cookie</translation>
+<translation id="5287456746628258573">這個網站的安全性設定過舊，因此你傳送給這個網站的的資訊 (例如密碼或信用卡號碼) 可能會外洩。</translation>
 <translation id="5288108484102287882">政策值驗證作業出現警告訊息</translation>
 <translation id="5299298092464848405">解析政策時發生錯誤</translation>
 <translation id="5300589172476337783">顯示</translation>
@@ -993,6 +997,7 @@
 <translation id="5946937721014915347">正在開啟 <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">是，我要新增</translation>
 <translation id="5951495562196540101">無法透過個人帳戶註冊 (有封裝授權)。</translation>
+<translation id="5966900314707961320">開啟這項功能時，網站不能使用 Cookie 來追蹤你在網路上的活動</translation>
 <translation id="5967592137238574583">編輯聯絡資訊</translation>
 <translation id="5967867314010545767">從記錄中移除</translation>
 <translation id="5975083100439434680">縮小</translation>
@@ -1075,6 +1080,7 @@
 <translation id="6383221683286411806">你要造訪的網站可能會誘導使用者支付額外額外費用。</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{以及另外 1 個建議項目}other{以及另外 # 個建議項目}}</translation>
 <translation id="6387754724289022810">只要將卡片資訊與帳單地址儲存到你的 Google 帳戶中和這部裝置上，下次即可更快完成付款程序。</translation>
+<translation id="6389470377220713856">持卡人姓名</translation>
 <translation id="6390200185239044127">對折後的彈簧二摺</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">這項政策目前已淘汰，請改用 <ph name="NEW_POLICY" /> 政策。</translation>
@@ -1253,7 +1259,6 @@
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">是否已建立關聯：</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">離開這個網站</translation>
 <translation id="7353601530677266744">命令列</translation>
 <translation id="7372973238305370288">搜尋結果</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1426,6 +1431,7 @@
 <translation id="8131740175452115882">確認</translation>
 <translation id="8149426793427495338">您的電腦已進入睡眠模式。</translation>
 <translation id="8150722005171944719">無法讀取位於 <ph name="URL" /> 的檔案。這個檔案可能已遭移除或移動位置，或者檔案權限為禁止存取。</translation>
+<translation id="8157295877370077682">離開網站</translation>
 <translation id="8163866351304776260">四孔 (左側)</translation>
 <translation id="8175796834047840627">你已登入帳戶，因此 Chrome 詢問你是否要將卡片儲存至你的 Google 帳戶。你可以在設定中變更這項行為。</translation>
 <translation id="8184538546369750125">使用全域預設值 (允許)</translation>

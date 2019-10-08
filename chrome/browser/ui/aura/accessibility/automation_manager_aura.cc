@@ -83,16 +83,6 @@ void AutomationManagerAura::OnViewEvent(views::View* view,
   if (!obj)
     return;
 
-  // Ignore toplevel window activate and deactivate events. These are causing
-  // issues with ChromeOS accessibility tests and are currently only used on
-  // desktop Linux platforms.
-  // TODO(https://crbug.com/89717): Need to harmonize the firing of
-  // accessibility events between platforms.
-  if (event_type == ax::mojom::Event::kWindowActivated ||
-      event_type == ax::mojom::Event::kWindowDeactivated) {
-    return;
-  }
-
   // Post a task to handle the event at the end of the current call stack.
   // This helps us avoid firing accessibility events for transient changes.
   // because there's a chance that the underlying object being wrapped could

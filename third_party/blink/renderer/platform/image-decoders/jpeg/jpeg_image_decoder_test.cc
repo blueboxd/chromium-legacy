@@ -250,6 +250,16 @@ TEST(JPEGImageDecoderTest, yuv) {
   EXPECT_EQ(128u, output_uv_width);
   EXPECT_EQ(128u, output_uv_height);
 
+  // Each plane is in its own scan.
+  const char* jpeg_file_non_interleaved =
+      "/images/resources/cs-uma-ycbcr-420-non-interleaved.jpg";  // 64x64
+  ReadYUV(kLargeEnoughSize, &output_y_width, &output_y_height, &output_uv_width,
+          &output_uv_height, jpeg_file_non_interleaved);
+  EXPECT_EQ(64u, output_y_width);
+  EXPECT_EQ(64u, output_y_height);
+  EXPECT_EQ(32u, output_uv_width);
+  EXPECT_EQ(32u, output_uv_height);
+
   const char* jpeg_file_image_size_not_multiple_of8 =
       "/images/resources/cropped_mandrill.jpg";  // 439x154
   ReadYUV(kLargeEnoughSize, &output_y_width, &output_y_height, &output_uv_width,
@@ -493,7 +503,7 @@ const ColorSpaceUMATest::ParamType kColorSpaceUMATestParams[] = {
     {"cs-uma-grayscale.jpg", true,
      BitmapImageMetrics::JpegColorSpace::kGrayscale},
     {"cs-uma-rgb.jpg", true, BitmapImageMetrics::JpegColorSpace::kRGB},
-    // Each component is in a separate plane. Should not make a difference.
+    // Each component is in a separate scan. Should not make a difference.
     {"cs-uma-rgb-non-interleaved.jpg", true,
      BitmapImageMetrics::JpegColorSpace::kRGB},
     {"cs-uma-cmyk.jpg", true, BitmapImageMetrics::JpegColorSpace::kCMYK},
@@ -515,7 +525,7 @@ const ColorSpaceUMATest::ParamType kColorSpaceUMATestParams[] = {
      BitmapImageMetrics::JpegColorSpace::kYCbCr411},
     {"cs-uma-ycbcr-420.jpg", true,
      BitmapImageMetrics::JpegColorSpace::kYCbCr420},
-    // Each component is in a separate plane. Should not make a difference.
+    // Each component is in a separate scan. Should not make a difference.
     {"cs-uma-ycbcr-420-non-interleaved.jpg", true,
      BitmapImageMetrics::JpegColorSpace::kYCbCr420},
     // 3 components/both JFIF and Adobe markers, so we expect libjpeg_turbo to

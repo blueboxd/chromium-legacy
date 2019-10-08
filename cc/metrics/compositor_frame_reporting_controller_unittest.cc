@@ -173,41 +173,22 @@ TEST_F(CompositorFrameReportingControllerTest,
 
   // 2 reporters active.
   SimulateActivate();
-  SimulateBeginImplFrame();
+  SimulateCommit();
 
-  // Submitting and Presenting the next reporter should be a missed.
+  // Submitting and Presenting the next reporter which will be a normal frame.
   SimulatePresentCompositorFrame();
 
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 1);
+      "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 0);
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.SendBeginMainFrameToCommit", 1);
-  histogram_tester.ExpectTotalCount("CompositorLatency.MissedFrame.Commit", 1);
+      "CompositorLatency.MissedFrame.SendBeginMainFrameToCommit", 0);
+  histogram_tester.ExpectTotalCount("CompositorLatency.MissedFrame.Commit", 0);
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.EndCommitToActivation", 1);
+      "CompositorLatency.MissedFrame.EndCommitToActivation", 0);
   histogram_tester.ExpectTotalCount("CompositorLatency.MissedFrame.Activation",
-                                    1);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.EndActivateToSubmitCompositorFrame", 1);
-
-  // Other histograms should not be reported.
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 0);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.SendBeginMainFrameToCommit", 0);
-  histogram_tester.ExpectTotalCount("CompositorLatency.Commit", 0);
-  histogram_tester.ExpectTotalCount("CompositorLatency.EndCommitToActivation",
                                     0);
-  histogram_tester.ExpectTotalCount("CompositorLatency.Activation", 0);
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.EndActivateToSubmitCompositorFrame", 0);
-
-  // Submitting the next reporter will not be counted as missed.
-  // In practice this submitted frame should be considered as missed because a
-  // new BeginFrame would have been issued, which is the cause for this frame
-  // submission.
-  SimulatePresentCompositorFrame();
-  // Other histograms should not be reported.
+      "CompositorLatency.MissedFrame.EndActivateToSubmitCompositorFrame", 0);
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 1);
   histogram_tester.ExpectTotalCount(
@@ -219,7 +200,22 @@ TEST_F(CompositorFrameReportingControllerTest,
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.EndActivateToSubmitCompositorFrame", 1);
 
-  // Missed frame histogram counts should not change.
+  // Submitting the next reporter will be replaced as a result of a new commit.
+  // And this will be reported for all stage before activate as a missed frame.
+  SimulateCommit();
+  // Non Missed frame histogram counts should not change.
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.SendBeginMainFrameToCommit", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.Commit", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.EndCommitToActivation",
+                                    1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.Activation", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.EndActivateToSubmitCompositorFrame", 1);
+
+  // Other histograms should be reported updated.
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 1);
   histogram_tester.ExpectTotalCount(
@@ -228,9 +224,9 @@ TEST_F(CompositorFrameReportingControllerTest,
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.MissedFrame.EndCommitToActivation", 1);
   histogram_tester.ExpectTotalCount("CompositorLatency.MissedFrame.Activation",
-                                    1);
+                                    0);
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.EndActivateToSubmitCompositorFrame", 1);
+      "CompositorLatency.MissedFrame.EndActivateToSubmitCompositorFrame", 0);
 }
 }  // namespace
 }  // namespace cc

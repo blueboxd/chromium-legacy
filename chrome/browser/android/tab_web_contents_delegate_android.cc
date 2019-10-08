@@ -334,7 +334,6 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
   nav_params.FillNavigateParamsFromOpenURLParams(params);
   nav_params.source_contents = source;
   nav_params.window_action = NavigateParams::SHOW_WINDOW;
-  nav_params.user_gesture = params.user_gesture;
   if (ConsiderForPopupBlocking(params.disposition) &&
       MaybeBlockPopup(source, nullptr, &nav_params, &params,
                       blink::mojom::WindowFeatures())) {

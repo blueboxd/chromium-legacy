@@ -111,6 +111,11 @@ HeapVector<Member<DOMPointReadOnly>> XRBoundedReferenceSpace::boundsGeometry() {
   return bounds_geometry_;
 }
 
+base::Optional<XRNativeOriginInformation>
+XRBoundedReferenceSpace::NativeOrigin() const {
+  return XRNativeOriginInformation::Create(this);
+}
+
 void XRBoundedReferenceSpace::Trace(blink::Visitor* visitor) {
   visitor->Trace(bounds_geometry_);
   XRReferenceSpace::Trace(visitor);

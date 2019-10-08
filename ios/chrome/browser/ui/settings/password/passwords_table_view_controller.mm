@@ -20,6 +20,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -77,6 +78,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeLinkHeader = kItemTypeEnumZero,
   ItemTypeHeader,
   ItemTypeSavePasswordsSwitch,
+  ItemTypePasswordLeakCheckSwitch,
   ItemTypeSavedPassword,  // This is a repeated item type.
   ItemTypeBlacklisted,    // This is a repeated item type.
   ItemTypeExportPasswordsButton,
@@ -161,10 +163,16 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   // The observable boolean that binds to the password manager setting state.
   // Saved passwords are only on if the password manager is enabled.
   PrefBackedBoolean* passwordManagerEnabled_;
+  // The observable boolean that binds to the password leak check settings
+  // state.
+  PrefBackedBoolean* passwordLeakCheckEnabled_;
   // The header for save passwords switch section.
   TableViewLinkHeaderFooterItem* manageAccountLinkItem_;
   // The item related to the switch for the password manager setting.
   SettingsSwitchItem* savePasswordsItem_;
+  // The item related to the switch for the automatic password leak detection
+  // setting.
+  SettingsSwitchItem* leakCheckItem_;
   // The item related to the button for exporting passwords.
   TableViewTextItem* exportPasswordsItem_;
   // The interface for getting and manipulating a user's saved passwords.
@@ -243,6 +251,14 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
         initWithPrefService:browserState_->GetPrefs()
                    prefName:password_manager::prefs::kCredentialsEnableService];
     [passwordManagerEnabled_ setObserver:self];
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kLeakDetection)) {
+      passwordLeakCheckEnabled_ = [[PrefBackedBoolean alloc]
+          initWithPrefService:browserState_->GetPrefs()
+                     prefName:password_manager::prefs::
+                                  kPasswordLeakDetectionEnabled];
+      [passwordLeakCheckEnabled_ setObserver:self];
+    }
     [self getLoginsFromPasswordStore];
     [self updateUIForEditState];
     [self updateExportPasswordsButton];
@@ -322,10 +338,12 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   [super setEditing:editing animated:animated];
   if (editing) {
     [self setSavePasswordsSwitchItemEnabled:NO];
+    [self setLeakCheckSwitchItemEnabled:NO];
     [self setExportPasswordsButtonEnabled:NO];
     [self setSearchBarEnabled:NO];
   } else {
     [self setSavePasswordsSwitchItemEnabled:YES];
+    [self setLeakCheckSwitchItemEnabled:YES];
     if (exportReady_) {
       [self setExportPasswordsButtonEnabled:YES];
     }
@@ -346,6 +364,12 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     savePasswordsItem_ = [self savePasswordsItem];
     [model addItem:savePasswordsItem_
         toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kLeakDetection)) {
+      leakCheckItem_ = [self leakCheckItem];
+      [model addItem:leakCheckItem_
+          toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+    }
     manageAccountLinkItem_ = [self manageAccountLinkItem];
     [model setHeader:manageAccountLinkItem_
         forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
@@ -434,6 +458,15 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   return savePasswordsItem;
 }
 
+- (SettingsSwitchItem*)leakCheckItem {
+  SettingsSwitchItem* leakCheckItem =
+      [[SettingsSwitchItem alloc] initWithType:ItemTypePasswordLeakCheckSwitch];
+  leakCheckItem.text = l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SWITCH);
+  leakCheckItem.on = [passwordLeakCheckEnabled_ value];
+  leakCheckItem.accessibilityIdentifier = @"leakCheckItem_switch";
+  return leakCheckItem;
+}
+
 - (TableViewTextItem*)exportPasswordsItem {
   TableViewTextItem* exportPasswordsItem =
       [[TableViewTextItem alloc] initWithType:ItemTypeExportPasswordsButton];
@@ -472,16 +505,30 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 #pragma mark - BooleanObserver
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
-  DCHECK_EQ(observableBoolean, passwordManagerEnabled_);
+  if (observableBoolean == passwordManagerEnabled_) {
+    // Update the item.
+    savePasswordsItem_.on = [passwordManagerEnabled_ value];
 
-  // Update the item.
-  savePasswordsItem_.on = [passwordManagerEnabled_ value];
+    // Update the cell if it's not removed by presenting search controller.
+    if ([self.tableViewModel
+            hasItemForItemType:ItemTypeSavePasswordsSwitch
+             sectionIdentifier:SectionIdentifierSavePasswordsSwitch]) {
+      [self reconfigureCellsForItems:@[ savePasswordsItem_ ]];
+    }
+  } else if (observableBoolean == passwordLeakCheckEnabled_) {
+    DCHECK(base::FeatureList::IsEnabled(
+        password_manager::features::kLeakDetection));
+    // Update the item.
+    leakCheckItem_.on = [passwordLeakCheckEnabled_ value];
 
-  // Update the cell if it's not removed by presenting search controller.
-  if ([self.tableViewModel
-          hasItemForItemType:ItemTypeSavePasswordsSwitch
-           sectionIdentifier:SectionIdentifierSavePasswordsSwitch]) {
-    [self reconfigureCellsForItems:@[ savePasswordsItem_ ]];
+    // Update the cell if it's not removed by presenting search controller.
+    if ([self.tableViewModel
+            hasItemForItemType:ItemTypePasswordLeakCheckSwitch
+             sectionIdentifier:SectionIdentifierSavePasswordsSwitch]) {
+      [self reconfigureCellsForItems:@[ leakCheckItem_ ]];
+    }
+  } else {
+    NOTREACHED();
   }
 }
 
@@ -493,6 +540,14 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
   // Update the item.
   savePasswordsItem_.on = [passwordManagerEnabled_ value];
+}
+
+- (void)passwordLeakCheckSwitchChanged:(UISwitch*)switchView {
+  // Update the setting.
+  [passwordLeakCheckEnabled_ setValue:switchView.on];
+
+  // Update the item.
+  leakCheckItem_.on = [passwordLeakCheckEnabled_ value];
 }
 
 #pragma mark - SavePasswordsConsumerDelegate
@@ -585,6 +640,11 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
                       withRowAnimation:UITableViewRowAnimationTop];
         [model addItem:savePasswordsItem_
             toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+        if (base::FeatureList::IsEnabled(
+                password_manager::features::kLeakDetection)) {
+          [model addItem:leakCheckItem_
+              toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+        }
         [self.tableView
             insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0
                                                          inSection:0] ]
@@ -910,6 +970,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     case ItemTypeLinkHeader:
     case ItemTypeHeader:
     case ItemTypeSavePasswordsSwitch:
+    case ItemTypePasswordLeakCheckSwitch:
       break;
     case ItemTypeSavedPassword: {
       DCHECK_EQ(SectionIdentifierSavedPasswords,
@@ -987,6 +1048,17 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       [switchCell.switchView addTarget:self
                                 action:@selector(savePasswordsSwitchChanged:)
                       forControlEvents:UIControlEventValueChanged];
+      break;
+    }
+    case ItemTypePasswordLeakCheckSwitch: {
+      DCHECK(base::FeatureList::IsEnabled(
+          password_manager::features::kLeakDetection));
+      SettingsSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
+      [switchCell.switchView
+                 addTarget:self
+                    action:@selector(passwordLeakCheckSwitchChanged:)
+          forControlEvents:UIControlEventValueChanged];
       break;
     }
   }
@@ -1168,6 +1240,15 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 - (void)setSavePasswordsSwitchItemEnabled:(BOOL)enabled {
   [savePasswordsItem_ setEnabled:enabled];
   [self reconfigureCellsForItems:@[ savePasswordsItem_ ]];
+}
+
+// Sets the leak check switch item's enabled status to |enabled| and
+// reconfigures the corresponding cell.
+- (void)setLeakCheckSwitchItemEnabled:(BOOL)enabled {
+  if (!base::FeatureList::IsEnabled(password_manager::features::kLeakDetection))
+    return;
+  [leakCheckItem_ setEnabled:enabled];
+  [self reconfigureCellsForItems:@[ leakCheckItem_ ]];
 }
 
 // Enables/disables search bar.

@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"

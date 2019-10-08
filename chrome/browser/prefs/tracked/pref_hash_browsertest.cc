@@ -432,15 +432,15 @@ class PrefHashBrowserTestBase
 
 #else  // defined(OFFICIAL_BUILD)
 
-    using namespace chrome_prefs::internals;
-    if (trial_group == kSettingsEnforcementGroupNoEnforcement)
+    namespace internals = chrome_prefs::internals;
+    if (trial_group == internals::kSettingsEnforcementGroupNoEnforcement)
       return PROTECTION_DISABLED_FOR_GROUP;
-    if (trial_group == kSettingsEnforcementGroupEnforceAlways)
+    if (trial_group == internals::kSettingsEnforcementGroupEnforceAlways)
       return PROTECTION_ENABLED_BASIC;
-    if (trial_group == kSettingsEnforcementGroupEnforceAlwaysWithDSE)
+    if (trial_group == internals::kSettingsEnforcementGroupEnforceAlwaysWithDSE)
       return PROTECTION_ENABLED_DSE;
     if (trial_group ==
-        kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE) {
+        internals::kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE) {
       return PROTECTION_ENABLED_EXTENSIONS;
     }
     ADD_FAILURE();

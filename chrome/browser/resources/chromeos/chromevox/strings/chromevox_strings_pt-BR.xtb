@@ -127,7 +127,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="1845944666972354496">Toque duas vezes para ativar</translation>
 <translation id="1846771122725914429">Linha braille com Bluetooth</translation>
 <translation id="1865601187525349519">Fim do texto</translation>
-<translation id="1875375785454778375">Presença ao vivo</translation>
+<translation id="1875375785454778375">Há mais alguém aqui</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Fala a hora e a data atuais.</translation>
 <translation id="1902396333223336119">Célula</translation>
@@ -327,6 +327,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="3241052487511142956">Link anterior visitado</translation>
 <translation id="3241638166094654466">Células em cada linha:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">Item semelhante anterior</translation>
 <translation id="3286372614333682499">retrato</translation>
 <translation id="3286390186030710347">Slide</translation>
 <translation id="3299925995433437805">Não há próximo link visitado.</translation>
@@ -342,7 +343,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="3324983252691184275">Carmim</translation>
 <translation id="3338224621010291843">Controle deslizante <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="335581015389089642">Voz</translation>
-<translation id="3356951775008366684">Anunciar pronúncia fonética da palavra</translation>
+<translation id="3356951775008366684">Ler em voz alta a pronúncia fonética da palavra</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{sinal de mais}one{# indicadores de mais}other{# indicadores de mais}}</translation>
 <translation id="338583716107319301">Separador</translation>
@@ -509,6 +510,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="4517854969512651305">Aumentar valor</translation>
 <translation id="4529987814483543472">Mapa de teclado clássico</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra}one{# barras}other{# barras}}</translation>
+<translation id="4537277403911487429">Próximo item semelhante</translation>
 <translation id="4547556996012970016">Próximo cabeçalho de nível 5</translation>
 <translation id="4562381607973973258">Cabeçalho</translation>
 <translation id="4569941707103739422">Pressione a seta para cima ou para baixo para navegar ou pressione Enter para ativar.</translation>
@@ -576,7 +578,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="4983588134362688868">Vai para a parte superior da página</translation>
 <translation id="4986606102545753256">Janela <ph name="NAME" /></translation>
 <translation id="4993152509206108683">Velocidade <ph name="PERCENT" /> por cento</translation>
-<translation id="4994420463726586413">Anunciar o status atual da bateria</translation>
+<translation id="4994420463726586413">Ler em voz alta o status atual da bateria</translation>
 <translation id="4996716799442435517">Visual</translation>
 <translation id="4997282455736854877">Botão de opção <ph name="NAME" /> selecionado</translation>
 <translation id="4997475792277222884">Nenhum item a seguir que não seja link.</translation>

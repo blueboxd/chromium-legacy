@@ -34,21 +34,19 @@ import common
 SRC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 BUILD_ANDROID = os.path.join(SRC_DIR, 'build', 'android')
-PLATFORM_TOOLS = os.path.join(SRC_DIR, 'third_party', 'android_sdk', 'public',
-                              'platform-tools')
 
 if BUILD_ANDROID not in sys.path:
   sys.path.append(BUILD_ANDROID)
 
-from pylib.constants import host_paths
-if host_paths.DEVIL_PATH not in sys.path:
-  sys.path.append(host_paths.DEVIL_PATH)
+import devil_chromium
 
+from devil import devil_env
 from devil.android import apk_helper
 from devil.android import device_utils
 from devil.android import flag_changer
 from devil.android.tools import system_app
 from devil.android.tools import webview_app
+
 
 DEFAULT_WEBDRIVER = os.path.join(SRC_DIR, 'chrome', 'test', 'chromedriver',
                                  'cipd', 'linux', 'chromedriver')
@@ -211,6 +209,8 @@ def main():
   adapter = WPTAndroidAdapter()
   adapter.parse_args()
 
+  devil_chromium.Initialize()
+
   # Only 1 device is supported for Android locally, this will work well with
   # sharding support via swarming infra.
   device = device_utils.DeviceUtils.HealthyDevices()[0]
@@ -220,7 +220,8 @@ def main():
   flags = flag_changer.CustomCommandLineFlags(device, flags_file, all_flags)
 
   # WPT setup for chrome and webview requires that PATH contains adb.
-  os.environ['PATH'] = ':'.join([PLATFORM_TOOLS] +
+  platform_tools_path = os.path.dirname(devil_env.config.FetchPath('adb'))
+  os.environ['PATH'] = ':'.join([platform_tools_path] +
                                 os.environ['PATH'].split(':'))
 
   with flags:

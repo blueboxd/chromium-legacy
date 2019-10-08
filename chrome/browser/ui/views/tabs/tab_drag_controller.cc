@@ -1011,9 +1011,9 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
         did_layout = true;
       }
 
-      UpdateGroupForDraggedTabs(to_index);
-
       attached_model->MoveSelectedTabsTo(to_index);
+
+      UpdateGroupForDraggedTabs();
 
       // Move may do nothing in certain situations (such as when dragging pinned
       // tabs). Make sure the tabstrip actually changed before updating
@@ -2081,53 +2081,53 @@ void TabDragController::ClearTabDraggingInfo() {
 #endif
 }
 
-void TabDragController::UpdateGroupForDraggedTabs(int to_index) {
+void TabDragController::UpdateGroupForDraggedTabs() {
   TabStripModel* attached_model = attached_context_->GetTabStripModel();
+
   const ui::ListSelectionModel::SelectedIndices& selected =
       attached_model->selection_model().selected_indices();
-
-  // TODO(crbug.com/978609): Support multi-select case.
-  if (selected.size() != 1)
-    return;
-
-  const int current_index = selected[0];
-
   const base::Optional<TabGroupId> updated_group =
-      GetTabGroupForTargetIndex(current_index, to_index);
-  const base::Optional<TabGroupId> current_selected_group =
-      attached_model->GetTabGroupForTab(current_index);
+      GetTabGroupForTargetIndex(selected);
 
-  if (updated_group == current_selected_group)
+  // Removing a tab from a group could change the index of the selected tabs.
+  // Store this to move the tab back to the proper position.
+  const int to_index = selected[0];
+
+  // All selected tabs should all be in the same group unless it is the initial
+  // move.
+  if (initial_move_) {
+    attached_model->RemoveFromGroup(selected);
+    attached_model->MoveSelectedTabsTo(to_index);
+  }
+
+  if (updated_group == attached_model->GetTabGroupForTab(selected[0])) {
     return;
+  }
 
   if (updated_group.has_value()) {
-    attached_model->MoveTabsIntoGroup({current_index}, to_index,
+    attached_model->MoveTabsIntoGroup(selected, selected[0],
                                       updated_group.value());
   } else {
-    attached_model->RemoveFromGroup({current_index});
+    attached_model->RemoveFromGroup(selected);
+    attached_model->MoveSelectedTabsTo(to_index);
   }
 }
 
 base::Optional<TabGroupId> TabDragController::GetTabGroupForTargetIndex(
-    int current_index,
-    int to_index) {
+    const std::vector<int>& selected) {
+  // Indices in {selected} are always ordered in ascending order and should all
+  // be consecutive.
+  DCHECK_EQ(selected.back() - selected.front() + 1, int{selected.size()});
   const TabStripModel* attached_model = attached_context_->GetTabStripModel();
 
-  // For the currently dragged tab, find the tab index of the tab to the left
-  // (|left_tab_index|) and right (|right_tab_index|)) after this current move
-  // has finished. If this is a left-drag or a right-drag, grab two adjacent
-  // indices near to_index. Otherwise, if there is no drag direction (i.e. if
-  // current_index == to_index), grab the indices to the left and the right.
-  const int left_tab_index = current_index < to_index ? to_index : to_index - 1;
-  const int right_tab_index =
-      current_index <= to_index ? to_index + 1 : to_index;
+  const int left_tab_index = selected.front() - 1;
 
   const base::Optional<TabGroupId> left_group =
       attached_model->GetTabGroupForTab(left_tab_index);
   const base::Optional<TabGroupId> right_group =
-      attached_model->GetTabGroupForTab(right_tab_index);
+      attached_model->GetTabGroupForTab(selected.back() + 1);
   const base::Optional<TabGroupId> current_group =
-      attached_model->GetTabGroupForTab(current_index);
+      attached_model->GetTabGroupForTab(selected[0]);
 
   if (left_group == right_group)
     return left_group;
@@ -2138,28 +2138,41 @@ base::Optional<TabGroupId> TabDragController::GetTabGroupForTargetIndex(
   // right of the gap. If the tab is centered in the gap, make the tab
   // ungrouped.
 
-  // TODO(crbug.com/978609): Adjust this for multi-select case.
-  const Tab* current_tab = source_context_->GetTabAt(current_index);
-  const int buffer = current_tab->width() / 4;
+  const Tab* left_most_selected_tab =
+      source_context_->GetTabAt(selected.front());
+
+  const int buffer = left_most_selected_tab->width() / 4;
+
+  // The tab's bounds are larger than what visually appears in order to include
+  // space for the rounded feet. Adding {tab_left_inset} to the horiztonal
+  // bounds of the tab results in the x position that would be drawn when there
+  // are no feet showing.
+  const int tab_left_inset = TabStyle::GetTabOverlap() / 2;
 
   // Use the left edge for a reliable fallback, e.g. if this is the leftmost
   // tab or there is a group header to the immediate left.
   int left_edge =
       attached_model->ContainsIndex(left_tab_index)
-          ? source_context_->GetTabAt(left_tab_index)->bounds().right()
-          : 0;
+          ? source_context_->GetTabAt(left_tab_index)->bounds().right() -
+                tab_left_inset
+          : tab_left_inset;
 
   // Extra polish: Prefer staying in an existing group, if any. This prevents
   // tabs at the edge of the group from flickering between grouped and
   // ungrouped. It also gives groups a slightly "sticky" feel while dragging.
   if (left_group.has_value() && left_group == current_group)
     left_edge += buffer;
-  if (right_group.has_value() && right_group == current_group && left_edge > 0)
+  if (right_group.has_value() && right_group == current_group &&
+      left_edge > tab_left_inset) {
     left_edge -= buffer;
+  }
 
-  if (current_tab->x() <= left_edge - buffer)
+  int left_most_selected_x_position =
+      left_most_selected_tab->x() + tab_left_inset;
+
+  if (left_most_selected_x_position <= left_edge - buffer)
     return left_group;
-  if (current_tab->x() >= left_edge + buffer)
+  if (left_most_selected_x_position >= left_edge + buffer)
     return right_group;
   return base::nullopt;
 }

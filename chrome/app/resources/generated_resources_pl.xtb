@@ -319,6 +319,7 @@
 <translation id="1470811252759861213">Aby korzystać z rozszerzeń na wszystkich swoich komputerach, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1470967055429794975">Spowoduje to usunięcie z klucza bezpieczeństwa wszystkich danych, w tym kodu PIN</translation>
 <translation id="1475502736924165259">Masz zapisane certyfikaty, które nie pasują do żadnej z pozostałych kategorii</translation>
+<translation id="1476088332184200792">Skopiuj na swoje urządzenie</translation>
 <translation id="1476607407192946488">&amp;Ustawienia języka</translation>
 <translation id="1478340334823509079">Szczegóły: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Instalacja nie została włączona</translation>
@@ -951,7 +952,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2379281330731083556">Drukuj w oknie systemowym <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Pytaj przed wysłaniem (zalecane)</translation>
 <translation id="2384436799579181135">Wystąpił błąd. Sprawdź drukarkę i spróbuj ponownie.</translation>
-<translation id="2386926718981642523">Uruchamiaj Asystenta w dowolnej chwili, mówiąc „OK Google”</translation>
 <translation id="2387458720915042159">Typ połączenia z serwerem proxy</translation>
 <translation id="2391419135980381625">Czcionka standardowa</translation>
 <translation id="2392369802118427583">Aktywuj</translation>
@@ -1341,6 +1341,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2941112035454246133">Niski</translation>
 <translation id="2942560570858569904">Czekam…</translation>
 <translation id="2942581856830209953">Dostosuj tę stronę</translation>
+<translation id="294308617863380348">Uwzględnianie plików cookie innych firm</translation>
 <translation id="2944060181911631861">Wysyłaj dane diagnostyczne oraz informacje o użyciu. Pomóż ulepszyć działanie Androida, wysyłając automatycznie do Google dane diagnostyczne oraz informacje o używaniu urządzenia i aplikacji. Dzięki temu będziemy mogli poprawić stabilność systemu i aplikacji oraz wprowadzić inne ulepszenia. Niektóre dane zbiorcze pomogą nam też udoskonalić aplikacje Google lub zostaną wykorzystane przez naszych partnerów, na przykład deweloperów aplikacji na Androida. Jeśli włączysz ustawienie Dodatkowa aktywność w internecie i aplikacjach, te dane mogą być zapisywane na Twoim koncie Google. <ph name="BEGIN_LINK1" />Więcej informacji<ph name="END_LINK1" /></translation>
 <translation id="2946119680249604491">Dodaj połączenie</translation>
 <translation id="2948300991547862301">Wejdź na <ph name="PAGE_TITLE" /></translation>
@@ -1355,7 +1356,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2961695502793809356">Kliknij, aby przejść dalej. Przytrzymaj, aby wyświetlić historię</translation>
 <translation id="2963151496262057773">Ta wtyczka nie odpowiada: <ph name="PLUGIN_NAME" />Chcesz ją zatrzymać?</translation>
 <translation id="2966937470348689686">Zarządzaj ustawieniami Androida</translation>
-<translation id="2972557485845626008">Oprogramowanie układowe</translation>
 <translation id="2972581237482394796">&amp;Ponów</translation>
 <translation id="2973324205039581528">Wycisz stronę</translation>
 <translation id="2977480621796371840">Usuń z grupy</translation>
@@ -1613,7 +1613,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separator</translation>
 <translation id="3387614642886316601">Używaj ulepszonego sprawdzania pisowni</translation>
-<translation id="3393352139658145068">Aktywuj Asystenta, gdy dowolna osoba powie „OK Google”. Aby oszczędzać baterię, to polecenie głosowe będzie aktywne tylko wtedy, gdy urządzenie będzie podłączone do zasilania.</translation>
 <translation id="3396800784455899911">Klikając przycisk „Zaakceptuj i kontynuuj”, wyrażasz zgodę na opisane powyżej przetwarzanie danych w tych usługach Google.</translation>
 <translation id="3399432415385675819">Powiadomienia zostaną wyłączone</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hz) – z przeplotem</translation>
@@ -1774,6 +1773,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3613134908380545408">Pokaż <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Otwórz w nowej karcie</translation>
 <translation id="3615073365085224194">Przyłóż palec do czytnika linii papilarnych</translation>
+<translation id="3615579745882581859">Skanuję plik <ph name="FILE_NAME" />.</translation>
 <translation id="3616741288025931835">&amp;Wyczyść dane przeglądania...</translation>
 <translation id="3617891479562106823">Tła są niedostępne. Spróbuj ponownie później.</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
@@ -1888,7 +1888,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3759933321830434300">Blokowanie części stron internetowych</translation>
 <translation id="3760460896538743390">Sprawdź &amp;stronę tła</translation>
 <translation id="37613671848467444">Otwórz w oknie &amp;incognito</translation>
-<translation id="3764314093345384080">Szczegółowe informacje o kompilacji</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Komunikuje się z urządzeniem USB}few{Komunikuje się z # urządzeniami USB}many{Komunikuje się z # urządzeniami USB}other{Komunikuje się z # urządzenia USB}}</translation>
 <translation id="3765246971671567135">Nie udało się odczytać zasad trybu demonstracyjnego offline.</translation>
 <translation id="3768037234834996183">Synchronizuję ustawienia...</translation>
@@ -2169,7 +2168,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4138267921960073861">Pokaż nazwy użytkowników i zdjęcia na stronie logowania</translation>
 <translation id="4142052906269098341">Odblokowuj urządzenie <ph name="DEVICE_TYPE" /> telefonem. <ph name="LINK_BEGIN" />Więcej informacji<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">Lepsza jakość filmów i dłuższy czas pracy na baterii. Filmy będą odtwarzane tylko na ekranie obsługującym Cast.</translation>
-<translation id="4145922204387553806">Pozwól Asystentowi wyświetlić więcej informacji związanych z tym, co masz na ekranie</translation>
 <translation id="4146026355784316281">Zawsze otwieraj w przeglądarce systemowej</translation>
 <translation id="4146785383423576110">Resetowanie komputera i czyszczenie danych</translation>
 <translation id="4147911968024186208">Spróbuj jeszcze raz. Jeśli ten błąd pojawi się ponownie, skontaktuj się z przedstawicielem pomocy.</translation>
@@ -2256,6 +2254,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4297322094678649474">Zmień języki</translation>
 <translation id="4301671483919369635">Ta strona ma zezwolenie na edytowanie plików</translation>
 <translation id="4303079906735388947">Ustaw nowy kod PIN klucza bezpieczeństwa</translation>
+<translation id="4305402730127028764">Skopiuj na: <ph name="DEVICE_NAME" /></translation>
 <translation id="4306119971288449206">Aplikacje muszą być udostępniane z parametrem content-type „<ph name="CONTENT_TYPE" />”</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> KB (aktywne <ph name="NUM_KILOBYTES_LIVE" /> KB)</translation>
 <translation id="4310139701823742692">Plik ma niewłaściwy format. Sprawdź plik PPD i spróbuj ponownie.</translation>
@@ -2391,7 +2390,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4534661889221639075">Spróbuj ponownie.</translation>
 <translation id="4535127706710932914">Profil domyślny</translation>
 <translation id="4535767533210902251">Czytnik linii papilarnych to klawisz w prawym górnym rogu klawiatury. Dotknij go delikatnie dowolnym palcem.</translation>
-<translation id="4538417792467843292">Usuń słowo</translation>
 <translation id="4538684596480161368">Zawsze blokuj wtyczki poza piaskownicą na <ph name="HOST" /></translation>
 <translation id="4538792345715658285">Zainstalowane na podstawie zasad przedsiębiorstwa.</translation>
 <translation id="4542520061254486227">Odczyt Twoich danych na stronie <ph name="WEBSITE_1" /> i <ph name="WEBSITE_2" /></translation>
@@ -2935,6 +2933,7 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="5367091008316207019">Odczytuję plik..</translation>
 <translation id="5368720394188453070">Twój telefon jest zablokowany. Aby uzyskać do niego dostęp, odblokuj go.</translation>
 <translation id="5368779022775404937">Zaloguj się na <ph name="REALM" /></translation>
+<translation id="5369491905435686894">Włącz przyspieszenie myszy</translation>
 <translation id="5370819323174483825">&amp;Odśwież</translation>
 <translation id="5372529912055771682">Ta wersja systemu operacyjnego nie obsługuje podanego trybu rejestrowania. Upewnij się, że używasz najnowszej wersji i spróbuj ponownie.</translation>
 <translation id="5372579129492968947">Odepnij rozszerzenie</translation>
@@ -3007,6 +3006,7 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="5464632865477611176">Uruchom tym razem</translation>
 <translation id="5464660706533281090">Dziecko nie może zmienić tego ustawienia.</translation>
 <translation id="5466374726908360271">&amp;Wklej i wyszukaj „<ph name="SEARCH_TERMS" />”</translation>
+<translation id="5468173180030470402">Wyszukuję udziały plików</translation>
 <translation id="5471768120198416576">Witaj. Jestem Twoim głosem do czytania tekstu.</translation>
 <translation id="5473333559083690127">Ponownie wpisz nowy kod PIN</translation>
 <translation id="5481941284378890518">Dodaj drukarki znalezione w pobliżu</translation>
@@ -3542,6 +3542,7 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="6233154960150021497">Domyślnie używaj głosu zamiast klawiatury</translation>
 <translation id="6234474535228214774">Oczekiwanie na instalację</translation>
 <translation id="6237816943013845465">Pozwala zmienić rozdzielczość ekranu</translation>
+<translation id="6238767809035845642">Tekst udostępniany przez inne urządzenie</translation>
 <translation id="6238923052227198598">Wyświetlaj najnowszą notatkę na ekranie blokady</translation>
 <translation id="6239558157302047471">Załaduj ponownie &amp;ramkę</translation>
 <translation id="6241530762627360640">Dostęp do informacji o urządzeniach Bluetooth sparowanych z systemem oraz wykrywanie urządzeń Bluetooth w pobliżu</translation>
@@ -3768,7 +3769,6 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="6577284282025554716">Anulowano pobieranie: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Szyfruj synchronizowane hasła przy użyciu nazwy użytkownika i hasła Google</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> – udostępnia zawartość pulpitu</translation>
-<translation id="6580151766480067746">Wersja ARC</translation>
 <translation id="6582080224869403177">Aby zwiększyć bezpieczeństwo, musisz zresetować urządzenie <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6584878029876017575">Podpisywanie dożywotnie firmy Microsoft</translation>
 <translation id="6586451623538375658">Zamień główny przycisk myszy</translation>
@@ -4373,6 +4373,7 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="7487141338393529395">Włączanie ulepszonego sprawdzania pisowni</translation>
 <translation id="7487969577036436319">Nie zainstalowano żadnych komponentów</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Otwórz wszystkie}=1{&amp;Otwórz zakładkę}few{&amp;Otwórz wszystkie (#)}many{&amp;Otwórz wszystkie (#)}other{&amp;Otwórz wszystkie (#)}}</translation>
+<translation id="7489761397368794366">Zadzwoń ze swojego urządzenia</translation>
 <translation id="749028671485790643">Osoba <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">Adres MAC</translation>
 <translation id="7493386493263658176">Rozszerzenie <ph name="EXTENSION_NAME" /> może rejestrować wszystko, co wpisujesz, w tym poufne informacje takie jak hasła i numery kart kredytowych. Czy chcesz używać tego rozszerzenia?</translation>
@@ -4392,6 +4393,7 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="7508054832109420082">Przyznaj dostęp do drukarek</translation>
 <translation id="7510943789645525906">Ostrzeżemy Cię, jeśli Twoje hasło zostało ujawnione w wyniku naruszenia bezpieczeństwa danych</translation>
 <translation id="7513029293694390567">Automatycznie loguj się na stronach, używając zapisanych danych logowania. Jeśli ta funkcja jest wyłączona, przed każdym zalogowaniem się zobaczysz prośbę o potwierdzenie.</translation>
+<translation id="7514239104543605883">Skopiuj na swoje urządzenie</translation>
 <translation id="7514365320538308">Pobierz</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Powiedz „OK Google”</translation>
@@ -4948,6 +4950,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8274332263553132018">Prześlij plik</translation>
 <translation id="8274924778568117936">Nie wyłączaj ani nie zamykaj urządzenia <ph name="DEVICE_TYPE" /> do momentu ukończenia aktualizacji. Po zakończeniu instalacji <ph name="DEVICE_TYPE" /> uruchomi się ponownie.</translation>
 <translation id="8275038454117074363">Importuj</translation>
+<translation id="8275080796245127762">Zadzwoń ze swojego urządzenia</translation>
 <translation id="8276560076771292512">Opróżnij pamięć podręczną i wymuś ponowne załadowanie</translation>
 <translation id="8281886186245836920">Pomiń</translation>
 <translation id="8282947398454257691">Odczytywanie unikalnego identyfikatora Twojego urządzenia</translation>
@@ -5268,6 +5271,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8758418656925882523">Włącz dyktowanie (mów, by pisać)</translation>
 <translation id="8759408218731716181">Nie można skonfigurować wielokrotnego logowania</translation>
 <translation id="8759753423332885148">Więcej informacji.</translation>
+<translation id="8761945298804995673">Ten użytkownik już istnieje</translation>
 <translation id="8762886931014513155"><ph name="DEVICE_TYPE" /> wymaga aktualizacji</translation>
 <translation id="8763927697961133303">Urządzenie USB</translation>
 <translation id="8767621466733104912">Automatycznie aktualizuj Chrome u wszystkich użytkowników</translation>
@@ -5356,6 +5360,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8879284080359814990">&amp;Pokaż jako kartę</translation>
 <translation id="8879921471468674457">Zapamiętaj dane logowania</translation>
 <translation id="8881020143150461183">Spróbuj ponownie. Aby uzyskać pomoc techniczną, skontaktuj się z <ph name="CARRIER_NAME" />.</translation>
+<translation id="8883273463630735858">Włącz przyspieszenie touchpada</translation>
 <translation id="8884570509232205463">Urządzenie jest blokowane o <ph name="UNLOCK_TIME" />.</translation>
 <translation id="8885197664446363138">Smart Lock jest niedostępny</translation>
 <translation id="8888253246822647887">Aplikacja otworzy się po zakończeniu uaktualnienia. Może to potrwać kilka minut.</translation>

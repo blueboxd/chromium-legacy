@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Atidaryti paleidimo puslapius</translation>
 <translation id="1883255238294161206">Sutraukti sąrašą</translation>
 <translation id="1898423065542865115">Filtravimas</translation>
+<translation id="1901443836186977402">{1,plural, =1{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikato galiojimas baigėsi pastarąją dieną. Taip gali būti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuolėjo. Šiuo metu kompiuterio laikrodis nustatytas į <ph name="CURRENT_DATE" />. Ar šis laikas tinkamas? Jeigu ne, pakoreguokite sistemos laikrodį ir atnaujinkite šį puslapį.}one{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikato galiojimas baigėsi prieš # dieną. Taip gali būti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuolėjo. Šiuo metu kompiuterio laikrodis nustatytas į <ph name="CURRENT_DATE" />. Ar šis laikas tinkamas? Jeigu ne, pakoreguokite sistemos laikrodį ir atnaujinkite šį puslapį.}few{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikato galiojimas baigėsi prieš # dienas. Taip gali būti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuolėjo. Šiuo metu kompiuterio laikrodis nustatytas į <ph name="CURRENT_DATE" />. Ar šis laikas tinkamas? Jeigu ne, pakoreguokite sistemos laikrodį ir atnaujinkite šį puslapį.}many{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikato galiojimas baigėsi prieš # dienos. Taip gali būti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuolėjo. Šiuo metu kompiuterio laikrodis nustatytas į <ph name="CURRENT_DATE" />. Ar šis laikas tinkamas? Jeigu ne, pakoreguokite sistemos laikrodį ir atnaujinkite šį puslapį.}other{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikato galiojimas baigėsi prieš # dienų. Taip gali būti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuolėjo. Šiuo metu kompiuterio laikrodis nustatytas į <ph name="CURRENT_DATE" />. Ar šis laikas tinkamas? Jeigu ne, pakoreguokite sistemos laikrodį ir atnaujinkite šį puslapį.}}</translation>
 <translation id="1914326953223720820">Išpakavimo paslauga</translation>
 <translation id="1915697529809968049">Naudoti „Touch ID“ vietoj CVC?</translation>
 <translation id="1916770123977586577">Kad pritaikytumėte atnaujintus nustatymus šioje svetainėje, iš naujo įkelkite šį puslapį</translation>
@@ -445,6 +446,7 @@
 <translation id="3116158981186517402">Laminavimas</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Pabandykite paleisti ryšio diagnostikos įrankį<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Eiti į <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Nėra}=1{1 paskyros prisijungimo duomenys}one{# paskyros prisijungimo duomenys}few{# paskyrų prisijungimo duomenys}many{# paskyros prisijungimo duomenys}other{# paskyrų prisijungimo duomenys}}</translation>
 <translation id="3145945101586104090">Iššifruojant atsakymą įvyko klaida</translation>
 <translation id="3150653042067488994">Laikina serverio klaida</translation>
@@ -830,6 +832,7 @@
 <translation id="5043480802608081735">Nukopijuota nuoroda</translation>
 <translation id="5045550434625856497">Neteisingas slaptažodis</translation>
 <translation id="5056549851600133418">Jums skirti straipsniai</translation>
+<translation id="5061227663725596739">Turėjote omenyje <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(naudojamas 1)}one{(naudojamas #)}few{(naudojami #)}many{(naudojama #)}other{(naudojama #)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Patikrinti tarpinio serverio adresą<ph name="END_LINK" /></translation>
@@ -883,6 +886,7 @@
 <translation id="5284909709419567258">Tinklų adresai</translation>
 <translation id="5285570108065881030">Rodyti visus išsaugotus slaptažodžius</translation>
 <translation id="5287240709317226393">Rodyti slapukus</translation>
+<translation id="5287456746628258573">Šioje svetainėje naudojama pasenusi saugos konfigūracija, todėl gali būti atskleista į šią svetainę siunčiama informacija (pvz., slaptažodžiai ar kredito kortelių numeriai).</translation>
 <translation id="5288108484102287882">Patvirtinant politikos vertes pateikta įspėjimų</translation>
 <translation id="5299298092464848405">Analizuojant politiką įvyko klaida</translation>
 <translation id="5300589172476337783">Rodyti</translation>
@@ -1011,6 +1015,7 @@
 <translation id="5946937721014915347">Atidaroma „<ph name="SITE_NAME" />“…</translation>
 <translation id="5947933617628957894">Taip, pridėti</translation>
 <translation id="5951495562196540101">Nepavyko prisiregistruoti su kliento paskyra (galima įsigyti licencijos paketą).</translation>
+<translation id="5966900314707961320">Įjungus svetainės negalės naudoti slapukų, kurie stebi jūsų veiklą žiniatinklyje</translation>
 <translation id="5967592137238574583">Kontaktinės informacijos redagavimas</translation>
 <translation id="5967867314010545767">Pašalinti iš istorijos</translation>
 <translation id="5975083100439434680">Tolinti</translation>
@@ -1093,6 +1098,7 @@
 <translation id="6383221683286411806">Galimi apmokestinimai.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{Dar 1 pasiūlymas}one{Dar # pasiūlymas}few{Dar # pasiūlymai}many{Dar # pasiūlymo}other{Dar # pasiūlymų}}</translation>
 <translation id="6387754724289022810">Kad kitą kartą galėtumėte greičiau atlikti mokėjimą, išsaugokite kortelę ir atsiskaitymo adresą „Google“ paskyroje ir šiame įrenginyje.</translation>
+<translation id="6389470377220713856">Vardas kortel.</translation>
 <translation id="6390200185239044127">Z formos perlenkimas pusiau</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Ši politika nebenaudojama. Vietoj jos turėtumėte naudoti politiką „<ph name="NEW_POLICY" />“.</translation>
@@ -1271,7 +1277,6 @@ Papildoma išsami informacija:
 <translation id="734600844861828519">11 x 15</translation>
 <translation id="7346048084945669753">Susietas:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Išeiti iš šios svetainės</translation>
 <translation id="7353601530677266744">Komandos eilutė</translation>
 <translation id="7372973238305370288">paieškos rezultatas</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1444,6 +1449,7 @@ Papildoma išsami informacija:
 <translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8149426793427495338">Įjungta kompiuterio miego būsena.</translation>
 <translation id="8150722005171944719"><ph name="URL" /> nurodyto failo negalima skaityti. Gali būti, kad jis pašalintas, perkeltas arba neleidžiama prieiga prie jo dėl failo leidimų.</translation>
+<translation id="8157295877370077682">Išeiti iš svetainės</translation>
 <translation id="8163866351304776260">Keturios skylės kairėje</translation>
 <translation id="8175796834047840627">„Chrome“ siūlo išsaugoti korteles „Google“ paskyroje, nes esate prisijungę. Šią elgseną galite pakeisti nustatymuose.</translation>
 <translation id="8184538546369750125">Naudoti visuotinį numatytąjį nustatymą (leisti)</translation>

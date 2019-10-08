@@ -4,11 +4,11 @@
 
 #include "chrome/browser/performance_manager/decorators/frozen_frame_aggregator.h"
 
-#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph_impl.h"
-#include "chrome/browser/performance_manager/graph/node_attached_data_impl.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/graph/frame_node_impl.h"
+#include "components/performance_manager/graph/graph_impl.h"
+#include "components/performance_manager/graph/node_attached_data_impl.h"
+#include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/graph/process_node_impl.h"
 
 namespace performance_manager {
 

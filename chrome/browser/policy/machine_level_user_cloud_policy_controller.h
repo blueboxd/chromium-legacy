@@ -25,11 +25,11 @@ class ReportScheduler;
 }
 
 namespace policy {
+class ChromeBrowserCloudManagementRegistrar;
 class ConfigurationPolicyProvider;
 class MachineLevelUserCloudPolicyManager;
 class MachineLevelUserCloudPolicyFetcher;
 class MachineLevelUserCloudPolicyRegisterWatcher;
-class MachineLevelUserCloudPolicyRegistrar;
 
 // A class that setups and manages MachineLevelUserCloudPolicy.
 class MachineLevelUserCloudPolicyController {
@@ -94,7 +94,7 @@ class MachineLevelUserCloudPolicyController {
  private:
   bool GetEnrollmentTokenAndClientId(std::string* enrollment_token,
                                      std::string* client_id);
-  void RegisterForPolicyWithEnrollmentTokenCallback(
+  void RegisterForCloudManagementWithEnrollmentTokenCallback(
       const std::string& dm_token,
       const std::string& client_id);
 
@@ -104,7 +104,8 @@ class MachineLevelUserCloudPolicyController {
 
   base::ObserverList<Observer, true>::Unchecked observers_;
 
-  std::unique_ptr<MachineLevelUserCloudPolicyRegistrar> policy_registrar_;
+  std::unique_ptr<ChromeBrowserCloudManagementRegistrar>
+      cloud_management_registrar_;
   std::unique_ptr<MachineLevelUserCloudPolicyFetcher> policy_fetcher_;
     // This is an observer of the controller and needs to be declared after the
     // |observers_|.

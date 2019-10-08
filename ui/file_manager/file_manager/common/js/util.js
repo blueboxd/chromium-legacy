@@ -219,9 +219,10 @@ util.removeFileOrDirectory = (entry, onSuccess, onError) => {
  * number separators.
  *
  * @param {number} bytes The number of bytes.
+ * @param {number=} addedPrecision The number of precision digits to add.
  * @return {string} Localized string.
  */
-util.bytesToString = bytes => {
+util.bytesToString = (bytes, addedPrecision = 0) => {
   // Translation identifiers for size units.
   const UNITS = [
     'SIZE_BYTES',
@@ -242,12 +243,18 @@ util.bytesToString = bytes => {
     Math.pow(2, 50),
   ];
 
+  // Rounding with precision.
+  const round = (value, decimals) => {
+    const scale = Math.pow(10, decimals);
+    return Math.round(value * scale) / scale;
+  };
+
   const str = (n, u) => {
     return strf(u, n.toLocaleString());
   };
 
   const fmt = (s, u) => {
-    const rounded = Math.round(bytes / s * 10) / 10;
+    const rounded = round(bytes / s, 1 + addedPrecision);
     return str(rounded, u);
   };
 
@@ -256,9 +263,11 @@ util.bytesToString = bytes => {
     return str(bytes, UNITS[0]);
   }
 
-  // Up to 1MB is displayed as rounded up number of KBs.
+  // Up to 1MB is displayed as rounded up number of KBs, or with the desired
+  // number of precision digits.
   if (bytes < STEPS[2]) {
-    const rounded = Math.ceil(bytes / STEPS[1]);
+    const rounded = addedPrecision ? round(bytes / STEPS[1], addedPrecision) :
+                                     Math.ceil(bytes / STEPS[1]);
     return str(rounded, UNITS[1]);
   }
 

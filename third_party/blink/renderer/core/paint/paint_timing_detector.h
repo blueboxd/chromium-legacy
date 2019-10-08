@@ -156,6 +156,7 @@ class CORE_EXPORT PaintTimingDetector
                                 const PropertyTreeState&) const;
 
   TextPaintTimingDetector* GetTextPaintTimingDetector() const {
+    DCHECK(text_paint_timing_detector_);
     return text_paint_timing_detector_;
   }
   ImagePaintTimingDetector* GetImagePaintTimingDetector() const {
@@ -177,12 +178,11 @@ class CORE_EXPORT PaintTimingDetector
   void Trace(Visitor* visitor);
 
  private:
-  void StopRecordingIfNeeded();
+  void StopRecordingLargestContentfulPaint();
   bool HasLargestImagePaintChanged(base::TimeTicks, uint64_t size) const;
   bool HasLargestTextPaintChanged(base::TimeTicks, uint64_t size) const;
   Member<LocalFrameView> frame_view_;
-  // This member lives until the end of the paint phase after the largest text
-  // paint is found.
+  // This member lives forever because it is also used for Text Element Timing.
   Member<TextPaintTimingDetector> text_paint_timing_detector_;
   // This member lives until the end of the paint phase after the largest
   // image paint is found.

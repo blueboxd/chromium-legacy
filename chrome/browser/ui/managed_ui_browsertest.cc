@@ -15,8 +15,6 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using namespace policy;
-
 class ManagedUiTest : public InProcessBrowserTest {
  public:
   ManagedUiTest() = default;
@@ -25,13 +23,13 @@ class ManagedUiTest : public InProcessBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
         .WillRepeatedly(testing::Return(true));
-    BrowserPolicyConnectorBase::SetPolicyProviderForTesting(&provider_);
+    policy::BrowserPolicyConnectorBase::SetPolicyProviderForTesting(&provider_);
   }
 
-  MockConfigurationPolicyProvider* provider() { return &provider_; }
+  policy::MockConfigurationPolicyProvider* provider() { return &provider_; }
 
  private:
-  MockConfigurationPolicyProvider provider_;
+  policy::MockConfigurationPolicyProvider provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedUiTest);
 };
@@ -41,9 +39,9 @@ IN_PROC_BROWSER_TEST_F(ManagedUiTest, ShouldDisplayManagedUiNoPolicies) {
 }
 
 IN_PROC_BROWSER_TEST_F(ManagedUiTest, ShouldDisplayManagedUiOnDesktop) {
-  PolicyMap policy_map;
-  policy_map.Set("test-policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                 POLICY_SOURCE_PLATFORM,
+  policy::PolicyMap policy_map;
+  policy_map.Set("test-policy", policy::POLICY_LEVEL_MANDATORY,
+                 policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
                  std::make_unique<base::Value>("hello world"), nullptr);
   provider()->UpdateChromePolicy(policy_map);
 
@@ -62,9 +60,9 @@ IN_PROC_BROWSER_TEST_F(ManagedUiTest, GetManagedUiMenuItemLabel) {
   builder_with_domain.SetProfileName("foobar@example.com");
   auto profile_with_domain = builder_with_domain.Build();
 
-  EXPECT_EQ(base::UTF8ToUTF16("Managed by your organization"),
+  EXPECT_EQ(base::ASCIIToUTF16("Managed by your organization"),
             chrome::GetManagedUiMenuItemLabel(profile.get()));
-  EXPECT_EQ(base::UTF8ToUTF16("Managed by example.com"),
+  EXPECT_EQ(base::ASCIIToUTF16("Managed by example.com"),
             chrome::GetManagedUiMenuItemLabel(profile_with_domain.get()));
 }
 
@@ -77,23 +75,23 @@ IN_PROC_BROWSER_TEST_F(ManagedUiTest, GetManagedUiWebUILabel) {
   auto profile_with_domain = builder_with_domain.Build();
 
   EXPECT_EQ(
-      base::UTF8ToUTF16(
+      base::ASCIIToUTF16(
           "Your <a href=\"chrome://management\">browser is managed</a> by your "
           "organization"),
       chrome::GetManagedUiWebUILabel(profile.get()));
   EXPECT_EQ(
-      base::UTF8ToUTF16(
+      base::ASCIIToUTF16(
           "Your <a href=\"chrome://management\">browser is managed</a> by "
           "example.com"),
       chrome::GetManagedUiWebUILabel(profile_with_domain.get()));
 #if defined(OS_CHROMEOS)
-  EXPECT_EQ(base::UTF8ToUTF16("Your <a target=\"_blank\" "
-                              "href=\"chrome://management\">Chrome device is "
-                              "managed</a> by your organization"),
+  EXPECT_EQ(base::ASCIIToUTF16("Your <a target=\"_blank\" "
+                               "href=\"chrome://management\">Chrome device is "
+                               "managed</a> by your organization"),
             chrome::GetDeviceManagedUiWebUILabel(profile.get()));
-  EXPECT_EQ(base::UTF8ToUTF16("Your <a target=\"_blank\" "
-                              "href=\"chrome://management\">Chrome device is "
-                              "managed</a> by example.com"),
+  EXPECT_EQ(base::ASCIIToUTF16("Your <a target=\"_blank\" "
+                               "href=\"chrome://management\">Chrome device is "
+                               "managed</a> by example.com"),
             chrome::GetDeviceManagedUiWebUILabel(profile_with_domain.get()));
 #endif
 }

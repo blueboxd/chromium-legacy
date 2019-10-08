@@ -239,6 +239,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Returns true if all its window grids don't have any window item.
   bool IsEmpty() const;
 
+  // If |focus| is true, restores focus to |restore_focus_window_|. Sets
+  // |restore_focus_window_| to null regardless of |focus|.
+  void ResetFocusRestoreWindow(bool focus);
+
   // Handles requests to active or close the currently highlighted |item|.
   void OnHighlightedItemActivated(OverviewItem* item);
   void OnHighlightedItemClosed(OverviewItem* item);
@@ -305,9 +309,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   friend class DesksAcceleratorsTest;
   friend class OverviewSessionTest;
 
-  // |focus|, restores focus to the stored window.
-  void ResetFocusRestoreWindow(bool focus);
-
   // Helper function that moves the selection widget to forward or backward on
   // the corresponding window grid.
   void Move(bool reverse);
@@ -319,9 +320,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Removes all observers that were registered during construction and/or
   // initialization.
   void RemoveAllObservers();
-
-  // Called when the display area for the overview window grids changed.
-  void OnDisplayBoundsChanged();
 
   void UpdateNoWindowsWidget();
 

@@ -129,7 +129,7 @@ class WebAppProvider : public WebAppProviderBase {
 
   base::OneShotEvent on_registry_ready_;
 
-  Profile* profile_;
+  Profile* const profile_;
 
   // Ensures that ConnectSubsystems() is not called after Start().
   bool started_ = false;

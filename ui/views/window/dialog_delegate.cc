@@ -33,6 +33,11 @@
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
+// DialogDelegate::Params:
+DialogDelegate::Params::Params() = default;
+DialogDelegate::Params::~Params() = default;
+
+////////////////////////////////////////////////////////////////////////////////
 // DialogDelegate:
 
 DialogDelegate::DialogDelegate() {
@@ -105,6 +110,8 @@ int DialogDelegate::GetDialogButtons() const {
 }
 
 int DialogDelegate::GetDefaultDialogButton() const {
+  if (params_.default_button.has_value())
+    return *params_.default_button;
   if (GetDialogButtons() & ui::DIALOG_BUTTON_OK)
     return ui::DIALOG_BUTTON_OK;
   if (GetDialogButtons() & ui::DIALOG_BUTTON_CANCEL)

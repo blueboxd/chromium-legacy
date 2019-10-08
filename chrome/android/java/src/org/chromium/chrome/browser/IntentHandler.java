@@ -285,7 +285,7 @@ public class IntentHandler {
     /**
      * Receiver for screen unlock broadcast.
      */
-    private DelayedScreenLockIntentHandler mDelayedScreenIntentHandler;
+    private static DelayedScreenLockIntentHandler sDelayedScreenIntentHandler;
 
     @IntDef({TabOpenType.OPEN_NEW_TAB, TabOpenType.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB,
             TabOpenType.REUSE_APP_ID_MATCHING_TAB_ELSE_NEW_TAB, TabOpenType.CLOBBER_CURRENT_TAB,
@@ -435,13 +435,13 @@ public class IntentHandler {
         }
     }
 
-    private void updateDeferredIntent(Intent intent) {
-        if (mDelayedScreenIntentHandler == null && intent != null) {
-            mDelayedScreenIntentHandler = new DelayedScreenLockIntentHandler();
+    private static void updateDeferredIntent(Intent intent) {
+        if (sDelayedScreenIntentHandler == null && intent != null) {
+            sDelayedScreenIntentHandler = new DelayedScreenLockIntentHandler();
         }
 
-        if (mDelayedScreenIntentHandler != null) {
-            mDelayedScreenIntentHandler.updateDeferredIntent(intent);
+        if (sDelayedScreenIntentHandler != null) {
+            sDelayedScreenIntentHandler.updateDeferredIntent(intent);
         }
     }
 
@@ -472,9 +472,6 @@ public class IntentHandler {
 
         if (isIntentForMhtmlFileOrContent(intent) && tabOpenType == TabOpenType.OPEN_NEW_TAB
                 && referrerUrl == null && extraHeaders == null) {
-            if (!OfflinePageUtils.isEnabled()) {
-                return false;
-            }
             handleMhtmlFileOrContentIntent(url, intent);
             return true;
         }
@@ -864,7 +861,7 @@ public class IntentHandler {
      * @param intent Intent to check.
      * @return true if the intent should be ignored.
      */
-    public boolean shouldIgnoreIntent(Intent intent) {
+    public static boolean shouldIgnoreIntent(Intent intent) {
         // Although not documented to, many/most methods that retrieve values from an Intent may
         // throw. Because we can't control what packages might send to us, we should catch any
         // Throwable and then fail closed (safe). This is ugly, but resolves top crashers in the
@@ -942,7 +939,7 @@ public class IntentHandler {
     }
 
     @VisibleForTesting
-    boolean intentHasValidUrl(Intent intent) {
+    static boolean intentHasValidUrl(Intent intent) {
         String url = extractUrlFromIntent(intent);
 
         // Check if this is a valid googlechrome:// URL.
@@ -1024,7 +1021,7 @@ public class IntentHandler {
     }
 
     @VisibleForTesting
-    boolean isIntentUserVisible() {
+    static boolean isIntentUserVisible() {
         // Only process Intents if the screen is on and the device is unlocked;
         // i.e. the user will see what is going on.
         Context appContext = ContextUtils.getApplicationContext();
@@ -1078,7 +1075,7 @@ public class IntentHandler {
                                           : TabOpenType.REUSE_APP_ID_MATCHING_TAB_ELSE_NEW_TAB;
     }
 
-    private boolean isInvalidScheme(String scheme) {
+    private static boolean isInvalidScheme(String scheme) {
         return scheme != null
             && (scheme.toLowerCase(Locale.US).equals(UrlConstants.JAVASCRIPT_SCHEME)
                 || scheme.toLowerCase(Locale.US).equals(UrlConstants.JAR_SCHEME));
@@ -1120,7 +1117,7 @@ public class IntentHandler {
         return scheme;
     }
 
-    private boolean isJavascriptSchemeOrInvalidUrl(String url) {
+    private static boolean isJavascriptSchemeOrInvalidUrl(String url) {
         String urlScheme = getSanitizedUrlScheme(url);
         return isInvalidScheme(urlScheme);
     }

@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
+#import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/testing/nserror_util.h"
 #include "ios/web/public/test/element_selector.h"
@@ -405,6 +406,20 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 - (void)purgeCachedWebViewPages {
   [ChromeEarlGreyAppInterface purgeCachedWebViewPages];
+  [self waitForRestoreSessionToFinish];
+  [self waitForPageToFinishLoading];
+}
+
+- (void)triggerRestoreViaTabGridRemoveAllUndo {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridUndoCloseAllButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridDoneButton()]
+      performAction:grey_tap()];
   [self waitForRestoreSessionToFinish];
   [self waitForPageToFinishLoading];
 }

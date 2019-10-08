@@ -8,10 +8,10 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/performance_manager/public/graph/graph.h"
-#include "chrome/browser/performance_manager/public/graph/node_attached_data.h"
-#include "chrome/browser/performance_manager/public/graph/process_node.h"
 #include "chrome/common/performance_manager/mojom/tcmalloc.mojom.h"
+#include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/node_attached_data.h"
+#include "components/performance_manager/public/graph/process_node.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace performance_manager {

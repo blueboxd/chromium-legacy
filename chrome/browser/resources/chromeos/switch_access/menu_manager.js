@@ -69,12 +69,10 @@ class MenuManager {
     this.selectionExists_ = false;
 
     /**
-     * Callback for reloading the menu when the text selection has changed.
-     * Bind creates a new function, so this function is saved as a field to
-     * add and remove the selection event listener properly.
-     * @private {function(chrome.automation.AutomationEvent): undefined}
+     * A function to be called when the menu exits.
+     * @private {?function()}
      */
-    this.onSelectionChanged_ = this.reloadMenuForSelectionChange_.bind(this);
+    this.onExitCallback_ = null;
 
     /**
      * Keeps track of when the clipboard is empty.
@@ -150,16 +148,14 @@ class MenuManager {
     this.closeCurrentMenu_();
     this.inMenu_ = false;
 
-    if (window.switchAccess.improvedTextInputEnabled() &&
-        this.menuOriginNode_) {
-      this.menuOriginNode_.removeEventListener(
-          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
-          this.onSelectionChanged_, false /** Don't use capture. */);
+    if (this.onExitCallback_) {
+      this.onExitCallback_();
+      this.onExitCallback_ = null;
     }
     this.menuOriginNode_ = null;
 
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
-        false /** Hide the menu. */, RectHelper.ZERO_RECT, 0);
+        false /** should_show */, RectHelper.ZERO_RECT, 0);
   }
 
   /**
@@ -205,7 +201,7 @@ class MenuManager {
     if (!shouldReloadMenu) {
       // Wait for the menu to appear in the panel before highlighting the
       // first available action.
-      this.menuPanelNode().addEventListener(
+      this.menuPanelNode_.addEventListener(
           chrome.automation.EventType.CHILDREN_CHANGED,
           this.onMenuPanelChildrenChanged_, false /** Don't use capture. */);
     }
@@ -227,9 +223,15 @@ class MenuManager {
 
     this.menuOriginNode_ = navNode;
     if (!shouldReloadMenu && window.switchAccess.improvedTextInputEnabled()) {
+      const callback = this.reloadMenuForSelectionChange_.bind(this);
+
       this.menuOriginNode_.addEventListener(
-          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
-          this.onSelectionChanged_, false /** Don't use capture. */);
+          chrome.automation.EventType.TEXT_SELECTION_CHANGED, callback,
+          false /** use_capture */);
+      this.onExitCallback_ = this.menuOriginNode_.removeEventListener.bind(
+          this.menuOriginNode_,
+          chrome.automation.EventType.TEXT_SELECTION_CHANGED, callback,
+          false /** use_capture */);
     }
 
     if (shouldReloadMenu && actionNode) {
@@ -321,7 +323,7 @@ class MenuManager {
     // panel, so remove the listener once the callback has been called once.
     // This ensures the first action is not continually highlighted as we
     // navigate through the menu.
-    this.menuPanelNode().removeEventListener(
+    this.menuPanelNode_.removeEventListener(
         chrome.automation.EventType.CHILDREN_CHANGED,
         this.onMenuPanelChildrenChanged_, false /** Don't use capture. */);
   }
@@ -430,28 +432,23 @@ class MenuManager {
    */
   connectMenuPanel(menuPanel) {
     this.menuPanel_ = menuPanel;
+    this.findMenuPanelNode_();
     return this;
   }
 
   /**
-   * Get the menu panel node. If it's not defined, search for it.
-   * @return {!chrome.automation.AutomationNode}
+   * Searches for the menu panel node.
    */
-  menuPanelNode() {
-    if (this.menuPanelNode_) {
-      return this.menuPanelNode_;
-    }
-
+  findMenuPanelNode_() {
     const treeWalker = new AutomationTreeWalker(
         this.desktop_, constants.Dir.FORWARD,
         SwitchAccessPredicate.switchAccessMenuPanelDiscoveryRestrictions());
     const node = treeWalker.next().node;
-    if (node) {
-      this.menuPanelNode_ = node;
-      return this.menuPanelNode_;
+    if (!node) {
+      setTimeout(this.findMenuPanelNode_.bind(this), 500);
+      return;
     }
-    console.log('Unable to find the Switch Access menu panel.');
-    return this.desktop_;
+    this.menuPanelNode_ = node;
   }
 
   /**
@@ -465,7 +462,7 @@ class MenuManager {
       return this.menuNode_;
     }
 
-    if (this.menuPanelNode() !== this.desktop_) {
+    if (this.menuPanelNode_) {
       if (this.menuPanelNode_.firstChild) {
         this.menuNode_ = this.menuPanelNode_.firstChild;
         return this.menuNode_;

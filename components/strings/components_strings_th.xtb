@@ -202,6 +202,7 @@
 <translation id="187918866476621466">เปิดหน้าเริ่มต้นใช้งาน</translation>
 <translation id="1883255238294161206">ยุบรายการ</translation>
 <translation id="1898423065542865115">การกรอง</translation>
+<translation id="1901443836186977402">{1,plural, =1{เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> ใบรับรองความปลอดภัยของเซิร์ฟเวอร์หมดอายุไปแล้วในวันสุดท้าย สาเหตุอาจเกิดจากการกำหนดค่าผิดหรือผู้โจมตีขัดขวางการเชื่อมต่อของคุณ ขณะนี้นาฬิกาคอมพิวเตอร์ของคุณตั้งค่าเป็น<ph name="CURRENT_DATE" /> การตั้งค่านี้ถูกต้องไหม หากไม่ถูกต้อง คุณควรแก้ไขนาฬิกาของระบบและรีเฟรชหน้านี้}other{เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> ใบรับรองความปลอดภัยของเซิร์ฟเวอร์หมดอายุไปแล้วเมื่อ # วันที่ผ่านมา สาเหตุอาจเกิดจากการกำหนดค่าผิดหรือผู้โจมตีขัดขวางการเชื่อมต่อของคุณ ขณะนี้นาฬิกาคอมพิวเตอร์ของคุณตั้งค่าเป็น<ph name="CURRENT_DATE" /> หากไม่ถูกต้อง คุณควรแก้ไขนาฬิกาของระบบและรีเฟรชหน้านี้}}</translation>
 <translation id="1914326953223720820">บริการแตกไฟล์</translation>
 <translation id="1915697529809968049">ใช้ Touch ID แทน CVC ไหม</translation>
 <translation id="1916770123977586577">โหลดหน้านี้ซ้ำเพื่อใช้การตั้งค่าที่อัปเดตกับไซต์นี้</translation>
@@ -435,6 +436,7 @@
 <translation id="3116158981186517402">แยกออกเป็นชั้นๆ</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />ลองเรียกใช้การวินิจฉัยการเชื่อมต่อ<ph name="END_LINK" /></translation>
+<translation id="3121994479408824897">ไปที่ <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{ไม่มี}=1{ข้อมูลการลงชื่อเข้าใช้ของบัญชี 1 บัญชี}other{ข้อมูลการลงชื่อเข้าใช้ของบัญชี # บัญชี}}</translation>
 <translation id="3145945101586104090">การถอดรหัสการตอบกลับล้มเหลว</translation>
 <translation id="3150653042067488994">ข้อผิดพลาดชั่วคราวของเซิร์ฟเวอร์</translation>
@@ -812,6 +814,7 @@
 <translation id="5043480802608081735">ลิงก์ที่คุณคัดลอก</translation>
 <translation id="5045550434625856497">รหัสผ่านไม่ถูกต้อง</translation>
 <translation id="5056549851600133418">บทความสำหรับคุณ</translation>
+<translation id="5061227663725596739">หรือคุณหมายถึง <ph name="LOOKALIKE_DOMAIN" /></translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(ใช้งานอยู่ 1 รายการ)}other{(ใช้งานอยู่ # รายการ)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />ตรวจสอบที่อยู่พร็อกซี<ph name="END_LINK" /></translation>
@@ -865,6 +868,7 @@
 <translation id="5284909709419567258">ที่อยู่เครือข่าย</translation>
 <translation id="5285570108065881030">แสดงรหัสผ่านที่บันทึกไว้ทั้งหมด</translation>
 <translation id="5287240709317226393">แสดงคุกกี้</translation>
+<translation id="5287456746628258573">เว็บไซต์นี้ใช้การกำหนดค่าความปลอดภัยที่ล้าสมัย ซึ่งอาจทำให้ข้อมูลของคุณรั่วไหลเมื่อส่งไปยังเว็บไซต์นี้ (เช่น รหัสผ่านหรือหมายเลขบัตรเครดิต)</translation>
 <translation id="5288108484102287882">มีคำเตือนจากการตรวจสอบความถูกต้องของค่านโยบาย</translation>
 <translation id="5299298092464848405">ข้อผิดพลาดในการแยกวิเคราะห์นโยบาย</translation>
 <translation id="5300589172476337783">แสดง</translation>
@@ -992,6 +996,7 @@
 <translation id="5946937721014915347">กำลังเปิด <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">เพิ่มเลย</translation>
 <translation id="5951495562196540101">ลงทะเบียนด้วยบัญชีผู้ใช้ทั่วไปไม่ได้ (มีใบอนุญาตแบบแพ็กเกจ)</translation>
+<translation id="5966900314707961320">เมื่อเปิดใช้ เว็บไซต์ต่างๆ จะใช้คุกกี้ที่ติดตามคุณในอินเทอร์เน็ตไม่ได้</translation>
 <translation id="5967592137238574583">แก้ไขข้อมูลติดต่อ</translation>
 <translation id="5967867314010545767">ลบจากประวัติการเข้าชม</translation>
 <translation id="5975083100439434680">ย่อ</translation>
@@ -1074,6 +1079,7 @@
 <translation id="6383221683286411806">อาจมีการเรียกเก็บเงิน</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{อีก 1 คำแนะนำ}other{อีก # คำแนะนำ}}</translation>
 <translation id="6387754724289022810">เพื่อความสะดวกในการชำระเงินในครั้งถัดไป โปรดบันทึกบัตรและที่อยู่สำหรับการเรียกเก็บเงินไว้ในบัญชี Google สำหรับอุปกรณฺ์นี้</translation>
+<translation id="6389470377220713856">ชื่อบนบัตร</translation>
 <translation id="6390200185239044127">พับครึ่งแบบตัว Z</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">นโยบายนี้เลิกใช้งานไปแล้ว คุณควรใช้นโยบาย <ph name="NEW_POLICY" /> แทน</translation>
@@ -1252,7 +1258,6 @@
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">เป็นพาร์ทเนอร์:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">ออกจากเว็บไซต์นี้</translation>
 <translation id="7353601530677266744">บรรทัดคำสั่ง </translation>
 <translation id="7372973238305370288">ผลการค้นหา</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1425,6 +1430,7 @@
 <translation id="8131740175452115882">ยืนยัน</translation>
 <translation id="8149426793427495338">คอมพิวเตอร์ของคุณเข้าสู่โหมดสลีปแล้ว</translation>
 <translation id="8150722005171944719">ไฟล์ที่ <ph name="URL" /> ไม่สามารถอ่านได้ เนื่องจากอาจถูกลบ ย้ายไปแล้ว หรือการอนุญาตของไฟล์อาจป้องกันการเข้าถึง</translation>
+<translation id="8157295877370077682">ออกจากเว็บไซต์</translation>
 <translation id="8163866351304776260">เจาะรูด้านซ้าย 4 รู</translation>
 <translation id="8175796834047840627">Chrome เสนอที่จะบันทึกบัตรลงในบัญชี Google ของคุณเพราะคุณลงชื่อเข้าใช้อยู่ คุณปรับเปลี่ยนลักษณะการทำงานนี้ได้ในการตั้งค่า</translation>
 <translation id="8184538546369750125">ใช้ค่าเริ่มต้นสากล (อนุญาต)</translation>

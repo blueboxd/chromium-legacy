@@ -5,6 +5,7 @@
 #include "chrome/common/channel_info.h"
 
 #include "base/strings/string_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/version_info/version_info.h"
 
@@ -25,7 +26,7 @@ version_info::Channel GetChannelImpl(std::string* modifier_out,
   if (env)
     modifier = env;
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Only ever return "", "unknown", "dev" or "beta" in a branded build.
   if (modifier == "unstable")  // linux version of "dev"
     modifier = "dev";

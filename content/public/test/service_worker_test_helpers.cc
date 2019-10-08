@@ -55,10 +55,9 @@ class StoppedObserver : public base::RefCountedThreadSafe<StoppedObserver> {
     }
 
     // ServiceWorkerContextCoreObserver:
-    void OnRunningStateChanged(int64_t version_id,
-                               EmbeddedWorkerStatus status) override {
+    void OnStopped(int64_t version_id) override {
       DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-      if (version_id != version_id_ || status != EmbeddedWorkerStatus::STOPPED)
+      if (version_id != version_id_)
         return;
       std::move(stopped_callback_).Run();
     }

@@ -60,7 +60,8 @@ enum class LitePageRedirectIneligibleReason {
   kInvalidProxyHeaders = 11,
   kServiceProbeIncomplete = 12,
   kServiceProbeFailed = 13,
-  kMaxValue = kServiceProbeFailed,
+  kAPIPageTransition = 14,
+  kMaxValue = kAPIPageTransition,
 };
 
 // The response type from the previews server. This enum must

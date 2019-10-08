@@ -2195,7 +2195,7 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */,
 IN_PROC_BROWSER_TEST_P(TextFragmentAnchorBrowserTest, EnabledOnUserNavigation) {
   GURL url(embedded_test_server()->GetURL("/target_text_link.html"));
   GURL target_text_url(embedded_test_server()->GetURL(
-      "/scrollable_page_with_content.html#targetText=text"));
+      "/scrollable_page_with_content.html#:~:text=text"));
 
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -2222,7 +2222,7 @@ IN_PROC_BROWSER_TEST_P(TextFragmentAnchorBrowserTest, EnabledOnUserNavigation) {
 IN_PROC_BROWSER_TEST_P(TextFragmentAnchorBrowserTest,
                        EnabledOnBrowserNavigation) {
   GURL url(embedded_test_server()->GetURL(
-      "/scrollable_page_with_content.html#targetText=text"));
+      "/scrollable_page_with_content.html#:~:text=text"));
   WebContents* main_contents = shell()->web_contents();
   RenderFrameSubmissionObserver frame_observer(main_contents);
 
@@ -2237,7 +2237,7 @@ IN_PROC_BROWSER_TEST_P(TextFragmentAnchorBrowserTest,
                        EnabledOnUserGestureScriptNavigation) {
   GURL url(embedded_test_server()->GetURL("/empty.html"));
   GURL target_text_url(embedded_test_server()->GetURL(
-      "/scrollable_page_with_content.html#targetText=text"));
+      "/scrollable_page_with_content.html#:~:text=text"));
 
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -2260,7 +2260,7 @@ IN_PROC_BROWSER_TEST_P(TextFragmentAnchorBrowserTest,
                        DisabledOnScriptNavigation) {
   GURL url(embedded_test_server()->GetURL("/empty.html"));
   GURL target_text_url(embedded_test_server()->GetURL(
-      "/scrollable_page_with_content.html#targetText=text"));
+      "/scrollable_page_with_content.html#:~:text=text"));
 
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -2284,7 +2284,7 @@ IN_PROC_BROWSER_TEST_P(TextFragmentAnchorBrowserTest,
 IN_PROC_BROWSER_TEST_P(TextFragmentAnchorBrowserTest,
                        DisabledOnScriptHistoryNavigation) {
   GURL target_text_url(embedded_test_server()->GetURL(
-      "/scrollable_page_with_content.html#targetText=text"));
+      "/scrollable_page_with_content.html#:~:text=text"));
   GURL url(embedded_test_server()->GetURL("/empty.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), target_text_url));

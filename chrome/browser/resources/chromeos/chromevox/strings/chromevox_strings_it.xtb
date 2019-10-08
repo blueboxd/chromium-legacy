@@ -326,6 +326,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="3241052487511142956">Link visitato precedente</translation>
 <translation id="3241638166094654466">Celle in ogni riga:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">Elemento simile precedente</translation>
 <translation id="3286372614333682499">verticale</translation>
 <translation id="3286390186030710347">Dispositivo di scorrimento</translation>
 <translation id="3299925995433437805">Nessun link visitato successivo.</translation>
@@ -508,6 +509,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4517854969512651305">Aumenta il valore</translation>
 <translation id="4529987814483543472">Mappa di chiavi classica</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra}other{# barre}}</translation>
+<translation id="4537277403911487429">Elemento simile successivo</translation>
 <translation id="4547556996012970016">Intestazione livello 5 successiva</translation>
 <translation id="4562381607973973258">Intestazione</translation>
 <translation id="4569941707103739422">Premi la freccia su o giù per spostarti e INVIO per attivare.</translation>

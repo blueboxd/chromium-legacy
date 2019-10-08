@@ -114,7 +114,6 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   const ResourceType resource_type_;
   base::OnceClosure prepare_callback_;
   FetchCallback fetch_callback_;
-  bool did_complete_;
 
   scoped_refptr<URLLoaderAssets> url_loader_assets_;
 

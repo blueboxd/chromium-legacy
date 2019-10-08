@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_error.h"
 
+#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 

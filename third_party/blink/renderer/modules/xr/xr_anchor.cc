@@ -32,6 +32,10 @@ void XRAnchor::Update(const device::mojom::blink::XRAnchorDataPtr& anchor_data,
   }
 }
 
+uint32_t XRAnchor::id() const {
+  return id_;
+}
+
 XRSpace* XRAnchor::anchorSpace() const {
   if (!anchor_data_) {
     return nullptr;

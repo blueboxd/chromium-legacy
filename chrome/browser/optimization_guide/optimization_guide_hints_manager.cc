@@ -16,10 +16,13 @@
 #include "base/task_runner_util.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_permissions_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/google/core/common/google_util.h"
 #include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hint_cache.h"
 #include "components/optimization_guide/hint_cache_store.h"
@@ -184,6 +187,10 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
       optimization_guide::switches::ShouldPurgeHintCacheStoreOnStartup(),
       base::BindOnce(&OptimizationGuideHintsManager::OnHintCacheInitialized,
                      ui_weak_ptr_factory_.GetWeakPtr()));
+
+  NavigationPredictorKeyedService* navigation_predictor_service =
+      NavigationPredictorKeyedServiceFactory::GetForProfile(profile_);
+  navigation_predictor_service->AddObserver(this);
 }
 
 OptimizationGuideHintsManager::~OptimizationGuideHintsManager() {
@@ -192,6 +199,10 @@ OptimizationGuideHintsManager::~OptimizationGuideHintsManager() {
   optimization_guide_service_->RemoveObserver(this);
   g_browser_process->network_quality_tracker()
       ->RemoveEffectiveConnectionTypeObserver(this);
+
+  NavigationPredictorKeyedService* navigation_predictor_service =
+      NavigationPredictorKeyedServiceFactory::GetForProfile(profile_);
+  navigation_predictor_service->RemoveObserver(this);
 }
 
 void OptimizationGuideHintsManager::Shutdown() {
@@ -533,6 +544,7 @@ void OptimizationGuideHintsManager::OnPageNavigationHintsFetched(
 }
 
 void OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   LOCAL_HISTOGRAM_BOOLEAN("OptimizationGuide.FetchedHints.Stored", true);
 
   top_hosts_hints_fetch_timer_.Stop();
@@ -542,11 +554,13 @@ void OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored() {
 }
 
 void OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored() {
-  for (const auto& url : navigation_urls_last_fetched_real_time_)
-    LoadHintForURL(url, base::DoNothing());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  for (const auto& host : navigation_hosts_last_fetched_real_time_)
+    LoadHintForHost(host, base::DoNothing());
 }
 
 base::Time OptimizationGuideHintsManager::GetLastHintsFetchAttemptTime() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return base::Time::FromDeltaSinceWindowsEpoch(
       base::TimeDelta::FromMicroseconds(pref_service_->GetInt64(
           optimization_guide::prefs::kHintsFetcherLastFetchAttempt)));
@@ -554,6 +568,7 @@ base::Time OptimizationGuideHintsManager::GetLastHintsFetchAttemptTime() const {
 
 void OptimizationGuideHintsManager::SetLastHintsFetchAttemptTime(
     base::Time last_attempt_time) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   pref_service_->SetInt64(
       optimization_guide::prefs::kHintsFetcherLastFetchAttempt,
       last_attempt_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
@@ -581,18 +596,86 @@ void OptimizationGuideHintsManager::LoadHintForNavigation(
     }
   }
 
-  LoadHintForURL(url, std::move(callback));
+  LoadHintForHost(url.host(), std::move(callback));
 }
 
-void OptimizationGuideHintsManager::LoadHintForURL(const GURL& url,
-                                                   base::OnceClosure callback) {
+void OptimizationGuideHintsManager::LoadHintForHost(
+    const std::string& host,
+    base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(url.has_host());
 
   hint_cache_->LoadHint(
-      url.host(),
+      host,
       base::BindOnce(&OptimizationGuideHintsManager::OnHintLoaded,
                      ui_weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+bool OptimizationGuideHintsManager::IsGoogleURL(const GURL& url) const {
+  return google_util::IsGoogleHostname(url.host(),
+                                       google_util::DISALLOW_SUBDOMAIN);
+}
+
+void OptimizationGuideHintsManager::OnPredictionUpdated(
+    const base::Optional<NavigationPredictorKeyedService::Prediction>&
+        prediction) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!prediction.has_value())
+    return;
+
+  const GURL& source_document_url = prediction->source_document_url();
+
+  // We only extract next predicted navigations from Google URLs.
+  if (!IsGoogleURL(source_document_url))
+    return;
+
+  // Extract the target hosts. Use a flat set to remove duplicates.
+  // |target_hosts_serialized| is the ordered list of non-duplicate hosts.
+  base::flat_set<std::string> target_hosts;
+  std::vector<std::string> target_hosts_serialized;
+  for (const auto& url : prediction->sorted_predicted_urls()) {
+    if (!IsAllowedToFetchNavigationHints(url))
+      continue;
+    if (target_hosts.size() >=
+        optimization_guide::features::
+            MaxHostsForOptimizationGuideServiceHintsFetch()) {
+      break;
+    }
+
+    // Insert the host to |target_hosts|. The host is inserted to
+    // |target_hosts_serialized| only if it was not a duplicate insertion to
+    // |target_hosts|.
+    std::pair<base::flat_set<std::string>::iterator, bool> insert_result =
+        target_hosts.insert(url.host());
+    if (insert_result.second)
+      target_hosts_serialized.push_back(url.host());
+
+    // Ensure that the 2 data structures remain synchronized.
+    DCHECK_EQ(target_hosts.size(), target_hosts_serialized.size());
+  }
+
+  if (target_hosts.empty())
+    return;
+
+  navigation_hosts_last_fetched_real_time_.clear();
+  for (const auto& host : target_hosts)
+    navigation_hosts_last_fetched_real_time_.push_back(host);
+
+  if (!hints_fetcher_) {
+    hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
+        url_loader_factory_,
+        optimization_guide::features::GetOptimizationGuideServiceURL(),
+        pref_service_);
+  }
+
+  hints_fetcher_->FetchOptimizationGuideServiceHints(
+      target_hosts_serialized,
+      optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
+      base::BindOnce(&OptimizationGuideHintsManager::OnHintsFetched,
+                     ui_weak_ptr_factory_.GetWeakPtr()));
+
+  for (const auto& host : target_hosts)
+    LoadHintForHost(host, base::DoNothing());
 }
 
 void OptimizationGuideHintsManager::OnHintLoaded(
@@ -841,11 +924,16 @@ void OptimizationGuideHintsManager::OnNavigationStartOrRedirect(
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  if (optimization_guide::switches::
+          DisableFetchingHintsAtNavigationStartForTesting()) {
+    return;
+  }
+
   if (IsAllowedToFetchNavigationHints(navigation_handle->GetURL())) {
     std::vector<std::string> hosts{navigation_handle->GetURL().host()};
-    navigation_urls_last_fetched_real_time_.clear();
-    navigation_urls_last_fetched_real_time_.push_back(
-        navigation_handle->GetURL());
+    navigation_hosts_last_fetched_real_time_.clear();
+    navigation_hosts_last_fetched_real_time_.push_back(
+        navigation_handle->GetURL().host());
 
     if (!hints_fetcher_) {
       hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(

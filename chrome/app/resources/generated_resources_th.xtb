@@ -319,6 +319,7 @@
 <translation id="1470811252759861213">หากต้องการรับส่วนขยายในคอมพิวเตอร์ทุกเครื่องของคุณ ให้<ph name="SIGN_IN_LINK" /></translation>
 <translation id="1470967055429794975">การดำเนินการนี้จะลบข้อมูลทั้งหมดในคีย์ความปลอดภัย รวมถึง PIN ของคีย์ด้วย</translation>
 <translation id="1475502736924165259">คุณมีใบรับรองของไฟล์ที่ไม่เข้ากับหมวดหมู่อื่นๆ</translation>
+<translation id="1476088332184200792">คัดลอกไปยังอุปกรณ์ของคุณ</translation>
 <translation id="1476607407192946488">&amp;การตั้งค่าภาษา</translation>
 <translation id="1478340334823509079">รายละเอียด: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">ไม่ได้เปิดใช้การติดตั้ง</translation>
@@ -951,7 +952,6 @@
 <translation id="2379281330731083556">พิมพ์โดยใช้ช่องโต้ตอบของระบบ... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">ถามก่อนที่จะส่ง (แนะนำ)</translation>
 <translation id="2384436799579181135">เกิดข้อผิดพลาด โปรดตรวจสอบเครื่องพิมพ์และลองอีกครั้ง</translation>
-<translation id="2386926718981642523">เข้าถึง Assistant ได้ทุกเมื่อเพียงพูดว่า "Ok Google"</translation>
 <translation id="2387458720915042159">ประเภทการเชื่อมต่อพร็อกซี</translation>
 <translation id="2391419135980381625">แบบอักษรมาตรฐาน</translation>
 <translation id="2392369802118427583">เปิดใช้งาน</translation>
@@ -1341,6 +1341,7 @@
 <translation id="2941112035454246133">ต่ำ</translation>
 <translation id="2942560570858569904">กำลังรอ...</translation>
 <translation id="2942581856830209953">ปรับแต่งหน้านี้</translation>
+<translation id="294308617863380348">รวมถึงคุกกี้ของบุคคลที่สาม</translation>
 <translation id="2944060181911631861">ส่งข้อมูลการใช้งานและการวินิจฉัย ช่วยปรับปรุงประสบการณ์การใช้งาน Android ของคุณให้ดีขึ้นด้วยการส่งข้อมูลการวินิจฉัย อุปกรณ์ และการใช้งานแอปไปยัง Google โดยอัตโนมัติ ซึ่งจะช่วยปรับปรุงความเสถียรของแอปและระบบ และอื่นๆ ข้อมูลที่รวบรวมมาบางส่วนจะมีประโยชน์ต่อแอปและพาร์ทเนอร์ของ Google ด้วย เช่น นักพัฒนาซอฟต์แวร์ Android หากเปิดการตั้งค่ากิจกรรมเพิ่มเติมบนเว็บและแอปไว้ ระบบอาจบันทึกข้อมูลนี้ไว้ในบัญชี Google ของคุณ <ph name="BEGIN_LINK1" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK1" /></translation>
 <translation id="2946119680249604491">เพิ่มการเชื่อมต่อ</translation>
 <translation id="2948300991547862301">ไปที่ <ph name="PAGE_TITLE" /></translation>
@@ -1355,7 +1356,6 @@
 <translation id="2961695502793809356">คลิกเพื่อไปข้างหน้า กดค้างเพื่อดูประวัติการเข้าชม</translation>
 <translation id="2963151496262057773">ปลั๊กอินต่อไปนี้ไม่ตอบสนอง: <ph name="PLUGIN_NAME" />คุณต้องการหยุดปลั๊กอินดังกล่าวไหม</translation>
 <translation id="2966937470348689686">จัดการค่ากำหนด Android</translation>
-<translation id="2972557485845626008">เฟิร์มแวร์</translation>
 <translation id="2972581237482394796">&amp;ทำซ้ำ</translation>
 <translation id="2973324205039581528">ปิดเสียงเว็บไซต์</translation>
 <translation id="2977480621796371840">นำออกจากกลุ่ม</translation>
@@ -1613,7 +1613,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">ตัวแยก</translation>
 <translation id="3387614642886316601">ใช้ฟีเจอร์ตรวจตัวสะกดที่ได้รับการปรับปรุง</translation>
-<translation id="3393352139658145068">เปิดใช้งาน Assistant เมื่อมีคนพูดว่า “Ok Google” วลี “Ok Google” นี้จะใช้ได้เฉพาะเมื่ออุปกรณ์เชื่อมต่อกับแหล่งจ่ายไฟเพื่อเป็นการประหยัดแบตเตอรี่</translation>
 <translation id="3396800784455899911">การคลิกปุ่ม "ยอมรับและดำเนินการต่อ" แสดงว่าคุณยอมรับการดำเนินการของบริการต่างๆ ของ Google ตามที่ชี้แจ้งไว้ด้านบน</translation>
 <translation id="3399432415385675819">ระบบจะปิดใช้การแจ้งเตือน</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> เฮิรตซ์) - อินเตอร์เลซ</translation>
@@ -1774,6 +1773,7 @@
 <translation id="3613134908380545408">แสดง <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;เปิดในแท็บใหม่่</translation>
 <translation id="3615073365085224194">ใช้นิ้วแตะเซ็นเซอร์ลายนิ้วมือ</translation>
+<translation id="3615579745882581859">กำลังสแกน <ph name="FILE_NAME" /></translation>
 <translation id="3616741288025931835">&amp;ล้างข้อมูลการท่องเว็บ...</translation>
 <translation id="3617891479562106823">พื้นหลังไม่พร้อมใช้งาน โปรดลองอีกครั้งภายหลัง</translation>
 <translation id="3619115746895587757">คาปูชิโน</translation>
@@ -1888,7 +1888,6 @@
 <translation id="3759933321830434300">บล็อกส่วนต่างๆ ของหน้าเว็บ</translation>
 <translation id="3760460896538743390">ตรวจสอบ&amp;หน้าพื้นหลัง</translation>
 <translation id="37613671848467444">เปิดใน&amp;หน้าต่างที่ไม่ระบุตัวตน</translation>
-<translation id="3764314093345384080">ข้อมูลบิวด์โดยละเอียด</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{สื่อสารกับอุปกรณ์ USB 1 เครื่อง}other{สื่อสารกับอุปกรณ์ USB # เครื่อง}}</translation>
 <translation id="3765246971671567135">อ่านนโยบายโหมดสาธิตออฟไลน์ไม่ได้</translation>
 <translation id="3768037234834996183">กำลังซิงค์ค่ากำหนดของคุณ...</translation>
@@ -2169,7 +2168,6 @@
 <translation id="4138267921960073861">แสดงชื่อผู้ใช้และภาพถ่ายบนหน้าจอลงชื่อเข้าใช้</translation>
 <translation id="4142052906269098341">ปลดล็อก <ph name="DEVICE_TYPE" /> ด้วยโทรศัพท์ <ph name="LINK_BEGIN" />ดูข้อมูลเพิ่มเติม<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">ดูวิดีโอคุณภาพดีขึ้นและยืดอายุการใช้งานแบตเตอรี่ วิดีโอจะเล่นเฉพาะในหน้าจอที่พร้อมใช้งาน Cast</translation>
-<translation id="4145922204387553806">ให้ Assistant แสดงข้อมูลเกี่ยวกับสิ่งที่อยู่ในหน้าจอ</translation>
 <translation id="4146026355784316281">เปิดด้วยโปรแกรมดูของระบบทุกครั้ง</translation>
 <translation id="4146785383423576110">รีเซ็ตและล้างข้อมูล</translation>
 <translation id="4147911968024186208">โปรดลองอีกครั้ง หากพบข้อผิดพลาดนี้อีก ให้ติดต่อตัวแทนฝ่ายสนับสนุน</translation>
@@ -2256,6 +2254,7 @@
 <translation id="4297322094678649474">เปลี่ยนภาษา</translation>
 <translation id="4301671483919369635">หน้านี้ได้รับอนุญาตให้แก้ไขไฟล์</translation>
 <translation id="4303079906735388947">ตั้งค่า PIN ใหม่สำหรับคีย์ความปลอดภัย</translation>
+<translation id="4305402730127028764">คัดลอกไปยัง <ph name="DEVICE_NAME" /></translation>
 <translation id="4306119971288449206">แอปต้องได้รับบริการจากประเภทเนื้อหา "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (แสดงอยู่ <ph name="NUM_KILOBYTES_LIVE" />K)</translation>
 <translation id="4310139701823742692">รูปแบบไฟล์ไม่ถูกต้อง ตรวจสอบไฟล์ PPD แล้วลองอีกครั้ง</translation>
@@ -2391,7 +2390,6 @@
 <translation id="4534661889221639075">ลองอีกครั้ง</translation>
 <translation id="4535127706710932914">โปรไฟล์เริ่มต้น</translation>
 <translation id="4535767533210902251">เซ็นเซอร์ลายนิ้วมืออยู่ในแป้นด้านขวาบนของแป้นพิมพ์ โปรดแตะเบาๆ ด้วยนิ้วใดก็ได้</translation>
-<translation id="4538417792467843292">ลบคำ</translation>
 <translation id="4538684596480161368">บล็อกปลั๊กอินที่อยู่นอกแซนด์บ็อกซ์ใน <ph name="HOST" /> เสมอ</translation>
 <translation id="4538792345715658285">ติดตั้งโดยนโยบายขององค์กร</translation>
 <translation id="4542520061254486227">อ่านข้อมูลใน <ph name="WEBSITE_1" /> และ <ph name="WEBSITE_2" /></translation>
@@ -2935,6 +2933,7 @@
 <translation id="5367091008316207019">กำลังอ่านไฟล์..</translation>
 <translation id="5368720394188453070">โทรศัพท์ล็อกอยู่ โปรดปลดล็อกเพื่อเข้าใช้งาน</translation>
 <translation id="5368779022775404937">ลงชื่อเข้าใช้ <ph name="REALM" /></translation>
+<translation id="5369491905435686894">เปิดใช้การเร่งความเร็วเมาส์</translation>
 <translation id="5370819323174483825">&amp;โหลดซ้ำ</translation>
 <translation id="5372529912055771682">รุ่นของระบบปฏิบัติการนี้ไม่สนับสนุนโหมดการลงทะเบียนที่กำหนด โปรดตรวจสอบให้แน่ใจว่าคุณกำลังใช้งานรุ่นใหม่ล่าสุดและลองอีกครั้ง</translation>
 <translation id="5372579129492968947">เลิกตรึงส่วนขยาย</translation>
@@ -3007,6 +3006,7 @@
 <translation id="5464632865477611176">เรียกใช้ตอนนี้</translation>
 <translation id="5464660706533281090">ผู้ใช้ที่เป็นเด็กจะเปลี่ยนแปลงการตั้งค่านี้ไม่ได้</translation>
 <translation id="5466374726908360271">ว&amp;างและค้นหา “<ph name="SEARCH_TERMS" />”</translation>
+<translation id="5468173180030470402">กำลังมองหาพื้นที่แชร์ไฟล์</translation>
 <translation id="5471768120198416576">สวัสดี นี่เป็นเสียงของระบบอ่านออกเสียงข้อความ</translation>
 <translation id="5473333559083690127">ป้อน PIN ใหม่อีกครั้ง</translation>
 <translation id="5481941284378890518">เพิ่มเครื่องพิมพ์ที่อยู่ใกล้เคียง</translation>
@@ -3542,6 +3542,7 @@
 <translation id="6233154960150021497">มีค่าเริ่มต้นเป็นการใช้เสียงแทนแป้นพิมพ์</translation>
 <translation id="6234474535228214774">กำลังรอการติดตั้ง</translation>
 <translation id="6237816943013845465">ให้คุณปรับเปลี่ยนความละเอียดของหน้าจอ</translation>
+<translation id="6238767809035845642">ข้อความแชร์มาจากอุปกรณ์อื่น</translation>
 <translation id="6238923052227198598">เก็บโน้ตล่าสุดไว้ในหน้าจอล็อก</translation>
 <translation id="6239558157302047471">โหลดเ&amp;ฟรมซ้ำ</translation>
 <translation id="6241530762627360640">เข้าถึงข้อมูลเกี่ยวกับอุปกรณ์บลูทูธที่จับคู่กับระบบของคุณ และสำรวจอุปกรณ์บลูทูธใกล้เคียง</translation>
@@ -3768,7 +3769,6 @@
 <translation id="6577284282025554716">ยกเลิกการดาวน์โหลดแล้ว: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">เข้ารหัสลับรหัสผ่านที่ซิงค์ด้วยชื่อผู้ใช้และรหัสผ่าน Google ของคุณ</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> - แชร์เนื้อหาบนเดสก์ท็อปอยู่</translation>
-<translation id="6580151766480067746">เวอร์ชัน ARC</translation>
 <translation id="6582080224869403177">รีเซ็ต <ph name="DEVICE_TYPE" /> เพื่ออัปเกรดความปลอดภัย</translation>
 <translation id="6584878029876017575">การรับรองตลอดชีพของ Microsoft</translation>
 <translation id="6586451623538375658">สลับปุ่มเมาส์หลัก</translation>
@@ -4373,6 +4373,7 @@
 <translation id="7487141338393529395">เปิดฟีเจอร์ตรวจตัวสะกดที่ได้รับการปรับปรุง</translation>
 <translation id="7487969577036436319">ไม่มีคอมโพเนนต์ที่ได้รับการติดตั้ง</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;เปิดทั้งหมด}=1{&amp;เปิดบุ๊กมาร์ก}other{&amp;เปิดทั้งหมด (#)}}</translation>
+<translation id="7489761397368794366">โทรจากอุปกรณ์ของคุณ</translation>
 <translation id="749028671485790643">คนที่ <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">ที่อยู่ MAC</translation>
 <translation id="7493386493263658176">ส่วนขยาย <ph name="EXTENSION_NAME" /> อาจรวบรวมข้อความทั้งหมดที่คุณพิมพ์ ซึ่งรวมถึงข้อมูลส่วนตัว เช่น รหัสผ่านและหมายเลขบัตรเครดิต คุณต้องการใช้ส่วนขยายนี้ไหม</translation>
@@ -4392,6 +4393,7 @@
 <translation id="7508054832109420082">ให้สิทธิ์เข้าถึงเครื่องพิมพ์</translation>
 <translation id="7510943789645525906">เตือนคุณในกรณีที่รหัสผ่านที่ใช้รวมอยู่ในการละเมิดข้อมูล</translation>
 <translation id="7513029293694390567">ลงชื่อเข้าใช้เว็บไซต์โดยอัตโนมัติโดยใช้ข้อมูลเข้าสู่ระบบที่เก็บไว้ เมื่อฟีเจอร์นี้ปิดอยู่ ระบบจะขอให้คุณยืนยันทุกครั้งก่อนลงชื่อเข้าใช้เว็บไซต์</translation>
+<translation id="7514239104543605883">คัดลอกไปยังอุปกรณ์ของคุณ</translation>
 <translation id="7514365320538308">ดาวน์โหลด</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">พูดว่า "Ok Google"</translation>
@@ -4948,6 +4950,7 @@
 <translation id="8274332263553132018">แคสต์ไฟล์</translation>
 <translation id="8274924778568117936">อย่าปิดเครื่องหรือปิดฝา <ph name="DEVICE_TYPE" /> จนกว่าการอัปเดตจะเสร็จสิ้น <ph name="DEVICE_TYPE" /> จะรีสตาร์ทหลังติดตั้งเสร็จแล้ว</translation>
 <translation id="8275038454117074363">การนำเข้า</translation>
+<translation id="8275080796245127762">โทรจากอุปกรณ์ของคุณ</translation>
 <translation id="8276560076771292512">ล้างแคชและโหลดซ้ำแบบดึงข้อมูลใหม่ทั้งหมด</translation>
 <translation id="8281886186245836920">ข้าม</translation>
 <translation id="8282947398454257691">ทราบตัวระบุอุปกรณ์ที่ไม่ซ้ำกัน</translation>
@@ -5268,6 +5271,7 @@
 <translation id="8758418656925882523">เปิดใช้การพิมพ์ตามคำบอก (พูดเพื่อพิมพ์)</translation>
 <translation id="8759408218731716181">ไม่สามารถตั้งค่าการลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชีได้</translation>
 <translation id="8759753423332885148">ดูข้อมูลเพิ่มเติม</translation>
+<translation id="8761945298804995673">มีผู้ใช้รายนี้แล้ว</translation>
 <translation id="8762886931014513155"><ph name="DEVICE_TYPE" /> ต้องการการอัปเดต</translation>
 <translation id="8763927697961133303">อุปกรณ์ USB</translation>
 <translation id="8767621466733104912">อัปเดต Chrome สำหรับผู้ใช้ทุกคนโดยอัตโนมัติ</translation>
@@ -5356,6 +5360,7 @@
 <translation id="8879284080359814990">แ&amp;สดงเป็นแถบ</translation>
 <translation id="8879921471468674457">จำข้อมูลการลงชื่อเข้าใช้</translation>
 <translation id="8881020143150461183">โปรดลองอีกครั้ง หรือติดต่อ <ph name="CARRIER_NAME" /> เพื่อรับการสนับสนุนด้านเทคนิค</translation>
+<translation id="8883273463630735858">เปิดใช้การเร่งความเร็วทัชแพด</translation>
 <translation id="8884570509232205463">ตอนนี้อุปกรณ์จะล็อกที่เวลา <ph name="UNLOCK_TIME" /></translation>
 <translation id="8885197664446363138">Smart Lock ไม่พร้อมใช้งาน</translation>
 <translation id="8888253246822647887">แอปจะเปิดเมื่อการอัปเกรดเสร็จสมบูรณ์ ซึ่งอาจใช้เวลาสักครู่</translation>

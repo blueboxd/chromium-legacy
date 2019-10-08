@@ -9,11 +9,11 @@
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/performance_manager_impl.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

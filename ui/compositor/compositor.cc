@@ -155,7 +155,6 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
 
   settings.initial_debug_state.SetRecordRenderingStats(
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
-  settings.enable_surface_synchronization = true;
   settings.build_hit_test_data = features::IsVizHitTestingSurfaceLayerEnabled();
 
   settings.use_zero_copy = IsUIZeroCopyEnabled();

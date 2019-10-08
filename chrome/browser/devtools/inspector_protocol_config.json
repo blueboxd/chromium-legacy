@@ -28,6 +28,11 @@
             },
             {
                 "domain": "WindowManager"
+            },
+            {
+                "domain": "Security",
+                "include": [ "enable", "disable" ],
+                "include_events": [ "visibleSecurityStateChanged" ]
             }
         ]
     },

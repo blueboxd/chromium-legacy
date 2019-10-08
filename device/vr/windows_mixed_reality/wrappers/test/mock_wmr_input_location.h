@@ -23,6 +23,9 @@ class MockWMRInputLocation : public WMRInputLocation {
                              orientation) const override;
   bool TryGetAngularVelocity(ABI::Windows::Foundation::Numerics::Vector3*
                                  angular_velocity) const override;
+  bool TryGetPositionAccuracy(ABI::Windows::UI::Input::Spatial::
+                                  SpatialInteractionSourcePositionAccuracy*
+                                      position_accuracy) const override;
 
  private:
   ControllerFrameData data_;

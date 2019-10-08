@@ -256,18 +256,6 @@ jumbo_static_library("safe_browsing") {
         "//components/safe_browsing:buildflags",
         "//components/safe_browsing/android:safe_browsing_mobile",
       ]
-    } else if (safe_browsing_mode == 3) {
-      sources += [
-        "android/file_type_policies.cc",
-        "android/services_delegate_android.cc",
-        "android/services_delegate_android.h",
-        "telemetry/android/android_telemetry_service.cc",
-        "telemetry/android/android_telemetry_service.h",
-      ]
-      deps += [
-        "//chrome/android:jni_headers",
-        "//components/safe_browsing/db:db",
-      ]
     }
   }
 }

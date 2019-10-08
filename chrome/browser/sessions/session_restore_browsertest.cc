@@ -13,13 +13,13 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/fake_memory_pressure_monitor.h"
 #include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/util/memory_pressure/fake_memory_pressure_monitor.h"
 #include "build/build_config.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -69,7 +69,9 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_palette.h"
@@ -232,7 +234,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
   const BrowserList* active_browser_list_ = nullptr;
 
  private:
-  base::test::FakeMemoryPressureMonitor fake_memory_pressure_monitor_;
+  util::test::FakeMemoryPressureMonitor fake_memory_pressure_monitor_;
 };
 
 // Activates the smart restore behaviour and tracks the loading of tabs.
@@ -1859,4 +1861,105 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreWithURLInCommandLineTest,
   EXPECT_EQ(url1_, tab_strip_model->GetWebContentsAt(0)->GetURL());
   EXPECT_EQ(url2_, tab_strip_model->GetWebContentsAt(1)->GetURL());
   EXPECT_EQ(url3_, tab_strip_model->GetWebContentsAt(2)->GetURL());
+}
+
+class SecFetchSiteSessionRestoreTest : public SessionRestoreTest {
+ public:
+  SecFetchSiteSessionRestoreTest()
+      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  void SetUpOnMainThread() override {
+    SessionRestoreTest::SetUpOnMainThread();
+
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    https_test_server_.AddDefaultHandlers(GetChromeTestDataDir());
+    https_test_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+    ASSERT_TRUE(https_test_server_.Start());
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    feature_list_.InitWithFeatures(
+        {network::features::kFetchMetadata,
+         network::features::kFetchMetadataDestination},
+        {});
+  }
+
+  content::WebContents* GetTab(Browser* browser, int tab_index) {
+    DCHECK_LT(tab_index, browser->tab_strip_model()->count());
+    return browser->tab_strip_model()->GetWebContentsAt(tab_index);
+  }
+
+  std::string GetContent(Browser* browser, int tab_index) {
+    return EvalJs(GetTab(browser, tab_index), "document.body.innerText")
+        .ExtractString();
+  }
+
+  GURL GetSecFetchUrl() {
+    return GetSameOriginUrl("/echoheader?sec-fetch-site");
+  }
+
+  GURL GetSameOriginUrl(const std::string& path_and_query) {
+    return https_test_server_.GetURL(path_and_query);
+  }
+
+  GURL GetCrossSiteUrl(const std::string& path_and_query) {
+    return embedded_test_server()->GetURL("another.origin.example.com",
+                                          path_and_query);
+  }
+
+ private:
+  net::EmbeddedTestServer https_test_server_;
+  base::test::ScopedFeatureList feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(SecFetchSiteSessionRestoreTest);
+};
+
+// Test that Sec-Fetch-Site http request header is correctly replayed during
+// session restore.  This is a regression test for https://crbug.com/976055.
+IN_PROC_BROWSER_TEST_F(SecFetchSiteSessionRestoreTest, Test) {
+  // Tab #1: Same-origin navigation.
+  ui_test_utils::NavigateToURL(browser(), GetSameOriginUrl("/title1.html"));
+  {
+    content::WebContents* tab1 = GetTab(browser(), 0);
+    content::TestNavigationObserver nav_observer(tab1);
+    ASSERT_TRUE(content::ExecJs(
+        tab1, content::JsReplace("location = $1", GetSecFetchUrl())));
+    nav_observer.Wait();
+  }
+
+  // Tab #2: Cross-site navigation.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GetCrossSiteUrl("/title1.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  {
+    content::WebContents* tab2 = GetTab(browser(), 1);
+    content::TestNavigationObserver nav_observer(tab2);
+    ASSERT_TRUE(content::ExecJs(
+        tab2, content::JsReplace("location = $1", GetSecFetchUrl())));
+    nav_observer.Wait();
+  }
+
+  // Tab #3: Omnibox navigation.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GetSecFetchUrl(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Verify that all the tabs have seen the expected Sec-Fetch-Site header.
+  ASSERT_EQ(3, browser()->tab_strip_model()->count());
+  EXPECT_EQ("same-origin", GetContent(browser(), 0));
+  EXPECT_EQ("cross-site", GetContent(browser(), 1));
+  EXPECT_EQ("none", GetContent(browser(), 2));
+
+  // Kill the original browser then open a new one to trigger a restore.
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  ASSERT_EQ(1u, active_browser_list_->size());
+
+  // Verify again (after session restore) that all the tabs have seen the
+  // expected Sec-Fetch-Site header.  This is the main verification for
+  // https://crbug.com/976055.
+  ASSERT_EQ(3, new_browser->tab_strip_model()->count());
+  EXPECT_EQ("same-origin", GetContent(new_browser, 0));
+  EXPECT_EQ("cross-site", GetContent(new_browser, 1));
+  EXPECT_EQ("none", GetContent(new_browser, 2));
 }

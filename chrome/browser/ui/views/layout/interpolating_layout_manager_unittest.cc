@@ -11,26 +11,24 @@
 #include "ui/views/test/test_views.h"
 #include "ui/views/view.h"
 
-using namespace views;
-
 namespace {
 
-class TestLayout : public LayoutManagerBase {
+class TestLayout : public views::LayoutManagerBase {
  public:
   explicit TestLayout(int size = 0) : size_(size) {}
 
   int num_layouts_generated() const { return num_layouts_generated_; }
 
-  ProposedLayout CalculateProposedLayout(
-      const SizeBounds& size_bounds) const override {
+  views::ProposedLayout CalculateProposedLayout(
+      const views::SizeBounds& size_bounds) const override {
     ++num_layouts_generated_;
-    ProposedLayout layout;
+    views::ProposedLayout layout;
     int x = size_;
     for (auto it = host_view()->children().begin();
          it != host_view()->children().end(); ++it) {
       if (!IsChildIncludedInLayout(*it))
         continue;
-      ChildLayout child_layout;
+      views::ChildLayout child_layout;
       child_layout.child_view = *it;
       child_layout.visible = true;
       child_layout.bounds = gfx::Rect(x, 1, size_, size_);
@@ -46,8 +44,8 @@ class TestLayout : public LayoutManagerBase {
   mutable int num_layouts_generated_ = 0;
 };
 
-void CompareProposedLayouts(const ProposedLayout& left,
-                            const ProposedLayout& right) {
+void CompareProposedLayouts(const views::ProposedLayout& left,
+                            const views::ProposedLayout& right) {
   EXPECT_EQ(left.host_size, right.host_size);
   EXPECT_EQ(left.child_layouts.size(), right.child_layouts.size());
   for (auto left_it = left.child_layouts.begin(),
@@ -67,17 +65,17 @@ void CompareProposedLayouts(const ProposedLayout& left,
 class InterpolatingLayoutManagerTest : public testing::Test {
  public:
   void SetUp() override {
-    host_view_ = std::make_unique<View>();
+    host_view_ = std::make_unique<views::View>();
     layout_manager_ = host_view_->SetLayoutManager(
         std::make_unique<InterpolatingLayoutManager>());
   }
 
   InterpolatingLayoutManager* layout_manager() { return layout_manager_; }
-  View* host_view() { return host_view_.get(); }
+  views::View* host_view() { return host_view_.get(); }
 
  private:
   InterpolatingLayoutManager* layout_manager_ = nullptr;
-  std::unique_ptr<View> host_view_;
+  std::unique_ptr<views::View> host_view_;
 };
 
 TEST_F(InterpolatingLayoutManagerTest, AddLayout) {
@@ -191,7 +189,7 @@ TEST_F(InterpolatingLayoutManagerTest, SetOrientation) {
       layout_manager()->AddLayout(std::make_unique<TestLayout>());
   TestLayout* const second_layout =
       layout_manager()->AddLayout(std::make_unique<TestLayout>(), {4, 2});
-  layout_manager()->SetOrientation(LayoutOrientation::kVertical);
+  layout_manager()->SetOrientation(views::LayoutOrientation::kVertical);
   EXPECT_EQ(0, first_layout->num_layouts_generated());
   EXPECT_EQ(0, second_layout->num_layouts_generated());
   layout_manager()->GetProposedLayout({2, 6});
@@ -237,7 +235,7 @@ TEST_F(InterpolatingLayoutManagerTest, GetPreferredSize_UsesDefaultLayout) {
 }
 
 TEST_F(InterpolatingLayoutManagerTest, GetPreferredHeightForWidth_Vertical) {
-  layout_manager()->SetOrientation(LayoutOrientation::kVertical);
+  layout_manager()->SetOrientation(views::LayoutOrientation::kVertical);
   layout_manager()->AddLayout(std::make_unique<TestLayout>(5));
   TestLayout* const second_layout =
       layout_manager()->AddLayout(std::make_unique<TestLayout>(10), {5, 5});
@@ -252,7 +250,7 @@ TEST_F(InterpolatingLayoutManagerTest, GetPreferredHeightForWidth_Vertical) {
 }
 
 TEST_F(InterpolatingLayoutManagerTest, GetPreferredHeightForWidth_Horizontal) {
-  layout_manager()->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_manager()->SetOrientation(views::LayoutOrientation::kHorizontal);
   TestLayout* const first_layout =
       layout_manager()->AddLayout(std::make_unique<TestLayout>(5));
   TestLayout* const second_layout =
@@ -274,7 +272,8 @@ TEST_F(InterpolatingLayoutManagerTest, GetPreferredHeightForWidth_Horizontal) {
 }
 
 TEST_F(InterpolatingLayoutManagerTest, GetProposedLayout) {
-  View* const child_view = host_view()->AddChildView(std::make_unique<View>());
+  views::View* const child_view =
+      host_view()->AddChildView(std::make_unique<views::View>());
   TestLayout* const first_layout =
       layout_manager()->AddLayout(std::make_unique<TestLayout>(5));
   TestLayout* const second_layout =
@@ -284,9 +283,9 @@ TEST_F(InterpolatingLayoutManagerTest, GetProposedLayout) {
   constexpr gfx::Size kLargeSize{11, 10};
   constexpr gfx::Size kOneThirdSize{7, 10};
   constexpr gfx::Size kOneHalfSize{8, 10};
-  const ProposedLayout expected_default =
+  const views::ProposedLayout expected_default =
       first_layout->GetProposedLayout(kSmallSize);
-  const ProposedLayout expected_other =
+  const views::ProposedLayout expected_other =
       second_layout->GetProposedLayout(kLargeSize);
 
   CompareProposedLayouts(expected_default,
@@ -294,13 +293,14 @@ TEST_F(InterpolatingLayoutManagerTest, GetProposedLayout) {
   CompareProposedLayouts(expected_other,
                          layout_manager()->GetProposedLayout(kLargeSize));
 
-  ProposedLayout actual = layout_manager()->GetProposedLayout(kOneThirdSize);
+  views::ProposedLayout actual =
+      layout_manager()->GetProposedLayout(kOneThirdSize);
   EXPECT_EQ(gfx::Tween::SizeValueBetween(0.3333, expected_default.host_size,
                                          expected_other.host_size),
             actual.host_size);
   ASSERT_EQ(1U, actual.child_layouts.size());
   EXPECT_EQ(child_view, actual.child_layouts[0].child_view);
-  EXPECT_EQ(true, actual.child_layouts[0].visible);
+  EXPECT_TRUE(actual.child_layouts[0].visible);
   EXPECT_EQ(gfx::Tween::RectValueBetween(
                 0.3333, expected_default.child_layouts[0].bounds,
                 expected_other.child_layouts[0].bounds),
@@ -312,7 +312,7 @@ TEST_F(InterpolatingLayoutManagerTest, GetProposedLayout) {
             actual.host_size);
   ASSERT_EQ(1U, actual.child_layouts.size());
   EXPECT_EQ(child_view, actual.child_layouts[0].child_view);
-  EXPECT_EQ(true, actual.child_layouts[0].visible);
+  EXPECT_TRUE(actual.child_layouts[0].visible);
   EXPECT_EQ(gfx::Tween::RectValueBetween(
                 0.5, expected_default.child_layouts[0].bounds,
                 expected_other.child_layouts[0].bounds),

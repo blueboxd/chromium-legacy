@@ -29,11 +29,6 @@ const base::Feature kGridLayoutForNtpShortcuts{
 const base::Feature kNtpCustomizationMenuV2{"NtpCustomizationMenuV2",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, include a pre-populated Google search shortcut on the NTP during
-// first run.
-const base::Feature kFirstRunDefaultSearchShortcut{
-    "FirstRunDefaultSearchShortcut", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If enabled, the search box in the middle of the NTP will accept input
 // directly (i.e. not be a "fake" box) and search results will show directly
 // below the non-fake input ("realbox").

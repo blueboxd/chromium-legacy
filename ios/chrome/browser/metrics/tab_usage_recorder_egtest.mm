@@ -48,6 +48,7 @@ using chrome_test_util::SettingsMenuPrivacyButton;
 using chrome_test_util::WebViewMatcher;
 
 using tab_usage_recorder_test_util::OpenNewIncognitoTabUsingUIAndEvictMainTabs;
+using tab_usage_recorder_test_util::RemoveBrowsingCacheForMainTabs;
 using tab_usage_recorder_test_util::SwitchToNormalMode;
 
 namespace {
@@ -62,6 +63,10 @@ const char kClearPageScript[] = "document.body.innerHTML='';";
 
 // The delay to use to serve slow URLs.
 const CGFloat kSlowURLDelay = 3;
+
+// The delay to use to serve very slow URLS -- tests using this delay expect the
+// page to never load.
+const CGFloat kVerySlowURLDelay = 20;
 
 // The delay to wait for an element to appear before tapping on it.
 const CGFloat kWaitElementTimeout = 3;
@@ -409,8 +414,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 
 // Test that the USER_DID_NOT_WAIT metric is logged when the user opens an NTP
 // while the evicted tab is still reloading.
-// TODO(crbug.com/1011336) This test is flaky.
-- (void)DISABLED_testEvictedTabReloadSwitchToNTP {
+- (void)testEvictedTabReloadSwitchToNTP {
   std::map<GURL, std::string> responses;
   const GURL slowURL = web::test::HttpServer::MakeUrl("http://slow");
   responses[slowURL] = "Slow Page";
@@ -428,7 +432,10 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
                  @"Failed to open Incognito Tab");
 
   web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
-      std::make_unique<HtmlResponseProvider>(responses), kSlowURLDelay));
+      std::make_unique<HtmlResponseProvider>(responses), kVerySlowURLDelay));
+
+  GREYAssertTrue(RemoveBrowsingCacheForMainTabs(),
+                 @"Failed to clear cache for main tabs");
 
   SwitchToNormalMode();
 
@@ -489,8 +496,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 
 // Tests that leaving Chrome while an evicted tab is reloading triggers the
 // recording of the USER_LEFT_CHROME metric.
-// TODO(crbug.com/1011336) This test is flaky.
-- (void)DISABLED_testEvictedTabReloadBackgrounded {
+- (void)testEvictedTabReloadBackgrounded {
   std::map<GURL, std::string> responses;
   const GURL slowURL = web::test::HttpServer::MakeUrl("http://slow");
   responses[slowURL] = "Slow Page";
@@ -504,7 +510,11 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
                  @"Failed to open Incognito Tab");
 
   web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
-      std::make_unique<HtmlResponseProvider>(responses), kSlowURLDelay));
+      std::make_unique<HtmlResponseProvider>(responses), kVerySlowURLDelay));
+
+  GREYAssertTrue(RemoveBrowsingCacheForMainTabs(),
+                 @"Failed to clear cache for main tabs");
+
   SwitchToNormalMode();
 
   // Letting page load start.

@@ -1007,4 +1007,8 @@ void ContentBrowserClient::BlockBluetoothScanning(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin) {}
 
+bool ContentBrowserClient::ShouldLoadExtraIcuDataFile() {
+  return false;
+}
+
 }  // namespace content

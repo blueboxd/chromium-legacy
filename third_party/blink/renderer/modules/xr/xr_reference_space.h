@@ -30,8 +30,10 @@ class XRReferenceSpace : public XRSpace {
 
   static Type StringToReferenceSpaceType(const String& reference_space_type);
 
-  XRReferenceSpace(XRSession*, Type);
-  XRReferenceSpace(XRSession*, XRRigidTransform*, Type);
+  XRReferenceSpace(XRSession* session, Type type);
+  XRReferenceSpace(XRSession* session,
+                   XRRigidTransform* origin_offset,
+                   Type type);
   ~XRReferenceSpace() override;
 
   XRPose* getPose(XRSpace* other_space,
@@ -50,9 +52,13 @@ class XRReferenceSpace : public XRSpace {
   TransformationMatrix OriginOffsetMatrix() override;
   TransformationMatrix InverseOriginOffsetMatrix() override;
 
+  Type GetType() const;
+
   XRReferenceSpace* getOffsetReferenceSpace(XRRigidTransform* transform);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(reset, kReset)
+
+  base::Optional<XRNativeOriginInformation> NativeOrigin() const override;
 
   void Trace(blink::Visitor*) override;
 

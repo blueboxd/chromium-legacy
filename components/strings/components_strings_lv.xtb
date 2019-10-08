@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Atvērt sākumlapas</translation>
 <translation id="1883255238294161206">Sakļaut sarakstu</translation>
 <translation id="1898423065542865115">Filtrēšana</translation>
+<translation id="1901443836186977402">{1,plural, =1{Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />. Tās drošības sertifikāta derīguma termiņš beidzās pēdējās dienas laikā. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu. Jūsu datora pulkstenī pašlaik ir iestatīts šāds datums: <ph name="CURRENT_DATE" />. Vai tas ir pareizs? Ja datums nav pareizs, mainiet sistēmas pulksteni un pēc tam atsvaidziniet šo lapu.}zero{Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />. Tās drošības sertifikāta derīguma termiņš beidzās pirms # dienām. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu. Jūsu datora pulkstenī pašlaik ir iestatīts šāds datums: <ph name="CURRENT_DATE" />. Vai tas ir pareizs? Ja datums nav pareizs, mainiet sistēmas pulksteni un pēc tam atsvaidziniet šo lapu.}one{Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />. Tās drošības sertifikāta derīguma termiņš beidzās pirms # dienas. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu. Jūsu datora pulkstenī pašlaik ir iestatīts šāds datums: <ph name="CURRENT_DATE" />. Vai tas ir pareizs? Ja datums nav pareizs, mainiet sistēmas pulksteni un pēc tam atsvaidziniet šo lapu.}other{Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />. Tās drošības sertifikāta derīguma termiņš beidzās pirms # dienām. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu. Jūsu datora pulkstenī pašlaik ir iestatīts šāds datums: <ph name="CURRENT_DATE" />. Vai tas ir pareizs? Ja datums nav pareizs, mainiet sistēmas pulksteni un pēc tam atsvaidziniet šo lapu.}}</translation>
 <translation id="1914326953223720820">Pakalpojums failu izgūšanai no arhīva</translation>
 <translation id="1915697529809968049">Vai vēlaties izmantot Touch ID, nevis CVC?</translation>
 <translation id="1916770123977586577">Lai lietotu atjauninātos iestatījumus šai vietnei, atkārtoti ielādējiet šo lapu</translation>
@@ -443,6 +444,7 @@
 <translation id="3116158981186517402">Laminēšana</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Mēģiniet palaist savienojamības diagnostiku<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Pāriet uz <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Nav}=1{1 konta pierakstīšanās dati}zero{# kontu pierakstīšanās dati}one{# konta pierakstīšanās dati}other{# kontu pierakstīšanās dati}}</translation>
 <translation id="3145945101586104090">Neizdevās atšifrēt atbildi.</translation>
 <translation id="3150653042067488994">Īslaicīga servera kļūda</translation>
@@ -826,6 +828,7 @@
 <translation id="5043480802608081735">Jūsu kopētā saite</translation>
 <translation id="5045550434625856497">Nepareiza parole</translation>
 <translation id="5056549851600133418">Jums piemeklēti raksti</translation>
+<translation id="5061227663725596739">Vai domājāt <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(viens tiek lietots)}zero{(# tiek lietoti)}one{(# tiek lietots)}other{(# tiek lietoti)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Pārbaudiet starpniekservera adresi<ph name="END_LINK" />.</translation>
@@ -879,6 +882,7 @@
 <translation id="5284909709419567258">Tīkla adreses</translation>
 <translation id="5285570108065881030">Rādīt visas saglabātās paroles</translation>
 <translation id="5287240709317226393">Rādīt sīkfailus</translation>
+<translation id="5287456746628258573">Šajā vietnē tiek izmantota novecojusi drošības konfigurācija, tādēļ var tikt atklāta jūsu informācija (piemēram, paroles vai kredītkaršu numuri), kad tā tiek nosūtīta uz šo vietni.</translation>
 <translation id="5288108484102287882">Validējot politikas vērtības, tika konstatētas kļūdas</translation>
 <translation id="5299298092464848405">Parsējot politiku, radās kļūda.</translation>
 <translation id="5300589172476337783">Rādīt</translation>
@@ -1006,6 +1010,7 @@
 <translation id="5946937721014915347">Notiek vietnes <ph name="SITE_NAME" /> atvēršana...</translation>
 <translation id="5947933617628957894">Jā, pievienot</translation>
 <translation id="5951495562196540101">Neizdevās reģistrēt, izmantojot patērētāja kontu (pieejama komplektā iekļauta licence).</translation>
+<translation id="5966900314707961320">Kad ir ieslēgta šī opcija, vietnes nevar izmantot sīkfailus, lai izsekotu jūsu darbības tīmeklī.</translation>
 <translation id="5967592137238574583">Kontaktinformācijas rediģēšana</translation>
 <translation id="5967867314010545767">Noņemt no vēstures</translation>
 <translation id="5975083100439434680">Tālināt</translation>
@@ -1088,6 +1093,7 @@
 <translation id="6383221683286411806">Iespējams, tiks pieprasīta maksa.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{vēl 1 ieteikums}zero{vēl # ieteikumi}one{vēl # ieteikums}other{vēl # ieteikumi}}</translation>
 <translation id="6387754724289022810">Lai nākamreiz veiktu maksājumu ātrāk, saglabājiet kartes datus un norēķinu adresi savā Google kontā un šajā ierīcē.</translation>
+<translation id="6389470377220713856">Vārds un uzvārds uz kartes</translation>
 <translation id="6390200185239044127">Z-veida locījums uz pusēm</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Šī politika ir novecojusi. Tās vietā jums vajadzētu izmantot <ph name="NEW_POLICY" /> politiku.</translation>
@@ -1266,7 +1272,6 @@ Papildu informācija:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Ir saistīts:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Pamest šo vietni</translation>
 <translation id="7353601530677266744">Komandrinda</translation>
 <translation id="7372973238305370288">meklēšanas rezultāts</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1439,6 +1444,7 @@ Papildu informācija:
 <translation id="8131740175452115882">Apstiprināt</translation>
 <translation id="8149426793427495338">Dators tika pārslēgts miega režīmā.</translation>
 <translation id="8150722005171944719">Vietnē <ph name="URL" /> esošo failu nevar nolasīt. Iespējams, tas ir noņemts vai pārvietots vai piekļuvei nepieciešamas atļaujas.</translation>
+<translation id="8157295877370077682">Pamest vietni</translation>
 <translation id="8163866351304776260">Četri caurumi kreisajā malā</translation>
 <translation id="8175796834047840627">Pārlūkprogrammā Chrome tiek piedāvāts saglabāt jūsu kartes Google kontā, jo esat pierakstījies. Varat mainīt šo darbību iestatījumos.</translation>
 <translation id="8184538546369750125">Izmantot globālo noklusējumu (Atļaut)</translation>

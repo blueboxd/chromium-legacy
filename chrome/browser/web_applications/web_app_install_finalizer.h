@@ -51,7 +51,7 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                                  const AppId& app_id,
                                  bool success);
 
-  WebAppSyncBridge* sync_bridge_;
+  WebAppSyncBridge* const sync_bridge_;
   WebAppIconManager* const icon_manager_;
 
   base::WeakPtrFactory<WebAppInstallFinalizer> weak_ptr_factory_{this};

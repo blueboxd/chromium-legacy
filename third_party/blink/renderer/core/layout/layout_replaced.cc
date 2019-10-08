@@ -167,13 +167,6 @@ void LayoutReplaced::ComputeIntrinsicSizingInfoForReplacedContent(
         FloatSize(ContentLogicalSizeForSizeContainment());
     return;
   }
-  if (DisplayLockInducesSizeContainment()) {
-    auto* context = GetDisplayLockContext();
-    intrinsic_sizing_info.size =
-        FloatSize(context->GetLockedContentLogicalWidth(),
-                  context->GetLockedContentLogicalHeight());
-    return;
-  }
 
   ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
 
@@ -668,7 +661,7 @@ PhysicalRect LayoutReplaced::PreSnappedRectForPersistentSizing(
 
 void LayoutReplaced::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  DCHECK(!ShouldApplySizeContainment() && !DisplayLockInducesSizeContainment());
+  DCHECK(!ShouldApplySizeContainment());
   intrinsic_sizing_info.size = FloatSize(IntrinsicLogicalWidth().ToFloat(),
                                          IntrinsicLogicalHeight().ToFloat());
 

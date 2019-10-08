@@ -602,9 +602,6 @@ grit("resources") {
     "grit/blink_resources.h",
     "blink_resources.pak",
   ]
-  if (is_android) {
-    defines = [ "notouch_build=$notouch_build" ]
-  }
   html_min_css = "$blink_core_output_dir/html.css"
   grit_flags = [
     "-E",
@@ -630,10 +627,6 @@ group("scaled_resources") {
     ":image_resources",
     "//third_party/blink/renderer/modules/media_controls:media_controls_resources",
   ]
-
-  if (is_android && notouch_build) {
-    public_deps += [ "//third_party/blink/renderer/modules/media_controls:media_controls_touchless_resources" ]
-  }
 }
 
 repack("scaled_resources_100_percent") {
@@ -642,9 +635,6 @@ repack("scaled_resources_100_percent") {
     "$root_gen_dir/third_party/blink/public/resources/blink_image_resources_100_percent.pak",
     "$root_gen_dir/third_party/blink/renderer/modules/media_controls/resources/media_controls_resources_100_percent.pak",
   ]
-  if (is_android && notouch_build) {
-    sources += [ "$root_gen_dir/third_party/blink/renderer/modules/media_controls/touchless/resources/media_controls_touchless_resources.pak" ]
-  }
   deps = [
     ":scaled_resources",
   ]
@@ -656,9 +646,6 @@ repack("scaled_resources_200_percent") {
     "$root_gen_dir/third_party/blink/public/resources/blink_image_resources_200_percent.pak",
     "$root_gen_dir/third_party/blink/renderer/modules/media_controls/resources/media_controls_resources_200_percent.pak",
   ]
-  if (is_android && notouch_build) {
-    sources += [ "$root_gen_dir/third_party/blink/renderer/modules/media_controls/touchless/resources/media_controls_touchless_resources.pak" ]
-  }
   deps = [
     ":scaled_resources",
   ]

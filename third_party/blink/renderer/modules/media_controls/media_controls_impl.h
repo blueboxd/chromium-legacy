@@ -116,7 +116,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
     // There is no update because only the overlay is expected to change.
     RefreshCastButtonVisibilityWithoutUpdate();
   }
-  void ShowContextMenu() override {}
 
   // Called by the fullscreen buttons to toggle fulllscreen on/off.
   void EnterFullscreen();

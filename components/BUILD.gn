@@ -246,6 +246,7 @@ test("components_unittests") {
       "//components/password_manager/content/browser:unit_tests",
       "//components/payments/content:unit_tests",
       "//components/payments/content/utility:unit_tests",
+      "//components/performance_manager:unit_tests",
       "//components/policy/content:unit_tests",
       "//components/policy/core/browser:unit_tests",
       "//components/policy/core/common:unit_tests",
@@ -390,8 +391,6 @@ test("components_unittests") {
     ]
   } else if (safe_browsing_mode == 2) {
     deps += [ "//components/safe_browsing/android:unit_tests_mobile" ]
-  } else if (safe_browsing_mode == 3) {
-    deps += [ "//components/safe_browsing/db:unit_tests_desktop" ]
   }
 
   if (!is_ios) {

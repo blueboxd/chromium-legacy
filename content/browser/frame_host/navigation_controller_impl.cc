@@ -510,7 +510,8 @@ NavigationControllerImpl::NavigationControllerImpl(
       is_initial_navigation_(true),
       in_navigate_to_pending_entry_(false),
       pending_reload_(ReloadType::NONE),
-      get_timestamp_callback_(base::Bind(&base::Time::Now)) {
+      get_timestamp_callback_(base::Bind(&base::Time::Now)),
+      entry_replaced_by_post_commit_error_(nullptr) {
   DCHECK(browser_context_);
 }
 
@@ -574,9 +575,20 @@ void NavigationControllerImpl::Reload(ReloadType reload_type,
   NavigationEntryImpl* entry = nullptr;
   int current_index = -1;
 
-  // If we are reloading the initial navigation, just use the current
-  // pending entry.  Otherwise look up the current entry.
-  if (IsInitialNavigation() && pending_entry_) {
+  if (entry_replaced_by_post_commit_error_) {
+    // If there is an entry that was replaced by a currently active post-commit
+    // error navigation, this can't be the initial navigation.
+    DCHECK(!IsInitialNavigation());
+    // If the current entry is a post commit error, we reload the entry it
+    // replaced instead. We leave the error entry in place until a commit
+    // replaces it, but the pending entry points to the original entry in the
+    // meantime. Note that NavigateToExistingPendingEntry is able to handle the
+    // case that pending_entry_ != entries_[pending_entry_index_].
+    entry = entry_replaced_by_post_commit_error_.get();
+    current_index = GetCurrentEntryIndex();
+  } else if (IsInitialNavigation() && pending_entry_) {
+    // If we are reloading the initial navigation, just use the current
+    // pending entry.  Otherwise look up the current entry.
     entry = pending_entry_;
     // The pending entry might be in entries_ (e.g., after a Clone), so we
     // should also update the current_index.
@@ -980,6 +992,21 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // Save the previous state before we clobber it.
   bool overriding_user_agent_changed = false;
   if (GetLastCommittedEntry()) {
+    if (entry_replaced_by_post_commit_error_) {
+      if (is_same_document_navigation) {
+        // Same document navigations should not be possible on error pages and
+        // would leave the controller in a weird state. Kill the renderer if
+        // that happens.
+        bad_message::ReceivedBadMessage(
+            rfh->GetProcess(), bad_message::NC_SAME_DOCUMENT_POST_COMMIT_ERROR);
+      }
+      // Any commit while a post-commit error page is showing should put the
+      // original entry back, replacing the error page's entry.  This includes
+      // reloads, where the original entry was used as the pending entry and
+      // should now be at the correct index at commit time.
+      entries_[last_committed_entry_index_] =
+          std::move(entry_replaced_by_post_commit_error_);
+    }
     details->previous_url = GetLastCommittedEntry()->GetURL();
     details->previous_entry_index = GetLastCommittedEntryIndex();
     if (pending_entry_ &&
@@ -1491,7 +1518,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
                                        previous_document_was_activated,
                                        request->IsRendererInitiated());
 
-  InsertOrReplaceEntry(std::move(new_entry), replace_entry);
+  InsertOrReplaceEntry(std::move(new_entry), replace_entry,
+                       !request->post_commit_error_page_html().empty());
 }
 
 void NavigationControllerImpl::RendererDidNavigateToExistingPage(
@@ -1778,7 +1806,7 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
   // https://crbug.com/607205. For now, the call to CloneAndReplace() will
   // delete the |frame_entry| when the function exits if it doesn't get used.
 
-  InsertOrReplaceEntry(std::move(new_entry), replace_entry);
+  InsertOrReplaceEntry(std::move(new_entry), replace_entry, false);
 }
 
 bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
@@ -2416,9 +2444,12 @@ NavigationEntryImpl* NavigationControllerImpl::GetPendingEntry() {
   DCHECK(pending_entry_ || pending_entry_index_ == -1);
 
   // If there is a pending_entry_index_, then pending_entry_ must be the entry
-  // at that index.
+  // at that index. An exception is while a reload of a post commit error page
+  // is ongoing; in that case pending entry will point to the entry replaced
+  // by the error.
   DCHECK(pending_entry_index_ == -1 ||
-         pending_entry_ == GetEntryAtIndex(pending_entry_index_));
+         pending_entry_ == GetEntryAtIndex(pending_entry_index_) ||
+         pending_entry_ == entry_replaced_by_post_commit_error_.get());
 
   return pending_entry_;
 }
@@ -2433,7 +2464,8 @@ int NavigationControllerImpl::GetPendingEntryIndex() {
 
 void NavigationControllerImpl::InsertOrReplaceEntry(
     std::unique_ptr<NavigationEntryImpl> entry,
-    bool replace) {
+    bool replace,
+    bool was_post_commit_error) {
   DCHECK(!ui::PageTransitionCoreTypeIs(entry->GetTransitionType(),
                                        ui::PAGE_TRANSITION_AUTO_SUBFRAME));
 
@@ -2448,9 +2480,17 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
   DiscardNonCommittedEntries();
 
   // When replacing, don't prune the forward history.
-  if (replace && entries_.size() > 0) {
+  if ((replace || was_post_commit_error) && entries_.size() > 0) {
     CopyReplacedNavigationEntryDataIfPreviouslyEmpty(
         entries_[last_committed_entry_index_].get(), entry.get());
+    // If the new entry is a post-commit error page, we store the current last
+    // committed entry to the side so that we can put it back when navigating
+    // away from the error.
+    if (was_post_commit_error) {
+      DCHECK(!entry_replaced_by_post_commit_error_);
+      entry_replaced_by_post_commit_error_ =
+          std::move(entries_[last_committed_entry_index_]);
+    }
     entries_[last_committed_entry_index_] = std::move(entry);
     return;
   }
@@ -2503,6 +2543,12 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
                "NavigationControllerImpl::NavigateToExistingPendingEntry");
   DCHECK(pending_entry_);
   DCHECK(IsInitialNavigation() || pending_entry_index_ != -1);
+  if (pending_entry_index_ != -1) {
+    // The pending entry may not be in entries_ if a post-commit error page is
+    // showing.
+    DCHECK(pending_entry_ == entries_[pending_entry_index_].get() ||
+           pending_entry_ == entry_replaced_by_post_commit_error_.get());
+  }
   DCHECK(!IsRendererDebugURL(pending_entry_->GetURL()));
   needs_reload_ = false;
   FrameTreeNode* root = delegate_->GetFrameTree()->root();
@@ -3324,10 +3370,11 @@ void NavigationControllerImpl::LoadIfNecessary() {
   }
 }
 
-void NavigationControllerImpl::LoadErrorPage(RenderFrameHost* render_frame_host,
-                                             const GURL& url,
-                                             const std::string& error_page_html,
-                                             net::Error error) {
+void NavigationControllerImpl::LoadPostCommitErrorPage(
+    RenderFrameHost* render_frame_host,
+    const GURL& url,
+    const std::string& error_page_html,
+    net::Error error) {
   FrameTreeNode* node =
       static_cast<RenderFrameHostImpl*>(render_frame_host)->frame_tree_node();
 
@@ -3343,7 +3390,7 @@ void NavigationControllerImpl::LoadErrorPage(RenderFrameHost* render_frame_host,
           true /* browser_initiated */, "" /* extra_headers */,
           nullptr /* frame_entry */, nullptr /* entry */,
           nullptr /* post_body */, nullptr /* navigation_ui_data */);
-  navigation_request->set_error_page_html(error_page_html);
+  navigation_request->set_post_commit_error_page_html(error_page_html);
   navigation_request->set_net_error(error);
   node->CreatedNavigationRequest(std::move(navigation_request));
   DCHECK(node->navigation_request());

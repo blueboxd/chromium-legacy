@@ -72,4 +72,10 @@ bool MockWMRInputLocation::TryGetAngularVelocity(
   return true;
 }
 
+bool MockWMRInputLocation::TryGetPositionAccuracy(
+    ABI::Windows::UI::Input::Spatial::SpatialInteractionSourcePositionAccuracy*
+        position_accuracy) const {
+  return false;
+}
+
 }  // namespace device

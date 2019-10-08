@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">বুকমার্ক সম্পাদনা করুন</translation>
 <translation id="2179182049312275900">যেকোনও সময় সেটিংস থেকে আপনি সিঙ্ক চালু করতে পারেন।</translation>
 <translation id="2198757192731523470">সার্চ, বিজ্ঞাপন এবং অন্যান্য Google পরিষেবাকে আপনার মতো করে সাজিয়ে নিতে Google আপনার ইতিহাস ব্যবহার করতে পারে।</translation>
-<translation id="2207590065820824892">পড়ার তালিকাতে <ph name="UNREAD_COUNT" />টি না পড়া নিবন্ধ।</translation>
 <translation id="2230173723195178503">Webpage loaded</translation>
 <translation id="2239626343334228536">ব্রাউজিং ডেটা মোছা হচ্ছে…</translation>
 <translation id="2267753748892043616">অ্যাকাউন্ট যোগ করুন</translation>
@@ -265,7 +264,6 @@
 
 <ph name="BEGIN_LINK" />রিসেট সিঙ্ক<ph name="END_LINK" /> থেকে এই সেটিং পরিবর্তন করুন</translation>
 <translation id="4805759445554688327">ভুল কার্ড নম্বর</translation>
-<translation id="4807020197310989387">পড়ার তালিকাতে ১টি না পড়া নিবন্ধ।</translation>
 <translation id="4818522717893377262">ভাষা যোগ করুন…</translation>
 <translation id="481968316161811770">কুকিজ, সাইট ডেটা</translation>
 <translation id="4833786495304741580">Google-কে অটোমেটিক ব্যবহারের পরিসংখ্যান ও ক্র্যাশ রিপোর্ট পাঠায়।</translation>
@@ -415,6 +413,7 @@
 <translation id="6858855187367714033">স্ক্যান করা হয়েছে</translation>
 <translation id="6859944681507688231">কোনও QR কোড বা ক্রেডিট কার্ড স্ক্যান করতে সেটিংস থেকে ক্যামেরা চালু করুন।</translation>
 <translation id="6873263987691478642">স্প্লিট ভিউ</translation>
+<translation id="6888009575607455378">আপনি কি সত্যিই আপনার করা পরিবর্তন বাতিল করতে চান?</translation>
 <translation id="6896758677409633944">কপি</translation>
 <translation id="6903907808598579934">সিঙ্ক চালু করুন</translation>
 <translation id="6914583639806229067">আপনার কপি করা ছবি সার্চ করুন</translation>

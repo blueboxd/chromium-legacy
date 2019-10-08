@@ -28,6 +28,7 @@ struct NotificationMessage final {
   std::string message_text;
   std::string link_text;
   std::string link_url;
+  bool allow_dont_show_again;
 };
 
 }  // namespace remoting

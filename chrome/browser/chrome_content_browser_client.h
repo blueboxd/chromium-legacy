@@ -614,6 +614,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                               const url::Origin& requesting_origin,
                               const url::Origin& embedding_origin) override;
 
+  bool ShouldLoadExtraIcuDataFile() override;
+
   content::PreviewsState DetermineAllowedPreviewsWithoutHoldback(
       content::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle,

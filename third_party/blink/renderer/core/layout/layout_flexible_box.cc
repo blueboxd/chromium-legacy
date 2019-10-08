@@ -75,12 +75,6 @@ void LayoutFlexibleBox::ComputeIntrinsicLogicalWidths(
         ContentLogicalWidthForSizeContainment() + scrollbar_width;
     return;
   }
-  if (DisplayLockInducesSizeContainment()) {
-    min_logical_width = max_logical_width =
-        scrollbar_width +
-        GetDisplayLockContext()->GetLockedContentLogicalWidth();
-    return;
-  }
 
   // FIXME: We're ignoring flex-basis here and we shouldn't. We can't start
   // honoring it though until the flex shorthand stops setting it to 0. See
@@ -513,9 +507,6 @@ LayoutUnit LayoutFlexibleBox::ChildUnstretchedLogicalHeight(
     if (child.ShouldApplySizeContainment()) {
       child_intrinsic_content_logical_height =
           child.ContentLogicalHeightForSizeContainment();
-    } else if (child.DisplayLockInducesSizeContainment()) {
-      child_intrinsic_content_logical_height =
-          child.GetDisplayLockContext()->GetLockedContentLogicalHeight();
     } else {
       child_intrinsic_content_logical_height =
           child.IntrinsicContentLogicalHeight();
@@ -892,15 +883,11 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
     // width includes the scrollbar, even for overflow: auto.
     main_axis_extent = child.MaxPreferredLogicalWidth();
   } else {
+    // The needed value here is the logical height. This value does not include
+    // the border/scrollbar/padding size, so we have to add the scrollbar.
     if (child.ShouldApplySizeContainment()) {
       return child.ContentLogicalHeightForSizeContainment() +
              LayoutUnit(child.ScrollbarLogicalHeight());
-    }
-    // The needed value here is the logical height. This value does not include
-    // the border/scrollbar/padding size, so we have to add the scrollbar.
-    if (child.DisplayLockInducesSizeContainment()) {
-      return child.GetDisplayLockContext()->GetLockedContentLogicalHeight() +
-             child.ScrollbarLogicalHeight();
     }
 
     if (child_layout_type == kNeverLayout)
@@ -1353,8 +1340,7 @@ bool LayoutFlexibleBox::ChildHasIntrinsicMainAxisSize(
     const FlexLayoutAlgorithm& algorithm,
     const LayoutBox& child) const {
   bool result = false;
-  if (!MainAxisIsInlineAxis(child) && !child.ShouldApplySizeContainment() &&
-      !child.DisplayLockInducesSizeContainment()) {
+  if (!MainAxisIsInlineAxis(child) && !child.ShouldApplySizeContainment()) {
     Length child_flex_basis = FlexBasisForChild(child);
     const Length& child_min_size = IsHorizontalFlow()
                                        ? child.StyleRef().MinWidth()

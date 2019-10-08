@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/hid.mojom-blink.h"
+#include "services/device/public/mojom/hid.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"

@@ -1242,9 +1242,11 @@ public class PaymentRequestImpl
             // opaque to Chrome sub-instruments inside, representing each card in the user account.
             // Hence Chrome forwards the updateWith() calls to the currently invoked
             // PaymentInstrument object.
+            // Todo(sahel): handlesShipping must be true when the payment handler is responsible for
+            // handling shipping. crbug.com/984694
             mInvokedPaymentInstrument.updateWith(
                     PaymentDetailsConverter.convertToPaymentMethodChangeResponse(
-                            details, this /* methodChecker */));
+                            details, false /* handlesShipping */, this /* methodChecker */));
             return;
         }
 

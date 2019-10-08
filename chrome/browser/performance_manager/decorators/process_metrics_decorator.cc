@@ -4,10 +4,10 @@
 
 #include "chrome/browser/performance_manager/decorators/process_metrics_decorator.h"
 
-#include "chrome/browser/performance_manager/graph/graph_impl.h"
-#include "chrome/browser/performance_manager/graph/node_attached_data_impl.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/graph/system_node_impl.h"
+#include "components/performance_manager/graph/graph_impl.h"
+#include "components/performance_manager/graph/node_attached_data_impl.h"
+#include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/graph/system_node_impl.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 
 namespace performance_manager {

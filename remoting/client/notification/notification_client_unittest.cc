@@ -67,6 +67,7 @@ base::Value CreateDefaultRule() {
   rule.SetStringKey("link_text", "link_text.json");
   rule.SetStringKey("link_url", "https://example.com/some_link");
   rule.SetIntKey("percent", 100);
+  rule.SetBoolKey("allow_dont_show_again", true);
   return rule;
 }
 
@@ -84,6 +85,7 @@ NotificationMessage CreateDefaultNotification() {
   message.message_text = "zh-CN:message";
   message.link_text = "zh-CN:link";
   message.link_url = "https://example.com/some_link";
+  message.allow_dont_show_again = true;
   return message;
 }
 
@@ -309,6 +311,25 @@ TEST_F(NotificationClientTest, DebugBuildsDontIgnoreDevMessages) {
 
   base::MockCallback<NotificationClient::NotificationCallback> callback;
   EXPECT_CALL(callback, Run(MessageMatches(CreateDefaultNotification())));
+  client_->GetNotification(kTestEmail, callback.Get());
+}
+
+TEST_F(NotificationClientTest, AllowDontShowAgainNotSet_DefaultToFalse) {
+  base::Value rules(base::Value::Type::LIST);
+  base::Value rule = CreateDefaultRule();
+  rule.RemoveKey("allow_dont_show_again");
+  rules.Append(std::move(rule));
+  EXPECT_CALL(*fetcher_, FetchJsonFile("notification/rules.json"))
+      .WillOnce(ReturnByMove(std::move(rules)));
+  EXPECT_CALL(*fetcher_, FetchJsonFile("notification/message_text.json"))
+      .WillOnce(ReturnByMove(CreateDefaultTranslations("message")));
+  EXPECT_CALL(*fetcher_, FetchJsonFile("notification/link_text.json"))
+      .WillOnce(ReturnByMove(CreateDefaultTranslations("link")));
+
+  NotificationMessage notification = CreateDefaultNotification();
+  notification.allow_dont_show_again = false;
+  base::MockCallback<NotificationClient::NotificationCallback> callback;
+  EXPECT_CALL(callback, Run(MessageMatches(notification)));
   client_->GetNotification(kTestEmail, callback.Get());
 }
 

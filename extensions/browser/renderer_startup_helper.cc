@@ -61,35 +61,27 @@ bool IsExtensionVisibleToContext(const Extension& extension,
 RendererStartupHelper::RendererStartupHelper(BrowserContext* browser_context)
     : browser_context_(browser_context) {
   DCHECK(browser_context);
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
-RendererStartupHelper::~RendererStartupHelper() {}
+RendererStartupHelper::~RendererStartupHelper() {
+  for (auto* process : initialized_processes_)
+    process->RemoveObserver(this);
+}
 
-void RendererStartupHelper::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_CREATED:
-      InitializeProcess(
-          content::Source<content::RenderProcessHost>(source).ptr());
-      break;
-    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
-    // Fall through.
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
-      // This is needed to take care of the case when a RenderProcessHost is
-      // reused for a different renderer process.
-      UntrackProcess(content::Source<content::RenderProcessHost>(source).ptr());
-      break;
-    default:
-      NOTREACHED() << "Unexpected notification: " << type;
-  }
+void RendererStartupHelper::OnRenderProcessHostCreated(
+    content::RenderProcessHost* host) {
+  InitializeProcess(host);
+}
+
+void RendererStartupHelper::RenderProcessExited(
+    content::RenderProcessHost* host,
+    const content::ChildProcessTerminationInfo& info) {
+  UntrackProcess(host);
+}
+
+void RendererStartupHelper::RenderProcessHostDestroyed(
+    content::RenderProcessHost* host) {
+  UntrackProcess(host);
 }
 
 void RendererStartupHelper::InitializeProcess(
@@ -181,6 +173,7 @@ void RendererStartupHelper::InitializeProcess(
 
   initialized_processes_.insert(process);
   pending_active_extensions_.erase(process);
+  process->AddObserver(this);
 }
 
 void RendererStartupHelper::UntrackProcess(
@@ -190,6 +183,7 @@ void RendererStartupHelper::UntrackProcess(
     return;
   }
 
+  process->RemoveObserver(this);
   initialized_processes_.erase(process);
   pending_active_extensions_.erase(process);
   for (auto& extension_process_pair : extension_process_map_)

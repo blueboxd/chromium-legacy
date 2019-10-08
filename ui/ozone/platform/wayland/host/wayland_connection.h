@@ -34,6 +34,7 @@ namespace ui {
 class WaylandBufferManagerHost;
 class WaylandOutputManager;
 class WaylandWindow;
+class WaylandDrm;
 class WaylandZwpLinuxDmabuf;
 class WaylandShm;
 
@@ -98,6 +99,8 @@ class WaylandConnection : public PlatformEventSource,
   }
 
   WaylandZwpLinuxDmabuf* zwp_dmabuf() const { return zwp_dmabuf_.get(); }
+
+  WaylandDrm* drm() const { return drm_.get(); }
 
   WaylandShm* shm() const { return shm_.get(); }
 
@@ -191,6 +194,7 @@ class WaylandConnection : public PlatformEventSource,
   std::unique_ptr<WaylandTouch> touch_;
   std::unique_ptr<WaylandCursorPosition> wayland_cursor_position_;
   std::unique_ptr<WaylandZwpLinuxDmabuf> zwp_dmabuf_;
+  std::unique_ptr<WaylandDrm> drm_;
   std::unique_ptr<WaylandShm> shm_;
   std::unique_ptr<WaylandBufferManagerHost> buffer_manager_host_;
 

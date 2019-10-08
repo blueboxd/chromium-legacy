@@ -117,7 +117,7 @@ public class IntentHandlerTest {
 
         for (String url : urls) {
             mIntent.setData(Uri.parse(url));
-            if (mIntentHandler.intentHasValidUrl(mIntent) != isValid) {
+            if (IntentHandler.intentHasValidUrl(mIntent) != isValid) {
                 failedTests.add(url);
             }
         }
@@ -212,7 +212,7 @@ public class IntentHandlerTest {
     public void testNullUrlIntent() {
         mIntent.setData(null);
         Assert.assertTrue(
-                "Intent with null data should be valid", mIntentHandler.intentHasValidUrl(mIntent));
+                "Intent with null data should be valid", IntentHandler.intentHasValidUrl(mIntent));
     }
 
     @Test

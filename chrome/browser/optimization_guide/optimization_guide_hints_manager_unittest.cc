@@ -1703,6 +1703,175 @@ TEST_F(OptimizationGuideHintsManagerTest,
   EXPECT_EQ(nullptr, navigation_data->page_hint());
 }
 
+TEST_F(OptimizationGuideHintsManagerTest, IsGoogleURL) {
+  const struct {
+    const char* url;
+    bool expect_is_google_url;
+  } tests[] = {
+      {"https://www.google.com/"
+       "search?q=cats&oq=cq&aqs=foo&ie=UTF-8",
+       true},
+      {"https://www.google.com/", true},
+      {"https://www.google.com/:99", true},
+
+      // Try localized search pages.
+      {"https://www.google.co.in/"
+       "search?q=cats&oq=cq&aqs=foo&ie=UTF-8",
+       true},
+      {"https://www.google.co.in/", true},
+      {"https://www.google.co.in/:99", true},
+
+      // Try Google domain pages that are not web search related.
+      {"https://www.not-google.com/", false},
+      {"https://www.youtube.com/", false},
+      {"https://domain.google.com/", false},
+      {"https://images.google.com/", false},
+  };
+
+  for (const auto& test : tests) {
+    GURL url(test.url);
+    EXPECT_TRUE(url.is_valid());
+    EXPECT_EQ(test.expect_is_google_url, hints_manager()->IsGoogleURL(url));
+  }
+}
+
+TEST_F(OptimizationGuideHintsManagerTest, HintsFetched_AtSRP_ECT_SLOW_2G) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  base::HistogramTester histogram_tester;
+  std::vector<GURL> sorted_predicted_urls;
+  sorted_predicted_urls.push_back(GURL("https://foo.com/"));
+  NavigationPredictorKeyedService::Prediction prediction(
+      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
+
+  hints_manager()->OnPredictionUpdated(prediction);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1, 1);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       HintsFetched_AtSRP_ECT_SLOW_2G_DuplicatesRemoved) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  base::HistogramTester histogram_tester;
+  std::vector<GURL> sorted_predicted_urls;
+  sorted_predicted_urls.push_back(GURL("https://foo.com/page1.html"));
+  sorted_predicted_urls.push_back(GURL("https://foo.com/page2.html"));
+  sorted_predicted_urls.push_back(GURL("https://foo.com/page3.html"));
+  sorted_predicted_urls.push_back(GURL("https://bar.com/"));
+
+  NavigationPredictorKeyedService::Prediction prediction(
+      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
+
+  hints_manager()->OnPredictionUpdated(prediction);
+  // Ensure that we only include 2 hosts in the request. These would be foo.com
+  // and bar.com.
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       HintsFetched_AtSRP_ECT_SLOW_2G_InsecureHostsRemoved) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  base::HistogramTester histogram_tester;
+  std::vector<GURL> sorted_predicted_urls;
+  sorted_predicted_urls.push_back(GURL("https://foo.com/page1.html"));
+  sorted_predicted_urls.push_back(GURL("http://insecure-bar.com/"));
+
+  NavigationPredictorKeyedService::Prediction prediction(
+      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
+
+  hints_manager()->OnPredictionUpdated(prediction);
+  // Ensure that we only include 1 secure host in the request. These would be
+  // foo.com.
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1, 1);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest, HintsFetched_AtSRP_ECT_4G) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  base::HistogramTester histogram_tester;
+  std::vector<GURL> sorted_predicted_urls;
+  sorted_predicted_urls.push_back(GURL("https://foo.com/"));
+  NavigationPredictorKeyedService::Prediction prediction(
+      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
+
+  hints_manager()->OnPredictionUpdated(prediction);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest, HintsFetched_AtNonSRP_ECT_SLOW_2G) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  base::HistogramTester histogram_tester;
+  std::vector<GURL> sorted_predicted_urls;
+  sorted_predicted_urls.push_back(GURL("https://foo.com/"));
+  NavigationPredictorKeyedService::Prediction prediction(
+      nullptr, GURL("https://www.not-google.com/"), sorted_predicted_urls);
+
+  hints_manager()->OnPredictionUpdated(prediction);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+}
+
 TEST_F(OptimizationGuideHintsManagerTest,
        HintsFetchedAtNavigationTime_ECT_SLOW_2G) {
   hints_manager()->RegisterOptimizationTypes(

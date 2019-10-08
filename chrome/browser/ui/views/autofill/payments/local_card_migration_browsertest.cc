@@ -82,6 +82,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -137,6 +138,36 @@ class PersonalDataLoadedObserverMock : public PersonalDataManagerObserver {
   ~PersonalDataLoadedObserverMock() = default;
 
   MOCK_METHOD0(OnPersonalDataChanged, void());
+};
+
+// Helper to wait until the hover card widget is visible.
+class AnimatingLayoutWaiter : public views::AnimatingLayoutManager::Observer {
+ public:
+  explicit AnimatingLayoutWaiter(
+      views::AnimatingLayoutManager* animating_layout)
+      : animating_layout_(animating_layout) {
+    observer_.Add(animating_layout_);
+  }
+
+  void Wait() {
+    if (!animating_layout_->is_animating())
+      return;
+    run_loop_.Run();
+  }
+
+  // views::AnimatingLayoutManager overrides:
+  void OnLayoutIsAnimatingChanged(views::AnimatingLayoutManager* source,
+                                  bool is_animating) override {
+    if (!is_animating)
+      run_loop_.Quit();
+  }
+
+ private:
+  views::AnimatingLayoutManager* const animating_layout_;
+  ScopedObserver<views::AnimatingLayoutManager,
+                 views::AnimatingLayoutManager::Observer>
+      observer_{this};
+  base::RunLoop run_loop_;
 };
 
 class LocalCardMigrationBrowserTest
@@ -323,6 +354,15 @@ class LocalCardMigrationBrowserTest
          DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
     FillAndSubmitFormWithCard(card_number);
     WaitForObservedEvent();
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillEnableToolbarStatusChip)) {
+      AnimatingLayoutWaiter waiter(static_cast<views::AnimatingLayoutManager*>(
+          BrowserView::GetBrowserViewForBrowser(browser())
+              ->toolbar()
+              ->toolbar_account_icon_container()
+              ->GetLayoutManager()));
+      waiter.Wait();
+    }
   }
 
   void ClickOnSaveButtonAndWaitForMigrationResults() {

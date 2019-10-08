@@ -21,8 +21,7 @@ namespace heavy_ad_thresholds {
 // Maximum number of network bytes allowed to be loaded by a frame. These
 // numbers reflect the 99.9th percentile of the
 // PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Network histogram on mobile and
-// desktop. Additive noise is added to this threshold, see
-// AdsPageLoadMetricsObserver::HeavyAdThresholdNoiseProvider.
+// desktop.
 const int kMaxNetworkBytes = 4.0 * 1024 * 1024;
 
 // CPU thresholds are selected from AdFrameLoad UKM, and are intended to target
@@ -118,8 +117,7 @@ class FrameData {
   static ResourceMimeType GetResourceMimeType(
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
 
-  explicit FrameData(FrameTreeNodeId frame_tree_node_id,
-                     int heavy_ad_network_threshold_noise);
+  explicit FrameData(FrameTreeNodeId frame_tree_node_id);
   ~FrameData();
 
   // Update the metadata of this frame if it is being navigated.
@@ -229,10 +227,6 @@ class FrameData {
 
   HeavyAdStatus heavy_ad_status() const { return heavy_ad_status_; }
 
-  HeavyAdStatus heavy_ad_status_with_noise() const {
-    return heavy_ad_status_with_noise_;
-  }
-
  private:
   // Time updates for the frame with a timestamp indicating when they arrived.
   // Used for windowed cpu load reporting.
@@ -248,10 +242,7 @@ class FrameData {
 
   // Computes whether this frame meets the criteria for being a heavy frame for
   // the heavy ad intervention and returns the type of threshold hit if any.
-  // If |use_network_threshold_noise| is set,
-  // |heavy_ad_network_threshold_noise_| is added to the network threshold when
-  // computing the status.
-  HeavyAdStatus ComputeHeavyAdStatus(bool use_network_threshold_noise) const;
+  HeavyAdStatus ComputeHeavyAdStatus() const;
 
   // The most recently updated timing received for this frame.
   page_load_metrics::mojom::PageLoadTimingPtr timing_;
@@ -321,18 +312,9 @@ class FrameData {
   MediaStatus media_status_ = MediaStatus::kNotPlayed;
 
   // Indicates whether or not this frame met the criteria for the heavy ad
-  // intervention.
+  // intervention. This should be not be set if the Heavy Ad Intervention is
+  // not enabled.
   HeavyAdStatus heavy_ad_status_;
-
-  // Same as |heavy_ad_status_| but uses additional additive noise for the
-  // network threshold. A frame can be considered a heavy ad by
-  // |heavy_ad_status_| but not |heavy_ad_status_with_noise_|. The noised
-  // threshold is used when determining whether to actually trigger the
-  // intervention.
-  HeavyAdStatus heavy_ad_status_with_noise_;
-
-  // Number of bytes of noise that should be added to the network threshold.
-  const int heavy_ad_network_threshold_noise_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameData);
 };

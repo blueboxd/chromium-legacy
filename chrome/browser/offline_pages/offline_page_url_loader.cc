@@ -47,9 +47,6 @@ net::RedirectInfo CreateRedirectInfo(const GURL& redirected_url,
 }
 
 bool ShouldCreateLoader(const network::ResourceRequest& resource_request) {
-  if (!IsOfflinePagesEnabled())
-    return false;
-
   // Ignore the requests not for the main frame.
   if (resource_request.resource_type !=
       static_cast<int>(content::ResourceType::kMainFrame))

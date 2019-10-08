@@ -251,9 +251,6 @@ const char kDiskCacheSize[]                 = "disk-cache-size";
 
 const char kDnsLogDetails[]                 = "dns-log-details";
 
-// Enables new UI for net-error page.
-const char kNewNetErrorPageUI[] = "new-net-error-page-ui";
-
 // Requests that a running browser process dump its collected histograms to a
 // given file. The file is overwritten if it exists.
 const char kDumpBrowserHistograms[]         = "dump-browser-histograms";

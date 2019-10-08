@@ -23,13 +23,9 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using crypto::SHA256HashString;
-
 namespace extensions {
 
 namespace {
-
-using namespace api::cryptotoken_private;
 
 bool GetSingleBooleanResult(ExtensionFunction* function, bool* result) {
   const base::ListValue* result_list = function->GetResultList();
@@ -133,9 +129,9 @@ TEST_F(CryptoTokenPrivateApiTest, CanOriginAssertAppId) {
 
 TEST_F(CryptoTokenPrivateApiTest, IsAppIdHashInEnterpriseContext) {
   const std::string example_com("https://example.com/");
-  const std::string example_com_hash(SHA256HashString(example_com));
-  const std::string rp_id_hash(SHA256HashString("example.com"));
-  const std::string foo_com_hash(SHA256HashString("https://foo.com/"));
+  const std::string example_com_hash(crypto::SHA256HashString(example_com));
+  const std::string rp_id_hash(crypto::SHA256HashString("example.com"));
+  const std::string foo_com_hash(crypto::SHA256HashString("https://foo.com/"));
 
   bool result;
   ASSERT_TRUE(GetAppIdHashInEnterpriseContext(example_com_hash, &result));

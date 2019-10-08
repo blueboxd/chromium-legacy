@@ -49,3 +49,19 @@ IN_PROC_BROWSER_TEST_F(BrowserRootViewBrowserTest, PlainString) {
   EXPECT_NE(ui::DragDropTypes::DRAG_NONE, root_view->OnDragUpdated(event));
   EXPECT_NE(ui::DragDropTypes::DRAG_NONE, root_view->OnPerformDrop(event));
 }
+
+// Clear drop target when the widget is being destroyed.
+// http://crbug.com/1001942
+IN_PROC_BROWSER_TEST_F(BrowserRootViewBrowserTest, ClearDropTarget) {
+  ui::OSExchangeData data;
+  data.SetURL(GURL("http://www.chromium.org/"), base::string16());
+  ui::DropTargetEvent event(data, gfx::PointF(), gfx::PointF(),
+                            ui::DragDropTypes::DRAG_COPY);
+
+  BrowserRootView* root_view = browser_root_view();
+  root_view->OnDragUpdated(event);
+
+  // Calling this will cause segmentation fault if |root_view| doesn't clear
+  // the target.
+  root_view->GetWidget()->Close();
+}

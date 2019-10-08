@@ -37,7 +37,24 @@ constexpr int kReScanButtonTag = 2;
 
 }  // namespace
 
-DeviceChooserContentView::BluetoothStatusContainer::BluetoothStatusContainer(
+class BluetoothStatusContainer : public views::View {
+ public:
+  explicit BluetoothStatusContainer(views::ButtonListener* listener);
+
+  void ShowScanningLabelAndThrobber();
+  void ShowReScanButton(bool enabled);
+
+ private:
+  friend class DeviceChooserContentView;
+
+  views::LabelButton* re_scan_button_;
+  views::Throbber* throbber_;
+  views::Label* scanning_label_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothStatusContainer);
+};
+
+BluetoothStatusContainer::BluetoothStatusContainer(
     views::ButtonListener* listener) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -76,16 +93,14 @@ DeviceChooserContentView::BluetoothStatusContainer::BluetoothStatusContainer(
   scanning_label_ = scan_container->AddChildView(std::move(scanning_label));
 }
 
-void DeviceChooserContentView::BluetoothStatusContainer::
-    ShowScanningLabelAndThrobber() {
+void BluetoothStatusContainer::ShowScanningLabelAndThrobber() {
   re_scan_button_->SetVisible(false);
   throbber_->SetVisible(true);
   scanning_label_->SetVisible(true);
   throbber_->Start();
 }
 
-void DeviceChooserContentView::BluetoothStatusContainer::ShowReScanButton(
-    bool enabled) {
+void BluetoothStatusContainer::ShowReScanButton(bool enabled) {
   re_scan_button_->SetVisible(true);
   re_scan_button_->SetEnabled(enabled);
   throbber_->Stop();
@@ -115,7 +130,7 @@ DeviceChooserContentView::DeviceChooserContentView(
   table_parent_ = AddChildView(
       views::TableView::CreateScrollViewWithTable(std::move(table_view)));
 
-  const auto add_centered_view = [this](auto view) {
+  const auto add_centering_view = [this](auto view) {
     auto* container = AddChildView(std::make_unique<views::View>());
     auto* layout =
         container->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -124,24 +139,26 @@ DeviceChooserContentView::DeviceChooserContentView(
         views::BoxLayout::MainAxisAlignment::kCenter);
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kCenter);
-    return container->AddChildView(std::move(view));
+    layout->set_inside_border_insets(gfx::Insets(0, 6));
+    container->AddChildView(std::move(view));
+    return container;
   };
 
-  no_options_help_ = add_centered_view(
-      std::make_unique<views::Label>(chooser_controller_->GetNoOptionsText()));
-  no_options_help_->SetMultiLine(true);
+  auto no_options_help =
+      std::make_unique<views::Label>(chooser_controller_->GetNoOptionsText());
+  no_options_help->SetMultiLine(true);
+  no_options_view_ = add_centering_view(std::move(no_options_help));
 
   base::string16 link_text = l10n_util::GetStringUTF16(
       IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ON_BLUETOOTH_LINK_TEXT);
   size_t offset = 0;
   base::string16 text = l10n_util::GetStringFUTF16(
       IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF, link_text, &offset);
-  adapter_off_help_ =
-      add_centered_view(std::make_unique<views::StyledLabel>(text, this));
-  adapter_off_help_->AddStyleRange(
+  auto adapter_off_help = std::make_unique<views::StyledLabel>(text, this);
+  adapter_off_help->AddStyleRange(
       gfx::Range(0, link_text.size()),
       views::StyledLabel::RangeStyleInfo::CreateForLink());
-  adapter_off_help_->SetVisible(false);
+  adapter_off_view_ = add_centering_view(std::move(adapter_off_help));
 
   UpdateTableView();
 }
@@ -155,13 +172,6 @@ DeviceChooserContentView::~DeviceChooserContentView() {
 gfx::Size DeviceChooserContentView::GetMinimumSize() const {
   // Let the dialog shrink when its parent is smaller than the preferred size.
   return gfx::Size();
-}
-
-void DeviceChooserContentView::OnBoundsChanged(
-    const gfx::Rect& previous_bounds) {
-  constexpr int kMessagePadding = 6;
-  no_options_help_->SizeToFit(width() - 2 * kMessagePadding);
-  adapter_off_help_->SizeToFit(width() - 2 * kMessagePadding);
 }
 
 int DeviceChooserContentView::RowCount() {
@@ -258,7 +268,6 @@ void DeviceChooserContentView::OnRefreshStateChanged(bool refreshing) {
 void DeviceChooserContentView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                       const gfx::Range& range,
                                                       int event_flags) {
-  DCHECK_EQ(adapter_off_help_, label);
   chooser_controller_->OpenAdapterOffHelpUrl();
 }
 
@@ -349,10 +358,20 @@ void DeviceChooserContentView::Close() {
 void DeviceChooserContentView::UpdateTableView() {
   bool has_options = adapter_enabled_ && RowCount() > 0;
   table_parent_->SetVisible(has_options);
-  if (chooser_controller_->TableViewAlwaysDisabled())
-    table_view_->SetEnabled(false);
-  else
-    table_view_->SetEnabled(has_options);
-  no_options_help_->SetVisible(!has_options && adapter_enabled_);
-  adapter_off_help_->SetVisible(!adapter_enabled_);
+  table_view_->SetEnabled(has_options &&
+                          !chooser_controller_->TableViewAlwaysDisabled());
+  no_options_view_->SetVisible(!has_options && adapter_enabled_);
+  adapter_off_view_->SetVisible(!adapter_enabled_);
+}
+
+views::LabelButton* DeviceChooserContentView::ReScanButtonForTesting() {
+  return bluetooth_status_container_->re_scan_button_;
+}
+
+views::Throbber* DeviceChooserContentView::ThrobberForTesting() {
+  return bluetooth_status_container_->throbber_;
+}
+
+views::Label* DeviceChooserContentView::ScanningLabelForTesting() {
+  return bluetooth_status_container_->scanning_label_;
 }

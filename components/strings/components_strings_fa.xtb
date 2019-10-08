@@ -202,6 +202,7 @@
 <translation id="187918866476621466">باز کردن صفحه‌های شروع</translation>
 <translation id="1883255238294161206">کوچک کردن فهرست</translation>
 <translation id="1898423065542865115">فیلتر کردن</translation>
+<translation id="1901443836186977402">{1,plural, =1{این سرور نتوانست اثبات کند که <ph name="DOMAIN" /> است؛ گواهی امنیتی آن روز گذشته منقضی شده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی درحال رهگیری اتصالتان باشد. ساعت رایانه‌تان درحال‌حاضر روی <ph name="CURRENT_DATE" /> تنظیم شده است. آیا درست است؟ اگر نه، باید ساعت سیستم را درست کنید و سپس این صفحه را بازخوانی کنید.}one{این سرور نتوانست اثبات کند که <ph name="DOMAIN" /> است؛ گواهینامه امنیتی آن # روز پیش منقضی شده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی درحال رهگیری اتصالتان باشد. ساعت رایانه‌تان درحال‌حاضر روی <ph name="CURRENT_DATE" /> تنظیم شده است. آیا درست است؟ اگر نه، باید ساعت سیستم را درست کنید و سپس این صفحه را بازخوانی کنید.}other{این سرور نتوانست اثبات کند که <ph name="DOMAIN" /> است؛ گواهینامه امنیتی آن # روز پیش منقضی شده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی درحال رهگیری اتصالتان باشد. ساعت رایانه‌تان درحال‌حاضر روی <ph name="CURRENT_DATE" /> تنظیم شده است. آیا درست است؟ اگر نه، باید ساعت سیستم را درست کنید و سپس این صفحه را بازخوانی کنید.}}</translation>
 <translation id="1914326953223720820">سرویس خارج کردن از فشرده‌سازی</translation>
 <translation id="1915697529809968049">‏به‌جای CVC از شناسه لمسی استفاده شود؟</translation>
 <translation id="1916770123977586577">برای اعمال کردن تنظیمات به‌روزرسانی‌شده خود در این سایت، این صفحه را تازه‌سازی کنید</translation>
@@ -444,6 +445,7 @@
 <translation id="3116158981186517402">روکش‌دار کردن</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />عیب‌یابی اتصال را اجرا کنید<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">رفتن به <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{هیچ‌کدام}=1{داده‌های ورود به سیستم برای ۱ حساب}one{داده‌های ورود به سیستم برای # حساب}other{داده‌های ورود به سیستم برای # حساب}}</translation>
 <translation id="3145945101586104090">رمزگشایی پاسخ انجام نشد</translation>
 <translation id="3150653042067488994">خطای موقت سرور</translation>
@@ -611,7 +613,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{هیچ‌کدام}=1{از ۱ سایت }one{از # سایت }other{از # سایت }}</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> مسدود شده است</translation>
-<translation id="3981540111851280311">‏<ph name="ENROLLMENT_DOMAIN" /> «محافظت از خطرات تهدیدکننده Chrome Enterprise» را در مرورگرتان فعال کرده است. «محافظت از خطرات تهدیدکننده Chrome Enterprise» به برخی داده‌هایتان دسترسی دارد.</translation>
+<translation id="3981540111851280311">‏<ph name="ENROLLMENT_DOMAIN" /> «محافظت از تهدیدهای شرکتی در Chrome» را در مرورگرتان فعال کرده است. «محافظت از تهدیدهای شرکتی در Chrome» به برخی داده‌هایتان دسترسی دارد.</translation>
 <translation id="3987940399970879459">کمتر از ۱ مگابایت</translation>
 <translation id="3990250421422698716">‏آفست Z شکل</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ ۱ صفحه وب در این نزدیکی است}one{ # صفحه وب در این نزدیکی است}other{ # صفحه وب در این نزدیکی است}}</translation>
@@ -828,6 +830,7 @@
 <translation id="5043480802608081735">پیوندی که کپی کرده‌اید</translation>
 <translation id="5045550434625856497">گذرواژه نادرست</translation>
 <translation id="5056549851600133418">مقالاتی برای شما</translation>
+<translation id="5061227663725596739">منظورتان <ph name="LOOKALIKE_DOMAIN" /> بود؟</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(۱ کوکی درحال استفاده)}one{(# کوکی درحال استفاده)}other{(# کوکی درحال استفاده)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />بررسی آدرس پروکسی<ph name="END_LINK" /></translation>
@@ -881,6 +884,7 @@
 <translation id="5284909709419567258">نشانی‌های شبکه</translation>
 <translation id="5285570108065881030">نمایش همه گذرواژه‌های ذخیره‌شده</translation>
 <translation id="5287240709317226393">نمایش کوکی‌ها</translation>
+<translation id="5287456746628258573">پیکربندی امنیتی این سایت قدیمی است و ممکن است اطلاعاتتان (برای مثال، گذرواژه‌ها یا شماره کارت‌های اعتباری) را هنگام ارسال به این سایت افشا کند.</translation>
 <translation id="5288108484102287882">اعتبارسنجی مقادیر خط‌مشی با چند هشدار به پایان رسید</translation>
 <translation id="5299298092464848405">خطا در تجزیه خط‌‌مشی</translation>
 <translation id="5300589172476337783">نمایش</translation>
@@ -1009,6 +1013,7 @@
 <translation id="5946937721014915347">درحال باز کردن <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">بله، اضافه شود</translation>
 <translation id="5951495562196540101">نمی‌توان با حساب مصرف‌کننده ثبت‌نام کرد (مجوز بسته‌بندی دردسترس است).</translation>
+<translation id="5966900314707961320">وقتی روشن باشد، سایت‌ها نمی‌توانند از کوکی‌هایی استفاده کنند که شما را در وب ردیابی می‌کند</translation>
 <translation id="5967592137238574583">ویرایش اطلاعات تماس</translation>
 <translation id="5967867314010545767">حذف از سابقه</translation>
 <translation id="5975083100439434680">دورنمایی کردن</translation>
@@ -1091,6 +1096,7 @@
 <translation id="6383221683286411806">احتمالاً هزینه‌هایی اعمال می‌شود.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{۱ پیشنهاد دیگر}one{# پیشنهاد دیگر}other{# پیشنهاد دیگر}}</translation>
 <translation id="6387754724289022810">‏برای اینکه دفعات بعد پرداخت سریع‌تری داشته باشید، اطلاعات کارت و نشانی صورت‌حسابتان را در حساب Google خود و این دستگاه ذخیره کنید.</translation>
+<translation id="6389470377220713856">نام روی کارت</translation>
 <translation id="6390200185239044127">‏تاخوردگی Z شکل از وسط</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">این خط‌مشی منسوخ شده است. درعوض، باید از خط‌مشی <ph name="NEW_POLICY" /> استفاده کنید.</translation>
@@ -1103,7 +1109,7 @@
 <translation id="6433490469411711332">ویرایش اطلاعات تماس</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> از اتصال خودداری کرد.</translation>
 <translation id="6434309073475700221">رد کردن</translation>
-<translation id="6435221585574090192">‏داده‌های مربوط به رویدادهای امنیتی‌ای را که «محافظت از خطرات تهدیدکننده Chrome Enterprise» پرچم‌گذاری کرده‌ است، با «سرپرست» به اشتراک بگذارید. این کار ممکن است شامل نشانی وب صفحه‌ها، نام فایل و فراداده فایل، نام کاربری دستگاه، و نام کاربری Chrome باشد.</translation>
+<translation id="6435221585574090192">‏داده‌های مربوط به رویدادهای امنیتی‌ای را که «محافظت از تهدیدهای شرکتی در Chrome» پرچم‌گذاری کرده‌ است، با «سرپرست» به اشتراک بگذارید. این کار ممکن است شامل نشانی وب صفحه‌ها، نام فایل و فراداده فایل، نام کاربری دستگاه، و نام کاربری Chrome باشد.</translation>
 <translation id="6440503408713884761">نادیده گرفته شد</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">افزودن اطلاعات بیشتر</translation>
@@ -1269,7 +1275,6 @@
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">وابسته است:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">خارج شدن از این سایت</translation>
 <translation id="7353601530677266744">خط فرمان</translation>
 <translation id="7372973238305370288">نتیجه جستجو</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1335,7 +1340,7 @@
 <translation id="7610193165460212391">مقدار خارج از محدوده <ph name="VALUE" /> است.</translation>
 <translation id="7613889955535752492">انقضا: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">‏شما در حال حاضر داده‌هایی دارید که با استفاده از نسخه دیگری از گذرواژه حساب Google شما رمزگذاری شده‌اند. لطفاً آن را در زیر وارد کنید.</translation>
-<translation id="7625784245512586808">‏محافظت از خطرات تهدیدکننده Chrome Enterprise</translation>
+<translation id="7625784245512586808">‏محافظت از تهدیدهای شرکتی در Chrome</translation>
 <translation id="7633909222644580952">داده‌های عملکرد و گزارش‌های خرابی</translation>
 <translation id="7637571805876720304">‏کارت اعتباری از Chromium پاک شود؟</translation>
 <translation id="7638605456503525968">درگاه‌های سریال</translation>
@@ -1442,6 +1447,7 @@
 <translation id="8131740175452115882">تأیید</translation>
 <translation id="8149426793427495338">رایانه‌تان به خواب رفته است.</translation>
 <translation id="8150722005171944719">این فایل در <ph name="URL" /> قابل خواندن نیست. ممکن است حذف شده، جابجا شده باشد و یا مجوزهای فایل از دسترسی جلوگیری می‌کنند.</translation>
+<translation id="8157295877370077682">خروج از سایت</translation>
 <translation id="8163866351304776260">چهار سوراخ در چپ</translation>
 <translation id="8175796834047840627">‏چون به سیستم وارد شده‌اید، Chrome پیشنهاد می‌کند کارت‌ها را در حساب Google ذخیره کنید. در تنظیمات می‌توانید این رفتار را تغییر دهید.</translation>
 <translation id="8184538546369750125">استفاده از پیش‌فرض جهانی (مجاز)</translation>
@@ -1454,7 +1460,7 @@
 <translation id="8211406090763984747">اتصال امن است</translation>
 <translation id="8218327578424803826">مکان اختصاص یافته:</translation>
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
-<translation id="8220639454292072926">‏گزارش Enterprise</translation>
+<translation id="8220639454292072926">گزارش خطای شرکتی</translation>
 <translation id="8225771182978767009">شخصی که این رایانه را راه‌اندازی کرده این سایت را مسدود کرده است.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />،‏ <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">صفحه را در برگه «ناشناس» جدیدی باز کنید</translation>
@@ -1610,7 +1616,7 @@
 <translation id="9080712759204168376">خلاصه سفارش</translation>
 <translation id="9089260154716455634">خط‌مشی ساعت‌های خاموشی:</translation>
 <translation id="9095388113577226029">زبان‌های بیشتر...</translation>
-<translation id="9098981495403789647">‏سرپرست «محافظت از خطرات تهدیدکننده Chrome Enterprise» در مرورگرتان فعال شده است. «محافظت از خطرات تهدیدکننده Chrome Enterprise» به برخی داده‌هایتان دسترسی دارد.</translation>
+<translation id="9098981495403789647">‏سرپرست «محافظت از تهدیدهای شرکتی در Chrome» در مرورگرتان فعال شده است. «محافظت از تهدیدهای شرکتی در Chrome» به برخی داده‌هایتان دسترسی دارد.</translation>
 <translation id="9103872766612412690">‏<ph name="SITE" /> معمولاً برای محافظت از اطلاعات شما از رمزگذاری استفاده می‌کند. اما این بار که Chromium تلاش کرد به <ph name="SITE" /> متصل شود، وب‌سایت اعتبارنامه‌ای نامعمول و نادرست را برگرداند. ممکن است مهاجمی در تلاش باشد خود را به‌جای <ph name="SITE" /> معرفی کند یا یک صفحه ورود به سیستم Wi-Fi در ارتباط اختلال ایجاد کرده باشد. اطلاعات شما همچنان ایمن است، زیرا Chromium قبل از هرگونه تبادل داده، اتصال را متوقف کرد.</translation>
 <translation id="9106062320799175032">افزودن نشانی صورت‌حساب</translation>
 <translation id="9114524666733003316">درحال تأیید کردن کارت…</translation>

@@ -475,12 +475,12 @@ extern const char kWebRtcEventLogCollectionAllowed[];
 
 #if !defined(OS_ANDROID)
 extern const char kHasSeenWelcomePage[];
-extern const char kShowFirstRunDefaultSearchShortcut[];
 #endif
 
-#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if defined(OS_WIN)
+// Only used in branded builds.
 extern const char kNaviOnboardGroup[];
-#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // defined(OS_WIN)
 
 // Deprecated preference for metric / crash reporting on Android. Use
 // kMetricsReportingEnabled instead.
@@ -896,11 +896,10 @@ extern const char kDSEWasDisabledByPolicy[];
 extern const char kWebShareVisitedTargets[];
 
 #if defined(OS_WIN)
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+// Only used in branded builds.
 extern const char kIncompatibleApplications[];
 extern const char kModuleBlacklistCacheMD5Digest[];
 extern const char kThirdPartyBlockingEnabled[];
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // defined(OS_WIN)
 
 // Windows mitigation policies.

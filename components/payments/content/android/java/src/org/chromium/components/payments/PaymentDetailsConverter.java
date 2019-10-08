@@ -41,12 +41,14 @@ public class PaymentDetailsConverter {
      * sent to the payment handler.
      * @param details       The pre-validated payment details update from the merchant. Should not
      *                      be null.
+     * @param handlesShipping The shipping related information should get redacted when
+     *         handlesShipping is false.
      * @param methodChecker The object that can check whether the invoked payment instrument is
      *                      valid for the given payment method identifier. Should not be null.
      * @return The data structure that can be sent to the invoked payment handler.
      */
     public static PaymentMethodChangeResponse convertToPaymentMethodChangeResponse(
-            PaymentDetails details, MethodChecker methodChecker) {
+            PaymentDetails details, boolean handlesShipping, MethodChecker methodChecker) {
         // Keep in sync with components/payments/content/payment_details_converter.cc.
         assert details != null;
         assert methodChecker != null;
@@ -54,7 +56,7 @@ public class PaymentDetailsConverter {
         PaymentMethodChangeResponse response = new PaymentMethodChangeResponse();
         response.error = details.error;
         response.stringifiedPaymentMethodErrors = details.stringifiedPaymentMethodErrors;
-        response.shippingAddressErrors = details.shippingAddressErrors;
+        if (handlesShipping) response.shippingAddressErrors = details.shippingAddressErrors;
 
         if (details.total != null) response.total = details.total.amount;
 
@@ -83,7 +85,7 @@ public class PaymentDetailsConverter {
             response.modifiers = modifiers.toArray(new PaymentHandlerModifier[modifiers.size()]);
         }
 
-        if (details.shippingOptions != null) {
+        if (handlesShipping && details.shippingOptions != null) {
             ArrayList<PaymentShippingOption> options = new ArrayList<>();
             for (int i = 0; i < details.shippingOptions.length; i++) {
                 PaymentShippingOption option = new PaymentShippingOption();

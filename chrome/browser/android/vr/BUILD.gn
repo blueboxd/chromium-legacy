@@ -188,7 +188,7 @@ source_set("ui_module_factory") {
 # dependency on chrome/browser precludes the use of an intermediate target (eg.
 # vr_android_with_factory).
 group("module_factory") {
-  if (use_native_modules && modularize_vr_native) {
+  if (use_native_partitions) {
     deps = [
       ":ui_module_factory",
     ]

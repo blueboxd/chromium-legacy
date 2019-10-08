@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
+<translation id="1181037720776840403">Pašalinti</translation>
 <translation id="125153950246128346">Palieskite, kad peržiūrėtumėte kitą skirtuką</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> skirtukas}one{<ph name="TABS_COUNT_MANY" /> skirtukas}few{<ph name="TABS_COUNT_MANY" /> skirtukai}many{<ph name="TABS_COUNT_MANY" /> skirtuko}other{<ph name="TABS_COUNT_MANY" /> skirtukų}}</translation>
 <translation id="257674075312929031">Grupė</translation>

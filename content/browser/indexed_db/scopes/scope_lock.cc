@@ -9,42 +9,43 @@
 namespace content {
 
 ScopeLock::ScopeLock() = default;
-ScopeLock::~ScopeLock() = default;
+
+ScopeLock::~ScopeLock() {
+  Release();
+}
+
 ScopeLock::ScopeLock(ScopeLock&& other) noexcept {
-  DCHECK(!this->is_locked_)
+  DCHECK(!this->is_locked())
       << "Cannot move a lock onto an active lock: " << *this;
-  this->is_locked_ = other.is_locked_;
   this->range_ = std::move(other.range_);
   this->level_ = other.level_;
-  this->closure_runner_ = std::move(other.closure_runner_);
-  other.is_locked_ = false;
+  this->lock_released_callback_ = std::move(other.lock_released_callback_);
+  DCHECK(!other.is_locked());
 }
-ScopeLock::ScopeLock(ScopeLockRange range, int level, base::OnceClosure closure)
-    : is_locked_(!closure.is_null()),
-      range_(std::move(range)),
+ScopeLock::ScopeLock(ScopeLockRange range,
+                     int level,
+                     LockReleasedCallback lock_released_callback)
+    : range_(std::move(range)),
       level_(level),
-      closure_runner_(std::move(closure)) {}
+      lock_released_callback_(std::move(lock_released_callback)) {}
 
 ScopeLock& ScopeLock::operator=(ScopeLock&& other) noexcept {
-  DCHECK(!this->is_locked_)
+  DCHECK(!this->is_locked())
       << "Cannot move a lock onto an active lock: " << *this;
-  this->is_locked_ = other.is_locked_;
   this->range_ = std::move(other.range_);
   this->level_ = other.level_;
-  this->closure_runner_ = std::move(other.closure_runner_);
-  other.is_locked_ = false;
+  this->lock_released_callback_ = std::move(other.lock_released_callback_);
+  DCHECK(!other.is_locked());
   return *this;
 }
 
 void ScopeLock::Release() {
-  if (is_locked_) {
-    is_locked_ = false;
-    closure_runner_.RunAndReset();
-  }
+  if (is_locked())
+    std::move(lock_released_callback_).Run(level_, range_);
 }
 
 std::ostream& operator<<(std::ostream& out, const ScopeLock& lock) {
-  return out << "<ScopeLock>{is_locked_: " << lock.is_locked_
+  return out << "<ScopeLock>{is_locked_: " << lock.is_locked()
              << ", level_: " << lock.level_ << ", range_: " << lock.range_
              << "}";
 }

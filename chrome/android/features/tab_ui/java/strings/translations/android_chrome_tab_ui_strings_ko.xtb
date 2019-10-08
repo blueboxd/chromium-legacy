@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="1181037720776840403">삭제</translation>
 <translation id="125153950246128346">다른 탭을 보려면 탭하세요.</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{탭 <ph name="TABS_COUNT_ONE" />개}other{탭 <ph name="TABS_COUNT_MANY" />개}}</translation>
 <translation id="257674075312929031">그룹</translation>

@@ -148,7 +148,7 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
   if (!parsed) {
     *error_to_rethrow =
         modulator.CreateSyntaxError("Failed to parse import map: invalid JSON");
-    return MakeGarbageCollected<ImportMap>(modulator, SpecifierMap());
+    return MakeGarbageCollected<ImportMap>();
   }
 
   // <spec step="2">If parsed is not a map, then throw a TypeError indicating
@@ -157,7 +157,7 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
   if (!parsed_map) {
     *error_to_rethrow =
         modulator.CreateTypeError("Failed to parse import map: not an object");
-    return MakeGarbageCollected<ImportMap>(modulator, SpecifierMap());
+    return MakeGarbageCollected<ImportMap>();
   }
 
   // <spec step="3">Let sortedAndNormalizedImports be an empty map.</spec>
@@ -173,7 +173,7 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
       *error_to_rethrow = modulator.CreateTypeError(
           "Failed to parse import map: \"imports\" "
           "top-level key must be a JSON object.");
-      return MakeGarbageCollected<ImportMap>(modulator, SpecifierMap());
+      return MakeGarbageCollected<ImportMap>();
     }
 
     // <spec step="4.2">Set sortedAndNormalizedImports to the result of sorting
@@ -183,15 +183,94 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
         imports, base_url, support_builtin_modules, logger);
   }
 
-  // TODO(crbug.com/927181): Process "scopes" entry (Steps 5 and 6).
+  // <spec step="5">Let sortedAndNormalizedScopes be an empty map.</spec>
+  ScopeType sorted_and_normalized_scopes;
+
+  // <spec step="6">If parsed["scopes"] exists, then:</spec>
+  if (parsed_map->Get("scopes")) {
+    // <spec step="6.1">If parsed["scopes"] is not a map, then throw a TypeError
+    // indicating that the "scopes" top-level key must be a JSON object.</spec>
+    JSONObject* scopes = parsed_map->GetJSONObject("scopes");
+    if (!scopes) {
+      *error_to_rethrow = modulator.CreateTypeError(
+          "Failed to parse import map: \"scopes\" "
+          "top-level key must be a JSON object.");
+      return MakeGarbageCollected<ImportMap>();
+    }
+
+    // <spec step="6.2">Set sortedAndNormalizedScopes to the result of sorting
+    // and normalizing scopes given parsed["scopes"] and baseURL.</spec>
+
+    // <specdef
+    // href="https://wicg.github.io/import-maps/#sort-and-normalize-scopes">
+
+    // <spec step="1">Let normalized be an empty map.</spec>
+    ScopeType normalized;
+
+    // <spec step="2">For each scopePrefix -> potentialSpecifierMap of
+    // originalMap,</spec>
+    for (wtf_size_t i = 0; i < scopes->size(); ++i) {
+      const JSONObject::Entry& entry = scopes->at(i);
+
+      JSONObject* specifier_map = scopes->GetJSONObject(entry.first);
+      if (!specifier_map) {
+        // <spec step="2.1">If potentialSpecifierMap is not a map, then throw a
+        // TypeError indicating that the value of the scope with prefix
+        // scopePrefix must be a JSON object.</spec>
+        *error_to_rethrow = modulator.CreateTypeError(
+            "Failed to parse import map: the value of the scope with prefix "
+            "\"" +
+            entry.first + "\" must be a JSON object.");
+        return MakeGarbageCollected<ImportMap>();
+      }
+
+      // <spec step="2.2">Let scopePrefixURL be the result of parsing
+      // scopePrefix with baseURL as the base URL.</spec>
+      const KURL prefix_url(base_url, entry.first);
+
+      // <spec step="2.3">If scopePrefixURL is failure, then:</spec>
+      if (!prefix_url.IsValid()) {
+        // <spec step="2.3.1">Report a warning to the console that the scope
+        // prefix URL was not parseable.</spec>
+        logger.AddConsoleMessage(
+            mojom::ConsoleMessageSource::kOther,
+            mojom::ConsoleMessageLevel::kWarning,
+            "Ignored scope \"" + entry.first + "\": not parsable as a URL.");
+
+        // <spec step="2.3.2">Continue.</spec>
+        continue;
+      }
+
+      // <spec step="2.5">Let normalizedScopePrefix be the serialization of
+      // scopePrefixURL.</spec>
+      //
+      // <spec step="2.6">Set normalized[normalizedScopePrefix] to the result of
+      // sorting and normalizing a specifier map given potentialSpecifierMap and
+      // baseURL.</spec>
+      sorted_and_normalized_scopes.push_back(std::make_pair(
+          prefix_url.GetString(),
+          SortAndNormalizeSpecifierMap(specifier_map, base_url,
+                                       support_builtin_modules, logger)));
+    }
+    // <spec step="3">Return the result of sorting normalized, with an entry a
+    // being less than an entry b if b's key is code unit less than a's
+    // key.</spec>
+    std::sort(sorted_and_normalized_scopes.begin(),
+              sorted_and_normalized_scopes.end(),
+              [](const ScopeEntryType& a, const ScopeEntryType& b) {
+                return CodeUnitCompareLessThan(b.first, a.first);
+              });
+  }
 
   // TODO(hiroshige): Implement Step 7.
 
   // <spec step="8">Return the import map whose imports are
   // sortedAndNormalizedImports and whose scopes scopes are
   // sortedAndNormalizedScopes.</spec>
-  return MakeGarbageCollected<ImportMap>(modulator,
-                                         sorted_and_normalized_imports);
+  return MakeGarbageCollected<ImportMap>(
+      modulator, support_builtin_modules,
+      std::move(sorted_and_normalized_imports),
+      std::move(sorted_and_normalized_scopes));
 }
 
 // <specdef
@@ -321,7 +400,8 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
 
 // <specdef href="https://wicg.github.io/import-maps/#resolve-an-imports-match">
 base::Optional<ImportMap::MatchResult> ImportMap::MatchPrefix(
-    const ParsedSpecifier& parsed_specifier) const {
+    const ParsedSpecifier& parsed_specifier,
+    const SpecifierMap& specifier_map) const {
   // Do not perform prefix match for non-bare specifiers.
   if (parsed_specifier.GetType() != ParsedSpecifier::Type::kBare)
     return base::nullopt;
@@ -341,7 +421,7 @@ base::Optional<ImportMap::MatchResult> ImportMap::MatchPrefix(
   base::Optional<MatchResult> best_match;
 
   // <spec step="1">For each specifierKey → addresses of specifierMap,</spec>
-  for (auto it = imports_.begin(); it != imports_.end(); ++it) {
+  for (auto it = specifier_map.begin(); it != specifier_map.end(); ++it) {
     // <spec step="1.2">If specifierKey ends with U+002F (/) and
     // normalizedSpecifier starts with specifierKey, then:</spec>
     if (!it->key.EndsWith('/'))
@@ -361,26 +441,70 @@ base::Optional<ImportMap::MatchResult> ImportMap::MatchPrefix(
   return best_match;
 }
 
+ImportMap::ImportMap()
+    : support_builtin_modules_(false),
+      modulator_for_built_in_modules_(nullptr) {}
+
 ImportMap::ImportMap(const Modulator& modulator_for_built_in_modules,
-                     const HashMap<String, Vector<KURL>>& imports)
-    : imports_(imports),
+                     bool support_builtin_modules,
+                     SpecifierMap&& imports,
+                     ScopeType&& scopes)
+    : imports_(std::move(imports)),
+      scopes_(std::move(scopes)),
+      support_builtin_modules_(support_builtin_modules),
       modulator_for_built_in_modules_(&modulator_for_built_in_modules) {}
+
+// <specdef
+// href="https://wicg.github.io/import-maps/#resolve-a-module-specifier">
+base::Optional<KURL> ImportMap::Resolve(const ParsedSpecifier& parsed_specifier,
+                                        const KURL& base_url,
+                                        String* debug_message) const {
+  DCHECK(debug_message);
+
+  // <spec step="8">For each scopePrefix -> scopeImports of importMap's
+  // scopes,</spec>
+  for (const auto& entry : scopes_) {
+    // <spec step="8.1">If scopePrefix is baseURLString, or if scopePrefix ends
+    // with U+002F (/) and baseURLString starts with scopePrefix, then:</spec>
+    if (entry.first == base_url.GetString() ||
+        (entry.first.EndsWith("/") &&
+         base_url.GetString().StartsWith(entry.first))) {
+      // <spec step="8.1.1">Let scopeImportsMatch be the result of resolving an
+      // imports match given normalizedSpecifier and scopeImports.</spec>
+      base::Optional<KURL> scope_match =
+          ResolveImportsMatch(parsed_specifier, entry.second, debug_message);
+
+      // <spec step="8.1.2">If scopeImportsMatch is not null, then return
+      // scopeImportsMatch.</spec>
+      if (scope_match)
+        return scope_match;
+    }
+  }
+
+  // <spec step="9">Let topLevelImportsMatch be the result of resolving an
+  // imports match given normalizedSpecifier and importMap’s imports.</spec>
+  //
+  // <spec step="10">If topLevelImportsMatch is not null, then return
+  // topLevelImportsMatch.</spec>
+  return ResolveImportsMatch(parsed_specifier, imports_, debug_message);
+}
 
 // <specdef href="https://wicg.github.io/import-maps/#resolve-an-imports-match">
 base::Optional<KURL> ImportMap::ResolveImportsMatch(
     const ParsedSpecifier& parsed_specifier,
+    const SpecifierMap& specifier_map,
     String* debug_message) const {
   DCHECK(debug_message);
   const String key = parsed_specifier.GetImportMapKeyString();
 
   // <spec step="1.1">If specifierKey is normalizedSpecifier, then:</spec>
-  MatchResult exact = imports_.find(key);
-  if (exact != imports_.end()) {
+  MatchResult exact = specifier_map.find(key);
+  if (exact != specifier_map.end()) {
     return ResolveImportsMatchInternal(key, exact, debug_message);
   }
 
   // Step 1.2.
-  if (auto prefix_match = MatchPrefix(parsed_specifier)) {
+  if (auto prefix_match = MatchPrefix(parsed_specifier, specifier_map)) {
     return ResolveImportsMatchInternal(key, *prefix_match, debug_message);
   }
 
@@ -427,7 +551,8 @@ base::Optional<KURL> ImportMap::ResolveImportsMatchInternal(
     // return url1.</spec>
     //
     // Note: Here we filter out non-existing built-in modules in all cases.
-    if (layered_api::ResolveFetchingURL(*modulator_for_built_in_modules_, url)
+    if (!support_builtin_modules_ ||
+        layered_api::ResolveFetchingURL(*modulator_for_built_in_modules_, url)
             .IsValid()) {
       *debug_message = "Import Map: \"" + key + "\" matches with \"" +
                        matched->key + "\" and is mapped to " +
@@ -451,17 +576,16 @@ String ImportMap::ToString() const {
     if (!is_first_key)
       builder.Append(",");
     is_first_key = false;
-    builder.Append("\n  \"");
-    builder.Append(it.key);
-    builder.Append("\": [");
+    builder.Append("\n  ");
+    builder.Append(it.key.EncodeForDebugging());
+    builder.Append(": [");
     bool is_first_value = true;
     for (const auto& v : it.value) {
       if (!is_first_value)
         builder.Append(",");
       is_first_value = false;
-      builder.Append("\n    \"");
-      builder.Append(v.GetString());
-      builder.Append("\"");
+      builder.Append("\n    ");
+      builder.Append(v.GetString().EncodeForDebugging());
     }
     builder.Append("\n  ]");
   }

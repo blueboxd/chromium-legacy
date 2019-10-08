@@ -51,6 +51,18 @@ class TestHatsWebDialog : public HatsWebDialog {
     return HatsWebDialog::GetDialogContentURL();
   }
 
+  void OnMainFrameResourceLoadComplete(
+      const content::mojom::ResourceLoadInfo& resource_load_info) {
+    if (resource_load_info.net_error == net::Error::OK &&
+        resource_load_info.url == resource_url_) {
+      // The resource is loaded successfully.
+      resource_loaded_ = true;
+    }
+  }
+
+  void set_resource_url(const GURL& url) { resource_url_ = url; }
+  bool resource_loaded() { return resource_loaded_; }
+
   MOCK_METHOD0(OnWebContentsFinishedLoad, void());
   MOCK_METHOD0(OnLoadTimedOut, void());
 
@@ -61,6 +73,7 @@ class TestHatsWebDialog : public HatsWebDialog {
 
   base::TimeDelta loading_timeout_;
   GURL content_url_;
+  GURL resource_url_;
 };
 
 class HatsWebDialogBrowserTest : public InProcessBrowserTest {
@@ -102,5 +115,41 @@ IN_PROC_BROWSER_TEST_F(HatsWebDialogBrowserTest, ContentPreloading) {
   base::RunLoop run_loop;
   EXPECT_CALL(*dialog, OnWebContentsFinishedLoad)
       .WillOnce(testing::Invoke(&run_loop, &base::RunLoop::Quit));
+  run_loop.Run();
+}
+
+// Test the correct state will be set when the resource fails to load.
+// Load with_inline_js.html which has an inline javascript that points to a
+// nonexistent file.
+IN_PROC_BROWSER_TEST_F(HatsWebDialogBrowserTest, LoadFailureInPreloading) {
+  base::FilePath test_data_dir;
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+  std::string contents;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_TRUE(base::ReadFileToString(
+        test_data_dir.AppendASCII("hats").AppendASCII("with_inline_js.html"),
+        &contents));
+  }
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  constexpr char kJSPath[] = "/hats/nonexistent.js";
+  constexpr char kSrcPlaceholder[] = "$JS_SRC";
+  GURL url = embedded_test_server()->GetURL(kJSPath);
+  size_t pos = contents.find(kSrcPlaceholder);
+  EXPECT_NE(pos, std::string::npos);
+  contents.replace(pos, strlen(kSrcPlaceholder), url.spec());
+
+  TestHatsWebDialog* dialog =
+      Create(browser(), base::TimeDelta::FromSeconds(100),
+             GURL("data:text/html;charset=utf-8," + contents));
+  dialog->set_resource_url(url);
+  base::RunLoop run_loop;
+  EXPECT_CALL(*dialog, OnWebContentsFinishedLoad)
+      .WillOnce(testing::Invoke([dialog, &run_loop]() {
+        EXPECT_FALSE(dialog->resource_loaded());
+        run_loop.Quit();
+      }));
   run_loop.Run();
 }

@@ -208,6 +208,7 @@
 <translation id="2498359688066513246">ヘルプとフィードバック</translation>
 <translation id="2501278716633472235">戻る</translation>
 <translation id="2513403576141822879">プライバシー、セキュリティ、データ収集に関連するその他の設定については、<ph name="BEGIN_LINK" />同期と Google サービス<ph name="END_LINK" />をご覧ください</translation>
+<translation id="2518590038762162553">ライトモードを使用すると、Chrome でページの読み込みが高速化され、データ使用量も最大 60% 抑えることができます。アクセスするページを最適化するため、ウェブ トラフィックが Chrome から Google に送信されます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">アクセスしたページの URL を Google に送信します</translation>
 <translation id="2532336938189706096">ウェブ表示</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" />件の項目を削除しました</translation>

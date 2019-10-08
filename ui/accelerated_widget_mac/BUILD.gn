@@ -9,7 +9,6 @@ component("accelerated_widget_mac") {
     "accelerated_widget_mac.h",
     "accelerated_widget_mac.mm",
     "accelerated_widget_mac_export.h",
-    "availability_macros.h",
     "ca_layer_frame_sink.h",
     "ca_layer_frame_sink.mm",
     "ca_layer_tree_coordinator.h",

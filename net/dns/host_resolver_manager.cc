@@ -951,10 +951,10 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
                                    const HostCache::Entry& results,
                                    bool secure) = 0;
 
-    // Called when the first of two jobs succeeds.  If the first completed
-    // transaction fails, this is not called.  Also not called when the DnsTask
-    // only needs to run one transaction.
-    virtual void OnFirstDnsTransactionComplete() = 0;
+    // Called when a job succeeds and there are more transactions needed.  If
+    // the current completed transaction fails, this is not called.  Also not
+    // called when the DnsTask only needs to run one transaction.
+    virtual void OnIntermediateTransactionComplete() = 0;
 
     virtual RequestPriority priority() const = 0;
 
@@ -974,7 +974,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
           const base::TickClock* tick_clock)
       : client_(client),
         hostname_(hostname),
-        query_type_(query_type),
         request_context_(request_context),
         secure_(secure),
         secure_dns_mode_(secure_dns_mode),
@@ -989,34 +988,39 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     else
       DCHECK(client_->CanUseInsecureDnsTransactions());
 
+    if (query_type != DnsQueryType::UNSPECIFIED) {
+      transactions_needed_.push(query_type);
+    } else {
+      transactions_needed_.push(DnsQueryType::A);
+      transactions_needed_.push(DnsQueryType::AAAA);
+    }
+    num_needed_transactions_ = transactions_needed_.size();
+
     DCHECK(delegate_);
   }
 
-  bool needs_two_transactions() const {
-    return query_type_ == DnsQueryType::UNSPECIFIED;
-  }
+  // The number of transactions required for the specified query type. Does not
+  // change as transactions are completed.
+  int num_needed_transactions() const { return num_needed_transactions_; }
 
   bool needs_another_transaction() const {
-    return needs_two_transactions() && !transaction2_;
+    return !transactions_needed_.empty();
   }
 
   bool secure() const { return secure_; }
 
-  void StartFirstTransaction() {
-    DCHECK_EQ(0u, num_completed_transactions_);
-    DCHECK(!transaction1_);
-
-    net_log_.BeginEvent(NetLogEventType::HOST_RESOLVER_IMPL_DNS_TASK);
-    transaction1_ = CreateTransaction(query_type_ == DnsQueryType::UNSPECIFIED
-                                          ? DnsQueryType::A
-                                          : query_type_);
-    transaction1_->Start();
-  }
-
-  void StartSecondTransaction() {
+  void StartNextTransaction() {
     DCHECK(needs_another_transaction());
-    transaction2_ = CreateTransaction(DnsQueryType::AAAA);
-    transaction2_->Start();
+
+    if (transactions_started_.empty())
+      net_log_.BeginEvent(NetLogEventType::HOST_RESOLVER_IMPL_DNS_TASK);
+
+    DnsQueryType type = transactions_needed_.front();
+    transactions_needed_.pop();
+
+    std::unique_ptr<DnsTransaction> transaction = CreateTransaction(type);
+    transaction->Start();
+    transactions_started_.insert(std::move(transaction));
   }
 
  private:
@@ -1082,8 +1086,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
     // Merge results with saved results from previous transactions.
     if (saved_results_) {
-      DCHECK(needs_two_transactions());
-      DCHECK_GE(1u, num_completed_transactions_);
+      DCHECK_LE(2, num_needed_transactions());
+      DCHECK_LT(num_completed_transactions_, num_needed_transactions());
 
       switch (dns_query_type) {
         case DnsQueryType::A:
@@ -1107,9 +1111,9 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     // If not all transactions are complete, the task cannot yet be completed
     // and the results so far must be saved to merge with additional results.
     ++num_completed_transactions_;
-    if (needs_two_transactions() && num_completed_transactions_ == 1) {
+    if (num_completed_transactions_ < num_needed_transactions()) {
       saved_results_ = std::move(results);
-      delegate_->OnFirstDnsTransactionComplete();
+      delegate_->OnIntermediateTransactionComplete();
       return;
     }
 
@@ -1390,7 +1394,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   DnsClient* client_;
   std::string hostname_;
-  const DnsQueryType query_type_;
   URLRequestContext* const request_context_;
 
   // Whether lookups in this DnsTask should occur using DoH or plaintext.
@@ -1401,10 +1404,10 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   Delegate* delegate_;
   const NetLogWithSource net_log_;
 
-  std::unique_ptr<DnsTransaction> transaction1_;
-  std::unique_ptr<DnsTransaction> transaction2_;
-
-  unsigned num_completed_transactions_;
+  base::queue<DnsQueryType> transactions_needed_;
+  base::flat_set<std::unique_ptr<DnsTransaction>> transactions_started_;
+  int num_needed_transactions_;
+  int num_completed_transactions_;
 
   // Result from previously completed transactions. Only set if a transaction
   // has completed while others are still in progress.
@@ -1776,18 +1779,21 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
   void KillDnsTask() {
     if (dns_task_) {
-      if (dispatcher_)
-        ReduceToOneJobSlot();
+      if (dispatcher_) {
+        while (num_occupied_job_slots_ > 1 || is_queued()) {
+          ReduceByOneJobSlot();
+        }
+      }
       dns_task_.reset();
     }
   }
 
-  // Reduce the number of job slots occupied and queued in the dispatcher
-  // to one. If the second Job slot is queued in the dispatcher, cancels the
-  // queued job. Otherwise, the second Job has been started by the
-  // PrioritizedDispatcher, so signals it is complete.
-  void ReduceToOneJobSlot() {
-    DCHECK_GE(num_occupied_job_slots_, 1u);
+  // Reduce the number of job slots occupied and queued in the dispatcher by
+  // one. If the next Job slot is queued in the dispatcher, cancels the queued
+  // job. Otherwise, the next Job has been started by the PrioritizedDispatcher,
+  // so signals it is complete.
+  void ReduceByOneJobSlot() {
+    DCHECK_GE(num_occupied_job_slots_, 1);
     DCHECK(dispatcher_);
     if (is_queued()) {
       dispatcher_->Cancel(handle_);
@@ -1795,8 +1801,9 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     } else if (num_occupied_job_slots_ > 1) {
       dispatcher_->OnJobFinished();
       --num_occupied_job_slots_;
+    } else {
+      NOTREACHED();
     }
-    DCHECK_EQ(1u, num_occupied_job_slots_);
   }
 
   void UpdatePriority() {
@@ -1806,13 +1813,19 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
   // PriorityDispatch::Job:
   void Start() override {
-    DCHECK_LE(num_occupied_job_slots_, 1u);
-
     handle_.Reset();
     ++num_occupied_job_slots_;
 
-    if (num_occupied_job_slots_ == 2) {
-      StartSecondDnsTransaction();
+    if (num_occupied_job_slots_ >= 2) {
+      if (!dns_task_) {
+        dispatcher_->OnJobFinished();
+        return;
+      }
+      DCHECK(dns_task_);
+      StartNextDnsTransaction();
+      if (dns_task_->needs_another_transaction()) {
+        Schedule(true);
+      }
       return;
     }
 
@@ -1828,7 +1841,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   // PrioritizedDispatcher with tighter limits.
   void StartProcTask() {
     DCHECK(dispatcher_);
-    DCHECK_EQ(1u, num_occupied_job_slots_);
+    DCHECK_EQ(1, num_occupied_job_slots_);
     DCHECK(IsAddressType(query_type_));
 
     proc_task_ = std::make_unique<ProcTask>(
@@ -1897,30 +1910,30 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
   void StartDnsTask(bool secure) {
     DCHECK_EQ(secure, !dispatcher_);
-    DCHECK_EQ(dispatcher_ ? 1u : 0, num_occupied_job_slots_);
+    DCHECK_EQ(dispatcher_ ? 1 : 0, num_occupied_job_slots_);
     DCHECK(!resolver_->HaveTestProcOverride());
     // Need to create the task even if we're going to post a failure instead of
     // running it, as a "started" job needs a task to be properly cleaned up.
     dns_task_.reset(new DnsTask(resolver_->dns_client_.get(), hostname_,
                                 query_type_, request_context_, secure,
                                 secure_dns_mode_, this, net_log_, tick_clock_));
-    dns_task_->StartFirstTransaction();
+    dns_task_->StartNextTransaction();
     // Schedule a second transaction, if needed. DoH queries can bypass the
-    // dispatcher and start immediately.
-    if (dns_task_->needs_two_transactions()) {
-      if (secure)
-        dns_task_->StartSecondTransaction();
-      else
-        Schedule(true);
+    // dispatcher and start all of their transactions immediately.
+    if (secure) {
+      while (dns_task_->needs_another_transaction())
+        dns_task_->StartNextTransaction();
+    } else if (dns_task_->needs_another_transaction()) {
+      Schedule(true);
     }
   }
 
-  void StartSecondDnsTransaction() {
+  void StartNextDnsTransaction() {
     DCHECK_EQ(dns_task_->secure(), !dispatcher_);
     DCHECK(!dispatcher_ || num_occupied_job_slots_ >= 1);
     DCHECK(dns_task_);
-    DCHECK(dns_task_->needs_two_transactions());
-    dns_task_->StartSecondTransaction();
+    DCHECK(dns_task_->needs_another_transaction());
+    dns_task_->StartNextTransaction();
   }
 
   // Called if DnsTask fails. It is posted from StartDnsTask, so Job may be
@@ -2004,18 +2017,28 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     CompleteRequests(results, bounded_ttl, true /* allow_cache */, secure);
   }
 
-  void OnFirstDnsTransactionComplete() override {
-    DCHECK(dns_task_->needs_two_transactions());
+  void OnIntermediateTransactionComplete() override {
+    DCHECK_LE(2, dns_task_->num_needed_transactions());
     DCHECK_EQ(dns_task_->needs_another_transaction(), is_queued());
-    // No longer need to occupy two dispatcher slots.
-    if (dispatcher_)
-      ReduceToOneJobSlot();
 
-    // We already have a job slot at the dispatcher, so if the second
-    // transaction hasn't started, reuse it now instead of waiting in the queue
-    // for the second slot.
-    if (dns_task_->needs_another_transaction())
-      dns_task_->StartSecondTransaction();
+    if (dispatcher_) {
+      // We already have a job slot at the dispatcher, so if the next
+      // transaction hasn't started, reuse it now instead of waiting in the
+      // queue for another slot.
+      if (!dns_task_->needs_another_transaction()) {
+        // The DnsTask has no more transactions, so we can relinquish this slot.
+        DCHECK(!is_queued());
+        ReduceByOneJobSlot();
+      } else {
+        dns_task_->StartNextTransaction();
+        if (!dns_task_->needs_another_transaction() && is_queued()) {
+          dispatcher_->Cancel(handle_);
+          handle_.Reset();
+        }
+      }
+    } else if (dns_task_->needs_another_transaction()) {
+      dns_task_->StartNextTransaction();
+    }
   }
 
   void StartMdnsTask() {
@@ -2189,7 +2212,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
       if (dispatcher_) {
         // Signal dispatcher that a slot has opened.
-        DCHECK_EQ(1u, num_occupied_job_slots_);
+        DCHECK_EQ(1, num_occupied_job_slots_);
         dispatcher_->OnJobFinished();
       }
     } else if (is_queued()) {
@@ -2314,7 +2337,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
   // Number of slots occupied by this Job in |dispatcher_|. Should be 0 when
   // the job is not registered with any dispatcher.
-  unsigned num_occupied_job_slots_;
+  int num_occupied_job_slots_;
 
   // The dispatcher with which this Job is currently registered. Is nullptr if
   // not registered with any dispatcher.

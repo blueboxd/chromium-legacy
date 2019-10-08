@@ -765,7 +765,7 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
           metrics[0]->source_url);
   MergeMetricsSameTargetUrl(&metrics);
 
-  if (metrics.empty())
+  if (metrics.empty() || viewport_size.IsEmpty())
     return;
 
   number_of_anchors_ = metrics.size();

@@ -8478,6 +8478,113 @@ TEST_F(WebFrameTest, OverlayFullscreenVideoInIframe) {
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
 }
 
+TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
+  RegisterMockedHttpURLLoad("webxr_overlay.html");
+  frame_test_helpers::TestWebWidgetClient web_widget_client;
+  frame_test_helpers::WebViewHelper web_view_helper;
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
+      base_url_ + "webxr_overlay.html", nullptr, nullptr, &web_widget_client);
+  web_view_helper.Resize(WebSize(640, 480));
+
+  // Ensure that the local frame view has a paint artifact compositor. It's
+  // created lazily, and doing so after entering fullscreen would undo the
+  // overlay layer modification.
+  UpdateAllLifecyclePhases(web_view_impl);
+
+  const cc::LayerTreeHost* layer_tree_host =
+      web_widget_client.layer_tree_host();
+
+  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
+
+  Document* document = frame->GetDocument();
+  EXPECT_FALSE(document->IsImmersiveArOverlay());
+  document->SetIsImmersiveArOverlay(true);
+  EXPECT_TRUE(document->IsImmersiveArOverlay());
+
+  Element* overlay = document->getElementById("overlay");
+  EXPECT_FALSE(Fullscreen::IsFullscreenElement(*overlay));
+  EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
+
+  // Fullscreen should work without separate user activation while in ArOverlay
+  // mode.
+  Fullscreen::RequestFullscreen(*overlay);
+  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  UpdateAllLifecyclePhases(web_view_impl);
+  EXPECT_TRUE(Fullscreen::IsFullscreenElement(*overlay));
+  EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()),
+            SK_AlphaTRANSPARENT);
+
+  GraphicsLayer* inner_layer =
+      ToLayoutBoxModelObject(
+          frame->GetDocument()->getElementById("inner")->GetLayoutObject())
+          ->Layer()
+          ->GetCompositedLayerMapping()
+          ->MainGraphicsLayer();
+  EXPECT_TRUE(inner_layer);
+
+  // Verify that the overlay layer and inner layers are present in the painted
+  // graphics layer tree and that the non-overlay graphics layers (if any) don't
+  // paint anything. The goal is that the body text and sibling div content
+  // should not be visible. This test should be independent of the mechanism
+  // used to accomplish this, i.e. it could be done by deleting layers, marking
+  // them as not drawing, or by overriding the paint root.
+  GraphicsLayer* overlay_layer =
+      ToLayoutBoxModelObject(overlay->GetLayoutObject())
+          ->Layer()
+          ->GetCompositedLayerMapping()
+          ->MainGraphicsLayer();
+  EXPECT_TRUE(overlay_layer);
+  GraphicsLayer* root_layer =
+      frame->View()->GetLayoutView()->Compositor()->PaintRootGraphicsLayer();
+  EXPECT_TRUE(root_layer);
+  int actively_painting_layers = 0;
+  bool found_overlay_layer = false;
+  bool found_inner_layer = false;
+  ForAllGraphicsLayers(*root_layer, [&](GraphicsLayer& layer) -> bool {
+    // The overlay layers is expected to be present, but don't recurse into it.
+    // (This also skips the inner layer which is a child of the overlay layer.)
+    if (&layer == overlay_layer) {
+      found_overlay_layer = true;
+      return false;
+    }
+    if (&layer == inner_layer) {
+      // This shouldn't happen, the inner layer must remain inside the overlay
+      // layer.
+      found_inner_layer = true;
+    }
+    if (!layer.PaintsContentOrHitTest() || !layer.HasLayerState() ||
+        !layer.DrawsContent()) {
+      // Recurse into non-drawing layers, but don't check if they paint.
+      return true;
+    }
+    layer.CapturePaintRecord();
+    if (layer.GetPaintController().GetDisplayItemList().size() > 0 ||
+        layer.GetPaintController().PaintChunks().size() > 0)
+      ++actively_painting_layers;
+    return true;
+  });
+  EXPECT_EQ(actively_painting_layers, 0);
+  EXPECT_TRUE(found_overlay_layer);
+
+  // Check for the inner layer separately, the previous recursion was supposed
+  // to skip it due to being a child of the overlay layer.
+  EXPECT_FALSE(found_inner_layer);
+  ForAllGraphicsLayers(*root_layer, [&](GraphicsLayer& layer) -> bool {
+    if (&layer == inner_layer) {
+      found_inner_layer = true;
+      return false;
+    }
+    return true;
+  });
+  EXPECT_TRUE(found_inner_layer);
+
+  web_view_impl->MainFrameWidget()->DidExitFullscreen();
+  UpdateAllLifecyclePhases(web_view_impl);
+  EXPECT_FALSE(Fullscreen::IsFullscreenElement(*overlay));
+  EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
+  document->SetIsImmersiveArOverlay(false);
+}
+
 TEST_F(WebFrameTest, LayoutBlockPercentHeightDescendants) {
   RegisterMockedHttpURLLoad("percent-height-descendants.html");
   frame_test_helpers::WebViewHelper web_view_helper;

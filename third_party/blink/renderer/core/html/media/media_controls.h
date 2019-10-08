@@ -77,10 +77,6 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
   virtual HTMLDivElement* PanelElement() = 0;
   virtual void OnMediaControlsEnabledChange() = 0;
 
-  // This is required for showing a context menu upon pressing right soft key
-  // on a touchless device.
-  virtual void ShowContextMenu() = 0;
-
   void Trace(Visitor*) override;
 
  private:

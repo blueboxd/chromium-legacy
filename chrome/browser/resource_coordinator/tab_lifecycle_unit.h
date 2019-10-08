@@ -93,6 +93,10 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // Updates the tab's origin trial freeze policy.
   void UpdateOriginTrialFreezePolicy(mojom::InterventionPolicy policy);
 
+  // Setters for the WebLock and IndexedDB lock usage properties.
+  void SetIsHoldingWebLock(bool is_holding_weblock);
+  void SetIsHoldingIndexedDBLock(bool is_holding_indexeddb_lock);
+
   // LifecycleUnit:
   TabLifecycleUnitExternal* AsTabLifecycleUnitExternal() override;
   base::string16 GetTitle() const override;
@@ -224,6 +228,14 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // TimeTicks() if the tab was never "recently audible", last time at which the
   // tab was "recently audible" otherwise.
   base::TimeTicks recently_audible_time_;
+
+  // Indicates if at least one of the frames of this tab is currently holding
+  // at least one WebLock.
+  bool is_holding_weblock_ = false;
+
+  // Indicates if at least one of the frames of this tab is currently holding
+  // at least one IndexedDB Lock.
+  bool is_holding_indexeddb_lock_ = false;
 
   std::unique_ptr<TabLifecycleUnitExternalImpl> external_impl_;
 

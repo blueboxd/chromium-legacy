@@ -326,6 +326,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="3241052487511142956">Enllaç visitat anterior</translation>
 <translation id="3241638166094654466">Cel·les en cada línia:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">Element similar anterior</translation>
 <translation id="3286372614333682499">vertical</translation>
 <translation id="3286390186030710347">Control lliscant</translation>
 <translation id="3299925995433437805">No hi ha cap enllaç visitat següent.</translation>
@@ -508,6 +509,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4517854969512651305">Augmenta el valor</translation>
 <translation id="4529987814483543472">Mapa de teclat clàssic</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra inclinada}other{# barres inclinades}}</translation>
+<translation id="4537277403911487429">Element similar següent</translation>
 <translation id="4547556996012970016">Capçalera del nivell 5 següent</translation>
 <translation id="4562381607973973258">Capçalera</translation>
 <translation id="4569941707103739422">Prem les fletxes amunt i avall per navegar; prem Retorn per activar una opció.</translation>
@@ -538,7 +540,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4763480195061959176">vídeo</translation>
 <translation id="4764692524839457597">opció predeterminada</translation>
 <translation id="4772771694153161212">Sense subratllat</translation>
-<translation id="4787577491510559358">Anuncia el format de l'element</translation>
+<translation id="4787577491510559358">Anuncia el format de l'element actual</translation>
 <translation id="479989351350248267">cerca</translation>
 <translation id="4804818685124855865">Desconnecta</translation>
 <translation id="481165870889056555">Presenta el títol de la pàgina actual</translation>

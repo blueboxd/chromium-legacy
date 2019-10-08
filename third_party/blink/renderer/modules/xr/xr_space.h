@@ -9,6 +9,7 @@
 
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/xr/xr_native_origin_information.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -24,8 +25,10 @@ class XRSession;
 class XRSpace : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
+ protected:
+  explicit XRSpace(XRSession* session);
+
  public:
-  explicit XRSpace(XRSession*);
   ~XRSpace() override;
 
   // Gets a default viewer pose appropriate for this space. This is an identity
@@ -74,10 +77,13 @@ class XRSpace : public EventTargetWithInlineData {
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
+  // Return origin offset matrix, aka native_origin_from_offset_space.
   virtual TransformationMatrix OriginOffsetMatrix();
   virtual TransformationMatrix InverseOriginOffsetMatrix();
 
-  void Trace(blink::Visitor*) override;
+  virtual base::Optional<XRNativeOriginInformation> NativeOrigin() const = 0;
+
+  void Trace(blink::Visitor* visitor) override;
 
  private:
   const Member<XRSession> session_;

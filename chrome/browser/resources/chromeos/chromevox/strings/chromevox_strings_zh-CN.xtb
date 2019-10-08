@@ -326,6 +326,7 @@
 <translation id="3241052487511142956">上一个访问过的链接</translation>
 <translation id="3241638166094654466">每行中的单元格数：</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />：<ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">上一个相似项</translation>
 <translation id="3286372614333682499">纵向</translation>
 <translation id="3286390186030710347">滑块</translation>
 <translation id="3299925995433437805">不存在下一个访问过的链接。</translation>
@@ -508,6 +509,7 @@
 <translation id="4517854969512651305">将值增大</translation>
 <translation id="4529987814483543472">传统键映射</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{1个斜线符号}other{#个斜线符号}}</translation>
+<translation id="4537277403911487429">下一个相似项</translation>
 <translation id="4547556996012970016">下一个5级标题</translation>
 <translation id="4562381607973973258">标头标记</translation>
 <translation id="4569941707103739422">按向上或向下箭头即可浏览；按 Enter 键即可启动。</translation>

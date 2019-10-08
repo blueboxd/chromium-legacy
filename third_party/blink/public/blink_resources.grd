@@ -18,9 +18,6 @@
       <if expr="is_macosx">
         <include name="IDR_UASTYLE_THEME_MAC_CSS" file="../renderer/core/html/resources/mac.css" type="BINDATA" compress="gzip"/>
       </if>
-      <if expr="notouch_build">
-        <include name="IDR_UASTYLE_THEME_TOUCHLESS_CSS" file="../renderer/core/css/touchless.css" type="BINDATA" compress="gzip"/>
-      </if>
       <include name="IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS" file="../renderer/core/html/resources/input_multiple_fields.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_THEME_WIN_CSS" file="../renderer/core/html/resources/win.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_THEME_WIN_QUIRKS_CSS" file="../renderer/core/html/resources/win_quirks.css" type="BINDATA" compress="gzip"/>

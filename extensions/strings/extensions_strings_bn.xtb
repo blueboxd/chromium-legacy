@@ -12,7 +12,6 @@
 <translation id="2159915644201199628">ইমেজ ডিকোড করা যায়নি: '<ph name="IMAGE_NAME" />'</translation>
 <translation id="2350172092385603347">স্থানীয়করণ ব্যবহৃত হয়েছে, কিন্তু default_locale তালিকাতে উল্লেখ ছিল না৷</translation>
 <translation id="2576842806987913196">এই নামের একটি CRX ফাইল ইতিমধ্যে বিদ্যমান আছে৷</translation>
-<translation id="2753617847762399167">ভুল পথ (পূর্ণ অথবা '..' এর সাথে সম্পর্কিত: '<ph name="IMAGE_PATH" />'</translation>
 <translation id="2785530881066938471">বর্তমান স্ক্রিপ্টটির জন্য <ph name="RELATIVE_PATH" /> ফাইলটি লোড করতে পারা যায়নি৷ এটি UTF-8 এনকোড হওয়া নেই৷</translation>
 <translation id="2903070246402204397">প্রশাসক <ph name="EXTENSION_NAME" /> (এক্সটেনশন আইডি "<ph name="EXTENSION_ID" />") ব্লক করেছে। <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">এই প্যাকেজটি ইনস্টল করা যায়নি: '<ph name="ERROR_CODE" />'</translation>
@@ -38,7 +37,6 @@
 <translation id="5436430103864390185">আকৃতি দেয়া উইন্ডো সমর্থিত নয়।</translation>
 <translation id="5456409301717116725">এই এক্সটেনশনটি '<ph name="KEY_PATH" />' মুখ্য ফাইলকে অন্তর্ভুক্ত করে৷ আপনি সম্ভবত এটি করতে চাইবেন না৷</translation>
 <translation id="5486326529110362464">ব্যক্তিগত কী-র জন্য ইনপুট মান থাকা আবশ্যক৷</translation>
-<translation id="5627523580512561598">এক্সটেনশন <ph name="EXTENSION_NAME" /></translation>
 <translation id="5972529113578162692">এই মেশিনের প্রশাসকের <ph name="EXTENSION_NAME" /> ইন্সটল করা প্রয়োজন। এটি আনইন্সটল করা যাবে না।</translation>
 <translation id="6027032947578871493"><ph name="VENDOR_NAME" /> এর থেকে অজানা পণ্য <ph name="PRODUCT_ID" /> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="VENDOR_ID" /> বিক্রেতার থেকে <ph name="PRODUCT_NAME" /></translation>
@@ -50,7 +48,6 @@
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" আপনার এক বা একাধিক ডিভাইসে অ্যাক্সেসের জন্য অনুরোধ করছে:</translation>
 <translation id="657064425229075395">পশ্চাদপট লিপি '<ph name="BACKGROUND_SCRIPT" />' লোড করা যায়নি৷</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> এর পক্ষ থেকে <ph name="PRODUCT_NAME" /> (ক্রমিক সংখ্যা <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="6731255991101203740">এটিকে আনজিপ করার জন্য ডিরেক্টরি তৈরি করা যায়নি: '<ph name="DIRECTORY_PATH" />'</translation>
 <translation id="677806580227005219">মাইমহ্যান্ডলার: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">এই এক্সটেনশনটি খুব ঘন ঘন নিজের থেকে পুনরায় লোড হয়৷</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> এর থেকে অজানা পণ্য <ph name="PRODUCT_ID" /></translation>

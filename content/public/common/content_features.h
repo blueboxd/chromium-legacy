@@ -47,6 +47,7 @@ CONTENT_EXPORT extern const base::Feature
     kExtraSafelistedRequestHeadersForOutOfBlinkCors;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicyForSandbox;
 CONTENT_EXPORT extern const base::Feature kFontSrcLocalMatching;
+CONTENT_EXPORT extern const base::Feature kForcedColors;
 CONTENT_EXPORT extern const base::Feature kFractionalScrollOffsets;
 CONTENT_EXPORT extern const base::Feature kGuestViewCrossProcessFrames;
 CONTENT_EXPORT extern const base::Feature kHistoryManipulationIntervention;
@@ -91,7 +92,6 @@ CONTENT_EXPORT extern const base::Feature
     kProcessSharingWithDefaultSiteInstances;
 CONTENT_EXPORT extern const base::Feature
     kProcessSharingWithStrictSiteInstances;
-CONTENT_EXPORT extern const base::Feature kRasterInducingScroll;
 CONTENT_EXPORT extern const base::Feature kReducedReferrerGranularity;
 CONTENT_EXPORT extern const base::Feature kReloadHiddenTabsWithCrashedSubframes;
 CONTENT_EXPORT extern const base::Feature kRenderDocumentForMainFrame;

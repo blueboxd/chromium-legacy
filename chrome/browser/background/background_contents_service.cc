@@ -268,10 +268,6 @@ BackgroundContentsService::BackgroundContentsService(
 }
 
 BackgroundContentsService::~BackgroundContentsService() {
-  // BackgroundContents should be shutdown before we go away, as otherwise
-  // our browser process refcount will be off.
-  DCHECK(contents_map_.empty());
-
   for (auto& observer : observers_)
     observer.OnBackgroundContentsServiceDestroying();
 }
@@ -307,7 +303,7 @@ std::vector<BackgroundContents*>
 BackgroundContentsService::GetBackgroundContents() const {
   std::vector<BackgroundContents*> contents;
   for (auto it = contents_map_.begin(); it != contents_map_.end(); ++it)
-    contents.push_back(it->second.contents);
+    contents.push_back(it->second.contents.get());
   return contents;
 }
 
@@ -582,8 +578,9 @@ void BackgroundContentsService::LoadBackgroundContents(
   DVLOG(1) << "Loading background content url: " << url;
 
   BackgroundContents* contents = CreateBackgroundContents(
-      SiteInstance::CreateForURL(profile_, url), nullptr, true, frame_name,
-      application_id, std::string(), nullptr);
+      SiteInstance::CreateForURL(profile_, url), nullptr, MSG_ROUTING_NONE,
+      MSG_ROUTING_NONE, MSG_ROUTING_NONE, frame_name, application_id,
+      std::string(), nullptr);
 
   contents->CreateRenderViewSoon(url);
 }
@@ -591,26 +588,36 @@ void BackgroundContentsService::LoadBackgroundContents(
 BackgroundContents* BackgroundContentsService::CreateBackgroundContents(
     scoped_refptr<SiteInstance> site,
     content::RenderFrameHost* opener,
-    bool is_new_browsing_instance,
+    int32_t routing_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
     const std::string& frame_name,
     const std::string& application_id,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
-  BackgroundContents* contents =
-      new BackgroundContents(std::move(site), opener, is_new_browsing_instance,
-                             this, partition_id, session_storage_namespace);
+  auto contents = std::make_unique<BackgroundContents>(
+      std::move(site), opener, routing_id, main_frame_route_id,
+      main_frame_widget_route_id, this, partition_id,
+      session_storage_namespace);
+  BackgroundContents* contents_ptr = contents.get();
+  AddBackgroundContents(std::move(contents), application_id, frame_name);
 
   // Register the BackgroundContents internally, then send out a notification
   // to external listeners.
-  BackgroundContentsOpenedDetails details = {contents, frame_name,
+  BackgroundContentsOpenedDetails details = {contents_ptr, frame_name,
                                              application_id};
-  BackgroundContentsOpened(&details);
   for (auto& observer : observers_)
     observer.OnBackgroundContentsOpened(details);
 
   // A new background contents has been created - notify our listeners.
   SendChangeNotification();
-  return contents;
+  return contents_ptr;
+}
+
+void BackgroundContentsService::DeleteBackgroundContents(
+    BackgroundContents* contents) {
+  contents_map_.erase(GetParentApplicationId(contents));
+  SendChangeNotification();
 }
 
 void BackgroundContentsService::RegisterBackgroundContents(
@@ -662,19 +669,21 @@ void BackgroundContentsService::ShutdownAssociatedBackgroundContents(
   if (contents) {
     UnregisterBackgroundContents(contents);
     // Background contents destructor shuts down the renderer.
-    delete contents;
+    DeleteBackgroundContents(contents);
   }
 }
 
-void BackgroundContentsService::BackgroundContentsOpened(
-    BackgroundContentsOpenedDetails* details) {
-  // Add the passed object to our list. Should not already be tracked.
-  DCHECK(!IsTracked(details->contents));
-  DCHECK(!details->application_id.empty());
-  contents_map_[details->application_id].contents = details->contents;
-  contents_map_[details->application_id].frame_name = details->frame_name;
+void BackgroundContentsService::AddBackgroundContents(
+    std::unique_ptr<BackgroundContents> contents,
+    const std::string& application_id,
+    const std::string& frame_name) {
+  // Add the passed object to our list.
+  DCHECK(!application_id.empty());
+  BackgroundContentsInfo& info = contents_map_[application_id];
+  info.contents = std::move(contents);
+  info.frame_name = frame_name;
 
-  CloseBalloon(details->application_id, profile_);
+  CloseBalloon(application_id, profile_);
 }
 
 // Used by test code and debug checks to verify whether a given
@@ -697,13 +706,13 @@ void BackgroundContentsService::RemoveObserver(
 BackgroundContents* BackgroundContentsService::GetAppBackgroundContents(
     const std::string& application_id) {
   BackgroundContentsMap::const_iterator it = contents_map_.find(application_id);
-  return (it != contents_map_.end()) ? it->second.contents : nullptr;
+  return (it != contents_map_.end()) ? it->second.contents.get() : nullptr;
 }
 
 const std::string& BackgroundContentsService::GetParentApplicationId(
     BackgroundContents* contents) const {
   for (auto it = contents_map_.begin(); it != contents_map_.end(); ++it) {
-    if (contents == it->second.contents)
+    if (contents == it->second.contents.get())
       return it->first;
   }
   return base::EmptyString();
@@ -743,23 +752,18 @@ void BackgroundContentsService::OnBackgroundContentsTerminated(
       extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
           GetParentApplicationId(contents),
           extensions::ExtensionRegistry::ENABLED));
+  DeleteBackgroundContents(contents);
 }
 
 void BackgroundContentsService::OnBackgroundContentsClosed(
     BackgroundContents* contents) {
   DCHECK(IsTracked(contents));
   UnregisterBackgroundContents(contents);
-  // CLOSED is always followed by a DELETED notification so we'll send our
-  // change notification there.
+  DeleteBackgroundContents(contents);
 }
 
-void BackgroundContentsService::OnBackgroundContentsDeleted(
-    BackgroundContents* contents) {
-  // Stop tracking BackgroundContents when they have been deleted (happens
-  // during shutdown or if the render process dies).
-  DCHECK(IsTracked(contents));
-  contents_map_.erase(GetParentApplicationId(contents));
-  SendChangeNotification();
+void BackgroundContentsService::Shutdown() {
+  contents_map_.clear();
 }
 
 void BackgroundContentsService::HandleExtensionCrashed(
@@ -785,3 +789,8 @@ void BackgroundContentsService::HandleExtensionCrashed(
     RestartForceInstalledExtensionOnCrash(extension);
   }
 }
+
+BackgroundContentsService::BackgroundContentsInfo::BackgroundContentsInfo() =
+    default;
+BackgroundContentsService::BackgroundContentsInfo::~BackgroundContentsInfo() =
+    default;

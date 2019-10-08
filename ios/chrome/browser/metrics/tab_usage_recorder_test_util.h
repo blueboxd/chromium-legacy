@@ -15,6 +15,9 @@ namespace tab_usage_recorder_test_util {
 // Returns false on failure.
 bool OpenNewIncognitoTabUsingUIAndEvictMainTabs() WARN_UNUSED_RESULT;
 
+// Removes browsing cache for main tabs. Returns false on failure.
+bool RemoveBrowsingCacheForMainTabs() WARN_UNUSED_RESULT;
+
 // Switches to normal mode using the tab switcher and selects the
 // previously-selected normal tab. Assumes current mode is Incognito.
 // Induces EG assert on failure.

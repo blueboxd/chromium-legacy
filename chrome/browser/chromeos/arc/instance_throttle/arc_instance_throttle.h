@@ -59,10 +59,6 @@ class ArcInstanceThrottle : public KeyedService,
     delegate_ = std::move(delegate);
   }
 
-  void set_level_for_testing(chromeos::ThrottleObserver::PriorityLevel level) {
-    SetLevel(level);
-  }
-
  private:
   // chromeos::ThrottleService:
   void ThrottleInstance(

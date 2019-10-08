@@ -33,6 +33,16 @@
           --cr-toggle-unchecked-ink-color: var(--google-grey-refresh-300);
         }
       }
+      /* Keep the prefers-color-scheme and [dark] rules the same. */
+      :host([dark]) {
+        --cr-toggle-checked-bar-color: var(--google-blue-refresh-300);
+        --cr-toggle-checked-button-color: var(--google-blue-refresh-300);
+        --cr-toggle-checked-ink-color: var(--google-blue-refresh-300);
+        --cr-toggle-ripple-opacity: .4;
+        --cr-toggle-unchecked-bar-color: var(--google-grey-refresh-500);
+        --cr-toggle-unchecked-button-color: var(--google-grey-refresh-300);
+        --cr-toggle-unchecked-ink-color: var(--google-grey-refresh-300);
+      }
 
       :host([disabled]) {
         cursor: initial;

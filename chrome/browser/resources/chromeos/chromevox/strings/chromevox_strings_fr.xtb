@@ -327,6 +327,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="3241052487511142956">Lien consulté précédent</translation>
 <translation id="3241638166094654466">Cellules sur chaque ligne :</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" /> : <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">Élément similaire précédent</translation>
 <translation id="3286372614333682499">portrait</translation>
 <translation id="3286390186030710347">Curseur</translation>
 <translation id="3299925995433437805">Aucun lien consulté suivant.</translation>
@@ -509,6 +510,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="4517854969512651305">Augmenter la valeur</translation>
 <translation id="4529987814483543472">Mappage classique du clavier</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barre oblique}one{# barre oblique}other{# barres obliques}}</translation>
+<translation id="4537277403911487429">Élément similaire suivant</translation>
 <translation id="4547556996012970016">En-tête suivant de niveau 5</translation>
 <translation id="4562381607973973258">En-tête</translation>
 <translation id="4569941707103739422">Appuyez sur la flèche vers le haut ou vers le bas pour parcourir les éléments, et sur la touche Entrée pour les activer.</translation>

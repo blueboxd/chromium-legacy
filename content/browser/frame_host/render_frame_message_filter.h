@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <set>
+#include <string>
 
 #include "base/optional.h"
 #include "content/common/frame_replication_state.h"
@@ -26,7 +27,6 @@
 
 struct FrameHostMsg_CreateChildFrame_Params;
 struct FrameHostMsg_CreateChildFrame_Params_Reply;
-struct FrameHostMsg_DownloadUrl_Params;
 class GURL;
 
 namespace url {
@@ -36,7 +36,6 @@ class Origin;
 namespace content {
 class BrowserContext;
 class PluginServiceImpl;
-struct Referrer;
 class RenderWidgetHelper;
 class ResourceContext;
 class StoragePartition;
@@ -65,21 +64,6 @@ class CONTENT_EXPORT RenderFrameMessageFilter : public BrowserMessageFilter {
   // Clears |resource_context_| to prevent accessing it after deletion.
   void ClearResourceContext();
 
- protected:
-  friend class TestSaveImageFromDataURL;
-
-  // This method will be overridden by TestSaveImageFromDataURL class for test.
-  virtual void DownloadUrl(
-      int render_view_id,
-      int render_frame_id,
-      const GURL& url,
-      const Referrer& referrer,
-      const url::Origin& initiator,
-      const base::string16& suggested_name,
-      const bool use_prompt,
-      const bool follow_cross_origin_redirects,
-      mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) const;
-
  private:
   friend class BrowserThread;
   friend class base::DeleteHelper<RenderFrameMessageFilter>;
@@ -95,11 +79,6 @@ class CONTENT_EXPORT RenderFrameMessageFilter : public BrowserMessageFilter {
       const FrameHostMsg_CreateChildFrame_Params& params,
       FrameHostMsg_CreateChildFrame_Params_Reply* params_reply);
 
-  void OnDownloadUrl(const FrameHostMsg_DownloadUrl_Params& params);
-
-  void OnSaveImageFromDataURL(int render_view_id,
-                              int render_frame_id,
-                              const std::string& url_str);
 
   void OnAre3DAPIsBlocked(int render_frame_id,
                           const GURL& top_origin_url,

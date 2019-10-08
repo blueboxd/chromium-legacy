@@ -12,6 +12,8 @@ cast_source_set("graphics") {
     "cast_window_manager.h",
     "gestures/cast_gesture_handler.cc",
     "gestures/cast_gesture_handler.h",
+    "rounded_window_corners.cc",
+    "rounded_window_corners.h",
   ]
 
   deps = [
@@ -63,6 +65,7 @@ cast_source_set("graphics") {
       "gestures/multiple_tap_detector.h",
       "gestures/side_swipe_detector.cc",
       "gestures/side_swipe_detector.h",
+      "rounded_window_corners_aura.cc",
     ]
 
     deps += [
@@ -77,6 +80,7 @@ cast_source_set("graphics") {
     sources += [
       "cast_window_manager_default.cc",
       "cast_window_manager_default.h",
+      "rounded_window_corners.h",
     ]
   }
 

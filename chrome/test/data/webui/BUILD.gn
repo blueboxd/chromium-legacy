@@ -54,9 +54,6 @@ js2gtest("browser_tests_js_webui") {
   sources = [
     "../../../browser/ui/webui/identity_internals_ui_browsertest.js",
     "../../../browser/ui/webui/sync_internals_browsertest.js",
-    "//third_party/axe-core/axe.js",
-    "a11y/accessibility_audit_rules.js",
-    "a11y/accessibility_test.js",
     "about_invalidations_browsertest.js",
     "assertions.js",
     "async_gen.js",
@@ -79,7 +76,6 @@ js2gtest("browser_tests_js_webui") {
     "net_internals/main.js",
     "net_internals/net_internals_test.js",
     "ntp4.js",
-    "polymer_browser_test_base.js",
     "resources/webui_resources_browsertest.js",
     "sandboxstatus_browsertest.js",
     "settings/a11y/about_a11y_test.js",
@@ -87,17 +83,28 @@ js2gtest("browser_tests_js_webui") {
     "settings/a11y/basic_a11y_test.js",
     "settings/a11y/edit_dictionary_a11y_test.js",
     "settings/a11y/passwords_a11y_test.js",
-    "settings/a11y/settings_accessibility_test.js",
     "settings/advanced_page_browsertest.js",
     "settings/basic_page_browsertest.js",
     "settings/cr_settings_browsertest.js",
     "settings/help_page_browsertest.js",
     "settings/settings_idle_load_browsertest.js",
-    "settings/settings_page_browsertest.js",
     "settings/site_settings_page_browsertest.js",
     "text_defaults_browsertest.js",
     "webui_resource_async_browsertest.js",
   ]
+
+  gen_include_files = [
+    "a11y/accessibility_audit_rules.js",
+    "a11y/accessibility_test.js",
+    "polymer_browser_test_base.js",
+    "settings/a11y/settings_accessibility_test.js",
+    "settings/settings_page_browsertest.js",
+    "//third_party/axe-core/axe.js",
+  ]
+
+  if (is_chromeos) {
+    gen_include_files += [ "settings/a11y/crostini_accessibility_test.js" ]
+  }
 
   extra_js_files = [
     "test_browser_proxy.js",
@@ -115,7 +122,6 @@ js2gtest("browser_tests_js_webui") {
       "../chromeos/oobe_webui_browsertest.js",
       "certificate_viewer_dialog_test.js",
       "set_time_dialog_browsertest.js",
-      "settings/a11y/crostini_accessibility_test.js",
       "settings/a11y/crostini_settings_details_a11y_test.js",
       "settings/a11y/crostini_settings_export_import_a11y_test.js",
       "settings/a11y/crostini_settings_shared_paths_a11y_test.js",

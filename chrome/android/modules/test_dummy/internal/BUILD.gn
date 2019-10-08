@@ -36,7 +36,7 @@ component("test_dummy") {
   ]
 
   # Test dummy native entrypoints belong in the partition.
-  if (use_native_modules) {
+  if (use_native_partitions) {
     cflags = [ "-fsymbol-partition=libtest_dummy.so" ]
   }
 }

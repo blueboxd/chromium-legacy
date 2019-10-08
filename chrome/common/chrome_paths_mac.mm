@@ -13,6 +13,7 @@
 #import "base/mac/foundation_util.h"
 #include "base/memory/free_deleter.h"
 #include "base/path_service.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -56,7 +57,7 @@ char* ProductDirNameForBundle(NSBundle* chrome_bundle) {
     product_dir_name = [product_dir_name_ns fileSystemRepresentation];
 
     if (!product_dir_name) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       product_dir_name = "Google/Chrome";
 #else
       product_dir_name = "Chromium";

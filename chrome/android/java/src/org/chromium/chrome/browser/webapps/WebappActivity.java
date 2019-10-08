@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -15,8 +17,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.text.TextUtils;
-import android.view.View;
-import android.view.View.OnSystemUiVisibilityChangeListener;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -74,16 +75,6 @@ public class WebappActivity extends SingleTabActivity {
     private static final String HISTOGRAM_NAVIGATION_STATUS = "Webapp.NavigationStatus";
     private static final long MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL = 1000;
 
-    private static final int ENTER_IMMERSIVE_MODE_DELAY_MILLIS = 300;
-    private static final int RESTORE_IMMERSIVE_MODE_DELAY_MILLIS = 3000;
-    static final int IMMERSIVE_MODE_UI_FLAGS = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-            | View.SYSTEM_UI_FLAG_LOW_PROFILE
-            | View.SYSTEM_UI_FLAG_IMMERSIVE;
-
     private WebappInfo mWebappInfo;
 
     private TabObserverRegistrar mTabObserverRegistrar;
@@ -96,8 +87,6 @@ public class WebappActivity extends SingleTabActivity {
     private Integer mBrandColor;
 
     private Bitmap mLargestFavicon;
-
-    private Runnable mSetImmersiveRunnable;
 
     private static Integer sOverrideCoreCountForTesting;
 
@@ -331,7 +320,8 @@ public class WebappActivity extends SingleTabActivity {
         applyScreenOrientation();
 
         if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) {
-            enterImmersiveMode();
+            new ImmersiveModeController(getLifecycleDispatcher(), this).enterImmersiveMode(
+                    LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT, false /*sticky*/);
         }
 
         initSplash();
@@ -390,61 +380,6 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     protected TabState restoreTabState(Bundle savedInstanceState, int tabId) {
         return TabState.restoreTabState(savedInstanceState);
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-
-        // Re-enter immersive mode after users switch back to this Activity.
-        if (hasFocus) {
-            asyncSetImmersive(ENTER_IMMERSIVE_MODE_DELAY_MILLIS);
-        }
-    }
-
-    /**
-     * Sets activity's decor view into an immersive mode.
-     * If immersive mode is not supported, this method no-ops.
-     */
-    private void enterImmersiveMode() {
-        if (mSetImmersiveRunnable == null) {
-            final View decor = getWindow().getDecorView();
-
-            mSetImmersiveRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    int currentFlags = decor.getSystemUiVisibility();
-                    int desiredFlags = currentFlags | IMMERSIVE_MODE_UI_FLAGS;
-                    if (currentFlags != desiredFlags) {
-                        decor.setSystemUiVisibility(desiredFlags);
-                    }
-                }
-            };
-
-            // When we enter immersive mode for the first time, register a
-            // SystemUiVisibilityChangeListener that restores immersive mode. This is necessary
-            // because user actions like focusing a keyboard will break out of immersive mode.
-            decor.setOnSystemUiVisibilityChangeListener(new OnSystemUiVisibilityChangeListener() {
-                @Override
-                public void onSystemUiVisibilityChange(int newFlags) {
-                    if ((newFlags & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                        asyncSetImmersive(RESTORE_IMMERSIVE_MODE_DELAY_MILLIS);
-                    }
-                }
-            });
-        }
-
-        asyncSetImmersive(0);
-    }
-
-    /**
-     * This method no-ops before {@link #enterImmersiveMode()} is called explicitly.
-     */
-    private void asyncSetImmersive(int delayInMills) {
-        if (mSetImmersiveRunnable == null) return;
-
-        mHandler.removeCallbacks(mSetImmersiveRunnable);
-        mHandler.postDelayed(mSetImmersiveRunnable, delayInMills);
     }
 
     @Override

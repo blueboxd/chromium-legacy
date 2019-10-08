@@ -5,22 +5,16 @@
 <translation id="1104942323762546749">A Chromium exportálni szeretné a jelszavakat. Ennek engedélyezéséhez írja be Windows-jelszavát.</translation>
 <translation id="1115445892567829615">A Chromium nem tudta szinkronizálni az adatokat. Kérjük, frissítse a szinkronizálás jelszavát.</translation>
 <translation id="113122355610423240">A Chromium az alapértelmezett böngésző</translation>
-<translation id="1170115874949214249">Telepítse a Chromiumot telefonjára. SMS-t küldünk majd a fiók-helyreállítási telefonszámára.</translation>
-<translation id="1174473354587728743">Közösen használ valakivel egy számítógépet? Mostantól úgy állíthatja be a Chromiumot, ahogy Ön szeretné.</translation>
 <translation id="1185134272377778587">A Chromium névjegye</translation>
-<translation id="1298199220304005244">Segítség kérése a Chromium OS használatával  kapcsolatban</translation>
 <translation id="1396446129537741364">A Chromium megpróbálja megjeleníteni a jelszavakat.</translation>
 <translation id="1414495520565016063">Bejelentkezett a Chromiumba.</translation>
 <translation id="151962892725702025">A Chromium OS nem tudta szinkronizálni az adatait, mert a szinkronizálás nem érhető el az Ön domainjénél.</translation>
 <translation id="1524282610922162960">Chromium-lap megosztása</translation>
-<translation id="1668054258064581266">Fiókjának eltávolítása után a Chromiumból előfordulhat, hogy újra kell töltenie a megnyitott lapokat ahhoz, hogy a változások életbe lépjenek.</translation>
-<translation id="1688750314291223739">A szinkronizálás beállításával személyre szabott beállításait az interneten tárolhatja, így azok elérhetők a Chromiumból bármelyik számítógépen.</translation>
 <translation id="1708666629004767631">Elérhető a Chromium új, biztonságosabb verziója.</translation>
 <translation id="1766096484055239003">A rendszergazda előírta, hogy újra kell indítania a Chromiumot egy frissítés alkalmazása miatt</translation>
 <translation id="1774152462503052664">A Chromium fusson a háttérben</translation>
 <translation id="1779356040007214683">A Chromium biztonságosabbá tétele érdekében kikapcsoltunk néhány bővítményt, amelyek nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> szolgáltatásból származnak, és előfordulhat, hogy az Ön tudta nélkül lettek telepítve.</translation>
 <translation id="1808667845054772817">A Chromium újratelepítése</translation>
-<translation id="1869480248812203386">Az esetleges biztonsági események adatainak automatikus jelentésével segítséget nyújthat a Google-nak a Chromium használatának biztonságosabbá és egyszerűbbé tételéhez.</translation>
 <translation id="1881322772814446296">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chromium-profiljához. Chromium-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. Létrehozhat egy új profilt is meglévő Chromium-adatainak elkülönített tárolásához. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">A beállítás kikapcsolásával anélkül jelentkezhet be a Google-webhelyekre (pl. Gmail), hogy a Chromiumba is bejelentkezne</translation>
 <translation id="1929939181775079593">A Chromium nem válaszol. Újraindítja most?</translation>
@@ -29,7 +23,6 @@
 <translation id="2117378023188580026">Rendszergazdája arra kéri, hogy indítsa újra a Chromiumot a frissítés alkalmazásához</translation>
 <translation id="2119636228670142020">A &amp;Chromium OS névjegye</translation>
 <translation id="2241627712206172106">Ha megoszt egy számítógépet, ismerősei és családtagjai külön fiókokban internetezve a saját kívánságaik szerint állíthatják be a Chromiumot.</translation>
-<translation id="2265088490657775772">Chromium beszerzése iPhone eszközre</translation>
 <translation id="2347108572062610441">Ez a bővítmény módosította, hogy melyik oldal jelenjen meg a Chromium indításakor.</translation>
 <translation id="2396765026452590966">A(z) <ph name="EXTENSION_NAME" /> bővítmény módosította, hogy melyik oldal jelenjen meg a Chromium indításakor.</translation>
 <translation id="2483889755041906834">A Chromiumban</translation>
@@ -48,11 +41,9 @@
 <translation id="2838154144102149890">A frissítéshez le kell állítani a Chromiumot ezen a számítógépen. Ennek következményeként a számítógépen bejelentkezett további felhasználók elveszthetik a nem mentett módosításokat.</translation>
 <translation id="2847479871509788944">Eltávolítás a Chromiumból…</translation>
 <translation id="2886012850691518054">Opcionális: Segítsen a Chromium fejlesztésében azáltal, hogy automatikusan elküldi a használati statisztikákat és hibajelentéseket a Google-nak.</translation>
-<translation id="2898082584336937987">Telepítse a Chromiumot telefonjára. SMS-t küldünk majd a következő telefonszámra: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="2910007522516064972">A &amp;Chromium névjegye</translation>
 <translation id="2977470724722393594">A Chromium naprakész</translation>
 <translation id="3032787606318309379">Hozzáadás a Chromiumhoz...</translation>
-<translation id="3046695367536568084">Alkalmazások használatához be kell jelentkeznie a Chromiumba. A Chromium így szinkronizálni tudja alkalmazásait, könyvjelzőit, előzményeit, jelszavait és egyéb beállításait az eszközök között.</translation>
 <translation id="3068515742935458733">Segítse a Chromium fejlesztését azáltal, hogy elküldi a Google-nak a következőket: hibajelentések és <ph name="UMA_LINK" /></translation>
 <translation id="3103660991484857065">Nem sikerült a telepítőnek kibontani a tömörített állományt. Kérjük, töltse le újra a Chromium böngészőt.</translation>
 <translation id="3130323860337406239">A Chromium használja a mikrofont.</translation>
@@ -60,7 +51,6 @@
 <translation id="3179665906251668410">Link megnyitása Chromium-inko&amp;gnitóablakban</translation>
 <translation id="3190315855212034486">Ó! A Chromium összeomlott. Újraindítja most?</translation>
 <translation id="3229526316128325841">A Chromium exportálni szeretné a jelszavakat.</translation>
-<translation id="3256316712990552818">A Chromiumra másolva</translation>
 <translation id="3258596308407688501">A Chromium nem tudja olvasni és írni az adatkönyvtárát:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -84,7 +74,6 @@
 <translation id="4050175100176540509">A legújabb verzióban fontos biztonsági fejlesztések és új funkciók érhetők el.</translation>
 <translation id="421369550622382712">Fedezzen fel nagyszerű alkalmazásokat, játékokat, bővítményeket és témákat a Chromiumhoz.</translation>
 <translation id="4216212958613226427">A Chromium kezelőfelülete ezen a nyelven jelenik meg.</translation>
-<translation id="4222580632002216401">Bejelentkezett a Chromiumba! A szinkronizálást a rendszergazdája letiltotta.</translation>
 <translation id="4230135487732243613">Társítja Chromium-adatait ezzel a fiókkal?</translation>
 <translation id="4271805377592243930">Segítség a Chromium használatával kapcsolatban</translation>
 <translation id="4285930937574705105">A telepítés váratlan hiba miatt nem sikerült. Ha a Chromium jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
@@ -106,7 +95,6 @@
 <translation id="4943838377383847465">A Chromium háttérmódban van.</translation>
 <translation id="4987820182225656817">A vendégek úgy használhatják a Chromiumot, hogy nem hagynak hátra semmit.</translation>
 <translation id="4994636714258228724">Adja hozzá magát a Chromiumban</translation>
-<translation id="5181952534059945058">Ez az oldal túl sok memóriát használ, ezért a Chromium eltávolított egyes tartalmakat.</translation>
 <translation id="5277894862589591112">A módosítások alkalmazásához indítsa újra a Chromiumot</translation>
 <translation id="5358375970380395591">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chromium-profiljához. Chromium-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">A Chromium frissítése (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -129,7 +117,6 @@
 <translation id="5895138241574237353">Újraindítás</translation>
 <translation id="5987687638152509985">Frissítse a Chromiumot a szinkronizálás megkezdéséhez</translation>
 <translation id="6013050204643758987">A Chromium OS létrejöttéhez egyéb <ph name="BEGIN_LINK_CROS_OSS" />nyílt forráskódú szoftverek<ph name="END_LINK_CROS_OSS" /> is hozzájárultak, ahogyan a <ph name="BEGIN_LINK_LINUX_OSS" />Linux (béta)<ph name="END_LINK_LINUX_OSS" /> létrejöttéhez is.</translation>
-<translation id="6040143037577758943">Bezárás</translation>
 <translation id="6055895534982063517">Elérhető a Chromium új verziója, amely minden korábbinál sokkal gyorsabb.</translation>
 <translation id="6063093106622310249">Megnyitás Chromiumban</translation>
 <translation id="6072279588547424923">A(z) <ph name="EXTENSION_NAME" /> hozzá lett adva a Chromiumhoz</translation>
@@ -151,7 +138,6 @@
 <translation id="6434250628340475518">Chromium OS rendszer</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{A Chromium 1 másodpercen belül újraindul}other{A Chromium # másodpercen belül újraindul}}</translation>
 <translation id="6475912303565314141">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chromium indításakor.</translation>
-<translation id="6485906693002546646">Chromiumos dolgainak szinkronizálásához a(z) <ph name="PROFILE_EMAIL" /> fiókot használja. Szinkronizálási beállításainak frissítéséhez, illetve a Chromium Google-fiók nélküli használatához keresse fel a <ph name="SETTINGS_LINK" /> linket.</translation>
 <translation id="6510925080656968729">Chromium eltávolítása</translation>
 <translation id="6570579332384693436">A nyelvtani hibák javítása érdekében a Chromium elküldi a szövegmezőkbe gépelt szöveget a Google-nak</translation>
 <translation id="6598877126913850652">A Chromium értesítési beállításainak megnyitása</translation>
@@ -159,7 +145,6 @@
 <translation id="6717134281241384636">A profilja nem használható, mert az a Chromium egy újabb verziójából származik. Előfordulhat, hogy egyes funkciók nem érhetők el. Kérjük, adjon meg egy másik profilmappát, vagy használja a Chromium újabb verzióját.</translation>
 <translation id="6734080038664603509">A &amp;Chromium frissítése</translation>
 <translation id="6734291798041940871">A Chromium már telepítve van az összes felhasználó számára a számítógépen.</translation>
-<translation id="6810143991807788455">Segítsen a Chromium fejlesztésében a jelenlegi beállítások elküldésével</translation>
 <translation id="6847869444787758381">A Chromium tájékoztatja arról, ha jelszavai illetéktelen kezekbe kerülnek</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (a Chromiumba másolva)</translation>
@@ -178,7 +163,6 @@
 <translation id="7318036098707714271">A beállításait tartalmazó fájl hibás vagy érvénytelen.
 
 A Chromium nem tudja visszaállítani a beállításait.</translation>
-<translation id="7331920710658926971">Telepítse a Chromiumot telefonjára. SMS-t küldünk majd a telefonszámára.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Új ablak</translation>
 <translation id="734373864078049451">Az Ön könyvjelzői, valamint az internetezéssel és a Chromiummal kapcsolatos egyéb dolgai vannak itt.</translation>
@@ -209,16 +193,13 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="7979877361127045932">Elrejtés a Chromium-menüben</translation>
 <translation id="8013436988911883588">Miután hozzáférést biztosított a Chromiumnak, a webhelyek is hozzáférést kérhetnek.</translation>
 <translation id="81770708095080097">Ez a fájl veszélyes, ezért a Chromium letiltotta.</translation>
-<translation id="8222496066431494154">Telepítse a Chromiumot telefonjára. SMS-t küldünk majd a fiók-helyreállítási telefonszámára: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="8248265253516264921">Ha valamelyik kép nem rendelkezik hasznos leírással, akkor a Chromium igyekszik leírást adni róla. A Google automatikusan megkapja a leírások létrehozásához szükséges képeket. A funkciót a beállítások között bármikor kikapcsolhatja.</translation>
-<translation id="8269379391216269538">Segítsen a Chromium továbbfejlesztésében</translation>
 <translation id="8290862415967981663">Ez a fájl veszélyes lehet, ezért a Chromium letiltotta.</translation>
 <translation id="8330519371938183845">Jelentkezzen be, hogy szinkronizálhassa és személyre szabhassa a Chromiumot minden eszközén</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> előzőleg Chromiumot használt</translation>
 <translation id="8417404458978023919">{0,plural, =1{A Chromiumot 1 napon belül újra kell indítani}other{A Chromiumot # napon belül újra kell indítani}}</translation>
 <translation id="8453117565092476964">A telepítő tömörített állománya megsérült vagy érvénytelen. Kérjük, töltse le újra a Chromium böngészőt.</translation>
 <translation id="8493179195440786826">A Chromium elavult</translation>
-<translation id="85843667276690461">Segítséget kaphat a Chromium használatával kapcsolatban</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> – A Chromium szerzői. Minden jog fenntartva.</translation>
 <translation id="8619360774459241877">Chromium indítása…</translation>
 <translation id="8621669128220841554">A telepítés egy meg nem határozott hiba miatt nem sikerült. Kérjük, töltse le újra a Chromiumot.</translation>
@@ -235,21 +216,14 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="8907580949721785412">A Chromium megkísérli megjeleníteni a jelszavakat. Ennek engedélyezéséhez írja be Windows-jelszavát.</translation>
 <translation id="8941642502866065432">Nem sikerült a Chromium frissítése</translation>
 <translation id="8974095189086268230">A Chromium OS létrejöttéhez további <ph name="BEGIN_LINK_CROS_OSS" />nyílt forráskódú szoftverek<ph name="END_LINK_CROS_OSS" /> is hozzájárultak.</translation>
-<translation id="8985587603644336029">Valaki korábban <ph name="ACCOUNT_EMAIL_LAST" /> néven bejelentkezett a Chromiumba erről a számítógépről. Ha ez nem az Ön fiókja, hozzon létre egy új Chromium-felhasználót, hogy elkülönítse adatait.
-
-Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" /> fiókkal az olyan Chromium-adatokat, mint a könyvjelzők, az előzmények és más beállítások.</translation>
 <translation id="9019929317751753759">A Chromium biztonságosabbá tétele érdekében kikapcsoltuk a következő bővítményt, amely nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> szolgáltatásból származik, és előfordulhat, hogy az Ön tudta nélkül lett telepítve.</translation>
 <translation id="9022552996538154597">Bejelentkezés a Chromiumba</translation>
-<translation id="9025992965467895364">Ez az oldal túl sok memóriát használ, ezért a Chromium szünetelteti.</translation>
-<translation id="9036189287518468038">Chromium Alkalmazásindító</translation>
 <translation id="9089354809943900324">A Chromium elavult</translation>
 <translation id="9093206154853821181">{0,plural, =1{A Chromium 1 órán belül újraindul}other{A Chromium # órán belül újraindul}}</translation>
 <translation id="91086099826398415">Link megnyi&amp;tása új Chromium-lapon</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
 <translation id="9158494823179993217">Rendszergazdája úgy állította be a Chromiumot, hogy másik böngészőt nyisson meg a(z) <ph name="TARGET_URL_HOSTNAME" /> eléréséhez.</translation>
-<translation id="918373042641772655"><ph name="USERNAME" /> társításának megszüntetésével törli az eszközön tárolt előzményeket, könyvjelzőket, beállításokat és egyéb Chromium-adatokat. A Google-fiókban tárolt adatokat a rendszer nem törli, azokat a <ph name="GOOGLE_DASHBOARD_LINK" />Google Irányítópulton<ph name="END_GOOGLE_DASHBOARD_LINK" /> kezelheti.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9197815481970649201">Most már bejelentkezett a Chromiumba</translation>
 <translation id="93478295209880648">Előfordulhat, hogy a Chromium nem működik majd megfelelően, mert a továbbiakban már nem támogatja a következő rendszereket: Windows XP és Windows Vista</translation>
 <translation id="95514773681268843">A(z) <ph name="DOMAIN" /> megköveteli, hogy olvassa, majd fogadja el a következő Általános Szerződési Feltételeket, mielőtt használná ezt az eszközt. Ezek a feltételek nem bővítik, módosítják vagy korlátozzák a Chromium OS feltételeit.</translation>
 <translation id="985602178874221306">A Chromium szerzői</translation>

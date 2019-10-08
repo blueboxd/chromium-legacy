@@ -10,11 +10,11 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "chrome/browser/performance_manager/public/graph/frame_node.h"
-#include "chrome/browser/performance_manager/public/graph/graph.h"
-#include "chrome/browser/performance_manager/public/graph/page_node.h"
-#include "chrome/browser/performance_manager/public/graph/process_node.h"
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
+#include "components/performance_manager/public/graph/frame_node.h"
+#include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/page_node.h"
+#include "components/performance_manager/public/graph/process_node.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -75,10 +75,10 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   void OnIsAdFrameChanged(
       const performance_manager::FrameNode* frame_node) override {}
   // Ignored.
-  void OnFrameHoldsWebLockChanged(
+  void OnFrameIsHoldingWebLockChanged(
       const performance_manager::FrameNode* frame_node) override {}
   // Ignored.
-  void OnFrameHoldsIndexedDBLockChanged(
+  void OnFrameIsHoldingIndexedDBLockChanged(
       const performance_manager::FrameNode* frame_node) override {}
   // Ignored.
   void OnNonPersistentNotificationCreated(
@@ -104,6 +104,12 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
       const performance_manager::PageNode* page_node) override {}
   // Ignored.
   void OnPageOriginTrialFreezePolicyChanged(
+      const performance_manager::PageNode* page_node) override {}
+  // Ignored.
+  void OnPageIsHoldingWebLockChanged(
+      const performance_manager::PageNode* page_node) override {}
+  // Ignored.
+  void OnPageIsHoldingIndexedDBLockChanged(
       const performance_manager::PageNode* page_node) override {}
   void OnMainFrameUrlChanged(
       const performance_manager::PageNode* page_node) override;

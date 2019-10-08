@@ -56,8 +56,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /** Unit tests for auto-fetch-on-net-error-page. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=AutoFetchOnNetErrorPage", "disable-features=NewNetErrorPageUI"})
+@CommandLineFlags.
+Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=AutoFetchOnNetErrorPage"})
 public class OfflinePageAutoFetchTest {
     private static final String TAG = "AutoFetchTest";
     private static final long WAIT_TIMEOUT_MS = 20000;

@@ -112,7 +112,7 @@ class AppRegistrar {
   void NotifyAppRegistrarShutdown();
 
  private:
-  Profile* profile_;
+  Profile* const profile_;
 
   base::ObserverList<AppRegistrarObserver, /*check_empty=*/true> observers_;
 };

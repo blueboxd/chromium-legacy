@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_HID_HID_H_
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/hid.mojom-blink.h"
+#include "services/device/public/mojom/hid.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"

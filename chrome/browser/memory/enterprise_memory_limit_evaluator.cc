@@ -5,8 +5,8 @@
 #include "chrome/browser/memory/enterprise_memory_limit_evaluator.h"
 
 #include "base/bind.h"
-#include "chrome/browser/performance_manager/public/graph/process_node.h"
-#include "chrome/browser/performance_manager/public/performance_manager.h"
+#include "components/performance_manager/public/graph/process_node.h"
+#include "components/performance_manager/public/performance_manager.h"
 
 namespace memory {
 

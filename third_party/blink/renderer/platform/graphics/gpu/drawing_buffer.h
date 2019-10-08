@@ -474,6 +474,10 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   bool SetupRGBEmulationForBlitFramebuffer(bool is_user_draw_framebuffer_bound);
   void CleanupRGBEmulationForBlitFramebuffer();
 
+  // Reallocate Multisampled renderbuffer, used by explicit resolve when resize
+  // and GPU switch
+  bool ReallocateMultisampleRenderbuffer(const IntSize&);
+
   // Weak, reset by beginDestruction.
   Client* client_ = nullptr;
 

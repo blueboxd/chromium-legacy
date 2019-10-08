@@ -20,6 +20,7 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "content/browser/can_commit_status.h"
 #include "content/browser/isolated_origin_util.h"
 #include "content/browser/isolation_context.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -114,6 +115,17 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Identical to the above method, but takes url::Origin as input.
   bool CanAccessDataForOrigin(int child_id, const url::Origin& origin);
+
+  // Determines if the combination of |origin| & |url| is safe to commit to
+  // the process associated with |child_id|.
+  //
+  // Returns CAN_COMMIT_ORIGIN_AND_URL if it is safe to commit the |origin| and
+  // |url| combination to the process associated with |child_id|.
+  // Returns CANNOT_COMMIT_URL if |url| is not safe to commit.
+  // Returns CANNOT_COMMIT_ORIGIN if |origin| is not safe to commit.
+  CanCommitStatus CanCommitOriginAndUrl(int child_id,
+                                        const url::Origin& origin,
+                                        const GURL& url);
 
   // This function will check whether |origin| requires process isolation
   // within |isolation_context|, and if so, it will return true and put the

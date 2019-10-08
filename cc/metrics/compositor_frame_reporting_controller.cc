@@ -130,14 +130,6 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
     return;
   std::unique_ptr<CompositorFrameReporter> submitted_reporter =
       std::move(reporters_[PipelineStage::kActivate]);
-  // If there are any other reporters active on the other stages of the
-  // pipeline then that means a new frame was started during the duration of
-  // this reporter and therefore the frame being tracked missed the deadline.
-  if (reporters_[PipelineStage::kBeginImplFrame] ||
-      reporters_[PipelineStage::kBeginMainFrame] ||
-      reporters_[PipelineStage::kCommit]) {
-    submitted_reporter->MissedSubmittedFrame();
-  }
   submitted_reporter->StartStage(
       CompositorFrameReporter::StageType::
           kSubmitCompositorFrameToPresentationCompositorFrame,

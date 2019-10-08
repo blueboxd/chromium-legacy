@@ -2,6 +2,7 @@
 include_rules = [
   "-chrome/browser",
   "+chrome/browser/performance_manager",
+  "+components/performance_manager",
 ]
 
 # Allow some Chrome specific files to includes more things from //chrome.

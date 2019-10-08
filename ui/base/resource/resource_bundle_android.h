@@ -25,6 +25,9 @@ UI_BASE_EXPORT void LoadAndroidDevUiPackFile(
     const char* path_within_apk,
     const base::FilePath& disk_file_path);
 
+// Loads a PAK file from the APK and makes the contained resources accessible.
+UI_BASE_EXPORT void LoadPackFileFromApk(const std::string& path);
+
 // Returns the file descriptor and region for resources.pak.
 UI_BASE_EXPORT int GetMainAndroidPackFd(
     base::MemoryMappedFile::Region* out_region);

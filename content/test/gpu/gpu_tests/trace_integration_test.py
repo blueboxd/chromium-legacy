@@ -83,6 +83,7 @@ _SWAP_CHAIN_GET_FRAME_STATISTICS_MEDIA_FAILED = -1
 
 _GET_STATISTICS_EVENT_NAME = 'GetFrameStatisticsMedia'
 _SWAP_CHAIN_PRESENT_EVENT_NAME = 'SwapChain::Present'
+_PRESENT_TO_SWAP_CHAIN_EVENT_NAME = 'SwapChainPresenter::PresentToSwapChain'
 
 
 class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
@@ -122,6 +123,14 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
               'finish_js_condition': 'domAutomationController._finished',
               'success_eval_func': 'CheckVideoPath',
               'other_args': p.other_args})
+    for p in namespace.LowLatencySwapChainPages('SwapChainTraceTest'):
+      yield (p.name, gpu_relative_path + p.url,
+             {'browser_args': p.browser_args,
+              'category': 'gpu',
+              'test_harness_script': basic_test_harness_script,
+              'finish_js_condition': 'domAutomationController._finished',
+              'success_eval_func': 'CheckSwapChainPath',
+              'other_args': p.other_args})
     for p in namespace.DirectCompositionPages('OverlayModeTraceTest'):
       if p.other_args and p.other_args.get('video_is_rotated', False):
         # For all drivers we tested, when a video is rotated, frames won't
@@ -156,7 +165,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # Set up tracing.
     config = tracing_config.TracingConfig()
     config.chrome_trace_config.category_filter.AddExcludedCategory('*')
-    config.chrome_trace_config.category_filter.AddDisabledByDefault(category)
+    config.chrome_trace_config.category_filter.AddFilter(category)
     config.enable_chrome_trace = True
     tab = self.tab
     tab.browser.platform.tracing_controller.StartTracing(config, 60)
@@ -370,6 +379,30 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       self.fail('No valid frame statistics being collected: %s' %
           TraceIntegrationTest._SwapChainPresentationModeListToStr(
               presentation_mode_history))
+
+  def _EvaluateSuccess_CheckSwapChainPath(self, category, event_iterator,
+                                          other_args):
+    """Verified that swap chains were used for low latency canvas."""
+    os_name = self.browser.platform.GetOSName()
+    assert os_name and os_name.lower() == 'win'
+
+    overlay_bot_config = self.GetOverlayBotConfig()
+    if overlay_bot_config is None:
+      self.fail('Overlay bot config can not be determined')
+    assert overlay_bot_config.get('direct_composition', False)
+
+    # Verify expectations through captured trace events.
+    for event in event_iterator:
+      if event.category != category:
+        continue
+      if event.name != _PRESENT_TO_SWAP_CHAIN_EVENT_NAME:
+        continue
+      presentation_mode = event.args.get('image_type', None)
+      if presentation_mode == 'swap chain':
+        break
+    else:
+      self.fail('Events with name %s were not found' %
+                _SWAP_CHAIN_PRESENT_EVENT_NAME)
 
   @classmethod
   def ExpectationsFiles(cls):

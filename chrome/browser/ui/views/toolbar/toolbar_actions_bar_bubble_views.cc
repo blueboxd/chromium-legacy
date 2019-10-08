@@ -33,6 +33,7 @@ ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
                                       views::BubbleBorder::TOP_RIGHT),
       delegate_(std::move(delegate)),
       anchored_to_action_(anchored_to_action) {
+  DialogDelegate::set_default_button(delegate_->GetDefaultDialogButton());
   DCHECK(anchor_view);
   set_close_on_deactivate(delegate_->ShouldCloseOnDeactivate());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::TOOLBAR_ACTIONS_BAR);
@@ -177,10 +178,6 @@ int ToolbarActionsBarBubbleViews::GetDialogButtons() const {
   if (!delegate_->GetDismissButtonText().empty())
     buttons |= ui::DIALOG_BUTTON_CANCEL;
   return buttons;
-}
-
-int ToolbarActionsBarBubbleViews::GetDefaultDialogButton() const {
-  return delegate_->GetDefaultDialogButton();
 }
 
 base::string16 ToolbarActionsBarBubbleViews::GetDialogButtonLabel(

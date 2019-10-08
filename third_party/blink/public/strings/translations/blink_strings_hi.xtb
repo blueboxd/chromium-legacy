@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">पाद लेख</translation>
 <translation id="2709516037105925701">ऑटोमैटिक भरना</translation>
 <translation id="2723001399770238859">ऑडियो</translation>
+<translation id="2725963129578236554">टिप्पणियां</translation>
 <translation id="2746543609216772311">मान <ph name="MINIMUM_DATE_OR_TIME" /> या बाद का होना चाहिए.</translation>
 <translation id="2759744352195237655">पॉप अप बटन</translation>
 <translation id="2761667185364618470">अगर आप आगे बढ़ना चाहते हैं तो इस बॉक्‍स को सही का निशान लगाकर चुनें.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">कृपया इस लेख को <ph name="MIN_CHARACTERS" /> वर्णों या ज़्यादा तक बढ़ाएं (वर्तमान में आप <ph name="CURRENT_LENGTH" /> वर्णों का उपयोग कर रहे हैं).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' के बाद आने वाले भाग में '<ph name="INVALIDCHARACTER" />' प्रतीक शामिल नहीं होना चाहिए.</translation>
 <translation id="3846214748874656680">पूर्णस्क्रीन से बाहर निकलें</translation>
+<translation id="3889183436948184105">बदलाव</translation>
 <translation id="3920932319529768807">निष्कर्ष</translation>
 <translation id="3924558731517983934">ऐप्लिकेशन</translation>
 <translation id="3944740393230681990">प्रस्तावना</translation>
@@ -132,6 +134,7 @@
 <translation id="5516424706154626233">तारीख पिकर</translation>
 <translation id="5537725057119320332">कास्‍ट करें</translation>
 <translation id="5546461542133609677">अनम्यूट करें</translation>
+<translation id="5608153257855394627">हाइलाइट</translation>
 <translation id="561939826962581046">समय</translation>
 <translation id="5630795885300617244">10 सेकंड के लिए 'स्किप' करने के लिए बाएं या दाएं पर दो बार टैप करें</translation>
 <translation id="5631759159893697722">संक्षेप</translation>
@@ -160,6 +163,7 @@
 <translation id="6404546809543547843">ऑडियो समय स्क्रबर</translation>
 <translation id="6443871981718447451">बंद कैप्‍शन मेन्यू दिखाएं</translation>
 <translation id="6453774872122745852">धन्यवाद</translation>
+<translation id="6475115390776617481">लाइव मौजूदगी</translation>
 <translation id="648732519525291180">समय पिकर</translation>
 <translation id="6550675742724504774">विकल्प</translation>
 <translation id="6572309429103589720">गलत व्याकरण</translation>
@@ -183,6 +187,7 @@
 <translation id="6981594929165378967">डालना</translation>
 <translation id="6989848892321993519">कृपया इस लेख को <ph name="MIN_CHARACTERS" /> या उससे ज़्यादा वर्णों तक बढ़ाएं (आप इस समय 1 वर्ण का उपयोग कर रहे हैं).</translation>
 <translation id="7033340931668032222">आवाज़ कम-ज़्यादा करने के लिए ऊपर और नीचे वाले बटन का इस्तेमाल करें</translation>
+<translation id="7034405885550056553">सुझाव</translation>
 <translation id="709897737746224366">कृपया अनुरोधित प्रारूप का मिलान करें.</translation>
 <translation id="7118469954320184356">कोई जानकारी मौजूद नहीं है.</translation>
 <translation id="7139483182332611405">आमुख</translation>
@@ -222,6 +227,7 @@
 <translation id="8208673686607688524">स्थानीय तारीख और समय पिकर (स्थानीय तारीख और समय चुनने की सुविधा)</translation>
 <translation id="8261464734335370856">गलत स्पेलिंग</translation>
 <translation id="8284326494547611709">कैप्शन</translation>
+<translation id="8346634859695247203">सेक्शन</translation>
 <translation id="835897206747267392">अमान्य मान.</translation>
 <translation id="8403857369060869934">बीता हुआ समय: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">भाग</translation>
@@ -243,6 +249,7 @@
 <translation id="8711688047404765493">आउटपुट</translation>
 <translation id="8750798805984357768">कृपया इनमें से कोई विकल्प चुनें.</translation>
 <translation id="8808573423886751634">पाठ</translation>
+<translation id="8822203815165896261">लेखन से जुड़ी जानकारी</translation>
 <translation id="8845239796550121995">अब आपके टीवी पर कास्ट हो रहा है</translation>
 <translation id="8851136666856101339">मुख्य</translation>
 <translation id="8875657656876809964">वीडियो चलाने में गड़बड़ी</translation>

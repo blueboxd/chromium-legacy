@@ -153,10 +153,6 @@ class V4UpdateProtocolManager {
   // Get the next update interval, considering whether we are in backoff.
   base::TimeDelta GetNextUpdateInterval(bool back_off);
 
-  // Returns the entry count to be used for the DB for the threat type. Should
-  // only be used on low end devices (with very little RAM).
-  int GetLowEndDBEntryCount(ThreatType threat_type);
-
   // The factory that controls the creation of V4UpdateProtocolManager.
   // This is used by tests.
   static V4UpdateProtocolManagerFactory* factory_;

@@ -39,15 +39,8 @@ enum SchemaOnErrorStrategy {
   // don't know newField). Prefer to use |SCHEMA_ALLOW_UNKNOWN| for policies
   // instead.
   SCHEMA_STRICT = 0,
-  // Unknown properties in the top-level dictionary will be ignored.
-  SCHEMA_ALLOW_UNKNOWN_TOPLEVEL,
   // Unknown properties in any dictionary will be ignored.
   SCHEMA_ALLOW_UNKNOWN,
-  // Mismatched values will be ignored at the toplevel.
-  SCHEMA_ALLOW_INVALID_TOPLEVEL,
-  // Mismatched values will be ignored at the top-level value.
-  // Unknown properties in any dictionary will be ignored.
-  SCHEMA_ALLOW_INVALID_TOPLEVEL_AND_ALLOW_UNKNOWN,
   // Mismatched values will be ignored.
   SCHEMA_ALLOW_INVALID,
 };

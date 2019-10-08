@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Editar favoritos</translation>
 <translation id="2179182049312275900">Ative a sincronização a qualquer momento nas configurações.</translation>
 <translation id="2198757192731523470">O Google pode usar seu histórico para personalizar a Pesquisa, os anúncios e outros serviços que ele oferece.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artigos não lidos na lista de leitura.</translation>
 <translation id="2230173723195178503">Página da Web carregada</translation>
 <translation id="2239626343334228536">Limpando dados de navegação…</translation>
 <translation id="2267753748892043616">Adicionar conta</translation>
@@ -265,7 +264,6 @@ Seus dados são criptografados com sua senha longa de sincronização. Informe-a
 
 Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Número de cartão inválido</translation>
-<translation id="4807020197310989387">1 artigo não lido na lista de leitura.</translation>
 <translation id="4818522717893377262">Adicionar idioma…</translation>
 <translation id="481968316161811770">Dados do site e arquivos "cookies"</translation>
 <translation id="4833786495304741580">Envia automaticamente estatísticas de uso e relatórios de erros para o Google.</translation>
@@ -414,6 +412,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6858855187367714033">Lido</translation>
 <translation id="6859944681507688231">Para ler um código QR ou cartão de crédito, ative a câmera nas configurações.</translation>
 <translation id="6873263987691478642">Visualização dividida</translation>
+<translation id="6888009575607455378">Tem certeza de que quer descartar suas alterações?</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Ativar a sincronização</translation>
 <translation id="6914583639806229067">Pesquisar imagem que você copiou</translation>

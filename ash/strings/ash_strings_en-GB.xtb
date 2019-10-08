@@ -231,6 +231,7 @@
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4281007048406351813">Add 1 min to timer</translation>
 <translation id="4296136865091727875">Clear all <ph name="COUNT" /> notifications</translation>
+<translation id="4303223480529385476">Expand status area</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">You pressed the keyboard shortcut for high contrast. Do you want to turn it on?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -406,6 +407,7 @@
 <translation id="7015766095477679451">Come back at <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Connect your <ph name="DEVICE_NAME" /> with your phone</translation>
 <translation id="7029814467594812963">Exit session</translation>
+<translation id="7042322267639375032">Collapse status area</translation>
 <translation id="7066646422045619941">This network is disabled by your administrator.</translation>
 <translation id="7067196344162293536">Auto rotate</translation>
 <translation id="7068360136237591149">Open files</translation>

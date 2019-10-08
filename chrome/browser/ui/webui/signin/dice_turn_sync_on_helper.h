@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/sync_startup_tracker.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
+#include "components/policy/core/common/policy_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
 
@@ -32,7 +33,9 @@ class SyncSetupInProgressHandle;
 
 // Handles details of setting the primary account with IdentityManager and
 // turning on sync for an account for which there is already a refresh token.
-class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
+class DiceTurnSyncOnHelper
+    : public SyncStartupTracker::Observer,
+      public policy::PolicyService::ProviderUpdateObserver {
  public:
   // Behavior when the signin is aborted (by an error or cancelled by the user).
   enum class SigninAbortedMode {
@@ -159,6 +162,10 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
   // Callback invoked when a policy fetch request has completed. |success| is
   // true if policy was successfully fetched.
   void OnPolicyFetchComplete(bool success);
+
+  // policy::PolicyService::ProviderUpdateObserver
+  void OnProviderUpdatePropagated(
+      policy::ConfigurationPolicyProvider* provider) override;
 
   // Called to create a new profile, which is then signed in with the
   // in-progress auth credentials currently stored in this object.

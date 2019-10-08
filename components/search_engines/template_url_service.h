@@ -254,6 +254,15 @@ class TemplateURLService : public WebDataServiceConsumer,
                         const base::string16& keyword,
                         const std::string& search_url);
 
+  // Creates TemplateURL, populating it with data from Play API. If TemplateURL
+  // with matching keyword already exists then merges Play API data into it.
+  // Sets |created_from_play_api| flag.
+  TemplateURL* CreateOrUpdateTemplateURLFromPlayAPIData(
+      const base::string16& title,
+      const base::string16& keyword,
+      const std::string& search_url,
+      const std::string& favicon_url);
+
   // Updates any search providers matching |potential_search_url| with the new
   // favicon location |favicon_url|.
   void UpdateProviderFavicons(const GURL& potential_search_url,

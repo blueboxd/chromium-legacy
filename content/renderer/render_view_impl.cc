@@ -509,15 +509,15 @@ void RenderViewImpl::Initialize(
   } else {
     // TODO(https://crbug.com/995981): We should not need to create a
     // RenderWidget for a remote main frame.
-    render_widget_ = RenderWidget::CreateForFrame(
+    undead_render_widget_ = RenderWidget::CreateForFrame(
         params->main_frame_widget_routing_id, compositor_deps,
         page_properties(), params->visual_properties.display_mode,
         /*is_undead=*/true, params->never_visible);
-    render_widget_->set_delegate(this);
+    undead_render_widget_->set_delegate(this);
     // We intentionally pass in a null webwidget since it shouldn't be needed
     // for remote frames.
-    render_widget_->InitForMainFrame(std::move(show_callback),
-                                     /*web_frame_widget=*/nullptr);
+    undead_render_widget_->InitForMainFrame(std::move(show_callback),
+                                            /*web_frame_widget=*/nullptr);
 
     RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id, GetRoutingID(),
                                        opener_frame, MSG_ROUTING_NONE,
@@ -1072,12 +1072,13 @@ void RenderViewImpl::Destroy() {
   // a main frame. So it should not be able to see this happening when there is
   // no local main frame.
   if (close_render_widget_here) {
-    // We pass ownership of |render_widget_| to itself. Grab a raw pointer to
-    // call the Close() method on so we don't have to be a C++ expert to know
-    // whether we will end up with a nullptr where we didn't intend due to order
-    // of execution.
-    RenderWidget* closing_widget = render_widget_.get();
-    closing_widget->CloseForFrame(std::move(render_widget_));
+    if (undead_render_widget_) {
+      RenderWidget* closing_widget = undead_render_widget_.get();
+      closing_widget->CloseForFrame(std::move(undead_render_widget_));
+    } else {
+      RenderWidget* closing_widget = render_widget_.get();
+      closing_widget->CloseForFrame(std::move(render_widget_));
+    }
   }
 
   delete this;
@@ -1570,25 +1571,30 @@ void RenderViewImpl::DetachWebFrameWidget() {
     // The RenderWidget will be closed, and it will close the WebWidget stored
     // in |frame_widget_|. We just want to drop raw pointer here.
     frame_widget_ = nullptr;
-    // We pass ownership of |render_widget_| to itself. Grab a raw pointer to
-    // call the Close() method on so we don't have to be a C++ expert to know
-    // whether we will end up with a nullptr where we didn't intend due to order
-    // of execution.
-    RenderWidget* closing_widget = render_widget_.get();
-    closing_widget->CloseForFrame(std::move(render_widget_));
+    if (undead_render_widget_) {
+      RenderWidget* closing_widget = undead_render_widget_.get();
+      closing_widget->CloseForFrame(std::move(undead_render_widget_));
+    } else {
+      RenderWidget* closing_widget = render_widget_.get();
+      closing_widget->CloseForFrame(std::move(render_widget_));
+    }
   } else {
     // We are not inside RenderViewImpl::Destroy(), the main frame is being
     // detached and replaced with a remote frame proxy. We can't close the
     // RenderWidget, and it is marked undead instead, but we do need to close
     // the WebFrameWidget and remove it from the RenderWidget.
 
-    DCHECK(render_widget_->IsUndeadOrProvisional());
+    RenderWidget* render_widget = render_widget_.get();
+    if (!render_widget)
+      render_widget = undead_render_widget_.get();
+
+    DCHECK(render_widget->IsUndeadOrProvisional());
     // The WebWidget needs to be closed even though the RenderWidget won't be
     // here (since it is marked undead instead).
     frame_widget_->Close();
     frame_widget_ = nullptr;
     // This just clears the webwidget_internal_ member from RenderWidget.
-    render_widget_->SetWebWidgetInternal(nullptr);
+    render_widget->SetWebWidgetInternal(nullptr);
   }
 }
 
@@ -1948,6 +1954,16 @@ void RenderViewImpl::ApplyPageHidden(bool hidden, bool initial_setting) {
   webview()->SetIsHidden(hidden, initial_setting);
   // Note: RenderWidget visibility is separately set from the IPC handlers, and
   // does not change when tests override the visibility of the Page.
+}
+
+void RenderViewImpl::MakeMainFrameRenderWidgetUndead() {
+  render_widget_->SetIsUndead(true);
+  undead_render_widget_ = std::move(render_widget_);
+}
+
+void RenderViewImpl::ReviveUndeadMainFrameRenderWidget() {
+  render_widget_ = std::move(undead_render_widget_);
+  render_widget_->SetIsUndead(false);
 }
 
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {

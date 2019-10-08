@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Öppna startsidorna</translation>
 <translation id="1883255238294161206">Komprimera lista</translation>
 <translation id="1898423065542865115">Filtrering</translation>
+<translation id="1901443836186977402">{1,plural, =1{Serverns identitet som <ph name="DOMAIN" /> gick inte att styrka eftersom dess säkerhetscertifikat upphörde att gälla under det senaste dygnet. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad. Klockan på datorn är för närvarande inställd på <ph name="CURRENT_DATE" />. Går den rätt? I annat fall bör du ställa om datorklockan och sedan uppdatera sidan.}other{Serverns identitet som <ph name="DOMAIN" /> gick inte att styrka eftersom dess säkerhetscertifikat upphörde att gälla för # dagar sedan. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad. Klockan på datorn är för närvarande inställd på <ph name="CURRENT_DATE" />. Går den rätt? I annat fall bör du ställa om datorklockan och sedan uppdatera sidan.}}</translation>
 <translation id="1914326953223720820">Uppackningstjänst</translation>
 <translation id="1915697529809968049">Vill du använda Touch ID i stället för CVC?</translation>
 <translation id="1916770123977586577">Läs in sidan igen för att tillämpa dina uppdaterade inställningar för webbplatsen</translation>
@@ -445,6 +446,7 @@
 <translation id="3116158981186517402">Laminera</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Testa att köra anslutningsdiagnostik<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Besök <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Ingen}=1{inloggningsuppgifter för 1 konto}other{inloggningsuppgifter för # konton}}</translation>
 <translation id="3145945101586104090">Det gick inte att avkoda svaret</translation>
 <translation id="3150653042067488994">Tillfälligt serverfel</translation>
@@ -829,6 +831,7 @@
 <translation id="5043480802608081735">Länk som du har kopierat</translation>
 <translation id="5045550434625856497">Felaktigt lösenord</translation>
 <translation id="5056549851600133418">Artiklar för dig</translation>
+<translation id="5061227663725596739">Menade du <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 används)}other{(# används)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />kontrollera proxyadressen<ph name="END_LINK" /></translation>
@@ -882,6 +885,7 @@
 <translation id="5284909709419567258">Nätverksadresser</translation>
 <translation id="5285570108065881030">Visa alla sparade lösenord</translation>
 <translation id="5287240709317226393">Visa cookies</translation>
+<translation id="5287456746628258573">Den här webbplatsens säkerhetskonfiguration är inaktuell. Det kan leda till att dina uppgifter (till exempel lösenord eller kreditkortsnummer) exponeras när de skickas till den här webbplatsen.</translation>
 <translation id="5288108484102287882">Valideringen av principvärdena har utlöst varningar</translation>
 <translation id="5299298092464848405">Det uppstod ett fel när policyn analyserades</translation>
 <translation id="5300589172476337783">Visa</translation>
@@ -1010,6 +1014,7 @@
 <translation id="5946937721014915347">Öppnar <ph name="SITE_NAME" /> …</translation>
 <translation id="5947933617628957894">Ja, lägg till</translation>
 <translation id="5951495562196540101">Det går inte att registrera enheten med ett konsumentkonto (paketerad licens är tillgänglig).</translation>
+<translation id="5966900314707961320">När detta har aktiverats kan en webbplats inte använda cookies som spårar dig på webben</translation>
 <translation id="5967592137238574583">Redigera kontaktuppgifter</translation>
 <translation id="5967867314010545767">Ta bort från historiken</translation>
 <translation id="5975083100439434680">Zooma ut</translation>
@@ -1092,6 +1097,7 @@
 <translation id="6383221683286411806">Du kan komma att debiteras.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 annat förslag}other{# andra förslag}}</translation>
 <translation id="6387754724289022810">Spara kortet och faktureringsadressen i Google-kontot och på enheten så går det snabbare att betala nästa gång.</translation>
+<translation id="6389470377220713856">Namn på kort</translation>
 <translation id="6390200185239044127">Halv Z-falsning</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Den här principen är utfasad. Använd principen <ph name="NEW_POLICY" /> i stället.</translation>
@@ -1270,7 +1276,6 @@ Mer information.
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Är anknuten:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Lämna webbplatsen</translation>
 <translation id="7353601530677266744">Kommandorad</translation>
 <translation id="7372973238305370288">sökresultat</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1443,6 +1448,7 @@ Mer information.
 <translation id="8131740175452115882">Bekräfta</translation>
 <translation id="8149426793427495338">Datorn gick i viloläge.</translation>
 <translation id="8150722005171944719">Det går inte att läsa filen på <ph name="URL" />. Den kan ha tagits bort eller flyttats, eller så krävs behörighet för att få åtkomst till den.</translation>
+<translation id="8157295877370077682">Lämna webbplatsen</translation>
 <translation id="8163866351304776260">Fyra hål till vänster</translation>
 <translation id="8175796834047840627">Du erbjuds av Chrome att spara dina kort i Google-kontot eftersom du är inloggad. Du kan ändra detta i inställningarna.</translation>
 <translation id="8184538546369750125">Använd global standardinställning (Tillåt)</translation>

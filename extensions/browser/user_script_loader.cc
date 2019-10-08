@@ -165,9 +165,6 @@ UserScriptLoader::UserScriptLoader(BrowserContext* browser_context,
       queued_load_(false),
       browser_context_(browser_context),
       host_id_(host_id) {
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 UserScriptLoader::~UserScriptLoader() {
@@ -216,17 +213,13 @@ void UserScriptLoader::ClearScripts() {
   AttemptLoad();
 }
 
-void UserScriptLoader::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  DCHECK_EQ(type, content::NOTIFICATION_RENDERER_PROCESS_CREATED);
-  content::RenderProcessHost* process =
-      content::Source<content::RenderProcessHost>(source).ptr();
+void UserScriptLoader::OnRenderProcessHostCreated(
+    content::RenderProcessHost* process_host) {
   if (!ExtensionsBrowserClient::Get()->IsSameContext(
-          browser_context_, process->GetBrowserContext()))
+          browser_context_, process_host->GetBrowserContext()))
     return;
   if (initial_load_complete()) {
-    SendUpdate(process, shared_memory_,
+    SendUpdate(process_host, shared_memory_,
                std::set<HostID>());  // Include all hosts.
   }
 }

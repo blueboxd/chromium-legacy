@@ -156,7 +156,7 @@ class IncidentReportingServiceTest : public testing::Test {
   };
 
   // A type for specifying the action to be taken by the test fixture during
-  // profile initialization (before NOTIFICATION_PROFILE_ADDED is sent).
+  // profile initialization (before OnProfileAdded is called).
   enum OnProfileAdditionAction {
     ON_PROFILE_ADDITION_NO_ACTION,
     ON_PROFILE_ADDITION_ADD_INCIDENT,  // Add an incident to the service.
@@ -466,7 +466,7 @@ class IncidentReportingServiceTest : public testing::Test {
     ProfileProperties() : on_addition_action(ON_PROFILE_ADDITION_NO_ACTION) {}
 
     // The action taken by the test fixture during profile initialization
-    // (before NOTIFICATION_PROFILE_ADDED is sent).
+    // (before OnProfileAdded is called).
     OnProfileAdditionAction on_addition_action;
   };
 

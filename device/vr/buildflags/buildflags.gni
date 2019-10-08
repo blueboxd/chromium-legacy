@@ -48,9 +48,6 @@ declare_args() {
   enable_arcore = enable_vr && is_android && !is_chromecast &&
                   (current_cpu == "arm" || current_cpu == "arm64")
 
-  # When true, portions of VR's native code are included in the VR DFM.
-  modularize_vr_native = true
-
   # Whether to create AR module as an asynchronous DFM.
   async_ar = false
 

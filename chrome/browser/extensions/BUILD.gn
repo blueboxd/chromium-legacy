@@ -823,6 +823,7 @@ jumbo_static_library("extensions") {
     "//components/password_manager/core/browser:affiliation",
     "//components/payments/core",
     "//components/pdf/browser",
+    "//components/performance_manager",
     "//components/policy:generated",
     "//components/policy/core/browser",
     "//components/pref_registry",

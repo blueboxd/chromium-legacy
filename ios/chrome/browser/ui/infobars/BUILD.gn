@@ -37,6 +37,14 @@ source_set("public") {
   ]
 }
 
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "infobar_constants.h",
+    "infobar_constants.mm",
+  ]
+}
+
 source_set("feature_flags") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -54,8 +62,6 @@ source_set("infobars_ui") {
     "confirm_infobar_view.h",
     "confirm_infobar_view.mm",
     "infobar_badge_ui_delegate.h",
-    "infobar_constants.h",
-    "infobar_constants.mm",
     "infobar_container_consumer.h",
     "infobar_ui_delegate.h",
     "legacy_infobar_container_view_controller.h",
@@ -88,6 +94,9 @@ source_set("infobars_ui") {
     "//ui/base",
     "//ui/gfx",
     "//url",
+  ]
+  public_deps = [
+    ":constants",
   ]
   libs = [
     "CoreGraphics.framework",

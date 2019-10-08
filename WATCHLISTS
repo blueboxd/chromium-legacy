@@ -2095,7 +2095,6 @@
     'blink_layers': ['blink-layers+watch@chromium.org'],
     'blink_layout': ['blink-reviews-layout@chromium.org',
                      'eae+blinkwatch@chromium.org',
-                     'pdr+renderingwatchlist@chromium.org',
                      'szager+layoutwatch@chromium.org',
                      'zoltan@webkit.org'],
     'blink_layout_ng': ['cbiesinger@chromium.org',

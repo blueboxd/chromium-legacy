@@ -60,7 +60,8 @@ void GtkEventLoopX11::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
   // corresponding key event in the X event queue.  So we have to handle this
   // case.  ibus-gtk is used through gtk-immodule to support IMEs.
 
-  XEvent x_event = {0};
+  XEvent x_event;
+  x_event.xkey = {};
   x_event.xkey.type =
       gdk_event_key.type == GDK_KEY_PRESS ? KeyPress : KeyRelease;
   x_event.xkey.send_event = gdk_event_key.send_event;

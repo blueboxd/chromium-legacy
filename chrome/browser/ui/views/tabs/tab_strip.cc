@@ -1471,6 +1471,64 @@ void TabStrip::CloseTab(Tab* tab, CloseTabSource source) {
   controller_->CloseTab(model_index, source);
 }
 
+void TabStrip::MoveTabLeft(Tab* tab) {
+  MoveTabRelative(tab, -1);
+}
+
+void TabStrip::MoveTabRight(Tab* tab) {
+  MoveTabRelative(tab, 1);
+}
+
+void TabStrip::MoveTabFirst(Tab* tab) {
+  if (tab->closing())
+    return;
+
+  const int start_index = GetModelIndexOfTab(tab);
+  if (!IsValidModelIndex(start_index))
+    return;
+
+  int target_index = 0;
+  if (!controller_->IsTabPinned(start_index)) {
+    while (target_index < start_index && controller_->IsTabPinned(target_index))
+      ++target_index;
+  }
+
+  if (target_index == start_index || !IsValidModelIndex(target_index))
+    return;
+
+  controller_->MoveTab(start_index, target_index);
+}
+
+void TabStrip::MoveTabLast(Tab* tab) {
+  if (tab->closing())
+    return;
+
+  const int start_index = GetModelIndexOfTab(tab);
+  if (!IsValidModelIndex(start_index))
+    return;
+
+  int target_index;
+  if (controller_->IsTabPinned(start_index)) {
+    int temp_index = start_index + 1;
+    while (temp_index < tab_count() && controller_->IsTabPinned(temp_index))
+      ++temp_index;
+    target_index = temp_index - 1;
+  } else {
+    target_index = tab_count() - 1;
+  }
+
+  if (target_index == start_index || !IsValidModelIndex(target_index))
+    return;
+
+  controller_->MoveTab(start_index, target_index);
+}
+
+void TabStrip::ShowContextMenuForTab(Tab* tab,
+                                     const gfx::Point& p,
+                                     ui::MenuSourceType source_type) {
+  controller_->ShowContextMenuForTab(tab, p, source_type);
+}
+
 bool TabStrip::IsActiveTab(const Tab* tab) const {
   int model_index = GetModelIndexOfTab(tab);
   return IsValidModelIndex(model_index) &&
@@ -2571,6 +2629,24 @@ void TabStrip::UpdateContrastRatioValues() {
   // The contrast ratio for the separator between inactive tabs.
   constexpr float kTabSeparatorContrast = 2.5f;
   separator_color_ = get_blend(inactive_fg, kTabSeparatorContrast).color;
+}
+
+void TabStrip::MoveTabRelative(Tab* tab, int offset) {
+  DCHECK_NE(offset, 0);
+  const int start_index = GetModelIndexOfTab(tab);
+  const int target_index = start_index + offset;
+
+  if (tab->closing())
+    return;
+
+  if (!IsValidModelIndex(start_index) || !IsValidModelIndex(target_index))
+    return;
+
+  if (controller_->IsTabPinned(start_index) !=
+      controller_->IsTabPinned(target_index))
+    return;
+
+  controller_->MoveTab(start_index, target_index);
 }
 
 void TabStrip::ResizeLayoutTabs() {

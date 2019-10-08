@@ -121,6 +121,15 @@ source_set("geolocation") {
       "Foundation.framework",
     ]
   }
+
+  if (is_win) {
+    sources += [
+      "location_provider_winrt.cc",
+      "location_provider_winrt.h",
+    ]
+
+    deps += [ "//services/device/public/cpp:device_features" ]
+  }
 }
 
 if (is_android) {

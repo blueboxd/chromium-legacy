@@ -37,6 +37,7 @@ class XRAnchor;
 class XRAnchorSet;
 class XRCanvasInputProvider;
 class XRHitTestOptionsInit;
+class XRHitTestSource;
 class XRPlane;
 class XRRay;
 class XRReferenceSpace;
@@ -125,7 +126,7 @@ class XRSession final
 
   ScriptPromise requestHitTestSource(ScriptState* script_state,
                                      XRHitTestOptionsInit* options,
-                                     ExceptionState&);
+                                     ExceptionState& exception_state);
 
   ScriptPromise requestHitTest(ScriptState* script_state,
                                XRRay* ray,
@@ -213,6 +214,10 @@ class XRSession final
   unsigned int DisplayInfoPtrId() const { return display_info_id_; }
   unsigned int StageParametersId() const { return stage_parameters_id_; }
 
+  // Returns true if the session recognizes passed in hit_test_source as still
+  // existing.
+  bool ValidateHitTestSourceExists(XRHitTestSource* hit_test_source);
+
   void SetXRDisplayInfo(device::mojom::blink::VRDisplayInfoPtr display_info);
 
   bool UsesInputEventing() { return uses_input_eventing_; }
@@ -295,6 +300,14 @@ class XRSession final
   bool is_tracked_anchors_null_ = true;
   HeapHashMap<uint32_t, Member<XRAnchor>> anchor_ids_to_anchors_;
 
+  // Mapping of hit test source ids (aka hit test subscription ids) to hit test
+  // sources. Hit test source has to be stored via weak member - JavaScript side
+  // will communicate that it's no longer interested in the subscription by
+  // dropping all its references to the hit test source & we need to make sure
+  // that we don't keep the XRHitTestSources alive.
+  HeapHashMap<uint32_t, WeakMember<XRHitTestSource>>
+      hit_test_source_ids_to_hit_test_sources_;
+
   WTF::Vector<XRViewData> views_;
 
   Member<XRInputSourceArray> input_sources_;
@@ -305,6 +318,9 @@ class XRSession final
   HeapHashSet<Member<ScriptPromiseResolver>> hit_test_promises_;
   // Set of promises returned from CreateAnchor that are still in-flight.
   HeapHashSet<Member<ScriptPromiseResolver>> create_anchor_promises_;
+  // Set of promises returned from requestHitTestSource that are still
+  // in-flight.
+  HeapHashSet<Member<ScriptPromiseResolver>> request_hit_test_source_promises_;
   HeapVector<Member<XRReferenceSpace>> reference_spaces_;
 
   bool is_external_ = false;

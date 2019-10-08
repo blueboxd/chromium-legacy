@@ -418,7 +418,6 @@ void CompositorImpl::CreateLayerTreeHost() {
 
   cc::LayerTreeSettings settings;
   settings.use_zero_copy = true;
-  settings.enable_surface_synchronization = true;
   settings.build_hit_test_data = features::IsVizHitTestingSurfaceLayerEnabled();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

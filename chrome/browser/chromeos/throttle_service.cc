@@ -26,6 +26,11 @@ void ThrottleService::SetObserversForTesting(
   StartObservers();
 }
 
+void ThrottleService::set_level_for_testing(
+    ThrottleObserver::PriorityLevel level) {
+  SetLevel(level);
+}
+
 void ThrottleService::AddObserver(std::unique_ptr<ThrottleObserver> observer) {
   observers_.push_back(std::move(observer));
 }

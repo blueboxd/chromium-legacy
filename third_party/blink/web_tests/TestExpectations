@@ -3120,6 +3120,9 @@ crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.
 crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/webaudio/the-audio-api/processing-model/feedback-delay-time.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/webaudio/the-audio-api/processing-model/feedback-delay-time.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webaudio/the-audio-api/processing-model/feedback-delay-time.html [ Timeout ]

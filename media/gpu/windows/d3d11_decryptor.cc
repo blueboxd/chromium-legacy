@@ -142,7 +142,7 @@ D3D11Decryptor::~D3D11Decryptor() {}
 
 void D3D11Decryptor::RegisterNewKeyCB(StreamType stream_type,
                                       const NewKeyCB& new_key_cb) {
-  // TODO(xhwang): Use RegisterNewKeyCB() on CdmContext, and remove
+  // TODO(crbug.com/821288): Use RegisterNewKeyCB() on CdmContext, and remove
   // RegisterNewKeyCB from Decryptor interface.
   NOTREACHED();
 }

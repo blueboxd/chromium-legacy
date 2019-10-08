@@ -24,6 +24,10 @@ class WMRInputLocation {
 
   virtual bool TryGetAngularVelocity(
       ABI::Windows::Foundation::Numerics::Vector3* angular_velocity) const = 0;
+  virtual bool TryGetPositionAccuracy(
+      ABI::Windows::UI::Input::Spatial::
+          SpatialInteractionSourcePositionAccuracy* position_accuracy)
+      const = 0;
 };
 
 class WMRInputLocationImpl : public WMRInputLocation {
@@ -47,6 +51,9 @@ class WMRInputLocationImpl : public WMRInputLocation {
   // Uses ISpatialInteractionSourceLocation3.
   bool TryGetAngularVelocity(ABI::Windows::Foundation::Numerics::Vector3*
                                  angular_velocity) const override;
+  bool TryGetPositionAccuracy(ABI::Windows::UI::Input::Spatial::
+                                  SpatialInteractionSourcePositionAccuracy*
+                                      position_accuracy) const override;
 
  private:
   Microsoft::WRL::ComPtr<

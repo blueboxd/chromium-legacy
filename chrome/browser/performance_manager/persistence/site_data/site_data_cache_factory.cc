@@ -10,10 +10,10 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/performance_manager/performance_manager_impl.h"
 #include "chrome/browser/performance_manager/persistence/site_data/non_recording_site_data_cache.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_impl.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_inspector.h"
+#include "components/performance_manager/performance_manager_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 

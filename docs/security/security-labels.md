@@ -25,7 +25,8 @@ that.)
 * **Security_Severity-**{**Critical**, **High**, **Medium**, **Low**,
 **None**}: Designates the severity of a vulnerability according to our
 [severity guidelines](severity-guidelines.md).
-* **Pri-#**: Priority should generally match Severity:
+* **Pri-#**: Priority should generally match Severity (but should be higher if
+  there is evidence of active exploitation):
   * **Security_Severity-Critical**: **Pri-0**.
   * **High** and **Medium**: **Pri-1**.
   * **Low**: **Pri-2**.
@@ -175,7 +176,8 @@ Similarly, critical security regressions are marked **ReleaseBlock-Beta**.
 ### Adjust **Pri-#** To Match Severity
 
 Adjust **Pri-#** according to the priority rules for severity labels described
-above.
+above. If there is evidence of active exploitation then a higher priority should
+be used.
 
 ### Drop **Restrict-View-{SecurityTeam,SecurityNotify}** From Old And Fixed Bugs
 

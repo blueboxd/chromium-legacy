@@ -162,6 +162,13 @@ const base::Feature kParentalControlsSettings{
 const base::Feature kReleaseNotes{"ReleaseNotes",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables long kill timeout for session manager daemon. When
+// enabled, session manager daemon waits for a longer time (e.g. 12s) for chrome
+// to exit before sending SIGABRT. Otherwise, it uses the default time out
+// (currently 3s).
+const base::Feature kSessionManagerLongKillTimeout{
+    "SessionManagerLongKillTimeout", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the scrollable shelf.
 const base::Feature kShelfScrollable{"ShelfScrollable",
                                      base::FEATURE_ENABLED_BY_DEFAULT};

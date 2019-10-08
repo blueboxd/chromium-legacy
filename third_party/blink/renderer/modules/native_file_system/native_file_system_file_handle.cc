@@ -21,9 +21,12 @@ namespace blink {
 using mojom::blink::NativeFileSystemErrorPtr;
 
 NativeFileSystemFileHandle::NativeFileSystemFileHandle(
+    ExecutionContext* context,
     const String& name,
-    RevocableInterfacePtr<mojom::blink::NativeFileSystemFileHandle> mojo_ptr)
-    : NativeFileSystemHandle(name), mojo_ptr_(std::move(mojo_ptr)) {
+    mojo::PendingRemote<mojom::blink::NativeFileSystemFileHandle> mojo_ptr)
+    : NativeFileSystemHandle(context, name),
+      mojo_ptr_(std::move(mojo_ptr),
+                context->GetTaskRunner(TaskType::kMiscPlatformAPI)) {
   DCHECK(mojo_ptr_);
 }
 
@@ -48,9 +51,7 @@ ScriptPromise NativeFileSystemFileHandle::createWriter(
               return;
             }
             resolver->Resolve(MakeGarbageCollected<NativeFileSystemWriter>(
-                RevocableInterfacePtr<mojom::blink::NativeFileSystemFileWriter>(
-                    std::move(writer), context->GetInterfaceInvalidator(),
-                    context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
+                context, std::move(writer)));
           },
           WrapPersistent(resolver)));
 
@@ -81,6 +82,10 @@ NativeFileSystemFileHandle::Transfer() {
   mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> result;
   mojo_ptr_->Transfer(result.InitWithNewPipeAndPassReceiver());
   return result;
+}
+
+void NativeFileSystemFileHandle::ContextDestroyed(ExecutionContext*) {
+  mojo_ptr_.reset();
 }
 
 void NativeFileSystemFileHandle::QueryPermissionImpl(

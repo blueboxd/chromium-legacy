@@ -393,14 +393,6 @@ Runner.prototype = {
 
     this.outerContainerEl.appendChild(this.containerEl);
 
-// <if expr="SHOW_INSTRUCTIONS_FOR_DINO_PAGE">
-    if (this.isArcadeMode()) {
-      document.querySelector('#offline-instruction').classList
-          .remove(HIDDEN_CLASS);
-      this.containerEl.style.top = '50px'
-    }
-// </if>
-
     this.startListening();
     this.update();
 
@@ -487,12 +479,6 @@ Runner.prototype = {
       this.playingIntro = true;
       this.tRex.playingIntro = true;
 
-// <if expr="SHOW_INSTRUCTIONS_FOR_DINO_PAGE">
-      if (this.isArcadeMode()) {
-        document.querySelector('#offline-instruction').classList
-            .add(HIDDEN_CLASS);
-      }
-// </if>
       // CSS animation definition.
       var keyframes = '@-webkit-keyframes intro { ' +
             'from { width:' + Trex.config.WIDTH + 'px }' +
@@ -967,10 +953,6 @@ Runner.prototype = {
         Runner.config.ARCADE_MODE_INITIAL_TOP_POSITION) *
         Runner.config.ARCADE_MODE_TOP_POSITION_PERCENT)) *
         window.devicePixelRatio;
-// <if expr="SHOW_INSTRUCTIONS_FOR_DINO_PAGE">
-    // We add top padding in Runner#init, no need to do it here.
-    translateY = 0;
-// </if>
     this.containerEl.style.transform = 'scale(' + scale + ') translateY(' +
         translateY + 'px)';
   },

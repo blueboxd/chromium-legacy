@@ -10,8 +10,8 @@
 #include "base/sequence_checker.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/util/memory_pressure/memory_pressure_voter.h"
-#include "chrome/browser/performance_manager/public/graph/graph.h"
-#include "chrome/browser/performance_manager/public/graph/system_node.h"
+#include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/system_node.h"
 
 namespace memory {
 

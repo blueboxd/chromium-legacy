@@ -84,7 +84,6 @@
 #include "chrome/browser/payments/payment_request_display_manager_factory.h"
 #include "chrome/browser/performance_manager/chrome_browser_main_extra_parts_performance_manager.h"
 #include "chrome/browser/performance_manager/chrome_content_browser_client_performance_manager_part.h"
-#include "chrome/browser/performance_manager/public/performance_manager.h"
 #include "chrome/browser/permissions/attestation_permission_request.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -224,6 +223,7 @@
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/payments/content/payment_request_display_manager.h"
+#include "components/performance_manager/public/performance_manager.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/policy/content/policy_blacklist_service.h"
 #include "components/policy/core/common/policy_service.h"
@@ -405,6 +405,7 @@
 #elif defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
 #include "chrome/android/features/dev_ui/buildflags.h"
+#include "chrome/android/modules/extra_icu/provider/module_provider.h"
 #include "chrome/browser/android/app_hooks.h"
 #include "chrome/browser/android/chrome_context_util.h"
 #include "chrome/browser/android/devtools_manager_delegate_android.h"
@@ -4013,7 +4014,6 @@ void ChromeContentBrowserClient::OpenURL(
   NavigateParams nav_params(Profile::FromBrowserContext(browser_context),
                             params.url, params.transition);
   nav_params.FillNavigateParamsFromOpenURLParams(params);
-  nav_params.user_gesture = params.user_gesture;
 
   Navigate(&nav_params);
   std::move(callback).Run(nav_params.navigated_or_inserted_contents);
@@ -5668,4 +5668,11 @@ void ChromeContentBrowserClient::BlockBluetoothScanning(
       requesting_origin.GetURL(), embedding_origin.GetURL(),
       CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING, std::string(),
       CONTENT_SETTING_BLOCK);
+}
+
+bool ChromeContentBrowserClient::ShouldLoadExtraIcuDataFile() {
+#if defined(OS_ANDROID)
+  return extra_icu::ModuleProvider::IsModuleInstalled();
+#endif
+  return false;
 }

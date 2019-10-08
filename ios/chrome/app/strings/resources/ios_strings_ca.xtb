@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Edita l'adreça d'interès</translation>
 <translation id="2179182049312275900">Pots activar la sincronització en qualsevol moment des de la configuració.</translation>
 <translation id="2198757192731523470">És possible que Google utilitzi el teu historial per personalitzar la Cerca, els anuncis i altres serveis de Google.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> articles de la llista de lectura no llegits</translation>
 <translation id="2230173723195178503">La pàgina web s'ha carregat</translation>
 <translation id="2239626343334228536">S'estan esborrant les dades de navegació...</translation>
 <translation id="2267753748892043616">Afegeix un compte</translation>
@@ -265,7 +264,6 @@ Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincro
 
 Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronització<ph name="END_LINK" />.</translation>
 <translation id="4805759445554688327">El número de targeta no és vàlid</translation>
-<translation id="4807020197310989387">1 article de la llista de lectura no llegit</translation>
 <translation id="4818522717893377262">Afegeix un idioma...</translation>
 <translation id="481968316161811770">Galetes, dades llocs</translation>
 <translation id="4833786495304741580">Envia automàticament a Google estadístiques d'ús i informes d'error.</translation>
@@ -414,6 +412,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="6858855187367714033">S'ha escanejat</translation>
 <translation id="6859944681507688231">Per escanejar un codi QR o una targeta de crèdit, activa la càmera des de Configuració.</translation>
 <translation id="6873263987691478642">Visualització dividida</translation>
+<translation id="6888009575607455378">Confirmes que vols descartar els canvis?</translation>
 <translation id="6896758677409633944">Copia</translation>
 <translation id="6903907808598579934">Activa la sincronització</translation>
 <translation id="6914583639806229067">Cerca la imatge que has copiat</translation>

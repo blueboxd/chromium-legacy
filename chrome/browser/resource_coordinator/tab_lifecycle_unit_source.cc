@@ -9,9 +9,6 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/performance_manager/performance_manager_impl.h"
-#include "chrome/browser/performance_manager/public/graph/page_node.h"
-#include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/resource_coordinator/discard_metrics_lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
@@ -24,6 +21,9 @@
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/public/graph/page_node.h"
+#include "components/performance_manager/public/web_contents_proxy.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -97,6 +97,30 @@ class TabLifecycleStateObserver
     }
   }
 
+  static void OnPageIsHoldingWebLockChangedImpl(
+      const WebContentsProxy& contents_proxy,
+      bool is_holding_weblock) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // If the web contents is still alive then dispatch to the actual
+    // implementation in TabLifecycleUnitSource.
+    if (auto* contents = contents_proxy.Get()) {
+      TabLifecycleUnitSource::OnIsHoldingWebLockChanged(contents,
+                                                        is_holding_weblock);
+    }
+  }
+
+  static void OnPageIsHoldingIndexedDBLockChangedImpl(
+      const WebContentsProxy& contents_proxy,
+      bool is_holding_indexeddb_lock) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // If the web contents is still alive then dispatch to the actual
+    // implementation in TabLifecycleUnitSource.
+    if (auto* contents = contents_proxy.Get()) {
+      TabLifecycleUnitSource::OnIsHoldingIndexedDBLockChanged(
+          contents, is_holding_indexeddb_lock);
+    }
+  }
+
   // performance_manager::PageNode::ObserverDefaultImpl::
   void OnPageLifecycleStateChanged(const PageNode* page_node) override {
     // Forward the notification over to the UI thread.
@@ -116,6 +140,25 @@ class TabLifecycleStateObserver
             &TabLifecycleStateObserver::OnOriginTrialFreezePolicyChangedImpl,
             page_node->GetContentsProxy(),
             page_node->GetOriginTrialFreezePolicy()));
+  }
+
+  void OnPageIsHoldingWebLockChanged(const PageNode* page_node) override {
+    // Forward the notification over to the UI thread.
+    base::PostTask(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(
+            &TabLifecycleStateObserver::OnPageIsHoldingWebLockChangedImpl,
+            page_node->GetContentsProxy(), page_node->IsHoldingWebLock()));
+  }
+
+  void OnPageIsHoldingIndexedDBLockChanged(const PageNode* page_node) override {
+    // Forward the notification over to the UI thread.
+    base::PostTask(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(
+            &TabLifecycleStateObserver::OnPageIsHoldingIndexedDBLockChangedImpl,
+            page_node->GetContentsProxy(),
+            page_node->IsHoldingIndexedDBLock()));
   }
 
   void OnPassedToGraph(Graph* graph) override {
@@ -382,6 +425,30 @@ void TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
   // TODO(fdoray): This may want to filter for the navigation_id.
   if (lifecycle_unit)
     lifecycle_unit->UpdateOriginTrialFreezePolicy(policy);
+}
+
+// static
+void TabLifecycleUnitSource::OnIsHoldingWebLockChanged(
+    content::WebContents* web_contents,
+    bool is_holding_weblock) {
+  TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(web_contents);
+
+  // Some WebContents aren't attached to a tab, so there is no corresponding
+  // TabLifecycleUnit.
+  if (lifecycle_unit)
+    lifecycle_unit->SetIsHoldingWebLock(is_holding_weblock);
+}
+
+// static
+void TabLifecycleUnitSource::OnIsHoldingIndexedDBLockChanged(
+    content::WebContents* web_contents,
+    bool is_holding_indexeddb_lock) {
+  TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(web_contents);
+
+  // Some WebContents aren't attached to a tab, so there is no corresponding
+  // TabLifecycleUnit.
+  if (lifecycle_unit)
+    lifecycle_unit->SetIsHoldingIndexedDBLock(is_holding_indexeddb_lock);
 }
 
 void TabLifecycleUnitSource::SetTabLifecyclesEnterprisePolicy(bool enabled) {

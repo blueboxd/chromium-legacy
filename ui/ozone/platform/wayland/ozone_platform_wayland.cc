@@ -18,15 +18,16 @@
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
+#include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_connector.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
-#include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -162,16 +163,15 @@ class OzonePlatformWayland : public OzonePlatform {
     if (!connection_->Initialize())
       LOG(FATAL) << "Failed to initialize Wayland platform";
 
-    buffer_manager_connector_ =
-        std::make_unique<WaylandBufferManagerConnector>(connection_.get());
+    buffer_manager_connector_ = std::make_unique<WaylandBufferManagerConnector>(
+        connection_->buffer_manager_host());
     cursor_factory_ = std::make_unique<BitmapCursorFactoryOzone>();
     overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
-    auto* zwp_dmabuf = connection_->zwp_dmabuf();
-    if (zwp_dmabuf)
-      supported_buffer_formats_ = zwp_dmabuf->supported_buffer_formats();
+    supported_buffer_formats_ =
+        connection_->buffer_manager_host()->GetSupportedBufferFormats();
 
     // Instantiate and set LinuxInputMethodContextFactory unless it is already
     // set (e.g: tests may have already set it).
@@ -242,8 +242,7 @@ class OzonePlatformWayland : public OzonePlatform {
 
   // Provides supported buffer formats for native gpu memory buffers
   // framework.
-  WaylandZwpLinuxDmabuf::BufferFormatsWithModifiersMap
-      supported_buffer_formats_;
+  wl::BufferFormatsWithModifiersMap supported_buffer_formats_;
 
   // This is used both in the gpu and browser processes to find out if a drm
   // render node is available.

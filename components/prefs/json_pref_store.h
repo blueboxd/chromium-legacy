@@ -48,7 +48,7 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   // A pair of callbacks to call before and after the preference file is written
   // to disk.
   using OnWriteCallbackPair =
-      std::pair<base::Closure, base::Callback<void(bool success)>>;
+      std::pair<base::OnceClosure, base::OnceCallback<void(bool success)>>;
 
   // |pref_filename| is the path to the file to read prefs from. It is incorrect
   // to create multiple JsonPrefStore with the same |pref_filename|.
@@ -113,7 +113,7 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   // |on_next_successful_write_reply| will be called on the thread from which
   // this method is called and does not need to be thread safe.
   void RegisterOnNextSuccessfulWriteReply(
-      const base::Closure& on_next_successful_write_reply);
+      base::OnceClosure on_next_successful_write_reply);
 
   void ClearMutableValues() override;
 
@@ -134,8 +134,8 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   // |on_next_write_callback| on the current thread and posts
   // |on_next_write_reply| on |reply_task_runner|.
   static void PostWriteCallback(
-      const base::Callback<void(bool success)>& on_next_write_callback,
-      const base::Callback<void(bool success)>& on_next_write_reply,
+      base::OnceCallback<void(bool success)> on_next_write_callback,
+      base::OnceCallback<void(bool success)> on_next_write_reply,
       scoped_refptr<base::SequencedTaskRunner> reply_task_runner,
       bool write_success);
 
@@ -193,7 +193,7 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   std::set<std::string> keys_need_empty_value_;
 
   bool has_pending_write_reply_ = true;
-  base::Closure on_next_successful_write_reply_;
+  base::OnceClosure on_next_successful_write_reply_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

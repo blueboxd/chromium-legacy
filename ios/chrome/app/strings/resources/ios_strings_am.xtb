@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">እልባት አርትዕ</translation>
 <translation id="2179182049312275900">ስምረትን በማንኛውም ጊዜ በቅንብሮች ውስጥ ማብራት ይችላሉ።</translation>
 <translation id="2198757192731523470">Google ፍለጋን፣ ማስታወቂያዎችን እና ሌሎች የGoogle አገልግሎቶችን ግላዊነት ለማላበስ ሲል ታሪክዎን ሊጠቀም ይችላል።</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> ያልተነበቡ የንባብ ዝርዝር ጽሑፎች።</translation>
 <translation id="2230173723195178503">ድረ-ገጽ ተጭኗል</translation>
 <translation id="2239626343334228536">የአሰሳ ውሂብን በማጽዳት ላይ...</translation>
 <translation id="2267753748892043616">መለያ አክል</translation>
@@ -265,7 +264,6 @@
 
 ይህን ቅንብር ለመቀየር <ph name="BEGIN_LINK" />ስምረትን ዳግም ያስጀምሩ<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">ልክ ያልሆነ የካርድ ቁጥር</translation>
-<translation id="4807020197310989387">1 ያልተነበበ የንባብ ዝርዝር ጽሑፍ።</translation>
 <translation id="4818522717893377262">ቋንቋን አክል...</translation>
 <translation id="481968316161811770">ኩኪዎች፣ የጣቢያ ውሂብ</translation>
 <translation id="4833786495304741580">የአጠቃቀም ስታቲስቲክስስን እና የስንክል ሪፖርቶችን በራስ-ሰር ወደ Google ይልካል።</translation>
@@ -414,6 +412,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6858855187367714033">ተቃኝቷል</translation>
 <translation id="6859944681507688231">አንድ QR ኮድ ወይም ክሬዲት ካርድ ለመቃኘት ከቅንብሮች ሆነው ካሜራውን ያንቁት።</translation>
 <translation id="6873263987691478642">የተከፈለ ዕይታ</translation>
+<translation id="6888009575607455378">እርግጠኛ ነዎት ለውጦችዎን ማስወገድ ይፈልጋሉ?</translation>
 <translation id="6896758677409633944">ቅዳ</translation>
 <translation id="6903907808598579934">ስምረትን አብራ</translation>
 <translation id="6914583639806229067">የቀዱትን ምስል ይፈልጉ</translation>

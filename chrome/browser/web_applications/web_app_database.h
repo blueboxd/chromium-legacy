@@ -79,7 +79,7 @@ class WebAppDatabase {
 
   std::unique_ptr<syncer::ModelTypeStore> store_;
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch_;
-  AbstractWebAppDatabaseFactory* database_factory_;
+  AbstractWebAppDatabaseFactory* const database_factory_;
   ReportErrorCallback error_callback_;
 
   // Database is opened if store is created and all data read.

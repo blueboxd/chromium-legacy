@@ -1079,6 +1079,11 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
 
   LoadHTML("Hello world!");
 
+  // Early grab testing values as the main-frame widget becomes inaccessible
+  // when it swaps out.
+  VisualProperties test_visual_properties =
+      MakeVisualPropertiesWithDeviceScaleFactor(device_scale);
+
   // Swap the main frame out after which it should become a WebRemoteFrame.
   content::FrameReplicationState replication_state =
       ReconstructReplicationStateForTesting(frame());
@@ -1106,9 +1111,8 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
   // The new frame is initialized with |device_scale| as the device scale
   // factor.
   mojom::CreateFrameWidgetParams widget_params;
-  widget_params.routing_id = view()->GetWidget()->routing_id();
-  widget_params.visual_properties =
-      MakeVisualPropertiesWithDeviceScaleFactor(device_scale);
+  widget_params.routing_id = kProxyRoutingId + 2;
+  widget_params.visual_properties = test_visual_properties;
   RenderFrameImpl::CreateFrame(
       routing_id, std::move(stub_interface_provider),
       std::move(stub_document_interface_broker_content),

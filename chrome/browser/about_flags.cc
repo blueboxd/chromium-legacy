@@ -2888,6 +2888,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceEffectiveConnectionTypeDescription, kOsAll,
      MULTI_VALUE_TYPE(kForceEffectiveConnectionTypeChoices)},
 
+    {"forced-colors", flag_descriptions::kForcedColorsName,
+     flag_descriptions::kForcedColorsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kForcedColors)},
+
     {"memlog", flag_descriptions::kMemlogName,
      flag_descriptions::kMemlogDescription, kOsAll,
      MULTI_VALUE_TYPE(kMemlogModeChoices)},
@@ -3155,12 +3159,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          download::features::kAllowDownloadResumptionWithoutStrongValidators)},
-
-#if defined(OS_ANDROID)
-    {"new-net-error-page-ui", flag_descriptions::kNewNetErrorPageUIName,
-     flag_descriptions::kNewNetErrorPageUIDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kNewNetErrorPageUI)},
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
     {"auto-fetch-on-net-error-page",
@@ -4640,6 +4638,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-assistant-aec", flag_descriptions::kEnableGoogleAssistantAecName,
      flag_descriptions::kEnableGoogleAssistantAecDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantAudioEraser)},
+#endif
+
+#if defined(OS_WIN)
+    {"enable-winrt-geolocation-implementation",
+     flag_descriptions::kWinrtGeolocationImplementationName,
+     flag_descriptions::kWinrtGeolocationImplementationDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kWinrtGeolocationImplementation)},
 #endif
 
 #if defined(OS_CHROMEOS)

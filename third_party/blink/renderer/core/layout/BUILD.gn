@@ -567,17 +567,10 @@ blink_core_sources("layout") {
   }
 
   if (is_android) {
-    if (notouch_build) {
-      sources += [
-        "layout_theme_touchless.cc",
-        "layout_theme_touchless.h",
-      ]
-    } else {
-      sources += [
-        "layout_theme_android.cc",
-        "layout_theme_android.h",
-      ]
-    }
+    sources += [
+      "layout_theme_android.cc",
+      "layout_theme_android.h",
+    ]
   }
 
   if (is_fuchsia) {

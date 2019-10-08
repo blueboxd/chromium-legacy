@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">แก้ไขบุ๊กมาร์ก</translation>
 <translation id="2179182049312275900">คุณเปิดการซิงค์ได้ทุกเมื่อในการตั้งค่า</translation>
 <translation id="2198757192731523470">Google อาจใช้ประวัติของคุณเพื่อปรับเปลี่ยนการค้นหา โฆษณา และบริการอื่นๆ ของ Google ในแบบของคุณ</translation>
-<translation id="2207590065820824892">บทความในรายการเรื่องรออ่านที่ยังไม่อ่าน <ph name="UNREAD_COUNT" /> รายการ</translation>
 <translation id="2230173723195178503">หน้าเว็บโหลดแล้ว</translation>
 <translation id="2239626343334228536">กำลังล้างข้อมูลการท่องเว็บ...</translation>
 <translation id="2267753748892043616">เพิ่มบัญชี</translation>
@@ -265,7 +264,6 @@
 
 หากต้องการเปลี่ยนแปลงการตั้งค่านี้ ให้<ph name="BEGIN_LINK" />รีเซ็ตการซิงค์<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">หมายเลขบัตรไม่ถูกต้อง</translation>
-<translation id="4807020197310989387">บทความในรายการเรื่องรออ่านที่ยังไม่อ่าน 1 รายการ</translation>
 <translation id="4818522717893377262">เพิ่มภาษา...</translation>
 <translation id="481968316161811770">คุกกี้ ข้อมูลเว็บไซต์</translation>
 <translation id="4833786495304741580">ส่งสถิติการใช้งานและรายงานข้อขัดข้องให้กับ Google โดยอัตโนมัติ</translation>
@@ -414,6 +412,7 @@
 <translation id="6858855187367714033">สแกนแล้ว</translation>
 <translation id="6859944681507688231">หากต้องการสแกนคิวอาร์โค้ดหรือบัตรเครดิต ให้เปิดใช้กล้องถ่ายรูปจากการตั้งค่า</translation>
 <translation id="6873263987691478642">Split View</translation>
+<translation id="6888009575607455378">คุณแน่ใจไหมว่าต้องการทิ้งการเปลี่ยนแปลง</translation>
 <translation id="6896758677409633944">คัดลอก</translation>
 <translation id="6903907808598579934">เปิดการซิงค์</translation>
 <translation id="6914583639806229067">ค้นหารูปภาพที่คุณคัดลอก</translation>

@@ -102,6 +102,9 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridPanelProperties.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridPanelToolbarCoordinator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridPanelViewBinder.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridMessageCardViewProperties.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridMessageCardView.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridMessageCardViewBinder.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridSheetCoordinator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridSheetMediator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridSheetContent.java",
@@ -140,6 +143,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionsRanker.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionProviderConfiguration.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionsFetcher.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionsOrchestrator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionsFetcherResults.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionsClientFetcher.java",
   ]

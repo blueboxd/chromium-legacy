@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/webui/snippets_internals/snippets_internals.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/features.h"
@@ -106,11 +107,11 @@ snippets_internals::mojom::SuggestionItemPtr PrepareContentSuggestionItem(
 
 // TODO: Add browser tests.
 SnippetsInternalsPageHandler::SnippetsInternalsPageHandler(
-    snippets_internals::mojom::PageHandlerRequest request,
-    snippets_internals::mojom::PagePtr page,
+    mojo::PendingReceiver<snippets_internals::mojom::PageHandler> receiver,
+    mojo::PendingRemote<snippets_internals::mojom::Page> page,
     ntp_snippets::ContentSuggestionsService* content_suggestions_service,
     PrefService* pref_service)
-    : binding_(this, std::move(request)),
+    : receiver_(this, std::move(receiver)),
       content_suggestions_service_observer_(this),
       content_suggestions_service_(content_suggestions_service),
       remote_suggestions_provider_(

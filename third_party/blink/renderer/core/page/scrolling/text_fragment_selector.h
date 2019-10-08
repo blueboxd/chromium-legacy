@@ -10,7 +10,7 @@
 
 namespace blink {
 
-// TextFragmentSelector represents a single targetText=... selector of a
+// TextFragmentSelector represents a single text=... selector of a
 // TextFragmentAnchor, parsed into its components.
 class CORE_EXPORT TextFragmentSelector final {
  public:

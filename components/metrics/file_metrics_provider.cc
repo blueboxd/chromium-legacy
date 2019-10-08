@@ -208,9 +208,8 @@ void FileMetricsProvider::RegisterSource(const Params& params) {
   // |prefs_key| may be empty if the caller does not wish to persist the
   // state across instances of the program.
   if (pref_service_ && !params.prefs_key.empty()) {
-    source->last_seen = base::Time::FromInternalValue(
-        pref_service_->GetInt64(metrics::prefs::kMetricsLastSeenPrefix +
-                                source->prefs_key));
+    source->last_seen = pref_service_->GetTime(
+        metrics::prefs::kMetricsLastSeenPrefix + source->prefs_key);
   }
 
   switch (params.association) {
@@ -696,9 +695,9 @@ void FileMetricsProvider::RecordSourceAsRead(SourceInfo* source) {
   // Persistently record the "last seen" timestamp of the source file to
   // ensure that the file is never read again unless it is modified again.
   if (pref_service_ && !source->prefs_key.empty()) {
-    pref_service_->SetInt64(
+    pref_service_->SetTime(
         metrics::prefs::kMetricsLastSeenPrefix + source->prefs_key,
-        source->last_seen.ToInternalValue());
+        source->last_seen);
   }
 }
 

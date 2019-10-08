@@ -22,12 +22,8 @@ apk_pak_asset_type = "_apk"
 #    is_monochrome: Optional. If set, the library is for use in monochrome.
 #    is_webview: If true, the library is for webview, and browser-specific
 #      config is skipped.
-#    allow_partitions: If true, and the build config supports it, the library
-#      is linked as a partitioned library, and separate feature libs are
-#      generated if specified. Those libraries may later be packaged into
-#      dynamic feature modules or APKs.
-#    module_descs: Optional. Descriptors of modules for which to extract
-#      partitions. Can only be set if |allow_partitions| is true. See
+#    module_descs: Optional. Descriptors of feature modules from which deps
+#      should be included, and if enabled, partition libraries created. See
 #      //chrome/android/modules/chrome_feature_modules.gni for the descriptor
 #      format.
 template("chrome_common_shared_library") {
@@ -39,16 +35,10 @@ template("chrome_common_shared_library") {
   _linker_script_target = "${target_name}_linker_script"
 
   # Create a partitioned libraries if the build config supports it, and the
-  # invoker wants partitions.
-  _allow_partitions =
-      defined(invoker.allow_partitions) && invoker.allow_partitions
-  _generate_partitions = _allow_partitions && use_native_modules
-  if (_generate_partitions) {
-    assert(defined(invoker.module_descs))
-  } else {
-    if (defined(invoker.module_descs)) {
-      not_needed(invoker, [ "module_descs" ])
-    }
+  # invoker has supplied module descriptors.
+  _generate_partitions = defined(invoker.module_descs) && use_native_partitions
+  if (defined(invoker.module_descs)) {
+    not_needed(invoker, [ "module_descs" ])
   }
 
   # Create a custom linker script based on JNI and feature module requirements.
@@ -107,7 +97,7 @@ template("chrome_common_shared_library") {
       }
     }
 
-    if (_allow_partitions) {
+    if (defined(invoker.module_descs)) {
       partitions = []
       foreach(_module_desc, invoker.module_descs) {
         if (defined(_module_desc.native_deps)) {

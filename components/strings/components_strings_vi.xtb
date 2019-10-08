@@ -1092,6 +1092,7 @@
 <translation id="6383221683286411806">Nếu tiếp tục, bạn có thể bị tính phí.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 đề xuất khác}other{# đề xuất khác}}</translation>
 <translation id="6387754724289022810">Để thanh toán nhanh hơn vào lần tiếp theo, hãy lưu địa chỉ thanh toán và thẻ vào Tài khoản Google của bạn và thiết bị này.</translation>
+<translation id="6389470377220713856">Tên trên thẻ</translation>
 <translation id="6390200185239044127">Gấp đôi kiểu chữ Z</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Chính sách này không còn dùng nữa. Thay vào đó, bạn nên sử dụng chính sách <ph name="NEW_POLICY" />.</translation>
@@ -1270,7 +1271,6 @@ Thông tin chi tiết bổ sung:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Được liên kết:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Rời khỏi trang web này</translation>
 <translation id="7353601530677266744">Dòng Lệnh</translation>
 <translation id="7372973238305370288">kết quả tìm kiếm</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>

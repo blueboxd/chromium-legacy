@@ -104,18 +104,25 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
   }
 
   // WebContentsDelegate:
-  bool IsWebContentsCreationOverridden(
+  bool ShouldCreateWebContents(
+      content::WebContents* web_contents,
+      content::RenderFrameHost* opener,
       content::SiteInstance* source_site_instance,
+      int32_t route_id,
+      int32_t main_frame_route_id,
+      int32_t main_frame_widget_route_id,
       content::mojom::WindowContainerType window_container_type,
       const GURL& opener_url,
       const std::string& frame_name,
-      const GURL& target_url) override {
+      const GURL& target_url,
+      const std::string& partition_id,
+      content::SessionStorageNamespace* session_storage_namespace) override {
     // This method is invoked when attempting to open links in a new tab, e.g.:
     // <a href="https://www.google.com/" target="_blank">Link</a>
     client_->DidSuppressNavigation(target_url,
                                    WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                    /*from_user_gesture=*/true);
-    return true;
+    return false;
   }
 
   WebContents* OpenURLFromTab(WebContents* source,

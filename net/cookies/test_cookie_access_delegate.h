@@ -15,7 +15,7 @@ namespace net {
 // CookieAccessDelegate for testing. You can set the return value for a given
 // cookie_domain (modulo any leading dot). Calling GetAccessSemantics() will
 // then return the given value, or UNKNOWN if you haven't set one.
-class TestCookieAccessDelegate : CookieAccessDelegate {
+class TestCookieAccessDelegate : public CookieAccessDelegate {
  public:
   TestCookieAccessDelegate();
   ~TestCookieAccessDelegate() override;

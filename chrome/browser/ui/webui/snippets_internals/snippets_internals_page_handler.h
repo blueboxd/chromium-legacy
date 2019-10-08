@@ -15,7 +15,10 @@
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/prefs/pref_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 // TODO: Write tests for this.
 class SnippetsInternalsPageHandler
@@ -23,8 +26,8 @@ class SnippetsInternalsPageHandler
       public ntp_snippets::ContentSuggestionsService::Observer {
  public:
   explicit SnippetsInternalsPageHandler(
-      snippets_internals::mojom::PageHandlerRequest request,
-      snippets_internals::mojom::PagePtr,
+      mojo::PendingReceiver<snippets_internals::mojom::PageHandler> receiver,
+      mojo::PendingRemote<snippets_internals::mojom::Page> page,
       ntp_snippets::ContentSuggestionsService* content_suggestions_service,
       PrefService* pref_service);
   ~SnippetsInternalsPageHandler() override;
@@ -67,8 +70,8 @@ class SnippetsInternalsPageHandler
       GetSuggestionsByCategoryCallback callback,
       std::vector<ntp_snippets::ContentSuggestion> suggestions);
 
-  // Binding from the mojo interface to concrete impl.
-  mojo::Binding<snippets_internals::mojom::PageHandler> binding_;
+  // Receiver from the mojo interface to concrete impl.
+  mojo::Receiver<snippets_internals::mojom::PageHandler> receiver_;
 
   // Observer to notify frontend of dirty data.
   ScopedObserver<ntp_snippets::ContentSuggestionsService,
@@ -90,7 +93,7 @@ class SnippetsInternalsPageHandler
   base::OneShotTimer suggestion_fetch_timer_;
 
   // Handle back to the page by which we can update.
-  snippets_internals::mojom::PagePtr page_;
+  mojo::Remote<snippets_internals::mojom::Page> page_;
 
   base::WeakPtrFactory<SnippetsInternalsPageHandler> weak_ptr_factory_{this};
 

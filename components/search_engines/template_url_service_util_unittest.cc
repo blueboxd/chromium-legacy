@@ -107,25 +107,28 @@ TEST(TemplateURLServiceUtilTest, MergeEnginesFromPrepopulateData_PlayAPI) {
   local_turls.push_back(CreatePrepopulateTemplateURL(0, "play", 1, true));
 
   // Test that prepopulated search engine with matching keyword is merged with
-  // Play API search engine.
+  // Play API search engine. Search URL should come from Play API search engine.
+  const std::string prepopulated_search_url = "http://prepopulated.url";
   prepopulated_turls.push_back(CreatePrepopulateTemplateURLData(1, "play"));
+  prepopulated_turls.back()->SetURL(prepopulated_search_url);
   MergeEnginesFromPrepopulateData(nullptr, &prepopulated_turls, &local_turls,
                                   nullptr, nullptr);
   ASSERT_EQ(local_turls.size(), 1U);
   // Merged search engine should have both Play API flag and valid
   // prepopulate_id.
   EXPECT_TRUE(local_turls[0]->created_from_play_api());
-  EXPECT_EQ(local_turls[0]->prepopulate_id(), 1);
+  EXPECT_EQ(1, local_turls[0]->prepopulate_id());
+  EXPECT_NE(prepopulated_search_url, local_turls[0]->url());
 
   // Test that merging prepopulated search engine with matching prepopulate_id
-  // updates keyword of Play API search engine.
+  // preserves keyword of Play API search engine.
   prepopulated_turls.clear();
   prepopulated_turls.push_back(CreatePrepopulateTemplateURLData(1, "play2"));
   MergeEnginesFromPrepopulateData(nullptr, &prepopulated_turls, &local_turls,
                                   nullptr, nullptr);
   ASSERT_EQ(local_turls.size(), 1U);
   EXPECT_TRUE(local_turls[0]->created_from_play_api());
-  EXPECT_EQ(local_turls[0]->keyword(), base::ASCIIToUTF16("play2"));
+  EXPECT_EQ(local_turls[0]->keyword(), base::ASCIIToUTF16("play"));
 
   // Test that removing search engine from prepopulated list doesn't delete Play
   // API search engine record.

@@ -6,11 +6,11 @@ import json
 import os
 import sys
 
-from gpu_tests import gpu_integration_test
-from gpu_tests import pixel_integration_test
-from gpu_tests import path_util
 from gpu_tests import color_profile_manager
+from gpu_tests import gpu_integration_test
+from gpu_tests import path_util
 from gpu_tests import pixel_test_pages
+from gpu_tests import skia_gold_integration_test_base
 
 from py_utils import cloud_storage
 
@@ -22,7 +22,8 @@ _DATA_PATH = os.path.join(path_util.GetChromiumSrcDir(),
 
 _TOLERANCE = 3
 
-class MapsIntegrationTest(pixel_integration_test.PixelIntegrationTest):
+class MapsIntegrationTest(
+    skia_gold_integration_test_base.SkiaGoldIntegrationTestBase):
   """Google Maps pixel tests.
 
   Note: this test uses the same WPR as the smoothness.maps benchmark
@@ -110,7 +111,7 @@ class MapsIntegrationTest(pixel_integration_test.PixelIntegrationTest):
   def _MapsExpectationToPixelExpectation(self, url, expected_colors, tolerance):
     page = pixel_test_pages.PixelTestPage(
         url=url,
-        name=('Maps_' + url),
+        name=('Maps_maps'),
         # Exact test_rect is arbitrary, just needs to encapsulate all pixels
         # that are tested.
         test_rect=[0, 0, 600, 400],

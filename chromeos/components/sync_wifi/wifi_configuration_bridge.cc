@@ -189,12 +189,12 @@ void WifiConfigurationBridge::Commit(
                                           weak_ptr_factory_.GetWeakPtr()));
 }
 
-std::vector<std::string> WifiConfigurationBridge::GetAllSsidsForTesting() {
-  std::vector<std::string> ssids;
+std::vector<NetworkIdentifier> WifiConfigurationBridge::GetAllIdsForTesting() {
+  std::vector<NetworkIdentifier> ids;
   for (const auto& entry : entries_)
-    ssids.push_back(entry.second.hex_ssid());
+    ids.push_back(NetworkIdentifier::FromProto(entry.second));
 
-  return ssids;
+  return ids;
 }
 
 }  // namespace sync_wifi

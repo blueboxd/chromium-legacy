@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">बुकमार्क संपादित करा</translation>
 <translation id="2179182049312275900">तुम्ही सेटिंग्जमध्ये कधीही सिंक करणे सुरू करू शकता.</translation>
 <translation id="2198757192731523470">शोध, जाहिरात आणि इतर Google सेवा पर्सनलाइझ करण्यासाठी Google कदाचित तुमच्या इतिहासाचा वापर करू शकते.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> न वाचलेले वाचन सूची लेख.</translation>
 <translation id="2230173723195178503">वेबपेज लोड केले</translation>
 <translation id="2239626343334228536">ब्राउझिंग डेटा साफ करत आहे...</translation>
 <translation id="2267753748892043616">खाते जोडा</translation>
@@ -266,7 +265,6 @@
 
 हे सेटिंग बदलण्यासाठी, <ph name="BEGIN_LINK" />सिंक रीसेट करा<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">कार्डाचा नंबर चुकीचा आहे</translation>
-<translation id="4807020197310989387">एक न वाचलेला वाचन सूची लेख.</translation>
 <translation id="4818522717893377262">भाषा जोडा…</translation>
 <translation id="481968316161811770">कुकीज, साइट डेटा</translation>
 <translation id="4833786495304741580">Google ला वापर आकडेवारी आणि क्रॅश अहवाल आपोआप पाठवते.</translation>
@@ -415,6 +413,7 @@
 <translation id="6858855187367714033">स्कॅन केलेले</translation>
 <translation id="6859944681507688231">QR कोड किंवा क्रेडिट कार्ड स्कॅन करण्यासाठी सेटिंग्जमध्ये कॅमेरा सुरू करा.</translation>
 <translation id="6873263987691478642">विभाजित दृश्य</translation>
+<translation id="6888009575607455378">तुम्हाला तुमचे बदल नक्की काढून टाकायचे आहेत का?</translation>
 <translation id="6896758677409633944">कॉपी करा</translation>
 <translation id="6903907808598579934">संकालन चालू करा</translation>
 <translation id="6914583639806229067">तुम्ही कॉपी केलेली इमेज शोधा</translation>

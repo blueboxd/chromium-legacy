@@ -151,7 +151,6 @@ class LayerTreeHostImplTest : public testing::Test,
 
   LayerTreeSettings DefaultSettings() {
     LayerListSettings settings;
-    settings.enable_surface_synchronization = true;
     settings.minimum_occlusion_tracking_size = gfx::Size();
     return settings;
   }

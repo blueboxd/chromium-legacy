@@ -66,8 +66,7 @@ TEST_F(CrostiniPackageNotificationTest, InstallWithNoIcons) {
       profile_.get(),
       CrostiniPackageNotification::NotificationType::PACKAGE_INSTALL,
       PackageOperationStatus::RUNNING,
-      std::pair<std::string, std::string>(kCrostiniDefaultVmName,
-                                          kCrostiniDefaultContainerName),
+      ContainerId(kCrostiniDefaultVmName, kCrostiniDefaultContainerName),
       base::string16(), kNotificationId, service_.get());
 
   notification.UpdateProgress(PackageOperationStatus::SUCCEEDED, 100);
@@ -79,8 +78,7 @@ TEST_F(CrostiniPackageNotificationTest, InstallWithOneIcon) {
       profile_.get(),
       CrostiniPackageNotification::NotificationType::PACKAGE_INSTALL,
       PackageOperationStatus::RUNNING,
-      std::pair<std::string, std::string>(kCrostiniDefaultVmName,
-                                          kCrostiniDefaultContainerName),
+      ContainerId(kCrostiniDefaultVmName, kCrostiniDefaultContainerName),
       base::string16(), kNotificationId, service_.get());
 
   auto app = CrostiniTestHelper::BasicApp(kDefaultAppFileId);
@@ -95,8 +93,7 @@ TEST_F(CrostiniPackageNotificationTest, InstallWithTwoIcons) {
       profile_.get(),
       CrostiniPackageNotification::NotificationType::PACKAGE_INSTALL,
       PackageOperationStatus::RUNNING,
-      std::pair<std::string, std::string>(kCrostiniDefaultVmName,
-                                          kCrostiniDefaultContainerName),
+      ContainerId(kCrostiniDefaultVmName, kCrostiniDefaultContainerName),
       base::string16(), kNotificationId, service_.get());
 
   auto app = CrostiniTestHelper::BasicApp(kDefaultAppFileId);
@@ -117,8 +114,7 @@ TEST_F(CrostiniPackageNotificationTest, InstallIgnorePreviousIcons) {
       profile_.get(),
       CrostiniPackageNotification::NotificationType::PACKAGE_INSTALL,
       PackageOperationStatus::RUNNING,
-      std::pair<std::string, std::string>(kCrostiniDefaultVmName,
-                                          kCrostiniDefaultContainerName),
+      ContainerId(kCrostiniDefaultVmName, kCrostiniDefaultContainerName),
       base::string16(), kNotificationId, service_.get());
 
   app = CrostiniTestHelper::BasicApp(kSecondAppFileId);

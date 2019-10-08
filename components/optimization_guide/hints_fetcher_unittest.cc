@@ -150,11 +150,16 @@ class HintsFetcherTest : public testing::Test {
 };
 
 TEST_F(HintsFetcherTest, FetchOptimizationGuideServiceHints) {
+  base::HistogramTester histogram_tester;
+
   std::string response_content;
   EXPECT_TRUE(FetchHints(std::vector<std::string>()));
   VerifyHasPendingFetchRequests();
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
   EXPECT_TRUE(hints_fetched());
+
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency", 1);
 }
 
 // Tests to ensure that multiple hint fetches by the same object cannot be in
@@ -173,6 +178,8 @@ TEST_F(HintsFetcherTest, FetchInProcess) {
 
 // Tests 404 response from request.
 TEST_F(HintsFetcherTest, FetchReturned404) {
+  base::HistogramTester histogram_tester;
+
   std::string response_content;
 
   EXPECT_TRUE(FetchHints(std::vector<std::string>()));
@@ -180,27 +187,46 @@ TEST_F(HintsFetcherTest, FetchReturned404) {
   // Send a 404 to HintsFetcher.
   SimulateResponse(response_content, net::HTTP_NOT_FOUND);
   EXPECT_FALSE(hints_fetched());
+
+  // Make sure histogram not recorded on bad response.
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency", 0);
 }
 
 TEST_F(HintsFetcherTest, FetchReturnBadResponse) {
+  base::HistogramTester histogram_tester;
+
   std::string response_content = "not proto";
   EXPECT_TRUE(FetchHints(std::vector<std::string>()));
   VerifyHasPendingFetchRequests();
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
   EXPECT_FALSE(hints_fetched());
+
+  // Make sure histogram not recorded on bad response.
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency", 0);
 }
 
 TEST_F(HintsFetcherTest, FetchAttemptWhenNetworkOffline) {
+  base::HistogramTester histogram_tester;
+
   SetConnectionOffline();
   std::string response_content;
   EXPECT_FALSE(FetchHints(std::vector<std::string>()));
   EXPECT_FALSE(hints_fetched());
+
+  // Make sure histogram not recorded on bad response.
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency", 0);
 
   SetConnectionOnline();
   EXPECT_TRUE(FetchHints(std::vector<std::string>()));
   VerifyHasPendingFetchRequests();
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
   EXPECT_TRUE(hints_fetched());
+
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency", 1);
 }
 
 TEST_F(HintsFetcherTest, HintsFetchSuccessfulHostsRecorded) {

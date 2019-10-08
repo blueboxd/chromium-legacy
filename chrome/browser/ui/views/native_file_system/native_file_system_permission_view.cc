@@ -62,10 +62,6 @@ base::string16 NativeFileSystemPermissionView::GetWindowTitle() const {
       path_.BaseName().LossyDisplayName());
 }
 
-int NativeFileSystemPermissionView::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
 base::string16 NativeFileSystemPermissionView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)

@@ -114,6 +114,10 @@ const AtomicString& XRSpace::InterfaceName() const {
   return event_target_names::kXRSpace;
 }
 
+base::Optional<XRNativeOriginInformation> XRSpace::NativeOrigin() const {
+  return base::nullopt;
+}
+
 void XRSpace::Trace(blink::Visitor* visitor) {
   visitor->Trace(session_);
   ScriptWrappable::Trace(visitor);

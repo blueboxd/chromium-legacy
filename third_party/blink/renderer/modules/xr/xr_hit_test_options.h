@@ -11,13 +11,22 @@ namespace blink {
 
 class XRRay;
 class XRSpace;
+class XRHitTestOptionsInit;
 
 class XRHitTestOptions : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  explicit XRHitTestOptions(XRHitTestOptionsInit* options_init);
+
   XRSpace* space() const;
   XRRay* offsetRay() const;
+
+  void Trace(blink::Visitor* visitor) override;
+
+ private:
+  Member<XRSpace> space_;
+  Member<XRRay> ray_;
 };
 
 }  // namespace blink

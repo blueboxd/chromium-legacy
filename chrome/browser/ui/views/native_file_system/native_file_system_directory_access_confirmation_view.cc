@@ -49,11 +49,6 @@ base::string16 NativeFileSystemDirectoryAccessConfirmationView::GetWindowTitle()
       IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_TITLE);
 }
 
-int NativeFileSystemDirectoryAccessConfirmationView::GetDefaultDialogButton()
-    const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
 base::string16
 NativeFileSystemDirectoryAccessConfirmationView::GetDialogButtonLabel(
     ui::DialogButton button) const {

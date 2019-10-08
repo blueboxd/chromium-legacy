@@ -348,9 +348,9 @@ that will be merged into the final `.jar` file for distribution.
 Path to the final classes.dex file (or classes.zip in case of multi-dex)
 for this APK.
 
-* `deps_info['final_dex']['dependency_dex_files']`:
-The list of paths to all `deps_info['dex_path']` entries for all library
-dependencies for this APK.
+* `deps_info['final_dex']['all_dex_files']`:
+The list of paths to all `deps_info['dex_path']` entries for all libraries
+that comprise this APK. Valid only for debug builds.
 
 * `native['libraries']`
 List of native libraries for the primary ABI to be embedded in this APK.
@@ -1191,6 +1191,9 @@ def main(argv):
         raise Exception('Not all deps support the Android platform: '
             + str(deps_not_support_android))
 
+  if is_apk_or_module_target:
+    all_dex_files = [c['dex_path'] for c in all_library_deps]
+
   if is_java_target:
     # Classpath values filled in below (after applying tested_apk_config).
     config['javac'] = {}
@@ -1200,6 +1203,8 @@ def main(argv):
       deps_info['interface_jar_path'] = options.interface_jar_path
     if options.dex_path:
       deps_info['dex_path'] = options.dex_path
+      if is_apk_or_module_target:
+        all_dex_files.append(options.dex_path)
     if options.type == 'android_apk':
       deps_info['apk_path'] = options.apk_path
       deps_info['incremental_apk_path'] = options.incremental_apk_path
@@ -1317,9 +1322,6 @@ def main(argv):
           tested_apk_config['package_name'])
     if options.res_size_info:
       config['deps_info']['res_size_info'] = options.res_size_info
-
-  if is_apk_or_module_target:
-    deps_dex_files = [c['dex_path'] for c in all_library_deps]
 
   if options.type == 'group':
     if options.extra_classpath_jars:
@@ -1590,8 +1592,9 @@ def main(argv):
     #     within proguard.py. Move the logic for the proguard case to here.
     tested_apk_library_deps = tested_apk_deps.All('java_library')
     tested_apk_deps_dex_files = [c['dex_path'] for c in tested_apk_library_deps]
-    deps_dex_files = [
-        p for p in deps_dex_files if not p in tested_apk_deps_dex_files]
+    all_dex_files = [
+        p for p in all_dex_files if not p in tested_apk_deps_dex_files
+    ]
 
   if options.type in ('android_apk', 'dist_aar', 'dist_jar',
                       'android_app_bundle_module', 'android_app_bundle'):
@@ -1605,7 +1608,7 @@ def main(argv):
     dex_config = config['final_dex']
     dex_config['path'] = options.final_dex_path
   if is_apk_or_module_target:
-    dex_config['dependency_dex_files'] = deps_dex_files
+    dex_config['all_dex_files'] = all_dex_files
 
   if is_java_target:
     config['javac']['classpath'] = javac_classpath
@@ -1723,7 +1726,7 @@ def main(argv):
     RemoveObjDups(config, base, 'deps_info', 'javac_full_classpath')
     RemoveObjDups(config, base, 'deps_info', 'javac_full_interface_classpath')
     RemoveObjDups(config, base, 'deps_info', 'jni', 'all_source')
-    RemoveObjDups(config, base, 'final_dex', 'dependency_dex_files')
+    RemoveObjDups(config, base, 'final_dex', 'all_dex_files')
     RemoveObjDups(config, base, 'extra_android_manifests')
 
   build_utils.WriteJson(config, options.build_config, only_if_changed=True)

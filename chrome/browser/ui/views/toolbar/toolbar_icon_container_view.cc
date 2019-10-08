@@ -11,17 +11,21 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
+#include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
 
 ToolbarIconContainerView::ToolbarIconContainerView(bool uses_highlight)
     : uses_highlight_(uses_highlight) {
-  auto layout_manager = std::make_unique<views::FlexLayout>();
-  layout_manager->SetCollapseMargins(true)
+  views::AnimatingLayoutManager* animating_layout =
+      SetLayoutManager(std::make_unique<views::AnimatingLayoutManager>());
+  animating_layout->SetShouldAnimateBounds(true);
+  auto* flex_layout = animating_layout->SetTargetLayoutManager(
+      std::make_unique<views::FlexLayout>());
+  flex_layout->SetCollapseMargins(true)
       .SetIgnoreDefaultMainAxisMargins(true)
       .SetDefault(views::kMarginsKey,
                   gfx::Insets(0, GetLayoutConstant(TOOLBAR_ELEMENT_PADDING)));
-  SetLayoutManager(std::move(layout_manager));
 }
 
 ToolbarIconContainerView::~ToolbarIconContainerView() = default;
@@ -39,10 +43,8 @@ void ToolbarIconContainerView::AddMainButton(views::Button* main_button) {
 void ToolbarIconContainerView::OnHighlightChanged(
     views::Button* observed_button,
     bool highlighted) {
-  if (highlighted) {
+  if (highlighted)
     DCHECK(observed_button);
-    DCHECK(observed_button->GetVisible());
-  }
 
   // TODO(crbug.com/932818): Pass observed button type to container.
   highlighted_button_ = highlighted ? observed_button : nullptr;

@@ -457,31 +457,31 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
       version_(std::move(version)),
       resource_type_(resource_type),
       prepare_callback_(std::move(prepare_callback)),
-      fetch_callback_(std::move(fetch_callback)),
-      did_complete_(false) {
+      fetch_callback_(std::move(fetch_callback)) {
   DCHECK(!request_->blob);
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
-      "ServiceWorker", "ServiceWorkerFetchDispatcher::DispatchFetchEvent", this,
-      "event_type", ServiceWorkerMetrics::EventTypeToString(GetEventType()));
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker",
+      "ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher",
+      TRACE_ID_LOCAL(this), TRACE_EVENT_FLAG_FLOW_OUT, "event_type",
+      ServiceWorkerMetrics::EventTypeToString(GetEventType()));
 }
 
 ServiceWorkerFetchDispatcher::~ServiceWorkerFetchDispatcher() {
-  if (!did_complete_) {
-    TRACE_EVENT_NESTABLE_ASYNC_END0(
-        "ServiceWorker", "ServiceWorkerFetchDispatcher::DispatchFetchEvent",
-        this);
-  }
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker",
+      "ServiceWorkerFetchDispatcher::~ServiceWorkerFetchDispatcher",
+      TRACE_ID_LOCAL(this), TRACE_EVENT_FLAG_FLOW_IN);
 }
 
 void ServiceWorkerFetchDispatcher::Run() {
   DCHECK(version_->status() == ServiceWorkerVersion::ACTIVATING ||
          version_->status() == ServiceWorkerVersion::ACTIVATED)
       << version_->status();
+  TRACE_EVENT_WITH_FLOW0("ServiceWorker", "ServiceWorkerFetchDispatcher::Run",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   if (version_->status() == ServiceWorkerVersion::ACTIVATING) {
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
-        "ServiceWorker", "ServiceWorkerFetchDispatcher::WaitForActivation",
-        this);
     version_->RegisterStatusChangeCallback(
         base::BindOnce(&ServiceWorkerFetchDispatcher::DidWaitForActivation,
                        weak_factory_.GetWeakPtr()));
@@ -491,12 +491,19 @@ void ServiceWorkerFetchDispatcher::Run() {
 }
 
 void ServiceWorkerFetchDispatcher::DidWaitForActivation() {
-  TRACE_EVENT_NESTABLE_ASYNC_END0(
-      "ServiceWorker", "ServiceWorkerFetchDispatcher::WaitForActivation", this);
+  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
+                         "ServiceWorkerFetchDispatcher::DidWaitForActivation",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   StartWorker();
 }
 
 void ServiceWorkerFetchDispatcher::StartWorker() {
+  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
+                         "ServiceWorkerFetchDispatcher::StartWorker",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   // We might be REDUNDANT if a new worker started activating and kicked us out
   // before we could finish activation.
   if (version_->status() != ServiceWorkerVersion::ACTIVATED) {
@@ -510,8 +517,6 @@ void ServiceWorkerFetchDispatcher::StartWorker() {
     return;
   }
 
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
-      "ServiceWorker", "ServiceWorkerFetchDispatcher::StartWorker", this);
   version_->RunAfterStartWorker(
       GetEventType(),
       base::BindOnce(&ServiceWorkerFetchDispatcher::DidStartWorker,
@@ -520,9 +525,11 @@ void ServiceWorkerFetchDispatcher::StartWorker() {
 
 void ServiceWorkerFetchDispatcher::DidStartWorker(
     blink::ServiceWorkerStatusCode status) {
-  TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker",
-                                  "ServiceWorkerFetchDispatcher::StartWorker",
-                                  this, "status", status);
+  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
+                         "ServiceWorkerFetchDispatcher::DidStartWorker",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     DidFail(status);
     return;
@@ -533,6 +540,10 @@ void ServiceWorkerFetchDispatcher::DidStartWorker(
 void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status())
       << "Worker stopped too soon after it was started.";
+  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
+                         "ServiceWorkerFetchDispatcher::DispatchFetchEvent",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   // Grant the service worker's process access to files in the request body.
   if (request_->body) {
@@ -543,8 +554,6 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   // Run callback to say that the fetch event will be dispatched.
   DCHECK(prepare_callback_);
   std::move(prepare_callback_).Run();
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
-      "ServiceWorker", "ServiceWorkerFetchDispatcher::FetchEvent", this);
 
   // Set up for receiving the response.
   mojo::PendingRemote<blink::mojom::ServiceWorkerFetchResponseCallback>
@@ -591,15 +600,16 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
 void ServiceWorkerFetchDispatcher::DidFailToDispatch(
     std::unique_ptr<ResponseCallback> response_callback,
     blink::ServiceWorkerStatusCode status) {
-  TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker",
-                                  "ServiceWorkerFetchDispatcher::FetchEvent",
-                                  this, "status", status);
   DidFail(status);
 }
 
 void ServiceWorkerFetchDispatcher::DidFail(
     blink::ServiceWorkerStatusCode status) {
   DCHECK_NE(blink::ServiceWorkerStatusCode::kOk, status);
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker", "ServiceWorkerFetchDispatcher::DidFail",
+      TRACE_ID_LOCAL(this),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status", status);
   Complete(status, FetchEventResult::kShouldFallback,
            blink::mojom::FetchAPIResponse::New(), nullptr /* body_as_stream */,
            nullptr /* timing */);
@@ -611,8 +621,10 @@ void ServiceWorkerFetchDispatcher::DidFinish(
     blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
-  TRACE_EVENT_NESTABLE_ASYNC_END0(
-      "ServiceWorker", "ServiceWorkerFetchDispatcher::FetchEvent", this);
+  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
+                         "ServiceWorkerFetchDispatcher::DidFinish",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   Complete(blink::ServiceWorkerStatusCode::kOk, fetch_result,
            std::move(response), std::move(body_as_stream), std::move(timing));
 }
@@ -625,10 +637,6 @@ void ServiceWorkerFetchDispatcher::Complete(
     blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
   DCHECK(fetch_callback_);
 
-  did_complete_ = true;
-  TRACE_EVENT_NESTABLE_ASYNC_END1(
-      "ServiceWorker", "ServiceWorkerFetchDispatcher::DispatchFetchEvent", this,
-      "result", fetch_result);
   std::move(fetch_callback_)
       .Run(status, fetch_result, std::move(response), std::move(body_as_stream),
            std::move(timing), version_);

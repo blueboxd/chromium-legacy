@@ -8,11 +8,11 @@
 
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/performance_manager/performance_manager_impl.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
+#include "components/performance_manager/performance_manager_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"

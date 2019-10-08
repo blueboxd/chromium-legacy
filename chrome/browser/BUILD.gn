@@ -1088,28 +1088,6 @@ jumbo_split_static_library("browser") {
     "performance_manager/decorators/page_almost_idle_decorator.h",
     "performance_manager/decorators/process_metrics_decorator.cc",
     "performance_manager/decorators/process_metrics_decorator.h",
-    "performance_manager/frame_priority/frame_priority.cc",
-    "performance_manager/frame_priority/max_vote_aggregator.cc",
-    "performance_manager/frame_priority/override_vote_aggregator.cc",
-    "performance_manager/graph/frame_node.cc",
-    "performance_manager/graph/frame_node_impl.cc",
-    "performance_manager/graph/frame_node_impl.h",
-    "performance_manager/graph/graph.cc",
-    "performance_manager/graph/graph_impl.cc",
-    "performance_manager/graph/graph_impl.h",
-    "performance_manager/graph/graph_impl_operations.cc",
-    "performance_manager/graph/graph_impl_operations.h",
-    "performance_manager/graph/graph_operations.cc",
-    "performance_manager/graph/node.cc",
-    "performance_manager/graph/node_attached_data.cc",
-    "performance_manager/graph/node_attached_data.h",
-    "performance_manager/graph/node_attached_data_impl.h",
-    "performance_manager/graph/node_base.cc",
-    "performance_manager/graph/node_base.h",
-    "performance_manager/graph/node_type.h",
-    "performance_manager/graph/page_node.cc",
-    "performance_manager/graph/page_node_impl.cc",
-    "performance_manager/graph/page_node_impl.h",
     "performance_manager/graph/policies/policy_features.cc",
     "performance_manager/graph/policies/policy_features.h",
     "performance_manager/graph/policies/working_set_trimmer_policy.cc",
@@ -1118,16 +1096,6 @@ jumbo_split_static_library("browser") {
     "performance_manager/graph/policies/working_set_trimmer_policy_chromeos.h",
     "performance_manager/graph/policies/working_set_trimmer_policy_win.cc",
     "performance_manager/graph/policies/working_set_trimmer_policy_win.h",
-    "performance_manager/graph/process_node.cc",
-    "performance_manager/graph/process_node_impl.cc",
-    "performance_manager/graph/process_node_impl.h",
-    "performance_manager/graph/properties.h",
-    "performance_manager/graph/system_node.cc",
-    "performance_manager/graph/system_node_impl.cc",
-    "performance_manager/graph/system_node_impl.h",
-    "performance_manager/graph/worker_node.cc",
-    "performance_manager/graph/worker_node_impl.cc",
-    "performance_manager/graph/worker_node_impl.h",
     "performance_manager/mechanisms/working_set_trimmer.cc",
     "performance_manager/mechanisms/working_set_trimmer.h",
     "performance_manager/mechanisms/working_set_trimmer_chromeos.cc",
@@ -1139,13 +1107,6 @@ jumbo_split_static_library("browser") {
     "performance_manager/observers/isolation_context_metrics.h",
     "performance_manager/observers/metrics_collector.cc",
     "performance_manager/observers/metrics_collector.h",
-    "performance_manager/performance_manager.cc",
-    "performance_manager/performance_manager_impl.cc",
-    "performance_manager/performance_manager_impl.h",
-    "performance_manager/performance_manager_lock_observer.cc",
-    "performance_manager/performance_manager_lock_observer.h",
-    "performance_manager/performance_manager_tab_helper.cc",
-    "performance_manager/performance_manager_tab_helper.h",
     "performance_manager/persistence/site_data/exponential_moving_average.cc",
     "performance_manager/persistence/site_data/exponential_moving_average.h",
     "performance_manager/persistence/site_data/feature_usage.h",
@@ -1173,27 +1134,6 @@ jumbo_split_static_library("browser") {
     "performance_manager/persistence/site_data/site_data_writer.cc",
     "performance_manager/persistence/site_data/site_data_writer.h",
     "performance_manager/persistence/site_data/tab_visibility.h",
-    "performance_manager/public/frame_priority/frame_priority.h",
-    "performance_manager/public/frame_priority/max_vote_aggregator.h",
-    "performance_manager/public/frame_priority/override_vote_aggregator.h",
-    "performance_manager/public/graph/frame_node.h",
-    "performance_manager/public/graph/graph.h",
-    "performance_manager/public/graph/graph_operations.h",
-    "performance_manager/public/graph/node.h",
-    "performance_manager/public/graph/node_attached_data.h",
-    "performance_manager/public/graph/page_node.h",
-    "performance_manager/public/graph/process_node.h",
-    "performance_manager/public/graph/system_node.h",
-    "performance_manager/public/graph/worker_node.h",
-    "performance_manager/public/performance_manager.h",
-    "performance_manager/public/render_process_host_proxy.h",
-    "performance_manager/public/web_contents_proxy.h",
-    "performance_manager/render_process_host_proxy.cc",
-    "performance_manager/render_process_user_data.cc",
-    "performance_manager/render_process_user_data.h",
-    "performance_manager/web_contents_proxy.cc",
-    "performance_manager/web_contents_proxy_impl.cc",
-    "performance_manager/web_contents_proxy_impl.h",
     "performance_monitor/metric_evaluator_helper_win.cc",
     "performance_monitor/metric_evaluator_helper_win.h",
     "performance_monitor/process_metrics_history.cc",
@@ -2060,6 +2000,7 @@ jumbo_split_static_library("browser") {
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/payments/core",
+    "//components/performance_manager",
     "//components/policy:generated",
     "//components/policy/content/",
     "//components/policy/core/browser",
@@ -2883,6 +2824,8 @@ jumbo_split_static_library("browser") {
       "profiles/profile_android.h",
       "profiles/profile_key_android.cc",
       "profiles/profile_key_android.h",
+      "profiles/profile_manager_android.cc",
+      "profiles/profile_manager_android.h",
       "search/contextual_search_policy_handler_android.cc",
       "search/contextual_search_policy_handler_android.h",
       "search_engines/template_url_service_factory_android.cc",
@@ -4097,8 +4040,8 @@ jumbo_split_static_library("browser") {
       "notifications/screen_lock_notification_blocker.cc",
       "notifications/screen_lock_notification_blocker.h",
       "platform_util.cc",
-      "policy/cloud/machine_level_user_cloud_policy_helper.cc",
-      "policy/cloud/machine_level_user_cloud_policy_helper.h",
+      "policy/cloud/chrome_browser_cloud_management_helper.cc",
+      "policy/cloud/chrome_browser_cloud_management_helper.h",
       "policy/cloud/user_policy_signin_service.cc",
       "policy/cloud/user_policy_signin_service.h",
       "policy/cloud/user_policy_signin_service_internal.h",
@@ -5227,11 +5170,7 @@ jumbo_split_static_library("browser") {
 }
 
 config("notouch_config") {
-  defines = [
-    "BROWSER_MEDIA_CONTROLS_MENU",
-    "ENABLE_SPATIAL_NAVIGATION_HOST",
-    "INCOGNITO_DEFAULT_DISABLED",
-  ]
+  defines = [ "ENABLE_SPATIAL_NAVIGATION_HOST" ]
 }
 
 if (is_android) {
@@ -5315,8 +5254,7 @@ grit("resources") {
   # The .grd contains references to generated files.
   source_is_generated = true
 
-  # Allow compress="brotli". Used in supervised_user_error_page_resources.grdp.
-  use_brotli = enable_supervised_users
+  use_brotli = true
 
   defines = chrome_grit_defines
   if (enable_hangout_services_extension) {
@@ -5381,8 +5319,8 @@ grit("resources") {
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
     deps += [
-      "//chrome/browser/resources/management:polymer3_elements",
       "//chrome/browser/resources/discards:discards_resources_gen",
+      "//chrome/browser/resources/management:polymer3_elements",
       "//chrome/browser/ui/webui/discards:mojo_bindings_js",
       "//services/resource_coordinator/public/mojom:mojom_js",
     ]

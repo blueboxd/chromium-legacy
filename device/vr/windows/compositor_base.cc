@@ -215,6 +215,14 @@ void XRCompositorCommon::RequestSession(
 
   on_visibility_state_changed_ = std::move(on_visibility_state_changed);
 
+  // Queue up a notification to the requester of the current visibility state,
+  // so that it can be initialized to the right value.
+  if (on_visibility_state_changed_) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(on_visibility_state_changed_, visibility_state_));
+  }
+
   device::mojom::XRPresentationTransportOptionsPtr transport_options =
       device::mojom::XRPresentationTransportOptions::New();
   transport_options->transport_method =
@@ -274,12 +282,15 @@ void XRCompositorCommon::ExitPresent() {
   }
 }
 
-void XRCompositorCommon::VisibilityStateChanged(
+void XRCompositorCommon::SetVisibilityState(
     mojom::XRVisibilityState visibility_state) {
-  if (on_visibility_state_changed_) {
-    main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(on_visibility_state_changed_, visibility_state));
+  if (visibility_state_ != visibility_state) {
+    visibility_state_ = visibility_state;
+    if (on_visibility_state_changed_) {
+      main_thread_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(on_visibility_state_changed_, visibility_state));
+    }
   }
 }
 
@@ -385,9 +396,17 @@ void XRCompositorCommon::GetControllerDataAndSendFrameData(
   // Update gamepad controllers.
   UpdateControllerState();
 
+  // This method represents a call from the renderer process. If our visibility
+  // state is hidden, we should avoid handing "sensitive" information, like the
+  // pose back up to the renderer. Note that this check is done here as other
+  // methods (RequestNextOverlayPose) represent a call from the browser process,
+  // which should receive the pose.
+  bool is_visible =
+      (visibility_state_ != device::mojom::XRVisibilityState::HIDDEN);
+
   // We have posted a message to allow other calls to get through, and now state
   // may have changed.  WebXR may not be presenting any more, or may be hidden.
-  std::move(callback).Run(is_presenting_ &&
+  std::move(callback).Run(is_presenting_ && is_visible &&
                                   (webxr_visible_ || on_webxr_submitted_)
                               ? std::move(frame_data)
                               : mojom::XRFrameData::New());

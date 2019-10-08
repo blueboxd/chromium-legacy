@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Avaa aloitussivut</translation>
 <translation id="1883255238294161206">Tiivistä luettelo</translation>
 <translation id="1898423065542865115">Suodatus</translation>
+<translation id="1901443836186977402">{1,plural, =1{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne vanheni viimeisen päivän aikana. Tämä voi johtua määritysvirheestä tai yhteytesi siepanneesta hyökkääjästä. Tietokoneesi aika on tällä hetkellä <ph name="CURRENT_DATE" />. Onko se oikein? Jos ei, korjaa järjestelmän aika ja päivitä sivu.}other{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne on vanhentunut # päivää sitten. Tämä voi johtua määritysvirheestä tai yhteytesi siepanneesta hyökkääjästä. Tietokoneesi aika on tällä hetkellä <ph name="CURRENT_DATE" />. Onko se oikein? Jos ei, päivitä sivu.}}</translation>
 <translation id="1914326953223720820">Purkupalvelu</translation>
 <translation id="1915697529809968049">Käytetäänkö Touch ID:tä CVC:n sijaan?</translation>
 <translation id="1916770123977586577">Päivitä tämä sivu, niin päivitetyt asetuksesi otetaan käyttöön tällä sivustolla.</translation>
@@ -338,7 +339,7 @@
 <translation id="2587730715158995865">Julkaisijalta <ph name="ARTICLE_PUBLISHER" />. Lue tämä ja <ph name="OTHER_ARTICLE_COUNT" /> muuta tarinaa.</translation>
 <translation id="2587841377698384444">Hakemistosovellusliittymän tunnus:</translation>
 <translation id="2595719060046994702">Yritys tai muu organisaatio ei ylläpidä tätä laitetta tai tiliä.</translation>
-<translation id="2597378329261239068">Tämä asiakirja on suojattu salasanalla. Anna salasana.</translation>
+<translation id="2597378329261239068">Tämä asiakirja on suojattu salasanalla. Lisää salasana.</translation>
 <translation id="2609632851001447353">Muunnelmat</translation>
 <translation id="2618023639789766142">C10 (kirjekuori)</translation>
 <translation id="2625385379895617796">Kellosi edistää</translation>
@@ -445,6 +446,7 @@
 <translation id="3116158981186517402">Laminointi</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Kokeile yhteysdiagnostiikkaa<ph name="END_LINK" /></translation>
+<translation id="3121994479408824897">Avaa <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Ei mitään}=1{1 tilin kirjautumistiedot}other{# tilin kirjautumistiedot}}</translation>
 <translation id="3145945101586104090">Vastauksen purkaminen epäonnistui</translation>
 <translation id="3150653042067488994">Tilapäinen palvelinvirhe</translation>
@@ -830,6 +832,7 @@
 <translation id="5043480802608081735">Kopioimasi linkki</translation>
 <translation id="5045550434625856497">Väärä salasana</translation>
 <translation id="5056549851600133418">Sinulle valitut artikkelit</translation>
+<translation id="5061227663725596739">Tarkoititko: <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 käytössä)}other{(# käytössä)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Tarkista välityspalvelimen osoite.<ph name="END_LINK" /></translation>
@@ -883,6 +886,7 @@
 <translation id="5284909709419567258">Verkko-osoitteet</translation>
 <translation id="5285570108065881030">Näytä kaikki tallennetut salasanat</translation>
 <translation id="5287240709317226393">Näytä evästeet</translation>
+<translation id="5287456746628258573">Tämä sivusto käyttää vanhentunutta tietoturvamääritystä, joka voi paljastaa tietosi (esim. salasanat tai credit-korttien numerot), kun ne lähetetään sivustolle.</translation>
 <translation id="5288108484102287882">Käytäntöarvojen vahvistus aiheutti varoituksia</translation>
 <translation id="5299298092464848405">Virhe jäsennettäessä käytäntöä</translation>
 <translation id="5300589172476337783">Näytä</translation>
@@ -1011,6 +1015,7 @@
 <translation id="5946937721014915347">Avataan <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Kyllä, lisää</translation>
 <translation id="5951495562196540101">Liittyminen kuluttajatilillä ei onnistu (pakettilisenssi saatavilla).</translation>
+<translation id="5966900314707961320">Kun tämä on käytössä, sivustot eivät voi seurata sinua verkossa evästeiden avulla</translation>
 <translation id="5967592137238574583">Muokkaa yhteystietoja</translation>
 <translation id="5967867314010545767">Poista historiasta</translation>
 <translation id="5975083100439434680">Loitonna</translation>
@@ -1093,6 +1098,7 @@
 <translation id="6383221683286411806">Tästä voi seurata kuluja</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 muu ehdotus}other{# muuta ehdotusta}}</translation>
 <translation id="6387754724289022810">Jos haluat maksaa nopeammin ensi kerralla, tallenna kortti ja laskutusosoite Google-tilillesi ja tälle laitteelle.</translation>
+<translation id="6389470377220713856">Nimi kortissa</translation>
 <translation id="6390200185239044127">Kolmoistaite puoliksi</translation>
 <translation id="6390662030813198813">Insinööri-E</translation>
 <translation id="6401136357288658127">Tämä käytäntö on vanhentunut. Käytä <ph name="NEW_POLICY" /> ‑käytäntöä sen sijaan.</translation>
@@ -1271,7 +1277,6 @@ Lisätietoja:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">On yhdistetty:</translation>
 <translation id="7349430561505560861">A4-ekstra</translation>
-<translation id="7352902249897488700">Poistu tältä sivustolta</translation>
 <translation id="7353601530677266744">Komentorivi</translation>
 <translation id="7372973238305370288">hakutulos</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1444,6 +1449,7 @@ Lisätietoja:
 <translation id="8131740175452115882">Vahvista</translation>
 <translation id="8149426793427495338">Tietokoneesi siirtyi virransäästötilaan.</translation>
 <translation id="8150722005171944719">Tiedosto osoitteessa <ph name="URL" /> ei ole luettavissa. Se on voitu poistaa tai siirtää, tai tiedoston käyttöluvat voivat estää sen käytön.</translation>
+<translation id="8157295877370077682">Poistu sivustolta</translation>
 <translation id="8163866351304776260">Neljä reikää vasemmalla</translation>
 <translation id="8175796834047840627">Chrome tarjoaa korttien tallentamista Google-tilillesi, koska olet kirjautuneena sisään. Voit muuttaa tätä koska tahansa asetuksista.</translation>
 <translation id="8184538546369750125">Käytä yleistä oletusasetusta (salli)</translation>

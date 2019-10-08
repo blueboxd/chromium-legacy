@@ -327,6 +327,7 @@
 <translation id="3241052487511142956">上一個造訪過的連結</translation>
 <translation id="3241638166094654466">各行儲存格數目：</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />：<ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">上一個相似的項目</translation>
 <translation id="3286372614333682499">縱向</translation>
 <translation id="3286390186030710347">滑桿</translation>
 <translation id="3299925995433437805">沒有下一個造訪過的連結。</translation>
@@ -509,6 +510,7 @@
 <translation id="4517854969512651305">調升值</translation>
 <translation id="4529987814483543472">傳統按鍵對應配置</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{斜線}other{# 個斜線}}</translation>
+<translation id="4537277403911487429">下一個相似的項目</translation>
 <translation id="4547556996012970016">下一個第 5 階標題</translation>
 <translation id="4562381607973973258">頁首</translation>
 <translation id="4569941707103739422">按下向上鍵或向下鍵即可瀏覽；按下 Enter 鍵則可啟動。</translation>

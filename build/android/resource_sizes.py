@@ -462,7 +462,7 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
   # devices running Android O (which ~= uncompressed dex size).
   # Use a constant compression factor to account for fluctuations.
   normalized_apk_size -= java_code.ComputeZippedSize()
-  normalized_apk_size += int(java_code.ComputeUncompressedSize() * 1.5)
+  normalized_apk_size += java_code.ComputeUncompressedSize()
   # Unaligned size should be ~= uncompressed size or something is wrong.
   # As of now, padding_fraction ~= .007
   padding_fraction = -_PercentageDifference(

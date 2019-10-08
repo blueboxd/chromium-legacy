@@ -248,7 +248,8 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
     VersionActivated,
     VersionRedundant,
     NoControllees,
-    VersionRunningStatusChanged,
+    VersionStartedRunning,
+    VersionStoppedRunning,
     Destruct
   };
   struct EventLog {
@@ -310,13 +311,22 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
     events_.push_back(log);
   }
 
-  void OnVersionRunningStatusChanged(content::ServiceWorkerContext* context,
-                                     int64_t version_id,
-                                     bool is_running) override {
+  void OnVersionStartedRunning(content::ServiceWorkerContext* context,
+                               int64_t version_id,
+                               const GURL& scope,
+                               int process_id,
+                               const GURL& script_url) override {
     EventLog log;
-    log.type = EventType::VersionRunningStatusChanged;
+    log.type = EventType::VersionStartedRunning;
     log.version_id = version_id;
-    log.is_running = is_running;
+    events_.push_back(log);
+  }
+
+  void OnVersionStoppedRunning(content::ServiceWorkerContext* context,
+                               int64_t version_id) override {
+    EventLog log;
+    log.type = EventType::VersionStoppedRunning;
+    log.version_id = version_id;
     events_.push_back(log);
   }
 
@@ -470,7 +480,8 @@ TEST_F(ServiceWorkerContextTest, VersionRedundantObserver) {
   EXPECT_EQ(2l, observer.events()[0].version_id);
 }
 
-// Make sure OnVersionRunningStatusChanged is called on observer.
+// Make sure OnVersionStartedRunning and OnVersionStoppedRunning are called on
+// observer.
 TEST_F(ServiceWorkerContextTest, OnVersionRunningStatusChangedObserver) {
   GURL scope("https://www.example.com/");
   GURL script_url("https://www.example.com/service_worker.js");
@@ -492,13 +503,18 @@ TEST_F(ServiceWorkerContextTest, OnVersionRunningStatusChangedObserver) {
   // Filter the events to be verified.
   for (auto event : observer.events()) {
     if (event.type == TestServiceWorkerContextObserver::EventType::
-                          VersionRunningStatusChanged)
+                          VersionStartedRunning ||
+        event.type == TestServiceWorkerContextObserver::EventType::
+                          VersionStoppedRunning) {
       events.push_back(event);
+    }
   }
 
   ASSERT_EQ(2u, events.size());
-  EXPECT_EQ(true, events[0].is_running);
-  EXPECT_EQ(false, events[1].is_running);
+  EXPECT_EQ(TestServiceWorkerContextObserver::EventType::VersionStartedRunning,
+            events[0].type);
+  EXPECT_EQ(TestServiceWorkerContextObserver::EventType::VersionStoppedRunning,
+            events[1].type);
   EXPECT_EQ(events[0].version_id, events[1].version_id);
 }
 

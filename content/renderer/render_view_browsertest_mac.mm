@@ -147,40 +147,4 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   EXPECT_EQ(kArrowUpNoScroll, output);
 }
 
-// TODO(ekaramad): This test could be removed once we do not send irrelevant
-// IPCs from browser during the time RenderViewImpl is swapped out
-// (https://crbug.com/669219).
-// This test verfies that when RenderViewImpl is swapped out, handling IPCs
-// which need a WebFrameWidget will not lead to a crash.
-TEST_F(RenderViewTest, HandleIPCsInSwappedOutState) {
-  LoadHTML("<input/>");
-
-  // We have a WebFrameWidget on the root RenderWidget while a local main frame
-  // is attached.
-  EXPECT_TRUE(GetWebWidget());
-
-  // Swap out the main frame so that the frame widget is destroyed.
-  auto* view = static_cast<RenderViewImpl*>(view_);
-  auto* main_frame = view->GetMainRenderFrame();
-  main_frame->OnMessageReceived(UnfreezableFrameMsg_SwapOut(
-      main_frame->GetRoutingID(), 123, true, FrameReplicationState()));
-
-  // We no longer have a frame widget.
-  EXPECT_FALSE(GetWebWidget());
-
-  int routing_id = view->GetRoutingID();
-  // Now simulate some TextInputClientMac IPCs. These will be handled by
-  // RenderWidget which forwards them to the TextInputClientObserver
-  using Range = gfx::Range;
-  using Point = gfx::Point;
-  view->GetWidget()->OnMessageReceived(
-      TextInputClientMsg_CharacterIndexForPoint(routing_id, Point()));
-  view->GetWidget()->OnMessageReceived(
-      TextInputClientMsg_FirstRectForCharacterRange(routing_id, Range()));
-  view->GetWidget()->OnMessageReceived(
-      TextInputClientMsg_StringForRange(routing_id, Range()));
-  view->GetWidget()->OnMessageReceived(
-      TextInputClientMsg_CharacterIndexForPoint(routing_id, Point()));
-}
-
 }  // namespace content

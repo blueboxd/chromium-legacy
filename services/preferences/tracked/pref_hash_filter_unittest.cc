@@ -1230,7 +1230,7 @@ TEST_P(PrefHashFilterTest, CallFilterSerializeDataCallbacks) {
   // before-write callback is run.
   ASSERT_EQ(
       0u, mock_external_validation_hash_store_contents_->cleared_paths_count());
-  callbacks.first.Run();
+  std::move(callbacks.first).Run();
   ASSERT_EQ(
       2u, mock_external_validation_hash_store_contents_->cleared_paths_count());
 
@@ -1238,7 +1238,7 @@ TEST_P(PrefHashFilterTest, CallFilterSerializeDataCallbacks) {
   ASSERT_EQ(
       0u, mock_external_validation_hash_store_contents_->stored_hashes_count());
 
-  callbacks.second.Run(true);
+  std::move(callbacks.second).Run(true);
 
   ASSERT_EQ(
       2u, mock_external_validation_hash_store_contents_->stored_hashes_count());
@@ -1267,13 +1267,13 @@ TEST_P(PrefHashFilterTest, CallFilterSerializeDataCallbacksWithFailure) {
 
   ASSERT_FALSE(callbacks.first.is_null());
 
-  callbacks.first.Run();
+  std::move(callbacks.first).Run();
 
   // The pref should have been cleared from the external validation store.
   ASSERT_EQ(
       1u, mock_external_validation_hash_store_contents_->cleared_paths_count());
 
-  callbacks.second.Run(false);
+  std::move(callbacks.second).Run(false);
 
   // Expect no writes to the external validation hash store contents.
   ASSERT_EQ(0u,

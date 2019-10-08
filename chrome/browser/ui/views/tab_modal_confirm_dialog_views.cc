@@ -36,6 +36,10 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     std::unique_ptr<TabModalConfirmDialogDelegate> delegate,
     content::WebContents* web_contents)
     : delegate_(std::move(delegate)) {
+  base::Optional<int> default_button = delegate_->GetDefaultDialogButton();
+  if (bool(default_button))
+    DialogDelegate::set_default_button(*default_button);
+
   views::MessageBoxView::InitParams init_params(delegate_->GetDialogMessage());
   init_params.inter_row_vertical_spacing =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -113,11 +117,6 @@ bool TabModalConfirmDialogViews::Close() {
 // right corner. They should only have yes/no buttons.
 bool TabModalConfirmDialogViews::ShouldShowCloseButton() const {
   return false;
-}
-
-int TabModalConfirmDialogViews::GetDefaultDialogButton() const {
-  base::Optional<int> default_button = delegate_->GetDefaultDialogButton();
-  return default_button.value_or(DialogDelegate::GetDefaultDialogButton());
 }
 
 views::View* TabModalConfirmDialogViews::GetInitiallyFocusedView() {

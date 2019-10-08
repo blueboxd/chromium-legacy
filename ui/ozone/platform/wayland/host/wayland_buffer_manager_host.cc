@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_drm.h"
 #include "ui/ozone/platform/wayland/host/wayland_shm.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
@@ -541,6 +542,21 @@ void WaylandBufferManagerHost::OnChannelDestroyed() {
   anonymous_buffers_.clear();
 }
 
+wl::BufferFormatsWithModifiersMap
+WaylandBufferManagerHost::GetSupportedBufferFormats() const {
+  if (connection_->zwp_dmabuf())
+    return connection_->zwp_dmabuf()->supported_buffer_formats();
+  else if (connection_->drm())
+    return connection_->drm()->supported_buffer_formats();
+  else
+    return {};
+}
+
+bool WaylandBufferManagerHost::SupportsDmabuf() const {
+  return !!connection_->zwp_dmabuf() ||
+         (connection_->drm() && connection_->drm()->SupportsDrmPrime());
+}
+
 void WaylandBufferManagerHost::SetWaylandBufferManagerGpu(
     mojo::PendingAssociatedRemote<ozone::mojom::WaylandBufferManagerGpu>
         buffer_manager_gpu_associated) {
@@ -578,9 +594,19 @@ void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
   auto callback =
       base::BindOnce(&WaylandBufferManagerHost::OnCreateBufferComplete,
                      weak_factory_.GetWeakPtr(), widget, buffer_id);
-  connection_->zwp_dmabuf()->CreateBuffer(std::move(fd), size, strides, offsets,
-                                          modifiers, format, planes_count,
-                                          std::move(callback));
+  if (connection_->zwp_dmabuf()) {
+    connection_->zwp_dmabuf()->CreateBuffer(std::move(fd), size, strides,
+                                            offsets, modifiers, format,
+                                            planes_count, std::move(callback));
+  } else if (connection_->drm()) {
+    connection_->drm()->CreateBuffer(std::move(fd), size, strides, offsets,
+                                     modifiers, format, planes_count,
+                                     std::move(callback));
+  } else {
+    // This method must never be called if neither zwp_linux_dmabuf or wl_drm
+    // are supported.
+    NOTREACHED();
+  }
 }
 
 void WaylandBufferManagerHost::CreateShmBasedBuffer(

@@ -134,6 +134,7 @@
 <translation id="5516424706154626233">инструмент за избор на дата</translation>
 <translation id="5537725057119320332">Предаване</translation>
 <translation id="5546461542133609677">пускане на звука</translation>
+<translation id="5608153257855394627">открояване</translation>
 <translation id="561939826962581046">time</translation>
 <translation id="5630795885300617244">Докоснете два пъти стрелката наляво или надясно, за да пропуснете 10 сек</translation>
 <translation id="5631759159893697722">резюме</translation>
@@ -226,6 +227,7 @@
 <translation id="8208673686607688524">инструмент за избор на дата и час според местното време</translation>
 <translation id="8261464734335370856">Невалиден правопис</translation>
 <translation id="8284326494547611709">Надписи</translation>
+<translation id="8346634859695247203">секция</translation>
 <translation id="835897206747267392">Невалидна стойност.</translation>
 <translation id="8403857369060869934">изминало време: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">част</translation>

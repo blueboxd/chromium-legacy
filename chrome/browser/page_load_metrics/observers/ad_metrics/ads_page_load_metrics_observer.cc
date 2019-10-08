@@ -11,7 +11,6 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_blocklist.h"
@@ -95,11 +94,6 @@ bool AdsPageLoadMetricsObserver::IsSubframeSameOriginToMainFrame(
 AdsPageLoadMetricsObserver::AggregateFrameInfo::AggregateFrameInfo()
     : bytes(0), network_bytes(0), num_frames(0) {}
 
-int AdsPageLoadMetricsObserver::HeavyAdThresholdNoiseProvider::
-    GetNetworkThresholdNoiseForFrame() const {
-  return base::RandInt(0, kMaxNetworkThresholdNoiseBytes);
-}
-
 AdsPageLoadMetricsObserver::AdsPageLoadMetricsObserver(
     base::TickClock* clock,
     HeavyAdBlocklist* blocklist)
@@ -107,9 +101,7 @@ AdsPageLoadMetricsObserver::AdsPageLoadMetricsObserver(
       clock_(clock ? clock : base::DefaultTickClock::GetInstance()),
       heavy_ad_blocklist_(blocklist),
       heavy_ad_blocklist_enabled_(
-          base::FeatureList::IsEnabled(features::kHeavyAdBlocklist)),
-      heavy_ad_threshold_noise_provider_(
-          std::make_unique<HeavyAdThresholdNoiseProvider>()) {}
+          base::FeatureList::IsEnabled(features::kHeavyAdBlocklist)) {}
 
 AdsPageLoadMetricsObserver::~AdsPageLoadMetricsObserver() = default;
 
@@ -127,11 +119,9 @@ AdsPageLoadMetricsObserver::OnStart(
   if (observer_manager)
     subresource_observer_.Add(observer_manager);
   main_frame_data_ =
-      std::make_unique<FrameData>(navigation_handle->GetFrameTreeNodeId(),
-                                  0 /* heavy_ad_network_threshold_noise */);
+      std::make_unique<FrameData>(navigation_handle->GetFrameTreeNodeId());
   aggregate_frame_data_ =
-      std::make_unique<FrameData>(navigation_handle->GetFrameTreeNodeId(),
-                                  0 /* heavy_ad_network_threshold_noise */);
+      std::make_unique<FrameData>(navigation_handle->GetFrameTreeNodeId());
   return CONTINUE_OBSERVING;
 }
 
@@ -196,7 +186,7 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
   // Ensure that this RenderFrameHost is a subframe.
   DCHECK(render_frame_host->GetParent());
 
-  GetDelegate().GetWebContents()->GetController().LoadErrorPage(
+  GetDelegate().GetWebContents()->GetController().LoadPostCommitErrorPage(
       render_frame_host, render_frame_host->GetLastCommittedURL(),
       heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
 
@@ -287,9 +277,7 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
       previous_data->UpdateForNavigation(ad_host, frame_navigated);
       return;
     }
-    ad_frames_data_storage_.emplace_back(
-        ad_id,
-        heavy_ad_threshold_noise_provider_->GetNetworkThresholdNoiseForFrame());
+    ad_frames_data_storage_.emplace_back(ad_id);
     ad_data_iterator = --ad_frames_data_storage_.end();
     ad_data = &*ad_data_iterator;
     ad_data->UpdateForNavigation(ad_host, frame_navigated);
@@ -858,9 +846,6 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForAdTagging(
                   ad_frame_data.user_activation_status());
     ADS_HISTOGRAM("HeavyAds.ComputedType2", UMA_HISTOGRAM_ENUMERATION,
                   visibility, ad_frame_data.heavy_ad_status());
-    ADS_HISTOGRAM("HeavyAds.ComputedTypeWithThresholdNoise",
-                  UMA_HISTOGRAM_ENUMERATION, visibility,
-                  ad_frame_data.heavy_ad_status_with_noise());
   }
 }
 

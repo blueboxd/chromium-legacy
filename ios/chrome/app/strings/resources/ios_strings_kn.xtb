@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">ಬುಕ್‌ಮಾರ್ಕ್ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="2179182049312275900">ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಯಾವಾಗ ಬೇಕಾದರೂ ಸಿಂಕ್ ಅನ್ನು ಆನ್ ಮಾಡಬಹುದು.</translation>
 <translation id="2198757192731523470">Google ನಿಮ್ಮ ಇತಿಹಾಸವನ್ನು ಹುಡುಕಾಟ, ಜಾಹೀರಾತುಗಳು ಮತ್ತು ಇತರ Google ಸೇವೆಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸಲು ಬಳಸಬಹುದು.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> ಓದದಿರುವ ಓದುವ ಪಟ್ಟಿ ಲೇಖನಗಳು.</translation>
 <translation id="2230173723195178503">ವೆಬ್‌ಪುಟ ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="2239626343334228536">ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="2267753748892043616">ಖಾತೆ ಸೇರಿಸಿ</translation>
@@ -265,7 +264,6 @@
 
 ಈ ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು ಬದಲಾಯಿಸಲು, <ph name="BEGIN_LINK" />ಸಿಂಕ್ ಅನ್ನು ಮರುಹೊಂದಿಸಿ<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">ಕಾರ್ಡ್ ಸಂಖ್ಯೆ ಅಮಾನ್ಯವಾಗಿದೆ</translation>
-<translation id="4807020197310989387">1 ಓದದಿರುವ ಓದುವ ಪಟ್ಟಿ ಲೇಖನ.</translation>
 <translation id="4818522717893377262">ಭಾಷೆ ಸೇರಿಸಿ...</translation>
 <translation id="481968316161811770">ಕುಕೀಗಳು, ಸೈಟ್‌ ಡೇಟಾ</translation>
 <translation id="4833786495304741580">ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳು ಮತ್ತು ಕ್ರ್ಯಾಶ್ ವರದಿಗಳನ್ನು Google ಗೆ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಳುಹಿಸುತ್ತದೆ.</translation>
@@ -414,6 +412,7 @@
 <translation id="6858855187367714033">ಸ್ಕ್ಯಾನ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="6859944681507688231">QR ಕೋಡ್ ಅಥವಾ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಅನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಲು, ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಕ್ಯಾಮರಾವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.</translation>
 <translation id="6873263987691478642">ವಿಭಜಿತ ವೀಕ್ಷಣೆ</translation>
+<translation id="6888009575607455378">ನೀವು ಮಾಡಿದ ಬದಲಾವಣೆಗಳನ್ನು ತ್ಯಜಿಸಲು ಖಚಿತವಾಗಿ ಬಯಸುವಿರಾ?</translation>
 <translation id="6896758677409633944">ನಕಲಿಸು</translation>
 <translation id="6903907808598579934">ಸಿಂಕ್‌ ಆನ್‌ ಮಾಡಿ</translation>
 <translation id="6914583639806229067">ನೀವು ನಕಲಿಸಿದ ಚಿತ್ರವನ್ನು ಹುಡುಕಿ</translation>

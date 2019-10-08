@@ -327,6 +327,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="3241052487511142956">Poprzedni kliknięty link</translation>
 <translation id="3241638166094654466">Komórki w każdym wierszu:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">Poprzedni podobny element</translation>
 <translation id="3286372614333682499">orientacja pionowa</translation>
 <translation id="3286390186030710347">Suwak</translation>
 <translation id="3299925995433437805">Brak następnego klikniętego linku.</translation>
@@ -509,6 +510,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4517854969512651305">Zwiększ wartość</translation>
 <translation id="4529987814483543472">Klasyczny układ klawiatury</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{ukośnik}few{# ukośniki}many{# ukośników}other{# slashes}}</translation>
+<translation id="4537277403911487429">Następny podobny element</translation>
 <translation id="4547556996012970016">Następny nagłówek poziomu 5</translation>
 <translation id="4562381607973973258">Nagłówek</translation>
 <translation id="4569941707103739422">Naciśnij strzałkę w górę lub w dół, aby się poruszać, i Enter, aby wybrać.</translation>

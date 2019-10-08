@@ -17,7 +17,6 @@ per-file error_page_strings.grdp=file://components/error_page/OWNERS
 per-file management_strings.grdp=file://docs/privacy/OWNERS
 per-file media_message_center_strings.grdp=file://components/media_message_center/OWNERS
 per-file ntp_snippets_strings.grdp=file://components/ntp_snippets/OWNERS
-per-file ntp_tiles_strings.grdp=file://components/ntp_tiles/OWNERS
 per-file omnibox_strings.grdp=file://components/omnibox/OWNERS
 per-file page_info_strings.grdp=file://chrome/browser/ui/page_info/OWNERS
 per-file password_manager_strings.grdp=file://components/password_manager/OWNERS

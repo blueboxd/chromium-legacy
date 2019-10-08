@@ -4,20 +4,25 @@
 
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals_ui.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/snippets_internals/snippets_internals.mojom.h"
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals_page_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
 #endif
 
 SnippetsInternalsUI::SnippetsInternalsUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui), binding_(this) {
+    : ui::MojoWebUIController(web_ui) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISnippetsInternalsHost);
   source->OverrideContentSecurityPolicyScriptSrc(
@@ -41,20 +46,20 @@ SnippetsInternalsUI::SnippetsInternalsUI(content::WebUI* web_ui)
 SnippetsInternalsUI::~SnippetsInternalsUI() {}
 
 void SnippetsInternalsUI::BindSnippetsInternalsPageHandlerFactory(
-    snippets_internals::mojom::PageHandlerFactoryRequest request) {
-  if (binding_.is_bound())
-    binding_.Unbind();
+    mojo::PendingReceiver<snippets_internals::mojom::PageHandlerFactory>
+        receiver) {
+  receiver_.reset();
 
-  binding_.Bind(std::move(request));
+  receiver_.Bind(std::move(receiver));
 }
 
 void SnippetsInternalsUI::CreatePageHandler(
-    snippets_internals::mojom::PagePtr page,
+    mojo::PendingRemote<snippets_internals::mojom::Page> page,
     CreatePageHandlerCallback callback) {
   DCHECK(page);
-  snippets_internals::mojom::PageHandlerPtr handler;
+  mojo::PendingRemote<snippets_internals::mojom::PageHandler> handler;
   page_handler_ = std::make_unique<SnippetsInternalsPageHandler>(
-      mojo::MakeRequest(&handler), std::move(page),
+      handler.InitWithNewPipeAndPassReceiver(), std::move(page),
       content_suggestions_service_, pref_service_);
 
   std::move(callback).Run(std::move(handler));

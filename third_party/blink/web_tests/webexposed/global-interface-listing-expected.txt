@@ -10928,8 +10928,8 @@ interface XRHitTestOptions
 interface XRHitTestResult
     attribute @@toStringTag
     getter hitTestOptions
-    getter transform
     method constructor
+    method getPose
 interface XRHitTestSource
     attribute @@toStringTag
     getter hitTestOptions

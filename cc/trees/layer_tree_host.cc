@@ -457,8 +457,7 @@ void LayerTreeHost::WillCommit() {
 void LayerTreeHost::UpdateDeferMainFrameUpdateInternal() {
   proxy_->SetDeferMainFrameUpdate(
       defer_main_frame_update_count_ > 0 ||
-      (settings_.enable_surface_synchronization &&
-       !local_surface_id_allocation_from_parent_.IsValid()));
+      !local_surface_id_allocation_from_parent_.IsValid());
 }
 
 bool LayerTreeHost::IsUsingLayerLists() const {
@@ -1377,11 +1376,8 @@ void LayerTreeHost::SetLocalSurfaceIdAllocationFromParent(
 }
 
 void LayerTreeHost::RequestNewLocalSurfaceId() {
-  // If surface synchronization is enabled, then we can still request a new
-  // viz::LocalSurfaceId but that request will be deferred until we have a valid
-  // viz::LocalSurfaceId from the parent.
-  DCHECK(settings_.enable_surface_synchronization ||
-         local_surface_id_allocation_from_parent_.IsValid());
+  // We can still request a new viz::LocalSurfaceId but that request will be
+  // deferred until we have a valid viz::LocalSurfaceId from the parent.
   if (new_local_surface_id_request_)
     return;
   new_local_surface_id_request_ = true;

@@ -19,6 +19,7 @@ struct wl_data_device_manager;
 struct wl_data_device;
 struct wl_data_offer;
 struct wl_data_source;
+struct wl_drm;
 struct wl_keyboard;
 struct wl_output;
 struct wl_pointer;
@@ -114,6 +115,12 @@ template <>
 struct ObjectTraits<wl_data_source> {
   static const wl_interface* interface;
   static void (*deleter)(wl_data_source*);
+};
+
+template <>
+struct ObjectTraits<wl_drm> {
+  static const wl_interface* interface;
+  static void (*deleter)(wl_drm*);
 };
 
 template <>

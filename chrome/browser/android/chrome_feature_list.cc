@@ -272,8 +272,8 @@ const base::Feature kAndroidPaymentApps{"AndroidPaymentApps",
 const base::Feature kAndroidSearchEngineChoiceNotification{
     "AndroidSearchEngineChoiceNotification", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kAndroidSetupSearchEngine{
-    "AndroidSetupSearchEngine", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAndroidSetupSearchEngine{"AndroidSetupSearchEngine",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAndroidSiteSettingsUIRefresh{
     "AndroidSiteSettingsUIRefresh", base::FEATURE_ENABLED_BY_DEFAULT};

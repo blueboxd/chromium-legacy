@@ -88,9 +88,8 @@ class COMPONENTS_DOWNLOAD_EXPORT ParallelDownloadJob
   void ForkSubRequests(const DownloadItem::ReceivedSlices& slices_to_download);
 
   // Create one range request, virtual for testing. Range request will start
-  // from |offset| to |length|. Range request will be half open, e.g.
-  // "Range:50-" if |length| is 0.
-  virtual void CreateRequest(int64_t offset, int64_t length);
+  // from |offset| and will be half open.
+  virtual void CreateRequest(int64_t offset);
 
   // Information about the initial request when download is started.
   int64_t initial_request_offset_;

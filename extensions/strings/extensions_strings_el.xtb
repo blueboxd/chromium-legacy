@@ -12,7 +12,6 @@
 <translation id="2159915644201199628">Δεν ήταν δυνατή η αποκωδικοποίηση της εικόνας: "<ph name="IMAGE_NAME" />"</translation>
 <translation id="2350172092385603347">Χρησιμοποιήθηκε τοπική προσαρμογή, όμως δεν καθορίστηκε η τιμή "default_locale" στη δήλωση.</translation>
 <translation id="2576842806987913196">Υπάρχει ήδη ένα αρχείο CRX με αυτό το όνομα.</translation>
-<translation id="2753617847762399167">Παράνομη διαδρομή (απόλυτη ή σχετική με ".."): "<ph name="IMAGE_PATH" />"</translation>
 <translation id="2785530881066938471">Δεν ήταν δυνατή η φόρτωση του αρχείου "<ph name="RELATIVE_PATH" />" για το σενάριο περιεχομένου. Δεν έχει κωδικοποίηση UTF-8.</translation>
 <translation id="2903070246402204397">Η επέκταση <ph name="EXTENSION_NAME" /> (αναγνωριστικό επέκτασης "<ph name="EXTENSION_ID" />") έχει αποκλειστεί από τον διαχειριστή. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Δεν ήταν δυνατή η εγκατάσταση του πακέτου: '<ph name="ERROR_CODE" />'</translation>
@@ -38,7 +37,6 @@
 <translation id="5436430103864390185">Τα διαμορφωμένα παράθυρα δεν υποστηρίζονται.</translation>
 <translation id="5456409301717116725">Αυτή η επέκταση περιλαμβάνει το αρχείο κλειδιού "<ph name="KEY_PATH" />". Πιθανότατα δεν θέλετε να προβείτε σε αυτήν την ενέργεια.</translation>
 <translation id="5486326529110362464">Η τιμή εισόδου για το ιδιωτικό κλειδί πρέπει να υπάρχει.</translation>
-<translation id="5627523580512561598">επέκταση <ph name="EXTENSION_NAME" /></translation>
 <translation id="5972529113578162692">Ο διαχειριστής αυτού του υπολογιστή απαιτεί την εγκατάσταση της επέκτασης <ph name="EXTENSION_NAME" />. Η εγκατάσταση δεν μπορεί να καταργηθεί.</translation>
 <translation id="6027032947578871493">Άγνωστο προϊόν <ph name="PRODUCT_ID" /> από <ph name="VENDOR_NAME" /> (σειριακός αριθμός <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME" /> από τον πάροχο υπηρεσιών <ph name="VENDOR_ID" /></translation>
@@ -50,7 +48,6 @@
 <translation id="6542618148162044354">Η εφαρμογή "<ph name="APP_NAME" />" ζητά πρόσβαση σε μία ή περισσότερες συσκευές σας:</translation>
 <translation id="657064425229075395">Δεν ήταν δυνατή η φόρτωση του σεναρίου παρασκηνίου '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> από <ph name="VENDOR_NAME" /> (σειριακός αριθμός <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="6731255991101203740">Δεν ήταν δυνατή η δημιουργία καταλόγου για την αποσυμπίεση: "<ph name="DIRECTORY_PATH" />"</translation>
 <translation id="677806580227005219">Χειρισμός mime: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">Αυτή η επέκταση επαναφορτώνεται πολύ συχνά.</translation>
 <translation id="7003844668372540529">Άγνωστο προϊόν <ph name="PRODUCT_ID" /> από <ph name="VENDOR_NAME" /></translation>

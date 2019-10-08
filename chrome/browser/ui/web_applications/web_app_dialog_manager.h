@@ -50,7 +50,7 @@ class WebAppDialogManager {
   base::flat_set<std::unique_ptr<DialogInstance>, base::UniquePtrComparator>
       dialogs_;
 
-  Profile* profile_;
+  Profile* const profile_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppDialogManager);
 };

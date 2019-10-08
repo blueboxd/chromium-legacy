@@ -5,6 +5,7 @@
 #include "chrome/common/channel_info.h"
 
 #include "base/system/sys_info.h"
+#include "build/branding_buildflags.h"
 #include "components/version_info/version_info.h"
 
 namespace chrome {
@@ -31,7 +32,7 @@ void SetChannel(const std::string& channel) {
 }  // namespace
 
 std::string GetChannelName() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   switch (g_chromeos_channel) {
     case version_info::Channel::STABLE:
       return std::string();
@@ -53,7 +54,7 @@ version_info::Channel GetChannel() {
   if (is_channel_set)
     return g_chromeos_channel;
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   static const char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
   std::string channel;
   if (base::SysInfo::GetLsbReleaseValue(kChromeOSReleaseTrack, &channel)) {

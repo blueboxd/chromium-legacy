@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/containers/flat_map.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -27,19 +26,17 @@ namespace ui {
 class WaylandConnection;
 
 // Wrapper around |zwp_linux_dmabuf_v1| Wayland factory, which creates
-// |wl_buffer|s backed by dmabuf |file| descriptor.
+// |wl_buffer|s backed by dmabuf prime file descriptor.
 class WaylandZwpLinuxDmabuf {
  public:
-  using BufferFormatsWithModifiersMap =
-      base::flat_map<gfx::BufferFormat, std::vector<uint64_t>>;
-
   WaylandZwpLinuxDmabuf(zwp_linux_dmabuf_v1* zwp_linux_dmabuf,
                         WaylandConnection* connection);
   ~WaylandZwpLinuxDmabuf();
 
-  // Requests to create a wl_buffer backed by the |file| descriptor. The result
-  // is sent back via the |callback|. If buffer creation failed, nullptr is sent
-  // back via the callback. Otherwise, a pointer to the |wl_buffer| is sent.
+  // Requests to create a wl_buffer backed by the dmabuf prime |fd| descriptor.
+  // The result is sent back via the |callback|. If buffer creation failed,
+  // nullptr is sent back via the callback. Otherwise, a pointer to the
+  // |wl_buffer| is sent.
   void CreateBuffer(base::ScopedFD fd,
                     const gfx::Size& size,
                     const std::vector<uint32_t>& strides,
@@ -50,7 +47,7 @@ class WaylandZwpLinuxDmabuf {
                     wl::OnRequestBufferCallback callback);
 
   // Returns supported buffer formats received from the Wayland compositor.
-  BufferFormatsWithModifiersMap supported_buffer_formats() const {
+  wl::BufferFormatsWithModifiersMap supported_buffer_formats() const {
     return supported_buffer_formats_with_modifiers_;
   }
 
@@ -94,7 +91,7 @@ class WaylandZwpLinuxDmabuf {
   WaylandConnection* const connection_;
 
   // Holds supported DRM formats translated to gfx::BufferFormat.
-  BufferFormatsWithModifiersMap supported_buffer_formats_with_modifiers_;
+  wl::BufferFormatsWithModifiersMap supported_buffer_formats_with_modifiers_;
 
   // Contains callbacks for requests to create |wl_buffer|s using
   // |zwp_linux_dmabuf_| factory.

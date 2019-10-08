@@ -130,30 +130,24 @@ void WaitForCondition(base::RepeatingCallback<bool()> condition) {
 
 class ServiceWorkerStatusObserver : public ServiceWorkerContextCoreObserver {
  public:
-  void WaitForState(EmbeddedWorkerStatus expected_status) {
-    for (const auto& status : statuses_in_past_) {
-      if (status == expected_status)
-        return;
-    }
+  void WaitForStopped() {
+    if (stopped_)
+      return;
 
-    expected_status_ = expected_status;
     base::RunLoop loop;
     callback_ = loop.QuitClosure();
     loop.Run();
   }
 
  private:
-  void OnRunningStateChanged(int64_t version_id,
-                             EmbeddedWorkerStatus running_status) override {
-    statuses_in_past_.push_back(running_status);
-    if (expected_status_.has_value() &&
-        running_status == expected_status_.value()) {
+  void OnStopped(int64_t version_id) override {
+    stopped_ = true;
+
+    if (callback_)
       std::move(callback_).Run();
-    }
   }
 
-  base::Optional<EmbeddedWorkerStatus> expected_status_;
-  std::vector<EmbeddedWorkerStatus> statuses_in_past_;
+  bool stopped_ = false;
   base::OnceClosure callback_;
 };
 
@@ -802,7 +796,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   partition->FlushNetworkInterfaceForTesting();
 
   // Service worker should be stopped when network service crashes.
-  observer.WaitForState(EmbeddedWorkerStatus::STOPPED);
+  observer.WaitForStopped();
 
   // Fetch from the controlled page again.
   EXPECT_EQ("Echo", EvalJs(shell(), script));
@@ -845,7 +839,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   partition->FlushNetworkInterfaceForTesting();
 
   // Service worker should be stopped when network service crashes.
-  observer.WaitForState(EmbeddedWorkerStatus::STOPPED);
+  observer.WaitForStopped();
 
   // Fetch from the controlled page again.
   EXPECT_EQ("Echo", EvalJs(shell(), script));
@@ -889,7 +883,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   partition->FlushNetworkInterfaceForTesting();
 
   // Service worker should be stopped when network service crashes.
-  observer.WaitForState(EmbeddedWorkerStatus::STOPPED);
+  observer.WaitForStopped();
 
   // Fetch from the controlled page again.
   EXPECT_EQ("Echo", EvalJs(shell(), script));
@@ -928,7 +922,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, ServiceWorkerFetch) {
   partition->FlushNetworkInterfaceForTesting();
 
   // Service worker should be stopped when network service crashes.
-  observer.WaitForState(EmbeddedWorkerStatus::STOPPED);
+  observer.WaitForStopped();
 
   // Fetch from the service worker again.
   EXPECT_EQ("Echo", EvalJs(shell(), script));

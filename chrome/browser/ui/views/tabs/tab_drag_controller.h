@@ -504,15 +504,17 @@ class TabDragController : public views::WidgetObserver {
   bool ShouldDisallowDrag(gfx::NativeWindow window);
 
   // Helper method for TabDragController::MoveAttached to update the tab group
-  // membership of selected tabs.
-  void UpdateGroupForDraggedTabs(int to_index);
+  // membership of selected tabs. UpdateGroupForDraggedTabs should be called
+  // after the tabs move in a drag so the first selected index is the target
+  // index of the move.
+  void UpdateGroupForDraggedTabs();
 
   // Helper method for TabDragController::UpdateGroupForDraggedTabs to decide if
   // a dragged tab should stay in the tab group. Returns base::nullopt if the
-  // tab should not be in a group. Otherwise returns TabGroupId of the group
-  // being selected.
-  base::Optional<TabGroupId> GetTabGroupForTargetIndex(int current_index,
-                                                       int to_index);
+  // tab should not be in a group. Otherwise returns TabGroupId of the group the
+  // selected tabs should join.
+  base::Optional<TabGroupId> GetTabGroupForTargetIndex(
+      const std::vector<int>& selected);
 
   EventSource event_source_;
 

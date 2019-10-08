@@ -602,6 +602,19 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
       CanvasResourceType::kBitmap,
   });
 
+  static const Vector<CanvasResourceType> kAcceleratedDirect2DFallbackList({
+      // Needed for low latency canvas on Windows.
+      CanvasResourceType::kDirect2DSwapChain,
+      // The rest is equal to |kCompositedFallbackList|.
+      CanvasResourceType::kSharedImage,
+      CanvasResourceType::kSharedBitmap,
+      CanvasResourceType::kBitmap,
+  });
+  DCHECK(std::equal(kAcceleratedDirect2DFallbackList.begin() + 1,
+                    kAcceleratedDirect2DFallbackList.end(),
+                    kCompositedFallbackList.begin(),
+                    kCompositedFallbackList.end()));
+
   static const Vector<CanvasResourceType> kAcceleratedDirect3DFallbackList({
       // This is used with single-buffered WebGL where the resource comes
       // from an external source. The external site should take care of
@@ -632,7 +645,7 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
       return kCompositedFallbackList;
     case CanvasResourceProvider::ResourceUsage::
         kAcceleratedDirect2DResourceUsage:
-      return kCompositedFallbackList;
+      return kAcceleratedDirect2DFallbackList;
     case CanvasResourceProvider::ResourceUsage::
         kAcceleratedDirect3DResourceUsage:
       return kAcceleratedDirect3DFallbackList;

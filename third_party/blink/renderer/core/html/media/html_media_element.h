@@ -556,8 +556,6 @@ class CORE_EXPORT HTMLMediaElement
 
   void OnRemovedFromDocumentTimerFired(TimerBase*);
 
-  void DefaultEventHandler(Event&) override;
-
   Features GetFeatures() override;
 
   TaskRunnerTimer<HTMLMediaElement> load_timer_;
@@ -736,7 +734,6 @@ class CORE_EXPORT HTMLMediaElement
   friend class Internals;
   friend class TrackDisplayUpdateScope;
   friend class MediaControlsImplTest;
-  friend class MediaControlsTouchlessImplTest;
   friend class HTMLMediaElementTest;
   friend class HTMLMediaElementEventListenersTest;
   friend class HTMLVideoElement;

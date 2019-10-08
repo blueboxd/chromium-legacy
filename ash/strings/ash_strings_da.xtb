@@ -224,13 +224,14 @@
 <translation id="4181841719683918333">Sprog</translation>
 <translation id="4195877955194704651">Knap til automatisk klik</translation>
 <translation id="4217571870635786043">Diktering</translation>
-<translation id="421885205185866088">Pinkode til Smart Card for <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="421885205185866088">Pinkode til chipkort for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Vis indstillinger for notifikationer. Notifikationer er slået fra</translation>
 <translation id="4269883910223712419">Administratoren af denne enhed kan gøre følgende:</translation>
 <translation id="4279490309300973883">Spejling</translation>
 <translation id="4281007048406351813">Føj 1 minut til timeren</translation>
 <translation id="4296136865091727875">Ryd alle <ph name="COUNT" /> notifikationer</translation>
+<translation id="4303223480529385476">Udvid statusområde</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Du trykkede på tastaturgenvejen for høj kontrast. Vil du aktivere indstillingen?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -341,7 +342,7 @@
 <translation id="6043212731627905357">Denne skærm fungerer ikke sammen med <ph name="DEVICE_TYPE" /> (skærmen understøttes ikke).</translation>
 <translation id="6043994281159824495">Log ud nu</translation>
 <translation id="6047696787498798094">Skærmdeling ophører, når du skifter til en anden bruger. Vil du fortsætte?</translation>
-<translation id="6054305421211936131">Log ind med Smart Card</translation>
+<translation id="6054305421211936131">Log ind med chipkort</translation>
 <translation id="6062360702481658777">Du bliver automatisk logget ud om <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Din adgangskode blev ikke bekræftet. Prøv igen.</translation>
 <translation id="607652042414456612">Din computer kan registreres af Bluetooth-enheder i nærheden, og den vil blive vist som "<ph name="NAME" />" med adressen <ph name="ADDRESS" /></translation>
@@ -370,7 +371,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6459472438155181876">Udvider skærmen til <ph name="DISPLAY_NAME" /></translation>
 <translation id="6482559668224714696">Forstørrelse af fuld skærm</translation>
 <translation id="6490471652906364588">USB-C-enhed (højre port)</translation>
-<translation id="649452524636452238">Pinkode til Smart Card</translation>
+<translation id="649452524636452238">Pinkode til chipkort</translation>
 <translation id="6501401484702599040">Caster skærmen til <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Indtastning via håndskrift</translation>
 <translation id="6528179044667508675">Vil ikke forstyrres</translation>
@@ -400,13 +401,14 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6857811139397017780">Aktivér <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Denne opdatering kræver, at der udføres en powerwash på din enhed. Få flere oplysninger om den nyeste <ph name="SYSTEM_APP_NAME" />-opdatering.</translation>
 <translation id="6911468394164995108">Vælg et andet...</translation>
-<translation id="6919251195245069855">Dit Smart Card kunne ikke genkendes. Prøv igen.</translation>
+<translation id="6919251195245069855">Dit chipkort blev ikke genkendt. Prøv igen.</translation>
 <translation id="6972754398087986839">Kom godt i gang</translation>
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
 <translation id="698231206551913481">Alle filer og lokale data, der er knyttet til denne bruger, slettes permanent, når brugeren fjernes.</translation>
 <translation id="7015766095477679451">Vend tilbage kl. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Slut <ph name="DEVICE_NAME" /> til din telefon</translation>
 <translation id="7029814467594812963">Afslut session</translation>
+<translation id="7042322267639375032">Skjul statusområde</translation>
 <translation id="7066646422045619941">Din administrator har deaktiveret dette netværk.</translation>
 <translation id="7067196344162293536">Automatisk rotering</translation>
 <translation id="7068360136237591149">Åbn filer</translation>

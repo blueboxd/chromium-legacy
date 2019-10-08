@@ -617,6 +617,30 @@ void TemplateURLService::ResetTemplateURL(TemplateURL* url,
   Update(url, TemplateURL(data));
 }
 
+TemplateURL* TemplateURLService::CreateOrUpdateTemplateURLFromPlayAPIData(
+    const base::string16& title,
+    const base::string16& keyword,
+    const std::string& search_url,
+    const std::string& favicon_url) {
+  TemplateURL* existing_turl = FindNonExtensionTemplateURLForKeyword(keyword);
+  TemplateURLData data;
+  if (existing_turl)
+    data = existing_turl->data();
+  data.SetShortName(title);
+  data.SetKeyword(keyword);
+  data.SetURL(search_url);
+  data.favicon_url = GURL(favicon_url);
+  data.safe_for_autoreplace = true;
+  data.created_from_play_api = true;
+  if (existing_turl) {
+    Update(existing_turl, TemplateURL(data));
+  } else {
+    existing_turl = Add(std::make_unique<TemplateURL>(data));
+    DCHECK(existing_turl);
+  }
+  return existing_turl;
+}
+
 void TemplateURLService::UpdateProviderFavicons(
     const GURL& potential_search_url,
     const GURL& favicon_url) {

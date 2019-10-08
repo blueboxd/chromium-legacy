@@ -29,6 +29,11 @@ crbug.com/867136 [ linux ] OverlayModeTraceTest_* [ Skip ]
 crbug.com/867136 [ android ] OverlayModeTraceTest_* [ Skip ]
 crbug.com/867136 [ chromeos ] OverlayModeTraceTest_* [ Skip ]
 crbug.com/867136 [ win7 ] OverlayModeTraceTest_* [ Skip ]
+crbug.com/1009860 [ mac ] SwapChainTraceTest_* [ Skip ]
+crbug.com/1009860 [ linux ] SwapChainTraceTest_* [ Skip ]
+crbug.com/1009860 [ android ] SwapChainTraceTest_* [ Skip ]
+crbug.com/1009860 [ chromeos ] SwapChainTraceTest_* [ Skip ]
+crbug.com/1009860 [ win7 ] SwapChainTraceTest_* [ Skip ]
 
 # VP9 videos fail to trigger zero copy video presentation path.
 crbug.com/930343 [ win intel ] VideoPathTraceTest_DirectComposition_Video_VP9_Fullsize [ Failure ]

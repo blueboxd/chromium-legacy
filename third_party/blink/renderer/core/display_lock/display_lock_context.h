@@ -191,10 +191,6 @@ class CORE_EXPORT DisplayLockContext final
     needs_prepaint_subtree_walk_ = true;
   }
 
-  // TODO(vmpstr): These are deprecated and will be removed soon.
-  LayoutUnit GetLockedContentLogicalWidth() const { return LayoutUnit(); }
-  LayoutUnit GetLockedContentLogicalHeight() const { return LayoutUnit(); }
-
  private:
   friend class DisplayLockContextTest;
   friend class DisplayLockBudgetTest;

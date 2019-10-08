@@ -63,10 +63,6 @@
 #include "extensions/browser/extension_registry_observer.h"
 #endif
 
-using base::UserMetricsAction;
-using content::BrowserThread;
-using extensions::Extension;
-using ui::ResourceBundle;
 using TP = ThemeProperties;
 
 // Helpers --------------------------------------------------------------------
@@ -411,14 +407,14 @@ void ThemeService::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   }
 }
 
-void ThemeService::SetTheme(const Extension* extension) {
+void ThemeService::SetTheme(const extensions::Extension* extension) {
   DoSetTheme(extension, true);
 }
 
 void ThemeService::RevertToExtensionTheme(const std::string& extension_id) {
-  const Extension* extension = extensions::ExtensionRegistry::Get(profile_)
-                                   ->disabled_extensions()
-                                   .GetByID(extension_id);
+  const auto* extension = extensions::ExtensionRegistry::Get(profile_)
+                              ->disabled_extensions()
+                              .GetByID(extension_id);
   if (extension && extension->is_theme()) {
     extensions::ExtensionService* service =
         extensions::ExtensionSystem::Get(profile_)->extension_service();
@@ -432,7 +428,7 @@ void ThemeService::RevertToExtensionTheme(const std::string& extension_id) {
 
 void ThemeService::UseDefaultTheme() {
   if (ready_)
-    base::RecordAction(UserMetricsAction("Themes_Reset"));
+    base::RecordAction(base::UserMetricsAction("Themes_Reset"));
 
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
   if (native_theme && native_theme->UsesHighContrastColors()) {
@@ -728,7 +724,7 @@ void ThemeService::InitFromPrefs() {
   }
 
   if (loaded_pack) {
-    base::RecordAction(UserMetricsAction("Themes.Loaded"));
+    base::RecordAction(base::UserMetricsAction("Themes.Loaded"));
     set_ready();
   }
   // Else: wait for the extension service to be ready so that the theme pack
@@ -799,7 +795,7 @@ SkColor ThemeService::GetSeparatorColor(SkColor tab_color,
   return SkColorSetA(separator_color, result.alpha);
 }
 
-void ThemeService::DoSetTheme(const Extension* extension,
+void ThemeService::DoSetTheme(const extensions::Extension* extension,
                               bool suppress_infobar) {
   DCHECK(extension->is_theme());
   DCHECK(extensions::ExtensionSystem::Get(profile_)
@@ -932,7 +928,7 @@ void ThemeService::OnExtensionServiceReady() {
 void ThemeService::MigrateTheme() {
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile_);
-  const Extension* extension =
+  const extensions::Extension* extension =
       registry ? registry->GetExtensionById(
                      GetThemeID(), extensions::ExtensionRegistry::ENABLED)
                : nullptr;
@@ -945,11 +941,11 @@ void ThemeService::MigrateTheme() {
         new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
     BrowserThemePack::BuildFromExtension(extension, pack.get());
     OnThemeBuiltFromExtension(extension->id(), pack.get(), true);
-    base::RecordAction(UserMetricsAction("Themes.Migrated"));
+    base::RecordAction(base::UserMetricsAction("Themes.Migrated"));
   } else {
     DLOG(ERROR) << "Theme is mysteriously gone.";
     ClearAllThemeData();
-    base::RecordAction(UserMetricsAction("Themes.Gone"));
+    base::RecordAction(base::UserMetricsAction("Themes.Gone"));
   }
 }
 
@@ -962,7 +958,7 @@ void ThemeService::SwapThemeSupplier(
     theme_supplier_->StartUsingTheme();
 }
 
-void ThemeService::BuildFromExtension(const Extension* extension,
+void ThemeService::BuildFromExtension(const extensions::Extension* extension,
                                       bool suppress_infobar) {
   build_extension_task_tracker_.TryCancelAll();
   building_extension_id_ = extension->id();
@@ -995,9 +991,9 @@ void ThemeService::OnThemeBuiltFromExtension(
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!service)
     return;
-  const Extension* extension = extensions::ExtensionRegistry::Get(profile_)
-                                   ->enabled_extensions()
-                                   .GetByID(extension_id);
+  const auto* extension = extensions::ExtensionRegistry::Get(profile_)
+                              ->enabled_extensions()
+                              .GetByID(extension_id);
   if (!extension)
     return;
 
@@ -1022,7 +1018,7 @@ void ThemeService::OnThemeBuiltFromExtension(
     return;
   }
 
-  base::RecordAction(UserMetricsAction("Themes_Installed"));
+  base::RecordAction(base::UserMetricsAction("Themes_Installed"));
 
   bool can_revert_theme = true;
   if (previous_theme_id.has_value())
@@ -1053,7 +1049,8 @@ void ThemeService::ClearThemePrefs() {
   profile_->GetPrefs()->SetString(prefs::kCurrentThemeID, kDefaultThemeID);
 }
 
-void ThemeService::SetThemePrefsForExtension(const Extension* extension) {
+void ThemeService::SetThemePrefsForExtension(
+    const extensions::Extension* extension) {
   ClearThemePrefs();
 
   profile_->GetPrefs()->SetString(prefs::kCurrentThemeID, extension->id());
@@ -1096,8 +1093,6 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
     int id,
     bool incognito,
     bool* has_custom_color) const {
-  using namespace color_utils;
-
   // |custom| will be set to true if any part of the computation of the
   // color relied on a custom base color from the theme supplier.
   struct OmniboxColor {
@@ -1119,14 +1114,15 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
   // Some utilities from color_utils are reimplemented here to plumb the custom
   // bit through.
   auto get_color_with_max_contrast = [](OmniboxColor color) -> OmniboxColor {
-    return {GetColorWithMaxContrast(color.value), color.custom};
+    return {color_utils::GetColorWithMaxContrast(color.value), color.custom};
   };
   auto derive_default_icon_color = [](OmniboxColor color) -> OmniboxColor {
-    return {DeriveDefaultIconColor(color.value), color.custom};
+    return {color_utils::DeriveDefaultIconColor(color.value), color.custom};
   };
   auto blend_toward_max_contrast = [](OmniboxColor color,
                                       SkAlpha alpha) -> OmniboxColor {
-    return {BlendTowardMaxContrast(color.value, alpha), color.custom};
+    return {color_utils::BlendTowardMaxContrast(color.value, alpha),
+            color.custom};
   };
   auto blend_for_min_contrast = [&](OmniboxColor fg, OmniboxColor bg,
                                     base::Optional<OmniboxColor> hc_fg =
@@ -1139,15 +1135,15 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
       hc_fg_arg = hc_fg.value().value;
       custom |= hc_fg.value().custom;
     }
-    return {BlendForMinContrast(
-                fg.value, bg.value, hc_fg_arg,
-                contrast_ratio.value_or(
-                    high_contrast ? 6.0f : kMinimumReadableContrastRatio))
-                .color,
-            custom};
+    const float ratio = contrast_ratio.value_or(
+        high_contrast ? 6.0f : color_utils::kMinimumReadableContrastRatio);
+    return {
+        color_utils::BlendForMinContrast(fg.value, bg.value, hc_fg_arg, ratio)
+            .color,
+        custom};
   };
   auto get_resulting_paint_color = [&](OmniboxColor fg, OmniboxColor bg) {
-    return OmniboxColor{GetResultingPaintColor(fg.value, bg.value),
+    return OmniboxColor{color_utils::GetResultingPaintColor(fg.value, bg.value),
                         fg.custom || bg.custom};
   };
 
@@ -1172,13 +1168,13 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
     auto invert_color = [&](OmniboxColor fg) -> OmniboxColor {
       const auto bg = get_color_with_max_contrast(fg);
       const auto inverted_bg = get_color_with_max_contrast(bg);
-      const float contrast = GetContrastRatio(fg.value, bg.value);
+      const float contrast = color_utils::GetContrastRatio(fg.value, bg.value);
       return blend_for_min_contrast(fg, inverted_bg, base::nullopt, contrast);
     };
     fg = invert_color(fg);
     bg = invert_color(bg);
   }
-  const bool dark = IsDark(bg.value);
+  const bool dark = color_utils::IsDark(bg.value);
 
   auto results_bg_color = [&]() { return get_color_with_max_contrast(fg); };
   auto bg_hovered_color = [&]() { return blend_toward_max_contrast(bg, 0x0A); };

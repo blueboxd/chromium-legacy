@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Edit Penanda Halaman</translation>
 <translation id="2179182049312275900">Anda boleh menghidupkan penyegerakan pada bila-bila masa dalam tetapan.</translation>
 <translation id="2198757192731523470">Google boleh menggunakan sejarah anda untuk memperibadikan Carian, iklan dan perkhidmatan Google yang lain.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artikel Senarai Bacaan yang belum dibaca.</translation>
 <translation id="2230173723195178503">Halaman web dimuatkan</translation>
 <translation id="2239626343334228536">Mengosongkan data semakan imbas...</translation>
 <translation id="2267753748892043616">Tambahkan Akaun</translation>
@@ -265,7 +264,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda. Masukkannya untuk memu
 
 Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Nombor Kad Tidak Sah</translation>
-<translation id="4807020197310989387">1 artikel Senarai Bacaan yang belum dibaca.</translation>
 <translation id="4818522717893377262">Tambahkan Bahasa...</translation>
 <translation id="481968316161811770">Kuki, Data Tapak</translation>
 <translation id="4833786495304741580">Menghantar perangkaan penggunaan dan laporan ranap sistem secara automatik kepada Google.</translation>
@@ -414,6 +412,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="6858855187367714033">Diimbas</translation>
 <translation id="6859944681507688231">Untuk mengimbas kod QR atau kad kredit, dayakan kamera daripada tetapan.</translation>
 <translation id="6873263987691478642">Paparan Pisah</translation>
+<translation id="6888009575607455378">Adakah anda pasti anda mahu membuang perubahan anda?</translation>
 <translation id="6896758677409633944">Salin</translation>
 <translation id="6903907808598579934">Hidupkan penyegerakan</translation>
 <translation id="6914583639806229067">Cari Imej yang Anda Salin</translation>

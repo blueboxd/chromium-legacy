@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Abrir páginas de inicio</translation>
 <translation id="1883255238294161206">Ocultar lista</translation>
 <translation id="1898423065542865115">Filtrado</translation>
+<translation id="1901443836186977402">{1,plural, =1{Este servidor no puedo probar que su dominio sea <ph name="DOMAIN" />; su certificado de seguridad venció en el último día. Es posible que se deba a una configuración incorrecta o a que un atacante haya interceptado tu conexión. El reloj de la computadora actualmente está configurado en la siguiente fecha: <ph name="CURRENT_DATE" />. ¿Es correcto? De no ser así, corrige el reloj del sistema y, luego, actualiza esta página.}other{Este servidor no pudo probar que su dominio sea <ph name="DOMAIN" />; el certificado de seguridad venció hace # días. Es posible que esto se deba a una configuración incorrecta o a que un atacante haya interceptado tu conexión. El reloj de la computadora actualmente está configurado en la siguiente fecha: <ph name="CURRENT_DATE" />. ¿Es correcto? De no ser así, corrige el reloj del sistema y, luego, actualiza la página.}}</translation>
 <translation id="1914326953223720820">Servicio de descompresión</translation>
 <translation id="1915697529809968049">¿Deseas usar Touch ID en lugar de CVC?</translation>
 <translation id="1916770123977586577">Para aplicar la configuración actualizada en este sitio, vuelve a cargar la página</translation>
@@ -443,6 +444,7 @@
 <translation id="3116158981186517402">Laminado</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Intenta ejecutar el Diagnóstico de conectividad<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Ir a <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Ninguno}=1{Datos de acceso para 1 cuenta}other{Datos de acceso para # cuentas}}</translation>
 <translation id="3145945101586104090">Se produjo un error al decodificar respuesta.</translation>
 <translation id="3150653042067488994">Error temporal del servidor</translation>
@@ -828,6 +830,7 @@
 <translation id="5043480802608081735">Vínculo que copiaste</translation>
 <translation id="5045550434625856497">Contraseña incorrecta</translation>
 <translation id="5056549851600133418">Artículos para ti</translation>
+<translation id="5061227663725596739">¿Quisiste decir <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 en uso)}other{(# en uso)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Comprobar la dirección de proxy<ph name="END_LINK" />.</translation>
@@ -881,6 +884,7 @@
 <translation id="5284909709419567258">Direcciones de red</translation>
 <translation id="5285570108065881030">Mostrar todas las contraseñas guardadas</translation>
 <translation id="5287240709317226393">Mostrar cookies</translation>
+<translation id="5287456746628258573">Este sitio usa una configuración de seguridad obsoleta. Si envías información (p. ej., contraseñas o números de tarjetas de crédito) a este sitio, es posible que se filtre.</translation>
 <translation id="5288108484102287882">La validación de los valores de la política generó advertencias</translation>
 <translation id="5299298092464848405">Error al analizar la política</translation>
 <translation id="5300589172476337783">Mostrar</translation>
@@ -1008,6 +1012,7 @@
 <translation id="5946937721014915347">Abriendo <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Sí, agregar</translation>
 <translation id="5951495562196540101">No se puede realizar la inscripción con una cuenta personal (licencia de paquete disponible).</translation>
+<translation id="5966900314707961320">Cuando esta opción está activada, los sitios no pueden usar cookies que te rastreen en la Web</translation>
 <translation id="5967592137238574583">Editar la información de contacto</translation>
 <translation id="5967867314010545767">Eliminar del historial</translation>
 <translation id="5975083100439434680">Alejar</translation>
@@ -1090,6 +1095,7 @@
 <translation id="6383221683286411806">Es posible que se cobren cargos.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 sugerencia más}other{# sugerencias más}}</translation>
 <translation id="6387754724289022810">Para realizar pagos de forma más rápida la próxima vez, guarda tu tarjeta y dirección de facturación en tu cuenta de Google y en este dispositivo.</translation>
+<translation id="6389470377220713856">Nombre en tarj.</translation>
 <translation id="6390200185239044127">Plegado en Z a la mitad</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Esta política es obsoleta. En su lugar, debes usar la política <ph name="NEW_POLICY" />.</translation>
@@ -1268,7 +1274,6 @@ Detalles adicionales:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Se afilió:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Salir de este sitio</translation>
 <translation id="7353601530677266744">Línea de comandos</translation>
 <translation id="7372973238305370288">resultado de búsqueda</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1441,6 +1446,7 @@ Detalles adicionales:
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8149426793427495338">La computadora se suspendió.</translation>
 <translation id="8150722005171944719">El archivo de <ph name="URL" /> no se puede leer. Es posible que se haya eliminado o movido o que se impida el acceso a los permisos del archivo.</translation>
+<translation id="8157295877370077682">Salir del sitio</translation>
 <translation id="8163866351304776260">Perforación cuádruple a la izquierda</translation>
 <translation id="8175796834047840627">Como accediste a tu cuenta, Chrome te ofrece guardar tus tarjetas en tu Cuenta de Google. Puedes modificar este comportamiento en la configuración.</translation>
 <translation id="8184538546369750125">Usar configuración global predeterminada (Permitir)</translation>

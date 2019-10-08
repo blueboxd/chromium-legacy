@@ -951,7 +951,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2379281330731083556">In bằng hộp thoại hệ thống... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Hỏi trước khi gửi (được đề xuất)</translation>
 <translation id="2384436799579181135">Đã xảy ra lỗi. Vui lòng kiểm tra máy in của bạn và thử lại.</translation>
-<translation id="2386926718981642523">Nói "Ok Google" bất cứ lúc nào bạn muốn sử dụng Trợ lý</translation>
 <translation id="2387458720915042159">Loại kết nối proxy</translation>
 <translation id="2391419135980381625">Phông chữ tiêu chuẩn</translation>
 <translation id="2392369802118427583">Kích hoạt</translation>
@@ -1355,7 +1354,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2961695502793809356">Nhấp vào để tiến, giữ để xem lịch sử</translation>
 <translation id="2963151496262057773">Plugin sau không hồi đáp: <ph name="PLUGIN_NAME" />Bạn có muốn dừng lại không?</translation>
 <translation id="2966937470348689686">Quản lý tùy chọn Android</translation>
-<translation id="2972557485845626008">Chương trình cơ sở</translation>
 <translation id="2972581237482394796">&amp;Làm lại</translation>
 <translation id="2973324205039581528">Tắt tiếng trang web</translation>
 <translation id="2977480621796371840">Xóa khỏi nhóm</translation>
@@ -1613,7 +1611,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Dấu phân tách</translation>
 <translation id="3387614642886316601">Sử dụng tính năng kiểm tra lỗi chính tả nâng cao</translation>
-<translation id="3393352139658145068">Kích hoạt Trợ lý khi có người nói “Ok Google”. Để tiết kiệm pin, “Ok Google” chỉ bật khi thiết bị của bạn được kết nối với nguồn điện.</translation>
 <translation id="3396800784455899911">Bằng cách nhấp vào nút "Đồng ý và tiếp tục", bạn đồng ý với quy trình xử lý mô tả ở trên cho các dịch vụ này của Google.</translation>
 <translation id="3399432415385675819">Thông báo sẽ bị tắt</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hertz) - đan xen</translation>
@@ -1888,7 +1885,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3759933321830434300">Chặn các phần của trang web</translation>
 <translation id="3760460896538743390">Kiểm tra trang &amp;nền</translation>
 <translation id="37613671848467444">Mở trong &amp;Cửa sổ ẩn danh</translation>
-<translation id="3764314093345384080">Thông tin bản dựng chi tiết</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Kết nối với một thiết bị USB}other{Kết nối với # thiết bị USB}}</translation>
 <translation id="3765246971671567135">Không thể đọc chính sách về chế độ minh họa ngoại tuyến.</translation>
 <translation id="3768037234834996183">Đang đồng bộ hóa tùy chọn của bạn...</translation>
@@ -2169,7 +2165,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4138267921960073861">Hiển thị tên người dùng và ảnh trên màn hình đăng nhập</translation>
 <translation id="4142052906269098341">Mở khóa <ph name="DEVICE_TYPE" /> bằng điện thoại của bạn. <ph name="LINK_BEGIN" />Tìm hiểu thêm<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">Trải nhiệm chất lượng video tốt hơn và tiết kiệm pin. Video sẽ chỉ phát trên màn hình có hỗ trợ tính năng Truyền.</translation>
-<translation id="4145922204387553806">Cho phép Trợ lý hiển thị thông tin liên quan đến nội dung trên màn hình của bạn</translation>
 <translation id="4146026355784316281">Luôn mở bằng trình xem hệ thống</translation>
 <translation id="4146785383423576110">Đặt lại và dọn dẹp</translation>
 <translation id="4147911968024186208">Vui lòng thử lại. Nếu bạn vẫn thấy lỗi này, vui lòng liên hệ với người đại diện hỗ trợ của bạn.</translation>
@@ -2391,7 +2386,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4534661889221639075">Hãy thử lại.</translation>
 <translation id="4535127706710932914">Hồ sơ mặc định</translation>
 <translation id="4535767533210902251">Cảm biến vân tay là phím trên cùng bên phải của bàn phím. Hãy chạm nhẹ ngón tay bất kỳ vào đó.</translation>
-<translation id="4538417792467843292">Xóa từ</translation>
 <translation id="4538684596480161368">Luôn chặn các plugin không có hộp cát trên <ph name="HOST" /></translation>
 <translation id="4538792345715658285">Được cài đặt theo chính sách doanh nghiệp.</translation>
 <translation id="4542520061254486227">Đọc dữ liệu của bạn trên <ph name="WEBSITE_1" /> và <ph name="WEBSITE_2" /></translation>
@@ -3768,7 +3762,6 @@ Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế
 <translation id="6577284282025554716">Đã hủy tải xuống: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Mã hóa mật khẩu đã đồng bộ hóa với tên người dùng và mật khẩu Google của bạn</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> - Đã chia sẻ nội dung trên màn hình</translation>
-<translation id="6580151766480067746">Phiên bản ARC</translation>
 <translation id="6582080224869403177">Đặt lại <ph name="DEVICE_TYPE" /> của bạn để nâng cấp bảo mật.</translation>
 <translation id="6584878029876017575">Ký Trọn đời của Microsoft</translation>
 <translation id="6586451623538375658">Hoán đổi nút chuột chính</translation>

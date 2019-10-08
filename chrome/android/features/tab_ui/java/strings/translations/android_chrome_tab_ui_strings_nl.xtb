@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="1181037720776840403">Verwijderen</translation>
 <translation id="125153950246128346">Tik om nog een tabblad te bekijken</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> tabblad}other{<ph name="TABS_COUNT_MANY" /> tabbladen}}</translation>
 <translation id="257674075312929031">Groep</translation>

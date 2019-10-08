@@ -58,6 +58,9 @@ constexpr int kSearchBoxHeight = 56;
 // due to the round up.
 constexpr int kSearchBoxBottomSpacing = 1;
 
+// Minimum spacing between shelf and bottom of search box.
+constexpr int kSearchResultPageMinimumBottomMargin = 24;
+
 constexpr SkColor kSeparatorColor = SkColorSetA(gfx::kGoogleGrey900, 0x24);
 
 // The shadow elevation value for the shadow of the expanded search box.
@@ -268,10 +271,11 @@ gfx::Size SearchResultPageView::CalculatePreferredSize() const {
 }
 
 void SearchResultPageView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // This bounds change is produced by search result movement (rotation, etc)
-  // and all content has to follow.
-  if (previous_bounds != GetContentsBounds())
-    layer()->SetClipRect(GetContentsBounds());
+  // The clip rect set for page state animations needs to be reset when the
+  // bounds change because page size change invalidates the previous bounds.
+  // This allows content to properly follow target bounds when screen rotates.
+  if (previous_bounds.size() != bounds().size())
+    layer()->SetClipRect(gfx::Rect());
 }
 
 void SearchResultPageView::ReorderSearchResultContainers() {
@@ -529,8 +533,16 @@ gfx::Rect SearchResultPageView::GetPageBoundsForState(
     // Hides this view behind the search box by using the same bounds.
     return search_box_bounds;
   }
-  return gfx::Rect(search_box_bounds.origin(),
-                   gfx::Size(search_box_bounds.width(), kHeight));
+
+  gfx::Rect bounding_rect = contents_bounds;
+  bounding_rect.Inset(0, 0, 0, kSearchResultPageMinimumBottomMargin);
+
+  gfx::Rect preferred_bounds =
+      gfx::Rect(search_box_bounds.origin(),
+                gfx::Size(search_box_bounds.width(), kHeight));
+  preferred_bounds.Intersect(bounding_rect);
+
+  return preferred_bounds;
 }
 
 views::View* SearchResultPageView::GetFirstFocusableView() {

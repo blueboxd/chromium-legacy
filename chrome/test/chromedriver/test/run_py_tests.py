@@ -78,8 +78,6 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testAlertOnNewWindow',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=1011225
-    'ChromeDriverTest.testActionsMultiTouchPoint',
 ]
 
 
@@ -953,15 +951,18 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         'document.body.innerHTML = "<div>old</div>";'
         'var div = document.getElementsByTagName("div")[0];'
         'window.events = [];'
-        'var touch_point_count = 0;'
         'div.style["width"] = "100px";'
         'div.style["height"] = "100px";'
-        'div.addEventListener("pointerdown", function() {'
-        '  touch_point_count++;'
+        'div.addEventListener("touchstart", function(e) {'
         '  window.events.push('
-        '      {x: event.clientX, y: event.clientY});'
+        '      {type: e.type,'
+        '       x: e.touches[e.touches.length - 1].clientX,'
+        '       y: e.touches[e.touches.length - 1].clientY});'
         '});'
-        'return div;')
+        'div.addEventListener("touchend", function(e) {'
+        '  window.events.push('
+        '      {type: e.type});'
+        '});')
     actions = ({"actions": [{
       "type":"pointer",
       "actions":[{"type": "pointerMove", "x": 10, "y": 10},
@@ -978,7 +979,11 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       "id": "pointer2"}]})
     self._driver.PerformActions(actions)
     events = self._driver.ExecuteScript('return window.events')
-    self.assertEquals(2, len(events))
+    self.assertEquals(4, len(events))
+    self.assertEquals("touchstart", events[0]['type'])
+    self.assertEquals("touchstart", events[1]['type'])
+    self.assertEquals("touchend", events[2]['type'])
+    self.assertEquals("touchend", events[3]['type'])
     self.assertEquals(10, events[0]['x'])
     self.assertEquals(10, events[0]['y'])
     self.assertEquals(15, events[1]['x'])
@@ -2463,19 +2468,19 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
         self._driver.RemoveVirtualAuthenticator, 'id')
 
     # Create an authenticator and try removing it.
-    response = self._driver.AddVirtualAuthenticator(
+    authenticatorId = self._driver.AddVirtualAuthenticator(
         protocol = 'ctap2',
         transport = 'usb',
         hasResidentKey = False,
         hasUserVerification = False,
     )
-    self._driver.RemoveVirtualAuthenticator(response['authenticatorId'])
+    self._driver.RemoveVirtualAuthenticator(authenticatorId)
 
     # Trying to remove the same authenticator should fail.
     self.assertRaisesRegexp(
         chromedriver.InvalidArgument,
         'Could not find a Virtual Authenticator matching the ID',
-        self._driver.RemoveVirtualAuthenticator, response['authenticatorId'])
+        self._driver.RemoveVirtualAuthenticator, authenticatorId)
 
   def testAddCredential(self):
 
@@ -2495,7 +2500,7 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
         transport = 'usb',
         hasResidentKey = False,
         hasUserVerification = False,
-    )['authenticatorId']
+    )
 
     # Register a credential and try authenticating with it.
     self._driver.AddCredential(
@@ -2520,7 +2525,7 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
         transport = 'usb',
         hasResidentKey = False,
         hasUserVerification = False,
-    )['authenticatorId']
+    )
 
     # Try adding a credentialId that is encoded in vanilla base64.
     self.assertRaisesRegexp(
@@ -2555,7 +2560,7 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
         hasResidentKey = True,
         hasUserVerification = True,
         isUserVerified = True,
-    )['authenticatorId']
+    )
 
     # Register a credential via the webauthn API.
     result = self._driver.ExecuteAsyncScript(script)
@@ -2563,7 +2568,7 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     credentialId = result['credential']['id']
 
     # GetCredentials should return the credential that was just created.
-    credentials = self._driver.GetCredentials(authenticatorId)['credentials']
+    credentials = self._driver.GetCredentials(authenticatorId)
     self.assertEquals(1, len(credentials))
     self.assertEquals(credentialId, credentials[0]['credentialId'])
     self.assertEquals(True, credentials[0]['isResidentCredential'])
@@ -2583,7 +2588,7 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     authenticatorId = self._driver.AddVirtualAuthenticator(
         protocol = 'ctap2',
         transport = 'usb',
-    )['authenticatorId']
+    )
 
     # Register two credentials.
     result = self._driver.ExecuteAsyncScript(script)
@@ -2595,12 +2600,12 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     credential2Id = result['credential']['id']
 
     # GetCredentials should return both credentials.
-    credentials = self._driver.GetCredentials(authenticatorId)['credentials']
+    credentials = self._driver.GetCredentials(authenticatorId)
     self.assertEquals(2, len(credentials))
 
     # Removing the first credential should leave only the first one.
     self._driver.RemoveCredential(authenticatorId, credential1Id)
-    credentials = self._driver.GetCredentials(authenticatorId)['credentials']
+    credentials = self._driver.GetCredentials(authenticatorId)
     self.assertEquals(1, len(credentials))
     self.assertEquals(credential2Id, credentials[0]['credentialId'])
 
@@ -2614,7 +2619,7 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     authenticatorId = self._driver.AddVirtualAuthenticator(
         protocol = 'ctap2',
         transport = 'usb',
-    )['authenticatorId']
+    )
 
     # Register a credential via the webauthn API.
     result = self._driver.ExecuteAsyncScript(register_credential_script)
@@ -2660,7 +2665,7 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
         transport = 'usb',
         hasResidentKey = True,
         hasUserVerification = True,
-    )['authenticatorId']
+    )
 
     # Configure the virtual authenticator to fail user verification.
     self._driver.SetUserVerified(authenticatorId, False)

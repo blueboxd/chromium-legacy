@@ -49,6 +49,9 @@ TemplateURLData::TemplateURLData()
 
 TemplateURLData::TemplateURLData(const TemplateURLData& other) = default;
 
+TemplateURLData& TemplateURLData::operator=(const TemplateURLData& other) =
+    default;
+
 TemplateURLData::TemplateURLData(const base::string16& name,
                                  const base::string16& keyword,
                                  base::StringPiece search_url,
@@ -96,8 +99,7 @@ TemplateURLData::TemplateURLData(const base::string16& name,
   }
 }
 
-TemplateURLData::~TemplateURLData() {
-}
+TemplateURLData::~TemplateURLData() = default;
 
 void TemplateURLData::SetShortName(const base::string16& short_name) {
   // Remove tabs, carriage returns, and the like, as they can corrupt

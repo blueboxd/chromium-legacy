@@ -312,6 +312,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Cache-Control response header says otherwise.
 - (void)purgeCachedWebViewPages;
 
+// Simulators background, killing, and restoring the app within the limitations
+// of EG1, by simply doing a tab grid close all / undo / done.
+- (void)triggerRestoreViaTabGridRemoveAllUndo;
+
 #pragma mark - Bookmarks Utilities (EG2)
 
 // Waits for the bookmark internal state to be done loading.

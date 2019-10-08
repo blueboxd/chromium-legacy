@@ -103,6 +103,8 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   if (url_loader_)
     return false;
 
+  hints_fetch_start_time_ = base::TimeTicks::Now();
+
   request_context_ = request_context;
 
   get_hints_request_ = std::make_unique<proto::GetHintsRequest>();
@@ -184,6 +186,8 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
 void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
                                   int net_status,
                                   int response_code) {
+  SEQUENCE_CHECKER(sequence_checker_);
+
   std::unique_ptr<proto::GetHintsResponse> get_hints_response =
       std::make_unique<proto::GetHintsResponse>();
 
@@ -201,6 +205,9 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
     UMA_HISTOGRAM_COUNTS_100(
         "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount",
         get_hints_response->hints_size());
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency",
+        base::TimeTicks::Now() - hints_fetch_start_time_);
     UpdateHostsSuccessfullyFetched();
     std::move(hints_fetched_callback_)
         .Run(request_context_, std::move(get_hints_response));
@@ -261,6 +268,8 @@ void HintsFetcher::UpdateHostsSuccessfullyFetched() {
 
 void HintsFetcher::OnURLLoadComplete(
     std::unique_ptr<std::string> response_body) {
+  SEQUENCE_CHECKER(sequence_checker_);
+
   int response_code = -1;
   if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
     response_code = url_loader_->ResponseInfo()->headers->response_code();

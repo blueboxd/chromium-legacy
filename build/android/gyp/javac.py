@@ -600,8 +600,7 @@ def main(argv):
       depfile_deps=depfile_deps,
       input_paths=input_paths,
       input_strings=input_strings,
-      output_paths=output_paths,
-      add_pydeps=False)
+      output_paths=output_paths)
   logging.info('Script complete: %s', __file__)
 
 

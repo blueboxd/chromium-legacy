@@ -260,7 +260,7 @@ void CrostiniPackageService::OnInstallLinuxPackageProgress(
   if (status == InstallLinuxPackageProgressStatus::INSTALLING)
     display_progress += 50;  // Second phase
 
-  UpdatePackageOperationStatus(std::make_pair(vm_name, container_name),
+  UpdatePackageOperationStatus(ContainerId(vm_name, container_name),
                                InstallStatusToOperationStatus(status),
                                display_progress);
 }

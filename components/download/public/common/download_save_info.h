@@ -56,12 +56,6 @@ struct COMPONENTS_DOWNLOAD_EXPORT DownloadSaveInfo {
   // used for validation purpose.
   int64_t file_offset = -1;
 
-  // The number of the bytes to download from |offset|.
-  // Ask to retrieve segment of the download file when length is greater than 0.
-  // Request the rest of the file starting from |offset|, when length is
-  // |kLengthFullContent|.
-  int64_t length = kLengthFullContent;
-
   // The state of the hash. If specified, this hash state must indicate the
   // state of the partial file for the first |offset| bytes.
   std::unique_ptr<crypto::SecureHash> hash_state;

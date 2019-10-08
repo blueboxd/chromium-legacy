@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "gpu/vulkan/vulkan_export.h"
+#include "gpu/vulkan/vulkan_info.h"
 #include "ui/gfx/extension_set.h"
 
 namespace gpu {
@@ -29,27 +30,17 @@ class VULKAN_EXPORT VulkanInstance {
   bool Initialize(const std::vector<const char*>& required_extensions,
                   const std::vector<const char*>& required_layers);
 
-  // VkApplicationInfo.apiVersion value used to initialize the instance.
-  uint32_t api_version() const { return api_version_; }
-
-  const gfx::ExtensionSet& enabled_extensions() const {
-    return enabled_extensions_;
-  }
-
-  const std::vector<VkLayerProperties>& layer_properties() const {
-    return layer_properties_;
-  }
+  const VulkanInfo& vulkan_info() const { return vulkan_info_; }
 
   VkInstance vk_instance() { return vk_instance_; }
 
  private:
+  void CollectInfo();
   void Destroy();
 
-  uint32_t api_version_;
+  VulkanInfo vulkan_info_;
 
   VkInstance vk_instance_ = VK_NULL_HANDLE;
-  std::vector<VkLayerProperties> layer_properties_;
-  gfx::ExtensionSet enabled_extensions_;
   bool debug_report_enabled_ = false;
 #if DCHECK_IS_ON()
   VkDebugReportCallbackEXT error_callback_ = VK_NULL_HANDLE;

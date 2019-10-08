@@ -53,12 +53,6 @@ struct AssistantAlarmTimerEvent {
 // AssistantController. Currently used by the Assistant service to notify Ash
 // of changes to the underlying alarm/timer state in LibAssistant.
 interface AssistantAlarmTimerController {
-  // Invoked when a timer has started sounding.
-  OnTimerSoundingStarted();
-
-  // Invoked when a timer has finished sounding.
-  OnTimerSoundingFinished();
-
   // Invoked when an alarm/timer state changed. No alarm/timer is ringing if
   // |event| is nullptr.
   OnAlarmTimerStateChanged(AssistantAlarmTimerEvent? event);

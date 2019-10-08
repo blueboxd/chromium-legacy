@@ -4119,22 +4119,6 @@ void HTMLMediaElement::OnRemovedFromDocumentTimerFired(TimerBase*) {
   PauseInternal();
 }
 
-void HTMLMediaElement::DefaultEventHandler(Event& event) {
-  if (event.IsKeyboardEvent() && event.type() == event_type_names::kKeyup &&
-      ShouldShowControls()) {
-    // TODO(bokan): Cleanup magic numbers once https://crbug.com/949766 lands.
-    const int key =
-        static_cast<int>(ToKeyboardEvent(event).KeyEvent()->dom_key);
-    if (key == 0x00200310) {
-      // We need to handle the event here rather than in
-      // MediaControlsTouchlessImpl because it is not sent to JS.
-      GetMediaControls()->ShowContextMenu();
-      event.SetDefaultHandled();
-    }
-  }
-  HTMLElement::DefaultEventHandler(event);
-}
-
 void HTMLMediaElement::AudioSourceProviderImpl::Wrap(
     scoped_refptr<WebAudioSourceProviderImpl> provider) {
   MutexLocker locker(provide_input_lock);

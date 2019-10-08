@@ -208,6 +208,7 @@
 <translation id="2498359688066513246">Pomoč in povratne inform.</translation>
 <translation id="2501278716633472235">Nazaj</translation>
 <translation id="2513403576141822879">Če vas zanima več nastavitev, povezanih z zasebnostjo, varnostjo in zbiranjem podatkov, si oglejte razdelek <ph name="BEGIN_LINK" />Sinhronizacija in Googlove storitve<ph name="END_LINK" /></translation>
+<translation id="2518590038762162553">Chrome v lahkem načinu naloži strani hitreje in uporabi do 60 odstotkov manj podatkov. Chrome zaradi optimiziranja strani, ki jih obiščete, Googlu pošlje vaš spletni promet. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Googlu pošlje URL-je strani, ki jih obiščete</translation>
 <translation id="2532336938189706096">Spletni pogled</translation>
 <translation id="2534155362429831547">Št. izbrisanih elementov: <ph name="NUMBER_OF_ITEMS" /></translation>
@@ -673,7 +674,7 @@ Prepričajte se, da zaupate temu spletnemu mestu, preden zaženete VR.</translat
 <translation id="5962718611393537961">Dotik za strnitev</translation>
 <translation id="6000066717592683814">Ohrani Google</translation>
 <translation id="6005538289190791541">Predlagano geslo</translation>
-<translation id="6036057147555329831">Dodatni model ICU</translation>
+<translation id="6036057147555329831">Dodatni modul ICU</translation>
 <translation id="6039379616847168523">Premik na naslednji zavihek</translation>
 <translation id="6040143037577758943">Zapri</translation>
 <translation id="6042308850641462728">Več</translation>

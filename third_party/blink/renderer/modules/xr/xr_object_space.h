@@ -31,6 +31,10 @@ class XRObjectSpace : public XRSpace {
     return std::make_unique<TransformationMatrix>(object_from_mojo.Inverse());
   }
 
+  base::Optional<XRNativeOriginInformation> NativeOrigin() const override {
+    return XRNativeOriginInformation::Create(object_);
+  }
+
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(object_);
     XRSpace::Trace(visitor);

@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">બુકમાર્કમાં ફેરફાર કરો</translation>
 <translation id="2179182049312275900">તમે કોઈ પણ સમયે સેટિંગમાં સિંક કરો ચાલુ કરી શકો છો.</translation>
 <translation id="2198757192731523470">શોધ, જાહેરાતો અને અન્ય Google સેવાઓને મનગમતી બનાવવા માટે Google, તમારા ઇતિહાસનો ઉપયોગ કરી શકે છે.</translation>
-<translation id="2207590065820824892">વાંચન સૂચિમાં <ph name="UNREAD_COUNT" /> ન વાંચેલા લેખો.</translation>
 <translation id="2230173723195178503">વેબપેજ લોડ કર્યું</translation>
 <translation id="2239626343334228536">બ્રાઉઝિંગ ડેટા સાફ થઈ રહ્યો છે...</translation>
 <translation id="2267753748892043616">એકાઉન્ટ ઉમેરો</translation>
@@ -265,7 +264,6 @@
 
 આ સેટિંગ બદલવા માટે, <ph name="BEGIN_LINK" />સિંકને રીસેટ કરો<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">અમાન્ય કાર્ડ નંબર</translation>
-<translation id="4807020197310989387">વાંચન સૂચિમાં 1 ન વાંચેલ લેખ.</translation>
 <translation id="4818522717893377262">ભાષા ઉમેરો...</translation>
 <translation id="481968316161811770">કુકીઝ, સાઇટ ડેટા</translation>
 <translation id="4833786495304741580">Googleને વપરાશના આંકડા અને ક્રૅશ રિપોર્ટ ઑટોમૅટિક રીતે મોકલે છે.</translation>
@@ -414,6 +412,7 @@
 <translation id="6858855187367714033">સ્કૅન કર્યો</translation>
 <translation id="6859944681507688231">QR કોડ અથવા ક્રેડિટ કાર્ડ સ્કૅન કરવા માટે, સેટિંગમાં કૅમેરા ચાલુ કરો.</translation>
 <translation id="6873263987691478642">વિભાજિત દૃશ્ય</translation>
+<translation id="6888009575607455378">શું તમે ખરેખર તમારા ફેરફારો કાઢી નાખવા ઇચ્છો છો?</translation>
 <translation id="6896758677409633944">કૉપિ કરો</translation>
 <translation id="6903907808598579934">સમન્વયન ચાલુ કરો</translation>
 <translation id="6914583639806229067">તમે કૉપિ કરેલી છબી માટે શોધ કરો</translation>

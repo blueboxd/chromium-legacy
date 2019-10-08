@@ -13,12 +13,16 @@
 #include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
 namespace blink {
+
+XRRay::XRRay() {
+  origin_ = DOMPointReadOnly::Create(0.0, 0.0, 0.0, 1.0);
+  direction_ = DOMPointReadOnly::Create(0.0, 0.0, -1.0, 0.0);
+}
 
 XRRay::XRRay(const TransformationMatrix& matrix,
              ExceptionState& exception_state) {
@@ -60,7 +64,8 @@ void XRRay::Set(const TransformationMatrix& matrix,
 }
 
 // Sets member variables from passed in |origin| and |direction|.
-// All constructors eventually invoke this method.
+// All constructors with the exception of default constructor eventually invoke
+// this method.
 // If the |direction|'s length is 0, this method will initialize direction to
 // default vector (0, 0, -1).
 void XRRay::Set(FloatPoint3D origin,
@@ -184,10 +189,23 @@ DOMFloat32Array* XRRay::matrix() {
     // onto translation (i.e. translation * rotation) in column-vector notation.
     // Step 8: Set ray’s internal matrix to matrix
     matrix_ = transformationMatrixToDOMFloat32Array(matrix);
+    if (!raw_matrix_) {
+      raw_matrix_ = std::make_unique<TransformationMatrix>(matrix);
+    } else {
+      *raw_matrix_ = matrix;
+    }
   }
 
   // Step 9: Return matrix
   return matrix_;
+}
+
+TransformationMatrix XRRay::RawMatrix() {
+  matrix();
+
+  DCHECK(raw_matrix_);
+
+  return *raw_matrix_;
 }
 
 void XRRay::Trace(blink::Visitor* visitor) {

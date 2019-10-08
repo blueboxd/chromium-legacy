@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">I-edit ang Bookmark</translation>
 <translation id="2179182049312275900">Puwede mong i-on ang pag-sync anumang oras sa mga setting.</translation>
 <translation id="2198757192731523470">Maaaring gamitin ng Google ang iyong history para i-personalize ang Search, mga ad, at iba pang serbisyo ng Google.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> (na) hindi pa nababasang artikulo sa Listahan ng Babasahin</translation>
 <translation id="2230173723195178503">Na-load na ang webpage</translation>
 <translation id="2239626343334228536">Kini-clear ang data sa pag-browse...</translation>
 <translation id="2267753748892043616">Magdagdag ng Account</translation>
@@ -265,7 +264,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync. Ilagay ito upa
 
 Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Invalid ang Numero ng Card</translation>
-<translation id="4807020197310989387">1 hindi pa nababasang artikulo sa Listahan ng Babasahin.</translation>
 <translation id="4818522717893377262">Magdagdag ng Wika...</translation>
 <translation id="481968316161811770">Cookies, Data ng Site</translation>
 <translation id="4833786495304741580">Awtomatikong nagpapadala sa Google ng mga istatistika sa paggamit at ulat ng pag-crash.</translation>
@@ -414,6 +412,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="6858855187367714033">Na-scan</translation>
 <translation id="6859944681507688231">Para mag-scan ng QR code o credit card, i-enable ang camera mula sa mga setting.</translation>
 <translation id="6873263987691478642">Split View</translation>
+<translation id="6888009575607455378">Sigurado ka bang gusto mong i-discard ang iyong mga pagbabago?</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6903907808598579934">I-on ang pag-sync</translation>
 <translation id="6914583639806229067">Maghanap para sa Larawang Kinopya Mo</translation>

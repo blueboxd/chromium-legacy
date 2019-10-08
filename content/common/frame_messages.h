@@ -514,8 +514,6 @@ IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameHostMsg_DownloadUrl_Params)
-  IPC_STRUCT_MEMBER(int, render_view_id)
-  IPC_STRUCT_MEMBER(int, render_frame_id)
   IPC_STRUCT_MEMBER(GURL, url)
   IPC_STRUCT_MEMBER(content::Referrer, referrer)
   IPC_STRUCT_MEMBER(url::Origin, initiator_origin)
@@ -1035,15 +1033,13 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishLoad,
                     GURL /* validated_url */)
 
 // Initiates a download based on user actions like 'ALT+click'.
-IPC_MESSAGE_CONTROL(FrameHostMsg_DownloadUrl, FrameHostMsg_DownloadUrl_Params)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DownloadUrl, FrameHostMsg_DownloadUrl_Params)
 
 // Asks the browser to save a image (for <canvas> or <img>) from a data URL.
 // Note: |data_url| is the contents of a data:URL, and that it's represented as
 // a string only to work around size limitations for GURLs in IPC messages.
-IPC_MESSAGE_CONTROL3(FrameHostMsg_SaveImageFromDataURL,
-                     int /* render_view_id */,
-                     int /* render_frame_id */,
-                     std::string /* data_url */)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_SaveImageFromDataURL,
+                    std::string /* data_url */)
 
 // Notifies that the initial empty document of a view has been accessed.
 // After this, it is no longer safe to show a pending navigation's URL without

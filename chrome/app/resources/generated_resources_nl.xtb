@@ -319,6 +319,7 @@
 <translation id="1470811252759861213">Als je je extensies wilt gebruiken op al je computers, moet je <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1470967055429794975">Hierdoor worden alle gegevens op de beveiligingssleutel, waaronder de pincode, gewist.</translation>
 <translation id="1475502736924165259">Je hebt certificaten die niet in een van de andere categorieën vallen</translation>
+<translation id="1476088332184200792">Kopiëren naar je apparaat</translation>
 <translation id="1476607407192946488">&amp;Taalinstellingen</translation>
 <translation id="1478340334823509079">Details: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Installatie is niet ingeschakeld</translation>
@@ -951,7 +952,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2379281330731083556">Afdrukken via systeemdialoogvenster... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Vragen vóór verzenden (aanbevolen)</translation>
 <translation id="2384436799579181135">Er is een fout opgetreden. Controleer je printer en probeer het opnieuw.</translation>
-<translation id="2386926718981642523">Open je Assistent door 'Oké Google' te zeggen</translation>
 <translation id="2387458720915042159">Proxyverbindingstype</translation>
 <translation id="2391419135980381625">Standaard lettertype</translation>
 <translation id="2392369802118427583">Activeren</translation>
@@ -1341,6 +1341,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2941112035454246133">Laag</translation>
 <translation id="2942560570858569904">Wachten...</translation>
 <translation id="2942581856830209953">Deze pagina aanpassen</translation>
+<translation id="294308617863380348">Inclusief cookies van derden</translation>
 <translation id="2944060181911631861">Verzend gebruiks- en diagnostische gegevens. Verbeter je Android-functionaliteit door automatisch diagnostische, apparaat- en app-gebruiksgegevens naar Google te verzenden. Deze gegevens kunnen worden gebruikt om de systeem- en app-stabiliteit te verbeteren en andere optimalisaties mogelijk te maken. Daarnaast zijn bepaalde verzamelde gegevens nuttig voor Google-apps en -partners, zoals Android-ontwikkelaars. Als je de instelling voor aanvullende Web- en app-activiteit hebt ingeschakeld, kunnen deze gegevens worden opgeslagen in je Google-account. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="2946119680249604491">Verbinding toevoegen</translation>
 <translation id="2948300991547862301">Ga naar <ph name="PAGE_TITLE" /></translation>
@@ -1355,7 +1356,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2961695502793809356">Klik om verder te gaan, houd ingedrukt om de geschiedenis weer te geven</translation>
 <translation id="2963151496262057773">De volgende plug-in reageert niet meer: <ph name="PLUGIN_NAME" />Wil je deze beëindigen?</translation>
 <translation id="2966937470348689686">Android-voorkeuren beheren</translation>
-<translation id="2972557485845626008">Firmware</translation>
 <translation id="2972581237482394796">&amp;Opnieuw</translation>
 <translation id="2973324205039581528">Geluid van site dempen</translation>
 <translation id="2977480621796371840">Uit groep verwijderen</translation>
@@ -1613,7 +1613,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separator</translation>
 <translation id="3387614642886316601">Verbeterde spellingcontrole gebruiken</translation>
-<translation id="3393352139658145068">Activeer de Assistent wanneer iemand 'Oké Google' zegt. 'Oké Google' is alleen ingeschakeld wanneer je apparaat op een voedingsbron is aangesloten om de batterij te sparen.</translation>
 <translation id="3396800784455899911">Door op de knop 'Accepteren en doorgaan' te klikken, ga je akkoord met de bovengenoemde verwerking voor deze Google-services.</translation>
 <translation id="3399432415385675819">Meldingen worden uitgeschakeld</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hertz) - geïnterlinieerd</translation>
@@ -1774,6 +1773,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3613134908380545408"><ph name="FOLDER_NAME" /> weergeven</translation>
 <translation id="3613422051106148727">&amp;Openen op nieuw tabblad</translation>
 <translation id="3615073365085224194">Raak de vingerafdruksensor aan met je vinger</translation>
+<translation id="3615579745882581859"><ph name="FILE_NAME" /> wordt gescand.</translation>
 <translation id="3616741288025931835">&amp;Browsegegevens wissen</translation>
 <translation id="3617891479562106823">Achtergronden zijn niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
@@ -1888,7 +1888,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3759933321830434300">Delen van webpagina's blokkeren</translation>
 <translation id="3760460896538743390">&amp;Achtergrondpagina controleren</translation>
 <translation id="37613671848467444">Openen in &amp;incognitovenster</translation>
-<translation id="3764314093345384080">Gedetailleerde build-gegevens</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Communiceren met een USB-apparaat}other{Communiceren met # USB-apparaten}}</translation>
 <translation id="3765246971671567135">Kan beleid voor offline demomodus niet lezen.</translation>
 <translation id="3768037234834996183">Je voorkeuren worden gesynchroniseerd…</translation>
@@ -2169,7 +2168,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4138267921960073861">Gebruikersnamen en foto's weergeven in het inlogscherm</translation>
 <translation id="4142052906269098341">Ontgrendel je <ph name="DEVICE_TYPE" /> met je telefoon. <ph name="LINK_BEGIN" />Meer informatie<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">Ontvang video van betere kwaliteit en spaar de batterij. De video wordt alleen afgespeeld op je scherm dat werkt met Cast.</translation>
-<translation id="4145922204387553806">Laat de Assistent je scherm lezen om gerelateerde informatie op te zoeken</translation>
 <translation id="4146026355784316281">Altijd openen met systeemviewer</translation>
 <translation id="4146785383423576110">Resetten en opruimen</translation>
 <translation id="4147911968024186208">Probeer het opnieuw. Als deze fout opnieuw wordt weergegeven, neem je contact op met een medewerker van de ondersteuning.</translation>
@@ -2256,6 +2254,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4297322094678649474">Talen wijzigen</translation>
 <translation id="4301671483919369635">Deze pagina heeft toestemming om bestanden te bewerken</translation>
 <translation id="4303079906735388947">Stel een nieuwe pincode in voor je beveiligingssleutel</translation>
+<translation id="4305402730127028764">Kopiëren naar <ph name="DEVICE_NAME" /></translation>
 <translation id="4306119971288449206">Apps moeten worden weergegeven met inhoudstype '<ph name="CONTENT_TYPE" />'</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K live)</translation>
 <translation id="4310139701823742692">Bestand heeft een onjuiste indeling. Controleer het PPD-bestand en probeer het opnieuw.</translation>
@@ -2391,7 +2390,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4534661889221639075">Probeer het opnieuw.</translation>
 <translation id="4535127706710932914">Standaardprofiel</translation>
 <translation id="4535767533210902251">De vingerafdruksensor is de toets rechtsboven op je toetsenbord. Raak deze kort aan met een vinger.</translation>
-<translation id="4538417792467843292">Woord verwijderen</translation>
 <translation id="4538684596480161368">Plug-ins zonder sandbox op <ph name="HOST" /> altijd blokkeren</translation>
 <translation id="4538792345715658285">Geïnstalleerd door bedrijfsbeleid.</translation>
 <translation id="4542520061254486227">Je gegevens voor <ph name="WEBSITE_1" /> en <ph name="WEBSITE_2" /> lezen</translation>
@@ -2935,6 +2933,7 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5367091008316207019">Bestand lezen...</translation>
 <translation id="5368720394188453070">Je telefoon is vergrendeld. Ontgrendel deze om door te gaan.</translation>
 <translation id="5368779022775404937">Inloggen bij <ph name="REALM" /></translation>
+<translation id="5369491905435686894">Muisversnelling inschakelen</translation>
 <translation id="5370819323174483825">&amp;Opnieuw laden</translation>
 <translation id="5372529912055771682">De geleverde inschrijvingsmodus wordt niet ondersteund door deze versie van het besturingssysteem. Zorg ervoor dat je de nieuwste versie gebruikt en probeer het opnieuw.</translation>
 <translation id="5372579129492968947">Extensie losmaken</translation>
@@ -3007,6 +3006,7 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5464632865477611176">Eenmalig uitvoeren</translation>
 <translation id="5464660706533281090">Deze instelling kan niet worden gewijzigd door gebruikers met een kinderaccount.</translation>
 <translation id="5466374726908360271">Pl&amp;akken en zoeken naar '<ph name="SEARCH_TERMS" />'</translation>
+<translation id="5468173180030470402">Zoeken naar fileshares</translation>
 <translation id="5471768120198416576">Hallo. Ik ben je stem voor tekst-naar-spraak.</translation>
 <translation id="5473333559083690127">Pincode opnieuw opgeven</translation>
 <translation id="5481941284378890518">Printers in de buurt toevoegen</translation>
@@ -3542,6 +3542,7 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="6233154960150021497">Standaard spraak in plaats van toetsenbord gebruiken</translation>
 <translation id="6234474535228214774">Installatie in behandeling</translation>
 <translation id="6237816943013845465">Hiermee kun je de schermresolutie aanpassen</translation>
+<translation id="6238767809035845642">Tekst gedeeld vanaf ander apparaat</translation>
 <translation id="6238923052227198598">Laatste notitie op vergrendelingsscherm laten staan</translation>
 <translation id="6239558157302047471">&amp;Frame opnieuw laden</translation>
 <translation id="6241530762627360640">Toegang krijgen tot informatie over Bluetooth-apparaten die zijn gekoppeld met je systeem en Bluetooth-apparaten in de buurt detecteren.</translation>
@@ -3768,7 +3769,6 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="6577284282025554716">Download geannuleerd: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Gesynchroniseerde wachtwoorden versleutelen met je Google-gebruikersnaam en -wachtwoord</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" />: content van bureaublad gedeeld</translation>
-<translation id="6580151766480067746">ARC-versie</translation>
 <translation id="6582080224869403177">Reset je <ph name="DEVICE_TYPE" /> om je beveiliging te upgraden.</translation>
 <translation id="6584878029876017575">Microsoft-ondertekening van levensduur</translation>
 <translation id="6586451623538375658">Primaire muisknop omwisselen</translation>
@@ -4373,6 +4373,7 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="7487141338393529395">Verbeterde spellingcontrole inschakelen</translation>
 <translation id="7487969577036436319">Er zijn geen componenten geïnstalleerd</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{Alles &amp;openen}=1{Bladwijzer &amp;openen}other{Alles (#) &amp;openen}}</translation>
+<translation id="7489761397368794366">Bellen vanaf je apparaat</translation>
 <translation id="749028671485790643">Persoon <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC-adres</translation>
 <translation id="7493386493263658176">De extensie <ph name="EXTENSION_NAME" /> kan alle tekst verzamelen die je typt, waaronder persoonsgegevens zoals wachtwoorden en creditcardnummers. Wil je deze extensie gebruiken?</translation>
@@ -4392,6 +4393,7 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="7508054832109420082">Toegang verlenen tot printers</translation>
 <translation id="7510943789645525906">Je krijgt een waarschuwing als je wachtwoord betrokken was bij een gegevenslek</translation>
 <translation id="7513029293694390567">Automatisch inloggen bij websites met de opgeslagen gegevens. Als de functie is uitgeschakeld, wordt elke keer om bevestiging gevraagd voordat je inlogt bij een website.</translation>
+<translation id="7514239104543605883">Kopiëren naar je apparaat</translation>
 <translation id="7514365320538308">Downloaden</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Zeg "Oké Google"</translation>
@@ -4947,6 +4949,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8274332263553132018">Bestand casten</translation>
 <translation id="8274924778568117936">Je moet je <ph name="DEVICE_TYPE" /> niet uitschakelen of sluiten totdat de update is voltooid. Je <ph name="DEVICE_TYPE" /> wordt opnieuw opgestart nadat de installatie is voltooid.</translation>
 <translation id="8275038454117074363">Importeren</translation>
+<translation id="8275080796245127762">Bellen vanaf je apparaat</translation>
 <translation id="8276560076771292512">Cache wissen en geforceerd opnieuw laden</translation>
 <translation id="8281886186245836920">Overslaan</translation>
 <translation id="8282947398454257691">Je unieke apparaat-ID weten</translation>
@@ -5268,6 +5271,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8758418656925882523">Dicteren inschakelen (spreken om te typen)</translation>
 <translation id="8759408218731716181">Kan toegang tot meerdere accounts niet instellen</translation>
 <translation id="8759753423332885148">Meer informatie.</translation>
+<translation id="8761945298804995673">Deze gebruiker bestaat al</translation>
 <translation id="8762886931014513155">Je <ph name="DEVICE_TYPE" /> moet worden geüpdatet</translation>
 <translation id="8763927697961133303">USB-apparaat</translation>
 <translation id="8767621466733104912">Chrome automatisch updaten voor alle gebruikers</translation>
@@ -5356,6 +5360,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8879284080359814990">Weergeven al&amp;s tabblad</translation>
 <translation id="8879921471468674457">Inloggegevens onthouden</translation>
 <translation id="8881020143150461183">Probeer het opnieuw. Neem contact op met <ph name="CARRIER_NAME" /> voor technische support.</translation>
+<translation id="8883273463630735858">Touchpadversnelling inschakelen</translation>
 <translation id="8884570509232205463">Je apparaat wordt nu vergrendeld om <ph name="UNLOCK_TIME" />.</translation>
 <translation id="8885197664446363138">Smart Lock is niet beschikbaar</translation>
 <translation id="8888253246822647887">Je app wordt geopend wanneer de upgrade is voltooid. Upgrades kunnen enkele minuten duren.</translation>

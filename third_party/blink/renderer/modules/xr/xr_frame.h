@@ -52,8 +52,7 @@ class XRFrame final : public ScriptWrappable {
   }
 
   HeapVector<Member<XRHitTestResult>> getHitTestResults(
-      XRHitTestSource* hitTestSource,
-      XRSpace* relativeTo);
+      XRHitTestSource* hit_test_source);
 
   bool EmulatedPosition() const { return emulated_position_; }
 

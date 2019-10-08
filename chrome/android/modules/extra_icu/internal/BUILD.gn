@@ -12,10 +12,3 @@ android_library("java") {
     "//chrome/android/modules/extra_icu/public:java",
   ]
 }
-
-android_assets("icudtl_extra_assets") {
-  sources = [
-    "//third_party/icu/android_small/icudtl_extra.dat",
-  ]
-  disable_compression = true
-}

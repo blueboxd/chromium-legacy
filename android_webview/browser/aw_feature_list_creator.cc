@@ -51,6 +51,8 @@ const char* const kPersistentPrefsWhitelist[] = {
     // Random seed value for variation's entropy providers. Used to assign
     // experiment groups.
     metrics::prefs::kMetricsLowEntropySource,
+    // Logged directly in the ChromeUserMetricsExtension proto.
+    metrics::prefs::kMetricsSessionID,
     // Current and past country codes, to filter variations studies by country.
     variations::prefs::kVariationsCountry,
     variations::prefs::kVariationsPermanentConsistencyCountry,

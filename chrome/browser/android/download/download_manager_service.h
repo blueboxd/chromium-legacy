@@ -49,13 +49,13 @@ class DownloadManagerService
   DownloadManagerService();
   ~DownloadManagerService() override;
 
-  // Called to Initialize this object. If |is_full_browser_started| is false,
-  // it means only the service manager is launched. OnFullBrowserStarted() will
-  // be called later when browser process fully launches.
-  void Init(JNIEnv* env, jobject obj, bool is_full_browser_started);
+  // Called to Initialize this object. If |is_profile_created| is false,
+  // it means only the service manager is launched. OnProfileCreated() will
+  // be called later when the profile is created.
+  void Init(JNIEnv* env, jobject obj, bool is_profile_created);
 
-  // Called when full browser process starts.
-  void OnFullBrowserStarted(JNIEnv* env, jobject obj);
+  // Called when the prfile is created.
+  void OnProfileCreated(JNIEnv* env, jobject obj);
 
   // Called to handle subsequent steps, after a download was determined as a OMA
   // download type.

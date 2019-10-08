@@ -5075,6 +5075,7 @@ Unknown properties are collapsed to zero. -->
   <int value="217" label="AUTH_INVALID_ICON_URL"/>
   <int value="218" label="MDDH_INVALID_STREAM_SELECTION_INFO"/>
   <int value="219" label="REGISTER_PROTOCOL_HANDLER_INVALID_URL"/>
+  <int value="220" label="NC_SAME_DOCUMENT_POST_COMMIT_ERROR"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -18206,6 +18207,8 @@ Called by update_net_error_codes.py.-->
   <int value="620" label="ShelfAlignment"/>
   <int value="621" label="PrintingAllowedBackgroundGraphicsModes"/>
   <int value="622" label="PrintingBackgroundGraphicsDefault"/>
+  <int value="623" label="LegacySameSiteCookieBehaviorEnabled"/>
+  <int value="624" label="LegacySameSiteCookieBehaviorEnabledForDomainList"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -35894,6 +35897,7 @@ from previous Chrome versions.
   <int value="-892428689" label="ManualPasswordGenerationAndroid:enabled"/>
   <int value="-891856063" label="MidiManagerAndroid:enabled"/>
   <int value="-889670978" label="AssistantRoutines:disabled"/>
+  <int value="-887094098" label="ForcedColors:enabled"/>
   <int value="-886912558" label="ChromeHomePromo:enabled"/>
   <int value="-886898803" label="CooperativeScheduling:enabled"/>
   <int value="-885601782" label="enable-contextual-search"/>
@@ -36764,6 +36768,7 @@ from previous Chrome versions.
   <int value="297095559" label="ShowBluetoothDebugLogToggle:disabled"/>
   <int value="299792415" label="OmniboxSuggestionTransparencyOptions:enabled"/>
   <int value="300095239" label="FCMInvalidations:enabled"/>
+  <int value="301630312" label="ForcedColors:disabled"/>
   <int value="301869874" label="NTPPhysicalWebPageSuggestions:disabled"/>
   <int value="303058039" label="AccountConsistency:disabled"/>
   <int value="303252119" label="AutofillExpandedPopupViews:disabled"/>
@@ -37374,6 +37379,7 @@ from previous Chrome versions.
   <int value="1138349838" label="EnableMDRoundedCornersOnDialogs:disabled"/>
   <int value="1139226452" label="enable-nacl-debug"/>
   <int value="1139363314" label="disable-supervised-user-blacklist"/>
+  <int value="1140541604" label="WinrtGeolocationImplementation:enabled"/>
   <int value="1142515376" label="enable-nacl"/>
   <int value="1142788238" label="FontCacheScaling:disabled"/>
   <int value="1142970266"
@@ -37575,6 +37581,7 @@ from previous Chrome versions.
   <int value="1382500494" label="disable-drive-apps-in-app-list"/>
   <int value="1383591631" label="enable-gesture-typing"/>
   <int value="1384614036" label="disable-unified-media-pipeline"/>
+  <int value="1385833812" label="WinrtGeolocationImplementation:disabled"/>
   <int value="1386300777"
       label="OmniboxUIExperimentHideSuggestionUrlTrivialSubdomains:disabled"/>
   <int value="1387356699" label="PolicyAtomicGroup:enabled"/>
@@ -48852,6 +48859,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="35" label="DateAndTime"/>
   <int value="36" label="Display"/>
   <int value="37" label="ActiveDirectoryManagement"/>
+  <int value="38" label="LegacySameSiteCookieBehaviorSettings"/>
 </enum>
 
 <enum name="PolicyLoadStatus">
@@ -49879,6 +49887,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="11" label="The chrome-proxy header is invalid"/>
   <int value="12" label="The network probe has not completed yet"/>
   <int value="13" label="The network probe completed and failed"/>
+  <int value="14" label="Preview is disabled for API navigations"/>
 </enum>
 
 <enum name="PreviewsServerLitePageServerResponse">
@@ -57819,6 +57828,34 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="TLS 1.3 full handshake (1-RTT, usually)"/>
   <int value="4" label="TLS 1.3 resumption handshake (1-RTT, usually)"/>
   <int value="5" label="TLS 1.3 0-RTT handshake (0-RTT)"/>
+</enum>
+
+<enum name="SSLHandshakeEarlyDataReason">
+<!-- Corresponds to //third_party/boringssl's ssl_early_data_reason_t -->
+
+  <int value="0"
+      label="The handshake has not progressed far enough for the 0-RTT status
+             to be known."/>
+  <int value="1" label="0-RTT is disabled for this connection."/>
+  <int value="2" label="0-RTT was accepted."/>
+  <int value="3"
+      label="The negotiated protocol version does not support 0-RTT."/>
+  <int value="4"
+      label="The peer declined to offer or accept 0-RTT for an unknown
+             reason."/>
+  <int value="5" label="The client did not offer a session."/>
+  <int value="6" label="The server declined to resume the session."/>
+  <int value="7" label="The session does not support 0-RTT."/>
+  <int value="8" label="The server sent a HelloRetryRequest."/>
+  <int value="9"
+      label="The negotiated ALPN protocol did not match the session."/>
+  <int value="10"
+      label="The connection negotiated Channel ID, which is incompatible with
+             0-RTT."/>
+  <int value="11"
+      label="The connection negotiated token binding, which is incompatible
+             with 0-RTT."/>
+  <int value="12" label="The client and server ticket age were too far apart."/>
 </enum>
 
 <enum name="SSLHashAlgorithm">

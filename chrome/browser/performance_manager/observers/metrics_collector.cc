@@ -8,8 +8,8 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/performance_manager/public/graph/graph_operations.h"
-#include "chrome/browser/performance_manager/public/graph/node_attached_data.h"
+#include "components/performance_manager/public/graph/graph_operations.h"
+#include "components/performance_manager/public/graph/node_attached_data.h"
 
 namespace performance_manager {
 

@@ -292,6 +292,10 @@ void BrowserTabStripController::CloseTab(int model_index,
                              TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 }
 
+void BrowserTabStripController::MoveTab(int start_index, int final_index) {
+  model_->MoveWebContentsAt(start_index, final_index, false);
+}
+
 void BrowserTabStripController::ShowContextMenuForTab(
     Tab* tab,
     const gfx::Point& p,

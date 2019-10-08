@@ -13,9 +13,11 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/root_window_settings.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -37,7 +39,6 @@
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
-#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -219,6 +220,86 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   return widget;
 }
 
+// Returns the bounds for the overview window grid according to the split view
+// state. If split view mode is active, the overview window should open on the
+// opposite side of the default snap window. If |divider_changed| is true, maybe
+// clamp the bounds to a minimum size and shift the bounds offscreen.
+gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
+                                bool divider_changed) {
+  gfx::Rect work_area =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          root_window);
+
+  // If the shelf is in auto hide, overview will force it to be in auto hide
+  // shown, but we want to place the thumbnails as if the shelf was shown, so
+  // manually update the work area.
+  if (Shelf::ForWindow(root_window)->GetVisibilityState() == SHELF_AUTO_HIDE) {
+    const int inset = ShelfConfig::Get()->shelf_size();
+    switch (Shelf::ForWindow(root_window)->alignment()) {
+      case SHELF_ALIGNMENT_BOTTOM:
+      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+        work_area.Inset(0, 0, 0, inset);
+        break;
+      case SHELF_ALIGNMENT_LEFT:
+        work_area.Inset(inset, 0, 0, 0);
+        break;
+      case SHELF_ALIGNMENT_RIGHT:
+        work_area.Inset(0, 0, inset, 0);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  if (!split_view_controller->InSplitViewMode())
+    return work_area;
+
+  SplitViewController::SnapPosition opposite_position =
+      (split_view_controller->default_snap_position() ==
+       SplitViewController::LEFT)
+          ? SplitViewController::RIGHT
+          : SplitViewController::LEFT;
+  gfx::Rect bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
+      root_window, opposite_position);
+  if (!divider_changed)
+    return bounds;
+
+  const bool landscape = IsCurrentScreenOrientationLandscape();
+  const int min_length =
+      (landscape ? work_area.width() : work_area.height()) / 3;
+  const int current_length = landscape ? bounds.width() : bounds.height();
+
+  if (current_length > min_length)
+    return bounds;
+
+  // Clamp bounds' length to the minimum length.
+  if (landscape)
+    bounds.set_width(min_length);
+  else
+    bounds.set_height(min_length);
+
+  // The |opposite_position| will be physically on the left or top of the screen
+  // (depending on whether the orientation is landscape or portrait
+  //  respectively), if |opposite_position| is left AND current orientation is
+  // primary, OR |opposite_position| is right AND current orientation is not
+  // primary. This is an X-NOR condition.
+  const bool primary = IsCurrentScreenOrientationPrimary();
+  const bool left_or_top =
+      (primary == (opposite_position == SplitViewController::LEFT));
+  if (left_or_top) {
+    // If we are shifting to the left or top we need to update the origin as
+    // well.
+    const int offset = min_length - current_length;
+    bounds.Offset(landscape ? gfx::Vector2d(-offset, 0)
+                            : gfx::Vector2d(0, -offset));
+  }
+
+  return bounds;
+}
+
 // Get the grid bounds if a window is snapped in splitview, or what they will be
 // when snapped based on |indicator_state|.
 gfx::Rect GetGridBoundsInScreenForSplitview(
@@ -366,11 +447,10 @@ class OverviewGrid::TargetWindowObserver : public aura::WindowObserver {
 
 OverviewGrid::OverviewGrid(aura::Window* root_window,
                            const std::vector<aura::Window*>& windows,
-                           OverviewSession* overview_session,
-                           const gfx::Rect& bounds_in_screen)
+                           OverviewSession* overview_session)
     : root_window_(root_window),
       overview_session_(overview_session),
-      bounds_(bounds_in_screen) {
+      bounds_(GetGridBoundsInScreen(root_window, /*divider_changed=*/false)) {
   for (auto* window : windows) {
     if (window->GetRootWindow() != root_window)
       continue;
@@ -395,6 +475,7 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
 OverviewGrid::~OverviewGrid() = default;
 
 void OverviewGrid::Shutdown() {
+  Shell::Get()->split_view_controller()->RemoveObserver(this);
   ScreenRotationAnimator::GetForRootWindow(root_window_)->RemoveObserver(this);
   Shell::Get()->wallpaper_controller()->RemoveObserver(this);
   grid_event_handler_.reset();
@@ -435,6 +516,7 @@ void OverviewGrid::PrepareForOverview() {
 
   for (const auto& window : window_list_)
     window->PrepareForOverview();
+  Shell::Get()->split_view_controller()->AddObserver(this);
   if (Shell::Get()->tablet_mode_controller()->InTabletMode())
     ScreenRotationAnimator::GetForRootWindow(root_window_)->AddObserver(this);
 
@@ -817,6 +899,66 @@ OverviewItem* OverviewGrid::GetDropTarget() {
   return drop_target_widget_
              ? GetOverviewItemContaining(drop_target_widget_->GetNativeWindow())
              : nullptr;
+}
+
+void OverviewGrid::OnDisplayMetricsChanged() {
+  // In case of split view mode, the grid bounds and item positions will be
+  // updated in |OnSplitViewDividerPositionChanged|.
+  if (Shell::Get()->split_view_controller()->InSplitViewMode())
+    return;
+  SetBoundsAndUpdatePositions(
+      GetGridBoundsInScreen(root_window_, /*divider_changed=*/false),
+      /*ignored_items=*/{}, /*animate=*/false);
+}
+
+void OverviewGrid::OnSplitViewStateChanged(
+    SplitViewController::State previous_state,
+    SplitViewController::State state) {
+  // Do nothing if overview is being shutdown.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  if (!overview_controller->InOverviewSession())
+    return;
+
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  const bool unsnappable_window_activated =
+      state == SplitViewController::State::kNoSnap &&
+      split_view_controller->end_reason() ==
+          SplitViewController::EndReason::kUnsnappableWindowActivated;
+
+  // Restore focus unless either a window was just snapped (and activated) or
+  // split view mode was ended by activating an unsnappable window.
+  if (state != SplitViewController::State::kNoSnap ||
+      unsnappable_window_activated) {
+    overview_session_->ResetFocusRestoreWindow(false);
+  }
+
+  // If two windows were snapped to both sides of the screen or an unsnappable
+  // window was just activated, or we're in single split mode in clamshell mode
+  // and there is no window in overview, end overview mode and bail out.
+  if (state == SplitViewController::State::kBothSnapped ||
+      unsnappable_window_activated ||
+      (split_view_controller->InClamshellSplitViewMode() &&
+       overview_session_->IsEmpty())) {
+    overview_controller->EndOverview();
+    return;
+  }
+
+  // Adjust the grid bounds and update the cannot snap warnings.
+  SetBoundsAndUpdatePositions(
+      GetGridBoundsInScreen(root_window_, /*divider_changed=*/false),
+      /*ignored_items=*/{}, /*animate=*/false);
+  UpdateCannotSnapWarningVisibility();
+
+  // Activate the overview focus window, to match the behavior of entering
+  // overview mode in the beginning.
+  wm::ActivateWindow(overview_session_->GetOverviewFocusWindow());
+}
+
+void OverviewGrid::OnSplitViewDividerPositionChanged() {
+  SetBoundsAndUpdatePositions(GetGridBoundsInScreen(root_window_,
+                                                    /*divider_changed=*/true),
+                              /*ignored_items=*/{}, /*animate=*/false);
 }
 
 void OverviewGrid::OnScreenCopiedBeforeRotation() {

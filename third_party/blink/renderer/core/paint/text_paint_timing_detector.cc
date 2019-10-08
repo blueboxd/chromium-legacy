@@ -112,8 +112,6 @@ void TextPaintTimingDetector::OnPaintFinished() {
 
 void TextPaintTimingDetector::LayoutObjectWillBeDestroyed(
     const LayoutObject& object) {
-  if (!is_recording_)
-    return;
   if (records_manager_.IsKnownVisible(object)) {
     records_manager_.RemoveVisibleRecord(object);
     need_update_timing_at_frame_end_ = true;
@@ -130,8 +128,6 @@ void TextPaintTimingDetector::RegisterNotifySwapTime(
 }
 
 void TextPaintTimingDetector::ReportSwapTime(base::TimeTicks timestamp) {
-  if (!is_recording_)
-    return;
   if (!records_manager_.HasTextElementTiming()) {
     Document* document = frame_view_->GetFrame().GetDocument();
     if (document) {
@@ -150,8 +146,6 @@ void TextPaintTimingDetector::ReportSwapTime(base::TimeTicks timestamp) {
 
 bool TextPaintTimingDetector::ShouldWalkObject(
     const LayoutBoxModelObject& object) const {
-  if (!is_recording_)
-    return false;
   // TODO(crbug.com/933479): Use LayoutObject::GeneratingNode() to include
   // anonymous objects' rect.
   Node* node = object.GetNode();
@@ -197,11 +191,6 @@ void TextPaintTimingDetector::RecordAggregatedText(
       visualizer->DumpTextDebuggingRect(aggregator, mapped_visual_rect);
     }
   }
-}
-
-void TextPaintTimingDetector::StopRecordEntries() {
-  is_recording_ = false;
-  records_manager_.CleanUp();
 }
 
 void TextPaintTimingDetector::StopRecordingLargestTextPaint() {
@@ -311,13 +300,6 @@ TextRecordsManager::TextRecordsManager(
     LocalFrameView* frame_view,
     PaintTimingDetector* paint_timing_detector) {
   ltp_manager_.emplace(frame_view, paint_timing_detector);
-}
-
-void TextRecordsManager::CleanUp() {
-  visible_objects_.clear();
-  invisible_objects_.clear();
-  texts_queued_for_paint_time_.clear();
-  CleanUpLargestTextPaint();
 }
 
 void TextRecordsManager::Trace(blink::Visitor* visitor) {

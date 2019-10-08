@@ -1448,7 +1448,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_localizedExtendedRole(
   COM_OBJECT_VALIDATE_1_ARG(localized_extended_role);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  base::string16 role_description = GetRoleDescription();
+  base::string16 role_description =
+      GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute();
   if (base::ContainsOnlyChars(role_description, base::kWhitespaceUTF16))
     return S_FALSE;
 

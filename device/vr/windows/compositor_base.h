@@ -62,7 +62,6 @@ class XRCompositorCommon : public base::Thread,
                       mojom::XRRuntimeSessionOptionsPtr options,
                       RequestSessionCallback callback);
   void ExitPresent();
-  void VisibilityStateChanged(mojom::XRVisibilityState visibility_state);
 
   void GetFrameData(mojom::XRFrameDataRequestOptionsPtr options,
                     XRFrameDataProvider::GetFrameDataCallback callback) final;
@@ -82,6 +81,7 @@ class XRCompositorCommon : public base::Thread,
 
  protected:
   virtual bool UsesInputEventing();
+  void SetVisibilityState(mojom::XRVisibilityState visibility_state);
 #if defined(OS_WIN)
   D3D11TextureHelper texture_helper_;
 #endif
@@ -183,6 +183,8 @@ class XRCompositorCommon : public base::Thread,
   mojo::Receiver<mojom::XRFrameDataProvider> frame_data_receiver_{this};
   mojo::Binding<mojom::IsolatedXRGamepadProvider> gamepad_provider_;
   mojo::Binding<mojom::ImmersiveOverlay> overlay_binding_;
+  mojom::XRVisibilityState visibility_state_ =
+      mojom::XRVisibilityState::VISIBLE;
 
   DISALLOW_COPY_AND_ASSIGN(XRCompositorCommon);
 };

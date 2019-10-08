@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/resource_load_info.mojom.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/controls/webview/webview.h"
@@ -50,6 +51,18 @@ void ObservableWebView::DidFinishLoad(
 
   if (delegate_)
     delegate_->OnWebContentsFinishedLoad();
+}
+
+void ObservableWebView::ResourceLoadComplete(
+    content::RenderFrameHost* render_frame_host,
+    const content::GlobalRequestID& request_id,
+    const content::mojom::ResourceLoadInfo& resource_load_info) {
+  // Only listen to the main frame.
+  if (render_frame_host->GetParent())
+    return;
+
+  if (delegate_)
+    delegate_->OnMainFrameResourceLoadComplete(resource_load_info);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -378,15 +391,22 @@ void WebDialogView::BeforeUnloadFired(content::WebContents* tab,
   *proceed_to_fire_unload = proceed;
 }
 
-bool WebDialogView::IsWebContentsCreationOverridden(
+bool WebDialogView::ShouldCreateWebContents(
+    content::WebContents* web_contents,
+    content::RenderFrameHost* opener,
     content::SiteInstance* source_site_instance,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
     content::mojom::WindowContainerType window_container_type,
     const GURL& opener_url,
     const std::string& frame_name,
-    const GURL& target_url) {
+    const GURL& target_url,
+    const std::string& partition_id,
+    content::SessionStorageNamespace* session_storage_namespace) {
   if (delegate_)
-    return delegate_->HandleShouldOverrideWebContentsCreation();
-  return false;
+    return delegate_->HandleShouldCreateWebContents();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

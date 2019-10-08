@@ -5,8 +5,8 @@
 // https://gpuweb.github.io/gpuweb/
 
 dictionary GPURenderPipelineDescriptor : GPUPipelineDescriptorBase {
-    required GPUPipelineStageDescriptor vertexStage;
-    GPUPipelineStageDescriptor fragmentStage;
+    required GPUProgrammableStageDescriptor vertexStage;
+    GPUProgrammableStageDescriptor fragmentStage;
 
     required GPUPrimitiveTopology primitiveTopology;
     GPURasterizationStateDescriptor rasterizationState = {};

@@ -14,14 +14,14 @@
 #include "chrome/browser/performance_manager/decorators/page_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
 #include "chrome/browser/performance_manager/decorators/process_metrics_decorator.h"
-#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/policies/policy_features.h"
 #include "chrome/browser/performance_manager/graph/policies/working_set_trimmer_policy.h"
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
-#include "chrome/browser/performance_manager/performance_manager_impl.h"
-#include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
-#include "chrome/browser/performance_manager/render_process_user_data.h"
+#include "components/performance_manager/graph/graph_impl.h"
+#include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/performance_manager_tab_helper.h"
+#include "components/performance_manager/render_process_user_data.h"
 #include "content/public/common/content_features.h"
 
 #if defined(OS_LINUX)

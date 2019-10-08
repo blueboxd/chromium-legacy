@@ -22,6 +22,12 @@ Polymer({
       notify: true,
     },
 
+    dark: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
     disabled: {
       type: Boolean,
       value: false,

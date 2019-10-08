@@ -38,13 +38,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadWorker
         std::unique_ptr<DownloadCreateInfo> download_create_info) = 0;
   };
 
-  DownloadWorker(DownloadWorker::Delegate* delegate,
-                 int64_t offset,
-                 int64_t length);
+  DownloadWorker(DownloadWorker::Delegate* delegate, int64_t offset);
   virtual ~DownloadWorker();
 
   int64_t offset() const { return offset_; }
-  int64_t length() const { return length_; }
 
   // Send network request to ask for a download.
   void SendRequest(std::unique_ptr<DownloadUrlParameters> params,
@@ -73,9 +70,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadWorker
 
   // The starting position of the content for this worker to download.
   int64_t offset_;
-
-  // The length of the request. May be 0 to fetch to the end of the file.
-  int64_t length_;
 
   // States of the worker.
   bool is_paused_;

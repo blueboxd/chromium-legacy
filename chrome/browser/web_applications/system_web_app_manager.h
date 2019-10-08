@@ -139,7 +139,7 @@ class SystemWebAppManager {
 
   base::flat_map<AppId, SystemAppType> app_id_to_app_type_;
 
-  PrefService* pref_service_;
+  PrefService* const pref_service_;
 
   // Used to install, uninstall, and update apps. Should outlive this class.
   PendingAppManager* pending_app_manager_ = nullptr;

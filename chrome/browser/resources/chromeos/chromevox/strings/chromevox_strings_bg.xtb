@@ -326,6 +326,7 @@
 <translation id="3241052487511142956">Предишна посетена връзка</translation>
 <translation id="3241638166094654466">Клетки във всеки ред:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">Предишен подобен елемент</translation>
 <translation id="3286372614333682499">вертикална ориентация</translation>
 <translation id="3286390186030710347">Плъзгач</translation>
 <translation id="3299925995433437805">Няма следваща посетена връзка.</translation>
@@ -508,6 +509,7 @@
 <translation id="4517854969512651305">Увеличаване на стойността</translation>
 <translation id="4529987814483543472">Традиционна клавиатурна подредба</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{наклонена черта}other{# наклонени черти}}</translation>
+<translation id="4537277403911487429">Следващ подобен елемент</translation>
 <translation id="4547556996012970016">Следващото заглавие от пето ниво</translation>
 <translation id="4562381607973973258">Горен колонтитул</translation>
 <translation id="4569941707103739422">За придвижване натиснете клавиша със стрелка нагоре или надолу, за активиране използвайте Enter.</translation>

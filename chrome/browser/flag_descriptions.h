@@ -407,6 +407,9 @@ extern const char kEnforceTLS13DowngradeDescription[];
 extern const char kEnableTLS13EarlyDataName[];
 extern const char kEnableTLS13EarlyDataDescription[];
 
+extern const char kWinrtGeolocationImplementationName[];
+extern const char kWinrtGeolocationImplementationDescription[];
+
 extern const char kWinrtSensorsImplementationName[];
 extern const char kWinrtSensorsImplementationDescription[];
 
@@ -964,6 +967,9 @@ extern const char kPasswordLeakDetectionDescription[];
 extern const char kForceWebContentsDarkModeName[];
 extern const char kForceWebContentsDarkModeDescription[];
 
+extern const char kForcedColorsName[];
+extern const char kForcedColorsDescription[];
+
 extern const char kPercentBasedScrollingName[];
 extern const char kPercentBasedScrollingDescription[];
 
@@ -1510,9 +1516,6 @@ extern const char kInterestFeedContentSuggestionsDescription[];
 
 extern const char kManualPasswordGenerationAndroidName[];
 extern const char kManualPasswordGenerationAndroidDescription[];
-
-extern const char kNewNetErrorPageUIName[];
-extern const char kNewNetErrorPageUIDescription[];
 
 extern const char kNewPhotoPickerName[];
 extern const char kNewPhotoPickerDescription[];

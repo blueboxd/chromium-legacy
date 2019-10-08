@@ -43,10 +43,6 @@ base::string16 JavaScriptDialogViews::GetUserInput() {
   return message_box_view_->GetInputText();
 }
 
-int JavaScriptDialogViews::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
 int JavaScriptDialogViews::GetDialogButtons() const {
   const bool is_alert = dialog_type_ == content::JAVASCRIPT_DIALOG_TYPE_ALERT;
   return ui::DIALOG_BUTTON_OK | (is_alert ? 0 : ui::DIALOG_BUTTON_CANCEL);
@@ -109,6 +105,8 @@ JavaScriptDialogViews::JavaScriptDialogViews(
       default_prompt_text_(default_prompt_text),
       dialog_callback_(std::move(dialog_callback)),
       dialog_force_closed_callback_(std::move(dialog_force_closed_callback)) {
+  DialogDelegate::set_default_button(ui::DIALOG_BUTTON_OK);
+
   int options = views::MessageBoxView::DETECT_DIRECTIONALITY;
   if (dialog_type == content::JAVASCRIPT_DIALOG_TYPE_PROMPT)
     options |= views::MessageBoxView::HAS_PROMPT_FIELD;

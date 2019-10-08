@@ -76,14 +76,21 @@ void BackgroundLoaderContents::CanDownload(
   }
 }
 
-bool BackgroundLoaderContents::IsWebContentsCreationOverridden(
+bool BackgroundLoaderContents::ShouldCreateWebContents(
+    content::WebContents* web_contents,
+    content::RenderFrameHost* opener,
     content::SiteInstance* source_site_instance,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
     content::mojom::WindowContainerType window_container_type,
     const GURL& opener_url,
     const std::string& frame_name,
-    const GURL& target_url) {
+    const GURL& target_url,
+    const std::string& partition_id,
+    content::SessionStorageNamespace* session_storage_namespace) {
   // Background pages should not create other webcontents/tabs.
-  return true;
+  return false;
 }
 
 void BackgroundLoaderContents::AddNewContents(

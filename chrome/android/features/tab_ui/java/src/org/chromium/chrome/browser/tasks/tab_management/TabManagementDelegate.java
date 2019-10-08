@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestions;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.components.module_installer.builder.ModuleInterface;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -85,4 +86,11 @@ public interface TabManagementDelegate {
      * @return The {@link TabGroupModelFilter}.
      */
     TabGroupModelFilter createTabGroupModelFilter(TabModel tabModel);
+
+    /**
+     * Create a {@link TabSuggestions} for the given {@link ChromeActivity}
+     * @param activity the {@link ChromeActivity} creates this {@link TabSuggestions}.
+     * @return the {@link TabSuggestions} for the activity
+     */
+    TabSuggestions createTabSuggestions(ChromeActivity activity);
 }

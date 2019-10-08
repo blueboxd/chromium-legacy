@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/clock.h"
+#include "base/time/time.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "url/gurl.h"
 
@@ -52,7 +53,9 @@ class HintsFetcher {
   // not already in progress. Returns whether a new request was issued.
   // |hints_fetched_callback| is run, passing a GetHintsResponse object, if a
   // fetch was successful or passes nullopt if the fetch fails. Virtualized for
-  // testing.
+  // testing. Hints fetcher may fetch hints for only a subset of the provided
+  // |hosts|. |hosts| should be an ordered list in descending order of
+  // probability that the hints are needed for that host.
   virtual bool FetchOptimizationGuideServiceHints(
       const std::vector<std::string>& hosts,
       optimization_guide::proto::RequestContext request_context,
@@ -121,6 +124,10 @@ class HintsFetcher {
 
   // Used for creating a |url_loader_| when needed for request hints.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  // The start time of the current hints fetch, used to determine the latency in
+  // retrieving hints from the remote Optimization Guide Service.
+  base::TimeTicks hints_fetch_start_time_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -76,8 +76,7 @@ void DownloadJob::OnDownloadFileInitialized(
 }
 
 bool DownloadJob::AddInputStream(std::unique_ptr<InputStream> stream,
-                                 int64_t offset,
-                                 int64_t length) {
+                                 int64_t offset) {
   DownloadFile* download_file = download_item_->GetDownloadFile();
   if (!download_file) {
     CancelRequestWithOffset(offset);
@@ -90,7 +89,7 @@ bool DownloadJob::AddInputStream(std::unique_ptr<InputStream> stream,
   GetDownloadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&DownloadFile::AddInputStream,
                                 base::Unretained(download_file),
-                                std::move(stream), offset, length));
+                                std::move(stream), offset));
   return true;
 }
 

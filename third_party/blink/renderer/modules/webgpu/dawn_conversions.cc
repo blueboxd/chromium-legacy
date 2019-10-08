@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/double_sequence_or_gpu_color_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_extent_3d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_origin_3d_dict.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_stage_descriptor.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_programmable_stage_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -698,8 +698,8 @@ DawnOrigin3D AsDawnType(
   return dawn_origin;
 }
 
-OwnedPipelineStageDescriptor AsDawnType(
-    const GPUPipelineStageDescriptor* webgpu_stage) {
+OwnedProgrammableStageDescriptor AsDawnType(
+    const GPUProgrammableStageDescriptor* webgpu_stage) {
   DCHECK(webgpu_stage);
 
   std::string entry_point = webgpu_stage->entryPoint().Ascii();
@@ -711,7 +711,7 @@ OwnedPipelineStageDescriptor AsDawnType(
   char* entry_point_ptr = entry_point_keepalive.get();
   memcpy(entry_point_ptr, entry_point.c_str(), byte_size);
 
-  DawnPipelineStageDescriptor dawn_stage = {};
+  DawnProgrammableStageDescriptor dawn_stage = {};
   dawn_stage.module = webgpu_stage->module()->GetHandle();
   dawn_stage.entryPoint = entry_point_ptr;
 

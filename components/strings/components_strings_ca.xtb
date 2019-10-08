@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Obre les pàgines d'inici</translation>
 <translation id="1883255238294161206">Redueix la llista</translation>
 <translation id="1898423065542865115">Filtratge</translation>
+<translation id="1901443836186977402">{1,plural, =1{El servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el seu certificat de seguretat va caducar l'últim dia. Això pot ser a causa d'una configuració incorrecta o d'un atacant que ha interceptat la teva connexió. Actualment, el rellotge del teu ordinador està configurat amb la data <ph name="CURRENT_DATE" />. És correcta? Si no ho és, corregeix el rellotge del sistema i, a continuació, actualitza aquesta pàgina.}other{Aquest servidor no ha pogut demostrar que és <ph name="DOMAIN" /> perquè el seu certificat de seguretat va caducar fa # dies. Això pot ser a causa d'una configuració incorrecta o d'un atacant que ha interceptat la teva connexió. Actualment, el rellotge del teu ordinador està configurat amb la data <ph name="CURRENT_DATE" />. És correcta? Si no ho és, corregeix el rellotge del sistema i, a continuació, actualitza aquesta pàgina.}}</translation>
 <translation id="1914326953223720820">Descomprimeix el servei</translation>
 <translation id="1915697529809968049">Vols utilitzar Touch ID en lloc del CVC?</translation>
 <translation id="1916770123977586577">Per aplicar la configuració actualitzada a aquest lloc web, torna a carregar la pàgina</translation>
@@ -435,6 +436,7 @@
 <translation id="3116158981186517402">Laminat</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Proveu d'executar el Diagnòstic de connectivitat<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Ves a <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Cap}=1{dades d'inici de sessió per a 1 compte}other{dades d'inici de sessió per a # comptes}}</translation>
 <translation id="3145945101586104090">No s'ha pogut descodificar la resposta</translation>
 <translation id="3150653042067488994">Error temporal del servidor</translation>
@@ -813,6 +815,7 @@
 <translation id="5043480802608081735">Enllaç que has copiat</translation>
 <translation id="5045550434625856497">Contrasenya incorrecta</translation>
 <translation id="5056549851600133418">Articles que et poden interessar</translation>
+<translation id="5061227663725596739">Volies dir <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 en ús)}other{(# en ús)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Comproveu l'adreça del servidor intermediari<ph name="END_LINK" /></translation>
@@ -866,6 +869,7 @@
 <translation id="5284909709419567258">Adreces de xarxa</translation>
 <translation id="5285570108065881030">Mostra totes les contrasenyes desades</translation>
 <translation id="5287240709317226393">Mostra les galetes</translation>
+<translation id="5287456746628258573">Aquest lloc web utilitza una configuració de seguretat obsoleta i, per tant, la informació que hi enviïs podria quedar exposada (per exemple, les contrasenyes o els números de les targetes de crèdit).</translation>
 <translation id="5288108484102287882">La validació dels valors de la política ha generat advertiments</translation>
 <translation id="5299298092464848405">S'ha produït un error en analitzar la política</translation>
 <translation id="5300589172476337783">Mostra</translation>
@@ -993,6 +997,7 @@
 <translation id="5946937721014915347">S'està obrint <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Sí, afegeix</translation>
 <translation id="5951495562196540101">El dispositiu no es pot inscriure amb un compte de consumidor (hi ha una llicència associada disponible).</translation>
+<translation id="5966900314707961320">Quan està activada, els llocs web no poden utilitzar galetes que facin un seguiment de la teva activitat al web</translation>
 <translation id="5967592137238574583">Edita la informació de contacte</translation>
 <translation id="5967867314010545767">Elimina de l'historial</translation>
 <translation id="5975083100439434680">Redueix</translation>
@@ -1075,6 +1080,7 @@
 <translation id="6383221683286411806">Aquest lloc web et pot fer càrrecs.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 suggeriment més}other{# suggeriments més}}</translation>
 <translation id="6387754724289022810">Perquè la propera vegada puguis pagar més ràpidament, desa la targeta i l'adreça de facturació al compte de Google i en aquest dispositiu.</translation>
+<translation id="6389470377220713856">Titular de la targeta</translation>
 <translation id="6390200185239044127">Plegat en Z fins a la meitat</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Aquesta política es considera obsoleta. Hauries de fer servir la política <ph name="NEW_POLICY" />.</translation>
@@ -1253,7 +1259,6 @@ Detalls addicionals:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Està afiliat:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Surt d'aquest lloc web</translation>
 <translation id="7353601530677266744">Línia d'ordres</translation>
 <translation id="7372973238305370288">resultat de la cerca</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1426,6 +1431,7 @@ Detalls addicionals:
 <translation id="8131740175452115882">Confirma</translation>
 <translation id="8149426793427495338">L'ordinador ha entrat en mode de repòs.</translation>
 <translation id="8150722005171944719">El fitxer de <ph name="URL" /> no es pot llegir. Pot ser que s'hagi eliminat, que s'hagi traslladat o que els permisos del fitxer n'impedeixin l'accés.</translation>
+<translation id="8157295877370077682">Surt del lloc web</translation>
 <translation id="8163866351304776260">Encunyació quàdruple a l'esquerra</translation>
 <translation id="8175796834047840627">Chrome t'està oferint desar les targetes al Compte de Google perquè tens la sessió iniciada. Pots canviar aquest comportament a la configuració.</translation>
 <translation id="8184538546369750125">Utilitza l'opció predeterminada global (Permet)</translation>

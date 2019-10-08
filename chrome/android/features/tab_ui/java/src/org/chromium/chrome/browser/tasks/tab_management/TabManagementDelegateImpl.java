@@ -21,6 +21,8 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.TasksSurfaceCoordinator;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestions;
+import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionsOrchestrator;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceCoordinator;
 import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
@@ -83,5 +85,11 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
     public TabGroupModelFilter createTabGroupModelFilter(TabModel tabModel) {
         return new TabGroupModelFilter(tabModel);
+    }
+
+    @Override
+    public TabSuggestions createTabSuggestions(ChromeActivity activity) {
+        return new TabSuggestionsOrchestrator(
+                activity.getTabModelSelector(), activity.getLifecycleDispatcher());
     }
 }

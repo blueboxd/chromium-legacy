@@ -50,10 +50,13 @@ bool LayoutTreeRebuildRoot::IsDirty(const Node& node) const {
 
 void LayoutTreeRebuildRoot::ClearChildDirtyForAncestors(
     ContainerNode& parent) const {
-  for (ContainerNode* ancestor = &parent; ancestor;
-       ancestor = ancestor->GetReattachParent()) {
-    ancestor->ClearChildNeedsReattachLayoutTree();
+  Element* ancestor = DynamicTo<Element>(parent);
+  if (!ancestor)
+    ancestor = parent.ParentOrShadowHostElement();
+  for (; ancestor; ancestor = ancestor->GetReattachParent()) {
+    DCHECK(ancestor->ChildNeedsReattachLayoutTree());
     DCHECK(!ancestor->NeedsReattachLayoutTree());
+    ancestor->ClearChildNeedsReattachLayoutTree();
   }
 }
 

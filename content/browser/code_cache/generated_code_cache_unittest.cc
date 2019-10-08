@@ -17,7 +17,6 @@ namespace content {
 
 class GeneratedCodeCacheTest : public testing::Test {
  public:
-  static const int kLargeSizeInBytes = 8192;
   static const int kMaxSizeInBytes = 1024 * 1024;
   static constexpr char kInitialUrl[] = "http://example.com/script.js";
   static constexpr char kInitialOrigin[] = "http://example.com";
@@ -154,23 +153,6 @@ TEST_F(GeneratedCodeCacheTest, WriteEntry) {
   EXPECT_EQ(response_time, received_response_time_);
 }
 
-TEST_F(GeneratedCodeCacheTest, WriteLargeEntry) {
-  GURL new_url("http://example1.com/script.js");
-  GURL origin_lock = GURL(kInitialOrigin);
-
-  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
-  std::string large_data(kLargeSizeInBytes, 'x');
-  base::Time response_time = base::Time::Now();
-  WriteToCache(new_url, origin_lock, large_data, response_time);
-  task_environment_.RunUntilIdle();
-  FetchFromCache(new_url, origin_lock);
-  task_environment_.RunUntilIdle();
-
-  ASSERT_TRUE(received_);
-  EXPECT_EQ(large_data, received_data_);
-  EXPECT_EQ(response_time, received_response_time_);
-}
-
 TEST_F(GeneratedCodeCacheTest, DeleteEntry) {
   GURL url(kInitialUrl);
   GURL origin_lock = GURL(kInitialOrigin);
@@ -247,23 +229,6 @@ TEST_F(GeneratedCodeCacheTest, WriteEntryPendingOp) {
   EXPECT_EQ(response_time, received_response_time_);
 }
 
-TEST_F(GeneratedCodeCacheTest, WriteLargeEntryPendingOp) {
-  GURL new_url("http://example1.com/script1.js");
-  GURL origin_lock = GURL(kInitialOrigin);
-
-  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
-  std::string large_data(kLargeSizeInBytes, 'x');
-  base::Time response_time = base::Time::Now();
-  WriteToCache(new_url, origin_lock, large_data, response_time);
-  task_environment_.RunUntilIdle();
-  FetchFromCache(new_url, origin_lock);
-  task_environment_.RunUntilIdle();
-
-  ASSERT_TRUE(received_);
-  EXPECT_EQ(large_data, received_data_);
-  EXPECT_EQ(response_time, received_response_time_);
-}
-
 TEST_F(GeneratedCodeCacheTest, DeleteEntryPendingOp) {
   GURL url(kInitialUrl);
   GURL origin_lock = GURL(kInitialOrigin);
@@ -284,63 +249,6 @@ TEST_F(GeneratedCodeCacheTest, UpdateDataOfExistingEntry) {
   InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   std::string new_data = "SerializedCodeForScriptOverwrite";
   base::Time response_time = base::Time::Now();
-  WriteToCache(url, origin_lock, new_data, response_time);
-  task_environment_.RunUntilIdle();
-  FetchFromCache(url, origin_lock);
-  task_environment_.RunUntilIdle();
-
-  ASSERT_TRUE(received_);
-  EXPECT_EQ(new_data, received_data_);
-  EXPECT_EQ(response_time, received_response_time_);
-}
-
-TEST_F(GeneratedCodeCacheTest, UpdateDataOfSmallExistingEntry) {
-  GURL url(kInitialUrl);
-  GURL origin_lock = GURL(kInitialOrigin);
-
-  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
-  std::string new_data(kLargeSizeInBytes, 'x');
-  base::Time response_time = base::Time::Now();
-  WriteToCache(url, origin_lock, new_data, response_time);
-  task_environment_.RunUntilIdle();
-  FetchFromCache(url, origin_lock);
-  task_environment_.RunUntilIdle();
-
-  ASSERT_TRUE(received_);
-  EXPECT_EQ(new_data, received_data_);
-  EXPECT_EQ(response_time, received_response_time_);
-}
-
-TEST_F(GeneratedCodeCacheTest, UpdateDataOfLargeExistingEntry) {
-  GURL url(kInitialUrl);
-  GURL origin_lock = GURL(kInitialOrigin);
-
-  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
-  std::string large_data(kLargeSizeInBytes, 'x');
-  base::Time response_time = base::Time::Now();
-  WriteToCache(url, origin_lock, large_data, response_time);
-  std::string new_data = large_data + "Overwrite";
-  response_time = base::Time::Now();
-  WriteToCache(url, origin_lock, new_data, response_time);
-  task_environment_.RunUntilIdle();
-  FetchFromCache(url, origin_lock);
-  task_environment_.RunUntilIdle();
-
-  ASSERT_TRUE(received_);
-  EXPECT_EQ(new_data, received_data_);
-  EXPECT_EQ(response_time, received_response_time_);
-}
-
-TEST_F(GeneratedCodeCacheTest, TruncateDataOfLargeExistingEntry) {
-  GURL url(kInitialUrl);
-  GURL origin_lock = GURL(kInitialOrigin);
-
-  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
-  std::string large_data(kLargeSizeInBytes, 'x');
-  base::Time response_time = base::Time::Now();
-  WriteToCache(url, origin_lock, large_data, response_time);
-  std::string new_data = "SerializedCodeForScriptOverwrite";
-  response_time = base::Time::Now();
   WriteToCache(url, origin_lock, new_data, response_time);
   task_environment_.RunUntilIdle();
   FetchFromCache(url, origin_lock);

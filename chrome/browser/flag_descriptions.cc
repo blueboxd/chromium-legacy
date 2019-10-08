@@ -668,6 +668,12 @@ const char kEnableTLS13EarlyDataDescription[] =
     "during the handshake when resuming a connection to a compatible TLS 1.3 "
     "server.";
 
+const char kWinrtGeolocationImplementationName[] =
+    "WinRT Geolocation Implementation";
+const char kWinrtGeolocationImplementationDescription[] =
+    "Enables usage of the Windows.Devices.Geolocation WinRT APIs on Windows "
+    "for geolocation";
+
 const char kWinrtSensorsImplementationName[] = "WinRT Sensor Implementation";
 const char kWinrtSensorsImplementationDescription[] =
     "Enables usage of the Windows.Devices.Sensors WinRT APIs on Windows for "
@@ -1606,6 +1612,10 @@ const char kPasswordLeakDetectionDescription[] =
 const char kForceWebContentsDarkModeName[] = "Force Dark Mode for Web Contents";
 const char kForceWebContentsDarkModeDescription[] =
     "Automatically render all web contents using a dark theme.";
+
+const char kForcedColorsName[] = "Forced Colors";
+const char kForcedColorsDescription[] =
+    "Enables forced colors mode for web content.";
 
 const char kPercentBasedScrollingName[] = "Percent-based Scrolling";
 const char kPercentBasedScrollingDescription[] =
@@ -2549,10 +2559,6 @@ const char kManualPasswordGenerationAndroidName[] =
 const char kManualPasswordGenerationAndroidDescription[] =
     "Whether Chrome should offer users the option to manually request to "
     "generate passwords on Android.";
-
-const char kNewNetErrorPageUIName[] = "Enable new UI for net-error page";
-const char kNewNetErrorPageUIDescription[] =
-    "Enables showing available offline content on the net-error (Dino) page.";
 
 const char kNewPhotoPickerName[] = "Enable new Photopicker";
 const char kNewPhotoPickerDescription[] =

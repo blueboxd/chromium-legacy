@@ -438,198 +438,146 @@ TEST(CanonicalCookieTest, IsOnPath) {
   EXPECT_TRUE(cookie->IsOnPath("/test/sample/bar.html"));
 }
 
+struct EffectiveSameSiteTestCase {
+  CookieSameSite same_site;
+  CookieEffectiveSameSite effective_same_site;
+  CookieAccessSemantics access_semantics;
+};
+
+void VerifyEffectiveSameSiteTestCases(
+    base::Time creation_time,
+    base::Time expiry_time,
+    bool is_samesite_by_default_enabled,
+    std::vector<EffectiveSameSiteTestCase> test_cases) {
+  base::test::ScopedFeatureList feature_list;
+  if (is_samesite_by_default_enabled) {
+    feature_list.InitAndEnableFeature(features::kSameSiteByDefaultCookies);
+  } else {
+    feature_list.InitAndDisableFeature(features::kSameSiteByDefaultCookies);
+  }
+
+  for (const auto& test_case : test_cases) {
+    CanonicalCookie cookie("A", "2", "example.test", "/", creation_time,
+                           expiry_time, base::Time(), true /* secure */,
+                           false /* httponly */, test_case.same_site,
+                           COOKIE_PRIORITY_DEFAULT);
+    EXPECT_EQ(
+        test_case.effective_same_site,
+        cookie.GetEffectiveSameSiteForTesting(test_case.access_semantics));
+  }
+}
+
 TEST(CanonicalCookieTest, GetEffectiveSameSite) {
-  struct EffectiveSameSiteTestCase {
-    CookieSameSite same_site;
-    CookieEffectiveSameSite effective_same_site;
-  };
+  // Test cases that are always the same, regardless of time or
+  // SameSite-by-default feature status.
+  const std::vector<EffectiveSameSiteTestCase> common_test_cases = {
+      // Explicitly specified SameSite always has the same effective SameSite
+      // regardless of the access semantics.
+      {CookieSameSite::NO_RESTRICTION, CookieEffectiveSameSite::NO_RESTRICTION,
+       CookieAccessSemantics::UNKNOWN},
+      {CookieSameSite::LAX_MODE, CookieEffectiveSameSite::LAX_MODE,
+       CookieAccessSemantics::UNKNOWN},
+      {CookieSameSite::STRICT_MODE, CookieEffectiveSameSite::STRICT_MODE,
+       CookieAccessSemantics::UNKNOWN},
+      {CookieSameSite::EXTENDED_MODE, CookieEffectiveSameSite::LAX_MODE,
+       CookieAccessSemantics::UNKNOWN},
+      {CookieSameSite::NO_RESTRICTION, CookieEffectiveSameSite::NO_RESTRICTION,
+       CookieAccessSemantics::LEGACY},
+      {CookieSameSite::LAX_MODE, CookieEffectiveSameSite::LAX_MODE,
+       CookieAccessSemantics::LEGACY},
+      {CookieSameSite::STRICT_MODE, CookieEffectiveSameSite::STRICT_MODE,
+       CookieAccessSemantics::LEGACY},
+      {CookieSameSite::EXTENDED_MODE, CookieEffectiveSameSite::LAX_MODE,
+       CookieAccessSemantics::LEGACY},
+      {CookieSameSite::NO_RESTRICTION, CookieEffectiveSameSite::NO_RESTRICTION,
+       CookieAccessSemantics::NONLEGACY},
+      {CookieSameSite::LAX_MODE, CookieEffectiveSameSite::LAX_MODE,
+       CookieAccessSemantics::NONLEGACY},
+      {CookieSameSite::STRICT_MODE, CookieEffectiveSameSite::STRICT_MODE,
+       CookieAccessSemantics::NONLEGACY},
+      {CookieSameSite::EXTENDED_MODE, CookieEffectiveSameSite::LAX_MODE,
+       CookieAccessSemantics::NONLEGACY},
+      // UNSPECIFIED always maps to NO_RESTRICTION if LEGACY access semantics.
+      {CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::NO_RESTRICTION,
+       CookieAccessSemantics::LEGACY}};
+
+  // Test cases that differ based on access semantics, feature status, and
+  // whether cookie is recently created:
+
+  std::vector<EffectiveSameSiteTestCase> enabled_recent_test_cases = {
+      {CookieSameSite::UNSPECIFIED,
+       CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
+       CookieAccessSemantics::UNKNOWN},
+      {CookieSameSite::UNSPECIFIED,
+       CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
+       CookieAccessSemantics::NONLEGACY}};
+
+  std::vector<EffectiveSameSiteTestCase> enabled_not_recent_test_cases = {
+      {CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::LAX_MODE,
+       CookieAccessSemantics::UNKNOWN},
+      {CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::LAX_MODE,
+       CookieAccessSemantics::NONLEGACY}};
+
+  std::vector<EffectiveSameSiteTestCase> disabled_recent_test_cases = {
+      {CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::NO_RESTRICTION,
+       CookieAccessSemantics::UNKNOWN},
+      {CookieSameSite::UNSPECIFIED,
+       CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
+       CookieAccessSemantics::NONLEGACY}};
+
+  std::vector<EffectiveSameSiteTestCase> disabled_not_recent_test_cases = {
+      {CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::NO_RESTRICTION,
+       CookieAccessSemantics::UNKNOWN},
+      {CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::LAX_MODE,
+       CookieAccessSemantics::NONLEGACY}};
 
   // Test GetEffectiveSameSite for recently created cookies
   // Session cookie created less than kLaxAllowUnsafeMaxAge ago.
   base::Time now = base::Time::Now();
   base::Time creation_time = now - (kLaxAllowUnsafeMaxAge / 4);
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(features::kSameSiteByDefaultCookies);
-
-    const EffectiveSameSiteTestCase test_cases[] = {
-        {CookieSameSite::NO_RESTRICTION,
-         CookieEffectiveSameSite::NO_RESTRICTION},
-        {CookieSameSite::LAX_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::STRICT_MODE, CookieEffectiveSameSite::STRICT_MODE},
-        {CookieSameSite::EXTENDED_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::NO_RESTRICTION}};
-
-    for (const auto& test_case : test_cases) {
-      CanonicalCookie cookie("A", "2", "example.test", "/", creation_time,
-                             base::Time(), base::Time(), true /* secure */,
-                             false /* httponly */, test_case.same_site,
-                             COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site,
-                cookie.GetEffectiveSameSiteForTesting());
-    }
-  }
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kSameSiteByDefaultCookies);
-
-    const EffectiveSameSiteTestCase test_cases[] = {
-        {CookieSameSite::NO_RESTRICTION,
-         CookieEffectiveSameSite::NO_RESTRICTION},
-        {CookieSameSite::LAX_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::STRICT_MODE, CookieEffectiveSameSite::STRICT_MODE},
-        {CookieSameSite::EXTENDED_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::UNSPECIFIED,
-         CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE}};
-
-    for (const auto& test_case : test_cases) {
-      CanonicalCookie cookie("A", "2", "example.test", "/", creation_time,
-                             base::Time(), base::Time(), true /* secure */,
-                             false /* httponly */, test_case.same_site,
-                             COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site,
-                cookie.GetEffectiveSameSiteForTesting());
-    }
-  }
+  VerifyEffectiveSameSiteTestCases(creation_time, base::Time(), false,
+                                   common_test_cases);
+  VerifyEffectiveSameSiteTestCases(creation_time, base::Time(), false,
+                                   disabled_recent_test_cases);
+  VerifyEffectiveSameSiteTestCases(creation_time, base::Time(), true,
+                                   common_test_cases);
+  VerifyEffectiveSameSiteTestCases(creation_time, base::Time(), true,
+                                   enabled_recent_test_cases);
 
   // Persistent cookie with max age less than kLaxAllowUnsafeMaxAge.
   base::Time expiry_time = creation_time + (kLaxAllowUnsafeMaxAge / 4);
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(features::kSameSiteByDefaultCookies);
-
-    const EffectiveSameSiteTestCase test_cases[] = {
-        {CookieSameSite::NO_RESTRICTION,
-         CookieEffectiveSameSite::NO_RESTRICTION},
-        {CookieSameSite::LAX_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::STRICT_MODE, CookieEffectiveSameSite::STRICT_MODE},
-        {CookieSameSite::EXTENDED_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::NO_RESTRICTION}};
-
-    for (const auto& test_case : test_cases) {
-      CanonicalCookie cookie("A", "2", "example.test", "/", creation_time,
-                             expiry_time, base::Time(), true /* secure */,
-                             false /* httponly */, test_case.same_site,
-                             COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site,
-                cookie.GetEffectiveSameSiteForTesting());
-    }
-  }
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kSameSiteByDefaultCookies);
-
-    const EffectiveSameSiteTestCase test_cases[] = {
-        {CookieSameSite::NO_RESTRICTION,
-         CookieEffectiveSameSite::NO_RESTRICTION},
-        {CookieSameSite::LAX_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::STRICT_MODE, CookieEffectiveSameSite::STRICT_MODE},
-        {CookieSameSite::EXTENDED_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::UNSPECIFIED,
-         CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE}};
-
-    for (const auto& test_case : test_cases) {
-      CanonicalCookie cookie("A", "2", "example.test", "/", creation_time,
-                             expiry_time, base::Time(), true /* secure */,
-                             false /* httponly */, test_case.same_site,
-                             COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site,
-                cookie.GetEffectiveSameSiteForTesting());
-    }
-  }
+  VerifyEffectiveSameSiteTestCases(creation_time, expiry_time, false,
+                                   common_test_cases);
+  VerifyEffectiveSameSiteTestCases(creation_time, expiry_time, false,
+                                   disabled_recent_test_cases);
+  VerifyEffectiveSameSiteTestCases(creation_time, expiry_time, true,
+                                   common_test_cases);
+  VerifyEffectiveSameSiteTestCases(creation_time, expiry_time, true,
+                                   enabled_recent_test_cases);
 
   // Test GetEffectiveSameSite for not-recently-created cookies:
   // Session cookie created more than kLaxAllowUnsafeMaxAge ago.
   creation_time = now - (kLaxAllowUnsafeMaxAge * 4);
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(features::kSameSiteByDefaultCookies);
+  VerifyEffectiveSameSiteTestCases(creation_time, base::Time(), false,
+                                   common_test_cases);
+  VerifyEffectiveSameSiteTestCases(creation_time, base::Time(), false,
+                                   disabled_not_recent_test_cases);
+  VerifyEffectiveSameSiteTestCases(creation_time, base::Time(), true,
+                                   common_test_cases);
+  VerifyEffectiveSameSiteTestCases(creation_time, base::Time(), true,
+                                   enabled_not_recent_test_cases);
 
-    const EffectiveSameSiteTestCase test_cases[] = {
-        {CookieSameSite::NO_RESTRICTION,
-         CookieEffectiveSameSite::NO_RESTRICTION},
-        {CookieSameSite::LAX_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::STRICT_MODE, CookieEffectiveSameSite::STRICT_MODE},
-        {CookieSameSite::EXTENDED_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::NO_RESTRICTION}};
-
-    for (const auto& test_case : test_cases) {
-      CanonicalCookie cookie("A", "2", "example.test", "/", creation_time,
-                             base::Time(), base::Time(), true /* secure */,
-                             false /* httponly */, test_case.same_site,
-                             COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site,
-                cookie.GetEffectiveSameSiteForTesting());
-    }
-  }
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kSameSiteByDefaultCookies);
-
-    const EffectiveSameSiteTestCase test_cases[] = {
-        {CookieSameSite::NO_RESTRICTION,
-         CookieEffectiveSameSite::NO_RESTRICTION},
-        {CookieSameSite::LAX_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::STRICT_MODE, CookieEffectiveSameSite::STRICT_MODE},
-        {CookieSameSite::EXTENDED_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::LAX_MODE}};
-
-    for (const auto& test_case : test_cases) {
-      CanonicalCookie cookie("A", "2", "example.test", "/", creation_time,
-                             base::Time(), base::Time(), true /* secure */,
-                             false /* httponly */, test_case.same_site,
-                             COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site,
-                cookie.GetEffectiveSameSiteForTesting());
-    }
-  }
-
-  // Test GetEffectiveSameSite for not-recently-created cookies:
   // Persistent cookie with max age more than kLaxAllowUnsafeMaxAge, created
   // more than kLaxAllowUnsafeMaxAge ago.
   expiry_time = creation_time + (kLaxAllowUnsafeMaxAge * 8);
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(features::kSameSiteByDefaultCookies);
-
-    const EffectiveSameSiteTestCase test_cases[] = {
-        {CookieSameSite::NO_RESTRICTION,
-         CookieEffectiveSameSite::NO_RESTRICTION},
-        {CookieSameSite::LAX_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::STRICT_MODE, CookieEffectiveSameSite::STRICT_MODE},
-        {CookieSameSite::EXTENDED_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::NO_RESTRICTION}};
-
-    for (const auto& test_case : test_cases) {
-      CanonicalCookie cookie("A", "2", "example.test", "/", creation_time,
-                             expiry_time, base::Time(), true /* secure */,
-                             false /* httponly */, test_case.same_site,
-                             COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site,
-                cookie.GetEffectiveSameSiteForTesting());
-    }
-  }
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kSameSiteByDefaultCookies);
-
-    const EffectiveSameSiteTestCase test_cases[] = {
-        {CookieSameSite::NO_RESTRICTION,
-         CookieEffectiveSameSite::NO_RESTRICTION},
-        {CookieSameSite::LAX_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::STRICT_MODE, CookieEffectiveSameSite::STRICT_MODE},
-        {CookieSameSite::EXTENDED_MODE, CookieEffectiveSameSite::LAX_MODE},
-        {CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::LAX_MODE}};
-
-    for (const auto& test_case : test_cases) {
-      CanonicalCookie cookie("A", "2", "example.test", "/", creation_time,
-                             expiry_time, base::Time(), true /* secure */,
-                             false /* httponly */, test_case.same_site,
-                             COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site,
-                cookie.GetEffectiveSameSiteForTesting());
-    }
-  }
+  VerifyEffectiveSameSiteTestCases(creation_time, expiry_time, false,
+                                   common_test_cases);
+  VerifyEffectiveSameSiteTestCases(creation_time, expiry_time, false,
+                                   disabled_not_recent_test_cases);
+  VerifyEffectiveSameSiteTestCases(creation_time, expiry_time, true,
+                                   common_test_cases);
+  VerifyEffectiveSameSiteTestCases(creation_time, expiry_time, true,
+                                   enabled_not_recent_test_cases);
 }
 
 TEST(CanonicalCookieTest, IncludeForRequestURL) {
@@ -699,222 +647,24 @@ TEST(CanonicalCookieTest, IncludeForRequestURL) {
               {CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY}));
 }
 
-TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
-  const base::TimeDelta kLongAge = kLaxAllowUnsafeMaxAge * 4;
-  const base::TimeDelta kShortAge = kLaxAllowUnsafeMaxAge / 4;
+struct IncludeForRequestURLTestCase {
+  std::string cookie_line;
+  CookieSameSite expected_samesite;
+  CookieEffectiveSameSite expected_effective_samesite;
+  CookieOptions::SameSiteCookieContext request_options_samesite_context;
+  CanonicalCookie::CookieInclusionStatus expected_inclusion_status;
+  base::TimeDelta creation_time_delta = base::TimeDelta();
+};
 
-  struct TestCase {
-    std::string cookie_line;
-    bool is_samesite_by_default_enabled;
-    CookieSameSite expected_samesite;
-    CookieEffectiveSameSite expected_effective_samesite;
-    CookieOptions::SameSiteCookieContext request_options_samesite_context;
-    CanonicalCookie::CookieInclusionStatus expected_inclusion_status;
-    base::TimeDelta creation_time_delta = base::TimeDelta();
-  } test_cases[] = {
-      // SameSite-by-default is not enabled:
-      // Strict cookies:
-      {"A=2; SameSite=Strict", false, CookieSameSite::STRICT_MODE,
-       CookieEffectiveSameSite::STRICT_MODE,
-       CookieOptions::SameSiteCookieContext::CROSS_SITE,
-       CanonicalCookie::CookieInclusionStatus(
-           CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT)},
-      {"A=2; SameSite=Strict", false, CookieSameSite::STRICT_MODE,
-       CookieEffectiveSameSite::STRICT_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
-       CanonicalCookie::CookieInclusionStatus(
-           CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT)},
-      {"A=2; SameSite=Strict", false, CookieSameSite::STRICT_MODE,
-       CookieEffectiveSameSite::STRICT_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
-       CanonicalCookie::CookieInclusionStatus(
-           CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT)},
-      {"A=2; SameSite=Strict", false, CookieSameSite::STRICT_MODE,
-       CookieEffectiveSameSite::STRICT_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
-       CanonicalCookie::CookieInclusionStatus()},
-      // Lax cookies:
-      {"A=2; SameSite=Lax", false, CookieSameSite::LAX_MODE,
-       CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::CROSS_SITE,
-       CanonicalCookie::CookieInclusionStatus(
-           CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX)},
-      {"A=2; SameSite=Lax", false, CookieSameSite::LAX_MODE,
-       CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
-       CanonicalCookie::CookieInclusionStatus(
-           CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX)},
-      {"A=2; SameSite=Lax", false, CookieSameSite::LAX_MODE,
-       CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
-       CanonicalCookie::CookieInclusionStatus()},
-      {"A=2; SameSite=Lax", false, CookieSameSite::LAX_MODE,
-       CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
-       CanonicalCookie::CookieInclusionStatus()},
-      // None cookies:
-      {"A=2; SameSite=None; Secure", false, CookieSameSite::NO_RESTRICTION,
-       CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::CROSS_SITE,
-       CanonicalCookie::CookieInclusionStatus()},
-      {"A=2; SameSite=None; Secure", false, CookieSameSite::NO_RESTRICTION,
-       CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
-       CanonicalCookie::CookieInclusionStatus()},
-      {"A=2; SameSite=None; Secure", false, CookieSameSite::NO_RESTRICTION,
-       CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
-       CanonicalCookie::CookieInclusionStatus()},
-      {"A=2; SameSite=None; Secure", false, CookieSameSite::NO_RESTRICTION,
-       CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
-       CanonicalCookie::CookieInclusionStatus()},
-      // Unspecified cookies (without SameSite-by-default):
-      {"A=2", false, CookieSameSite::UNSPECIFIED,
-       CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::CROSS_SITE,
-       CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
-           std::vector<
-               CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
-           CanonicalCookie::CookieInclusionStatus::
-               WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT)},
-      {"A=2", false, CookieSameSite::UNSPECIFIED,
-       CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
-       CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
-           std::vector<
-               CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
-           CanonicalCookie::CookieInclusionStatus::
-               WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT)},
-      {"A=2", false, CookieSameSite::UNSPECIFIED,
-       CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
-       CanonicalCookie::CookieInclusionStatus()},
-      {"A=2", false, CookieSameSite::UNSPECIFIED,
-       CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
-       CanonicalCookie::CookieInclusionStatus()},
-
-      // SameSite-by-default is enabled:
-      // Strict cookies:
-      {"A=2; SameSite=Strict", true, CookieSameSite::STRICT_MODE,
-       CookieEffectiveSameSite::STRICT_MODE,
-       CookieOptions::SameSiteCookieContext::CROSS_SITE,
-       CanonicalCookie::CookieInclusionStatus(
-           CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT)},
-      {"A=2; SameSite=Strict", true, CookieSameSite::STRICT_MODE,
-       CookieEffectiveSameSite::STRICT_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
-       CanonicalCookie::CookieInclusionStatus(
-           CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT)},
-      {"A=2; SameSite=Strict", true, CookieSameSite::STRICT_MODE,
-       CookieEffectiveSameSite::STRICT_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
-       CanonicalCookie::CookieInclusionStatus(
-           CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT)},
-      {"A=2; SameSite=Strict", true, CookieSameSite::STRICT_MODE,
-       CookieEffectiveSameSite::STRICT_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
-       CanonicalCookie::CookieInclusionStatus()},
-      // Lax cookies:
-      {"A=2; SameSite=Lax", true, CookieSameSite::LAX_MODE,
-       CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::CROSS_SITE,
-       CanonicalCookie::CookieInclusionStatus(
-           CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX)},
-      {"A=2; SameSite=Lax", true, CookieSameSite::LAX_MODE,
-       CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
-       CanonicalCookie::CookieInclusionStatus(
-           CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX)},
-      {"A=2; SameSite=Lax", true, CookieSameSite::LAX_MODE,
-       CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
-       CanonicalCookie::CookieInclusionStatus()},
-      {"A=2; SameSite=Lax", true, CookieSameSite::LAX_MODE,
-       CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
-       CanonicalCookie::CookieInclusionStatus()},
-      // None cookies:
-      {"A=2; SameSite=None; Secure", true, CookieSameSite::NO_RESTRICTION,
-       CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::CROSS_SITE,
-       CanonicalCookie::CookieInclusionStatus()},
-      {"A=2; SameSite=None; Secure", true, CookieSameSite::NO_RESTRICTION,
-       CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
-       CanonicalCookie::CookieInclusionStatus()},
-      {"A=2; SameSite=None; Secure", true, CookieSameSite::NO_RESTRICTION,
-       CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
-       CanonicalCookie::CookieInclusionStatus()},
-      {"A=2; SameSite=None; Secure", true, CookieSameSite::NO_RESTRICTION,
-       CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
-       CanonicalCookie::CookieInclusionStatus()},
-      // Unspecified recently-created cookies (with SameSite-by-default):
-      {"A=2", true, CookieSameSite::UNSPECIFIED,
-       CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
-       CookieOptions::SameSiteCookieContext::CROSS_SITE,
-       CanonicalCookie::CookieInclusionStatus(
-           CanonicalCookie::CookieInclusionStatus::
-               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
-           CanonicalCookie::CookieInclusionStatus::
-               WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT),
-       kShortAge},
-      {"A=2", true, CookieSameSite::UNSPECIFIED,
-       CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
-       CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
-           std::vector<
-               CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
-           CanonicalCookie::CookieInclusionStatus::
-               WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE),
-       kShortAge},
-      {"A=2", true, CookieSameSite::UNSPECIFIED,
-       CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
-       CanonicalCookie::CookieInclusionStatus(), kShortAge},
-      {"A=2", true, CookieSameSite::UNSPECIFIED,
-       CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
-       CanonicalCookie::CookieInclusionStatus(), kShortAge},
-      // Unspecified not-recently-created cookies (with SameSite-by-default):
-      {"A=2", true, CookieSameSite::UNSPECIFIED,
-       CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::CROSS_SITE,
-       CanonicalCookie::CookieInclusionStatus(
-           CanonicalCookie::CookieInclusionStatus::
-               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
-           CanonicalCookie::CookieInclusionStatus::
-               WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT),
-       kLongAge},
-      {"A=2", true, CookieSameSite::UNSPECIFIED,
-       CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
-       CanonicalCookie::CookieInclusionStatus(
-           CanonicalCookie::CookieInclusionStatus::
-               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
-           CanonicalCookie::CookieInclusionStatus::
-               WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT),
-       kLongAge},
-      {"A=2", true, CookieSameSite::UNSPECIFIED,
-       CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
-       CanonicalCookie::CookieInclusionStatus(), kLongAge},
-      {"A=2", true, CookieSameSite::UNSPECIFIED,
-       CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
-       CanonicalCookie::CookieInclusionStatus(), kLongAge},
-  };
-
+void VerifyIncludeForRequestURLTestCases(
+    bool is_samesite_by_default_enabled,
+    CookieAccessSemantics access_semantics,
+    std::vector<IncludeForRequestURLTestCase> test_cases) {
   GURL url("https://example.test");
 
-  int length = sizeof(test_cases) / sizeof(test_cases[0]);
-  for (int i = 0; i < length; ++i) {
-    TestCase test = test_cases[i];
+  for (const auto& test : test_cases) {
     base::test::ScopedFeatureList feature_list;
-    if (test.is_samesite_by_default_enabled) {
+    if (is_samesite_by_default_enabled) {
       feature_list.InitAndEnableFeature(features::kSameSiteByDefaultCookies);
     } else {
       feature_list.InitAndDisableFeature(features::kSameSiteByDefaultCookies);
@@ -925,17 +675,190 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
         url, test.cookie_line, creation_time, base::nullopt /* server_time */);
     EXPECT_EQ(test.expected_samesite, cookie->SameSite());
     EXPECT_EQ(test.expected_effective_samesite,
-              cookie->GetEffectiveSameSiteForTesting())
-        << "Test case " << i << " failed.";
+              cookie->GetEffectiveSameSiteForTesting(access_semantics));
 
     CookieOptions request_options;
     request_options.set_same_site_cookie_context(
         test.request_options_samesite_context);
 
-    EXPECT_EQ(test.expected_inclusion_status,
-              cookie->IncludeForRequestURL(url, request_options))
-        << "Test case " << i << " failed.";
+    EXPECT_EQ(
+        test.expected_inclusion_status,
+        cookie->IncludeForRequestURL(url, request_options, access_semantics));
   }
+}
+
+TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
+  const base::TimeDelta kLongAge = kLaxAllowUnsafeMaxAge * 4;
+  const base::TimeDelta kShortAge = kLaxAllowUnsafeMaxAge / 4;
+
+  // Test cases that are the same regardless of feature status or access
+  // semantics:
+  std::vector<IncludeForRequestURLTestCase> common_test_cases = {
+      // Strict cookies:
+      {"A=2; SameSite=Strict", CookieSameSite::STRICT_MODE,
+       CookieEffectiveSameSite::STRICT_MODE,
+       CookieOptions::SameSiteCookieContext::CROSS_SITE,
+       CanonicalCookie::CookieInclusionStatus(
+           CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT)},
+      {"A=2; SameSite=Strict", CookieSameSite::STRICT_MODE,
+       CookieEffectiveSameSite::STRICT_MODE,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
+       CanonicalCookie::CookieInclusionStatus(
+           CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT)},
+      {"A=2; SameSite=Strict", CookieSameSite::STRICT_MODE,
+       CookieEffectiveSameSite::STRICT_MODE,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+       CanonicalCookie::CookieInclusionStatus(
+           CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT)},
+      {"A=2; SameSite=Strict", CookieSameSite::STRICT_MODE,
+       CookieEffectiveSameSite::STRICT_MODE,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+       CanonicalCookie::CookieInclusionStatus()},
+      // Lax cookies:
+      {"A=2; SameSite=Lax", CookieSameSite::LAX_MODE,
+       CookieEffectiveSameSite::LAX_MODE,
+       CookieOptions::SameSiteCookieContext::CROSS_SITE,
+       CanonicalCookie::CookieInclusionStatus(
+           CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX)},
+      {"A=2; SameSite=Lax", CookieSameSite::LAX_MODE,
+       CookieEffectiveSameSite::LAX_MODE,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
+       CanonicalCookie::CookieInclusionStatus(
+           CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX)},
+      {"A=2; SameSite=Lax", CookieSameSite::LAX_MODE,
+       CookieEffectiveSameSite::LAX_MODE,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+       CanonicalCookie::CookieInclusionStatus()},
+      {"A=2; SameSite=Lax", CookieSameSite::LAX_MODE,
+       CookieEffectiveSameSite::LAX_MODE,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+       CanonicalCookie::CookieInclusionStatus()},
+      // None and Secure cookies:
+      {"A=2; SameSite=None; Secure", CookieSameSite::NO_RESTRICTION,
+       CookieEffectiveSameSite::NO_RESTRICTION,
+       CookieOptions::SameSiteCookieContext::CROSS_SITE,
+       CanonicalCookie::CookieInclusionStatus()},
+      {"A=2; SameSite=None; Secure", CookieSameSite::NO_RESTRICTION,
+       CookieEffectiveSameSite::NO_RESTRICTION,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
+       CanonicalCookie::CookieInclusionStatus()},
+      {"A=2; SameSite=None; Secure", CookieSameSite::NO_RESTRICTION,
+       CookieEffectiveSameSite::NO_RESTRICTION,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+       CanonicalCookie::CookieInclusionStatus()},
+      {"A=2; SameSite=None; Secure", CookieSameSite::NO_RESTRICTION,
+       CookieEffectiveSameSite::NO_RESTRICTION,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+       CanonicalCookie::CookieInclusionStatus()}};
+
+  // Test cases where the default is None (either access semantics is LEGACY, or
+  // semantics is UNKNOWN and feature is enabled):
+  std::vector<IncludeForRequestURLTestCase> default_none_test_cases = {
+      // Unspecified cookies (without SameSite-by-default):
+      {"A=2", CookieSameSite::UNSPECIFIED,
+       CookieEffectiveSameSite::NO_RESTRICTION,
+       CookieOptions::SameSiteCookieContext::CROSS_SITE,
+       CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
+           std::vector<
+               CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
+           CanonicalCookie::CookieInclusionStatus::
+               WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT)},
+      {"A=2", CookieSameSite::UNSPECIFIED,
+       CookieEffectiveSameSite::NO_RESTRICTION,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
+       CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
+           std::vector<
+               CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
+           CanonicalCookie::CookieInclusionStatus::
+               WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT)},
+      {"A=2", CookieSameSite::UNSPECIFIED,
+       CookieEffectiveSameSite::NO_RESTRICTION,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+       CanonicalCookie::CookieInclusionStatus()},
+      {"A=2", CookieSameSite::UNSPECIFIED,
+       CookieEffectiveSameSite::NO_RESTRICTION,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+       CanonicalCookie::CookieInclusionStatus()}};
+
+  // Test cases where the default is Lax (either access semantics is NONLEGACY,
+  // or access semantics is UNKNOWN and feature is enabled):
+  std::vector<IncludeForRequestURLTestCase> default_lax_test_cases = {
+      // Unspecified recently-created cookies (with SameSite-by-default):
+      {"A=2", CookieSameSite::UNSPECIFIED,
+       CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
+       CookieOptions::SameSiteCookieContext::CROSS_SITE,
+       CanonicalCookie::CookieInclusionStatus(
+           CanonicalCookie::CookieInclusionStatus::
+               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
+           CanonicalCookie::CookieInclusionStatus::
+               WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT),
+       kShortAge},
+      {"A=2", CookieSameSite::UNSPECIFIED,
+       CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
+       CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
+           std::vector<
+               CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
+           CanonicalCookie::CookieInclusionStatus::
+               WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE),
+       kShortAge},
+      {"A=2", CookieSameSite::UNSPECIFIED,
+       CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+       CanonicalCookie::CookieInclusionStatus(), kShortAge},
+      {"A=2", CookieSameSite::UNSPECIFIED,
+       CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+       CanonicalCookie::CookieInclusionStatus(), kShortAge},
+      // Unspecified not-recently-created cookies (with SameSite-by-default):
+      {"A=2", CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::LAX_MODE,
+       CookieOptions::SameSiteCookieContext::CROSS_SITE,
+       CanonicalCookie::CookieInclusionStatus(
+           CanonicalCookie::CookieInclusionStatus::
+               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
+           CanonicalCookie::CookieInclusionStatus::
+               WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT),
+       kLongAge},
+      {"A=2", CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::LAX_MODE,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
+       CanonicalCookie::CookieInclusionStatus(
+           CanonicalCookie::CookieInclusionStatus::
+               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
+           CanonicalCookie::CookieInclusionStatus::
+               WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT),
+       kLongAge},
+      {"A=2", CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::LAX_MODE,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+       CanonicalCookie::CookieInclusionStatus(), kLongAge},
+      {"A=2", CookieSameSite::UNSPECIFIED, CookieEffectiveSameSite::LAX_MODE,
+       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+       CanonicalCookie::CookieInclusionStatus(), kLongAge},
+  };
+
+  VerifyIncludeForRequestURLTestCases(true, CookieAccessSemantics::UNKNOWN,
+                                      common_test_cases);
+  VerifyIncludeForRequestURLTestCases(true, CookieAccessSemantics::UNKNOWN,
+                                      default_lax_test_cases);
+  VerifyIncludeForRequestURLTestCases(true, CookieAccessSemantics::LEGACY,
+                                      common_test_cases);
+  VerifyIncludeForRequestURLTestCases(true, CookieAccessSemantics::LEGACY,
+                                      default_none_test_cases);
+  VerifyIncludeForRequestURLTestCases(true, CookieAccessSemantics::NONLEGACY,
+                                      common_test_cases);
+  VerifyIncludeForRequestURLTestCases(true, CookieAccessSemantics::NONLEGACY,
+                                      default_lax_test_cases);
+  VerifyIncludeForRequestURLTestCases(false, CookieAccessSemantics::UNKNOWN,
+                                      common_test_cases);
+  VerifyIncludeForRequestURLTestCases(false, CookieAccessSemantics::UNKNOWN,
+                                      default_none_test_cases);
+  VerifyIncludeForRequestURLTestCases(false, CookieAccessSemantics::LEGACY,
+                                      common_test_cases);
+  VerifyIncludeForRequestURLTestCases(false, CookieAccessSemantics::LEGACY,
+                                      default_none_test_cases);
+  VerifyIncludeForRequestURLTestCases(false, CookieAccessSemantics::NONLEGACY,
+                                      common_test_cases);
+  VerifyIncludeForRequestURLTestCases(false, CookieAccessSemantics::NONLEGACY,
+                                      default_lax_test_cases);
 }
 
 // Test that non-SameSite, insecure cookies are excluded if both
@@ -956,6 +879,8 @@ TEST(CanonicalCookieTest, IncludeCookiesWithoutSameSiteMustBeSecure) {
   EXPECT_EQ(CookieEffectiveSameSite::NO_RESTRICTION,
             cookie->GetEffectiveSameSiteForTesting());
 
+  // Test SameSite=None must be Secure.
+  // Features on:
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitWithFeatures(
@@ -963,10 +888,46 @@ TEST(CanonicalCookieTest, IncludeCookiesWithoutSameSiteMustBeSecure) {
          features::kCookiesWithoutSameSiteMustBeSecure} /* enabled_features */,
         {} /* disabled_features */);
 
-    EXPECT_TRUE(cookie->IncludeForRequestURL(url, options)
+    EXPECT_TRUE(
+        cookie
+            ->IncludeForRequestURL(url, options, CookieAccessSemantics::UNKNOWN)
+            .HasExactlyExclusionReasonsForTesting(
+                {CanonicalCookie::CookieInclusionStatus::
+                     EXCLUDE_SAMESITE_NONE_INSECURE}));
+    EXPECT_TRUE(
+        cookie
+            ->IncludeForRequestURL(url, options, CookieAccessSemantics::LEGACY)
+            .IsInclude());
+    EXPECT_TRUE(cookie
+                    ->IncludeForRequestURL(url, options,
+                                           CookieAccessSemantics::NONLEGACY)
                     .HasExactlyExclusionReasonsForTesting(
                         {CanonicalCookie::CookieInclusionStatus::
                              EXCLUDE_SAMESITE_NONE_INSECURE}));
+  }
+  // Features off:
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        {} /* enabled_features */,
+        {features::kSameSiteByDefaultCookies,
+         features::
+             kCookiesWithoutSameSiteMustBeSecure} /* disabled_features */);
+
+    EXPECT_TRUE(
+        cookie
+            ->IncludeForRequestURL(url, options, CookieAccessSemantics::UNKNOWN)
+            .IsInclude());
+    EXPECT_TRUE(
+        cookie
+            ->IncludeForRequestURL(url, options, CookieAccessSemantics::LEGACY)
+            .IsInclude());
+    // If the semantics is Nonlegacy, only reject the cookie if the
+    // SameSite=None-must-be-Secure feature is enabled.
+    EXPECT_TRUE(cookie
+                    ->IncludeForRequestURL(url, options,
+                                           CookieAccessSemantics::NONLEGACY)
+                    .IsInclude());
   }
 }
 
@@ -1979,7 +1940,7 @@ TEST(CanonicalCookieTest, IsSetPermittedInContext) {
                     .IsInclude());
   }
 
-  // Behavior of UNSPECIFIED depends on an experiment.
+  // Behavior of UNSPECIFIED depends on an experiment and CookieAccessSemantics.
   CanonicalCookie cookie_same_site_unspecified(
       "A", "2", "www.example.com", "/test", current_time, base::Time(),
       base::Time(), true /*secure*/, false /*httponly*/,
@@ -1989,14 +1950,43 @@ TEST(CanonicalCookieTest, IsSetPermittedInContext) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(features::kSameSiteByDefaultCookies);
 
-    EXPECT_TRUE(
-        cookie_same_site_unspecified.IsSetPermittedInContext(context_cross_site)
-            .IsInclude());
     EXPECT_TRUE(cookie_same_site_unspecified
-                    .IsSetPermittedInContext(context_same_site_lax)
+                    .IsSetPermittedInContext(context_cross_site,
+                                             CookieAccessSemantics::UNKNOWN)
                     .IsInclude());
     EXPECT_TRUE(cookie_same_site_unspecified
-                    .IsSetPermittedInContext(context_same_site_strict)
+                    .IsSetPermittedInContext(context_same_site_lax,
+                                             CookieAccessSemantics::UNKNOWN)
+                    .IsInclude());
+    EXPECT_TRUE(cookie_same_site_unspecified
+                    .IsSetPermittedInContext(context_same_site_strict,
+                                             CookieAccessSemantics::UNKNOWN)
+                    .IsInclude());
+    EXPECT_TRUE(cookie_same_site_unspecified
+                    .IsSetPermittedInContext(context_cross_site,
+                                             CookieAccessSemantics::LEGACY)
+                    .IsInclude());
+    EXPECT_TRUE(cookie_same_site_unspecified
+                    .IsSetPermittedInContext(context_same_site_lax,
+                                             CookieAccessSemantics::LEGACY)
+                    .IsInclude());
+    EXPECT_TRUE(cookie_same_site_unspecified
+                    .IsSetPermittedInContext(context_same_site_strict,
+                                             CookieAccessSemantics::LEGACY)
+                    .IsInclude());
+    EXPECT_TRUE(cookie_same_site_unspecified
+                    .IsSetPermittedInContext(context_cross_site,
+                                             CookieAccessSemantics::NONLEGACY)
+                    .HasExactlyExclusionReasonsForTesting(
+                        {CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
+    EXPECT_TRUE(cookie_same_site_unspecified
+                    .IsSetPermittedInContext(context_same_site_lax,
+                                             CookieAccessSemantics::NONLEGACY)
+                    .IsInclude());
+    EXPECT_TRUE(cookie_same_site_unspecified
+                    .IsSetPermittedInContext(context_same_site_strict,
+                                             CookieAccessSemantics::NONLEGACY)
                     .IsInclude());
   }
 
@@ -2004,16 +1994,45 @@ TEST(CanonicalCookieTest, IsSetPermittedInContext) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(features::kSameSiteByDefaultCookies);
 
-    EXPECT_TRUE(
-        cookie_same_site_unspecified.IsSetPermittedInContext(context_cross_site)
-            .HasExactlyExclusionReasonsForTesting(
-                {CanonicalCookie::CookieInclusionStatus::
-                     EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
     EXPECT_TRUE(cookie_same_site_unspecified
-                    .IsSetPermittedInContext(context_same_site_lax)
+                    .IsSetPermittedInContext(context_cross_site,
+                                             CookieAccessSemantics::UNKNOWN)
+                    .HasExactlyExclusionReasonsForTesting(
+                        {CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
+    EXPECT_TRUE(cookie_same_site_unspecified
+                    .IsSetPermittedInContext(context_same_site_lax,
+                                             CookieAccessSemantics::UNKNOWN)
                     .IsInclude());
     EXPECT_TRUE(cookie_same_site_unspecified
-                    .IsSetPermittedInContext(context_same_site_strict)
+                    .IsSetPermittedInContext(context_same_site_strict,
+                                             CookieAccessSemantics::UNKNOWN)
+                    .IsInclude());
+    EXPECT_TRUE(cookie_same_site_unspecified
+                    .IsSetPermittedInContext(context_cross_site,
+                                             CookieAccessSemantics::LEGACY)
+                    .IsInclude());
+    EXPECT_TRUE(cookie_same_site_unspecified
+                    .IsSetPermittedInContext(context_same_site_lax,
+                                             CookieAccessSemantics::LEGACY)
+                    .IsInclude());
+    EXPECT_TRUE(cookie_same_site_unspecified
+                    .IsSetPermittedInContext(context_same_site_strict,
+                                             CookieAccessSemantics::LEGACY)
+                    .IsInclude());
+    EXPECT_TRUE(cookie_same_site_unspecified
+                    .IsSetPermittedInContext(context_cross_site,
+                                             CookieAccessSemantics::NONLEGACY)
+                    .HasExactlyExclusionReasonsForTesting(
+                        {CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
+    EXPECT_TRUE(cookie_same_site_unspecified
+                    .IsSetPermittedInContext(context_same_site_lax,
+                                             CookieAccessSemantics::NONLEGACY)
+                    .IsInclude());
+    EXPECT_TRUE(cookie_same_site_unspecified
+                    .IsSetPermittedInContext(context_same_site_strict,
+                                             CookieAccessSemantics::NONLEGACY)
                     .IsInclude());
   }
 }

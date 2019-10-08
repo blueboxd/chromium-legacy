@@ -26,18 +26,23 @@ namespace content {
 // |is_locked()| result.
 class CONTENT_EXPORT ScopeLock {
  public:
+  using LockReleasedCallback =
+      base::OnceCallback<void(int level, ScopeLockRange range)>;
+
   ScopeLock();
   ~ScopeLock();
   ScopeLock(ScopeLock&&) noexcept;
-  // The |closure| is called when the lock is released, either by destruction
-  // of this object or by the |Released()| call. It will be called
+  // |lock_released_callback| is called when the lock is released, either by
+  // destruction of this object or by the |Released()| call. It will be called
   // synchronously on the sequence runner this lock is released on.
-  ScopeLock(ScopeLockRange range, int level, base::OnceClosure closure);
+  ScopeLock(ScopeLockRange range,
+            int level,
+            LockReleasedCallback lock_released_callback);
   // The lock in |other| is not released, and |this| must not be holding a lock.
   ScopeLock& operator=(ScopeLock&& other) noexcept;
 
   // Returns true if this object is holding a lock.
-  bool is_locked() const { return is_locked_; }
+  bool is_locked() const { return !lock_released_callback_.is_null(); }
 
   // Explicitly releases the granted lock.
   //
@@ -54,10 +59,11 @@ class CONTENT_EXPORT ScopeLock {
   friend bool operator==(const ScopeLock& x, const ScopeLock& y);
   friend bool operator<(const ScopeLock& x, const ScopeLock& y);
 
-  bool is_locked_ = false;
   ScopeLockRange range_;
   int level_ = 0;
-  base::ScopedClosureRunner closure_runner_;
+  // Closure to run when the lock is released. The lock is held when this is
+  // non-null.
+  LockReleasedCallback lock_released_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopeLock);
 };

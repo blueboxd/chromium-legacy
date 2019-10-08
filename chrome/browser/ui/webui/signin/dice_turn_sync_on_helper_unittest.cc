@@ -46,8 +46,6 @@
 using ::testing::AtLeast;
 using ::testing::Return;
 
-using namespace unified_consent;
-
 class DiceTurnSyncOnHelperTestBase;
 
 namespace {
@@ -442,12 +440,13 @@ class DiceTurnSyncOnHelperTestWithUnifiedConsent
     : public DiceTurnSyncOnHelperTestBase {
  public:
   DiceTurnSyncOnHelperTestWithUnifiedConsent()
-      : scoped_unified_consent_(UnifiedConsentFeatureState::kEnabled) {}
+      : scoped_unified_consent_(
+            unified_consent::UnifiedConsentFeatureState::kEnabled) {}
   ~DiceTurnSyncOnHelperTestWithUnifiedConsent() override {}
 
  private:
   ScopedAccountConsistencyDice scoped_dice_;
-  ScopedUnifiedConsent scoped_unified_consent_;
+  unified_consent::ScopedUnifiedConsent scoped_unified_consent_;
 };
 
 // TestDiceTurnSyncOnHelperDelegate implementation.
@@ -742,7 +741,7 @@ TEST_F(DiceTurnSyncOnHelperTest, ShowSyncDialogForEndConsumerAccount) {
 // Tests that the user enabled unified consent,
 TEST_F(DiceTurnSyncOnHelperTestWithUnifiedConsent,
        ShowSyncDialogForEndConsumerAccount_UnifiedConsentEnabled) {
-  ASSERT_TRUE(IsUnifiedConsentFeatureEnabled());
+  ASSERT_TRUE(unified_consent::IsUnifiedConsentFeatureEnabled());
   // Set expectations.
   expected_sync_confirmation_shown_ = true;
   sync_confirmation_result_ = LoginUIService::SyncConfirmationUIClosedResult::
@@ -753,11 +752,12 @@ TEST_F(DiceTurnSyncOnHelperTestWithUnifiedConsent,
       SetFirstSetupComplete(syncer::SyncFirstSetupCompleteSource::BASIC_FLOW))
       .Times(1);
   PrefService* pref_service = profile()->GetPrefs();
-  std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
-      url_keyed_collection_helper = UrlKeyedDataCollectionConsentHelper::
-          NewAnonymizedDataCollectionConsentHelper(
-              pref_service,
-              ProfileSyncServiceFactory::GetForProfile(profile()));
+  std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
+      url_keyed_collection_helper =
+          unified_consent::UrlKeyedDataCollectionConsentHelper::
+              NewAnonymizedDataCollectionConsentHelper(
+                  pref_service,
+                  ProfileSyncServiceFactory::GetForProfile(profile()));
   EXPECT_FALSE(url_keyed_collection_helper->IsEnabled());
 
   // Signin flow.

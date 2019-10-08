@@ -321,6 +321,8 @@ void AssistantManagerServiceImpl::RegisterAlarmsTimersListener() {
 }
 
 void AssistantManagerServiceImpl::EnableListening(bool enable) {
+  if (!assistant_manager_)
+    return;
   assistant_manager_->EnableListening(enable);
 }
 
@@ -1166,27 +1168,7 @@ void AssistantManagerServiceImpl::OnStartFinished() {
   if (assistant_state()->arc_play_store_enabled().has_value())
     SetArcPlayStoreEnabled(assistant_state()->arc_play_store_enabled().value());
 
-  if (assistant::features::IsAlarmTimerManagerEnabled()) {
-    RegisterAlarmsTimersListener();
-  }
-}
-
-void AssistantManagerServiceImpl::OnTimerSoundingStarted() {
-  if (assistant::features::IsAlarmTimerManagerEnabled())
-    return;
-
-  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnTimerSoundingStarted);
-  if (assistant_alarm_timer_controller())
-    assistant_alarm_timer_controller()->OnTimerSoundingStarted();
-}
-
-void AssistantManagerServiceImpl::OnTimerSoundingFinished() {
-  if (assistant::features::IsAlarmTimerManagerEnabled())
-    return;
-
-  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnTimerSoundingFinished);
-  if (assistant_alarm_timer_controller())
-    assistant_alarm_timer_controller()->OnTimerSoundingFinished();
+  RegisterAlarmsTimersListener();
 }
 
 void AssistantManagerServiceImpl::OnAndroidAppListRefreshed(

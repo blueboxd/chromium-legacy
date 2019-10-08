@@ -327,6 +327,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="3241052487511142956">Előző felkeresett link</translation>
 <translation id="3241638166094654466">Az egyes sorokban található cellák száma:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">Előző hasonló elem</translation>
 <translation id="3286372614333682499">álló</translation>
 <translation id="3286390186030710347">Csúszka</translation>
 <translation id="3299925995433437805">Nincs következő felkeresett link.</translation>
@@ -509,6 +510,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="4517854969512651305">Érték növelése</translation>
 <translation id="4529987814483543472">Hagyományos billentyűzetkiosztás</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{törtvonal}other{# törtvonal}}</translation>
+<translation id="4537277403911487429">Következő hasonló elem</translation>
 <translation id="4547556996012970016">Következő 5. szintű fejléc</translation>
 <translation id="4562381607973973258">Fejléc</translation>
 <translation id="4569941707103739422">A navigációhoz a lefelé és a felfelé mutató nyilakat, az aktiváláshoz az Enter billentyűt használja.</translation>

@@ -20,10 +20,6 @@ class ExtensionsToolbarButton;
 class ToolbarActionViewController;
 class ToolbarActionsBarBubbleViews;
 
-namespace views {
-class AnimatingLayoutManager;
-}  // namespace views
-
 // Container for extensions shown in the toolbar. These include pinned
 // extensions and extensions that are 'popped out' transitively to show dialogs
 // or be called out to the user.
@@ -47,10 +43,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
 
   ToolbarActionsBarBubbleViews* action_bubble_public_for_testing() {
     return active_bubble_;
-  }
-
-  views::AnimatingLayoutManager* animating_layout_for_testing() {
-    return animating_layout_;
   }
 
   // ToolbarIconContainerView:
@@ -169,8 +161,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // The DropInfo for the current drag-and-drop operation, or a null pointer if
   // there is none.
   std::unique_ptr<DropInfo> drop_info_;
-
-  views::AnimatingLayoutManager* animating_layout_ = nullptr;
 
   base::WeakPtrFactory<ExtensionsToolbarContainer> weak_ptr_factory_{this};
 

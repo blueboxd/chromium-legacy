@@ -319,6 +319,7 @@
 <translation id="1470811252759861213">如要在所有電腦上使用您的擴充功能，請<ph name="SIGN_IN_LINK" />。</translation>
 <translation id="1470967055429794975">這項操作將清除這個安全金鑰上的所有資料，包括 PIN 碼</translation>
 <translation id="1475502736924165259">您儲存的這些憑證不屬於任何其他類別</translation>
+<translation id="1476088332184200792">複製到你的裝置</translation>
 <translation id="1476607407192946488">語言設定(&amp;L)</translation>
 <translation id="1478340334823509079">詳細資料：<ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">未啟用安裝功能</translation>
@@ -951,7 +952,6 @@
 <translation id="2379281330731083556">使用系統對話方塊進行列印... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">傳送前詢問我 (建議)</translation>
 <translation id="2384436799579181135">發生錯誤。請檢查你的印表機，然後再試一次。</translation>
-<translation id="2386926718981642523">只要說出「Ok Google」，就能隨時存取 Google 助理</translation>
 <translation id="2387458720915042159">Proxy 連線類型</translation>
 <translation id="2391419135980381625">標準字型</translation>
 <translation id="2392369802118427583">啟用</translation>
@@ -1340,6 +1340,7 @@
 <translation id="2941112035454246133">低</translation>
 <translation id="2942560570858569904">等待中…</translation>
 <translation id="2942581856830209953">自訂這個頁面</translation>
+<translation id="294308617863380348">包括第三方 Cookie</translation>
 <translation id="2944060181911631861">傳送使用狀況與診斷資料。讓系統自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google，協助改善你的 Android 使用體驗。這些資料將有助於系統和應用程式提高穩定性及做出其他改善。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。如果你的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到你的 Google 帳戶。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="2946119680249604491">新增連線</translation>
 <translation id="2948300991547862301">前往<ph name="PAGE_TITLE" /></translation>
@@ -1354,7 +1355,6 @@
 <translation id="2961695502793809356">按一下到下一頁，按住可查看記錄</translation>
 <translation id="2963151496262057773">下列外掛程式無回應：<ph name="PLUGIN_NAME" /> 您要停止執行嗎？</translation>
 <translation id="2966937470348689686">管理 Android 偏好設定</translation>
-<translation id="2972557485845626008">韌體</translation>
 <translation id="2972581237482394796">重做(&amp;R)</translation>
 <translation id="2973324205039581528">關閉網站音訊</translation>
 <translation id="2977480621796371840">從群組中移除</translation>
@@ -1612,7 +1612,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">分隔線</translation>
 <translation id="3387614642886316601">使用進階拼字檢查功能</translation>
-<translation id="3393352139658145068">只要有人說出「Ok Google」即啟動 Google 助理。為了節省電力，系統只有在裝置連接到電源時才會啟動「Ok Google」。</translation>
 <translation id="3396800784455899911">點選 [接受並繼續] 按鈕即表示您同意上述的 Google 服務處理程序。</translation>
 <translation id="3399432415385675819">通知功能會遭到停用</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> 赫茲) - 交錯顯示</translation>
@@ -1773,6 +1772,7 @@
 <translation id="3613134908380545408">顯示「<ph name="FOLDER_NAME" />」</translation>
 <translation id="3613422051106148727">在新分頁中開啟(&amp;O)</translation>
 <translation id="3615073365085224194">請以手指輕觸指紋感應器</translation>
+<translation id="3615579745882581859">正在掃描「<ph name="FILE_NAME" />」。</translation>
 <translation id="3616741288025931835">清除瀏覽資料(&amp;C)...</translation>
 <translation id="3617891479562106823">目前無法存取背景，請稍後再試。</translation>
 <translation id="3619115746895587757">卡布奇諾</translation>
@@ -1887,7 +1887,6 @@
 <translation id="3759933321830434300">封鎖網頁部分內容</translation>
 <translation id="3760460896538743390">檢查背景頁面(&amp;B)</translation>
 <translation id="37613671848467444">在無痕式視窗中開啟(&amp;I)</translation>
-<translation id="3764314093345384080">詳細版本資訊</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{與 1 個 USB 裝置通訊}other{與 # 個 USB 裝置通訊}}</translation>
 <translation id="3765246971671567135">無法讀取離線示範模式的政策。</translation>
 <translation id="3768037234834996183">正在處理您的偏好設定...</translation>
@@ -2167,7 +2166,6 @@
 <translation id="4138267921960073861">在登入畫面中顯示使用者名稱和相片</translation>
 <translation id="4142052906269098341">用你的手機解鎖 <ph name="DEVICE_TYPE" />。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">取得畫質更高的影片，並降低耗電量。只能透過支援 Cast 的螢幕播放影片。</translation>
-<translation id="4145922204387553806">允許 Google 助理根據畫面上的內容顯示相關資訊</translation>
 <translation id="4146026355784316281">一律使用系統檢視器開啟</translation>
 <translation id="4146785383423576110">重設與清理</translation>
 <translation id="4147911968024186208">請再試一次。如果這個錯誤再次發生，請與你的產品支援代表聯絡。</translation>
@@ -2254,6 +2252,7 @@
 <translation id="4297322094678649474">變更語言</translation>
 <translation id="4301671483919369635">這個頁面具有檔案編輯權限</translation>
 <translation id="4303079906735388947">為安全金鑰設定新的 PIN 碼</translation>
+<translation id="4305402730127028764">複製到「<ph name="DEVICE_NAME" />」</translation>
 <translation id="4306119971288449206">應用程式的內容類型應設為「<ph name="CONTENT_TYPE" />」</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K 作用中)</translation>
 <translation id="4310139701823742692">檔案格式錯誤。請檢查 PPD 檔案，然後再試一次。</translation>
@@ -2389,7 +2388,6 @@
 <translation id="4534661889221639075">請再試一次。</translation>
 <translation id="4535127706710932914">預設設定檔</translation>
 <translation id="4535767533210902251">指紋感應器位於鍵盤右上方，請用任何一隻手指輕觸指紋感應器。</translation>
-<translation id="4538417792467843292">刪除文字</translation>
 <translation id="4538684596480161368">一律禁止在 <ph name="HOST" /> 執行無沙箱防護的外掛程式</translation>
 <translation id="4538792345715658285">由公司政策安裝</translation>
 <translation id="4542520061254486227">讀取你在 <ph name="WEBSITE_1" /> 和 <ph name="WEBSITE_2" /> 上產生的資料</translation>
@@ -2933,6 +2931,7 @@
 <translation id="5367091008316207019">正在讀取檔案...</translation>
 <translation id="5368720394188453070">你的手機已鎖定，必須解鎖才能繼續操作。</translation>
 <translation id="5368779022775404937">登入 <ph name="REALM" /></translation>
+<translation id="5369491905435686894">啟用滑鼠加速</translation>
 <translation id="5370819323174483825">重新載入(&amp;R)</translation>
 <translation id="5372529912055771682">這個版本的作業系統不支援提供註冊模式。請確認你使用的是最新版本，然後再試一次。</translation>
 <translation id="5372579129492968947">取消固定擴充功能</translation>
@@ -3005,6 +3004,7 @@
 <translation id="5464632865477611176">執行 (僅限這次)</translation>
 <translation id="5464660706533281090">兒童使用者無法變更這項設定。</translation>
 <translation id="5466374726908360271">貼上「<ph name="SEARCH_TERMS" />」並執行搜尋 (&amp;S)</translation>
+<translation id="5468173180030470402">正在尋找檔案共用區</translation>
 <translation id="5471768120198416576">你好！這是文字轉語音的語音。</translation>
 <translation id="5473333559083690127">再次輸入新的 PIN 碼</translation>
 <translation id="5481941284378890518">新增附近的印表機</translation>
@@ -3540,6 +3540,7 @@
 <translation id="6233154960150021497">預設使用語音，而不使用鍵盤</translation>
 <translation id="6234474535228214774">等待安裝中</translation>
 <translation id="6237816943013845465">讓你調整螢幕解析度</translation>
+<translation id="6238767809035845642">從其他裝置分享的文字</translation>
 <translation id="6238923052227198598">在鎖定畫面上顯示最新記事</translation>
 <translation id="6239558157302047471">重新載入頁框(&amp;F)</translation>
 <translation id="6241530762627360640">存取與系統配對的藍牙裝置資訊並搜尋附近的藍牙裝置。</translation>
@@ -3766,7 +3767,6 @@
 <translation id="6577284282025554716">已取消下載：<ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">使用你的 Google 使用者名稱與密碼將經過同步處理的密碼加密</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> - 已分享桌面內容</translation>
-<translation id="6580151766480067746">ARC 版本</translation>
 <translation id="6582080224869403177">請重設 <ph name="DEVICE_TYPE" />，以便進行安全性更新。</translation>
 <translation id="6584878029876017575">Microsoft 永久簽署</translation>
 <translation id="6586451623538375658">調換滑鼠主按鈕</translation>
@@ -4371,6 +4371,7 @@
 <translation id="7487141338393529395">開啟進階拼字檢查功能</translation>
 <translation id="7487969577036436319">未安裝任何元件</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{開啟所有書籤(&amp;O)}=1{開啟書籤(&amp;O)}other{開啟全部 # 個書籤(&amp;O)}}</translation>
+<translation id="7489761397368794366">用你的裝置撥打電話</translation>
 <translation id="749028671485790643">人員 <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC 位址</translation>
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> 擴充功能可能會收集您輸入的所有文字，包括密碼和信用卡號碼等個人資料。您要使用這個擴充功能嗎？</translation>
@@ -4390,6 +4391,7 @@
 <translation id="7508054832109420082">授予印表機存取權</translation>
 <translation id="7510943789645525906">在發生線上資料侵害事件時向你發出警告</translation>
 <translation id="7513029293694390567">使用已儲存的憑證自動登入網站。如果停用這項功能，每當你登入網站時，都必須向系統確認你的登入憑證。</translation>
+<translation id="7514239104543605883">複製到你的裝置</translation>
 <translation id="7514365320538308">下載</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">說出「Ok Google」</translation>
@@ -4945,6 +4947,7 @@
 <translation id="8274332263553132018">投放檔案</translation>
 <translation id="8274924778568117936">完成更新前，請勿將 <ph name="DEVICE_TYPE" /> 關機。<ph name="DEVICE_TYPE" /> 會在安裝完成後重新啟動。</translation>
 <translation id="8275038454117074363">匯入</translation>
+<translation id="8275080796245127762">用你的裝置撥打電話</translation>
 <translation id="8276560076771292512">清除快取並強制重新載入</translation>
 <translation id="8281886186245836920">略過</translation>
 <translation id="8282947398454257691">存取您的專屬裝置識別碼</translation>
@@ -5265,6 +5268,7 @@
 <translation id="8758418656925882523">啟用語音輸入 (說話即可輸入)</translation>
 <translation id="8759408218731716181">無法設定多重登入</translation>
 <translation id="8759753423332885148">瞭解詳情</translation>
+<translation id="8761945298804995673">這名使用者已經存在。</translation>
 <translation id="8762886931014513155">你的 <ph name="DEVICE_TYPE" /> 需要更新</translation>
 <translation id="8763927697961133303">USB 裝置</translation>
 <translation id="8767621466733104912">自動為所有使用者更新 Chrome</translation>
@@ -5353,6 +5357,7 @@
 <translation id="8879284080359814990">以分頁顯示(&amp;S)</translation>
 <translation id="8879921471468674457">記住登入資訊</translation>
 <translation id="8881020143150461183">請再試一次。如需技術支援，請聯絡「<ph name="CARRIER_NAME" />」。</translation>
+<translation id="8883273463630735858">啟用觸控板加速</translation>
 <translation id="8884570509232205463">你的裝置會在 <ph name="UNLOCK_TIME" /> 遭到鎖定。</translation>
 <translation id="8885197664446363138">無法使用 Smart Lock</translation>
 <translation id="8888253246822647887">升級完成後，你的應用程式即會啟動。升級作業可能需要幾分鐘才能完成。</translation>

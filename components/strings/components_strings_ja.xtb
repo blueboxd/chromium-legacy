@@ -202,6 +202,7 @@
 <translation id="187918866476621466">起動ページを開く</translation>
 <translation id="1883255238294161206">リストを折りたたむ</translation>
 <translation id="1898423065542865115">フィルタ</translation>
+<translation id="1901443836186977402">{1,plural, =1{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の期限が昨日で切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" /> に設定されています。この時刻が正しくない場合は、システムの時計を修正して、このページを更新してください。}other{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の期限が # 日前に切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" /> に設定されています。この時刻が正しくない場合は、システムの時計を修正して、このページを更新してください。}}</translation>
 <translation id="1914326953223720820">解凍サービス</translation>
 <translation id="1915697529809968049">CVC の代わりに Touch ID を使用しますか？</translation>
 <translation id="1916770123977586577">更新後の設定をこのサイトに適用するには、このページを再読み込みしてください</translation>
@@ -435,6 +436,7 @@
 <translation id="3116158981186517402">ラミネート</translation>
 <translation id="3120730422813725195">ELO</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />接続診断ツールを実行してみてください<ph name="END_LINK" />。</translation>
+<translation id="3121994479408824897"><ph name="DOMAIN" /> に移動</translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{なし}=1{1 件のアカウントのログインデータ}other{# 件のアカウントのログインデータ}}</translation>
 <translation id="3145945101586104090">応答をデコードできませんでした</translation>
 <translation id="3150653042067488994">一時的なサーバー エラーです</translation>
@@ -813,6 +815,7 @@
 <translation id="5043480802608081735">コピーしたリンク</translation>
 <translation id="5045550434625856497">パスワードが正しくありません</translation>
 <translation id="5056549851600133418">おすすめの記事</translation>
+<translation id="5061227663725596739">もしかして: <ph name="LOOKALIKE_DOMAIN" /></translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{（1 個が使用中）}other{（# 個が使用中）}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />プロキシ アドレスを確認する<ph name="END_LINK" /></translation>
@@ -866,6 +869,7 @@
 <translation id="5284909709419567258">ネットワーク アドレス</translation>
 <translation id="5285570108065881030">保存したパスワードをすべて表示</translation>
 <translation id="5287240709317226393">Cookie を表示</translation>
+<translation id="5287456746628258573">このサイトでは古いセキュリティ設定を使用しています。このサイトにパスワードやクレジット カード番号などの情報を送信すると流出する恐れがあります。</translation>
 <translation id="5288108484102287882">ポリシー値の検証で警告が返されました</translation>
 <translation id="5299298092464848405">ポリシーの解析中にエラーが発生しました</translation>
 <translation id="5300589172476337783">表示</translation>
@@ -993,6 +997,7 @@
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> を開いています…</translation>
 <translation id="5947933617628957894">はい、追加します</translation>
 <translation id="5951495562196540101">一般ユーザー向けアカウントでは登録できません（ライセンス パッケージが利用可能です）。</translation>
+<translation id="5966900314707961320">オンにすると、サイトは Cookie を使用してあなたをウェブ上でトラッキングできなくなります</translation>
 <translation id="5967592137238574583">連絡先情報の編集</translation>
 <translation id="5967867314010545767">履歴から削除</translation>
 <translation id="5975083100439434680">縮小する</translation>
@@ -1022,7 +1027,7 @@
 <translation id="6047927260846328439">アクセス先のコンテンツは、ユーザーをだましてソフトウェアをインストールさせようとしたり、個人情報を危険にさらしたりする可能性があります。<ph name="BEGIN_LINK" />危険性を理解したうえで表示する<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923"><ph name="SITE" /> では証明書ピンニングが使用されているため、現在アクセスできません。通常、ネットワーク エラーやネットワークへの攻撃は一時的なものです。しばらくするとページにアクセスできるようになります。</translation>
 <translation id="6052284303005792909">•</translation>
-<translation id="6058977677006700226">お使いのどのデバイスでも同じカードを使用できるようにしかすか？</translation>
+<translation id="6058977677006700226">お使いのどのデバイスでも同じカードを使用できるようにしますか？</translation>
 <translation id="6059925163896151826">USB デバイス</translation>
 <translation id="6060009363608157444">無効な DnsOverHttps モードです。</translation>
 <translation id="6064217302520318294">画面ロック</translation>
@@ -1075,6 +1080,7 @@
 <translation id="6383221683286411806">続行すると料金が請求される可能性があります。</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{他 1 件の候補}other{他 # 件の候補}}</translation>
 <translation id="6387754724289022810">カードと請求先住所を Google アカウントとこのデバイスに保存すると、次回のお支払いが簡単になります。</translation>
+<translation id="6389470377220713856">カード名義人（半角英文字）</translation>
 <translation id="6390200185239044127">2 つ折り直角 Z 折り</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">このポリシーはサポートが終了したため、代わりに <ph name="NEW_POLICY" /> ポリシーを使用してください。</translation>
@@ -1253,7 +1259,6 @@
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">外部のユーザーかどうか:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">このサイトから離れる</translation>
 <translation id="7353601530677266744">コマンドライン</translation>
 <translation id="7372973238305370288">検索結果</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1426,6 +1431,7 @@
 <translation id="8131740175452115882">確認</translation>
 <translation id="8149426793427495338">パソコンがスリープ状態です。</translation>
 <translation id="8150722005171944719"><ph name="URL" /> のファイルを読むことができません。削除されたか移動された可能性があります。ファイルに対するアクセス権がない場合もあります。</translation>
+<translation id="8157295877370077682">このサイトから離れる</translation>
 <translation id="8163866351304776260">4 穴パンチ（左）</translation>
 <translation id="8175796834047840627">ログインしている場合は、その Google アカウントにカードを保存できます。この動作は設定で変更できます。</translation>
 <translation id="8184538546369750125">グローバルのデフォルト値（[許可]）を使用</translation>

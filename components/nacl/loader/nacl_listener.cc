@@ -36,6 +36,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/nacl_app.h"
 #include "native_client/src/public/nacl_desc.h"
@@ -332,10 +333,10 @@ void NaClListener::OnStart(nacl::NaClStartParams params) {
       base::Bind(&NaClListener::ResolveFileToken, base::Unretained(this)),
       base::Bind(&NaClListener::OnOpenResource, base::Unretained(this)));
 
-  nacl::mojom::NaClRendererHostPtr renderer_host;
+  mojo::PendingRemote<nacl::mojom::NaClRendererHost> renderer_host;
   if (!Send(new NaClProcessHostMsg_PpapiChannelsCreated(
           browser_handle, ppapi_renderer_handle,
-          MakeRequest(&renderer_host).PassMessagePipe().release(),
+          renderer_host.InitWithNewPipeAndPassReceiver().PassPipe().release(),
           manifest_service_handle, ro_shmem_region)))
     LOG(FATAL) << "Failed to send IPC channel handle to NaClProcessHost.";
 

@@ -52,6 +52,7 @@ ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
       username_(username),
       delegate_(std::move(delegate)),
       prompt_for_new_profile_(true) {
+  DialogDelegate::set_default_button(ui::DIALOG_BUTTON_NONE);
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::PROFILE_SIGNIN_CONFIRMATION);
 }
@@ -106,10 +107,6 @@ base::string16 ProfileSigninConfirmationDialogViews::GetDialogButtonLabel(
             IDS_ENTERPRISE_SIGNIN_CONTINUE);
   }
   return l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CANCEL);
-}
-
-int ProfileSigninConfirmationDialogViews::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 std::unique_ptr<views::View>

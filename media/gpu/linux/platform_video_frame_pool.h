@@ -90,10 +90,6 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
   bool IsExhausted_Locked() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // Purges the stale frame. This method is executed periodically on
-  // |parent_task_runner_|.
-  void PurgeStaleFrames();
-
   // The function used to allocate new frames.
   const CreateFrameCB create_frame_cb_;
 

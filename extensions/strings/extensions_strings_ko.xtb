@@ -12,7 +12,6 @@
 <translation id="2159915644201199628">'<ph name="IMAGE_NAME" />' 이미지를 디코딩하지 못했습니다.</translation>
 <translation id="2350172092385603347">번역한 언어를 이용하였지만 매니페스트에 기본 언어(default_locale)를 지정하지 않았습니다.</translation>
 <translation id="2576842806987913196">동일한 이름의 CRX 파일이 이미 있습니다.</translation>
-<translation id="2753617847762399167">불법 경로(절대 또는 상대): '<ph name="IMAGE_PATH" />'</translation>
 <translation id="2785530881066938471">콘텐츠 스크립트에 파일('<ph name="RELATIVE_PATH" />')을 로드할 수 없습니다. UTF-8로 인코딩되지 않았습니다.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" />(확장 프로그램 ID '<ph name="EXTENSION_ID" />')은(는) 관리자에 의해 차단되었습니다. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">패키지를 설치할 수 없습니다. '<ph name="ERROR_CODE" />'</translation>
@@ -38,7 +37,6 @@
 <translation id="5436430103864390185">창 모양은 지원되지 않습니다.</translation>
 <translation id="5456409301717116725">이 확장 프로그램은 키 파일 '<ph name="KEY_PATH" />'을(를) 포함합니다. 사용하지 않는 것이 좋습니다.</translation>
 <translation id="5486326529110362464">비공개 키 입력 값이 있어야 합니다.</translation>
-<translation id="5627523580512561598">확장 프로그램 <ph name="EXTENSION_NAME" /></translation>
 <translation id="5972529113578162692">이 시스템의 관리자가 <ph name="EXTENSION_NAME" />의 설치를 요구합니다. 이 확장 프로그램은 제거할 수 없습니다.</translation>
 <translation id="6027032947578871493"><ph name="VENDOR_NAME" />의 알 수 없는 제품 <ph name="PRODUCT_ID" />(일련번호 <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721">공급업체 <ph name="VENDOR_ID" />의 <ph name="PRODUCT_NAME" /></translation>
@@ -50,7 +48,6 @@
 <translation id="6542618148162044354">'<ph name="APP_NAME" />'이(가) 사용자의 기기 하나 이상에 액세스 권한을 요청하고 있습니다.</translation>
 <translation id="657064425229075395">백그라운드 스크립트('<ph name="BACKGROUND_SCRIPT" />')를 로드하지 못했습니다.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" />의 제품 <ph name="PRODUCT_NAME" />(일련 번호 <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="6731255991101203740">'<ph name="DIRECTORY_PATH" />'의 압축을 해제하기 위한 디렉터리를 만들지 못했습니다.</translation>
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">확장 프로그램이 너무 자주 새로고침됩니다.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" />의 알 수 없는 제품 <ph name="PRODUCT_ID" /></translation>

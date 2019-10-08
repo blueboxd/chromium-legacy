@@ -299,6 +299,7 @@ void VRServiceImpl::OnSessionCreated(
     session->enabled_features.push_back(feature);
   }
 
+  client->OnVisibilityStateChanged(visibility_state_);
   session_clients_.Add(std::move(client));
 
   std::move(callback).Run(
@@ -581,6 +582,7 @@ void VRServiceImpl::OnExitPresent() {
 
 void VRServiceImpl::OnVisibilityStateChanged(
     device::mojom::XRVisibilityState visiblity_state) {
+  visibility_state_ = visiblity_state;
   for (auto& client : session_clients_)
     client->OnVisibilityStateChanged(visiblity_state);
 }

@@ -37,8 +37,6 @@ android_library("module_installer_java") {
     "//third_party/google_android_play_core:com_google_android_play_core_java",
   ]
 
-  jar_excluded_patterns = [ "*/ModuleInstallerConfig.class" ]
-
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
@@ -78,16 +76,6 @@ java_annotation_processor("module_interface_processor") {
   ]
 }
 
-# Use this one if your target needs to depend on ModuleInstallerConfig. The
-# other two targets are automatically added to build targets.
-java_cpp_template("module_installer_build_config") {
-  # TODO(fredmello): Temporary code to keep downstream unbroken.
-  package_path = "org/chromium/components/module_installer/builder"
-  sources = [
-    "build/ModuleInstallerConfig.template",
-  ]
-}
-
 source_set("native") {
   sources = [
     "module.cc",
@@ -95,11 +83,12 @@ source_set("native") {
   deps = [
     ":jni_headers",
     "//base",
+    "//ui/base",
   ]
 
   # The method used to load and register JNI for native libraries depends
   # heavily on build type.
-  if (use_native_modules) {
+  if (use_native_partitions) {
     defines = [ "LOAD_FROM_PARTITIONS" ]
   } else if (is_component_build) {
     defines = [ "LOAD_FROM_COMPONENTS" ]

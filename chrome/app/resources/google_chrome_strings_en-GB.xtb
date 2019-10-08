@@ -17,10 +17,8 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="123620459398936149">Chrome OS could not sync your data. Please update your Sync passphrase.</translation>
 <translation id="1302523850133262269">Please wait while Chrome installs the latest system updates.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
-<translation id="1393853151966637042">Get help with using Chrome</translation>
 <translation id="1399397803214730675">This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and try again.</translation>
 <translation id="1434626383986940139">Chrome Canary Apps</translation>
-<translation id="1469002951682717133">Chrome App Launcher</translation>
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1587223624401073077">Google Chrome is using your camera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> is dangerous, so Chrome has blocked it.</translation>
@@ -38,8 +36,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1734234790201236882">Chrome will save this password in your Google Account. You won’t have to remember it.</translation>
 <translation id="174539241580958092">Google Chrome could not sync your data due to an error signing in.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1773601347087397504">Get help with using Chrome OS</translation>
-<translation id="1795405610103747296">Install Chrome on your phone. We’ll send an SMS to your phone: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">By turning this off, you can sign in to Google sites such as Gmail, without signing in to Chrome</translation>
 <translation id="1860536484129686729">Chrome needs permission to access your camera for this site</translation>
 <translation id="1873233029667955273">Google Chrome isn't your default browser</translation>
@@ -56,16 +52,10 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2128103434102193461">For Chrome OS details, please see <ph name="LINK_BEGIN" />
       About Chrome OS<ph name="LINK_END" /></translation>
 <translation id="2151406531797534936">Please restart Chrome now</translation>
-<translation id="216054706567564023">Install Chrome on your phone. We’ll send an SMS to your account recovery phone number.</translation>
 <translation id="2246246234298806438">Google Chrome cannot show the print preview when the built-in PDF viewer is missing.</translation>
-<translation id="2252923619938421629">Help make Google Chrome better by reporting the current settings</translation>
-<translation id="2286950485307333924">You're now signed in to Chrome</translation>
 <translation id="2290014774651636340">Google API keys are missing. Some functionality of Google Chrome will be disabled.</translation>
 <translation id="2290095356545025170">Are you sure you want to uninstall Google Chrome?</translation>
 <translation id="2309047409763057870">This is a secondary installation of Google Chrome, and cannot be made your default browser.</translation>
-<translation id="2346876346033403680">Someone previously signed in to Chrome on this computer as <ph name="ACCOUNT_EMAIL_LAST" />. If that isn't your account, create a new Chrome user to keep your information separate.
-
-Signing in anyway will merge Chrome information like bookmarks, history and other settings to <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2348335408836342058">Chrome needs permission to access your camera and microphone for this site</translation>
 <translation id="2429317896000329049">Google Chrome could not sync your data because Sync is not available for your domain.</translation>
 <translation id="2467438592969358367">Google Chrome wants to export your passwords. Type your Windows password to allow this.</translation>
@@ -87,7 +77,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="2871893339301912279">You're signed in to Chrome!</translation>
 <translation id="2888126860611144412">About Chrome</translation>
 <translation id="3037838751736561277">Google Chrome is in background mode.</translation>
-<translation id="3047079729301751317">Disconnecting <ph name="USERNAME" /> will clear your history, bookmarks, settings and other Chrome data stored on this device. Data stored in your Google Account will not be cleared and can be managed on <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3065168410429928842">Chrome Tab</translation>
 <translation id="3080151273017101988">Continue running background apps when Google Chrome is closed</translation>
 <translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
@@ -108,7 +97,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="3582972582564653026">Sync and personalise Chrome across your devices</translation>
 <translation id="3622797965165704966">Now it's easier to use Chrome with your Google Account and on shared computers.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />Terms of Service<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
-<translation id="3716182511346448902">This page uses too much memory, so Chrome paused it.</translation>
 <translation id="3718181793972440140">This will delete 1 item from this device. To retrieve your data later, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">The extension "<ph name="EXTENSION_NAME" />" has changed the page that is shown when you start Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -124,7 +112,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="4191857738314598978">{0,plural, =1{Relaunch Chrome within a day}other{Relaunch Chrome within # days}}</translation>
 <translation id="424864128008805179">Sign out of Chrome?</translation>
 <translation id="4251615635259297716">Link my Chrome data to this account</translation>
-<translation id="4251625577313994583">get Chrome on your iPhone</translation>
 <translation id="4293420128516039005">Sign in to sync and personalise Chrome across your devices</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -146,7 +133,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="479167709087336770">This uses the same spell checker that's used in Google search. Text that you type in the browser is sent to Google. You can always change this behaviour in settings.</translation>
 <translation id="4891791193823137474">Let Google Chrome run in the background</translation>
 <translation id="4895437082222824641">Open link in new Chrome &amp;tab</translation>
-<translation id="4921569541910214635">Share a computer? Now you can set up Chrome just the way you like it.</translation>
 <translation id="4953650215774548573">Set Google Chrome as your default browser</translation>
 <translation id="495931528404527476">In Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -180,8 +166,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="5895138241574237353">Restart</translation>
 <translation id="5940385492829620908">Your web, bookmarks and other Chrome stuff live here.</translation>
 <translation id="5941830788786076944">Make Google Chrome the default browser</translation>
-<translation id="6014844626092547096">You're now signed in to Chrome! Sync is disabled by your administrator.</translation>
-<translation id="6040143037577758943">Close</translation>
 <translation id="6070348360322141662">For added security, Google Chrome will encrypt your data</translation>
 <translation id="6113794647360055231">Chrome just got better</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
@@ -194,8 +178,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6368958679917195344">Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS" />open-source software<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6566149418543181476">Updating Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
-<translation id="6598387184982954187">You're using <ph name="PROFILE_EMAIL" /> to sync your Chrome stuff. To update your sync preference or to use Chrome without a Google Account, visit <ph name="SETTINGS_LINK" />.</translation>
-<translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="6676384891291319759">Access the Internet</translation>
 <translation id="6679975945624592337">Let Google Chrome Run in the Background</translation>
 <translation id="6750954913813541382">To fix spelling errors, Chrome sends the text that you type in the browser to Google</translation>
@@ -209,7 +191,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6989339256997917931">Google Chrome has been updated, but you haven't used it for at least 30 days.</translation>
 <translation id="7098166902387133879">Google Chrome is using your microphone.</translation>
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>
-<translation id="7164397146364144019">You can help make Chrome safer and easier to use by automatically reporting details of possible security incidents to Google.</translation>
 <translation id="7242029209006116544">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chrome data separate. <ph name="LEARN_MORE" /></translation>
 <translation id="7295052994004373688">This language is used to display the Google Chrome UI</translation>
 <translation id="7296210096911315575">Important use and safety information</translation>
@@ -218,7 +199,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7398801000654795464">You were signed in to Chrome as <ph name="USER_EMAIL_ADDRESS" />. Please use the same account to sign in again.</translation>
 <translation id="7408085963519505752">Chrome OS terms</translation>
 <translation id="7419046106786626209">Chrome OS could not sync your data because Sync is not available for your domain.</translation>
-<translation id="7459554271817304652">Set up Sync to save your personalised browser features to the web and access them from Google Chrome on any computer.</translation>
 <translation id="7486227612705979895">Chrome will access your Drive to make suggestions in the address bar</translation>
 <translation id="7531671357096394523">Quit all copies of Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
@@ -242,25 +222,18 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7962410387636238736">This computer will no longer receive Google Chrome updates because Windows XP and Windows Vista are no longer supported</translation>
 <translation id="8008534537613507642">Reinstall Chrome</translation>
 <translation id="8013993649590906847">If an image doesn’t have a useful description, Chrome will try to provide one for you. To create descriptions, images are sent to Google.</translation>
-<translation id="8032142183999901390">After removing your account from Chrome, you may need to reload your open tabs to take effect.</translation>
 <translation id="8129812357326543296">About &amp;Google Chrome</translation>
-<translation id="8179874765710681175">Install Chrome on your phone. We’ll send an SMS to your phone.</translation>
-<translation id="825412236959742607">This page uses too much memory, so Chrome removed some content.</translation>
 <translation id="8255190535488645436">Google Chrome is using your camera and microphone.</translation>
 <translation id="8286862437124483331">Google Chrome is trying to show passwords. Type your Windows password to allow this.</translation>
 <translation id="8290100596633877290">Whoa! Google Chrome has crashed. Relaunch now?</translation>
 <translation id="8342675569599923794">This file is dangerous, so Chrome has blocked it.</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. All rights reserved.</translation>
 <translation id="840084489713044809">Google Chrome wants to export your passwords.</translation>
-<translation id="8406086379114794905">Help make Chrome better</translation>
 <translation id="8455999171311319804">Optional: Help make Chrome OS better by automatically sending diagnostic and usage data to Google.</translation>
-<translation id="8478823064122749032">Install Chrome on your phone. We’ll send an SMS to your account recovery phone number: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8498858610309223613">A special security update for Google Chrome was just applied. Restart now and we'll restore your tabs.</translation>
 <translation id="8521348052903287641">Inbound rule for Google Chrome Dev to allow mDNS traffic.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8547799825197623713">Chrome App Launcher Canary</translation>
 <translation id="8556340503434111824">There's a new version of Google Chrome available and it's faster than ever.</translation>
-<translation id="8568392309447938879">You need to be signed in to Chrome to use apps. This allows Chrome to sync your apps, bookmarks, history, passwords and other settings across devices.</translation>
 <translation id="8606668294522778825">Google Chrome may use web services to improve your browsing experience. You may optionally disable these services. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome is unresponsive. Relaunch now?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome will relaunch in 1 minute}other{Chrome will relaunch in # minutes}}</translation>

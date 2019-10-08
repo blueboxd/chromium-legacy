@@ -191,8 +191,7 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
       active_state_(kInactive),
       restart_(kRestartAlways),
       fill_(kFillRemove),
-      last_percent_(0),
-      last_repeat_(0),
+      last_progress_{0.0f, 0},
       document_order_index_(0),
       cached_dur_(kInvalidCachedTime),
       cached_repeat_dur_(kInvalidCachedTime),
@@ -257,8 +256,7 @@ void SVGSMILElement::Reset() {
   is_waiting_for_first_interval_ = true;
   interval_ = {SMILTime::Unresolved(), SMILTime::Unresolved()};
   previous_interval_ = {SMILTime::Unresolved(), SMILTime::Unresolved()};
-  last_percent_ = 0;
-  last_repeat_ = 0;
+  last_progress_ = {0.0f, 0};
   ResolveFirstInterval();
 }
 
@@ -1106,13 +1104,17 @@ void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
     }
 
     ProgressState progress_state = CalculateProgressState(elapsed);
-    if (progress_state.repeat && progress_state.repeat != last_repeat_) {
-      last_repeat_ = progress_state.repeat;
-      NotifyDependentsOnRepeat(last_repeat_, elapsed);
+    if (progress_state.repeat &&
+        progress_state.repeat != last_progress_.repeat) {
+      NotifyDependentsOnRepeat(progress_state.repeat, elapsed);
       ScheduleRepeatEvents();
     }
-    last_percent_ = progress_state.progress;
+    last_progress_ = progress_state;
   }
+}
+
+void SVGSMILElement::UpdateProgressState(SMILTime presentation_time) {
+  last_progress_ = CalculateProgressState(presentation_time);
 }
 
 struct SVGSMILElement::NotifyDependentsInfo {

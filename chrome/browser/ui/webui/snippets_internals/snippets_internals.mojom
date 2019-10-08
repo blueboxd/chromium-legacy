@@ -26,7 +26,8 @@ struct SuggestionItem {
 };
 
 interface PageHandlerFactory {
-  CreatePageHandler(Page page) => (PageHandler handler);
+  CreatePageHandler(pending_remote<Page> page) =>
+      (pending_remote<PageHandler> handler);
 };
 
 // Browser interface.

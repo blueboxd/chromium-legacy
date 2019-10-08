@@ -84,8 +84,13 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
   void OnNewLiveRegistration(int64_t registration_id,
                              const GURL& scope) override;
   void OnNewLiveVersion(const ServiceWorkerVersionInfo& version_info) override;
-  void OnRunningStateChanged(int64_t version_id,
-                             EmbeddedWorkerStatus running_status) override;
+  void OnStarting(int64_t version_id) override;
+  void OnStarted(int64_t version_id,
+                 const GURL& scope,
+                 int process_id,
+                 const GURL& script_url) override;
+  void OnStopping(int64_t version_id) override;
+  void OnStopped(int64_t version_id) override;
   void OnVersionStateChanged(int64_t version_id,
                              const GURL& scope,
                              ServiceWorkerVersion::Status status) override;
@@ -111,6 +116,9 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
                                const GURL& scope) override;
   void OnRegistrationDeleted(int64_t registration_id,
                              const GURL& scope) override;
+
+  void OnRunningStateChanged(int64_t version_id,
+                             EmbeddedWorkerStatus running_status);
 
   std::unordered_map<int64_t, std::unique_ptr<ServiceWorkerVersionInfo>>
       version_info_map_;

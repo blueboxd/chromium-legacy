@@ -326,6 +326,7 @@
 <translation id="3241052487511142956">ลิงก์ที่เคยเข้าชมก่อนหน้า</translation>
 <translation id="3241638166094654466">จำนวนเซลล์ในแต่ละบรรทัด:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">รายการที่คล้ายกันก่อนหน้า</translation>
 <translation id="3286372614333682499">แนวตั้ง</translation>
 <translation id="3286390186030710347">แถบเลื่อน</translation>
 <translation id="3299925995433437805">ไม่มีลิงก์ที่เคยเข้าชมถัดไป</translation>
@@ -508,6 +509,7 @@
 <translation id="4517854969512651305">เพิ่มค่า</translation>
 <translation id="4529987814483543472">รูปแบบแป้นคลาสสิก</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{เครื่องหมายทับ}other{# เครื่องหมายทับ}}</translation>
+<translation id="4537277403911487429">รายการที่คล้ายกันถัดไป</translation>
 <translation id="4547556996012970016">ส่วนหัวระดับ 5 ถัดไป</translation>
 <translation id="4562381607973973258">ส่วนหัว</translation>
 <translation id="4569941707103739422">กดลูกศรขึ้นหรือลงเพื่อนำทาง แล้วกด Enter เพื่อเปิดใช้งาน</translation>

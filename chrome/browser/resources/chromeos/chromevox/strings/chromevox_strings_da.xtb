@@ -327,6 +327,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3241052487511142956">Tidligere besøgt link</translation>
 <translation id="3241638166094654466">Celler i hver linje:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">Forrige lignende element</translation>
 <translation id="3286372614333682499">stående</translation>
 <translation id="3286390186030710347">Skyder</translation>
 <translation id="3299925995433437805">Intet næste besøgte link.</translation>
@@ -509,6 +510,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4517854969512651305">Hæv værdien</translation>
 <translation id="4529987814483543472">Klassisk tastaturoversigt</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{skråstreg}one{# skråstreger}other{# skråstreger}}</translation>
+<translation id="4537277403911487429">Næste lignende element</translation>
 <translation id="4547556996012970016">Næste niveau 5-overskrift</translation>
 <translation id="4562381607973973258">Overskrift</translation>
 <translation id="4569941707103739422">Tryk på pil op eller pil ned for at navigere. Tryk på Enter for at aktivere.</translation>

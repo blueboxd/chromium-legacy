@@ -1,5 +1,6 @@
 include_rules = [
   "+media/capture/mojom/image_capture.mojom-blink.h",
+  "+media/capture/mojom/image_capture.mojom-blink-forward.h",
 
   "+media/base",
   "+skia/ext/platform_canvas.h",

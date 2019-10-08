@@ -223,7 +223,7 @@
 <translation id="3645531960514756307">Відкріпити папку</translation>
 <translation id="3678559383040232393">Мальтійська клавіатура</translation>
 <translation id="3685122418104378273">Коли використовується мобільний Інтернет, синхронізацію Google Диска вимкнено за умовчанням.</translation>
-<translation id="3689865792480713551">Скасувати: <ph name="ACTIVITY_DESCRIPTION" />.</translation>
+<translation id="3689865792480713551">Скасувати <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Не вдається відкрити пристрій, оскільки його файлова система не підтримується.</translation>
 <translation id="3741243925913727067">Створення резервних копій фотографій і відео з носія на Google Диску.</translation>
 <translation id="3749289110408117711">Ім’я файлу</translation>
@@ -464,7 +464,7 @@
 <translation id="6339145975392024142">Американська міжнародна клавіатура (ПК)</translation>
 <translation id="6346310558342052870">Доступ обмежено</translation>
 <translation id="6353618411602605519">Хорватська розкладка</translation>
-<translation id="6356685157277930264">Вікно інформації про файли</translation>
+<translation id="6356685157277930264">Вікно відгуку про файли</translation>
 <translation id="6358884629796491903">Дракон</translation>
 <translation id="637062427944097960">Цей файл відкрито на іншому робочому столі. Перейдіть до <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />), щоб переглянути його.</translation>
 <translation id="6395575651121294044">Елементів: <ph name="NUMBER_OF_FILES" /></translation>

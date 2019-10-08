@@ -319,6 +319,7 @@
 <translation id="1470811252759861213">برای دریافت افزونه‌هایتان در همه رایانه‌هایتان، <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1470967055429794975">با این کار، همه داده‌های موجود در کلید امنیتی، ازجمله پین آن، پاک‌سازی می‌شود</translation>
 <translation id="1475502736924165259">گواهی‌هایی برای فایل دارید که در هیچ‌کدام از دسته‌های دیگر قرار نمی‌گیرد</translation>
+<translation id="1476088332184200792">کپی در دستگاه</translation>
 <translation id="1476607407192946488">&amp;تنظیمات زبان</translation>
 <translation id="1478340334823509079">جزئیات: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">نصب فعال نشده است</translation>
@@ -948,7 +949,6 @@
 <translation id="2379281330731083556">چاپ با استفاده از گفتگوی سیستم... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">قبل از ارسال سؤال شود (توصیه می‌شود)</translation>
 <translation id="2384436799579181135">خطایی روی داده است. لطفاً چاپگرتان را بررسی و دوباره امتحان کنید.</translation>
-<translation id="2386926718981642523">‏هرزمان می‌گویید «Ok Google»، به «دستیار» دسترسی داشته باشید</translation>
 <translation id="2387458720915042159">نوع اتصال پراکسی</translation>
 <translation id="2391419135980381625">قلم استاندارد</translation>
 <translation id="2392369802118427583">فعالسازی</translation>
@@ -1338,6 +1338,7 @@
 <translation id="2941112035454246133">کم</translation>
 <translation id="2942560570858569904">درحال انتظار…</translation>
 <translation id="2942581856830209953">سفارشی کردن این صفحه</translation>
+<translation id="294308617863380348">شامل کوکی‌های شخص ثالث</translation>
 <translation id="2944060181911631861">‏داده‌های استفاده و عیب‌یابی را ارسال کنید. با ارسال خودکار داده‌های تشخیص عیب و داده‌های استفاده از دستگاه و برنامه به Google، به بهبود تجربه استفاده از Android کمک کنید. این داده‌ها به بهبود پایداری سیستم و برنامه و موارد دیگر کمک خواهد کرد. بعضی داده‌های انبوه نیز به برنامه‌ها و شرکای Google (مانند برنامه‌نویس‌های Android) کمک می‌کند. اگر تنظیم «فعالیت وب و برنامه» تکمیلی روشن باشد، ممکن است این داده‌ها در حساب Google شما ذخیره شود. <ph name="BEGIN_LINK1" />بیشتر بدانید<ph name="END_LINK1" /></translation>
 <translation id="2946119680249604491">افزودن اتصال</translation>
 <translation id="2948300991547862301">رفتن به <ph name="PAGE_TITLE" /></translation>
@@ -1352,7 +1353,6 @@
 <translation id="2961695502793809356">برای رفتن به جلو کلیک کنید، برای دیدن سابقه نگه دارید</translation>
 <translation id="2963151496262057773">این افزایه جواب نمی‌دهد: <ph name="PLUGIN_NAME" />آیا می‌خواهید متوقف شود؟</translation>
 <translation id="2966937470348689686">‏مدیریت تنظیمات برگزیده Android</translation>
-<translation id="2972557485845626008">سفت‌افزار</translation>
 <translation id="2972581237482394796">انجام مجدد</translation>
 <translation id="2973324205039581528">بی‌صدا کردن سایت</translation>
 <translation id="2977480621796371840">برداشتن از گروه</translation>
@@ -1610,7 +1610,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">جداساز</translation>
 <translation id="3387614642886316601">استفاده از غلط‌گیر املای بهبودیافته</translation>
-<translation id="3393352139658145068">‏وفتی فردی می‌گوید «Ok Google»، «دستیار» فعال شود. برای صرفه‌جویی در مصرف باتری، «Ok Google» فقط زمانی روشن است که دستگاهتان به برق متصل باشد.</translation>
 <translation id="3396800784455899911">‏با کلیک کردن روی دکمه «پذیرفتن و ادامه»، با پردازش مربوط به این سرویس‌های Google که در بالا توضیح داده شد موافقت می‌کنید.</translation>
 <translation id="3399432415385675819">اعلان‌ها غیرفعال خواهند شد</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> × <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> هرتز) - درهم‌بافته</translation>
@@ -1771,6 +1770,7 @@
 <translation id="3613134908380545408">نشان دادن <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">باز &amp;کردن در برگهٔ جدید</translation>
 <translation id="3615073365085224194">حسگر اثر انگشت را با انگشتانتان لمس کنید</translation>
+<translation id="3615579745882581859"><ph name="FILE_NAME" /> درحال اسکن است.</translation>
 <translation id="3616741288025931835">&amp;پاک کردن داده‌های مرور...</translation>
 <translation id="3617891479562106823">پس‌زمینه‌ها دردسترس نیست. بعداً دوباره امتحان کنید.</translation>
 <translation id="3619115746895587757">کاپوچینو</translation>
@@ -1885,7 +1885,6 @@
 <translation id="3759933321830434300">مسدود کردن بخش‌هایی از صفحات وب</translation>
 <translation id="3760460896538743390">بازرسی صفحه &amp;پس‌زمینه</translation>
 <translation id="37613671848467444">باز کردن در پنجره &amp;ناشناس</translation>
-<translation id="3764314093345384080">اطلاعات دقیق ساخت</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{‏ارتباط با یک دستگاه USB}one{‏ارتباط با # دستگاه USB}other{‏ارتباط با # دستگاه USB}}</translation>
 <translation id="3765246971671567135">خط‌مشی آفلاین حالت نمایشی خوانده نشد.</translation>
 <translation id="3768037234834996183">در حال همگام‌سازی تنظیمات ترجیحی...</translation>
@@ -2166,7 +2165,6 @@
 <translation id="4138267921960073861">نمایش نام‌های کاربری و عکس‌ها در صفحه ورود به سیستم</translation>
 <translation id="4142052906269098341">قفل <ph name="DEVICE_TYPE" /> را با تلفنتان باز کنید. <ph name="LINK_BEGIN" />بیشتر بدانید<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">‏دریافت ویدیوی با کیفیت بهتر و افزایش ماندگاری شارژ باتری. ویدیو فقط در صفحه‌نمایش سازگار با Cast پخش خواهد شد.</translation>
-<translation id="4145922204387553806">به «دستیار» اجازه دهید اطلاعات مرتبط با آنچه روی صفحه است نشان دهد</translation>
 <translation id="4146026355784316281">همیشه با نظاره‌گر سیستم باز شود</translation>
 <translation id="4146785383423576110">بارنشانی و پاک کردن</translation>
 <translation id="4147911968024186208">لطفاً دوباره امتحان کنید. اگر باز این خطا را دیدید، لطفاً با نماینده پشتیبانی‌تان تماس بگیرید.</translation>
@@ -2253,6 +2251,7 @@
 <translation id="4297322094678649474">تغییر زبان‌ها</translation>
 <translation id="4301671483919369635">این صفحه مجاز به ویرایش فایل‌ها است</translation>
 <translation id="4303079906735388947">پین جدیدی برای کلید امنیتی‌تان تنظیم کنید</translation>
+<translation id="4305402730127028764">کپی در <ph name="DEVICE_NAME" /></translation>
 <translation id="4306119971288449206">نوع محتوای برنامه باید «<ph name="CONTENT_TYPE" />» باشد</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> کیلوبایت (<ph name="NUM_KILOBYTES_LIVE" />کیلوبایت زنده)</translation>
 <translation id="4310139701823742692">‏قالب فایل صحیح نیست. فایل PPD را بررسی کرده و دوباره امتحان کنید.</translation>
@@ -2388,7 +2387,6 @@
 <translation id="4534661889221639075">دوباره امتحان کنید.</translation>
 <translation id="4535127706710932914">نمایه پیش‌فرض</translation>
 <translation id="4535767533210902251">حسگر اثر انگشت، بالاترین کلید سمت چپ در صفحه‌کلید است. با یکی از انگشت‌هایتان آن را به‌آرامی لمس کنید.</translation>
-<translation id="4538417792467843292">حذف کلمه</translation>
 <translation id="4538684596480161368">همیشه افزایه‌های آزمایشی نشده در <ph name="HOST" /> مسدود شوند</translation>
 <translation id="4538792345715658285">نصب شده توسط خط‌مشی سازمانی.</translation>
 <translation id="4542520061254486227">خواندن داده‌های شما در <ph name="WEBSITE_1" /> و <ph name="WEBSITE_2" /></translation>
@@ -2932,6 +2930,7 @@
 <translation id="5367091008316207019">درحال خواندن فایل ...</translation>
 <translation id="5368720394188453070">تلفنتان قفل است. برای وارد شدن قفل آن را باز کنید.</translation>
 <translation id="5368779022775404937">به سیستم <ph name="REALM" /> وارد شوید</translation>
+<translation id="5369491905435686894">فعال کردن شتاب‌دهنده موشواره</translation>
 <translation id="5370819323174483825">&amp;تازه‌سازی</translation>
 <translation id="5372529912055771682">حالت ثبت‌نام ارائه شده توسط این نسخه از سیستم عامل پشتیبانی نمی‌شود. لطفاً مطمئن شوید که جدیدترین نسخه را اجرا می‌کنید و دوباره امتحان کنید.</translation>
 <translation id="5372579129492968947">برداشتن پین افزونه</translation>
@@ -3004,6 +3003,7 @@
 <translation id="5464632865477611176">این بار اجرا شود</translation>
 <translation id="5464660706533281090">کاربر کودک نمی‌تواند این تنظیم را تغییر دهد.</translation>
 <translation id="5466374726908360271">جای‌گذاری و جستجوی «<ph name="SEARCH_TERMS" />»</translation>
+<translation id="5468173180030470402">درحال یافتن دستگاه ذخیره‌سازی متصل به شبکه</translation>
 <translation id="5471768120198416576">سلام! من صدای نوشتار به گفتار شما هستم.</translation>
 <translation id="5473333559083690127">پین جدید را دوباره وارد کنید</translation>
 <translation id="5481941284378890518">افزودن چاپگرهای اطراف</translation>
@@ -3539,6 +3539,7 @@
 <translation id="6233154960150021497">پیش‌فرض استفاده از صدا به‌جای صفحه‌کلید</translation>
 <translation id="6234474535228214774">نصب درانتظار</translation>
 <translation id="6237816943013845465">به شما امکان می‌دهد وضوح صفحه را تنظیم کنید</translation>
+<translation id="6238767809035845642">نوشتار هم‌رسانی‌شده از دستگاه دیگر</translation>
 <translation id="6238923052227198598">نگه داشتن جدیدترین یادداشت در صفحه درحالت قفل</translation>
 <translation id="6239558157302047471">تازه‌سازی قاب</translation>
 <translation id="6241530762627360640">دسترسی به اطلاعات دستگاه‌های بلوتوث مرتبط شده با سیستم شما و کشف دستگاه‌های بلوتوث در این نزدیکی.</translation>
@@ -3765,7 +3766,6 @@
 <translation id="6577284282025554716">بارگیری لغو شد: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">‏رمزگذاری گذرواژه‌های همگام‌سازی‌شده با گذرواژه و نام کاربری Google شما</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> - محتوای میز کار هم‌رسانی می‌شود</translation>
-<translation id="6580151766480067746">‏نسخه ARC</translation>
 <translation id="6582080224869403177">برای ارتقای امنیت‌تان، <ph name="DEVICE_TYPE" /> را بازنشانی کنید.</translation>
 <translation id="6584878029876017575">‏امضای دائمی Microsoft</translation>
 <translation id="6586451623538375658">جابجایی دکمه اصلی ماوس</translation>
@@ -4370,6 +4370,7 @@
 <translation id="7487141338393529395">روشن کردن غلط‌گیر املای بهبود‌یافته</translation>
 <translation id="7487969577036436319">هیچ مؤلفه‌ای نصب نشده است</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{باز کردن همه}=1{باز کردن نشانک}one{باز کردن همه (#)}other{باز کردن همه (#)}}</translation>
+<translation id="7489761397368794366">تماس از دستگاه</translation>
 <translation id="749028671485790643">نفر <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">‏نشانی MAC</translation>
 <translation id="7493386493263658176">ممکن است افزونه <ph name="EXTENSION_NAME" /> همه نوشتاری را که تایپ می‌کنید (از جمله داده‌های شخصی مانند گذرواژه‌ها و شماره کارت‌های اعتباری) جمع‌آوری کند. می‌خواهید از این افزونه استفاده کنید؟</translation>
@@ -4389,6 +4390,7 @@
 <translation id="7508054832109420082">ارائه دسترسی به چاپگرها</translation>
 <translation id="7510943789645525906">اگر گذرواژه مورداستفاده بخشی از نقض داده باشد، هشدار می‌دهد</translation>
 <translation id="7513029293694390567">با استفاده از اعتبارنامه‌های ذخیره‌شده، به‌طور خودکار به سیستم وب‌سایت‌ها وارد شوید. اگر این قابلیت غیرفعال باشد، هر بار قبل از وارد شدن به وب‌سایت از شما برای تأیید اطلاعات درخواست می‌شود.</translation>
+<translation id="7514239104543605883">کپی در دستگاه</translation>
 <translation id="7514365320538308">بارگیری</translation>
 <translation id="7521387064766892559">جاوا اسکریپت</translation>
 <translation id="7522255036471229694">‏بگویید «Ok Google»</translation>
@@ -4945,6 +4947,7 @@
 <translation id="8274332263553132018">ارسال محتوای فایل</translation>
 <translation id="8274924778568117936">تا وقتی به‌روزرسانی به پایان نرسیده است، <ph name="DEVICE_TYPE" /> را خاموش نکنید یا نبندید. بعد از کامل شدن نصب، <ph name="DEVICE_TYPE" /> راه‌اندازی مجدد می‌شود.</translation>
 <translation id="8275038454117074363">وارد کردن</translation>
+<translation id="8275080796245127762">تماس از دستگاه</translation>
 <translation id="8276560076771292512">خالی کردن حافظه پنهان و تازه‌سازی سخت</translation>
 <translation id="8281886186245836920">رد شدن</translation>
 <translation id="8282947398454257691">شناسه یکتای دستگاهتان را بداند</translation>
@@ -5265,6 +5268,7 @@
 <translation id="8758418656925882523">فعال کردن املا (صحبت برای تایپ)</translation>
 <translation id="8759408218731716181">تنظیم ورود چندگانه به سیستم ممکن نیست</translation>
 <translation id="8759753423332885148">بیشتر بیاموزید.</translation>
+<translation id="8761945298804995673">این کاربر از قبل وجود دارد</translation>
 <translation id="8762886931014513155"><ph name="DEVICE_TYPE" /> شما باید به‌روزرسانی شود</translation>
 <translation id="8763927697961133303">‏دستگاه USB</translation>
 <translation id="8767621466733104912">‏به‌روزرسانی‌ خودکار Chrome برای همه کاربران</translation>
@@ -5353,6 +5357,7 @@
 <translation id="8879284080359814990">&amp;نمایش به‌صورت برگه</translation>
 <translation id="8879921471468674457">اطلاعات ورود به سیستم به‌خاطر سپرده شود</translation>
 <translation id="8881020143150461183">لطفاً دوباره امتحان کنید. برای پشتیبانی فنی، با <ph name="CARRIER_NAME" /> تماس بگیرید.</translation>
+<translation id="8883273463630735858">فعال کردن شتاب‌دهنده صفحه لمسی</translation>
 <translation id="8884570509232205463">اکنون دستگاهتان ساعت <ph name="UNLOCK_TIME" /> قفل می‌شود.</translation>
 <translation id="8885197664446363138">‏Smart Lock در دسترس نیست</translation>
 <translation id="8888253246822647887">وقتی ارتقا به پایان برسد، برنامه‌تان باز خواهد شد. ارتقا ممکن است چند دقیقه طول بکشد.</translation>

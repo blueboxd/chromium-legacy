@@ -15,10 +15,8 @@
 <translation id="123620459398936149">Το Chrome OS δεν μπόρεσε να συγχρονίσει τα δεδομένα σας. Ενημερώστε τη φράση πρόσβασης συγχρονισμού.</translation>
 <translation id="1302523850133262269">Περιμένετε μέχρι να γίνει εγκατάσταση των πιο πρόσφατων ενημερώσεων συστήματος από το Chrome.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
-<translation id="1393853151966637042">Λήψη βοήθειας σχετικά με τη χρήση του Chrome</translation>
 <translation id="1399397803214730675">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome. Αν το λογισμικό δεν λειτουργεί, απεγκαταστήστε το Google Chrome και δοκιμάστε ξανά.</translation>
 <translation id="1434626383986940139">Εφαρμογές Chrome Canary</translation>
-<translation id="1469002951682717133">Λειτουργία εκκίνησης εφαρμογών Chrome</translation>
 <translation id="1553358976309200471">Ενημερώστε το Chrome</translation>
 <translation id="1587223624401073077">Το Google Chrome χρησιμοποιεί την κάμερά σας.</translation>
 <translation id="1587325591171447154">Το αρχείο <ph name="FILE_NAME" /> είναι επικίνδυνο, επομένως έχει αποκλειστεί από το Chrome.</translation>
@@ -36,8 +34,6 @@
 <translation id="1734234790201236882">Το Chrome θα αποθηκεύσει αυτόν τον κωδικό πρόσβασης στον Λογαριασμό σας Google. Δεν χρειάζεται να τον απομνημονεύσετε.</translation>
 <translation id="174539241580958092">Το Google Chrome δεν κατάφερε να συγχρονίσει τα δεδομένα σας λόγω σφάλματος κατά τη σύνδεση.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1773601347087397504">Λήψη βοήθειας σχετικά με τη χρήση του Chrome OS</translation>
-<translation id="1795405610103747296">Εγκαταστήστε το Chrome στο τηλέφωνό σας. Θα στείλουμε ένα SMS στο τηλέφωνό σας: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">Με την απενεργοποίηση αυτής της λειτουργίας, μπορείτε να συνδεθείτε σε ιστοτόπους Google, όπως το Gmail, χωρίς να συνδεθείτε στο Chrome</translation>
 <translation id="1860536484129686729">Το Chrome χρειάζεται άδεια, για να αποκτήσει πρόσβαση στην κάμερα για αυτόν τον ιστότοπο</translation>
 <translation id="1873233029667955273">Το Google Chrome δεν είναι το προεπιλεγμένο πρόγραμμα περιήγησης</translation>
@@ -54,16 +50,10 @@
 <translation id="2128103434102193461">Για λεπτομέρειες σχετικά με το Chrome OS, ανατρέξτε στην ενότητα <ph name="LINK_BEGIN" />
       Σχετικά με το Chrome OS<ph name="LINK_END" /></translation>
 <translation id="2151406531797534936">Επανεκκινήστε το Chrome τώρα</translation>
-<translation id="216054706567564023">Εγκαταστήστε το Chrome στο τηλέφωνό σας. Θα στείλουμε ένα SMS στον αριθμό τηλεφώνου ανάκτησης του λογαριασμού σας.</translation>
 <translation id="2246246234298806438">Το Google Chrome δεν είναι δυνατό να εμφανίσει την προεπισκόπηση εκτύπωσης όταν λείπει το ενσωματωμένο πρόγραμμα προβολής PDF.</translation>
-<translation id="2252923619938421629">Συμβάλετε στη βελτίωση του Google Chrome αναφέροντας τις τρέχουσες ρυθμίσεις</translation>
-<translation id="2286950485307333924">Έχετε συνδεθεί στο Chrome</translation>
 <translation id="2290014774651636340">Λείπουν κλειδιά του Google API. Ορισμένες λειτουργίες του Google Chrome θα απενεργοποιηθούν.</translation>
 <translation id="2290095356545025170">Είστε βέβαιοι ότι θέλετε να απεγκαταστήσετε του Google Chrome;</translation>
 <translation id="2309047409763057870">Αυτή είναι μια δευτερεύουσα εγκατάσταση του Google Chrome και δεν μπορεί να γίνει το προεπιλεγμένο πρόγραμμα περιήγησης.</translation>
-<translation id="2346876346033403680">Κάποιο άτομο συνδέθηκε προηγουμένως στο Chrome σε αυτόν τον υπολογιστή ως <ph name="ACCOUNT_EMAIL_LAST" />. Αν αυτός δεν είναι ο λογαριασμός σας, δημιουργήστε ένα νέο χρήστη του Chrome, για να παραμείνουν οι πληροφορίες σας ξεχωριστά
-
-Με τη σύνδεση, θα συγχωνευτούν στο Chrome πληροφορίες όπως οι σελιδοδείκτες, το ιστορικό και άλλες ρυθμίσεις στο <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2348335408836342058">Το Chrome χρειάζεται άδεια, για να αποκτήσει πρόσβαση στην κάμερα και στο μικρόφωνο για αυτόν τον ιστότοπο</translation>
 <translation id="2429317896000329049">Το Google Chrome δεν κατάφερε να συγχρονίσει τα δεδομένα σας επειδή ο συγχρονισμός δεν είναι διαθέσιμος για τον τομέα σας.</translation>
 <translation id="2467438592969358367">Το Google Chrome θέλει να εξαγάγει τους κωδικούς πρόσβασής σας. Για να το επιτρέψετε αυτό, πληκτρολογήστε τον κωδικό πρόσβασης για τα Windows.</translation>
@@ -85,7 +75,6 @@
 <translation id="2871893339301912279">Έχετε συνδεθεί στο Chrome!</translation>
 <translation id="2888126860611144412">Σχετικά με το Chrome</translation>
 <translation id="3037838751736561277">Το Google Chrome εκτελείται στο παρασκήνιο.</translation>
-<translation id="3047079729301751317">Με την αποσύνδεση του λογαριασμού <ph name="USERNAME" />, θα διαγραφεί το ιστορικό, οι  σελιδοδείκτες, οι ρυθμίσιες σας και άλλα δεδομένα Chrome που έχουν αποθηκευτεί σε αυτήν τη συσκευή. Τα δεδομένα που έχουν αποθηκευτεί στον Λογαριασμό σας Google δεν θα διαγραφούν και μπορείτε να τα διαχειριστείτε μέσω του <ph name="GOOGLE_DASHBOARD_LINK" />Πίνακα ελέγχου Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3065168410429928842">Καρτέλα Chrome</translation>
 <translation id="3080151273017101988">Να συνεχίζεται η εκτέλεση εφαρμογών παρασκηνίου όταν το Google Chrome είναι κλειστό</translation>
 <translation id="3089968997497233615">Υπάρχει μια νέα, ασφαλέστερη έκδοση του Google Chrome.</translation>
@@ -106,7 +95,6 @@
 <translation id="3582972582564653026">Συγχρονίστε και εξατομικεύστε το Chrome στις συσκευές σας</translation>
 <translation id="3622797965165704966">Τώρα μπορείτε να χρησιμοποιείτε πιο εύκολα το Chrome με το Λογαριασμό σας Google και σε κοινόχρηστους υπολογιστές.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Όροι Παροχής Υπηρεσιών<ph name="END_TERMS_OF_SERVICE_LINK" /> του Google Chrome OS</translation>
-<translation id="3716182511346448902">Αυτή η σελίδα χρησιμοποιεί πάρα πολλή μνήμη. Για αυτόν τον λόγο, το Chrome την έθεσε σε παύση.</translation>
 <translation id="3718181793972440140">Με αυτήν την ενέργεια θα διαγραφεί 1 στοιχείο από αυτήν τη συσκευή. Για να ανακτήσετε τα δεδομένα σας αργότερα, συνδεθείτε στο Chrome ως <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Η επέκταση <ph name="EXTENSION_NAME" /> άλλαξε τη σελίδα που εμφανίζεται κατά την εκκίνηση του Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -122,7 +110,6 @@
 <translation id="4191857738314598978">{0,plural, =1{Επανεκκίνηση του Chrome σε μία ημέρα}other{Επανεκκίνηση του Chrome σε # ημέρες}}</translation>
 <translation id="424864128008805179">Αποσύνδεση από το Chrome;</translation>
 <translation id="4251615635259297716">Να συνδεθούν τα δεδομένα σας στο Chrome με αυτόν το λογαριασμό;</translation>
-<translation id="4251625577313994583">λήψη Chrome στο iPhone</translation>
 <translation id="4293420128516039005">Συνδεθείτε, για να συγχρονίσετε και να εξατομικεύσετε το Chrome στις συσκευές σας</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -144,7 +131,6 @@
 <translation id="479167709087336770">Αυτό χρησιμοποιεί τον ίδιο ορθογραφικό έλεγχο που χρησιμοποιείται στην Αναζήτηση Google. Το κείμενο που πληκτρολογείτε στο πρόγραμμα περιήγησης αποστέλλεται στην Google. Μπορείτε ανά πάσα στιγμή να αλλάξετε αυτήν τη συμπεριφορά στις ρυθμίσεις.</translation>
 <translation id="4891791193823137474">Να επιτρέπεται στο Google Chrome να εκτελείται στο παρασκήνιο</translation>
 <translation id="4895437082222824641">Άνοιγμα συνδέσμου σε νέα καρτέ&amp;λα Chrome</translation>
-<translation id="4921569541910214635">Μοιράζεστε έναν υπολογιστή; Τώρα μπορείτε να ρυθμίσετε το Chrome όπως ακριβώς σας αρέσει.</translation>
 <translation id="4953650215774548573">Ορίστε το Google Chrome ως προεπιλεγμένο πρόγραμμα περιήγησης</translation>
 <translation id="495931528404527476">Στο Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -176,8 +162,6 @@
 <translation id="5895138241574237353">Επανεκκίνηση</translation>
 <translation id="5940385492829620908">Εδώ μπορείτε να βρείτε τις ιστοσελίδες, τους σελιδοδείκτες σας και άλλα δεδομένα του Chrome.</translation>
 <translation id="5941830788786076944">Ορισμός Google Chrome ως προεπιλεγμένο πρόγραμμα περιήγησης</translation>
-<translation id="6014844626092547096">Έχετε πλέον συνδεθεί στο Chrome! Ο συγχρονισμός έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
-<translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="6070348360322141662">Για επιπλέον ασφάλεια, το Google Chrome θα κρυπτογραφήσει τα δεδομένα σας</translation>
 <translation id="6113794647360055231">Το Chrome έγινε ακόμα καλύτερο</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
@@ -190,8 +174,6 @@
 <translation id="6368958679917195344">Το Chrome OS έγινε πραγματικότητα χάρη στην ύπαρξη πρόσθετων <ph name="BEGIN_LINK_CROS_OSS" />λογισμικών ανοικτού κώδικα<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Ενημέρωση του Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
-<translation id="6598387184982954187">Χρησιμοποιείτε το προφίλ <ph name="PROFILE_EMAIL" /> για το συγχρονισμό του περιεχομένου σας στο Chrome. Για να ενημερώσετε τις προτιμήσεις συγχρονισμού ή για να χρησιμοποιήστε το Chrome χωρίς Λογαριασμό Google, μεταβείτε στην περιοχή <ph name="SETTINGS_LINK" />.</translation>
-<translation id="6600954340915313787">Αντιγράφηκε στο Chrome</translation>
 <translation id="6676384891291319759">Πρόσβαση στο Διαδίκτυο</translation>
 <translation id="6679975945624592337">Να επιτρέπεται στο Google Chrome να εκτελείται στο παρασκήνιο</translation>
 <translation id="6750954913813541382">Για τη διόρθωση ορθογραφικών λαθών, το Chrome στέλνει στην Google το κείμενο που πληκτρολογείτε στο πρόγραμμα περιήγησης</translation>
@@ -205,7 +187,6 @@
 <translation id="6989339256997917931">Το Google Chrome έχει ενημερωθεί, αλλά δεν το έχετε χρησιμοποιήσει για 30 ημέρες τουλάχιστον.</translation>
 <translation id="7098166902387133879">Το Google Chrome χρησιμοποιεί το μικρόφωνό σας.</translation>
 <translation id="7106741999175697885">Διαχείριση Εργασιών - Google Chrome</translation>
-<translation id="7164397146364144019">Μπορείτε να βοηθήσετε να κάνουμε το Chromium πιο ασφαλές και εύχρηστο αναφέροντας αυτόματα στην Google λεπτομέρειες σχετικά με πιθανά περιστατικά ασφάλειας.</translation>
 <translation id="7242029209006116544">Είστε συνδεδεμένοι με έναν διαχειριζόμενο λογαριασμό και παραχωρείτε στο διαχειριστή του τον έλεγχο του προφίλ σας στο Google Chrome. Τα δεδομένα σας στο Chrome, όπως οι εφαρμογές, οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και άλλες ρυθμίσεις θα συνδεθούν μόνιμα με το όνομα χρήστη <ph name="USER_NAME" />. Θα έχετε τη δυνατότητα να διαγράψετε αυτά τα δεδομένα μέσω του Πίνακα ελέγχου των Λογαριασμών Google, αλλά δεν θα μπορείτε να τα συσχετίσετε με άλλο λογαριασμό. Αν θέλετε, μπορείτε να δημιουργήσετε ένα νέο προφίλ στο οποίο θα διατηρηθούν ξεχωριστά τα υπάρχοντα δεδομένα του Chrome. <ph name="LEARN_MORE" /></translation>
 <translation id="7295052994004373688">Αυτή η γλώσσα χρησιμοποιείται για την προβολή της διεπαφής Google Chrome</translation>
 <translation id="7296210096911315575">Σημαντικές πληροφορίες χρήσης και ασφάλειας</translation>
@@ -214,7 +195,6 @@
 <translation id="7398801000654795464">Συνδεθήκατε στο Chrome ως <ph name="USER_EMAIL_ADDRESS" />. Χρησιμοποιήστε τον ίδιο λογαριασμό για να συνδεθείτε ξανά.</translation>
 <translation id="7408085963519505752">Όροι Chrome OS</translation>
 <translation id="7419046106786626209">Το Chrome OS δεν μπόρεσε να συγχρονίσει τα δεδομένα σας, επειδή ο συγχρονισμός δεν είναι διαθέσιμος για τον τομέα σας.</translation>
-<translation id="7459554271817304652">Ρυθμίστε τον συγχρονισμό για την αποθήκευση όλων των εξατομικευμένων λειτουργιών του προγράμματος περιήγησής σας στον ιστό και μεταβείτε σε αυτές από το Google Chrome μέσω οποιουδήποτε υπολογιστή.</translation>
 <translation id="7486227612705979895">Το Chrome θα αποκτήσει πρόσβαση στο Drive, για να κάνει προτάσεις στη γραμμή διευθύνσεων</translation>
 <translation id="7531671357096394523">Κλείστε όλα τα αντίγραφα του Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
@@ -238,25 +218,18 @@
 <translation id="7962410387636238736">Αυτός ο υπολογιστής δεν θα λαμβάνει πια ενημερώσεις Google Chrome, επειδή δεν υποστηρίζονται πλέον τα Windows XP και Windows Vista</translation>
 <translation id="8008534537613507642">Επανεγκατάσταση του Chrome</translation>
 <translation id="8013993649590906847">Εάν μια εικόνα δεν έχει κάποια χρήσιμη περιγραφή, το Chrome θα προσπαθήσει να σας προσφέρει μια περιγραφή. Για τη δημιουργία περιγραφών, αποστέλλονται εικόνες στην Google.</translation>
-<translation id="8032142183999901390">Μετά την κατάργηση του λογαριασμού σας στο Chrome, μπορεί να χρειαστεί να επαναφορτώσετε τις ανοικτές καρτέλες σας προκειμένου να εφαρμοστούν οι επιλογές σας.</translation>
 <translation id="8129812357326543296">Σχετικά με &amp;το Google Chrome</translation>
-<translation id="8179874765710681175">Εγκαταστήστε το Chrome στο τηλέφωνό σας. Θα στείλουμε ένα SMS στο τηλέφωνό σας.</translation>
-<translation id="825412236959742607">Αυτή η σελίδα χρησιμοποιεί πάρα πολλή μνήμη. Για αυτόν τον λόγο, το Chrome κατάργησε κάποιο περιεχόμενο.</translation>
 <translation id="8255190535488645436">Το Google Chrome χρησιμοποιεί την κάμερα και το μικρόφωνό σας.</translation>
 <translation id="8286862437124483331">Το Google Chrome προσπαθεί να εμφανίσει τους κωδικούς πρόσβασης. Πληκτρολογήστε τον κωδικό πρόσβασής σας Windows για να το επιτρέψετε αυτό.</translation>
 <translation id="8290100596633877290">Πω πω! Το Google Chrome παρουσίασε σφάλμα. Επανεκκίνηση τώρα;</translation>
 <translation id="8342675569599923794">Αυτό το αρχείο είναι επικίνδυνο και έχει αποκλειστεί από το Chrome.</translation>
 <translation id="8370517070665726704">Πνευματικά δικαιώματα <ph name="YEAR" /> Google LLC. Με την επιφύλαξη παντός δικαιώματος.</translation>
 <translation id="840084489713044809">Το Google Chrome θέλει να εξαγάγει τους κωδικούς πρόσβασής σας.</translation>
-<translation id="8406086379114794905">Βοηθήστε μας να κάνουμε καλύτερο το Chrome</translation>
 <translation id="8455999171311319804">Προαιρετικό: Συμβάλετε στη βελτίωση του Chrome OS στέλνοντας αυτόματα στην Google διαγνωστικά και δεδομένα χρήσης.</translation>
-<translation id="8478823064122749032">Εγκαταστήστε το Chrome στο τηλέφωνό σας. Θα στείλουμε ένα SMS στον αριθμό τηλεφώνου ανάκτησης του λογαριασμού σας: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="8498858610309223613">Μόλις εφαρμόστηκε μια ειδική ενημέρωση ασφαλείας για το Google Chrome. Επανεκκινήστε τώρα και θα γίνει επαναφορά των καρτελών σας.</translation>
 <translation id="8521348052903287641">Εισερχόμενος κανόνας για το Google Chrome Dev για να επιτρέπεται η κυκλοφορία του mDNS.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8547799825197623713">Λειτουργία εκκίνησης εφαρμογών Chrome Canary</translation>
 <translation id="8556340503434111824">Υπάρχει μια νέα έκδοση του Google Chrome και είναι ταχύτερη από ποτέ.</translation>
-<translation id="8568392309447938879">Θα πρέπει να έχετε συνδεθεί στο Chrome για να χρησιμοποιείτε εφαρμογές. Αυτό δίνει τη δυνατότητα στο Chrome να συγχρονίσει τις εφαρμογές, τους σελιδοδείκτες, το ιστορικό, τους κωδικούς πρόσβασης και άλλες ρυθμίσεις στις συσκευές σας.</translation>
 <translation id="8606668294522778825">Το Google Chrome ενδέχεται να χρησιμοποιεί υπηρεσίες ιστού για να βελτιώσει την εμπειρία περιήγησής σας. Μπορείτε, εάν θέλετε, να απενεργοποιήσετε αυτές τις υπηρεσίες. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Το Google Chrome δεν αποκρίνεται. Επανεκκίνηση τώρα;</translation>
 <translation id="8625237574518804553">{0,plural, =1{Η επανεκκίνηση του Chrome θα γίνει σε 1 λεπτό}other{Η επανεκκίνηση του Chrome θα γίνει σε # λεπτά}}</translation>

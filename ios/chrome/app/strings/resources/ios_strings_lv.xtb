@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Rediģēt grāmatzīmes</translation>
 <translation id="2179182049312275900">Jebkurā brīdī iestatījumos varat ieslēgt sinhronizēšanu.</translation>
 <translation id="2198757192731523470">Google var izmantot jūsu vēsturi, lai personalizētu Meklēšanu, reklāmas un citus Google pakalpojumus.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> nelasīts(-i) raksts(-i), kas pievienots(-i) lasīšanas sarakstam.</translation>
 <translation id="2230173723195178503">Tīmekļa lapa ielādēta</translation>
 <translation id="2239626343334228536">Notiek pārlūkošanas datu notīrīšana…</translation>
 <translation id="2267753748892043616">Pievienot kontu</translation>
@@ -265,7 +264,6 @@ Jūsu dati ir šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi. Lai s�
 
 Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāciju<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Nederīgs kartes numurs</translation>
-<translation id="4807020197310989387">1 nelasīts raksts, kas pievienots lasīšanas sarakstam.</translation>
 <translation id="4818522717893377262">Pievienot valodu...</translation>
 <translation id="481968316161811770">Sīkfaili, vietņu dati</translation>
 <translation id="4833786495304741580">Automātiski sūtīt lietojuma statistiku un avāriju pārskatus Google serveriem.</translation>
@@ -414,6 +412,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="6858855187367714033">Skenēšana pabeigta</translation>
 <translation id="6859944681507688231">Lai skenētu QR kodu vai kredītkarti, iestatījumos iespējojiet kameras atļauju.</translation>
 <translation id="6873263987691478642">Dalītais skats</translation>
+<translation id="6888009575607455378">Vai tiešām vēlaties atmest veiktās izmaiņas?</translation>
 <translation id="6896758677409633944">Kopēt</translation>
 <translation id="6903907808598579934">Ieslēgt sinhronizāciju</translation>
 <translation id="6914583639806229067">Meklēt jūsu kopēto attēlu</translation>

@@ -77,6 +77,10 @@
 #include "content/browser/plugin_service_impl.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::InSequence;
@@ -99,9 +103,9 @@ constexpr int kTestRequestCount = 3;
 // Offset for download to pause.
 const int kPauseOffset = 100 * 1024;
 
-const std::string kOriginOne = "one.example";
-const std::string kOriginTwo = "two.example";
-const std::string kOriginThree = "example.com";
+const char kOriginOne[] = "one.example";
+const char kOriginTwo[] = "two.example";
+const char kOriginThree[] = "example.com";
 const char k404Response[] = "HTTP/1.1 404 Not found\r\n\r\n";
 
 // Implementation of TestContentBrowserClient that overrides
@@ -141,7 +145,7 @@ class MockDownloadItemObserver : public download::DownloadItem::Observer {
 
 class MockDownloadManagerObserver : public DownloadManager::Observer {
  public:
-  MockDownloadManagerObserver(DownloadManager* manager) {
+  explicit MockDownloadManagerObserver(DownloadManager* manager) {
     manager_ = manager;
     manager->AddObserver(this);
   }
@@ -162,6 +166,7 @@ class MockDownloadManagerObserver : public DownloadManager::Observer {
   }
 
   MOCK_METHOD1(MockManagerGoingDown, void(DownloadManager*));
+
  private:
   DownloadManager* manager_;
 };
@@ -532,6 +537,7 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
       std::vector<DownloadOpenDelayedCallback>* callbacks) {
     callbacks->swap(delayed_callbacks_);
   }
+
  private:
   bool delay_download_open_;
   std::vector<DownloadOpenDelayedCallback> delayed_callbacks_;
@@ -540,7 +546,7 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
 // Get the next created download.
 class DownloadCreateObserver : DownloadManager::Observer {
  public:
-  DownloadCreateObserver(DownloadManager* manager)
+  explicit DownloadCreateObserver(DownloadManager* manager)
       : manager_(manager), item_(nullptr) {
     manager_->AddObserver(this);
   }
@@ -2515,7 +2521,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumingDownload) {
   // Resume and cancel download. We expect only a single OnDownloadCreated()
   // call, and that's for the second download created below.
   MockDownloadManagerObserver dm_observer(DownloadManagerForShell(shell()));
-  EXPECT_CALL(dm_observer, OnDownloadCreated(_,_)).Times(1);
+  EXPECT_CALL(dm_observer, OnDownloadCreated(_, _)).Times(1);
 
   TestRequestPauseHandler request_pause_handler;
   parameters.on_pause_handler = request_pause_handler.GetOnPauseHandler();
@@ -4089,6 +4095,37 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadFromWebUIWithoutRenderer) {
   // render frame host, download should gracefully fail without triggering
   // crash.
   ASSERT_EQ(download::DownloadItem::INTERRUPTED, downloads[0]->GetState());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, SaveImageAt) {
+  // Navigate to a page containing a data-URL image in the top-left corner.
+  GURL main_url(
+      embedded_test_server()->GetURL("/download/page_with_data_image.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Ask the frame to save a data-URL image at the given coordinates.
+  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
+  shell()->web_contents()->GetMainFrame()->SaveImageAt(100, 100);
+  observer->WaitForFinished();
+  EXPECT_EQ(
+      1u, observer->NumDownloadsSeenInState(download::DownloadItem::COMPLETE));
+
+  // Verify that there was one, appropriately named download.
+  std::vector<download::DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+  EXPECT_EQ(FILE_PATH_LITERAL("download.png"),
+            downloads[0]->GetTargetFilePath().BaseName().value());
+
+  // Verify file contents.
+  std::string expected_content;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(ReadFileToString(GetTestFilePath("media", "blackwhite.png"),
+                                 &expected_content));
+  }
+  ASSERT_TRUE(VerifyFile(downloads[0]->GetFullPath(), expected_content,
+                         expected_content.size()));
 }
 
 // Test fixture for forcing MHTML download.

@@ -55,8 +55,7 @@ XRCanvasInputProvider::XRCanvasInputProvider(XRSession* session,
   canvas->addEventListener(event_type_names::kPointercancel, listener_);
 }
 
-XRCanvasInputProvider::~XRCanvasInputProvider() {
-}
+XRCanvasInputProvider::~XRCanvasInputProvider() {}
 
 void XRCanvasInputProvider::Stop() {
   if (!listener_) {

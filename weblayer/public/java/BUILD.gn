@@ -19,39 +19,57 @@ android_resources("client_resources") {
   android_manifest_dep = ":weblayer_client_manifest"
 }
 
-android_library("java") {
-  java_files = [
-    "org/chromium/weblayer/BrowserController.java",
-    "org/chromium/weblayer/BrowserFragment.java",
-    "org/chromium/weblayer/BrowserFragmentController.java",
-    "org/chromium/weblayer/BrowserObserver.java",
-    "org/chromium/weblayer/Callback.java",
-    "org/chromium/weblayer/ListenableFuture.java",
-    "org/chromium/weblayer/ListenableResult.java",
-    "org/chromium/weblayer/Navigation.java",
-    "org/chromium/weblayer/NavigationController.java",
-    "org/chromium/weblayer/NavigationObserver.java",
-    "org/chromium/weblayer/ObserverList.java",
-    "org/chromium/weblayer/Profile.java",
-    "org/chromium/weblayer/WebLayer.java",
-    "org/chromium/weblayer/ChildProcessService.java",
-    "org/chromium/weblayer/UnsupportedVersionException.java",
-  ]
+template("weblayer_java") {
+  android_library(target_name) {
+    java_files = [
+      "org/chromium/weblayer/BrowserController.java",
+      "org/chromium/weblayer/BrowserFragment.java",
+      "org/chromium/weblayer/BrowserFragmentController.java",
+      "org/chromium/weblayer/BrowserObserver.java",
+      "org/chromium/weblayer/Callback.java",
+      "org/chromium/weblayer/ListenableFuture.java",
+      "org/chromium/weblayer/ListenableResult.java",
+      "org/chromium/weblayer/Navigation.java",
+      "org/chromium/weblayer/NavigationController.java",
+      "org/chromium/weblayer/NavigationObserver.java",
+      "org/chromium/weblayer/ObserverList.java",
+      "org/chromium/weblayer/Profile.java",
+      "org/chromium/weblayer/WebLayer.java",
+      "org/chromium/weblayer/ChildProcessService.java",
+      "org/chromium/weblayer/UnsupportedVersionException.java",
+    ]
 
+    deps = [
+      "//third_party/android_deps:com_android_support_support_fragment_java",
+      "//weblayer/browser/java:client_java",
+    ]
+    deps += invoker.deps
+
+    # Needed for android.webkit.WebViewDelegate.
+    alternative_android_sdk_dep =
+        "//third_party/android_sdk:public_framework_system_java"
+  }
+}
+
+# This target should be used by client apps in the chromium repo that want to
+# include the client library code and manifest.
+weblayer_java("java") {
   deps = [
+    # This dep is needed to include the manifest that should be merged into the
+    # client app's manifest.
     ":client_resources",
-    "//third_party/android_deps:com_android_support_support_fragment_java",
-    "//weblayer/browser/java:client_java",
   ]
+}
 
-  # Needed for android.webkit.WebViewDelegate.
-  alternative_android_sdk_dep =
-      "//third_party/android_sdk:public_framework_system_java"
+# This target should only be used when generating the aar. The dist_aar rule
+# adds the client manifest separately.
+weblayer_java("aar_java") {
+  deps = []
 }
 
 dist_aar("client_aar") {
   deps = [
-    ":java",
+    ":aar_java",
     ":weblayer_client_manifest",
   ]
 

@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Buksan ang mga page sa pagsisimula</translation>
 <translation id="1883255238294161206">Tiklupin ang listahan</translation>
 <translation id="1898423065542865115">Pagfi-filter</translation>
+<translation id="1901443836186977402">{1,plural, =1{Hindi mapatunayan ng server na ito na <ph name="DOMAIN" /> ito; nag-expire ang panseguridad na certificate nito noong nakaraang araw. Posibleng sanhi ito ng maling pag-configure o ng panghihimasok ng isang nang-aatake sa iyong koneksyon. Kasalukuyang nakatakda ang orasan ng iyong computer sa <ph name="CURRENT_DATE" />. Mukha bang tama ito? Kung hindi, dapat mong itama ang orasan ng iyong system at pagkatapos ay i-refresh ang page na ito.}one{Hindi mapatunayan ng server na ito na <ph name="DOMAIN" /> ito; nag-expire ang panseguridad na certificate nito # araw na ang nakalipas. Posibleng sanhi ito ng maling pag-configure o ng panghihimasok ng isang nang-aatake sa iyong koneksyon. Kasalukuyang nakatakda ang orasan ng iyong computer sa <ph name="CURRENT_DATE" />. Mukha bang tama ito? Kung hindi, dapat mong itama ang orasan ng iyong system at pagkatapos ay i-refresh ang page na ito.}other{Hindi mapatunayan ng server na ito na <ph name="DOMAIN" /> ito; nag-expire ang panseguridad na certificate nito # araw na ang nakalipas. Posibleng sanhi ito ng maling pag-configure o ng panghihimasok ng isang nang-aatake sa iyong koneksyon. Kasalukuyang nakatakda ang orasan ng iyong computer sa <ph name="CURRENT_DATE" />. Mukha bang tama ito? Kung hindi, dapat mong itama ang orasan ng iyong system at pagkatapos ay i-refresh ang page na ito.}}</translation>
 <translation id="1914326953223720820">I-unzip ang Serbisyo</translation>
 <translation id="1915697529809968049">Gamitin ang Touch ID sa halip na CVC?</translation>
 <translation id="1916770123977586577">Upang ilapat ang iyong mga na-update na setting sa site na ito, i-reload ang page</translation>
@@ -437,6 +438,7 @@
 <translation id="3116158981186517402">Laminate</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Subukang magpatakbo ng Connectivity Diagnostics<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Pumunta sa <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Wala}=1{data ng pag-sign in para sa 1 account}one{data ng pag-sign in para sa # account}other{data ng pag-sign in para sa # na account}}</translation>
 <translation id="3145945101586104090">Nabigong i-decode ang tugon</translation>
 <translation id="3150653042067488994">Pansamantalang error sa server</translation>
@@ -815,6 +817,7 @@
 <translation id="5043480802608081735">Link na Kinopya Mo</translation>
 <translation id="5045550434625856497">Hindi wastong password</translation>
 <translation id="5056549851600133418">Mga artikulo para sa iyo</translation>
+<translation id="5061227663725596739">Ang ibig mo bang sabihin ay <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 ang ginagamit)}one{(# ang ginagamit)}other{(# ang ginagamit)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Suriin ang proxy address<ph name="END_LINK" /></translation>
@@ -868,6 +871,7 @@
 <translation id="5284909709419567258">Mga address ng network</translation>
 <translation id="5285570108065881030">Ipakita ang lahat ng naka-save na password</translation>
 <translation id="5287240709317226393">Ipakita ang cookies</translation>
+<translation id="5287456746628258573">Gumagamit ang site na ito ng lumang configuration sa seguridad, na posibleng maglantad ng iyong impormasyon (halimbawa, mga password o numero ng credit card) kapag ipinadala ito sa site na ito.</translation>
 <translation id="5288108484102287882">Na-validate ang mga value ng patakaran at nagkaroon ng mga babala</translation>
 <translation id="5299298092464848405">Error sa pag-parse ng patakaran</translation>
 <translation id="5300589172476337783">Ipakita</translation>
@@ -996,6 +1000,7 @@
 <translation id="5946937721014915347">Binubuksan ang <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Oo, idagdag</translation>
 <translation id="5951495562196540101">Hindi maka-enroll gamit ang account ng consumer (may available na naka-package na lisensya).</translation>
+<translation id="5966900314707961320">Kapag naka-on, hindi makakagamit ang mga site ng cookies na sumusubaybay sa iyo sa buong web</translation>
 <translation id="5967592137238574583">I-edit ang Impormasyon ng Contact</translation>
 <translation id="5967867314010545767">Alisin sa history</translation>
 <translation id="5975083100439434680">Mag-zoom out</translation>
@@ -1078,6 +1083,7 @@
 <translation id="6383221683286411806">Maaaring magkaroon ng singil.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 pang suhestyon}one{# pang suhestyon}other{# pang suhestyon}}</translation>
 <translation id="6387754724289022810">Para mas mabilis na makapagbayad sa susunod, i-save ang iyong card at billing address sa Google Account mo at sa device na ito.</translation>
+<translation id="6389470377220713856">Pangalan sa Card</translation>
 <translation id="6390200185239044127">Z-fold half</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Hindi na ginagamit ang patakarang ito. Dapat mong gamitin ang patakarang <ph name="NEW_POLICY" /> sa halip.</translation>
@@ -1256,7 +1262,6 @@ Mga karagdagang detalye:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Naka-affiliate:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Umalis sa site na ito</translation>
 <translation id="7353601530677266744">Command Line</translation>
 <translation id="7372973238305370288">resulta ng paghahanap</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1429,6 +1434,7 @@ Mga karagdagang detalye:
 <translation id="8131740175452115882">Kumpirmahin</translation>
 <translation id="8149426793427495338">Nag-sleep ang iyong computer.</translation>
 <translation id="8150722005171944719">Hindi nababasa ang file sa <ph name="URL" />. Maaaring ito ay naalis, nalipat, o maaaring pinipigilan ng mga pagpapahintulot ng file ang access.</translation>
+<translation id="8157295877370077682">Umalis sa site</translation>
 <translation id="8163866351304776260">Quad punch left</translation>
 <translation id="8175796834047840627">Nag-aalok ang Chrome na i-save ang iyong mga card sa Google Account mo dahil naka-sign in ka. Maaari mong baguhin ang gawing ito sa mga setting.</translation>
 <translation id="8184538546369750125">Gamitin ang pangkalahatang default (Payagan)</translation>

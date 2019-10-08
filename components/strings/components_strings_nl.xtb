@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Startpagina's openen</translation>
 <translation id="1883255238294161206">Lijst samenvouwen</translation>
 <translation id="1898423065542865115">Filteren</translation>
+<translation id="1901443836186977402">{1,plural, =1{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is gedurende de afgelopen dag verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_DATE" />. Klopt dat? Zo niet, dan moet je de klok van je systeem aanpassen en daarna deze pagina vernieuwen.}other{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is # dagen geleden verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_DATE" />. Klopt dat? Zo niet, dan moet je de klok van je systeem aanpassen en daarna deze pagina vernieuwen.}}</translation>
 <translation id="1914326953223720820">Uitpakservice</translation>
 <translation id="1915697529809968049">Touch ID gebruiken in plaats van CVC?</translation>
 <translation id="1916770123977586577">Laad deze pagina opnieuw om je geüpdatete instellingen toe te passen op deze site</translation>
@@ -435,6 +436,7 @@
 <translation id="3116158981186517402">Lamineren</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Voer Verbindingsdiagnose uit<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Naar <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Geen}=1{inloggegevens voor één account}other{inloggegevens voor # accounts}}</translation>
 <translation id="3145945101586104090">Kan reactie niet decoderen</translation>
 <translation id="3150653042067488994">Tijdelijke serverfout</translation>
@@ -808,6 +810,7 @@
 <translation id="5043480802608081735">Link die je hebt gekopieerd</translation>
 <translation id="5045550434625856497">Onjuist wachtwoord</translation>
 <translation id="5056549851600133418">Artikelen voor jou</translation>
+<translation id="5061227663725596739">Bedoelde je <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 in gebruik)}other{(# in gebruik)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Het proxy-adres controleren<ph name="END_LINK" /></translation>
@@ -861,6 +864,7 @@
 <translation id="5284909709419567258">Netwerkadressen</translation>
 <translation id="5285570108065881030">Alle opgeslagen wachtwoorden weergeven</translation>
 <translation id="5287240709317226393">Cookies weergeven</translation>
+<translation id="5287456746628258573">Deze site gebruikt een verouderde beveiligingsconfiguratie, waardoor je gegevens (zoals wachtwoorden of creditcardnummers) openbaar kunnen worden gemaakt als ze naar deze site worden gestuurd.</translation>
 <translation id="5288108484102287882">Tijdens de validatie van de beleidswaarden zijn er waarschuwingen geconstateerd</translation>
 <translation id="5299298092464848405">Fout bij het parseren van het beleid</translation>
 <translation id="5300589172476337783">Weergeven</translation>
@@ -988,6 +992,7 @@
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> openen…</translation>
 <translation id="5947933617628957894">Ja, toevoegen</translation>
 <translation id="5951495562196540101">Kan consumentenaccount niet inschrijven (verpakte licentie beschikbaar).</translation>
+<translation id="5966900314707961320">Als deze optie is ingeschakeld, kunnen sites geen cookies gebruiken die je volgen op internet</translation>
 <translation id="5967592137238574583">Contactgegevens bewerken</translation>
 <translation id="5967867314010545767">Verwijderen uit geschiedenis</translation>
 <translation id="5975083100439434680">Uitzoomen</translation>
@@ -1069,6 +1074,7 @@
 <translation id="6383221683286411806">Er worden later mogelijk kosten in rekening gebracht.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 andere suggestie}other{# andere suggesties}}</translation>
 <translation id="6387754724289022810">Sla je pas en factuuradres op in je Google-account en op dit apparaat zodat je de volgende keer sneller kunt betalen.</translation>
+<translation id="6389470377220713856">Naam op pas</translation>
 <translation id="6390200185239044127">Zigzag kruisvouw</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Dit beleid is beëindigd. Gebruik in plaats daarvan dit beleid: <ph name="NEW_POLICY" />.</translation>
@@ -1247,7 +1253,6 @@ Aanvullende informatie:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Is gelieerd:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Deze site verlaten</translation>
 <translation id="7353601530677266744">Opdrachtregel</translation>
 <translation id="7372973238305370288">zoekresultaat</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1420,6 +1425,7 @@ Aanvullende informatie:
 <translation id="8131740175452115882">Bevestigen</translation>
 <translation id="8149426793427495338">De slaapstand van je computer is geactiveerd.</translation>
 <translation id="8150722005171944719">Het bestand op <ph name="URL" /> is onleesbaar. Het bestand is mogelijk verwijderd of verplaatst of de bestandsrechten zorgen ervoor dat het bestand niet kan worden geopend.</translation>
+<translation id="8157295877370077682">Site verlaten</translation>
 <translation id="8163866351304776260">Vier perforaties links</translation>
 <translation id="8175796834047840627">Chrome biedt aan je passen in je Google-account op te slaan omdat je bent ingelogd. Je kunt dit wijzigen in de instellingen.</translation>
 <translation id="8184538546369750125">Algemene standaardinstelling gebruiken (Toestaan)</translation>

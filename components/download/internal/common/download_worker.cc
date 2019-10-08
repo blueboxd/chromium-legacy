@@ -68,11 +68,9 @@ void CreateUrlDownloadHandler(
 }  // namespace
 
 DownloadWorker::DownloadWorker(DownloadWorker::Delegate* delegate,
-                               int64_t offset,
-                               int64_t length)
+                               int64_t offset)
     : delegate_(delegate),
       offset_(offset),
-      length_(length),
       is_paused_(false),
       is_canceled_(false),
       url_download_handler_(nullptr, base::OnTaskRunnerDeleter(nullptr)) {

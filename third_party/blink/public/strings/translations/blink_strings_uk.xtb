@@ -134,6 +134,7 @@
 <translation id="5516424706154626233">засіб вибору дати</translation>
 <translation id="5537725057119320332">Трансляція екрана</translation>
 <translation id="5546461542133609677">увімкнути звук</translation>
+<translation id="5608153257855394627">виділити</translation>
 <translation id="561939826962581046">час</translation>
 <translation id="5630795885300617244">Двічі торкніться ліворуч або праворуч, щоб пропустити 10 с</translation>
 <translation id="5631759159893697722">автореферат</translation>
@@ -162,7 +163,7 @@
 <translation id="6404546809543547843">повзунок часу відтворення аудіо</translation>
 <translation id="6443871981718447451">показати меню субтитрів</translation>
 <translation id="6453774872122745852">слова подяки</translation>
-<translation id="6475115390776617481">присутність у реальному часі</translation>
+<translation id="6475115390776617481">дані про присутність у реальному часі</translation>
 <translation id="648732519525291180">засіб вибору часу</translation>
 <translation id="6550675742724504774">Параметри</translation>
 <translation id="6572309429103589720">Граматична помилка</translation>
@@ -226,6 +227,7 @@
 <translation id="8208673686607688524">засіб вибору місцевих дати й часу</translation>
 <translation id="8261464734335370856">Орфографічна помилка</translation>
 <translation id="8284326494547611709">Субтитри</translation>
+<translation id="8346634859695247203">розділ</translation>
 <translation id="835897206747267392">Недійсне значення</translation>
 <translation id="8403857369060869934">минуло часу: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">частина</translation>

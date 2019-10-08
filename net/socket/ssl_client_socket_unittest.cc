@@ -87,6 +87,7 @@
 #include "third_party/boringssl/src/include/openssl/bio.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/pem.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -5872,6 +5873,92 @@ TEST_P(SSLHandshakeDetailsTest, Metrics) {
     histograms.ExpectUniqueSample("Net.SSLHandshakeDetails",
                                   GetParam().expected_resume, 1);
   }
+}
+
+TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonNewSession) {
+  const char kReasonHistogram[] = "Net.SSLHandshakeEarlyDataReason";
+
+  ASSERT_TRUE(StartServer());
+  base::HistogramTester histograms;
+  ASSERT_TRUE(RunInitialConnection());
+  histograms.ExpectUniqueSample(kReasonHistogram,
+                                ssl_early_data_no_session_offered, 1);
+}
+
+// Test 0-RTT logging when the server declines to resume a connection.
+TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonNoResume) {
+  const char kReasonHistogram[] = "Net.SSLHandshakeEarlyDataReason";
+
+  ASSERT_TRUE(StartServer());
+  ASSERT_TRUE(RunInitialConnection());
+
+  SSLServerConfig server_config;
+  server_config.early_data_enabled = false;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+
+  SetServerConfig(server_config);
+
+  base::HistogramTester histograms;
+
+  // 0-RTT Connection
+  FakeBlockingStreamSocket* socket = MakeClient(true);
+  socket->BlockReadResult();
+  ASSERT_THAT(Connect(), IsOk());
+  constexpr base::StringPiece kRequest = "GET /zerortt HTTP/1.0\r\n\r\n";
+  EXPECT_EQ(static_cast<int>(kRequest.size()), WriteAndWait(kRequest));
+  socket->UnblockReadResult();
+
+  // Expect early data to be rejected.
+  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(4096);
+  int rv = ReadAndWait(buf.get(), 4096);
+  EXPECT_EQ(ERR_EARLY_DATA_REJECTED, rv);
+
+  histograms.ExpectUniqueSample(kReasonHistogram,
+                                ssl_early_data_session_not_resumed, 1);
+}
+
+// Test 0-RTT logging in the standard ConfirmHandshake-after-acceptance case.
+TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonZeroRTT) {
+  const char kReasonHistogram[] = "Net.SSLHandshakeEarlyDataReason";
+
+  ASSERT_TRUE(StartServer());
+  ASSERT_TRUE(RunInitialConnection());
+
+  // 0-RTT Connection
+  base::HistogramTester histograms;
+  MakeClient(true);
+  ASSERT_THAT(Connect(), IsOk());
+  TestCompletionCallback callback;
+  ASSERT_THAT(
+      callback.GetResult(ssl_socket()->ConfirmHandshake(callback.callback())),
+      IsOk());
+  histograms.ExpectUniqueSample(kReasonHistogram, ssl_early_data_accepted, 1);
+}
+
+// Check that we're correctly logging 0-rtt success when the handshake
+// concludes during a Read.
+TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonReadServerHello) {
+  const char kReasonHistogram[] = "Net.SSLHandshakeEarlyDataReason";
+  ASSERT_TRUE(StartServer());
+  ASSERT_TRUE(RunInitialConnection());
+
+  // 0-RTT Connection
+  base::HistogramTester histograms;
+  MakeClient(true);
+  ASSERT_THAT(Connect(), IsOk());
+  constexpr base::StringPiece kRequest = "GET /zerortt HTTP/1.0\r\n\r\n";
+  EXPECT_EQ(static_cast<int>(kRequest.size()), WriteAndWait(kRequest));
+
+  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(4096);
+  int size = ReadAndWait(buf.get(), 4096);
+  EXPECT_GT(size, 0);
+  EXPECT_EQ('1', buf->data()[size - 1]);
+
+  SSLInfo ssl_info;
+  ASSERT_TRUE(GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+
+  histograms.ExpectUniqueSample(kReasonHistogram, ssl_early_data_accepted, 1);
 }
 
 TEST_F(SSLClientSocketTest, VersionOverride) {

@@ -68,26 +68,17 @@ chromeos::assistant::mojom::AssistantNotificationPtr CreateTimerNotification(
       l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE);
   const std::string message =
       CreateTimerNotificationMessage(alarm_timer, time_remaining);
-  const GURL action_url = assistant::util::CreateAssistantQueryDeepLink(
-      l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_QUERY));
 
-  base::Optional<GURL> stop_alarm_timer_action_url;
-  base::Optional<GURL> add_time_to_timer_action_url;
-  if (chromeos::assistant::features::IsAlarmTimerManagerEnabled()) {
-    stop_alarm_timer_action_url = assistant::util::CreateAlarmTimerDeepLink(
-        assistant::util::AlarmTimerAction::kStopRinging,
-        /*alarm_timer_id=*/base::nullopt,
-        /*duration=*/base::nullopt);
-    add_time_to_timer_action_url = assistant::util::CreateAlarmTimerDeepLink(
-        assistant::util::AlarmTimerAction::kAddTimeToTimer, alarm_timer.id,
-        kOneMin);
-  } else {
-    stop_alarm_timer_action_url = assistant::util::CreateAssistantQueryDeepLink(
-        l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_QUERY));
-    add_time_to_timer_action_url =
-        assistant::util::CreateAssistantQueryDeepLink(l10n_util::GetStringUTF8(
-            IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_QUERY));
-  }
+  base::Optional<GURL> stop_alarm_timer_action_url =
+      assistant::util::CreateAlarmTimerDeepLink(
+          assistant::util::AlarmTimerAction::kStopRinging,
+          /*alarm_timer_id=*/base::nullopt,
+          /*duration=*/base::nullopt);
+
+  base::Optional<GURL> add_time_to_timer_action_url =
+      assistant::util::CreateAlarmTimerDeepLink(
+          assistant::util::AlarmTimerAction::kAddTimeToTimer, alarm_timer.id,
+          kOneMin);
 
   AssistantNotificationPtr notification = AssistantNotification::New();
 
@@ -152,7 +143,6 @@ AssistantAlarmTimerController::~AssistantAlarmTimerController() {
 
 void AssistantAlarmTimerController::BindReceiver(
     mojo::PendingReceiver<mojom::AssistantAlarmTimerController> receiver) {
-  DCHECK(chromeos::assistant::features::IsTimerNotificationEnabled());
   receiver_.Bind(std::move(receiver));
 }
 
@@ -164,20 +154,6 @@ void AssistantAlarmTimerController::AddModelObserver(
 void AssistantAlarmTimerController::RemoveModelObserver(
     AssistantAlarmTimerModelObserver* observer) {
   model_.RemoveObserver(observer);
-}
-
-// TODO(dmblack): Remove method when the LibAssistant Alarm/Timer API is ready.
-void AssistantAlarmTimerController::OnTimerSoundingStarted() {
-  AlarmTimer timer;
-  timer.id = std::to_string(next_timer_id_++);
-  timer.type = AlarmTimerType::kTimer;
-  timer.end_time = base::TimeTicks::Now();
-  model_.AddAlarmTimer(timer);
-}
-
-// TODO(dmblack): Remove method when the LibAssistant Alarm/Timer API is ready.
-void AssistantAlarmTimerController::OnTimerSoundingFinished() {
-  model_.RemoveAllAlarmsTimers();
 }
 
 void AssistantAlarmTimerController::OnAlarmTimerStateChanged(
@@ -212,26 +188,18 @@ void AssistantAlarmTimerController::OnAlarmTimerAdded(
     const AlarmTimer& alarm_timer,
     const base::TimeDelta& time_remaining) {
   // Schedule a repeating timer to tick the tracked alarms/timers.
-  if (chromeos::assistant::features::IsTimerTicksEnabled() &&
-      !timer_.IsRunning()) {
+  if (!timer_.IsRunning()) {
     timer_.Start(FROM_HERE, kTickInterval, &model_,
                  &AssistantAlarmTimerModel::Tick);
   }
 
   // Create a notification for the added alarm/timer.
-  DCHECK(chromeos::assistant::features::IsTimerNotificationEnabled());
-  if (chromeos::assistant::features::IsTimerNotificationEnabled()) {
-    assistant_controller_->notification_controller()->AddOrUpdateNotification(
-        CreateTimerNotification(alarm_timer, time_remaining));
-  }
+  assistant_controller_->notification_controller()->AddOrUpdateNotification(
+      CreateTimerNotification(alarm_timer, time_remaining));
 }
 
 void AssistantAlarmTimerController::OnAlarmsTimersTicked(
     const std::map<std::string, base::TimeDelta>& times_remaining) {
-  // This code should only be called when timer notifications/ticks are enabled.
-  DCHECK(chromeos::assistant::features::IsTimerNotificationEnabled());
-  DCHECK(chromeos::assistant::features::IsTimerTicksEnabled());
-
   // Update any existing notifications associated w/ our alarms/timers.
   for (auto& pair : times_remaining) {
     auto* notification_controller =
@@ -245,16 +213,13 @@ void AssistantAlarmTimerController::OnAlarmsTimersTicked(
 }
 
 void AssistantAlarmTimerController::OnAllAlarmsTimersRemoved() {
-  if (chromeos::assistant::features::IsTimerTicksEnabled())
-    timer_.Stop();
+  // We can stop our timer from ticking when all alarms/timers are removed.
+  timer_.Stop();
 
   // Remove any notifications associated w/ alarms/timers.
-  DCHECK(chromeos::assistant::features::IsTimerNotificationEnabled());
-  if (chromeos::assistant::features::IsTimerNotificationEnabled()) {
-    assistant_controller_->notification_controller()
-        ->RemoveNotificationByGroupingKey(kTimerNotificationGroupingKey,
-                                          /*from_server=*/false);
-  }
+  assistant_controller_->notification_controller()
+      ->RemoveNotificationByGroupingKey(kTimerNotificationGroupingKey,
+                                        /*from_server=*/false);
 }
 
 void AssistantAlarmTimerController::SetAssistant(
@@ -304,18 +269,6 @@ void AssistantAlarmTimerController::OnUiVisibilityChanged(
   // When the Assistant UI transitions from a visible state, we'll dismiss any
   // ringing alarms or timers (assuming certain conditions have been met).
   if (old_visibility != AssistantVisibility::kVisible)
-    return;
-
-  // We only do this if the AlarmTimerManager is enabled, as otherwise we would
-  // have to issue an Assistant query to stop ringing alarms/timers which would
-  // cause Assistant UI to once again show. This would be a bad user experience.
-  if (!chromeos::assistant::features::IsAlarmTimerManagerEnabled())
-    return;
-
-  // We only do this if timer notifications are enabled, as otherwise the
-  // ringing alarm/timer isn't bound to any particular UI affordance so it can
-  // maintain its own lifecycle.
-  if (!chromeos::assistant::features::IsTimerNotificationEnabled())
     return;
 
   // We only do this if in-Assistant notifications are enabled, as in-Assistant

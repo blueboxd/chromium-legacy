@@ -21,10 +21,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
-#if !BUILDFLAG(FULL_SAFE_BROWSING)
-#include "base/system/sys_info.h"
-#endif
-
 using base::Time;
 using base::TimeDelta;
 
@@ -77,15 +73,6 @@ static const int kV4TimerStartIntervalSecMax = 300;
 
 // Maximum time, in seconds, to wait for a response to an update request.
 static const int kV4TimerUpdateWaitSecMax = 15 * 60;  // 15 minutes
-
-// The default number of entries, per threat type, in the safe browsing
-// database on low end (low RAM) devices. This value is also used as the default
-// for GMS Safe Browsing on low end devices.
-static const int kLowEndDefaultDBEntryCount = 1 << 10;
-
-// Malware threat DB coverage drops off too much below 4096 entries, so we use
-// this values instead of the default above.
-static const int kLowEndMalwareDBEntryCount = 1 << 12;
 
 ChromeClientInfo::SafeBrowsingReportingPopulation GetReportingLevelProtoValue(
     ExtendedReportingLevel reporting_level) {
@@ -252,13 +239,6 @@ std::string V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto() {
     list_update_request->mutable_constraints()->add_supported_compressions(RAW);
     list_update_request->mutable_constraints()->add_supported_compressions(
         RICE);
-
-#if !BUILDFLAG(FULL_SAFE_BROWSING)
-    if (base::SysInfo::IsLowEndDevice()) {
-      list_update_request->mutable_constraints()->set_max_database_entries(
-          GetLowEndDBEntryCount(list_update_request->threat_type()));
-    }
-#endif
   }
 
   if (!extended_reporting_level_callback_.is_null()) {
@@ -275,15 +255,6 @@ std::string V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto() {
   base::Base64UrlEncode(req_data, base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                         &req_base64);
   return req_base64;
-}
-
-int V4UpdateProtocolManager::GetLowEndDBEntryCount(ThreatType threat_type) {
-  switch (threat_type) {
-    case ThreatType::MALWARE_THREAT:
-      return kLowEndMalwareDBEntryCount;
-    default:
-      return kLowEndDefaultDBEntryCount;
-  }
 }
 
 bool V4UpdateProtocolManager::ParseUpdateResponse(

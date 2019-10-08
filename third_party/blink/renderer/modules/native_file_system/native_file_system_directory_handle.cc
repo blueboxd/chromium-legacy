@@ -30,10 +30,12 @@ constexpr const char kSandboxRootDirectoryName[] = "";
 using mojom::blink::NativeFileSystemErrorPtr;
 
 NativeFileSystemDirectoryHandle::NativeFileSystemDirectoryHandle(
+    ExecutionContext* context,
     const String& name,
-    RevocableInterfacePtr<mojom::blink::NativeFileSystemDirectoryHandle>
-        mojo_ptr)
-    : NativeFileSystemHandle(name), mojo_ptr_(std::move(mojo_ptr)) {
+    mojo::PendingRemote<mojom::blink::NativeFileSystemDirectoryHandle> mojo_ptr)
+    : NativeFileSystemHandle(context, name),
+      mojo_ptr_(std::move(mojo_ptr),
+                context->GetTaskRunner(TaskType::kMiscPlatformAPI)) {
   DCHECK(mojo_ptr_);
 }
 
@@ -59,10 +61,7 @@ ScriptPromise NativeFileSystemDirectoryHandle::getFile(
               return;
             }
             resolver->Resolve(MakeGarbageCollected<NativeFileSystemFileHandle>(
-                name,
-                RevocableInterfacePtr<mojom::blink::NativeFileSystemFileHandle>(
-                    std::move(handle), context->GetInterfaceInvalidator(),
-                    context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
+                context, name, std::move(handle)));
           },
           WrapPersistent(resolver), name));
 
@@ -92,13 +91,7 @@ ScriptPromise NativeFileSystemDirectoryHandle::getDirectory(
             }
             resolver->Resolve(
                 MakeGarbageCollected<NativeFileSystemDirectoryHandle>(
-                    name,
-                    RevocableInterfacePtr<
-                        mojom::blink::NativeFileSystemDirectoryHandle>(
-                        mojom::blink::NativeFileSystemDirectoryHandlePtrInfo(
-                            handle.PassPipe(), 0u),
-                        context->GetInterfaceInvalidator(),
-                        context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
+                    context, name, std::move(handle)));
           },
           WrapPersistent(resolver), name));
 
@@ -184,13 +177,7 @@ ScriptPromise NativeFileSystemDirectoryHandle::getSystemDirectory(
           return;
         }
         resolver->Resolve(MakeGarbageCollected<NativeFileSystemDirectoryHandle>(
-            kSandboxRootDirectoryName,
-            RevocableInterfacePtr<
-                mojom::blink::NativeFileSystemDirectoryHandle>(
-                mojom::blink::NativeFileSystemDirectoryHandlePtrInfo(
-                    handle.PassPipe(), 0u),
-                context->GetInterfaceInvalidator(),
-                context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
+            context, kSandboxRootDirectoryName, std::move(handle)));
       },
       WrapPersistent(resolver), std::move(manager)));
 
@@ -215,6 +202,10 @@ void NativeFileSystemDirectoryHandle::RequestPermissionImpl(
     base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr,
                             mojom::blink::PermissionStatus)> callback) {
   mojo_ptr_->RequestPermission(writable, std::move(callback));
+}
+
+void NativeFileSystemDirectoryHandle::ContextDestroyed(ExecutionContext*) {
+  mojo_ptr_.reset();
 }
 
 }  // namespace blink

@@ -30,7 +30,7 @@
 #include <memory>
 
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink-forward.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 

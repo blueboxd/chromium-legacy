@@ -323,14 +323,6 @@ function onDocumentLoadOrUpdate() {
       loadTimeData.getValue('downloadButton').msg;
   var detailsButton = document.getElementById('details-button');
 
-// <if expr="HIDE_ERROR_MESSAGE_FOR_DINO_PAGE">
-  if ('chrome://dino/' == document.title) {
-    // If the user explicitly loads the dino page, don't show offline
-    // information as it's not accurate.
-    document.getElementById('main-message').classList.add(HIDDEN_CLASS);
-  }
-// </if>
-
   // If offline content suggestions will be visible, the usual buttons will not
   // be presented.
   var offlineContentVisible =

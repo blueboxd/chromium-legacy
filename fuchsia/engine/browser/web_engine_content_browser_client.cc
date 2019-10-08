@@ -10,7 +10,9 @@
 
 #include "base/stl_util.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/devtools_manager_delegate.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
 #include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
@@ -20,6 +22,7 @@
 #include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/common/web_engine_url_loader_throttle.h"
 #include "fuchsia/engine/switches.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 namespace {
 
@@ -165,4 +168,25 @@ WebEngineContentBrowserClient::CreateURLLoaderThrottles(
   throttles.emplace_back(std::make_unique<WebEngineURLLoaderThrottle>(
       UrlRequestRewriteRulesManager::ForFrameTreeNodeId(frame_tree_node_id)));
   return throttles;
+}
+
+mojo::Remote<network::mojom::NetworkContext>
+WebEngineContentBrowserClient::CreateNetworkContext(
+    content::BrowserContext* context,
+    bool in_memory,
+    const base::FilePath& relative_partition_path) {
+  // Same as ContentBrowserClient::CreateNetworkContext().
+  mojo::Remote<network::mojom::NetworkContext> network_context;
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
+  context_params->user_agent = GetUserAgent();
+  context_params->accept_language = "en-us,en";
+
+  // Whitelist some headers to be used for CORS requests, e.g. for resource
+  // prefetching.
+  content::UpdateCorsExemptHeader(context_params.get());
+
+  content::GetNetworkService()->CreateNetworkContext(
+      network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
+  return network_context;
 }

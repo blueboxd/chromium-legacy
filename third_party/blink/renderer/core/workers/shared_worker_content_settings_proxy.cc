@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-blink.h"
 
 namespace blink {
 

@@ -98,11 +98,11 @@
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_controller.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/metrics.h"
 #include "ui/views/style/platform_style.h"
-#include "ui/views/view_class_properties.h"
 #include "ui/views/view_constants.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
@@ -147,16 +147,6 @@ gfx::ImageSkia* GetImageSkiaNamed(int id) {
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
-// Set the highlight path for inkdrops and focus rings.
-void SetBookmarkHighlightPath(views::View* host_view) {
-  auto path = std::make_unique<SkPath>();
-  const int radius = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MAXIMUM, host_view->size());
-  path->addRoundRect(gfx::RectToSkRect(gfx::Rect(host_view->size())), radius,
-                     radius);
-  host_view->SetProperty(views::kHighlightPathKey, path.release());
-}
-
 std::unique_ptr<views::InkDrop> CreateBookmarkButtonInkDrop(
     std::unique_ptr<views::InkDropImpl> ink_drop) {
   ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
@@ -182,6 +172,7 @@ class BookmarkButtonBase : public views::LabelButton {
       : LabelButton(listener, title) {
     SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
         DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
+    views::InstallPillHighlightPathGenerator(this);
     SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
     set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
@@ -207,11 +198,6 @@ class BookmarkButtonBase : public views::LabelButton {
   }
 
   // LabelButton:
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    SetBookmarkHighlightPath(this);
-    LabelButton::OnBoundsChanged(previous_bounds);
-  }
-
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
     return CreateBookmarkButtonInkDrop(CreateDefaultFloodFillInkDropImpl());
   }
@@ -318,16 +304,12 @@ class BookmarkMenuButtonBase : public views::MenuButton {
       : MenuButton(title, menu_button_listener) {
     SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
         DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
+    views::InstallPillHighlightPathGenerator(this);
     SetInkDropMode(InkDropMode::ON);
     set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
   }
 
   // MenuButton:
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    SetBookmarkHighlightPath(this);
-    MenuButton::OnBoundsChanged(previous_bounds);
-  }
-
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
     return CreateBookmarkButtonInkDrop(CreateDefaultFloodFillInkDropImpl());
   }

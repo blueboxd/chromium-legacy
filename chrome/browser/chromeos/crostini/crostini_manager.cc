@@ -98,8 +98,8 @@ void InvokeAndErasePendingContainerCallbacks(
     const std::string& vm_name,
     const std::string& container_name,
     CrostiniResult result) {
-  auto range = container_callbacks->equal_range(
-      std::make_tuple(vm_name, container_name));
+  auto range =
+      container_callbacks->equal_range(ContainerId(vm_name, container_name));
   for (auto it = range.first; it != range.second; ++it) {
     std::move(it->second).Run(result);
   }
@@ -1076,7 +1076,7 @@ void CrostiniManager::OnDeleteLxdContainer(
     VLOG(1) << "Awaiting LxdContainerDeletedSignal for " << vm_name << ", "
             << container_name;
     delete_lxd_container_callbacks_.emplace(
-        std::make_tuple(vm_name, container_name), std::move(callback));
+        ContainerId(vm_name, container_name), std::move(callback));
 
   } else if (response->status() ==
              vm_tools::cicerone::DeleteLxdContainerResponse::DOES_NOT_EXIST) {
@@ -1630,7 +1630,7 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostini(
       std::move(callback));
   if (observer)
     restarter->AddObserver(observer);
-  auto key = std::make_pair(restarter->vm_name(), restarter->container_name());
+  auto key = ContainerId(restarter->vm_name(), restarter->container_name());
   restarters_by_container_.emplace(key, restarter->restart_id());
   restarters_by_id_[restarter->restart_id()] = restarter;
   if (restarters_by_container_.count(key) > 1) {
@@ -1661,8 +1661,8 @@ void CrostiniManager::OnAbortRestartCrostini(
     CrostiniManager::RestartId restart_id,
     base::OnceClosure callback) {
   auto restarter_it = restarters_by_id_.find(restart_id);
-  auto key = std::make_pair(restarter_it->second->vm_name(),
-                            restarter_it->second->container_name());
+  auto key = ContainerId(restarter_it->second->vm_name(),
+                         restarter_it->second->container_name());
   if (restarter_it != restarters_by_id_.end()) {
     auto range = restarters_by_container_.equal_range(key);
     for (auto it = range.first; it != range.second; ++it) {
@@ -2023,7 +2023,7 @@ void CrostiniManager::OnContainerShutdown(
     return;
   // Find the callbacks to call, then erase them from the map.
   auto range_callbacks = shutdown_container_callbacks_.equal_range(
-      std::make_tuple(signal.vm_name(), signal.container_name()));
+      ContainerId(signal.vm_name(), signal.container_name()));
   for (auto it = range_callbacks.first; it != range_callbacks.second; ++it) {
     std::move(it->second).Run();
   }
@@ -2303,7 +2303,7 @@ void CrostiniManager::OnLxdContainerDeleted(
 
   // Find the callbacks to call, then erase them from the map.
   auto range = delete_lxd_container_callbacks_.equal_range(
-      std::make_tuple(signal.vm_name(), signal.container_name()));
+      ContainerId(signal.vm_name(), signal.container_name()));
   for (auto it = range.first; it != range.second; ++it) {
     std::move(it->second).Run(success);
   }
@@ -2316,7 +2316,7 @@ void CrostiniManager::OnLxdContainerDownloading(
     return;
   }
   auto range = restarters_by_container_.equal_range(
-      std::make_pair(signal.vm_name(), signal.container_name()));
+      ContainerId(signal.vm_name(), signal.container_name()));
   for (auto it = range.first; it != range.second; ++it) {
     restarters_by_id_[it->second]->OnContainerDownloading(
         signal.download_progress());
@@ -2528,7 +2528,7 @@ void CrostiniManager::OnRemoveCrostini(CrostiniResult result) {
 
 void CrostiniManager::FinishRestart(CrostiniRestarter* restarter,
                                     CrostiniResult result) {
-  auto key = std::make_pair(restarter->vm_name(), restarter->container_name());
+  auto key = ContainerId(restarter->vm_name(), restarter->container_name());
   auto range = restarters_by_container_.equal_range(key);
   std::vector<scoped_refptr<CrostiniRestarter>> pending_restarters;
   // Erase first, because restarter->RunCallback() may modify our maps.
@@ -2625,7 +2625,7 @@ void CrostiniManager::OnExportLxdContainerProgress(
   }
 
   // Invoke original callback with either success or failure.
-  auto key = std::make_pair(signal.vm_name(), signal.container_name());
+  auto key = ContainerId(signal.vm_name(), signal.container_name());
   auto it = export_lxd_container_callbacks_.find(key);
   if (it == export_lxd_container_callbacks_.end()) {
     LOG(ERROR) << "No export callback for " << signal.vm_name() << ", "
@@ -2725,7 +2725,7 @@ void CrostiniManager::OnImportLxdContainerProgress(
 
   // Invoke original callback with either success or failure.
   if (call_original_callback) {
-    auto key = std::make_pair(signal.vm_name(), signal.container_name());
+    auto key = ContainerId(signal.vm_name(), signal.container_name());
     auto it = import_lxd_container_callbacks_.find(key);
     if (it == import_lxd_container_callbacks_.end()) {
       LOG(ERROR) << "No import callback for " << signal.vm_name() << ", "

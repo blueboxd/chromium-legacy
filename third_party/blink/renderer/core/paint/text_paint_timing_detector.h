@@ -133,7 +133,6 @@ class CORE_EXPORT TextRecordsManager {
     return invisible_objects_.Contains(&object);
   }
 
-  void CleanUp();
   void CleanUpLargestTextPaint();
 
   bool HasTextElementTiming() const { return text_element_timing_; }
@@ -202,10 +201,7 @@ class CORE_EXPORT TextPaintTimingDetector final
                             const PropertyTreeState&);
   void OnPaintFinished();
   void LayoutObjectWillBeDestroyed(const LayoutObject&);
-  void StopRecordEntries();
   void StopRecordingLargestTextPaint();
-  bool IsRecording() const { return is_recording_; }
-  inline bool FinishedReportingText() const { return !is_recording_; }
   void ResetCallbackManager(PaintTimingCallbackManager* manager) {
     callback_manager_ = manager;
   }
@@ -230,7 +226,6 @@ class CORE_EXPORT TextPaintTimingDetector final
 
   // Make sure that at most one swap promise is ongoing.
   bool awaiting_swap_promise_ = false;
-  bool is_recording_ = true;
 
   bool need_update_timing_at_frame_end_ = false;
 

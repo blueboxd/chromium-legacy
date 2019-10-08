@@ -10,6 +10,7 @@
 #include <wayland-client.h>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
@@ -22,6 +23,7 @@ class WaylandShmBuffer;
 }  // namespace ui
 
 namespace gfx {
+enum class BufferFormat;
 class Size;
 }  // namespace gfx
 
@@ -31,6 +33,9 @@ using RequestSizeCallback = base::OnceCallback<void(const gfx::Size&)>;
 
 using OnRequestBufferCallback =
     base::OnceCallback<void(wl::Object<struct wl_buffer>)>;
+
+using BufferFormatsWithModifiersMap =
+    base::flat_map<gfx::BufferFormat, std::vector<uint64_t>>;
 
 // Identifies the direction of the "hittest" for Wayland. |connection|
 // is used to identify whether values from shell v5 or v6 must be used.

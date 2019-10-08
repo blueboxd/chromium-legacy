@@ -656,10 +656,12 @@ void ToolbarView::OnPaintBackground(gfx::Canvas* canvas) {
   }
 
   // Toolbar/content separator.
-  BrowserView::Paint1pxHorizontalLine(
-      canvas,
-      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR),
-      GetLocalBounds(), true);
+  const SkColor separator_color =
+      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR);
+  const gfx::Rect local_bounds = GetLocalBounds();
+  canvas->DrawLine(gfx::Point(local_bounds.x(), local_bounds.bottom() - 1),
+                   gfx::Point(local_bounds.right(), local_bounds.bottom() - 1),
+                   separator_color);
 }
 
 void ToolbarView::OnThemeChanged() {

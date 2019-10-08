@@ -438,7 +438,7 @@ class DownloadFileTest : public testing::Test {
     // 1. RegisterCallback: Must called twice. One to set the callback, the
     // other to release the stream.
     // 2. Read: If filled with N buffer, called (N+1) times, where the last Read
-    // call doesn't read any data but returns STRAM_COMPLETE.
+    // call doesn't read any data but returns STREAM_COMPLETE.
     // The stream may terminate in the middle and less Read calls are expected.
     // 3. GetStatus: Only called if the stream is completed and last Read call
     // returns STREAM_COMPLETE.
@@ -997,8 +997,8 @@ TEST_F(DownloadFileTest, MultipleStreamsWrite) {
 
   // Activate the streams.
   download_file_->AddInputStream(
-      std::unique_ptr<MockInputStream>(additional_streams_[0]), stream_0_length,
-      DownloadSaveInfo::kLengthFullContent);
+      std::unique_ptr<MockInputStream>(additional_streams_[0]),
+      stream_0_length);
   sink_callback_.Run(MOJO_RESULT_OK);
   base::RunLoop().RunUntilIdle();
 
@@ -1039,12 +1039,12 @@ TEST_F(DownloadFileTest, MultipleStreamsLimitedLength) {
   EXPECT_CALL(*(observer_.get()), MockDestinationCompleted(_, _));
 
   // Activate all the streams.
-  download_file_->AddInputStream(
-      std::unique_ptr<MockInputStream>(additional_streams_[0]), stream_0_length,
-      stream_1_length);
-  download_file_->AddInputStream(
+   download_file_->AddInputStream(
       std::unique_ptr<MockInputStream>(additional_streams_[1]),
-      stream_0_length + stream_1_length, DownloadSaveInfo::kLengthFullContent);
+      stream_0_length + stream_1_length);
+  download_file_->AddInputStream(
+      std::unique_ptr<MockInputStream>(additional_streams_[0]),
+      stream_0_length);
   sink_callback_.Run(MOJO_RESULT_OK);
   base::RunLoop().RunUntilIdle();
 
@@ -1085,7 +1085,7 @@ TEST_F(DownloadFileTest, MultipleStreamsFirstStreamWriteAllData) {
   additional_streams_[0] = new StrictMock<MockInputStream>();
   download_file_->AddInputStream(
       std::unique_ptr<MockInputStream>(additional_streams_[0]),
-      stream_0_length - 1, DownloadSaveInfo::kLengthFullContent);
+      stream_0_length - 1);
   base::RunLoop().RunUntilIdle();
 
   SourceStreamTestData stream_data_0(0, stream_0_length, true);
@@ -1127,7 +1127,7 @@ TEST_F(DownloadFileTest, SecondStreamStartingOffsetAlreadyWritten) {
 
   download_file_->AddInputStream(
       std::unique_ptr<MockInputStream>(additional_streams_[0]),
-      strlen(kTestData1), DownloadSaveInfo::kLengthFullContent);
+      strlen(kTestData1));
 
   // The stream should get terminated and reset the callback.
   EXPECT_TRUE(sink_callback_.is_null());
@@ -1169,8 +1169,7 @@ TEST_F(DownloadFileTest, SecondStreamReadsOffsetWrittenByFirst) {
       .RetiresOnSaturation();
   int64_t offset = strlen(kTestData1) + strlen(kTestData2);
   download_file_->AddInputStream(
-      std::unique_ptr<MockInputStream>(additional_streams_[0]), offset,
-      DownloadSaveInfo::kLengthFullContent);
+      std::unique_ptr<MockInputStream>(additional_streams_[0]), offset);
   base::RunLoop().RunUntilIdle();
 
   // First stream reads the 3rd chunk and writes it to disk.

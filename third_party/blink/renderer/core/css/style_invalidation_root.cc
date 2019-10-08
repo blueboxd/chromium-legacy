@@ -37,8 +37,9 @@ void StyleInvalidationRoot::ClearChildDirtyForAncestors(
     ContainerNode& parent) const {
   for (Node* ancestor = &parent; ancestor;
        ancestor = ancestor->ParentOrShadowHostNode()) {
-    ancestor->ClearChildNeedsStyleInvalidation();
+    DCHECK(ancestor->ChildNeedsStyleInvalidation());
     DCHECK(!ancestor->NeedsStyleInvalidation());
+    ancestor->ClearChildNeedsStyleInvalidation();
   }
 }
 

@@ -68,10 +68,10 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
                const std::string& extra_headers) override;
   void LoadURLWithParams(const LoadURLParams& params) override;
   void LoadIfNecessary() override;
-  void LoadErrorPage(RenderFrameHost* render_frame_host,
-                     const GURL& url,
-                     const std::string& error_page_html,
-                     net::Error error) override;
+  void LoadPostCommitErrorPage(RenderFrameHost* render_frame_host,
+                               const GURL& url,
+                               const std::string& error_page_html,
+                               net::Error error) override;
   bool CanGoBack() override;
   bool CanGoForward() override;
   bool CanGoToOffset(int offset) override;
@@ -438,8 +438,12 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // Inserts a new entry or replaces the current entry with a new one, removing
   // all entries after it. The new entry will become the active one.
+  // If |was_post_commit_error_| is set, the last committed entry will be saved,
+  // the new entry will replace it, and on any navigation away from the new
+  // entry or on reloads, the old one will replace |entry|.
   void InsertOrReplaceEntry(std::unique_ptr<NavigationEntryImpl> entry,
-                            bool replace);
+                            bool replace,
+                            bool was_post_commit_error);
 
   // Removes the entry at |index|, as long as it is not the current entry.
   void RemoveEntryAtIndexInternal(int index);
@@ -585,6 +589,17 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Stores frozen RenderFrameHost. Restores them on history navigation.
   // See BackForwardCache class documentation.
   BackForwardCacheImpl back_forward_cache_;
+
+  // Holds the entry that was committed at the time an error page was triggered
+  // due to a call to LoadPostCommitErrorPage. The error entry will take its
+  // place until the user navigates again, at which point it will go back into
+  // the entry list instead of the error entry. Set to nullptr if there is no
+  // post commit error entry. Note that this entry must always correspond to the
+  // last committed entry index, and that there can be only a single post-commit
+  // error page entry in its place in entries_. This ensures that its spot in
+  // entries_ cannot go away (e.g., due to PruneForwardEntries) and that it can
+  // go back into place after any subsequent commit.
+  std::unique_ptr<NavigationEntryImpl> entry_replaced_by_post_commit_error_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationControllerImpl);
 };

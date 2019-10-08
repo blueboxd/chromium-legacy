@@ -725,9 +725,52 @@ GraphicsLayer* PaintLayerCompositor::RootGraphicsLayer() const {
   return nullptr;
 }
 
+GraphicsLayer* PaintLayerCompositor::GetXrImmersiveDomOverlayLayer() const {
+  // immersive-ar DOM overlay mode is very similar to fullscreen video, using
+  // the AR camera image instead of a video element as a background that's
+  // separately composited in the browser. The fullscreened DOM content is shown
+  // on top of that, same as HTML video controls.
+  //
+  // The normal fullscreen mode assumes an opaque background, and this doesn't
+  // work for this use case since this mode uses a transparent background, so
+  // the non-fullscreened content would remain visible. Fix this by ensuring
+  // that the fullscreened element has its own layer and using that layer as the
+  // paint root. (This is different from the fullscreen video overlay which
+  // detaches layers other than the video layer. The overall effect is the same,
+  // but it seems safer since it avoids unattached leftover layers.)
+  DCHECK(IsMainFrame());
+  DCHECK(layout_view_.GetDocument().IsImmersiveArOverlay());
+
+  Element* fullscreen_element =
+      Fullscreen::FullscreenElementFrom(layout_view_.GetDocument());
+  if (!fullscreen_element)
+    return nullptr;
+
+  LayoutBoxModelObject* box = fullscreen_element->GetLayoutBoxModelObject();
+  if (!box) {
+    // Currently, only HTML fullscreen elements are supported for this mode,
+    // not others such as SVG or MathML.
+    DVLOG(1) << "no LayoutBoxModelObject for element " << fullscreen_element;
+    return nullptr;
+  }
+
+  // The fullscreen element will be in its own layer due to
+  // CompositingReasonFinder treating this scenario as a direct_reason.
+  PaintLayer* layer = box->Layer();
+  DCHECK(layer);
+  GraphicsLayer* full_screen_layer = layer->GraphicsLayerBacking(box);
+  return full_screen_layer;
+}
+
 GraphicsLayer* PaintLayerCompositor::PaintRootGraphicsLayer() const {
   if (layout_view_.GetDocument().GetPage()->GetChromeClient().IsPopup())
     return RootGraphicsLayer();
+
+  if (IsMainFrame() && layout_view_.GetDocument().IsImmersiveArOverlay()) {
+    GraphicsLayer* overlay_layer = GetXrImmersiveDomOverlayLayer();
+    if (overlay_layer)
+      return overlay_layer;
+  }
 
   // Start painting at the root graphics layer of the inner viewport which is an
   // ancestor of both the main contents layers and the scrollbar layers.

@@ -64,9 +64,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadJob {
 
   // Add an input stream to the download sink. Return false if we start to
   // destroy download file.
-  bool AddInputStream(std::unique_ptr<InputStream> stream,
-                      int64_t offset,
-                      int64_t length);
+  bool AddInputStream(std::unique_ptr<InputStream> stream, int64_t offset);
 
   DownloadItem* download_item_;
 

@@ -202,6 +202,7 @@
 <translation id="187918866476621466">Otevřít počáteční stránky</translation>
 <translation id="1883255238294161206">Sbalit seznam</translation>
 <translation id="1898423065542865115">Filtrování</translation>
+<translation id="1901443836186977402">{1,plural, =1{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu včera vypršela. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste hodiny systému nastavit správně a poté tuto stránku načíst znovu.}few{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela před # dny. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste hodiny systému nastavit správně a poté tuto stránku načíst znovu.}many{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela před # dne. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste hodiny systému nastavit správně a poté tuto stránku načíst znovu.}other{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela před # dny. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste hodiny systému nastavit správně a poté tuto stránku načíst znovu.}}</translation>
 <translation id="1914326953223720820">Služba rozbalování souborů ZIP</translation>
 <translation id="1915697529809968049">Použít Touch ID namísto CVC?</translation>
 <translation id="1916770123977586577">Chcete-li pro tento web použít aktualizovaná nastavení, načtěte tuto stránku znovu</translation>
@@ -435,6 +436,7 @@
 <translation id="3116158981186517402">Laminování</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Zkuste spustit Diagnostiku připojení<ph name="END_LINK" />.</translation>
+<translation id="3121994479408824897">Přejít na web <ph name="DOMAIN" /></translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Žádné}=1{přihlašovací údaje pro 1 účet}few{přihlašovací údaje pro # účty}many{přihlašovací údaje pro # účtu}other{přihlašovací údaje pro # účtů}}</translation>
 <translation id="3145945101586104090">Dekódování odpovědi se nezdařilo</translation>
 <translation id="3150653042067488994">Dočasná chyba serveru</translation>
@@ -809,6 +811,7 @@
 <translation id="5043480802608081735">Zkopírovaný odkaz</translation>
 <translation id="5045550434625856497">Nesprávné heslo</translation>
 <translation id="5056549851600133418">Články pro vás</translation>
+<translation id="5061227663725596739">Měli jste na mysli <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(používá se 1)}few{(používají se #)}many{(používá se #)}other{(používá se #)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Zkontrolovat adresu proxy serveru<ph name="END_LINK" /></translation>
@@ -862,6 +865,7 @@
 <translation id="5284909709419567258">Síťové adresy</translation>
 <translation id="5285570108065881030">Zobrazit všechna uložená hesla</translation>
 <translation id="5287240709317226393">Zobrazit soubory cookie</translation>
+<translation id="5287456746628258573">Tento web používá zastaralou konfiguraci zabezpečení, která vaše informace odesílané na tento web (například hesla nebo čísla kreditních karet) vystavuje riziku odhalení.</translation>
 <translation id="5288108484102287882">Ověření hodnot zásad vygenerovalo upozornění</translation>
 <translation id="5299298092464848405">Při analýze zásady došlo k chybě</translation>
 <translation id="5300589172476337783">Zobrazit</translation>
@@ -989,6 +993,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5946937721014915347">Otevírání webu <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Ano, přidat</translation>
 <translation id="5951495562196540101">Pomocí běžného uživatelského účtu se nelze zaregistrovat (je k dispozici licence v balíčku).</translation>
+<translation id="5966900314707961320">Když je tato možnost zapnutá, weby vás na internetu nemohou sledovat pomocí souborů cookie</translation>
 <translation id="5967592137238574583">Úprava kontaktních údajů</translation>
 <translation id="5967867314010545767">Odstranit z historie</translation>
 <translation id="5975083100439434680">Oddálit</translation>
@@ -1070,6 +1075,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6383221683286411806">Pozor na možné poplatky na webu, který se chystáte navštívit</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 další návrh}few{# další návrhy}many{# dalšího návrhu}other{# dalších návrhů}}</translation>
 <translation id="6387754724289022810">Abyste příště mohli zaplatit rychleji, uložte si kartu a fakturační adresu do účtu Google a do tohoto zařízení.</translation>
+<translation id="6389470377220713856">Jméno na kartě</translation>
 <translation id="6390200185239044127">Přeložení napůl do Z</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Podpora této zásady byla ukončena. Měli byste místo ní používat zásadu <ph name="NEW_POLICY" />.</translation>
@@ -1247,7 +1253,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Je přidružený:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
-<translation id="7352902249897488700">Opustit tento web</translation>
 <translation id="7353601530677266744">Příkazový řádek</translation>
 <translation id="7372973238305370288">výsledek vyhledávání</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1420,6 +1425,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8131740175452115882">Potvrdit</translation>
 <translation id="8149426793427495338">Počítač přešel do režimu spánku.</translation>
 <translation id="8150722005171944719">Soubor na adrese <ph name="URL" /> nelze načíst. Možná byl odstraněn, přesunut nebo mohou přístupu bránit oprávnění souboru.</translation>
+<translation id="8157295877370077682">Opustit web</translation>
 <translation id="8163866351304776260">Čtyři díry vlevo</translation>
 <translation id="8175796834047840627">Chrome vám nabízí uložení karet do účtu Google, protože jste přihlášeni. Toto chování můžete změnit v Nastavení.</translation>
 <translation id="8184538546369750125">Použít výchozí globální hodnotu (Povolit)</translation>

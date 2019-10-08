@@ -67,8 +67,8 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
         min_slice_size_(min_slice_size),
         min_remaining_time_(min_remaining_time) {}
 
-  void CreateRequest(int64_t offset, int64_t length) override {
-    auto worker = std::make_unique<DownloadWorker>(this, offset, length);
+  void CreateRequest(int64_t offset) override {
+    auto worker = std::make_unique<DownloadWorker>(this, offset);
 
     DCHECK(workers_.find(offset) == workers_.end());
     workers_[offset] = std::move(worker);
@@ -155,7 +155,6 @@ class ParallelDownloadJobTest : public testing::Test {
   void VerifyWorker(int64_t offset, int64_t length) const {
     EXPECT_TRUE(job_->workers_.find(offset) != job_->workers_.end());
     EXPECT_EQ(offset, job_->workers_[offset]->offset());
-    EXPECT_EQ(length, job_->workers_[offset]->length());
   }
 
   void OnFileInitialized(DownloadInterruptReason result, int64_t bytes_wasted) {

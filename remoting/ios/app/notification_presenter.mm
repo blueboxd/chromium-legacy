@@ -10,8 +10,10 @@
 
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#import "remoting/ios/app/notification_dialog_view_controller.h"
 #import "remoting/ios/facade/remoting_authentication.h"
 #import "remoting/ios/facade/remoting_service.h"
+#import "remoting/ios/persistence/remoting_preferences.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -32,6 +34,21 @@ namespace {
 // kUserDidUpdate event.
 constexpr base::TimeDelta kFetchNotificationDelay =
     base::TimeDelta::FromSeconds(2);
+
+enum NotificationUiState : unsigned int {
+  NOT_SHOWN = 0,
+  SHOWN_AT_LEAST_ONCE = 1,
+  USER_CHOSE_DONT_SHOW_AGAIN = 2,
+};
+
+NotificationUiState NSNumberToUiState(NSNumber* number) {
+  return number ? static_cast<NotificationUiState>(number.unsignedIntValue)
+                : NOT_SHOWN;
+}
+
+NSNumber* UiStateToNSNumber(NotificationUiState state) {
+  return @(static_cast<unsigned int>(state));
+}
 
 }  // namespace
 
@@ -101,13 +118,31 @@ void NotificationPresenter::OnNotificationFetched(
 
   state_ = State::FETCHED;
 
+  DCHECK(!notification->message_id.empty());
+
+  std::string last_seen_message_id =
+      base::SysNSStringToUTF8([RemotingPreferences.instance
+          objectForFlag:RemotingFlagLastSeenNotificationMessageId]);
+  NotificationUiState ui_state = NSNumberToUiState([RemotingPreferences.instance
+      objectForFlag:RemotingFlagNotificationUiState]);
+  if (notification->allow_dont_show_again &&
+      ui_state == USER_CHOSE_DONT_SHOW_AGAIN &&
+      last_seen_message_id == notification->message_id) {
+    return;
+  }
+
+  if (last_seen_message_id != notification->message_id) {
+    [RemotingPreferences.instance
+        setObject:base::SysUTF8ToNSString(notification->message_id)
+          forFlag:RemotingFlagLastSeenNotificationMessageId];
+    ui_state = NOT_SHOWN;
+    [RemotingPreferences.instance setObject:UiStateToNSNumber(ui_state)
+                                    forFlag:RemotingFlagNotificationUiState];
+    [RemotingPreferences.instance synchronizeFlags];
+  }
+
   NSURL* url =
       [NSURL URLWithString:base::SysUTF8ToNSString(notification->link_url)];
-  auto open_url_block = ^{
-    [[UIApplication sharedApplication] openURL:url
-                                       options:@{}
-                             completionHandler:nil];
-  };
 
   NSString* message_text_nsstring =
       base::SysUTF8ToNSString(notification->message_text);
@@ -119,7 +154,11 @@ void NotificationPresenter::OnNotificationFetched(
       MDCSnackbarMessage* message = [MDCSnackbarMessage new];
       message.text = message_text_nsstring;
       MDCSnackbarMessageAction* action = [MDCSnackbarMessageAction new];
-      action.handler = open_url_block;
+      action.handler = ^{
+        [[UIApplication sharedApplication] openURL:url
+                                           options:@{}
+                                 completionHandler:nil];
+      };
       action.title = link_text_nsstring;
       message.action = action;
       message.duration = MDCSnackbarMessageDurationMax;
@@ -127,26 +166,21 @@ void NotificationPresenter::OnNotificationFetched(
       break;
     }
     case NotificationMessage::Appearance::DIALOG: {
-      // TODO(yuweih): Implement "Don't show again".
-      MDCAlertController* alert_controller =
-          [MDCAlertController alertControllerWithTitle:nil
-                                               message:message_text_nsstring];
-
-      MDCAlertAction* link_action =
-          [MDCAlertAction actionWithTitle:link_text_nsstring
-                                  handler:^(MDCAlertAction*) {
-                                    open_url_block();
-                                  }];
-      [alert_controller addAction:link_action];
-
-      MDCAlertAction* dismiss_action =
-          [MDCAlertAction actionWithTitle:l10n_util::GetNSString(IDS_DISMISS)
-                                  handler:nil];
-      [alert_controller addAction:dismiss_action];
-
-      [remoting::TopPresentingVC() presentViewController:alert_controller
-                                                animated:YES
-                                              completion:nil];
+      BOOL shouldShowDontShowAgain = notification->allow_dont_show_again &&
+                                     ui_state == SHOWN_AT_LEAST_ONCE;
+      NotificationDialogViewController* dialogVc =
+          [[NotificationDialogViewController alloc]
+                initWithNotificationMessage:*notification
+              shouldShowDontShowAgainToggle:shouldShowDontShowAgain];
+      [dialogVc presentOnTopVCWithCompletion:^(BOOL isDontShowAgainOn) {
+        NotificationUiState new_ui_state = isDontShowAgainOn
+                                               ? USER_CHOSE_DONT_SHOW_AGAIN
+                                               : SHOWN_AT_LEAST_ONCE;
+        [RemotingPreferences.instance
+            setObject:UiStateToNSNumber(new_ui_state)
+              forFlag:RemotingFlagNotificationUiState];
+        [RemotingPreferences.instance synchronizeFlags];
+      }];
       break;
     }
     default:

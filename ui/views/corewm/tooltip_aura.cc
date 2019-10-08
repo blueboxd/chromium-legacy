@@ -121,7 +121,13 @@ class TooltipAura::TooltipView : public views::View {
 
   void SetText(const base::string16& text) {
     render_text_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
-    render_text_->SetText(text);
+
+    // Replace tabs with whitespace to avoid placeholder character rendering
+    // where previously it did not. crbug.com/993100
+    base::string16 newText(text);
+    base::ReplaceChars(newText, base::ASCIIToUTF16("\t"),
+                       base::ASCIIToUTF16("        "), &newText);
+    render_text_->SetText(newText);
     SchedulePaint();
   }
 

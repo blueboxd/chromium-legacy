@@ -608,6 +608,8 @@ main() {
   readonly VERSIONS_DIR_OLD="${CONTENTS_DIR}/Versions"
   readonly UNROOTED_BRAND_PLIST="Library/Google/Google Chrome Brand"
   readonly UNROOTED_DEBUG_FILE="Library/Google/Google Chrome Updater Debug"
+  readonly UNROOTED_KS_BUNDLE_DIR=\
+"Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle"
 
   readonly APP_VERSION_KEY="CFBundleShortVersionString"
   readonly APP_BUNDLEID_KEY="CFBundleIdentifier"
@@ -875,12 +877,12 @@ framework_${update_version_app_old}_${update_version_app}.dirpatch"
   fi
   note "system_ticket = ${system_ticket}"
 
-  # If this script is being driven by a user ticket, but a system ticket is
-  # also present, there's a potential for the two to collide.  Both ticket
-  # types might be present if another user on the system promoted the ticket
-  # to system: the other user could not have removed this user's user ticket.
-  # Handle that case here by deleting the user ticket and exiting early with
-  # a discrete exit code.
+  # If this script is being driven by a user ticket, but a system ticket is also
+  # present and system Keystone is installed, there's a potential for the two
+  # tickets to collide.  Both ticket types might be present if another user on
+  # the system promoted the ticket to system: the other user could not have
+  # removed this user's user ticket.  Handle that case here by deleting the user
+  # ticket and exiting early with a discrete exit code.
   #
   # Current versions of ksadmin will exit 1 (false) when asked to print tickets
   # and given a specific product ID to print.  Older versions of ksadmin would
@@ -893,6 +895,7 @@ framework_${update_version_app_old}_${update_version_app}.dirpatch"
   # something is eventually able to remove it.
   if [[ -z "${GOOGLE_CHROME_UPDATER_TEST_PATH}" ]] &&
      [[ -z "${system_ticket}" ]] &&
+     [[ -d "/${UNROOTED_KS_BUNDLE_DIR}" ]] &&
      ksadmin -S --print-tickets --productid "${product_id}" >& /dev/null; then
     ksadmin --delete --productid "${product_id}" || true
     err "can't update on a user ticket when a system ticket is also present"

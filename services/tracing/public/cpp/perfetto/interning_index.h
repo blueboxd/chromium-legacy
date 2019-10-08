@@ -5,11 +5,11 @@
 #ifndef SERVICES_TRACING_PUBLIC_CPP_PERFETTO_INTERNING_INDEX_H_
 #define SERVICES_TRACING_PUBLIC_CPP_PERFETTO_INTERNING_INDEX_H_
 
+#include <array>
 #include <cstdint>
 #include <tuple>
 
 #include "base/component_export.h"
-#include "base/containers/mru_cache.h"
 
 namespace tracing {
 
@@ -17,7 +17,7 @@ namespace tracing {
 using InterningID = uint32_t;
 
 struct COMPONENT_EXPORT(TRACING_CPP) InterningIndexEntry {
-  InterningID id;
+  InterningID id = 0;
 
   // Whether the entry was emitted since the last reset of emitted state. If
   // |false|, the sink should (re)emit the entry in the current TracePacket.
@@ -25,29 +25,80 @@ struct COMPONENT_EXPORT(TRACING_CPP) InterningIndexEntry {
   // We don't remove entries on reset of emitted state, so that we can continue
   // to use their original IDs and avoid unnecessarily incrementing the ID
   // counter.
-  bool was_emitted;
+  bool was_emitted = false;
 };
 
 // Interning index that associates interned values with interning IDs. It can
 // track entries of different types within the same ID space, e.g. so that both
 // copied strings and pointers to static strings can co-exist in the same index.
-// Uses base::MRUCaches to track the ID associations while enforcing an upper
-// bound on the index size.
-template <typename... ValueTypes>
+//
+// The index will cache up to |N| values per ValueType after which it will start
+// replacing them in a FIFO basis. N must be a power of 2 for performance
+// reasons.
+template <size_t N, typename... ValueTypes>
 class COMPONENT_EXPORT(TRACING_CPP) InterningIndex {
  public:
+  // IndexCache is just a pair of std::arrays which arg kept in sync with each
+  // other. This has an advantage over a std::array<pairs> since we can load a
+  // bunch of keys to search in one cache line without loading values.
   template <typename ValueType>
-  using IndexCache = base::MRUCache<ValueType, InterningIndexEntry>;
+  class IndexCache {
+   public:
+    IndexCache() {
+      // Assert that N is a power of two. This allows the "% N" in Insert() to
+      // compile to a bunch of bit shifts which improves performance over an
+      // arbitrary modulo division.
+      static_assert(
+          N && ((N & (N - 1)) == 0),
+          "InterningIndex requires that the cache size be a power of 2.");
+    }
 
-  // Construct a new index with caches for each of the ValueTypes. The cache
-  // size for the n-th ValueType will be limited to max_entry_counts[n] entries.
+    void Clear() {
+      for (auto& val : keys_) {
+        val = ValueType{};
+      }
+    }
+
+    typename std::array<InterningIndexEntry, N>::iterator Find(
+        const ValueType& value) {
+      auto it = std::find(keys_.begin(), keys_.end(), value);
+      // If the find above returns it == keys_.end(), then (it - keys_.begin())
+      // will equal keys_.size() which is equal to values_.size(). So
+      // values_.begin() + values_size() will be values_.end() and we've
+      // returned the correct value. This saves us checking a conditional in
+      // this function.
+      return values_.begin() + (it - keys_.begin());
+    }
+
+    typename std::array<InterningIndexEntry, N>::iterator Insert(
+        const ValueType& key,
+        InterningIndexEntry&& value) {
+      size_t new_position = current_index_++ % N;
+      keys_[new_position] = key;
+      values_[new_position] = std::move(value);
+      return values_.begin() + new_position;
+    }
+
+    typename std::array<InterningIndexEntry, N>::iterator begin() {
+      return values_.begin();
+    }
+    typename std::array<InterningIndexEntry, N>::iterator end() {
+      return values_.end();
+    }
+
+   private:
+    size_t current_index_ = 0;
+    std::array<ValueType, N> keys_{{}};
+    std::array<InterningIndexEntry, N> values_{{}};
+  };
+
+  // Construct a new index with caches for each of the ValueTypes. Every cache
+  // is |N| elements.
   //
-  // For example, to construct an index containing at most 1000 char* pointers
-  // and 100 std::string objects:
-  //     InterningIndex<char*, std::string> index(1000, 100);
-  template <typename... SizeType>
-  InterningIndex(SizeType... max_entry_counts)
-      : entry_caches_(max_entry_counts...) {}
+  // For example, to construct an index containing at most 1024 char* pointers
+  // and 1024 std::string objects:
+  //     InterningIndex<1024, char*, std::string> index;
+  InterningIndex() = default;
 
   // Returns the entry for the given interned |value|, adding it to the index if
   // it didn't exist previously or was evicted from the index. Entries may be
@@ -60,14 +111,14 @@ class COMPONENT_EXPORT(TRACING_CPP) InterningIndex {
   InterningIndexEntry LookupOrAdd(const ValueType& value) {
     IndexCache<ValueType>& cache =
         std::get<IndexCache<ValueType>>(entry_caches_);
-    auto it = cache.Get(value);
+    auto it = cache.Find(value);
     if (it == cache.end()) {
-      it = cache.Put(value, InterningIndexEntry{next_id_++, false});
+      it = cache.Insert(value, InterningIndexEntry{next_id_++, false});
     }
-    bool was_emitted = it->second.was_emitted;
+    bool was_emitted = it->was_emitted;
     // The caller will (re)emit the entry, so mark it as emitted.
-    it->second.was_emitted = true;
-    return InterningIndexEntry{it->second.id, was_emitted};
+    it->was_emitted = true;
+    return InterningIndexEntry{it->id, was_emitted};
   }
 
   // Marks all entries as "not emitted", so that they will be reemitted when
@@ -103,7 +154,7 @@ class COMPONENT_EXPORT(TRACING_CPP) InterningIndex {
       cache.Clear();
     } else {
       for (auto& entry : cache) {
-        entry.second.was_emitted = false;
+        entry.was_emitted = false;
       }
     }
   }

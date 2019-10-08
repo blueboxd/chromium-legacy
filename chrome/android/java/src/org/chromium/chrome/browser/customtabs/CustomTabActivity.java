@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import static org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason.USER_NAVIGATION;
-
 import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_DARK;
 import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
+
+import static org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason.USER_NAVIGATION;
 
 import android.app.Activity;
 import android.content.Context;
@@ -22,6 +22,11 @@ import android.provider.Browser;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
@@ -67,11 +72,6 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**
  * The activity for custom tabs. It will be launched on top of a client's task.
@@ -567,11 +567,10 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             ChromeActivityCommonsModule commonsModule) {
         // mIntentHandler comes from the base class.
         IntentIgnoringCriterion intentIgnoringCriterion =
-                (intent) -> mIntentHandler.shouldIgnoreIntent(intent);
+                (intent) -> IntentHandler.shouldIgnoreIntent(intent);
 
-        CustomTabActivityModule customTabsModule =
-                new CustomTabActivityModule(mIntentDataProvider, mNightModeStateController,
-                        intentIgnoringCriterion);
+        CustomTabActivityModule customTabsModule = new CustomTabActivityModule(mIntentDataProvider,
+                mNightModeStateController, intentIgnoringCriterion, getStartupTabPreloader());
         CustomTabActivityComponent component =
                 ChromeApplication.getComponent().createCustomTabActivityComponent(
                         commonsModule, customTabsModule);

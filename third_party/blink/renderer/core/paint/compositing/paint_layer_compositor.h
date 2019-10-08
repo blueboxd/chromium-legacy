@@ -129,7 +129,7 @@ class CORE_EXPORT PaintLayerCompositor {
 
   // Returns the GraphicsLayer we should start painting from. This can differ
   // from above in some cases, e.g.  when the RootGraphicsLayer is detached and
-  // swapped out for an overlay video layer.
+  // swapped out for an overlay video or immersive-ar DOM overlay layer.
   GraphicsLayer* PaintRootGraphicsLayer() const;
 
   static PaintLayerCompositor* FrameContentsCompositor(LayoutEmbeddedContent&);
@@ -202,6 +202,8 @@ class CORE_EXPORT PaintLayerCompositor {
   VisualViewport& GetVisualViewport() const;
   GraphicsLayer* ParentForContentLayers(
       GraphicsLayer* child_frame_parent_candidate = nullptr) const;
+
+  GraphicsLayer* GetXrImmersiveDomOverlayLayer() const;
 
   LayoutView& layout_view_;
   const bool has_accelerated_compositing_ = true;

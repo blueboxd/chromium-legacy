@@ -136,7 +136,7 @@ class InstallManager {
   InstallFinalizer* finalizer() { return finalizer_; }
 
  private:
-  Profile* profile_;
+  Profile* const profile_;
   WebAppUrlLoader url_loader_;
 
   AppRegistrar* registrar_ = nullptr;

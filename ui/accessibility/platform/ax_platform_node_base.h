@@ -293,6 +293,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Get the role description from the node data or from the image annotation
   // status.
   base::string16 GetRoleDescription() const;
+  base::string16 GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute()
+      const;
 
   // Cast a gfx::NativeViewAccessible to an AXPlatformNodeBase if it is one,
   // or return NULL if it's not an instance of this class.

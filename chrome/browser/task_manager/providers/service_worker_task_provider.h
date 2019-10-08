@@ -44,9 +44,13 @@ class ServiceWorkerTaskProvider : public TaskProvider,
                const content::NotificationDetails& details) override;
 
   // content::ServiceWorkerContextObserver:
-  void OnVersionRunningStatusChanged(content::ServiceWorkerContext* context,
-                                     int64_t version_id,
-                                     bool is_running) override;
+  void OnVersionStartedRunning(content::ServiceWorkerContext* context,
+                               int64_t version_id,
+                               const GURL& scope,
+                               int process_id,
+                               const GURL& script_url) override;
+  void OnVersionStoppedRunning(content::ServiceWorkerContext* context,
+                               int64_t version_id) override;
   void OnDestruct(content::ServiceWorkerContext* context) override;
 
  private:

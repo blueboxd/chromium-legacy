@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Rediger bogmærke</translation>
 <translation id="2179182049312275900">Du kan til enhver tid aktivere synkronisering i indstillingerne.</translation>
 <translation id="2198757192731523470">Google kan bruge din historik til at tilpasse Søgning, annoncer og andre Google-tjenester.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> ulæste artikler på læselisten.</translation>
 <translation id="2230173723195178503">Websiden er indlæst</translation>
 <translation id="2239626343334228536">Browserdata ryddes...</translation>
 <translation id="2267753748892043616">Tilføj konto</translation>
@@ -265,7 +264,6 @@ Dine data er krypteret med din adgangssætning til synkronisering. Angiv den for
 
 Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkronisering<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Kortnummeret er ugyldigt</translation>
-<translation id="4807020197310989387">1 ulæst artikel på læselisten.</translation>
 <translation id="4818522717893377262">Tilføj sprog...</translation>
 <translation id="481968316161811770">Cookies, websitedata</translation>
 <translation id="4833786495304741580">Sender automatisk brugsstatistik og nedbrudsrapporter til Google.</translation>
@@ -414,6 +412,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6858855187367714033">Scannet</translation>
 <translation id="6859944681507688231">Aktivér kameraet i Indstillinger for at scanne en QR-kode eller et betalingskort.</translation>
 <translation id="6873263987691478642">Opdelt visning</translation>
+<translation id="6888009575607455378">Er du sikker på, at du vil kassere dine ændringer?</translation>
 <translation id="6896758677409633944">Kopiér</translation>
 <translation id="6903907808598579934">Aktivér synkronisering</translation>
 <translation id="6914583639806229067">Søg efter billede, du har kopieret</translation>

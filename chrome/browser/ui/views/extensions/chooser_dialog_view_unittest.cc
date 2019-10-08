@@ -63,12 +63,13 @@ class ChooserDialogViewTest : public ChromeViewsTestBase {
   }
 
   views::TableView* table_view() {
-    return dialog_->device_chooser_content_view_for_test()->table_view_;
+    return dialog_->device_chooser_content_view_for_test()
+        ->table_view_for_testing();
   }
 
   views::LabelButton* re_scan_button() {
     return dialog_->device_chooser_content_view_for_test()
-        ->bluetooth_status_container_->re_scan_button();
+        ->ReScanButtonForTesting();
   }
 
   void AddDevice() {

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs.content;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -14,6 +15,8 @@ import static org.mockito.Mockito.when;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -42,6 +45,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.shadows.ShadowExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
@@ -53,8 +57,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
-
-import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**
  * A TestRule that sets up the mocks and contains helper methods for JUnit/Robolectric tests scoped
@@ -88,6 +90,8 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     @Mock public ToolbarManager toolbarManager;
     @Mock public ChromeBrowserInitializer browserInitializer;
     @Mock public ChromeFullscreenManager fullscreenManager;
+    @Mock
+    public StartupTabPreloader startupTabPreloader;
     public final CustomTabActivityTabProvider tabProvider = new CustomTabActivityTabProvider();
 
     @Captor public ArgumentCaptor<ActivityTabObserver> activityTabObserverCaptor;
@@ -116,6 +120,8 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
         // Default setup is toolbarManager doesn't consume back press event.
         when(toolbarManager.back()).thenReturn(null);
 
+        when(startupTabPreloader.takeTabIfMatchingOrDestroy(any(), anyInt())).thenReturn(null);
+
         doNothing().when(activityTabProvider).addObserverAndTrigger(
                 activityTabObserverCaptor.capture());
         doNothing()
@@ -133,10 +139,15 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
 
     public CustomTabActivityTabController createTabController() {
         return new CustomTabActivityTabController(activity,
-                () -> customTabDelegateFactory, connection, intentDataProvider, activityTabProvider,
-                tabObserverRegistrar, () -> compositorViewHolder, lifecycleDispatcher,
-                warmupManager, tabPersistencePolicy, tabFactory, () -> customTabObserver,
-                webContentsFactory, navigationEventObserver, tabProvider);
+                ()
+                        -> customTabDelegateFactory,
+                connection, intentDataProvider, activityTabProvider, tabObserverRegistrar,
+                ()
+                        -> compositorViewHolder,
+                lifecycleDispatcher, warmupManager, tabPersistencePolicy, tabFactory,
+                ()
+                        -> customTabObserver,
+                webContentsFactory, navigationEventObserver, tabProvider, startupTabPreloader);
     }
 
     public CustomTabActivityNavigationController createNavigationController(

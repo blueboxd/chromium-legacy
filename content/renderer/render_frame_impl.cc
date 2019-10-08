@@ -1623,10 +1623,6 @@ void RenderFrameImpl::CreateFrame(
 
   // We now have a WebLocalFrame for the new frame. The next step is to set
   // up a RenderWidget for it, if it is needed.
-  //
-  // If there is no widget routing id, then the new frame is not a local root,
-  // and does not need a RenderWidget. In that case we'll do nothing. Otherwise
-  // it does.
   if (is_main_frame) {
     // For a main frame, we use the RenderWidget already attached to the
     // RenderView (this is being changed by https://crbug.com/419087).
@@ -1640,6 +1636,12 @@ void RenderFrameImpl::CreateFrame(
     DCHECK(widget_params);
     DCHECK_NE(widget_params->routing_id, MSG_ROUTING_NONE);
 
+    // We revive the undead main frame RenderWidget at the same time we would
+    // create the RenderWidget if the RenderFrame owned it instead of having the
+    // RenderWidget live for eternity on the RenderView (after setting up the
+    // WebFrameWidget since that would be part of creating the RenderWidget).
+    render_view->ReviveUndeadMainFrameRenderWidget();
+
     // The RenderViewImpl and its RenderWidget already exist by the time we
     // get here (we get them from the RenderFrameProxy).
     // TODO(crbug.com/419087): We probably want to create the RenderWidget
@@ -1652,11 +1654,6 @@ void RenderFrameImpl::CreateFrame(
     auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
         render_view->GetWidget(), web_frame);
     render_view->AttachWebFrameWidget(web_frame_widget);
-    // We revive the undead main frame RenderWidget at the same time we would
-    // create the RenderWidget if the RenderFrame owned it instead of having the
-    // RenderWidget live for eternity on the RenderView (after setting up the
-    // WebFrameWidget since that would be part of creating the RenderWidget).
-    render_widget->SetIsUndead(false);
 
     // Note that we do *not* call WebViewImpl's DidAttachLocalMainFrame() here
     // yet because this frame is provisional and not attached to the Page yet.
@@ -4502,12 +4499,12 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
   if (is_main_frame_) {
     DCHECK(!owned_render_widget_);
     // TODO(crbug.com/419087): The RenderWidget for the main frame can't be
-    // closed/destroyed since it is part of the RenderView. So instead it is
-    // swapped out, which we would be in the middle of here. So instead of
-    // closing the RenderWidget we mark it undead and drop the WebFrameWidget in
-    // order to also drop its reference on the WebLocalFrameImpl for this
-    // detaching frame.
-    render_widget_->SetIsUndead(true);
+    // closed/destroyed since there is no way to recreate it without also
+    // fixing the lifetimes of the related browser side objects. To simulate
+    // this "swap out", the pointer is moved off to the side until it is
+    // swapped back in. The renderer is then told that the WebFrameWidget is
+    // dropped which should remove all reference to this object.
+    render_view_->MakeMainFrameRenderWidgetUndead();
     render_view_->DetachWebFrameWidget();
   } else if (render_widget_) {
     DCHECK(owned_render_widget_);
@@ -4672,8 +4669,6 @@ void RenderFrameImpl::DownloadURL(
     return;
 
   FrameHostMsg_DownloadUrl_Params params;
-  params.render_view_id = render_view_->GetRoutingID();
-  params.render_frame_id = GetRoutingID();
   params.url = request.Url();
   params.referrer = RenderViewImpl::GetReferrerFromRequest(frame_, request);
   params.initiator_origin = request.RequestorOrigin();
@@ -4683,7 +4678,7 @@ void RenderFrameImpl::DownloadURL(
       (cross_origin_redirect_behavior == CrossOriginRedirects::kFollow);
   params.blob_url_token = blob_url_token.release();
 
-  Send(new FrameHostMsg_DownloadUrl(params));
+  Send(new FrameHostMsg_DownloadUrl(routing_id_, params));
 }
 
 void RenderFrameImpl::WillSendSubmitEvent(const blink::WebFormElement& form) {
@@ -5328,8 +5323,7 @@ void RenderFrameImpl::SaveImageFromDataURL(const blink::WebString& data_url) {
   // Note: We should basically send GURL but we use size-limited string instead
   // in order to send a larger data url to save a image for <canvas> or <img>.
   if (data_url.length() < kMaxLengthOfDataURLString) {
-    Send(new FrameHostMsg_SaveImageFromDataURL(render_view_->GetRoutingID(),
-                                               routing_id_, data_url.Utf8()));
+    Send(new FrameHostMsg_SaveImageFromDataURL(routing_id_, data_url.Utf8()));
   }
 }
 

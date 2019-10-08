@@ -78,14 +78,15 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
     const base::PlatformThreadId sampled_thread_id_;
     base::Lock trace_writer_lock_;
     std::unique_ptr<perfetto::TraceWriter> trace_writer_;
-    InterningIndex<size_t> interned_callstacks_{1000};
-    InterningIndex<std::pair<std::string, std::string>,
+    InterningIndex<1024, size_t> interned_callstacks_{};
+    InterningIndex<1024,
+                   std::pair<std::string, std::string>,
                    std::pair<uintptr_t, std::string>>
-        interned_frames_{1000, 1000};
-    InterningIndex<std::string> interned_frame_names_{1000};
-    InterningIndex<std::string> interned_module_names_{1000};
-    InterningIndex<std::string> interned_module_ids_{1000};
-    InterningIndex<uintptr_t> interned_modules_{1000};
+        interned_frames_{};
+    InterningIndex<1024, std::string> interned_frame_names_{};
+    InterningIndex<1024, std::string> interned_module_names_{};
+    InterningIndex<1024, std::string> interned_module_ids_{};
+    InterningIndex<1024, uintptr_t> interned_modules_{};
     bool reset_incremental_state_ = true;
     uint32_t last_incremental_state_reset_id_ = 0;
     int32_t last_emitted_process_priority_ = -1;

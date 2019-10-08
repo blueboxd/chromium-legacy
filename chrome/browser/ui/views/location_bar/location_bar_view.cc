@@ -1021,8 +1021,11 @@ void LocationBarView::OnPaintBorder(gfx::Canvas* canvas) {
 
   gfx::Rect bounds(GetContentsBounds());
   const SkColor border_color = GetOpaqueBorderColor(profile_->IsOffTheRecord());
-  BrowserView::Paint1pxHorizontalLine(canvas, border_color, bounds, false);
-  BrowserView::Paint1pxHorizontalLine(canvas, border_color, bounds, true);
+  canvas->DrawLine(gfx::PointF(bounds.x(), bounds.y()),
+                   gfx::PointF(bounds.right(), bounds.y()), border_color);
+  canvas->DrawLine(gfx::PointF(bounds.x(), bounds.bottom() - 1),
+                   gfx::PointF(bounds.right(), bounds.bottom() - 1),
+                   border_color);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

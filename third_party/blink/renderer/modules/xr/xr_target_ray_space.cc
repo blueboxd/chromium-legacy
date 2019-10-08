@@ -107,6 +107,11 @@ XRPose* XRTargetRaySpace::getPose(
                                       input_source_->emulatedPosition());
 }
 
+base::Optional<XRNativeOriginInformation> XRTargetRaySpace::NativeOrigin()
+    const {
+  return input_source_->nativeOrigin();
+}
+
 void XRTargetRaySpace::Trace(blink::Visitor* visitor) {
   visitor->Trace(input_source_);
   XRSpace::Trace(visitor);

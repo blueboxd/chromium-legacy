@@ -81,6 +81,54 @@ const int exifMarker = JPEG_APP0 + 1;
 // JPEG only supports a denominator of 8.
 const unsigned g_scale_denominator = 8;
 
+enum yuv_subsampling {
+  YUV_UNKNOWN,
+  YUV_410,
+  YUV_411,
+  YUV_420,
+  YUV_422,
+  YUV_440,
+  YUV_444
+};
+
+// Extracts the YUV subsampling format of an image given |info| which is assumed
+// to have gone through a jpeg_read_header() call.
+yuv_subsampling YuvSubsampling(const jpeg_decompress_struct& info) {
+  if (info.jpeg_color_space == JCS_YCbCr && info.num_components == 3 &&
+      info.comp_info && info.comp_info[1].h_samp_factor == 1 &&
+      info.comp_info[1].v_samp_factor == 1 &&
+      info.comp_info[2].h_samp_factor == 1 &&
+      info.comp_info[2].v_samp_factor == 1) {
+    const int h = info.comp_info[0].h_samp_factor;
+    const int v = info.comp_info[0].v_samp_factor;
+    if (v == 1) {
+      switch (h) {
+        case 1:
+          return YUV_444;
+        case 2:
+          return YUV_422;
+        case 4:
+          return YUV_411;
+        default:
+          break;
+      }
+    } else if (v == 2) {
+      switch (h) {
+        case 1:
+          return YUV_440;
+        case 2:
+          return YUV_420;
+        case 4:
+          return YUV_410;
+        default:
+          break;
+      }
+    }
+  }
+
+  return YUV_UNKNOWN;
+}
+
 // Extracts the JPEG color space of an image for UMA purposes given |info| which
 // is assumed to have gone through a jpeg_read_header(). When the color space is
 // YCbCr, we also extract the chroma subsampling. The caveat is that the
@@ -101,39 +149,23 @@ blink::BitmapImageMetrics::JpegColorSpace ExtractUMAJpegColorSpace(
     case JCS_YCCK:
       return blink::BitmapImageMetrics::JpegColorSpace::kYCCK;
     case JCS_YCbCr:
-      // The following logic is mostly reused from YuvSubsampling(). However,
-      // here we use |info.comp_info| instead of |info.cur_comp_info| to read
-      // the components from the SOF instead of the first scan. We also don't
-      // care about |info.scale_denom|.
-      // TODO: can we use this same logic in YuvSubsampling()?
-      if (info.num_components == 3 && info.comp_info &&
-          info.comp_info[1].h_samp_factor == 1 &&
-          info.comp_info[1].v_samp_factor == 1 &&
-          info.comp_info[2].h_samp_factor == 1 &&
-          info.comp_info[2].v_samp_factor == 1) {
-        const int h = info.comp_info[0].h_samp_factor;
-        const int v = info.comp_info[0].v_samp_factor;
-        if (v == 1) {
-          switch (h) {
-            case 1:
-              return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr444;
-            case 2:
-              return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr422;
-            case 4:
-              return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr411;
-          }
-        } else if (v == 2) {
-          switch (h) {
-            case 1:
-              return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr440;
-            case 2:
-              return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr420;
-            case 4:
-              return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr410;
-          }
-        }
+      switch (YuvSubsampling(info)) {
+        case YUV_444:
+          return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr444;
+        case YUV_422:
+          return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr422;
+        case YUV_411:
+          return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr411;
+        case YUV_440:
+          return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr440;
+        case YUV_420:
+          return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr420;
+        case YUV_410:
+          return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr410;
+        case YUV_UNKNOWN:
+          return blink::BitmapImageMetrics::JpegColorSpace::kYCbCrOther;
       }
-      return blink::BitmapImageMetrics::JpegColorSpace::kYCbCrOther;
+      NOTREACHED();
     default:
       return blink::BitmapImageMetrics::JpegColorSpace::kUnknown;
   }
@@ -162,16 +194,6 @@ enum jstate {
   JPEG_DECOMPRESS_PROGRESSIVE,  // Output progressive pixels
   JPEG_DECOMPRESS_SEQUENTIAL,   // Output sequential pixels
   JPEG_DONE
-};
-
-enum yuv_subsampling {
-  YUV_UNKNOWN,
-  YUV_410,
-  YUV_411,
-  YUV_420,
-  YUV_422,
-  YUV_440,
-  YUV_444
 };
 
 void init_source(j_decompress_ptr jd);
@@ -273,56 +295,13 @@ static ImageOrientation ReadImageOrientation(jpeg_decompress_struct* info) {
 
 static IntSize ComputeYUVSize(const jpeg_decompress_struct* info,
                               int component) {
-  return IntSize(info->cur_comp_info[component]->downsampled_width,
-                 info->cur_comp_info[component]->downsampled_height);
+  return IntSize(info->comp_info[component].downsampled_width,
+                 info->comp_info[component].downsampled_height);
 }
 
 static size_t ComputeYUVWidthBytes(const jpeg_decompress_struct* info,
                                    int component) {
-  return info->cur_comp_info[component]->width_in_blocks * DCTSIZE;
-}
-
-static yuv_subsampling YuvSubsampling(const jpeg_decompress_struct& info) {
-  if ((DCTSIZE == 8) && (info.num_components == 3) && (info.scale_denom <= 8) &&
-      (info.cur_comp_info[0]) && (info.cur_comp_info[1]) &&
-      (info.cur_comp_info[2]) && (info.cur_comp_info[1]->h_samp_factor == 1) &&
-      (info.cur_comp_info[1]->v_samp_factor == 1) &&
-      (info.cur_comp_info[2]->h_samp_factor == 1) &&
-      (info.cur_comp_info[2]->v_samp_factor == 1)) {
-    int h = info.cur_comp_info[0]->h_samp_factor;
-    int v = info.cur_comp_info[0]->v_samp_factor;
-    // 4:4:4 : (h == 1) && (v == 1)
-    // 4:4:0 : (h == 1) && (v == 2)
-    // 4:2:2 : (h == 2) && (v == 1)
-    // 4:2:0 : (h == 2) && (v == 2)
-    // 4:1:1 : (h == 4) && (v == 1)
-    // 4:1:0 : (h == 4) && (v == 2)
-    if (v == 1) {
-      switch (h) {
-        case 1:
-          return YUV_444;
-        case 2:
-          return YUV_422;
-        case 4:
-          return YUV_411;
-        default:
-          break;
-      }
-    } else if (v == 2) {
-      switch (h) {
-        case 1:
-          return YUV_440;
-        case 2:
-          return YUV_420;
-        case 4:
-          return YUV_410;
-        default:
-          break;
-      }
-    }
-  }
-
-  return YUV_UNKNOWN;
+  return info->comp_info[component].width_in_blocks * DCTSIZE;
 }
 
 static void ProgressMonitor(j_common_ptr info) {
@@ -483,8 +462,10 @@ class JPEGImageReader final {
         switch (info_.jpeg_color_space) {
           case JCS_YCbCr:
             // libjpeg can convert YCbCr image pixels to RGB.
+            // TODO(crbug.com/919627): is the info_.scale_denom <= 8 actually
+            // needed?
             info_.out_color_space = rgbOutputColorSpace();
-            if (decoder_->HasImagePlanes() &&
+            if (decoder_->HasImagePlanes() && (info_.scale_denom <= 8) &&
                 (YuvSubsampling(info_) != YUV_UNKNOWN))
               override_color_space = JCS_YCbCr;
             break;

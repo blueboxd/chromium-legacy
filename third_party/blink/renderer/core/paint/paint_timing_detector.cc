@@ -84,13 +84,7 @@ void PaintTimingDetector::NotifyPaintFinished() {
   } else {
     visualizer_.reset();
   }
-  if (text_paint_timing_detector_) {
-    text_paint_timing_detector_->OnPaintFinished();
-    if (text_paint_timing_detector_->FinishedReportingText()) {
-      text_paint_timing_detector_->StopRecordEntries();
-      text_paint_timing_detector_ = nullptr;
-    }
-  }
+  text_paint_timing_detector_->OnPaintFinished();
   if (image_paint_timing_detector_) {
     image_paint_timing_detector_->OnPaintFinished();
     if (image_paint_timing_detector_->FinishedReportingImages())
@@ -154,8 +148,7 @@ void PaintTimingDetector::NotifyImageFinished(
 
 void PaintTimingDetector::LayoutObjectWillBeDestroyed(
     const LayoutObject& object) {
-  if (text_paint_timing_detector_)
-    text_paint_timing_detector_->LayoutObjectWillBeDestroyed(object);
+  text_paint_timing_detector_->LayoutObjectWillBeDestroyed(object);
 
   if (image_paint_timing_detector_)
     image_paint_timing_detector_->LayoutObjectWillBeDestroyed(object);
@@ -169,10 +162,14 @@ void PaintTimingDetector::NotifyImageRemoved(
   }
 }
 
-void PaintTimingDetector::StopRecordingIfNeeded() {
+void PaintTimingDetector::StopRecordingLargestContentfulPaint() {
   DCHECK(frame_view_);
-  if (text_paint_timing_detector_)
-    text_paint_timing_detector_->StopRecordingLargestTextPaint();
+  // TextPaintTimingDetector is used for both Largest Contentful Paint and for
+  // Element Timing. Therefore, here we only want to stop recording Largest
+  // Contentful Paint.
+  text_paint_timing_detector_->StopRecordingLargestTextPaint();
+  // ImagePaintTimingDetector is currently only being used for
+  // LargestContentfulPaint.
   if (image_paint_timing_detector_)
     image_paint_timing_detector_->StopRecordEntries();
   largest_contentful_paint_calculator_ = nullptr;
@@ -184,18 +181,18 @@ void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
       WebInputEvent::IsPinchGestureEventType(type)) {
     return;
   }
-  StopRecordingIfNeeded();
+  StopRecordingLargestContentfulPaint();
 }
 
 void PaintTimingDetector::NotifyScroll(ScrollType scroll_type) {
   if (scroll_type != kUserScroll && scroll_type != kCompositorScroll)
     return;
-  StopRecordingIfNeeded();
+  StopRecordingLargestContentfulPaint();
 }
 
 bool PaintTimingDetector::NeedToNotifyInputOrScroll() const {
-  return (text_paint_timing_detector_ &&
-          text_paint_timing_detector_->IsRecording()) ||
+  DCHECK(text_paint_timing_detector_);
+  return text_paint_timing_detector_->IsRecordingLargestTextPaint() ||
          (image_paint_timing_detector_ &&
           image_paint_timing_detector_->IsRecording());
 }

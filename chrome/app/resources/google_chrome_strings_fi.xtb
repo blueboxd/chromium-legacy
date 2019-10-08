@@ -15,10 +15,8 @@
 <translation id="123620459398936149">Chrome-käyttöjärjestelmä ei voinut synkronoida tietoja. Päivitä synkronoinnin tunnuslause.</translation>
 <translation id="1302523850133262269">Odota hetki, Chrome asentaa uusimpia järjestelmäpäivityksiä.</translation>
 <translation id="137466361146087520">Google Chromen betaversio</translation>
-<translation id="1393853151966637042">Apua Chromen käytössä</translation>
 <translation id="1399397803214730675">Tietokoneessa on jo Google Chromen uudempi versio. Jos sovellus ei toimi, poista Google Chrome ja yritä uudelleen.</translation>
 <translation id="1434626383986940139">Chrome Canary -sovellukset</translation>
-<translation id="1469002951682717133">Chromen sovellusten käynnistysohjelma</translation>
 <translation id="1553358976309200471">Päivitä Chrome</translation>
 <translation id="1587223624401073077">Google Chrome käyttää kameraasi.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> on vaarallinen, joten Chrome on estänyt sen.</translation>
@@ -34,8 +32,6 @@
 <translation id="1734234790201236882">Chrome tallentaa tämän salasanan Google-tilillesi. Sinun ei tarvitse muistaa sitä.</translation>
 <translation id="174539241580958092">Google Chrome ei voinut synkronoida tietoja kirjautumisvirheen vuoksi.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1773601347087397504">Apua Chrome-käyttöjärjestelmän käytössä</translation>
-<translation id="1795405610103747296">Asenna Chrome puhelimellesi. Lähetämme tekstiviestin puhelimeesi: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="1812689907177901597">Poistamalla tämän käytöstä voit kirjautua Google-sivustoille, esim. Gmailiin, kirjautumatta Chromeen.</translation>
 <translation id="1860536484129686729">Chrome tarvitsee oikeuden käyttää kameraasi tällä sivustolla.</translation>
 <translation id="1873233029667955273">Google Chrome ei ole oletusselain.</translation>
@@ -52,16 +48,10 @@
 <translation id="2128103434102193461">Tutustu Chrome-käyttöjärjestelmään lukemalla <ph name="LINK_BEGIN" />
       Tietoja Chrome-käyttöjärjestelmästä<ph name="LINK_END" /></translation>
 <translation id="2151406531797534936">Käynnistä Chrome uudelleen nyt</translation>
-<translation id="216054706567564023">Asenna Chrome puhelimellesi. Lähetämme tekstiviestin palauttamisen puhelinnumeroosi.</translation>
 <translation id="2246246234298806438">Google Chrome ei voi näyttää tulostusesikatselua, koska PDF-katseluohjelma puuttuu.</translation>
-<translation id="2252923619938421629">Auta parantamaan Google Chromea ilmoittamalla nykyiset asetukset.</translation>
-<translation id="2286950485307333924">Olet nyt kirjautuneena Chromeen</translation>
 <translation id="2290014774651636340">Googlen sovellusliittymän avaimet puuttuvat. Jotkin Google Chromen toiminnoista poistetaan käytöstä.</translation>
 <translation id="2290095356545025170">Haluatko varmasti poistaa Google Chromen?</translation>
 <translation id="2309047409763057870">Tämä on Google Chromen toissijainen asennus, eikä sitä voi asettaa oletusselaimeksi.</translation>
-<translation id="2346876346033403680">Joku on jo kirjautunut tällä tietokoneella Chromeen käyttäjätilillä <ph name="ACCOUNT_EMAIL_LAST" />. Jos se ei ole sinun käyttäjätilisi, luo uusi Chrome-käyttäjä, jos haluat pitää tiedot erillään.
-
-Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja asetukset, yhdistetään tiliin <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2348335408836342058">Chrome tarvitsee oikeuden käyttää kameraasi ja mikrofoniasi tällä sivustolla.</translation>
 <translation id="2429317896000329049">Google Chrome ei voinut synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="2467438592969358367">Google Chrome yrittää viedä salasanojasi tiedostoon. Salli tämä kirjoittamalla Windows-salasanasi.</translation>
@@ -83,7 +73,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="2871893339301912279">Olet kirjautunut Chromeen!</translation>
 <translation id="2888126860611144412">Tietoja Chromesta</translation>
 <translation id="3037838751736561277">Google Chrome on käynnissä taustalla.</translation>
-<translation id="3047079729301751317">Jos irrotat tilin <ph name="USERNAME" />, historiasi, kirjanmerkkisi ja muut laitteelle tallennetut Chrome-tiedot poistetaan. Google-tiliisi tallennetut tiedot säilyvät ennallaan ja voit hallinnoida niitä <ph name="GOOGLE_DASHBOARD_LINK" />Google Hallintapaneelin kautta<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3065168410429928842">Chrome-välilehti</translation>
 <translation id="3080151273017101988">Jätä taustaohjelmat käyntiin, kun Google Chrome suljetaan</translation>
 <translation id="3089968997497233615">Google Chromesta on saatavillaa uusi, turvallisempi versio.</translation>
@@ -104,7 +93,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="3582972582564653026">Voit synkronoida Chromen ja tehdä siitä yksilöllisemmän kaikilla laitteilla.</translation>
 <translation id="3622797965165704966">Nyt voit helpommin käyttää Chromea Google-tililläsi ja jaetuilla tietokoneilla.</translation>
 <translation id="3637702109597584617">Google Chrome ‑käyttöjärjestelmän <ph name="TERMS_OF_SERVICE_LINK" />käyttöehdot<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
-<translation id="3716182511346448902">Tämä sivu käyttää liikaa muistia, joten Chrome keskeytti sen.</translation>
 <translation id="3718181793972440140">Yksi kohde poistetaan pysyvästi  tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Laajennus <ph name="EXTENSION_NAME" /> on vaihtanut Chromen aloitussivun.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
@@ -120,7 +108,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="4191857738314598978">{0,plural, =1{Käynnistä Chrome uudelleen vuorokauden kuluessa}other{Käynnistä Chrome uudelleen # vuorokauden kuluessa}}</translation>
 <translation id="424864128008805179">Kirjaudutaanko ulos Chromesta?</translation>
 <translation id="4251615635259297716">Linkitetäänkö Chrome-tiedot tähän tiliin?</translation>
-<translation id="4251625577313994583">lataa Chrome iPhoneen</translation>
 <translation id="4293420128516039005">Kirjaudu sisään, niin voit synkronoida Chromen ja tehdä siitä yksilöllisemmän kaikilla laitteilla.</translation>
 <translation id="4328355335528187361">Google Chromen kehittäjäversio (saapuva mDNS)</translation>
 <translation id="4331809312908958774">Chrome-käyttöjärjestelmä</translation>
@@ -142,7 +129,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="479167709087336770">Tämä käyttää samaa oikeinkirjoituksen tarkistusta kuin Google Haku. Selaimeen kirjoittamasi teksti lähetetään Googlelle. Voit muuttaa tätä milloin tahansa asetuksista.</translation>
 <translation id="4891791193823137474">Jätä Google Chrome käyntiin taustalle</translation>
 <translation id="4895437082222824641">Avaa linkki uudella Chromen välilehdellä</translation>
-<translation id="4921569541910214635">Jaatko tietokoneen jonkun kanssa? Nyt voit määrittää Chromen juuri sellaiseksi kuin haluat.</translation>
 <translation id="4953650215774548573">Aseta Google Chrome oletusselaimeksi</translation>
 <translation id="495931528404527476">Chromessa</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -172,8 +158,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="5895138241574237353">Käynnistä uudelleen</translation>
 <translation id="5940385492829620908">Tämä on verkkosi, kirjanmerkkiesi ja muun Chrome-sisältösi koti.</translation>
 <translation id="5941830788786076944">Tee Google Chromesta oletusselain</translation>
-<translation id="6014844626092547096">Olet nyt kirjautunut sisään Chromeen! Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
-<translation id="6040143037577758943">Sulje</translation>
 <translation id="6070348360322141662">Google Chrome lisää suojausta salaamalla tietosi.</translation>
 <translation id="6113794647360055231">Chrome on nyt entistä parempi</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
@@ -186,8 +170,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="6368958679917195344">Chrome-käyttöjärjestelmää tukee toinen <ph name="BEGIN_LINK_CROS_OSS" />avoimen lähdekoodin ohjelmisto<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6566149418543181476">Päivitetään Google Chromea (<ph name="PROGRESS_PERCENT" />)</translation>
-<translation id="6598387184982954187">Synkronoit Chromen tietosi osoitteella <ph name="PROFILE_EMAIL" />. Voit vaihtaa synkronoinnin asetuksia tai siirtyä käyttämään Chromea ilman Google-tiliä käymällä <ph name="SETTINGS_LINK" />.</translation>
-<translation id="6600954340915313787">Kopioitiin Chromeen.</translation>
 <translation id="6676384891291319759">Käytä internetiä</translation>
 <translation id="6679975945624592337">Jätä Google Chrome käyntiin taustalle</translation>
 <translation id="6750954913813541382">Chrome lähettää selaimeen kirjoittamasi tekstin Googlelle kirjoitusvirheiden korjaamiseksi</translation>
@@ -201,7 +183,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="6989339256997917931">Google Chrome on päivitetty, mutta et ole käyttänyt sitä ainakaan 30 päivään.</translation>
 <translation id="7098166902387133879">Google Chrome käyttää mikrofoniasi.</translation>
 <translation id="7106741999175697885">Tehtävänhallinta - Google Chrome</translation>
-<translation id="7164397146364144019">Voit auttaa meitä parantamaan Chromen turvallisuutta ja tekemään selaimesta helppokäyttöisemmän ilmoittamalla mahdollisista turvallisuusongelmista Googlelle automaattisesti.</translation>
 <translation id="7242029209006116544">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Google Chrome -profiiliasi. Chrome-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME" />. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. Voit myös halutessasi luoda uuden profiilin, jos haluat pitää aiemmat Chrome-tietosi erillään. <ph name="LEARN_MORE" /></translation>
 <translation id="7295052994004373688">Google Chrome ‑käyttöliittymä näytetään tällä kielellä</translation>
 <translation id="7296210096911315575">Tärkeää käyttö- ja turvallisuustietoa</translation>
@@ -210,7 +191,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="7398801000654795464">Chromeen kirjautunut käyttäjä: <ph name="USER_EMAIL_ADDRESS" />. Kirjaudu uudelleen sisään samalla tilillä.</translation>
 <translation id="7408085963519505752">Chrome-käyttöjärjestelmän käyttöehdot</translation>
 <translation id="7419046106786626209">Chrome-käyttöjärjestelmä ei voinut synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
-<translation id="7459554271817304652">Määrittämällä synkronoinnin voit tallentaa selaimesi tiedot verkkoon ja käyttää niitä minkä tahansa tietokoneen Google Chromella.</translation>
 <translation id="7486227612705979895">Chrome käyttää Drivea antaakseen ehdotuksia osoitepalkissa</translation>
 <translation id="7531671357096394523">Lopeta kaikki Chrome-kopiot</translation>
 <translation id="7535429826459677826">Google Chromen kehittäjäversio</translation>
@@ -234,25 +214,18 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="7962410387636238736">Tämän tietokoneen Google Chromea ei enää päivitetä, koska Windows XP:tä ja Windows Vistaa ei enää tueta.</translation>
 <translation id="8008534537613507642">Asenna Chrome uudelleen</translation>
 <translation id="8013993649590906847">Jos kuvalla ei ole hyödyllistä kuvausta, Chrome yrittää luoda sellaisen. Kuvat lähetetään Googlelle kuvausten luomista varten.</translation>
-<translation id="8032142183999901390">Kun olet poistanut tilisi Chromesta, sinun on ehkä avattava avoinna olleet välilehdet uudelleen, jotta muutos tulee voimaan.</translation>
 <translation id="8129812357326543296">Tietoja &amp;Google Chromesta</translation>
-<translation id="8179874765710681175">Asenna Chrome puhelimeesi. Lähetämme tekstiviestin puhelimeen.</translation>
-<translation id="825412236959742607">Tämä sivu käyttää liikaa muistia, joten Chrome poisti osan sisällöstä.</translation>
 <translation id="8255190535488645436">Google Chrome käyttää kameraasi ja mikrofoniasi.</translation>
 <translation id="8286862437124483331">Google Chrome yrittää näyttää salasanoja. Salli tämä kirjoittamalla Windows-salasanasi.</translation>
 <translation id="8290100596633877290">Hups! Google Chrome kaatui. Käynnistetäänkö uudelleen?</translation>
 <translation id="8342675569599923794">Tämä tiedosto on vaarallinen, joten Chrome on estänyt sen.</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Kaikki oikeudet pidätetään.</translation>
 <translation id="840084489713044809">Google Chrome yrittää viedä salasanojasi tiedostoon.</translation>
-<translation id="8406086379114794905">Auta parantamaan Chromea</translation>
 <translation id="8455999171311319804">Valinnainen: Lähetä automaattisesti diagnostiikka- ja käyttötietoja Googlelle Chrome-käyttöjärjestelmän kehittämiseksi.</translation>
-<translation id="8478823064122749032">Asenna Chrome puhelimellesi. Lähetämme tekstiviestin palauttamisen puhelinnumeroosi: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="8498858610309223613">Google Chromen tärkeä tietoturvapäivitys on asennettu. Käynnistä selain uudelleen – palautamme avoimet välilehdet.</translation>
 <translation id="8521348052903287641">Google Chromen kehittäjäversion saapuvien yhteyksien sääntö, joka sallii mDNS-liikenteen.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8547799825197623713">Chrome Canary -sovellusten käynnistysohjelma</translation>
 <translation id="8556340503434111824">Chromesta on saatavissa uusi versio, joka on entistäkin nopeampi.</translation>
-<translation id="8568392309447938879">Sinun täytyy kirjautua Chromeen käyttääksesi sovelluksia. Kirjauduttuasi Chrome voi synkronoida sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi eri laitteille.</translation>
 <translation id="8606668294522778825">Google Chrome voi käyttää verkkopalveluita selauskokemuksesi parantamiseen. Voit halutessasi poistaa nämä palvelut käytöstä. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome ei vastaa. Käynnistetäänkö uudelleen?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome käynnistetään uudelleen 1 minuutin kuluttua}other{Chrome käynnistetään uudelleen # minuutin kuluttua.}}</translation>

@@ -40,6 +40,8 @@ const char* AutocompleteProvider::TypeToString(Type type) {
       return "Bookmark";
     case TYPE_BUILTIN:
       return "Builtin";
+    case TYPE_CLIPBOARD:
+      return "Clipboard";
     case TYPE_DOCUMENT:
       return "Document";
     case TYPE_HISTORY_QUICK:
@@ -48,16 +50,14 @@ const char* AutocompleteProvider::TypeToString(Type type) {
       return "HistoryURL";
     case TYPE_KEYWORD:
       return "Keyword";
+    case TYPE_ON_DEVICE_HEAD:
+      return "OnDeviceHead";
     case TYPE_SEARCH:
       return "Search";
     case TYPE_SHORTCUTS:
       return "Shortcuts";
     case TYPE_ZERO_SUGGEST:
       return "ZeroSuggest";
-    case TYPE_CLIPBOARD:
-      return "Clipboard";
-    case TYPE_ON_DEVICE_HEAD:
-      return "OnDeviceHead";
     case TYPE_ZERO_SUGGEST_LOCAL_HISTORY:
       return "LocalHistoryZeroSuggest";
     default:
@@ -110,6 +110,8 @@ metrics::OmniboxEventProto_ProviderType AutocompleteProvider::
       return metrics::OmniboxEventProto::BOOKMARK;
     case TYPE_BUILTIN:
       return metrics::OmniboxEventProto::BUILTIN;
+    case TYPE_CLIPBOARD:
+      return metrics::OmniboxEventProto::CLIPBOARD;
     case TYPE_DOCUMENT:
       return metrics::OmniboxEventProto::DOCUMENT;
     case TYPE_HISTORY_QUICK:
@@ -118,14 +120,14 @@ metrics::OmniboxEventProto_ProviderType AutocompleteProvider::
       return metrics::OmniboxEventProto::HISTORY_URL;
     case TYPE_KEYWORD:
       return metrics::OmniboxEventProto::KEYWORD;
+    case TYPE_ON_DEVICE_HEAD:
+      return metrics::OmniboxEventProto::ON_DEVICE_HEAD;
     case TYPE_SEARCH:
       return metrics::OmniboxEventProto::SEARCH;
     case TYPE_SHORTCUTS:
       return metrics::OmniboxEventProto::SHORTCUTS;
     case TYPE_ZERO_SUGGEST:
       return metrics::OmniboxEventProto::ZERO_SUGGEST;
-    case TYPE_CLIPBOARD:
-      return metrics::OmniboxEventProto::CLIPBOARD;
     case TYPE_ZERO_SUGGEST_LOCAL_HISTORY:
       return metrics::OmniboxEventProto::ZERO_SUGGEST_LOCAL_HISTORY;
     default:

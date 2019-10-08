@@ -10,9 +10,9 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/scoped_observer.h"
 #include "content/public/browser/ax_event_notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "extensions/browser/api/automation_internal/automation_event_router_interface.h"
 #include "extensions/common/api/automation_internal.h"
 #include "extensions/common/extension_id.h"
@@ -35,7 +35,7 @@ namespace extensions {
 struct AutomationListener;
 
 class AutomationEventRouter : public ui::AXEventBundleSink,
-                              public content::NotificationObserver,
+                              public content::RenderProcessHostObserver,
                               public AutomationEventRouterInterface {
  public:
   static AutomationEventRouter* GetInstance();
@@ -104,10 +104,11 @@ class AutomationEventRouter : public ui::AXEventBundleSink,
                                    const gfx::Point& mouse_location,
                                    std::vector<ui::AXEvent> events) override;
 
-  // content::NotificationObserver interface.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // RenderProcessHostObserver:
+  void RenderProcessExited(
+      content::RenderProcessHost* host,
+      const content::ChildProcessTerminationInfo& info) override;
+  void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
   // Called when the user switches profiles or when a listener is added
   // or removed. The purpose is to ensure that multiple instances of the
@@ -125,6 +126,9 @@ class AutomationEventRouter : public ui::AXEventBundleSink,
   std::vector<AutomationListener> listeners_;
 
   content::BrowserContext* active_context_;
+
+  ScopedObserver<content::RenderProcessHost, content::RenderProcessHostObserver>
+      rph_observers_{this};
 
   friend struct base::DefaultSingletonTraits<AutomationEventRouter>;
 

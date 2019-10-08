@@ -72,8 +72,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFile {
   // Add an input stream to write into a slice of the file, used for
   // parallel download.
   virtual void AddInputStream(std::unique_ptr<InputStream> stream,
-                              int64_t offset,
-                              int64_t length) = 0;
+                              int64_t offset) = 0;
 
   // Rename the download file to |full_path|.  If that file exists
   // |full_path| will be uniquified by suffixing " (<number>)" to the

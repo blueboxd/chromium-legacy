@@ -326,6 +326,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="3241052487511142956">Vorige bezochte link</translation>
 <translation id="3241638166094654466">Cellen in elke regel:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">Vorig vergelijkbaar item</translation>
 <translation id="3286372614333682499">staand</translation>
 <translation id="3286390186030710347">Schuifregelaar</translation>
 <translation id="3299925995433437805">Geen volgende bezochte link.</translation>
@@ -508,6 +509,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4517854969512651305">Waarde verhogen</translation>
 <translation id="4529987814483543472">Klassieke toetsenbordindeling</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{slash}other{# slashes}}</translation>
+<translation id="4537277403911487429">Volgend vergelijkbaar item</translation>
 <translation id="4547556996012970016">Volgende kop voor niveau 5</translation>
 <translation id="4562381607973973258">Koptekst</translation>
 <translation id="4569941707103739422">Druk op de pijl-omhoog of -omlaag om te navigeren of druk op Enter om te activeren.</translation>

@@ -948,7 +948,6 @@
 <translation id="2379281330731083556">הדפס באמצעות תיבת דו-שיח של המערכת... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">שאל לפני שליחה (מומלץ)</translation>
 <translation id="2384436799579181135">אירעה שגיאה. יש לבדוק את המדפסת ולנסות שוב.</translation>
-<translation id="2386926718981642523">‏גישה אל ה-Assistant בכל פעם שנאמר הביטוי "Ok Google"</translation>
 <translation id="2387458720915042159">‏סוג חיבור לשרת proxy</translation>
 <translation id="2391419135980381625">גופן רגיל</translation>
 <translation id="2392369802118427583">הפעל</translation>
@@ -1352,7 +1351,6 @@
 <translation id="2961695502793809356">לחץ כדי לעבור קדימה, לחץ והחזק כדי לראות את ההיסטוריה</translation>
 <translation id="2963151496262057773">הפלאגין הבא אינו מגיב: <ph name="PLUGIN_NAME" /> האם ברצונך לכבות אותו?</translation>
 <translation id="2966937470348689686">‏ניהול העדפות ל-Android</translation>
-<translation id="2972557485845626008">קושחה</translation>
 <translation id="2972581237482394796">&amp;בצע שנית</translation>
 <translation id="2973324205039581528">השתקת האתר</translation>
 <translation id="2977480621796371840">הסרה מהקבוצה</translation>
@@ -1610,7 +1608,6 @@
 <translation id="3385092118218578224">%<ph name="DISPLAY_ZOOM" /></translation>
 <translation id="338583716107319301">מפריד</translation>
 <translation id="3387614642886316601">שימוש בבדיקת איות משופרת</translation>
-<translation id="3393352139658145068">‏הפעלה של ה-Assistant כשמישהו אומר "Ok Google". כדי לחסוך בסוללה, התכונה "Ok Google" פועלת רק כשהמכשיר מחובר למקור חשמל.</translation>
 <translation id="3396800784455899911">‏לחיצה על הלחצן "קבלה והמשך" מבטאת את הסכמתך לעיבוד שתואר קודם לכן לגבי השירותים האלה של Google.</translation>
 <translation id="3399432415385675819">הודעות יושבתו</translation>
 <translation id="3400390787768057815">‏<ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> הרץ) – סריקה שזורה (Interlaced)</translation>
@@ -1885,7 +1882,6 @@
 <translation id="3759933321830434300">חסימת חלקים של דפי אינטרנט</translation>
 <translation id="3760460896538743390">בדיקת דף ה&amp;רקע</translation>
 <translation id="37613671848467444">פתח בחלון &amp;גלישה בסתר</translation>
-<translation id="3764314093345384080">מידע מפורט על הגרסה</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{‏תקשורת עם מכשיר USB אחד}two{‏תקשורת עם # מכשירי USB}many{‏תקשורת עם # מכשירי USB}other{‏תקשורת עם # מכשירי USB}}</translation>
 <translation id="3765246971671567135">לא ניתן לקרוא מדיניות של מצב הדגמה לא מקוון.</translation>
 <translation id="3768037234834996183">מסנכרן את ההעדפות שלך...</translation>
@@ -2166,7 +2162,6 @@
 <translation id="4138267921960073861">הצג שמות משתמשים ותמונות במסך הכניסה</translation>
 <translation id="4142052906269098341">אפשר לבטל את הנעילה של <ph name="DEVICE_TYPE" /> בעזרת הטלפון. <ph name="LINK_BEGIN" />מידע נוסף<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">שיפור איכות הווידאו וחיסכון בחיי הסוללה. תוכן וידאו יופעל רק במסך התומך בהעברה.</translation>
-<translation id="4145922204387553806">‏Assistant יכול להראות לך מידע שקשור למה שמוצג על המסך</translation>
 <translation id="4146026355784316281">פתח תמיד באמצעות מציג המערכת</translation>
 <translation id="4146785383423576110">איפוס וניקוי</translation>
 <translation id="4147911968024186208">אפשר לנסות שוב. אם השגיאה הזאת ממשיכה להופיע, ניתן לפנות לנציג התמיכה.</translation>
@@ -2388,7 +2383,6 @@
 <translation id="4534661889221639075">יש לנסות שוב.</translation>
 <translation id="4535127706710932914">פרופיל ברירת מחדל</translation>
 <translation id="4535767533210902251">חיישן טביעת האצבע מותקן במקש הימני העליון במקלדת. יש לגעת בו בעדינות באחת האצבעות.</translation>
-<translation id="4538417792467843292">מחק מילה</translation>
 <translation id="4538684596480161368">חסום תמיד יישומי פלאגין ללא ארגז חול ב-<ph name="HOST" /></translation>
 <translation id="4538792345715658285">מותקן לפי מדיניות של ארגון.</translation>
 <translation id="4542520061254486227">קריאת הנתונים שלך באתרים <ph name="WEBSITE_1" /> ו-<ph name="WEBSITE_2" /></translation>
@@ -3765,7 +3759,6 @@
 <translation id="6577284282025554716">ההורדה בוטלה: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">‏הצפנת סיסמאות מסונכרנות עם שם המשתמש והסיסמה שלך ב-Google</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> - תוכן שולחן העבודה משותף</translation>
-<translation id="6580151766480067746">‏גירסת ARC</translation>
 <translation id="6582080224869403177">יש לאתחל את <ph name="DEVICE_TYPE" /> כדי לשדרג את האבטחה.</translation>
 <translation id="6584878029876017575">‏חתימה לכל החיים של Microsoft</translation>
 <translation id="6586451623538375658">החלף את לחצן העכבר העיקרי</translation>

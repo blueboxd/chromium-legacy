@@ -368,7 +368,8 @@ DWORD CreateLowBoxToken(HANDLE base_token,
       &token_lowbox, base_token, TOKEN_ALL_ACCESS, &obj_attr,
       security_capabilities->AppContainerSid,
       security_capabilities->CapabilityCount,
-      security_capabilities->Capabilities, saved_handles_count, saved_handles);
+      security_capabilities->Capabilities, saved_handles_count,
+      saved_handles_count > 0 ? saved_handles : nullptr);
   if (!NT_SUCCESS(status))
     return GetLastErrorFromNtStatus(status);
 

@@ -10,6 +10,7 @@
 
 #include "base/strings/string16.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/resource_load_info.mojom.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/web_dialogs/web_dialogs_export.h"
@@ -141,8 +142,8 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
                                     content::WebContents** out_new_contents);
 
   // A callback to control whether a WebContents will be created. Returns
-  // true to disallow the creation. Return false to use the default handler.
-  virtual bool HandleShouldOverrideWebContentsCreation();
+  // false to disallow the creation. Return true to use the default handler.
+  virtual bool HandleShouldCreateWebContents();
 
   // Stores the dialog bounds.
   virtual void StoreDialogSize(const gfx::Size& dialog_size) {}
@@ -154,6 +155,8 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   virtual bool AcceleratorPressed(const Accelerator& accelerator);
 
   virtual void OnWebContentsFinishedLoad() {}
+  virtual void OnMainFrameResourceLoadComplete(
+      const content::mojom::ResourceLoadInfo& resource_load_info) {}
 
   virtual ~WebDialogDelegate() {}
 };

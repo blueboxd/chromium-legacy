@@ -189,6 +189,10 @@ TransformationMatrix XRReferenceSpace::InverseOriginOffsetMatrix() {
   return origin_offset_->InverseTransformMatrix();
 }
 
+XRReferenceSpace::Type XRReferenceSpace::GetType() const {
+  return type_;
+}
+
 XRReferenceSpace* XRReferenceSpace::getOffsetReferenceSpace(
     XRRigidTransform* additional_offset) {
   auto matrix =
@@ -202,6 +206,11 @@ XRReferenceSpace* XRReferenceSpace::cloneWithOriginOffset(
     XRRigidTransform* origin_offset) {
   return MakeGarbageCollected<XRReferenceSpace>(this->session(), origin_offset,
                                                 type_);
+}
+
+base::Optional<XRNativeOriginInformation> XRReferenceSpace::NativeOrigin()
+    const {
+  return XRNativeOriginInformation::Create(this);
 }
 
 void XRReferenceSpace::Trace(blink::Visitor* visitor) {

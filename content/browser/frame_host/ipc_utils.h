@@ -18,7 +18,8 @@ namespace content {
 
 class SiteInstance;
 
-// Verifies that |params| are valid and can be accessed by |process_id|.
+// Verifies that |params| are valid and can be accessed by the renderer process
+// associated with |site_instance|.
 //
 // Returns true if the |params| are valid.  As a side-effect of the verification
 // |out_blob_url_token_remote| will be populated.
@@ -26,10 +27,9 @@ class SiteInstance;
 // Terminates the renderer with the given |process_id| and returns false if the
 // |params| are invalid.
 //
-// This function may be called on either the IO thread or the UI thread
-// (but not on other threads).
+// This function has to be called on the UI thread.
 bool VerifyDownloadUrlParams(
-    int process_id,
+    SiteInstance* site_instance,
     const FrameHostMsg_DownloadUrl_Params& params,
     mojo::PendingRemote<blink::mojom::BlobURLToken>* out_blob_url_token_remote);
 

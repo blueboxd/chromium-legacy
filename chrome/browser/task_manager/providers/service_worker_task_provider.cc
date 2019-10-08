@@ -46,45 +46,47 @@ void ServiceWorkerTaskProvider::Observe(
   }
 }
 
-void ServiceWorkerTaskProvider::OnVersionRunningStatusChanged(
+void ServiceWorkerTaskProvider::OnVersionStartedRunning(
     content::ServiceWorkerContext* context,
     int64_t version_id,
-    bool is_running) {
+    const GURL& scope,
+    int process_id,
+    const GURL& script_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const ServiceWorkerTaskKey key(context, version_id);
 
-#if DCHECK_IS_ON()
-  if (is_running) {
-    DCHECK(!base::Contains(service_worker_task_map_, key) &&
-           !base::Contains(tasks_to_be_created_, key));
-  } else {
-    DCHECK(base::Contains(service_worker_task_map_, key) ||
-           base::Contains(tasks_to_be_created_, key));
+  DCHECK(!base::Contains(service_worker_task_map_, key) &&
+         !base::Contains(tasks_to_be_created_, key));
+
+  tasks_to_be_created_.emplace(key);
+
+  // Create a new task since the service worker is running now.
+  context->GetServiceWorkerRunningInfo(
+      version_id,
+      base::BindOnce(
+          &ServiceWorkerTaskProvider::OnDidGetServiceWorkerRunningInfo,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+void ServiceWorkerTaskProvider::OnVersionStoppedRunning(
+    content::ServiceWorkerContext* context,
+    int64_t version_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const ServiceWorkerTaskKey key(context, version_id);
+
+  DCHECK(base::Contains(service_worker_task_map_, key) ||
+         base::Contains(tasks_to_be_created_, key));
+
+  auto iter = tasks_to_be_created_.find(key);
+
+  // If the task is not created yet, erase it from |tasks_to_be_created_|.
+  if (iter != tasks_to_be_created_.end()) {
+    tasks_to_be_created_.erase(iter);
+    return;
   }
-#endif  // DCHECK_IS_ON()
 
-  if (is_running) {
-    tasks_to_be_created_.emplace(key);
-
-    // Create a new task since the service worker is running now.
-    context->GetServiceWorkerRunningInfo(
-        version_id,
-        base::BindOnce(
-            &ServiceWorkerTaskProvider::OnDidGetServiceWorkerRunningInfo,
-            weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    auto iter = tasks_to_be_created_.find(key);
-
-    // If the task is not created yet, erase it from |tasks_to_be_created_|.
-    if (iter != tasks_to_be_created_.end()) {
-      tasks_to_be_created_.erase(iter);
-      return;
-    }
-
-    // Since the task has been created and the service worker is not running
-    // any longer, delete it.
-    DeleteTask(context, version_id);
-  }
+  // Since the task has been created and the service worker is not running
+  // any longer, delete it.
+  DeleteTask(context, version_id);
 }
 
 void ServiceWorkerTaskProvider::OnDestruct(

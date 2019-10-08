@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.sharing.click_to_call;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.telephony.PhoneStateListener;
@@ -90,6 +91,8 @@ public class ClickToCallUma {
 
         @MainThread
         public static void startMetric(Context context) {
+            // We do not have READ_PHONE_STATE permissions which are required pre-M.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
             if (sListener != null) sListener.stopMetric();
             sListener = new CallMetricListener(context);
         }

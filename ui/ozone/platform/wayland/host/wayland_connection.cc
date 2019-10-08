@@ -22,6 +22,7 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
+#include "ui/ozone/platform/wayland/host/wayland_drm.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_shm.h"
@@ -42,6 +43,7 @@ constexpr uint32_t kMaxXdgShellVersion = 1;
 constexpr uint32_t kMaxDeviceManagerVersion = 3;
 constexpr uint32_t kMaxWpPresentationVersion = 1;
 constexpr uint32_t kMaxTextInputManagerVersion = 1;
+constexpr uint32_t kMinWlDrmVersion = 2;
 constexpr uint32_t kMinWlOutputVersion = 2;
 }  // namespace
 
@@ -387,6 +389,11 @@ void WaylandConnection::Global(void* data,
       LOG(ERROR) << "Failed to bind to zwp_text_input_manager_v1 global";
       return;
     }
+  } else if (!connection->drm_ && (strcmp(interface, "wl_drm") == 0) &&
+             version >= kMinWlDrmVersion) {
+    auto wayland_drm = wl::Bind<struct wl_drm>(registry, name, version);
+    connection->drm_ =
+        std::make_unique<WaylandDrm>(wayland_drm.release(), connection);
   }
 
   connection->ScheduleFlush();

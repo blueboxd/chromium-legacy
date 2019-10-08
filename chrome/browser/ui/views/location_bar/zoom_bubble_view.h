@@ -103,16 +103,15 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   void Init() override;
   void WindowClosing() override;
   void CloseBubble() override;
-  void Layout() override;
 
-  // views::ButtonListener:
+  // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // ImmersiveModeController::Observer:
+  // ImmersiveModeController::Observer
   void OnImmersiveRevealStarted() override;
   void OnImmersiveModeControllerDestroyed() override;
 
-  // extensions::IconImage::Observer:
+  // extensions::IconImage::Observer
   void OnExtensionIconImageChanged(extensions::IconImage* /* image */) override;
 
   // Sets information about the extension that initiated the zoom change.

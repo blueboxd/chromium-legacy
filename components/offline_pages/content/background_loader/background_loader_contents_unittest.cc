@@ -134,11 +134,14 @@ TEST_F(BackgroundLoaderContentsTest, CanDownload_DelegateCalledWhenSet) {
 }
 
 TEST_F(BackgroundLoaderContentsTest, ShouldNotCreateWebContents) {
-  ASSERT_TRUE(contents()->IsWebContentsCreationOverridden(
-      nullptr /* source_site_instance */,
+  ASSERT_FALSE(contents()->ShouldCreateWebContents(
+      nullptr /* contents */, nullptr /* opener */,
+      nullptr /* source_site_instance */, 0 /* route_id */,
+      0 /* main_frame_route_id */, 0 /* main_frame_widget_route_id */,
       content::mojom::WindowContainerType::NORMAL /* window_container_type */,
       GURL() /* opener_url */, "foo" /* frame_name */,
-      GURL::EmptyGURL() /* target_url */));
+      GURL::EmptyGURL() /* target_url */, "bar" /* partition_id */,
+      nullptr /* session_storage_namespace */));
 }
 
 TEST_F(BackgroundLoaderContentsTest, ShouldNotAddNewContents) {

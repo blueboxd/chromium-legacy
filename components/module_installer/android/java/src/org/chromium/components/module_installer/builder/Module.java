@@ -14,6 +14,7 @@ import org.chromium.components.module_installer.util.Timer;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Represents a feature module. Can be used to install the module, access its interface, etc. See
@@ -24,16 +25,27 @@ import java.util.Set;
  */
 @JNINamespace("module_installer")
 public class Module<T> {
+    private static final Set<String> sInitializedModules = new HashSet<>();
+    private static Set<String> sPendingNativeRegistrations = new TreeSet<>();
+
     private final String mName;
     private final Class<T> mInterfaceClass;
     private final String mImplClassName;
-
     private T mImpl;
-
     private InstallEngine mInstaller;
 
-    private static boolean sNativeInitialized;
-    private static final Set<String> sPendingNativeRegistrations = new HashSet<>();
+    /**
+     * To be called after the main native library has been loaded. Any module instances created
+     * before the native library is loaded have their native component queued for loading and
+     * registration. Calling this methed completes that process.
+     */
+    public static void doDeferredNativeRegistrations() {
+        if (sPendingNativeRegistrations == null) return;
+        for (String name : sPendingNativeRegistrations) {
+            loadNative(name);
+        }
+        sPendingNativeRegistrations = null;
+    }
 
     /**
      * Instantiates a module.
@@ -98,52 +110,51 @@ public class Module<T> {
      */
     public T getImpl() {
         try (Timer timer = new Timer()) {
-            assert isInstalled();
-            if (mImpl == null) {
-                // Accessing classes in the module may cause its DEX file to be loaded. And on some
-                // devices that causes a read mode violation.
-                try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-                    mImpl = mInterfaceClass.cast(Class.forName(mImplClassName).newInstance());
-                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                        | IllegalArgumentException e) {
-                    throw new RuntimeException(e);
-                }
+            if (mImpl != null) return mImpl;
 
-                // Load the module's native library if there's one present, and the Chrome native
-                // library itself has been loaded.
-                if (sNativeInitialized) {
-                    loadNativeLibrary(mName);
-                } else {
-                    sPendingNativeRegistrations.add(mName);
-                }
+            assert isInstalled();
+            // Accessing classes in the module may cause its DEX file to be loaded. And on some
+            // devices that causes a read mode violation.
+            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                mImpl = mInterfaceClass.cast(Class.forName(mImplClassName).newInstance());
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                    | IllegalArgumentException e) {
+                throw new RuntimeException(e);
+            }
+
+            // Load the module's native code and/or resources if they are present, and the Chrome
+            // native library itself has been loaded.
+            if (sPendingNativeRegistrations == null) {
+                loadNative(mName);
+            } else {
+                // We have to defer native initialization because VR is calling getImpl in early
+                // startup. As soon as VR stops doing that we want to deprecate deferred native
+                // initialization.
+                sPendingNativeRegistrations.add(mName);
             }
             return mImpl;
         }
     }
 
-    private static void loadNativeLibrary(String name) {
-        // TODO(https://crbug.com/870055): Whitelist modules, until each module explicitly indicates
-        // its need for library loading through this system.
-        if (!"test_dummy".equals(name)) return;
-
-        ModuleJni.get().loadNativeLibrary(name);
-    }
-
-    /**
-     * To be called after the main native library has been loaded. Any module instances
-     * created before the native library is loaded have their native component queued
-     * for loading and registration. Calling this methed completes that process.
-     **/
-    public static void doDeferredNativeRegistrations() {
-        for (String name : sPendingNativeRegistrations) {
-            loadNativeLibrary(name);
+    private static void loadNative(String name) {
+        // Can only initialize native once per lifetime of Chrome.
+        if (sInitializedModules.contains(name)) return;
+        // TODO(crbug.com/870055, crbug.com/986960): Automatically determine if module has native
+        // code or resources instead of whitelisting.
+        boolean loadLibrary = false;
+        boolean loadResources = false;
+        if ("test_dummy".equals(name)) {
+            loadLibrary = true;
+            loadResources = true;
         }
-        sPendingNativeRegistrations.clear();
-        sNativeInitialized = true;
+        if (loadLibrary || loadResources) {
+            ModuleJni.get().loadNative(name, loadLibrary, loadResources);
+        }
+        sInitializedModules.add(name);
     }
 
     @NativeMethods
     interface Natives {
-        void loadNativeLibrary(String name);
+        void loadNative(String name, boolean loadLibrary, boolean loadResources);
     }
 }

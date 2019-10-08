@@ -300,18 +300,27 @@ void FrameImpl::ExecuteJavaScriptInternal(std::vector<std::string> origins,
   }
 }
 
-bool FrameImpl::IsWebContentsCreationOverridden(
+bool FrameImpl::ShouldCreateWebContents(
+    content::WebContents* web_contents,
+    content::RenderFrameHost* opener,
     content::SiteInstance* source_site_instance,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
     content::mojom::WindowContainerType window_container_type,
     const GURL& opener_url,
     const std::string& frame_name,
-    const GURL& target_url) {
+    const GURL& target_url,
+    const std::string& partition_id,
+    content::SessionStorageNamespace* session_storage_namespace) {
   // Specify a generous upper bound for unacknowledged popup windows, so that we
   // can catch bad client behavior while not interfering with normal operation.
   constexpr size_t kMaxPendingWebContentsCount = 10;
 
+  DCHECK_EQ(web_contents, web_contents_.get());
+
   if (!popup_listener_)
-    return true;
+    return false;
 
   if (pending_popups_.size() >= kMaxPendingWebContentsCount) {
     // The content is producing popups faster than the embedder can process
@@ -319,10 +328,10 @@ bool FrameImpl::IsWebContentsCreationOverridden(
     LOG(WARNING) << "Too many pending popups, ignoring request.";
 
     // Don't produce a WebContents for this popup.
-    return true;
+    return false;
   }
 
-  return false;
+  return true;
 }
 
 void FrameImpl::AddNewContents(

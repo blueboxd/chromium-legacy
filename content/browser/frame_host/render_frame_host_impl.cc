@@ -33,6 +33,7 @@
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/about_url_loader_factory.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -115,6 +116,7 @@
 #include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/associated_interfaces.mojom.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
@@ -135,6 +137,7 @@
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/network_service_instance.h"
@@ -1556,6 +1559,9 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameDidCallFocus, OnFrameDidCallFocus)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RenderFallbackContentInParentProcess,
                         OnRenderFallbackContentInParentProcess)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DownloadUrl, OnDownloadUrl)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SaveImageFromDataURL,
+                        OnSaveImageFromDataURL)
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
@@ -3903,6 +3909,91 @@ void RenderFrameHostImpl::OnRenderFallbackContentInParentProcess() {
   }
 }
 
+void RenderFrameHostImpl::OnDownloadUrl(
+    const FrameHostMsg_DownloadUrl_Params& params) {
+  mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token;
+  if (!VerifyDownloadUrlParams(GetSiteInstance(), params, &blob_url_token))
+    return;
+
+  DownloadUrl(params.url, params.referrer, params.initiator_origin,
+              params.suggested_name, false,
+              params.follow_cross_origin_redirects, std::move(blob_url_token));
+}
+
+void RenderFrameHostImpl::OnSaveImageFromDataURL(const std::string& url_str) {
+  // Please refer to RenderFrameImpl::SaveImageFromDataURL().
+  if (url_str.length() >= kMaxLengthOfDataURLString)
+    return;
+
+  GURL data_url(url_str);
+  if (!data_url.is_valid() || !data_url.SchemeIs(url::kDataScheme))
+    return;
+
+  DownloadUrl(data_url, Referrer(), url::Origin(), base::string16(), true, true,
+              mojo::NullRemote());
+}
+
+void RenderFrameHostImpl::DownloadUrl(
+    const GURL& url,
+    const Referrer& referrer,
+    const url::Origin& initiator,
+    const base::string16& suggested_name,
+    const bool use_prompt,
+    const bool follow_cross_origin_redirects,
+    mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) {
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("renderer_initiated_download", R"(
+        semantics {
+          sender: "Download from Renderer"
+          description:
+            "The frame has either navigated to a URL that was determined to be "
+            "a download via one of the renderer's classification mechanisms, "
+            "or WebView has requested a <canvas> or <img> element at a "
+            "specific location be to downloaded."
+          trigger:
+            "The user navigated to a destination that was categorized as a "
+            "download, or WebView triggered saving a <canvas> or <img> tag."
+          data: "Only the URL we are attempting to download."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "user"
+          setting: "This feature cannot be disabled by settings."
+          chrome_policy {
+            DownloadRestrictions {
+              DownloadRestrictions: 3
+            }
+          }
+        })");
+  std::unique_ptr<download::DownloadUrlParameters> parameters(
+      new download::DownloadUrlParameters(url, GetProcess()->GetID(),
+                                          GetRenderViewHost()->GetRoutingID(),
+                                          GetRoutingID(), traffic_annotation));
+  parameters->set_content_initiated(true);
+  parameters->set_suggested_name(suggested_name);
+  parameters->set_prompt(use_prompt);
+  parameters->set_follow_cross_origin_redirects(follow_cross_origin_redirects);
+  parameters->set_referrer(referrer.url);
+  parameters->set_referrer_policy(
+      Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
+  parameters->set_initiator(initiator);
+  parameters->set_download_source(download::DownloadSource::FROM_RENDERER);
+
+  BrowserContext* browser_context = GetSiteInstance()->GetBrowserContext();
+  scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
+  if (blob_url_token) {
+    blob_url_loader_factory =
+        ChromeBlobStorageContext::URLLoaderFactoryForToken(
+            browser_context, std::move(blob_url_token));
+  }
+
+  DownloadManager* download_manager =
+      BrowserContext::GetDownloadManager(browser_context);
+  download_manager->DownloadUrl(std::move(parameters),
+                                std::move(blob_url_loader_factory));
+}
+
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 void RenderFrameHostImpl::OnShowPopup(
     const FrameHostMsg_ShowPopup_Params& params) {
@@ -4112,9 +4203,8 @@ void RenderFrameHostImpl::CreateNewWindow(
       cloned_namespace.get());
 
   if (is_new_browsing_instance || !new_window) {
-    // Opener suppressed, Javascript access disabled, or delegate did not
-    // provide a handle to any windows it created. In these cases, never tell
-    // the renderer about the new window.
+    // Opener suppressed or Javascript access disabled. Never tell the renderer
+    // about the new window.
     std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);
     return;
   }
@@ -4133,8 +4223,8 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   if (main_frame->waiting_for_init_) {
     // Need to check |waiting_for_init_| as some paths inside CreateNewWindow
-    // call above (eg if WebContentsDelegate::IsWebContentsCreationOverridden()
-    // returns true) will resume requests by calling RenderFrameHostImpl::Init.
+    // call above (namely, if WebContentsDelegate::ShouldCreateWebContents
+    // returns false) will resume requests by calling RenderFrameHostImpl::Init.
     main_frame->frame_->BlockRequests();
   }
 
@@ -4494,7 +4584,7 @@ void RenderFrameHostImpl::ResetWaitingState() {
   network_service_connection_error_handler_holder_.reset();
 }
 
-RenderFrameHostImpl::CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
+CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
     const url::Origin& origin,
     const GURL& url) {
   // If the --disable-web-security flag is specified, all bets are off and the
@@ -4539,41 +4629,29 @@ RenderFrameHostImpl::CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
   if (!GetContentClient()->browser()->CanCommitURL(GetProcess(), url))
     return CanCommitStatus::CANNOT_COMMIT_URL;
 
-  // TODO(nasko): This check should be updated to apply to all URLs, not just
-  // standard ones.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (url.IsStandard() &&
-      !policy->CanAccessDataForOrigin(GetProcess()->GetID(), url)) {
-    return CanCommitStatus::CANNOT_COMMIT_URL;
+  const CanCommitStatus can_commit_status =
+      policy->CanCommitOriginAndUrl(GetProcess()->GetID(), origin, url);
+  if (can_commit_status != CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL)
+    return can_commit_status;
+
+  if (!origin.opaque()) {
+    // A non-opaque origin must be a valid URL, which allows us to safely do a
+    // conversion to GURL.
+    GURL origin_url = origin.GetURL();
+
+    // Verify that the origin is allowed to commit in this process.
+    // Note: This also handles non-standard cases for |url|, such as
+    // about:blank, data, and blob URLs.
+
+    // Renderer-debug URLs can never be committed.
+    if (IsRendererDebugURL(origin_url))
+      return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
+
+    // Give the client a chance to disallow URLs from committing.
+    if (!GetContentClient()->browser()->CanCommitURL(GetProcess(), origin_url))
+      return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
   }
-
-  // It is safe to commit into a opaque origin, regardless of the URL, as it is
-  // restricted from accessing other origins.
-  if (origin.opaque())
-    return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
-
-  // Standard URLs must match the reported origin.
-  if (url.IsStandard() && !origin.IsSameOriginWith(url::Origin::Create(url)))
-    return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
-
-  // A non-opaque origin must be a valid URL, which allows us to safely do a
-  // conversion to GURL.
-  GURL origin_url = origin.GetURL();
-
-  if (!policy->CanAccessDataForOrigin(GetProcess()->GetID(), origin))
-    return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
-
-  // Verify that the origin is allowed to commit in this process.
-  // Note: This also handles non-standard cases for |url|, such as
-  // about:blank, data, and blob URLs.
-
-  // Renderer-debug URLs can never be committed.
-  if (IsRendererDebugURL(origin_url))
-    return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
-
-  // Give the client a chance to disallow URLs from committing.
-  if (!GetContentClient()->browser()->CanCommitURL(GetProcess(), origin_url))
-    return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
 
   return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
 }

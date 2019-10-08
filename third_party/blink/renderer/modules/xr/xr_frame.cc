@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
 
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/xr/xr_hit_test_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
@@ -131,9 +132,10 @@ void XRFrame::Deactivate() {
 }
 
 HeapVector<Member<XRHitTestResult>> XRFrame::getHitTestResults(
-    XRHitTestSource* hitTestSource,
-    XRSpace* relativeTo) {
-  return {};
+    XRHitTestSource* hit_test_source) {
+  if (!session_->ValidateHitTestSourceExists(hit_test_source))
+    return {};
+  return hit_test_source->Results();
 }
 
 void XRFrame::Trace(blink::Visitor* visitor) {

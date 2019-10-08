@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Edytuj zakładkę</translation>
 <translation id="2179182049312275900">W każdej chwili możesz włączyć synchronizację w ustawieniach.</translation>
 <translation id="2198757192731523470">Google może korzystać z Twojej historii, by personalizować wyniki wyszukiwania, reklamy i działanie innych usług.</translation>
-<translation id="2207590065820824892">Nieprzeczytane artykuły na liście Do przeczytania: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Wczytano stronę internetową</translation>
 <translation id="2239626343334228536">Czyszczę dane przeglądania…</translation>
 <translation id="2267753748892043616">Dodaj konto</translation>
@@ -265,7 +264,6 @@ Dane zostały zaszyfrowane z użyciem Twojego hasła synchronizacji. Wpisz je, 
 
 Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" />.</translation>
 <translation id="4805759445554688327">Nieprawidłowy numer karty</translation>
-<translation id="4807020197310989387">1 nieprzeczytany artykuł na liście Do przeczytania.</translation>
 <translation id="4818522717893377262">Dodaj język...</translation>
 <translation id="481968316161811770">Cookie i dane stron</translation>
 <translation id="4833786495304741580">Automatycznie przesyła do Google statystyki użytkowania i raporty o awariach.</translation>
@@ -414,6 +412,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6858855187367714033">Zeskanowano</translation>
 <translation id="6859944681507688231">Aby zeskanować kod QR lub kartę kredytową, włącz aparat w ustawieniach.</translation>
 <translation id="6873263987691478642">Widok dzielony</translation>
+<translation id="6888009575607455378">Czy na pewno chcesz odrzucić zmiany?</translation>
 <translation id="6896758677409633944">Kopiuj</translation>
 <translation id="6903907808598579934">Włącz synchronizację</translation>
 <translation id="6914583639806229067">Wyszukaj skopiowany obraz</translation>

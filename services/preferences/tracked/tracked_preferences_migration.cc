@@ -32,9 +32,9 @@ class TrackedPreferencesMigrator
           unprotected_store_cleaner,
       const base::Callback<void(const std::string& key)>&
           protected_store_cleaner,
-      const base::Callback<void(const base::Closure&)>&
+      const base::Callback<void(base::OnceClosure)>&
           register_on_successful_unprotected_store_write_callback,
-      const base::Callback<void(const base::Closure&)>&
+      const base::Callback<void(base::OnceClosure)>&
           register_on_successful_protected_store_write_callback,
       std::unique_ptr<PrefHashStore> unprotected_pref_hash_store,
       std::unique_ptr<PrefHashStore> protected_pref_hash_store,
@@ -63,9 +63,9 @@ class TrackedPreferencesMigrator
 
   const base::Callback<void(const std::string& key)> unprotected_store_cleaner_;
   const base::Callback<void(const std::string& key)> protected_store_cleaner_;
-  const base::Callback<void(const base::Closure&)>
+  const base::Callback<void(base::OnceClosure)>
       register_on_successful_unprotected_store_write_callback_;
-  const base::Callback<void(const base::Closure&)>
+  const base::Callback<void(base::OnceClosure)>
       register_on_successful_protected_store_write_callback_;
 
   InterceptablePrefFilter::FinalizeFilterOnLoadCallback
@@ -98,7 +98,7 @@ void CleanupPrefStore(
 // once the destination pref store they were migrated to was successfully
 // written to disk. Otherwise, executes the cleanup right away.
 void ScheduleSourcePrefStoreCleanup(
-    const base::Callback<void(const base::Closure&)>&
+    const base::Callback<void(base::OnceClosure)>&
         register_on_successful_destination_store_write_callback,
     const base::Callback<void(const std::string& key)>& source_store_cleaner,
     const std::set<std::string>& keys_to_clean,
@@ -197,9 +197,9 @@ TrackedPreferencesMigrator::TrackedPreferencesMigrator(
     const base::Callback<void(const std::string& key)>&
         unprotected_store_cleaner,
     const base::Callback<void(const std::string& key)>& protected_store_cleaner,
-    const base::Callback<void(const base::Closure&)>&
+    const base::Callback<void(base::OnceClosure)>&
         register_on_successful_unprotected_store_write_callback,
-    const base::Callback<void(const base::Closure&)>&
+    const base::Callback<void(base::OnceClosure)>&
         register_on_successful_protected_store_write_callback,
     std::unique_ptr<PrefHashStore> unprotected_pref_hash_store,
     std::unique_ptr<PrefHashStore> protected_pref_hash_store,
@@ -214,8 +214,7 @@ TrackedPreferencesMigrator::TrackedPreferencesMigrator(
       register_on_successful_protected_store_write_callback_(
           register_on_successful_protected_store_write_callback),
       unprotected_pref_hash_store_(std::move(unprotected_pref_hash_store)),
-      protected_pref_hash_store_(std::move(protected_pref_hash_store)) {
-}
+      protected_pref_hash_store_(std::move(protected_pref_hash_store)) {}
 
 TrackedPreferencesMigrator::~TrackedPreferencesMigrator() {}
 
@@ -306,9 +305,9 @@ void SetupTrackedPreferencesMigration(
     const base::Callback<void(const std::string& key)>&
         unprotected_store_cleaner,
     const base::Callback<void(const std::string& key)>& protected_store_cleaner,
-    const base::Callback<void(const base::Closure&)>&
+    const base::Callback<void(base::OnceClosure)>&
         register_on_successful_unprotected_store_write_callback,
-    const base::Callback<void(const base::Closure&)>&
+    const base::Callback<void(base::OnceClosure)>&
         register_on_successful_protected_store_write_callback,
     std::unique_ptr<PrefHashStore> unprotected_pref_hash_store,
     std::unique_ptr<PrefHashStore> protected_pref_hash_store,

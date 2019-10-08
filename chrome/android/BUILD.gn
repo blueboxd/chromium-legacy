@@ -390,7 +390,6 @@ android_library("chrome_java") {
   deps += feed_deps
 
   srcjar_deps = [
-    ":browser_build_config",
     ":chrome_android_java_enums_srcjar",
     ":chrome_android_java_switches_srcjar",
     ":chrome_android_java_google_api_keys_srcjar",
@@ -608,18 +607,6 @@ java_cpp_strings("chrome_android_java_switches_srcjar") {
     "//chrome/common/chrome_switches.cc",
   ]
   template = "//chrome/android/java_templates/ChromeSwitches.java.tmpl"
-}
-
-java_cpp_template("browser_build_config") {
-  sources = [
-    "//chrome/android/java_templates/BuildConfig.template",
-  ]
-  package_path = "org/chromium/chrome/browser"
-
-  defines = []
-  if (!notouch_build) {
-    defines += [ "_ENABLE_OFFLINE_PAGES" ]
-  }
 }
 
 proto_java_library("partner_location_descriptor_proto_java") {
@@ -1190,7 +1177,6 @@ chrome_common_shared_library("libchrome") {
     deps += [ "//chrome/browser/android/vr:module_factory" ]
   }
 
-  allow_partitions = true
   module_descs = chrome_modern_module_descs
 }
 
@@ -1460,7 +1446,6 @@ template("libmonochrome_apk_or_bundle_tmpl") {
     }
 
     is_monochrome = true
-    allow_partitions = true
     module_descs = monochrome_module_descs
   }
 }
@@ -2211,6 +2196,17 @@ if (public_android_sdk) {
     never_incremental = true
     modules = [ "test_dummy" ]
     extra_args = _bundle_smoke_test_extra_args
+  }
+
+  instrumentation_test_runner(
+      "monochrome_public_bundle_fake_modules_smoke_test") {
+    apk_under_test = "//chrome/android:monochrome_public_bundle_apks"
+    android_test_apk = ":chrome_bundle_smoke_test_apk"
+    android_test_apk_name = "ChromeBundleSmokeTest"
+    never_incremental = true
+    fake_modules = [ "test_dummy" ]
+    extra_args = _bundle_smoke_test_extra_args +
+                 _bundle_fake_modules_smoke_test_extra_args
   }
 
   if (defined(expected_static_initializer_count)) {

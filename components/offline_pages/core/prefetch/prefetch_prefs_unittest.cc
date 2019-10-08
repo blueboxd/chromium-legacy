@@ -28,12 +28,7 @@ void PrefetchPrefsTest::SetUp() {
   prefetch_prefs::RegisterPrefs(prefs()->registry());
 }
 
-#if defined(DISABLE_OFFLINE_PAGES_TOUCHLESS)
-#define MAYBE_PrefetchingEnabled DISABLED_PrefetchingEnabled
-#else
-#define MAYBE_PrefetchingEnabled PrefetchingEnabled
-#endif
-TEST_F(PrefetchPrefsTest, MAYBE_PrefetchingEnabled) {
+TEST_F(PrefetchPrefsTest, PrefetchingEnabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
   EXPECT_FALSE(prefetch_prefs::IsEnabled(prefs()));
@@ -110,12 +105,7 @@ TEST_F(PrefetchPrefsTest, EnabledByServer) {
   EXPECT_FALSE(prefetch_prefs::IsEnabledByServer(prefs()));
 }
 
-#if defined(DISABLE_OFFLINE_PAGES_TOUCHLESS)
-#define MAYBE_ForbiddenCheck DISABLED_ForbiddenCheck
-#else
-#define MAYBE_ForbiddenCheck ForbiddenCheck
-#endif
-TEST_F(PrefetchPrefsTest, MAYBE_ForbiddenCheck) {
+TEST_F(PrefetchPrefsTest, ForbiddenCheck) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
 
@@ -146,12 +136,7 @@ TEST_F(PrefetchPrefsTest, MAYBE_ForbiddenCheck) {
   EXPECT_FALSE(prefetch_prefs::IsForbiddenCheckDue(prefs()));
 }
 
-#if defined(DISABLE_OFFLINE_PAGES_TOUCHLESS)
-#define MAYBE_FirstForbiddenCheck DISABLED_FirstForbiddenCheck
-#else
-#define MAYBE_FirstForbiddenCheck FirstForbiddenCheck
-#endif
-TEST_F(PrefetchPrefsTest, MAYBE_FirstForbiddenCheck) {
+TEST_F(PrefetchPrefsTest, FirstForbiddenCheck) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
 

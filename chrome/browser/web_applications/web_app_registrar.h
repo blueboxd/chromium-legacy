@@ -86,7 +86,7 @@ class WebAppRegistrar : public AppRegistrar {
     const_iterator end() const;
 
    private:
-    const WebAppRegistrar* registrar_;
+    const WebAppRegistrar* const registrar_;
 #if DCHECK_IS_ON()
     const size_t mutations_count_;
 #endif

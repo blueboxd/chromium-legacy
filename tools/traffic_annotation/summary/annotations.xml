@@ -224,7 +224,7 @@ Refer to README.md for content description and update process.
  <item id="refresh_token_annotation_request" hash_code="7433837" type="1" second_id="29188932" deprecated="2018-01-17" content_hash_code="137103383" file_path=""/>
  <item id="remote_suggestions_provider" hash_code="49544361" type="0" content_hash_code="126329742" os_list="linux,windows" file_path="components/ntp_snippets/remote/cached_image_fetcher.cc"/>
  <item id="render_view_context_menu" hash_code="25844439" type="0" content_hash_code="69471170" os_list="linux,windows" file_path="chrome/browser/renderer_context_menu/render_view_context_menu.cc"/>
- <item id="renderer_initiated_download" hash_code="116443055" type="0" content_hash_code="37846436" os_list="linux,windows" file_path="content/browser/frame_host/render_frame_message_filter.cc"/>
+ <item id="renderer_initiated_download" hash_code="116443055" type="0" content_hash_code="37846436" os_list="linux,windows" file_path="content/browser/frame_host/render_frame_host_impl.cc"/>
  <item id="reporting" hash_code="109891200" type="0" content_hash_code="125758928" os_list="linux,windows" file_path="net/reporting/reporting_uploader.cc"/>
  <item id="resource_dispatcher_host" hash_code="81157007" type="0" deprecated="2019-07-30" content_hash_code="35725167" file_path=""/>
  <item id="resource_prefetch" hash_code="110815970" type="0" deprecated="2018-02-28" content_hash_code="39251261" file_path=""/>

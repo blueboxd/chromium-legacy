@@ -92,7 +92,6 @@
 <translation id="2149973817440762519">Редагувати закладку</translation>
 <translation id="2179182049312275900">Ви можете будь-коли ввімкнути синхронізацію в налаштуваннях.</translation>
 <translation id="2198757192731523470">Ваша історія може допомогти нам персоналізувати Пошук, оголошення й інші сервіси Google.</translation>
-<translation id="2207590065820824892">Непрочитаних статей у списку читання: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Веб-сторінку завантажено</translation>
 <translation id="2239626343334228536">Очищення даних веб-перегляду…</translation>
 <translation id="2267753748892043616">Додати обліковий запис</translation>
@@ -265,7 +264,6 @@
 
 Щоб змінити це налаштування, <ph name="BEGIN_LINK" />скиньте параметри синхронізації<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Недійсний номер картки</translation>
-<translation id="4807020197310989387">1 непрочитана стаття в списку читання.</translation>
 <translation id="4818522717893377262">Додати мову…</translation>
 <translation id="481968316161811770">Файли cookie й дані із сайтів</translation>
 <translation id="4833786495304741580">Автоматично надсилає статистику використання та звіти про аварійне завершення роботи в Google.</translation>
@@ -414,6 +412,7 @@
 <translation id="6858855187367714033">Зіскановано</translation>
 <translation id="6859944681507688231">Щоб відсканувати QR-код або кредитну картку, увімкніть камеру в налаштуваннях.</translation>
 <translation id="6873263987691478642">Режим розділеного екрана</translation>
+<translation id="6888009575607455378">Відхилити зміни?</translation>
 <translation id="6896758677409633944">Копіювати</translation>
 <translation id="6903907808598579934">Увімкнути синхронізацію</translation>
 <translation id="6914583639806229067">Шукати скопійоване зображення</translation>

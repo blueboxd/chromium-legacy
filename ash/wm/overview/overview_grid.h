@@ -13,6 +13,8 @@
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_observer.h"
 #include "ash/wm/window_state.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -51,13 +53,13 @@ class PresentationTimeRecorder;
 //    0, 1, 2, 3, 4, 5, 6
 // The selector is switched to the next window grid (if available) or wrapped if
 // it reaches the end of its movement sequence.
-class ASH_EXPORT OverviewGrid : public ScreenRotationAnimatorObserver,
+class ASH_EXPORT OverviewGrid : public SplitViewObserver,
+                                public ScreenRotationAnimatorObserver,
                                 public WallpaperControllerObserver {
  public:
   OverviewGrid(aura::Window* root_window,
                const std::vector<aura::Window*>& window_list,
-               OverviewSession* overview_session,
-               const gfx::Rect& bounds_in_screen);
+               OverviewSession* overview_session);
   ~OverviewGrid() override;
 
   // Exits overview mode.
@@ -168,6 +170,15 @@ class ASH_EXPORT OverviewGrid : public ScreenRotationAnimatorObserver,
   // Returns the overview item that accociates with |drop_target_widget_|.
   // Returns nullptr if overview does not have the drop target.
   OverviewItem* GetDropTarget();
+
+  // Called by |OverviewSession::OnDisplayMetricsChanged|, only for the display
+  // with this grid.
+  void OnDisplayMetricsChanged();
+
+  // SplitViewObserver:
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
+  void OnSplitViewDividerPositionChanged() override;
 
   // ScreenRotationAnimatorObserver:
   void OnScreenCopiedBeforeRotation() override;

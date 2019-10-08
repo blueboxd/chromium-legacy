@@ -15,10 +15,8 @@
 <translation id="123620459398936149">Chrome OS no ha pogut sincronitzar les vostres dades. Actualitzeu la contrasenya de sincronització.</translation>
 <translation id="1302523850133262269">Espereu mentre Chrome instal·la les actualitzacions més recents del sistema.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
-<translation id="1393853151966637042">Obtén ajuda per fer servir Chrome</translation>
 <translation id="1399397803214730675">Aquest equip ja disposa d'una versió més recent de Google Chrome. Si el programari no funciona, desinstal·leu Google Chrome i torneu-ho a provar.</translation>
 <translation id="1434626383986940139">Aplicacions de Chrome Canary</translation>
-<translation id="1469002951682717133">Menú d'aplicacions de Chrome</translation>
 <translation id="1553358976309200471">Actualitza Chrome</translation>
 <translation id="1587223624401073077">Google Chrome està utilitzant la càmera.</translation>
 <translation id="1587325591171447154">Chrome ha bloquejat <ph name="FILE_NAME" /> perquè és perillós.</translation>
@@ -34,8 +32,6 @@
 <translation id="1734234790201236882">Chrome desarà aquesta contrasenya al Compte de Google. No caldrà que la recordis.</translation>
 <translation id="174539241580958092">Google Chrome no ha pogut sincronitzar les dades a causa d'un error en iniciar la sessió.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1773601347087397504">Obtén ajuda per a l'ús de Chrome OS</translation>
-<translation id="1795405610103747296">Instal·la Chrome al telèfon. T'enviarem un SMS al telèfon: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">En desactivar aquesta opció, pots iniciar la sessió en llocs web de Google, com ara Gmail, sense iniciar la sessió a Chrome</translation>
 <translation id="1860536484129686729">Per visitar aquest lloc web, Chrome necessita permís per accedir a la càmera</translation>
 <translation id="1873233029667955273">Google Chrome no és el navegador predeterminat</translation>
@@ -50,16 +46,10 @@
 <translation id="2123055963409958220">Informa de la <ph name="BEGIN_LINK" />configuració actual<ph name="END_LINK" /> per ajudar-nos a millorar Chrome</translation>
 <translation id="2128103434102193461">Per obtenir informació sobre Chrome OS, consulta <ph name="LINK_BEGIN" />Sobre Chrome OS<ph name="LINK_END" /></translation>
 <translation id="2151406531797534936">Reinicia Chrome ara</translation>
-<translation id="216054706567564023">Instal·la Chrome al telèfon. T'enviarem un SMS al número de telèfon de recuperació del compte.</translation>
 <translation id="2246246234298806438">Google Chrome no pot mostrar la previsualització d'impressió perquè falta el lector de PDF incorporat.</translation>
-<translation id="2252923619938421629">Informa de la configuració actual per ajudar-nos a millorar Google Chrome</translation>
-<translation id="2286950485307333924">Heu iniciat la sessió a Chrome</translation>
 <translation id="2290014774651636340">Falten les claus de l'API de Google. Es desactivaran algunes de les funcionalitats de Google Chrome.</translation>
 <translation id="2290095356545025170">Confirmeu que voleu desinstal·lar Google Chrome?</translation>
 <translation id="2309047409763057870">Aquesta és una instal·lació secundària de Google Chrome i no pot definir-se com a navegador predeterminat.</translation>
-<translation id="2346876346033403680">Algú ha iniciat anteriorment la sessió a Chrome en aquest ordinador com a <ph name="ACCOUNT_EMAIL_LAST" />. Si no és el vostre compte, creeu un usuari de Chrome per mantenir la informació separada.
-
-En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name="ACCOUNT_EMAIL_NEW" /> la informació de Chrome com ara adreces d'interès, historial i altres configuracions.</translation>
 <translation id="2348335408836342058">Per visitar aquest lloc web, Chrome necessita permís per accedir a la càmera i al micròfon</translation>
 <translation id="2429317896000329049">Google Chrome no ha pogut sincronitzar les dades perquè la sincronització no està disponible per al vostre domini.</translation>
 <translation id="2467438592969358367">Google Chrome vol exportar les teves contrasenyes. Escriu la contrasenya de Windows per permetre-ho.</translation>
@@ -81,7 +71,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="2871893339301912279">Teniu la sessió iniciada a Chrome.</translation>
 <translation id="2888126860611144412">Sobre Chrome</translation>
 <translation id="3037838751736561277">Google Chrome està en mode de segon pla.</translation>
-<translation id="3047079729301751317">Si desconnecteu <ph name="USERNAME" /> s'esborraran l'historial, les adreces d'interès, la configuració i totes les dades de Chrome que hi hagi desades en aquest dispositiu. Les dades emmagatzemades al compte de Google no s'esborraran, i es poden gestionar des del <ph name="GOOGLE_DASHBOARD_LINK" />Tauler de Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3065168410429928842">Pestanya de Chrome</translation>
 <translation id="3080151273017101988">Continua executant aplicacions de segon pla en tancar Google Chrome</translation>
 <translation id="3089968997497233615">Hi ha disponible una nova versió més segura de Google Chrome.</translation>
@@ -102,7 +91,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="3582972582564653026">Sincronitza i personalitza Chrome en tots els teus dispositius</translation>
 <translation id="3622797965165704966">Ara resulta més fàcil utilitzar Chrome amb el vostre compte de Google i en ordinadors compartits.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Condicions del servei<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome OS</translation>
-<translation id="3716182511346448902">Com que aquesta pàgina fa servir massa memòria, Chrome l'ha posat en pausa.</translation>
 <translation id="3718181793972440140">Amb aquesta acció, se suprimirà 1 element d'aquest dispositiu. Per recuperar les teves dades més endavant, inicia la sessió a Chrome com a <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">L'extensió <ph name="EXTENSION_NAME" /> ha canviat la pàgina que es mostra quan inicieu Chrome.</translation>
 <translation id="3780814664026482060">Chrome: <ph name="PAGE_TITLE" /></translation>
@@ -118,7 +106,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="4191857738314598978">{0,plural, =1{Reinicia Chrome en 1 dia}other{Reinicia Chrome en # dies}}</translation>
 <translation id="424864128008805179">Vols tancar la sessió de Chrome?</translation>
 <translation id="4251615635259297716">Voleu enllaçar les vostres dades de Chrome amb aquest compte?</translation>
-<translation id="4251625577313994583">baixa Chrome al dispositiu iPhone</translation>
 <translation id="4293420128516039005">Inicia la sessió per sincronitzar i personalitzar Chrome en tots els teus dispositius</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -140,7 +127,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="479167709087336770">Fa servir el mateix corrector ortogràfic que s'utilitza a la Cerca de Google. El text que escrius al navegador s'envia a Google. Pots canviar aquest comportament sempre que vulguis a la configuració.</translation>
 <translation id="4891791193823137474">Permet que Google Chrome s'executi en procés de fons</translation>
 <translation id="4895437082222824641">Obre l'enllaç en una pes&amp;tanya nova a Chrome</translation>
-<translation id="4921569541910214635">Si compartiu un ordinador, ara podeu configurar Chrome com vulgueu.</translation>
 <translation id="4953650215774548573">Defineix Google Chrome com a navegador predeterminat</translation>
 <translation id="495931528404527476">A Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -169,8 +155,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="5895138241574237353">Reinicia</translation>
 <translation id="5940385492829620908">El vostre web, les adreces d'interès i altres coses de Chrome resideixen aquí.</translation>
 <translation id="5941830788786076944">Estableix Google Chrome com el navegador predeterminat</translation>
-<translation id="6014844626092547096">Heu iniciat la sessió a Chrome. El vostre administrador ha desactivat la sincronització.</translation>
-<translation id="6040143037577758943">Tanca</translation>
 <translation id="6070348360322141662">Per a més seguretat, Google Chrome encriptarà les teves dades</translation>
 <translation id="6113794647360055231">Chrome és millor que mai</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
@@ -183,8 +167,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="6368958679917195344">Chrome OS és possible gràcies a <ph name="BEGIN_LINK_CROS_OSS" />programari addicional de codi obert<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">S'està actualitzant Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
-<translation id="6598387184982954187">Utilitzeu <ph name="PROFILE_EMAIL" /> per sincronitzar el contingut de Chrome. Per modificar la preferència de sincronització o per utilitzar Chrome sense cap compte de Google, dirigiu-vos a <ph name="SETTINGS_LINK" />.</translation>
-<translation id="6600954340915313787">Copiada de Chrome</translation>
 <translation id="6676384891291319759">Accedeix a Internet</translation>
 <translation id="6679975945624592337">Permet que Google Chrome s'executi en segon pla</translation>
 <translation id="6750954913813541382">Per corregir els errors d'ortografia, Chrome envia a Google el text que escrius al navegador</translation>
@@ -198,7 +180,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="6989339256997917931">Google Chrome està actualitzat, però no l'heu utilitzat durant un mínim de 30 dies.</translation>
 <translation id="7098166902387133879">Google Chrome està utilitzant el micròfon.</translation>
 <translation id="7106741999175697885">Gestor de tasques - Google Chrome</translation>
-<translation id="7164397146364144019">Si voleu col·laborar perquè Chrome sigui més segur i fàcil d'utilitzar, informeu automàticament Google dels detalls sobre possibles incidències de seguretat.</translation>
 <translation id="7242029209006116544">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Google Chrome a l'administrador corresponent. Les vostres dades de Chrome, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Podreu suprimir aquestes dades mitjançant el Tauler de Comptes de Google, però no les podreu associar amb un altre compte. De manera opcional, podeu crear un perfil nou per mantenir les vostres dades de Chrome a part. <ph name="LEARN_MORE" /></translation>
 <translation id="7295052994004373688">És l'idioma en què es mostra la IU de Google Chrome</translation>
 <translation id="7296210096911315575">Informació important d'ús i de seguretat</translation>
@@ -207,7 +188,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="7398801000654795464">Teníeu la sessió iniciada a Chrome com a <ph name="USER_EMAIL_ADDRESS" />. Utilitzeu el mateix compte per tornar-hi a iniciar la sessió.</translation>
 <translation id="7408085963519505752">Condicions de Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS no ha pogut sincronitzar les vostres dades perquè la sincronització no està disponible per al vostre domini.</translation>
-<translation id="7459554271817304652">Configureu la sincronització per desar al web les funcions personalitzades del navegador i per accedir-hi des de qualsevol ordinador mitjançant Google Chrome.</translation>
 <translation id="7486227612705979895">Chrome accedirà a Drive per fer suggeriments a la barra d'adreces</translation>
 <translation id="7531671357096394523">Tanca totes les còpies de Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
@@ -231,25 +211,18 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="7962410387636238736">Aquest ordinador ja no rebrà més actualitzacions de Google Chrome perquè Windows XP i Windows Vista ja no són compatibles</translation>
 <translation id="8008534537613507642">Torna a instal·lar Chrome</translation>
 <translation id="8013993649590906847">Si una imatge no té una descripció útil, Chrome provarà d'oferir-te'n una. Per crear les descripcions, les imatges s'envien a Google.</translation>
-<translation id="8032142183999901390">Després de suprimir el vostre compte de Chrome, pot ser que hàgiu de tornar a carregar les pestanyes obertes.</translation>
 <translation id="8129812357326543296">Quant a &amp;Google Chrome</translation>
-<translation id="8179874765710681175">Instal·la Chrome al telèfon. T'enviarem un SMS al telèfon.</translation>
-<translation id="825412236959742607">Com que aquesta pàgina fa servir massa memòria, Chrome n'ha suprimit contingut.</translation>
 <translation id="8255190535488645436">Google Chrome està utilitzant la càmera i el micròfon.</translation>
 <translation id="8286862437124483331">Google Chrome està provant de mostrar contrasenyes. Escriviu la vostra contrasenya de Windows per permetre-ho.</translation>
 <translation id="8290100596633877290">Google Chrome s'ha bloquejat. Voleu tornar-lo a iniciar?</translation>
 <translation id="8342675569599923794">Chrome ha bloquejat aquest fitxer perquè és perillós.</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Tots els drets reservats.</translation>
 <translation id="840084489713044809">Google Chrome vol exportar les teves contrasenyes.</translation>
-<translation id="8406086379114794905">Ajudeu a millorar Chrome</translation>
 <translation id="8455999171311319804">Opcional: ajuda'ns a millorar Chrome OS enviant automàticament dades de diagnòstic i d'ús a Google.</translation>
-<translation id="8478823064122749032">Instal·la Chrome al telèfon. T'enviarem un SMS al número de telèfon de recuperació del compte: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8498858610309223613">S'acaba d'aplicar una actualització de seguretat especial per a Google Chrome. Reinicia el navegador i restaurarem les pestanyes.</translation>
 <translation id="8521348052903287641">Regla d'entrada de Google Chrome Dev per permetre el trànsit d'mDNS.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8547799825197623713">Menú d'aplicacions de Chrome per a Canary</translation>
 <translation id="8556340503434111824">Hi ha disponible una nova versió de Google Chrome, i és més ràpida que mai.</translation>
-<translation id="8568392309447938879">Heu de tenir la sessió iniciada a Chrome per utilitzar les aplicacions. Això permet que Chrome sincronitzi les aplicacions, les adreces d'interès, l'historial, les contrasenyes i altres configuracions a tots els dispositius.</translation>
 <translation id="8606668294522778825">Google Chrome pot utilitzar serveis web per millorar la vostra experiència de  navegació, però podeu desactivar-los si voleu. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome no respon. Voleu tornar-lo a iniciar ara?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome es reiniciarà d'aquí a 1 minut}other{Chrome es reiniciarà d'aquí a # minuts}}</translation>

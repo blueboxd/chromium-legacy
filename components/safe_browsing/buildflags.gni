@@ -10,16 +10,12 @@ if (is_android) {
 declare_args() {
   # Variable safe_browsing is used to control the build time configuration for
   # safe browsing feature. Safe browsing can be compiled in 3 different levels:
-  # 0 disables it, 1 enables it fully, 2 enables mobile protection via an
-  # external API, and 3 enables mobile protection via internal API.
+  # 0 disables it, 1 enables it fully, and 2 enables mobile protection via an
+  # external API.
   if (is_ios || is_chromecast) {
     safe_browsing_mode = 0
   } else if (is_android) {
-    if (notouch_build) {
-      safe_browsing_mode = 3
-    } else {
-      safe_browsing_mode = 2
-    }
+    safe_browsing_mode = 2
   } else {
     safe_browsing_mode = 1
   }

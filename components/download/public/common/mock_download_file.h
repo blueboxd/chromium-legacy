@@ -35,10 +35,9 @@ class MockDownloadFile : public DownloadFile {
                     const DownloadItem::ReceivedSlices& received_slices,
                     bool is_parallelizable));
   void AddInputStream(std::unique_ptr<InputStream> input_stream,
-                      int64_t offset,
-                      int64_t length) override;
-  MOCK_METHOD3(DoAddInputStream,
-               void(InputStream* input_stream, int64_t offset, int64_t length));
+                      int64_t offset) override;
+  MOCK_METHOD2(DoAddInputStream,
+               void(InputStream* input_stream, int64_t offset));
   MOCK_METHOD2(OnResponseCompleted,
                void(int64_t offset, DownloadInterruptReason status));
   MOCK_METHOD2(AppendDataToFile,

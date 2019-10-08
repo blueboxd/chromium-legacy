@@ -672,6 +672,16 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                   "supportsSession()",
                   "isSessionSupported() and check the resolved boolean value")};
 
+    case WebFeature::kCSSValueAppearanceButtonForBootstrapLooseSelectorRendered:
+    case WebFeature::kCSSValueAppearanceButtonForOthers2Rendered:
+      // The below DeprecationInfo::id doesn't match to WebFeature enums
+      // intentionally.
+      return {"CSSValueAppearanceButtonForOthersRendered", kM80,
+              WillBeRemoved("'-webkit-appearance: button' for "
+                            "elements other than <button> and <input "
+                            "type=button/color/reset/submit>",
+                            kM80, "4867142128238592")};
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", kUnknown, ""};

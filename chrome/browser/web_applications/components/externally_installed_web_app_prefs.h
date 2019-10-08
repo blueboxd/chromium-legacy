@@ -60,7 +60,7 @@ class ExternallyInstalledWebAppPrefs {
   bool IsPlaceholderApp(const AppId& app_id) const;
 
  private:
-  PrefService* pref_service_;
+  PrefService* const pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternallyInstalledWebAppPrefs);
 };

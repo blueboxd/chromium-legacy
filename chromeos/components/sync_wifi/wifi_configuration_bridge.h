@@ -50,7 +50,7 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge {
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
   // Comes from |entries_| the in-memory map.
-  std::vector<std::string> GetAllSsidsForTesting();
+  std::vector<NetworkIdentifier> GetAllIdsForTesting();
 
  private:
   void Commit(std::unique_ptr<syncer::ModelTypeStore::WriteBatch> batch);

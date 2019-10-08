@@ -517,10 +517,9 @@ void GetCookies(const GURL& url,
     base::RunLoop loop;
     auto* storage_partition =
         contents->GetMainFrame()->GetProcess()->GetStoragePartition();
-    net::CookieOptions options;
     net::CookieList cookie_list;
     storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
-        url, options,
+        url, net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(GetCookieCallback, loop.QuitClosure(), &cookie_list));
     loop.Run();
 

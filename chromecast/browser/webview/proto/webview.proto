@@ -174,9 +174,10 @@ message NavigationRequestEvent {
 }
 
 enum NavigationDecision {
-  PREVENT = 0;
-  NAVIGATE = 1;
+  NAVIGATE = 0;
+  PREVENT = 1;
 }
+
 message WebviewRequest {
   // Unique identifier for the request. For requests that will have a response,
   // the response id will match the request id.

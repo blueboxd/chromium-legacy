@@ -62,10 +62,14 @@ source_set("channel_info") {
     "channel_info_mac.mm",
     "channel_info_win.cc",
   ]
-
   if (is_posix && !is_android && !is_chromeos && !is_mac) {
     sources += [ "channel_info_posix.cc" ]
   }
+
+  deps = [
+    "//build:branding_buildflags",
+  ]
+
   public_deps = [
     "//base",
     "//components/version_info",
@@ -614,7 +618,6 @@ static_library("constants") {
     ":buildflags",
     ":chrome_features",
     ":non_code_constants",
-    "//build:branding_buildflags",
     "//content/public/common:result_codes",
     "//rlz/buildflags",
   ]
@@ -624,6 +627,7 @@ static_library("constants") {
     ":version_header",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//build:branding_buildflags",
     "//components/bookmarks/common",
     "//components/nacl/common:switches",
     "//components/offline_pages/buildflags",

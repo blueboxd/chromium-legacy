@@ -1746,7 +1746,6 @@ if (is_android) {
     ]
 
     deps = [
-      "//chrome/android/modules/test_dummy/provider:native",
       "//chrome/browser/ui",
       "//chrome/child",
       "//chrome/common",

@@ -178,27 +178,46 @@ class TimePicker extends HTMLElement {
     this.submissionControls_ = new SubmissionControls(
         this.onSubmitButtonClick_, this.onCancelButtonClick_);
     this.append(this.timeColumns_, this.submissionControls_);
-  }
+
+    window.addEventListener('resize', this.onWindowResize_, {once: true});
+    this.addEventListener('keydown', this.onKeyDown_);
+  };
 
   initializeFromConfig_ = (config) => {
     const initialSelection = parseDateTimeString(config.currentValue);
-    this.selectedTime_ = initialSelection ? initialSelection
-                                          : Time.currentTime();
+    this.selectedTime_ =
+        initialSelection ? initialSelection : Time.currentTime();
     this.hasSecond_ = config.hasSecond;
     this.hasMillisecond_ = config.hasMillisecond;
     this.hasAMPM_ = config.hasAMPM;
-  }
+  };
 
   onSubmitButtonClick_ = () => {
-    const selectedValue = this.timeColumns_.selectedValue().toString(this.hasSecond, this.hasMillisecond);
+    const selectedValue = this.timeColumns_.selectedValue().toString(
+        this.hasSecond, this.hasMillisecond);
     window.setTimeout(function() {
       window.pagePopupController.setValueAndClosePopup(0, selectedValue);
     }, 100);
-  }
+  };
 
   onCancelButtonClick_ = () => {
     window.pagePopupController.closePopup();
-  }
+  };
+
+  onWindowResize_ = (event) => {
+    this.timeColumns_.firstChild.focus();
+  };
+
+  onKeyDown_ = (event) => {
+    switch (event.key) {
+      case 'Enter':
+        this.submissionControls_.submitButton.click();
+        break;
+      case 'Escape':
+        this.submissionControls_.cancelButton.click();
+        break;
+    }
+  };
 
   get selectedTime() {
     return this.selectedTime_;
@@ -274,7 +293,7 @@ class TimeColumns extends HTMLElement {
       this.append(this.ampmColumn_);
       this.width_ += TimePicker.ColumnWidth;
     }
-  }
+  };
 
   get width() {
     return this.width_;
@@ -299,7 +318,7 @@ class TimeColumns extends HTMLElement {
       }
     }
     return new Time(hour, minute, second, millisecond);
-  }
+  };
 }
 TimeColumns.ClassName = 'time-columns';
 window.customElements.define('time-columns', TimeColumns);
@@ -312,6 +331,7 @@ class TimeColumn extends HTMLUListElement {
     super();
 
     this.className = TimeColumn.ClassName;
+    this.tabIndex = 0;
     this.columnType_ = columnType;
     if (this.columnType_ == TimeColumnType.AMPM) {
       this.createAndInitializeAMPMCells_(timePicker);
@@ -320,21 +340,29 @@ class TimeColumn extends HTMLUListElement {
     }
 
     this.addEventListener('click', this.onClick_);
-  }
+    this.addEventListener('keydown', this.onKeyDown_);
+  };
 
   createAndInitializeCells_ = (timePicker) => {
     const totalCells = Time.numberOfValues(this.columnType_, timePicker.hasAMPM);
     let currentTime = timePicker.selectedTime.clone();
     let cells = [];
+    let duplicateCells = [];
+    // In order to support a continuous looping navigation for up/down arrows,
+    // the initial list of cells is doubled and middleTimeCell is kept
+    // to inform where the duplicated cells begin.
     for (let i = 0; i < totalCells; i++) {
       let value = currentTime.value(this.columnType_, timePicker.hasAMPM);
       let timeCell = new TimeCell(value, localizeNumber(value));
+      let duplicatedTimeCell = new TimeCell(value, localizeNumber(value));
       cells.push(timeCell);
+      duplicateCells.push(duplicatedTimeCell);
       currentTime.next(this.columnType_);
     }
     this.selectedTimeCell = cells[0];
-    this.append(...cells);
-  }
+    this.middleTimeCell_ = duplicateCells[0];
+    this.append(...cells, ...duplicateCells);
+  };
 
   createAndInitializeAMPMCells_ = (timePicker) => {
     let cells = [];
@@ -351,11 +379,67 @@ class TimeColumn extends HTMLUListElement {
       this.append(cells[Label.PM], cells[Label.AM]);
       this.selectedTimeCell = cells[Label.PM];
     }
-  }
+  };
 
   onClick_ = (event) => {
     this.selectedTimeCell = event.target;
-  }
+  };
+
+  /**
+   * Continuous looping navigation for up/down arrows is supported by:
+   *   - moving for ArrowUp to previous cell and for topmost cell which
+   * has no previous, we are moving to the last cell from the first list
+   *   - moving for ArrowDown to next cell and for the last duplicated cell
+   * which has no next, we are moving to the first cell from the duplicated list
+   */
+  onKeyDown_ = (event) => {
+    let eventHandled = false;
+    switch (event.key) {
+      case 'ArrowUp':
+        const previousTimeCell = this.selectedTimeCell.previousSibling;
+        if (previousTimeCell) {
+          this.selectedTimeCell = previousTimeCell;
+          previousTimeCell.scrollIntoViewIfNeeded(false);
+        } else if (this.columnType != TimeColumnType.AMPM) {
+          // move from the topmost cell to the last cell (the last cell is
+          // the first one before the duplicated list).
+          this.selectedTimeCell = this.middleTimeCell.previousSibling;
+          this.selectedTimeCell.scrollIntoView();
+        }
+        eventHandled = true;
+        break;
+      case 'ArrowDown':
+        const nextTimeCell = this.selectedTimeCell.nextSibling;
+        if (nextTimeCell) {
+          this.selectedTimeCell = nextTimeCell;
+          nextTimeCell.scrollIntoViewIfNeeded(false);
+        } else if (this.columnType != TimeColumnType.AMPM) {
+          // move from the last duplicated cell to the first cell
+          // of the duplicated list.
+          this.selectedTimeCell = this.middleTimeCell;
+          this.selectedTimeCell.scrollIntoView(false);
+        }
+        eventHandled = true;
+        break;
+      case 'ArrowLeft':
+        const previousTimeColumn = this.previousSibling;
+        if (previousTimeColumn) {
+          previousTimeColumn.focus();
+        }
+        break;
+      case 'ArrowRight':
+        const nextTimeColumn = this.nextSibling;
+        if (nextTimeColumn) {
+          nextTimeColumn.focus();
+        }
+        break;
+    }
+
+    if (eventHandled) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  };
 
   get selectedTimeCell() {
     return this.selectedTimeCell_;
@@ -367,6 +451,14 @@ class TimeColumn extends HTMLUListElement {
     }
     this.selectedTimeCell_ = timeCell;
     this.selectedTimeCell_.classList.add('selected');
+  }
+
+  get middleTimeCell() {
+    return this.middleTimeCell_;
+  }
+
+  get columnType() {
+    return this.columnType_;
   }
 }
 TimeColumn.ClassName = 'time-column';
@@ -382,7 +474,7 @@ class TimeCell extends HTMLLIElement {
     this.className = TimeCell.ClassName;
     this.textContent = localizedValue;
     this.value = value;
-  }
+  };
 }
 TimeCell.ClassName = 'time-cell';
 window.customElements.define('time-cell', TimeCell, {extends: 'li'});

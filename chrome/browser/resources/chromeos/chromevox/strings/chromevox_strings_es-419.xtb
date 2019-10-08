@@ -327,6 +327,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="3241052487511142956">Vínculo visitado anterior</translation>
 <translation id="3241638166094654466">Celdas en cada línea:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">Elemento similar anterior</translation>
 <translation id="3286372614333682499">vertical</translation>
 <translation id="3286390186030710347">Control deslizante</translation>
 <translation id="3299925995433437805">No hay ningún vínculo visitado posterior.</translation>
@@ -509,6 +510,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4517854969512651305">Incrementar el valor</translation>
 <translation id="4529987814483543472">Mapa de teclado clásico</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra}other{# barras}}</translation>
+<translation id="4537277403911487429">Próximo elemento similar</translation>
 <translation id="4547556996012970016">Siguiente encabezado de nivel 5</translation>
 <translation id="4562381607973973258">Encabezado</translation>
 <translation id="4569941707103739422">Presiona la flecha hacia arriba o abajo para navegar e Intro para activar una opción.</translation>

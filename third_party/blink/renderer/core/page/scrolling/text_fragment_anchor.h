@@ -20,31 +20,19 @@ namespace blink {
 class LocalFrame;
 class KURL;
 
-constexpr char kFragmentDirectivePrefix[] = "##";
+constexpr char kFragmentDirectivePrefix[] = ":~:";
 // Subtract 1 because base::size includes the \0 string terminator.
 constexpr size_t kFragmentDirectivePrefixStringLength =
     base::size(kFragmentDirectivePrefix) - 1;
-// TODO(crbug/1007016): Remove support for the old prefix once we confirm the
-// new prefix choice.
-constexpr char kFragmentDirectiveNewPrefix[] = ":~:";
-// Subtract 1 because base::size includes the \0 string terminator.
-constexpr size_t kFragmentDirectiveNewPrefixStringLength =
-    base::size(kFragmentDirectiveNewPrefix) - 1;
 
-constexpr char kTextFragmentIdentifierPrefix[] = "targetText=";
+constexpr char kTextFragmentIdentifierPrefix[] = "text=";
 // Subtract 1 because base::size includes the \0 string terminator.
 constexpr size_t kTextFragmentIdentifierPrefixStringLength =
     base::size(kTextFragmentIdentifierPrefix) - 1;
 
-enum class TextFragmentFormat { PlainFragment, FragmentDirective };
-
 class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
                                              public TextFragmentFinder::Client {
  public:
-  static TextFragmentAnchor* TryCreate(const KURL& url,
-                                       LocalFrame& frame,
-                                       bool same_document_navigation);
-
   static TextFragmentAnchor* TryCreateFragmentDirective(
       const KURL& url,
       LocalFrame& frame,
@@ -52,8 +40,7 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
 
   TextFragmentAnchor(
       const Vector<TextFragmentSelector>& text_fragment_selectors,
-      LocalFrame& frame,
-      const TextFragmentFormat fragment_format);
+      LocalFrame& frame);
   ~TextFragmentAnchor() override = default;
 
   bool Invoke() override;
@@ -96,10 +83,6 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   // Whether we found a match. Used to determine if we should activate the
   // element fragment anchor at the end of searching.
   bool did_find_match_ = false;
-  // Whether the text fragment anchor is specified as a regular URL fragment or
-  // a fragment directive. Used to determine if we should activate the element
-  // fragment anchor in the case where we don't find a match.
-  const TextFragmentFormat fragment_format_;
   // If the text fragment anchor is defined as a fragment directive and we don't
   // find a match, we fall back to the element anchor if it is present.
   Member<ElementFragmentAnchor> element_fragment_anchor_;

@@ -319,6 +319,7 @@
 <translation id="1470811252759861213">Да би вам додаци били доступни на свим рачунарима, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1470967055429794975">Тиме ћете обрисати све податке са безбедносног кључа, укључујући његов PIN</translation>
 <translation id="1475502736924165259">На датотеци има сертификата који се не уклапају ни у једну другу категорију</translation>
+<translation id="1476088332184200792">Копирајте на свој уређај</translation>
 <translation id="1476607407192946488">&amp;Подешавања језика</translation>
 <translation id="1478340334823509079">Детаљи: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Инсталација није омогућена</translation>
@@ -948,7 +949,6 @@
 <translation id="2379281330731083556">Штампај помоћу системског дијалога... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Питај пре слања (препоручује се)</translation>
 <translation id="2384436799579181135">Дошло је до грешке. Проверите штампач и пробајте поново.</translation>
-<translation id="2386926718981642523">Приступајте Помоћнику сваки пут када кажете „Ок Google“</translation>
 <translation id="2387458720915042159">Тип везе са проксијем</translation>
 <translation id="2391419135980381625">Стандардни фонт</translation>
 <translation id="2392369802118427583">Активирај</translation>
@@ -1338,6 +1338,7 @@
 <translation id="2941112035454246133">Низак</translation>
 <translation id="2942560570858569904">Чека се...</translation>
 <translation id="2942581856830209953">Прилагодите ову страницу</translation>
+<translation id="294308617863380348">Укључујући колачиће треће стране</translation>
 <translation id="2944060181911631861">Шаљите податке о коришћењу и дијагностичке податке. Помозите нам да вам пружимо бољи доживљај Android-а тако што ћете аутоматски слати податке о дијагностици, уређају и коришћењу апликација Google-у. То ће помоћи у одржавању стабилности система и апликације и другим подешавањима. Неки обједињени подаци ће такође помоћи Google апликацијама и партнерима, попут Android програмера. Ако укључите подешавање додатне активности на вебу и у апликацијама, ти подаци ће се можда чувати на Google налогу. <ph name="BEGIN_LINK1" />Сазнајте више<ph name="END_LINK1" /></translation>
 <translation id="2946119680249604491">Додај везу</translation>
 <translation id="2948300991547862301">Иди на <ph name="PAGE_TITLE" /></translation>
@@ -1352,7 +1353,6 @@
 <translation id="2961695502793809356">Кликните да бисте отишли напред, задржите да бисте видели историју</translation>
 <translation id="2963151496262057773">Следећа додатна компонента се не одазива: <ph name="PLUGIN_NAME" /> Желите ли да је зауставите?</translation>
 <translation id="2966937470348689686">Управљајте Android подешавањима</translation>
-<translation id="2972557485845626008">Фирмвер</translation>
 <translation id="2972581237482394796">&amp;Понови радњу</translation>
 <translation id="2973324205039581528">Искључи звук сајта</translation>
 <translation id="2977480621796371840">Уклони из групе</translation>
@@ -1610,7 +1610,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Разделник</translation>
 <translation id="3387614642886316601">Користите побољшану проверу правописа</translation>
-<translation id="3393352139658145068">Помоћник се активира када неко каже „Ок Google“. Да бисте уштедели батерију, функција „Ок Google“ је укључена само када је уређај повезан са извором напајања.</translation>
 <translation id="3396800784455899911">Ако кликнете на дугме „Прихвати и настави“, прихватате горенаведену обраду за ове Google услуге.</translation>
 <translation id="3399432415385675819">Обавештења ће бити онемогућена</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" />×<ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> херца) – преплетено</translation>
@@ -1771,6 +1770,7 @@
 <translation id="3613134908380545408">Прикажи <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Отвори на новој картици</translation>
 <translation id="3615073365085224194">Додирните прстом сензор за отисак прста</translation>
+<translation id="3615579745882581859"><ph name="FILE_NAME" /> се скенира.</translation>
 <translation id="3616741288025931835">&amp;Обриши податке прегледања...</translation>
 <translation id="3617891479562106823">Позадине нису доступне. Пробајте поново касније.</translation>
 <translation id="3619115746895587757">Капучино</translation>
@@ -1885,7 +1885,6 @@
 <translation id="3759933321830434300">Блокирање делова веб-страница</translation>
 <translation id="3760460896538743390">Провери страницу &amp;позадине</translation>
 <translation id="37613671848467444">Отвори у &amp;прозору без архивирања</translation>
-<translation id="3764314093345384080">Детаљне информације о верзији</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Комуникација са USB уређајем}one{Комуникација са # USB уређајем}few{Комуникација са # USB уређаја}other{Комуникација са # USB уређаја}}</translation>
 <translation id="3765246971671567135">Читање офлајн смерница за режим демонстрације није успело.</translation>
 <translation id="3768037234834996183">Подешавања се синхронизују...</translation>
@@ -2166,7 +2165,6 @@
 <translation id="4138267921960073861">Приказуј корисничка имена и слике на екрану за пријављивање</translation>
 <translation id="4142052906269098341">Откључајте <ph name="DEVICE_TYPE" /> помоћу телефона. <ph name="LINK_BEGIN" />Сазнајте више<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">Пронађите видео садржај бољег квалитета и продужите трајање батерије. Видео ће се пуштати само на екрану који подржава Cast.</translation>
-<translation id="4145922204387553806">Дозволите Помоћнику да вам приказује информације на основу онога што је на екрану</translation>
 <translation id="4146026355784316281">Увек отварај помоћу системског приказивача</translation>
 <translation id="4146785383423576110">Ресетовање и чишћење</translation>
 <translation id="4147911968024186208">Пробајте поново. Ако се ова грешка поново прикаже, контактирајте представника подршке.</translation>
@@ -2253,6 +2251,7 @@
 <translation id="4297322094678649474">Промените језике</translation>
 <translation id="4301671483919369635">Ова страница може да мења датотеке</translation>
 <translation id="4303079906735388947">Подесите нови PIN за безбедносни кључ</translation>
+<translation id="4305402730127028764">Копирај на: <ph name="DEVICE_NAME" /></translation>
 <translation id="4306119971288449206">Апликације морају да се приказују са типом садржаја „<ph name="CONTENT_TYPE" />“</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> kB (<ph name="NUM_KILOBYTES_LIVE" /> kB уживо)</translation>
 <translation id="4310139701823742692">Формат датотеке је погрешан. Проверите PPD датотеку и пробајте поново.</translation>
@@ -2388,7 +2387,6 @@
 <translation id="4534661889221639075">Пробајте поново.</translation>
 <translation id="4535127706710932914">Подразумевани профил</translation>
 <translation id="4535767533210902251">Сензор за отисак прста је тастер у горњем десном углу тастатуре. Лагано га додирните прстом.</translation>
-<translation id="4538417792467843292">Брисање речи</translation>
 <translation id="4538684596480161368">Увек блокирај додатне компоненте које су изван заштићеног окружења на <ph name="HOST" /></translation>
 <translation id="4538792345715658285">Инсталирано је према смерницама за предузеће.</translation>
 <translation id="4542520061254486227">Читање ваших података на <ph name="WEBSITE_1" /> и <ph name="WEBSITE_2" /></translation>
@@ -2932,6 +2930,7 @@
 <translation id="5367091008316207019">Читање датотеке..</translation>
 <translation id="5368720394188453070">Телефон је закључан. Откључајте га да бисте приступили.</translation>
 <translation id="5368779022775404937">Пријавите се на <ph name="REALM" /></translation>
+<translation id="5369491905435686894">Омогући убрзавање миша</translation>
 <translation id="5370819323174483825">&amp;Учитај поново</translation>
 <translation id="5372529912055771682">Ова верзија оперативног система не подржава наведени режим пријављивања. Проверите да ли користите најновију верзију и покушајте поново.</translation>
 <translation id="5372579129492968947">Откачите додатак</translation>
@@ -3004,6 +3003,7 @@
 <translation id="5464632865477611176">Покрени овај пут</translation>
 <translation id="5464660706533281090">Дете не може да промени ово подешавање.</translation>
 <translation id="5466374726908360271">Налепи и претражи „<ph name="SEARCH_TERMS" />“</translation>
+<translation id="5468173180030470402">Траже се дељења датотека</translation>
 <translation id="5471768120198416576">Здраво! Ја сам глас за претварање текста у говор.</translation>
 <translation id="5473333559083690127">Поново унесите нови PIN</translation>
 <translation id="5481941284378890518">Додај оближње штампаче</translation>
@@ -3541,6 +3541,7 @@
 <translation id="6233154960150021497">Враћа подразумевану употребу гласа уместо тастатуре</translation>
 <translation id="6234474535228214774">Инсталирање је на чекању</translation>
 <translation id="6237816943013845465">Омогућавају вам да прилагодите резолуцију екрана</translation>
+<translation id="6238767809035845642">Текст који се дели са другог уређаја</translation>
 <translation id="6238923052227198598">Задржи најновију белешку на закључаном екрану</translation>
 <translation id="6239558157302047471">Поново учитај &amp;оквир</translation>
 <translation id="6241530762627360640">Приступање информацијама о Bluetooth уређајима упареним са вашим системом и откривање оближњих Bluetooth уређаја.</translation>
@@ -3767,7 +3768,6 @@
 <translation id="6577284282025554716">Преузимање је отказано: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Шифруј синхронизоване лозинке помоћу Google корисничког имена и лозинке</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> – дели се садржај екрана</translation>
-<translation id="6580151766480067746">Верзија ARC.</translation>
 <translation id="6582080224869403177">Ресетујте уређај <ph name="DEVICE_TYPE" /> да бисте надоградили безбедносну функцију.</translation>
 <translation id="6584878029876017575">Microsoft доживотно потписивање</translation>
 <translation id="6586451623538375658">Замени примарни тастер миша</translation>
@@ -4372,6 +4372,7 @@
 <translation id="7487141338393529395">Укључите побољшану проверу правописа</translation>
 <translation id="7487969577036436319">Није инсталирана ниједна компонента</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Отвори све}=1{&amp;Отвори обележивач}one{&amp;Отвори све (#)}few{&amp;Отвори све (#)}other{&amp;Отвори све (#)}}</translation>
+<translation id="7489761397368794366">Позовите са свог уређаја</translation>
 <translation id="749028671485790643">Особа <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC адреса</translation>
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> ће прикупљати сав текст који унесете, укључујући личне податке, попут лозинки и бројева кредитних картица. Да ли желите да користите овај додатак?</translation>
@@ -4391,6 +4392,7 @@
 <translation id="7508054832109420082">Омогућите приступ штампачима</translation>
 <translation id="7510943789645525906">Упозорава вас ако је лозинка коју користите била део упада у податке</translation>
 <translation id="7513029293694390567">Аутоматски се пријављујте на веб-сајтове помоћу сачуваних акредитива. Када је ова функција онемогућена, тражићемо потврду пре сваког пријављивања на веб-сајт.</translation>
+<translation id="7514239104543605883">Копирајте на свој уређај</translation>
 <translation id="7514365320538308">Преузми</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Реците „Ок Google“</translation>
@@ -4947,6 +4949,7 @@
 <translation id="8274332263553132018">Пребаците датотеку</translation>
 <translation id="8274924778568117936">Не искључујте и не затварајте <ph name="DEVICE_TYPE" /> док се ажурирање не заврши. <ph name="DEVICE_TYPE" /> ће се поново покренути када се инсталација заврши.</translation>
 <translation id="8275038454117074363">Увези</translation>
+<translation id="8275080796245127762">Позовите са свог уређаја</translation>
 <translation id="8276560076771292512">Испразни кеш и поново учитај са сервера</translation>
 <translation id="8281886186245836920">Прескочи</translation>
 <translation id="8282947398454257691">зна јединствени идентификатор уређаја</translation>
@@ -5267,6 +5270,7 @@
 <translation id="8758418656925882523">Омогући диктирање (говорите за куцање)</translation>
 <translation id="8759408218731716181">Није могуће подесити вишеструко пријављивање</translation>
 <translation id="8759753423332885148">Сазнајте више.</translation>
+<translation id="8761945298804995673">Овај корисник већ постоји</translation>
 <translation id="8762886931014513155">Треба да ажурирате <ph name="DEVICE_TYPE" /></translation>
 <translation id="8763927697961133303">USB уређај</translation>
 <translation id="8767621466733104912">Аутоматски ажурирај Chrome за све кориснике</translation>
@@ -5355,6 +5359,7 @@
 <translation id="8879284080359814990">&amp;Прикажи као картицу</translation>
 <translation id="8879921471468674457">Запамти податке за пријављивање</translation>
 <translation id="8881020143150461183">Пробајте поново. За техничку подршку се обратите: <ph name="CARRIER_NAME" />.</translation>
+<translation id="8883273463630735858">Омогући убрзавање тачпеда</translation>
 <translation id="8884570509232205463">Уређај се сада закључава у <ph name="UNLOCK_TIME" />.</translation>
 <translation id="8885197664446363138">Smart Lock није доступно</translation>
 <translation id="8888253246822647887">Апликација ће се отворити када се надоградња заврши. Надоградње могу да трају неколико минута.</translation>

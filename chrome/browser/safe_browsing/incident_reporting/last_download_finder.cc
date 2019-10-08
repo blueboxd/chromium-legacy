@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
@@ -30,9 +29,6 @@
 #include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/proto/csd.pb.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "crypto/sha2.h"
 #include "extensions/buildflags/buildflags.h"
 
@@ -239,17 +235,15 @@ void PopulateNonBinaryDetailsFromRow(
 }  // namespace
 
 LastDownloadFinder::~LastDownloadFinder() {
+  g_browser_process->profile_manager()->RemoveObserver(this);
 }
 
 // static
 std::unique_ptr<LastDownloadFinder> LastDownloadFinder::Create(
     const DownloadDetailsGetter& download_details_getter,
     const LastDownloadCallback& callback) {
-  std::unique_ptr<LastDownloadFinder> finder(
-      base::WrapUnique(new LastDownloadFinder(
-          download_details_getter,
-          g_browser_process->profile_manager()->GetLoadedProfiles(),
-          callback)));
+  std::unique_ptr<LastDownloadFinder> finder(base::WrapUnique(
+      new LastDownloadFinder(download_details_getter, callback)));
   // Return NULL if there is no work to do.
   if (finder->profile_states_.empty())
     return std::unique_ptr<LastDownloadFinder>();
@@ -260,21 +254,16 @@ LastDownloadFinder::LastDownloadFinder() = default;
 
 LastDownloadFinder::LastDownloadFinder(
     const DownloadDetailsGetter& download_details_getter,
-    const std::vector<Profile*>& profiles,
     const LastDownloadCallback& callback)
     : download_details_getter_(download_details_getter), callback_(callback) {
-  // Observe profile lifecycle events so that the finder can begin or abandon
-  // the search in profiles while it is running.
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_PROFILE_ADDED,
-                              content::NotificationService::AllSources());
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              content::NotificationService::AllSources());
-
-  // Begin the search for all given profiles.
-  for (auto* profile : profiles)
+  // Begin the search for all existing profiles.
+  for (auto* profile :
+       g_browser_process->profile_manager()->GetLoadedProfiles()) {
     SearchInProfile(profile);
+  }
+
+  // Also search on new profiles when they are added.
+  g_browser_process->profile_manager()->AddObserver(this);
 }
 
 void LastDownloadFinder::SearchInProfile(Profile* profile) {
@@ -284,12 +273,13 @@ void LastDownloadFinder::SearchInProfile(Profile* profile) {
     return;
 
   // Exit early if already processing this profile. This could happen if, for
-  // example, NOTIFICATION_PROFILE_ADDED arrives after construction while
-  // waiting for OnHistoryServiceLoaded.
+  // example, OnProfileAdded is called after construction while waiting for
+  // OnHistoryServiceLoaded.
   if (profile_states_.count(profile))
     return;
 
-  // Initiate a metadata search.
+  // Initiate a metadata search. As with IncidentReportingService, it's assumed
+  // that all passed profiles will outlive |this|.
   profile_states_[profile] = WAITING_FOR_METADATA;
   download_details_getter_.Run(profile,
                                base::Bind(&LastDownloadFinder::OnMetadataQuery,
@@ -333,13 +323,6 @@ void LastDownloadFinder::OnMetadataQuery(
     // else wait until history is loaded.
     history_service_observer_.Add(history_service);
   }
-}
-
-void LastDownloadFinder::AbandonSearchInProfile(Profile* profile) {
-  // |profile| may not be present in the set of profiles.
-  auto iter = profile_states_.find(profile);
-  if (iter != profile_states_.end())
-    RemoveProfileAndReportIfDone(iter);
 }
 
 void LastDownloadFinder::OnDownloadQuery(
@@ -413,19 +396,8 @@ void LastDownloadFinder::ReportResults() {
   // may have been deleted.
 }
 
-void LastDownloadFinder::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PROFILE_ADDED:
-      SearchInProfile(content::Source<Profile>(source).ptr());
-      break;
-    case chrome::NOTIFICATION_PROFILE_DESTROYED:
-      AbandonSearchInProfile(content::Source<Profile>(source).ptr());
-      break;
-    default:
-      break;
-  }
+void LastDownloadFinder::OnProfileAdded(Profile* profile) {
+  SearchInProfile(profile);
 }
 
 void LastDownloadFinder::OnHistoryServiceLoaded(

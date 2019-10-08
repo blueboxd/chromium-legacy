@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -40,6 +41,7 @@ public class CustomTabActivityTabFactory {
     private final Lazy<ActivityWindowAndroid> mActivityWindowAndroid;
     private final Lazy<CustomTabDelegateFactory> mCustomTabDelegateFactory;
     private final CustomTabIntentDataProvider mIntentDataProvider;
+    private final StartupTabPreloader mStartupTabPreloader;
 
     @Nullable
     private TabModelSelectorImpl mTabModelSelector;
@@ -49,12 +51,14 @@ public class CustomTabActivityTabFactory {
             CustomTabTabPersistencePolicy persistencePolicy,
             Lazy<ActivityWindowAndroid> activityWindowAndroid,
             Lazy<CustomTabDelegateFactory> customTabDelegateFactory,
-            CustomTabIntentDataProvider intentDataProvider) {
+            CustomTabIntentDataProvider intentDataProvider,
+            StartupTabPreloader startupTabPreloader) {
         mActivity = activity;
         mPersistencePolicy = persistencePolicy;
         mActivityWindowAndroid = activityWindowAndroid;
         mCustomTabDelegateFactory = customTabDelegateFactory;
         mIntentDataProvider = intentDataProvider;
+        mStartupTabPreloader = startupTabPreloader;
     }
 
     /** Creates a {@link TabModelSelector} for the custom tab. */
@@ -79,7 +83,8 @@ public class CustomTabActivityTabFactory {
     }
 
     private ChromeTabCreator createTabCreator(boolean incognito) {
-        return new ChromeTabCreator(mActivity, mActivityWindowAndroid.get(), incognito) {
+        return new ChromeTabCreator(
+                mActivity, mActivityWindowAndroid.get(), mStartupTabPreloader, incognito) {
             @Override
             public TabDelegateFactory createDefaultTabDelegateFactory() {
                 return mCustomTabDelegateFactory.get();

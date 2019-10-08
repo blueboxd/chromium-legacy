@@ -399,9 +399,14 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       base::BindRepeating(&VaapiVideoEncodeAccelerator::RecycleVASurfaceID,
                           base::Unretained(this)));
 
+  // In native input mode, an input surface is needed only if scaling
+  // is not required. Since we cannot find the necessity of the scaling here,
+  // we allocate input surfaces always, which is redundant.
+  //
+  // TODO(hiroh): Think about moving this surface creation in the first
+  // Encode().
   va_surfaces_per_video_frame_ =
-      kNumSurfacesForOutputPicture +
-      (native_input_mode_ ? 0 : kNumSurfacesPerInputVideoFrame);
+      kNumSurfacesForOutputPicture + kNumSurfacesPerInputVideoFrame;
 
   if (!vaapi_wrapper_->CreateContextAndSurfaces(
           kVaSurfaceFormat, aligned_input_size_,
@@ -583,12 +588,46 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
       return nullptr;
     }
   } else {
+    if (aligned_input_size_ != frame->coded_size()) {
+      NOTIFY_ERROR(kPlatformFailureError,
+                   "Expected frame size: " << aligned_input_size_.ToString()
+                                           << ", but got: "
+                                           << frame->coded_size().ToString());
+      return nullptr;
+    }
     input_surface =
         new VASurface(available_va_surface_ids_.back(), aligned_input_size_,
                       kVaSurfaceFormat, base::BindOnce(va_surface_release_cb_));
     available_va_surface_ids_.pop_back();
   }
 
+  if (aligned_input_size_ !=
+      gfx::Size(frame->stride(0), frame->coded_size().height())) {
+    // Do scaling.  Here the buffer size contained in |input_surface| is
+    // |frame->coded_size()|.
+    if (!vpp_vaapi_wrapper_) {
+      vpp_vaapi_wrapper_ =
+          VaapiWrapper::Create(VaapiWrapper::kVideoProcess, VAProfileNone,
+                               base::Bind(&ReportToUMA, VAAPI_ERROR));
+      if (!vpp_vaapi_wrapper_) {
+        NOTIFY_ERROR(kPlatformFailureError,
+                     "Failed to initialize VppVaapiWrapper");
+        return nullptr;
+      }
+    }
+    scoped_refptr<VASurface> scaled_surface =
+        new VASurface(available_va_surface_ids_.back(), aligned_input_size_,
+                      kVaSurfaceFormat, base::BindOnce(va_surface_release_cb_));
+    available_va_surface_ids_.pop_back();
+    // Scale frame->coded_size() -> |aligned_input_size_| here.
+    vpp_vaapi_wrapper_->BlitSurface(input_surface, scaled_surface);
+    // We can destroy the original |input_surface| because the buffer is alive
+    // as long as |frame| is alive.
+    input_surface = std::move(scaled_surface);
+  }
+
+  // Here, the size contained in |input_surface| is |aligned_input_size_|
+  // regardless of scaling.
   scoped_refptr<VASurface> reconstructed_surface =
       new VASurface(available_va_surface_ids_.back(), aligned_input_size_,
                     kVaSurfaceFormat, base::BindOnce(va_surface_release_cb_));

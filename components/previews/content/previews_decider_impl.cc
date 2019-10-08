@@ -323,21 +323,21 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
     }
     passed_reasons->push_back(PreviewsEligibilityReason::DEVICE_OFFLINE);
 
-    // If the optimization type does not require optimization hints, determine
+    // If the optimization type is not a commit-time preview, determine
     // the ECT network triggering condition here.
-    if (!ShouldCheckOptimizationHints(type)) {
+    if (!IsCommitTimePreview(type)) {
       if (effective_connection_type_ >
           previews::params::GetECTThresholdForPreview(type)) {
         return PreviewsEligibilityReason::NETWORK_NOT_SLOW;
       }
       passed_reasons->push_back(PreviewsEligibilityReason::NETWORK_NOT_SLOW);
-    }
 
-    if (effective_connection_type_ > params::GetSessionMaxECTThreshold()) {
-      return PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION;
+      if (effective_connection_type_ > params::GetSessionMaxECTThreshold()) {
+        return PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION;
+      }
+      passed_reasons->push_back(
+          PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION);
     }
-    passed_reasons->push_back(
-        PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION);
   }
 
   if (is_reload) {

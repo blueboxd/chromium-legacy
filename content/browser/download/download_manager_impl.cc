@@ -527,9 +527,8 @@ base::FilePath DownloadManagerImpl::GetDefaultDownloadDirectory() {
 #else
   if (delegate_) {
     base::FilePath website_save_directory;  // Unused
-    bool skip_dir_check = false;            // Unused
     delegate_->GetSaveDir(GetBrowserContext(), &website_save_directory,
-                          &default_download_directory, &skip_dir_check);
+                          &default_download_directory);
   }
 #endif
   if (default_download_directory.empty()) {

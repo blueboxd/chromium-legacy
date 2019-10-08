@@ -6,6 +6,7 @@ include_rules = [
     "+base/bind.h",
     "+base/bind_helpers.h",
     "+base/bit_cast.h",
+    "+base/command_line.h",
     "+base/compiler_specific.h",
     "+base/cpu.h",
     "+base/feature_list.h",

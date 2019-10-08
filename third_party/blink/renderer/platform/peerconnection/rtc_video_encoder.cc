@@ -8,6 +8,9 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/unsafe_shared_memory_region.h"
@@ -22,6 +25,7 @@
 #include "base/time/time.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_bitrate_allocation.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -211,6 +215,12 @@ class RTCVideoEncoder::Impl
   // Perform encoding on an input frame from the input queue.
   void EncodeOneFrame();
 
+  // Perform encoding on an input frame from the input queue using VEA native
+  // input mode.  The input frame must be backed with GpuMemoryBuffer buffers.
+  void EncodeOneFrameWithNativeInput();
+
+  void CreateBlackGpuMemoryBufferFrame(const gfx::Size& natural_size);
+
   // Notify that an input frame is finished for encoding.  |index| is the index
   // of the completed frame in |input_buffers_|.
   void EncodeFrameFinished(int index);
@@ -289,6 +299,13 @@ class RTCVideoEncoder::Impl
   // encoder.
   int output_buffers_free_count_;
 
+  // Whether to send the frames to VEA as native buffer. Native buffer allows
+  // VEA to pass the buffer to the encoder directly without further processing.
+  bool use_native_input_;
+
+  // A black GpuMemoryBuffer frame used when the video track is disabled.
+  scoped_refptr<media::VideoFrame> black_gmb_frame_;
+
   // webrtc::VideoEncoder encode complete callback.
   webrtc::EncodedImageCallback* encoded_image_callback_;
 
@@ -321,6 +338,7 @@ RTCVideoEncoder::Impl::Impl(media::GpuVideoAcceleratorFactories* gpu_factories,
       input_next_frame_(nullptr),
       input_next_frame_keyframe_(false),
       output_buffers_free_count_(0),
+      use_native_input_(false),
       encoded_image_callback_(nullptr),
       video_codec_type_(video_codec_type),
       video_content_type_(video_content_type),
@@ -351,9 +369,21 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
     return;
   }
   input_visible_size_ = input_visible_size;
+  media::VideoPixelFormat pixel_format = media::PIXEL_FORMAT_I420;
+  auto storage_type =
+      media::VideoEncodeAccelerator::Config::StorageType::kShmem;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kVideoCaptureUseGpuMemoryBuffer) &&
+      video_content_type_ != webrtc::VideoContentType::SCREENSHARE) {
+    // Use import mode for camera when GpuMemoryBuffer-based video capture is
+    // enabled.
+    pixel_format = media::PIXEL_FORMAT_NV12;
+    storage_type = media::VideoEncodeAccelerator::Config::StorageType::kDmabuf;
+    use_native_input_ = true;
+  }
   const media::VideoEncodeAccelerator::Config config(
-      media::PIXEL_FORMAT_I420, input_visible_size_, profile, bitrate * 1000,
-      base::nullopt, base::nullopt, base::nullopt, base::nullopt,
+      pixel_format, input_visible_size_, profile, bitrate * 1000, base::nullopt,
+      base::nullopt, base::nullopt, storage_type,
       video_content_type_ == webrtc::VideoContentType::SCREENSHARE
           ? media::VideoEncodeAccelerator::Config::ContentType::kDisplay
           : media::VideoEncodeAccelerator::Config::ContentType::kCamera);
@@ -382,10 +412,10 @@ void RTCVideoEncoder::Impl::Enqueue(const webrtc::VideoFrame* input_frame,
   }
 
   // If there are no free input and output buffers, drop the frame to avoid a
-  // deadlock. If there is a free input buffer, EncodeOneFrame will run and
-  // unblock Encode(). If there are no free input buffers but there is a free
-  // output buffer, EncodeFrameFinished will be called later to unblock
-  // Encode().
+  // deadlock. If there is a free input buffer and |use_native_input_| is false,
+  // EncodeOneFrame will run and unblock Encode(). If there are no free input
+  // buffers but there is a free output buffer, EncodeFrameFinished will be
+  // called later to unblock Encode().
   //
   // The caller of Encode() holds a webrtc lock. The deadlock happens when:
   // (1) Encode() is waiting for the frame to be encoded in EncodeOneFrame().
@@ -399,13 +429,21 @@ void RTCVideoEncoder::Impl::Enqueue(const webrtc::VideoFrame* input_frame,
   // buffers. Returning an error in Encode() is not fatal and WebRTC will just
   // continue. If this is a key frame, WebRTC will request a key frame again.
   // Besides, webrtc will drop a frame if Encode() blocks too long.
-  if (input_buffers_free_.IsEmpty() && output_buffers_free_count_ == 0) {
+  if (!use_native_input_ && input_buffers_free_.IsEmpty() &&
+      output_buffers_free_count_ == 0) {
     DVLOG(2) << "Run out of input and output buffers. Drop the frame.";
     SignalAsyncWaiter(WEBRTC_VIDEO_CODEC_ERROR);
     return;
   }
   input_next_frame_ = input_frame;
   input_next_frame_keyframe_ = force_keyframe;
+
+  // If |use_native_input_| is true, then we always queue the frame to the
+  // encoder since no intermediate buffer is needed in RTCVideoEncoder.
+  if (use_native_input_) {
+    EncodeOneFrameWithNativeInput();
+    return;
+  }
 
   if (!input_buffers_free_.IsEmpty())
     EncodeOneFrame();
@@ -757,9 +795,97 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   SignalAsyncWaiter(WEBRTC_VIDEO_CODEC_OK);
 }
 
+void RTCVideoEncoder::Impl::EncodeOneFrameWithNativeInput() {
+  DVLOG(3) << "Impl::EncodeOneFrameWithNativeInput()";
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(input_next_frame_);
+
+  // EncodeOneFrameWithNativeInput() may re-enter EncodeFrameFinished() if
+  // VEA::Encode() fails, we receive a VEA::NotifyError(), and the
+  // media::VideoFrame we pass to Encode() gets destroyed early.  Handle this by
+  // resetting our input_next_frame_* state before we hand off the VideoFrame to
+  // the VEA.
+  const webrtc::VideoFrame* next_frame = input_next_frame_;
+  const bool next_frame_keyframe = input_next_frame_keyframe_;
+  input_next_frame_ = nullptr;
+  input_next_frame_keyframe_ = false;
+
+  if (!video_encoder_) {
+    SignalAsyncWaiter(WEBRTC_VIDEO_CODEC_ERROR);
+    return;
+  }
+
+  scoped_refptr<media::VideoFrame> frame;
+  if (next_frame->video_frame_buffer()->type() !=
+      webrtc::VideoFrameBuffer::Type::kNative) {
+    // If we get a non-native frame it's because the video track is disabled and
+    // WebRTC VideoBroadcaster replaces the camera frame with a black YUV frame.
+    if (!black_gmb_frame_) {
+      gfx::Size natural_size(next_frame->width(), next_frame->height());
+      CreateBlackGpuMemoryBufferFrame(natural_size);
+    }
+    frame = media::VideoFrame::WrapVideoFrame(
+        black_gmb_frame_, black_gmb_frame_->format(),
+        black_gmb_frame_->visible_rect(), black_gmb_frame_->natural_size());
+    frame->set_timestamp(
+        base::TimeDelta::FromMilliseconds(next_frame->ntp_time_ms()));
+  } else {
+    frame = static_cast<blink::WebRtcVideoFrameAdapter*>(
+                next_frame->video_frame_buffer().get())
+                ->getMediaVideoFrame();
+  }
+  DCHECK_EQ(frame->storage_type(),
+            media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+
+  constexpr int kDummyIndex = -1;
+  frame->AddDestructionObserver(media::BindToCurrentLoop(base::BindOnce(
+      &RTCVideoEncoder::Impl::EncodeFrameFinished, this, kDummyIndex)));
+  if (!failed_timestamp_match_) {
+    DCHECK(std::find_if(pending_timestamps_.begin(), pending_timestamps_.end(),
+                        [&frame](const RTCTimestamps& entry) {
+                          return entry.media_timestamp_ == frame->timestamp();
+                        }) == pending_timestamps_.end());
+    pending_timestamps_.emplace_back(frame->timestamp(),
+                                     next_frame->timestamp(),
+                                     next_frame->render_time_ms());
+  }
+  video_encoder_->Encode(frame, next_frame_keyframe);
+  SignalAsyncWaiter(WEBRTC_VIDEO_CODEC_OK);
+}
+
+void RTCVideoEncoder::Impl::CreateBlackGpuMemoryBufferFrame(
+    const gfx::Size& natural_size) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  auto gmb = gpu_factories_->CreateGpuMemoryBuffer(
+      natural_size, gfx::BufferFormat::YUV_420_BIPLANAR,
+      gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
+
+  // Fills the NV12 frame with YUV black (0x00, 0x80, 0x80).
+  const auto gmb_size = gmb->GetSize();
+  gmb->Map();
+  memset(static_cast<uint8_t*>(gmb->memory(0)), 0x0,
+         gmb->stride(0) * gmb_size.height());
+  memset(static_cast<uint8_t*>(gmb->memory(1)), 0x80,
+         gmb->stride(1) * gmb_size.height());
+  gmb->Unmap();
+
+  gpu::MailboxHolder empty_mailboxes[media::VideoFrame::kMaxPlanes];
+  black_gmb_frame_ = media::VideoFrame::WrapExternalGpuMemoryBuffer(
+      gfx::Rect(gmb_size), natural_size, std::move(gmb), empty_mailboxes,
+      base::NullCallback(), base::TimeDelta());
+}
+
 void RTCVideoEncoder::Impl::EncodeFrameFinished(int index) {
   DVLOG(3) << "Impl::EncodeFrameFinished(): index=" << index;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (use_native_input_) {
+    if (input_next_frame_)
+      EncodeOneFrameWithNativeInput();
+    return;
+  }
+
   DCHECK_GE(index, 0);
   DCHECK_LT(index, static_cast<int>(input_buffers_.size()));
   input_buffers_free_.push_back(index);

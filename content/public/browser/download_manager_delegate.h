@@ -138,8 +138,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // Retrieve the directories to save html pages and downloads to.
   virtual void GetSaveDir(BrowserContext* browser_context,
                           base::FilePath* website_save_dir,
-                          base::FilePath* download_save_dir,
-                          bool* skip_dir_check) {}
+                          base::FilePath* download_save_dir) {}
 
   // Asks the user for the path to save a page. The delegate calls the callback
   // to give the answer.

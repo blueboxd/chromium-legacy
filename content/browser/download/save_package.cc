@@ -1240,12 +1240,10 @@ void SavePackage::GetSaveInfo() {
   // need before calling to it.
   base::FilePath website_save_dir;
   base::FilePath download_save_dir;
-  bool skip_dir_check = false;
   auto* delegate = download_manager_->GetDelegate();
   if (delegate) {
-    delegate->GetSaveDir(
-        web_contents()->GetBrowserContext(), &website_save_dir,
-        &download_save_dir, &skip_dir_check);
+    delegate->GetSaveDir(web_contents()->GetBrowserContext(), &website_save_dir,
+                         &download_save_dir);
   }
   std::string mime_type = web_contents()->GetContentsMimeType();
   bool can_save_as_complete = CanSaveAsComplete(mime_type);
@@ -1253,7 +1251,7 @@ void SavePackage::GetSaveInfo() {
       download::GetDownloadTaskRunner().get(), FROM_HERE,
       base::Bind(&SavePackage::CreateDirectoryOnFileThread, title_, page_url_,
                  can_save_as_complete, mime_type, website_save_dir,
-                 download_save_dir, skip_dir_check),
+                 download_save_dir),
       base::Bind(&SavePackage::ContinueGetSaveInfo, this,
                  can_save_as_complete));
 }
@@ -1265,8 +1263,7 @@ base::FilePath SavePackage::CreateDirectoryOnFileThread(
     bool can_save_as_complete,
     const std::string& mime_type,
     const base::FilePath& website_save_dir,
-    const base::FilePath& download_save_dir,
-    bool skip_dir_check) {
+    const base::FilePath& download_save_dir) {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
 
   base::FilePath suggested_filename = filename_generation::GenerateFilename(
@@ -1274,8 +1271,7 @@ base::FilePath SavePackage::CreateDirectoryOnFileThread(
 
   base::FilePath save_dir;
   // If the default html/websites save folder doesn't exist...
-  // We skip the directory check for gdata directories on ChromeOS.
-  if (!skip_dir_check && !base::DirectoryExists(website_save_dir)) {
+  if (!base::DirectoryExists(website_save_dir)) {
     // If the default download dir doesn't exist, create it.
     if (!base::DirectoryExists(download_save_dir)) {
       bool res = base::CreateDirectory(download_save_dir);

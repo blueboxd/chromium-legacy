@@ -89,7 +89,8 @@ void MojoVideoEncodeAcceleratorService::Encode(
   if (!encoder_)
     return;
 
-  if (frame->coded_size() != input_coded_size_) {
+  if (frame->coded_size() != input_coded_size_ &&
+      frame->storage_type() != media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
     DLOG(ERROR) << __func__ << " wrong input coded size, expected "
                 << input_coded_size_.ToString() << ", got "
                 << frame->coded_size().ToString();

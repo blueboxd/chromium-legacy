@@ -38,11 +38,9 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
 
   void GetSaveDir(BrowserContext* context,
                   base::FilePath* website_save_dir,
-                  base::FilePath* download_save_dir,
-                  bool* skip_dir_check) override {
+                  base::FilePath* download_save_dir) override {
     *website_save_dir = download_dir_;
     *download_save_dir = download_dir_;
-    *skip_dir_check = false;
   }
 
   bool ShouldCompleteDownload(download::DownloadItem* download,

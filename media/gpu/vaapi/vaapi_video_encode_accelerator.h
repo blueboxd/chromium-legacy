@@ -206,6 +206,10 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   std::unique_ptr<base::WeakPtrFactory<Client>> client_ptr_factory_;
   base::WeakPtr<Client> client_;
 
+  // VaapiWrapper for VPP (Video Pre Processing). This is used for scale down
+  // for the picture send to vaapi encoder.
+  scoped_refptr<VaapiWrapper> vpp_vaapi_wrapper_;
+
   // WeakPtr to post from the encoder thread back to the ChildThread, as it may
   // outlive this. Posting from the ChildThread using base::Unretained(this)
   // to the encoder thread is safe, because |this| always outlives the encoder

@@ -94,11 +94,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/download_handler.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
-#endif
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -161,24 +156,10 @@ enum PlatformDownloadPathType {
 // Returns a path in the form that that is expected by platform_util::OpenItem /
 // platform_util::ShowItemInFolder / DownloadTargetDeterminer.
 //
-// DownloadItems corresponding to Drive downloads use a temporary file as the
-// target path. The paths returned by DownloadItem::GetFullPath() /
-// GetTargetFilePath() refer to this temporary file. This function looks up the
-// corresponding path in Drive for these downloads.
-//
 // How the platform path is determined is based on PlatformDownloadPathType.
 base::FilePath GetPlatformDownloadPath(Profile* profile,
                                        const DownloadItem* download,
                                        PlatformDownloadPathType path_type) {
-#if defined(OS_CHROMEOS)
-  // Drive downloads always return the target path for all types.
-  drive::DownloadHandler* drive_download_handler =
-      drive::DownloadHandler::GetForProfile(profile);
-  if (drive_download_handler &&
-      drive_download_handler->IsDriveDownload(download))
-    return drive_download_handler->GetTargetPath(download);
-#endif
-
   if (path_type == PLATFORM_TARGET_PATH)
     return download->GetTargetFilePath();
   return download->GetFullPath();
@@ -624,15 +605,10 @@ bool ChromeDownloadManagerDelegate::InterceptDownloadIfApplicable(
 void ChromeDownloadManagerDelegate::GetSaveDir(
     content::BrowserContext* browser_context,
     base::FilePath* website_save_dir,
-    base::FilePath* download_save_dir,
-    bool* skip_dir_check) {
+    base::FilePath* download_save_dir) {
   *website_save_dir = download_prefs_->SaveFilePath();
   DCHECK(!website_save_dir->empty());
   *download_save_dir = download_prefs_->DownloadPath();
-  *skip_dir_check = false;
-#if defined(OS_CHROMEOS)
-  *skip_dir_check = drive::util::IsUnderDriveMountPoint(*website_save_dir);
-#endif
 }
 
 void ChromeDownloadManagerDelegate::ChooseSavePath(
@@ -775,16 +751,6 @@ void ContinueCheckingForFileExistence(
 void ChromeDownloadManagerDelegate::CheckForFileExistence(
     DownloadItem* download,
     content::CheckForFileExistenceCallback callback) {
-#if defined(OS_CHROMEOS)
-  drive::DownloadHandler* drive_download_handler =
-      drive::DownloadHandler::GetForProfile(profile_);
-  if (drive_download_handler &&
-      drive_download_handler->IsDriveDownload(download)) {
-    drive_download_handler->CheckForFileExistence(download,
-                                                  std::move(callback));
-    return;
-  }
-#endif
   base::PostTaskAndReplyWithResult(
       disk_access_task_runner_.get(), FROM_HERE,
       base::BindOnce(&base::PathExists, download->GetTargetFilePath()),
@@ -850,12 +816,7 @@ void ChromeDownloadManagerDelegate::ReserveVirtualPath(
     const DownloadTargetDeterminerDelegate::ReservedPathCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!virtual_path.empty());
-#if defined(OS_CHROMEOS)
-  if (drive::util::IsUnderDriveMountPoint(virtual_path)) {
-    callback.Run(PathValidationResult::SUCCESS, virtual_path);
-    return;
-  }
-#endif
+
   base::FilePath document_dir;
   base::PathService::Get(chrome::DIR_USER_DOCUMENTS, &document_dir);
   DownloadPathReservationTracker::GetReservedPath(
@@ -1095,15 +1056,6 @@ void ChromeDownloadManagerDelegate::DetermineLocalPath(
     const base::FilePath& virtual_path,
     const DownloadTargetDeterminerDelegate::LocalPathCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(OS_CHROMEOS)
-  drive::DownloadHandler* drive_download_handler =
-      drive::DownloadHandler::GetForProfile(profile_);
-  if (drive_download_handler) {
-    drive_download_handler->SubstituteDriveDownloadPath(
-        virtual_path, download, callback);
-    return;
-  }
-#endif
   callback.Run(virtual_path);
 }
 

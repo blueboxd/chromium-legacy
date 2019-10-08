@@ -91,8 +91,8 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
   MOCK_METHOD2(ShouldOpenDownload,
                bool(download::DownloadItem*,
                     const DownloadOpenDelayedCallback&));
-  MOCK_METHOD4(GetSaveDir, void(BrowserContext*,
-                                base::FilePath*, base::FilePath*, bool*));
+  MOCK_METHOD3(GetSaveDir,
+               void(BrowserContext*, base::FilePath*, base::FilePath*));
   MOCK_METHOD5(ChooseSavePath, void(
       WebContents*, const base::FilePath&, const base::FilePath::StringType&,
       bool, const SavePackagePathPickedCallback&));
@@ -599,7 +599,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
 
 #if !defined(USE_X11)
   // Doing nothing will set the default download directory to null.
-  EXPECT_CALL(GetMockDownloadManagerDelegate(), GetSaveDir(_, _, _, _));
+  EXPECT_CALL(GetMockDownloadManagerDelegate(), GetSaveDir(_, _, _));
 #endif
   EXPECT_CALL(GetMockDownloadManagerDelegate(),
               ApplicationClientIdForFileScanning())
@@ -635,7 +635,7 @@ TEST_F(DownloadManagerTest, StartDownloadWithoutHistoryDB) {
 
 #if !defined(USE_X11)
   // Doing nothing will set the default download directory to null.
-  EXPECT_CALL(GetMockDownloadManagerDelegate(), GetSaveDir(_, _, _, _));
+  EXPECT_CALL(GetMockDownloadManagerDelegate(), GetSaveDir(_, _, _));
 #endif
   EXPECT_CALL(GetMockDownloadManagerDelegate(),
               ApplicationClientIdForFileScanning())

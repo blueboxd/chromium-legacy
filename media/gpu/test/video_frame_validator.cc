@@ -65,7 +65,7 @@ bool VideoFrameValidator::Initialize() {
 void VideoFrameValidator::Destroy() {
   frame_validator_thread_.Stop();
   base::AutoLock auto_lock(frame_validator_lock_);
-  DCHECK_EQ(0u, num_frames_validating_);
+  CHECK_EQ(0u, num_frames_validating_);
 }
 
 std::vector<VideoFrameValidator::MismatchedFrameInfo>

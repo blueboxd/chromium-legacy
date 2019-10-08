@@ -6,6 +6,7 @@
 #define UI_GL_GL_CONTEXT_STUB_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_export.h"
 
@@ -34,6 +35,10 @@ class GL_EXPORT GLContextStub : public GLContextReal {
   void SetExtensionsString(const char* extensions);
   void SetGLVersionString(const char* version_str);
   bool HasRobustness();
+
+#if defined(OS_MACOSX)
+  void FlushForDriverCrashWorkaround() override;
+#endif
 
  protected:
   ~GLContextStub() override;

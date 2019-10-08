@@ -127,25 +127,11 @@ const int kMaxExtractorTasks = 8;
 std::unique_ptr<DomDistillerService> CreateDomDistillerService(
     content::BrowserContext* context,
     sync_preferences::TestingPrefServiceSyncable* pref_service,
-    const base::FilePath& db_path,
     const FileToUrlMap& file_to_url_map) {
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
-
   // Setting up PrefService for DistilledPagePrefs.
   DistilledPagePrefs::RegisterProfilePrefs(pref_service->registry());
 
-  auto* db_provider =
-      content::BrowserContext::GetDefaultStoragePartition(context)
-          ->GetProtoDatabaseProvider();
-
-  // TODO(cjhopman): use an in-memory database instead of an on-disk one with
-  // temporary directory.
-  auto db = db_provider->GetDB<ArticleEntry>(
-      leveldb_proto::ProtoDbType::DOM_DISTILLER_STORE, db_path,
-      background_task_runner);
-
-  auto dom_distiller_store = std::make_unique<DomDistillerStore>(std::move(db));
+  auto dom_distiller_store = std::make_unique<DomDistillerStore>();
 
   auto distiller_page_factory =
       std::make_unique<DistillerPageWebContentsFactory>(context);
@@ -338,7 +324,6 @@ class ContentExtractor : public ContentBrowserTest {
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableDnsSwitch)) {
       EnableDNSLookupForThisTest();
     }
-    CHECK(db_dir_.CreateUniqueTempDir());
     AddComponentsTestResources();
   }
 
@@ -359,7 +344,7 @@ class ContentExtractor : public ContentBrowserTest {
         std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
 
     service_ = CreateDomDistillerService(context, pref_service_.get(),
-                                         db_dir_.GetPath(), file_to_url_map);
+                                         file_to_url_map);
     PumpQueue();
   }
 
@@ -435,7 +420,6 @@ class ContentExtractor : public ContentBrowserTest {
   size_t max_tasks_;
   size_t next_request_;
 
-  base::ScopedTempDir db_dir_;
   std::unique_ptr<net::ScopedDefaultHostResolverProc>
       mock_host_resolver_override_;
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;

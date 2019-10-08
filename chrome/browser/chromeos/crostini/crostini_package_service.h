@@ -58,13 +58,11 @@ class CrostiniPackageService : public KeyedService,
       CrostiniManager::GetLinuxPackageInfoCallback callback);
 
   // LinuxPackageOperationProgressObserver:
-  void OnInstallLinuxPackageProgress(const std::string& vm_name,
-                                     const std::string& container_name,
+  void OnInstallLinuxPackageProgress(const ContainerId& container_id,
                                      InstallLinuxPackageProgressStatus status,
                                      int progress_percent) override;
 
-  void OnUninstallPackageProgress(const std::string& vm_name,
-                                  const std::string& container_name,
+  void OnUninstallPackageProgress(const ContainerId& container_id,
                                   UninstallPackageProgressStatus status,
                                   int progress_percent) override;
 

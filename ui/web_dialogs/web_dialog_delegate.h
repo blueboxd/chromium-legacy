@@ -142,8 +142,8 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
                                     content::WebContents** out_new_contents);
 
   // A callback to control whether a WebContents will be created. Returns
-  // false to disallow the creation. Return true to use the default handler.
-  virtual bool HandleShouldCreateWebContents();
+  // true to disallow the creation. Return false to use the default handler.
+  virtual bool HandleShouldOverrideWebContentsCreation();
 
   // Stores the dialog bounds.
   virtual void StoreDialogSize(const gfx::Size& dialog_size) {}

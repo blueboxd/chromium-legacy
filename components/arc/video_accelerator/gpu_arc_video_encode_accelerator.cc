@@ -17,6 +17,7 @@
 #include "media/base/color_plane_layout.h"
 #include "media/base/format_utils.h"
 #include "media/base/video_types.h"
+#include "media/gpu/buffer_validation.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -330,7 +331,7 @@ void GpuArcVideoEncodeAccelerator::UseBitstreamBuffer(
   }
 
   size_t shmem_size;
-  if (!GetFileSize(fd.get(), &shmem_size)) {
+  if (!media::GetFileSize(fd.get(), &shmem_size)) {
     client_->NotifyError(Error::kInvalidArgumentError);
     return;
   }

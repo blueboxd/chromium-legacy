@@ -223,9 +223,6 @@ def main():
     extra_gn_options += 'ios_web_view_include_cronet=false '
   if options.enable_sync:
     extra_gn_options += 'ios_web_view_enable_sync=true '
-    # Used to differentiate //ios/web_view from //ios/chrome in the user agent
-    # product string passed to sync servers.
-    extra_gn_options += 'sync_user_agent_product="ChromeWebView" '
   else:
     extra_gn_options += 'ios_web_view_enable_sync=false '
   if options.enable_autofill:

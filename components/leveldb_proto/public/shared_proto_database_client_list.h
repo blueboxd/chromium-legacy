@@ -65,6 +65,7 @@ constexpr ProtoDbType kWhitelistedDbForSharedImpl[]{
 // Add any obsolete databases in this list so that, if the data is no longer
 // needed.
 constexpr ProtoDbType kObsoleteSharedProtoDbTypeClients[] = {
+    ProtoDbType::DOM_DISTILLER_STORE,
     ProtoDbType::LAST,  // Marks the end of list.
 };
 

@@ -468,8 +468,6 @@ void WebSocketStream::DidConnect(const String& subprotocol,
     return;
   common_.SetState(WebSocketCommon::kOpen);
   was_ever_connected_ = true;
-  // Don't read all of a huge initial message before read() has been called.
-  channel_->ApplyBackpressure();
   auto* connection = MakeGarbageCollected<WebSocketConnection>();
   connection->setProtocol(subprotocol);
   connection->setExtensions(extensions);
@@ -598,6 +596,9 @@ void WebSocketStream::Connect(ScriptState* script_state,
                               ExceptionState& exception_state) {
   DVLOG(1) << "WebSocketStream " << this << " Connect() url=" << url
            << " options=" << options;
+
+  // Don't read all of a huge initial message before read() has been called.
+  channel_->ApplyBackpressure();
 
   auto* signal = options->signal();
   if (signal && signal->aborted()) {

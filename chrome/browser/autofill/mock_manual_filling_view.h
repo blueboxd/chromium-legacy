@@ -19,7 +19,6 @@ class MockManualFillingView : public ManualFillingViewInterface {
   MOCK_METHOD0(CloseAccessorySheet, void());
   MOCK_METHOD0(SwapSheetWithKeyboard, void());
   MOCK_METHOD0(ShowWhenKeyboardIsVisible, void());
-  MOCK_METHOD0(ShowTouchToFillSheet, void());
   MOCK_METHOD0(Hide, void());
 
  private:

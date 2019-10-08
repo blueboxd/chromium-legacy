@@ -18,6 +18,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -26,15 +27,19 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/system_flags.h"
+#include "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/tabs/tab_model_list.h"
 #include "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
+#import "ios/web/public/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -283,12 +288,46 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
   DCHECK(!AuthenticationServiceFactory::GetForBrowserState(browserState)
               ->IsAuthenticated());
 
+  // Workaround for crbug.com/1003578
+  //
+  // During the Chrome sign-in flow, if the user chooses to clear the cookies
+  // when switching their primary account, then the following actions take
+  // place (in the following order):
+  //   1. All cookies are cleared.
+  //   2. The user is signed in to Chrome (aka the primary account set)
+  //   2.a. All requests to Gaia page will include Mirror header.
+  //   2.b. Account reconcilor will rebuild the Gaia cookies having the Chrome
+  //      primary account as the Gaia default web account.
+  //
+  // The Gaia sign-in webpage monitors changes to its cookies and reloads the
+  // page whenever they change. Reloading the webpage while the cookies are
+  // cleared and just before they are rebuilt seems to confuse WKWebView that
+  // ends up with a nil URL, which in turns translates in about:blank URL shown
+  // in the Omnibox.
+  //
+  // This CL works around this issue by waiting for 1 second between steps 1
+  // and 2 above to allow the WKWebView to initiate the reload after the
+  // cookies are cleared.
+  WebStateList* webStateList =
+      TabModelList::GetLastActiveTabModelForChromeBrowserState(browserState)
+          .webStateList;
+  web::WebState* activeWebState = webStateList->GetActiveWebState();
+  bool activeWebStateHasGaiaOrigin =
+      activeWebState && (activeWebState->GetVisibleURL().GetOrigin() ==
+                         GaiaUrls::GetInstance()->gaia_url());
+  int64_t dispatchDelaySecs = activeWebStateHasGaiaOrigin ? 1 : 0;
+
   [dispatcher
       removeBrowsingDataForBrowserState:browserState
                              timePeriod:browsing_data::TimePeriod::ALL_TIME
                              removeMask:BrowsingDataRemoveMask::REMOVE_ALL
                         completionBlock:^{
-                          [_delegate didClearData];
+                          dispatch_after(
+                              dispatch_time(DISPATCH_TIME_NOW,
+                                            dispatchDelaySecs * NSEC_PER_SEC),
+                              dispatch_get_main_queue(), ^{
+                                [_delegate didClearData];
+                              });
                         }];
 }
 

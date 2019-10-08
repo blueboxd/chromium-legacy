@@ -589,7 +589,7 @@ class DirectCompositionPixelTest : public DirectCompositionSurfaceTest {
 
  protected:
   void SetUp() override {
-    static_cast<ui::PlatformWindow*>(&window_)->Show();
+    static_cast<ui::PlatformWindowBase*>(&window_)->Show();
     DirectCompositionSurfaceTest::SetUp();
   }
 

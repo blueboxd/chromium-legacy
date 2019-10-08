@@ -14240,6 +14240,59 @@ should be able to be added at any place in this file.
   <description>Recorded when a persistent notification gets shown.</description>
 </action>
 
+<action name="Notifications.Quiet.AnimatedIconClicked">
+  <owner>andypaicu@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
+  <owner>hkamila@chromium.org</owner>
+  <description>
+    Logs when the user clicks on the notification permission request animated
+    icon on the omnibox, that upon being clicked, opens the permission request
+    bubble .
+  </description>
+</action>
+
+<action name="Notifications.Quiet.ManageClicked">
+  <owner>andypaicu@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
+  <owner>hkamila@chromium.org</owner>
+  <description>
+    Logs when the user clicks &quot;Manage&quot;, which is a button, that upon
+    being clicked, navigates the user to the notifications category settings
+    page.
+  </description>
+</action>
+
+<action name="Notifications.Quiet.PermissionRequestShown">
+  <owner>andypaicu@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
+  <owner>hkamila@chromium.org</owner>
+  <description>
+    The notification permission request was shown quietly as an icon in the
+    omnibox.
+  </description>
+</action>
+
+<action name="Notifications.Quiet.ShowForSiteClicked">
+  <owner>andypaicu@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
+  <owner>hkamila@chromium.org</owner>
+  <description>
+    Logs when the user clicks &quot;Show for site&quot;, which is a button, that
+    upon being clicked, allows the site to send notifications.
+  </description>
+</action>
+
+<action name="Notifications.Quiet.StaticIconClicked">
+  <owner>andypaicu@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
+  <owner>hkamila@chromium.org</owner>
+  <description>
+    Logs when the user clicks on the notification permission request static icon
+    on the omnibox, that upon being clicked, opens the permission request bubble
+    .
+  </description>
+</action>
+
 <action name="Notifications.ShowMessageCenter">
   <owner>dewittj@chromium.org</owner>
   <description>

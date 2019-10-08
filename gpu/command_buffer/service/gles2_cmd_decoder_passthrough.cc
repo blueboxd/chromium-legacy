@@ -699,6 +699,15 @@ GLES2Decoder::Error GLES2DecoderPassthroughImpl::DoCommandsImpl(
   if (entries_processed)
     *entries_processed = process_pos;
 
+#if defined(OS_MACOSX)
+  // Aggressively call glFlush on macOS. This is the only fix that has been
+  // found so far to avoid crashes on Intel drivers. The workaround
+  // isn't needed for WebGL contexts, though.
+  // https://crbug.com/863817
+  if (!feature_info_->IsWebGLContext())
+    context_->FlushForDriverCrashWorkaround();
+#endif
+
   return result;
 }
 

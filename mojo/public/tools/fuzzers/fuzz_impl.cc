@@ -38,8 +38,8 @@ void FuzzImpl::FuzzArgsSyncResp(fuzz::mojom::FuzzStructPtr a,
 }
 
 void FuzzImpl::FuzzAssociated(
-    fuzz::mojom::FuzzDummyInterfaceAssociatedRequest req) {
-  associated_bindings_.AddBinding(this, std::move(req));
+    mojo::PendingAssociatedReceiver<fuzz::mojom::FuzzDummyInterface> receiver) {
+  associated_receivers_.Add(this, std::move(receiver));
 }
 
 void FuzzImpl::Ping() {}

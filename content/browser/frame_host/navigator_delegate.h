@@ -91,10 +91,6 @@ class CONTENT_EXPORT NavigatorDelegate {
   // different process between the load start and commit.
   virtual bool ShouldTransferNavigation(bool is_main_frame_navigation);
 
-  // Returns whether URLs for aborted browser-initiated navigations should be
-  // preserved in the omnibox.  Defaults to false.
-  virtual bool ShouldPreserveAbortedURLs();
-
   // Returns the overriden user agent string if it's set.
   virtual const std::string& GetUserAgentOverride() = 0;
 

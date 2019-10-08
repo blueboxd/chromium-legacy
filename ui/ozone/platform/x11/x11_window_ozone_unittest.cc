@@ -100,7 +100,7 @@ class X11WindowOzoneTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<PlatformWindow> CreatePlatformWindow(
+  std::unique_ptr<PlatformWindowBase> CreatePlatformWindow(
       MockPlatformWindowDelegate* delegate,
       const gfx::Rect& bounds,
       gfx::AcceleratedWidget* widget) {

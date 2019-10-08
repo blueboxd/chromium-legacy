@@ -2824,39 +2824,14 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
       static_cast<SessionStorageNamespaceImpl*>(session_storage_namespace);
   CHECK(session_storage_namespace_impl->IsFromContext(dom_storage_context));
 
-  // TODO(crbug.com/545684): Move these closer to usage after cleaning up the
-  // ShouldCreateWebContents() interface to not need the raw ID numbers.
-  int render_view_route_id = MSG_ROUTING_NONE;
-  int main_frame_route_id = MSG_ROUTING_NONE;
-  int main_frame_widget_route_id = MSG_ROUTING_NONE;
-  if (!is_new_browsing_instance) {
-    render_view_route_id = opener->GetProcess()->GetNextRoutingID();
-    main_frame_route_id = opener->GetProcess()->GetNextRoutingID();
-    main_frame_widget_route_id = opener->GetProcess()->GetNextRoutingID();
-  }
-
-  if (delegate_ &&
-      !delegate_->ShouldCreateWebContents(
-          this, opener, source_site_instance, render_view_route_id,
-          main_frame_route_id, main_frame_widget_route_id,
-          params.window_container_type, opener->GetLastCommittedURL(),
-          params.frame_name, params.target_url, partition_id,
-          session_storage_namespace)) {
-    // Note: even though we're not creating a WebContents here, it could have
-    // been created by the embedder so ensure that the RenderFrameHost is
-    // properly initialized.
-    // It's safe to only target the frame because the render process will not
-    // have a chance to create more frames at this point.
-    RenderFrameHostImpl* rfh =
-        RenderFrameHostImpl::FromID(render_process_id, main_frame_route_id);
-    if (rfh) {
-      // TODO(crbug.com/545684): It's super surprising that
-      // ShouldCreateWebContents() is actually a way to allow
-      // BackgroundWebContents to intercede and provide a completely different
-      // webcontents. Fix that API.
-      return rfh->delegate();
-    }
-    return nullptr;
+  if (delegate_ && delegate_->IsWebContentsCreationOverridden(
+                       source_site_instance, params.window_container_type,
+                       opener->GetLastCommittedURL(), params.frame_name,
+                       params.target_url)) {
+    return static_cast<WebContentsImpl*>(delegate_->CreateCustomWebContents(
+        opener, source_site_instance, is_new_browsing_instance,
+        opener->GetLastCommittedURL(), params.frame_name, params.target_url,
+        partition_id, session_storage_namespace));
   }
 
   bool renderer_started_hidden =
@@ -2878,9 +2853,22 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
   // the opener's process will not given the routing IDs for the new
   // objects.
   create_params.renderer_initiated_creation = !is_new_browsing_instance;
-  create_params.routing_id = render_view_route_id;
-  create_params.main_frame_routing_id = main_frame_route_id;
-  create_params.main_frame_widget_routing_id = main_frame_widget_route_id;
+
+  // If |is_new_browsing_instance| is true, defer routing_id allocation
+  // to the WebContentsImpl::Create() call. This is required because with
+  // a new browsing instance, WebContentsImpl::Create() may elect a different
+  // SiteInstance from |site_instance| (which happens if |site_instance| is
+  // nullptr for example).
+  //
+  // TODO(ajwong): This routing id allocation should be pushed down further
+  // into WebContentsImpl::Create().
+  if (!is_new_browsing_instance) {
+    create_params.routing_id = opener->GetProcess()->GetNextRoutingID();
+    create_params.main_frame_routing_id =
+        opener->GetProcess()->GetNextRoutingID();
+    create_params.main_frame_widget_routing_id =
+        opener->GetProcess()->GetNextRoutingID();
+  }
 
   std::unique_ptr<WebContentsImpl> new_contents;
   if (!is_guest) {
@@ -2924,8 +2912,9 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
     // TODO(ajwong): This should be keyed off the RenderFrame routing id or the
     // FrameTreeNode id instead of the routing id of the Widget for the main
     // frame.  https://crbug.com/545684
-    DCHECK_NE(MSG_ROUTING_NONE, main_frame_widget_route_id);
-    GlobalRoutingID id(render_process_id, main_frame_widget_route_id);
+    DCHECK_NE(MSG_ROUTING_NONE, create_params.main_frame_routing_id);
+    GlobalRoutingID id(render_process_id,
+                       create_params.main_frame_widget_routing_id);
     pending_contents_[id] = std::move(new_contents);
     AddDestructionObserver(new_contents_impl);
   }

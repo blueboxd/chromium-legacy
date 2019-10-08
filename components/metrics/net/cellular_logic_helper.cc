@@ -28,17 +28,15 @@ const bool kDefaultCellularLogicEnabled = false;
 
 }  // namespace
 
-base::TimeDelta GetUploadInterval() {
+base::TimeDelta GetUploadInterval(bool use_cellular_upload_interval) {
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  if (IsCellularLogicEnabled())
+  if (use_cellular_upload_interval)
     return base::TimeDelta::FromSeconds(kStandardUploadIntervalCellularSeconds);
 #endif
   return base::TimeDelta::FromSeconds(kStandardUploadIntervalSeconds);
 }
 
-// Returns true if current connection type is cellular and cellular logic is
-// enabled.
-bool IsCellularLogicEnabled() {
+bool ShouldUseCellularUploadInterval() {
   if (!kDefaultCellularLogicEnabled)
     return false;
 

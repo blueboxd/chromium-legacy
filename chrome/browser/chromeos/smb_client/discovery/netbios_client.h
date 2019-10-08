@@ -11,7 +11,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/smb_client/discovery/netbios_client_interface.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
@@ -108,7 +108,7 @@ class NetBiosClient : public network::mojom::UDPSocketListener,
   NetBiosResponseCallback callback_;
   std::unique_ptr<FirewallHole> firewall_hole_;
   mojo::Remote<network::mojom::UDPSocket> server_socket_;
-  mojo::Binding<network::mojom::UDPSocketListener> listener_binding_;
+  mojo::Receiver<network::mojom::UDPSocketListener> listener_receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetBiosClient);
 };

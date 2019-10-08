@@ -5,7 +5,8 @@
 #include <utility>
 
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/mojom/geometry_traits_test_service.mojom.h"
 #include "ui/gfx/geometry/point.h"
@@ -21,9 +22,9 @@ class GeometryStructTraitsTest : public testing::Test,
   GeometryStructTraitsTest() {}
 
  protected:
-  mojom::GeometryTraitsTestServicePtr GetTraitsTestProxy() {
-    mojom::GeometryTraitsTestServicePtr proxy;
-    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
+  mojo::Remote<mojom::GeometryTraitsTestService> GetTraitsTestProxy() {
+    mojo::Remote<mojom::GeometryTraitsTestService> proxy;
+    traits_test_receivers_.Add(this, proxy.BindNewPipeAndPassReceiver());
     return proxy;
   }
 
@@ -85,7 +86,7 @@ class GeometryStructTraitsTest : public testing::Test,
   }
 
   base::test::TaskEnvironment task_environment_;
-  mojo::BindingSet<GeometryTraitsTestService> traits_test_bindings_;
+  mojo::ReceiverSet<GeometryTraitsTestService> traits_test_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(GeometryStructTraitsTest);
 };
@@ -96,7 +97,7 @@ TEST_F(GeometryStructTraitsTest, Point) {
   const int32_t x = 1234;
   const int32_t y = -5678;
   gfx::Point input(x, y);
-  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::GeometryTraitsTestService> proxy = GetTraitsTestProxy();
   gfx::Point output;
   proxy->EchoPoint(input, &output);
   EXPECT_EQ(x, output.x());
@@ -107,7 +108,7 @@ TEST_F(GeometryStructTraitsTest, PointF) {
   const float x = 1234.5f;
   const float y = 6789.6f;
   gfx::PointF input(x, y);
-  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::GeometryTraitsTestService> proxy = GetTraitsTestProxy();
   gfx::PointF output;
   proxy->EchoPointF(input, &output);
   EXPECT_EQ(x, output.x());
@@ -119,7 +120,7 @@ TEST_F(GeometryStructTraitsTest, Point3F) {
   const float y = 6789.6f;
   const float z = 5432.1f;
   gfx::Point3F input(x, y, z);
-  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::GeometryTraitsTestService> proxy = GetTraitsTestProxy();
   gfx::Point3F output;
   proxy->EchoPoint3F(input, &output);
   EXPECT_EQ(x, output.x());
@@ -131,7 +132,7 @@ TEST_F(GeometryStructTraitsTest, Size) {
   const int32_t width = 1234;
   const int32_t height = 5678;
   gfx::Size input(width, height);
-  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::GeometryTraitsTestService> proxy = GetTraitsTestProxy();
   gfx::Size output;
   proxy->EchoSize(input, &output);
   EXPECT_EQ(width, output.width());
@@ -142,7 +143,7 @@ TEST_F(GeometryStructTraitsTest, SizeF) {
   const float width = 1234.5f;
   const float height = 6789.6f;
   gfx::SizeF input(width, height);
-  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::GeometryTraitsTestService> proxy = GetTraitsTestProxy();
   gfx::SizeF output;
   proxy->EchoSizeF(input, &output);
   EXPECT_EQ(width, output.width());
@@ -155,7 +156,7 @@ TEST_F(GeometryStructTraitsTest, Rect) {
   const int32_t width = 4321;
   const int32_t height = 8765;
   gfx::Rect input(x, y, width, height);
-  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::GeometryTraitsTestService> proxy = GetTraitsTestProxy();
   gfx::Rect output;
   proxy->EchoRect(input, &output);
   EXPECT_EQ(x, output.x());
@@ -170,7 +171,7 @@ TEST_F(GeometryStructTraitsTest, RectF) {
   const float width = 4321.3f;
   const float height = 8765.4f;
   gfx::RectF input(x, y, width, height);
-  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::GeometryTraitsTestService> proxy = GetTraitsTestProxy();
   gfx::RectF output;
   proxy->EchoRectF(input, &output);
   EXPECT_EQ(x, output.x());
@@ -185,7 +186,7 @@ TEST_F(GeometryStructTraitsTest, Insets) {
   const int32_t bottom = 4321;
   const int32_t right = 8765;
   gfx::Insets input(top, left, bottom, right);
-  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::GeometryTraitsTestService> proxy = GetTraitsTestProxy();
   gfx::Insets output;
   proxy->EchoInsets(input, &output);
   EXPECT_EQ(top, output.top());
@@ -200,7 +201,7 @@ TEST_F(GeometryStructTraitsTest, InsetsF) {
   const float bottom = 4321.3f;
   const float right = 8765.4f;
   gfx::InsetsF input(top, left, bottom, right);
-  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::GeometryTraitsTestService> proxy = GetTraitsTestProxy();
   gfx::InsetsF output;
   proxy->EchoInsetsF(input, &output);
   EXPECT_EQ(top, output.top());
@@ -213,7 +214,7 @@ TEST_F(GeometryStructTraitsTest, Vector2d) {
   const int32_t x = 1234;
   const int32_t y = -5678;
   gfx::Vector2d input(x, y);
-  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::GeometryTraitsTestService> proxy = GetTraitsTestProxy();
   gfx::Vector2d output;
   proxy->EchoVector2d(input, &output);
   EXPECT_EQ(x, output.x());
@@ -224,7 +225,7 @@ TEST_F(GeometryStructTraitsTest, Vector2dF) {
   const float x = 1234.5f;
   const float y = 6789.6f;
   gfx::Vector2dF input(x, y);
-  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::GeometryTraitsTestService> proxy = GetTraitsTestProxy();
   gfx::Vector2dF output;
   proxy->EchoVector2dF(input, &output);
   EXPECT_EQ(x, output.x());
@@ -236,7 +237,7 @@ TEST_F(GeometryStructTraitsTest, Vector3dF) {
   const float y = 6789.6f;
   const float z = 5432.1f;
   gfx::Vector3dF input(x, y, z);
-  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::GeometryTraitsTestService> proxy = GetTraitsTestProxy();
   gfx::Vector3dF output;
   proxy->EchoVector3dF(input, &output);
   EXPECT_EQ(x, output.x());
@@ -250,7 +251,7 @@ TEST_F(GeometryStructTraitsTest, Quaternion) {
   const double z = 31415.9;
   const double w = 27182.8;
   gfx::Quaternion input(x, y, z, w);
-  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::GeometryTraitsTestService> proxy = GetTraitsTestProxy();
   gfx::Quaternion output;
   proxy->EchoQuaternion(input, &output);
   EXPECT_EQ(x, output.x());

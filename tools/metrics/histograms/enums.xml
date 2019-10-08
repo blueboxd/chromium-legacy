@@ -4691,6 +4691,13 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="Overlay Insecure Non-player-element Fullscreen"/>
 </enum>
 
+<enum name="BackForwardCacheDisabledForRenderFrameHostReason">
+  <int value="-1449100855" label="safe_browsing::ThreatDetails"/>
+  <int value="-1314032804" label="MediaSessionImpl::OnServiceCreated"/>
+  <int value="-866479064" label="content::protocol::SecurityHandler"/>
+  <int value="671363579" label="banners::AppBannerManager"/>
+</enum>
+
 <enum name="BackForwardCacheHistoryNavigationOutcome">
   <int value="0" label="Restored"/>
   <int value="1" label="Not cached"/>
@@ -45751,6 +45758,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Page load matches target">
     The model for the optimization target was evaluated and the page load was
     predicted to match the optimization target.
+  </int>
+  <int value="3" label="Model for target not available on client">
+    The model for the optimization target not available on the client.
   </int>
 </enum>
 

@@ -55,34 +55,24 @@ PolicyMap::Entry::Entry(Entry&&) noexcept = default;
 PolicyMap::Entry& PolicyMap::Entry::operator=(Entry&&) noexcept = default;
 
 PolicyMap::Entry PolicyMap::Entry::DeepCopy() const {
-  Entry copy;
-  copy.level = level;
-  copy.scope = scope;
-  copy.source = source;
-  if (value)
-    copy.value = value->CreateDeepCopy();
+  Entry copy(level, scope, source, value ? value->CreateDeepCopy() : nullptr,
+             external_data_fetcher
+                 ? std::make_unique<ExternalDataFetcher>(*external_data_fetcher)
+                 : nullptr);
   copy.error_strings_ = error_strings_;
   copy.error_message_ids_ = error_message_ids_;
   copy.warning_message_ids_ = warning_message_ids_;
-  if (external_data_fetcher) {
-    copy.external_data_fetcher.reset(
-        new ExternalDataFetcher(*external_data_fetcher));
-  }
+  copy.conflicts.reserve(conflicts.size());
   for (const auto& conflict : conflicts) {
-    copy.AddConflictingPolicy(conflict);
+    copy.AddConflictingPolicy(conflict.DeepCopy());
   }
   return copy;
 }
 
 bool PolicyMap::Entry::has_higher_priority_than(
     const PolicyMap::Entry& other) const {
-  if (level != other.level)
-    return level > other.level;
-
-  if (scope != other.scope)
-    return scope > other.scope;
-
-  return source > other.source;
+  return std::tie(level, scope, source) >
+         std::tie(other.level, other.scope, other.source);
 }
 
 bool PolicyMap::Entry::Equals(const PolicyMap::Entry& other) const {
@@ -116,19 +106,15 @@ void PolicyMap::Entry::AddWarning(int message_id) {
   warning_message_ids_.insert(message_id);
 }
 
-void PolicyMap::Entry::AddConflictingPolicy(const Entry& conflict) {
-  Entry conflicted_policy_copy = conflict.DeepCopy();
-
-  for (const auto& conflict : conflicted_policy_copy.conflicts) {
-    AddConflictingPolicy(conflict);
-  }
+void PolicyMap::Entry::AddConflictingPolicy(Entry&& conflict) {
+  // Move all of the newly conflicting Entry's conflicts into this Entry.
+  std::move(conflict.conflicts.begin(), conflict.conflicts.end(),
+            std::back_inserter(conflicts));
 
   // Avoid conflict nesting
-  conflicted_policy_copy.conflicts.clear();
-  conflicted_policy_copy.error_message_ids_.clear();
-  conflicted_policy_copy.warning_message_ids_.clear();
-  conflicted_policy_copy.error_strings_.clear();
-  conflicts.push_back(std::move(conflicted_policy_copy));
+  conflicts.emplace_back(conflict.level, conflict.scope, conflict.source,
+                         std::move(conflict.value),
+                         std::move(conflict.external_data_fetcher));
 }
 
 void PolicyMap::Entry::ClearConflicts() {
@@ -278,35 +264,37 @@ std::unique_ptr<PolicyMap> PolicyMap::DeepCopy() const {
 }
 
 void PolicyMap::MergeFrom(const PolicyMap& other) {
-  for (const auto& it : other) {
-    Entry* current_policy = GetMutableUntrusted(it.first);
-    auto other_policy = it.second.DeepCopy();
+  for (const auto& policy_and_entry : other) {
+    Entry* current_policy = GetMutableUntrusted(policy_and_entry.first);
+    Entry other_policy = policy_and_entry.second.DeepCopy();
 
     if (!current_policy) {
-      Set(it.first, std::move(other_policy));
+      Set(policy_and_entry.first, std::move(other_policy));
       continue;
     }
 
-    auto& new_policy = other_policy.has_higher_priority_than(*current_policy)
-                           ? other_policy
-                           : *current_policy;
-    auto& conflict =
-        current_policy == &new_policy ? other_policy : *current_policy;
+    const bool other_is_higher_priority =
+        policy_and_entry.second.has_higher_priority_than(*current_policy);
 
-    bool overwriting_default_policy =
-        new_policy.source != conflict.source &&
-        conflict.source == POLICY_SOURCE_ENTERPRISE_DEFAULT;
+    Entry& higher_policy =
+        other_is_higher_priority ? other_policy : *current_policy;
+    Entry& conflicting_policy =
+        other_is_higher_priority ? *current_policy : other_policy;
+
+    const bool overwriting_default_policy =
+        higher_policy.source != conflicting_policy.source &&
+        conflicting_policy.source == POLICY_SOURCE_ENTERPRISE_DEFAULT;
     if (!overwriting_default_policy) {
-      new_policy.AddConflictingPolicy(conflict);
-      new_policy.AddWarning(
+      higher_policy.AddConflictingPolicy(std::move(conflicting_policy));
+      higher_policy.AddWarning(
           (current_policy->value &&
-           it.second.value->Equals(current_policy->value.get()))
+           *policy_and_entry.second.value == *current_policy->value)
               ? IDS_POLICY_CONFLICT_SAME_VALUE
               : IDS_POLICY_CONFLICT_DIFF_VALUE);
     }
 
-    if (current_policy != &new_policy)
-      Set(it.first, std::move(new_policy));
+    if (other_is_higher_priority)
+      *current_policy = std::move(other_policy);
   }
 }
 

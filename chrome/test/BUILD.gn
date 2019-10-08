@@ -42,7 +42,9 @@ if (is_android) {
   import("//chrome/android/features/dev_ui/dev_ui_module.gni")
   import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 } else {
-  include_js_tests = !(is_asan || is_msan || is_tsan)
+  # js_tests don't work in cross builds, https://crbug.com/1010561
+  include_js_tests =
+      !(is_asan || is_msan || is_tsan || (is_win && host_os != "win"))
 }
 
 # This target exists to reference other test executables to bring these files
@@ -3053,6 +3055,7 @@ test("unit_tests") {
     "../browser/optimization_guide/optimization_guide_session_statistic_unittest.cc",
     "../browser/optimization_guide/optimization_guide_top_host_provider_unittest.cc",
     "../browser/optimization_guide/prediction/decision_tree_prediction_model_unittest.cc",
+    "../browser/optimization_guide/prediction/prediction_manager_unittest.cc",
     "../browser/optimization_guide/prediction/prediction_model_fetcher_unittest.cc",
     "../browser/optimization_guide/prediction/prediction_model_unittest.cc",
     "../browser/page_load_metrics/metrics_web_contents_observer_unittest.cc",

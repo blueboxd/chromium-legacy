@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_FORM_FETCHER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_FORM_FETCHER_H_
 
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -83,10 +82,10 @@ class FormFetcher {
   GetAllRelevantMatches() const = 0;
 
   // Nonblacklisted matches obtained from the backend.
-  virtual const std::map<base::string16, const autofill::PasswordForm*>&
-  GetBestMatches() const = 0;
+  virtual const std::vector<const autofill::PasswordForm*>& GetBestMatches()
+      const = 0;
 
-  // Pointer to an preferred entry in the map returned by GetBestMatches().
+  // Pointer to a preferred entry in the vector returned by GetBestMatches().
   virtual const autofill::PasswordForm* GetPreferredMatch() const = 0;
 
   // Fetches stored matching logins. In addition the statistics is fetched on

@@ -55,8 +55,7 @@ class TouchToFillBridge implements TouchToFillComponent.Delegate {
 
     @Override
     public void onDismissed() {
-        TouchToFillBridgeJni.get().onDismiss(mNativeView);
-        mNativeView = 0; // The native view shouldn't be used after it's dismissed.
+        if (mNativeView != 0) TouchToFillBridgeJni.get().onDismiss(mNativeView);
     }
 
     @Override

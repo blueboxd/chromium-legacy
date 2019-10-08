@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 
 namespace base {
@@ -50,7 +51,7 @@ bool RegisterBlinkTestPlugin(base::CommandLine* command_line)
 using CreateUDPSocketCallback = base::RepeatingCallback<void(
     network::mojom::NetworkContext* network_context,
     mojo::PendingReceiver<network::mojom::UDPSocket> socket_receiver,
-    network::mojom::UDPSocketListenerPtr socket_listener)>;
+    mojo::PendingRemote<network::mojom::UDPSocketListener> socket_listener)>;
 
 // Sets a NetworkContext to be used by the Pepper TCP classes for testing.
 // Passed in NetworkContext must remain valid until the method is called again

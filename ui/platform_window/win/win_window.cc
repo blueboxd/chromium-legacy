@@ -191,6 +191,10 @@ void WinWindow::FlashFrame(bool flash_frame) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
+void WinWindow::SetVisibilityChangedAnimationsEnabled(bool enabled) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 bool WinWindow::IsFullscreen() const {
   return GetPlatformWindowState() == PlatformWindowState::kFullScreen;
 }

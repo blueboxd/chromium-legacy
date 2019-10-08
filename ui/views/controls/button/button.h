@@ -62,10 +62,10 @@ class VIEWS_EXPORT Button : public InkDropHostView,
 
   // An enum describing the events on which a button should be clicked for a
   // given key event.
-  enum KeyClickAction {
-    CLICK_ON_KEY_PRESS,
-    CLICK_ON_KEY_RELEASE,
-    CLICK_NONE,
+  enum class KeyClickAction {
+    kOnKeyPress,
+    kOnKeyRelease,
+    kNone,
   };
 
   // TODO(cyan): Consider having Button implement ButtonControllerDelegate.

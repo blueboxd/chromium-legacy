@@ -39,15 +39,13 @@ class LinuxPackageOperationProgressObserver {
   // |progress_percent| field is given as a percentage of the given step,
   // DOWNLOADING or INSTALLING.
   virtual void OnInstallLinuxPackageProgress(
-      const std::string& vm_name,
-      const std::string& container_name,
+      const ContainerId& container_id,
       InstallLinuxPackageProgressStatus status,
       int progress_percent) = 0;
 
   // A successfully started package uninstall will continually fire progress
   // events until it returns a status of SUCCEEDED or FAILED.
-  virtual void OnUninstallPackageProgress(const std::string& vm_name,
-                                          const std::string& container_name,
+  virtual void OnUninstallPackageProgress(const ContainerId& container_id,
                                           UninstallPackageProgressStatus status,
                                           int progress_percent) = 0;
 };

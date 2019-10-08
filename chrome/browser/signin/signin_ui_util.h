@@ -18,6 +18,8 @@
 struct AccountInfo;
 class Browser;
 class Profile;
+class ProfileAttributesEntry;
+class ProfileAttributesStorage;
 
 // Utility functions to gather status information from the various signed in
 // services and construct messages suitable for showing in UI.
@@ -63,6 +65,15 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile);
 
 #endif
 
+// Returns the short user identity to display for |profile|. It is based on the
+// current unconsented primary account (if exists).
+// TODO(crbug.com/1012179): Move this logic into ProfileAttributesEntry once
+// AvatarToolbarButton becomes an observer of ProfileAttributesStorage and thus
+// ProfileAttributesEntry is up-to-date when AvatarToolbarButton needs it.
+base::string16 GetShortProfileIdentityToDisplay(
+    const ProfileAttributesEntry& profile_attributes_entry,
+    Profile* profile);
+
 // Returns the domain of the policy value of RestrictSigninToPattern. Returns
 // an empty string if the policy is not set or can not be parsed. The parser
 // only supports the policy value that matches [^@]+@[a-zA-Z0-9\-.]+(\\E)?\$?$.
@@ -89,6 +100,13 @@ void EnableSyncFromPromo(
         create_dice_turn_sync_on_helper_callback);
 }  // namespace internal
 #endif
+
+// Returns whether Chrome should show the identity of the user (using a brief
+// animation) on opening a profile. IdentityManager's refresh tokens must be
+// loaded when this function gets called.
+bool ShouldShowIdentityOnOpeningProfile(
+    const ProfileAttributesStorage& profile_attributes_storage,
+    Profile* profile);
 
 }  // namespace signin_ui_util
 

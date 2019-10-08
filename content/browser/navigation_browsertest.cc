@@ -2528,6 +2528,41 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
   }
 }
 
+// Regression test for https://crbug.com/999932.
+IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CanceledNavigationBug999932) {
+  using Response = net::test_server::ControllableHttpResponse;
+  Response response_A1(embedded_test_server(), "/A");
+  Response response_A2(embedded_test_server(), "/A");
+  Response response_B1(embedded_test_server(), "/B");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/A");
+  GURL url_b = embedded_test_server()->GetURL("b.com", "/B");
+
+  // 1. Navigate to A.
+  shell()->LoadURL(url_a);
+  response_A1.WaitForRequest();
+  response_A1.Send(non_cacheable_html_response);
+  response_A1.Done();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // 2. Start pending navigation to B.
+  shell()->LoadURL(url_b);
+  EXPECT_EQ(url_b, shell()->web_contents()->GetVisibleURL());
+  EXPECT_TRUE(shell()->web_contents()->GetController().GetPendingEntry());
+
+  // 3. Cancel (2) with renderer-initiated reload with a UserGesture.
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), "location.reload()"));
+  EXPECT_EQ(url_a, shell()->web_contents()->GetVisibleURL());
+  EXPECT_FALSE(shell()->web_contents()->GetController().GetPendingEntry());
+
+  // 4. Cancel (3) using document.open();
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), "document.open()"));
+  EXPECT_EQ(url_a, shell()->web_contents()->GetVisibleURL());
+  EXPECT_FALSE(shell()->web_contents()->GetController().GetPendingEntry());
+}
+
 // Regression test for https://crbug.com/1001283
 // 1) Load main document with CSP: script-src 'none'
 // 2) Open an about:srcdoc iframe. It inherits the CSP.

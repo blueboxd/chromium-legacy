@@ -63,9 +63,12 @@ class SourceStreamToDataPipeTest
                                   &consumer_end_));
 
     adapter_ = std::make_unique<SourceStreamToDataPipe>(
-        std::move(source), std::move(producer_end),
-        base::BindOnce(&SourceStreamToDataPipeTest::FinishedReading,
-                       base::Unretained(this)));
+        std::move(source), std::move(producer_end));
+  }
+
+  base::OnceCallback<void(int)> callback() {
+    return base::BindOnce(&SourceStreamToDataPipeTest::FinishedReading,
+                          base::Unretained(this));
   }
 
   void CompleteReadsIfAsync() {
@@ -142,7 +145,7 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_P(SourceStreamToDataPipeTest, EmptyStream) {
   Init();
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
-  adapter()->Start();
+  adapter()->Start(callback());
 
   std::string output;
   EXPECT_EQ(ReadPipe(&output), net::OK);
@@ -156,7 +159,7 @@ TEST_P(SourceStreamToDataPipeTest, Simple) {
   source()->AddReadResult(message, sizeof(message) - 1, net::OK,
                           GetParam().mode);
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
-  adapter()->Start();
+  adapter()->Start(callback());
 
   std::string output;
   EXPECT_EQ(ReadPipe(&output), net::OK);
@@ -170,7 +173,7 @@ TEST_P(SourceStreamToDataPipeTest, Error) {
   source()->AddReadResult(message, sizeof(message) - 1, net::OK,
                           GetParam().mode);
   source()->AddReadResult(nullptr, 0, net::ERR_FAILED, GetParam().mode);
-  adapter()->Start();
+  adapter()->Start(callback());
 
   std::string output;
   EXPECT_EQ(ReadPipe(&output), net::ERR_FAILED);
@@ -183,7 +186,7 @@ TEST_P(SourceStreamToDataPipeTest, ConsumerClosed) {
   Init();
   source()->AddReadResult(message, sizeof(message) - 1, net::OK,
                           GetParam().mode);
-  adapter()->Start();
+  adapter()->Start(callback());
 
   CloseConsumerHandle();
   CompleteReadsIfAsync();

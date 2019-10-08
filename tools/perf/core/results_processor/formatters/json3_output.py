@@ -46,7 +46,7 @@ def Convert(in_results, base_dir):
     actual_status = result['status']
     expected_status = actual_status if result['isExpected'] else 'PASS'
     status_counter[actual_status] += 1
-    artifacts = result.get('artifacts', {})
+    artifacts = result.get('outputArtifacts', {})
     shard = _GetTagValue(result.get('tags', []), 'shard', as_type=int)
     _MergeDict(
         results['tests'],

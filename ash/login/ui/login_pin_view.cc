@@ -61,13 +61,11 @@ constexpr int kInitialBackspaceDelayMs = 500;
 constexpr int kRepeatingBackspaceDelayMs = 150;
 
 // Size of the md-ripple when a PIN button is tapped.
-constexpr int kRippleSizeDp = 54;
+constexpr int kRippleSizeDp = 48;
 
-// Button sizes. Button height varies per keyboard style, while button width is
-// the same for both styles.
-constexpr int kAlphanumericButtonHeightDp = 78;
-constexpr int kNumericButtonHeightDp = 70;
-constexpr int kButtonWidthDp = 78;
+// Button sizes.
+constexpr int kButtonHeightDp = 56;
+constexpr int kButtonWidthDp = 72;
 
 base::string16 GetButtonLabelForNumber(int value) {
   DCHECK(value >= 0 && value < int{base::size(kPinLabels)});
@@ -399,9 +397,7 @@ class LoginPinView::BackButton : public BasePinButton {
 
 // static
 gfx::Size LoginPinView::TestApi::GetButtonSize(Style style) {
-  return gfx::Size(kButtonWidthDp, style == Style::kNumeric
-                                       ? kNumericButtonHeightDp
-                                       : kAlphanumericButtonHeightDp);
+  return gfx::Size(kButtonWidthDp, kButtonHeightDp);
 }
 
 LoginPinView::TestApi::TestApi(LoginPinView* view) : view_(view) {}
@@ -454,9 +450,7 @@ LoginPinView::LoginPinView(Style keyboard_style,
       views::BoxLayout::Orientation::kVertical));
 
   bool show_letters = keyboard_style == Style::kAlphanumeric;
-  const gfx::Size button_size =
-      gfx::Size(kButtonWidthDp, show_letters ? kAlphanumericButtonHeightDp
-                                             : kNumericButtonHeightDp);
+  const gfx::Size button_size = gfx::Size(kButtonWidthDp, kButtonHeightDp);
 
   auto add_digit_button = [&](View* row, int value) {
     row->AddChildView(

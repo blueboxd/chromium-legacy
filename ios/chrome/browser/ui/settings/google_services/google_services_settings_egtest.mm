@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
+#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_table_view_controller.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -137,7 +138,7 @@ TabModel* GetNormalTabModel() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
   self.scrollViewMatcher =
-      grey_accessibilityID(@"google_services_settings_view_controller");
+      grey_accessibilityID(kGoogleServicesSettingsViewIdentifier);
   [[EarlGrey selectElementWithMatcher:self.scrollViewMatcher]
       assertWithMatcher:grey_notNil()];
 }

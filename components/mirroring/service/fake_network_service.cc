@@ -12,7 +12,7 @@ namespace mirroring {
 
 MockUdpSocket::MockUdpSocket(
     mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
-    network::mojom::UDPSocketListenerPtr listener)
+    mojo::PendingRemote<network::mojom::UDPSocketListener> listener)
     : receiver_(this, std::move(receiver)), listener_(std::move(listener)) {}
 
 MockUdpSocket::~MockUdpSocket() {}
@@ -60,7 +60,7 @@ MockNetworkContext::~MockNetworkContext() {}
 
 void MockNetworkContext::CreateUDPSocket(
     mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
-    network::mojom::UDPSocketListenerPtr listener) {
+    mojo::PendingRemote<network::mojom::UDPSocketListener> listener) {
   udp_socket_ =
       std::make_unique<MockUdpSocket>(std::move(receiver), std::move(listener));
   OnUDPSocketCreated();

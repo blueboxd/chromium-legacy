@@ -156,7 +156,8 @@ void MimeHandlerViewGuest::SetEmbedderFrame(int process_id, int routing_id) {
 }
 
 void MimeHandlerViewGuest::SetBeforeUnloadController(
-    mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control) {
+    mojo::PendingRemote<mime_handler::BeforeUnloadControl>
+        pending_before_unload_control) {
   pending_before_unload_control_ = std::move(pending_before_unload_control);
 }
 
@@ -391,14 +392,19 @@ bool MimeHandlerViewGuest::IsFullscreenForTabOrPending(
   return is_guest_fullscreen_;
 }
 
-bool MimeHandlerViewGuest::ShouldCreateWebContents(
-    content::WebContents* web_contents,
+bool MimeHandlerViewGuest::IsWebContentsCreationOverridden(
+    content::SiteInstance* source_site_instance,
+    content::mojom::WindowContainerType window_container_type,
+    const GURL& opener_url,
+    const std::string& frame_name,
+    const GURL& target_url) {
+  return true;
+}
+
+content::WebContents* MimeHandlerViewGuest::CreateCustomWebContents(
     content::RenderFrameHost* opener,
     content::SiteInstance* source_site_instance,
-    int32_t route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
-    content::mojom::WindowContainerType window_container_type,
+    bool is_renderer_initiated,
     const GURL& opener_url,
     const std::string& frame_name,
     const GURL& target_url,
@@ -414,7 +420,7 @@ bool MimeHandlerViewGuest::ShouldCreateWebContents(
   auto* delegate = embedder_web_contents()->GetDelegate();
   if (delegate)
     delegate->OpenURLFromTab(embedder_web_contents(), open_params);
-  return false;
+  return nullptr;
 }
 
 bool MimeHandlerViewGuest::SetFullscreenState(bool is_fullscreen) {
@@ -469,12 +475,12 @@ void MimeHandlerViewGuest::ReadyToCommitNavigation(
 }
 
 void MimeHandlerViewGuest::FuseBeforeUnloadControl(
-    mime_handler::BeforeUnloadControlRequest request) {
+    mojo::PendingReceiver<mime_handler::BeforeUnloadControl> receiver) {
   if (!pending_before_unload_control_)
     return;
 
-  mojo::FuseInterface(std::move(request),
-                      std::move(pending_before_unload_control_));
+  mojo::FusePipes(std::move(receiver),
+                  std::move(pending_before_unload_control_));
 }
 
 content::RenderFrameHost* MimeHandlerViewGuest::GetEmbedderFrame() {

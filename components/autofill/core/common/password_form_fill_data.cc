@@ -75,7 +75,15 @@ PasswordFormFillData::PasswordFormFillData(
   }
 }
 
-PasswordFormFillData::PasswordFormFillData(const PasswordFormFillData& other) =
+PasswordFormFillData::PasswordFormFillData(const PasswordFormFillData&) =
+    default;
+
+PasswordFormFillData& PasswordFormFillData::operator=(
+    const PasswordFormFillData&) = default;
+
+PasswordFormFillData::PasswordFormFillData(PasswordFormFillData&&) = default;
+
+PasswordFormFillData& PasswordFormFillData::operator=(PasswordFormFillData&&) =
     default;
 
 PasswordFormFillData::~PasswordFormFillData() = default;

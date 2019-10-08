@@ -497,6 +497,10 @@ class CORE_EXPORT Node : public EventTarget {
     return GetFlag(kForceReattachLayoutTree);
   }
 
+  bool IsDirtyForStyleRecalc() const {
+    return NeedsStyleRecalc() || GetForceReattachLayoutTree();
+  }
+
   bool NeedsDistributionRecalc() const;
 
   bool ChildNeedsDistributionRecalc() const {

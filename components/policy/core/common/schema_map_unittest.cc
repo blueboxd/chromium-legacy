@@ -186,7 +186,7 @@ TEST_F(SchemaMapTest, FilterBundle) {
   expected_bundle.Get(chrome_ns)
       .GetMutable("ChromePolicy")
       ->AddConflictingPolicy(
-          *expected_bundle.Get(chrome_ns).Get("ChromePolicy"));
+          expected_bundle.Get(chrome_ns).Get("ChromePolicy")->DeepCopy());
   expected_bundle.Get(chrome_ns)
       .GetMutable("ChromePolicy")
       ->AddWarning(IDS_POLICY_CONFLICT_SAME_VALUE);

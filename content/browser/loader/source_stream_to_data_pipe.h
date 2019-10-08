@@ -24,12 +24,11 @@ class CONTENT_EXPORT SourceStreamToDataPipe {
  public:
   // Reads out the data from |source| and write into |dest|.
   SourceStreamToDataPipe(std::unique_ptr<net::SourceStream> source,
-                         mojo::ScopedDataPipeProducerHandle dest,
-                         base::OnceCallback<void(int)> completion_callback);
+                         mojo::ScopedDataPipeProducerHandle dest);
   ~SourceStreamToDataPipe();
 
   // Start reading the source.
-  void Start();
+  void Start(base::OnceCallback<void(int)> completion_callback);
   int64_t TransferredBytes() const { return transferred_bytes_; }
 
  private:

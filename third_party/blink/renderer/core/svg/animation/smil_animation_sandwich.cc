@@ -76,14 +76,14 @@ void SMILAnimationSandwich::UpdateTiming(SMILTime elapsed) {
   }
 }
 
-SMILTime SMILAnimationSandwich::NextInterestingTime(
+SMILTime SMILAnimationSandwich::NextIntervalTime(
     SMILTime presentation_time) const {
-  SMILTime interesting_time = SMILTime::Indefinite();
+  SMILTime interval_time = SMILTime::Indefinite();
   for (const auto& animation : sandwich_) {
-    interesting_time = std::min(
-        interesting_time, animation->NextInterestingTime(presentation_time));
+    interval_time =
+        std::min(interval_time, animation->NextIntervalTime(presentation_time));
   }
-  return interesting_time;
+  return interval_time;
 }
 
 SMILTime SMILAnimationSandwich::NextProgressTime(

@@ -14,7 +14,6 @@ class GPUBufferUsage : public ScriptWrappable {
 
  public:
   // gpu_buffer_usage.idl
-  static constexpr uint32_t kNone = 0;
   static constexpr uint32_t kMapRead = 1;
   static constexpr uint32_t kMapWrite = 2;
   static constexpr uint32_t kCopySrc = 4;

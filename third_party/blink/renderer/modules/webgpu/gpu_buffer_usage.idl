@@ -8,7 +8,6 @@ typedef unsigned long GPUBufferUsageFlags;
 [
     RuntimeEnabled=WebGPU
 ] interface GPUBufferUsage {
-    const GPUBufferUsageFlags NONE = 0;
     const GPUBufferUsageFlags MAP_READ = 1;
     const GPUBufferUsageFlags MAP_WRITE = 2;
     const GPUBufferUsageFlags COPY_SRC = 4;

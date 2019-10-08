@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "media/cast/net/cast_transport_config.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_endpoint.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -60,7 +60,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) UdpSocketClient final
   network::mojom::NetworkContext* const network_context_;
   base::OnceClosure error_callback_;
 
-  mojo::Binding<network::mojom::UDPSocketListener> binding_;
+  mojo::Receiver<network::mojom::UDPSocketListener> receiver_{this};
 
   // The callback to deliver the received packets to the packet parser. Set
   // when StartReceiving() is called.

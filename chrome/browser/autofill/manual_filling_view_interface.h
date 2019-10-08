@@ -69,10 +69,6 @@ class ManualFillingViewInterface {
   // Shows the accessory bar when the keyboard is also shown.
   virtual void ShowWhenKeyboardIsVisible() = 0;
 
-  // Requests to show the touch to fill sheet. This will hide the keyboard if
-  // shown.
-  virtual void ShowTouchToFillSheet() = 0;
-
   // Hides the accessory bar and the accessory sheet (if open).
   virtual void Hide() = 0;
 

@@ -42,7 +42,7 @@ SocketFactory::~SocketFactory() {}
 
 void SocketFactory::CreateUDPSocket(
     mojo::PendingReceiver<mojom::UDPSocket> receiver,
-    mojom::UDPSocketListenerPtr listener) {
+    mojo::PendingRemote<mojom::UDPSocketListener> listener) {
   udp_socket_receivers_.Add(
       std::make_unique<UDPSocket>(std::move(listener), net_log_),
       std::move(receiver));

@@ -39,6 +39,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
     Params();
     ~Params();
     base::Optional<int> default_button = base::nullopt;
+    bool round_corners = true;
   };
 
   DialogDelegate();
@@ -125,9 +126,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // LayoutProvider's snapping.
   virtual bool ShouldSnapFrameWidth() const;
 
-  // Returns whether the dialog should have round corners
-  virtual bool ShouldHaveRoundCorners() const;
-
   // Overridden from WidgetDelegate:
   View* GetInitiallyFocusedView() override;
   DialogDelegate* AsDialogDelegate() override;
@@ -157,12 +155,15 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   void DialogModelChanged();
 
   void set_default_button(int button) { params_.default_button = button; }
+  void set_use_round_corners(bool round) { params_.round_corners = round; }
 
  protected:
   ~DialogDelegate() override;
 
   // Overridden from WidgetDelegate:
   ax::mojom::Role GetAccessibleWindowRole() override;
+
+  const Params& GetParams() const { return params_; }
 
  private:
   // A flag indicating whether this dialog is able to use the custom frame

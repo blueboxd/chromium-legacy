@@ -13,6 +13,7 @@
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/tools/fuzzers/fuzz.mojom.h"
 #include "mojo/public/tools/fuzzers/fuzz_impl.h"
 
@@ -225,7 +226,7 @@ void FuzzCallback() {}
  * supplied directory. */
 void DumpMessages(std::string output_directory) {
   fuzz::mojom::FuzzInterfacePtr fuzz;
-  fuzz::mojom::FuzzDummyInterfaceAssociatedPtr dummy;
+  mojo::AssociatedRemote<fuzz::mojom::FuzzDummyInterface> dummy;
 
   /* Create the impl and add a MessageDumper to the filter chain. */
   env->impl = std::make_unique<FuzzImpl>(MakeRequest(&fuzz));
@@ -247,7 +248,7 @@ void DumpMessages(std::string output_directory) {
                          GetPopulatedFuzzStruct(), base::Bind(FuzzCallback));
   fuzz->FuzzArgsSyncResp(fuzz::mojom::FuzzStruct::New(),
                          GetPopulatedFuzzStruct(), base::Bind(FuzzCallback));
-  fuzz->FuzzAssociated(MakeRequest(&dummy));
+  fuzz->FuzzAssociated(dummy.BindNewEndpointAndPassReceiver());
   dummy->Ping();
 }
 

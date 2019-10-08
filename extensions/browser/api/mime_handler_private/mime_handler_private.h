@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/common/api/mime_handler.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace extensions {
 class StreamContainer;
@@ -19,8 +20,9 @@ class MimeHandlerServiceImpl : public mime_handler::MimeHandlerService {
       base::WeakPtr<StreamContainer> stream_container);
   ~MimeHandlerServiceImpl() override;
 
-  static void Create(base::WeakPtr<StreamContainer> stream_container,
-                     mime_handler::MimeHandlerServiceRequest request);
+  static void Create(
+      base::WeakPtr<StreamContainer> stream_container,
+      mojo::PendingReceiver<mime_handler::MimeHandlerService> receiver);
 
  private:
   friend class MimeHandlerServiceImplTest;

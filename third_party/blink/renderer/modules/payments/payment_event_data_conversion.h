@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_EVENT_DATA_CONVERSION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_EVENT_DATA_CONVERSION_H_
 
-#include "third_party/blink/public/mojom/payments/payment_app.mojom-blink.h"
+#include "third_party/blink/public/mojom/payments/payment_app.mojom-blink-forward.h"
 #include "third_party/blink/renderer/modules/payments/can_make_payment_event_init.h"
 #include "third_party/blink/renderer/modules/payments/payment_request_event_init.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"

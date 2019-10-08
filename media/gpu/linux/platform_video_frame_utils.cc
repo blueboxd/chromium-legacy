@@ -12,6 +12,7 @@
 #include "media/base/format_utils.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/video_frame_layout.h"
+#include "media/gpu/buffer_validation.h"
 #include "media/gpu/macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
@@ -126,7 +127,6 @@ gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
     case VideoFrame::STORAGE_GPU_MEMORY_BUFFER:
       handle = video_frame->GetGpuMemoryBuffer()->CloneHandle();
       break;
-#if defined(OS_LINUX)
     case VideoFrame::STORAGE_DMABUFS: {
       handle.type = gfx::NATIVE_PIXMAP;
       std::vector<base::ScopedFD> duped_fds =
@@ -139,11 +139,15 @@ gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
         handle.native_pixmap_handle.planes.emplace_back(
             plane.stride, plane.offset, plane.size, std::move(duped_fds[i]));
       }
-#endif  // defined(OS_LINUX)
     } break;
     default:
       NOTREACHED() << "Unsupported storage type: "
                    << video_frame->storage_type();
+  }
+  if (!handle.is_null() && handle.type == gfx::NATIVE_PIXMAP &&
+      !VerifyGpuMemoryBufferHandle(video_frame->format(),
+                                   video_frame->coded_size(), handle)) {
+    VLOGF(1) << "Created GpuMemoryBufferHandle is invalid";
   }
   return handle;
 }

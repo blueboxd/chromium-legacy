@@ -56,6 +56,10 @@ class NavigationControllerDelegate {
   virtual void ActivateAndShowRepostFormWarningDialog() = 0;
   virtual bool HasAccessedInitialDocument() = 0;
 
+  // Returns whether URLs for aborted browser-initiated navigations should be
+  // preserved in the omnibox.  Defaults to false.
+  virtual bool ShouldPreserveAbortedURLs() = 0;
+
   // TODO(crbug.com/934637): Remove when pdf and any inner web contents user
   // gesture is properly propagated.
   virtual bool HadInnerWebContents() = 0;

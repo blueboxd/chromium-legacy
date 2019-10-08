@@ -66,7 +66,8 @@ class WebviewController : public CastWebContents::Delegate,
   void AttachTo(aura::Window* window, int window_id);
 
   void SendNavigationEvent(WebviewNavigationThrottle* throttle,
-                           const GURL& url);
+                           const GURL& url,
+                           bool is_in_main_frame);
 
  private:
   webview::AsyncPageEvent_State current_state();

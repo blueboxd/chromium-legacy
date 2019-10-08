@@ -164,8 +164,8 @@ bool LoginWebDialog::HandleOpenURLFromTab(WebContents* source,
   return (source && !chrome::FindBrowserWithWebContents(source));
 }
 
-bool LoginWebDialog::HandleShouldCreateWebContents() {
-  return false;
+bool LoginWebDialog::HandleShouldOverrideWebContentsCreation() {
+  return true;
 }
 
 std::vector<ui::Accelerator> LoginWebDialog::GetAccelerators() {

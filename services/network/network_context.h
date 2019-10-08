@@ -242,8 +242,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void GetExpectCTState(const std::string& domain,
                         GetExpectCTStateCallback callback) override;
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
-  void CreateUDPSocket(mojo::PendingReceiver<mojom::UDPSocket> receiver,
-                       mojom::UDPSocketListenerPtr listener) override;
+  void CreateUDPSocket(
+      mojo::PendingReceiver<mojom::UDPSocket> receiver,
+      mojo::PendingRemote<mojom::UDPSocketListener> listener) override;
   void CreateTCPServerSocket(
       const net::IPEndPoint& local_addr,
       uint32_t backlog,

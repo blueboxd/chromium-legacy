@@ -972,6 +972,8 @@ jumbo_split_static_library("browser") {
     "optimization_guide/optimization_guide_web_contents_observer.h",
     "optimization_guide/prediction/decision_tree_prediction_model.cc",
     "optimization_guide/prediction/decision_tree_prediction_model.h",
+    "optimization_guide/prediction/prediction_manager.cc",
+    "optimization_guide/prediction/prediction_manager.h",
     "optimization_guide/prediction/prediction_model.cc",
     "optimization_guide/prediction/prediction_model.h",
     "optimization_guide/prediction/prediction_model_fetcher.cc",

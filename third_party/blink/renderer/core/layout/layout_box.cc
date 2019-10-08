@@ -2054,6 +2054,7 @@ void LayoutBox::ExcludeScrollbars(
         overlay_scrollbar_clip_behavior);
     rect.size.height -= scrollable_area->HorizontalScrollbarHeight(
         overlay_scrollbar_clip_behavior);
+    rect.size.ClampNegativeToZero();
   }
 }
 

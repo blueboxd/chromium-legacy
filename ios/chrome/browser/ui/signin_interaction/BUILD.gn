@@ -69,6 +69,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/recent_tabs:recent_tabs_ui_constants",
     "//ios/chrome/browser/ui/settings",
+    "//ios/chrome/browser/ui/settings/google_services",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web_state_list",

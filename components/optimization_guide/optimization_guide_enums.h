@@ -52,9 +52,11 @@ enum class OptimizationTargetDecision {
   kPageLoadDoesNotMatch,
   // The page load matches the optimization target.
   kPageLoadMatches,
-
+  // The model needed to make the target decision was not available on the
+  // client.
+  kModelNotAvailableOnClient,
   // Add new values above this line.
-  kMaxValue = kPageLoadMatches,
+  kMaxValue = kModelNotAvailableOnClient,
 };
 
 }  // namespace optimization_guide

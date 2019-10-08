@@ -72,7 +72,7 @@ class TestButton : public Button, public ButtonListener {
   ~TestButton() override = default;
 
   KeyClickAction GetKeyClickActionForEvent(const ui::KeyEvent& event) override {
-    if (custom_key_click_action_ == KeyClickAction::CLICK_NONE)
+    if (custom_key_click_action_ == KeyClickAction::kNone)
       return Button::GetKeyClickActionForEvent(event);
     return custom_key_click_action_;
   }
@@ -117,7 +117,7 @@ class TestButton : public Button, public ButtonListener {
   int ink_drop_layer_add_count_ = 0;
   int ink_drop_layer_remove_count_ = 0;
 
-  KeyClickAction custom_key_click_action_ = KeyClickAction::CLICK_NONE;
+  KeyClickAction custom_key_click_action_ = KeyClickAction::kNone;
 
   DISALLOW_COPY_AND_ASSIGN(TestButton);
 };
@@ -831,9 +831,8 @@ TEST_F(ButtonTest, CustomActionOnKeyPressedEvent) {
   button()->RequestFocus();
   EXPECT_TRUE(button()->HasFocus());
 
-  // Set the button to handle any key pressed event as |CLICK_ON_KEY_PRESS|.
-  button()->set_custom_key_click_action(
-      Button::KeyClickAction::CLICK_ON_KEY_PRESS);
+  // Set the button to handle any key pressed event as kOnKeyPress.
+  button()->set_custom_key_click_action(Button::KeyClickAction::kOnKeyPress);
 
   ui::KeyEvent control_press(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, ui::EF_NONE);
   EXPECT_TRUE(button()->OnKeyPressed(control_press));

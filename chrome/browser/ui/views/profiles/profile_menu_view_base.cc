@@ -318,7 +318,7 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
 }
 
 void ProfileMenuViewBase::SetSyncInfo(const base::string16& description,
-                                      const base::string16& link_text,
+                                      const base::string16& clickable_text,
                                       base::RepeatingClosure action) {
   constexpr int kVerticalPadding = 8;
 
@@ -340,15 +340,14 @@ void ProfileMenuViewBase::SetSyncInfo(const base::string16& description,
     label->SetBorder(views::CreateEmptyBorder(gfx::Insets(0, kMenuEdgeMargin)));
   }
 
-  views::Link* link = sync_info_container_->AddChildView(
-      std::make_unique<views::Link>(link_text));
-  link->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  link->set_listener(this);
-  link->SetBorder(views::CreateEmptyBorder(/*top=*/0, /*left=*/kMenuEdgeMargin,
-                                           /*bottom=*/kVerticalPadding,
-                                           /*right=*/kMenuEdgeMargin));
+  views::Button* button = sync_info_container_->AddChildView(
+      views::MdTextButton::CreateSecondaryUiBlueButton(this, clickable_text));
+  button->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets(/*top=*/0, /*left=*/kMenuEdgeMargin,
+                  /*bottom=*/kVerticalPadding, /*right=*/kMenuEdgeMargin));
 
-  RegisterClickAction(link, std::move(action));
+  RegisterClickAction(button, std::move(action));
 }
 
 void ProfileMenuViewBase::AddShortcutFeatureButton(

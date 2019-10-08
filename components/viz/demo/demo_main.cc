@@ -17,7 +17,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_base.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
@@ -110,7 +110,7 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   }
 
  private:
-  std::unique_ptr<ui::PlatformWindow> CreatePlatformWindow(
+  std::unique_ptr<ui::PlatformWindowBase> CreatePlatformWindow(
       const gfx::Rect& bounds) {
     ui::PlatformWindowInitProperties props(bounds);
 #if defined(USE_OZONE)
@@ -178,7 +178,7 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   std::unique_ptr<demo::DemoHost> host_;
   std::unique_ptr<demo::DemoService> service_;
 
-  std::unique_ptr<ui::PlatformWindow> platform_window_;
+  std::unique_ptr<ui::PlatformWindowBase> platform_window_;
   gfx::AcceleratedWidget widget_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoWindow);

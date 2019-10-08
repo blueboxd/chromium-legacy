@@ -1209,13 +1209,13 @@ void Node::MarkAncestorsWithChildNeedsDistributionRecalc() {
 
 void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   ContainerNode* ancestor = GetStyleRecalcParent();
-  bool parent_dirty = ancestor && ancestor->NeedsStyleRecalc();
+  bool parent_dirty = ancestor && ancestor->IsDirtyForStyleRecalc();
   for (; ancestor && !ancestor->ChildNeedsStyleRecalc();
        ancestor = ancestor->GetStyleRecalcParent()) {
     if (!ancestor->isConnected())
       return;
     ancestor->SetChildNeedsStyleRecalc();
-    if (ancestor->NeedsStyleRecalc())
+    if (ancestor->IsDirtyForStyleRecalc())
       break;
     // If we reach a locked ancestor, we should abort since the ancestor marking
     // will be done when the lock is committed.
@@ -1322,21 +1322,19 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
   if (!GetComputedStyle()) {
     // If we don't have a computed style, and our parent element does not have a
     // computed style it's not necessary to mark this node for style recalc.
-    if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
-      if (auto* parent = GetStyleRecalcParent()) {
-        DCHECK(parent->IsElementNode());
-        if (!parent->GetComputedStyle())
-          return;
-      } else if (GetDocument().documentElement() != this) {
-        // If this is the root element, and it does not have a parent computed
-        // style, we still need to mark it for style recalc since it may change
-        // from display:none. Otherwise, the node is not in the flat tree, and
-        // we can return here.
-        return;
-      }
-    } else if (auto* parent = ParentOrShadowHostElement()) {
+    if (auto* parent = GetStyleRecalcParent()) {
+      while (parent && !parent->CanParticipateInFlatTree())
+        parent = parent->GetStyleRecalcParent();
+      DCHECK(parent);
       if (!parent->GetComputedStyle())
         return;
+    } else if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled() &&
+               GetDocument().documentElement() != this) {
+      // If this is the root element, and it does not have a computed style, we
+      // still need to mark it for style recalc since it may change from
+      // display:none. Otherwise, the node is not in the flat tree, and we can
+      // return here.
+      return;
     }
   }
 

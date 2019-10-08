@@ -17,7 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_parameters.h"
 #include "media/capture/video_capture_types.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
@@ -1694,7 +1694,7 @@ bool UserMediaProcessor::HasActiveSources() const {
 blink::mojom::blink::MediaStreamDispatcherHost*
 UserMediaProcessor::GetMediaStreamDispatcherHost() {
   if (!dispatcher_host_) {
-    frame_->GetInterfaceProvider().GetInterface(
+    frame_->GetBrowserInterfaceBroker().GetInterface(
         dispatcher_host_.BindNewPipeAndPassReceiver());
   }
   return dispatcher_host_.get();

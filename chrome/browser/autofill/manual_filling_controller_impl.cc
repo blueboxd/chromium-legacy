@@ -285,10 +285,7 @@ bool ManualFillingControllerImpl::ShouldShowAccessory() const {
 
 void ManualFillingControllerImpl::UpdateVisibility() {
   if (ShouldShowAccessory()) {
-    if (available_sources_.contains(FillingSource::TOUCH_TO_FILL))
-      view_->ShowTouchToFillSheet();
-    else
-      view_->ShowWhenKeyboardIsVisible();
+    view_->ShowWhenKeyboardIsVisible();
   } else {
     view_->Hide();
   }

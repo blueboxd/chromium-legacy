@@ -21,6 +21,7 @@
 #include "third_party/khronos/EGL/eglext.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/yuv_to_rgb_converter.h"
@@ -214,7 +215,7 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
 }
 
 void GLContextEGL::Destroy() {
-  ReleaseYUVToRGBConverters();
+  ReleaseYUVToRGBConvertersAndBackpressureFences();
   if (context_) {
     if (!eglDestroyContext(display_, context_)) {
       LOG(ERROR) << "eglDestroyContext failed with error "
@@ -230,7 +231,7 @@ YUVToRGBConverter* GLContextEGL::GetYUVToRGBConverter(
   // Make sure YUVToRGBConverter objects never get created when surfaceless EGL
   // contexts aren't supported since support for surfaceless EGL contexts is
   // required in order to properly release YUVToRGBConverter objects (see
-  // GLContextEGL::ReleaseYUVToRGBConverters())
+  // GLContextEGL::ReleaseYUVToRGBConvertersAndBackpressureFences())
   if (!GLSurfaceEGL::IsEGLSurfacelessContextSupported()) {
     return nullptr;
   }
@@ -244,8 +245,14 @@ YUVToRGBConverter* GLContextEGL::GetYUVToRGBConverter(
   return yuv_to_rgb_converter.get();
 }
 
-void GLContextEGL::ReleaseYUVToRGBConverters() {
-  if (!yuv_to_rgb_converters_.empty()) {
+void GLContextEGL::ReleaseYUVToRGBConvertersAndBackpressureFences() {
+#if defined(OS_MACOSX)
+  bool has_backpressure_fences = HasBackpressureFences();
+#else
+  bool has_backpressure_fences = false;
+#endif
+
+  if (!yuv_to_rgb_converters_.empty() || has_backpressure_fences) {
     // If this context is not current, bind this context's API so that the YUV
     // converter can safely destruct
     GLContext* current_context = GetRealCurrent();
@@ -269,6 +276,9 @@ void GLContextEGL::ReleaseYUVToRGBConverters() {
     }
 
     yuv_to_rgb_converters_.clear();
+#if defined(OS_MACOSX)
+    DestroyBackpressureFences();
+#endif
 
     // Rebind the current context's API if needed.
     if (current_context && current_context != this) {

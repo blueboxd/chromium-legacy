@@ -9,15 +9,15 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/win/window_impl.h"
-#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
+#include "ui/platform_window/platform_window_win.h"
 #include "ui/platform_window/win/win_window_export.h"
 
 #include <windows.h>
 
 namespace ui {
 
-class WIN_WINDOW_EXPORT WinWindow : public PlatformWindow,
+class WIN_WINDOW_EXPORT WinWindow : public PlatformWindowWin,
                                     public gfx::WindowImpl {
  public:
   WinWindow(PlatformWindowDelegate* delegate, const gfx::Rect& bounds);
@@ -58,6 +58,7 @@ class WIN_WINDOW_EXPORT WinWindow : public PlatformWindow,
   void StackAbove(gfx::AcceleratedWidget widget) override;
   void StackAtTop() override;
   void FlashFrame(bool flash_frame) override;
+  void SetVisibilityChangedAnimationsEnabled(bool enabled) override;
 
   bool IsFullscreen() const;
 

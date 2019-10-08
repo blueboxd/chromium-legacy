@@ -141,8 +141,9 @@ public class AwAutofillManager {
 
     public void addInputUIObserver(InputUIObserver observer) {
         if (observer == null) return;
-        if (mInputUIObservers == null)
+        if (mInputUIObservers == null) {
             mInputUIObservers = new ArrayList<WeakReference<InputUIObserver>>();
+        }
         mInputUIObservers.add(new WeakReference<InputUIObserver>(observer));
     }
 

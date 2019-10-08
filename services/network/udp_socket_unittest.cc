@@ -16,7 +16,8 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/net_errors.h"
 #include "net/socket/udp_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -216,7 +217,7 @@ class UDPSocketTest : public testing::Test {
 TEST_F(UDPSocketTest, Settings) {
   mojo::Remote<mojom::UDPSocket> socket_remote;
   factory()->CreateUDPSocket(socket_remote.BindNewPipeAndPassReceiver(),
-                             nullptr);
+                             mojo::NullRemote());
   net::IPEndPoint server_addr;
   net::IPEndPoint any_port(GetLocalHostWithAnyPort());
 
@@ -235,7 +236,7 @@ TEST_F(UDPSocketTest, Settings) {
 TEST_F(UDPSocketTest, TestSendWithBind) {
   mojo::Remote<mojom::UDPSocket> socket_remote;
   factory()->CreateUDPSocket(socket_remote.BindNewPipeAndPassReceiver(),
-                             nullptr);
+                             mojo::NullRemote());
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
 
@@ -254,13 +255,11 @@ TEST_F(UDPSocketTest, TestSendWithBind) {
 TEST_F(UDPSocketTest, TestSendToWithConnect) {
   // Create a server socket to listen for incoming datagrams.
   test::UDPSocketListenerImpl listener;
-  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
-  mojom::UDPSocketListenerPtr listener_interface_ptr;
-  listener_binding.Bind(mojo::MakeRequest(&listener_interface_ptr));
+  mojo::Receiver<mojom::UDPSocketListener> listener_receiver(&listener);
 
   mojo::Remote<mojom::UDPSocket> server_socket;
   factory()->CreateUDPSocket(server_socket.BindNewPipeAndPassReceiver(),
-                             std::move(listener_interface_ptr));
+                             listener_receiver.BindNewPipeAndPassRemote());
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper helper(&server_socket);
@@ -269,7 +268,7 @@ TEST_F(UDPSocketTest, TestSendToWithConnect) {
   // Create a client socket to send datagrams.
   mojo::Remote<mojom::UDPSocket> client_socket;
   factory()->CreateUDPSocket(client_socket.BindNewPipeAndPassReceiver(),
-                             nullptr);
+                             mojo::NullRemote());
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper client_helper(&client_socket);
   ASSERT_EQ(net::OK,
@@ -285,7 +284,7 @@ TEST_F(UDPSocketTest, TestSendToWithConnect) {
 TEST_F(UDPSocketTest, TestUnexpectedSequences) {
   mojo::Remote<mojom::UDPSocket> socket_remote;
   factory()->CreateUDPSocket(socket_remote.BindNewPipeAndPassReceiver(),
-                             nullptr);
+                             mojo::NullRemote());
   test::UDPSocketTestHelper helper(&socket_remote);
   net::IPEndPoint local_addr(GetLocalHostWithAnyPort());
 
@@ -316,7 +315,7 @@ TEST_F(UDPSocketTest, TestUnexpectedSequences) {
 // ERR_IO_PENDING, udp_socket.cc doesn't free the send buffer.
 TEST_F(UDPSocketTest, TestBufferValid) {
   mojo::Remote<mojom::UDPSocket> socket_remote;
-  UDPSocket impl(nullptr /*listener*/, nullptr /*net_log*/);
+  UDPSocket impl(mojo::NullRemote() /*listener*/, nullptr /*net_log*/);
   mojo::Receiver<mojom::UDPSocket> receiver(&impl);
   receiver.Bind(socket_remote.BindNewPipeAndPassReceiver());
 
@@ -356,7 +355,7 @@ TEST_F(UDPSocketTest, TestBufferValid) {
 // ERR_INSUFFICIENT_RESOURCES is returned appropriately.
 TEST_F(UDPSocketTest, TestInsufficientResources) {
   mojo::Remote<mojom::UDPSocket> socket_remote;
-  UDPSocket impl(nullptr /*listener*/, nullptr /*net_log*/);
+  UDPSocket impl(mojo::NullRemote() /*listener*/, nullptr /*net_log*/);
   mojo::Receiver<mojom::UDPSocket> receiver(&impl);
   receiver.Bind(socket_remote.BindNewPipeAndPassReceiver());
 
@@ -400,12 +399,11 @@ TEST_F(UDPSocketTest, TestInsufficientResources) {
 TEST_F(UDPSocketTest, TestReceiveMoreOverflow) {
   // Create a server socket to listen for incoming datagrams.
   test::UDPSocketListenerImpl listener;
-  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
-  mojom::UDPSocketListenerPtr listener_interface_ptr;
-  listener_binding.Bind(mojo::MakeRequest(&listener_interface_ptr));
+  mojo::Receiver<mojom::UDPSocketListener> listener_receiver(&listener);
 
   mojo::Remote<mojom::UDPSocket> server_socket;
-  UDPSocket impl(std::move(listener_interface_ptr), nullptr /*net_log*/);
+  UDPSocket impl(listener_receiver.BindNewPipeAndPassRemote(),
+                 nullptr /*net_log*/);
   mojo::Receiver<mojom::UDPSocket> receiver(&impl);
   receiver.Bind(server_socket.BindNewPipeAndPassReceiver());
 
@@ -424,13 +422,11 @@ TEST_F(UDPSocketTest, TestReceiveMoreOverflow) {
 TEST_F(UDPSocketTest, TestReadSend) {
   // Create a server socket to listen for incoming datagrams.
   test::UDPSocketListenerImpl listener;
-  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
-  mojom::UDPSocketListenerPtr listener_interface_ptr;
-  listener_binding.Bind(mojo::MakeRequest(&listener_interface_ptr));
+  mojo::Receiver<mojom::UDPSocketListener> listener_receiver(&listener);
 
   mojo::Remote<mojom::UDPSocket> server_socket;
   factory()->CreateUDPSocket(server_socket.BindNewPipeAndPassReceiver(),
-                             std::move(listener_interface_ptr));
+                             listener_receiver.BindNewPipeAndPassRemote());
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper helper(&server_socket);
@@ -439,7 +435,7 @@ TEST_F(UDPSocketTest, TestReadSend) {
   // Create a client socket to send datagrams.
   mojo::Remote<mojom::UDPSocket> client_socket;
   factory()->CreateUDPSocket(client_socket.BindNewPipeAndPassReceiver(),
-                             nullptr);
+                             mojo::NullRemote());
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper client_helper(&client_socket);
   ASSERT_EQ(net::OK,
@@ -495,7 +491,7 @@ TEST_F(UDPSocketTest, TestReadSendTo) {
   // Create a server socket to send data.
   mojo::Remote<mojom::UDPSocket> server_socket;
   factory()->CreateUDPSocket(server_socket.BindNewPipeAndPassReceiver(),
-                             nullptr);
+                             mojo::NullRemote());
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper helper(&server_socket);
@@ -503,13 +499,11 @@ TEST_F(UDPSocketTest, TestReadSendTo) {
 
   // Create a client socket to send datagrams.
   test::UDPSocketListenerImpl listener;
-  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
-  mojom::UDPSocketListenerPtr client_listener_ptr;
-  listener_binding.Bind(mojo::MakeRequest(&client_listener_ptr));
+  mojo::Receiver<mojom::UDPSocketListener> listener_receiver(&listener);
 
   mojo::Remote<mojom::UDPSocket> client_socket;
   factory()->CreateUDPSocket(client_socket.BindNewPipeAndPassReceiver(),
-                             std::move(client_listener_ptr));
+                             listener_receiver.BindNewPipeAndPassRemote());
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper client_helper(&client_socket);
   ASSERT_EQ(net::OK,
@@ -561,13 +555,11 @@ TEST_F(UDPSocketTest, TestReadSendTo) {
 TEST_F(UDPSocketTest, TestReceiveMoreWithBufferSize) {
   // Create a server socket to listen for incoming datagrams.
   test::UDPSocketListenerImpl listener;
-  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
-  mojom::UDPSocketListenerPtr listener_interface_ptr;
-  listener_binding.Bind(mojo::MakeRequest(&listener_interface_ptr));
+  mojo::Receiver<mojom::UDPSocketListener> listener_receiver(&listener);
 
   mojo::Remote<mojom::UDPSocket> server_socket;
   factory()->CreateUDPSocket(server_socket.BindNewPipeAndPassReceiver(),
-                             std::move(listener_interface_ptr));
+                             listener_receiver.BindNewPipeAndPassRemote());
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper helper(&server_socket);
@@ -576,7 +568,7 @@ TEST_F(UDPSocketTest, TestReceiveMoreWithBufferSize) {
   // Create a client socket to send datagrams.
   mojo::Remote<mojom::UDPSocket> client_socket;
   factory()->CreateUDPSocket(client_socket.BindNewPipeAndPassReceiver(),
-                             nullptr);
+                             mojo::NullRemote());
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper client_helper(&client_socket);
   ASSERT_EQ(net::OK,
@@ -613,7 +605,7 @@ TEST_F(UDPSocketTest, TestReceiveMoreWithBufferSize) {
 TEST_F(UDPSocketTest, TestSendToInvalidAddress) {
   mojo::Remote<mojom::UDPSocket> server_socket;
   factory()->CreateUDPSocket(server_socket.BindNewPipeAndPassReceiver(),
-                             nullptr);
+                             mojo::NullRemote());
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper helper(&server_socket);
@@ -640,12 +632,11 @@ TEST_F(UDPSocketTest, TestSendToInvalidAddress) {
 // 0 byte payload.
 TEST_F(UDPSocketTest, TestReadZeroByte) {
   test::UDPSocketListenerImpl listener;
-  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
-  mojom::UDPSocketListenerPtr listener_interface_ptr;
-  listener_binding.Bind(mojo::MakeRequest(&listener_interface_ptr));
+  mojo::Receiver<mojom::UDPSocketListener> listener_receiver(&listener);
 
   mojo::Remote<mojom::UDPSocket> socket_remote;
-  UDPSocket impl(std::move(listener_interface_ptr), nullptr /*net_log*/);
+  UDPSocket impl(listener_receiver.BindNewPipeAndPassRemote(),
+                 nullptr /*net_log*/);
   mojo::Receiver<mojom::UDPSocket> receiver(&impl);
   receiver.Bind(socket_remote.BindNewPipeAndPassReceiver());
 
@@ -680,12 +671,10 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
   net::IPAddress group_ip;
   EXPECT_TRUE(group_ip.AssignFromIPLiteral(kGroup));
   mojo::Remote<mojom::UDPSocket> socket_remote;
-  mojom::UDPSocketListenerPtr listener_ptr;
   test::UDPSocketListenerImpl listener;
-  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
-  listener_binding.Bind(mojo::MakeRequest(&listener_ptr));
+  mojo::Receiver<mojom::UDPSocketListener> listener_receiver(&listener);
   factory()->CreateUDPSocket(socket_remote.BindNewPipeAndPassReceiver(),
-                             std::move(listener_ptr));
+                             listener_receiver.BindNewPipeAndPassRemote());
 
   test::UDPSocketTestHelper helper(&socket_remote);
 
@@ -724,7 +713,7 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
   // Create a second socket to send a packet to multicast group.
   mojo::Remote<mojom::UDPSocket> second_socket_remote;
   factory()->CreateUDPSocket(second_socket_remote.BindNewPipeAndPassReceiver(),
-                             nullptr);
+                             mojo::NullRemote());
   test::UDPSocketTestHelper second_socket_helper(&second_socket_remote);
   net::IPEndPoint second_socket_address(bind_ip_address, 0);
   ASSERT_EQ(net::OK,
@@ -757,7 +746,7 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
 TEST_F(UDPSocketTest, ErrorHappensDuringSocketOptionsConfiguration) {
   mojo::Remote<mojom::UDPSocket> server_socket_remote;
   factory()->CreateUDPSocket(server_socket_remote.BindNewPipeAndPassReceiver(),
-                             nullptr);
+                             mojo::NullRemote());
   test::UDPSocketTestHelper server_helper(&server_socket_remote);
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   ASSERT_EQ(net::OK,
@@ -765,7 +754,7 @@ TEST_F(UDPSocketTest, ErrorHappensDuringSocketOptionsConfiguration) {
 
   mojo::Remote<mojom::UDPSocket> socket_remote;
   factory()->CreateUDPSocket(socket_remote.BindNewPipeAndPassReceiver(),
-                             nullptr);
+                             mojo::NullRemote());
   test::UDPSocketTestHelper helper(&socket_remote);
 
   // Invalid options.

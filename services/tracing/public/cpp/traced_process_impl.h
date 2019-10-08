@@ -29,7 +29,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TracedProcessImpl
  public:
   static TracedProcessImpl* GetInstance();
 
-  void OnTracedProcessRequest(mojom::TracedProcessRequest request);
+  void OnTracedProcessRequest(
+      mojo::PendingReceiver<mojom::TracedProcess> receiver);
 
   // Set which taskrunner to bind any incoming requests on.
   void SetTaskRunner(scoped_refptr<base::SequencedTaskRunner> task_runner);
@@ -54,7 +55,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TracedProcessImpl
   base::Lock lock_;
   std::set<BaseAgent*> agents_;
   mojo::Remote<tracing::mojom::AgentRegistry> agent_registry_;
-  mojo::Binding<tracing::mojom::TracedProcess> binding_;
+  mojo::Receiver<tracing::mojom::TracedProcess> receiver_{this};
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);

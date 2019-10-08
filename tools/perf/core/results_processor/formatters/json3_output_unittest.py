@@ -155,10 +155,10 @@ class Json3OutputTest(unittest.TestCase):
   def testRepeatedTestCaseWithArtifacts(self):
     self.base_dir = 'base'
     results = self.Convert([
-        testing.TestResult('benchmark/story1', artifacts={
+        testing.TestResult('benchmark/story1', output_artifacts={
             'logs.txt': testing.Artifact('base/artifacts/logs1.txt')
         }),
-        testing.TestResult('benchmark/story1', artifacts={
+        testing.TestResult('benchmark/story1', output_artifacts={
             'logs.txt': testing.Artifact('base/artifacts/logs2.txt'),
             'trace.json': testing.Artifact('base/artifacts/trace2.json')
         }),
@@ -174,12 +174,12 @@ class Json3OutputTest(unittest.TestCase):
 
   def testRemoteArtifacts(self):
     results = self.Convert([
-        testing.TestResult('benchmark/story1', artifacts={
+        testing.TestResult('benchmark/story1', output_artifacts={
             'logs.txt': testing.Artifact(
                 'base/artifacts/logs1.txt',
                 'https://example.org/artifacts/logs1.txt')
         }),
-        testing.TestResult('benchmark/story1', artifacts={
+        testing.TestResult('benchmark/story1', output_artifacts={
             'logs.txt': testing.Artifact(
                 'base/artifacts/logs2.txt',
                 'https://example.org/artifacts/logs2.txt'),

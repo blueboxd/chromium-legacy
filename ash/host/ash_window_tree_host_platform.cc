@@ -25,7 +25,7 @@
 #include "ui/gfx/transform.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
-#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_base.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ash {

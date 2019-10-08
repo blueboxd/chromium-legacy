@@ -2069,9 +2069,9 @@ void CrostiniManager::OnInstallLinuxPackageProgress(
       NOTREACHED();
   }
 
+  ContainerId container_id(signal.vm_name(), signal.container_name());
   for (auto& observer : linux_package_operation_progress_observers_) {
-    observer.OnInstallLinuxPackageProgress(signal.vm_name(),
-                                           signal.container_name(), status,
+    observer.OnInstallLinuxPackageProgress(container_id, status,
                                            signal.progress_percent());
   }
 }
@@ -2103,9 +2103,9 @@ void CrostiniManager::OnUninstallPackageProgress(
       NOTREACHED();
   }
 
+  ContainerId container_id(signal.vm_name(), signal.container_name());
   for (auto& observer : linux_package_operation_progress_observers_) {
-    observer.OnUninstallPackageProgress(signal.vm_name(),
-                                        signal.container_name(), status,
+    observer.OnUninstallPackageProgress(container_id, status,
                                         signal.progress_percent());
   }
 }

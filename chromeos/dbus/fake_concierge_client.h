@@ -22,6 +22,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   ~FakeConciergeClient() override;
 
   // ConciergeClient:
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
   void AddVmObserver(VmObserver* observer) override;
   void RemoveVmObserver(VmObserver* observer) override;
   void AddContainerObserver(ContainerObserver* observer) override;
@@ -276,6 +278,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   // Can be set to fake a series of disk image status signals.
   std::vector<vm_tools::concierge::DiskImageStatusResponse>
       disk_image_status_signals_;
+
+  base::ObserverList<Observer> observer_list_;
 
   base::ObserverList<VmObserver>::Unchecked vm_observer_list_;
 

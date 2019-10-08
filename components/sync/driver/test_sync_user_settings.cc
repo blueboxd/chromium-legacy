@@ -153,6 +153,7 @@ bool TestSyncUserSettings::SetDecryptionPassphrase(
 }
 
 void TestSyncUserSettings::AddTrustedVaultDecryptionKeys(
+    const CoreAccountId& account_id,
     const std::vector<std::string>& keys) {}
 
 void TestSyncUserSettings::SetFirstSetupComplete() {

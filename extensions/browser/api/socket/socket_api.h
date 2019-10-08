@@ -22,6 +22,7 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/socket.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/address_list.h"
 #include "net/base/network_change_notifier.h"
@@ -197,7 +198,8 @@ class SocketCreateFunction : public SocketAsyncApiFunction {
 
   // These two fields are only applicable if |socket_type_| is UDP.
   mojo::PendingRemote<network::mojom::UDPSocket> socket_;
-  network::mojom::UDPSocketListenerRequest socket_listener_request_;
+  mojo::PendingReceiver<network::mojom::UDPSocketListener>
+      socket_listener_receiver_;
 
   std::unique_ptr<api::socket::Create::Params> params_;
   SocketType socket_type_;

@@ -63,6 +63,9 @@ class WebSocketStreamTest : public ::testing::Test {
 TEST_F(WebSocketStreamTest, ConstructWithBadURL) {
   V8TestingScope scope;
   auto& exception_state = scope.GetExceptionState();
+
+  EXPECT_CALL(Channel(), ApplyBackpressure());
+
   auto* stream = Create(scope.GetScriptState(), "bad-scheme:", exception_state);
 
   EXPECT_FALSE(stream);
@@ -72,7 +75,7 @@ TEST_F(WebSocketStreamTest, ConstructWithBadURL) {
   EXPECT_EQ(
       "The URL's scheme must be either 'ws' or 'wss'. 'bad-scheme' is not "
       "allowed.",
-      scope.GetExceptionState().Message());
+      exception_state.Message());
 }
 
 // Most coverage for bad constructor arguments is provided by
@@ -84,6 +87,7 @@ TEST_F(WebSocketStreamTest, Connect) {
 
   {
     InSequence s;
+    EXPECT_CALL(Channel(), ApplyBackpressure());
     EXPECT_CALL(Channel(), Connect(KURL("ws://example.com/hoge"), String()))
         .WillOnce(Return(true));
   }
@@ -100,6 +104,7 @@ TEST_F(WebSocketStreamTest, ConnectWithProtocols) {
 
   {
     InSequence s;
+    EXPECT_CALL(Channel(), ApplyBackpressure());
     EXPECT_CALL(Channel(),
                 Connect(KURL("ws://example.com/chat"), String("chat0, chat1")))
         .WillOnce(Return(true));
@@ -119,6 +124,7 @@ TEST_F(WebSocketStreamTest, ConnectWithFailedHandshake) {
 
   {
     InSequence s;
+    EXPECT_CALL(Channel(), ApplyBackpressure());
     EXPECT_CALL(Channel(), Connect(KURL("ws://example.com/chat"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(Channel(), Disconnect());
@@ -143,10 +149,10 @@ TEST_F(WebSocketStreamTest, ConnectWithSuccessfulHandshake) {
 
   {
     InSequence s;
+    EXPECT_CALL(Channel(), ApplyBackpressure());
     EXPECT_CALL(Channel(),
                 Connect(KURL("ws://example.com/chat"), String("chat")))
         .WillOnce(Return(true));
-    EXPECT_CALL(Channel(), ApplyBackpressure());
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(Channel(), Close(1001, String()));
   }
@@ -172,9 +178,9 @@ TEST_F(WebSocketStreamTest, ConnectThenCloseCleanly) {
 
   {
     InSequence s;
+    EXPECT_CALL(Channel(), ApplyBackpressure());
     EXPECT_CALL(Channel(), Connect(KURL("ws://example.com/echo"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(Channel(), ApplyBackpressure());
     EXPECT_CALL(Channel(), Close(-1, String("")));
     EXPECT_CALL(Channel(), Disconnect());
   }
@@ -195,6 +201,7 @@ TEST_F(WebSocketStreamTest, CloseDuringHandshake) {
 
   {
     InSequence s;
+    EXPECT_CALL(Channel(), ApplyBackpressure());
     EXPECT_CALL(Channel(), Connect(KURL("ws://example.com/echo"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(

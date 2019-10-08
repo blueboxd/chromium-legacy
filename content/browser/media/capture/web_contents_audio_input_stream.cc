@@ -385,7 +385,7 @@ WebContentsAudioInputStream* WebContentsAudioInputStream::Create(
 
   return new WebContentsAudioInputStream(
       media_id.render_process_id, media_id.main_render_frame_id,
-      audio_mirroring_manager, new WebContentsTracker(false),
+      audio_mirroring_manager, new WebContentsTracker(),
       new media::VirtualAudioInputStream(
           params, worker_task_runner,
           media::VirtualAudioInputStream::AfterCloseCallback()),

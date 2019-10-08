@@ -164,6 +164,7 @@ constexpr char kCrostiniTerminalId[] = "oajcgpnkmhaalajejhlfpacbiokdnnfe";
 
 constexpr char kCrostiniDefaultVmName[] = "termina";
 constexpr char kCrostiniDefaultContainerName[] = "penguin";
+constexpr char kCrostiniDefaultUsername[] = "emperor";
 constexpr char kCrostiniCroshBuiltinAppId[] =
     "nkoccljplnhpfnfiajclkommnmllphnl";
 // In order to be compatible with sync folder id must match standard.

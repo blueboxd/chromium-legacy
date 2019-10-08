@@ -193,11 +193,13 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
 }
 
 void WebviewController::SendNavigationEvent(WebviewNavigationThrottle* throttle,
-                                            const GURL& gurl) {
+                                            const GURL& gurl,
+                                            bool is_in_main_frame) {
   DCHECK(!current_navigation_throttle_);
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
   response->mutable_navigation_event()->set_url(gurl.spec());
+  response->mutable_navigation_event()->set_is_for_main_frame(is_in_main_frame);
   current_navigation_throttle_ = throttle;
   client_->EnqueueSend(std::move(response));
 }

@@ -19,6 +19,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/api/socket/udp_socket.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
@@ -39,13 +40,14 @@ class UDPSocketUnitTest : public extensions::ExtensionServiceTestBase {
         content::BrowserContext::GetDefaultStoragePartition(profile())
             ->GetNetworkContext();
     mojo::PendingRemote<network::mojom::UDPSocket> socket;
-    network::mojom::UDPSocketListenerPtr listener_ptr;
-    network::mojom::UDPSocketListenerRequest listener_request =
-        mojo::MakeRequest(&listener_ptr);
+    mojo::PendingRemote<network::mojom::UDPSocketListener> listener_remote;
+    mojo::PendingReceiver<network::mojom::UDPSocketListener> listener_receiver =
+        listener_remote.InitWithNewPipeAndPassReceiver();
     network_context->CreateUDPSocket(socket.InitWithNewPipeAndPassReceiver(),
-                                     std::move(listener_ptr));
-    return std::make_unique<UDPSocket>(
-        std::move(socket), std::move(listener_request), "abcdefghijklmnopqrst");
+                                     std::move(listener_remote));
+    return std::make_unique<UDPSocket>(std::move(socket),
+                                       std::move(listener_receiver),
+                                       "abcdefghijklmnopqrst");
   }
 };
 

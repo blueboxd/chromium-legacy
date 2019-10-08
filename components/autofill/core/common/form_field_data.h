@@ -18,7 +18,7 @@
 namespace base {
 class Pickle;
 class PickleIterator;
-}
+}  // namespace base
 
 namespace autofill {
 
@@ -61,7 +61,10 @@ struct FormFieldData {
       std::numeric_limits<uint32_t>::max();
 
   FormFieldData();
-  FormFieldData(const FormFieldData& other);
+  FormFieldData(const FormFieldData&);
+  FormFieldData& operator=(const FormFieldData&);
+  FormFieldData(FormFieldData&&);
+  FormFieldData& operator=(FormFieldData&&);
   ~FormFieldData();
 
   // Returns true if two form fields are the same, not counting the value.

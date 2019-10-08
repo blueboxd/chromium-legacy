@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_ERROR_H_
 
 #include "base/files/file.h"
-#include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink-forward.h"
 
 namespace blink {
 class ScriptPromiseResolver;

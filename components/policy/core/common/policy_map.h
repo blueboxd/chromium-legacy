@@ -73,7 +73,7 @@ class POLICY_EXPORT PolicyMap {
     void AddWarning(int message_id);
 
     // Adds a conflicting policy.
-    void AddConflictingPolicy(const Entry& conflict);
+    void AddConflictingPolicy(Entry&& conflict);
 
     // Removes all the conflicts.
     void ClearConflicts();

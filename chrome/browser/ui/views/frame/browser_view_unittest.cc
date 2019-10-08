@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/version_info/channel.h"
 #include "content/public/test/test_service_manager_context.h"
@@ -353,4 +354,13 @@ TEST_F(BrowserViewHostedAppTest, Layout) {
   // the bottom of the header.
   EXPECT_EQ(browser_view()->GetFindBarBoundingBox().y(),
             browser_view()->frame()->GetTopInset());
+}
+
+using BrowserViewWindowTypeTest = BrowserWithTestWindowTest;
+
+TEST_F(BrowserViewWindowTypeTest, TestWindowIsNotReturned) {
+  // Check that BrowserView::GetBrowserViewForBrowser does not return a
+  // non-BrowserView BrowserWindow instance - in this case, a TestBrowserWindow.
+  EXPECT_NE(nullptr, browser()->window());
+  EXPECT_EQ(nullptr, BrowserView::GetBrowserViewForBrowser(browser()));
 }

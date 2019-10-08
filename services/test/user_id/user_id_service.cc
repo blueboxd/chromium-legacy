@@ -9,8 +9,8 @@ namespace user_id {
 
 UserIdService::UserIdService(service_manager::mojom::ServiceRequest request)
     : service_binding_(this, std::move(request)) {
-  registry_.AddInterface<mojom::UserId>(
-      base::Bind(&UserIdService::BindUserIdRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::UserId>(base::BindRepeating(
+      &UserIdService::BindUserIdRequest, base::Unretained(this)));
 }
 
 UserIdService::~UserIdService() = default;

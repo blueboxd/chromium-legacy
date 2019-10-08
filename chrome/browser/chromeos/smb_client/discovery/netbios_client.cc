@@ -48,15 +48,12 @@ constexpr net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag() {
 }  // namespace
 
 NetBiosClient::NetBiosClient(network::mojom::NetworkContext* network_context)
-    : bind_address_(net::IPAddress::IPv4AllZeros(), 0 /* port */),
-      listener_binding_(this) {
+    : bind_address_(net::IPAddress::IPv4AllZeros(), 0 /* port */) {
   DCHECK(network_context);
 
-  network::mojom::UDPSocketListenerPtr rec_int_ptr;
-  listener_binding_.Bind(mojo::MakeRequest(&rec_int_ptr));
-
-  network_context->CreateUDPSocket(server_socket_.BindNewPipeAndPassReceiver(),
-                                   std::move(rec_int_ptr));
+  network_context->CreateUDPSocket(
+      server_socket_.BindNewPipeAndPassReceiver(),
+      listener_receiver_.BindNewPipeAndPassRemote());
 }
 
 NetBiosClient::~NetBiosClient() = default;

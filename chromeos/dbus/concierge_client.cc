@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/observer_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -25,6 +24,14 @@ class ConciergeClientImpl : public ConciergeClient {
   ConciergeClientImpl() {}
 
   ~ConciergeClientImpl() override = default;
+
+  void AddObserver(Observer* observer) override {
+    observer_list_.AddObserver(observer);
+  }
+
+  void RemoveObserver(Observer* observer) override {
+    observer_list_.RemoveObserver(observer);
+  }
 
   void AddVmObserver(VmObserver* observer) override {
     vm_observer_list_.AddObserver(observer);
@@ -224,6 +231,9 @@ class ConciergeClientImpl : public ConciergeClient {
       LOG(ERROR) << "Unable to get dbus proxy for "
                  << concierge::kVmConciergeServiceName;
     }
+    concierge_proxy_->SetNameOwnerChangedCallback(
+        base::BindRepeating(&ConciergeClientImpl::NameOwnerChangedReceived,
+                            weak_ptr_factory_.GetWeakPtr()));
     concierge_proxy_->ConnectToSignal(
         concierge::kVmConciergeInterface, concierge::kVmStartedSignal,
         base::BindRepeating(&ConciergeClientImpl::OnVmStartedSignal,
@@ -289,6 +299,17 @@ class ConciergeClientImpl : public ConciergeClient {
       return;
     }
     std::move(callback).Run(std::move(reponse_proto));
+  }
+
+  void NameOwnerChangedReceived(const std::string& old_owner,
+                                const std::string& new_owner) {
+    const bool restarted = !new_owner.empty();
+    for (auto& observer : observer_list_) {
+      if (restarted)
+        observer.ConciergeServiceRestarted();
+      else
+        observer.ConciergeServiceStopped();
+    }
   }
 
   void OnVmStartedSignal(dbus::Signal* signal) {
@@ -375,6 +396,7 @@ class ConciergeClientImpl : public ConciergeClient {
 
   dbus::ObjectProxy* concierge_proxy_ = nullptr;
 
+  base::ObserverList<Observer> observer_list_;
   base::ObserverList<VmObserver>::Unchecked vm_observer_list_;
   base::ObserverList<ContainerObserver>::Unchecked container_observer_list_;
   base::ObserverList<DiskImageObserver>::Unchecked disk_image_observer_list_;

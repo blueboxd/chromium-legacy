@@ -112,8 +112,7 @@ MimeHandlerViewContainerBase::MimeHandlerViewContainerBase(
     : original_url_(original_url),
       plugin_path_(info.path.MaybeAsASCII()),
       mime_type_(mime_type),
-      embedder_render_frame_routing_id_(embedder_render_frame->GetRoutingID()),
-      before_unload_control_binding_(this) {
+      embedder_render_frame_routing_id_(embedder_render_frame->GetRoutingID()) {
   DCHECK(!mime_type_.empty());
   g_mime_handler_view_container_base_map.Get()[embedder_render_frame].insert(
       this);
@@ -232,10 +231,10 @@ void MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary() {
 
   DCHECK_NE(GetInstanceId(), guest_view::kInstanceIDNone);
 
-  mime_handler::BeforeUnloadControlPtr before_unload_control;
+  mojo::PendingRemote<mime_handler::BeforeUnloadControl> before_unload_control;
   if (!is_embedded_) {
-    before_unload_control_binding_.Bind(
-        mojo::MakeRequest(&before_unload_control));
+    before_unload_control =
+        before_unload_control_receiver_.BindNewPipeAndPassRemote();
   }
   guest_view->CreateMimeHandlerViewGuest(
       embedder_render_frame->GetRoutingID(), view_id_, GetInstanceId(),

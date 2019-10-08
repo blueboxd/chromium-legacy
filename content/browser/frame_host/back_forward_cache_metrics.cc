@@ -5,6 +5,8 @@
 #include "content/browser/frame_host/back_forward_cache_metrics.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/metrics_hashes.h"
+#include "base/metrics/sparse_histogram.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/public/browser/browser_thread.h"
@@ -98,18 +100,9 @@ void BackForwardCacheMetrics::DidCommitNavigation(
       navigation->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK;
   if (navigation->IsInMainFrame() && !navigation->IsSameDocument() &&
       is_history_navigation) {
-    // TODO(hajimehoshi): Use kNotCachedDueToExperimentCondition if the
-    // experiment condition does not match.
-    HistoryNavigationOutcome outcome = HistoryNavigationOutcome::kNotCached;
-    if (navigation->is_served_from_back_forward_cache())
-      outcome = HistoryNavigationOutcome::kRestored;
-    if (evicted_ || last_committed_main_frame_navigation_id_ == -1) {
-      DCHECK(!navigation->is_served_from_back_forward_cache());
-      outcome = HistoryNavigationOutcome::kEvicted;
-    }
-    UMA_HISTOGRAM_ENUMERATION("BackForwardCache.HistoryNavigationOutcome",
-                              outcome, HistoryNavigationOutcome::kMaxValue);
+    RecordMetricsForHistoryNavigationCommit(navigation);
     evicted_ = false;
+    disallowed_reasons_.clear();
   }
 
   if (last_committed_main_frame_navigation_id_ != -1 &&
@@ -187,6 +180,40 @@ void BackForwardCacheMetrics::CollectFeatureUsageFromSubtree(
 
 void BackForwardCacheMetrics::MarkEvictedFromBackForwardCache() {
   evicted_ = true;
+}
+
+void BackForwardCacheMetrics::MarkDisableForRenderFrameHost(
+    const base::StringPiece& reason) {
+  disallowed_reasons_.push_back(reason.as_string());
+}
+
+void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
+    NavigationRequest* navigation) {
+  // TODO(hajimehoshi): Use kNotCachedDueToExperimentCondition if the
+  // experiment condition does not match.
+  HistoryNavigationOutcome outcome = HistoryNavigationOutcome::kNotCached;
+  if (navigation->is_served_from_back_forward_cache())
+    outcome = HistoryNavigationOutcome::kRestored;
+  if (evicted_ || last_committed_main_frame_navigation_id_ == -1) {
+    DCHECK(!navigation->is_served_from_back_forward_cache());
+    outcome = HistoryNavigationOutcome::kEvicted;
+  }
+  UMA_HISTOGRAM_ENUMERATION("BackForwardCache.HistoryNavigationOutcome",
+                            outcome, HistoryNavigationOutcome::kMaxValue);
+
+  for (const std::string& reason : disallowed_reasons_) {
+    // Use SparseHistogram instead of other simple macros for metrics. It is
+    // because the reasons are represented as strings, and it was impossible to
+    // define an enum values.
+    base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
+        "BackForwardCache.HistoryNavigationOutcome."
+        "DisabledForRenderFrameHostReason",
+        base::HistogramBase::kUmaTargetedHistogramFlag);
+    // Adopts the lower 32 bits as a signed integer from unsigned 64 bits
+    // integer.
+    histogram->Add(base::HistogramBase::Sample(
+        static_cast<int32_t>(base::HashMetricName(reason))));
+  }
 }
 
 }  // namespace content

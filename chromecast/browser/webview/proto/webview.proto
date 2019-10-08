@@ -171,6 +171,7 @@ message SetAutoMediaPlaybackPolicyRequest {
 
 message NavigationRequestEvent {
   string url = 1;
+  bool is_for_main_frame = 2;
 }
 
 enum NavigationDecision {

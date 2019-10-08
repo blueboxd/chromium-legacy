@@ -65,7 +65,7 @@ AshWindowTreeHostUnified::AshWindowTreeHostUnified(
     AshWindowTreeHostMirroringDelegate* delegate)
     : AshWindowTreeHostPlatform(), delegate_(delegate) {
   DCHECK(delegate);
-  std::unique_ptr<ui::PlatformWindow> window(new ui::StubWindow(this));
+  std::unique_ptr<ui::PlatformWindowBase> window(new ui::StubWindow(this));
   window->SetBounds(initial_bounds);
   SetPlatformWindow(std::move(window));
 }

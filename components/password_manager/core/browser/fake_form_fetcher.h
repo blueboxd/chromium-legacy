@@ -62,8 +62,8 @@ class FakeFormFetcher : public FormFetcher {
   const std::vector<const autofill::PasswordForm*>& GetAllRelevantMatches()
       const override;
 
-  const std::map<base::string16, const autofill::PasswordForm*>&
-  GetBestMatches() const override;
+  const std::vector<const autofill::PasswordForm*>& GetBestMatches()
+      const override;
 
   const autofill::PasswordForm* GetPreferredMatch() const override;
 
@@ -95,7 +95,7 @@ class FakeFormFetcher : public FormFetcher {
   std::vector<const autofill::PasswordForm*> non_federated_;
   std::vector<const autofill::PasswordForm*> federated_;
   std::vector<const autofill::PasswordForm*> non_federated_same_scheme_;
-  std::map<base::string16, const autofill::PasswordForm*> best_matches_;
+  std::vector<const autofill::PasswordForm*> best_matches_;
   const autofill::PasswordForm* preferred_match_ = nullptr;
   bool is_blacklisted_ = false;
 

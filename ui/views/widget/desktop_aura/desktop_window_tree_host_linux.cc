@@ -11,6 +11,7 @@
 #include "ui/events/event.h"
 #include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
+#include "ui/platform_window/platform_window_linux.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/desktop_aura/window_event_filter_linux.h"
@@ -69,7 +70,7 @@ void DesktopWindowTreeHostLinux::SetPendingXVisualId(int x_visual_id) {
 void DesktopWindowTreeHostLinux::Init(const Widget::InitParams& params) {
   DesktopWindowTreeHostPlatform::Init(params);
 
-  if (platform_window()->IsSyncExtensionAvailable()) {
+  if (GetPlatformWindowLinux()->IsSyncExtensionAvailable()) {
     compositor_observer_ = std::make_unique<SwapWithNewSizeObserverHelper>(
         compositor(),
         base::BindRepeating(
@@ -85,17 +86,17 @@ void DesktopWindowTreeHostLinux::OnNativeWidgetCreated(
 }
 
 std::string DesktopWindowTreeHostLinux::GetWorkspace() const {
-  base::Optional<int> workspace = platform_window()->GetWorkspace();
+  base::Optional<int> workspace = GetPlatformWindowLinux()->GetWorkspace();
   return workspace ? base::NumberToString(workspace.value()) : std::string();
 }
 
 void DesktopWindowTreeHostLinux::SetVisibleOnAllWorkspaces(
     bool always_visible) {
-  platform_window()->SetVisibleOnAllWorkspaces(always_visible);
+  GetPlatformWindowLinux()->SetVisibleOnAllWorkspaces(always_visible);
 }
 
 bool DesktopWindowTreeHostLinux::IsVisibleOnAllWorkspaces() const {
-  return platform_window()->IsVisibleOnAllWorkspaces();
+  return GetPlatformWindowLinux()->IsVisibleOnAllWorkspaces();
 }
 
 void DesktopWindowTreeHostLinux::OnDisplayMetricsChanged(
@@ -220,13 +221,13 @@ void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
 
 void DesktopWindowTreeHostLinux::OnCompleteSwapWithNewSize(
     const gfx::Size& size) {
-  platform_window()->OnCompleteSwapAfterResize();
+  GetPlatformWindowLinux()->OnCompleteSwapAfterResize();
 }
 
 void DesktopWindowTreeHostLinux::CreateNonClientEventFilter() {
   DCHECK(!non_client_window_event_filter_);
   non_client_window_event_filter_ = std::make_unique<WindowEventFilterLinux>(
-      this, GetWmMoveResizeHandler(*platform_window()));
+      this, GetWmMoveResizeHandler(*GetPlatformWindowLinux()));
 }
 
 void DesktopWindowTreeHostLinux::DestroyNonClientEventFilter() {
@@ -246,6 +247,15 @@ void DesktopWindowTreeHostLinux::GetWindowMask(const gfx::Size& size,
     // so, use it to define the window shape. If not, fall through.
     widget->non_client_view()->GetWindowMask(size, window_mask);
   }
+}
+
+const ui::PlatformWindowLinux*
+DesktopWindowTreeHostLinux::GetPlatformWindowLinux() const {
+  return static_cast<const ui::PlatformWindowLinux*>(platform_window());
+}
+
+ui::PlatformWindowLinux* DesktopWindowTreeHostLinux::GetPlatformWindowLinux() {
+  return static_cast<ui::PlatformWindowLinux*>(platform_window());
 }
 
 // As DWTHX11 subclasses DWTHPlatform through DWTHLinux now (during transition

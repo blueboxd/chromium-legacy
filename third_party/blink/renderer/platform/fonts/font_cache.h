@@ -60,6 +60,7 @@
 
 #if defined(OS_WIN)
 #include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom-blink.h"
+#include "third_party/blink/renderer/platform/fonts/win/fallback_family_style_cache_win.h"
 #endif
 
 class SkString;
@@ -356,6 +357,7 @@ class PLATFORM_EXPORT FontCache {
   // to ensure it's not happening in the production from the crash log.
   bool is_test_font_mgr_ = false;
   mojo::Remote<mojom::blink::DWriteFontProxy> service_;
+  std::unique_ptr<FallbackFamilyStyleCache> fallback_params_cache_;
 #endif  // defined(OS_WIN)
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)

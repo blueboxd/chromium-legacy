@@ -8,6 +8,7 @@
 
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
@@ -124,12 +125,13 @@ void ToolbarIconContainerView::UpdateHighlight() {
 void ToolbarIconContainerView::SetHighlightBorder() {
   const float highlight_value = highlight_animation_.GetCurrentValue();
   if (highlight_value > 0.0f) {
+    SkColor border_color = ToolbarButton::GetDefaultBorderColor(this);
     SetBorder(views::CreateRoundedRectBorder(
         1,
         ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
             views::EMPHASIS_MAXIMUM, size()),
-        SkColorSetA(GetToolbarInkDropBaseColor(this),
-                    highlight_value * kToolbarButtonBackgroundAlpha)));
+        SkColorSetA(border_color,
+                    SkColorGetA(border_color) * highlight_value)));
   } else {
     SetBorder(nullptr);
   }

@@ -116,7 +116,7 @@ ManagePasswordsStateTest::CreateFormManager(
     const std::vector<const PasswordForm*>& federated_matches) {
   auto form_manager = std::make_unique<MockPasswordFormManagerForUI>();
   EXPECT_CALL(*form_manager, GetBestMatches())
-      .WillOnce(testing::ReturnRef(*best_matches));
+      .WillOnce(testing::Return(*best_matches));
   EXPECT_CALL(*form_manager, GetFederatedMatches())
       .WillOnce(Return(federated_matches));
   EXPECT_CALL(*form_manager, GetOrigin())

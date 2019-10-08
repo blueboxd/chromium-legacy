@@ -7,7 +7,6 @@
 
 #include <OpenGL/CGLTypes.h>
 
-#include <map>
 #include <memory>
 
 #include "base/macros.h"
@@ -17,7 +16,6 @@
 
 namespace gl {
 
-class GLFence;
 class GLSurface;
 
 // Encapsulates a CGL OpenGL context.
@@ -36,9 +34,6 @@ class GL_EXPORT GLContextCGL : public GLContextReal {
   bool ForceGpuSwitchIfNeeded() override;
   YUVToRGBConverter* GetYUVToRGBConverter(
       const gfx::ColorSpace& color_space) override;
-  uint64_t BackpressureFenceCreate() override;
-  void BackpressureFenceWait(uint64_t fence) override;
-  void FlushForDriverCrashWorkaround() override;
   void SetVisibility(bool visibility) override;
 
  protected:
@@ -52,9 +47,6 @@ class GL_EXPORT GLContextCGL : public GLContextReal {
   GpuPreference gpu_preference_ = GpuPreference::kLowPower;
   std::map<gfx::ColorSpace, std::unique_ptr<YUVToRGBConverter>>
       yuv_to_rgb_converters_;
-
-  std::map<uint64_t, std::unique_ptr<GLFence>> backpressure_fences_;
-  uint64_t next_backpressure_fence_ = 0;
 
   int screen_ = -1;
   int renderer_id_ = -1;

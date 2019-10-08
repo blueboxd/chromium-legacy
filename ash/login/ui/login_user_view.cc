@@ -41,7 +41,7 @@ namespace ash {
 namespace {
 
 // Vertical spacing between icon, label, and authentication UI.
-constexpr int kVerticalSpacingBetweenEntriesDp = 32;
+constexpr int kVerticalSpacingBetweenEntriesDp = 24;
 // Horizontal spacing between username label and the dropdown icon.
 constexpr int kDistanceBetweenUsernameAndDropdownDp = 8;
 // Distance between user icon and the user label in small/extra-small layouts.

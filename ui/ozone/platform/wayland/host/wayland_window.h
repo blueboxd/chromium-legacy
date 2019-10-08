@@ -17,11 +17,11 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
-#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
 #include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
+#include "ui/platform_window/platform_window_linux.h"
 
 namespace gfx {
 class PointF;
@@ -39,7 +39,7 @@ namespace {
 class XDGShellObjectFactory;
 }  // namespace
 
-class WaylandWindow : public PlatformWindow,
+class WaylandWindow : public PlatformWindowLinux,
                       public PlatformEventDispatcher,
                       public WmMoveResizeHandler,
                       public WmDragHandler {

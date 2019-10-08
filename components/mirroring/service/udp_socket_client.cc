@@ -53,7 +53,6 @@ UdpSocketClient::UdpSocketClient(const net::IPEndPoint& remote_endpoint,
     : remote_endpoint_(remote_endpoint),
       network_context_(context),
       error_callback_(std::move(error_callback)),
-      binding_(this),
       bytes_sent_(0),
       allow_sending_(false),
       num_packets_pending_receive_(0) {
@@ -105,10 +104,8 @@ void UdpSocketClient::StartReceiving(
     const media::cast::PacketReceiverCallbackWithStatus& packet_receiver) {
   DVLOG(1) << __func__;
   packet_receiver_callback_ = packet_receiver;
-  network::mojom::UDPSocketListenerPtr udp_socket_listener;
-  binding_.Bind(mojo::MakeRequest(&udp_socket_listener));
   network_context_->CreateUDPSocket(udp_socket_.BindNewPipeAndPassReceiver(),
-                                    std::move(udp_socket_listener));
+                                    receiver_.BindNewPipeAndPassRemote());
   network::mojom::UDPSocketOptionsPtr options;
   udp_socket_->Connect(remote_endpoint_, std::move(options),
                        base::BindOnce(&UdpSocketClient::OnSocketConnected,
@@ -140,8 +137,8 @@ void UdpSocketClient::OnSocketConnected(
 
 void UdpSocketClient::StopReceiving() {
   packet_receiver_callback_.Reset();
-  if (binding_.is_bound())
-    binding_.Close();
+  if (receiver_.is_bound())
+    receiver_.reset();
   if (udp_socket_.is_bound())
     udp_socket_.reset();
   num_packets_pending_receive_ = 0;

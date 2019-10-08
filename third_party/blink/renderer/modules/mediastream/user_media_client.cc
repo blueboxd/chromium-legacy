@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -303,7 +303,7 @@ void UserMediaClient::SetMediaDevicesDispatcherForTesting(
 blink::mojom::blink::MediaDevicesDispatcherHost*
 UserMediaClient::GetMediaDevicesDispatcher() {
   if (!media_devices_dispatcher_) {
-    frame_->GetInterfaceProvider().GetInterface(
+    frame_->GetBrowserInterfaceBroker().GetInterface(
         media_devices_dispatcher_.BindNewPipeAndPassReceiver());
   }
 

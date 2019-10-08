@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/payments/payment_event_data_conversion.h"
 
+#include "third_party/blink/public/mojom/payments/payment_app.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/modules/payments/can_make_payment_event_init.h"
 #include "third_party/blink/renderer/modules/payments/payment_currency_amount.h"

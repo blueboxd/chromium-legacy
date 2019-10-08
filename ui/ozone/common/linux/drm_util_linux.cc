@@ -98,7 +98,6 @@ bool IsValidBufferFormat(uint32_t current_format) {
     case DRM_FORMAT_XRGB2101010:
     case DRM_FORMAT_XBGR2101010:
     case DRM_FORMAT_RGB565:
-    case DRM_FORMAT_UYVY:
     case DRM_FORMAT_NV12:
     case DRM_FORMAT_YVU420:
     case DRM_FORMAT_P010:

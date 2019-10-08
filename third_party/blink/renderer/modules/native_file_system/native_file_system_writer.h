@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_WRITER_H_
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_file_writer.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"

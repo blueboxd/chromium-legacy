@@ -14,6 +14,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
@@ -199,10 +200,7 @@ void PrivacyInfoView::InitCloseButton() {
   close_button_->set_ink_drop_highlight_opacity(kInkDropHighlightOpacity);
   close_button_->set_ink_drop_base_color(kInkDropBaseColor);
   close_button_->set_has_ink_drop_action_on_click(true);
-  auto highlight_path = std::make_unique<SkPath>();
-  highlight_path->addOval(gfx::RectToSkRect(gfx::Rect(close_button_->size())));
-  close_button_->SetProperty(views::kHighlightPathKey,
-                             highlight_path.release());
+  views::InstallCircleHighlightPathGenerator(close_button_);
   row_container_->AddChildView(close_button_);
 }
 

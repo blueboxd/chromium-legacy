@@ -20,7 +20,8 @@ export function testFull(target) {
 
 export function testFullScroll500px(target) {
   helpers.appendDivs(target, MORE_THAN_SCREENFUL, '10px');
-  helpers.nextFrame(() => {
+  // Scroller needs some time to settle.
+  helpers.inNFrames(10, () => {
     window.scrollBy(0, 500);  // eslint-disable-line no-magic-numbers
     helpers.stopWaiting();
   });

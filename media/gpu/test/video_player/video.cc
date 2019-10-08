@@ -33,8 +33,8 @@ Video::~Video() = default;
 bool Video::Load() {
   // TODO(dstaessens@) Investigate reusing existing infrastructure such as
   //                   DecoderBuffer.
-  DCHECK(!file_path_.empty());
-  DCHECK(data_.empty());
+  CHECK(!file_path_.empty());
+  CHECK(data_.empty());
 
   base::Optional<base::FilePath> resolved_path = ResolveFilePath(file_path_);
   if (!resolved_path) {

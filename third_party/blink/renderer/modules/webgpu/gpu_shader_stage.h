@@ -14,7 +14,6 @@ class GPUShaderStage : public ScriptWrappable {
 
  public:
   // gpu_shader_stage.idl
-  static constexpr uint32_t kNone = 0;
   static constexpr uint32_t kVertex = 1;
   static constexpr uint32_t kFragment = 2;
   static constexpr uint32_t kCompute = 4;

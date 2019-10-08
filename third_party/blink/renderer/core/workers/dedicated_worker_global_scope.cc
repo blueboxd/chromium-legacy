@@ -280,9 +280,17 @@ void DedicatedWorkerGlobalScope::DidFetchClassicScript(
   // Step 12. "If the algorithm asynchronously completes with null, then:"
   if (classic_script_loader->Failed()) {
     // Step 12.1. "Queue a task to fire an event named error at worker."
-    // Step 12.2. "Run the environment discarding steps for inside settings."
-    // Step 12.3. "Return."
+    // DidFailToFetchClassicScript() will asynchronously fire the event.
     ReportingProxy().DidFailToFetchClassicScript();
+
+    // Step 12.2. "Run the environment discarding steps for inside settings."
+    // Do nothing because the HTML spec doesn't define these steps for web
+    // workers.
+
+    // Schedule worker termination.
+    close();
+
+    // Step 12.3. "Return."
     return;
   }
   ReportingProxy().DidFetchScript();

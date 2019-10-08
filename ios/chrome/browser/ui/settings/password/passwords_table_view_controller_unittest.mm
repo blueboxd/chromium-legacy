@@ -44,11 +44,6 @@ using password_manager::MockPasswordStore;
 
 namespace {
 
-typedef struct {
-  bool export_enabled;
-  int section_offset;
-} ExportPasswordsFeatureStatus;
-
 class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
  protected:
   PasswordsTableViewControllerTest() = default;

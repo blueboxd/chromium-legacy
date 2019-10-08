@@ -21,8 +21,9 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/process_type.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -69,7 +70,7 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   using CreateUDPSocketCallback = base::RepeatingCallback<void(
       network::mojom::NetworkContext* network_context,
       mojo::PendingReceiver<network::mojom::UDPSocket> socket_receiver,
-      network::mojom::UDPSocketListenerPtr socket_listener)>;
+      mojo::PendingRemote<network::mojom::UDPSocketListener> socket_listener)>;
 
   static void SetCreateUDPSocketCallbackForTesting(
       const CreateUDPSocketCallback* create_udp_socket_callback);
@@ -127,16 +128,19 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   int32_t OnMsgLeaveGroup(const ppapi::host::HostMessageContext* context,
                           const PP_NetAddress_Private& addr);
 
-  void DoBindCallback(network::mojom::UDPSocketListenerRequest listener_request,
+  void DoBindCallback(mojo::PendingReceiver<network::mojom::UDPSocketListener>
+                          listener_receiver,
                       const ppapi::host::ReplyMessageContext& context,
                       int result,
                       const base::Optional<net::IPEndPoint>& local_addr_out);
-  void OnBindComplete(network::mojom::UDPSocketListenerRequest listener_request,
+  void OnBindComplete(mojo::PendingReceiver<network::mojom::UDPSocketListener>
+                          listener_receiver,
                       const ppapi::host::ReplyMessageContext& context,
                       const PP_NetAddress_Private& net_address);
 #if defined(OS_CHROMEOS)
   void OnFirewallHoleOpened(
-      network::mojom::UDPSocketListenerRequest listener_request,
+      mojo::PendingReceiver<network::mojom::UDPSocketListener>
+          listener_receiver,
       const ppapi::host::ReplyMessageContext& context,
       const PP_NetAddress_Private& net_address,
       std::unique_ptr<chromeos::FirewallHole> hole);
@@ -217,7 +221,7 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   // Binding late avoids receiving data when still setting up the socket. Closed
   // in Close() and on Mojo pipe errors. Must only be accessed (and destroyed)
   // on UI thread.
-  mojo::Binding<network::mojom::UDPSocketListener> binding_;
+  mojo::Receiver<network::mojom::UDPSocketListener> receiver_{this};
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::FirewallHole,

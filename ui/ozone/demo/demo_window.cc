@@ -13,7 +13,7 @@
 #include "ui/ozone/demo/renderer_factory.h"
 #include "ui/ozone/demo/window_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
-#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_base.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 #if defined(OS_FUCHSIA)

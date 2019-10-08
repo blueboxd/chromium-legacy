@@ -218,8 +218,8 @@ void FindBestMatches(
     const std::vector<const PasswordForm*>& non_federated_matches,
     PasswordForm::Scheme scheme,
     bool sort_matches_by_date_last_used,
-    std::vector<const autofill::PasswordForm*>* non_federated_same_scheme,
-    std::map<base::string16, const PasswordForm*>* best_matches,
+    std::vector<const PasswordForm*>* non_federated_same_scheme,
+    std::vector<const PasswordForm*>* best_matches,
     const PasswordForm** preferred_match) {
   DCHECK(std::all_of(
       non_federated_matches.begin(), non_federated_matches.end(),
@@ -246,11 +246,14 @@ void FindBestMatches(
             sort_matches_by_date_last_used ? IsBetterMatchUsingLastUsed
                                            : IsBetterMatch);
 
+  std::set<base::string16> usernames;
   for (const auto* match : *non_federated_same_scheme) {
     const base::string16& username = match->username_value;
     // The first match for |username| in the sorted array is best match.
-    if (best_matches->find(username) == best_matches->end())
-      best_matches->insert(std::make_pair(username, match));
+    if (!base::Contains(usernames, username)) {
+      usernames.insert(username);
+      best_matches->push_back(match);
+    }
   }
 
   *preferred_match = *non_federated_same_scheme->begin();

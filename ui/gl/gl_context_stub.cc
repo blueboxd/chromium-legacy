@@ -75,6 +75,10 @@ bool GLContextStub::HasRobustness() {
          HasExtension("GL_KHR_robustness") || HasExtension("GL_EXT_robustness");
 }
 
+#if defined(OS_MACOSX)
+void GLContextStub::FlushForDriverCrashWorkaround() {}
+#endif
+
 GLContextStub::~GLContextStub() {}
 
 GLApi* GLContextStub::CreateGLApi(DriverGL* driver) {

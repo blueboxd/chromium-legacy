@@ -15,21 +15,21 @@ namespace extensions {
 // static
 void KeepAliveImpl::Create(content::BrowserContext* context,
                            const Extension* extension,
-                           KeepAliveRequest request,
+                           mojo::PendingReceiver<KeepAlive> receiver,
                            content::RenderFrameHost* render_frame_host) {
   // Owns itself.
-  new KeepAliveImpl(context, extension, std::move(request));
+  new KeepAliveImpl(context, extension, std::move(receiver));
 }
 
 KeepAliveImpl::KeepAliveImpl(content::BrowserContext* context,
                              const Extension* extension,
-                             KeepAliveRequest request)
+                             mojo::PendingReceiver<KeepAlive> receiver)
     : context_(context),
       extension_(extension),
-      binding_(this, std::move(request)) {
+      receiver_(this, std::move(receiver)) {
   ProcessManager::Get(context_)->IncrementLazyKeepaliveCount(
       extension_, Activity::MOJO, std::string());
-  binding_.set_connection_error_handler(
+  receiver_.set_disconnect_handler(
       base::Bind(&KeepAliveImpl::OnDisconnected, base::Unretained(this)));
   extension_registry_observer_.Add(ExtensionRegistry::Get(context_));
 }

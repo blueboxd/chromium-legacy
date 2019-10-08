@@ -43,7 +43,7 @@ class GL_EXPORT GLContextEGL : public GLContextReal {
 
  private:
   void Destroy();
-  void ReleaseYUVToRGBConverters();
+  void ReleaseYUVToRGBConvertersAndBackpressureFences();
 
   EGLContext context_ = nullptr;
   EGLDisplay display_ = nullptr;

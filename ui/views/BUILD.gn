@@ -1232,6 +1232,7 @@ test("views_unittests") {
       if (use_ozone) {
         sources +=
             [ "widget/desktop_aura/desktop_drag_drop_client_ozone_unittest.cc" ]
+        deps += [ "//ui/platform_window" ]
       }
     }
   }

@@ -11,6 +11,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/socket/ssl_client_socket.h"
@@ -45,7 +46,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
 
   // These all correspond to the NetworkContext methods of the same name.
   void CreateUDPSocket(mojo::PendingReceiver<mojom::UDPSocket> receiver,
-                       mojom::UDPSocketListenerPtr listener);
+                       mojo::PendingRemote<mojom::UDPSocketListener> listener);
   void CreateTCPServerSocket(
       const net::IPEndPoint& local_addr,
       int backlog,

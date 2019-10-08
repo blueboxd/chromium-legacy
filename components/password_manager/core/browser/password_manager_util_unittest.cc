@@ -197,7 +197,7 @@ TEST(PasswordManagerUtil, FindBestMatches) {
     for (const PasswordForm& match : owning_matches)
       matches.push_back(&match);
 
-    std::map<base::string16, const PasswordForm*> best_matches;
+    std::vector<const PasswordForm*> best_matches;
     const PasswordForm* preferred_match = nullptr;
 
     std::vector<const PasswordForm*> same_scheme_matches;
@@ -217,15 +217,14 @@ TEST(PasswordManagerUtil, FindBestMatches) {
       ASSERT_EQ(test_case.expected_best_matches_indices.size(),
                 best_matches.size());
 
-      for (const auto& username_match : best_matches) {
-        std::string username = base::UTF16ToUTF8(username_match.first);
+      for (const PasswordForm* match : best_matches) {
+        std::string username = base::UTF16ToUTF8(match->username_value);
         ASSERT_NE(test_case.expected_best_matches_indices.end(),
                   test_case.expected_best_matches_indices.find(username));
         size_t expected_index =
             test_case.expected_best_matches_indices.at(username);
         size_t actual_index = std::distance(
-            matches.begin(),
-            std::find(matches.begin(), matches.end(), username_match.second));
+            matches.begin(), std::find(matches.begin(), matches.end(), match));
         EXPECT_EQ(expected_index, actual_index);
       }
     }
@@ -352,7 +351,7 @@ TEST(PasswordManagerUtil, FindBestMatchesByUsageTime) {
     for (const PasswordForm& match : owning_matches)
       matches.push_back(&match);
 
-    std::map<base::string16, const PasswordForm*> best_matches;
+    std::vector<const PasswordForm*> best_matches;
     const PasswordForm* preferred_match = nullptr;
 
     std::vector<const PasswordForm*> same_scheme_matches;
@@ -372,15 +371,14 @@ TEST(PasswordManagerUtil, FindBestMatchesByUsageTime) {
       ASSERT_EQ(test_case.expected_best_matches_indices.size(),
                 best_matches.size());
 
-      for (const auto& username_match : best_matches) {
-        std::string username = base::UTF16ToUTF8(username_match.first);
+      for (const PasswordForm* match : best_matches) {
+        std::string username = base::UTF16ToUTF8(match->username_value);
         ASSERT_NE(test_case.expected_best_matches_indices.end(),
                   test_case.expected_best_matches_indices.find(username));
         size_t expected_index =
             test_case.expected_best_matches_indices.at(username);
         size_t actual_index = std::distance(
-            matches.begin(),
-            std::find(matches.begin(), matches.end(), username_match.second));
+            matches.begin(), std::find(matches.begin(), matches.end(), match));
         EXPECT_EQ(expected_index, actual_index);
       }
     }

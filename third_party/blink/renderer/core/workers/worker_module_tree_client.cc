@@ -26,10 +26,20 @@ void WorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
   blink::WorkerReportingProxy& worker_reporting_proxy =
       worker_global_scope->ReportingProxy();
 
+  // Step 12. "If the algorithm asynchronously completes with null, then:"
   if (!module_script) {
-    // Step 12: "If the algorithm asynchronously completes with null, queue
-    // a task to fire an event named error at worker, and return."
+    // Step 12.1. "Queue a task to fire an event named error at worker."
+    // DidFailToFetchModuleScript() will asynchronously fire the event.
     worker_reporting_proxy.DidFailToFetchModuleScript();
+
+    // Step 12.2. "Run the environment discarding steps for inside settings."
+    // Do nothing because the HTML spec doesn't define these steps for web
+    // workers.
+
+    // Schedule worker termination.
+    worker_global_scope->close();
+
+    // Step 12.3. "Return."
     return;
   }
   worker_reporting_proxy.DidFetchScript();

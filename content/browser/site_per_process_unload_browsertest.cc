@@ -21,6 +21,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -378,7 +379,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // B2  A2
 //     |
 //     C3
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadHandlerSubframes) {
+// TODO(crbug.com/1012185): Flaky timeouts on Linux and Mac.
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+#define MAYBE_UnloadHandlerSubframes DISABLED_UnloadHandlerSubframes
+#else
+#define MAYBE_UnloadHandlerSubframes UnloadHandlerSubframes
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       MAYBE_UnloadHandlerSubframes) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c(b),c(a(c))),d)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

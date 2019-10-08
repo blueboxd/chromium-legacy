@@ -72,7 +72,7 @@ void VideoPlayerTestEnvironment::SetUp() {
 #endif  // defined(OS_CHROMEOS)
 
   // VideoDecoders always require import mode to be supported.
-  DCHECK(!use_vd_ || import_supported_);
+  CHECK(!use_vd_ || import_supported_);
 }
 
 const media::test::Video* VideoPlayerTestEnvironment::Video() const {

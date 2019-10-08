@@ -7,10 +7,10 @@
 
 #include "base/bind.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_handler/wm_platform_export.h"
 
 namespace ui {
+class PlatformWindowBase;
 class OSExchangeData;
 
 class WM_PLATFORM_EXPORT WmDragHandler {
@@ -29,10 +29,10 @@ class WM_PLATFORM_EXPORT WmDragHandler {
   virtual ~WmDragHandler() {}
 };
 
-WM_PLATFORM_EXPORT void SetWmDragHandler(PlatformWindow* platform_window,
+WM_PLATFORM_EXPORT void SetWmDragHandler(PlatformWindowBase* platform_window,
                                          WmDragHandler* drag_handler);
 WM_PLATFORM_EXPORT WmDragHandler* GetWmDragHandler(
-    const PlatformWindow& platform_window);
+    const PlatformWindowBase& platform_window);
 
 }  // namespace ui
 

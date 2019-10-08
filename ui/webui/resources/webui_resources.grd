@@ -168,9 +168,11 @@ without changes to the corresponding grd file. -->
                  file="css/menu_button.css" type="chrome_html" compress="gzip"
                  flattenhtml="true" />
       <structure name="IDR_WEBUI_CSS_TEXT_DEFAULTS"
-                 file="css/text_defaults.css" type="chrome_html" />
+                 file="css/text_defaults.css" type="chrome_html"
+                 compress="gzip" />
       <structure name="IDR_WEBUI_CSS_TEXT_DEFAULTS_MD"
-                 file="css/text_defaults_md.css" type="chrome_html" />
+                 file="css/text_defaults_md.css" type="chrome_html"
+                 compress="gzip" />
       <structure name="IDR_WEBUI_CSS_OVERLAY"
                  file="css/overlay.css" type="chrome_html" compress="gzip"
                  flattenhtml="true" />

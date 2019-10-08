@@ -34,7 +34,7 @@ VideoFrameFileWriter::VideoFrameFileWriter(const base::FilePath& output_folder,
 
 VideoFrameFileWriter::~VideoFrameFileWriter() {
   base::AutoLock auto_lock(frame_writer_lock_);
-  DCHECK_EQ(0u, num_frames_writing_);
+  CHECK_EQ(0u, num_frames_writing_);
 
   frame_writer_thread_.Stop();
 }
@@ -147,7 +147,7 @@ void VideoFrameFileWriter::WriteVideoFramePNG(
     scoped_refptr<const VideoFrame> video_frame,
     const base::FilePath& filename) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(writer_thread_sequence_checker_);
-  DCHECK(video_frame_mapper_);
+  CHECK(video_frame_mapper_);
 
   auto mapped_frame = video_frame;
 #if defined(OS_CHROMEOS)
@@ -189,7 +189,7 @@ void VideoFrameFileWriter::WriteVideoFrameYUV(
     scoped_refptr<const VideoFrame> video_frame,
     const base::FilePath& filename) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(writer_thread_sequence_checker_);
-  DCHECK(video_frame_mapper_);
+  CHECK(video_frame_mapper_);
 
   auto mapped_frame = video_frame;
 #if defined(OS_CHROMEOS)

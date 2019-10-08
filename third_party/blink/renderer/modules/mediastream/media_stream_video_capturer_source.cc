@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "media/capture/video_capturer_source.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -210,7 +210,7 @@ mojom::blink::MediaStreamDispatcherHost*
 MediaStreamVideoCapturerSource::GetMediaStreamDispatcherHost() {
   DCHECK(frame_);
   if (!host_) {
-    frame_->GetInterfaceProvider().GetInterface(
+    frame_->GetBrowserInterfaceBroker().GetInterface(
         host_.BindNewPipeAndPassReceiver());
   }
   return host_.get();

@@ -23,9 +23,6 @@ namespace arc {
 // Returns invalid ScopedFD on failure.
 base::ScopedFD UnwrapFdFromMojoHandle(mojo::ScopedHandle handle);
 
-// Return the file size of |fd| in bytes.
-bool GetFileSize(const int fd, size_t* size);
-
 // Return a list of duplicated |fd|. The size of list is |num_fds|. Return an
 // empty list if duplicatation fails.
 std::vector<base::ScopedFD> DuplicateFD(base::ScopedFD fd, size_t num_fds);

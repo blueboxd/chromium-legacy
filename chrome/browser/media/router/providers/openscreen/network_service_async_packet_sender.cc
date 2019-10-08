@@ -6,16 +6,15 @@
 
 #include <utility>
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-
-#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace media_router {
 NetworkServiceAsyncPacketSender::NetworkServiceAsyncPacketSender(
     network::mojom::NetworkContext* network_context) {
   network_context->CreateUDPSocket(socket_.BindNewPipeAndPassReceiver(),
-                                   nullptr);
+                                   mojo::NullRemote());
 }
 
 NetworkServiceAsyncPacketSender::NetworkServiceAsyncPacketSender(

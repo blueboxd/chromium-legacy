@@ -32,8 +32,8 @@ class PasswordFormManagerForUI {
   virtual const GURL& GetOrigin() const = 0;
 
   // Returns the best saved matches for the observed form.
-  // TODO(crbug.com/831123): it should return a vector.
-  virtual const std::map<base::string16, const autofill::PasswordForm*>&
+  // TODO(crbug.com/1011399): it should return a reference to a vector.
+  virtual std::map<base::string16, const autofill::PasswordForm*>
   GetBestMatches() const = 0;
 
   // Returns the federated saved matches for the observed form.

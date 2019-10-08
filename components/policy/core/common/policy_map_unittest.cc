@@ -264,31 +264,34 @@ TEST_F(PolicyMapTest, MergeFrom) {
         POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("chromium.org"),
         nullptr);
   c.GetMutable(kTestPolicyName1)->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
-  c.GetMutable(kTestPolicyName1)->AddConflictingPolicy(conflicted_policy_1);
+  c.GetMutable(kTestPolicyName1)
+      ->AddConflictingPolicy(std::move(conflicted_policy_1));
   // |a| has precedence over |b|.
   c.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
   c.GetMutable(kTestPolicyName2)->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   c.GetMutable(kTestPolicyName2)
-      ->AddConflictingPolicy(*b.Get(kTestPolicyName2));
+      ->AddConflictingPolicy(b.Get(kTestPolicyName2)->DeepCopy());
   c.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_ENTERPRISE_DEFAULT, nullptr,
         CreateExternalDataFetcher("a"));
   c.GetMutable(kTestPolicyName3)->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   c.GetMutable(kTestPolicyName3)
-      ->AddConflictingPolicy(*b.Get(kTestPolicyName3));
+      ->AddConflictingPolicy(b.Get(kTestPolicyName3)->DeepCopy());
   // POLICY_SCOPE_MACHINE over POLICY_SCOPE_USER for POLICY_LEVEL_RECOMMENDED.
   c.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
         std::make_unique<base::Value>(true), nullptr);
   c.GetMutable(kTestPolicyName4)->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
-  c.GetMutable(kTestPolicyName4)->AddConflictingPolicy(conflicted_policy_4);
+  c.GetMutable(kTestPolicyName4)
+      ->AddConflictingPolicy(std::move(conflicted_policy_4));
   // POLICY_LEVEL_MANDATORY over POLICY_LEVEL_RECOMMENDED.
   c.Set(kTestPolicyName5, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(std::string()),
         nullptr);
   c.GetMutable(kTestPolicyName5)->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
-  c.GetMutable(kTestPolicyName5)->AddConflictingPolicy(conflicted_policy_5);
+  c.GetMutable(kTestPolicyName5)
+      ->AddConflictingPolicy(std::move(conflicted_policy_5));
   // Merge new ones.
   c.Set(kTestPolicyName6, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
         POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
@@ -302,7 +305,8 @@ TEST_F(PolicyMapTest, MergeFrom) {
         POLICY_SOURCE_ACTIVE_DIRECTORY,
         std::make_unique<base::Value>("blocked AD policy"), nullptr);
   c.GetMutable(kTestPolicyName8)->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
-  c.GetMutable(kTestPolicyName8)->AddConflictingPolicy(conflicted_policy_8);
+  c.GetMutable(kTestPolicyName8)
+      ->AddConflictingPolicy(std::move(conflicted_policy_8));
   c.GetMutable(kTestPolicyName8)->SetBlocked();
 
   EXPECT_TRUE(a.Equals(c));
@@ -363,7 +367,7 @@ TEST_F(PolicyMapTest, MergeValuesList) {
   PolicyMap::Entry expected_case1(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                                   POLICY_SOURCE_MERGED,
                                   std::make_unique<base::Value>(abcd), nullptr);
-  expected_case1.AddConflictingPolicy(case1);
+  expected_case1.AddConflictingPolicy(case1.DeepCopy());
 
   // Case 2 - kTestPolicyName2
   // Policies should only be merged with other policies with the same target,
@@ -383,7 +387,7 @@ TEST_F(PolicyMapTest, MergeValuesList) {
   PolicyMap::Entry expected_case2(
       POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE, POLICY_SOURCE_MERGED,
       std::make_unique<base::Value>(int1234), nullptr);
-  expected_case2.AddConflictingPolicy(case2);
+  expected_case2.AddConflictingPolicy(case2.DeepCopy());
 
   // Case 3 - kTestPolicyName3
   // Trivial case with 2 sources.
@@ -400,7 +404,7 @@ TEST_F(PolicyMapTest, MergeValuesList) {
                                   std::make_unique<base::Value>(abcd), nullptr);
   auto case3_blocked_by_group = expected_case3.DeepCopy();
   case3_blocked_by_group.SetIgnoredByPolicyAtomicGroup();
-  expected_case3.AddConflictingPolicy(case3);
+  expected_case3.AddConflictingPolicy(case3.DeepCopy());
 
   // Case 4 - kTestPolicyName4
   // Policies with a single source should stay the same.
@@ -410,7 +414,7 @@ TEST_F(PolicyMapTest, MergeValuesList) {
   PolicyMap::Entry expected_case4(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                                   POLICY_SOURCE_MERGED,
                                   std::make_unique<base::Value>(ef), nullptr);
-  expected_case4.AddConflictingPolicy(case4);
+  expected_case4.AddConflictingPolicy(case4.DeepCopy());
 
   // Case 5 - kTestPolicyName5
   // Policies that are not lists should not be merged.
@@ -440,7 +444,7 @@ TEST_F(PolicyMapTest, MergeValuesList) {
   PolicyMap::Entry expected_case6(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                                   POLICY_SOURCE_MERGED,
                                   std::make_unique<base::Value>(ab), nullptr);
-  expected_case6.AddConflictingPolicy(case6);
+  expected_case6.AddConflictingPolicy(case6.DeepCopy());
 
   // Case 7 - kTestPolicyName7
   // Lists of dictionaries should not have duplicates.
@@ -460,7 +464,7 @@ TEST_F(PolicyMapTest, MergeValuesList) {
   PolicyMap::Entry expected_case7(
       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_MERGED,
       std::make_unique<base::Value>(list_dict_abcd), nullptr);
-  expected_case7.AddConflictingPolicy(case7);
+  expected_case7.AddConflictingPolicy(case7.DeepCopy());
 
   PolicyMap policy_not_merged;
   policy_not_merged.Set(kTestPolicyName1, case1.DeepCopy());
@@ -570,7 +574,7 @@ TEST_F(PolicyMapTest, MergeDictionaryValues) {
   PolicyMap::Entry expected_case1(
       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_MERGED,
       base::Value::ToUniquePtrValue(merged_dict_case1.Clone()), nullptr);
-  expected_case1.AddConflictingPolicy(case1);
+  expected_case1.AddConflictingPolicy(case1.DeepCopy());
 
   // Case  - kTestPolicyName2
   // Policies should only be merged with other policies with the same target,
@@ -595,7 +599,7 @@ TEST_F(PolicyMapTest, MergeDictionaryValues) {
   PolicyMap::Entry expected_case2(
       POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE, POLICY_SOURCE_MERGED,
       base::Value::ToUniquePtrValue(merged_dict_case2.Clone()), nullptr);
-  expected_case2.AddConflictingPolicy(case2);
+  expected_case2.AddConflictingPolicy(case2.DeepCopy());
 
   // Case 3 - kTestPolicyName3
   // Enterprise default policies should not be merged with other sources.
@@ -624,7 +628,7 @@ TEST_F(PolicyMapTest, MergeDictionaryValues) {
   PolicyMap::Entry expected_case3(
       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_MERGED,
       base::Value::ToUniquePtrValue(merged_dict_case3.Clone()), nullptr);
-  expected_case3.AddConflictingPolicy(case3);
+  expected_case3.AddConflictingPolicy(case3.DeepCopy());
 
   // Case 4 - kTestPolicyName4
   // Policies with a single source should be merged.
@@ -635,7 +639,7 @@ TEST_F(PolicyMapTest, MergeDictionaryValues) {
   PolicyMap::Entry expected_case4(
       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_MERGED,
       base::Value::ToUniquePtrValue(dict_a.Clone()), nullptr);
-  expected_case4.AddConflictingPolicy(case4);
+  expected_case4.AddConflictingPolicy(case4.DeepCopy());
 
   // Case 5 - kTestPolicyName5
   // Policies that are not dictionaries should not be merged.
@@ -666,7 +670,7 @@ TEST_F(PolicyMapTest, MergeDictionaryValues) {
   PolicyMap::Entry expected_case6(
       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_MERGED,
       base::Value::ToUniquePtrValue(dict_a.Clone()), nullptr);
-  expected_case6.AddConflictingPolicy(case6);
+  expected_case6.AddConflictingPolicy(case6.DeepCopy());
 
   // Case 7 - kTestPolicyName7
   // Policies that are not dictionaries should not be merged.
@@ -939,8 +943,8 @@ TEST_F(PolicyMapTest, EntryAddConflict) {
   PolicyMap::Entry entry_c = entry_a.DeepCopy();
   entry_c.source = POLICY_SOURCE_PLATFORM;
 
-  entry_b.AddConflictingPolicy(entry_c);
-  entry_a.AddConflictingPolicy(entry_b);
+  entry_b.AddConflictingPolicy(entry_c.DeepCopy());
+  entry_a.AddConflictingPolicy(entry_b.DeepCopy());
 
   EXPECT_TRUE(entry_a.conflicts.size() == 2);
   EXPECT_TRUE(entry_b.conflicts.size() == 1);

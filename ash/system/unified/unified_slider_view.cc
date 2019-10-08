@@ -14,6 +14,7 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
@@ -59,9 +60,7 @@ UnifiedSliderButton::UnifiedSliderButton(views::ButtonListener* listener,
     : TopShortcutButton(listener, accessible_name_id) {
   SetVectorIcon(icon);
   SetBorder(views::CreateEmptyBorder(kUnifiedCircularButtonFocusPadding));
-  auto path = std::make_unique<SkPath>();
-  path->addOval(gfx::RectToSkRect(gfx::Rect(CalculatePreferredSize())));
-  SetProperty(views::kHighlightPathKey, path.release());
+  views::InstallCircleHighlightPathGenerator(this);
 }
 
 UnifiedSliderButton::~UnifiedSliderButton() = default;

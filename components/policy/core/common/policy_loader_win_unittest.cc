@@ -464,7 +464,7 @@ TEST_F(PolicyLoaderWinTest, HKLMOverHKCU) {
                             std::make_unique<base::Value>("hkcu"), nullptr);
   expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .GetMutable(test_keys::kKeyString)
-      ->AddConflictingPolicy(conflict);
+      ->AddConflictingPolicy(std::move(conflict));
   EXPECT_TRUE(Matches(expected));
 }
 
@@ -530,9 +530,12 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
   PolicyMap::Entry a_conflict_3(
       POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
       std::make_unique<base::Value>(kUserRecommended), nullptr);
-  expected_policy.GetMutable("a")->AddConflictingPolicy(a_conflict_1);
-  expected_policy.GetMutable("a")->AddConflictingPolicy(a_conflict_2);
-  expected_policy.GetMutable("a")->AddConflictingPolicy(a_conflict_3);
+  expected_policy.GetMutable("a")->AddConflictingPolicy(
+      std::move(a_conflict_1));
+  expected_policy.GetMutable("a")->AddConflictingPolicy(
+      std::move(a_conflict_2));
+  expected_policy.GetMutable("a")->AddConflictingPolicy(
+      std::move(a_conflict_3));
 
   expected_policy.Set("b", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                       POLICY_SOURCE_PLATFORM,
@@ -546,8 +549,10 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
   PolicyMap::Entry b_conflict_2(
       POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
       std::make_unique<base::Value>(kUserRecommended), nullptr);
-  expected_policy.GetMutable("b")->AddConflictingPolicy(b_conflict_1);
-  expected_policy.GetMutable("b")->AddConflictingPolicy(b_conflict_2);
+  expected_policy.GetMutable("b")->AddConflictingPolicy(
+      std::move(b_conflict_1));
+  expected_policy.GetMutable("b")->AddConflictingPolicy(
+      std::move(b_conflict_2));
 
   expected_policy.Set("c", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
                       POLICY_SOURCE_PLATFORM,
@@ -558,7 +563,8 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
   PolicyMap::Entry c_conflict_1(
       POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
       std::make_unique<base::Value>(kUserRecommended), nullptr);
-  expected_policy.GetMutable("c")->AddConflictingPolicy(c_conflict_1);
+  expected_policy.GetMutable("c")->AddConflictingPolicy(
+      std::move(c_conflict_1));
 
   expected_policy.Set("d", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                       POLICY_SOURCE_PLATFORM,

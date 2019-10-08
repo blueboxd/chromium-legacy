@@ -112,24 +112,17 @@ class PrerenderContents::WebContentsDelegateImpl
     std::move(callback).Run(false);
   }
 
-  bool ShouldCreateWebContents(
-      content::WebContents* web_contents,
-      content::RenderFrameHost* opener,
+  bool IsWebContentsCreationOverridden(
       content::SiteInstance* source_site_instance,
-      int32_t route_id,
-      int32_t main_frame_route_id,
-      int32_t main_frame_widget_route_id,
       content::mojom::WindowContainerType window_container_type,
       const GURL& opener_url,
       const std::string& frame_name,
-      const GURL& target_url,
-      const std::string& partition_id,
-      SessionStorageNamespace* session_storage_namespace) override {
+      const GURL& target_url) override {
     // Since we don't want to permit child windows that would have a
     // window.opener property, terminate prerendering.
     prerender_contents_->Destroy(FINAL_STATUS_CREATE_NEW_WINDOW);
     // Cancel the popup.
-    return false;
+    return true;
   }
 
   bool OnGoToEntryOffset(int offset) override {

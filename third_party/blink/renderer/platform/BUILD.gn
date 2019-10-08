@@ -728,6 +728,10 @@ jumbo_component("platform") {
     "fonts/web_font_typeface_factory.h",
     "fonts/win/dwrite_font_format_support.cc",
     "fonts/win/dwrite_font_format_support.h",
+    "fonts/win/fallback_family_style_cache_win.cc",
+    "fonts/win/fallback_family_style_cache_win.h",
+    "fonts/win/fallback_lru_cache_win.cc",
+    "fonts/win/fallback_lru_cache_win.h",
     "fonts/win/font_cache_skia_win.cc",
     "fonts/win/font_fallback_win.cc",
     "fonts/win/font_fallback_win.h",
@@ -1867,6 +1871,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
 
   if (is_win) {
     sources += [ "text/locale_win_test.cc" ]
+    sources += [ "fonts/win/fallback_lru_cache_win_test.cc" ]
   } else if (is_mac) {
     sources += [
       "fonts/opentype/open_type_caps_support_test.mm",

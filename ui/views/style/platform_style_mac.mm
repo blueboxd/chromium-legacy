@@ -46,7 +46,7 @@ const bool PlatformStyle::kPreferFocusRings = true;
 const bool PlatformStyle::kInactiveWidgetControlsAppearDisabled = true;
 
 const Button::KeyClickAction PlatformStyle::kKeyClickActionOnSpace =
-    Button::CLICK_ON_KEY_PRESS;
+    Button::KeyClickAction::kOnKeyPress;
 
 // On Mac, the Return key is used to perform the default action even when a
 // control is focused.

@@ -171,9 +171,10 @@ bool SyncUserSettingsImpl::SetDecryptionPassphrase(
 }
 
 void SyncUserSettingsImpl::AddTrustedVaultDecryptionKeys(
+    const CoreAccountId& account_id,
     const std::vector<std::string>& keys) {
   DVLOG(1) << "Adding trusted vault decryption keys.";
-  crypto_->AddTrustedVaultDecryptionKeys(keys);
+  crypto_->AddTrustedVaultDecryptionKeys(account_id, keys);
 }
 
 void SyncUserSettingsImpl::SetSyncRequestedIfNotSetExplicitly() {

@@ -103,7 +103,7 @@ class OzonePlatformWayland : public OzonePlatform {
     return nullptr;
   }
 
-  std::unique_ptr<PlatformWindow> CreatePlatformWindow(
+  std::unique_ptr<PlatformWindowBase> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       PlatformWindowInitProperties properties) override {
     auto window = std::make_unique<WaylandWindow>(delegate, connection_.get());

@@ -9,6 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/files/scoped_file.h"
+#include "base/observer_list.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -20,6 +21,15 @@ namespace chromeos {
 // start and stop VMs, as well as for disk image management.
 class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
  public:
+  // Used for observing Concierge service itself.
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called when Concierge service exits.
+    virtual void ConciergeServiceStopped() = 0;
+    // Called when Concierge service is either started or restarted.
+    virtual void ConciergeServiceRestarted() = 0;
+  };
+
   // Used for observing VMs starting and stopping.
   class VmObserver {
    public:
@@ -62,6 +72,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
    protected:
     virtual ~DiskImageObserver() = default;
   };
+
+  // Adds an observer for monitoring Concierge service.
+  virtual void AddObserver(Observer* observer) = 0;
+  // Removes an observer if added.
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Adds an observer for VM start and stop.
   virtual void AddVmObserver(VmObserver* observer) = 0;

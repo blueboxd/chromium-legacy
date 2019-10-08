@@ -32,7 +32,7 @@
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/ozone_gpu_test_helper.h"
 #include "ui/ozone/public/ozone_platform.h"
-#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_base.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
@@ -166,7 +166,7 @@ class AppWindow : public ui::PlatformWindowDelegate {
   std::unique_ptr<vr::GlRenderer> renderer_;
 
   // Window-related state.
-  std::unique_ptr<ui::PlatformWindow> platform_window_;
+  std::unique_ptr<ui::PlatformWindowBase> platform_window_;
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
 
   base::WeakPtrFactory<AppWindow> weak_ptr_factory_;

@@ -8,7 +8,6 @@ typedef unsigned long GPUTextureUsageFlags;
 [
     RuntimeEnabled=WebGPU
 ] interface GPUTextureUsage {
-    const GPUTextureUsageFlags NONE = 0;
     const GPUTextureUsageFlags COPY_SRC = 1;
     const GPUTextureUsageFlags COPY_DST = 2;
     const GPUTextureUsageFlags SAMPLED = 4;

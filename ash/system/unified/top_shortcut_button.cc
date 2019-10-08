@@ -15,6 +15,7 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/view_class_properties.h"
 
 namespace ash {
@@ -57,9 +58,7 @@ TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
 
   TrayPopupUtils::ConfigureTrayPopupButton(this);
 
-  auto path = std::make_unique<SkPath>();
-  path->addOval(gfx::RectToSkRect(gfx::Rect(CalculatePreferredSize())));
-  SetProperty(views::kHighlightPathKey, path.release());
+  views::InstallCircleHighlightPathGenerator(this);
 }
 
 TopShortcutButton::~TopShortcutButton() = default;
@@ -75,7 +74,7 @@ void TopShortcutButton::PaintButtonContents(gfx::Canvas* canvas) {
       AshColorProvider::ControlsLayerType::kInactiveControlBackground,
       kUnifiedMenuButtonColor));
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->DrawPath(*GetProperty(views::kHighlightPathKey), flags);
+  canvas->DrawPath(views::GetHighlightPath(this), flags);
 
   views::ImageButton::PaintButtonContents(canvas);
 }

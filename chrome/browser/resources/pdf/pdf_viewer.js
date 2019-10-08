@@ -152,7 +152,10 @@ class PDFViewer {
     this.delayedScriptingMessages_ = [];
 
     /** @private {!PromiseResolver} */
-    this.loaded_ = new PromiseResolver();
+    this.loaded_;
+
+    /** @private {boolean} */
+    this.initialLoadComplete_ = false;
 
     /** @private {boolean} */
     this.isPrintPreview_ = location.origin === 'chrome://print';
@@ -775,11 +778,12 @@ class PDFViewer {
   }
 
   /**
-   * @return {!Promise} Resolved when the load state reaches LOADED, rejects on
-   *     FAILED.
+   * @return {?Promise} Resolved when the load state reaches LOADED,
+   * rejects on FAILED. Returns null if no promise has been created, which
+   * is the case for initial load of the PDF.
    */
   get loaded() {
-    return this.loaded_.promise;
+    return this.loaded_ ? this.loaded_.promise : null;
   }
 
   /** @return {!Viewport} The viewport. Used for testing. */
@@ -802,17 +806,20 @@ class PDFViewer {
     if (this.loadState_ == loadState) {
       return;
     }
+    assert(
+        loadState == LoadState.LOADING || this.loadState_ == LoadState.LOADING);
+    this.loadState_ = loadState;
+    if (!this.initialLoadComplete_) {
+      this.initialLoadComplete_ = true;
+      return;
+    }
     if (loadState == LoadState.SUCCESS) {
-      assert(this.loadState_ == LoadState.LOADING);
       this.loaded_.resolve();
     } else if (loadState == LoadState.FAILED) {
-      assert(this.loadState_ == LoadState.LOADING);
       this.loaded_.reject();
     } else {
-      assert(loadState == LoadState.LOADING);
       this.loaded_ = new PromiseResolver();
     }
-    this.loadState_ = loadState;
   }
 
   /**

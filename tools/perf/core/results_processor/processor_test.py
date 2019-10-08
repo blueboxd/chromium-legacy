@@ -80,7 +80,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.SerializeIntermediateResults([
         testing.TestResult(
             'benchmark/story',
-            artifacts={
+            output_artifacts={
                 'logs': testing.Artifact('/logs.txt', 'gs://logs.txt'),
                 'trace/telemetry': testing.Artifact('/telemetry.json'),
                 'trace.html':
@@ -116,7 +116,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         test_results=[
             testing.TestResult(
                 'benchmark/story',
-                artifacts={'histogram_dicts.json': testing.Artifact(hist_file)},
+                output_artifacts={
+                    'histogram_dicts.json': testing.Artifact(hist_file)
+                },
             ),
         ],
         diagnostics={
@@ -161,7 +163,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         test_results=[
             testing.TestResult(
                 'benchmark/story',
-                artifacts={'histogram_dicts.json': testing.Artifact(hist_file)},
+                output_artifacts={
+                    'histogram_dicts.json': testing.Artifact(hist_file)
+                },
             ),
         ],
     )
@@ -202,7 +206,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         test_results=[
             testing.TestResult(
                 'benchmark/story',
-                artifacts={'histogram_dicts.json': testing.Artifact(hist_file)},
+                output_artifacts={
+                    'histogram_dicts.json': testing.Artifact(hist_file)
+                },
             ),
         ],
     )
@@ -241,9 +247,10 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         test_results=[
             testing.TestResult(
                 'benchmark/story',
-                artifacts={
+                output_artifacts={
                     compute_metrics.HTML_TRACE_NAME:
-                        testing.Artifact(trace_file, 'gs://trace.html')},
+                        testing.Artifact(trace_file, 'gs://trace.html')
+                },
                 tags=['tbmv2:sampleMetric'],
             ),
         ],
@@ -278,7 +285,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         test_results=[
             testing.TestResult(
                 'benchmark/story',
-                artifacts={'histogram_dicts.json': testing.Artifact(hist_file)},
+                output_artifacts={
+                    'histogram_dicts.json': testing.Artifact(hist_file)
+                },
             ),
         ],
         diagnostics={
@@ -380,7 +389,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         test_results=[
             testing.TestResult(
                 'benchmark/story',
-                artifacts={'histogram_dicts.json': testing.Artifact(hist_file)},
+                output_artifacts={
+                    'histogram_dicts.json': testing.Artifact(hist_file)
+                },
             ),
         ],
         diagnostics={
@@ -424,7 +435,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         test_results=[
             testing.TestResult(
                 'benchmark/story',
-                artifacts={'histogram_dicts.json': testing.Artifact(hist_file)},
+                output_artifacts={
+                    'histogram_dicts.json': testing.Artifact(hist_file)
+                },
             ),
         ],
     )
@@ -460,7 +473,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         test_results=[
             testing.TestResult(
                 'benchmark/story',
-                artifacts={'histogram_dicts.json': testing.Artifact(hist_file)},
+                output_artifacts={
+                    'histogram_dicts.json': testing.Artifact(hist_file)
+                },
             ),
         ],
     )

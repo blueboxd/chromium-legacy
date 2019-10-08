@@ -123,51 +123,53 @@ public class AwAutofillUMA {
         }
 
         private int toUMAAutofillSessionValue() {
-            if (mState == 0)
+            if (mState == 0) {
                 return NO_CALLBACK_FORM_FRAMEWORK;
-            else if (mState == EVENT_VIRTUAL_STRUCTURE_PROVIDED)
+            } else if (mState == EVENT_VIRTUAL_STRUCTURE_PROVIDED) {
                 return NO_SUGGESTION_USER_NOT_CHANGE_FORM_NO_FORM_SUBMITTED;
-            else if (mState == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_USER_CHANGED_FIELD_VALUE))
+            } else if (mState
+                    == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_USER_CHANGED_FIELD_VALUE)) {
                 return NO_SUGGESTION_USER_CHANGE_FORM_NO_FORM_SUBMITTED;
-            else if (mState == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_FORM_SUBMITTED))
+            } else if (mState == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_FORM_SUBMITTED)) {
                 return NO_SUGGESTION_USER_NOT_CHANGE_FORM_FORM_SUBMITTED;
-            else if (mState
+            } else if (mState
                     == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_USER_CHANGED_FIELD_VALUE
-                               | EVENT_FORM_SUBMITTED))
+                            | EVENT_FORM_SUBMITTED)) {
                 return NO_SUGGESTION_USER_CHANGE_FORM_FORM_SUBMITTED;
-            else if (mState
+            } else if (mState
                     == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_SUGGESTION_DISPLAYED
-                               | EVENT_FORM_AUTOFILLED))
+                            | EVENT_FORM_AUTOFILLED)) {
                 return USER_SELECT_SUGGESTION_USER_NOT_CHANGE_FORM_NO_FORM_SUBMITTED;
-            else if (mState
+            } else if (mState
                     == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_SUGGESTION_DISPLAYED
-                               | EVENT_FORM_AUTOFILLED | EVENT_FORM_SUBMITTED))
+                            | EVENT_FORM_AUTOFILLED | EVENT_FORM_SUBMITTED)) {
                 return USER_SELECT_SUGGESTION_USER_NOT_CHANGE_FORM_FORM_SUBMITTED;
-            else if (mState
+            } else if (mState
                     == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_SUGGESTION_DISPLAYED
-                               | EVENT_FORM_AUTOFILLED | EVENT_USER_CHANGED_FIELD_VALUE
-                               | EVENT_FORM_SUBMITTED))
+                            | EVENT_FORM_AUTOFILLED | EVENT_USER_CHANGED_FIELD_VALUE
+                            | EVENT_FORM_SUBMITTED)) {
                 return USER_SELECT_SUGGESTION_USER_CHANGE_FORM_FORM_SUBMITTED;
-            else if (mState
+            } else if (mState
                     == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_SUGGESTION_DISPLAYED
-                               | EVENT_FORM_AUTOFILLED | EVENT_USER_CHANGED_FIELD_VALUE))
+                            | EVENT_FORM_AUTOFILLED | EVENT_USER_CHANGED_FIELD_VALUE)) {
                 return USER_SELECT_SUGGESTION_USER_CHANGE_FORM_NO_FORM_SUBMITTED;
-            else if (mState == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_SUGGESTION_DISPLAYED))
+            } else if (mState == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_SUGGESTION_DISPLAYED)) {
                 return USER_NOT_SELECT_SUGGESTION_USER_NOT_CHANGE_FORM_NO_FORM_SUBMITTED;
-            else if (mState
+            } else if (mState
                     == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_SUGGESTION_DISPLAYED
-                               | EVENT_FORM_SUBMITTED))
+                            | EVENT_FORM_SUBMITTED)) {
                 return USER_NOT_SELECT_SUGGESTION_USER_NOT_CHANGE_FORM_FORM_SUBMITTED;
-            else if (mState
+            } else if (mState
                     == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_SUGGESTION_DISPLAYED
-                               | EVENT_USER_CHANGED_FIELD_VALUE | EVENT_FORM_SUBMITTED))
+                            | EVENT_USER_CHANGED_FIELD_VALUE | EVENT_FORM_SUBMITTED)) {
                 return USER_NOT_SELECT_SUGGESTION_USER_CHANGE_FORM_FORM_SUBMITTED;
-            else if (mState
+            } else if (mState
                     == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_SUGGESTION_DISPLAYED
-                               | EVENT_USER_CHANGED_FIELD_VALUE))
+                            | EVENT_USER_CHANGED_FIELD_VALUE)) {
                 return USER_NOT_SELECT_SUGGESTION_USER_CHANGE_FORM_NO_FORM_SUBMITTED;
-            else
+            } else {
                 return SESSION_UNKNOWN;
+            }
         }
 
         private int mState;
@@ -218,10 +220,11 @@ public class AwAutofillUMA {
 
     public void onUserChangeFieldValue(boolean isPreviouslyAutofilled) {
         if (mRecorder == null) return;
-        if (isPreviouslyAutofilled)
+        if (isPreviouslyAutofilled) {
             mRecorder.record(SessionRecorder.EVENT_USER_CHANGED_AUTOFILLED_FIELD);
-        else
+        } else {
             mRecorder.record(SessionRecorder.EVENT_USER_CHANGED_FIELD_VALUE);
+        }
     }
 
     private void recordSession() {

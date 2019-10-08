@@ -434,6 +434,19 @@ bool DoesSandboxNavigationStayWithinSubtree(
 
 }  // namespace
 
+// NavigationControllerImpl::PendingEntryRef------------------------------------
+
+NavigationControllerImpl::PendingEntryRef::PendingEntryRef(
+    base::WeakPtr<NavigationControllerImpl> controller)
+    : controller_(controller) {}
+
+NavigationControllerImpl::PendingEntryRef::~PendingEntryRef() {
+  if (!controller_)  // Can be null with interstitials.
+    return;
+
+  controller_->PendingEntryRefDeleted(this);
+}
+
 // NavigationControllerImpl ----------------------------------------------------
 
 const size_t kMaxEntryCountForTestingNotSet = static_cast<size_t>(-1);
@@ -2110,6 +2123,11 @@ void NavigationControllerImpl::DiscardPendingEntry(bool was_failure) {
     pending_entry_index_ = -1;
     pending_entry_ = nullptr;
   }
+
+  // Ensure any refs to the current pending entry are ignored if they get
+  // deleted, by clearing the set of known refs. All future pending entries will
+  // only be affected by new refs.
+  pending_entry_refs_.clear();
 }
 
 void NavigationControllerImpl::SetPendingNavigationSSLError(bool error) {
@@ -2690,6 +2708,11 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
   CHECK(!in_navigate_to_pending_entry_);
   in_navigate_to_pending_entry_ = true;
 
+  // It is not possible to delete the pending NavigationEntry while navigating
+  // to it. Grab a reference to delay potential deletion until the end of this
+  // function.
+  std::unique_ptr<PendingEntryRef> pending_entry_ref = ReferencePendingEntry();
+
   // Send all the same document frame loads before the different document loads.
   for (auto& item : same_document_loads) {
     FrameTreeNode* frame = item->frame_tree_node();
@@ -2919,6 +2942,11 @@ void NavigationControllerImpl::NavigateWithoutEntry(
   // This call does not support re-entrancy.  See http://crbug.com/347742.
   CHECK(!in_navigate_to_pending_entry_);
   in_navigate_to_pending_entry_ = true;
+
+  // It is not possible to delete the pending NavigationEntry while navigating
+  // to it. Grab a reference to delay potential deletion until the end of this
+  // function.
+  std::unique_ptr<PendingEntryRef> pending_entry_ref = ReferencePendingEntry();
 
   node->navigator()->Navigate(std::move(request), reload_type,
                               RestoreType::NONE);
@@ -3547,6 +3575,56 @@ void NavigationControllerImpl::SetSkippableForSameDocumentEntries(
       entry->set_should_skip_on_back_forward_ui(skippable);
     }
   }
+}
+
+std::unique_ptr<NavigationControllerImpl::PendingEntryRef>
+NavigationControllerImpl::ReferencePendingEntry() {
+  DCHECK(pending_entry_);
+  auto pending_entry_ref =
+      std::make_unique<PendingEntryRef>(weak_factory_.GetWeakPtr());
+  pending_entry_refs_.insert(pending_entry_ref.get());
+  return pending_entry_ref;
+}
+
+void NavigationControllerImpl::PendingEntryRefDeleted(PendingEntryRef* ref) {
+  // Ignore refs that don't correspond to the current pending entry.
+  auto it = pending_entry_refs_.find(ref);
+  if (it == pending_entry_refs_.end())
+    return;
+  pending_entry_refs_.erase(it);
+
+  if (!pending_entry_refs_.empty())
+    return;
+
+  // The pending entry may be deleted before the last PendingEntryRef.
+  if (!pending_entry_)
+    return;
+
+  // We usually clear the pending entry when the matching NavigationRequest
+  // fails, so that an arbitrary URL isn't left visible above a committed page.
+  //
+  // However, we do preserve the pending entry in some cases, such as on the
+  // initial navigation of an unmodified blank tab. We also allow the delegate
+  // to say when it's safe to leave aborted URLs in the omnibox, to let the
+  // user edit the URL and try again. This may be useful in cases that the
+  // committed page cannot be attacker-controlled. In these cases, we still
+  // allow the view to clear the pending entry and typed URL if the user
+  // requests (e.g., hitting Escape with focus in the address bar).
+  //
+  // Do not leave the pending entry visible if it has an invalid URL, since this
+  // might be formatted in an unexpected or unsafe way.
+  // TODO(creis): Block navigations to invalid URLs in https://crbug.com/850824.
+  //
+  // Note: don't touch the transient entry, since an interstitial may exist.
+  bool should_preserve_entry =
+      (pending_entry_ == GetVisibleEntry()) &&
+      pending_entry_->GetURL().is_valid() &&
+      (IsUnmodifiedBlankTab() || delegate_->ShouldPreserveAbortedURLs());
+  if (should_preserve_entry)
+    return;
+
+  DiscardPendingEntry(true);
+  delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);
 }
 
 }  // namespace content

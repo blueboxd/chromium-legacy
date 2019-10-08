@@ -257,7 +257,6 @@ crbug.com/1004650 http/tests/security/contentSecurityPolicy/frame-src-cross-orig
 
 # Display locking failures
 crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
-crbug.com/1011376 wpt_internal/virtual-scroller/full-scroll-500px.html [ Failure ]
 
 # MSAN failure
 crbug.com/996625 inspector-protocol/accessibility/accessibility-getFullAXTree-display-locked.js [ Skip ]
@@ -2074,11 +2073,6 @@ crbug.com/803276 [ Win ] inspector-protocol/memory/sampling-native-snapshot.js [
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 
-crbug.com/1002780 [ Linux ] external/wpt/websockets/stream-tentative/backpressure-receive.any.html [ Failure Pass ]
-crbug.com/1002780 [ Linux ] external/wpt/websockets/stream-tentative/backpressure-receive.any.serviceworker.html [ Failure Pass ]
-crbug.com/1002780 [ Linux ] external/wpt/websockets/stream-tentative/backpressure-receive.any.sharedworker.html [ Failure Pass ]
-crbug.com/1002780 [ Linux ] external/wpt/websockets/stream-tentative/backpressure-receive.any.worker.html [ Failure Pass ]
-
 # For win10, see crbug.com/955109
 crbug.com/538697 [ Win Win10 ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
 crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash ]
@@ -3094,8 +3088,6 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/actionsWithKeyPr
 
 # Hit a DCHECK
 crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
-crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Crash ]
-crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # FontFace object failures detected by WPT test
 crbug.com/965409 external/wpt/css/css-font-loading/fontface-descriptor-updates.html [ Failure ]
@@ -3120,6 +3112,12 @@ crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.
 crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001a.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001a.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001a.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001b.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001b.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001b.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
@@ -6140,7 +6138,7 @@ crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-targe
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-snap-003.html [ Failure ]
 
 # Sheriff 2019-09-12
-crbug.com/1003268 [ Win10 Win7 ] fast/harness/internals-observe-gc.html [ Failure ]
+crbug.com/1011515 [ Win7 ] fast/harness/internals-observe-gc.html [ Failure ]
 crbug.com/731018 [ Mac ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Failure ]
 crbug.com/731018 [ Mac ] external/wpt/gyroscope/Gyroscope.https.html [ Pass Failure ]
 crbug.com/731018 [ Mac ] external/wpt/orientation-sensor/AbsoluteOrientationSensor.https.html [ Pass Failure ]

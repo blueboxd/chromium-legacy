@@ -24,14 +24,14 @@ class ComputeMetricsTest(unittest.TestCase):
     in_results = testing.IntermediateResults([
         testing.TestResult(
             'benchmark/story1',
-            artifacts={
+            output_artifacts={
                 compute_metrics.HTML_TRACE_NAME:
                     testing.Artifact('/trace1.html', 'gs://trace1.html')},
             tags=['tbmv2:metric1'],
         ),
         testing.TestResult(
             'benchmark/story2',
-            artifacts={
+            output_artifacts={
                 compute_metrics.HTML_TRACE_NAME:
                     testing.Artifact('/trace2.html', 'gs://trace2.html')},
             tags=['tbmv2:metric2'],
@@ -56,7 +56,7 @@ class ComputeMetricsTest(unittest.TestCase):
     in_results = testing.IntermediateResults([
         testing.TestResult(
             'benchmark/story1',
-            artifacts={
+            output_artifacts={
                 compute_metrics.HTML_TRACE_NAME:
                     testing.Artifact('/trace1.html', 'gs://trace1.html')},
             tags=['tbmv2:metric1'],
@@ -76,7 +76,7 @@ class ComputeMetricsTest(unittest.TestCase):
     in_results = testing.IntermediateResults([
         testing.TestResult(
             'benchmark/story1',
-            artifacts={
+            output_artifacts={
                 compute_metrics.HTML_TRACE_NAME:
                     testing.Artifact('/trace1.html', 'gs://trace1.html')},
             tags=['tbmv2:metric1'],
@@ -99,7 +99,7 @@ class ComputeMetricsTest(unittest.TestCase):
     in_results = testing.IntermediateResults([
         testing.TestResult(
             'benchmark/story1',
-            artifacts={
+            output_artifacts={
                 compute_metrics.HTML_TRACE_NAME:
                     testing.Artifact('/trace1.html', 'gs://trace1.html')},
             tags=['tbmv2:metric1'],

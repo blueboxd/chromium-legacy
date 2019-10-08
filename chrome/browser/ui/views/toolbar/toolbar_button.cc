@@ -394,6 +394,12 @@ SkColor ToolbarButton::AdjustHighlightColorForContrast(
       .color;
 }
 
+// static
+SkColor ToolbarButton::GetDefaultBorderColor(views::View* host_view) {
+  return SkColorSetA(GetToolbarInkDropBaseColor(host_view),
+                     kToolbarButtonBackgroundAlpha);
+}
+
 bool ToolbarButton::ShouldShowMenu() {
   return model_ != nullptr;
 }
@@ -552,11 +558,7 @@ base::Optional<SkColor> ToolbarButton::HighlightColorAnimation::GetBorderColor()
   if (highlight_color_) {
     border_color = *highlight_color_;
   } else {
-    // TODO(crbug.com/967317): Update to match mocks. If
-    // !color_utils::IsDark(..COLOR_TOOLBAR), return black with 30% alpha.
-    // Otherwise, consider returning GetDefaultTextColor(), instead.
-    border_color = parent_->GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+    border_color = ToolbarButton::GetDefaultBorderColor(parent_);
   }
   return FadeWithAnimation(border_color, highlight_color_animation_);
 }

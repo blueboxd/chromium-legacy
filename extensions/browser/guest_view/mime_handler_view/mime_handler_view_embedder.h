@@ -11,6 +11,7 @@
 #include "extensions/common/api/mime_handler.mojom.h"
 #include "extensions/common/mojom/guest_view.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -61,7 +62,8 @@ class MimeHandlerViewEmbedder : public content::WebContentsObserver {
                           const std::string& stream_id,
                           const std::string& internal_id);
   void CreateMimeHandlerViewGuest(
-      mime_handler::BeforeUnloadControlPtr before_unload_control_ptr);
+      mojo::PendingRemote<mime_handler::BeforeUnloadControl>
+          before_unload_control_remote);
   void DidCreateMimeHandlerViewGuest(content::WebContents* guest_web_contents);
   // Returns null before |render_frame_host_| is known.
   mojom::MimeHandlerViewContainerManager* GetContainerManager();
@@ -89,7 +91,8 @@ class MimeHandlerViewEmbedder : public content::WebContentsObserver {
   int32_t element_instance_id_ = -1;
   // Initialized before creating MimeHandlerViewGuest and will be passed on to
   // to after it is created.
-  mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control_;
+  mojo::PendingRemote<mime_handler::BeforeUnloadControl>
+      pending_before_unload_control_;
 
   mojo::AssociatedRemote<mojom::MimeHandlerViewContainerManager>
       container_manager_;

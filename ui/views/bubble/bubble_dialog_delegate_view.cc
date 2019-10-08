@@ -170,7 +170,7 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
 
   std::unique_ptr<BubbleBorder> border =
       std::make_unique<BubbleBorder>(arrow(), GetShadow(), color());
-  if (CustomShadowsSupported() && ShouldHaveRoundCorners()) {
+  if (CustomShadowsSupported() && GetParams().round_corners) {
     border->SetCornerRadius(
         base::FeatureList::IsEnabled(features::kEnableMDRoundedCornersOnDialogs)
             ? provider->GetCornerRadiusMetric(views::EMPHASIS_HIGH)

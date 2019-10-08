@@ -69,7 +69,7 @@ void FrameRendererDummy::Destroy() {
   renderer_thread_.Stop();
 
   base::AutoLock auto_lock(renderer_lock_);
-  DCHECK(pending_frames_.empty());
+  CHECK(pending_frames_.empty());
 }
 
 bool FrameRendererDummy::AcquireGLContext() {
@@ -135,7 +135,7 @@ scoped_refptr<VideoFrame> FrameRendererDummy::CreateVideoFrame(
   // TODO(dstaessens): Remove this function when allocate mode is deprecated.
   base::Optional<VideoFrameLayout> layout =
       CreateVideoFrameLayout(pixel_format, size);
-  DCHECK(layout);
+  CHECK(layout);
   return VideoFrame::WrapExternalDataWithLayout(*layout, gfx::Rect(size), size,
                                                 nullptr, 0, base::TimeDelta());
 }

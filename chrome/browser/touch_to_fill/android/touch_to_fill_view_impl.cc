@@ -81,7 +81,6 @@ void TouchToFillViewImpl::Show(
 
 void TouchToFillViewImpl::OnDismiss() {
   // TODO(crbug.com/957532): Implement.
-  NOTIMPLEMENTED();
 }
 
 void TouchToFillViewImpl::OnCredentialSelected(

@@ -375,8 +375,14 @@ void PermissionRequestManager::ShowBubble(bool is_reshow) {
   if (!view_)
     return;
 
-  if (!is_reshow)
+  if (!is_reshow) {
     PermissionUmaUtil::PermissionPromptShown(requests_);
+
+    if (ShouldShowQuietPermissionPrompt()) {
+      base::RecordAction(base::UserMetricsAction(
+          "Notifications.Quiet.PermissionRequestShown"));
+    }
+  }
   NotifyBubbleAdded();
 
   // If in testing mode, automatically respond to the bubble that was shown.

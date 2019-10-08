@@ -413,8 +413,16 @@ void BackForwardCacheImpl::DisableForRenderFrameHost(GlobalFrameRoutingId id,
     g_bfcache_disabled_test_observer->OnDisabledForFrameWithReason(id, reason);
 
   auto* rfh = RenderFrameHostImpl::FromID(id);
-  if (rfh)
+  if (rfh) {
     rfh->DisallowBackForwardCache();
+
+    RenderFrameHostImpl* frame = rfh;
+    while (frame->GetParent())
+      frame = frame->GetParent();
+
+    if (BackForwardCacheMetrics* metrics = frame->GetBackForwardCacheMetrics())
+      metrics->MarkDisableForRenderFrameHost(reason);
+  }
 }
 
 void BackForwardCacheImpl::DisableForTesting(DisableForTestingReason reason) {

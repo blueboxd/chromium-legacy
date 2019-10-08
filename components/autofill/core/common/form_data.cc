@@ -70,15 +70,21 @@ void LogDeserializationError(int version) {
 }  // namespace
 
 FormData::FormData() = default;
+
 FormData::FormData(const FormData&) = default;
+
 FormData& FormData::operator=(const FormData&) = default;
+
 FormData::FormData(FormData&&) = default;
+
 FormData& FormData::operator=(FormData&&) = default;
+
 FormData::~FormData() = default;
 
 bool FormData::SameFormAs(const FormData& form) const {
-  if (name != form.name || url != form.url || action != form.action ||
-      is_form_tag != form.is_form_tag ||
+  if (name != form.name || id_attribute != form.id_attribute ||
+      name_attribute != form.name_attribute || url != form.url ||
+      action != form.action || is_form_tag != form.is_form_tag ||
       is_formless_checkout != form.is_formless_checkout ||
       fields.size() != form.fields.size())
     return false;
@@ -90,8 +96,9 @@ bool FormData::SameFormAs(const FormData& form) const {
 }
 
 bool FormData::SimilarFormAs(const FormData& form) const {
-  if (name != form.name || url != form.url || action != form.action ||
-      is_form_tag != form.is_form_tag ||
+  if (name != form.name || id_attribute != form.id_attribute ||
+      name_attribute != form.name_attribute || url != form.url ||
+      action != form.action || is_form_tag != form.is_form_tag ||
       is_formless_checkout != form.is_formless_checkout ||
       fields.size() != form.fields.size())
     return false;
@@ -103,7 +110,9 @@ bool FormData::SimilarFormAs(const FormData& form) const {
 }
 
 bool FormData::DynamicallySameFormAs(const FormData& form) const {
-  if (name != form.name || fields.size() != form.fields.size())
+  if (name != form.name || id_attribute != form.id_attribute ||
+      name_attribute != form.name_attribute ||
+      fields.size() != form.fields.size())
     return false;
   for (size_t i = 0; i < fields.size(); ++i) {
     if (!fields[i].DynamicallySameFieldAs(form.fields[i]))
@@ -113,7 +122,9 @@ bool FormData::DynamicallySameFormAs(const FormData& form) const {
 }
 
 bool FormData::operator==(const FormData& form) const {
-  return name == form.name && url == form.url && action == form.action &&
+  return name == form.name && id_attribute == form.id_attribute &&
+         name_attribute == form.name_attribute && url == form.url &&
+         action == form.action &&
          unique_renderer_id == form.unique_renderer_id &&
          submission_event == form.submission_event &&
          is_form_tag == form.is_form_tag &&
@@ -127,10 +138,11 @@ bool FormData::operator!=(const FormData& form) const {
 }
 
 bool FormData::operator<(const FormData& form) const {
-  return std::tie(name, url, action, is_form_tag, is_formless_checkout,
-                  fields) < std::tie(form.name, form.url, form.action,
-                                     form.is_form_tag,
-                                     form.is_formless_checkout, form.fields);
+  return std::tie(name, id_attribute, name_attribute, url, action, is_form_tag,
+                  is_formless_checkout, fields) <
+         std::tie(form.name, form.id_attribute, form.name_attribute, form.url,
+                  form.action, form.is_form_tag, form.is_formless_checkout,
+                  form.fields);
 }
 
 std::ostream& operator<<(std::ostream& os, const FormData& form) {

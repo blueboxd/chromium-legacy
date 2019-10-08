@@ -284,8 +284,11 @@ bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
 }
 
 void SyncServiceCrypto::AddTrustedVaultDecryptionKeys(
+    const CoreAccountId& account_id,
     const std::vector<std::string>& keys) {
-  state_.engine->AddTrustedVaultDecryptionKeys(keys);
+  if (state_.engine && state_.account_id == account_id) {
+    state_.engine->AddTrustedVaultDecryptionKeys(keys);
+  }
 }
 
 PassphraseType SyncServiceCrypto::GetPassphraseType() const {
@@ -431,6 +434,13 @@ void SyncServiceCrypto::OnPassphraseTypeChanged(PassphraseType type,
   state_.cached_passphrase_type = type;
   state_.cached_explicit_passphrase_time = passphrase_time;
   notify_observers_.Run();
+}
+
+void SyncServiceCrypto::SetSyncEngine(const CoreAccountId& account_id,
+                                      SyncEngine* engine) {
+  DCHECK(engine);
+  state_.account_id = account_id;
+  state_.engine = engine;
 }
 
 std::unique_ptr<SyncEncryptionHandler::Observer>

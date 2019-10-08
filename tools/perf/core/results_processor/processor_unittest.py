@@ -45,11 +45,11 @@ class ResultsProcessorUnitTests(unittest.TestCase):
         test_results=[
             testing.TestResult(
                 'benchmark/story',
-                artifacts={'log': testing.Artifact('/log.log')},
+                output_artifacts={'log': testing.Artifact('/log.log')},
             ),
             testing.TestResult(
                 'benchmark/story',
-                artifacts={
+                output_artifacts={
                   'trace.html': testing.Artifact('/trace.html'),
                   'screenshot': testing.Artifact('/screenshot.png'),
                 },
@@ -69,7 +69,7 @@ class ResultsProcessorUnitTests(unittest.TestCase):
       )
 
     for result in in_results['testResults']:
-      for artifact in result['artifacts'].itervalues():
+      for artifact in result['outputArtifacts'].itervalues():
         self.assertEqual(artifact['remoteUrl'], 'gs://url')
 
   def testUploadArtifacts_CheckRemoteUrl(self):
@@ -77,7 +77,9 @@ class ResultsProcessorUnitTests(unittest.TestCase):
         test_results=[
             testing.TestResult(
                 'benchmark/story',
-                artifacts={'trace.html': testing.Artifact('/trace.html')},
+                output_artifacts={
+                    'trace.html': testing.Artifact('/trace.html')
+                },
             ),
         ],
         start_time='2019-10-01T12:00:00.123456Z',

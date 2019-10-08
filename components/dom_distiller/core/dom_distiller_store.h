@@ -9,12 +9,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/dom_distiller_model.h"
-#include "components/leveldb_proto/public/proto_database.h"
-#include "components/sync/model/sync_change.h"
-#include "components/sync/model/sync_data.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {
@@ -51,17 +47,10 @@ class DomDistillerStoreInterface {
 // TODO(cjhopman): Support deleting entries.
 class DomDistillerStore : public DomDistillerStoreInterface {
  public:
-  typedef std::vector<ArticleEntry> EntryVector;
+  DomDistillerStore();
 
-  // Creates storage using the given database for local storage.
-  DomDistillerStore(
-      std::unique_ptr<leveldb_proto::ProtoDatabase<ArticleEntry>> database);
-
-  // Creates storage using the given database for local storage. Initializes the
-  // internal model to |initial_model|.
-  DomDistillerStore(
-      std::unique_ptr<leveldb_proto::ProtoDatabase<ArticleEntry>> database,
-      const std::vector<ArticleEntry>& initial_data);
+  // Initializes the internal model to |initial_model|.
+  DomDistillerStore(const std::vector<ArticleEntry>& initial_data);
 
   ~DomDistillerStore() override;
 
@@ -70,22 +59,7 @@ class DomDistillerStore : public DomDistillerStoreInterface {
   std::vector<ArticleEntry> GetEntries() const override;
 
  private:
-  void OnDatabaseInit(leveldb_proto::Enums::InitStatus status);
-  void OnDatabaseLoad(bool success, std::unique_ptr<EntryVector> entries);
-  void OnDatabaseSave(bool success);
-
-  void MergeDataWithModel(const syncer::SyncDataList& data,
-                          syncer::SyncChangeList* changes_applied,
-                          syncer::SyncChangeList* changes_missing);
-
-  bool ApplyChangesToDatabase(const syncer::SyncChangeList& change_list);
-
-  std::unique_ptr<leveldb_proto::ProtoDatabase<ArticleEntry>> database_;
-  bool database_loaded_;
-
   DomDistillerModel model_;
-
-  base::WeakPtrFactory<DomDistillerStore> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DomDistillerStore);
 };

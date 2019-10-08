@@ -91,7 +91,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   bool IsHigherPriorityThan(const SVGSMILElement* other,
                             SMILTime presentation_time) const;
 
-  SMILTime NextInterestingTime(SMILTime elapsed) const;
+  SMILTime NextIntervalTime(SMILTime presentation_time) const;
+  SMILTime ComputeNextIntervalTime(SMILTime presentation_time) const;
   SMILTime NextProgressTime(SMILTime elapsed) const;
   void UpdateAnimatedValue(SVGSMILElement* result_element) {
     UpdateAnimation(last_progress_.progress, last_progress_.repeat,
@@ -163,7 +164,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime BeginTimeForPrioritization(SMILTime presentation_time) const;
 
   SMILInterval ResolveInterval(SMILTime begin_after, SMILTime end_after) const;
-  bool ResolveFirstInterval();
+  bool ResolveFirstInterval(SMILTime presentation_time);
   // Check if the current interval is still current, and apply restart
   // semantics. Returns true if a new interval should be resolved.
   bool HandleIntervalRestart(SMILTime presentation_time);
@@ -172,6 +173,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
                             SMILTime resolved_end) const;
   SMILTime RepeatingDuration() const;
   const SMILInterval& GetActiveInterval(SMILTime elapsed) const;
+  void SetNewInterval(const SMILInterval&, SMILTime presentation_time);
+  void SetNewIntervalEnd(SMILTime new_end, SMILTime presentation_time);
 
   void AddInstanceTime(BeginOrEnd begin_or_end,
                        SMILTime time,
@@ -275,6 +278,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   // This is the previous interval. It should always be non-overlapping and
   // "before" |interval_|.
   SMILInterval previous_interval_;
+  SMILTime next_interval_time_;
 
   unsigned active_state_ : 2;
   unsigned restart_ : 2;

@@ -11,6 +11,7 @@
 #include "base/unguessable_token.h"
 #include "components/arc/video_accelerator/arc_video_accelerator_util.h"
 #include "media/base/decoder_buffer.h"
+#include "media/gpu/buffer_validation.h"
 
 namespace arc {
 
@@ -52,7 +53,8 @@ scoped_refptr<media::DecoderBuffer> DecoderBuffer::ToMediaDecoderBuffer() && {
   }
 
   size_t file_size = 0;
-  if (!GetFileSize(handle_fd.get(), &file_size) || file_size < required_size) {
+  if (!media::GetFileSize(handle_fd.get(), &file_size) ||
+      file_size < required_size) {
     VLOG(1) << "File size(" << file_size << ") is smaller than required size("
             << required_size << ").";
     return nullptr;

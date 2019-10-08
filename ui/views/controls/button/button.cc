@@ -280,8 +280,8 @@ Button::KeyClickAction Button::GetKeyClickActionForEvent(
     return PlatformStyle::kKeyClickActionOnSpace;
   if (event.key_code() == ui::VKEY_RETURN &&
       PlatformStyle::kReturnClicksFocusedControl)
-    return CLICK_ON_KEY_PRESS;
-  return CLICK_NONE;
+    return KeyClickAction::kOnKeyPress;
+  return KeyClickAction::kNone;
 }
 
 void Button::SetButtonController(
@@ -370,7 +370,7 @@ bool Button::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   // If this button is focused and the user presses space or enter, don't let
   // that be treated as an accelerator if there is a key click action
   // corresponding to it.
-  return GetKeyClickActionForEvent(event) != KeyClickAction::CLICK_NONE;
+  return GetKeyClickActionForEvent(event) != KeyClickAction::kNone;
 }
 
 base::string16 Button::GetTooltipText(const gfx::Point& p) const {

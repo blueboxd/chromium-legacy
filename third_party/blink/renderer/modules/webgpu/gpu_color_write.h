@@ -14,7 +14,6 @@ class GPUColorWrite : public ScriptWrappable {
 
  public:
   // gpu_color_write.idl
-  static constexpr uint32_t kNone = 0;
   static constexpr uint32_t kRed = 1;
   static constexpr uint32_t kGreen = 2;
   static constexpr uint32_t kBlue = 4;

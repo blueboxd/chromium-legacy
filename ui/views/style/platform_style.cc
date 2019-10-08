@@ -42,7 +42,7 @@ const bool PlatformStyle::kDialogDefaultButtonCanBeCancel = true;
 const bool PlatformStyle::kSelectWordOnRightClick = false;
 const bool PlatformStyle::kSelectAllOnRightClickWhenUnfocused = false;
 const Button::KeyClickAction PlatformStyle::kKeyClickActionOnSpace =
-    Button::CLICK_ON_KEY_RELEASE;
+    Button::KeyClickAction::kOnKeyRelease;
 const bool PlatformStyle::kReturnClicksFocusedControl = true;
 const bool PlatformStyle::kTableViewSupportsKeyboardNavigationByCell = true;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = false;

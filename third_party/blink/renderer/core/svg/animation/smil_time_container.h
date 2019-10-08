@@ -118,7 +118,7 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   void UpdateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed);
   void RemoveUnusedKeys();
   void UpdateIntervals(SMILTime);
-  SMILTime NextInterestingTime(SMILTime elapsed) const;
+  SMILTime NextIntervalTime(SMILTime elapsed) const;
   void UpdateAnimationTimings(SMILTime elapsed);
   void ApplyAnimationValues(SMILTime elapsed);
   void ServiceOnNextFrame();

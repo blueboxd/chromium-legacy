@@ -51,7 +51,8 @@ base::Value NetLogQuicPacketSentParams(
     quic::TransmissionType transmission_type,
     quic::QuicTime sent_time) {
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetIntKey("transmission_type", transmission_type);
+  dict.SetStringKey("transmission_type",
+                    quic::TransmissionTypeToString(transmission_type));
   dict.SetKey("packet_number",
               NetLogNumberValue(serialized_packet.packet_number.ToUint64()));
   dict.SetIntKey("size", serialized_packet.encrypted_length);
@@ -77,7 +78,8 @@ base::Value NetLogQuicPacketLostParams(quic::QuicPacketNumber packet_number,
                                        quic::TransmissionType transmission_type,
                                        quic::QuicTime detection_time) {
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetIntKey("transmission_type", transmission_type);
+  dict.SetStringKey("transmission_type",
+                    quic::TransmissionTypeToString(transmission_type));
   dict.SetKey("packet_number", NetLogNumberValue(packet_number.ToUint64()));
   dict.SetKey("detection_time_us",
               NetLogNumberValue(detection_time.ToDebuggingValue()));

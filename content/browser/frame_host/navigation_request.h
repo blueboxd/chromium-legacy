@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_throttle_runner.h"
 #include "content/browser/initiator_csp_context.h"
@@ -504,6 +505,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   // BeginNavigation(), or if the request was created at commit time by calling
   // CreateForCommit().
   bool IsNavigationStarted() const;
+
+  // Stop referencing the pending NavigationEntry.
+  //
+  // Note: To be removed after removing DidFailProvisionalLoadWithError().
+  void DropPendingEntryRef();
 
  private:
   friend class NavigationRequestTest;
@@ -1098,6 +1104,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
 
   // This is used to store the current_frame_host id at request creation time.
   GlobalFrameRoutingId previous_render_frame_host_id_;
+
+  // This tracks a connection between the current pending entry and this
+  // request, such that the pending entry can be discarded if no requests are
+  // left referencing it.
+  std::unique_ptr<NavigationControllerImpl::PendingEntryRef> pending_entry_ref_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

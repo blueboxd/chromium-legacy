@@ -117,8 +117,7 @@
   display: none;
 }
 
-:host(.saml) #signin-frame {
-  height: 516px;
+:host(.saml) #signin-frame-container {
   padding-top: 44px;
 }
 

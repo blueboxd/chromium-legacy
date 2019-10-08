@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/mojom/guest_view.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace content {
 class BrowserContext;
@@ -81,7 +82,8 @@ class ExtensionsGuestViewMessageFilter
       const std::string& view_id,
       int32_t element_instance_id,
       const gfx::Size& element_size,
-      mime_handler::BeforeUnloadControlPtr before_unload_control) override;
+      mojo::PendingRemote<mime_handler::BeforeUnloadControl>
+          before_unload_control) override;
   void ReadyToCreateMimeHandlerView(int32_t render_frame_id,
                                     bool success) override;
 
@@ -90,7 +92,8 @@ class ExtensionsGuestViewMessageFilter
       const std::string& view_id,
       int32_t element_instance_id,
       const gfx::Size& element_size,
-      mime_handler::BeforeUnloadControlPtrInfo before_unload_control,
+      mojo::PendingRemote<mime_handler::BeforeUnloadControl>
+          before_unload_control,
       bool is_full_page_plugin);
 
   // Runs on UI thread.
@@ -99,7 +102,8 @@ class ExtensionsGuestViewMessageFilter
       int embedder_render_process_id,
       int embedder_render_frame_id,
       const gfx::Size& element_size,
-      mime_handler::BeforeUnloadControlPtrInfo before_unload_control,
+      mojo::PendingRemote<mime_handler::BeforeUnloadControl>
+          before_unload_control,
       bool is_full_page_plugin,
       content::WebContents* web_contents);
 

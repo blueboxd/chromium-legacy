@@ -261,7 +261,7 @@ void FrameRendererThumbnail::Initialize() {
 
 void FrameRendererThumbnail::DestroyTask(base::WaitableEvent* done) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(renderer_sequence_checker_);
-  DCHECK(mailbox_texture_map_.empty());
+  CHECK(mailbox_texture_map_.empty());
 
   DestroyThumbnailImageTask();
 

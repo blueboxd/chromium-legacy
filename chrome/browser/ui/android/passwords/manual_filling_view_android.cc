@@ -85,11 +85,6 @@ void ManualFillingViewAndroid::ShowWhenKeyboardIsVisible() {
       base::android::AttachCurrentThread(), java_object_);
 }
 
-void ManualFillingViewAndroid::ShowTouchToFillSheet() {
-  Java_ManualFillingComponentBridge_showTouchToFillSheet(
-      base::android::AttachCurrentThread(), java_object_);
-}
-
 void ManualFillingViewAndroid::Hide() {
   Java_ManualFillingComponentBridge_hide(base::android::AttachCurrentThread(),
                                          java_object_);

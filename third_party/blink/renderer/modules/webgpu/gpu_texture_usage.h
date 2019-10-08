@@ -14,7 +14,6 @@ class GPUTextureUsage : public ScriptWrappable {
 
  public:
   // gpu_texture_usage.idl
-  static constexpr uint32_t kNone = 0;
   static constexpr uint32_t kCopySrc = 1;
   static constexpr uint32_t kCopyDst = 2;
   static constexpr uint32_t kSampled = 4;

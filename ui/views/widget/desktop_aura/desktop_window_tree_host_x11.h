@@ -97,7 +97,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
       Widget::MoveLoopSource source,
       Widget::MoveLoopEscapeBehavior escape_behavior) override;
   void EndMoveLoop() override;
-  void SetVisibilityChangedAnimationsEnabled(bool value) override;
   void SetOpacity(float opacity) override;
   void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,

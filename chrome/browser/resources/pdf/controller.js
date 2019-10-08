@@ -223,7 +223,7 @@ class PluginController extends ContentController {
    * @param {!HTMLEmbedElement} plugin
    * @param {!Viewport} viewport
    * @param {function():boolean} getIsUserInitiatedCallback
-   * @param {function():!Promise} getLoadedCallback
+   * @param {function():?Promise} getLoadedCallback
    */
   constructor(plugin, viewport, getIsUserInitiatedCallback, getLoadedCallback) {
     super();
@@ -237,7 +237,7 @@ class PluginController extends ContentController {
     /** @private {!function():boolean} */
     this.getIsUserInitiatedCallback_ = getIsUserInitiatedCallback;
 
-    /** @private {!function():!Promise} */
+    /** @private {!function():?Promise} */
     this.getLoadedCallback_ = getLoadedCallback;
 
     /** @private {!Map<string, PromiseResolver>} */

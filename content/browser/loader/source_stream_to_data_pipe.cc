@@ -11,11 +11,9 @@ namespace content {
 
 SourceStreamToDataPipe::SourceStreamToDataPipe(
     std::unique_ptr<net::SourceStream> source,
-    mojo::ScopedDataPipeProducerHandle dest,
-    base::OnceCallback<void(int)> completion_callback)
+    mojo::ScopedDataPipeProducerHandle dest)
     : source_(std::move(source)),
       dest_(std::move(dest)),
-      completion_callback_(std::move(completion_callback)),
       writable_handle_watcher_(FROM_HERE,
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                                base::SequencedTaskRunnerHandle::Get()) {
@@ -27,7 +25,9 @@ SourceStreamToDataPipe::SourceStreamToDataPipe(
 
 SourceStreamToDataPipe::~SourceStreamToDataPipe() = default;
 
-void SourceStreamToDataPipe::Start() {
+void SourceStreamToDataPipe::Start(
+    base::OnceCallback<void(int)> completion_callback) {
+  completion_callback_ = std::move(completion_callback);
   ReadMore();
 }
 

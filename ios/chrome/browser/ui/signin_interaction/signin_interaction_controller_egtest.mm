@@ -6,6 +6,7 @@
 #import <XCTest/XCTest.h>
 
 #import "base/ios/block_types.h"
+#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -20,6 +21,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
+#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_view_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller_egtest_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -30,7 +32,9 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#import "ios/testing/earl_grey/matchers.h"
 #import "ios/web/public/web_state.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -41,6 +45,8 @@ using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SecondarySignInButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SyncSettingsConfirmButton;
+using l10n_util::GetNSString;
+using testing::ButtonWithAccessibilityLabel;
 
 typedef NS_ENUM(NSInteger, OpenSigninMethod) {
   OpenSigninMethodFromSettings,
@@ -367,16 +373,36 @@ void RemoveBrowsingData() {
                         tapSettingsLink:YES];
 }
 
-#pragma mark - Utils
-
-// Starts the sign-in workflow, and simulates opening an URL from another app.
-// |openSigninMethod| is the way to start the sign-in.
-// |tapSettingsLink| if YES, the setting link is tapped before opening the URL.
-- (void)assertOpenURLWhenSigninFromView:(OpenSigninMethod)openSigninMethod
-                        tapSettingsLink:(BOOL)tapSettingsLink {
+// Verifies that advanced sign-in shows an alert dialog when being swiped to
+// dismiss.
+- (void)testSwipeDownToCancelAdvancedSignin {
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
+  }
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
+  [self openSigninFromView:OpenSigninMethodFromSettings tapSettingsLink:YES];
+
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kGoogleServicesSettingsViewIdentifier)]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+  [[EarlGrey
+      selectElementWithMatcher:
+          ButtonWithAccessibilityLabel(GetNSString(
+              IDS_IOS_ADVANCED_SIGNIN_SETTINGS_CANCEL_SYNC_ALERT_CANCEL_SYNC_BUTTON))]
+      performAction:grey_tap()];
+  [SigninEarlGreyUtils checkSignedOut];
+}
+
+#pragma mark - Utils
+
+// Opens sign-in view.
+// |openSigninMethod| is the way to start the sign-in.
+// |tapSettingsLink| if YES, the setting link is tapped before opening the URL.
+- (void)openSigninFromView:(OpenSigninMethod)openSigninMethod
+           tapSettingsLink:(BOOL)tapSettingsLink {
   switch (openSigninMethod) {
     case OpenSigninMethodFromSettings:
       [ChromeEarlGreyUI openSettingsMenu];
@@ -409,6 +435,17 @@ void RemoveBrowsingData() {
     [SigninEarlGreyUI tapSettingsLink];
   }
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
+// Starts the sign-in workflow, and simulates opening an URL from another app.
+// |openSigninMethod| is the way to start the sign-in.
+// |tapSettingsLink| if YES, the setting link is tapped before opening the URL.
+- (void)assertOpenURLWhenSigninFromView:(OpenSigninMethod)openSigninMethod
+                        tapSettingsLink:(BOOL)tapSettingsLink {
+  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
+      identity);
+  [self openSigninFromView:openSigninMethod tapSettingsLink:tapSettingsLink];
   // Open the URL as if it was opened from another app.
   UIApplication* application = UIApplication.sharedApplication;
   id<UIApplicationDelegate> applicationDelegate = application.delegate;

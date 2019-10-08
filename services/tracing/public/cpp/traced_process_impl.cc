@@ -22,7 +22,7 @@ TracedProcessImpl* TracedProcessImpl::GetInstance() {
   return traced_process.get();
 }
 
-TracedProcessImpl::TracedProcessImpl() : binding_(this) {
+TracedProcessImpl::TracedProcessImpl() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -31,29 +31,29 @@ TracedProcessImpl::~TracedProcessImpl() = default;
 // OnTracedProcessRequest can be called concurrently from
 // multiple threads, as we get one call per service.
 void TracedProcessImpl::OnTracedProcessRequest(
-    mojom::TracedProcessRequest request) {
+    mojo::PendingReceiver<mojom::TracedProcess> receiver) {
   if (task_runner_ && !task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&TracedProcessImpl::OnTracedProcessRequest,
-                                  base::Unretained(this), std::move(request)));
+                                  base::Unretained(this), std::move(receiver)));
     return;
   }
 
   // We only need one binding per process.
   base::AutoLock lock(lock_);
-  if (binding_.is_bound()) {
+  if (receiver_.is_bound()) {
     return;
   }
 
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  binding_.Bind(std::move(request));
+  receiver_.Bind(std::move(receiver));
 }
 
 // SetTaskRunner must be called before we start receiving
 // any OnTracedProcessRequest calls.
 void TracedProcessImpl::SetTaskRunner(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  DCHECK(!binding_.is_bound());
+  DCHECK(!receiver_.is_bound());
   DCHECK(!task_runner_);
   task_runner_ = task_runner;
 }
@@ -100,7 +100,7 @@ void TracedProcessImpl::ConnectToTracingService(
         // again.
         base::AutoLock lock(traced_process->lock_);
         traced_process->agent_registry_.reset();
-        traced_process->binding_.Close();
+        traced_process->receiver_.reset();
       },
       base::Unretained(this)));
 

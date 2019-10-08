@@ -5,6 +5,7 @@
 #ifndef STORAGE_BROWSER_TEST_MOCK_BLOB_UTIL_H_
 #define STORAGE_BROWSER_TEST_MOCK_BLOB_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"

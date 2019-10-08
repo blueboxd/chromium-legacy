@@ -2944,8 +2944,9 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
       }
     } else if (auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(this)) {
       slot->RecalcStyleForSlotChildren(child_change);
-    } else if (auto* insertion_point = DynamicTo<V0InsertionPoint>(this)) {
-      insertion_point->RecalcStyleForInsertionPointChildren(child_change);
+    } else if (IsActiveV0InsertionPoint(*this)) {
+      To<V0InsertionPoint>(this)->RecalcStyleForInsertionPointChildren(
+          child_change);
     } else {
       RecalcDescendantStyles(child_change);
     }

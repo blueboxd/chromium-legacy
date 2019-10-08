@@ -15,8 +15,8 @@
 #include "extensions/common/mojom/guest_view.mojom.h"
 #include "extensions/renderer/guest_view/mime_handler_view/post_message_support.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "url/gurl.h"
 
@@ -144,8 +144,8 @@ class MimeHandlerViewContainerManager
 
   mojo::AssociatedReceiverSet<mojom::MimeHandlerViewContainerManager>
       receivers_;
-  mojo::Binding<mime_handler::BeforeUnloadControl>
-      before_unload_control_binding_;
+  mojo::Receiver<mime_handler::BeforeUnloadControl>
+      before_unload_control_receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewContainerManager);
 };

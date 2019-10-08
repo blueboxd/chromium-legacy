@@ -137,8 +137,7 @@ v8::Local<v8::Object> MimeHandlerViewContainerManager::GetScriptableObject(
 
 MimeHandlerViewContainerManager::MimeHandlerViewContainerManager(
     content::RenderFrame* render_frame)
-    : content::RenderFrameObserver(render_frame),
-      before_unload_control_binding_(this) {}
+    : content::RenderFrameObserver(render_frame) {}
 
 MimeHandlerViewContainerManager::~MimeHandlerViewContainerManager() {}
 
@@ -176,14 +175,10 @@ void MimeHandlerViewContainerManager::CreateBeforeUnloadControl(
     CreateBeforeUnloadControlCallback callback) {
   if (!post_message_support_)
     post_message_support_ = std::make_unique<PostMessageSupport>(this);
-  mime_handler::BeforeUnloadControlPtr before_unload_control;
-  if (before_unload_control_binding_.is_bound()) {
-    // Might happen when reloading the same page.
-    before_unload_control_binding_.Close();
-  }
-  before_unload_control_binding_.Bind(
-      mojo::MakeRequest(&before_unload_control));
-  std::move(callback).Run(std::move(before_unload_control));
+  // It might be bound when reloading the same page.
+  before_unload_control_receiver_.reset();
+  std::move(callback).Run(
+      before_unload_control_receiver_.BindNewPipeAndPassRemote());
 }
 
 void MimeHandlerViewContainerManager::DestroyFrameContainer(

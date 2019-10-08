@@ -146,7 +146,7 @@ bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
 bool ContentSettingImageView::OnKeyPressed(const ui::KeyEvent& event) {
   // Pause animation so that the icon does not shrink and deselect while the
   // user is attempting to press it using key commands.
-  if (GetKeyClickActionForEvent(event) == KeyClickAction::CLICK_ON_KEY_RELEASE)
+  if (GetKeyClickActionForEvent(event) == KeyClickAction::kOnKeyRelease)
     PauseAnimation();
   return Button::OnKeyPressed(event);
 }

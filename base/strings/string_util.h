@@ -204,10 +204,10 @@ enum TrimPositions {
 //
 // It is safe to use the same variable for both |input| and |output| (this is
 // the normal usage to trim in-place).
-BASE_EXPORT bool TrimString(const string16& input,
+BASE_EXPORT bool TrimString(StringPiece16 input,
                             StringPiece16 trim_chars,
                             string16* output);
-BASE_EXPORT bool TrimString(const std::string& input,
+BASE_EXPORT bool TrimString(StringPiece input,
                             StringPiece trim_chars,
                             std::string* output);
 
@@ -296,12 +296,12 @@ inline string16 AsString16(WStringPiece str) {
 //
 // The std::string versions return where whitespace was found.
 // NOTE: Safe to use the same variable for both input and output.
-BASE_EXPORT TrimPositions TrimWhitespace(const string16& input,
+BASE_EXPORT TrimPositions TrimWhitespace(StringPiece16 input,
                                          TrimPositions positions,
                                          string16* output);
 BASE_EXPORT StringPiece16 TrimWhitespace(StringPiece16 input,
                                          TrimPositions positions);
-BASE_EXPORT TrimPositions TrimWhitespaceASCII(const std::string& input,
+BASE_EXPORT TrimPositions TrimWhitespaceASCII(StringPiece input,
                                               TrimPositions positions,
                                               std::string* output);
 BASE_EXPORT StringPiece TrimWhitespaceASCII(StringPiece input,
@@ -531,6 +531,23 @@ BASE_EXPORT std::string ReplaceStringPlaceholders(
 BASE_EXPORT string16 ReplaceStringPlaceholders(const string16& format_string,
                                                const string16& a,
                                                size_t* offset);
+
+#if defined(OS_WIN) && defined(BASE_STRING16_IS_STD_U16STRING)
+BASE_EXPORT TrimPositions TrimWhitespace(WStringPiece input,
+                                         TrimPositions positions,
+                                         std::wstring* output);
+
+BASE_EXPORT WStringPiece TrimWhitespace(WStringPiece input,
+                                        TrimPositions positions);
+
+BASE_EXPORT bool TrimString(WStringPiece input,
+                            WStringPiece trim_chars,
+                            std::wstring* output);
+
+BASE_EXPORT WStringPiece TrimString(WStringPiece input,
+                                    WStringPiece trim_chars,
+                                    TrimPositions positions);
+#endif
 
 }  // namespace base
 

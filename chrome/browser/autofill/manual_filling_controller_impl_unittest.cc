@@ -171,15 +171,6 @@ TEST_F(ManualFillingControllerTest, AlwaysShowsAccessoryForPasswordFields) {
   FocusFieldAndClearExpectations(FocusedFieldType::kFillablePasswordField);
 }
 
-TEST_F(ManualFillingControllerTest, TouchToFillSheetHasPreference) {
-  controller()->RefreshSuggestions(
-      populate_sheet(AccessoryTabType::TOUCH_TO_FILL));
-  controller()->RefreshSuggestions(populate_sheet(AccessoryTabType::PASSWORDS));
-
-  EXPECT_CALL(*view(), ShowTouchToFillSheet());
-  FocusFieldAndClearExpectations(FocusedFieldType::kFillablePasswordField);
-}
-
 TEST_F(ManualFillingControllerTest,
        HidesAccessoryWithoutSuggestionsOnNonPasswordFields) {
   SetSuggestionsAndClearExpectations(

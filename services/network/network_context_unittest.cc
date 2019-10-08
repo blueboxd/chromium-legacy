@@ -2384,21 +2384,20 @@ TEST_F(NetworkContextTest, CreateUDPSocket) {
 
   // Create a server socket to listen for incoming datagrams.
   test::UDPSocketListenerImpl listener;
-  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
-  mojom::UDPSocketListenerPtr listener_interface_ptr;
-  listener_binding.Bind(mojo::MakeRequest(&listener_interface_ptr));
+  mojo::Receiver<mojom::UDPSocketListener> listener_receiver(&listener);
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   mojo::Remote<mojom::UDPSocket> server_socket;
-  network_context->CreateUDPSocket(server_socket.BindNewPipeAndPassReceiver(),
-                                   std::move(listener_interface_ptr));
+  network_context->CreateUDPSocket(
+      server_socket.BindNewPipeAndPassReceiver(),
+      listener_receiver.BindNewPipeAndPassRemote());
   test::UDPSocketTestHelper helper(&server_socket);
   ASSERT_EQ(net::OK, helper.BindSync(server_addr, nullptr, &server_addr));
 
   // Create a client socket to send datagrams.
   mojo::Remote<mojom::UDPSocket> client_socket;
   network_context->CreateUDPSocket(client_socket.BindNewPipeAndPassReceiver(),
-                                   nullptr);
+                                   mojo::NullRemote());
 
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper client_helper(&client_socket);

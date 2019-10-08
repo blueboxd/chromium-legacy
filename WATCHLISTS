@@ -245,7 +245,8 @@
       'filepath': 'content/browser/frame_host/back_forward_cache.*|'\
                   'content/browser/back_forward_cache_browsertest.cc|'\
                   'content/test/data/back_forward_cache/|'\
-                  'content/public/browser/back_forward_cache.*',
+                  'content/public/browser/back_forward_cache.*|'\
+                  'testing/buildbot/filters.bfcache.*.filter',
     },
     'binary_size': {
       'filepath': 'build/android/binary_size/|'\

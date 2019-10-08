@@ -859,7 +859,8 @@ void ProfileSyncService::OnEngineInitialized(
           initial_types, debug_info_listener, &data_type_controllers_,
           user_settings_.get(), engine_.get(), this);
 
-  crypto_.SetSyncEngine(engine_.get());
+  crypto_.SetSyncEngine(GetAuthenticatedAccountInfo().account_id,
+                        engine_.get());
 
   // Auto-start means IsFirstSetupComplete gets set automatically.
   if (start_behavior_ == AUTO_START &&

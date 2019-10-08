@@ -8,12 +8,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <set>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -37,6 +39,35 @@ struct LoadCommittedDetails;
 
 class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
  public:
+  // This tracks one NavigationRequest navigating to a pending NavigationEntry.
+  // In some cases, several NavigationRequests are referencing the same pending
+  // NavigationEntry. For instance:
+  // - A reload requested while a reload is already in progress.
+  // - An history navigation causing several subframes to navigate.
+  //
+  // When no NavigationRequests are referencing the pending NavigationEntry
+  // anymore, it should be discarded to avoid a URL spoof.
+  //
+  // The deletion is not always immediate, because it is not possible to delete
+  // the entry while requesting a navigation to it at the same time. In this
+  // case, the deletion happens later, when returning from the function.
+  //
+  // If the pending NavigationEntry is discarded before the PendingEntryRef(s),
+  // then removing the last associated PendingEntryRef is a no-op. It is a no-op
+  // forever, even if the entry becomes the pending NavigationEntry again in the
+  // meantime. Rather than track the NavigationRequest or pending entry
+  // explicitly, this ref class simply goes into a set that gets cleared with
+  // each change to the pending entry
+  class PendingEntryRef {
+   public:
+    PendingEntryRef(base::WeakPtr<NavigationControllerImpl> controller);
+    ~PendingEntryRef();
+
+   private:
+    base::WeakPtr<NavigationControllerImpl> controller_;
+    DISALLOW_COPY_AND_ASSIGN(PendingEntryRef);
+  };
+
   NavigationControllerImpl(
       NavigationControllerDelegate* delegate,
       BrowserContext* browser_context);
@@ -270,6 +301,11 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // entries can be updated as needed.
   void NotifyUserActivation();
 
+  // Tracks a new association between the current pending entry and a
+  // NavigationRequest. Callers are responsible for only calling this for
+  // requests corresponding to the current pending entry.
+  std::unique_ptr<PendingEntryRef> ReferencePendingEntry();
+
  private:
   friend class RestoreHelper;
 
@@ -496,6 +532,11 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // at |reference_index| will get their skippable flag set to |skippable|.
   void SetSkippableForSameDocumentEntries(int reference_index, bool skippable);
 
+  // Called when one PendingEntryRef is deleted. When all of the refs for the
+  // current pending entry have been deleted, this automatically discards the
+  // pending NavigationEntry.
+  void PendingEntryRefDeleted(PendingEntryRef* ref);
+
   // ---------------------------------------------------------------------------
 
   // The user browser context associated with this controller.
@@ -512,6 +553,14 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // != -1, or it may be its own entry that should be deleted. Be careful with
   // the memory management.
   NavigationEntryImpl* pending_entry_;
+
+  // This keeps track of the NavigationRequests associated with the pending
+  // NavigationEntry. When all of them have been deleted, or have stopped
+  // loading, the pending NavigationEntry can be discarded.
+  //
+  // This is meant to avoid a class of URL spoofs where the navigation is
+  // canceled, but the stale pending NavigationEntry is left in place.
+  std::set<PendingEntryRef*> pending_entry_refs_;
 
   // If a new entry fails loading, details about it are temporarily held here
   // until the error page is shown (or 0 otherwise).
@@ -600,6 +649,9 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // entries_ cannot go away (e.g., due to PruneForwardEntries) and that it can
   // go back into place after any subsequent commit.
   std::unique_ptr<NavigationEntryImpl> entry_replaced_by_post_commit_error_;
+
+  // NOTE: This must be the last member.
+  base::WeakPtrFactory<NavigationControllerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NavigationControllerImpl);
 };

@@ -1581,8 +1581,8 @@ void StyleEngine::MarkForWhitespaceReattachment() {
           *element);
       continue;
     }
-      DCHECK(!element->NeedsStyleRecalc());
-      DCHECK(!element->ChildNeedsStyleRecalc());
+    DCHECK(!element->NeedsStyleRecalc());
+    DCHECK(!element->ChildNeedsStyleRecalc());
     if (Node* first_child = LayoutTreeBuilderTraversal::FirstChild(*element))
       first_child->MarkAncestorsWithChildNeedsReattachLayoutTree();
   }

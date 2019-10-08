@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -14,6 +15,8 @@
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
 #include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
+#include "content/browser/renderer_host/media/media_devices_dispatcher_host.h"
+#include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/screen_enumeration/screen_enumeration_impl.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -51,6 +54,8 @@
 #include "third_party/blink/public/mojom/keyboard_lock/keyboard_lock.mojom.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom.h"
 #include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
+#include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom.h"
@@ -58,6 +63,7 @@
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_recognizer.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
+#include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
@@ -181,6 +187,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
         &RenderFrameHostImpl::BindSmsReceiverReceiver, base::Unretained(host)));
   }
 
+  map->Add<blink::mojom::WebUsbService>(base::BindRepeating(
+      &RenderFrameHostImpl::CreateWebUsbService, base::Unretained(host)));
+
   map->Add<blink::mojom::LockManager>(base::BindRepeating(
       &RenderFrameHostImpl::CreateLockManager, base::Unretained(host)));
 
@@ -219,6 +228,28 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::test::mojom::VirtualAuthenticatorManager>(
       base::BindRepeating(&RenderFrameHostImpl::GetVirtualAuthenticatorManager,
                           base::Unretained(host)));
+
+  // BrowserMainLoop::GetInstance() may be null on unit tests.
+  if (BrowserMainLoop::GetInstance()) {
+    // BrowserMainLoop, which owns MediaStreamManager, is alive for the lifetime
+    // of Mojo communication (see BrowserMainLoop::ShutdownThreadsAndCleanUp(),
+    // which shuts down Mojo). Hence, passing that MediaStreamManager instance
+    // as a raw pointer here is safe.
+    MediaStreamManager* media_stream_manager =
+        BrowserMainLoop::GetInstance()->media_stream_manager();
+
+    map->Add<blink::mojom::MediaDevicesDispatcherHost>(
+        base::BindRepeating(&MediaDevicesDispatcherHost::Create,
+                            host->GetProcess()->GetID(), host->GetRoutingID(),
+                            base::Unretained(media_stream_manager)),
+        base::CreateSingleThreadTaskRunner(BrowserThread::IO));
+
+    map->Add<blink::mojom::MediaStreamDispatcherHost>(
+        base::BindRepeating(&MediaStreamDispatcherHost::Create,
+                            host->GetProcess()->GetID(), host->GetRoutingID(),
+                            base::Unretained(media_stream_manager)),
+        base::CreateSingleThreadTaskRunner(BrowserThread::IO));
+  }
 
   map->Add<media::mojom::ImageCapture>(
       base::BindRepeating(&ImageCaptureImpl::Create));
@@ -307,6 +338,8 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
     map->Add<blink::mojom::SmsReceiver>(base::BindRepeating(
         &DedicatedWorkerHost::BindSmsReceiverReceiver, base::Unretained(host)));
   }
+  map->Add<blink::mojom::WebUsbService>(base::BindRepeating(
+      &DedicatedWorkerHost::CreateWebUsbService, base::Unretained(host)));
   map->Add<media::mojom::VideoDecodePerfHistory>(
       base::BindRepeating(&DedicatedWorkerHost::BindVideoDecodePerfHistory,
                           base::Unretained(host)));

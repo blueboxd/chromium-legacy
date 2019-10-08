@@ -42,17 +42,20 @@
 
 namespace {
 
-constexpr base::TimeDelta kEmailExpansionDuration =
+constexpr base::TimeDelta kIdentityAnimationDuration =
     base::TimeDelta::FromSeconds(3);
 
 constexpr base::TimeDelta kAvatarHighlightAnimationDuration =
     base::TimeDelta::FromSeconds(2);
 
+ProfileAttributesStorage& GetProfileAttributesStorage() {
+  return g_browser_process->profile_manager()->GetProfileAttributesStorage();
+}
+
 ProfileAttributesEntry* GetProfileAttributesEntry(Profile* profile) {
   ProfileAttributesEntry* entry;
-  if (!g_browser_process->profile_manager()
-           ->GetProfileAttributesStorage()
-           .GetProfileAttributesWithPath(profile->GetPath(), &entry)) {
+  if (!GetProfileAttributesStorage().GetProfileAttributesWithPath(
+          profile->GetPath(), &entry)) {
     return nullptr;
   }
   return entry;
@@ -65,9 +68,7 @@ bool IsGenericProfile(const ProfileAttributesEntry& entry) {
     return true;
 
   return entry.GetAvatarIconIndex() == 0 &&
-         g_browser_process->profile_manager()
-                 ->GetProfileAttributesStorage()
-                 .GetNumberOfProfiles() == 1;
+         GetProfileAttributesStorage().GetNumberOfProfiles() == 1;
 }
 
 int GetIconSizeForNonTouchUi() {
@@ -88,8 +89,7 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
 #endif  // !defined(OS_CHROMEOS)
       browser_(browser),
       profile_(browser_->profile()) {
-  profile_observer_.Add(
-      &g_browser_process->profile_manager()->GetProfileAttributesStorage());
+  profile_observer_.Add(&GetProfileAttributesStorage());
 
   State state = GetState();
   if (state == State::kIncognitoProfile) {
@@ -98,7 +98,9 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile_);
     identity_manager_observer_.Add(identity_manager);
-    SetUserEmail(identity_manager->GetUnconsentedPrimaryAccountInfo().email);
+
+    if (identity_manager->AreRefreshTokensLoaded())
+      OnRefreshTokensLoaded();
   }
 
   // Activate on press for left-mouse-button only to mimic other MenuButtons
@@ -127,7 +129,7 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
 
   if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
     // For consistency with identity representation, we need to have the avatar
-    // on the left and the (potential) user-name / email on the right.
+    // on the left and the (potential) user name on the right.
     SetHorizontalAlignment(gfx::ALIGN_LEFT);
   }
 
@@ -149,8 +151,8 @@ AvatarToolbarButton::~AvatarToolbarButton() {
 void AvatarToolbarButton::UpdateIcon() {
   // If widget isn't set, the button doesn't have access to the theme provider
   // to set colors. Defer updating until AddedToWidget(). This may get called as
-  // a result of SetUserEmail() called from the constructor when the button is
-  // not yet added to the ToolbarView's hierarchy.
+  // a result of OnUserIdentityChanged() called from the constructor when the
+  // button is not yet added to the ToolbarView's hierarchy.
   if (!GetWidget())
     return;
   gfx::Image gaia_image = GetGaiaImage();
@@ -158,9 +160,9 @@ void AvatarToolbarButton::UpdateIcon() {
 
   // TODO(crbug.com/990286): Get rid of this logic completely when we cache the
   // Google account image in the profile cache and thus it is always available.
-  if (waiting_for_image_to_show_user_email_ && !gaia_image.IsEmpty()) {
-    waiting_for_image_to_show_user_email_ = false;
-    ExpandToShowEmail();
+  if (identity_animation_state_ == IdentityAnimationState::kWaitingForImage &&
+      !gaia_image.IsEmpty()) {
+    ShowIdentityAnimation();
   }
 }
 
@@ -187,8 +189,9 @@ void AvatarToolbarButton::UpdateText() {
       }
       break;
     }
-    case State::kAnimatedSignIn: {
-      text = base::UTF8ToUTF16(*user_email_);
+    case State::kAnimatedUserIdentity: {
+      text = signin_ui_util::GetShortProfileIdentityToDisplay(
+          *GetProfileAttributesEntry(profile_), profile_);
       break;
     }
     case State::kHighlightAnimation:
@@ -248,8 +251,10 @@ void AvatarToolbarButton::ShowAvatarHighlightAnimation() {
 
 void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
   Button::NotifyClick(event);
-  if (should_reset_user_email_when_no_longer_hovered_or_focused_)
-    ResetUserEmailWhenNotHoveredOrFocused();
+  if (identity_animation_state_ ==
+      IdentityAnimationState::kShowingUntilNoLongerHoveredOrFocused) {
+    HideIdentityAnimationWhenNotHoveredOrFocused();
+  }
   // TODO(bsep): Other toolbar buttons have ToolbarView as a listener and let it
   // call ExecuteCommandWithDisposition on their behalf. Unfortunately, it's not
   // possible to plumb IsKeyEvent through, so this has to be a special case.
@@ -260,14 +265,18 @@ void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
 }
 
 void AvatarToolbarButton::OnMouseExited(const ui::MouseEvent& event) {
-  if (should_reset_user_email_when_no_longer_hovered_or_focused_)
-    ResetUserEmailWhenNotHoveredOrFocused();
+  if (identity_animation_state_ ==
+      IdentityAnimationState::kShowingUntilNoLongerHoveredOrFocused) {
+    HideIdentityAnimationWhenNotHoveredOrFocused();
+  }
   ToolbarButton::OnMouseExited(event);
 }
 
 void AvatarToolbarButton::OnBlur() {
-  if (should_reset_user_email_when_no_longer_hovered_or_focused_)
-    ResetUserEmailWhenNotHoveredOrFocused();
+  if (identity_animation_state_ ==
+      IdentityAnimationState::kShowingUntilNoLongerHoveredOrFocused) {
+    HideIdentityAnimationWhenNotHoveredOrFocused();
+  }
   ToolbarButton::OnBlur();
 }
 
@@ -328,7 +337,18 @@ void AvatarToolbarButton::OnProfileNameChanged(
 
 void AvatarToolbarButton::OnUnconsentedPrimaryAccountChanged(
     const CoreAccountInfo& unconsented_primary_account_info) {
-  SetUserEmail(unconsented_primary_account_info.email);
+  if (!base::FeatureList::IsEnabled(features::kAnimatedAvatarButtonOnSignIn))
+    return;
+  OnUserIdentityChanged(unconsented_primary_account_info);
+}
+
+void AvatarToolbarButton::OnRefreshTokensLoaded() {
+  if (!signin_ui_util::ShouldShowIdentityOnOpeningProfile(
+          GetProfileAttributesStorage(), profile_)) {
+    return;
+  }
+  OnUserIdentityChanged(IdentityManagerFactory::GetForProfile(profile_)
+                            ->GetUnconsentedPrimaryAccountInfo());
 }
 
 void AvatarToolbarButton::OnAccountsInCookieUpdated(
@@ -356,9 +376,10 @@ void AvatarToolbarButton::OnCreditCardSaved() {
   ShowAvatarHighlightAnimation();
 }
 
-void AvatarToolbarButton::ExpandToShowEmail() {
-  DCHECK(user_email_.has_value());
-  DCHECK(!waiting_for_image_to_show_user_email_);
+void AvatarToolbarButton::ShowIdentityAnimation() {
+  DCHECK_EQ(identity_animation_state_,
+            IdentityAnimationState::kWaitingForImage);
+  identity_animation_state_ = IdentityAnimationState::kShowing;
 
   UpdateText();
 
@@ -366,30 +387,30 @@ void AvatarToolbarButton::ExpandToShowEmail() {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(
-          &AvatarToolbarButton::ResetUserEmailWhenNotHoveredOrFocused,
+          &AvatarToolbarButton::HideIdentityAnimationWhenNotHoveredOrFocused,
           weak_ptr_factory_.GetWeakPtr()),
-      kEmailExpansionDuration);
+      kIdentityAnimationDuration);
 }
 
-void AvatarToolbarButton::ResetUserEmailWhenNotHoveredOrFocused() {
+void AvatarToolbarButton::HideIdentityAnimationWhenNotHoveredOrFocused() {
   // No-op if it has been reset already.
-  if (!user_email_)
+  if (identity_animation_state_ == IdentityAnimationState::kNotShowing)
     return;
 
   // Keep email visible while hovering or being focused.
   if (IsMouseHovered() || HasFocus()) {
     // TODO(crbug.com/967317): Include also the case when some other button from
     // the parent container is shown and hovered / focused.
-    should_reset_user_email_when_no_longer_hovered_or_focused_ = true;
+    identity_animation_state_ =
+        IdentityAnimationState::kShowingUntilNoLongerHoveredOrFocused;
     return;
   }
-  should_reset_user_email_when_no_longer_hovered_or_focused_ = false;
-  ResetUserEmail();
+  HideIdentityAnimation();
 }
 
-void AvatarToolbarButton::ResetUserEmail() {
-  DCHECK(user_email_.has_value());
-  user_email_ = base::nullopt;
+void AvatarToolbarButton::HideIdentityAnimation() {
+  DCHECK_NE(identity_animation_state_, IdentityAnimationState::kNotShowing);
+  identity_animation_state_ = IdentityAnimationState::kNotShowing;
 
   // Update the text to the pre-shown state. This also makes sure that we now
   // reflect changes that happened while the identity pill was shown.
@@ -404,8 +425,9 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
       return l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME);
     case State::kGenericProfile:
       return l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL);
-    case State::kAnimatedSignIn:
-      return base::UTF8ToUTF16(*user_email_);
+    case State::kAnimatedUserIdentity:
+      return signin_ui_util::GetShortProfileIdentityToDisplay(
+          *GetProfileAttributesEntry(profile_), profile_);
     case State::kSyncError:
       return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR_TOOLTIP,
                                         GetProfileName());
@@ -445,7 +467,7 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
     case State::kGenericProfile:
       return gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size,
                                    icon_color);
-    case State::kAnimatedSignIn:
+    case State::kAnimatedUserIdentity:
     case State::kHighlightAnimation:
     case State::kSyncError:
     case State::kSyncPaused:
@@ -520,8 +542,11 @@ AvatarToolbarButton::State AvatarToolbarButton::GetState() const {
     return State::kGenericProfile;
   }
 
-  if (user_email_.has_value() && !waiting_for_image_to_show_user_email_)
-    return State::kAnimatedSignIn;
+  if (identity_animation_state_ == IdentityAnimationState::kShowing ||
+      identity_animation_state_ ==
+          IdentityAnimationState::kShowingUntilNoLongerHoveredOrFocused) {
+    return State::kAnimatedUserIdentity;
+  }
 
   if (highlight_animation_visible_)
     return State::kHighlightAnimation;
@@ -553,16 +578,16 @@ void AvatarToolbarButton::SetInsets() {
   SetLayoutInsetDelta(layout_insets);
 }
 
-void AvatarToolbarButton::SetUserEmail(const std::string& user_email) {
+void AvatarToolbarButton::OnUserIdentityChanged(
+    const CoreAccountInfo& user_identity) {
   if (!base::FeatureList::IsEnabled(features::kAnimatedAvatarButton) ||
-      user_email.empty()) {
+      user_identity.IsEmpty()) {
     return;
   }
 
-  user_email_ = user_email;
   // If we already have a gaia image, the pill will be immediately
   // displayed by UpdateIcon().
-  waiting_for_image_to_show_user_email_ = true;
+  identity_animation_state_ = IdentityAnimationState::kWaitingForImage;
   UpdateIcon();
 }
 

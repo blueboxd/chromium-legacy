@@ -215,7 +215,7 @@ IOSChromeMetricsServiceClient::CreateUploader(
 }
 
 base::TimeDelta IOSChromeMetricsServiceClient::GetStandardUploadInterval() {
-  return metrics::GetUploadInterval();
+  return metrics::GetUploadInterval(metrics::ShouldUseCellularUploadInterval());
 }
 
 void IOSChromeMetricsServiceClient::OnRendererProcessCrash() {

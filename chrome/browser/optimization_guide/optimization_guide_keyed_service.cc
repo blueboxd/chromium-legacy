@@ -102,12 +102,16 @@ optimization_guide::OptimizationGuideDecision ResolveOptimizationGuideDecision(
     case optimization_guide::OptimizationTargetDecision::kPageLoadMatches:
       return GetOptimizationGuideDecisionFromOptimizationTypeDecision(
           optimization_type_decision);
+    case optimization_guide::OptimizationTargetDecision::
+        kModelNotAvailableOnClient:
+      return optimization_guide::OptimizationGuideDecision::kFalse;
     default:
       return optimization_guide::OptimizationGuideDecision::kUnknown;
   }
   static_assert(
       optimization_guide::OptimizationTargetDecision::kMaxValue ==
-          optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
+          optimization_guide::OptimizationTargetDecision::
+              kModelNotAvailableOnClient,
       "This function should be updated when a new OptimizationTargetDecision "
       "is added");
 }

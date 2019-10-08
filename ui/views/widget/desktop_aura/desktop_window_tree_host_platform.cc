@@ -15,7 +15,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
-#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_base.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.h"
@@ -502,8 +502,9 @@ void DesktopWindowTreeHostPlatform::EndMoveLoop() {
 
 void DesktopWindowTreeHostPlatform::SetVisibilityChangedAnimationsEnabled(
     bool value) {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+#if defined(OS_WIN)
+  platform_window()->SetVisibilityChangedAnimationsEnabled(value);
+#endif
 }
 
 NonClientFrameView* DesktopWindowTreeHostPlatform::CreateNonClientFrameView() {

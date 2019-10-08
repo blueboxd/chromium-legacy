@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "extensions/browser/api/socket/socket_api.h"
 #include "extensions/common/api/sockets_udp.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace extensions {
@@ -59,7 +60,8 @@ class SocketsUdpCreateFunction : public UDPSocketAsyncApiFunction {
   FRIEND_TEST_ALL_PREFIXES(SocketsUdpUnitTest, Create);
 
   mojo::PendingRemote<network::mojom::UDPSocket> socket_;
-  network::mojom::UDPSocketListenerRequest socket_listener_request_;
+  mojo::PendingReceiver<network::mojom::UDPSocketListener>
+      socket_listener_receiver_;
   std::unique_ptr<sockets_udp::Create::Params> params_;
 };
 

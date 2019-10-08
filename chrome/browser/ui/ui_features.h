@@ -18,6 +18,8 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 
 extern const base::Feature kAnimatedAvatarButton;
+extern const base::Feature kAnimatedAvatarButtonOnSignIn;
+extern const base::Feature kAnimatedAvatarButtonOnOpeningProfile;
 
 extern const base::Feature kEvDetailsInPageInfo;
 

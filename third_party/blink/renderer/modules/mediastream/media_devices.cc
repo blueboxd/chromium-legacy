@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -346,7 +346,7 @@ void MediaDevices::OnDispatcherHostConnectionError() {
 const mojo::Remote<mojom::blink::MediaDevicesDispatcherHost>&
 MediaDevices::GetDispatcherHost(LocalFrame* frame) {
   if (!dispatcher_host_) {
-    frame->GetInterfaceProvider().GetInterface(
+    frame->GetBrowserInterfaceBroker().GetInterface(
         dispatcher_host_.BindNewPipeAndPassReceiver());
     dispatcher_host_.set_disconnect_handler(
         WTF::Bind(&MediaDevices::OnDispatcherHostConnectionError,

@@ -38,8 +38,10 @@ struct PasswordFormFillData {
       const PasswordForm& preferred_match,
       bool wait_for_username);
 
-  PasswordFormFillData(const PasswordFormFillData& other);
-
+  PasswordFormFillData(const PasswordFormFillData&);
+  PasswordFormFillData& operator=(const PasswordFormFillData&);
+  PasswordFormFillData(PasswordFormFillData&&);
+  PasswordFormFillData& operator=(PasswordFormFillData&&);
   ~PasswordFormFillData();
 
   // If |has_renderer_ids| == true then |form_renderer_id| contains the unique
@@ -89,7 +91,6 @@ struct PasswordFormFillData {
   // TODO(https://crbug.com/831123): Remove this field when old parsing is
   // removed and filling by renderer ids is by default.
   bool has_renderer_ids = false;
-
 };
 
 // If |data.wait_for_username| is set, the renderer does not need to receive

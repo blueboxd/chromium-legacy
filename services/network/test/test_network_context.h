@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -120,8 +121,9 @@ class TestNetworkContext : public mojom::NetworkContext {
   void GetExpectCTState(const std::string& domain,
                         GetExpectCTStateCallback callback) override {}
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
-  void CreateUDPSocket(mojo::PendingReceiver<mojom::UDPSocket> receiver,
-                       mojom::UDPSocketListenerPtr listener) override {}
+  void CreateUDPSocket(
+      mojo::PendingReceiver<mojom::UDPSocket> receiver,
+      mojo::PendingRemote<mojom::UDPSocketListener> listener) override {}
   void CreateTCPServerSocket(
       const net::IPEndPoint& local_addr,
       uint32_t backlog,

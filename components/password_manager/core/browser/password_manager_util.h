@@ -103,17 +103,17 @@ base::StringPiece GetSignonRealmWithProtocolExcluded(
     const autofill::PasswordForm& form);
 
 // Given all non-blacklisted |non_federated_matches|, finds and populates
-// |best_matches| and |preferred_match_| accordingly. For comparing credentials
-// the following rule is used: non-psl match is better than psl match, preferred
-// match is better than non-preferred match. In case of tie, an arbitrary
-// credential from the tied ones is chosen for |best_matches| and
-// preferred_match.
+// |non_federated_same_scheme|, |best_matches|, and |preferred_match|
+// accordingly. For comparing credentials the following rule is used: non-psl
+// match is better than psl match, preferred match is better than non-preferred
+// match. In case of tie, an arbitrary credential from the tied ones is chosen
+// for |best_matches| and |preferred_match|.
 void FindBestMatches(
     const std::vector<const autofill::PasswordForm*>& non_federated_matches,
     autofill::PasswordForm::Scheme scheme,
     bool sort_matches_by_date_last_used,
     std::vector<const autofill::PasswordForm*>* non_federated_same_scheme,
-    std::map<base::string16, const autofill::PasswordForm*>* best_matches,
+    std::vector<const autofill::PasswordForm*>* best_matches,
     const autofill::PasswordForm** preferred_match);
 
 // If the user submits a form, they may have used existing credentials, new

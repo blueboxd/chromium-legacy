@@ -5,7 +5,6 @@
 #ifndef UI_PLATFORM_WINDOW_PLATFORM_WINDOW_HANDLER_WM_MOVE_RESIZE_HANDLER_H_
 #define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_HANDLER_WM_MOVE_RESIZE_HANDLER_H_
 
-#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_handler/wm_platform_export.h"
 
 namespace gfx {
@@ -13,6 +12,8 @@ class Point;
 }  // namespace gfx
 
 namespace ui {
+
+class PlatformWindowBase;
 
 class WmMoveResizeHandler {
  public:
@@ -52,10 +53,10 @@ class WmMoveResizeHandler {
 };
 
 WM_PLATFORM_EXPORT void SetWmMoveResizeHandler(
-    PlatformWindow* platform_window,
+    PlatformWindowBase* platform_window,
     WmMoveResizeHandler* move_resize_handler);
 WM_PLATFORM_EXPORT WmMoveResizeHandler* GetWmMoveResizeHandler(
-    const PlatformWindow& platform_window);
+    const PlatformWindowBase& platform_window);
 
 }  // namespace ui
 

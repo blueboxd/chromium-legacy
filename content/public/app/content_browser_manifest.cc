@@ -179,7 +179,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",
-                  "blink.mojom.WebUsbService",
                   "blink.mojom.WebSocketConnector"})
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:service_worker", "renderer",
@@ -202,8 +201,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.GeolocationService",
                   "blink.mojom.InsecureInputService",
-                  "blink.mojom.MediaDevicesDispatcherHost",
-                  "blink.mojom.MediaStreamDispatcherHost",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.Portal",
@@ -212,7 +209,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.SharedWorkerConnector",
                   "blink.mojom.TextSuggestionHost",
                   "blink.mojom.UnhandledTapNotifier",
-                  "blink.mojom.WebUsbService",
                   "content.mojom.BrowserTarget",
                   "content.mojom.InputInjector",
                   "content.mojom.RendererAudioInputStreamFactory",

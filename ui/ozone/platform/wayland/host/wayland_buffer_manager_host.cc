@@ -515,7 +515,8 @@ void WaylandBufferManagerHost::OnWindowAdded(WaylandWindow* window) {
 
 void WaylandBufferManagerHost::OnWindowRemoved(WaylandWindow* window) {
   DCHECK(window);
-  DCHECK(surfaces_.erase(window->GetWidget()));
+  auto ret = surfaces_.erase(window->GetWidget());
+  DCHECK(ret);
 }
 
 void WaylandBufferManagerHost::SetTerminateGpuCallback(

@@ -15,8 +15,6 @@
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/leveldb_proto/public/proto_database.h"
-#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -64,16 +62,7 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
   base::FilePath database_dir(
       context->GetPath().Append(FILE_PATH_LITERAL("Articles")));
 
-  leveldb_proto::ProtoDatabaseProvider* db_provider =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetProtoDatabaseProvider();
-
-  auto db = db_provider->GetDB<ArticleEntry>(
-      leveldb_proto::ProtoDbType::DOM_DISTILLER_STORE, database_dir,
-      background_task_runner);
-
-  std::unique_ptr<DomDistillerStore> dom_distiller_store(
-      new DomDistillerStore(std::move(db)));
+  auto dom_distiller_store = std::make_unique<DomDistillerStore>();
 
   std::unique_ptr<DistillerPageFactory> distiller_page_factory(
       new DistillerPageWebContentsFactory(context));

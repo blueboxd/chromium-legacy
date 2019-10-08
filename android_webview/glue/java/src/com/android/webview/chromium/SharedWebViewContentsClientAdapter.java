@@ -255,13 +255,15 @@ abstract class SharedWebViewContentsClientAdapter extends AwContentsClient {
 
     @Override
     public void onRendererUnresponsive(final AwRenderProcess renderProcess) {
-        if (mWebViewRendererClientAdapter != null)
+        if (mWebViewRendererClientAdapter != null) {
             mWebViewRendererClientAdapter.onRendererUnresponsive(mWebView, renderProcess);
+        }
     }
 
     @Override
     public void onRendererResponsive(final AwRenderProcess renderProcess) {
-        if (mWebViewRendererClientAdapter != null)
+        if (mWebViewRendererClientAdapter != null) {
             mWebViewRendererClientAdapter.onRendererResponsive(mWebView, renderProcess);
+        }
     }
 }

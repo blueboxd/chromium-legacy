@@ -28,8 +28,9 @@ def _PoolWorker(test_result):
   try:
     metrics = [tag['value'] for tag in test_result['tags']
                if tag['key'] == 'tbmv2']
-    html_local_path = test_result['artifacts'][HTML_TRACE_NAME]['filePath']
-    html_remote_url = test_result['artifacts'][HTML_TRACE_NAME]['remoteUrl']
+    html_trace = test_result['outputArtifacts'][HTML_TRACE_NAME]
+    html_local_path = html_trace['filePath']
+    html_remote_url = html_trace['remoteUrl']
 
     logging.info('%s: Starting to compute metrics on trace.',
                  test_result['testPath'])
@@ -73,7 +74,7 @@ def ComputeTBMv2Metrics(intermediate_results):
   histogram_dicts = []
   work_list = []
   for test_result in intermediate_results['testResults']:
-    artifacts = test_result.get('artifacts', {})
+    artifacts = test_result.get('outputArtifacts', {})
     # TODO(crbug.com/981349): If metrics have already been computed in
     # Telemetry, we read it from the file. Remove this branch after Telemetry
     # does not compute metrics anymore.

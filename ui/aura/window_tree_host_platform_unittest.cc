@@ -22,7 +22,7 @@ class TestWindowTreeHost : public WindowTreeHostPlatform {
     CreateCompositor();
   }
 
-  ui::PlatformWindow* platform_window() {
+  ui::PlatformWindowBase* platform_window() {
     return WindowTreeHostPlatform::platform_window();
   }
 
@@ -37,7 +37,7 @@ class TestWindowTreeHost : public WindowTreeHostPlatform {
 class TestWindowTreeHostObserver : public aura::WindowTreeHostObserver {
  public:
   TestWindowTreeHostObserver(WindowTreeHostPlatform* host,
-                             ui::PlatformWindow* platform_window)
+                             ui::PlatformWindowBase* platform_window)
       : host_(host), platform_window_(platform_window) {
     host_->AddObserver(this);
   }
@@ -70,7 +70,7 @@ class TestWindowTreeHostObserver : public aura::WindowTreeHostObserver {
 
  private:
   WindowTreeHostPlatform* host_;
-  ui::PlatformWindow* platform_window_;
+  ui::PlatformWindowBase* platform_window_;
   bool should_change_bounds_in_on_resized_ = true;
   int on_host_will_process_bounds_change_count_ = 0;
   int on_host_did_process_bounds_change_count_ = 0;

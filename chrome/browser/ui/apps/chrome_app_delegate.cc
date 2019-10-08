@@ -46,6 +46,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/mojom/app_window.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -323,8 +324,9 @@ void ChromeAppDelegate::SetWebContentsBlocked(
   // RenderViewHost may be NULL during shutdown.
   content::RenderFrameHost* host = web_contents->GetMainFrame();
   if (host) {
-    extensions::mojom::AppWindowPtr app_window;
-    host->GetRemoteInterfaces()->GetInterface(&app_window);
+    mojo::Remote<extensions::mojom::AppWindow> app_window;
+    host->GetRemoteInterfaces()->GetInterface(
+        app_window.BindNewPipeAndPassReceiver());
     app_window->SetVisuallyDeemphasized(blocked);
   }
 }

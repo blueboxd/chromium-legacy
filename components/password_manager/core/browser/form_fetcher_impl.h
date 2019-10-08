@@ -57,8 +57,8 @@ class FormFetcherImpl : public FormFetcher,
   const std::vector<const autofill::PasswordForm*>& GetAllRelevantMatches()
       const override;
 
-  const std::map<base::string16, const autofill::PasswordForm*>&
-  GetBestMatches() const override;
+  const std::vector<const autofill::PasswordForm*>& GetBestMatches()
+      const override;
 
   const autofill::PasswordForm* GetPreferredMatch() const override;
 
@@ -112,8 +112,8 @@ class FormFetcherImpl : public FormFetcher,
   std::vector<const autofill::PasswordForm*> non_federated_same_scheme_;
 
   // Set of nonblacklisted PasswordForms from the password store that best match
-  // the form being managed by |this|, indexed by username.
-  std::map<base::string16, const autofill::PasswordForm*> best_matches_;
+  // the form being managed by |this|.
+  std::vector<const autofill::PasswordForm*> best_matches_;
 
   // Convenience pointer to entry in |best_matches_| that is marked as
   // preferred. This is only allowed to be null if there are no best matches at

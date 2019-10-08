@@ -40,30 +40,12 @@ class DomDistillerModel {
   std::vector<ArticleEntry> GetEntries() const;
   size_t GetNumEntries() const;
 
-  // Convert a SyncDataList to a SyncChangeList of add or update changes based
-  // on the state of the model. Also calculate the entries missing from the
-  // SyncDataList.
-  void CalculateChangesForMerge(const syncer::SyncDataList& data,
-                                syncer::SyncChangeList* changes_to_apply,
-                                syncer::SyncChangeList* changes_missing);
-
-  // Applies the change list to the model, appending the actual changes made to
-  // the model to |changes_applied|. If conflict resolution does not apply the
-  // requested change, then adds the "diff" between what was requested and what
-  // was actually applied to |changes_missing|.
-  // Note: Currently conflicts are resolved by just applying the requested
-  // change. This means nothing will be added to |changes_missing|.
-  void ApplyChangesToModel(const syncer::SyncChangeList& change_list,
-                           syncer::SyncChangeList* changes_applied,
-                           syncer::SyncChangeList* changes_missing);
-
  private:
   typedef int32_t KeyType;
   typedef std::unordered_map<KeyType, ArticleEntry> EntryMap;
   typedef std::unordered_map<std::string, KeyType> StringToKeyMap;
 
   void AddEntry(const ArticleEntry& entry);
-  void RemoveEntry(const ArticleEntry& entry);
 
   // Lookup an entry's key by ID or URL. Returns whether a corresponding key was
   // found. On success, if |key| is not null, it will contain the entry.
@@ -73,10 +55,6 @@ class DomDistillerModel {
   // If |entry| is not null, assigns the entry for |key| to it. |key| must map
   // to an entry in |entries_|.
   void GetEntryByKey(KeyType key, ArticleEntry* entry) const;
-
-  void ApplyChangeToModel(const syncer::SyncChange& change,
-                          syncer::SyncChangeList* changes_applied,
-                          syncer::SyncChangeList* changes_missing);
 
   KeyType next_key_;
   EntryMap entries_;

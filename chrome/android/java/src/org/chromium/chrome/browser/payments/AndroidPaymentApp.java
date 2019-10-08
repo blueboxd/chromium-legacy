@@ -104,7 +104,7 @@ public class AndroidPaymentApp
     @Nullable
     private URI mCanDedupedApplicationId;
     private boolean mIsReadyToPayQueried;
-    private boolean mIsServiceConnected;
+    private boolean mIsServiceBindingInitiated;
 
     /**
      * Builds the point of interaction with a locally installed 3rd party native Android payment
@@ -163,7 +163,6 @@ public class AndroidPaymentApp
         mServiceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                mIsServiceConnected = true;
                 IsReadyToPayService isReadyToPayService =
                         IsReadyToPayService.Stub.asInterface(service);
                 if (isReadyToPayService == null) {
@@ -173,9 +172,16 @@ public class AndroidPaymentApp
                 }
             }
 
+            // "Called when a connection to the Service has been lost. This typically happens when
+            // the process hosting the service has crashed or been killed. This does not remove the
+            // ServiceConnection itself -- this binding to the service will remain active, and you
+            // will receive a call to onServiceConnected(ComponentName, IBinder) when the Service is
+            // next running."
+            // https://developer.android.com/reference/android/content/ServiceConnection.html#onServiceDisconnected(android.content.ComponentName)
             @Override
             public void onServiceDisconnected(ComponentName name) {
-                mIsServiceConnected = false;
+                // Do not wait for the service to restart.
+                respondToGetInstrumentsQuery(null);
             }
         };
 
@@ -183,12 +189,19 @@ public class AndroidPaymentApp
                 removeUrlScheme(origin), removeUrlScheme(iframeOrigin), certificateChain,
                 methodDataMap, null /* total */, null /* displayItems */, null /* modifiers */));
         try {
-            if (!ContextUtils.getApplicationContext().bindService(
-                        mIsReadyToPayIntent, mServiceConnection, Context.BIND_AUTO_CREATE)) {
-                respondToGetInstrumentsQuery(null);
-                return;
-            }
+            // This method returns "true if the system is in the process of bringing up a service
+            // that your client has permission to bind to; false if the system couldn't find the
+            // service or if your client doesn't have permission to bind to it. If this value is
+            // true, you should later call unbindService(ServiceConnection) to release the
+            // connection."
+            // https://developer.android.com/reference/android/content/Context.html#bindService(android.content.Intent,%20android.content.ServiceConnection,%20int)
+            mIsServiceBindingInitiated = ContextUtils.getApplicationContext().bindService(
+                    mIsReadyToPayIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
         } catch (SecurityException e) {
+            // Intentionally blank, so mIsServiceBindingInitiated is false.
+        }
+
+        if (!mIsServiceBindingInitiated) {
             respondToGetInstrumentsQuery(null);
             return;
         }
@@ -200,9 +213,11 @@ public class AndroidPaymentApp
 
     private void respondToGetInstrumentsQuery(final PaymentInstrument instrument) {
         if (mServiceConnection != null) {
-            if (mIsServiceConnected) {
+            if (mIsServiceBindingInitiated) {
+                // mServiceConnection "parameter must not be null."
+                // https://developer.android.com/reference/android/content/Context.html#unbindService(android.content.ServiceConnection)
                 ContextUtils.getApplicationContext().unbindService(mServiceConnection);
-                mIsServiceConnected = false;
+                mIsServiceBindingInitiated = false;
             }
             mServiceConnection = null;
         }

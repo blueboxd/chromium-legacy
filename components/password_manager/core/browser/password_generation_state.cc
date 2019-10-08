@@ -47,8 +47,7 @@ class PasswordDataForUI : public PasswordFormManagerForUI {
 
   // PasswordFormManagerForUI:
   const GURL& GetOrigin() const override;
-  const std::map<base::string16, const PasswordForm*>& GetBestMatches()
-      const override;
+  std::map<base::string16, const PasswordForm*> GetBestMatches() const override;
   std::vector<const PasswordForm*> GetFederatedMatches() const override;
   const PasswordForm& GetPendingCredentials() const override;
   metrics_util::CredentialSourceType GetCredentialSource() const override;
@@ -96,7 +95,7 @@ const GURL& PasswordDataForUI::GetOrigin() const {
   return pending_form_.origin;
 }
 
-const std::map<base::string16, const PasswordForm*>&
+std::map<base::string16, const PasswordForm*>
 PasswordDataForUI::GetBestMatches() const {
   return matches_;
 }

@@ -14,7 +14,7 @@
 #include "base/message_loop/message_pump_type.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/gfx/buffer_types.h"
-#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_base.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace display {
@@ -156,7 +156,7 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   virtual IPC::MessageFilter* GetGpuMessageFilter();
   virtual ui::GpuPlatformSupportHost* GetGpuPlatformSupportHost() = 0;
   virtual std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() = 0;
-  virtual std::unique_ptr<PlatformWindow> CreatePlatformWindow(
+  virtual std::unique_ptr<PlatformWindowBase> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       PlatformWindowInitProperties properties) = 0;
   virtual std::unique_ptr<display::NativeDisplayDelegate>

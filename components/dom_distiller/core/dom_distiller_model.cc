@@ -89,47 +89,6 @@ std::vector<ArticleEntry> DomDistillerModel::GetEntries() const {
   return entries_list;
 }
 
-void DomDistillerModel::CalculateChangesForMerge(
-    const SyncDataList& data,
-    SyncChangeList* changes_to_apply,
-    SyncChangeList* changes_missing) {
-  typedef std::unordered_set<std::string> StringSet;
-  StringSet entries_to_change;
-  for (auto it = data.begin(); it != data.end(); ++it) {
-    std::string entry_id = GetEntryIdFromSyncData(*it);
-    std::pair<StringSet::iterator, bool> insert_result =
-        entries_to_change.insert(entry_id);
-
-    DCHECK(insert_result.second);
-
-    SyncChange::SyncChangeType change_type = SyncChange::ACTION_ADD;
-    if (GetEntryById(entry_id, nullptr)) {
-      change_type = SyncChange::ACTION_UPDATE;
-    }
-    changes_to_apply->push_back(SyncChange(FROM_HERE, change_type, *it));
-  }
-
-  for (EntryMap::const_iterator it = entries_.begin(); it != entries_.end();
-       ++it) {
-    if (entries_to_change.find(it->second.entry_id()) ==
-        entries_to_change.end()) {
-      changes_missing->push_back(SyncChange(FROM_HERE, SyncChange::ACTION_ADD,
-                                            CreateLocalData(it->second)));
-    }
-  }
-}
-
-void DomDistillerModel::ApplyChangesToModel(const SyncChangeList& changes,
-                                            SyncChangeList* changes_applied,
-                                            SyncChangeList* changes_missing) {
-  DCHECK(changes_applied);
-  DCHECK(changes_missing);
-
-  for (auto it = changes.begin(); it != changes.end(); ++it) {
-    ApplyChangeToModel(*it, changes_applied, changes_missing);
-  }
-}
-
 void DomDistillerModel::AddEntry(const ArticleEntry& entry) {
   const std::string& entry_id = entry.entry_id();
   KeyType key = next_key_++;
@@ -138,58 +97,6 @@ void DomDistillerModel::AddEntry(const ArticleEntry& entry) {
   entry_id_to_key_map_.insert(std::make_pair(entry_id, key));
   for (int i = 0; i < entry.pages_size(); ++i) {
     url_to_key_map_.insert(std::make_pair(entry.pages(i).url(), key));
-  }
-}
-
-void DomDistillerModel::RemoveEntry(const ArticleEntry& entry) {
-  const std::string& entry_id = entry.entry_id();
-  KeyType key = 0;
-  bool success = GetKeyById(entry_id, &key);
-  DCHECK(success);
-
-  entries_.erase(key);
-  entry_id_to_key_map_.erase(entry_id);
-  for (int i = 0; i < entry.pages_size(); ++i) {
-    url_to_key_map_.erase(entry.pages(i).url());
-  }
-}
-
-void DomDistillerModel::ApplyChangeToModel(const SyncChange& change,
-                                           SyncChangeList* changes_applied,
-                                           SyncChangeList* changes_missing) {
-  DCHECK(change.IsValid());
-  DCHECK(changes_applied);
-  DCHECK(changes_missing);
-
-  const std::string& entry_id = GetEntryIdFromSyncData(change.sync_data());
-
-  if (change.change_type() == SyncChange::ACTION_DELETE) {
-    ArticleEntry current_entry;
-    if (GetEntryById(entry_id, &current_entry)) {
-      RemoveEntry(current_entry);
-      changes_applied->push_back(SyncChange(
-          change.location(), SyncChange::ACTION_DELETE, change.sync_data()));
-    }
-    // If we couldn't find in sync db, we were deleting anyway so swallow the
-    // error.
-    return;
-  }
-
-  ArticleEntry entry = GetEntryFromChange(change);
-  ArticleEntry current_entry;
-  if (!GetEntryById(entry_id, &current_entry)) {
-    AddEntry(entry);
-    changes_applied->push_back(SyncChange(
-        change.location(), SyncChange::ACTION_ADD, change.sync_data()));
-  } else {
-    if (!AreEntriesEqual(current_entry, entry)) {
-      // Currently, conflicts are simply resolved by accepting the last one to
-      // arrive.
-      RemoveEntry(current_entry);
-      AddEntry(entry);
-      changes_applied->push_back(SyncChange(
-          change.location(), SyncChange::ACTION_UPDATE, change.sync_data()));
-    }
   }
 }
 

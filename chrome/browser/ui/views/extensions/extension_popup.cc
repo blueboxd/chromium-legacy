@@ -95,10 +95,6 @@ void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
   }
 }
 
-bool ExtensionPopup::ShouldHaveRoundCorners() const {
-  return false;
-}
-
 #if defined(USE_AURA)
 void ExtensionPopup::OnWidgetDestroying(views::Widget* widget) {
   BubbleDialogDelegateView::OnWidgetDestroying(widget);
@@ -178,6 +174,8 @@ ExtensionPopup::ExtensionPopup(
                                views::BubbleBorder::SMALL_SHADOW),
       host_(std::move(host)),
       show_action_(show_action) {
+  DialogDelegate::set_use_round_corners(false);
+
   set_margins(gfx::Insets());
   SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(GetExtensionView());

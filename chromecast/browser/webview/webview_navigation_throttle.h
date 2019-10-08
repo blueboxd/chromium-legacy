@@ -35,6 +35,7 @@ class WebviewNavigationThrottle : public content::NavigationThrottle {
   scoped_refptr<base::SequencedTaskRunner> response_task_runner_;
 
   const GURL url_;
+  bool is_in_main_frame_;
   WebviewController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewNavigationThrottle);

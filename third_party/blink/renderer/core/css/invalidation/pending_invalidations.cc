@@ -31,14 +31,19 @@ void PendingInvalidations::ScheduleInvalidationSetsForNode(
   if (node.GetStyleChangeType() < kSubtreeStyleChange) {
     for (auto& invalidation_set : invalidation_lists.descendants) {
       if (invalidation_set->WholeSubtreeInvalid()) {
-        node.SetNeedsStyleRecalc(kSubtreeStyleChange,
-                                 StyleChangeReasonForTracing::Create(
+        ContainerNode* subtree_root = &node;
+        if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
+          if (auto* shadow_root = DynamicTo<ShadowRoot>(node))
+            subtree_root = &shadow_root->host();
+        }
+        subtree_root->SetNeedsStyleRecalc(
+            kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
                                      style_change_reason::kStyleInvalidator));
         requires_descendant_invalidation = false;
         break;
       }
 
-      if (invalidation_set->InvalidatesSelf()) {
+      if (invalidation_set->InvalidatesSelf() && node.IsElementNode()) {
         node.SetNeedsStyleRecalc(kLocalStyleChange,
                                  StyleChangeReasonForTracing::Create(
                                      style_change_reason::kStyleInvalidator));

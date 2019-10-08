@@ -36,7 +36,7 @@ def IntermediateResults(test_results, start_time='2015-10-21T07:28:00.000Z',
 
 def TestResult(test_path, status='PASS', is_expected=None,
                start_time='2015-10-21T07:28:00.000Z', run_duration='1.00s',
-               artifacts=None, tags=None):
+               output_artifacts=None, tags=None):
   """Build a TestResult dict.
 
   This follows the TestResultEntry spec of LUCI Test Results format.
@@ -69,8 +69,8 @@ def TestResult(test_path, status='PASS', is_expected=None,
       'startTime': start_time,
       'runDuration': run_duration
   }
-  if artifacts is not None:
-    test_result['artifacts'] = artifacts
+  if output_artifacts is not None:
+    test_result['outputArtifacts'] = output_artifacts
   if tags is not None:
     test_result['tags'] = [_SplitTag(tag) for tag in tags]
 

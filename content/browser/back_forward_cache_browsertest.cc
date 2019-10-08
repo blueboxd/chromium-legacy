@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -86,14 +87,7 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
   void ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome outcome,
                      base::Location location) {
     base::HistogramBase::Sample sample = base::HistogramBase::Sample(outcome);
-    auto it = std::find_if(
-        expected_outcomes_.begin(), expected_outcomes_.end(),
-        [sample](const base::Bucket& bucket) { return bucket.min == sample; });
-    if (it == expected_outcomes_.end()) {
-      expected_outcomes_.push_back(base::Bucket(sample, 1));
-    } else {
-      it->count++;
-    }
+    AddSampleToBuckets(&expected_outcomes_, sample);
 
     EXPECT_EQ(expected_outcomes_,
               histogram_tester_.GetAllSamples(
@@ -108,11 +102,37 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
         << location.ToString();
   }
 
+  void ExpectDisabledWithReason(const std::string& reason,
+                                base::Location location) {
+    base::HistogramBase::Sample sample =
+        base::HistogramBase::Sample(base::HashMetricName(reason));
+    AddSampleToBuckets(&expected_disabled_reasons_, sample);
+
+    EXPECT_EQ(expected_disabled_reasons_,
+              histogram_tester_.GetAllSamples(
+                  "BackForwardCache.HistoryNavigationOutcome."
+                  "DisabledForRenderFrameHostReason"))
+        << location.ToString();
+  }
+
  private:
+  void AddSampleToBuckets(std::vector<base::Bucket>* buckets,
+                          base::HistogramBase::Sample sample) {
+    auto it = std::find_if(
+        buckets->begin(), buckets->end(),
+        [sample](const base::Bucket& bucket) { return bucket.min == sample; });
+    if (it == buckets->end()) {
+      buckets->push_back(base::Bucket(sample, 1));
+    } else {
+      it->count++;
+    }
+  }
+
   base::test::ScopedFeatureList feature_list_;
 
   base::HistogramTester histogram_tester_;
   std::vector<base::Bucket> expected_outcomes_;
+  std::vector<base::Bucket> expected_disabled_reasons_;
 };
 
 // Match RenderFrameHostImpl* that are in the BackForwardCache.
@@ -2377,11 +2397,17 @@ IN_PROC_BROWSER_TEST_F(
   web_contents()
       ->GetController()
       .GetBackForwardCache()
-      .DisableForRenderFrameHost(rfh_a->GetGlobalFrameRoutingId(), "test");
+      .DisableForRenderFrameHost(rfh_a->GetGlobalFrameRoutingId(),
+                                 "DisabledByBackForwardCacheBrowserTest");
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   EXPECT_TRUE(delete_observer_rfh_a.deleted());
+
+  // 3) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectDisabledWithReason("DisabledByBackForwardCacheBrowserTest", FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -2400,7 +2426,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()
       ->GetController()
       .GetBackForwardCache()
-      .DisableForRenderFrameHost(rfh_a_id, "test");
+      .DisableForRenderFrameHost(rfh_a_id,
+                                 "DisabledByBackForwardCacheBrowserTest");
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
@@ -2410,7 +2437,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()
       ->GetController()
       .GetBackForwardCache()
-      .DisableForRenderFrameHost(rfh_a_id, "test");
+      .DisableForRenderFrameHost(rfh_a_id,
+                                 "DisabledByBackForwardCacheBrowserTest");
+
+  // 3) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectDisabledWithReason("DisabledByBackForwardCacheBrowserTest", FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -2437,6 +2470,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        DisableBackForwardEvictsIfAlreadyInCache) {
+  base::HistogramTester histogram_tester;
+
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
@@ -2456,10 +2491,16 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()
       ->GetController()
       .GetBackForwardCache()
-      .DisableForRenderFrameHost(rfh_a->GetGlobalFrameRoutingId(), "test");
+      .DisableForRenderFrameHost(rfh_a->GetGlobalFrameRoutingId(),
+                                 "DisabledByBackForwardCacheBrowserTest");
 
   EXPECT_TRUE(rfh_a->is_evicted_from_back_forward_cache());
   delete_observer_rfh_a.WaitUntilDeleted();
+
+  // 3) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectDisabledWithReason("DisabledByBackForwardCacheBrowserTest", FROM_HERE);
 }
 
 // Confirm that same-document navigation and not history-navigation does not

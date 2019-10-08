@@ -12,7 +12,7 @@
 #include "content/public/common/content_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/constants.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/http/http_response_headers.h"
 
 namespace extensions {
@@ -56,10 +56,10 @@ MimeHandlerServiceImpl::~MimeHandlerServiceImpl() {}
 // static
 void MimeHandlerServiceImpl::Create(
     base::WeakPtr<StreamContainer> stream_container,
-    mime_handler::MimeHandlerServiceRequest request) {
-  mojo::MakeStrongBinding(
+    mojo::PendingReceiver<mime_handler::MimeHandlerService> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<MimeHandlerServiceImpl>(stream_container),
-      std::move(request));
+      std::move(receiver));
 }
 
 void MimeHandlerServiceImpl::GetStreamInfo(GetStreamInfoCallback callback) {

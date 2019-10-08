@@ -85,9 +85,9 @@ class WebsiteLoginFetcherImpl::PendingFetchLoginsRequest
   // From PendingRequest:
   void OnFetchCompleted() override {
     std::vector<Login> logins;
-    for (const auto& match : form_fetcher_->GetBestMatches()) {
-      logins.emplace_back(match.second->origin,
-                          base::UTF16ToUTF8(match.second->username_value));
+    for (const auto* match : form_fetcher_->GetBestMatches()) {
+      logins.emplace_back(match->origin,
+                          base::UTF16ToUTF8(match->username_value));
     }
     std::move(callback_).Run(logins);
     PendingRequest::OnFetchCompleted();

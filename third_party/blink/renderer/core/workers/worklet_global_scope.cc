@@ -228,13 +228,11 @@ void WorkletGlobalScope::FetchAndInvokeScript(
   // moduleURLRecord, moduleResponsesMap, credentialOptions, outsideSettings,
   // and insideSettings when it asynchronously completes."
 
-  Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
-
   // Step 3 to 5 are implemented in
   // WorkletModuleTreeClient::NotifyModuleTreeLoadFinished.
-  WorkletModuleTreeClient* client =
-      MakeGarbageCollected<WorkletModuleTreeClient>(
-          modulator, std::move(outside_settings_task_runner), pending_tasks);
+  auto* client = MakeGarbageCollected<WorkletModuleTreeClient>(
+      ScriptController()->GetScriptState(),
+      std::move(outside_settings_task_runner), pending_tasks);
 
   // TODO(nhiroki): Pass an appropriate destination defined in each worklet
   // spec (e.g., "paint worklet", "audio worklet") (https://crbug.com/843980,

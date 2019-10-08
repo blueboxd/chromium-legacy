@@ -16,6 +16,7 @@
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_engine.h"
+#include "google_apis/gaia/core_account_id.h"
 
 namespace syncer {
 
@@ -43,7 +44,8 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   bool IsEncryptEverythingEnabled() const;
   void SetEncryptionPassphrase(const std::string& passphrase);
   bool SetDecryptionPassphrase(const std::string& passphrase);
-  void AddTrustedVaultDecryptionKeys(const std::vector<std::string>& keys);
+  void AddTrustedVaultDecryptionKeys(const CoreAccountId& account_id,
+                                     const std::vector<std::string>& keys);
 
   // Returns the actual passphrase type being used for encryption.
   PassphraseType GetPassphraseType() const;
@@ -70,7 +72,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
                                base::Time passphrase_time) override;
 
   // Used to provide the engine when it is initialized.
-  void SetSyncEngine(SyncEngine* engine) { state_.engine = engine; }
+  void SetSyncEngine(const CoreAccountId& account_id, SyncEngine* engine);
 
   // Creates a proxy observer object that will post calls to this thread.
   std::unique_ptr<SyncEncryptionHandler::Observer> GetEncryptionObserverProxy();
@@ -104,6 +106,9 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
 
     // Not-null when the engine is initialized.
     SyncEngine* engine = nullptr;
+
+    // Populated when the engine is initialized.
+    CoreAccountId account_id;
 
     RequiredUserAction required_user_action = RequiredUserAction::kNone;
 

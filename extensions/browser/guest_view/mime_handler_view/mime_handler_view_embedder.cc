@@ -143,7 +143,8 @@ void MimeHandlerViewEmbedder::FrameDeleted(
 }
 
 void MimeHandlerViewEmbedder::CreateMimeHandlerViewGuest(
-    mime_handler::BeforeUnloadControlPtr before_unload_control) {
+    mojo::PendingRemote<mime_handler::BeforeUnloadControl>
+        before_unload_control) {
   auto* browser_context = web_contents()->GetBrowserContext();
   auto* manager =
       guest_view::GuestViewManager::FromBrowserContext(browser_context);
@@ -153,7 +154,7 @@ void MimeHandlerViewEmbedder::CreateMimeHandlerViewGuest(
         ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(
             browser_context));
   }
-  pending_before_unload_control_ = before_unload_control.PassInterface();
+  pending_before_unload_control_ = std::move(before_unload_control);
   base::DictionaryValue create_params;
   create_params.SetString(mime_handler_view::kViewId, stream_id_);
   manager->CreateGuest(

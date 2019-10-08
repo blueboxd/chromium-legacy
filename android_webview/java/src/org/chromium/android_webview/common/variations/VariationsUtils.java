@@ -104,8 +104,9 @@ public class VariationsUtils {
             }
 
             if (!proto.hasSignature() || !proto.hasCountry() || !proto.hasDate()
-                    || !proto.hasIsGzipCompressed() || !proto.hasSeedData())
+                    || !proto.hasIsGzipCompressed() || !proto.hasSeedData()) {
                 return null;
+            }
 
             SeedInfo info = new SeedInfo();
             info.signature = proto.getSignature();

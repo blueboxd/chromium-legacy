@@ -26,6 +26,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "components/metrics/net/cellular_logic_helper.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/version_utils.h"
@@ -251,10 +252,17 @@ AwMetricsServiceClient::CreateUploader(
 }
 
 base::TimeDelta AwMetricsServiceClient::GetStandardUploadInterval() {
-  // The platform logging mechanism is responsible for upload frequency; this
-  // just specifies how frequently to provide logs to the platform. 30 minutes
-  // was chosen arbitrarily.
-  return base::TimeDelta::FromMinutes(30);
+  // In WebView, metrics collection (when we batch up all logged histograms into
+  // a ChromeUserMetricsExtension proto) and metrics uploading (when the proto
+  // goes to the server) happen separately.
+  //
+  // This interval controls the metrics collection rate, so we choose the
+  // standard upload interval to make sure we're collecting metrics consistently
+  // with Chrome for Android. The metrics uploading rate for WebView is
+  // controlled by the platform logging mechanism. Since this mechanism has its
+  // own logic for rate-limiting on cellular connections, we disable the
+  // component-layer logic.
+  return metrics::GetUploadInterval(false /* use_cellular_upload_interval */);
 }
 
 std::string AwMetricsServiceClient::GetAppPackageName() {

@@ -240,6 +240,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/authentication/cells",
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/settings",
+    "//ios/chrome/browser/ui/settings/google_services",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",

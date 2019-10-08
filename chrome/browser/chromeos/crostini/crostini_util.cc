@@ -470,6 +470,9 @@ std::string CryptohomeIdForProfile(Profile* profile) {
 std::string DefaultContainerUserNameForProfile(Profile* profile) {
   // Get rid of the @domain.name in the profile user name (an email address).
   std::string container_username = profile->GetProfileUserName();
+  if (container_username.empty()) {
+    return kCrostiniDefaultUsername;
+  }
   if (container_username.find('@') != std::string::npos) {
     // gaia::CanonicalizeEmail CHECKs its argument contains'@'.
     container_username = gaia::CanonicalizeEmail(container_username);

@@ -110,8 +110,8 @@ int DialogDelegate::GetDialogButtons() const {
 }
 
 int DialogDelegate::GetDefaultDialogButton() const {
-  if (params_.default_button.has_value())
-    return *params_.default_button;
+  if (GetParams().default_button.has_value())
+    return *GetParams().default_button;
   if (GetDialogButtons() & ui::DIALOG_BUTTON_OK)
     return ui::DIALOG_BUTTON_OK;
   if (GetDialogButtons() & ui::DIALOG_BUTTON_CANCEL)
@@ -184,10 +184,6 @@ bool DialogDelegate::ShouldSnapFrameWidth() const {
   return GetDialogButtons() != ui::DIALOG_BUTTON_NONE;
 }
 
-bool DialogDelegate::ShouldHaveRoundCorners() const {
-  return true;
-}
-
 View* DialogDelegate::GetInitiallyFocusedView() {
   // Focus the default button if any.
   const DialogClientView* dcv = GetDialogClientView();
@@ -236,7 +232,7 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
   border->set_use_theme_background_color(true);
   DialogDelegate* delegate = widget->widget_delegate()->AsDialogDelegate();
   if (delegate) {
-    if (delegate->ShouldHaveRoundCorners()) {
+    if (delegate->GetParams().round_corners) {
       border->SetCornerRadius(
           base::FeatureList::IsEnabled(
               features::kEnableMDRoundedCornersOnDialogs)

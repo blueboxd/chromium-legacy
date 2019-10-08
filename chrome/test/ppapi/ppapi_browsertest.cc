@@ -1058,14 +1058,15 @@ class WrappedUDPSocket : public network::mojom::UDPSocket {
       FailureType failure_type,
       network::mojom::NetworkContext* network_context,
       mojo::PendingReceiver<network::mojom::UDPSocket> socket_receiver,
-      network::mojom::UDPSocketListenerPtr socket_listener)
+      mojo::PendingRemote<network::mojom::UDPSocketListener> socket_listener)
       : failure_type_(failure_type),
         receiver_(this, std::move(socket_receiver)) {
     if (failure_type == FailureType::kDropListenerPipeOnConstruction)
       socket_listener.reset();
-    socket_listener_ = std::move(socket_listener);
+    else
+      socket_listener_.Bind(std::move(socket_listener));
     network_context->CreateUDPSocket(
-        wrapped_socket_.BindNewPipeAndPassReceiver(), nullptr);
+        wrapped_socket_.BindNewPipeAndPassReceiver(), mojo::NullRemote());
     receiver_.set_disconnect_handler(
         base::BindOnce(&WrappedUDPSocket::Close, base::Unretained(this)));
     wrapped_socket_.set_disconnect_handler(
@@ -1173,7 +1174,7 @@ class WrappedUDPSocket : public network::mojom::UDPSocket {
   mojo::Remote<network::mojom::UDPSocket> wrapped_socket_;
 
   // Only populated on certain read FailureTypes.
-  network::mojom::UDPSocketListenerPtr socket_listener_;
+  mojo::Remote<network::mojom::UDPSocketListener> socket_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(WrappedUDPSocket);
 };
@@ -1182,7 +1183,7 @@ void TestCreateUDPSocketCallback(
     WrappedUDPSocket::FailureType failure_type,
     network::mojom::NetworkContext* network_context,
     mojo::PendingReceiver<network::mojom::UDPSocket> socket_receiver,
-    network::mojom::UDPSocketListenerPtr socket_listener) {
+    mojo::PendingRemote<network::mojom::UDPSocketListener> socket_listener) {
   // This will delete itself when one of its Mojo pipes is closed.
   new WrappedUDPSocket(failure_type, network_context,
                        std::move(socket_receiver), std::move(socket_listener));

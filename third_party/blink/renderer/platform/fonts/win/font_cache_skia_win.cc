@@ -329,24 +329,36 @@ scoped_refptr<SimpleFontData> FontCache::GetDWriteFallbackFamily(
   // character + language tag and call matchFamilyStyleCharacter on the browser
   // side, where we can do that.
   if (!use_skia_font_fallback_) {
-    EnsureServiceConnected();
-
-    // After Mojo IPC, on the browser side, this ultimately reaches
-    // Skia's matchFamilyStyleCharacter for Windows, which does not implement
-    // traversing the language tag stack but only processes the most important
-    // one, so we use FallbackLocaleForCharacter() to determine what locale to
-    // choose to achieve the best possible result.
-
     String fallback_family;
     SkFontStyle fallback_style;
-    if (!GetOutOfProcessFallbackFamily(
-            codepoint, font_description.GenericFamily(),
-            fallback_locale->LocaleForSkFontMgr(), fallback_priority, service_,
-            &fallback_family, &fallback_style))
-      return nullptr;
 
-    if (fallback_family.IsEmpty())
-      return nullptr;
+    if (UNLIKELY(!fallback_params_cache_)) {
+      fallback_params_cache_ = std::make_unique<FallbackFamilyStyleCache>();
+    }
+
+    fallback_params_cache_->Get(
+        font_description.GenericFamily(), fallback_locale->LocaleForSkFontMgr(),
+        fallback_priority, codepoint, &fallback_family, &fallback_style);
+    bool result_from_cache = !fallback_family.IsNull();
+
+    if (!result_from_cache) {
+      EnsureServiceConnected();
+
+      // After Mojo IPC, on the browser side, this ultimately reaches
+      // Skia's matchFamilyStyleCharacter for Windows, which does not implement
+      // traversing the language tag stack but only processes the most important
+      // one, so we use FallbackLocaleForCharacter() to determine what locale to
+      // choose to achieve the best possible result.
+
+      if (!GetOutOfProcessFallbackFamily(
+              codepoint, font_description.GenericFamily(),
+              fallback_locale->LocaleForSkFontMgr(), fallback_priority,
+              service_, &fallback_family, &fallback_style))
+        return nullptr;
+
+      if (fallback_family.IsEmpty())
+        return nullptr;
+    }
 
     FontFaceCreationParams create_by_family((AtomicString(fallback_family)));
     FontDescription fallback_updated_font_description(font_description);
@@ -355,6 +367,12 @@ scoped_refptr<SimpleFontData> FontCache::GetDWriteFallbackFamily(
         fallback_updated_font_description, create_by_family);
     if (!data || !data->FontContainsCharacter(codepoint))
       return nullptr;
+
+    if (!result_from_cache) {
+      fallback_params_cache_->Put(font_description.GenericFamily(),
+                                  fallback_locale->LocaleForSkFontMgr(),
+                                  fallback_priority, data->Typeface());
+    }
     return FontDataFromFontPlatformData(data, kDoNotRetain);
   } else {
     std::string family_name = font_description.Family().Family().Utf8();

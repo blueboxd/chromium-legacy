@@ -241,12 +241,13 @@ bool SocketCreateFunction::Prepare() {
     case extensions::api::socket::SOCKET_TYPE_UDP: {
       socket_type_ = kSocketTypeUDP;
 
-      network::mojom::UDPSocketListenerPtr listener_ptr;
-      socket_listener_request_ = mojo::MakeRequest(&listener_ptr);
+      mojo::PendingRemote<network::mojom::UDPSocketListener> listener_remote;
+      socket_listener_receiver_ =
+          listener_remote.InitWithNewPipeAndPassReceiver();
       content::BrowserContext::GetDefaultStoragePartition(browser_context())
           ->GetNetworkContext()
           ->CreateUDPSocket(socket_.InitWithNewPipeAndPassReceiver(),
-                            std::move(listener_ptr));
+                            std::move(listener_remote));
       break;
     }
     case extensions::api::socket::SOCKET_TYPE_NONE:
@@ -263,7 +264,7 @@ void SocketCreateFunction::Work() {
     socket = new TCPSocket(browser_context(), extension_->id());
   } else if (socket_type_ == kSocketTypeUDP) {
     socket =
-        new UDPSocket(std::move(socket_), std::move(socket_listener_request_),
+        new UDPSocket(std::move(socket_), std::move(socket_listener_receiver_),
                       extension_->id());
   }
   DCHECK(socket);

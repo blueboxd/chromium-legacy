@@ -11,7 +11,8 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/mojom/keep_alive.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace content {
 class BrowserContext;
@@ -26,16 +27,16 @@ class Extension;
 class KeepAliveImpl : public KeepAlive, public ExtensionRegistryObserver {
  public:
   // Create a keep alive for |extension| running in |context| and connect it to
-  // |request|. When the requester closes its pipe, the keep alive ends.
+  // |receiver|. When the receiver closes its pipe, the keep alive ends.
   static void Create(content::BrowserContext* browser_context,
                      const Extension* extension,
-                     KeepAliveRequest request,
+                     mojo::PendingReceiver<KeepAlive> receiver,
                      content::RenderFrameHost* render_frame_host);
 
  private:
   KeepAliveImpl(content::BrowserContext* context,
                 const Extension* extension,
-                KeepAliveRequest request);
+                mojo::PendingReceiver<KeepAlive> receiver);
   ~KeepAliveImpl() override;
 
   // ExtensionRegistryObserver overrides.
@@ -51,7 +52,7 @@ class KeepAliveImpl : public KeepAlive, public ExtensionRegistryObserver {
   const Extension* extension_;
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_{this};
-  mojo::Binding<KeepAlive> binding_;
+  mojo::Receiver<KeepAlive> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(KeepAliveImpl);
 };

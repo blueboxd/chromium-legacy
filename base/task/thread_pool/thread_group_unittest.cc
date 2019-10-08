@@ -801,7 +801,10 @@ TEST_P(ThreadGroupTest, JoinJobTaskSource) {
   job_handle.Join();
   // All worker tasks should complete before Join() returns.
   EXPECT_EQ(0U, job_task->GetMaxConcurrency());
+  thread_group_->JoinForTesting();
   EXPECT_EQ(1U, task_source->HasOneRef());
+  // Prevent TearDown() from calling JoinForTesting() again.
+  thread_group_ = nullptr;
 }
 
 // Verify that the maximum number of BEST_EFFORT tasks that can run concurrently

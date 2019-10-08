@@ -874,8 +874,9 @@ constexpr ProfileMenuView::ActionableItem
     ProfileMenuClickTest_WithUnconsentedPrimaryAccount::kOrderedActionableItems
         [];
 
+// TODO(crbug.com/1012167): Flaky.
 IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_WithUnconsentedPrimaryAccount,
-                       SetupAndRunTest) {
+                       DISABLED_SetupAndRunTest) {
   signin::MakeAccountAvailableWithCookies(identity_manager(),
                                           &test_url_loader_factory_,
                                           "user@example.com", "gaia_id");
@@ -927,7 +928,9 @@ class ProfileMenuClickTest_GuestProfile : public ProfileMenuClickTest {
 constexpr ProfileMenuView::ActionableItem
     ProfileMenuClickTest_GuestProfile::kOrderedActionableItems[];
 
-IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_GuestProfile, SetupAndRunTest) {
+// TODO(crbug.com/1012167): Flaky.
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_GuestProfile,
+                       DISABLED_SetupAndRunTest) {
   profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
   ui_test_utils::WaitForBrowserToOpen();
   Profile* guest = g_browser_process->profile_manager()->GetProfileByPath(
@@ -972,7 +975,9 @@ class ProfileMenuClickTest_IncognitoProfile : public ProfileMenuClickTest {
 constexpr ProfileMenuView::ActionableItem
     ProfileMenuClickTest_IncognitoProfile::kOrderedActionableItems[];
 
-IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_IncognitoProfile, SetupAndRunTest) {
+// TODO(crbug.com/1012167): Flaky.
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_IncognitoProfile,
+                       DISABLED_SetupAndRunTest) {
   SetTargetBrowser(CreateIncognitoBrowser(browser()->profile()));
 
   RunTest();

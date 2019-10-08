@@ -13,6 +13,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/platform_window/platform_window_base.h"
 #include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
 #include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
 #include "ui/views/test/views_test_base.h"
@@ -24,7 +25,8 @@
 namespace views {
 
 namespace {
-class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
+class FakePlatformWindow : public ui::PlatformWindowBase,
+                           public ui::WmDragHandler {
  public:
   FakePlatformWindow() { SetWmDragHandler(this, this); }
   ~FakePlatformWindow() override = default;

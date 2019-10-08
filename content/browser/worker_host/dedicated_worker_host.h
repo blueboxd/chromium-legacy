@@ -84,6 +84,8 @@ class DedicatedWorkerHost final
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver);
   void BindSmsReceiverReceiver(
       mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver);
+  void CreateWebUsbService(
+      mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
 
 #if !defined(OS_ANDROID)
   void BindSerialService(
@@ -147,9 +149,6 @@ class DedicatedWorkerHost final
   CreateNetworkFactoryForSubresources(RenderProcessHost* worker_process_host,
                                       RenderFrameHostImpl* render_frame_host,
                                       bool* bypass_redirect_checks);
-
-  void CreateWebUsbService(
-      mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
 
   void CreateWebSocketConnector(
       mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver);

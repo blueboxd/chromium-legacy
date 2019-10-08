@@ -249,11 +249,6 @@ void DesktopWindowTreeHostX11::EndMoveLoop() {
   x11_window_move_client_->EndMoveLoop();
 }
 
-void DesktopWindowTreeHostX11::SetVisibilityChangedAnimationsEnabled(
-    bool value) {
-  // Much like the previous NativeWidgetGtk, we don't have anything to do here.
-}
-
 void DesktopWindowTreeHostX11::SetOpacity(float opacity) {
   GetXWindow()->SetOpacity(opacity);
 }

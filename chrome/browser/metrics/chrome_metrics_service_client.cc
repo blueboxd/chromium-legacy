@@ -557,7 +557,7 @@ ChromeMetricsServiceClient::CreateUploader(
 }
 
 base::TimeDelta ChromeMetricsServiceClient::GetStandardUploadInterval() {
-  return metrics::GetUploadInterval();
+  return metrics::GetUploadInterval(metrics::ShouldUseCellularUploadInterval());
 }
 
 void ChromeMetricsServiceClient::OnPluginLoadingError(
@@ -999,7 +999,7 @@ void ChromeMetricsServiceClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
 }
 
 bool ChromeMetricsServiceClient::IsUMACellularUploadLogicEnabled() {
-  return metrics::IsCellularLogicEnabled();
+  return metrics::ShouldUseCellularUploadInterval();
 }
 
 void ChromeMetricsServiceClient::OnHistoryDeleted() {

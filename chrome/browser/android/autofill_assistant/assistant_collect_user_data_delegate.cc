@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/android/jni_string.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantCollectUserDataNativeDelegate_jni.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"

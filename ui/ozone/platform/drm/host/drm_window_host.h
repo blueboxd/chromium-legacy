@@ -15,7 +15,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_observer.h"
-#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_base.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
@@ -37,7 +37,7 @@ class GpuThreadAdapter;
 // State propagation needs to happen before the state change is acknowledged to
 // |delegate_| as |delegate_| is responsible for initializing the surface
 // associated with the window (the surface is created on the GPU process).
-class DrmWindowHost : public PlatformWindow,
+class DrmWindowHost : public PlatformWindowBase,
                       public PlatformEventDispatcher,
                       public GpuThreadObserver {
  public:

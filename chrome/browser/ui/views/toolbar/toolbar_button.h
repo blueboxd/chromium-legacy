@@ -114,6 +114,10 @@ class ToolbarButton : public views::LabelButton,
       SkColor dark_extreme,
       SkColor light_extreme);
 
+  // Returns the default border color used for toolbar buttons (when having a
+  // highlight text, see SetHighlight()).
+  static SkColor GetDefaultBorderColor(views::View* host_view);
+
  protected:
   // Returns if menu should be shown. Override this to change default behavior.
   virtual bool ShouldShowMenu();

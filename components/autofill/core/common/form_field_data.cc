@@ -144,7 +144,13 @@ bool HaveSameLabel(const FormFieldData& field1, const FormFieldData& field2) {
 
 FormFieldData::FormFieldData() = default;
 
-FormFieldData::FormFieldData(const FormFieldData& other) = default;
+FormFieldData::FormFieldData(const FormFieldData&) = default;
+
+FormFieldData& FormFieldData::operator=(const FormFieldData&) = default;
+
+FormFieldData::FormFieldData(FormFieldData&&) = default;
+
+FormFieldData& FormFieldData::operator=(FormFieldData&&) = default;
 
 FormFieldData::~FormFieldData() = default;
 

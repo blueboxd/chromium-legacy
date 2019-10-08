@@ -29,7 +29,8 @@ interface GuestView {
       string view_id,
       int32 element_instance_id,
       gfx.mojom.Size element_size,
-      extensions.mime_handler.BeforeUnloadControl? before_unload_control);
+      pending_remote<extensions.mime_handler.BeforeUnloadControl>?
+          before_unload_control);
 
   // Notifies the browser whether or not now is a good time to start loading the
   // MimeHandlerView. |routing_id| identifies the embedder frame. If |success|
@@ -60,7 +61,8 @@ interface MimeHandlerViewContainerManager {
   // document). This is only relevant for the non-embedded MimeHandlerView (
   // e.g., full page navigations to a relevant MIME type).
   CreateBeforeUnloadControl()
-      => (extensions.mime_handler.BeforeUnloadControl before_unload_control);
+      => (pending_remote<extensions.mime_handler.BeforeUnloadControl>
+              before_unload_control);
 
   // Asks the renderer to destroy the MimeHandlerViewFrameContainer associated
   // with MimeHandlerViewGuest with |element_instance_id|.

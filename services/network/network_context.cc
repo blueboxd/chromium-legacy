@@ -997,7 +997,7 @@ void NetworkContext::GetExpectCTState(const std::string& domain,
 
 void NetworkContext::CreateUDPSocket(
     mojo::PendingReceiver<mojom::UDPSocket> receiver,
-    mojom::UDPSocketListenerPtr listener) {
+    mojo::PendingRemote<mojom::UDPSocketListener> listener) {
   socket_factory_->CreateUDPSocket(std::move(receiver), std::move(listener));
 }
 

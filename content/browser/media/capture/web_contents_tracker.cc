@@ -15,9 +15,7 @@
 
 namespace content {
 
-WebContentsTracker::WebContentsTracker(bool track_fullscreen_rwhv)
-    : track_fullscreen_rwhv_(track_fullscreen_rwhv),
-      last_target_view_(nullptr) {}
+WebContentsTracker::WebContentsTracker() : last_target_view_(nullptr) {}
 
 WebContentsTracker::~WebContentsTracker() {
   // Likely unintentional BUG if Stop() was not called before this point.
@@ -63,11 +61,6 @@ RenderWidgetHostView* WebContentsTracker::GetTargetView() const {
   WebContents* const wc = web_contents();
   if (!wc)
     return nullptr;
-
-  if (track_fullscreen_rwhv_) {
-    if (auto* view = wc->GetFullscreenRenderWidgetHostView())
-      return view;
-  }
 
   if (auto* view = wc->GetRenderWidgetHostView()) {
     // Make sure the RWHV is still associated with a RWH before considering the

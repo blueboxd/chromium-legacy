@@ -458,18 +458,17 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
 }
 
 // A helper function to fetch the next interesting time after document_time
-SMILTime SMILTimeContainer::NextInterestingTime(
-    SMILTime presentation_time) const {
+SMILTime SMILTimeContainer::NextIntervalTime(SMILTime presentation_time) const {
   DCHECK_GE(presentation_time, SMILTime());
-  SMILTime next_interesting_time = SMILTime::Indefinite();
+  SMILTime next_interval_time = SMILTime::Indefinite();
   for (const auto& sandwich : scheduled_animations_) {
-    next_interesting_time =
-        std::min(next_interesting_time,
-                 sandwich.value->NextInterestingTime(presentation_time));
+    next_interval_time =
+        std::min(next_interval_time,
+                 sandwich.value->NextIntervalTime(presentation_time));
   }
-  DCHECK(!next_interesting_time.IsFinite() ||
-         presentation_time < next_interesting_time);
-  return next_interesting_time;
+  DCHECK(!next_interval_time.IsFinite() ||
+         presentation_time < next_interval_time);
+  return next_interval_time;
 }
 
 void SMILTimeContainer::RemoveUnusedKeys() {
@@ -512,9 +511,9 @@ void SMILTimeContainer::UpdateAnimationTimings(SMILTime presentation_time) {
     UpdateIntervals(latest_update_time_);
 
   while (latest_update_time_ < presentation_time) {
-    const SMILTime interesting_time = NextInterestingTime(latest_update_time_);
-    if (interesting_time <= presentation_time) {
-      latest_update_time_ = interesting_time;
+    const SMILTime interval_time = NextIntervalTime(latest_update_time_);
+    if (interval_time <= presentation_time) {
+      latest_update_time_ = interval_time;
       UpdateIntervals(latest_update_time_);
     } else {
       latest_update_time_ = presentation_time;

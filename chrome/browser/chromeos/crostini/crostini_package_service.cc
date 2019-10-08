@@ -249,8 +249,7 @@ void CrostiniPackageService::QueueInstallLinuxPackage(
 }
 
 void CrostiniPackageService::OnInstallLinuxPackageProgress(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     InstallLinuxPackageProgressStatus status,
     int progress_percent) {
   // Linux package install has two phases, downloading and installing, which we
@@ -260,19 +259,16 @@ void CrostiniPackageService::OnInstallLinuxPackageProgress(
   if (status == InstallLinuxPackageProgressStatus::INSTALLING)
     display_progress += 50;  // Second phase
 
-  UpdatePackageOperationStatus(ContainerId(vm_name, container_name),
-                               InstallStatusToOperationStatus(status),
-                               display_progress);
+  UpdatePackageOperationStatus(
+      container_id, InstallStatusToOperationStatus(status), display_progress);
 }
 
 void CrostiniPackageService::OnUninstallPackageProgress(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     UninstallPackageProgressStatus status,
     int progress_percent) {
-  UpdatePackageOperationStatus(ContainerId(vm_name, container_name),
-                               UninstallStatusToOperationStatus(status),
-                               progress_percent);
+  UpdatePackageOperationStatus(
+      container_id, UninstallStatusToOperationStatus(status), progress_percent);
 }
 
 void CrostiniPackageService::OnVmShutdown(const std::string& vm_name) {

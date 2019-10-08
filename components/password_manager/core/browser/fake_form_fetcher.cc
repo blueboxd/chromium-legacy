@@ -53,8 +53,8 @@ const std::vector<const PasswordForm*>& FakeFormFetcher::GetAllRelevantMatches()
   return non_federated_same_scheme_;
 }
 
-const std::map<base::string16, const PasswordForm*>&
-FakeFormFetcher::GetBestMatches() const {
+const std::vector<const PasswordForm*>& FakeFormFetcher::GetBestMatches()
+    const {
   return best_matches_;
 }
 

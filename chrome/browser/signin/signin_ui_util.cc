@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -14,11 +15,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -233,6 +236,30 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
 
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
+base::string16 GetShortProfileIdentityToDisplay(
+    const ProfileAttributesEntry& profile_attributes_entry,
+    Profile* profile) {
+  DCHECK(profile);
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  CoreAccountInfo core_info =
+      identity_manager->GetUnconsentedPrimaryAccountInfo();
+  // If there's no unconsented primary account, simply return the name of the
+  // profile according to profile attributes.
+  if (core_info.IsEmpty())
+    return profile_attributes_entry.GetName();
+
+  base::Optional<AccountInfo> extended_info =
+      identity_manager
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              core_info.account_id);
+  // If there's no given name available, return the user email.
+  if (!extended_info.has_value() || extended_info->given_name.empty())
+    return base::UTF8ToUTF16(core_info.email);
+
+  return base::UTF8ToUTF16(extended_info->given_name);
+}
+
 std::string GetAllowedDomain(std::string signin_pattern) {
   std::vector<std::string> splitted_signin_pattern = base::SplitString(
       signin_pattern, "@", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
@@ -258,6 +285,32 @@ std::string GetAllowedDomain(std::string signin_pattern) {
     return std::string();
 
   return domain;
+}
+
+bool ShouldShowIdentityOnOpeningProfile(
+    const ProfileAttributesStorage& profile_attributes_storage,
+    Profile* profile) {
+  DCHECK(profile);
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  DCHECK(identity_manager->AreRefreshTokensLoaded());
+  // Wait with the potential positive response until refresh tokens are loaded
+  // so that we never show it twice on startup.
+  // TODO(crbug.com/1009441): Make it only appear once per profile
+  // instantiation (currently it appears for every new window which have their
+  // own instance of AvatarToolbarButton).
+  if (!base::FeatureList::IsEnabled(
+          features::kAnimatedAvatarButtonOnOpeningProfile)) {
+    return false;
+  }
+
+  // Show the user identity for users with multiple profiles.
+  if (profile_attributes_storage.GetNumberOfProfiles() > 1) {
+    return true;
+  }
+
+  // Show the user identity for users with multiple signed-in accounts.
+  return identity_manager->GetAccountsWithRefreshTokens().size() > 1;
 }
 
 }  // namespace signin_ui_util

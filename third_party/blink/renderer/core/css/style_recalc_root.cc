@@ -45,7 +45,7 @@ bool StyleRecalcRoot::IsChildDirty(const ContainerNode& node) const {
 #endif  // DCHECK_IS_ON()
 
 bool StyleRecalcRoot::IsDirty(const Node& node) const {
-  return node.NeedsStyleRecalc();
+  return node.IsDirtyForStyleRecalc();
 }
 
 void StyleRecalcRoot::ClearChildDirtyForAncestors(ContainerNode& parent) const {

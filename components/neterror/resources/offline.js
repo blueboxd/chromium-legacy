@@ -1618,6 +1618,7 @@ function Trex(canvas, spritePos) {
   this.spritePos = spritePos;
   this.xPos = 0;
   this.yPos = 0;
+  this.xInitialPos = 0;
   // Position when on the ground.
   this.groundYPos = 0;
   this.currentFrame = 0;
@@ -1630,7 +1631,6 @@ function Trex(canvas, spritePos) {
   this.config = Trex.config;
   // Current status.
   this.status = Trex.status.WAITING;
-
   this.jumping = false;
   this.ducking = false;
   this.jumpVelocity = 0;
@@ -1779,6 +1779,7 @@ Trex.prototype = {
     if (this.playingIntro && this.xPos < this.config.START_X_POS) {
       this.xPos += Math.round((this.config.START_X_POS /
           this.config.INTRO_DURATION) * deltaTime);
+      this.xInitialPos = this.xPos;
     }
 
     if (this.status == Trex.status.WAITING) {
@@ -1957,6 +1958,7 @@ Trex.prototype = {
    * Reset the t-rex to running at start of game.
    */
   reset: function() {
+    this.xPos = this.xInitialPos;
     this.yPos = this.groundYPos;
     this.jumpVelocity = 0;
     this.jumping = false;

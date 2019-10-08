@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/strings/string_piece.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -96,6 +97,9 @@ class BackForwardCacheMetrics
   // TODO(hajimehoshi): Add the parameter representing the reason.
   void MarkEvictedFromBackForwardCache();
 
+  // Marks the frame disabled the back forward cache with the reason.
+  void MarkDisableForRenderFrameHost(const base::StringPiece& reason);
+
   // Injects a clock for mocking time.
   // Should be called only from the UI thread.
   CONTENT_EXPORT static void OverrideTimeForTesting(base::TickClock* clock);
@@ -111,6 +115,8 @@ class BackForwardCacheMetrics
   // of a given frame.
   void CollectFeatureUsageFromSubtree(RenderFrameHostImpl* rfh,
                                       const url::Origin& main_frame_origin);
+
+  void RecordMetricsForHistoryNavigationCommit(NavigationRequest* navigation);
 
   // Main frame document sequence number that identifies all NavigationEntries
   // this metrics object is associated with.
@@ -136,6 +142,7 @@ class BackForwardCacheMetrics
   base::Optional<base::TimeTicks> navigated_away_from_main_document_timestamp_;
 
   bool evicted_ = false;
+  std::vector<std::string> disallowed_reasons_;
 
   DISALLOW_COPY_AND_ASSIGN(BackForwardCacheMetrics);
 };

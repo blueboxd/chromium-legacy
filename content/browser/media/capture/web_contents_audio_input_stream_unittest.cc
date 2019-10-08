@@ -77,8 +77,7 @@ class MockAudioMirroringManager : public AudioMirroringManager {
 
 class MockWebContentsTracker : public WebContentsTracker {
  public:
-  MockWebContentsTracker() : WebContentsTracker(false) {}
-
+  MockWebContentsTracker() = default;
   MOCK_METHOD3(Start,
                void(int render_process_id, int render_frame_id,
                     const ChangeCallback& callback));

@@ -18,6 +18,14 @@ FakeConciergeClient::FakeConciergeClient() {
 }
 FakeConciergeClient::~FakeConciergeClient() = default;
 
+void FakeConciergeClient::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void FakeConciergeClient::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void FakeConciergeClient::AddVmObserver(VmObserver* observer) {
   vm_observer_list_.AddObserver(observer);
 }

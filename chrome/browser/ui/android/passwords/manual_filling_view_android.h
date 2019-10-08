@@ -32,7 +32,6 @@ class ManualFillingViewAndroid : public ManualFillingViewInterface {
   void CloseAccessorySheet() override;
   void SwapSheetWithKeyboard() override;
   void ShowWhenKeyboardIsVisible() override;
-  void ShowTouchToFillSheet() override;
   void Hide() override;
 
   // Called from Java via JNI:

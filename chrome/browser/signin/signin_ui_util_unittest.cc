@@ -9,11 +9,15 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "build/buildflag.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "components/account_id/account_id.h"
 #include "components/google/core/common/google_util.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -52,8 +56,12 @@ TEST_F(GetAllowedDomainTest, WithValidPattern) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 namespace {
+
 const char kMainEmail[] = "main_email@example.com";
 const char kMainGaiaID[] = "main_gaia_id";
+const char kSecondaryEmail[] = "secondary_email@example.com";
+const char kSecondaryGaiaID[] = "secondary_gaia_id";
+
 class SigninUiUtilTestBrowserWindow : public TestBrowserWindow {
  public:
   SigninUiUtilTestBrowserWindow() = default;
@@ -76,6 +84,7 @@ class SigninUiUtilTestBrowserWindow : public TestBrowserWindow {
 
   DISALLOW_COPY_AND_ASSIGN(SigninUiUtilTestBrowserWindow);
 };
+
 }  // namespace
 
 class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
@@ -497,5 +506,60 @@ TEST_F(DiceSigninUiUtilTest, MergeDiceSigninTab) {
   EXPECT_EQ(1, tab_strip->active_index());
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+TEST_F(DiceSigninUiUtilTest,
+       ShouldShowIdentityOnOpeningProfile_ReturnsTrueForMultiProfiles) {
+  const char kSecondProfile[] = "SecondProfile";
+  const base::FilePath profile_path =
+      profile_manager()->profiles_dir().AppendASCII(kSecondProfile);
+  profile_manager()->profile_attributes_storage()->AddProfile(
+      profile_path, base::ASCIIToUTF16(kSecondProfile), std::string(),
+      base::string16(), false, 0, std::string(), EmptyAccountId());
+
+  EXPECT_TRUE(ShouldShowIdentityOnOpeningProfile(
+      *profile_manager()->profile_attributes_storage(), profile()));
+}
+
+TEST_F(DiceSigninUiUtilTest,
+       ShouldShowIdentityOnOpeningProfile_ReturnsTrueForMultiSignin) {
+  GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+      kMainGaiaID, kMainEmail, "refresh_token", false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+      kSecondaryEmail, kSecondaryGaiaID, "refresh_token", false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+
+  EXPECT_TRUE(ShouldShowIdentityOnOpeningProfile(
+      *profile_manager()->profile_attributes_storage(), profile()));
+}
+
+TEST_F(
+    DiceSigninUiUtilTest,
+    ShouldShowIdentityOnOpeningProfile_ReturnsFalseForSingleProfileSingleSignin) {
+  GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+      kMainGaiaID, kMainEmail, "refresh_token", false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+
+  EXPECT_FALSE(ShouldShowIdentityOnOpeningProfile(
+      *profile_manager()->profile_attributes_storage(), profile()));
+}
+
+TEST_F(DiceSigninUiUtilTest,
+       ShouldShowIdentityOnOpeningProfile_ReturnsFalseForFeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAnimatedAvatarButtonOnOpeningProfile);
+
+  // Do the same setup that makes the previous test return true.
+  GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+      kMainGaiaID, kMainEmail, "refresh_token", false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+      kSecondaryEmail, kSecondaryGaiaID, "refresh_token", false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+
+  EXPECT_FALSE(ShouldShowIdentityOnOpeningProfile(
+      *profile_manager()->profile_attributes_storage(), profile()));
+}
 
 }  // namespace signin_ui_util

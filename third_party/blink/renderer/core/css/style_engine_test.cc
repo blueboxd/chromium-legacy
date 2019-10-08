@@ -69,6 +69,10 @@ class StyleEngineTest : public testing::Test {
         DocumentLifecycle::LifecycleUpdateReason::kTest);
   }
 
+  Node* GetStyleRecalcRoot() {
+    return GetStyleEngine().style_recalc_root_.GetRootNode();
+  }
+
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
@@ -2254,6 +2258,23 @@ TEST_F(StyleEngineTest, NeedsLayoutTreeRebuild) {
   GetDocument().GetStyleEngine().RecalcStyle();
 
   EXPECT_TRUE(GetStyleEngine().NeedsLayoutTreeRebuild());
+}
+
+TEST_F(StyleEngineTest, ForceReattachLayoutTreeStyleRecalcRoot) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <div id="outer">
+      <div id="inner"></div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  Element* outer = GetDocument().getElementById("outer");
+  Element* inner = GetDocument().getElementById("inner");
+
+  outer->SetForceReattachLayoutTree();
+  inner->SetInlineStyleProperty(CSSPropertyID::kColor, "blue");
+
+  EXPECT_EQ(outer, GetStyleRecalcRoot());
 }
 
 }  // namespace blink

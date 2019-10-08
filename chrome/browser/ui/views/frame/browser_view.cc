@@ -513,7 +513,17 @@ BrowserView* BrowserView::GetBrowserViewForNativeWindow(
 
 // static
 BrowserView* BrowserView::GetBrowserViewForBrowser(const Browser* browser) {
-  return static_cast<BrowserView*>(browser->window());
+  // It might look like this method should be implemented as:
+  //   return static_cast<BrowserView*>(browser->window())
+  // but in fact in unit tests browser->window() may not be a BrowserView even
+  // in Views Browser builds. Always go through the ForNativeWindow path, which
+  // is robust against being given any kind of native window.
+  //
+  // Also, tests don't always have a non-null NativeWindow backing the
+  // BrowserWindow, so be sure to check for that as well.
+  if (!browser->window()->GetNativeWindow())
+    return nullptr;
+  return GetBrowserViewForNativeWindow(browser->window()->GetNativeWindow());
 }
 
 // static

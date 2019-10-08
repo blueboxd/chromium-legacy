@@ -33,6 +33,15 @@
 #endif
 
 namespace webui {
+namespace {
+std::string GetWebUiCssTextDefaults(const std::string& css_template) {
+  ui::TemplateReplacements placeholders;
+  placeholders["textDirection"] = GetTextDirection();
+  placeholders["fontFamily"] = GetFontFamily();
+  placeholders["fontSize"] = GetFontSize();
+  return ui::ReplaceTemplateExpressions(css_template, placeholders);
+}
+}  // namespace
 
 std::string GetBitmapDataUrl(const SkBitmap& bitmap) {
   TRACE_EVENT2("ui", "GetBitmapDataUrl", "width", bitmap.width(), "height",
@@ -193,26 +202,18 @@ void SetLoadTimeDataDefaults(const std::string& app_locale,
   (*replacements)["textdirection"] = GetTextDirection();
 }
 
-std::string GetWebUiCssTextDefaults(base::StringPiece css_template) {
-  ui::TemplateReplacements placeholders;
-  placeholders["textDirection"] = GetTextDirection();
-  placeholders["fontFamily"] = GetFontFamily();
-  placeholders["fontSize"] = GetFontSize();
-  return ui::ReplaceTemplateExpressions(css_template, placeholders);
-}
-
 std::string GetWebUiCssTextDefaults() {
   const ui::ResourceBundle& resource_bundle =
       ui::ResourceBundle::GetSharedInstance();
   return GetWebUiCssTextDefaults(
-      resource_bundle.GetRawDataResource(IDR_WEBUI_CSS_TEXT_DEFAULTS));
+      resource_bundle.DecompressDataResource(IDR_WEBUI_CSS_TEXT_DEFAULTS));
 }
 
 std::string GetWebUiCssTextDefaultsMd() {
   const ui::ResourceBundle& resource_bundle =
       ui::ResourceBundle::GetSharedInstance();
   return GetWebUiCssTextDefaults(
-      resource_bundle.GetRawDataResource(IDR_WEBUI_CSS_TEXT_DEFAULTS_MD));
+      resource_bundle.DecompressDataResource(IDR_WEBUI_CSS_TEXT_DEFAULTS_MD));
 }
 
 void AppendWebUiCssTextDefaults(std::string* html) {

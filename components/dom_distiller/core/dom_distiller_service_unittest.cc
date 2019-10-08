@@ -15,15 +15,12 @@
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_model.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
-#include "components/dom_distiller/core/dom_distiller_test_util.h"
 #include "components/dom_distiller/core/fake_distiller.h"
 #include "components/dom_distiller/core/fake_distiller_page.h"
 #include "components/dom_distiller/core/task_tracker.h"
-#include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using leveldb_proto::test::FakeDB;
 using testing::_;
 using testing::Invoke;
 using testing::Return;
@@ -75,9 +72,7 @@ class DomDistillerServiceTest : public testing::Test {
     ArticleEntry entry;
     entry.set_entry_id(kTestEntryId);
     entry.add_pages()->set_url("http://www.example.com/p1");
-    db_model_[kTestEntryId] = entry;
-    FakeDB<ArticleEntry>* fake_db = new FakeDB<ArticleEntry>(&db_model_);
-    store_ = test::util::CreateStoreWithFakeDB(fake_db, db_model_);
+    store_ = new DomDistillerStore({entry});
     distiller_factory_ = new MockDistillerFactory();
     distiller_page_factory_ = new MockDistillerPageFactory();
     service_.reset(new DomDistillerService(
@@ -85,8 +80,6 @@ class DomDistillerServiceTest : public testing::Test {
         std::unique_ptr<DistillerFactory>(distiller_factory_),
         std::unique_ptr<DistillerPageFactory>(distiller_page_factory_),
         std::unique_ptr<DistilledPagePrefs>()));
-    fake_db->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
-    fake_db->LoadCallback(true);
   }
 
   void TearDown() override {
@@ -103,7 +96,6 @@ class DomDistillerServiceTest : public testing::Test {
   MockDistillerFactory* distiller_factory_;
   MockDistillerPageFactory* distiller_page_factory_;
   std::unique_ptr<DomDistillerService> service_;
-  FakeDB<ArticleEntry>::EntryMap db_model_;
 };
 
 TEST_F(DomDistillerServiceTest, TestViewEntry) {

@@ -300,9 +300,7 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
   }
   pending_body_consumer_ = std::move(consumer_handle);
   body_data_pipe_adapter_ = std::make_unique<SourceStreamToDataPipe>(
-      std::move(payload_stream), std::move(producer_handle),
-      base::BindOnce(&SignedExchangeLoader::FinishReadingBody,
-                     base::Unretained(this)));
+      std::move(payload_stream), std::move(producer_handle));
 
   StartReadingBody();
 }
@@ -337,7 +335,8 @@ void SignedExchangeLoader::StartReadingBody() {
 
   // Start reading.
   client_->OnStartLoadingResponseBody(std::move(pending_body_consumer_));
-  body_data_pipe_adapter_->Start();
+  body_data_pipe_adapter_->Start(base::BindOnce(
+      &SignedExchangeLoader::FinishReadingBody, base::Unretained(this)));
 }
 
 void SignedExchangeLoader::FinishReadingBody(int result) {

@@ -153,7 +153,8 @@ UDPSocket::PendingSendRequest::PendingSendRequest() {}
 
 UDPSocket::PendingSendRequest::~PendingSendRequest() {}
 
-UDPSocket::UDPSocket(mojom::UDPSocketListenerPtr listener, net::NetLog* net_log)
+UDPSocket::UDPSocket(mojo::PendingRemote<mojom::UDPSocketListener> listener,
+                     net::NetLog* net_log)
     : net_log_(net_log),
       is_bound_(false),
       is_connected_(false),

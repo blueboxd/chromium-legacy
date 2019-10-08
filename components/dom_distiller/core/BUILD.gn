@@ -88,8 +88,6 @@ static_library("core") {
 static_library("test_support") {
   testonly = true
   sources = [
-    "dom_distiller_test_util.cc",
-    "dom_distiller_test_util.h",
     "fake_distiller.cc",
     "fake_distiller.h",
     "fake_distiller_page.cc",
@@ -133,7 +131,6 @@ source_set("unit_tests") {
     "dom_distiller_model_unittest.cc",
     "dom_distiller_request_view_base_unittest.cc",
     "dom_distiller_service_unittest.cc",
-    "dom_distiller_store_unittest.cc",
     "page_features_unittest.cc",
     "task_tracker_unittest.cc",
     "url_utils_unittest.cc",

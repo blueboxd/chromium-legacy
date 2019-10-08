@@ -21,6 +21,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -48,10 +49,7 @@ FeaturePodIconButton::FeaturePodIconButton(views::ButtonListener* listener)
   SetImageHorizontalAlignment(ALIGN_CENTER);
   SetImageVerticalAlignment(ALIGN_MIDDLE);
   TrayPopupUtils::ConfigureTrayPopupButton(this);
-
-  auto path = std::make_unique<SkPath>();
-  path->addOval(gfx::RectToSkRect(gfx::Rect(kUnifiedFeaturePodIconSize)));
-  SetProperty(views::kHighlightPathKey, path.release());
+  views::InstallCircleHighlightPathGenerator(this);
 }
 
 FeaturePodIconButton::~FeaturePodIconButton() = default;

@@ -99,12 +99,11 @@ void AnsibleManagementService::OnInstallAnsibleInDefaultContainer(
 }
 
 void AnsibleManagementService::OnInstallLinuxPackageProgress(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     InstallLinuxPackageProgressStatus status,
     int progress_percent) {
-  DCHECK_EQ(vm_name, kCrostiniDefaultVmName);
-  DCHECK_EQ(container_name, kCrostiniDefaultContainerName);
+  DCHECK_EQ(container_id.first, kCrostiniDefaultVmName);
+  DCHECK_EQ(container_id.second, kCrostiniDefaultContainerName);
 
   switch (status) {
     case InstallLinuxPackageProgressStatus::SUCCEEDED:
@@ -129,8 +128,7 @@ void AnsibleManagementService::OnInstallLinuxPackageProgress(
 }
 
 void AnsibleManagementService::OnUninstallPackageProgress(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     UninstallPackageProgressStatus status,
     int progress_percent) {
   NOTIMPLEMENTED();

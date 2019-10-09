@@ -111,6 +111,7 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
       params.should_replace_current_entry;
   load_params.is_renderer_initiated = params.is_renderer_initiated;
   load_params.has_user_gesture = params.user_gesture;
+  load_params.initiator_origin = params.initiator_origin;
 
   if (params.uses_post) {
     load_params.load_type = content::NavigationController::LOAD_TYPE_HTTP_POST;

@@ -163,7 +163,6 @@ customize.IDS = {
  */
 customize.CLASSES = {
   ATTR_SMALL: 'attr-small',
-  ATTR_COMMON: 'attr-common',
   ATTR_LINK: 'attr-link',
   COLLECTION_DIALOG: 'is-col-sel',
   COLLECTION_SELECTED: 'bg-selected',  // Highlight selected tile
@@ -358,25 +357,27 @@ customize.onThemeChange = function() {
 customize.setAttribution = function(
     attributionLine1, attributionLine2, attributionActionUrl) {
   const attributionBox = $(customize.IDS.ATTRIBUTIONS);
-  const attr1 = document.createElement('span');
+  const attr1 = document.createElement('a');
   attr1.id = customize.IDS.ATTR1;
-  const attr2 = document.createElement('span');
+  const attr2 = document.createElement('a');
   attr2.id = customize.IDS.ATTR2;
 
   if (attributionLine1 !== '') {
     // Shouldn't be changed from textContent for security assurances.
     attr1.textContent = attributionLine1;
-    attr1.classList.add(customize.CLASSES.ATTR_COMMON);
+    attr1.href = attributionActionUrl || '';
     $(customize.IDS.ATTRIBUTIONS).appendChild(attr1);
   }
+
   if (attributionLine2 !== '') {
     // Shouldn't be changed from textContent for security assurances.
     attr2.textContent = attributionLine2;
-    attr2.classList.add(customize.CLASSES.ATTR_SMALL);
-    attr2.classList.add(customize.CLASSES.ATTR_COMMON);
+    attr2.href = attributionActionUrl || '';
     attributionBox.appendChild(attr2);
   }
-  if (attributionActionUrl !== '') {
+
+  const hasActionUrl = attributionActionUrl !== '';
+  if (hasActionUrl) {
     const attr = (attributionLine2 !== '' ? attr2 : attr1);
     attr.classList.add(customize.CLASSES.ATTR_LINK);
 
@@ -388,24 +389,18 @@ customize.setAttribution = function(
     }
     attr.insertBefore(linkIcon, attr.firstChild);
 
-    attributionBox.classList.add(customize.CLASSES.ATTR_LINK);
-    attributionBox.href = attributionActionUrl;
-    attributionBox.onclick = function() {
-      ntpApiHandle.logEvent(
-          customize.LOG_TYPE.NTP_CUSTOMIZE_ATTRIBUTION_CLICKED);
+    attributionBox.onclick = e => {
+      if (attr1.contains(e.target) || attr2.contains(e.target)) {
+        ntpApiHandle.logEvent(
+            customize.LOG_TYPE.NTP_CUSTOMIZE_ATTRIBUTION_CLICKED);
+      }
     };
-    attributionBox.style.cursor = 'pointer';
   }
+  attributionBox.classList.toggle(customize.CLASSES.ATTR_LINK, hasActionUrl);
 };
 
 customize.clearAttribution = function() {
-  const attributions = $(customize.IDS.ATTRIBUTIONS);
-  attributions.removeAttribute('href');
-  attributions.className = '';
-  attributions.style.cursor = 'default';
-  while (attributions.firstChild) {
-    attributions.removeChild(attributions.firstChild);
-  }
+  $(customize.IDS.ATTRIBUTIONS).innerHTML = '';
 };
 
 customize.unselectTile = function() {

@@ -26,6 +26,7 @@ class PpdProvider;
 class PrinterConfigurer;
 class PrinterDetector;
 class PrinterEventTracker;
+class ServerPrintersProvider;
 class SyncedPrintersManager;
 class UsbPrinterNotificationController;
 
@@ -63,6 +64,7 @@ class CupsPrintersManager : public PrinterInstallationManager,
       std::unique_ptr<PrinterConfigurer> printer_configurer,
       std::unique_ptr<UsbPrinterNotificationController>
           usb_notification_controller,
+      std::unique_ptr<ServerPrintersProvider> server_printers_provider,
       PrinterEventTracker* event_tracker,
       PrefService* pref_service);
 

@@ -159,26 +159,6 @@ void BuiltInChromeOsApps::Launch(const std::string& app_id,
                                  int32_t event_flags,
                                  apps::mojom::LaunchSource launch_source,
                                  int64_t display_id) {
-  switch (launch_source) {
-    case apps::mojom::LaunchSource::kUnknown:
-      break;
-    case apps::mojom::LaunchSource::kFromAppListGrid:
-    case apps::mojom::LaunchSource::kFromAppListGridContextMenu:
-      InternalAppItem::RecordActiveHistogram(app_id);
-      break;
-    case apps::mojom::LaunchSource::kFromAppListQuery:
-    case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
-      app_list::InternalAppResult::RecordOpenHistogram(app_id);
-      break;
-    case apps::mojom::LaunchSource::kFromAppListRecommendation:
-      app_list::InternalAppResult::RecordOpenHistogram(app_id);
-      break;
-    case apps::mojom::LaunchSource::kFromParentalControls:
-    case apps::mojom::LaunchSource::kFromShelf:
-    case apps::mojom::LaunchSource::kFromFileManager:
-      break;
-  }
-
   app_list::OpenInternalApp(app_id, profile_, event_flags);
 }
 

@@ -23,6 +23,8 @@ namespace syncer {
 class ModelTypeChangeProcessor;
 }  // namespace syncer
 
+namespace chromeos {
+
 namespace sync_wifi {
 
 // Receives updates to network configurations from the Chrome sync back end and
@@ -84,5 +86,7 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge {
 };
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos
 
 #endif  // CHROMEOS_COMPONENTS_SYNC_WIFI_WIFI_CONFIGURATION_BRIDGE_H_

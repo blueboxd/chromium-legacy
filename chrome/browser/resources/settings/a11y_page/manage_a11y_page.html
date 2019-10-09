@@ -80,31 +80,35 @@
         label="$i18n{screenMagnifierLabel}"
         disabled="[[prefs.ash.docked_magnifier.enabled.value]]">
     </settings-toggle-button>
-    <div class="settings-box continuation">
-      <div class="start sub-item settings-box-text">
-        $i18n{screenMagnifierZoomLabel}
+    <template is="dom-if" if="[[prefs.settings.a11y.screen_magnifier.value]]">
+      <div class="settings-box continuation">
+        <div class="start sub-item settings-box-text">
+          $i18n{screenMagnifierZoomLabel}
+        </div>
+        <settings-dropdown-menu label="$i18n{screenMagnifierZoomLabel}"
+            pref="{{prefs.settings.a11y.screen_magnifier_scale}}"
+            menu-options="[[screenMagnifierZoomOptions_]]"
+            disabled="[[!prefs.settings.a11y.screen_magnifier.value]]">
+        </settings-dropdown-menu>
       </div>
-      <settings-dropdown-menu label="$i18n{screenMagnifierZoomLabel}"
-          pref="{{prefs.settings.a11y.screen_magnifier_scale}}"
-          menu-options="[[screenMagnifierZoomOptions_]]"
-          disabled="[[!prefs.settings.a11y.screen_magnifier.value]]">
-      </settings-dropdown-menu>
-    </div>
+    </template>
     <settings-toggle-button
         pref="{{prefs.ash.docked_magnifier.enabled}}"
         label="$i18n{dockedMagnifierLabel}"
         disabled="[[prefs.settings.a11y.screen_magnifier.value]]">
     </settings-toggle-button>
-    <div class="settings-box continuation">
-      <div class="start sub-item settings-box-text">
-        $i18n{dockedMagnifierZoomLabel}
+    <template is="dom-if" if="[[prefs.ash.docked_magnifier.enabled.value]]">
+      <div class="settings-box continuation">
+        <div class="start sub-item settings-box-text">
+          $i18n{dockedMagnifierZoomLabel}
+        </div>
+        <settings-dropdown-menu label="$i18n{dockedMagnifierZoomLabel}"
+            pref="{{prefs.ash.docked_magnifier.scale}}"
+            menu-options="[[screenMagnifierZoomOptions_]]"
+            disabled="[[!prefs.ash.docked_magnifier.enabled.value]]">
+        </settings-dropdown-menu>
       </div>
-      <settings-dropdown-menu label="$i18n{dockedMagnifierZoomLabel}"
-          pref="{{prefs.ash.docked_magnifier.scale}}"
-          menu-options="[[screenMagnifierZoomOptions_]]"
-          disabled="[[!prefs.ash.docked_magnifier.enabled.value]]">
-      </settings-dropdown-menu>
-    </div>
+    </template>
     <cr-link-row class="hr" label="$i18n{displaySettingsTitle}"
         on-click="onDisplayTap_" sub-label="$i18n{displaySettingsDescription}"
         embedded></cr-link-row>

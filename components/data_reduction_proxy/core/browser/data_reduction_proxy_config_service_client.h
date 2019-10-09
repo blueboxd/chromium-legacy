@@ -29,7 +29,7 @@ class HttpRequestHeaders;
 class HttpResponseHeaders;
 struct LoadTimingInfo;
 class ProxyServer;
-}
+}  // namespace net
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -105,6 +105,10 @@ class DataReductionProxyConfigServiceClient
   // Request the retrieval of the Data Reduction Proxy configuration. This
   // operation takes place asynchronously.
   void RetrieveConfig();
+
+  // Invalidates the current Data Reduction Proxy configuration and requests the
+  // retrieval of the Data Reduction Proxy configuration
+  void InvalidateAndRetrieveNewConfig();
 
   // Takes a serialized Data Reduction Proxy configuration and sets it as the
   // current Data Reduction Proxy configuration. If a remote configuration has

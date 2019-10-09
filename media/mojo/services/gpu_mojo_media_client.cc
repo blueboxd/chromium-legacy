@@ -15,7 +15,6 @@
 #include "media/base/fallback_video_decoder.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_decoder.h"
-#include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
@@ -111,6 +110,7 @@ GpuMojoMediaClient::GpuMojoMediaClient(
     const gpu::GpuFeatureInfo& gpu_feature_info,
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
     base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     AndroidOverlayMojoFactoryCB android_overlay_factory_cb,
     CdmProxyFactoryCB cdm_proxy_factory_cb)
     : gpu_preferences_(gpu_preferences),
@@ -119,7 +119,11 @@ GpuMojoMediaClient::GpuMojoMediaClient(
       gpu_task_runner_(std::move(gpu_task_runner)),
       media_gpu_channel_manager_(std::move(media_gpu_channel_manager)),
       android_overlay_factory_cb_(std::move(android_overlay_factory_cb)),
-      cdm_proxy_factory_cb_(std::move(cdm_proxy_factory_cb)) {}
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+      gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+      cdm_proxy_factory_cb_(std::move(cdm_proxy_factory_cb)) {
+}
 
 GpuMojoMediaClient::~GpuMojoMediaClient() = default;
 
@@ -237,8 +241,9 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
 
 #elif defined(OS_CHROMEOS)
       if (base::FeatureList::IsEnabled(kChromeosVideoDecoder)) {
-#if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
-        auto frame_pool = std::make_unique<PlatformVideoFramePool>();
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+        auto frame_pool = std::make_unique<PlatformVideoFramePool>(
+            gpu_memory_buffer_factory_);
         auto frame_converter = MailboxVideoFrameConverter::Create(
             base::BindRepeating(&PlatformVideoFramePool::UnwrapFrame,
                                 base::Unretained(frame_pool.get())),
@@ -249,7 +254,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                                 command_buffer_id->route_id));
         video_decoder = ChromeosVideoDecoderFactory::Create(
             task_runner, std::move(frame_pool), std::move(frame_converter));
-#endif  // BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
       } else {
         video_decoder = VdaVideoDecoder::Create(
             task_runner, gpu_task_runner_, media_log->Clone(),

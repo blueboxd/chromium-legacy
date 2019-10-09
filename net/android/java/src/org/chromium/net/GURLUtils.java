@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 
@@ -34,8 +35,9 @@ public final class GURLUtils {
         return GURLUtilsJni.get().getScheme(url);
     }
 
+    @VisibleForTesting
     @NativeMethods
-    interface Natives {
+    public interface Natives {
         String getOrigin(String url);
         String getScheme(String url);
     }

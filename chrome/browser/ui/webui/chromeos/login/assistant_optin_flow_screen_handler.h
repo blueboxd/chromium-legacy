@@ -63,6 +63,7 @@ class AssistantOptInFlowScreenHandler
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void RegisterMessages() override;
+  void GetAdditionalParameters(base::DictionaryValue* dict) override;
 
   // AssistantOptInFlowScreenView:
   void Bind(AssistantOptInFlowScreen* screen) override;

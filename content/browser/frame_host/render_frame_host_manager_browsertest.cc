@@ -94,8 +94,8 @@ const char kOpenUrlViaClickTargetFunc[] =
 
 // Adds a link with given url and target=_blank, and clicks on it.
 void OpenUrlViaClickTarget(const ToRenderFrameHost& adapter, const GURL& url) {
-  EXPECT_TRUE(ExecuteScript(adapter,
-      std::string(kOpenUrlViaClickTargetFunc) + "(\"" + url.spec() + "\");"));
+  EXPECT_TRUE(ExecuteScript(adapter, std::string(kOpenUrlViaClickTargetFunc) +
+                                         "(\"" + url.spec() + "\");"));
 }
 
 class TestWebUIMessageHandler : public WebUIMessageHandler {
@@ -346,8 +346,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, NoScriptAccessAfterSwapOut) {
   navigation_observer.Wait();
 
   GURL blank_url(url::kAboutBlankURL);
-  EXPECT_EQ(blank_url,
-            new_shell->web_contents()->GetLastCommittedURL());
+  EXPECT_EQ(blank_url, new_shell->web_contents()->GetLastCommittedURL());
   EXPECT_EQ(orig_site_instance, new_shell->web_contents()->GetSiteInstance());
 
   // We should have access to the opened window's location.
@@ -443,8 +442,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       embedded_test_server()->GetURL("/click-noreferrer-links.html").spec();
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell, "window.domAutomationController.send(document.referrer == '" +
-                     expected_referrer + "');",
+      new_shell,
+      "window.domAutomationController.send(document.referrer == '" +
+          expected_referrer + "');",
       &success));
   EXPECT_TRUE(success);
 
@@ -499,8 +499,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       embedded_test_server()->GetURL("/click-noreferrer-links.html").spec();
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell, "window.domAutomationController.send(document.referrer == '" +
-                     expected_referrer + "');",
+      new_shell,
+      "window.domAutomationController.send(document.referrer == '" +
+          expected_referrer + "');",
       &success));
   EXPECT_TRUE(success);
 
@@ -984,8 +985,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   scoped_refptr<SiteInstance> orig_site_instance(
       opener_contents->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance.get() != nullptr);
-  RenderFrameHostManager* opener_manager = static_cast<WebContentsImpl*>(
-      opener_contents)->GetRenderManagerForTesting();
+  RenderFrameHostManager* opener_manager =
+      static_cast<WebContentsImpl*>(opener_contents)
+          ->GetRenderManagerForTesting();
 
   // 1) Open two more windows, one named.  These initially have openers but no
   // reference to each other.  We will later post a message between them.
@@ -1087,8 +1089,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   expected_title = ASCIIToUTF16("msg2");
   TitleWatcher title_watcher2(foo_contents, expected_title);
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_contents,
-      "window.domAutomationController.send(postToFoo('msg2'));",
+      new_contents, "window.domAutomationController.send(postToFoo('msg2'));",
       &success));
   EXPECT_TRUE(success);
   ASSERT_EQ(expected_title, title_watcher2.WaitAndGetTitle());
@@ -1128,8 +1129,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   scoped_refptr<SiteInstance> orig_site_instance(
       opener_contents->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance.get() != nullptr);
-  RenderFrameHostManager* opener_manager = static_cast<WebContentsImpl*>(
-      opener_contents)->GetRenderManagerForTesting();
+  RenderFrameHostManager* opener_manager =
+      static_cast<WebContentsImpl*>(opener_contents)
+          ->GetRenderManagerForTesting();
 
   // 1) Open a named target=foo window. We will later post a message between the
   // opener and the new window.
@@ -1168,8 +1170,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   TitleWatcher title_observer(opener_contents, expected_title);
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       opener_contents,
-      "window.domAutomationController.send(postWithPortToFoo());",
-      &success));
+      "window.domAutomationController.send(postWithPortToFoo());", &success));
   EXPECT_TRUE(success);
   ASSERT_FALSE(
       opener_manager->GetSwappedOutRenderViewHost(orig_site_instance.get()));
@@ -1362,8 +1363,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Navigate the first window to a different site as well.  The original
   // process should exit, since all of its views are now swapped out.
   RenderProcessHostWatcher exit_observer(
-      orig_process,
-      RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
+      orig_process, RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
   EXPECT_TRUE(NavigateToURLInSameBrowsingInstance(shell(), cross_site_url));
   exit_observer.Wait();
   scoped_refptr<SiteInstance> new_site_instance2(
@@ -1391,8 +1391,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClickLinkAfter204Error) {
   scoped_refptr<SiteInstance> post_nav_site_instance(
       shell()->web_contents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, post_nav_site_instance);
-  EXPECT_EQ("/nocontent",
-            shell()->web_contents()->GetVisibleURL().path());
+  EXPECT_EQ("/nocontent", shell()->web_contents()->GetVisibleURL().path());
   EXPECT_FALSE(
       shell()->web_contents()->GetController().GetLastCommittedEntry());
 
@@ -2089,11 +2088,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // navigation is not considered an initial navigation.
   ShellAddedObserver new_shell_observer;
   bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      orig_contents,
-      "window.domAutomationController.send("
-      "clickNoContentScriptedTargetedLink());",
-      &success));
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractBool(orig_contents,
+                                  "window.domAutomationController.send("
+                                  "clickNoContentScriptedTargetedLink());",
+                                  &success));
   EXPECT_TRUE(success);
 
   // Wait for the window to open.
@@ -2246,8 +2245,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // SiteInstance and RenderViewHost.
   EXPECT_TRUE(NavigateToURL(shell(), view_source_url));
   EXPECT_NE(blank_rvh, shell()->web_contents()->GetRenderViewHost());
-  EXPECT_NE(blank_site_instance, shell()->web_contents()->
-      GetRenderViewHost()->GetSiteInstance());
+  EXPECT_NE(blank_site_instance,
+            shell()->web_contents()->GetRenderViewHost()->GetSiteInstance());
   rvh_observers.EnsureRVHGetsDestructed(
       shell()->web_contents()->GetRenderViewHost());
 
@@ -2255,16 +2254,16 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // This used to cause two RVH instances for the same SiteInstance, which
   // was a problem.  This is no longer the case.
   EXPECT_TRUE(NavigateToURL(shell(), navigated_url));
-  SiteInstance* site_instance1 = shell()->web_contents()->
-      GetRenderViewHost()->GetSiteInstance();
+  SiteInstance* site_instance1 =
+      shell()->web_contents()->GetRenderViewHost()->GetSiteInstance();
   rvh_observers.EnsureRVHGetsDestructed(
       shell()->web_contents()->GetRenderViewHost());
 
   EXPECT_TRUE(NavigateToURL(shell(), view_source_url));
   rvh_observers.EnsureRVHGetsDestructed(
       shell()->web_contents()->GetRenderViewHost());
-  SiteInstance* site_instance2 = shell()->web_contents()->
-      GetRenderViewHost()->GetSiteInstance();
+  SiteInstance* site_instance2 =
+      shell()->web_contents()->GetRenderViewHost()->GetSiteInstance();
 
   // Ensure that view-source navigations force a new SiteInstance.
   EXPECT_NE(site_instance1, site_instance2);
@@ -2378,8 +2377,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   RenderProcessHostWatcher crash_observer(
       shell()->web_contents(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  EXPECT_TRUE(
-      NavigateToURLAndExpectNoCommit(shell(), GURL(kChromeUICrashURL)));
+  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell(), GURL(kChromeUICrashURL)));
   crash_observer.Wait();
 }
 
@@ -2400,8 +2398,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   RenderProcessHostWatcher crash_observer(
       shell()->web_contents(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  EXPECT_TRUE(
-      NavigateToURLAndExpectNoCommit(shell(), GURL(kChromeUICrashURL)));
+  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell(), GURL(kChromeUICrashURL)));
   crash_observer.Wait();
 
   // Load the crash URL again but don't wait for any action.  If it is not
@@ -2415,10 +2412,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       Shell::CreateNewWindow(shell()->web_contents()->GetBrowserContext(),
                              GURL(), nullptr, gfx::Size());
   RenderProcessHostWatcher crash_observer2(
-      shell2->web_contents(),
-      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  EXPECT_TRUE(
-      NavigateToURLAndExpectNoCommit(shell2, GURL(kChromeUIKillURL)));
+      shell2->web_contents(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell2, GURL(kChromeUIKillURL)));
   crash_observer2.Wait();
 }
 
@@ -2432,8 +2427,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClearPendingWebUIOnCommit) {
   EXPECT_TRUE(NavigateToURL(shell(), webui_url));
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      shell()->web_contents());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
   FrameTreeNode* root = web_contents->GetFrameTree()->root();
   WebUIImpl* webui = root->current_frame_host()->web_ui();
   EXPECT_TRUE(webui);
@@ -2516,8 +2511,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, WebUIGetsBindings) {
   OpenUrlViaClickTarget(shell(), url2);
   nav_observer.Wait();
   Shell* new_shell = shao.GetShell();
-  WebContentsImpl* new_web_contents = static_cast<WebContentsImpl*>(
-      new_shell->web_contents());
+  WebContentsImpl* new_web_contents =
+      static_cast<WebContentsImpl*>(new_shell->web_contents());
   SiteInstance* site_instance2 = new_web_contents->GetSiteInstance();
   int process2_id = site_instance2->GetProcess()->GetID();
 
@@ -2527,8 +2522,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, WebUIGetsBindings) {
   EXPECT_NE(site_instance2, site_instance1);
   EXPECT_TRUE(site_instance2->IsRelatedSiteInstance(site_instance1));
 
-  RenderViewHost* initial_rvh = new_web_contents->
-      GetRenderManagerForTesting()->GetSwappedOutRenderViewHost(site_instance1);
+  RenderViewHost* initial_rvh =
+      new_web_contents->GetRenderManagerForTesting()
+          ->GetSwappedOutRenderViewHost(site_instance1);
   ASSERT_TRUE(initial_rvh);
 
   // Navigate to url1 and check bindings.
@@ -3524,8 +3520,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   shell()->LoadURL(cross_site_url);
   EXPECT_TRUE(stalled_navigation.WaitForResponse());
 
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      shell()->web_contents());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* next_rfh =
       web_contents->GetRenderManagerForTesting()->speculative_frame_host();
   ASSERT_TRUE(next_rfh);
@@ -6088,10 +6084,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // either, so that it can be used for subsequent navigations.
   content::RenderProcessHost* new_process = new_instance->GetProcess();
   auto* policy = ChildProcessSecurityPolicy::GetInstance();
-  EXPECT_TRUE(
-      policy->CanAccessDataForOrigin(new_process->GetID(), url1));
-  EXPECT_TRUE(
-      policy->CanAccessDataForOrigin(new_process->GetID(), url2));
+  EXPECT_TRUE(policy->CanAccessDataForOrigin(new_process->GetID(), url1));
+  EXPECT_TRUE(policy->CanAccessDataForOrigin(new_process->GetID(), url2));
 
   SetBrowserClientForTesting(old_client);
 }

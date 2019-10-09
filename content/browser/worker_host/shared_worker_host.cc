@@ -371,7 +371,8 @@ void SharedWorkerHost::CreateIDBFactory(
   RenderProcessHost* worker_process_host = GetProcessHost();
   if (!worker_process_host)
     return;
-  worker_process_host->BindIndexedDB(url::Origin::Create(instance().url()),
+  worker_process_host->BindIndexedDB(MSG_ROUTING_NONE,
+                                     url::Origin::Create(instance().url()),
                                      std::move(receiver));
 }
 

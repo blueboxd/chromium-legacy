@@ -418,19 +418,17 @@ void ColumnSet::AddColumn(GridLayout::Alignment h_align,
             min_width, false);
 }
 
-
-void ColumnSet::LinkColumnSizes(int first, ...) {
-  va_list marker;
-  va_start(marker, first);
-  DCHECK(first >= 0 && first < num_columns());
-  for (int last = first, next = va_arg(marker, int); next != -1;
-       next = va_arg(marker, int)) {
+void ColumnSet::LinkColumnSizes(const std::vector<int>& columns) {
+  if (columns.size() <= 1)
+    return;
+  int last = columns[0];
+  for (size_t i = 1; i < columns.size(); ++i) {
+    int next = columns[i];
     DCHECK_GE(next, 0);
     DCHECK_LT(next, num_columns());
     columns_[last]->same_size_column_ = next;
     last = next;
   }
-  va_end(marker);
 }
 
 void ColumnSet::AddColumn(GridLayout::Alignment h_align,

@@ -1246,6 +1246,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
         switch (eventType) {
             case SelectionEventType.SELECTION_HANDLES_SHOWN:
+                mSelectionRect.set(left, top, right, bottom);
                 break;
 
             case SelectionEventType.SELECTION_HANDLES_MOVED:

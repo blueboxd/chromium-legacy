@@ -142,6 +142,9 @@ enum SBThreatType {
   // DEPRECATED. Url detected by password protection service.
   DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING,
 
+  // Saved password reuse detected on low reputation page,
+  SB_THREAT_TYPE_SAVED_PASSWORD_REUSE,
+
   // Chrome signed in and syncing gaia password reuse detected on low reputation
   // page,
   SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE,

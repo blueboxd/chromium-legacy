@@ -450,7 +450,8 @@ void DedicatedWorkerHost::CreateIDBFactory(
   RenderProcessHost* worker_process_host = GetProcessHost();
   if (!worker_process_host)
     return;
-  worker_process_host->BindIndexedDB(GetOrigin(), std::move(receiver));
+  worker_process_host->BindIndexedDB(MSG_ROUTING_NONE, GetOrigin(),
+                                     std::move(receiver));
 }
 
 void DedicatedWorkerHost::BindSmsReceiverReceiver(

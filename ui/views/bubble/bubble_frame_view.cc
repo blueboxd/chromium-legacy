@@ -66,6 +66,10 @@ int GetOverflowLength(const gfx::Rect& available_bounds,
          std::max(0, window_bounds.right() - available_bounds.right());
 }
 
+// The height of the progress indicator shown at the top of the bubble frame
+// view.
+constexpr int kProgressIndicatorHeight = 4;
+
 }  // namespace
 
 // static
@@ -91,6 +95,12 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
   close->SetTooltipText(base::string16());
 #endif
   close_ = AddChildView(std::move(close));
+
+  auto progress_indicator = std::make_unique<ProgressBar>(
+      kProgressIndicatorHeight, /*allow_round_corner=*/false);
+  progress_indicator->SetBackgroundColor(SK_ColorTRANSPARENT);
+  progress_indicator->SetVisible(false);
+  progress_indicator_ = AddChildView(std::move(progress_indicator));
 }
 
 BubbleFrameView::~BubbleFrameView() = default;
@@ -188,7 +198,7 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
 
   if (point.y() < title()->bounds().bottom()) {
     auto* dialog_delegate = GetWidget()->widget_delegate()->AsDialogDelegate();
-    if (dialog_delegate && dialog_delegate->IsDialogDraggable()) {
+    if (dialog_delegate && dialog_delegate->draggable()) {
       return HTCAPTION;
     }
   }
@@ -265,6 +275,12 @@ void BubbleFrameView::SetTitleView(std::unique_ptr<View> title_view) {
   AddChildViewAt(title_view.release(), GetIndexOf(title_icon_) + 1);
 }
 
+void BubbleFrameView::SetProgress(base::Optional<double> progress) {
+  progress_indicator_->SetVisible(progress.has_value());
+  if (progress)
+    progress_indicator_->SetValue(progress.value());
+}
+
 const char* BubbleFrameView::GetClassName() const {
   return kViewClassName;
 }
@@ -313,6 +329,11 @@ void BubbleFrameView::Layout() {
          (!custom_title_ && !default_title_->GetVisible()));
 
   const gfx::Rect contents_bounds = GetContentsBounds();
+
+  progress_indicator_->SetBounds(contents_bounds.x(), contents_bounds.y(),
+                                 contents_bounds.width(),
+                                 kProgressIndicatorHeight);
+
   gfx::Rect bounds = contents_bounds;
   bounds.Inset(title_margins_);
 

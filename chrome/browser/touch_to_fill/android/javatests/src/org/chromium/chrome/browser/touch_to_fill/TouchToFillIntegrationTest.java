@@ -46,8 +46,9 @@ import java.util.Arrays;
 public class TouchToFillIntegrationTest {
     private static final String EXAMPLE_URL = "www.example.xyz";
     private static final String MOBILE_URL = "m.example.xyz";
-    private static final Credential ANA = new Credential("Ana", "S3cr3t", EXAMPLE_URL, false);
-    private static final Credential BOB = new Credential("Bob", "*****", MOBILE_URL, true);
+    private static final Credential ANA =
+            new Credential("Ana", "S3cr3t", "Ana", EXAMPLE_URL, false);
+    private static final Credential BOB = new Credential("Bob", "*****", "Bob", MOBILE_URL, true);
 
     private final TouchToFillComponent mTouchToFill = new TouchToFillCoordinator();
 

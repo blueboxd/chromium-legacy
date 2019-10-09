@@ -10,17 +10,22 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info_proto_conversions.h"
+#include "components/prefs/pref_service.h"
 
 namespace chromeos {
 
 PrintJobHistoryServiceImpl::PrintJobHistoryServiceImpl(
     std::unique_ptr<PrintJobDatabase> print_job_database,
-    CupsPrintJobManager* print_job_manager)
+    CupsPrintJobManager* print_job_manager,
+    PrefService* pref_service)
     : print_job_database_(std::move(print_job_database)),
-      print_job_manager_(print_job_manager) {
+      print_job_manager_(print_job_manager),
+      print_job_history_cleaner_(print_job_database_.get(), pref_service) {
   DCHECK(print_job_manager_);
   print_job_manager_->AddObserver(this);
-  print_job_database_->Initialize(base::DoNothing());
+  print_job_database_->Initialize(
+      base::BindOnce(&PrintJobHistoryServiceImpl::OnPrintJobDatabaseInitialized,
+                     base::Unretained(this)));
 }
 
 PrintJobHistoryServiceImpl::~PrintJobHistoryServiceImpl() {
@@ -57,6 +62,11 @@ void PrintJobHistoryServiceImpl::SavePrintJob(base::WeakPtr<CupsPrintJob> job) {
       print_job_info,
       base::BindOnce(&PrintJobHistoryServiceImpl::OnPrintJobSaved,
                      base::Unretained(this), print_job_info));
+}
+
+void PrintJobHistoryServiceImpl::OnPrintJobDatabaseInitialized(bool success) {
+  if (success)
+    print_job_history_cleaner_.Start();
 }
 
 void PrintJobHistoryServiceImpl::OnPrintJobSaved(

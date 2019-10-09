@@ -427,11 +427,8 @@ void CrostiniPackageService::UpdatePackageOperationStatus(
 }
 
 void CrostiniPackageService::OnPendingAppListUpdates(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     int count) {
-  const ContainerId container_id(vm_name, container_name);
-
   if (count != 0) {
     has_pending_app_list_updates_.insert(container_id);
   } else {

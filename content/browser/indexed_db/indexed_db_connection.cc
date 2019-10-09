@@ -27,7 +27,7 @@ static int32_t g_next_indexed_db_connection_id;
 }  // namespace
 
 IndexedDBConnection::IndexedDBConnection(
-    int child_process_id,
+    const IndexedDBExecutionContext& execution_context,
     IndexedDBOriginStateHandle origin_state_handle,
     IndexedDBClassFactory* indexed_db_class_factory,
     base::WeakPtr<IndexedDBDatabase> database,
@@ -35,7 +35,7 @@ IndexedDBConnection::IndexedDBConnection(
     base::OnceCallback<void(IndexedDBConnection*)> on_close,
     scoped_refptr<IndexedDBDatabaseCallbacks> callbacks)
     : id_(g_next_indexed_db_connection_id++),
-      child_process_id_(child_process_id),
+      execution_context_(execution_context),
       origin_state_handle_(std::move(origin_state_handle)),
       indexed_db_class_factory_(indexed_db_class_factory),
       database_(std::move(database)),

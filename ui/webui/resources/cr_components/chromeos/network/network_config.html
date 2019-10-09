@@ -60,7 +60,7 @@
             label="[[i18n('OncWiFi-Passphrase')]]"
             value="{{configProperties_.wifi.passphrase}}"
             on-enter="onEnterPressedInInput_"
-            property="[[managedProperties_.wifi.passphrase]]">
+            property="[[managedProperties_.typeProperties.wifi.passphrase]]">
         </network-password-input>
       </template>
 
@@ -68,7 +68,7 @@
       <template is="dom-if" if="[[showVpn_]]" restamp>
         <network-config-input label="[[i18n('OncVPN-Host')]]"
             value="{{configProperties_.vpn.host}}"
-            property="[[managedProperties_.vpn.host]]">
+            property="[[managedProperties_.typeProperties.vpn.host]]">
         </network-config-input>
         <network-config-input label="[[i18n('OncName')]]"
             value="{{configProperties_.name}}"
@@ -77,40 +77,42 @@
         <network-config-select id="outer" label="[[i18n('OncVPN-Type')]]"
             value="{{vpnType_}}" items="[[vpnTypeItems_]]"
             onc-prefix="VPN.Type" disabled="[[hasGuid_(guid)]]"
-            property="[[managedProperties_.vpn.type]]">
+            property="[[managedProperties_.typeProperties.vpn.type]]">
         </network-config-select>
         <template is="dom-if" if="[[!showVpn_.OpenVPN]]">
           <network-config-input label="[[i18n('OncVPN-L2TP-Username')]]"
               value="{{configProperties_.vpn.l2tp.username}}"
-              property="[[managedProperties_.vpn.l2tp.username]]">
+              property="[[managedProperties_.typeProperties.vpn.l2tp.username]]"
+          >
           </network-config-input>
           <network-password-input label="[[i18n('OncVPN-L2TP-Password')]]"
               value="{{configProperties_.vpn.l2tp.password}}"
-              property="[[managedProperties_.vpn.l2tp.password]]">
+              property="[[managedProperties_.typeProperties.vpn.l2tp.password]]"
+          >
           </network-password-input>
           <network-config-input label="[[i18n('OncVPN-IPsec-Group')]]"
               value="{{configProperties_.vpn.ipSec.group}}"
-              property="[[managedProperties_.vpn.ipSec.group]]">
+              property="[[managedProperties_.typeProperties.vpn.ipSec.group]]">
           </network-config-input>
           <template is="dom-if" if="[[!showVpn_.Cert]]">
             <network-password-input label="[[i18n('OncVPN-IPsec-PSK')]]"
                 value="{{configProperties_.vpn.ipSec.psk}}"
-                property="[[managedProperties_.vpn.ipSec.psk]]">
+                property="[[managedProperties_.typeProperties.vpn.ipSec.psk]]">
             </network-password-input>
           </template>
         </template>
         <template is="dom-if" if="[[showVpn_.OpenVPN]]">
           <network-config-input label="[[i18n('OncVPN-OpenVPN-Username')]]"
               value="{{configProperties_.vpn.openVpn.username}}"
-              property="[[managedProperties_.vpn.openVpn.username]]">
+              property="[[managedProperties_.typeProperties.vpn.openVpn.username]]">
           </network-config-input>
           <network-password-input label="[[i18n('OncVPN-OpenVPN-Password')]]"
               value="{{configProperties_.vpn.openVpn.password}}"
-              property="[[managedProperties_.vpn.openVpn.password]]">
+              property="[[managedProperties_.typeProperties.vpn.openVpn.password]]">
           </network-password-input>
           <network-config-input label="[[i18n('OncVPN-OpenVPN-OTP')]]"
               value="{{configProperties_.vpn.openVpn.otp}}"
-              property="[[managedProperties_.vpn.openVpn.otp]]">
+              property="[[managedProperties_.typeProperties.vpn.openVpn.otp]]">
           </network-config-input>
         </template>
         <template is="dom-if" if="[[showVpn_.Cert]]">

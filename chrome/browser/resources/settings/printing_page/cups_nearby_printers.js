@@ -137,13 +137,5 @@ Polymer({
         'show-cups-printer-toast',
         {resultCode: PrinterSetupResult.PRINTER_UNREACHABLE,
          printerName: printer.printerName});
-  },
-
-  /**
-   * @return {boolean} Returns true if noPrinterMessage should be visible.
-   * @private
-   */
-  shouldShowNoNearbyPrinterMessage_: function() {
-    return !this.searchTerm && !this.nearbyPrinters_.length;
   }
 });

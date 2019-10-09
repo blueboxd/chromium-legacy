@@ -73,6 +73,7 @@ include_rules = [
   "+third_party/crashpad/crashpad/client",
   "+third_party/crashpad/crashpad/util",
 
+  "+ui/display",
   "+ui/gfx",
   "+ui/gl",
   "+ui/touch_selection/touch_handle.h",

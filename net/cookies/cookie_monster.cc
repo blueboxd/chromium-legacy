@@ -387,7 +387,7 @@ void CookieMonster::SetForceKeepSessionState() {
 void CookieMonster::SetAllCookiesAsync(const CookieList& list,
                                        SetCookiesCallback callback) {
   DoCookieCallback(base::BindOnce(
-      // base::Unretained is safe as DoCookieCallbackForURL stores
+      // base::Unretained is safe as DoCookieCallback stores
       // the callback on |*this|, so the callback will not outlive
       // the object.
       &CookieMonster::SetAllCookies, base::Unretained(this), list,
@@ -404,7 +404,7 @@ void CookieMonster::SetCanonicalCookieAsync(
   std::string domain = cookie->Domain();
   DoCookieCallbackForHostOrDomain(
       base::BindOnce(
-          // base::Unretained is safe as DoCookieCallbackForURL stores
+          // base::Unretained is safe as DoCookieCallbackForHostOrDomain stores
           // the callback on |*this|, so the callback will not outlive
           // the object.
           &CookieMonster::SetCanonicalCookie, base::Unretained(this),
@@ -429,17 +429,28 @@ void CookieMonster::GetCookieListWithOptionsAsync(
 
 void CookieMonster::GetAllCookiesAsync(GetAllCookiesCallback callback) {
   DoCookieCallback(base::BindOnce(
-      // base::Unretained is safe as DoCookieCallbackForURL stores
+      // base::Unretained is safe as DoCookieCallback stores
       // the callback on |*this|, so the callback will not outlive
       // the object.
       &CookieMonster::GetAllCookies, base::Unretained(this),
       std::move(callback)));
 }
 
+void CookieMonster::GetAllCookiesWithAccessSemanticsAsync(
+    GetAllCookiesWithAccessSemanticsCallback callback) {
+  DoCookieCallback(base::BindOnce(
+      // base::Unretained is safe as DoCookieCallback stores
+      // the callback on |*this|, so the callback will not outlive
+      // the object.
+      &CookieMonster::GetAllCookies, base::Unretained(this),
+      base::BindOnce(&CookieMonster::AttachAccessSemanticsListForCookieList,
+                     base::Unretained(this), std::move(callback))));
+}
+
 void CookieMonster::DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                                DeleteCallback callback) {
   DoCookieCallback(base::BindOnce(
-      // base::Unretained is safe as DoCookieCallbackForURL stores
+      // base::Unretained is safe as DoCookieCallback stores
       // the callback on |*this|, so the callback will not outlive
       // the object.
       &CookieMonster::DeleteCanonicalCookie, base::Unretained(this), cookie,
@@ -450,7 +461,7 @@ void CookieMonster::DeleteAllCreatedInTimeRangeAsync(
     const TimeRange& creation_range,
     DeleteCallback callback) {
   DoCookieCallback(base::BindOnce(
-      // base::Unretained is safe as DoCookieCallbackForURL stores
+      // base::Unretained is safe as DoCookieCallback stores
       // the callback on |*this|, so the callback will not outlive
       // the object.
       &CookieMonster::DeleteAllCreatedInTimeRange, base::Unretained(this),
@@ -460,7 +471,7 @@ void CookieMonster::DeleteAllCreatedInTimeRangeAsync(
 void CookieMonster::DeleteAllMatchingInfoAsync(CookieDeletionInfo delete_info,
                                                DeleteCallback callback) {
   DoCookieCallback(base::BindOnce(
-      // base::Unretained is safe as DoCookieCallbackForURL stores
+      // base::Unretained is safe as DoCookieCallback stores
       // the callback on |*this|, so the callback will not outlive
       // the object.
       &CookieMonster::DeleteAllMatchingInfo, base::Unretained(this),
@@ -470,7 +481,7 @@ void CookieMonster::DeleteAllMatchingInfoAsync(CookieDeletionInfo delete_info,
 void CookieMonster::DeleteSessionCookiesAsync(
     CookieStore::DeleteCallback callback) {
   DoCookieCallback(base::BindOnce(
-      // base::Unretained is safe as DoCookieCallbackForURL stores
+      // base::Unretained is safe as DoCookieCallback stores
       // the callback on |*this|, so the callback will not outlive
       // the object.
       &CookieMonster::DeleteSessionCookies, base::Unretained(this),
@@ -591,6 +602,17 @@ void CookieMonster::GetAllCookies(GetAllCookiesCallback callback) {
     cookie_list.push_back(*cookie_ptr);
 
   MaybeRunCookieCallback(std::move(callback), cookie_list);
+}
+
+void CookieMonster::AttachAccessSemanticsListForCookieList(
+    GetAllCookiesWithAccessSemanticsCallback callback,
+    const CookieList& cookie_list) {
+  std::vector<CookieAccessSemantics> access_semantics_list;
+  for (const CanonicalCookie& cookie : cookie_list) {
+    access_semantics_list.push_back(GetAccessSemanticsForCookie(cookie));
+  }
+  MaybeRunCookieCallback(std::move(callback), cookie_list,
+                         access_semantics_list);
 }
 
 void CookieMonster::GetCookieListWithOptions(const GURL& url,

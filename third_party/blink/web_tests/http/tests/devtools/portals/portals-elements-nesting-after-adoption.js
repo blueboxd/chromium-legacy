@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 (async function() {
-  TestRunner.addResult(`Tests that adopted portal is rendered inline correctly.\n`);
+  TestRunner.addResult(
+      `Tests that adopted portal is rendered inline correctly.\n`);
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
 
@@ -11,17 +12,22 @@
   Elements.StylesSidebarPane.prototype.update = function() {};
   Elements.MetricsSidebarPane.prototype.update = function() {};
 
-  await TestRunner.navigatePromise('resources/portals-elements-nesting-after-adoption.html');
+  await TestRunner.navigatePromise('resources/append-predecessor-host.html');
 
   TestRunner.runTestSuite([
     function testSetUp(next) {
       ElementsTestRunner.expandElementsTree(() => {
         ElementsTestRunner.dumpElementsTree();
-        TestRunner.evaluateInPageAsync('waitForAdoption()').then(next);
+        TestRunner.evaluateInPage('activate()');
+        TestRunner
+            .waitForEvent(
+                Host.InspectorFrontendHostAPI.Events.ReattachMainTarget,
+                Host.InspectorFrontendHost.events)
+            .then(next);
       });
     },
 
-    function testAfterAdoption() {
+    function testAfterActivate() {
       ElementsTestRunner.expandElementsTree(() => {
         ElementsTestRunner.dumpElementsTree();
         TestRunner.completeTest();

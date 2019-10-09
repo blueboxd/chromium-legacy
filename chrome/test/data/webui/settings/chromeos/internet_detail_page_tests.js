@@ -316,12 +316,12 @@ suite('InternetDetailPage', function() {
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
       const wifi1 = getManagedProperties(
           mojom.NetworkType.kWiFi, 'wifi1', mojom.OncSource.kDevice);
-      wifi1.wifi.autoConnect = OncMojo.createManagedBool(true);
+      wifi1.typeProperties.wifi.autoConnect = OncMojo.createManagedBool(true);
       mojoApi_.setManagedPropertiesForTest(wifi1);
 
       const wifi2 = getManagedProperties(
           mojom.NetworkType.kWiFi, 'wifi2', mojom.OncSource.kDevice);
-      wifi2.wifi.autoConnect = OncMojo.createManagedBool(false);
+      wifi2.typeProperties.wifi.autoConnect = OncMojo.createManagedBool(false);
       mojoApi_.setManagedPropertiesForTest(wifi2);
 
       internetDetailPage.init('wifi1_guid', 'WiFi', 'wifi1');

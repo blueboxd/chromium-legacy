@@ -83,7 +83,6 @@
         <structure type="chrome_scaled_image" name="IDR_CLOSE_2_H" file="close_2_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_CLOSE_2_MASK" file="close_2_mask.png" />
         <structure type="chrome_scaled_image" name="IDR_CLOSE_2_P" file="close_2_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_CLOSE_3_MASK" file="common/close_3_mask.png" />
         <structure type="chrome_scaled_image" name="IDR_CLOSE_DIALOG" file="close_dialog.png" />
         <structure type="chrome_scaled_image" name="IDR_CLOSE_DIALOG_H" file="close_dialog_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_CLOSE_DIALOG_P" file="close_dialog_pressed.png" />

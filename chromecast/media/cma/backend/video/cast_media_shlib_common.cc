@@ -2,15 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
 #include "chromecast/public/media/media_capabilities_shlib.h"
 
 namespace chromecast {
 namespace media {
-
-namespace {
-base::AtExitManager g_at_exit_manager;
-}  // namespace
 
 bool MediaCapabilitiesShlib::IsSupportedAudioConfig(const AudioConfig& config) {
   switch (config.codec) {

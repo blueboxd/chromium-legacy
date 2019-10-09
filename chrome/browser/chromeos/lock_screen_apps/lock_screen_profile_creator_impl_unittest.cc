@@ -178,8 +178,9 @@ class UnittestProfileManager : public ::ProfileManagerWithoutInit {
   }
 
  protected:
-  Profile* CreateProfileHelper(const base::FilePath& path) override {
-    return new TestingProfile(path, NULL);
+  std::unique_ptr<Profile> CreateProfileHelper(
+      const base::FilePath& path) override {
+    return std::make_unique<TestingProfile>(path);
   }
 
   std::unique_ptr<Profile> CreateProfileAsyncHelper(

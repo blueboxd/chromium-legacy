@@ -23,10 +23,6 @@
     </message>
   </if>
   <if expr="chromeos">
-    <message name="IDS_SETTINGS_ABOUT_OS_BANNER" desc="Banner displayed in the browser About page that links to the OS About page.">
-      For Chrome OS details, please see <ph name="LINK_BEGIN">&lt;a href="chrome://os-settings/help"&gt;</ph>
-      About Chrome OS<ph name="LINK_END">&lt;/a&gt;</ph>
-    </message>
     <message name="IDS_SETTINGS_ABOUT_OS" desc="Menu title for the About Chrome OS page.">
       About Chrome OS
     </message>

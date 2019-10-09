@@ -2106,7 +2106,13 @@ void ShelfLayoutManager::CompleteAppListDrag(
   HomeLauncherGestureHandler* home_launcher_handler =
       Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
   DCHECK(home_launcher_handler);
-  if (home_launcher_handler->OnReleaseEvent(event_in_screen.location())) {
+  base::Optional<float> velocity_y;
+  if (event_in_screen.type() == ui::ET_SCROLL_FLING_START) {
+    velocity_y = base::make_optional(
+        event_in_screen.AsGestureEvent()->details().velocity_y());
+  }
+  if (home_launcher_handler->OnReleaseEvent(event_in_screen.location(),
+                                            velocity_y)) {
     drag_status_ = kDragNone;
     return;
   }

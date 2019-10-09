@@ -34,6 +34,7 @@
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
 #include "components/prefs/pref_service.h"
+#include "components/previews/core/previews_experiments.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace data_reduction_proxy {
@@ -93,7 +94,8 @@ DataReductionProxyService::DataReductionProxyService(
   // It is safe to use base::Unretained here, since it gets executed
   // synchronously on the UI thread, and |this| outlives the caller (since the
   // caller is owned by |this|.
-  if (!params::IsIncludedInHoldbackFieldTrial()) {
+  if (!params::IsIncludedInHoldbackFieldTrial() ||
+      previews::params::IsLitePageServerPreviewsEnabled()) {
     config_client_ = std::make_unique<DataReductionProxyConfigServiceClient>(
         GetBackoffPolicy(), request_options_.get(), raw_mutable_config,
         config_.get(), this, network_connection_tracker_,
@@ -441,6 +443,9 @@ void DataReductionProxyService::Clone(
 }
 
 void DataReductionProxyService::UpdateCustomProxyConfig() {
+  if (params::IsIncludedInHoldbackFieldTrial())
+    return;
+
   network::mojom::CustomProxyConfigPtr config = CreateCustomProxyConfig(
       !base::FeatureList::IsEnabled(
           features::kDataReductionProxyDisableProxyFailedWarmup),
@@ -506,6 +511,9 @@ DataReductionProxyService::CreateCustomProxyConfig(
 void DataReductionProxyService::StoreSerializedConfig(
     const std::string& serialized_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!params::IsIncludedInHoldbackFieldTrial() ||
+         previews::params::IsLitePageServerPreviewsEnabled());
+
   SetStringPref(prefs::kDataReductionProxyConfig, serialized_config);
   SetInt64Pref(prefs::kDataReductionProxyLastConfigRetrievalTime,
                (base::Time::Now() - base::Time()).InMicroseconds());

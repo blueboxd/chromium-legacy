@@ -34,12 +34,34 @@ namespace {
 
 const base::FilePath::CharType kDevNull[] = FILE_PATH_LITERAL("/dev/null");
 
+base::FilePath GetPathForWidget(const base::FilePath& base_path,
+                                gfx::AcceleratedWidget widget) {
+  if (base_path.empty() || base_path == base::FilePath(kDevNull))
+    return base_path;
+
+    // Disambiguate multiple window output files with the window id.
+#if defined(OS_WIN)
+  std::string path =
+      base::NumberToString(reinterpret_cast<int>(widget)) + ".png";
+  std::wstring wpath(path.begin(), path.end());
+  return base_path.Append(wpath);
+#else
+  return base_path.Append(base::NumberToString(widget) + ".png");
+#endif
+}
+
 void WriteDataToFile(const base::FilePath& location, const SkBitmap& bitmap) {
   DCHECK(!location.empty());
   std::vector<unsigned char> png_data;
   gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, true, &png_data);
-  base::WriteFile(location, reinterpret_cast<const char*>(png_data.data()),
-                  png_data.size());
+  if (base::WriteFile(location, reinterpret_cast<const char*>(png_data.data()),
+                      png_data.size()) < 0) {
+    static bool logged_once = false;
+    LOG_IF(ERROR, !logged_once)
+        << "Failed to write frame to file. "
+           "If running with the GPU process try --no-sandbox.";
+    logged_once = true;
+  }
 }
 
 // TODO(altimin): Find a proper way to capture rendering output.
@@ -76,6 +98,40 @@ class FileSurface : public SurfaceOzoneCanvas {
  private:
   base::FilePath base_path_;
   sk_sp<SkSurface> surface_;
+};
+
+class FileGLSurface : public GLSurfaceEglReadback {
+ public:
+  explicit FileGLSurface(const base::FilePath& location)
+      : location_(location) {}
+
+ private:
+  ~FileGLSurface() override = default;
+
+  // GLSurfaceEglReadback:
+  bool HandlePixels(uint8_t* pixels) override {
+    if (location_.empty())
+      return true;
+
+    const gfx::Size size = GetSize();
+    SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
+    SkPixmap pixmap(info, pixels, info.minRowBytes());
+
+    SkBitmap bitmap;
+    bitmap.allocPixels(info);
+    if (!bitmap.writePixels(pixmap))
+      return false;
+
+    base::PostTask(FROM_HERE,
+                   {base::ThreadPool(), base::MayBlock(),
+                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                   base::BindOnce(&WriteDataToFile, location_, bitmap));
+    return true;
+  }
+
+  base::FilePath location_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileGLSurface);
 };
 
 class TestPixmap : public gfx::NativePixmap {
@@ -117,15 +173,14 @@ class TestPixmap : public gfx::NativePixmap {
 
 class GLOzoneEGLHeadless : public GLOzoneEGL {
  public:
-  GLOzoneEGLHeadless() = default;
+  GLOzoneEGLHeadless(const base::FilePath& base_path) : base_path_(base_path) {}
   ~GLOzoneEGLHeadless() override = default;
 
   // GLOzone:
   scoped_refptr<gl::GLSurface> CreateViewGLSurface(
       gfx::AcceleratedWidget window) override {
-    // TODO(kylechar): Extend GLSurface implementation to write to PNG file.
-    return gl::InitializeGLSurface(
-        base::MakeRefCounted<GLSurfaceEglReadback>());
+    return gl::InitializeGLSurface(base::MakeRefCounted<FileGLSurface>(
+        GetPathForWidget(base_path_, window)));
   }
 
   scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
@@ -143,6 +198,8 @@ class GLOzoneEGLHeadless : public GLOzoneEGL {
   }
 
  private:
+  base::FilePath base_path_;
+
   DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLHeadless);
 };
 
@@ -150,27 +207,12 @@ class GLOzoneEGLHeadless : public GLOzoneEGL {
 
 HeadlessSurfaceFactory::HeadlessSurfaceFactory(base::FilePath base_path)
     : base_path_(base_path),
-      swiftshader_implementation_(std::make_unique<GLOzoneEGLHeadless>()) {
+      swiftshader_implementation_(
+          std::make_unique<GLOzoneEGLHeadless>(base_path)) {
   CheckBasePath();
 }
 
 HeadlessSurfaceFactory::~HeadlessSurfaceFactory() = default;
-
-base::FilePath HeadlessSurfaceFactory::GetPathForWidget(
-    gfx::AcceleratedWidget widget) {
-  if (base_path_.empty() || base_path_ == base::FilePath(kDevNull))
-    return base_path_;
-
-    // Disambiguate multiple window output files with the window id.
-#if defined(OS_WIN)
-  std::string path =
-      base::NumberToString(reinterpret_cast<int>(widget)) + ".png";
-  std::wstring wpath(path.begin(), path.end());
-  return base_path_.Append(wpath);
-#else
-  return base_path_.Append(base::NumberToString(widget) + ".png");
-#endif
-}
 
 std::vector<gl::GLImplementation>
 HeadlessSurfaceFactory::GetAllowedGLImplementations() {
@@ -192,7 +234,7 @@ GLOzone* HeadlessSurfaceFactory::GetGLOzone(
 std::unique_ptr<SurfaceOzoneCanvas>
 HeadlessSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget,
                                               base::TaskRunner* task_runner) {
-  return std::make_unique<FileSurface>(GetPathForWidget(widget));
+  return std::make_unique<FileSurface>(GetPathForWidget(base_path_, widget));
 }
 
 scoped_refptr<gfx::NativePixmap> HeadlessSurfaceFactory::CreateNativePixmap(

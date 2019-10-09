@@ -18,7 +18,6 @@
 
 namespace ash {
 class Shelf;
-class TrayBackground;
 class TrayContainer;
 class TrayEventFilter;
 
@@ -148,15 +147,14 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Helper function that calculates background insets relative to local bounds.
   gfx::Insets GetBackgroundInsets() const;
 
+  // Updates the background layer.
+  void UpdateBackground();
 
   // The shelf containing the system tray for this view.
   Shelf* shelf_;
 
   // Convenience pointer to the contents view.
   TrayContainer* tray_container_;
-
-  // Owned by the view passed to SetContents().
-  TrayBackground* background_;
 
   // Determines if the view is active. This changes how  the ink drop ripples
   // behave.

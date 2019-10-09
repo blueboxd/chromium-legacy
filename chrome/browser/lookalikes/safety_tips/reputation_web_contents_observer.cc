@@ -5,6 +5,7 @@
 #include "chrome/browser/lookalikes/safety_tips/reputation_web_contents_observer.h"
 
 #include <string>
+#include <utility>
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -137,12 +138,11 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
   UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.SafetyTipShown",
                             safety_tip_status);
 
-  if (safety_tip_status == security_state::SafetyTipStatus::kNone) {
+  if (safety_tip_status == security_state::SafetyTipStatus::kNone ||
+      safety_tip_status == security_state::SafetyTipStatus::kBadKeyword) {
     MaybeCallReputationCheckCallback();
     return;
   }
-
-  // TODO(crbug/987754): Record metrics here.
 
   if (user_ignored) {
     UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.SafetyTipIgnoredPageLoad",

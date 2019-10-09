@@ -615,8 +615,9 @@ TEST_F(CrosNetworkConfigTest, GetManagedProperties) {
   EXPECT_EQ(mojom::NetworkType::kWiFi, properties->type);
   EXPECT_EQ(mojom::ConnectionStateType::kConnected,
             properties->connection_state);
-  ASSERT_TRUE(properties->wifi);
-  EXPECT_EQ(50, properties->wifi->signal_strength);
+  ASSERT_TRUE(properties->type_properties);
+  ASSERT_TRUE(properties->type_properties->is_wifi());
+  EXPECT_EQ(50, properties->type_properties->get_wifi()->signal_strength);
   EXPECT_EQ(mojom::OncSource::kNone, properties->source);
 
   properties = GetManagedProperties("wifi2_guid");
@@ -625,9 +626,12 @@ TEST_F(CrosNetworkConfigTest, GetManagedProperties) {
   EXPECT_EQ(mojom::NetworkType::kWiFi, properties->type);
   EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
             properties->connection_state);
-  ASSERT_TRUE(properties->wifi);
-  EXPECT_EQ(mojom::SecurityType::kWpaPsk, properties->wifi->security);
-  EXPECT_EQ(100, properties->wifi->signal_strength);
+  ASSERT_TRUE(properties->type_properties);
+  mojom::ManagedWiFiPropertiesPtr& wifi =
+      properties->type_properties->get_wifi();
+  ASSERT_TRUE(wifi);
+  EXPECT_EQ(mojom::SecurityType::kWpaPsk, wifi->security);
+  EXPECT_EQ(100, wifi->signal_strength);
   EXPECT_EQ(mojom::OncSource::kUserPolicy, properties->source);
 
   properties = GetManagedProperties("wifi3_guid");
@@ -644,11 +648,13 @@ TEST_F(CrosNetworkConfigTest, GetManagedProperties) {
   EXPECT_EQ(mojom::NetworkType::kCellular, properties->type);
   EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
             properties->connection_state);
-  ASSERT_TRUE(properties->cellular);
-  EXPECT_EQ(0, properties->cellular->signal_strength);
-  EXPECT_EQ("LTE", properties->cellular->network_technology);
-  EXPECT_EQ(mojom::ActivationStateType::kActivated,
-            properties->cellular->activation_state);
+  ASSERT_TRUE(properties->type_properties);
+  mojom::ManagedCellularPropertiesPtr& cellular =
+      properties->type_properties->get_cellular();
+  ASSERT_TRUE(cellular);
+  EXPECT_EQ(0, cellular->signal_strength);
+  EXPECT_EQ("LTE", cellular->network_technology);
+  EXPECT_EQ(mojom::ActivationStateType::kActivated, cellular->activation_state);
 
   properties = GetManagedProperties("vpn_guid");
   ASSERT_TRUE(properties);
@@ -656,8 +662,10 @@ TEST_F(CrosNetworkConfigTest, GetManagedProperties) {
   EXPECT_EQ(mojom::NetworkType::kVPN, properties->type);
   EXPECT_EQ(mojom::ConnectionStateType::kConnecting,
             properties->connection_state);
-  ASSERT_TRUE(properties->vpn);
-  EXPECT_EQ(mojom::VpnType::kL2TPIPsec, properties->vpn->type);
+  ASSERT_TRUE(properties->type_properties);
+  ASSERT_TRUE(properties->type_properties->is_vpn());
+  EXPECT_EQ(mojom::VpnType::kL2TPIPsec,
+            properties->type_properties->get_vpn()->type);
 }
 
 // Test managed property policy values.
@@ -665,20 +673,25 @@ TEST_F(CrosNetworkConfigTest, GetManagedPropertiesPolicy) {
   mojom::ManagedPropertiesPtr properties = GetManagedProperties("wifi1_guid");
   ASSERT_TRUE(properties);
   ASSERT_EQ("wifi1_guid", properties->guid);
-  ASSERT_TRUE(properties->wifi);
-  ASSERT_TRUE(properties->wifi->auto_connect);
-  EXPECT_TRUE(properties->wifi->auto_connect->active_value);
-  EXPECT_EQ(mojom::PolicySource::kNone,
-            properties->wifi->auto_connect->policy_source);
+  ASSERT_TRUE(properties->type_properties);
+  mojom::ManagedWiFiProperties* wifi =
+      properties->type_properties->get_wifi().get();
+  ASSERT_TRUE(wifi);
+  ASSERT_TRUE(wifi->auto_connect);
+  EXPECT_TRUE(wifi->auto_connect->active_value);
+  EXPECT_EQ(mojom::PolicySource::kNone, wifi->auto_connect->policy_source);
 
   properties = GetManagedProperties("wifi2_guid");
   ASSERT_TRUE(properties);
   ASSERT_EQ("wifi2_guid", properties->guid);
-  ASSERT_TRUE(properties->wifi->auto_connect);
-  EXPECT_TRUE(properties->wifi->auto_connect->active_value);
+  ASSERT_TRUE(properties->type_properties);
+  wifi = properties->type_properties->get_wifi().get();
+  ASSERT_TRUE(wifi);
+  ASSERT_TRUE(wifi->auto_connect);
+  EXPECT_TRUE(wifi->auto_connect->active_value);
   EXPECT_EQ(mojom::PolicySource::kUserPolicyEnforced,
-            properties->wifi->auto_connect->policy_source);
-  EXPECT_TRUE(properties->wifi->auto_connect->policy_value);
+            wifi->auto_connect->policy_source);
+  EXPECT_TRUE(wifi->auto_connect->policy_value);
   ASSERT_TRUE(properties->name);
   EXPECT_EQ("wifi2", properties->name->active_value);
   EXPECT_EQ(mojom::PolicySource::kUserPolicyEnforced,
@@ -699,12 +712,15 @@ TEST_F(CrosNetworkConfigTest, GetManagedPropertiesEAP) {
   ASSERT_TRUE(properties);
   EXPECT_EQ("eth_guid", properties->guid);
   EXPECT_EQ(mojom::NetworkType::kEthernet, properties->type);
-  ASSERT_TRUE(properties->ethernet);
-  ASSERT_TRUE(properties->ethernet->authentication);
-  EXPECT_EQ("8021X", properties->ethernet->authentication->active_value);
-  ASSERT_TRUE(properties->ethernet->eap);
-  ASSERT_TRUE(properties->ethernet->eap->identity);
-  EXPECT_EQ("user1", properties->ethernet->eap->identity->active_value);
+  ASSERT_TRUE(properties->type_properties);
+  mojom::ManagedEthernetProperties* ethernet =
+      properties->type_properties->get_ethernet().get();
+  ASSERT_TRUE(ethernet);
+  ASSERT_TRUE(ethernet->authentication);
+  EXPECT_EQ("8021X", ethernet->authentication->active_value);
+  ASSERT_TRUE(ethernet->eap);
+  ASSERT_TRUE(ethernet->eap->identity);
+  EXPECT_EQ("user1", ethernet->eap->identity->active_value);
 }
 
 TEST_F(CrosNetworkConfigTest, SetProperties) {
@@ -715,8 +731,11 @@ TEST_F(CrosNetworkConfigTest, SetProperties) {
   mojom::ManagedPropertiesPtr properties = GetManagedProperties(kGUID);
   ASSERT_TRUE(properties);
   ASSERT_EQ(kGUID, properties->guid);
-  ASSERT_TRUE(properties->wifi);
-  ASSERT_FALSE(properties->wifi->auto_connect);
+  ASSERT_TRUE(properties->type_properties);
+  mojom::ManagedWiFiProperties* wifi =
+      properties->type_properties->get_wifi().get();
+  ASSERT_TRUE(wifi);
+  ASSERT_FALSE(wifi->auto_connect);
   ASSERT_FALSE(properties->priority);
 
   // Set priority.
@@ -729,8 +748,10 @@ TEST_F(CrosNetworkConfigTest, SetProperties) {
   properties = GetManagedProperties(kGUID);
   ASSERT_TRUE(properties);
   ASSERT_EQ(kGUID, properties->guid);
-  ASSERT_TRUE(properties->wifi);
-  ASSERT_FALSE(properties->wifi->auto_connect);
+  ASSERT_TRUE(properties->type_properties);
+  wifi = properties->type_properties->get_wifi().get();
+  ASSERT_TRUE(wifi);
+  ASSERT_FALSE(wifi->auto_connect);
   ASSERT_TRUE(properties->priority);
   EXPECT_EQ(1, properties->priority->active_value);
 
@@ -744,9 +765,11 @@ TEST_F(CrosNetworkConfigTest, SetProperties) {
   properties = GetManagedProperties(kGUID);
   ASSERT_TRUE(properties);
   ASSERT_EQ(kGUID, properties->guid);
-  ASSERT_TRUE(properties->wifi);
-  ASSERT_TRUE(properties->wifi->auto_connect);
-  EXPECT_TRUE(properties->wifi->auto_connect->active_value);
+  ASSERT_TRUE(properties->type_properties);
+  wifi = properties->type_properties->get_wifi().get();
+  ASSERT_TRUE(wifi);
+  ASSERT_TRUE(wifi->auto_connect);
+  EXPECT_TRUE(wifi->auto_connect->active_value);
   ASSERT_TRUE(properties->priority);
   EXPECT_EQ(1, properties->priority->active_value);
 }
@@ -922,10 +945,12 @@ TEST_F(CrosNetworkConfigTest, SelectCellularMobileNetwork) {
   // Assert initial state
   mojom::ManagedPropertiesPtr properties =
       GetManagedProperties("cellular_guid");
-  ASSERT_TRUE(properties->cellular);
-  ASSERT_TRUE(properties->cellular->found_networks);
+  mojom::ManagedCellularProperties* cellular =
+      properties->type_properties->get_cellular().get();
+  ASSERT_TRUE(cellular);
+  ASSERT_TRUE(cellular->found_networks);
   const std::vector<mojom::FoundNetworkPropertiesPtr>& found_networks1 =
-      *(properties->cellular->found_networks);
+      *(cellular->found_networks);
   ASSERT_EQ(2u, found_networks1.size());
   EXPECT_EQ("current", found_networks1[0]->status);
   EXPECT_EQ("available", found_networks1[1]->status);
@@ -933,10 +958,11 @@ TEST_F(CrosNetworkConfigTest, SelectCellularMobileNetwork) {
   // Select "network2"
   EXPECT_TRUE(SelectCellularMobileNetwork("cellular_guid", "network2"));
   properties = GetManagedProperties("cellular_guid");
-  ASSERT_TRUE(properties->cellular);
-  ASSERT_TRUE(properties->cellular->found_networks);
+  cellular = properties->type_properties->get_cellular().get();
+  ASSERT_TRUE(cellular);
+  ASSERT_TRUE(cellular->found_networks);
   const std::vector<mojom::FoundNetworkPropertiesPtr>& found_networks2 =
-      *(properties->cellular->found_networks);
+      *(cellular->found_networks);
   ASSERT_EQ(2u, found_networks2.size());
   EXPECT_EQ("available", found_networks2[0]->status);
   EXPECT_EQ("current", found_networks2[1]->status);

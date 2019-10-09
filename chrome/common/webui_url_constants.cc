@@ -402,6 +402,7 @@ const char kHelpSubPage[] = "help";
 const char kInternetSubPage[] = "internet";
 const char kKerberosAccountsSubPage[] = "kerberosAccounts";
 const char kKeyboardOverlaySubPage[] = "keyboard-overlay";
+const char kLanguageSubPage[] = "languages/details";
 const char kLockScreenSubPage[] = "lockScreen";
 const char kManageAccessibilitySubPage[] = "manageAccessibility";
 const char kManageAccessibilityTtsSubPage[] = "manageAccessibility/tts";
@@ -447,7 +448,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kKerberosAccountsSubPage,
       kKeyboardOverlaySubPage,
       // language is both an OS and browser sub page, but prefer the OS version
-      kLanguageOptionsSubPage,
+      kLanguageSubPage,
       kLockScreenSubPage,
       kManageAccessibilitySubPage,
       kManageAccessibilityTtsSubPage,

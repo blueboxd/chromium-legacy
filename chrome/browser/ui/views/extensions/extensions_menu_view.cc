@@ -35,6 +35,15 @@ constexpr int EXTENSIONS_SETTINGS_ID = 42;
 
 constexpr gfx::Size ExtensionsMenuView::kExtensionsMenuIconSize;
 
+ExtensionsMenuView::ButtonListener::ButtonListener(Browser* browser)
+    : browser_(browser) {}
+
+void ExtensionsMenuView::ButtonListener::ButtonPressed(views::Button* sender,
+                                                       const ui::Event& event) {
+  DCHECK_EQ(sender->GetID(), EXTENSIONS_SETTINGS_ID);
+  chrome::ShowExtensions(browser_, std::string());
+}
+
 ExtensionsMenuView::ExtensionsMenuView(
     views::View* anchor_view,
     Browser* browser,
@@ -44,7 +53,8 @@ ExtensionsMenuView::ExtensionsMenuView(
       browser_(browser),
       extensions_container_(extensions_container),
       model_(ToolbarActionsModel::Get(browser_->profile())),
-      model_observer_(this) {
+      model_observer_(this),
+      button_listener_(browser_) {
   model_observer_.Add(model_);
   set_margins(gfx::Insets(0));
 
@@ -59,12 +69,6 @@ ExtensionsMenuView::~ExtensionsMenuView() {
   DCHECK_EQ(g_extensions_dialog, this);
   g_extensions_dialog = nullptr;
   extensions_menu_items_.clear();
-}
-
-void ExtensionsMenuView::ButtonPressed(views::Button* sender,
-                                       const ui::Event& event) {
-  DCHECK_EQ(sender->GetID(), EXTENSIONS_SETTINGS_ID);
-  chrome::ShowExtensions(browser_, std::string());
 }
 
 base::string16 ExtensionsMenuView::GetWindowTitle() const {
@@ -110,7 +114,7 @@ void ExtensionsMenuView::Repopulate() {
                             GetNativeTheme()->GetSystemColor(
                                 ui::NativeTheme::kColorId_DefaultIconColor)));
   auto footer = std::make_unique<HoverButton>(
-      this, std::move(icon_view),
+      &button_listener_, std::move(icon_view),
       l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSION), base::string16());
   footer->SetID(EXTENSIONS_SETTINGS_ID);
   manage_extensions_button_for_testing_ = footer.get();

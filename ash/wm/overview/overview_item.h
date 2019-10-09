@@ -221,6 +221,13 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   OverviewGrid* overview_grid() { return overview_grid_; }
 
+  bool should_use_spawn_animation() const {
+    return should_use_spawn_animation_;
+  }
+  void set_should_use_spawn_animation(bool value) {
+    should_use_spawn_animation_ = value;
+  }
+
   void set_should_animate_when_entering(bool should_animate) {
     should_animate_when_entering_ = should_animate;
   }
@@ -264,18 +271,18 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   // Functions to be called back when their associated animations complete.
   void OnWindowCloseAnimationCompleted();
-  void OnItemAddedAnimationCompleted();
+  void OnItemSpawnedAnimationCompleted();
   void OnItemBoundsAnimationStarted();
   void OnItemBoundsAnimationEnded();
 
-  // Performs the add-item-to-overview animation (which is a fade-in plus
+  // Performs the spawn-item-in-overview animation (which is a fade-in plus
   // scale-up animation), on the given |window|. |target_transform| is the final
   // transform that should be applied to |window| at the end of the animation.
   // |window| is either the real window associated with this item (from
   // GetWindow()), or the `item_widget_->GetNativeWindow()` if the associated
   // window is minimized.
-  void PerformItemAddedAnimation(aura::Window* window,
-                                 const gfx::Transform& target_transform);
+  void PerformItemSpawnedAnimation(aura::Window* window,
+                                   const gfx::Transform& target_transform);
 
   // Sets the bounds of this overview item to |target_bounds| in |root_window_|.
   // The bounds change will be animated as specified by |animation_type|.
@@ -362,6 +369,12 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // Pointer to the OverviewGrid that contains |this|. Guaranteed to be non-null
   // for the lifetime of |this|.
   OverviewGrid* overview_grid_;
+
+  // True if this item should be added to an active overview session using the
+  // spawn animation on its first update. This implies an animation type of
+  // OVERVIEW_ANIMATION_SPAWN_ITEM_IN_OVERVIEW. This value will be reset to
+  // false once the spawn animation is performed.
+  bool should_use_spawn_animation_ = false;
 
   // True if the contained window should animate during the entering animation.
   bool should_animate_when_entering_ = true;

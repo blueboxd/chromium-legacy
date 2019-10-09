@@ -336,7 +336,9 @@ FrameFetchContext::GetPreviewsResourceLoadingHints() const {
 }
 
 WebURLRequest::PreviewsState FrameFetchContext::previews_state() const {
-  return GetLocalFrameClient()->GetPreviewsStateForFrame();
+  DocumentLoader* document_loader = MasterDocumentLoader();
+  return document_loader ? document_loader->GetPreviewsState()
+                         : WebURLRequest::kPreviewsUnspecified;
 }
 
 LocalFrame* FrameFetchContext::GetFrame() const {

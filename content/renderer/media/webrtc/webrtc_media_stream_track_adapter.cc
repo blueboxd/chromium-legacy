@@ -6,16 +6,16 @@
 
 #include "base/bind.h"
 #include "content/renderer/media/webrtc/media_stream_video_webrtc_sink.h"
-#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
+#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 
 namespace content {
 
 // static
 scoped_refptr<WebRtcMediaStreamTrackAdapter>
 WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter(
-    PeerConnectionDependencyFactory* factory,
+    blink::PeerConnectionDependencyFactory* factory,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     const blink::WebMediaStreamTrack& web_track) {
   DCHECK(factory);
@@ -36,7 +36,7 @@ WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter(
 // static
 scoped_refptr<WebRtcMediaStreamTrackAdapter>
 WebRtcMediaStreamTrackAdapter::CreateRemoteTrackAdapter(
-    PeerConnectionDependencyFactory* factory,
+    blink::PeerConnectionDependencyFactory* factory,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     const scoped_refptr<webrtc::MediaStreamTrackInterface>& webrtc_track) {
   DCHECK(factory);
@@ -57,7 +57,7 @@ WebRtcMediaStreamTrackAdapter::CreateRemoteTrackAdapter(
 }
 
 WebRtcMediaStreamTrackAdapter::WebRtcMediaStreamTrackAdapter(
-    PeerConnectionDependencyFactory* factory,
+    blink::PeerConnectionDependencyFactory* factory,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread)
     : factory_(factory),
       main_thread_(main_thread),

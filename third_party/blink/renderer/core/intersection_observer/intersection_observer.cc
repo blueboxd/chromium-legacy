@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/numerics/clamped_math.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_delegate.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
@@ -26,6 +27,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
@@ -200,6 +202,10 @@ IntersectionObserver* IntersectionObserver::Create(
   V8IntersectionObserverDelegate* delegate =
       MakeGarbageCollected<V8IntersectionObserverDelegate>(callback,
                                                            script_state);
+  if (observer_init && observer_init->trackVisibility()) {
+    UseCounter::Count(delegate->GetExecutionContext(),
+                      WebFeature::kIntersectionObserverV2);
+  }
   return Create(observer_init, *delegate, exception_state);
 }
 

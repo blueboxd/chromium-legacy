@@ -128,6 +128,7 @@ void FlagsUI::AddStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("enabled", IDS_FLAGS_UI_ENABLED_FEATURE);
   source->AddLocalizedString("experiment-enabled",
                              IDS_FLAGS_UI_EXPERIMENT_ENABLED);
+  source->AddLocalizedString("heading", IDS_FLAGS_UI_TITLE);
   source->AddLocalizedString("no-results", IDS_FLAGS_UI_NO_RESULTS);
   source->AddLocalizedString("not-available-platform",
                              IDS_FLAGS_UI_NOT_AVAILABLE_ON_PLATFORM);
@@ -161,11 +162,11 @@ void FlagsDeprecatedUI::AddStrings(content::WebUIDataSource* source) {
                              IDS_DEPRECATED_FEATURES_ENABLED_FEATURE);
   source->AddLocalizedString("experiment-enabled",
                              IDS_DEPRECATED_UI_EXPERIMENT_ENABLED);
+  source->AddLocalizedString("heading", IDS_DEPRECATED_FEATURES_HEADING);
   source->AddLocalizedString("no-results", IDS_DEPRECATED_FEATURES_NO_RESULTS);
   source->AddLocalizedString("not-available-platform",
                              IDS_DEPRECATED_FEATURES_NOT_AVAILABLE_ON_PLATFORM);
-  source->AddLocalizedString("page-warning",
-                             IDS_DEPRECATED_FEATURES_PAGE_WARNING);
+  source->AddString("page-warning", std::string());
   source->AddLocalizedString("page-warning-explanation",
                              IDS_DEPRECATED_FEATURES_PAGE_WARNING_EXPLANATION);
   source->AddLocalizedString("relaunch", IDS_DEPRECATED_FEATURES_RELAUNCH);

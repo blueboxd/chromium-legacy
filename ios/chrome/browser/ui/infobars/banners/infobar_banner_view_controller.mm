@@ -40,10 +40,12 @@ const CGFloat kButtonMaxFontSize = 45;
 // Container Stack constants.
 const CGFloat kContainerStackSpacing = 10.0;
 const CGFloat kContainerStackVerticalPadding = 18.0;
-const CGFloat kContainerStackHorizontalPadding = 18.0;
+const CGFloat kContainerStackHorizontalPadding = 15.0;
 
 // Icon constants.
-const CGFloat kIconWidth = 25.0;
+const CGFloat kIconWidth = 28.0;
+const CGFloat kIconHeight = 28.0;
+const CGFloat kIconCornerRadius = 5.0;
 
 // Gesture constants.
 const CGFloat kChangeInPositionForDismissal = -15.0;
@@ -125,12 +127,41 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   self.view.accessibilityCustomActions = [self accessibilityActions];
 
   // Icon setup.
-  UIImageView* iconImageView = nil;
+  UIView* iconContainerView = nil;
   if (self.iconImage) {
     self.iconImage = [self.iconImage
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    iconImageView = [[UIImageView alloc] initWithImage:self.iconImage];
+    UIImageView* iconImageView =
+        [[UIImageView alloc] initWithImage:self.iconImage];
     iconImageView.contentMode = UIViewContentModeScaleAspectFit;
+    iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
+
+    UIView* backgroundIconView =
+        [[UIView alloc] initWithFrame:iconImageView.frame];
+    backgroundIconView.backgroundColor = [UIColor colorNamed:kBlueHaloColor];
+    backgroundIconView.layer.cornerRadius = kIconCornerRadius;
+    backgroundIconView.translatesAutoresizingMaskIntoConstraints = NO;
+
+    iconContainerView = [[UIView alloc] init];
+    [iconContainerView addSubview:backgroundIconView];
+    [iconContainerView addSubview:iconImageView];
+    iconContainerView.translatesAutoresizingMaskIntoConstraints = NO;
+
+    [NSLayoutConstraint activateConstraints:@[
+      [backgroundIconView.centerXAnchor
+          constraintEqualToAnchor:iconContainerView.centerXAnchor],
+      [backgroundIconView.centerYAnchor
+          constraintEqualToAnchor:iconContainerView.centerYAnchor],
+      [backgroundIconView.widthAnchor constraintEqualToConstant:kIconWidth],
+      [backgroundIconView.heightAnchor constraintEqualToConstant:kIconHeight],
+      [iconImageView.centerXAnchor
+          constraintEqualToAnchor:iconContainerView.centerXAnchor],
+      [iconImageView.centerYAnchor
+          constraintEqualToAnchor:iconContainerView.centerYAnchor],
+      [iconImageView.widthAnchor constraintEqualToConstant:kIconWidth],
+      [iconContainerView.widthAnchor
+          constraintEqualToAnchor:backgroundIconView.widthAnchor],
+    ]];
   }
 
   // Labels setup.
@@ -180,10 +211,8 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   // Container Stack setup.
   UIStackView* containerStack = [[UIStackView alloc] init];
   // Check if it should have an icon.
-  if (iconImageView) {
-    [containerStack addArrangedSubview:iconImageView];
-    [iconImageView.widthAnchor constraintEqualToConstant:kIconWidth].active =
-        YES;
+  if (iconContainerView) {
+    [containerStack addArrangedSubview:iconContainerView];
   }
   // Add labels.
   [containerStack addArrangedSubview:labelsStackView];

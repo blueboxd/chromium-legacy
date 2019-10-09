@@ -69,7 +69,7 @@ const char kAuditRecordingOAuth2Scope[] =
     "https://www.googleapis.com/auth/auditrecording-pa";
 
 // OAuth scope for access to clear cut logs.
-const char kClearCutOAuth2Scope[] = "https://wwww.googleapis.com/auth/cclog";
+const char kClearCutOAuth2Scope[] = "https://www.googleapis.com/auth/cclog";
 
 // Used to mint uber auth tokens when needed.
 const char kGaiaSid[] = "sid";

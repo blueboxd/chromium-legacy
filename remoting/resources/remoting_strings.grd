@@ -659,7 +659,7 @@
         <message name="IDS_PRIVACY_POLICY" desc="The label to access the privacy policy, displayed in navigation menu." formatter_data="android_java">
           Privacy Policy
         </message>
-        <message name="IDS_DISMISS" desc="Label for button to dismiss a dialog">
+        <message name="IDS_DISMISS" desc="Label for button to dismiss a dialog" formatter_data="android_java">
           Dismiss
         </message>
         <message name="IDS_DONT_SHOW_AGAIN" desc="Label for checkbox to make a dialog not showing again.">

@@ -134,17 +134,28 @@ struct VisualProperties;
 // - Widgets for frames (the main frame, and subframes due to out-of-process
 //   iframe support)
 //
-// Because the main frame RenderWidget is used to implement RenderViewImpl
-// (deprecated) it has a shared lifetime. But the RenderViewImpl may have
-// a proxy main frame which does not use a RenderWidget. Thus a RenderWidget
-// can be undead, during the time in which we wish we could delete it but we
-// can't, and it should be (relatively.. it's a work in progress) unused during
-// that time. Once a provisional frame exists however, until it is swapped in,
-// RenderWidget remains undead as it should not exist from the point of view of
-// the frame tree or the RenderView, but it does get used then by the
-// provisional frame while still being undead. This concept does not apply to
-// RenderWidgets of subframes, whose lifetimes are not tied to the
-// RenderViewImpl.
+// Background info:
+// OOPIF causes webpages to be renderered by multiple renderers. Each renderer
+// has one instance of a RenderViewImpl, which represents page state shared by
+// each renderer. The frame tree is mirrored across each renderer. Local nodes
+// are represented by RenderFrame, and remote nodes are represented by
+// RenderFrameProxy. Each local root has a corresponding RenderWidget. This
+// RenderWidget is used to route input and graphical output between the browser
+// and the renderer.
+//
+// For legacy reasons, each RenderViewImpl also has a RenderWidget. The
+// RenderViewImpl hosting the local main frame legitimately needs a
+// RenderWidget, since this is a local root. To reduce complexity, we'd like the
+// RenderFrame to own the RenderWidget, which it already does for local root
+// subframes. This is tracked by https://crbug.com/419087.
+//
+// RenderViewImpls with a proxy main frame still own a RenderWidget, even though
+// the RenderWidget is not used by content/renderer or blink. This is because
+// the browser side semantics for RenderWidgetHost, RenderViewHost and
+// RenderFrameHost are still entangled. If we destroyed the RenderWidget
+// without destroying the corresponding RenderWidgetHost, we'd break IPC
+// channels that would not be re-established when recreating the RenderWidget.
+// These RenderWidgets are called "undead", and they should never be used.
 class CONTENT_EXPORT RenderWidget
     : public IPC::Listener,
       public IPC::Sender,

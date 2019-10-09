@@ -143,6 +143,9 @@ void StreamProcessorHelper::OnStreamFailed(uint64_t stream_lifetime_ordinal,
   }
 
   if (error == fuchsia::media::StreamError::DECRYPTOR_NO_KEY) {
+    // Always reset the stream since the current one has failed.
+    Reset();
+
     client_->OnNoKey();
     return;
   }

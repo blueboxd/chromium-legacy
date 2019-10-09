@@ -1027,13 +1027,6 @@ BlameContext* LocalFrameClientImpl::GetFrameBlameContext() {
   return nullptr;
 }
 
-WebURLRequest::PreviewsState LocalFrameClientImpl::GetPreviewsStateForFrame()
-    const {
-  if (web_frame_->Client())
-    return web_frame_->Client()->GetPreviewsStateForFrame();
-  return WebURLRequest::kPreviewsUnspecified;
-}
-
 WebDevToolsAgentImpl* LocalFrameClientImpl::DevToolsAgent() {
   return WebLocalFrameImpl::FromFrame(web_frame_->GetFrame()->LocalFrameRoot())
       ->DevToolsAgentImpl();

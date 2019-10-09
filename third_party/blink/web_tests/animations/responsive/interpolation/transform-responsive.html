@@ -57,4 +57,24 @@ assertCSSResponsive({
     ],
   }],
 });
+
+// https://crbug.com/1004096
+assertCSSResponsive({
+  property: 'transform',
+  from: 'translateX(0px)',
+  to: 'translateX(calc(10em + 0%))',
+  configurations: [{
+    state: {'font-size': '16px'},
+    expect: [
+      {at: 0.25, is: 'translateX(40px)'},
+      {at: 0.75, is: 'translateX(120px)'},
+    ],
+  }, {
+    state: {'font-size': '20px'},
+    expect: [
+      {at: 0.25, is: 'translateX(50px)'},
+      {at: 0.75, is: 'translateX(150px)'},
+    ],
+  }],
+});
 </script>

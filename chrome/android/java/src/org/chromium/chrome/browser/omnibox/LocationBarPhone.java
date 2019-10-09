@@ -166,8 +166,9 @@ public class LocationBarPhone extends LocationBarLayout {
                 * (mStatusView.getEndPaddingPixelSizeForState(true)
                         - mStatusView.getEndPaddingPixelSizeForState(false));
 
-        if (!hasFocus && mToolbarDataProvider.getNewTabPageForCurrentTab() != null
-                && mIconView.getVisibility() == VISIBLE) {
+        if (!hasFocus && mIconView.getVisibility() == VISIBLE
+                && mToolbarDataProvider.getNewTabPageForCurrentTab() != null
+                && !mToolbarDataProvider.getTab().isLoading()) {
             // When:
             // 1. unfocusing the LocationBar on the NTP.
             // 2. scrolling the fakebox to the LocationBar on the NTP.

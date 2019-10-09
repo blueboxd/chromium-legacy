@@ -71,6 +71,7 @@ std::unique_ptr<views::Label> CreateText(const base::string16& message) {
 EnterpriseStartupDialogView::EnterpriseStartupDialogView(
     EnterpriseStartupDialog::DialogResultCallback callback)
     : callback_(std::move(callback)) {
+  DialogDelegate::set_draggable(true);
   SetBorder(views::CreateEmptyBorder(GetDialogInsets()));
   CreateDialogWidget(this, nullptr, nullptr)->Show();
 #if defined(OS_MACOSX)
@@ -160,10 +161,6 @@ bool EnterpriseStartupDialogView::Cancel() {
 
 bool EnterpriseStartupDialogView::Close() {
   return Cancel();
-}
-
-bool EnterpriseStartupDialogView::IsDialogDraggable() const {
-  return true;
 }
 
 bool EnterpriseStartupDialogView::ShouldShowWindowTitle() const {

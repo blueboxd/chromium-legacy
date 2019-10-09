@@ -24,6 +24,7 @@ source_set("common") {
 
   deps = [
     "//base",
+    "//gpu/ipc/common:common",
     "//media",
     "//media/gpu:command_buffer_helper",
     "//media/gpu:common",
@@ -56,6 +57,7 @@ source_set("video_frame_mapper") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "mailbox_video_frame_converter_unittest.cc",
     "platform_video_frame_pool_unittest.cc",
     "platform_video_frame_utils_unittest.cc",
   ]
@@ -66,6 +68,7 @@ source_set("unit_tests") {
     "//media",
     "//media/gpu:common",
     "//skia",
+    "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",

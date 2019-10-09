@@ -88,6 +88,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // grid. If |reposition| is true, repositions all items except those in
   // |ignored_items|. If |animate| is true, animates the repositioning.
   // |animate| has no effect if |reposition| is false.
+  // If |use_spawn_animation| is true, and this item is being added *while*
+  // overview is already active, it will use a special spawn animation on its
+  // first position in the grid. |use_spawn_animation| has no effect if either
+  // |animate| or |reposition| are false.
   //
   // Note: This function should only be called by |OverviewSession::AddItem|.
   // |overview_session_| keeps count of all overview items, but this function
@@ -96,10 +100,14 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
                bool reposition,
                bool animate,
                const base::flat_set<OverviewItem*>& ignored_items,
-               size_t index);
+               size_t index,
+               bool use_spawn_animation = false);
 
   // Similar to the above function, but adds the window to the end of the grid.
-  void AppendItem(aura::Window* window, bool reposition, bool animate);
+  void AppendItem(aura::Window* window,
+                  bool reposition,
+                  bool animate,
+                  bool use_spawn_animation = false);
 
   // Removes |overview_item| from the grid. |overview_item| cannot already be
   // absent from the grid. No items are repositioned.

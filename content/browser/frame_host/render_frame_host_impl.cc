@@ -341,8 +341,8 @@ class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
   void Create(media::mojom::RemotingSourcePtr source,
               media::mojom::RemoterRequest request) final {
     if (auto* host = RenderFrameHostImpl::FromID(process_id_, routing_id_)) {
-      GetContentClient()->browser()->CreateMediaRemoter(
-          host, std::move(source), std::move(request));
+      GetContentClient()->browser()->CreateMediaRemoter(host, std::move(source),
+                                                        std::move(request));
     }
   }
 
@@ -1474,7 +1474,7 @@ bool RenderFrameHostImpl::Send(IPC::Message* message) {
   return GetProcess()->Send(message);
 }
 
-bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
+bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
   // Only process messages if the RenderFrame is alive.
   if (!render_frame_created_)
     return false;
@@ -1502,8 +1502,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_BeforeUnload_ACK, OnBeforeUnloadACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SwapOut_ACK, OnSwapOutACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_VisualStateResponse,
-                        OnVisualStateResponse)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_VisualStateResponse, OnVisualStateResponse)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunJavaScriptDialog,
                                     OnRunJavaScriptDialog)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunBeforeUnloadConfirm,
@@ -1637,7 +1636,7 @@ void RenderFrameHostImpl::AccessibilityFatalError() {
 }
 
 gfx::AcceleratedWidget
-    RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
+RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
   // Only the main frame's current frame host is connected to the native
   // widget tree for accessibility, so return null if this is queried on
   // any other frame.
@@ -1652,7 +1651,7 @@ gfx::AcceleratedWidget
 }
 
 gfx::NativeViewAccessible
-    RenderFrameHostImpl::AccessibilityGetNativeViewAccessible() {
+RenderFrameHostImpl::AccessibilityGetNativeViewAccessible() {
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       render_view_host_->GetWidget()->GetView());
   if (view)
@@ -1905,16 +1904,6 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
   params->has_committed_real_load =
       frame_tree_node()->has_committed_real_load();
 
-  if (GetLocalRenderWidgetHost()) {
-    params->widget_params = mojom::CreateFrameWidgetParams::New();
-    params->widget_params->routing_id =
-        GetLocalRenderWidgetHost()->GetRoutingID();
-    params->widget_params->visual_properties =
-        GetLocalRenderWidgetHost()->GetVisualProperties();
-  }
-
-  GetProcess()->GetRendererInterface()->CreateFrame(std::move(params));
-
   // The RenderWidgetHost takes ownership of its view. It is tied to the
   // lifetime of the current RenderProcessHost for this RenderFrameHost.
   // TODO(avi): This will need to change to initialize a
@@ -1928,6 +1917,16 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
     // The child frame should be created hidden.
     DCHECK(!rwhv->IsShowing());
   }
+
+  if (GetLocalRenderWidgetHost()) {
+    params->widget_params = mojom::CreateFrameWidgetParams::New();
+    params->widget_params->routing_id =
+        GetLocalRenderWidgetHost()->GetRoutingID();
+    params->widget_params->visual_properties =
+        GetLocalRenderWidgetHost()->GetVisualProperties();
+  }
+
+  GetProcess()->GetRendererInterface()->CreateFrame(std::move(params));
 
   if (previous_routing_id != MSG_ROUTING_NONE) {
     RenderFrameProxyHost* proxy = RenderFrameProxyHost::FromID(
@@ -2616,9 +2615,8 @@ void RenderFrameHostImpl::SetNavigationRequest(
       std::move(navigation_request);
 }
 
-void RenderFrameHostImpl::SwapOut(
-    RenderFrameProxyHost* proxy,
-    bool is_loading) {
+void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy,
+                                  bool is_loading) {
   // The end of this event is in OnSwapOutACK when the RenderFrame has completed
   // the operation and sends back an IPC message.
   // The trace event may not end properly if the ACK times out.  We expect this
@@ -2973,9 +2971,8 @@ void RenderFrameHostImpl::OnRunJavaScriptDialog(
                                  reply_msg);
 }
 
-void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
-    bool is_reload,
-    IPC::Message* reply_msg) {
+void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(bool is_reload,
+                                                   IPC::Message* reply_msg) {
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnRunBeforeUnloadConfirm",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id());
 
@@ -3273,8 +3270,8 @@ void RenderFrameHostImpl::OnDidChangeFramePolicy(
 void RenderFrameHostImpl::OnDidChangeFrameOwnerProperties(
     int32_t frame_routing_id,
     const FrameOwnerProperties& properties) {
-  FrameTreeNode* child = FindAndVerifyChild(
-      frame_routing_id, bad_message::RFH_OWNER_PROPERTY);
+  FrameTreeNode* child =
+      FindAndVerifyChild(frame_routing_id, bad_message::RFH_OWNER_PROPERTY);
   if (!child)
     return;
 
@@ -3607,9 +3604,9 @@ void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
     BrowserAccessibilityManager* manager =
         GetOrCreateBrowserAccessibilityManager();
     if (manager) {
-      manager->OnFindInPageResult(
-          params.request_id, params.match_index, params.start_id,
-          params.start_offset, params.end_id, params.end_offset);
+      manager->OnFindInPageResult(params.request_id, params.match_index,
+                                  params.start_id, params.start_offset,
+                                  params.end_id, params.end_offset);
     }
   }
 }
@@ -3666,8 +3663,7 @@ void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(
     dst_snapshot.root_id = snapshot.root_id;
     dst_snapshot.nodes.resize(snapshot.nodes.size());
     for (size_t i = 0; i < snapshot.nodes.size(); ++i) {
-      AXContentNodeDataToAXNodeData(snapshot.nodes[i],
-                                    &dst_snapshot.nodes[i]);
+      AXContentNodeDataToAXNodeData(snapshot.nodes[i], &dst_snapshot.nodes[i]);
     }
     if (snapshot.has_tree_data) {
       ax_content_tree_data_ = snapshot.tree_data;
@@ -4567,7 +4563,7 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
   // If the --disable-web-security flag is specified, all bets are off and the
   // renderer process can send any origin it wishes.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableWebSecurity)) {
+          switches::kDisableWebSecurity)) {
     return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
   }
 
@@ -5836,10 +5832,9 @@ void RenderFrameHostImpl::SetTextTrackSettings(
 }
 
 BrowserAccessibilityManager*
-    RenderFrameHostImpl::GetOrCreateBrowserAccessibilityManager() {
+RenderFrameHostImpl::GetOrCreateBrowserAccessibilityManager() {
   RenderWidgetHostViewBase* view = GetViewForAccessibility();
-  if (view &&
-      !browser_accessibility_manager_ &&
+  if (view && !browser_accessibility_manager_ &&
       !no_create_browser_accessibility_manager_for_testing_) {
     bool is_root_frame = !frame_tree_node()->parent();
     browser_accessibility_manager_.reset(
@@ -5914,8 +5909,8 @@ void RenderFrameHostImpl::DidSelectPopupMenuItems(
 }
 
 void RenderFrameHostImpl::DidCancelPopupMenu() {
-  Send(new FrameMsg_SelectPopupMenuItems(
-      routing_id_, true, std::vector<int>()));
+  Send(
+      new FrameMsg_SelectPopupMenuItems(routing_id_, true, std::vector<int>()));
 }
 
 #endif
@@ -6179,8 +6174,7 @@ void RenderFrameHostImpl::AXContentNodeDataToAXNodeData(
   }
 }
 
-void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
-    ui::AXTreeData* dst) {
+void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(ui::AXTreeData* dst) {
   const AXContentTreeData& src = ax_content_tree_data_;
 
   // Copy the common fields.
@@ -6507,7 +6501,8 @@ void RenderFrameHostImpl::CreateLockManager(
 
 void RenderFrameHostImpl::CreateIDBFactory(
     mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
-  GetProcess()->BindIndexedDB(GetLastCommittedOrigin(), std::move(receiver));
+  GetProcess()->BindIndexedDB(GetRoutingID(), GetLastCommittedOrigin(),
+                              std::move(receiver));
 }
 
 void RenderFrameHostImpl::CreatePermissionService(

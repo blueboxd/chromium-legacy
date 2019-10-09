@@ -13,6 +13,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
+namespace chromeos {
+
 namespace sync_wifi {
 
 namespace {
@@ -65,3 +67,5 @@ TEST_F(NetworkIdentifierTest, DifferentHexFormats) {
 }
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos

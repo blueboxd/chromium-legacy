@@ -87,8 +87,6 @@ PlatformEvent CopyNativeEvent(const PlatformEvent& event) {
 
 void ReleaseCopiedNativeEvent(const PlatformEvent& event) {}
 
-void ClearTouchIdIfReleased(const PlatformEvent& xev) {}
-
 // TODO(687724): Will remove all GetTouchId functions.
 int GetTouchId(const PlatformEvent& native_event) {
   const ui::TouchEvent* event =

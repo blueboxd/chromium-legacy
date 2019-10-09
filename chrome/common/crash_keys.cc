@@ -20,6 +20,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/common/chrome_switches.h"
+#include "components/crash/content/app/crash_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gl/gl_switches.h"
 #endif
@@ -42,7 +43,7 @@ static bool IsBoringSwitch(const std::string& flag) {
     // --crash-loop-before is a "boring" switch because it is redundant;
     // crash_reporter separately informs the crash server if it is doing
     // crash-loop handling.
-    switches::kCrashLoopBefore,
+    crash_reporter::switches::kCrashLoopBefore,
     switches::kPpapiFlashArgs,
     switches::kPpapiFlashPath,
     switches::kRegisterPepperPlugins,

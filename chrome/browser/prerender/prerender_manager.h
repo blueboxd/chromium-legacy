@@ -409,7 +409,7 @@ class PrerenderManager : public content::RenderProcessHostObserver,
     // counting the ones that have called PrerenderData::OnHandleCanceled(). For
     // pending prerenders, this will always be 1, since the PrerenderManager
     // only merges handles of running prerenders.
-    int handle_count_;
+    int handle_count_ = 0;
 
     // The time when OnHandleNavigatedAway was called.
     base::TimeTicks abandon_time_;
@@ -603,16 +603,16 @@ class PrerenderManager : public content::RenderProcessHostObserver,
   std::vector<std::unique_ptr<OnCloseWebContentsDeleter>>
       on_close_web_contents_deleters_;
 
-  std::unique_ptr<PrerenderHistory> prerender_history_;
+  const std::unique_ptr<PrerenderHistory> prerender_history_;
 
-  std::unique_ptr<PrerenderHistograms> histograms_;
+  const std::unique_ptr<PrerenderHistograms> histograms_;
 
   // The number of bytes transferred over the network for the profile this
   // PrerenderManager is attached to.
-  int64_t profile_network_bytes_;
+  int64_t profile_network_bytes_ = 0;
 
   // The value of profile_network_bytes_ that was last recorded.
-  int64_t last_recorded_profile_network_bytes_;
+  int64_t last_recorded_profile_network_bytes_ = 0;
 
   // Set of process hosts being prerendered.
   using PrerenderProcessSet = std::set<content::RenderProcessHost*>;
@@ -620,7 +620,7 @@ class PrerenderManager : public content::RenderProcessHostObserver,
 
   const base::TickClock* tick_clock_;
 
-  bool page_load_metric_observer_disabled_;
+  bool page_load_metric_observer_disabled_ = false;
 
   std::vector<std::unique_ptr<PrerenderManagerObserver>> observers_;
 

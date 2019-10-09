@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/aom/accessible_node_list.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_sparse_attribute_setter.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -2071,6 +2073,22 @@ ax::mojom::Role AXObject::DetermineAriaRoleAttribute() const {
     return ax::mojom::Role::kUnknown;
 
   ax::mojom::Role role = AriaRoleToWebCoreRole(aria_role);
+
+  switch (role) {
+    case ax::mojom::Role::kAnnotationAttribution:
+    case ax::mojom::Role::kAnnotationCommentary:
+    case ax::mojom::Role::kAnnotationPresence:
+    case ax::mojom::Role::kAnnotationRevision:
+    case ax::mojom::Role::kAnnotationSuggestion:
+      UseCounter::Count(GetDocument(), WebFeature::kARIAAnnotationRoles);
+      if (!RuntimeEnabledFeatures::
+              AccessibilityExposeARIAAnnotationsEnabled()) {
+        role = ax::mojom::Role::kGenericContainer;
+      }
+      break;
+    default:
+      break;
+  }
 
   // ARIA states if an item can get focus, it should not be presentational.
   // It also states user agents should ignore the presentational role if

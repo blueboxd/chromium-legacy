@@ -99,6 +99,7 @@ modules_idl_files =
           "canvas/offscreencanvas2d/offscreen_canvas_rendering_context_2d.idl",
           "clipboard/clipboard.idl",
           "clipboard/clipboard_item.idl",
+          "compression/compression_stream.idl",
           "compression/decompression_stream.idl",
           "contacts_picker/contacts_manager.idl",
           "content_index/content_index.idl",

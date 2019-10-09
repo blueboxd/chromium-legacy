@@ -27,6 +27,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/browsertest_util.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -39,6 +41,13 @@
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/window_finder.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -592,6 +601,49 @@ class DetachToBrowserTabDragControllerTest
         tab_0_center + gfx::Vector2d(drag_x_offset, GetDetachY(tab_strip)),
         std::move(task)));
     observer.Wait();
+  }
+
+  std::string InstallWebApp(
+      std::unique_ptr<WebApplicationInfo>&& web_app_info) {
+    std::string app_id;
+    base::RunLoop run_loop;
+    auto* provider = web_app::WebAppProvider::Get(browser()->profile());
+    DCHECK(provider);
+    provider->install_manager().InstallWebAppFromInfo(
+        std::move(web_app_info), web_app::ForInstallableSite::kYes,
+        WebappInstallSource::OMNIBOX_INSTALL_ICON,
+        base::BindLambdaForTesting([&](const std::string& installed_app_id,
+                                       web_app::InstallResultCode code) {
+          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
+          app_id = installed_app_id;
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+    return app_id;
+  }
+
+  Browser* GetTerminalAppBrowser() {
+    GURL app_url = embedded_test_server()->GetURL("app.com", "/simple.html");
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = app_url;
+    web_app_info->scope = app_url.GetWithoutFilename();
+    web_app_info->open_as_window = true;
+    web_app::AppId app_id = InstallWebApp(std::move(web_app_info));
+
+    auto* provider = web_app::WebAppProvider::Get(browser()->profile());
+    provider->system_web_app_manager().SetSystemAppsForTesting(
+        {{web_app::SystemAppType::TERMINAL, web_app::SystemAppInfo(app_url)}});
+    web_app::ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())
+        .Insert(app_url, app_id,
+                web_app::ExternalInstallSource::kInternalDefault);
+
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(browser()->profile())
+            ->GetInstalledExtension(app_id);
+
+    return extensions::browsertest_util::LaunchAppBrowser(browser()->profile(),
+                                                          extension);
   }
 
   Browser* browser() const { return InProcessBrowserTest::browser(); }
@@ -2669,6 +2721,34 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // Drag it far enough that the first tab detaches.
   DragTabAndNotify(tab_strip, base::BindOnce(&WindowSizeDuringDraggingTestStep2,
                                              this, tab_strip));
+}
+
+// Move tab from TYPE_APP Browser to create new TYPE_APP Browser.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DragAppToOwnWindow) {
+  // Start the embedded server, and get Terminal System App.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  Browser* app_browser = GetTerminalAppBrowser();
+  ASSERT_EQ(2u, browser_list->size());
+
+  // Close normal browser since other code expects only 1 browser to start.
+  CloseBrowserSynchronously(browser());
+  ASSERT_EQ(1u, browser_list->size());
+  SelectFirstBrowser();
+  ASSERT_EQ(app_browser, browser());
+  EXPECT_EQ(Browser::Type::TYPE_APP, browser_list->get(0)->type());
+  AddTabsAndResetBrowser(browser(), 1);
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  // Drag tab to create a new browser.
+  DragTabAndNotify(tab_strip,
+                   base::BindOnce(&DetachToBrowserTabDragControllerTest::
+                                      ReleaseInputAfterWindowDetached,
+                                  base::Unretained(this)));
+
+  // New browser should be TYPE_APP.
+  ASSERT_EQ(2u, browser_list->size());
+  EXPECT_EQ(Browser::Type::TYPE_APP, browser_list->get(1)->type());
 }
 
 // Subclass of DetachToBrowserTabDragControllerTest that

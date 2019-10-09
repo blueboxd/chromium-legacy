@@ -359,7 +359,14 @@ TEST_F(ContentCaptureReceiverTest, DidCaptureContent) {
             content_capture_receiver_manager_helper()->captured_data());
 }
 
-TEST_F(ContentCaptureReceiverTest, DISABLED_DidCaptureContentWithUpdate) {
+// TODO(https://crbug.com/1010179): Fix flakes on win10_chromium_x64_rel_ng and
+// re-enable this test.
+#if defined(OS_WIN)
+#define MAYBE_DidCaptureContentWithUpdate DISABLED_DidCaptureContentWithUpdate
+#else
+#define MAYBE_DidCaptureContentWithUpdate DidCaptureContentWithUpdate
+#endif
+TEST_F(ContentCaptureReceiverTest, MAYBE_DidCaptureContentWithUpdate) {
   DidCaptureContent(test_data(), true /* first_data */);
   // Verifies to get test_data() with correct frame content id.
   EXPECT_TRUE(
@@ -380,7 +387,14 @@ TEST_F(ContentCaptureReceiverTest, DISABLED_DidCaptureContentWithUpdate) {
             content_capture_receiver_manager_helper()->captured_data());
 }
 
-TEST_F(ContentCaptureReceiverTest, DISABLED_DidUpdateContent) {
+// TODO(https://crbug.com/1011204): Fix flakes on win10_chromium_x64_rel_ng and
+// re-enable this test.
+#if defined(OS_WIN)
+#define MAYBE_DidUpdateContent DISABLED_DidUpdateContent
+#else
+#define MAYBE_DidUpdateContent DidUpdateContent
+#endif
+TEST_F(ContentCaptureReceiverTest, MAYBE_DidUpdateContent) {
   DidCaptureContent(test_data(), true /* first_data */);
   EXPECT_TRUE(
       content_capture_receiver_manager_helper()->parent_session().empty());

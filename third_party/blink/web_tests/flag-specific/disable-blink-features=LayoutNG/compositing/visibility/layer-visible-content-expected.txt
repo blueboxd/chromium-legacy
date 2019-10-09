@@ -12,8 +12,7 @@
     },
     {
       "name": "LayoutBlockFlow PRE id='layer-tree'",
-      "bounds": [800, 16],
-      "opacity": 0
+      "bounds": [800, 16]
     }
   ]
 }

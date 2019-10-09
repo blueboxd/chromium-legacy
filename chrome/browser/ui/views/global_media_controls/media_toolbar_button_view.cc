@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
 #include "chrome/browser/ui/in_product_help/global_media_controls_in_product_help.h"
 #include "chrome/browser/ui/in_product_help/global_media_controls_in_product_help_factory.h"
 #include "chrome/browser/ui/views/feature_promos/global_media_controls_promo_controller.h"
@@ -27,7 +28,9 @@ MediaToolbarButtonView::MediaToolbarButtonView(
     const Browser* browser)
     : ToolbarButton(this),
       connector_(connector),
-      controller_(source_id, connector_, this),
+      controller_(std::make_unique<MediaToolbarButtonController>(source_id,
+                                                                 connector_,
+                                                                 this)),
       browser_(browser) {
   GlobalMediaControlsInProductHelp* in_product_help =
       GlobalMediaControlsInProductHelpFactory::GetForProfile(
@@ -48,7 +51,12 @@ MediaToolbarButtonView::MediaToolbarButtonView(
   SetVisible(false);
 }
 
-MediaToolbarButtonView::~MediaToolbarButtonView() = default;
+MediaToolbarButtonView::~MediaToolbarButtonView() {
+  // When |controller_| is destroyed, it may call
+  // |MediaToolbarButtonView::Hide()|, so we want to be sure it's destroyed
+  // before any of our other members.
+  controller_.reset();
+}
 
 void MediaToolbarButtonView::AddObserver(MediaToolbarButtonObserver* observer) {
   observers_.AddObserver(observer);
@@ -64,7 +72,7 @@ void MediaToolbarButtonView::ButtonPressed(views::Button* sender,
   if (MediaDialogView::IsShowing()) {
     MediaDialogView::HideDialog();
   } else {
-    MediaDialogView::ShowDialog(this, &controller_, connector_);
+    MediaDialogView::ShowDialog(this, controller_.get(), connector_);
 
     // Inform observers. Since the promo controller cares about the dialog
     // showing, we need to ensure that it's created.

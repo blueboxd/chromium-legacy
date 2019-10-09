@@ -23,6 +23,8 @@ const CGFloat kMargin = 15;
 const CGFloat kMaxHeight = 100;
 // Vertical spacing between subviews.
 const CGFloat kVerticalMargin = 8;
+// Corner radius of badge background.
+const CGFloat kBadgeCornerRadius = 5.0;
 }  // namespace
 
 @interface BadgePopupMenuItem ()
@@ -143,6 +145,8 @@ const CGFloat kVerticalMargin = 8;
     _badgeView = [[UIImageView alloc] init];
     _badgeView.translatesAutoresizingMaskIntoConstraints = NO;
     _badgeView.tintColor = [UIColor colorNamed:kBlueColor];
+    _badgeView.backgroundColor = [UIColor colorNamed:kBlueHaloColor];
+    _badgeView.layer.cornerRadius = kBadgeCornerRadius;
 
     _trailingImageView = [[UIImageView alloc]
         initWithImage:

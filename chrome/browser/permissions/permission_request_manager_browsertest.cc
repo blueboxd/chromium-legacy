@@ -34,6 +34,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -660,6 +661,30 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   EXPECT_EQ("denied", result);
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
+                       PendingRequestsDisableBackForwardCache) {
+  content::BackForwardCacheDisabledTester back_forward_cache_tester;
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(),
+      embedded_test_server()->GetURL(
+          "/permissions/requests-before-after-load.html"),
+      1);
+  bubble_factory()->WaitForPermissionBubble();
+
+  content::RenderFrameHost* main_frame =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  int main_frame_process_id = main_frame->GetProcess()->GetID();
+  int main_frame_routing_id = main_frame->GetRoutingID();
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), embedded_test_server()->GetURL("b.com", "/title1.html"), 1);
+  EXPECT_TRUE(back_forward_cache_tester.IsDisabledForFrameWithReason(
+      main_frame_process_id, main_frame_routing_id,
+      "PermissionRequestManager"));
 }
 
 // Test bubbles showing when tabs move between windows. Simulates a situation

@@ -848,12 +848,6 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
         break;
       back_gesture_affordance_ =
           std::make_unique<BackGestureAffordance>(event->location());
-
-      aura::Window* window = static_cast<aura::Window*>(event->target());
-      DCHECK(window);
-      ui::Layer* parent = window->layer()->parent();
-      parent->Add(back_gesture_affordance_->painted_layer());
-      parent->StackAtTop(back_gesture_affordance_->painted_layer());
       return true;
     }
     case ui::ET_GESTURE_SCROLL_UPDATE:

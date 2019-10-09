@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 
 namespace blink {

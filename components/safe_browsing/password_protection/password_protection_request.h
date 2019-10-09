@@ -155,7 +155,7 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   void CheckCachedVerdicts();
 
   // Fill |request_proto_| with appropriate values.
-  void FillRequestProto();
+  void FillRequestProto(bool is_sampled_ping);
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   // Collects visual features from the current login page.

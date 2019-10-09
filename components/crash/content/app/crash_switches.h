@@ -16,6 +16,10 @@ extern const char kCrashpadHandler[];
 extern const char kCrashpadHandlerPid[];
 #endif  // OS_LINUX
 
+#if defined(OS_CHROMEOS)
+extern const char kCrashLoopBefore[];
+#endif
+
 }  // namespace switches
 }  // namespace crash_reporter
 

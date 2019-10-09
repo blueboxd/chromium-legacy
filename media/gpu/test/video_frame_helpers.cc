@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/base/color_plane_layout.h"
 #include "media/base/format_utils.h"
 #include "media/base/video_frame.h"
@@ -201,6 +202,7 @@ scoped_refptr<VideoFrame> ConvertVideoFrame(const VideoFrame* src_frame,
 }
 
 scoped_refptr<VideoFrame> CloneVideoFrame(
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     const VideoFrame* const src_frame,
     const VideoFrameLayout& dst_layout,
     VideoFrame::StorageType dst_storage_type,
@@ -222,9 +224,10 @@ scoped_refptr<VideoFrame> CloneVideoFrame(
         return nullptr;
       }
       dst_frame = CreatePlatformVideoFrame(
-          dst_layout.format(), dst_layout.coded_size(),
-          src_frame->visible_rect(), src_frame->visible_rect().size(),
-          src_frame->timestamp(), *dst_buffer_usage);
+          gpu_memory_buffer_factory, dst_layout.format(),
+          dst_layout.coded_size(), src_frame->visible_rect(),
+          src_frame->visible_rect().size(), src_frame->timestamp(),
+          *dst_buffer_usage);
       break;
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     case VideoFrame::STORAGE_OWNED_MEMORY:

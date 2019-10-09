@@ -1974,7 +1974,7 @@ RenderWidgetHostInputEventRouter::GetMouseCaptureWidgetForTests() const {
 
 void RenderWidgetHostInputEventRouter::SetAutoScrollInProgress(
     bool is_autoscroll_in_progress) {
-  event_targeter_->set_is_auto_scroll_in_progress(is_autoscroll_in_progress);
+  event_targeter_->SetIsAutoScrollInProgress(is_autoscroll_in_progress);
 }
 
 }  // namespace content

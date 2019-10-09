@@ -953,22 +953,26 @@ void NGInlineNode::SegmentFontOrientation(NGInlineNodeData* data) {
   // If we don't have |NGInlineItemSegments| yet, create a segment for the
   // entire content.
   const unsigned capacity = items.size() + text_content.length() / 10;
-  if (!data->segments) {
-    data->segments = std::make_unique<NGInlineItemSegments>();
-    data->segments->ReserveCapacity(capacity);
-    data->segments->Append(text_content.length(), items.front());
-  } else {
+  NGInlineItemSegments* segments = data->segments.get();
+  if (segments) {
     DCHECK(!data->segments->IsEmpty());
     data->segments->ReserveCapacity(capacity);
+    DCHECK_EQ(text_content.length(), data->segments->EndOffset());
   }
-  DCHECK_EQ(text_content.length(), data->segments->EndOffset());
   unsigned segment_index = 0;
 
   for (const NGInlineItem& item : items) {
     if (item.Type() == NGInlineItem::kText && item.Length() &&
         item.Style()->GetFont().GetFontDescription().Orientation() ==
             FontOrientation::kVerticalMixed) {
-      segment_index = data->segments->AppendMixedFontOrientation(
+      if (!segments) {
+        data->segments = std::make_unique<NGInlineItemSegments>();
+        segments = data->segments.get();
+        segments->ReserveCapacity(capacity);
+        segments->Append(text_content.length(), item);
+        DCHECK_EQ(text_content.length(), data->segments->EndOffset());
+      }
+      segment_index = segments->AppendMixedFontOrientation(
           text_content, item.StartOffset(), item.EndOffset(), segment_index);
     }
   }

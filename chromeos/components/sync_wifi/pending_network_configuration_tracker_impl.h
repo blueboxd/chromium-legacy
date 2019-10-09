@@ -12,6 +12,8 @@
 class PrefRegistrySimple;
 class PrefService;
 
+namespace chromeos {
+
 namespace sync_wifi {
 
 // Keeps track of in flight updates to the local network stack and persists
@@ -19,7 +21,7 @@ namespace sync_wifi {
 class PendingNetworkConfigurationTrackerImpl
     : public PendingNetworkConfigurationTracker {
  public:
-  PendingNetworkConfigurationTrackerImpl(PrefService* pref_service);
+  explicit PendingNetworkConfigurationTrackerImpl(PrefService* pref_service);
   ~PendingNetworkConfigurationTrackerImpl() override;
 
   // Registers preferences used by this class in the provided |registry|.
@@ -48,5 +50,7 @@ class PendingNetworkConfigurationTrackerImpl
 };
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos
 
 #endif  // CHROMEOS_COMPONENTS_SYNC_WIFI_PENDING_NETWORK_CONFIGURATION_TRACKER_IMPL_H_

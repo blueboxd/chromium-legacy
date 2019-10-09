@@ -13,6 +13,8 @@ namespace sync_pb {
 class WifiConfigurationSpecificsData;
 }
 
+namespace chromeos {
+
 namespace sync_wifi {
 
 class NetworkIdentifier;
@@ -34,5 +36,7 @@ class SyncedNetworkUpdater {
 };
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos
 
 #endif  // CHROMEOS_COMPONENTS_SYNC_WIFI_SYNCED_NETWORK_UPDATER_H_

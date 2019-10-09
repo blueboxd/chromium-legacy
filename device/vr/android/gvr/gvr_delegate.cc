@@ -151,6 +151,22 @@ mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
   pose->angular_velocity =
       GetAngularVelocityFromPoses(*head_mat_ptr, head_mat_2, epsilon_seconds);
 
+  // The position is emulated unless the current tracking status is 6DoF and is
+  // not still initializing or invalid.
+  pose->emulated_position = true;
+  gvr::Properties props = gvr_api->GetCurrentProperties();
+  gvr::Value head_tracking_status;
+  if (props.Get(GVR_PROPERTY_TRACKING_STATUS, &head_tracking_status)) {
+    bool has_6dof =
+        !!(head_tracking_status.fl & GVR_TRACKING_STATUS_FLAG_HAS_6DOF);
+    bool initialized =
+        !(head_tracking_status.fl & GVR_TRACKING_STATUS_FLAG_INITIALIZING);
+    bool valid = !(head_tracking_status.fl & GVR_TRACKING_STATUS_FLAG_INVALID);
+    if (has_6dof && initialized && valid) {
+      pose->emulated_position = false;
+    }
+  }
+
   return pose;
 }
 

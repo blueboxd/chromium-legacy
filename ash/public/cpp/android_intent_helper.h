@@ -34,6 +34,8 @@ class ASH_PUBLIC_EXPORT AndroidIntentHelper {
   DISALLOW_COPY_AND_ASSIGN(AndroidIntentHelper);
 };
 
+ASH_PUBLIC_EXPORT bool IsAndroidIntent(const GURL& url);
+
 }  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_ANDROID_INTENT_HELPER_H_

@@ -228,8 +228,9 @@ bool StructTraits<gpu::mojom::VideoEncodeAcceleratorSupportedProfileDataView,
          gpu::VideoEncodeAcceleratorSupportedProfile* out) {
   out->max_framerate_numerator = data.max_framerate_numerator();
   out->max_framerate_denominator = data.max_framerate_denominator();
-  return data.ReadProfile(&out->profile) &&
-         data.ReadMaxResolution(&out->max_resolution);
+  return data.ReadMinResolution(&out->min_resolution) &&
+         data.ReadMaxResolution(&out->max_resolution) &&
+         data.ReadProfile(&out->profile);
 }
 
 // static

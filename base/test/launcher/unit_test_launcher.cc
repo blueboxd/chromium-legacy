@@ -46,11 +46,6 @@ namespace {
 // This constant controls how many tests are run in a single batch by default.
 const size_t kDefaultTestBatchLimit = 10;
 
-const char kHelpFlag[] = "help";
-
-// Flag to run all tests in a single process.
-const char kSingleProcessTestsFlag[] = "single-process-tests";
-
 void PrintUsage() {
   fprintf(stdout,
           "Runs tests using the gtest framework, each batch of tests being\n"
@@ -155,7 +150,8 @@ int LaunchUnitTestsInternal(RunTestSuiteCallback run_test_suite,
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(kGTestHelpFlag) ||
       CommandLine::ForCurrentProcess()->HasSwitch(kGTestListTestsFlag) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessTestsFlag) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcessTests) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTestChildProcess) ||
       force_single_process) {
@@ -163,7 +159,7 @@ int LaunchUnitTestsInternal(RunTestSuiteCallback run_test_suite,
   }
 #endif
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kHelpFlag)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kHelpFlag)) {
     PrintUsage();
     return 0;
   }
@@ -313,7 +309,7 @@ CommandLine DefaultUnitTestPlatformDelegate::GetCommandLineForChildGTestProcess(
 
   new_cmd_line.AppendSwitchPath(switches::kTestLauncherOutput, output_file);
   new_cmd_line.AppendSwitchPath(kGTestFlagfileFlag, flag_file);
-  new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
+  new_cmd_line.AppendSwitch(switches::kSingleProcessTests);
 
   return new_cmd_line;
 }

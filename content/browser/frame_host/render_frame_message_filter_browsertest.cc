@@ -182,8 +182,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, Cookies) {
   // TLS page writes secure cookie.
   EXPECT_TRUE(ExecuteScript(web_contents_https->GetMainFrame(),
                             "document.cookie = 'C=3;secure;';"));
-  EXPECT_EQ("B=2; C=3",
-            GetCookieFromJS(web_contents_https->GetMainFrame()));
+  EXPECT_EQ("B=2; C=3", GetCookieFromJS(web_contents_https->GetMainFrame()));
   EXPECT_EQ("B=2", GetCookieFromJS(web_contents_http->GetMainFrame()));
 
   // TLS page writes not-secure cookie.

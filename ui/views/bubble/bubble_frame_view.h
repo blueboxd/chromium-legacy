@@ -16,6 +16,7 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/progress_bar.h"
 #include "ui/views/input_event_activation_protector.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -59,6 +60,10 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // Sets a custom view to be the dialog title instead of the |default_title_|
   // label. If there is an existing title view it will be deleted.
   void SetTitleView(std::unique_ptr<View> title_view);
+
+  // Updates the current progress value of |progress_indicator_|. If progress is
+  // absent, hides |the progress_indicator|.
+  void SetProgress(base::Optional<double> progress);
 
   // View:
   const char* GetClassName() const override;
@@ -167,6 +172,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, RemoveFootnoteView);
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, LayoutWithIcon);
+  FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, LayoutWithProgressIndicator);
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, IgnorePossiblyUnintendedClicks);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CloseReasons);
   FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest, CloseMethods);
@@ -233,6 +239,10 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   // The optional close button (the X).
   Button* close_ = nullptr;
+
+  // The optional progress bar. Used to indicate bubble pending state. By
+  // default it is invisible.
+  ProgressBar* progress_indicator_ = nullptr;
 
   // The optional header view.
   View* header_view_ = nullptr;

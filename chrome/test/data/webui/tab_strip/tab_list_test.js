@@ -55,37 +55,31 @@ suite('TabList', () => {
   let testTabStripViewProxy;
   let testTabsApiProxy;
 
-  const currentWindow = {
-    id: 1001,
-    tabs: [
-      {
-        active: true,
-        id: 0,
-        index: 0,
-        title: 'Tab 1',
-        windowId: 1001,
-      },
-      {
-        active: false,
-        id: 1,
-        index: 1,
-        title: 'Tab 2',
-        windowId: 1001,
-      },
-      {
-        active: false,
-        id: 2,
-        index: 2,
-        title: 'Tab 3',
-        windowId: 1001,
-      },
-    ],
-  };
+  const tabs = [
+    {
+      active: true,
+      id: 0,
+      index: 0,
+      title: 'Tab 1',
+    },
+    {
+      active: false,
+      id: 1,
+      index: 1,
+      title: 'Tab 2',
+    },
+    {
+      active: false,
+      id: 2,
+      index: 2,
+      title: 'Tab 3',
+    },
+  ];
 
   function pinTabAt(tab, index) {
     const changeInfo = {index: index, pinned: true};
     const updatedTab = Object.assign({}, tab, changeInfo);
-    callbackRouter.onUpdated.dispatchEvent(tab.id, changeInfo, updatedTab);
+    webUIListenerCallback('tab-updated', updatedTab);
   }
 
   function getUnpinnedTabs() {
@@ -101,7 +95,7 @@ suite('TabList', () => {
     document.body.innerHTML = '';
 
     testTabsApiProxy = new TestTabsApiProxy();
-    testTabsApiProxy.setCurrentWindow(currentWindow);
+    testTabsApiProxy.setTabs(tabs);
     TabsApiProxy.instance_ = testTabsApiProxy;
     callbackRouter = testTabsApiProxy.callbackRouter;
 
@@ -115,7 +109,7 @@ suite('TabList', () => {
     tabList = document.createElement('tabstrip-tab-list');
     document.body.appendChild(tabList);
 
-    return testTabsApiProxy.whenCalled('getCurrentWindow');
+    return testTabsApiProxy.whenCalled('getTabs');
   });
 
   teardown(() => {
@@ -142,8 +136,8 @@ suite('TabList', () => {
 
   test('creates a tab element for each tab', () => {
     const tabElements = getUnpinnedTabs();
-    assertEquals(currentWindow.tabs.length, tabElements.length);
-    currentWindow.tabs.forEach((tab, index) => {
+    assertEquals(tabs.length, tabElements.length);
+    tabs.forEach((tab, index) => {
       assertEquals(tabElements[index].tab, tab);
     });
   });
@@ -153,22 +147,20 @@ suite('TabList', () => {
       id: 3,
       index: 3,
       title: 'New tab',
-      windowId: currentWindow.id,
     };
-    callbackRouter.onCreated.dispatchEvent(appendedTab);
+    webUIListenerCallback('tab-created', appendedTab);
     let tabElements = getUnpinnedTabs();
-    assertEquals(currentWindow.tabs.length + 1, tabElements.length);
-    assertEquals(tabElements[currentWindow.tabs.length].tab, appendedTab);
+    assertEquals(tabs.length + 1, tabElements.length);
+    assertEquals(tabElements[tabs.length].tab, appendedTab);
 
     const prependedTab = {
       id: 4,
       index: 0,
       title: 'New tab',
-      windowId: currentWindow.id,
     };
-    callbackRouter.onCreated.dispatchEvent(prependedTab);
+    webUIListenerCallback('tab-created', prependedTab);
     tabElements = getUnpinnedTabs();
-    assertEquals(currentWindow.tabs.length + 2, tabElements.length);
+    assertEquals(tabs.length + 2, tabElements.length);
     assertEquals(tabElements[0].tab, prependedTab);
   });
 
@@ -178,44 +170,25 @@ suite('TabList', () => {
       id: 3,
       index: 3,
       title: 'New tab',
-      windowId: currentWindow.id,
     };
-    callbackRouter.onCreated.dispatchEvent(newActiveTab);
+    webUIListenerCallback('tab-created', newActiveTab);
     const [tabId, newIndex] = await testTabsApiProxy.whenCalled('moveTab');
     assertEquals(tabId, newActiveTab.id);
     assertEquals(newIndex, 0);
   });
 
-  test(
-      'does not add a new tab element when a tab is added in a different ' +
-          'window',
-      () => {
-        const newTab = {
-          index: 3,
-          title: 'New tab',
-          windowId: currentWindow.id + 1,
-        };
-        callbackRouter.onCreated.dispatchEvent(newTab);
-        const tabElements = getUnpinnedTabs();
-        assertEquals(currentWindow.tabs.length, tabElements.length);
-      });
-
   test('removes a tab when tab is removed from current window', async () => {
-    const tabToRemove = currentWindow.tabs[0];
-    callbackRouter.onRemoved.dispatchEvent(tabToRemove.id, {
-      windowId: currentWindow.id,
-    });
+    const tabToRemove = tabs[0];
+    webUIListenerCallback('tab-removed', tabToRemove.id);
     await tabList.animationPromises;
-    assertEquals(currentWindow.tabs.length - 1, getUnpinnedTabs().length);
+    assertEquals(tabs.length - 1, getUnpinnedTabs().length);
   });
 
   test('updates a tab with new tab data when a tab is updated', () => {
-    const tabToUpdate = currentWindow.tabs[0];
+    const tabToUpdate = tabs[0];
     const changeInfo = {title: 'A new title'};
     const updatedTab = Object.assign({}, tabToUpdate, changeInfo);
-    callbackRouter.onUpdated.dispatchEvent(
-        tabToUpdate.id, changeInfo, updatedTab);
-
+    webUIListenerCallback('tab-updated', updatedTab);
     const tabElements = getUnpinnedTabs();
     assertEquals(tabElements[0].tab, updatedTab);
   });
@@ -224,21 +197,17 @@ suite('TabList', () => {
     const tabElements = getUnpinnedTabs();
 
     // Mock activating the 2nd tab
-    callbackRouter.onActivated.dispatchEvent({
-      tabId: currentWindow.tabs[1].id,
-      windowId: currentWindow.id,
-    });
+    webUIListenerCallback('tab-active-changed', tabs[1].id);
     assertFalse(tabElements[0].tab.active);
     assertTrue(tabElements[1].tab.active);
     assertFalse(tabElements[2].tab.active);
   });
 
   test('adds a pinned tab to its designated container', () => {
-    callbackRouter.onCreated.dispatchEvent({
+    webUIListenerCallback('tab-created', {
       index: 0,
       title: 'New pinned tab',
       pinned: true,
-      windowId: currentWindow.id,
     });
     const pinnedTabElements = getPinnedTabs();
     assertEquals(pinnedTabElements.length, 1);
@@ -246,10 +215,11 @@ suite('TabList', () => {
   });
 
   test('moves pinned tabs to designated containers', () => {
-    const tabToPin = currentWindow.tabs[1];
+    const tabToPin = tabs[1];
     const changeInfo = {index: 0, pinned: true};
     let updatedTab = Object.assign({}, tabToPin, changeInfo);
-    callbackRouter.onUpdated.dispatchEvent(tabToPin.id, changeInfo, updatedTab);
+    webUIListenerCallback('tab-updated', updatedTab);
+
     let pinnedTabElements = getPinnedTabs();
     assertEquals(pinnedTabElements.length, 1);
     assertTrue(pinnedTabElements[0].tab.pinned);
@@ -260,7 +230,8 @@ suite('TabList', () => {
     changeInfo.index = 0;
     changeInfo.pinned = false;
     updatedTab = Object.assign({}, updatedTab, changeInfo);
-    callbackRouter.onUpdated.dispatchEvent(tabToPin.id, changeInfo, updatedTab);
+    webUIListenerCallback('tab-updated', updatedTab);
+
     const unpinnedTabElements = getUnpinnedTabs();
     assertEquals(getPinnedTabs().length, 0);
     assertEquals(unpinnedTabElements.length, 3);
@@ -269,11 +240,9 @@ suite('TabList', () => {
 
   test('moves tab elements when tabs move', () => {
     const tabElementsBeforeMove = getUnpinnedTabs();
-    const tabToMove = currentWindow.tabs[0];
-    callbackRouter.onMoved.dispatchEvent(tabToMove.id, {
-      toIndex: 2,
-      windowId: currentWindow.id,
-    });
+    const tabToMove = tabs[0];
+    webUIListenerCallback('tab-moved', tabToMove.id, 2);
+
     const tabElementsAfterMove = getUnpinnedTabs();
     assertEquals(tabElementsBeforeMove[0], tabElementsAfterMove[2]);
     assertEquals(tabElementsBeforeMove[1], tabElementsAfterMove[0]);
@@ -301,10 +270,7 @@ suite('TabList', () => {
     // The 2nd tab should be off-screen to the right, so activating it should
     // scroll so that the element's right edge is aligned with the screen's
     // right edge
-    callbackRouter.onActivated.dispatchEvent({
-      tabId: currentWindow.tabs[1].id,
-      windowId: currentWindow.id,
-    });
+    webUIListenerCallback('tab-active-changed', tabs[1].id);
     let activeTab = getUnpinnedTabs()[1];
     await tabList.animationPromises;
     assertEquals(
@@ -315,77 +281,15 @@ suite('TabList', () => {
     // The 1st tab should be now off-screen to the left, so activating it should
     // scroll so that the element's left edge is aligned with the screen's
     // left edge
-    callbackRouter.onActivated.dispatchEvent({
-      tabId: currentWindow.tabs[0].id,
-      windowId: currentWindow.id,
-    });
+    webUIListenerCallback('tab-active-changed', tabs[0].id);
     activeTab = getUnpinnedTabs()[0];
     await tabList.animationPromises;
     assertEquals(fakeScroller.scrollLeft, activeTab.offsetLeft - scrollPadding);
   });
 
-  test('attaching a tab creates a new tab element', async () => {
-    const attachedTab = {
-      index: 2,
-      id: 9001,
-      title: 'My new tab',
-      windowId: currentWindow.id,
-    };
-    testTabsApiProxy.setTab(attachedTab);
-    callbackRouter.onAttached.dispatchEvent(attachedTab.id, {
-      newPosition: attachedTab.index,
-      newWindowId: attachedTab.windowId,
-    });
-
-    const tabId = await testTabsApiProxy.whenCalled('getTab');
-    assertEquals(tabId, attachedTab.id);
-    assertEquals(getUnpinnedTabs().length, currentWindow.tabs.length + 1);
-    assertEquals(getUnpinnedTabs()[attachedTab.index].tab, attachedTab);
-  });
-
-  test('detaching a tab removes the tab element', () => {
-    const detachedTab = currentWindow.tabs[1];
-    callbackRouter.onDetached.dispatchEvent(detachedTab.id, {
-      oldPosition: 1,
-      oldWindowId: currentWindow.id,
-    });
-    assertEquals(getUnpinnedTabs().length, currentWindow.tabs.length - 1);
-  });
-
-  test(
-      'respects the last attached/detached event when multiple events are ' +
-          'dispatched for the same tab',
-      async () => {
-        const attachedTab = {
-          index: 2,
-          id: 9001,
-          title: 'My new tab',
-          windowId: currentWindow.id,
-        };
-        testTabsApiProxy.setTab(attachedTab);
-        callbackRouter.onAttached.dispatchEvent(attachedTab.id, {
-          newPosition: attachedTab.index,
-          newWindowId: attachedTab.windowId,
-        });
-        callbackRouter.onDetached.dispatchEvent(attachedTab.id, {
-          oldPosition: attachedTab.index,
-          oldWindowId: attachedTab.windowId,
-        });
-        callbackRouter.onAttached.dispatchEvent(attachedTab.id, {
-          newPosition: attachedTab.index,
-          newWindowId: attachedTab.windowId,
-        });
-        callbackRouter.onDetached.dispatchEvent(attachedTab.id, {
-          oldPosition: attachedTab.index,
-          oldWindowId: attachedTab.windowId,
-        });
-        await testTabsApiProxy.whenCalled('getTab');
-        assertEquals(getUnpinnedTabs().length, currentWindow.tabs.length);
-      });
-
   test('dragstart sets a drag image offset by the event coordinates', () => {
     // Drag and drop only works for pinned tabs
-    currentWindow.tabs.forEach(pinTabAt);
+    tabs.forEach(pinTabAt);
 
     const draggedTab = getPinnedTabs()[0];
     const mockDataTransfer = new MockDataTransfer();
@@ -408,7 +312,7 @@ suite('TabList', () => {
 
   test('dragover moves tabs', async () => {
     // Drag and drop only works for pinned tabs
-    currentWindow.tabs.forEach(pinTabAt);
+    tabs.forEach(pinTabAt);
 
     const draggedIndex = 0;
     const dragOverIndex = 1;
@@ -435,7 +339,7 @@ suite('TabList', () => {
     dragOverTab.dispatchEvent(dragOverEvent);
     assertEquals(dragOverEvent.dataTransfer.dropEffect, 'move');
     const [tabId, newIndex] = await testTabsApiProxy.whenCalled('moveTab');
-    assertEquals(tabId, currentWindow.tabs[draggedIndex].id);
+    assertEquals(tabId, tabs[draggedIndex].id);
     assertEquals(newIndex, dragOverIndex);
   });
 
@@ -443,10 +347,7 @@ suite('TabList', () => {
       'when the tab strip closes, the active tab should move to the start',
       async () => {
         // Mock activating the 2nd tab
-        callbackRouter.onActivated.dispatchEvent({
-          tabId: currentWindow.tabs[1].id,
-          windowId: currentWindow.id,
-        });
+        webUIListenerCallback('tab-active-changed', tabs[1].id);
         testTabsApiProxy.resetResolver('moveTab');
 
         // Mock tab strip going from visible to hidden
@@ -454,7 +355,7 @@ suite('TabList', () => {
         document.dispatchEvent(new Event('visibilitychange'));
 
         const [moveId, newIndex] = await testTabsApiProxy.whenCalled('moveTab');
-        assertEquals(moveId, currentWindow.tabs[1].id);
+        assertEquals(moveId, tabs[1].id);
         assertEquals(newIndex, 0);
       });
 });

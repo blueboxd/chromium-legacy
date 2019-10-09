@@ -17,14 +17,16 @@ template <typename T>
 struct DefaultSingletonTraits;
 }  // namespace base
 
+namespace chromeos {
 namespace sync_wifi {
 class WifiConfigurationSyncService;
 }  // namespace sync_wifi
+}  // namespace chromeos
 
 class WifiConfigurationSyncServiceFactory
     : public BrowserContextKeyedServiceFactory {
  public:
-  static sync_wifi::WifiConfigurationSyncService* GetForProfile(
+  static chromeos::sync_wifi::WifiConfigurationSyncService* GetForProfile(
       Profile* profile);
   static WifiConfigurationSyncServiceFactory* GetInstance();
 

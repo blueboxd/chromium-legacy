@@ -90,6 +90,19 @@ JNI_UrlFormatter_FormatUrlForSecurityDisplayOmitScheme(
                url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
 }
 
+static ScopedJavaLocalRef<jstring>
+JNI_UrlFormatter_FormatUrlForDisplayOmitSchemeOmitTrivialSubdomains(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& url) {
+  return base::android::ConvertUTF16ToJavaString(
+      env, url_formatter::FormatUrl(
+               JNI_UrlFormatter_ConvertJavaStringToGURL(env, url),
+               url_formatter::kFormatUrlOmitDefaults |
+                   url_formatter::kFormatUrlOmitHTTPS |
+                   url_formatter::kFormatUrlOmitTrivialSubdomains,
+               net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
+}
+
 }  // namespace android
 
 }  // namespace url_formatter

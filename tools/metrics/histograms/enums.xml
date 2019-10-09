@@ -7718,6 +7718,7 @@ histogram as enum -->
   <int value="1" label="Search provider change"/>
   <int value="2" label="Tab closed"/>
   <int value="3" label="Navigation"/>
+  <int value="4" label="Shutdown"/>
 </enum>
 
 <enum name="ChromeDownloadCountType">
@@ -9157,6 +9158,7 @@ Called by update_net_error_codes.py.-->
   <int value="-402" label="CACHE_WRITE_FAILURE"/>
   <int value="-401" label="CACHE_READ_FAILURE"/>
   <int value="-400" label="CACHE_MISS"/>
+  <int value="-380" label="QUIC_CERT_ROOT_NOT_KNOWN"/>
   <int value="-379" label="HTTP_RESPONSE_CODE_FAILURE"/>
   <int value="-378" label="HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH"/>
   <int value="-377" label="HTTP2_CLIENT_REFUSED_STREAM"/>
@@ -13221,14 +13223,14 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DefaultAppName">
-  <int value="0" label="Calculator"/>
-  <int value="1" label="Text"/>
-  <int value="2" label="Get Help"/>
-  <int value="3" label="Gallery"/>
-  <int value="4" label="Video Player"/>
-  <int value="5" label="Audio Player"/>
-  <int value="6" label="Chrome Canvas"/>
-  <int value="7" label="Camera"/>
+  <int value="10" label="Calculator"/>
+  <int value="11" label="Text"/>
+  <int value="12" label="Get Help"/>
+  <int value="13" label="Gallery"/>
+  <int value="14" label="Video Player"/>
+  <int value="15" label="Audio Player"/>
+  <int value="16" label="Chrome Canvas"/>
+  <int value="17" label="Camera"/>
 </enum>
 
 <enum name="DefaultBrowserAsyncAttemptResult">
@@ -18216,6 +18218,7 @@ Called by update_net_error_codes.py.-->
   <int value="622" label="PrintingBackgroundGraphicsDefault"/>
   <int value="623" label="LegacySameSiteCookieBehaviorEnabled"/>
   <int value="624" label="LegacySameSiteCookieBehaviorEnabledForDomainList"/>
+  <int value="625" label="PrintJobHistoryExpirationPeriod"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -24867,6 +24870,12 @@ Called by update_net_error_codes.py.-->
   <int value="3043" label="InvalidFragmentDirective"/>
   <int value="3044" label="ContactsManagerGetProperties"/>
   <int value="3045" label="EvaluateScriptMovedBetweenElementDocuments"/>
+  <int value="3046" label="PluginElementLoadedDocument"/>
+  <int value="3047" label="PluginElementLoadedImage"/>
+  <int value="3048" label="PluginElementLoadedExternal"/>
+  <int value="3049" label="RenderSubtreeAttribute"/>
+  <int value="3050" label="ARIAAnnotationRoles"/>
+  <int value="3051" label="IntersectionObserverV2"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -36109,6 +36118,7 @@ from previous Chrome versions.
   <int value="-632030508" label="NativeWindowNavButtons:disabled"/>
   <int value="-631740127" label="inert-visual-viewport"/>
   <int value="-631614101" label="CameraSystemWebApp:enabled"/>
+  <int value="-625695291" label="AccessibilityExposeARIAAnnotations:enabled"/>
   <int value="-624221121" label="CommandLineOnNonRooted:enabled"/>
   <int value="-623364791" label="ClickToCallReceiver:disabled"/>
   <int value="-622685174" label="enable-pdf-material-ui"/>
@@ -37061,6 +37071,7 @@ from previous Chrome versions.
   <int value="667643314" label="LitePageServerPreviews:enabled"/>
   <int value="673588373" label="OmniboxPedalSuggestions:disabled"/>
   <int value="677866592" label="ClickToCallUI:disabled"/>
+  <int value="679251577" label="AccessibilityExposeARIAAnnotations:disabled"/>
   <int value="679931272" label="DcheckIsFatal:enabled"/>
   <int value="680070635"
       label="enable-fullscreen-handwriting-virtual-keyboard:disabled"/>
@@ -42096,6 +42107,7 @@ Called by update_net_error_codes.py.-->
   <int value="377" label="HTTP2_CLIENT_REFUSED_STREAM"/>
   <int value="378" label="HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH"/>
   <int value="379" label="HTTP_RESPONSE_CODE_FAILURE"/>
+  <int value="380" label="QUIC_CERT_ROOT_NOT_KNOWN"/>
   <int value="400" label="CACHE_MISS"/>
   <int value="401" label="CACHE_READ_FAILURE"/>
   <int value="402" label="CACHE_WRITE_FAILURE"/>
@@ -53106,6 +53118,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="No Safety Tip"/>
   <int value="2" label="Safety Tip for bad reputation"/>
   <int value="3" label="Safety Tip for lookalike URL"/>
+  <int value="4" label="Safety Tip for a URL with a suspicious keyword"/>
 </enum>
 
 <enum name="SameSiteCookieContext">

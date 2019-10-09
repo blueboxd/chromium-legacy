@@ -52,29 +52,57 @@ ColorProfileReader::ColorProfileReader(Client* client) : client_(client) {}
 ColorProfileReader::~ColorProfileReader() {}
 
 void ColorProfileReader::UpdateIfNeeded() {
+  // There is a potential race condition wherein the result from
+  // EnumDisplayMonitors is already stale by the time that we get
+  // back to BuildDeviceToPathMapCompleted.  To fix this we would
+  // need to record the fact that we early-out-ed because of
+  // update_in_flight_ was true, and then re-issue
+  // BuildDeviceToPathMapOnBackgroundThread when the update
+  // returned.
   if (update_in_flight_)
     return;
 
-  DeviceToPathMap new_device_to_path_map = BuildDeviceToPathMap();
-  if (device_to_path_map_ == new_device_to_path_map)
-    return;
-
   update_in_flight_ = true;
+
+  // Enumerate device profile paths on a background thread.  When this
+  // completes it will run another task on a background thread to read
+  // the profiles.
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&ColorProfileReader::ReadProfilesOnBackgroundThread,
-                     new_device_to_path_map),
-      base::BindOnce(&ColorProfileReader::ReadProfilesCompleted,
-                     weak_factory_.GetWeakPtr()));
+      base::Bind(&ColorProfileReader::BuildDeviceToPathMapOnBackgroundThread),
+      base::Bind(&ColorProfileReader::BuildDeviceToPathMapCompleted,
+                 weak_factory_.GetWeakPtr()));
 }
 
 // static
-ColorProfileReader::DeviceToPathMap ColorProfileReader::BuildDeviceToPathMap() {
+ColorProfileReader::DeviceToPathMap
+ColorProfileReader::BuildDeviceToPathMapOnBackgroundThread() {
   DeviceToPathMap device_to_path_map;
   EnumDisplayMonitors(nullptr, nullptr, EnumMonitorForProfilePathCallback,
                       reinterpret_cast<LPARAM>(&device_to_path_map));
   return device_to_path_map;
+}
+
+void ColorProfileReader::BuildDeviceToPathMapCompleted(
+    DeviceToPathMap new_device_to_path_map) {
+  DCHECK(update_in_flight_);
+
+  // Are there any changes from previous results
+  if (device_to_path_map_ == new_device_to_path_map) {
+    update_in_flight_ = false;
+    return;
+  }
+
+  device_to_path_map_ = new_device_to_path_map;
+
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::Bind(&ColorProfileReader::ReadProfilesOnBackgroundThread,
+                 new_device_to_path_map),
+      base::Bind(&ColorProfileReader::ReadProfilesCompleted,
+                 weak_factory_.GetWeakPtr()));
 }
 
 // static

@@ -17,8 +17,12 @@ void InitializeSharedGpuContext(viz::TestContextProvider* context_provider,
                     cc::ImageDecodeCache* cache, bool* gpu_compositing_disabled)
       -> std::unique_ptr<WebGraphicsContext3DProvider> {
     *gpu_compositing_disabled = false;
-    return std::make_unique<FakeWebGraphicsContext3DProvider>(gl, cache,
-                                                              context);
+    auto fake_context =
+        std::make_unique<FakeWebGraphicsContext3DProvider>(gl, cache, context);
+    auto caps = fake_context->GetCapabilities();
+    caps.max_texture_size = 1024;
+    fake_context->SetCapabilities(caps);
+    return fake_context;
   };
   context_provider->BindToCurrentThread();
   gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();

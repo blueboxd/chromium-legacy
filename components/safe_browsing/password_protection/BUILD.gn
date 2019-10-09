@@ -30,6 +30,7 @@ source_set("password_protection") {
       "//components/password_manager/core/browser:browser",
       "//components/safe_browsing:csd_proto",
       "//components/safe_browsing:features",
+      "//components/safe_browsing/browser:referrer_chain_provider",
       "//components/safe_browsing/common:common",
       "//components/safe_browsing/common:interfaces",
       "//components/safe_browsing/common:safe_browsing_prefs",

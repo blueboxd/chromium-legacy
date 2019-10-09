@@ -4,6 +4,7 @@
 
 #include "media/gpu/linux/platform_video_frame_utils.h"
 
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/scoped_file.h"
@@ -18,55 +19,55 @@
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 #include "ui/gfx/native_pixmap.h"
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
-#endif
+#if defined(OS_LINUX)
+#include "gpu/ipc/common/gpu_client_ids.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#endif  // defined(OS_LINUX)
 
 namespace media {
 
 namespace {
 
-#if defined(USE_OZONE)
-scoped_refptr<VideoFrame> CreateVideoFrameOzone(VideoPixelFormat pixel_format,
-                                                const gfx::Size& coded_size,
-                                                const gfx::Rect& visible_rect,
-                                                const gfx::Size& natural_size,
-                                                base::TimeDelta timestamp,
-                                                gfx::BufferUsage buffer_usage) {
-  ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
-  DCHECK(platform);
-  ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
-  DCHECK(factory);
+#if defined(OS_LINUX)
 
+scoped_refptr<VideoFrame> CreateVideoFrameGpu(
+    gpu::GpuMemoryBufferFactory* factory,
+    VideoPixelFormat pixel_format,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    base::TimeDelta timestamp,
+    gfx::BufferUsage buffer_usage) {
+  DCHECK(factory);
   auto buffer_format = VideoPixelFormatToGfxBufferFormat(pixel_format);
   if (!buffer_format)
     return nullptr;
 
-  auto pixmap =
-      factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, VK_NULL_HANDLE,
-                                  coded_size, *buffer_format, buffer_usage);
-  if (!pixmap)
+  static base::AtomicSequenceNumber buffer_id_generator;
+  auto gmb_handle = factory->CreateGpuMemoryBuffer(
+      gfx::GpuMemoryBufferId(buffer_id_generator.GetNext()), coded_size,
+      *buffer_format, buffer_usage, gpu::kPlatformVideoFramePoolClientId,
+      gfx::kNullAcceleratedWidget);
+  if (gmb_handle.is_null() || gmb_handle.type != gfx::NATIVE_PIXMAP)
     return nullptr;
 
-  const size_t num_planes = VideoFrame::NumPlanes(pixel_format);
-  std::vector<ColorPlaneLayout> planes(num_planes);
-  for (size_t i = 0; i < num_planes; ++i) {
-    planes[i].stride = pixmap->GetDmaBufPitch(i);
-    planes[i].offset = pixmap->GetDmaBufOffset(i);
-    planes[i].size = pixmap->GetDmaBufPlaneSize(i);
-  }
+  DCHECK_EQ(VideoFrame::NumPlanes(pixel_format),
+            gmb_handle.native_pixmap_handle.planes.size());
+  std::vector<ColorPlaneLayout> planes;
+  for (const auto& plane : gmb_handle.native_pixmap_handle.planes)
+    planes.emplace_back(plane.stride, plane.offset, plane.size);
+
   auto layout = VideoFrameLayout::CreateWithPlanes(
       pixel_format, coded_size, std::move(planes),
       VideoFrameLayout::kBufferAddressAlignment,
-      pixmap->GetBufferFormatModifier());
+      gmb_handle.native_pixmap_handle.modifier);
 
   if (!layout)
     return nullptr;
 
   std::vector<base::ScopedFD> dmabuf_fds;
-  for (size_t i = 0; i < num_planes; ++i) {
-    int duped_fd = HANDLE_EINTR(dup(pixmap->GetDmaBufFd(i)));
+  for (const auto& plane : gmb_handle.native_pixmap_handle.planes) {
+    int duped_fd = HANDLE_EINTR(dup(plane.fd.get()));
     if (duped_fd == -1) {
       DLOG(ERROR) << "Failed duplicating dmabuf fd";
       return nullptr;
@@ -80,40 +81,48 @@ scoped_refptr<VideoFrame> CreateVideoFrameOzone(VideoPixelFormat pixel_format,
   if (!frame)
     return nullptr;
 
-  // created |pixmap| must be owned by |frame|.
+  // Created |gmb_handle| must be owned by |frame|.
   frame->AddDestructionObserver(
-      base::BindOnce(base::DoNothing::Once<scoped_refptr<gfx::NativePixmap>>(),
-                     std::move(pixmap)));
+      base::BindOnce(base::DoNothing::Once<gfx::GpuMemoryBufferHandle>(),
+                     std::move(gmb_handle)));
+  // We also need to have the factory drop its reference to the native pixmap.
+  frame->AddDestructionObserver(
+      base::BindOnce(&gpu::GpuMemoryBufferFactory::DestroyGpuMemoryBuffer,
+                     base::Unretained(factory), gmb_handle.id,
+                     gpu::kPlatformVideoFramePoolClientId));
   return frame;
 }
-#endif  // defined(USE_OZONE)
+#endif  // defined(OS_LINUX)
 
 }  // namespace
 
 scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     VideoPixelFormat pixel_format,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
     base::TimeDelta timestamp,
     gfx::BufferUsage buffer_usage) {
-#if defined(USE_OZONE)
-  return CreateVideoFrameOzone(pixel_format, coded_size, visible_rect,
-                               natural_size, timestamp, buffer_usage);
-#endif  // defined(USE_OZONE)
+#if defined(OS_LINUX)
+  return CreateVideoFrameGpu(gpu_memory_buffer_factory, pixel_format,
+                             coded_size, visible_rect, natural_size, timestamp,
+                             buffer_usage);
+#endif  // defined(OS_LINUX)
   NOTREACHED();
   return nullptr;
 }
 
 base::Optional<VideoFrameLayout> GetPlatformVideoFrameLayout(
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     VideoPixelFormat pixel_format,
     const gfx::Size& coded_size,
     gfx::BufferUsage buffer_usage) {
-  // |visible_rect| and |natural_size| are not matter here. |coded_size| is set
+  // |visible_rect| and |natural_size| do not matter here. |coded_size| is set
   // as a dummy variable.
-  auto frame =
-      CreatePlatformVideoFrame(pixel_format, coded_size, gfx::Rect(coded_size),
-                               coded_size, base::TimeDelta(), buffer_usage);
+  auto frame = CreatePlatformVideoFrame(
+      gpu_memory_buffer_factory, pixel_format, coded_size,
+      gfx::Rect(coded_size), coded_size, base::TimeDelta(), buffer_usage);
   return frame ? base::make_optional<VideoFrameLayout>(frame->layout())
                : base::nullopt;
 }

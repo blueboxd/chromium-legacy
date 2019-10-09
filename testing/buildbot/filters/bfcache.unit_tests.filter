@@ -6,6 +6,7 @@
 # Crashing with:
 # [FATAL:deferred_sequenced_task_runner.cc(83)] Check failed: !target_task_runner_
 -ChromeBrowserMainExtraPartsMetricsTest.VerifyTouchEventsEnabledIsRecordedAfterPostBrowserStart
+-ChromeMetricsServiceClientTest.TestRegisterUKMProviders
 -ServicesTest.ConnectToFilePatch
 -SoundContentSettingObserverTest.*
 -SupervisedUserWhitelistInstallerTest.*

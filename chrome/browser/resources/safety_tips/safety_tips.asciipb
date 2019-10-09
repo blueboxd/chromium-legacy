@@ -15,6 +15,12 @@ version_id: 4
 
 # Example entry:
 # flagged_page {
-#  pattern: "example.test/test-path-for-safety-tips/test.html"
-#  type: BAD_REP
-#}
+#   pattern: "bad.test/test-path-for-safety-tips/test.html"
+#   type: BAD_REP
+# }
+
+# A page that's marked to not show a UI for any heuristic (including lookalike
+# or edit distance).
+# allowed_pattern:  {
+#   pattern: "good.test/some/path.html"
+# }

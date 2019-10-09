@@ -129,7 +129,7 @@ class SyncLoadContextTest : public testing::Test {
     context->resource_dispatcher_ = std::move(dispatcher);
 
     // Simulate the response.
-    context->OnReceivedResponse(network::ResourceResponseInfo());
+    context->OnReceivedResponse(network::mojom::URLResponseHead::New());
     mojo::ScopedDataPipeProducerHandle producer_handle;
     mojo::ScopedDataPipeConsumerHandle consumer_handle;
     EXPECT_EQ(MOJO_RESULT_OK,

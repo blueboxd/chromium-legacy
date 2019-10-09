@@ -12,6 +12,8 @@
 #include "chromeos/components/sync_wifi/pending_network_configuration_update.h"
 #include "components/sync/protocol/wifi_configuration_specifics.pb.h"
 
+namespace chromeos {
+
 namespace sync_wifi {
 
 class NetworkIdentifier;
@@ -55,5 +57,7 @@ class PendingNetworkConfigurationTracker {
 };
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos
 
 #endif  // CHROMEOS_COMPONENTS_SYNC_WIFI_PENDING_NETWORK_CONFIGURATION_TRACKER_H_

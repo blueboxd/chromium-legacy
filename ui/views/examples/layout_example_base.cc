@@ -16,6 +16,7 @@
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/examples/example_combobox_model.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view_class_properties.h"
 
@@ -39,23 +40,9 @@ class FullPanel : public View {
   FullPanel() = default;
   ~FullPanel() override = default;
 
-  // View
-  void Layout() override;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(FullPanel);
 };
-
-void FullPanel::Layout() {
-  DCHECK_EQ(2u, children().size());
-  View* left_panel = children()[0];
-  View* right_panel = children()[1];
-  gfx::Rect bounds = GetContentsBounds();
-  left_panel->SetBounds(bounds.x(), bounds.y(), (bounds.width() * 75) / 100,
-                        bounds.height());
-  right_panel->SetBounds(left_panel->width(), bounds.y(),
-                         bounds.width() - left_panel->width(), bounds.height());
-}
 
 }  // namespace
 
@@ -256,11 +243,15 @@ void LayoutExampleBase::CreateExampleView(View* container) {
   View* full_panel = new FullPanel();
   container->AddChildView(full_panel);
 
+  auto* manager = full_panel->SetLayoutManager(
+      std::make_unique<BoxLayout>(views::BoxLayout::Orientation::kHorizontal));
   layout_panel_ = new View();
   layout_panel_->SetBorder(CreateSolidBorder(1, SK_ColorLTGRAY));
   full_panel->AddChildView(layout_panel_);
+  manager->SetFlexForView(layout_panel_, 3);
   control_panel_ = new View();
   full_panel->AddChildView(control_panel_);
+  manager->SetFlexForView(control_panel_, 1);
 
   int vertical_pos = kLayoutExampleVerticalSpacing;
   int horizontal_pos = kLayoutExampleLeftPadding;

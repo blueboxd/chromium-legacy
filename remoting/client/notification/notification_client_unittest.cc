@@ -45,8 +45,7 @@ MATCHER(NoMessage, "") {
 }
 
 MATCHER_P(MessageMatches, expected, "") {
-  return arg->appearance == expected.appearance &&
-         arg->message_id == expected.message_id &&
+  return arg->message_id == expected.message_id &&
          arg->message_text == expected.message_text &&
          arg->link_text == expected.link_text &&
          arg->link_url == expected.link_url;
@@ -59,7 +58,6 @@ decltype(auto) ReturnByMove(T t) {
 
 base::Value CreateDefaultRule() {
   base::Value rule(base::Value::Type::DICTIONARY);
-  rule.SetStringKey("appearance", "TOAST");
   rule.SetStringKey("target_platform", "IOS");
   rule.SetStringKey("version", "[75-)");
   rule.SetStringKey("message_id", "test_message");
@@ -80,7 +78,6 @@ base::Value CreateDefaultTranslations(const std::string& text) {
 
 NotificationMessage CreateDefaultNotification() {
   NotificationMessage message;
-  message.appearance = NotificationMessage::Appearance::TOAST;
   message.message_id = "test_message";
   message.message_text = "zh-CN:message";
   message.link_text = "zh-CN:link";

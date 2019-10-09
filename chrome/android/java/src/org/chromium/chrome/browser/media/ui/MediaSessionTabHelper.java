@@ -14,7 +14,6 @@ import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -32,13 +31,12 @@ import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.media_session.mojom.MediaSessionAction;
+import org.chromium.net.GURLUtils;
 import org.chromium.services.media_session.MediaImage;
 import org.chromium.services.media_session.MediaMetadata;
 import org.chromium.services.media_session.MediaPosition;
 import org.chromium.ui.base.WindowAndroid;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Set;
 
@@ -323,16 +321,8 @@ public class MediaSessionTabHelper implements MediaImageCallback {
                 return;
             }
 
-            String origin = mTab.getUrl();
-            try {
-                URI uri = new URI(origin);
-                origin = UrlFormatter.formatUrlForSecurityDisplay(origin);
-            } catch (URISyntaxException e) {
-                Log.e(TAG, "Unable to parse the origin from the URL. "
-                                + "Using the full URL instead.");
-            }
-
-            mOrigin = origin;
+            mOrigin = UrlFormatter.formatUrlForDisplayOmitSchemeOmitTrivialSubdomains(
+                    GURLUtils.getOrigin(mTab.getUrl()));
             mFavicon = null;
             mPageMediaImage = null;
             mPageMetadata = null;

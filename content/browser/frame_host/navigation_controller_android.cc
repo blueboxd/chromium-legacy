@@ -112,9 +112,9 @@ NavigationControllerAndroid::NavigationControllerAndroid(
     NavigationControllerImpl* navigation_controller)
     : navigation_controller_(navigation_controller) {
   JNIEnv* env = AttachCurrentThread();
-  obj_.Reset(env,
-             Java_NavigationControllerImpl_create(
-                 env, reinterpret_cast<intptr_t>(this)).obj());
+  obj_.Reset(env, Java_NavigationControllerImpl_create(
+                      env, reinterpret_cast<intptr_t>(this))
+                      .obj());
 }
 
 NavigationControllerAndroid::~NavigationControllerAndroid() {
@@ -323,8 +323,7 @@ void NavigationControllerAndroid::GetDirectedNavigationHistory(
   int num_added = 0;
   int increment_value = is_forward ? 1 : -1;
   for (int i = navigation_controller_->GetCurrentEntryIndex() + increment_value;
-       i >= 0 && i < count;
-       i += increment_value) {
+       i >= 0 && i < count; i += increment_value) {
     if (num_added >= max_entries)
       break;
 

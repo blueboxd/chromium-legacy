@@ -333,7 +333,8 @@ void TtsControllerImpl::SpeakNow(std::unique_ptr<TtsUtterance> utterance) {
   // TODO(crbug/1003410): Change to always have a valid TtsControllerDelegate.
   // This may involve modifying tests to register a mock implementation.
   if (!GetTtsControllerDelegate()) {
-    utterance->Finish();
+    utterance->OnTtsEvent(TTS_EVENT_CANCELLED, kInvalidCharIndex,
+                          kInvalidLength, std::string());
     return;
   }
 

@@ -24,7 +24,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/libgtkui/gtk_event_loop_x11.h"
 #include "chrome/browser/ui/libgtkui/gtk_key_bindings_handler.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "chrome/browser/ui/libgtkui/input_method_context_impl_gtk.h"
@@ -70,6 +69,10 @@
 
 #if defined(USE_GIO)
 #include "chrome/browser/ui/libgtkui/settings_provider_gsettings.h"
+#endif
+
+#if defined(USE_GTK_EVENT_LOOP_X11)
+#include "chrome/browser/ui/libgtkui/gtk_event_loop_x11.h"
 #endif
 
 #if defined(USE_X11)
@@ -323,6 +326,19 @@ views::LinuxUI::WindowFrameAction GetDefaultMiddleClickAction() {
   }
 }
 
+#if defined(USE_GTK_EVENT_LOOP_X11)
+bool ShouldCreateGtkEventLoopX11() {
+#if defined(USE_OZONE)
+  // TODO(crbug.com/1002674): This is a temporary layering violation, supported
+  // during X11 migration to Ozone.
+  std::string ozone_platform{ui::OzonePlatform::GetPlatformName()};
+  return ozone_platform == "x11";
+#else
+  return true;
+#endif
+}
+#endif  // defined(USE_GTK_EVENT_LOOP_X11)
+
 }  // namespace
 
 GtkUi::GtkUi() {
@@ -403,8 +419,11 @@ void GtkUi::Initialize() {
 
   indicators_count = 0;
 
-  // Instantiate the singleton instance of GtkEventLoopX11.
-  GtkEventLoopX11::GetInstance();
+#if defined(USE_GTK_EVENT_LOOP_X11)
+  if (ShouldCreateGtkEventLoopX11())
+    // Instantiate the singleton instance of GtkEventLoopX11.
+    GtkEventLoopX11::GetInstance();
+#endif
 }
 
 bool GtkUi::GetTint(int id, color_utils::HSL* tint) const {

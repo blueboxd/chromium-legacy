@@ -30,6 +30,7 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
+#include "content/browser/indexed_db/indexed_db_execution_context.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_index_writer.h"
@@ -1671,10 +1672,10 @@ Status IndexedDBDatabase::OpenInternal() {
 std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
     IndexedDBOriginStateHandle origin_state_handle,
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
-    int child_process_id) {
+    const IndexedDBExecutionContext& execution_context) {
   std::unique_ptr<IndexedDBConnection> connection =
       std::make_unique<IndexedDBConnection>(
-          child_process_id, std::move(origin_state_handle), class_factory_,
+          execution_context, std::move(origin_state_handle), class_factory_,
           weak_factory_.GetWeakPtr(),
           base::BindRepeating(&IndexedDBDatabase::VersionChangeIgnored,
                               weak_factory_.GetWeakPtr()),
@@ -1682,7 +1683,8 @@ std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
                          weak_factory_.GetWeakPtr()),
           database_callbacks);
   connections_.insert(connection.get());
-  backing_store_->GrantChildProcessPermissions(child_process_id);
+  backing_store_->GrantChildProcessPermissions(
+      execution_context.render_process_id);
   return connection;
 }
 

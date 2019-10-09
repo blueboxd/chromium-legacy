@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Shader;
@@ -21,6 +22,7 @@ import android.graphics.drawable.shapes.Shape;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.widget.ImageView;
+
 import androidx.annotation.ColorRes;
 import androidx.annotation.Nullable;
 
@@ -44,6 +46,8 @@ public class RoundedCornerImageView extends ImageView {
     private Paint mPaint;
 
     private Paint mFillPaint;
+    private final Matrix mScaleMatrix = new Matrix();
+    private boolean mRoundCorners;
 
     // Object to avoid allocations during draw calls.
     private final RectF mTmpRect = new RectF();
@@ -90,6 +94,10 @@ public class RoundedCornerImageView extends ImageView {
      */
     public void setRoundedCorners(int cornerRadiusTopStart, int cornerRadiusTopEnd,
             int cornerRadiusBottomStart, int cornerRadiusBottomEnd) {
+        mRoundCorners = (cornerRadiusTopStart != 0 || cornerRadiusTopEnd != 0
+                || cornerRadiusBottomStart != 0 || cornerRadiusBottomEnd != 0);
+        if (!mRoundCorners) return;
+
         float[] radii;
         if (ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_LTR) {
             radii = new float[] {cornerRadiusTopStart, cornerRadiusTopStart, cornerRadiusTopEnd,
@@ -108,7 +116,22 @@ public class RoundedCornerImageView extends ImageView {
     @Override
     public void setImageDrawable(@Nullable Drawable drawable) {
         super.setImageDrawable(drawable);
+        reset();
+    }
 
+    @Override
+    public void setImageResource(int res) {
+        super.setImageResource(res);
+        reset();
+    }
+
+    @Override
+    public void setImageBitmap(Bitmap bm) {
+        super.setImageBitmap(bm);
+        reset();
+    }
+
+    private void reset() {
         // Reset shaders.  We will need to recalculate them.
         mShader = null;
         mApplyShader = false;
@@ -117,7 +140,6 @@ public class RoundedCornerImageView extends ImageView {
         if (mPaint != null) mPaint.setShader(null);
 
         maybeCreateShader();
-
         updateApplyShader();
     }
 
@@ -174,16 +196,22 @@ public class RoundedCornerImageView extends ImageView {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        final int width = getWidth() - getPaddingLeft() - getPaddingRight();
+        final int height = getHeight() - getPaddingTop() - getPaddingBottom();
+
         Drawable drawable = getDrawable();
         Shape localRoundedRect = mRoundedRectangle;
         Paint localPaint = mPaint;
 
         boolean drawFill = mFillPaint != null && localRoundedRect != null
                 && !(drawable instanceof ColorDrawable);
-        boolean drawContent =
-                localPaint != null && localRoundedRect != null && isSupportedDrawable(drawable);
+        boolean drawContent = localPaint != null && localRoundedRect != null
+                && isSupportedDrawable(drawable) && mRoundCorners;
 
-        if (drawFill || drawContent) localRoundedRect.resize(getWidth(), getHeight());
+        if (drawFill || drawContent) localRoundedRect.resize(width, height);
+
+        final int saveCount = canvas.save();
+        canvas.translate(getPaddingLeft(), getPaddingTop());
 
         // First, fill the drawing area with the given fill paint.
         if (drawFill) localRoundedRect.draw(canvas, mFillPaint);
@@ -191,6 +219,8 @@ public class RoundedCornerImageView extends ImageView {
         if (!drawContent) {
             // We probably have an unsupported drawable or we don't want rounded corners. Draw
             // normally and return.
+            // Undo our modifications to canvas first. ImageView will re-apply these.
+            canvas.restoreToCount(saveCount);
             super.onDraw(canvas);
             return;
         }
@@ -204,16 +234,17 @@ public class RoundedCornerImageView extends ImageView {
         if (mApplyShader) {
             assert mShader != null;
 
-            // Apply the matrix to the bitmap shader.
-            mShader.setLocalMatrix(getImageMatrix());
+            Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+            mScaleMatrix.set(getImageMatrix());
+            mScaleMatrix.preScale(1.f * drawable.getIntrinsicWidth() / bitmap.getWidth(),
+                    1.f * drawable.getIntrinsicHeight() / bitmap.getHeight());
+            mShader.setLocalMatrix(mScaleMatrix);
             localPaint.setShader(mShader);
 
             // Find the desired bounding box where the bitmap is to be shown.
             mTmpRect.set(getDrawable().getBounds());
             getImageMatrix().mapRect(mTmpRect);
         }
-
-        final int saveCount = canvas.save();
 
         // Clip the canvas to the desired bounding box so that the shader isn't applied anywhere
         // outside the desired area.

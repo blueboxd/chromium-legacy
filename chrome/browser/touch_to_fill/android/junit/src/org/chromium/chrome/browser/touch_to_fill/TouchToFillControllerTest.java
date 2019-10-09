@@ -36,9 +36,10 @@ import java.util.Collections;
 public class TouchToFillControllerTest {
     private static final String TEST_URL = "www.example.xyz";
     private static final String TEST_MOBILE_URL = "www.example.xyz";
-    private static final Credential ANA = new Credential("Ana", "S3cr3t", null, false);
-    private static final Credential BOB = new Credential("Bob", "*****", TEST_MOBILE_URL, true);
-    private static final Credential CARL = new Credential("Carl", "G3h3!m", "", false);
+    private static final Credential ANA = new Credential("Ana", "S3cr3t", "Ana", null, false);
+    private static final Credential BOB =
+            new Credential("Bob", "*****", "Bob", TEST_MOBILE_URL, true);
+    private static final Credential CARL = new Credential("Carl", "G3h3!m", "Carl", "", false);
 
     @Mock
     private TouchToFillComponent.Delegate mMockDelegate;

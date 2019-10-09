@@ -430,8 +430,12 @@ void SerialPort::InitializeReadableStream(
   DCHECK(!readable_);
   underlying_source_ = MakeGarbageCollected<SerialPortUnderlyingSource>(
       script_state, this, std::move(readable_pipe));
+  // Ideally the stream would report the number of bytes that can be read from
+  // the underlying Mojo data pipe. As an approximation the high water mark is
+  // set to 0 so that data remains in the pipe rather than being queued in the
+  // stream and thus adding an extra layer of buffering.
   readable_ = ReadableStream::CreateWithCountQueueingStrategy(
-      script_state, underlying_source_, 0);
+      script_state, underlying_source_, /*high_water_mark=*/0);
 }
 
 void SerialPort::InitializeWritableStream(
@@ -441,8 +445,13 @@ void SerialPort::InitializeWritableStream(
   DCHECK(!writable_);
   underlying_sink_ = MakeGarbageCollected<SerialPortUnderlyingSink>(
       this, std::move(writable_pipe));
+  // Ideally the stream would report the number of bytes that could be written
+  // to the underlying Mojo data pipe. As an approximation the high water mark
+  // is set to 1 so that the stream appears ready but producers observing
+  // backpressure won't queue additional chunks in the stream and thus add an
+  // extra layer of buffering.
   writable_ = WritableStream::CreateWithCountQueueingStrategy(
-      script_state, underlying_sink_, 0);
+      script_state, underlying_sink_, /*high_water_mark=*/1);
 }
 
 void SerialPort::OnGetSignals(

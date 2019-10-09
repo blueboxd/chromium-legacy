@@ -335,15 +335,6 @@ Browser::CreateParams::CreateParams(Type type,
                                     bool user_gesture)
     : type(type), profile(profile), user_gesture(user_gesture) {}
 
-Browser::CreateParams::CreateParams(Type type,
-                                    Profile* profile,
-                                    bool user_gesture,
-                                    bool in_tab_dragging)
-    : type(type),
-      profile(profile),
-      user_gesture(user_gesture),
-      in_tab_dragging(in_tab_dragging) {}
-
 Browser::CreateParams::CreateParams(const CreateParams& other) = default;
 
 // static
@@ -409,7 +400,8 @@ Browser* Browser::Create(const CreateParams& params) {
 }
 
 Browser::Browser(const CreateParams& params)
-    : type_(params.type),
+    : create_params_(params),
+      type_(params.type),
       profile_(params.profile),
       window_(nullptr),
       tab_strip_model_delegate_(
@@ -1369,6 +1361,11 @@ std::unique_ptr<content::WebContents> Browser::SwapWebContents(
     if (old_view && new_view)
       new_view->TakeFallbackContentFrom(old_view);
   }
+
+  DevToolsWindow* dev_tools_window =
+      DevToolsWindow::GetInstanceForInspectedWebContents(old_contents);
+  if (dev_tools_window)
+    dev_tools_window->UpdateInspectedWebContents(new_contents.get());
 
   // TODO(crbug.com/836409): TabLoadTracker should not rely on being notified
   // directly about tab contents swaps.

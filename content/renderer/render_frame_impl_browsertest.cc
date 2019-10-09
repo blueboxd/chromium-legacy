@@ -153,10 +153,6 @@ class RenderFrameImplTest : public RenderViewTest {
      RenderViewTest::TearDown();
   }
 
-  void SetPreviewsState(RenderFrameImpl* frame, PreviewsState previews_state) {
-    frame->previews_state_ = previews_state;
-  }
-
   TestRenderFrame* GetMainRenderFrame() {
     return static_cast<TestRenderFrame*>(view_->GetMainRenderFrame());
   }
@@ -442,15 +438,6 @@ TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsNow) {
   EXPECT_FALSE(msg);
 }
 #endif
-
-TEST_F(RenderFrameImplTest, GetPreviewsStateForFrame) {
-  SetPreviewsState(frame(), PREVIEWS_OFF);
-  EXPECT_EQ(WebURLRequest::kPreviewsOff, frame()->GetPreviewsStateForFrame());
-
-  SetPreviewsState(frame(), PREVIEWS_OFF | PREVIEWS_NO_TRANSFORM);
-  EXPECT_EQ(WebURLRequest::kPreviewsOff | WebURLRequest::kPreviewsNoTransform,
-            frame()->GetPreviewsStateForFrame());
-}
 
 TEST_F(RenderFrameImplTest, AutoplayFlags) {
   // Add autoplay flags to the page.

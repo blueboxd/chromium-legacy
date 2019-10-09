@@ -165,10 +165,6 @@ bool DialogDelegate::Close() {
   return Accept();
 }
 
-bool DialogDelegate::IsDialogDraggable() const {
-  return false;
-}
-
 void DialogDelegate::UpdateButton(LabelButton* button, ui::DialogButton type) {
   button->SetText(GetDialogButtonLabel(type));
   button->SetEnabled(IsDialogButtonEnabled(type));

@@ -27,6 +27,9 @@ EXCEPTION_MODEL_TYPES = [
   'SUPERVISED_USER_WHITELISTS',  # See previous.
 
   # Deprecated types:
+  'DEPRECATED_APP_NOTIFICATIONS',
+  'DEPRECATED_SYNCED_NOTIFICATIONS',
+  'DEPRECATED_SYNCED_NOTIFICATION_APP_INFO',
   'DEPRECATED_EXPERIMENTS']
 
 # Root tags are used as prefixes when creating storage keys, so certain strings
@@ -369,7 +372,8 @@ def FieldNumberToPrototypeString(field_number):
     => 'AppSpecifics'
   """
   return field_number.replace(FIELD_NUMBER_PREFIX, '').replace(
-    'FieldNumber', 'Specifics')
+    'FieldNumber', 'Specifics').replace(
+    'AppNotificationSpecifics', 'AppNotification')
 
 def CheckChangeLintsClean(input_api, output_api):
   source_filter = lambda x: input_api.FilterSourceFile(

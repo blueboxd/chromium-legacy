@@ -127,7 +127,7 @@ class PLATFORM_EXPORT ThreadManager {
   // Used to delete |task| from |pending_tasks_|.
   void DeleteTask(Task* task);
 
-  TaskQueueWithVoters* GetTaskQueueFor(uint64_t task_queue_id);
+  scoped_refptr<TaskQueueWithVoters> GetTaskQueueFor(uint64_t task_queue_id);
 
   // Used to protect |task_queues_| and |pending_tasks_|.
   Lock lock_;
@@ -140,7 +140,7 @@ class PLATFORM_EXPORT ThreadManager {
 
   // For testing purposes, this should follow the order in which queues
   // were created on the thread in which |this| was instantiated.
-  Vector<std::unique_ptr<TaskQueueWithVoters>> task_queues_;
+  Vector<scoped_refptr<TaskQueueWithVoters>> task_queues_;
 
   // Used to be able to cancel pending tasks from the sequence manager. For
   // testing purposes, this should follow the order in which the tasks were

@@ -32,6 +32,10 @@ class ImageSkia;
 // waiting for ARC or Crostini to be ready.
 class ShelfSpinnerController : public ash::ShelfModelObserver {
  public:
+  // ShelfSpinnerData holds the information used to draw the spinner, including
+  // animating the spinner after it has been dismissed.
+  class ShelfSpinnerData;
+
   explicit ShelfSpinnerController(ChromeLauncherController* owner);
   ~ShelfSpinnerController() override;
 
@@ -70,9 +74,10 @@ class ShelfSpinnerController : public ash::ShelfModelObserver {
                                 ash::ShelfItemDelegate* delegate) override;
 
  private:
-  // Defines mapping of a shelf app id to a corresponding controller. Shelf app
-  // id is optional mapping (for example, Play Store to ARC Host Support).
-  using AppControllerMap = std::map<std::string, ShelfSpinnerItemController*>;
+  // Defines mapping of a shelf app id to a corresponding controller's data.
+  // Shelf app id is optional mapping (for example, Play Store to ARC Host
+  // Support).
+  using AppControllerMap = std::map<std::string, ShelfSpinnerData>;
   // Defines a mapping from account id to (app id, ShelfSpinnerItemController)
   // for spinners that are not currently on the shelf. Taking ownership of these
   // delegates allows us to reuse them if we need to add the spinner back on to

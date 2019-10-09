@@ -4,49 +4,23 @@
 
 package org.chromium.chrome.features.dev_ui;
 
-import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.annotations.UsedByReflection;
 
 /** Helpers for DevUI DFM installation. */
-@JNINamespace("dev_ui")
-@UsedByReflection("DevUiModuleProvider")
 public class DevUiModuleProvider {
-    private static final String TAG = "DEV_UI";
-
-    private long mNativeDevUiModuleProvider;
-
-    @CalledByNative
-    private DevUiModuleProvider(long nativeDevUiModuleProvider) {
-        mNativeDevUiModuleProvider = nativeDevUiModuleProvider;
-    }
-
     @CalledByNative
     private static boolean isModuleInstalled() {
         return DevUiModule.isInstalled();
     }
 
     @CalledByNative
-    private void installModule() {
-        DevUiModule.install((success) -> {
-            Log.i(TAG, "Install status: %s", success);
-            if (mNativeDevUiModuleProvider != 0) {
-                DevUiModuleProviderJni.get().onInstallResult(
-                        mNativeDevUiModuleProvider, DevUiModuleProvider.this, success);
-            }
-        });
+    private static void installModule(DevUiInstallListener listener) {
+        DevUiModule.install(listener);
     }
 
     @CalledByNative
-    private void onNativeDestroy() {
-        mNativeDevUiModuleProvider = 0;
-    }
-
-    @NativeMethods
-    interface Natives {
-        void onInstallResult(
-                long nativeDevUiModuleProvider, DevUiModuleProvider caller, boolean success);
+    private static void loadModule() {
+        // Native resource are loaded as side effect of first getImpl() call.
+        DevUiModule.getImpl();
     }
 }

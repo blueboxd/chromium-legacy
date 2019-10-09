@@ -115,6 +115,8 @@ jumbo_component("libgtkui") {
       "gtk_event_loop_x11.h",
     ]
 
+    defines += [ "USE_GTK_EVENT_LOOP_X11" ]
+
     deps += [
       "//ui/events/platform/x11",
       "//ui/gfx/x",

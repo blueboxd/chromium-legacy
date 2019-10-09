@@ -23,7 +23,8 @@ using content::BrowserThread;
 
 namespace task_manager {
 
-ServiceWorkerTaskProvider::ServiceWorkerTaskProvider() {}
+ServiceWorkerTaskProvider::ServiceWorkerTaskProvider()
+    : scoped_context_observer_(this) {}
 
 ServiceWorkerTaskProvider::~ServiceWorkerTaskProvider() = default;
 
@@ -49,55 +50,22 @@ void ServiceWorkerTaskProvider::Observe(
 void ServiceWorkerTaskProvider::OnVersionStartedRunning(
     content::ServiceWorkerContext* context,
     int64_t version_id,
-    const GURL& scope,
-    int process_id,
-    const GURL& script_url) {
+    const content::ServiceWorkerRunningInfo& running_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const ServiceWorkerTaskKey key(context, version_id);
 
-  DCHECK(!base::Contains(service_worker_task_map_, key) &&
-         !base::Contains(tasks_to_be_created_, key));
-
-  tasks_to_be_created_.emplace(key);
-
-  // Create a new task since the service worker is running now.
-  context->GetServiceWorkerRunningInfo(
-      version_id,
-      base::BindOnce(
-          &ServiceWorkerTaskProvider::OnDidGetServiceWorkerRunningInfo,
-          weak_ptr_factory_.GetWeakPtr()));
+  CreateTask(context, version_id, running_info);
 }
 void ServiceWorkerTaskProvider::OnVersionStoppedRunning(
     content::ServiceWorkerContext* context,
     int64_t version_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const ServiceWorkerTaskKey key(context, version_id);
 
-  DCHECK(base::Contains(service_worker_task_map_, key) ||
-         base::Contains(tasks_to_be_created_, key));
-
-  auto iter = tasks_to_be_created_.find(key);
-
-  // If the task is not created yet, erase it from |tasks_to_be_created_|.
-  if (iter != tasks_to_be_created_.end()) {
-    tasks_to_be_created_.erase(iter);
-    return;
-  }
-
-  // Since the task has been created and the service worker is not running
-  // any longer, delete it.
   DeleteTask(context, version_id);
 }
 
 void ServiceWorkerTaskProvider::OnDestruct(
     content::ServiceWorkerContext* context) {
-  auto found = observed_contexts_.find(context);
-  if (found == observed_contexts_.end())
-    return;
-
-  (*found)->RemoveObserver(this);
-  observed_contexts_.erase(found);
-  DeleteAllTasks(context);
+  scoped_context_observer_.Remove(context);
 }
 
 void ServiceWorkerTaskProvider::StartUpdating() {
@@ -122,21 +90,11 @@ void ServiceWorkerTaskProvider::StartUpdating() {
 void ServiceWorkerTaskProvider::StopUpdating() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // OnDidGetAllServiceWorkerRunningInfos()/OnDidGetServiceWorkerRunningInfo()
-  // should never be called after this, and hence we must invalidate the weak
-  // pointers.
-  weak_ptr_factory_.InvalidateWeakPtrs();
-
   // Stop listening to NOTIFICATION_PROFILE_CREATED.
   registrar_.RemoveAll();
 
-  // Stop observing.
-  for (auto* context : observed_contexts_)
-    context->RemoveObserver(this);
-  observed_contexts_.clear();
-
-  // Delete all tasks that will be created.
-  tasks_to_be_created_.clear();
+  // Stop observing contexts.
+  scoped_context_observer_.RemoveAll();
 
   // Delete all tracked tasks.
   service_worker_task_map_.clear();
@@ -146,34 +104,33 @@ void ServiceWorkerTaskProvider::CreateTasksForProfile(Profile* profile) {
   content::ServiceWorkerContext* context =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetServiceWorkerContext();
-  context->GetAllServiceWorkerRunningInfos(base::BindOnce(
-      &ServiceWorkerTaskProvider::OnDidGetAllServiceWorkerRunningInfos,
-      weak_ptr_factory_.GetWeakPtr()));
+
+  if (!scoped_context_observer_.IsObserving(context))
+    scoped_context_observer_.Add(context);
+
+  for (const auto& kv : context->GetRunningServiceWorkerInfos()) {
+    const int64_t version_id = kv.first;
+    const content::ServiceWorkerRunningInfo& running_info = kv.second;
+
+    CreateTask(context, version_id, running_info);
+  }
 }
 
 void ServiceWorkerTaskProvider::CreateTask(
     content::ServiceWorkerContext* context,
-    const content::ServiceWorkerRunningInfo& service_worker_running_info) {
+    int64_t version_id,
+    const content::ServiceWorkerRunningInfo& running_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // The version may have been running, but by the time we got its running info
-  // from the IO thread it may have stopped.
-  if (service_worker_running_info.process_id ==
-          content::ChildProcessHost::kInvalidUniqueID ||
-      service_worker_running_info.version_id ==
-          blink::mojom::kInvalidServiceWorkerVersionId) {
-    return;
-  }
-
-  const ServiceWorkerTaskKey key(context,
-                                 service_worker_running_info.version_id);
+  const ServiceWorkerTaskKey key(context, version_id);
   DCHECK(!base::Contains(service_worker_task_map_, key));
 
-  auto* host = content::RenderProcessHost::FromID(
-      service_worker_running_info.process_id);
+  const int render_process_id = running_info.render_process_id;
+  auto* host = content::RenderProcessHost::FromID(render_process_id);
   auto result = service_worker_task_map_.emplace(
-      key, std::make_unique<ServiceWorkerTask>(service_worker_running_info,
-                                               host->GetProcess().Handle()));
+      key, std::make_unique<ServiceWorkerTask>(host->GetProcess().Handle(),
+                                               render_process_id,
+                                               running_info.script_url));
 
   DCHECK(result.second);
   NotifyObserverTaskAdded(result.first->second.get());
@@ -184,63 +141,17 @@ void ServiceWorkerTaskProvider::DeleteTask(
     int version_id) {
   const ServiceWorkerTaskKey key(context, version_id);
   auto it = service_worker_task_map_.find(key);
-
-  if (it == service_worker_task_map_.end())
-    return;
+  DCHECK(it != service_worker_task_map_.end());
 
   NotifyObserverTaskRemoved(it->second.get());
   service_worker_task_map_.erase(it);
-}
-
-void ServiceWorkerTaskProvider::DeleteAllTasks(
-    content::ServiceWorkerContext* context) {
-  for (auto it = service_worker_task_map_.begin();
-       it != service_worker_task_map_.end();) {
-    if (it->first.first == context) {
-      NotifyObserverTaskRemoved(it->second.get());
-      it = service_worker_task_map_.erase(it);
-    } else {
-      ++it;
-    }
-  }
-}
-
-void ServiceWorkerTaskProvider::OnDidGetAllServiceWorkerRunningInfos(
-    content::ServiceWorkerContext* context,
-    std::vector<content::ServiceWorkerRunningInfo> running_infos) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (const auto& running_info : running_infos)
-    CreateTask(context, running_info);
-
-  if (observed_contexts_.find(context) == observed_contexts_.end()) {
-    // Start observing.
-    context->AddObserver(this);
-    observed_contexts_.emplace(context);
-  }
-}
-
-void ServiceWorkerTaskProvider::OnDidGetServiceWorkerRunningInfo(
-    content::ServiceWorkerContext* context,
-    const content::ServiceWorkerRunningInfo& running_info) {
-  auto key = std::make_pair(context, running_info.version_id);
-
-  // Don't create a task if the version was stopped and the entry was erased
-  // while getting the info.
-  if (tasks_to_be_created_.find(key) == tasks_to_be_created_.end())
-    return;
-
-  CreateTask(context, running_info);
-  tasks_to_be_created_.erase(key);
 }
 
 void ServiceWorkerTaskProvider::OnProfileCreated(Profile* profile) {
   content::ServiceWorkerContext* context =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetServiceWorkerContext();
-  if (observed_contexts_.find(context) == observed_contexts_.end()) {
-    context->AddObserver(this);
-    observed_contexts_.emplace(context);
-  }
+  scoped_context_observer_.Add(context);
 }
 
 }  // namespace task_manager

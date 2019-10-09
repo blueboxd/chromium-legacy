@@ -27,6 +27,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/format_utils.h"
 #include "media/base/unaligned_shared_memory.h"
@@ -79,10 +80,13 @@ gfx::Size GetInputFrameSize(VideoPixelFormat format,
     // Remove this workaround once crrev.com/c/1573718 is landed.
     format = PIXEL_FORMAT_YV12;
   }
+
+  std::unique_ptr<::gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory =
+      ::gpu::GpuMemoryBufferFactory::CreateNativeType(nullptr);
   // Get a VideoFrameLayout of a graphic buffer with the same gfx::BufferUsage
   // as camera stack.
   base::Optional<VideoFrameLayout> layout = GetPlatformVideoFrameLayout(
-      format, visible_size,
+      gpu_memory_buffer_factory.get(), format, visible_size,
       gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
   if (!layout || layout->planes().empty()) {
     VLOGF(1) << "Failed to allocate VideoFrameLayout";

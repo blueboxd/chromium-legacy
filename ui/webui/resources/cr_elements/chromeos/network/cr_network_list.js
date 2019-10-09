@@ -54,6 +54,9 @@ Polymer({
       observer: 'selectedItemChanged_',
     },
 
+    /** Whether cellular activation is unavailable in the current context. */
+    activationUnavailable: Boolean,
+
     /**
      * Contains |networks| + |customItems|.
      * @private {!Array<!CrNetworkList.CrNetworkListItemType>}

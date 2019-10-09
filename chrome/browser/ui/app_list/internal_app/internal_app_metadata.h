@@ -21,6 +21,10 @@ namespace app_list {
 
 // The internal app's histogram name of the chrome search result. This is used
 // for logging so do not change the order of this enum.
+// It has been copied to chrome/browser/apps/app_service/app_service_metrics.cc,
+// so please update in app_service_metrics.cc as well.
+// TODO(crbug.com/1005640): delete this enum here, and use the enum in
+// app_service_metrics.cc.
 enum class InternalAppName {
   kKeyboardShortcutViewer = 0,
   kSettings = 1,

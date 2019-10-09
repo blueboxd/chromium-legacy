@@ -41,10 +41,10 @@ std::unique_ptr<DeskPreviewView> CreateDeskPreviewView(
 }
 
 // The desk preview bounds are proportional to the bounds of the display on
-// which it resides, but always has a fixed height `kDeskPreviewHeight`.
-gfx::Rect GetDeskPreviewBounds(aura::Window* root_window) {
+// which it resides, but always has a fixed height given as |preview_height|
+// which depends on the width of the OverviewGrid.
+gfx::Rect GetDeskPreviewBounds(aura::Window* root_window, int preview_height) {
   const auto root_size = root_window->GetBoundsInRootWindow().size();
-  const int preview_height = DeskPreviewView::GetHeight();
   return gfx::Rect(preview_height * root_size.width() / root_size.height(),
                    preview_height);
 }
@@ -152,15 +152,21 @@ void DeskMiniView::Layout() {
   auto* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
   DCHECK(root_window);
 
-  const gfx::Rect preview_bounds = GetDeskPreviewBounds(root_window);
+  const bool uses_small_screen = owner_bar_->UsesSmallScreenLayout();
+  const gfx::Rect preview_bounds = GetDeskPreviewBounds(
+      root_window, DeskPreviewView::GetHeight(uses_small_screen));
   desk_preview_->SetBoundsRect(preview_bounds);
 
-  const gfx::Size label_size = label_->GetPreferredSize();
-  const gfx::Rect label_bounds{
-      (preview_bounds.width() - label_size.width()) / 2,
-      preview_bounds.bottom() + kLabelPreviewSpacing, label_size.width(),
-      label_size.height()};
-  label_->SetBoundsRect(label_bounds);
+  label_->SetVisible(!uses_small_screen);
+
+  if (!uses_small_screen) {
+    const gfx::Size label_size = label_->GetPreferredSize();
+    const gfx::Rect label_bounds{
+        (preview_bounds.width() - label_size.width()) / 2,
+        preview_bounds.bottom() + kLabelPreviewSpacing, label_size.width(),
+        label_size.height()};
+    label_->SetBoundsRect(label_bounds);
+  }
 
   close_desk_button_->SetBounds(
       preview_bounds.right() - CloseDeskButton::kCloseButtonSize -
@@ -175,9 +181,13 @@ gfx::Size DeskMiniView::CalculatePreferredSize() const {
   auto* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
   DCHECK(root_window);
 
-  const gfx::Size label_size = label_->GetPreferredSize();
-  const gfx::Rect preview_bounds = GetDeskPreviewBounds(root_window);
+  const bool uses_small_screen = owner_bar_->UsesSmallScreenLayout();
+  const gfx::Rect preview_bounds = GetDeskPreviewBounds(
+      root_window, DeskPreviewView::GetHeight(uses_small_screen));
+  if (uses_small_screen)
+    return preview_bounds.size();
 
+  const gfx::Size label_size = label_->GetPreferredSize();
   return gfx::Size{
       std::max(preview_bounds.width(), label_size.width()),
       preview_bounds.height() + kLabelPreviewSpacing + label_size.height()};

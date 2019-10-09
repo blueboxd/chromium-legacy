@@ -40,4 +40,7 @@ specific_include_rules = {
   ".*(test|test_util)\.(cc|h)$": [
     "+content/public/test",
   ],
+  "mime_handler_view_browsertest.cc": [
+    "+components/printing/common",
+  ],
 }

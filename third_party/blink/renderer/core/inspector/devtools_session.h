@@ -93,6 +93,10 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
   void SendProtocolResponse(int call_id,
                             const protocol::ProtocolMessage& message);
 
+  // Converts to JSON if requested by the client.
+  blink::mojom::blink::DevToolsMessagePtr FinalizeMessage(
+      protocol::ProtocolMessage message);
+
   Member<DevToolsAgent> agent_;
   mojo::AssociatedReceiver<mojom::blink::DevToolsSession> receiver_;
   mojo::AssociatedRemote<mojom::blink::DevToolsSessionHost> host_remote_;

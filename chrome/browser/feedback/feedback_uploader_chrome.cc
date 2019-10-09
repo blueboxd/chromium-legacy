@@ -14,8 +14,6 @@
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/url_request/url_fetcher.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace feedback {
 
@@ -34,10 +32,9 @@ void QueueSingleReport(base::WeakPtr<feedback::FeedbackUploader> uploader,
 }  // namespace
 
 FeedbackUploaderChrome::FeedbackUploaderChrome(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     content::BrowserContext* context,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : FeedbackUploader(url_loader_factory, context, task_runner) {
+    : FeedbackUploader(context, task_runner) {
   DCHECK(!context->IsOffTheRecord());
 
   task_runner->PostTask(

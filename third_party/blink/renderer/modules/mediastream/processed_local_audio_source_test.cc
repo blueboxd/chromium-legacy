@@ -69,14 +69,11 @@ MockAudioCapturerSource::MockAudioCapturerSource() {}
 MockAudioCapturerSource::~MockAudioCapturerSource() {}
 
 // Test Platform implementation that overrides the known methods needed
-// by the tests, including creation of WebRtcAudioDevice and
-// AudioCapturerSource instances.
-class WebRtcAudioDeviceTestingPlatformSupport : public TestingPlatformSupport {
+// by the tests, including creation of AudioCapturerSource instances.
+class AudioCapturerSourceTestingPlatformSupport
+    : public TestingPlatformSupport {
  public:
-  WebRtcAudioDeviceTestingPlatformSupport() = default;
-  WebRtcAudioDeviceImpl* GetWebRtcAudioDevice() override {
-    return audio_device_.get();
-  }
+  AudioCapturerSourceTestingPlatformSupport() = default;
 
   scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
       WebLocalFrame* web_frame,
@@ -91,8 +88,6 @@ class WebRtcAudioDeviceTestingPlatformSupport : public TestingPlatformSupport {
   }
 
  private:
-  scoped_refptr<blink::WebRtcAudioDeviceImpl> audio_device_ =
-      new rtc::RefCountedObject<blink::WebRtcAudioDeviceImpl>();
   scoped_refptr<MockAudioCapturerSource> mock_audio_capturer_source_ =
       base::MakeRefCounted<MockAudioCapturerSource>();
 };
@@ -188,7 +183,7 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
   }
 
  private:
-  ScopedTestingPlatformSupport<WebRtcAudioDeviceTestingPlatformSupport>
+  ScopedTestingPlatformSupport<AudioCapturerSourceTestingPlatformSupport>
       webrtc_audio_device_platform_support_;
   WebMediaStreamSource blink_audio_source_;
   WebMediaStreamTrack blink_audio_track_;

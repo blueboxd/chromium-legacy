@@ -5,29 +5,29 @@ Running: testSetUp
 - <html>
       <head></head>
     - <body>
-        - <portal src="activate-predecessor.html">
+        - <portal src="append-predecessor.html">
             - #document
                 - <html>
                       <head></head>
                     - <body>
                         - <script>
-                              window.onportalactivate = e => {\n      var portal = e.adoptPredecessor();\n      portal.activate();\n    }\n
+                              window.onportalactivate = e => {\n      var portal = e.adoptPredecessor();\n      document.body.appendChild(portal);\n    }\n
                           </script>
                       </body>
                   </html>
           </portal>
         - <script>
-              async function waitForAdoption() {\n      var portal = document.querySelector("portal");\n      await portal.activate();\n      document.body.removeChild(portal);\n      return new Promise(resolve => {\n        window.onportalactivate = e => {\n          portal = e.adoptPredecessor();\n          document.body.appendChild(portal);\n          resolve();\n        }\n      });\n    }\n
+              function activate() {\n      var portal = document.querySelector('portal');\n      setTimeout(() => {\n        portal.activate().then(() => { document.body.removeChild(portal); })\n      });\n    }\n
           </script>
       </body>
   </html>
 
-Running: testAfterAdoption
+Running: testAfterActivate
 - <html>
       <head></head>
     - <body>
         - <script>
-              async function waitForAdoption() {\n      var portal = document.querySelector("portal");\n      await portal.activate();\n      document.body.removeChild(portal);\n      return new Promise(resolve => {\n        window.onportalactivate = e => {\n          portal = e.adoptPredecessor();\n          document.body.appendChild(portal);\n          resolve();\n        }\n      });\n    }\n
+              window.onportalactivate = e => {\n      var portal = e.adoptPredecessor();\n      document.body.appendChild(portal);\n    }\n
           </script>
         - <portal>
             - #document
@@ -35,7 +35,7 @@ Running: testAfterAdoption
                       <head></head>
                     - <body>
                         - <script>
-                              window.onportalactivate = e => {\n      var portal = e.adoptPredecessor();\n      portal.activate();\n    }\n
+                              function activate() {\n      var portal = document.querySelector('portal');\n      setTimeout(() => {\n        portal.activate().then(() => { document.body.removeChild(portal); })\n      });\n    }\n
                           </script>
                       </body>
                   </html>

@@ -155,7 +155,7 @@ TEST_F(ArcUtilTest, IsArcAvailable_OfficiallySupported) {
   EXPECT_TRUE(IsArcKioskAvailable());
 }
 
-TEST_F(ArcUtilTest, IsArcVmEnablede) {
+TEST_F(ArcUtilTest, IsArcVmEnabled) {
   EXPECT_FALSE(IsArcVmEnabled());
 
   auto* command_line = base::CommandLine::ForCurrentProcess();

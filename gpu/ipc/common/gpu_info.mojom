@@ -76,6 +76,7 @@ struct VideoDecodeAcceleratorCapabilities {
 // gpu::VideoEncodeAcceleratorSupportedProfile
 struct VideoEncodeAcceleratorSupportedProfile {
   VideoCodecProfile profile;
+  gfx.mojom.Size min_resolution;
   gfx.mojom.Size max_resolution;
   uint32 max_framerate_numerator;
   uint32 max_framerate_denominator;

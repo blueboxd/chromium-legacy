@@ -229,7 +229,6 @@
 <translation id="4261870227682513959">显示通知设置。通知已关闭</translation>
 <translation id="4269883910223712419">此设备的管理员能够：</translation>
 <translation id="4279490309300973883">正在镜像</translation>
-<translation id="4281007048406351813">给定时器加 1 分钟</translation>
 <translation id="4296136865091727875">清除所有 <ph name="COUNT" /> 条通知</translation>
 <translation id="4303223480529385476">展开状态区</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -419,7 +418,6 @@
 <translation id="7143207342074048698">正在连接</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />秒后恢复到原分辨率</translation>
-<translation id="7222902781030499995">停止计时器</translation>
 <translation id="7256634071279256947">后置麦克风</translation>
 <translation id="726276584504105859">拖到此处即可使用分屏模式</translation>
 <translation id="7262906531272962081">创建提醒</translation>

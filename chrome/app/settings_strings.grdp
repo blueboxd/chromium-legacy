@@ -192,11 +192,14 @@
   <message name="IDS_SETTINGS_CAPTIONS_BACKGROUND_OPACITY" desc="Name of the caption background opacity preference.">
     Background opacity
   </message>
-  <message name="IDS_SETTINGS_CAPTIONS_OPACITY_MIN" desc="Value of the minimum captions text opacity setting.">
-    0
+  <message name="IDS_SETTINGS_CAPTIONS_OPACITY_OPAQUE" desc="Name of the opaque opacity preference.">
+    Opaque
   </message>
-  <message name="IDS_SETTINGS_CAPTIONS_OPACITY_MAX" desc="Value of the maximum captions text opacity setting.">
-    100
+  <message name="IDS_SETTINGS_CAPTIONS_OPACITY_SEMI_TRANSPARENT" desc="Name of the semi-transparent opacity preference.">
+    Semi-transparent
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_OPACITY_TRANSPARENT" desc="Name of the transparent opacity preference.">
+    Transparent
   </message>
   <message name="IDS_SETTINGS_CAPTIONS_TEXT_SHADOW" desc="Name of the caption text shadow preference.">
     Text shadow
@@ -1488,7 +1491,7 @@
       Save detected printers to your profile, or add a new printer.
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS" desc="In CUPS printing settings subpage, title for the nearby printers list.">
-      Available printers to save
+      Add printers to your profile
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_EDIT" desc="Text for the drop down menu which allows the user to edit the printer details.">
       Edit
@@ -2876,6 +2879,9 @@
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_ADD_DICTIONARY_WORD_LENGTH_ERROR" desc="Error message displayed to the user when the word is too long in the text input used to add a new word to the custom spell check dictionary.">
       Cannot exceed 99 letters
+    </message>
+    <message name="IDS_SETTINGS_LANGUAGES_DELETE_DICTIONARY_WORD_BUTTON" desc="Message shown over the button to delete a custom word.">
+      Delete word
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_DICTIONARY_WORDS" desc="Header for the list of custom dictionary words used for spell check.">
       Custom words
@@ -4971,6 +4977,9 @@
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_FORGET_DEVICE_DIALOG_MESSAGE" desc="Text of a dialog that lets the user choose if their Chromebook should forget their phone. This means they will no longer have access to multidevice features.">
       Disconnect your phone from your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. They will no longer connect automatically.
+    </message>
+    <message name="IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE_DISCONNECT" desc="Text for the button that lets the user choose if their Chromebook should forget their phone. This means they will no longer have access to multidevice features.">
+      Disconnect
     </message>
   </if>
 

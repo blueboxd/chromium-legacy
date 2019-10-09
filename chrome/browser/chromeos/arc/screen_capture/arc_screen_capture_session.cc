@@ -30,7 +30,9 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/dip_util.h"
+#include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/linux/client_native_pixmap_factory_dmabuf.h"
 
@@ -118,16 +120,16 @@ mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Initialize(
     return nullptr;
   }
 
-  ui::Layer* layer = display_root_window_->layer();
-  if (!layer) {
-    LOG(ERROR) << "Unable to find layer for the desktop window";
-    return nullptr;
-  }
   auto context_provider = GetContextProvider();
   gl_helper_ = std::make_unique<viz::GLHelper>(
       context_provider->ContextGL(), context_provider->ContextSupport());
-  gfx::Size desktop_size =
-      ui::ConvertSizeToPixel(layer, layer->bounds().size());
+
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          display_root_window_);
+
+  gfx::Size desktop_size = display.GetSizeInPixel();
+
   scaler_ = gl_helper_->CreateScaler(
       viz::GLHelper::ScalerQuality::SCALER_QUALITY_GOOD,
       gfx::Vector2d(desktop_size.width(), desktop_size.height()),

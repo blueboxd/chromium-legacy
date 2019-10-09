@@ -27,6 +27,8 @@
       <include name="IDR_LOCAL_NTP_UTILS_JS" file="utils.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_VOICE_CSS" file="voice.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_VOICE_JS" file="voice.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOST_VISITED_DONT_SHOW_PNG" file="icons\dont_show.png" type="BINDATA" />
+      <include name="IDR_MOST_VISITED_DONT_SHOW_2X_PNG" file="icons\dont_show_2x.png" type="BINDATA" />
       <include name="IDR_MOST_VISITED_IFRAME_CSS" file="most_visited_iframe.css" type="BINDATA" />
       <include name="IDR_MOST_VISITED_SINGLE_CSS" file="most_visited_single.css" type="BINDATA" />
       <include name="IDR_MOST_VISITED_SINGLE_HTML" file="most_visited_single.html" type="BINDATA" />

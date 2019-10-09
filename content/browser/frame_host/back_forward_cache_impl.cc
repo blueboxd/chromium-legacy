@@ -406,14 +406,22 @@ void BackForwardCacheImpl::PostTaskToDestroyEvictedFrames() {
                                 weak_factory_.GetWeakPtr()));
 }
 
-void BackForwardCacheImpl::DisableForRenderFrameHost(GlobalFrameRoutingId id,
-                                                     base::StringPiece reason) {
+// static
+void BackForwardCache::DisableForRenderFrameHost(RenderFrameHost* rfh,
+                                                 base::StringPiece reason) {
+  DisableForRenderFrameHost(
+      static_cast<RenderFrameHostImpl*>(rfh)->GetGlobalFrameRoutingId(),
+      reason);
+}
+
+// static
+void BackForwardCache::DisableForRenderFrameHost(GlobalFrameRoutingId id,
+                                                 base::StringPiece reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (g_bfcache_disabled_test_observer)
     g_bfcache_disabled_test_observer->OnDisabledForFrameWithReason(id, reason);
 
-  auto* rfh = RenderFrameHostImpl::FromID(id);
-  if (rfh) {
+  if (auto* rfh = RenderFrameHostImpl::FromID(id)) {
     rfh->DisallowBackForwardCache();
 
     RenderFrameHostImpl* frame = rfh;

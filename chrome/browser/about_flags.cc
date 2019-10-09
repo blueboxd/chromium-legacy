@@ -975,6 +975,9 @@ const FeatureEntry::FeatureParam kMarkHttpAsWarningAndDangerousOnFormEdits[] = {
     {security_state::features::kMarkHttpAsFeatureParameterName,
      security_state::features::
          kMarkHttpAsParameterWarningAndDangerousOnFormEdits}};
+const FeatureEntry::FeatureParam kMarkHttpAsDangerWarning[] = {
+    {security_state::features::kMarkHttpAsFeatureParameterName,
+     security_state::features::kMarkHttpAsParameterDangerWarning}};
 
 // The "Enabled" state for this feature is "0" and representing setting A.
 const FeatureEntry::FeatureParam kTabHoverCardsSettingB[] = {
@@ -991,7 +994,9 @@ const FeatureEntry::FeatureVariation kMarkHttpAsFeatureVariations[] = {
      base::size(kMarkHttpAsDangerous), nullptr},
     {"(mark with a Not Secure warning and dangerous on form edits)",
      kMarkHttpAsWarningAndDangerousOnFormEdits,
-     base::size(kMarkHttpAsWarningAndDangerousOnFormEdits), nullptr}};
+     base::size(kMarkHttpAsWarningAndDangerousOnFormEdits), nullptr},
+    {"(mark with a grey triangle icon)", kMarkHttpAsDangerWarning,
+     base::size(kMarkHttpAsDangerWarning), nullptr}};
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kTranslateForceTriggerOnEnglishHeuristic[] = {
@@ -3482,6 +3487,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAccessibilityImageDescriptionsDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityLabels)},
+
+    {"enable-accessibility-expose-aria-annotations",
+     flag_descriptions::kAccessibilityExposeARIAAnnotationsName,
+     flag_descriptions::kAccessibilityExposeARIAAnnotationsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kEnableAccessibilityExposeARIAAnnotations)},
 
     {"enable-accessibility-expose-display-none",
      flag_descriptions::kAccessibilityExposeDisplayNoneName,

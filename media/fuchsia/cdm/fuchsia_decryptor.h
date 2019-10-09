@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "media/base/decryptor.h"
 #include "media/fuchsia/cdm/fuchsia_stream_decryptor.h"
 
@@ -47,8 +49,14 @@ class FuchsiaDecryptor : public Decryptor {
   void DeinitializeDecoder(StreamType stream_type) override;
   bool CanAlwaysDecrypt() override;
 
+  // Called by FuchsiaCdm to notify about the new key.
+  void OnNewKey();
+
  private:
   fuchsia::media::drm::ContentDecryptionModule* const cdm_;
+
+  base::Lock new_key_cb_lock_;
+  NewKeyCB new_key_cb_ GUARDED_BY(new_key_cb_lock_);
 
   std::unique_ptr<FuchsiaClearStreamDecryptor> audio_decryptor_;
 

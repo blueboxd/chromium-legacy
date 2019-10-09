@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
@@ -61,6 +62,7 @@ public class StartupTabPreloaderTest {
     @Test
     @LargeTest
     @DisableFeatures(ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS)
+    @DisabledTest(message = "https://crbug.com/1012479")
     public void testStartupTabPreloaderWithViewIntentFeatureDisabled() throws Exception {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);

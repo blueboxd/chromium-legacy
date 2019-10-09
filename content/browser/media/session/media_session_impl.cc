@@ -13,7 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "components/url_formatter/elide_url.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/media_session_controller.h"
 #include "content/browser/media/session/media_session_player_observer.h"
@@ -1344,8 +1344,12 @@ void MediaSessionImpl::RebuildAndNotifyMetadataChanged() {
   base::string16 formatted_origin =
       url.SchemeIsFile()
           ? content_client->GetLocalizedString(IDS_MEDIA_SESSION_FILE_SOURCE)
-          : url_formatter::FormatOriginForSecurityDisplay(
-                url::Origin::Create(url));
+          : url_formatter::FormatUrl(
+                url::Origin::Create(url).GetURL(),
+                url_formatter::kFormatUrlOmitDefaults |
+                    url_formatter::kFormatUrlOmitHTTPS |
+                    url_formatter::kFormatUrlOmitTrivialSubdomains,
+                net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
   metadata.source_title = formatted_origin;
 
   // If we have no artwork in |images_| or the arwork has changed then we should

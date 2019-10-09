@@ -58,22 +58,13 @@ interface Performance : EventTarget {
 
     // User Timing
     // https://w3c.github.io/user-timing/#extensions-performance-interface
-    // We use the returned value for feature detection:
-    // * L2 API returns null but this is a bug: crbug.com/914441.
-    // * L3 API returns the created entry.
-    [MeasureAs=UserTiming, CallWith=ScriptState, RaisesException] PerformanceMark? mark(DOMString markName);
-    // TODO(maxlg): PerformanceMarkOptions will be changed to optional after L3 is default to be enabled.
-    [MeasureAs=UserTiming, CallWith=ScriptState, RuntimeEnabled=CustomUserTiming, RaisesException] PerformanceMark? mark(DOMString markName, PerformanceMarkOptions markOptions);
+    // TODO(https://crbug.com/996275): Once our IDL parser supports it, we need
+    // to supply a default-value of '{}' to markOptions.
+    [MeasureAs=UserTiming, CallWith=ScriptState, RaisesException] PerformanceMark mark(DOMString markName, optional PerformanceMarkOptions markOptions);
     [MeasureAs=UserTiming] void clearMarks(optional DOMString markName);
-
-    // Doing either of the following requires enabling CustomUserTiming:
-    // * passing PerformanceMeasureOptions to |startOrOptions|
-    // * passing timestamps to |startOrOptions| or |end|
-    // We use the returned value for feature detection:
-    // * L2 API returns null but this is a bug: crbug.com/914441.
-    // * L3 API returns the created entry.
-    // https://w3c.github.io/user-timing/#extensions-performance-interface
-    [MeasureAs=UserTiming, CallWith=ScriptState, RaisesException] PerformanceMeasure? measure(DOMString measureName, optional (DOMString or PerformanceMeasureOptions) startOrOptions, optional DOMString end);
+    // TODO(https://crbug.com/996275): Once our IDL parser supports it, we need
+    // to supply a default-value of '{}' to startOrOptions.
+    [MeasureAs=UserTiming, CallWith=ScriptState, RaisesException] PerformanceMeasure measure(DOMString measureName, optional (DOMString or PerformanceMeasureOptions) startOrOptions, optional DOMString end);
     [MeasureAs=UserTiming] void clearMeasures(optional DOMString measureName);
 
     // TODO(foolip): There is no spec for the Memory Info API, see blink-dev:

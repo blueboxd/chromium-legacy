@@ -28,8 +28,10 @@ class ASH_EXPORT DesksBarView : public views::View,
   DesksBarView();
   ~DesksBarView() override;
 
-  // The height of the desk bar view.
-  static int GetBarHeight();
+  // The height of the desk bar view based on the width of desks bar widget
+  // which will determine whether or not the compact small screens layout will
+  // be used.
+  static int GetBarHeight(int desks_bar_view_width);
 
   // Creates and returns the widget that contains the DeskBarView in overview
   // mode. The returned widget has no content view yet, and hasn't been shown
@@ -72,6 +74,11 @@ class ASH_EXPORT DesksBarView : public views::View,
   // views::View:
   const char* GetClassName() const override;
   void Layout() override;
+
+  // Returns true if the width of the DesksBarView is below a defined
+  // threshold, suggesting a compact small screens layout should be used for
+  // both itself and its children.
+  bool UsesSmallScreenLayout() const;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

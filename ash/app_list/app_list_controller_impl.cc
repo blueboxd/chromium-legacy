@@ -1084,7 +1084,9 @@ bool AppListControllerImpl::ProcessHomeLauncherGesture(
       return home_launcher_gesture_handler->OnScrollEvent(
           screen_location, event->details().scroll_y());
     case ui::ET_GESTURE_END:
-      return home_launcher_gesture_handler->OnReleaseEvent(screen_location);
+      return home_launcher_gesture_handler->OnReleaseEvent(
+          screen_location,
+          /*velocity_y=*/base::nullopt);
     default:
       break;
   }

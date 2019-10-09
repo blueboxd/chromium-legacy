@@ -1621,6 +1621,7 @@ class TestRegistrationObserver : public content::ServiceWorkerContextObserver {
   }
 
   void OnDestruct(content::ServiceWorkerContext* context) override {
+    context_->RemoveObserver(this);
     context_ = nullptr;
   }
 

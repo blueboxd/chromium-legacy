@@ -229,7 +229,6 @@
 <translation id="4261870227682513959">顯示通知設定。已關閉所有通知</translation>
 <translation id="4269883910223712419">這部裝置的管理員擁有下列權限：</translation>
 <translation id="4279490309300973883">鏡像</translation>
-<translation id="4281007048406351813">將計時器時間增加 1 分鐘</translation>
 <translation id="4296136865091727875">清除全部 <ph name="COUNT" /> 則通知</translation>
 <translation id="4303223480529385476">展開狀態區</translation>
 <translation id="4321179778687042513">Ctrl</translation>
@@ -419,7 +418,6 @@
 <translation id="7143207342074048698">連線中</translation>
 <translation id="7165278925115064263">Alt + Shift + K 鍵</translation>
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS" /> 秒後還原成原來的解析度</translation>
-<translation id="7222902781030499995">停止計時器</translation>
 <translation id="7256634071279256947">後置麥克風</translation>
 <translation id="726276584504105859">拖曳到這裡即可使用分割畫面</translation>
 <translation id="7262906531272962081">建立提醒</translation>

@@ -53,6 +53,9 @@ extern const char kAcceleratedVideoDecodeDescription[];
 extern const char kAcceleratedVideoEncodeName[];
 extern const char kAcceleratedVideoEncodeDescription[];
 
+extern const char kAccessibilityExposeARIAAnnotationsName[];
+extern const char kAccessibilityExposeARIAAnnotationsDescription[];
+
 extern const char kAccessibilityExposeDisplayNoneName[];
 extern const char kAccessibilityExposeDisplayNoneDescription[];
 

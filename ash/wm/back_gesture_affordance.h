@@ -8,16 +8,15 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/compositor/layer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
-// This class is responsible for creating, painting, and positioning the layer
-// for the back gesture affordance.
-class BackGestureAffordance : public ui::LayerDelegate,
-                              public gfx::AnimationDelegate {
+// This class is responsible for creating, painting, and positioning the back
+// gesture affordance.
+class BackGestureAffordance : public gfx::AnimationDelegate {
  public:
   explicit BackGestureAffordance(const gfx::Point& location);
   ~BackGestureAffordance() override;
@@ -34,28 +33,23 @@ class BackGestureAffordance : public ui::LayerDelegate,
   // Completes the affordance and fading it out.
   void Complete();
 
-  ui::Layer* painted_layer() { return &painted_layer_; }
-
  private:
   enum class State { DRAGGING, ABORTING, COMPLETING };
+
+  void CreateAffordanceWidget(const gfx::Point& location);
 
   void UpdateTransform();
   void SchedulePaint();
   void SetAbortProgress(float progress);
   void SetCompleteProgress(float progress);
 
-  // ui::LayerDelegate:
-  void OnPaintLayer(const ui::PaintContext& context) override;
-  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
-                                  float new_device_scale_factor) override;
-
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
 
-  // Layer that actually paints the affordance.
-  ui::Layer painted_layer_;
+  // Widget of the affordance with AffordanceView as the content.
+  std::unique_ptr<views::Widget> affordance_widget_;
 
   // Values that determine current state of the affordance.
   State state_ = State::DRAGGING;

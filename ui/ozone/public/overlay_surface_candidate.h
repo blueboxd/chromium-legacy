@@ -30,7 +30,7 @@ class COMPONENT_EXPORT(OZONE_BASE) OverlaySurfaceCandidate {
   ~OverlaySurfaceCandidate();
   OverlaySurfaceCandidate& operator=(const OverlaySurfaceCandidate& other);
 
-  // Note that |clip_rect|, |is_clipped|, |is_opaque| and |overlay_handled| are
+  // Note that |clip_rect|, |is_clipped| and |overlay_handled| are
   // *not* used as part of the comparison.
   bool operator<(const OverlaySurfaceCandidate& other) const;
 
@@ -53,8 +53,6 @@ class COMPONENT_EXPORT(OZONE_BASE) OverlaySurfaceCandidate {
   gfx::Rect clip_rect;
   // If the quad is clipped after composition.
   bool is_clipped = false;
-  // If the quad doesn't require blending.
-  bool is_opaque = false;
 
   // To be modified by the implementer if this candidate can go into
   // an overlay.

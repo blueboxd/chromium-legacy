@@ -7,7 +7,7 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
 
-  await TestRunner.navigatePromise('resources/portal_host.html');
+  await TestRunner.navigatePromise('resources/append-predecessor-host.html');
 
   async function setContextLabel(target, label) {
     var runtimeModel = target.model(SDK.RuntimeModel);
@@ -21,14 +21,50 @@
   TestRunner.runTestSuite([
     async function testMainConsole(next) {
       ConsoleTestRunner.selectMainExecutionContext();
-      ConsoleTestRunner.evaluateInConsoleAndDump("!!window.portalHost", next);
+      await ConsoleTestRunner.evaluateInConsoleAndDumpPromise(
+          '!!window.portalHost');
+      await ConsoleTestRunner.evaluateInConsoleAndDumpPromise(
+          'window.location.pathname');
+      next();
     },
 
-    async function testPortalConsole() {
-      await setContextLabel(targets[1], "portal");
-      ConsoleTestRunner.changeExecutionContext("portal");
-      ConsoleTestRunner.evaluateInConsoleAndDump("!!window.portalHost",
-                                                 TestRunner.completeTest, true);
-    }
+    async function testPortalConsole(next) {
+      await setContextLabel(targets[1], 'portal');
+      ConsoleTestRunner.changeExecutionContext('portal');
+      await ConsoleTestRunner.evaluateInConsoleAndDumpPromise(
+          '!!window.portalHost', true);
+      await ConsoleTestRunner.evaluateInConsoleAndDumpPromise(
+          'window.location.pathname', true);
+      next();
+    },
+
+    async function activate(next) {
+      TestRunner.evaluateInPage('activate()');
+      await TestRunner.waitForTargetRemoved(SDK.targetManager.mainTarget());
+      await TestRunner.waitForTarget();
+      await TestRunner.waitForTarget(target => target != SDK.targetManager.mainTarget());
+      await TestRunner.waitForExecutionContext(TestRunner.runtimeModel);
+      targets = SDK.targetManager.targets();
+      next();
+    },
+
+    async function testMainConsoleAfterActivation(next) {
+      ConsoleTestRunner.selectMainExecutionContext();
+      await ConsoleTestRunner.evaluateInConsoleAndDumpPromise(
+          '!!window.portalHost');
+      await ConsoleTestRunner.evaluateInConsoleAndDumpPromise(
+          'window.location.pathname');
+      next();
+    },
+
+    async function testPortalConsoleAfterActivation() {
+      await setContextLabel(targets[1], 'portal');
+      ConsoleTestRunner.changeExecutionContext('portal');
+      await ConsoleTestRunner.evaluateInConsoleAndDumpPromise(
+          '!!window.portalHost', true);
+      await ConsoleTestRunner.evaluateInConsoleAndDumpPromise(
+          'window.location.pathname', true);
+      TestRunner.completeTest();
+    },
   ]);
 })();

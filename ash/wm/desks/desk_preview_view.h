@@ -5,6 +5,7 @@
 #ifndef ASH_WM_DESKS_DESK_PREVIEW_VIEW_H_
 #define ASH_WM_DESKS_DESK_PREVIEW_VIEW_H_
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/views/view.h"
@@ -56,13 +57,13 @@ class WallpaperBaseView;
 // to layers with rounded corners. In order to use the fast rounded corners
 // implementation we must make them sibling layers, rather than one being a
 // descendant of the other. Otherwise, this will trigger a render surface.
-class DeskPreviewView : public views::View {
+class ASH_EXPORT DeskPreviewView : public views::View {
  public:
   explicit DeskPreviewView(DeskMiniView* mini_view);
   ~DeskPreviewView() override;
 
   // Returns the height of the DeskPreviewView.
-  static int GetHeight();
+  static int GetHeight(bool for_small_screens);
 
   void SetBorderColor(SkColor color);
 

@@ -52,9 +52,6 @@ constexpr base::TimeDelta kLabelAnimation =
 constexpr base::TimeDelta kLabelAnimationDelay =
     base::TimeDelta::FromMilliseconds(167);
 
-constexpr float kHighlightOpacity = 0.3f;
-constexpr float kPreviewAreaHighlightOpacity = 0.18f;
-
 // Toast data.
 constexpr char kAppCannotSnapToastId[] = "split_view_app_cannot_snap";
 constexpr int kAppCannotSnapToastDurationMs = 2500;

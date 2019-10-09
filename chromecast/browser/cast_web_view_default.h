@@ -34,10 +34,12 @@ class CastWebViewDefault : public CastWebView,
                            content::WebContentsDelegate {
  public:
   // |web_contents_manager| and |browser_context| should outlive this object.
-  CastWebViewDefault(const CreateParams& params,
-                     CastWebContentsManager* web_contents_manager,
-                     content::BrowserContext* browser_context,
-                     scoped_refptr<content::SiteInstance> site_instance);
+  CastWebViewDefault(
+      const CreateParams& params,
+      CastWebContentsManager* web_contents_manager,
+      content::BrowserContext* browser_context,
+      scoped_refptr<content::SiteInstance> site_instance,
+      std::unique_ptr<shell::CastContentWindow> cast_content_window = nullptr);
   ~CastWebViewDefault() override;
 
   // CastWebView implementation:

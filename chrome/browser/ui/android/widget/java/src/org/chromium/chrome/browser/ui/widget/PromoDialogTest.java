@@ -9,10 +9,12 @@ import android.content.DialogInterface;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.support.v4.view.ViewCompat;
+import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -145,6 +147,52 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
             Assert.assertTrue(view.getMeasuredWidth() > 0);
             Assert.assertTrue(view.getMeasuredHeight() > 0);
         }
+    }
+
+    @Test
+    @SmallTest
+    public void testBasic_CharSequenceSummary() throws Exception {
+        final String subheaderCharSequenceTestValue = "Promo dialog CharSequence sub-header";
+
+        // Create basic dialog with subheaderCharSequence.
+        // Check that subHeader is visible.
+        DialogParams dialogParams = new DialogParams();
+        dialogParams.headerStringResource = R.string.promo_dialog_test_header;
+        dialogParams.subheaderCharSequence = subheaderCharSequenceTestValue;
+        dialogParams.primaryButtonStringResource = R.string.promo_dialog_test_primary_button;
+
+        PromoDialogWrapper wrapper = new PromoDialogWrapper(getActivity(), dialogParams);
+        PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
+        TextView subheader = (TextView) promoDialogLayout.findViewById(R.id.subheader);
+        checkControlVisibility(subheader, true);
+
+        // Create basic dialog with both subheaderCharSequence and subheaderStringResource.
+        // Check that subheaderCharSequence takes precedence.
+        dialogParams = new DialogParams();
+        dialogParams.headerStringResource = R.string.promo_dialog_test_header;
+        dialogParams.subheaderCharSequence = subheaderCharSequenceTestValue;
+        dialogParams.subheaderStringResource = R.string.promo_dialog_test_subheader;
+        dialogParams.primaryButtonStringResource = R.string.promo_dialog_test_primary_button;
+
+        wrapper = new PromoDialogWrapper(getActivity(), dialogParams);
+        promoDialogLayout = wrapper.dialogLayout;
+        subheader = promoDialogLayout.findViewById(R.id.subheader);
+        Assert.assertEquals(subheader.getText(), subheaderCharSequenceTestValue);
+
+        // Without setting subHeaderIsLink the sub-header should have the default movement method.
+        Assert.assertFalse(subheader.getMovementMethod() instanceof LinkMovementMethod);
+
+        // Create dialog with sub-header as link
+        dialogParams = new DialogParams();
+        dialogParams.headerStringResource = R.string.promo_dialog_test_header;
+        dialogParams.subheaderCharSequence = subheaderCharSequenceTestValue;
+        dialogParams.subheaderIsLink = true;
+        dialogParams.primaryButtonStringResource = R.string.promo_dialog_test_primary_button;
+
+        wrapper = new PromoDialogWrapper(getActivity(), dialogParams);
+        promoDialogLayout = wrapper.dialogLayout;
+        subheader = promoDialogLayout.findViewById(R.id.subheader);
+        Assert.assertTrue(subheader.getMovementMethod() instanceof LinkMovementMethod);
     }
 
     @Test

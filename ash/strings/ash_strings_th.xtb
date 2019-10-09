@@ -229,7 +229,6 @@
 <translation id="4261870227682513959">แสดงการตั้งค่าการแจ้งเตือน การแจ้งเตือนปิดอยู่</translation>
 <translation id="4269883910223712419">ผู้ดูแลระบบของอุปกรณ์เครื่องนี้ทำสิ่งต่อไปนี้ได้</translation>
 <translation id="4279490309300973883">กำลังแสดงผล</translation>
-<translation id="4281007048406351813">เพิ่มเวลาตัวจับเวลาอีก 1 นาที</translation>
 <translation id="4296136865091727875">ล้างการแจ้งเตือนทั้งหมด <ph name="COUNT" /> รายการ</translation>
 <translation id="4303223480529385476">ขยายพื้นที่แสดงสถานะ</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -419,7 +418,6 @@
 <translation id="7143207342074048698">กำลังเชื่อมต่อ</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">เปลี่ยนกลับไปเป็นความละเอียดเดิมภายใน <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7222902781030499995">หยุดตัวจับเวลา</translation>
 <translation id="7256634071279256947">ไมโครโฟนด้านหลัง</translation>
 <translation id="726276584504105859">ลากมาที่นี่เพื่อใช้การแยกหน้าจอ</translation>
 <translation id="7262906531272962081">สร้างการช่วยเตือน</translation>

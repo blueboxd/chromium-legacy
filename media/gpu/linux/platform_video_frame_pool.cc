@@ -17,20 +17,27 @@ namespace media {
 namespace {
 
 // The default method to create frames.
-scoped_refptr<VideoFrame> DefaultCreateFrame(VideoPixelFormat format,
-                                             const gfx::Size& coded_size,
-                                             const gfx::Rect& visible_rect,
-                                             const gfx::Size& natural_size,
-                                             base::TimeDelta timestamp) {
-  return CreatePlatformVideoFrame(format, coded_size, visible_rect,
-                                  natural_size, timestamp,
+scoped_refptr<VideoFrame> DefaultCreateFrame(
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+    VideoPixelFormat format,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    base::TimeDelta timestamp) {
+  return CreatePlatformVideoFrame(gpu_memory_buffer_factory, format, coded_size,
+                                  visible_rect, natural_size, timestamp,
                                   gfx::BufferUsage::SCANOUT_VDA_WRITE);
 }
 
 }  // namespace
 
-PlatformVideoFramePool::PlatformVideoFramePool()
-    : PlatformVideoFramePool(base::BindRepeating(&DefaultCreateFrame)) {}
+PlatformVideoFramePool::PlatformVideoFramePool(
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
+    : create_frame_cb_(base::BindRepeating(&DefaultCreateFrame)),
+      gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {
+  DVLOGF(4);
+  weak_this_ = weak_this_factory_.GetWeakPtr();
+}
 
 PlatformVideoFramePool::PlatformVideoFramePool(CreateFrameCB cb)
     : create_frame_cb_(std::move(cb)) {
@@ -68,9 +75,9 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
     // VideoFrame::WrapVideoFrame() will check whether the updated visible_rect
     // is sub rect of the original visible_rect. Therefore we set visible_rect
     // as large as coded_size to guarantee this condition.
-    scoped_refptr<VideoFrame> new_frame =
-        create_frame_cb_.Run(format, coded_size, gfx::Rect(coded_size),
-                             coded_size, base::TimeDelta());
+    scoped_refptr<VideoFrame> new_frame = create_frame_cb_.Run(
+        gpu_memory_buffer_factory_, format, coded_size, gfx::Rect(coded_size),
+        coded_size, base::TimeDelta());
     if (!new_frame)
       return nullptr;
 
@@ -129,9 +136,9 @@ base::Optional<VideoFrameLayout> PlatformVideoFramePool::NegotiateFrameFormat(
 
   // Create a temporary frame in order to know VideoFrameLayout that VideoFrame
   // that will be allocated in GetFrame() has.
-  auto frame =
-      create_frame_cb_.Run(layout.format(), layout.coded_size(), visible_rect,
-                           natural_size_, base::TimeDelta());
+  auto frame = create_frame_cb_.Run(gpu_memory_buffer_factory_, layout.format(),
+                                    layout.coded_size(), visible_rect,
+                                    natural_size_, base::TimeDelta());
   if (!frame) {
     VLOGF(1) << "Failed to create video frame";
     return base::nullopt;

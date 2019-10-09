@@ -100,10 +100,7 @@ static_library("app") {
   }
 
   if (is_linux) {
-    deps += [
-      "//content/public/common",
-      "//third_party/breakpad:client",
-    ]
+    deps += [ "//third_party/breakpad:client" ]
   }
 
   if (is_win) {

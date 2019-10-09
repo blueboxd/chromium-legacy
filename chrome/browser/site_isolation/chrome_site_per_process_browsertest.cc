@@ -74,6 +74,7 @@
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #include "chrome/browser/spellchecker/test/spellcheck_panel_browsertest_helper.h"
 #include "components/spellcheck/common/spellcheck_panel.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #endif
 
@@ -1127,9 +1128,9 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFSpellCheckPanelTest) {
 
   EXPECT_TRUE(cross_site_subframe->IsCrossProcessSubframe());
 
-  spellcheck::mojom::SpellCheckPanelPtr spell_check_panel_client;
+  mojo::Remote<spellcheck::mojom::SpellCheckPanel> spell_check_panel_client;
   cross_site_subframe->GetRemoteInterfaces()->GetInterface(
-      &spell_check_panel_client);
+      spell_check_panel_client.BindNewPipeAndPassReceiver());
   spell_check_panel_client->ToggleSpellPanel(false);
   test_helper.RunUntilBind();
 

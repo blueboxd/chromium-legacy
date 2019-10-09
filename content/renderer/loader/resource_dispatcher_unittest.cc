@@ -193,15 +193,13 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
 
     void OnUploadProgress(uint64_t position, uint64_t size) override {}
 
-    bool OnReceivedRedirect(
-        const net::RedirectInfo& redirect_info,
-        const network::ResourceResponseInfo& info) override {
+    bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
+                            network::mojom::URLResponseHeadPtr head) override {
       return false;
     }
 
-    void OnReceivedResponse(
-        const network::ResourceResponseInfo& info) override {
-      response_info_ = info;
+    void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) override {
+      response_head_ = std::move(head);
     }
 
     void OnStartLoadingResponseBody(
@@ -213,7 +211,7 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
 
     void OnCompletedRequest(
         const network::URLLoaderCompletionStatus& status) override {
-      original_peer_->OnReceivedResponse(response_info_);
+      original_peer_->OnReceivedResponse(std::move(response_head_));
       original_peer_->OnStartLoadingResponseBody(std::move(body_handle_));
       original_peer_->OnCompletedRequest(status);
     }
@@ -223,7 +221,7 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
 
    private:
     std::unique_ptr<RequestPeer> original_peer_;
-    network::ResourceResponseInfo response_info_;
+    network::mojom::URLResponseHeadPtr response_head_;
     mojo::ScopedDataPipeConsumerHandle body_handle_;
 
     DISALLOW_COPY_AND_ASSIGN(WrapperPeer);

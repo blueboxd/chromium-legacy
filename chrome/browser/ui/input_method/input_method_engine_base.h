@@ -98,9 +98,6 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
     virtual void OnCompositionBoundsChanged(
         const std::vector<gfx::Rect>& bounds) = 0;
 
-    // Returns whether the observer is interested in key events.
-    virtual bool IsInterestedInKeyEvent() const = 0;
-
     // Called when a surrounding text is changed.
     virtual void OnSurroundingTextChanged(const std::string& engine_id,
                                           const std::string& text,

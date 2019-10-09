@@ -162,19 +162,8 @@ void OfflinePageTabHelper::DidStartNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
-  // This is a new navigation so we can invalidate any previously scheduled
-  // operations.
-  weak_ptr_factory_.InvalidateWeakPtrs();
-  reloading_url_on_net_error_ = false;
-
   // The provisional offline info can be cleared no matter how.
   provisional_offline_info_.Clear();
-
-  // If not a fragment navigation, clear the cached offline info.
-  if (offline_info_.offline_page.get() &&
-      !navigation_handle->IsSameDocument()) {
-    offline_info_.Clear();
-  }
 
   // Report any attempted navigation as indication that browser is in use.
   // This doesn't have to be a successful navigation.
@@ -194,6 +183,11 @@ void OfflinePageTabHelper::DidFinishNavigation(
 
   if (navigation_handle->IsSameDocument())
     return;
+
+  // This is a new navigation so we can invalidate any previously scheduled
+  // operations.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  reloading_url_on_net_error_ = false;
 
   FinalizeOfflineInfo(navigation_handle);
   provisional_offline_info_.Clear();

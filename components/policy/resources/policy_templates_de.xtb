@@ -2554,7 +2554,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="5447306928176905178">Weitergabe von Speicherinformationen (JS-Heap-Größe) an Seite aktivieren (veraltet)</translation>
 <translation id="5457065417344056871">Gastmodus im Browser aktivieren</translation>
 <translation id="5457924070961220141">Ermöglicht Ihnen die Konfiguration des Standard-HTML-Renderers, wenn <ph name="PRODUCT_FRAME_NAME" /> installiert ist. Wenn diese Richtlinie nicht konfiguriert ist, so kommt die Standardeinstellung zum Einsatz, wobei der Hostbrowser das Rendering übernimmt. Sie haben aber die Möglichkeit, dies zu ändern und <ph name="PRODUCT_FRAME_NAME" /> das Rendering der HTML-Seite übernehmen zu lassen.</translation>
-<translation id="5458584148602890023">Umschalten bei Leistungsspitzen aktivieren</translation>
 <translation id="5464816904705580310">Konfiguriert Einstellungen für verwaltete Nutzer</translation>
 <translation id="546726650689747237">Verzögerung für die Bildschirmabdunkelung im Netzbetrieb</translation>
 <translation id="5469143988693423708">Nutzer darf Crostini ausführen</translation>

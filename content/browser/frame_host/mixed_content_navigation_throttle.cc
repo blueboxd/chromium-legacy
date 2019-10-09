@@ -103,8 +103,7 @@ MixedContentNavigationThrottle::CreateThrottleForNavigation(
 
 MixedContentNavigationThrottle::MixedContentNavigationThrottle(
     NavigationHandle* navigation_handle)
-    : NavigationThrottle(navigation_handle) {
-}
+    : NavigationThrottle(navigation_handle) {}
 
 MixedContentNavigationThrottle::~MixedContentNavigationThrottle() {}
 

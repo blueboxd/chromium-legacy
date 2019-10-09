@@ -7,6 +7,8 @@
 #include "components/sync/protocol/wifi_configuration_specifics.pb.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
+namespace chromeos {
+
 namespace sync_wifi {
 
 NetworkIdentifier GeneratePskNetworkId(const std::string& ssid) {
@@ -42,3 +44,5 @@ sync_pb::WifiConfigurationSpecificsData GenerateTestWifiSpecifics(
 }
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos

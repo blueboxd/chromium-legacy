@@ -28,6 +28,7 @@ class FuchsiaStreamDecryptorBase : public StreamProcessorHelper::Client {
   // StreamProcessorHelper::Client overrides.
   void AllocateInputBuffers(
       const fuchsia::media::StreamBufferConstraints& stream_constraints) final;
+  void OnOutputFormat(fuchsia::media::StreamOutputFormat format) final;
 
   void DecryptInternal(scoped_refptr<DecoderBuffer> encrypted);
   void ResetStream();
@@ -36,6 +37,8 @@ class FuchsiaStreamDecryptorBase : public StreamProcessorHelper::Client {
 
   BufferAllocator allocator_;
 
+  SysmemBufferWriterQueue input_writer_queue_;
+
  private:
   void OnInputBufferPoolCreated(std::unique_ptr<SysmemBufferPool> pool);
   void OnWriterCreated(std::unique_ptr<SysmemBufferWriter> writer);
@@ -43,7 +46,6 @@ class FuchsiaStreamDecryptorBase : public StreamProcessorHelper::Client {
                        StreamProcessorHelper::IoPacket packet);
   void ProcessEndOfStream();
 
-  SysmemBufferWriterQueue input_writer_queue_;
   std::unique_ptr<SysmemBufferPool::Creator> input_pool_creator_;
   std::unique_ptr<SysmemBufferPool> input_pool_;
 
@@ -67,13 +69,12 @@ class FuchsiaClearStreamDecryptor : public FuchsiaStreamDecryptorBase {
 
  private:
   // StreamProcessorHelper::Client overrides.
-  void AllocateOutputBuffers(const fuchsia::media::StreamBufferConstraints&
-                                 stream_constraints) override;
-  void OnProcessEos() override;
-  void OnOutputFormat(fuchsia::media::StreamOutputFormat format) override;
-  void OnOutputPacket(StreamProcessorHelper::IoPacket packet) override;
-  void OnNoKey() override;
-  void OnError() override;
+  void AllocateOutputBuffers(
+      const fuchsia::media::StreamBufferConstraints& stream_constraints) final;
+  void OnProcessEos() final;
+  void OnOutputPacket(StreamProcessorHelper::IoPacket packet) final;
+  void OnNoKey() final;
+  void OnError() final;
 
   void OnOutputBufferPoolCreated(size_t num_buffers_for_client,
                                  size_t num_buffers_for_server,
@@ -95,8 +96,8 @@ class FuchsiaClearStreamDecryptor : public FuchsiaStreamDecryptorBase {
   DISALLOW_COPY_AND_ASSIGN(FuchsiaClearStreamDecryptor);
 };
 
-// Stream decryptor that decrypts data to secure sysmem buffers. Used for video
-// stream.
+// Stream decryptor that decrypts data to protected sysmem buffers. Used for
+// video stream.
 class FuchsiaSecureStreamDecryptor : public FuchsiaStreamDecryptorBase {
  public:
   class Client {
@@ -111,10 +112,6 @@ class FuchsiaSecureStreamDecryptor : public FuchsiaStreamDecryptorBase {
     virtual ~Client() = default;
   };
 
-  static std::unique_ptr<FuchsiaSecureStreamDecryptor> Create(
-      fuchsia::media::drm::ContentDecryptionModule* cdm,
-      Client* client);
-
   FuchsiaSecureStreamDecryptor(fuchsia::media::StreamProcessorPtr processor,
                                Client* client);
   ~FuchsiaSecureStreamDecryptor() override;
@@ -124,25 +121,54 @@ class FuchsiaSecureStreamDecryptor : public FuchsiaStreamDecryptorBase {
       size_t num_buffers_for_decryptor,
       size_t num_buffers_for_codec);
 
+  // Enqueues the specified buffer to the input queue. Caller is allowed to
+  // queue as many buffers as it needs without waiting for results from the
+  // previous Decrypt() calls.
   void Decrypt(scoped_refptr<DecoderBuffer> encrypted);
+
+  // Returns closure that should be called when the key changes. This class
+  // uses this notification to handle NO_KEY errors. Note that this class can
+  // queue multiple input buffers so it's also responsible for resubmitting
+  // queued buffers after a new key is received. This is different from
+  // FuchsiaClearStreamDecryptor and media::Decryptor: they report NO_KEY error
+  // to the caller and expect the caller to resubmit same buffers again after
+  // the key is updated.
+  base::RepeatingClosure GetOnNewKeyClosure();
 
   // Drops all pending decryption requests.
   void Reset();
 
  private:
   // StreamProcessorHelper::Client overrides.
-  void AllocateOutputBuffers(const fuchsia::media::StreamBufferConstraints&
-                                 stream_constraints) override;
-  void OnProcessEos() override;
-  void OnOutputFormat(fuchsia::media::StreamOutputFormat format) override;
-  void OnOutputPacket(StreamProcessorHelper::IoPacket packet) override;
-  void OnNoKey() override;
-  void OnError() override;
+  void AllocateOutputBuffers(
+      const fuchsia::media::StreamBufferConstraints& stream_constraints) final;
+  void OnProcessEos() final;
+  void OnOutputPacket(StreamProcessorHelper::IoPacket packet) final;
+  void OnNoKey() final;
+  void OnError() final;
+
+  // Callback returned by GetOnNewKeyClosure(). When waiting for a key this
+  // method unpauses the stream to decrypt any pending buffers.
+  void OnNewKey();
 
   Client* const client_;
 
   bool waiting_output_buffers_ = false;
   base::OnceClosure complete_buffer_allocation_callback_;
+
+  // Set to true if some keys have been updated recently. New key notifications
+  // are received from a LicenseSession, while DECRYPTOR_NO_KEY error is
+  // received from StreamProcessor. These are separate FIDL connections that are
+  // handled on different threads, so they are not synchronized. As result
+  // OnNewKey() may be called before we get OnNoKey(). To handle this case
+  // correctly OnNewKey() sets |retry_on_no_key_| and then OnNoKey() tries to
+  // restart the stream immediately if this flag is set.
+  bool retry_on_no_key_ = false;
+
+  // Set to true if the stream is paused while we are waiting for new keys.
+  bool waiting_for_key_ = false;
+
+  base::WeakPtrFactory<FuchsiaSecureStreamDecryptor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FuchsiaSecureStreamDecryptor);
 };

@@ -10,6 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
@@ -97,7 +98,7 @@ void ExpectRegisteredWorkers(
 
 class InstallActivateWorker : public FakeServiceWorker {
  public:
-  InstallActivateWorker(EmbeddedWorkerTestHelper* helper)
+  explicit InstallActivateWorker(EmbeddedWorkerTestHelper* helper)
       : FakeServiceWorker(helper) {}
   ~InstallActivateWorker() override = default;
 
@@ -258,18 +259,14 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
     base::Optional<int64_t> version_id;
     base::Optional<int64_t> registration_id;
     base::Optional<bool> is_running;
-    base::Optional<ServiceWorkerContext*> context;
   };
 
   explicit TestServiceWorkerContextObserver(ServiceWorkerContext* context)
-      : context_(context) {
-    context_->AddObserver(this);
+      : scoped_observer_(this) {
+    scoped_observer_.Add(context);
   }
 
-  ~TestServiceWorkerContextObserver() override {
-    if (context_)
-      context_->RemoveObserver(this);
-  }
+  ~TestServiceWorkerContextObserver() override = default;
 
   void OnRegistrationCompleted(const GURL& scope) override {
     EventLog log;
@@ -311,11 +308,10 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
     events_.push_back(log);
   }
 
-  void OnVersionStartedRunning(content::ServiceWorkerContext* context,
-                               int64_t version_id,
-                               const GURL& scope,
-                               int process_id,
-                               const GURL& script_url) override {
+  void OnVersionStartedRunning(
+      content::ServiceWorkerContext* context,
+      int64_t version_id,
+      const ServiceWorkerRunningInfo& running_info) override {
     EventLog log;
     log.type = EventType::VersionStartedRunning;
     log.version_id = version_id;
@@ -331,17 +327,18 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
   }
 
   void OnDestruct(content::ServiceWorkerContext* context) override {
+    scoped_observer_.Remove(context);
+
     EventLog log;
     log.type = EventType::Destruct;
-    log.context = context;
     events_.push_back(log);
-    context_ = nullptr;
   }
 
   const std::vector<EventLog>& events() { return events_; }
 
  private:
-  ServiceWorkerContext* context_;
+  ScopedObserver<ServiceWorkerContext, ServiceWorkerContextObserver>
+      scoped_observer_;
   std::vector<EventLog> events_;
   DISALLOW_COPY_AND_ASSIGN(TestServiceWorkerContextObserver);
 };
@@ -528,7 +525,6 @@ TEST_F(ServiceWorkerContextTest, OnDestructObserver) {
   ASSERT_EQ(1u, observer.events().size());
   EXPECT_EQ(TestServiceWorkerContextObserver::EventType::Destruct,
             observer.events()[0].type);
-  EXPECT_EQ(context, observer.events()[0].context);
 }
 
 // Make sure basic registration is working.

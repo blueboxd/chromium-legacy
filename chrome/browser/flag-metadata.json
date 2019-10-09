@@ -814,6 +814,11 @@
     "expiry_milestone": 89
   },
   {
+    "name": "enable-accessibility-expose-aria-annotations",
+    "owners": [ "aleventhal@chromium.org", "//third_party/blink/renderer/modules/accessibility/OWNERS", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "enable-accessibility-expose-display-none",
     "owners": [ "adettenb@microsoft.com", "//third_party/blink/renderer/modules/accessibility/OWNERS", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 82

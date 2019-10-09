@@ -114,8 +114,8 @@ void TraceEventAgent::StopAndFlush(
       recorder_->AddMetadata(std::move(*metadata));
   }
 
-  base::trace_event::TraceLog::GetInstance()->Flush(
-      base::Bind(&TraceEventAgent::OnTraceLogFlush, base::Unretained(this)));
+  base::trace_event::TraceLog::GetInstance()->Flush(base::BindRepeating(
+      &TraceEventAgent::OnTraceLogFlush, base::Unretained(this)));
 }
 
 void TraceEventAgent::RequestBufferStatus(

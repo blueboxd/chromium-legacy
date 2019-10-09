@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -65,11 +66,13 @@ const char kIconSourceUmaClientName[] = "NtpIconSource";
 // changing the algorithm in RenderIconBitmap() that guarantees contrast.
 constexpr SkColor kFallbackIconLetterColor = SK_ColorWHITE;
 
+const char kShowFallbackMonogramParam[] = "show_fallback_monogram";
+
 // The requested size of the icon.
-const char kSizeParameter[] = "size";
+const char kSizeParam[] = "size";
 
 // The URL for which to create an icon.
-const char kUrlParameter[] = "url";
+const char kUrlParam[] = "url";
 
 // Size of the icon background (gray circle), in dp.
 const int kIconSizeDip = 48;
@@ -95,6 +98,9 @@ struct ParsedNtpIconPath {
 
   // The device scale factor of the requested icon.
   float device_scale_factor = 1.0;
+
+  // Whether to show a circle + letter monogram if an icon is unable.
+  bool show_fallback_monogram = true;
 };
 
 float GetMaxDeviceScaleFactor() {
@@ -107,8 +113,9 @@ float GetMaxDeviceScaleFactor() {
 // "?size=24@2x&url=https%3A%2F%2Fcnn.com"
 const ParsedNtpIconPath ParseNtpIconPath(const std::string& path) {
   ParsedNtpIconPath parsed;
-  parsed.url = GURL();
+  parsed.show_fallback_monogram = true;
   parsed.size_in_dip = gfx::kFaviconSize;
+  parsed.url = GURL();
 
   if (path.empty())
     return parsed;
@@ -121,7 +128,9 @@ const ParsedNtpIconPath ParseNtpIconPath(const std::string& path) {
 
   for (net::QueryIterator it(request); !it.IsAtEnd(); it.Advance()) {
     std::string key = it.GetKey();
-    if (key == kSizeParameter) {
+    if (key == kShowFallbackMonogramParam) {
+      parsed.show_fallback_monogram = it.GetUnescapedValue() != "false";
+    } else if (key == kSizeParam) {
       std::vector<std::string> pieces =
           base::SplitString(it.GetUnescapedValue(), "@", base::TRIM_WHITESPACE,
                             base::SPLIT_WANT_NONEMPTY);
@@ -138,7 +147,7 @@ const ParsedNtpIconPath ParseNtpIconPath(const std::string& path) {
         parsed.device_scale_factor =
             std::min(scale_factor, GetMaxDeviceScaleFactor());
       }
-    } else if (key == kUrlParameter) {
+    } else if (key == kUrlParam) {
       parsed.url = GURL(it.GetUnescapedValue());
     }
   }
@@ -218,25 +227,37 @@ SkColor GetBackgroundColorForUrl(const GURL& icon_url) {
 std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
                                             const SkBitmap& favicon,
                                             int icon_size,
-                                            int fallback_size) {
+                                            int fallback_size,
+                                            bool show_fallback_monogram,
+                                            float device_scale_factor) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(icon_size, icon_size, false);
   cc::SkiaPaintCanvas paint_canvas(bitmap);
   gfx::Canvas canvas(&paint_canvas, 1.f);
   canvas.DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
 
-  DrawFavicon(favicon, &canvas, icon_size);
-
   // If necessary, draw the colored fallback monogram.
   if (favicon.empty()) {
-    SkColor fallback_color =
-        color_utils::BlendForMinContrast(GetBackgroundColorForUrl(icon_url),
-                                         kFallbackIconLetterColor)
-            .color;
+    if (show_fallback_monogram) {
+      SkColor fallback_color =
+          color_utils::BlendForMinContrast(GetBackgroundColorForUrl(icon_url),
+                                           kFallbackIconLetterColor)
+              .color;
 
-    int offset = (icon_size - fallback_size) / 2;
-    DrawCircleInCanvas(&canvas, fallback_size, offset, fallback_color);
-    DrawFallbackIconLetter(icon_url, icon_size, &canvas);
+      int offset = (icon_size - fallback_size) / 2;
+      DrawCircleInCanvas(&canvas, fallback_size, offset, fallback_color);
+      DrawFallbackIconLetter(icon_url, icon_size, &canvas);
+    } else {
+      const auto* default_favicon = favicon::GetDefaultFavicon().ToImageSkia();
+      const auto& rep = default_favicon->GetRepresentation(device_scale_factor);
+      gfx::ImageSkia scaled_image(rep);
+      const auto resized = gfx::ImageSkiaOperations::CreateResizedImage(
+          scaled_image, skia::ImageOperations::RESIZE_BEST,
+          gfx::Size(fallback_size, fallback_size));
+      DrawFavicon(*resized.bitmap(), &canvas, icon_size);
+    }
+  } else {
+    DrawFavicon(favicon, &canvas, icon_size);
   }
 
   std::vector<unsigned char> bitmap_data;
@@ -251,11 +272,13 @@ struct NtpIconSource::NtpIconRequest {
   NtpIconRequest(const content::URLDataSource::GotDataCallback& cb,
                  const GURL& path,
                  int icon_size_in_pixels,
-                 float scale)
+                 float scale,
+                 bool show_fallback_monogram)
       : callback(cb),
         path(path),
         icon_size_in_pixels(icon_size_in_pixels),
-        device_scale_factor(scale) {}
+        device_scale_factor(scale),
+        show_fallback_monogram(show_fallback_monogram) {}
   NtpIconRequest(const NtpIconRequest& other) = default;
   ~NtpIconRequest() {}
 
@@ -263,6 +286,7 @@ struct NtpIconSource::NtpIconRequest {
   GURL path;
   int icon_size_in_pixels;
   float device_scale_factor;
+  bool show_fallback_monogram;
 };
 
 NtpIconSource::NtpIconSource(Profile* profile)
@@ -292,7 +316,8 @@ void NtpIconSource::StartDataRequest(
     int icon_size_in_pixels =
         std::ceil(parsed.size_in_dip * parsed.device_scale_factor);
     NtpIconRequest request(callback, parsed.url, icon_size_in_pixels,
-                           parsed.device_scale_factor);
+                           parsed.device_scale_factor,
+                           parsed.show_fallback_monogram);
 
     // Check if the requested URL is part of the prepopulated pages (currently,
     // only the Web Store).
@@ -460,8 +485,9 @@ void NtpIconSource::ReturnRenderedIconForRequest(const NtpIconRequest& request,
       std::round(kIconSizeDip * request.device_scale_factor * 0.5) * 2.0;
   int desired_fallback_size_in_pixel =
       std::round(kFallbackSizeDip * request.device_scale_factor * 0.5) * 2.0;
-  std::vector<unsigned char> bitmap_data =
-      RenderIconBitmap(request.path, bitmap, desired_overall_size_in_pixel,
-                       desired_fallback_size_in_pixel);
+  std::vector<unsigned char> bitmap_data = RenderIconBitmap(
+      request.path, bitmap, desired_overall_size_in_pixel,
+      desired_fallback_size_in_pixel, request.show_fallback_monogram,
+      request.device_scale_factor);
   request.callback.Run(base::RefCountedBytes::TakeVector(&bitmap_data));
 }

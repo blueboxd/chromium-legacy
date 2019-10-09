@@ -29,7 +29,10 @@ namespace {
 
 class TestDialog : public DialogDelegateView {
  public:
-  TestDialog() : input_(new views::Textfield()) { AddChildView(input_); }
+  TestDialog() : input_(new views::Textfield()) {
+    DialogDelegate::set_draggable(true);
+    AddChildView(input_);
+  }
   ~TestDialog() override = default;
 
   void Init() {
@@ -57,7 +60,6 @@ class TestDialog : public DialogDelegateView {
     closed_ = true;
     return closeable_;
   }
-  bool IsDialogDraggable() const override { return true; }
 
   gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(200, 200);

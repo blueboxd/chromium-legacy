@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
@@ -655,7 +656,10 @@ void HTMLElement::ParseAttribute(const AttributeModificationParams& params) {
   if (triggers->web_feature != kNoWebFeature) {
     // Count usage of attributes but ignore attributes in user agent shadow DOM.
     if (!IsInUserAgentShadowRoot()) {
-      UseCounter::Count(GetDocument(), triggers->web_feature);
+      if (triggers->web_feature == WebFeature::kARIAHelpAttribute)
+        Deprecation::CountDeprecation(GetDocument(), triggers->web_feature);
+      else
+        UseCounter::Count(GetDocument(), triggers->web_feature);
     }
   }
   if (triggers->function)

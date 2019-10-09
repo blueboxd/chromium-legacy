@@ -20,6 +20,8 @@ import org.chromium.components.url_formatter.UrlFormatterJni;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.net.GURLUtils;
+import org.chromium.net.GURLUtilsJni;
 import org.chromium.services.media_session.MediaMetadata;
 
 import java.util.Set;
@@ -30,6 +32,8 @@ import java.util.Set;
 public class MediaNotificationTestTabHolder {
     @Mock
     UrlFormatter.Natives mUrlFormatterJniMock;
+    @Mock
+    GURLUtils.Natives mGURLUtilsJniMock;
     @Mock
     WebContents mWebContents;
     @Mock
@@ -56,8 +60,12 @@ public class MediaNotificationTestTabHolder {
         mocker.mock(UrlFormatterJni.TEST_HOOKS, mUrlFormatterJniMock);
         // We don't want this matcher to match the current value of mUrl. Wrapping it in a matcher
         // allows us to match on the updated value of mUrl.
-        when(mUrlFormatterJniMock.formatUrlForSecurityDisplay(
+        when(mUrlFormatterJniMock.formatUrlForDisplayOmitSchemeOmitTrivialSubdomains(
                      argThat(urlArg -> urlArg.equals(mUrl))))
+                .thenAnswer(invocation -> mUrl);
+
+        mocker.mock(GURLUtilsJni.TEST_HOOKS, mGURLUtilsJniMock);
+        when(mGURLUtilsJniMock.getOrigin(argThat(urlArg -> urlArg.equals(mUrl))))
                 .thenAnswer(invocation -> mUrl);
 
         when(mTab.getWebContents()).thenReturn(mWebContents);

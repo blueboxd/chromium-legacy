@@ -399,15 +399,23 @@ void DialogClientView::SetupLayout() {
 
   // Track which columns to link sizes under MD.
   constexpr int kViewToColumnIndex[] = {1, 3, 5};
-  int link[] = {-1, -1, -1};
-  size_t link_index = 0;
+  std::vector<int> columns_to_link;
+
+  // Skip views that are not a button, or are a specific subclass of Button
+  // that should never be linked. Otherwise, link everything.
+  auto should_link = [](views::View* view) {
+    return Button::AsButton(view) &&
+           view->GetClassName() != Checkbox::kViewClassName &&
+           view->GetClassName() != ImageButton::kViewClassName;
+  };
 
   layout->StartRowWithPadding(kFixed, kButtonRowId, kFixed,
                               button_row_insets_.top());
   for (size_t view_index = 0; view_index < kNumButtons; ++view_index) {
     if (views[view_index]) {
       layout->AddExistingView(views[view_index]);
-      link[link_index++] = kViewToColumnIndex[view_index];
+      if (should_link(views[view_index]))
+        columns_to_link.push_back(kViewToColumnIndex[view_index]);
     } else {
       layout->SkipColumns(1);
     }
@@ -415,19 +423,7 @@ void DialogClientView::SetupLayout() {
 
   column_set->set_linked_column_size_limit(
       layout_provider->GetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH));
-
-  // If |views[0]| is non-null, it is a visible |extra_view_| and its column
-  // will be in |link[0]|. Skip that if it is not a button, or if it is a
-  // specific subclass of Button that should never be linked. Otherwise, link
-  // everything.
-  bool skip_first_link =
-      views[0] && (!Button::AsButton(views[0]) ||
-                   views[0]->GetClassName() == Checkbox::kViewClassName ||
-                   views[0]->GetClassName() == ImageButton::kViewClassName);
-  if (skip_first_link)
-    column_set->LinkColumnSizes(link[1], link[2], -1);
-  else
-    column_set->LinkColumnSizes(link[0], link[1], link[2], -1);
+  column_set->LinkColumnSizes(columns_to_link);
 
   layout->AddPaddingRow(kFixed, button_row_insets_.bottom());
 

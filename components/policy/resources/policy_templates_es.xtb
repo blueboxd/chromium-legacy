@@ -2629,7 +2629,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5457065417344056871">Habilitar el modo invitados en el navegador</translation>
 <translation id="5457924070961220141">Permite configurar el procesador de HTML predeterminado si se ha instalado <ph name="PRODUCT_FRAME_NAME" />.
           Si no se establece esta política, se permitirá que el navegador del host muestre las páginas HTML de forma predeterminada, pero puedes anular esta opción para que <ph name="PRODUCT_FRAME_NAME" /> muestre las páginas HTML de forma predeterminada.</translation>
-<translation id="5458584148602890023">Habilitar Peak Shift</translation>
 <translation id="5464816904705580310">Permite establecer opciones de configuración de usuarios administrados.</translation>
 <translation id="546726650689747237">Retraso de atenuación de pantalla cuando el dispositivo está conectado a la red</translation>
 <translation id="5469143988693423708">El usuario tiene permiso para ejecutar Crostini</translation>

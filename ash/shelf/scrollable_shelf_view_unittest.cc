@@ -77,9 +77,10 @@ class ScrollableShelfViewTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(ScrollableShelfViewTest);
 };
 
-// Verifies that the display rotation should not break the scrollable shelf's
-// UI behavior (https://crbug.com/1000764).
-TEST_F(ScrollableShelfViewTest, CorrectUIAfterDisplayRotation) {
+// Verifies that the display rotation from the short side to the long side
+// should not break the scrollable shelf's UI
+// behavior(https://crbug.com/1000764).
+TEST_F(ScrollableShelfViewTest, CorrectUIAfterDisplayRotationShortToLong) {
   // Changes the display setting in order that the display's height is greater
   // than the width.
   UpdateDisplay("600x800");
@@ -117,6 +118,7 @@ TEST_F(ScrollableShelfViewTest, CorrectUIAfterDisplayRotation) {
   // After rotation, checks the following things:
   // (1) The scrollable shelf has the correct layout strategy.
   // (2) The last app icon has the correct bounds.
+  // (3) The scrollable shelf does not need further adjustment.
   EXPECT_EQ(ScrollableShelfView::kShowLeftArrowButton,
             scrollable_shelf_view_->layout_strategy_for_test());
   views::ViewModel* view_model = shelf_view_->view_model();
@@ -125,7 +127,45 @@ TEST_F(ScrollableShelfViewTest, CorrectUIAfterDisplayRotation) {
   const gfx::Rect icon_bounds = last_visible_icon->GetBoundsInScreen();
   const gfx::Rect shelf_container_bounds =
       scrollable_shelf_view_->shelf_container_view()->GetBoundsInScreen();
-  EXPECT_EQ(icon_bounds.right(), shelf_container_bounds.right());
+  EXPECT_EQ(icon_bounds.right() +
+                ShelfConfig::Get()->scrollable_shelf_ripple_padding(),
+            shelf_container_bounds.right());
+  EXPECT_FALSE(scrollable_shelf_view_->ShouldAdjustForTest());
+}
+
+// Verifies that the display rotation from the long side to the short side
+// should not break the scrollable shelf's UI behavior
+// (https://crbug.com/1000764).
+TEST_F(ScrollableShelfViewTest, CorrectUIAfterDisplayRotationLongToShort) {
+  // Changes the display setting in order that the display's width is greater
+  // than the height.
+  UpdateDisplay("600x300");
+
+  display::Display display = GetPrimaryDisplay();
+  AddAppShortcutUntilOverflow();
+
+  // Presses the right arrow until reaching the last page of shelf icons.
+  const views::View* right_arrow = scrollable_shelf_view_->right_arrow();
+  const gfx::Point center_point =
+      right_arrow->GetBoundsInScreen().CenterPoint();
+  while (right_arrow->GetVisible()) {
+    GetEventGenerator()->MoveMouseTo(center_point);
+    GetEventGenerator()->PressLeftButton();
+    GetEventGenerator()->ReleaseLeftButton();
+  }
+  ASSERT_EQ(ScrollableShelfView::kShowLeftArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Rotates the display by 90 degrees. In order to reproduce the bug,
+  // both arrow buttons should show after rotation.
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display_manager->SetDisplayRotation(display.id(), display::Display::ROTATE_90,
+                                      display::Display::RotationSource::ACTIVE);
+  ASSERT_EQ(ScrollableShelfView::kShowButtons,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Verifies that the scrollable shelf does not need further adjustment.
+  EXPECT_FALSE(scrollable_shelf_view_->ShouldAdjustForTest());
 }
 
 // When hovering mouse on a shelf icon, the tooltip only shows for the visible

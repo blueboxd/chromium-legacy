@@ -64,9 +64,9 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape) {
   // Frame tree:
   //   Site-A Root
   EXPECT_TRUE(NavigateToURL(shell(), base_url.Resolve("blank.html")));
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-      GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
   EXPECT_EQ(0U, root->child_count());
 
   // Add 2 same-site frames. Verify 3 nodes in tree with proper names.
@@ -104,7 +104,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape2) {
   ASSERT_EQ(2UL, root->child_at(2)->child_count());
   EXPECT_EQ(1UL, root->child_at(2)->child_at(1)->child_count());
   EXPECT_EQ(0UL, root->child_at(2)->child_at(1)->child_at(0)->child_count());
-  EXPECT_STREQ("3-1-name",
+  EXPECT_STREQ(
+      "3-1-name",
       root->child_at(2)->child_at(1)->child_at(0)->frame_name().c_str());
 
   // Navigate to about:blank, which should leave only the root node of the frame
@@ -199,7 +200,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, IsRenderFrameLive) {
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()->root();
+                            ->GetFrameTree()
+                            ->root();
 
   // The root and subframe should each have a live RenderFrame.
   EXPECT_TRUE(
@@ -522,9 +524,10 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, ChildFrameWithSrcdoc) {
   // Create a new iframe with srcdoc and add it to the main frame. It should
   // be created in the same SiteInstance as the parent.
   {
-    std::string script("var f = document.createElement('iframe');"
-                       "f.srcdoc = 'some content';"
-                       "document.body.appendChild(f)");
+    std::string script(
+        "var f = document.createElement('iframe');"
+        "f.srcdoc = 'some content';"
+        "document.body.appendChild(f)");
     TestNavigationObserver observer(shell()->web_contents());
     EXPECT_TRUE(ExecJs(root, script));
     EXPECT_EQ(2U, root->child_count());
@@ -541,8 +544,9 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, ChildFrameWithSrcdoc) {
   // Set srcdoc on the existing cross-site frame. It should navigate the frame
   // back to the origin of the parent.
   {
-    std::string script("var f = document.getElementById('child-0');"
-                       "f.srcdoc = 'some content';");
+    std::string script(
+        "var f = document.getElementById('child-0');"
+        "f.srcdoc = 'some content';");
     TestNavigationObserver observer(shell()->web_contents());
     EXPECT_TRUE(ExecJs(root, script));
     observer.Wait();
@@ -614,7 +618,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SandboxFlagsSetForChildFrames) {
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()->root();
+                            ->GetFrameTree()
+                            ->root();
 
   // Verify that sandbox flags are set properly for all FrameTreeNodes.
   // First frame is completely sandboxed; second frame uses "allow-scripts",
@@ -808,7 +813,8 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()->root();
+                            ->GetFrameTree()
+                            ->root();
 
   // There should not be a proxy for the root's own SiteInstance.
   SiteInstance* root_instance = root->current_frame_host()->GetSiteInstance();
@@ -861,7 +867,8 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()->root();
+                            ->GetFrameTree()
+                            ->root();
 
   EXPECT_EQ(root->current_origin().Serialize() + '/',
             main_url.GetOrigin().spec());

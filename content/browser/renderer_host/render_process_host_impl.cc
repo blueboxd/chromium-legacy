@@ -1928,6 +1928,7 @@ void RenderProcessHostImpl::BindCacheStorage(
 }
 
 void RenderProcessHostImpl::BindIndexedDB(
+    int render_frame_id,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1948,9 +1949,10 @@ void RenderProcessHostImpl::BindIndexedDB(
   // guaranteeing that the usage of base::Unretained(indexed_db_factory_.get())
   // here is safe.
   indexed_db_factory_->context()->TaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&IndexedDBDispatcherHost::AddReceiver,
-                                base::Unretained(indexed_db_factory_.get()),
-                                std::move(receiver), origin));
+      FROM_HERE,
+      base::BindOnce(&IndexedDBDispatcherHost::AddReceiver,
+                     base::Unretained(indexed_db_factory_.get()), GetID(),
+                     render_frame_id, origin, std::move(receiver)));
 }
 
 void RenderProcessHostImpl::ForceCrash() {

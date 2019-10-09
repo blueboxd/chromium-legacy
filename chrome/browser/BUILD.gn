@@ -2336,8 +2336,6 @@ jumbo_split_static_library("browser") {
       "android/devtools_manager_delegate_android.h",
       "android/devtools_server.cc",
       "android/devtools_server.h",
-      "android/dfm_resource_bundle_helper.cc",
-      "android/dfm_resource_bundle_helper.h",
       "android/digital_asset_links/digital_asset_links_handler.cc",
       "android/digital_asset_links/digital_asset_links_handler.h",
       "android/document/document_web_contents_delegate.cc",
@@ -2907,8 +2905,6 @@ jumbo_split_static_library("browser") {
 
     if (dfmify_dev_ui) {
       sources += [
-        "android/dev_ui/dev_ui_module_provider.cc",
-        "android/dev_ui/dev_ui_module_provider.h",
         "android/dev_ui/dev_ui_url_handler.cc",
         "android/dev_ui/dev_ui_url_handler.h",
         "ui/webui/android/dev_ui_loader/dev_ui_loader_message_handler.cc",
@@ -2916,7 +2912,7 @@ jumbo_split_static_library("browser") {
         "ui/webui/android/dev_ui_loader/dev_ui_loader_ui.cc",
         "ui/webui/android/dev_ui_loader/dev_ui_loader_ui.h",
       ]
-      deps += [ "//chrome/android/modules/dev_ui/provider:jni_headers" ]
+      deps += [ "//chrome/android/modules/dev_ui/provider:native" ]
     }
   } else {  # !is_android
     sources += [

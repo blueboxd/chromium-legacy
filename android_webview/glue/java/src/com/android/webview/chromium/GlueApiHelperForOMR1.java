@@ -10,7 +10,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
-import org.chromium.android_webview.AwSafeBrowsingResponse;
+import org.chromium.android_webview.safe_browsing.AwSafeBrowsingResponse;
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.VerifiesOnOMR1;
 

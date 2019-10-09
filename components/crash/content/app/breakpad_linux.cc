@@ -63,7 +63,7 @@
 #include "third_party/lss/linux_syscall_support.h"
 
 #if defined(OS_CHROMEOS)
-#include "content/public/common/content_switches.h"      // nogncheck
+#include "components/crash/content/app/crash_switches.h"
 #include "services/service_manager/embedder/switches.h"  // nogncheck
 #endif
 
@@ -1154,8 +1154,8 @@ void InitCrashKeys() {
 void SetCrashLoopBeforeTime(const std::string& process_type,
                             const base::CommandLine& parsed_command_line) {
 #if defined(OS_CHROMEOS)
-  std::string crash_loop_before =
-      parsed_command_line.GetSwitchValueASCII(switches::kCrashLoopBefore);
+  std::string crash_loop_before = parsed_command_line.GetSwitchValueASCII(
+      crash_reporter::switches::kCrashLoopBefore);
   if (crash_loop_before.empty()) {
     return;
   }

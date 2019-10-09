@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -169,11 +170,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       StartServiceWorkerForNavigationHintCallback callback) override;
   void StopAllServiceWorkersForOrigin(const GURL& origin) override;
   void StopAllServiceWorkers(base::OnceClosure callback) override;
-  void GetAllServiceWorkerRunningInfos(
-      GetAllServiceWorkerRunningInfosCallback callback) override;
-  void GetServiceWorkerRunningInfo(
-      int64_t version_id,
-      GetServiceWorkerRunningInfoCallback callback) override;
+  const base::flat_map<int64_t, ServiceWorkerRunningInfo>&
+  GetRunningServiceWorkerInfos() override;
 
   // These methods must only be called from the core thread.
   ServiceWorkerRegistration* GetLiveRegistration(int64_t registration_id);
@@ -426,13 +424,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       scoped_refptr<base::TaskRunner> callback_runner,
       blink::ServiceWorkerStatusCode service_worker_status);
 
-  ServiceWorkerRunningInfo ExtractServiceWorkerRunningInfoFromVersionInfo(
-      const ServiceWorkerVersionInfo& version_info);
-
-  // RUNNING and STOPPING are considered "running". See the comments in
-  // OnRunningStateChange.
-  bool IsRunningStatus(EmbeddedWorkerStatus status);
-
   // Called when ServiceWorkerImportedScriptUpdateCheck is enabled.
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
   CreateNonNetworkURLLoaderFactoryBundleInfoForUpdateCheck(
@@ -537,13 +528,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void StopAllServiceWorkersOnCoreThread(
       base::OnceClosure callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback);
-  void GetAllServiceWorkerRunningInfosOnCoreThread(
-      GetAllServiceWorkerRunningInfosCallback callback,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback);
-  void GetServiceWorkerRunningInfoOnCoreThread(
-      int64_t version_id,
-      GetServiceWorkerRunningInfoCallback callback,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback);
 
   // Observers of |context_core_| which live within content's implementation
   // boundary. Shared with |context_core_|.
@@ -553,7 +537,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // Observers which live outside content's implementation boundary. Observer
   // methods will always be dispatched on the UI thread.
-  base::ObserverList<ServiceWorkerContextObserver>::Unchecked observer_list_;
+  base::ObserverList<ServiceWorkerContextObserver, true>::Unchecked
+      observer_list_;
 
   const std::unique_ptr<ServiceWorkerProcessManager> process_manager_;
   // Cleared in ShutdownOnCoreThread():
@@ -569,9 +554,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // context.
   ResourceContext* resource_context_ = nullptr;
 
-  // The set of workers that are considered "running". For dispatching
-  // OnVersionRunningStatusChanged events.
-  base::flat_set<int64_t /* version_id */> running_service_workers_;
+  // Map that contains all service workers that are considered "running". Used
+  // to dispatch OnVersionStartedRunning()/OnVersionStoppedRunning() events.
+  base::flat_map<int64_t /* version_id */, ServiceWorkerRunningInfo>
+      running_service_workers_;
 
   // Maps the origin to a set of registration ids for that origin. Must be
   // accessed on UI thread.

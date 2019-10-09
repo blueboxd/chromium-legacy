@@ -245,9 +245,7 @@ void CompositedLayerMapping::CreatePrimaryGraphicsLayer() {
                           owning_layer_.GetSquashingDisallowedReasons());
 
   graphics_layer_->SetHitTestable(true);
-  UpdateOpacity(GetLayoutObject().StyleRef());
   UpdateTransform(GetLayoutObject().StyleRef());
-  UpdateLayerBlendMode(GetLayoutObject().StyleRef());
 }
 
 void CompositedLayerMapping::DestroyGraphicsLayers() {
@@ -260,10 +258,6 @@ void CompositedLayerMapping::DestroyGraphicsLayers() {
 
   scrolling_layer_ = nullptr;
   scrolling_contents_layer_ = nullptr;
-}
-
-void CompositedLayerMapping::UpdateOpacity(const ComputedStyle& style) {
-  graphics_layer_->SetOpacity(CompositingOpacity(style.Opacity()));
 }
 
 void CompositedLayerMapping::UpdateTransform(const ComputedStyle& style) {
@@ -280,10 +274,6 @@ void CompositedLayerMapping::UpdateTransform(const ComputedStyle& style) {
   }
 
   graphics_layer_->SetTransform(t);
-}
-
-void CompositedLayerMapping::UpdateLayerBlendMode(const ComputedStyle& style) {
-  SetBlendMode(style.GetBlendMode());
 }
 
 void CompositedLayerMapping::UpdateBackgroundPaintsOntoScrollingContentsLayer(
@@ -826,10 +816,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
   if (!GetLayoutObject().StyleRef().IsRunningTransformAnimationOnCompositor())
     UpdateTransform(GetLayoutObject().StyleRef());
 
-  // Set opacity, if it is not animating.
-  if (!GetLayoutObject().StyleRef().IsRunningOpacityAnimationOnCompositor())
-    UpdateOpacity(GetLayoutObject().StyleRef());
-
   IntRect local_compositing_bounds;
   IntRect relative_compositing_bounds;
   PhysicalOffset offset_from_composited_ancestor;
@@ -870,7 +856,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
       owning_layer_.GetScrollableArea()->ScrollsOverflow())
     owning_layer_.GetScrollableArea()->PositionOverflowControls();
 
-  UpdateLayerBlendMode(GetLayoutObject().StyleRef());
   UpdateContentsRect();
   UpdateBackgroundColor();
 
@@ -1713,34 +1698,6 @@ CompositedLayerMapping::PaintingPhaseForPrimaryLayer() const {
   return static_cast<GraphicsLayerPaintingPhase>(phase);
 }
 
-float CompositedLayerMapping::CompositingOpacity(
-    float layout_object_opacity) const {
-  float final_opacity = layout_object_opacity;
-
-  for (PaintLayer* curr = owning_layer_.Parent(); curr; curr = curr->Parent()) {
-    // We only care about parents that are stacking contexts.
-    // Recall that opacity creates stacking context.
-    if (!curr->GetLayoutObject().StyleRef().IsStackingContext())
-      continue;
-
-    // If we found a composited layer, regardless of whether it actually
-    // paints into it, we want to compute opacity relative to it. So we can
-    // break here.
-    //
-    // FIXME: with grouped backings, a composited descendant will have to
-    // continue past the grouped (squashed) layers that its parents may
-    // contribute to. This whole confusion can be avoided by specifying
-    // explicitly the composited ancestor where we would stop accumulating
-    // opacity.
-    if (curr->GetCompositingState() == kPaintsIntoOwnBacking)
-      break;
-
-    final_opacity *= curr->GetLayoutObject().StyleRef().Opacity();
-  }
-
-  return final_opacity;
-}
-
 Color CompositedLayerMapping::LayoutObjectBackgroundColor() const {
   const auto& object = GetLayoutObject();
   auto background_color = object.ResolveColor(GetCSSPropertyBackgroundColor());
@@ -2008,10 +1965,6 @@ GraphicsLayer* CompositedLayerMapping::ChildForSuperlayers() const {
     return squashing_containment_layer_.get();
 
   return graphics_layer_.get();
-}
-
-void CompositedLayerMapping::SetBlendMode(BlendMode blend_mode) {
-  graphics_layer_->SetBlendMode(blend_mode);
 }
 
 GraphicsLayerUpdater::UpdateType CompositedLayerMapping::UpdateTypeForChildren(

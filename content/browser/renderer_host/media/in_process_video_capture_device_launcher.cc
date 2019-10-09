@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/in_process_launched_video_capture_device.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
+#include "content/common/buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
@@ -29,7 +30,7 @@
 #include "media/capture/video/video_frame_receiver_on_task_runner.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
-#if defined(ENABLE_SCREEN_CAPTURE)
+#if BUILDFLAG(ENABLE_SCREEN_CAPTURE)
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #if defined(OS_ANDROID)
 #include "content/browser/media/capture/screen_capture_device_android.h"
@@ -40,7 +41,7 @@
 #endif
 #include "content/browser/media/capture/desktop_capture_device.h"
 #endif  // defined(OS_ANDROID)
-#endif  // defined(ENABLE_SCREEN_CAPTURE)
+#endif  // BUILDFLAG(ENABLE_SCREEN_CAPTURE)
 
 #if defined(OS_CHROMEOS)
 #include "content/browser/gpu/chromeos/video_capture_dependencies.h"
@@ -140,7 +141,7 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
       break;
     }
 
-#if defined(ENABLE_SCREEN_CAPTURE)
+#if BUILDFLAG(ENABLE_SCREEN_CAPTURE)
 #if !defined(OS_ANDROID)
     case blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE:
       start_capture_closure = base::BindOnce(
@@ -221,7 +222,7 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
           std::move(after_start_capture_callback));
       break;
     }
-#endif  // defined(ENABLE_SCREEN_CAPTURE)
+#endif  // BUILDFLAG(ENABLE_SCREEN_CAPTURE)
 
     default: {
       NOTIMPLEMENTED();
@@ -329,7 +330,7 @@ void InProcessVideoCaptureDeviceLauncher::DoStartDeviceCaptureOnDeviceThread(
   std::move(result_callback).Run(std::move(video_capture_device));
 }
 
-#if defined(ENABLE_SCREEN_CAPTURE)
+#if BUILDFLAG(ENABLE_SCREEN_CAPTURE)
 
 #if !defined(OS_ANDROID)
 void InProcessVideoCaptureDeviceLauncher::DoStartTabCaptureOnDeviceThread(
@@ -407,7 +408,7 @@ void InProcessVideoCaptureDeviceLauncher::DoStartDesktopCaptureOnDeviceThread(
   std::move(result_callback).Run(std::move(video_capture_device));
 }
 
-#endif  // defined(ENABLE_SCREEN_CAPTURE)
+#endif  // BUILDFLAG(ENABLE_SCREEN_CAPTURE)
 
 void InProcessVideoCaptureDeviceLauncher::
     DoStartFakeDisplayCaptureOnDeviceThread(

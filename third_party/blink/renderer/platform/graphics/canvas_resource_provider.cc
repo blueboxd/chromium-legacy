@@ -695,6 +695,15 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
     bool is_origin_top_left) {
   std::unique_ptr<CanvasResourceProvider> provider;
+
+  if (context_provider_wrapper) {
+    const int max_texture_size = context_provider_wrapper->ContextProvider()
+                                     ->GetCapabilities()
+                                     .max_texture_size;
+    if (size.Width() > max_texture_size || size.Height() > max_texture_size)
+      usage = ResourceUsage::kSoftwareResourceUsage;
+  }
+
   const Vector<CanvasResourceType>& fallback_list =
       GetResourceTypeFallbackList(usage);
 
@@ -784,13 +793,9 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
                 ->GetCapabilities()
                 .texture_storage_image;
 
-        const int max_texture_size = context_provider_wrapper->ContextProvider()
-                                         ->GetCapabilities()
-                                         .max_texture_size;
         const bool can_use_gmbs =
             is_gpu_memory_buffer_image_allowed &&
-            Platform::Current()->GetGpuMemoryBufferManager() &&
-            size.Width() < max_texture_size && size.Height() < max_texture_size;
+            Platform::Current()->GetGpuMemoryBufferManager();
 
         const bool is_overlay_candidate =
             usage_wants_overlays && can_use_overlays;

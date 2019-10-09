@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
 
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"

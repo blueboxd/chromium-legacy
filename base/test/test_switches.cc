@@ -4,6 +4,13 @@
 
 #include "base/test/test_switches.h"
 
+// Flag to show the help message.
+const char switches::kHelpFlag[] = "help";
+
+// Flag to run all tests and the launcher in a single process. Useful for
+// debugging a specific test in a debugger.
+const char switches::kSingleProcessTests[] = "single-process-tests";
+
 // Maximum number of tests to run in a single batch.
 const char switches::kTestLauncherBatchLimit[] = "test-launcher-batch-limit";
 

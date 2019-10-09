@@ -21,6 +21,10 @@
 #include "media/gpu/linux/dmabuf_video_frame_pool.h"
 #include "media/gpu/media_gpu_export.h"
 
+namespace gpu {
+class GpuMemoryBufferFactory;
+}  // namespace gpu
+
 namespace media {
 
 // Simple VideoFrame pool used to avoid unnecessarily allocating and destroying
@@ -34,7 +38,8 @@ namespace media {
 // old parameter values will be purged from the pool.
 class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
  public:
-  PlatformVideoFramePool();
+  explicit PlatformVideoFramePool(
+      gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
   ~PlatformVideoFramePool() override;
 
   // VideoFramePoolBase Implementation.
@@ -56,6 +61,7 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   friend class PlatformVideoFramePoolTest;
 
   using CreateFrameCB = base::RepeatingCallback<scoped_refptr<VideoFrame>(
+      gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
       VideoPixelFormat format,
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
@@ -96,6 +102,11 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   // Lock to protect all data members.
   // Every public method and OnFrameReleased() should acquire this lock.
   base::Lock lock_;
+
+  // Used to allocate the video frame GpuMemoryBuffers, passed directly to
+  // the callback that creates video frames. Indirectly owned by GpuChildThread;
+  // therefore alive as long as the GPU process is.
+  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_ = nullptr;
 
   // The arguments of current frame. We allocate new frames only if a pixel
   // format or coded size in |frame_layout_| is changed. When GetFrame() is

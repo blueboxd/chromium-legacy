@@ -41,10 +41,6 @@ const base::Feature kOptimizationHints {
 const base::Feature kOptimizationHintsExperiments{
     "OptimizationHintsExperiments", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Provides slow page triggering parameters.
-const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables fetching optimization hints from a remote Optimization Guide Service.
 const base::Feature kOptimizationHintsFetching{
     "OptimizationHintsFetching", base::FEATURE_DISABLED_BY_DEFAULT};

@@ -3462,10 +3462,41 @@ IFACEMETHODIMP AXPlatformNodeWin::get_offsetAtPoint(
     LONG y,
     enum IA2CoordinateType coord_type,
     LONG* offset) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_OFFSET_AT_POINT);
   COM_OBJECT_VALIDATE_1_ARG(offset);
-  // We don't support this method, but we have to return something
-  // rather than E_NOTIMPL or screen readers will complain.
-  *offset = 0;
+
+  *offset = -1;
+
+  if (coord_type == IA2CoordinateType::IA2_COORDTYPE_PARENT_RELATIVE) {
+    // We don't support when the IA2 coordinate type is parent relative, but
+    // we have to return something rather than E_NOTIMPL or screen readers
+    // will complain.
+    NOTIMPLEMENTED_LOG_ONCE() << "See http://crbug.com/1010726";
+    return S_FALSE;
+  }
+
+  // We currently only handle IA2 screen relative coord type.
+  DCHECK_EQ(coord_type, IA2_COORDTYPE_SCREEN_RELATIVE);
+
+  const AXPlatformNodeWin* hit_child = static_cast<AXPlatformNodeWin*>(
+      FromNativeViewAccessible(GetDelegate()->HitTestSync(x, y)));
+
+  if (!hit_child || !hit_child->IsTextOnlyObject()) {
+    return S_FALSE;
+  }
+
+  for (int i = 0, text_length = hit_child->GetInnerText().length();
+       i < text_length; ++i) {
+    gfx::Rect char_bounds =
+        hit_child->GetDelegate()->GetInnerTextRangeBoundsRect(
+            i, i + 1, AXCoordinateSystem::kScreen,
+            AXClippingBehavior::kUnclipped);
+    if (char_bounds.Contains(x, y)) {
+      *offset = i;
+      break;
+    }
+  }
+
   return S_OK;
 }
 

@@ -314,50 +314,6 @@ TEST_P(CRWWebControllerTest, CancelCommittedNavigation) {
             item->error_retry_state_machine().state());
 }
 
-// Tests that when a placeholder navigation is preempted by another navigation,
-// WebStateObservers get neither a DidStartNavigation nor a DidFinishNavigation
-// call for the corresponding native URL navigation.
-TEST_P(CRWWebControllerTest, AbortNativeUrlNavigation) {
-  // The legacy navigation manager doesn't have the concept of placeholder
-  // navigations.
-  if (!GetWebClient()->IsSlimNavigationManagerEnabled())
-    return;
-  GURL native_url(
-      url::SchemeHostPort(kTestNativeContentScheme, "ui", 0).Serialize());
-  NSString* placeholder_url = [NSString
-      stringWithFormat:@"%s%s", "about:blank?for=", native_url.spec().c_str()];
-  TestWebStateObserver observer(web_state());
-
-  WKNavigation* navigation =
-      static_cast<WKNavigation*>([[NSObject alloc] init]);
-  [static_cast<WKWebView*>([[mock_web_view_ stub] andReturn:navigation])
-      loadRequest:OCMOCK_ANY];
-  TestNativeContentProvider* mock_native_provider =
-      [[TestNativeContentProvider alloc] init];
-  TestNativeContent* content =
-      [[TestNativeContent alloc] initWithURL:native_url virtualURL:native_url];
-  [mock_native_provider setController:content forURL:native_url];
-  [[web_controller() nativeContentHolder]
-      setNativeProvider:mock_native_provider];
-
-  AddPendingItem(native_url, ui::PAGE_TRANSITION_TYPED);
-
-  // Trigger a placeholder navigation.
-  [web_controller() loadCurrentURLWithRendererInitiatedNavigation:NO];
-
-  // Simulate the WKNavigationDelegate callbacks for the placeholder navigation
-  // arriving after another pending item has already been created.
-  AddPendingItem(GURL(kTestURLString), ui::PAGE_TRANSITION_TYPED);
-  SetWebViewURL(placeholder_url);
-  [navigation_delegate_ webView:mock_web_view_
-      didStartProvisionalNavigation:navigation];
-  [navigation_delegate_ webView:mock_web_view_ didCommitNavigation:navigation];
-  [navigation_delegate_ webView:mock_web_view_ didFinishNavigation:navigation];
-
-  EXPECT_FALSE(observer.did_start_navigation_info());
-  EXPECT_FALSE(observer.did_finish_navigation_info());
-}
-
 // Tests returning pending item stored in navigation context.
 TEST_P(CRWWebControllerTest, TestPendingItem) {
   ASSERT_FALSE([web_controller() pendingItemForSessionController:nil]);

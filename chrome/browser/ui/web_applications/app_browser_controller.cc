@@ -217,20 +217,19 @@ void AppBrowserController::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
+  if (selection.active_tab_changed()) {
+    content::WebContentsObserver::Observe(selection.new_contents);
+    DidChangeThemeColor(GetThemeColor());
+  }
   if (change.type() == TabStripModelChange::kInserted) {
     for (const auto& contents : change.GetInsert()->contents)
       OnTabInserted(contents.contents);
   } else if (change.type() == TabStripModelChange::kRemoved) {
     for (const auto& contents : change.GetRemove()->contents)
       OnTabRemoved(contents.contents);
+    // WebContents should be null when the last tab is closed.
+    DCHECK_EQ(web_contents() == nullptr, tab_strip_model->empty());
   }
-  if (selection.active_tab_changed()) {
-    content::WebContentsObserver::Observe(selection.new_contents);
-    DidChangeThemeColor(GetThemeColor());
-  }
-
-  // WebContents should be null when the last tab is closed.
-  DCHECK_EQ(web_contents() == nullptr, tab_strip_model->empty());
 }
 
 void AppBrowserController::OnTabInserted(content::WebContents* contents) {

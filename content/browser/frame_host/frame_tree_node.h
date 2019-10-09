@@ -95,25 +95,11 @@ class CONTENT_EXPORT FrameTreeNode {
   // Feature-Policy HTTP headers).
   void ResetForNavigation();
 
-  FrameTree* frame_tree() const {
-    return frame_tree_;
-  }
-
-  Navigator* navigator() {
-    return navigator_.get();
-  }
-
-  RenderFrameHostManager* render_manager() {
-    return &render_manager_;
-  }
-
-  int frame_tree_node_id() const {
-    return frame_tree_node_id_;
-  }
-
-  const std::string& frame_name() const {
-    return replication_state_.name;
-  }
+  FrameTree* frame_tree() const { return frame_tree_; }
+  Navigator* navigator() { return navigator_.get(); }
+  RenderFrameHostManager* render_manager() { return &render_manager_; }
+  int frame_tree_node_id() const { return frame_tree_node_id_; }
+  const std::string& frame_name() const { return replication_state_.name; }
 
   const std::string& unique_name() const {
     return replication_state_.unique_name;
@@ -164,9 +150,7 @@ class CONTENT_EXPORT FrameTreeNode {
   void SetCurrentURL(const GURL& url);
 
   // Returns true iff SetCurrentURL has been called with a non-blank URL.
-  bool has_committed_real_load() const {
-    return has_committed_real_load_;
-  }
+  bool has_committed_real_load() const { return has_committed_real_load_; }
 
   // Returns whether the frame's owner element in the parent document is
   // collapsed, that is, removed from the layout as if it did not exist, as per

@@ -264,9 +264,8 @@ void FrameTree::RemoveFrame(FrameTreeNode* child) {
   parent->current_frame_host()->RemoveChild(child);
 }
 
-void FrameTree::CreateProxiesForSiteInstance(
-    FrameTreeNode* source,
-    SiteInstance* site_instance) {
+void FrameTree::CreateProxiesForSiteInstance(FrameTreeNode* source,
+                                             SiteInstance* site_instance) {
   // Create the RenderFrameProxyHost for the new SiteInstance.
   if (!source || !source->IsMainFrame()) {
     RenderViewHostImpl* render_view_host =

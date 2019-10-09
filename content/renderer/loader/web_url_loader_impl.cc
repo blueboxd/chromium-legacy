@@ -60,6 +60,7 @@
 #include "net/url_request/url_request_data_job.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -184,7 +185,7 @@ WebString CryptoBufferAsWebString(const CRYPTO_BUFFER* buffer) {
 }
 
 void SetSecurityStyleAndDetails(const GURL& url,
-                                const network::ResourceResponseInfo& info,
+                                const network::mojom::URLResponseHead& head,
                                 WebURLResponse* response,
                                 bool report_security_info) {
   if (!report_security_info) {
@@ -204,12 +205,12 @@ void SetSecurityStyleAndDetails(const GURL& url,
   // The resource loader does not provide a guarantee that requests always have
   // security info (such as a certificate) attached. Use WebSecurityStyleUnknown
   // in this case where there isn't enough information to be useful.
-  if (!info.ssl_info.has_value()) {
+  if (!head.ssl_info.has_value()) {
     response->SetSecurityStyle(blink::kWebSecurityStyleUnknown);
     return;
   }
 
-  const net::SSLInfo& ssl_info = *info.ssl_info;
+  const net::SSLInfo& ssl_info = *head.ssl_info;
 
   const char* protocol = "";
   const char* key_exchange = "";
@@ -248,7 +249,7 @@ void SetSecurityStyleAndDetails(const GURL& url,
     }
   }
 
-  if (net::IsCertStatusError(info.cert_status)) {
+  if (net::IsCertStatusError(head.cert_status)) {
     response->SetSecurityStyle(blink::kWebSecurityStyleInsecure);
   } else {
     response->SetSecurityStyle(blink::kWebSecurityStyleSecure);
@@ -397,8 +398,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
 
   void OnUploadProgress(uint64_t position, uint64_t size);
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          const network::ResourceResponseInfo& info);
-  void OnReceivedResponse(const network::ResourceResponseInfo& info);
+                          network::mojom::URLResponseHeadPtr head);
+  void OnReceivedResponse(network::mojom::URLResponseHeadPtr head);
   void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body);
   void OnTransferSizeUpdated(int transfer_size_diff);
   void OnReceivedCachedMetadata(mojo_base::BigBuffer data);
@@ -467,8 +468,8 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   // RequestPeer methods:
   void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          const network::ResourceResponseInfo& info) override;
-  void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
+                          network::mojom::URLResponseHeadPtr head) override;
+  void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
@@ -497,10 +498,10 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
   // RequestPeer implementation:
   void OnUploadProgress(uint64_t position, uint64_t size) override {}
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          const network::ResourceResponseInfo& info) override {
+                          network::mojom::URLResponseHeadPtr head) override {
     return true;
   }
-  void OnReceivedResponse(const network::ResourceResponseInfo& info) override {}
+  void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) override {}
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override {
     body_handle_ = std::move(body);
@@ -863,7 +864,7 @@ void WebURLLoaderImpl::Context::OnUploadProgress(uint64_t position,
 
 bool WebURLLoaderImpl::Context::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseInfo& info) {
+    network::mojom::URLResponseHeadPtr head) {
   if (!client_)
     return false;
 
@@ -872,7 +873,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   WebURLResponse response;
-  PopulateURLResponse(url_, info, &response, report_raw_headers_, request_id_);
+  PopulateURLResponse(url_, *head, &response, report_raw_headers_, request_id_);
 
   url_ = WebURL(redirect_info.new_url);
   return client_->WillFollowRedirect(
@@ -885,7 +886,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
 }
 
 void WebURLLoaderImpl::Context::OnReceivedResponse(
-    const network::ResourceResponseInfo& info) {
+    network::mojom::URLResponseHeadPtr head) {
   if (!client_)
     return;
 
@@ -894,7 +895,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   WebURLResponse response;
-  PopulateURLResponse(url_, info, &response, report_raw_headers_, request_id_);
+  PopulateURLResponse(url_, *head, &response, report_raw_headers_, request_id_);
 
   client_->DidReceiveResponse(response);
 
@@ -977,13 +978,13 @@ void WebURLLoaderImpl::RequestPeerImpl::OnUploadProgress(uint64_t position,
 
 bool WebURLLoaderImpl::RequestPeerImpl::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseInfo& info) {
-  return context_->OnReceivedRedirect(redirect_info, info);
+    network::mojom::URLResponseHeadPtr head) {
+  return context_->OnReceivedRedirect(redirect_info, std::move(head));
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnReceivedResponse(
-    const network::ResourceResponseInfo& info) {
-  context_->OnReceivedResponse(info);
+    network::mojom::URLResponseHeadPtr head) {
+  context_->OnReceivedResponse(std::move(head));
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnStartLoadingResponseBody(
@@ -1027,103 +1028,98 @@ WebURLLoaderImpl::~WebURLLoaderImpl() {
 
 void WebURLLoaderImpl::PopulateURLResponse(
     const WebURL& url,
-    const network::ResourceResponseInfo& info,
+    const network::mojom::URLResponseHead& head,
     WebURLResponse* response,
     bool report_security_info,
     int request_id) {
   response->SetCurrentRequestUrl(url);
-  response->SetResponseTime(info.response_time);
-  response->SetMimeType(WebString::FromUTF8(info.mime_type));
-  response->SetTextEncodingName(WebString::FromUTF8(info.charset));
-  response->SetExpectedContentLength(info.content_length);
+  response->SetResponseTime(head.response_time);
+  response->SetMimeType(WebString::FromUTF8(head.mime_type));
+  response->SetTextEncodingName(WebString::FromUTF8(head.charset));
+  response->SetExpectedContentLength(head.content_length);
   response->SetHasMajorCertificateErrors(
-      net::IsCertStatusError(info.cert_status));
-  response->SetCTPolicyCompliance(info.ct_policy_compliance);
-  response->SetIsLegacyTLSVersion(info.is_legacy_tls_version);
-  response->SetAppCacheID(info.appcache_id);
-  response->SetAppCacheManifestURL(info.appcache_manifest_url);
-  response->SetWasCached(!info.load_timing.request_start_time.is_null() &&
-                         info.response_time <
-                             info.load_timing.request_start_time);
+      net::IsCertStatusError(head.cert_status));
+  response->SetCTPolicyCompliance(head.ct_policy_compliance);
+  response->SetIsLegacyTLSVersion(head.is_legacy_tls_version);
+  response->SetAppCacheID(head.appcache_id);
+  response->SetAppCacheManifestURL(head.appcache_manifest_url);
+  response->SetWasCached(!head.load_timing.request_start_time.is_null() &&
+                         head.response_time <
+                             head.load_timing.request_start_time);
   response->SetRemoteIPAddress(WebString::FromUTF8(
-      net::HostPortPair::FromIPEndPoint(info.remote_endpoint).HostForURL()));
-  response->SetRemotePort(info.remote_endpoint.port());
-  response->SetConnectionID(info.load_timing.socket_log_id);
-  response->SetConnectionReused(info.load_timing.socket_reused);
-  response->SetWasFetchedViaSPDY(info.was_fetched_via_spdy);
-  response->SetWasFetchedViaServiceWorker(info.was_fetched_via_service_worker);
+      net::HostPortPair::FromIPEndPoint(head.remote_endpoint).HostForURL()));
+  response->SetRemotePort(head.remote_endpoint.port());
+  response->SetConnectionID(head.load_timing.socket_log_id);
+  response->SetConnectionReused(head.load_timing.socket_reused);
+  response->SetWasFetchedViaSPDY(head.was_fetched_via_spdy);
+  response->SetWasFetchedViaServiceWorker(head.was_fetched_via_service_worker);
   response->SetWasFallbackRequiredByServiceWorker(
-      info.was_fallback_required_by_service_worker);
-  response->SetType(info.response_type);
-  response->SetUrlListViaServiceWorker(info.url_list_via_service_worker);
+      head.was_fallback_required_by_service_worker);
+  response->SetType(head.response_type);
+  response->SetUrlListViaServiceWorker(head.url_list_via_service_worker);
   response->SetCacheStorageCacheName(
-      info.is_in_cache_storage
-          ? blink::WebString::FromUTF8(info.cache_storage_cache_name)
+      head.is_in_cache_storage
+          ? blink::WebString::FromUTF8(head.cache_storage_cache_name)
           : blink::WebString());
   blink::WebVector<blink::WebString> cors_exposed_header_names(
-      info.cors_exposed_header_names.size());
+      head.cors_exposed_header_names.size());
   std::transform(
-      info.cors_exposed_header_names.begin(),
-      info.cors_exposed_header_names.end(), cors_exposed_header_names.begin(),
+      head.cors_exposed_header_names.begin(),
+      head.cors_exposed_header_names.end(), cors_exposed_header_names.begin(),
       [](const std::string& h) { return blink::WebString::FromLatin1(h); });
   response->SetCorsExposedHeaderNames(cors_exposed_header_names);
   response->SetDidServiceWorkerNavigationPreload(
-      info.did_service_worker_navigation_preload);
-  response->SetEncodedDataLength(info.encoded_data_length);
-  response->SetEncodedBodyLength(info.encoded_body_length);
+      head.did_service_worker_navigation_preload);
+  response->SetEncodedDataLength(head.encoded_data_length);
+  response->SetEncodedBodyLength(head.encoded_body_length);
   response->SetAlpnNegotiatedProtocol(
-      WebString::FromUTF8(info.alpn_negotiated_protocol));
-  response->SetConnectionInfo(info.connection_info);
-  response->SetAsyncRevalidationRequested(info.async_revalidation_requested);
-  response->SetNetworkAccessed(info.network_accessed);
+      WebString::FromUTF8(head.alpn_negotiated_protocol));
+  response->SetConnectionInfo(head.connection_info);
+  response->SetAsyncRevalidationRequested(head.async_revalidation_requested);
+  response->SetNetworkAccessed(head.network_accessed);
   response->SetRequestId(request_id);
   response->SetIsSignedExchangeInnerResponse(
-      info.is_signed_exchange_inner_response);
-  response->SetWasInPrefetchCache(info.was_in_prefetch_cache);
-  response->SetRecursivePrefetchToken(info.recursive_prefetch_token);
+      head.is_signed_exchange_inner_response);
+  response->SetWasInPrefetchCache(head.was_in_prefetch_cache);
+  response->SetRecursivePrefetchToken(head.recursive_prefetch_token);
 
-  SetSecurityStyleAndDetails(url, info, response, report_security_info);
+  SetSecurityStyleAndDetails(url, head, response, report_security_info);
 
   // If there's no received headers end time, don't set load timing.  This is
   // the case for non-HTTP requests, requests that don't go over the wire, and
   // certain error cases.
-  if (!info.load_timing.receive_headers_end.is_null()) {
+  if (!head.load_timing.receive_headers_end.is_null()) {
     WebURLLoadTiming timing;
-    PopulateURLLoadTiming(info.load_timing, &timing);
-    timing.SetWorkerStart(info.service_worker_start_time);
-    timing.SetWorkerReady(info.service_worker_ready_time);
+    PopulateURLLoadTiming(head.load_timing, &timing);
+    timing.SetWorkerStart(head.service_worker_start_time);
+    timing.SetWorkerReady(head.service_worker_ready_time);
     response->SetLoadTiming(timing);
   }
 
-  if (info.raw_request_response_info.get()) {
+  if (head.raw_request_response_info.get()) {
     WebHTTPLoadInfo load_info;
 
     load_info.SetHTTPStatusCode(
-        info.raw_request_response_info->http_status_code);
+        head.raw_request_response_info->http_status_code);
     load_info.SetHTTPStatusText(WebString::FromLatin1(
-        info.raw_request_response_info->http_status_text));
+        head.raw_request_response_info->http_status_text));
 
     load_info.SetRequestHeadersText(WebString::FromLatin1(
-        info.raw_request_response_info->request_headers_text));
+        head.raw_request_response_info->request_headers_text));
     load_info.SetResponseHeadersText(WebString::FromLatin1(
-        info.raw_request_response_info->response_headers_text));
-    const HeadersVector& request_headers =
-        info.raw_request_response_info->request_headers;
-    for (auto it = request_headers.begin(); it != request_headers.end(); ++it) {
-      load_info.AddRequestHeader(WebString::FromLatin1(it->first),
-                                 WebString::FromLatin1(it->second));
+        head.raw_request_response_info->response_headers_text));
+    for (auto& header : head.raw_request_response_info->request_headers) {
+      load_info.AddRequestHeader(WebString::FromLatin1(header->key),
+                                 WebString::FromLatin1(header->value));
     }
-    const HeadersVector& response_headers =
-        info.raw_request_response_info->response_headers;
-    for (auto it = response_headers.begin(); it != response_headers.end();
-         ++it) {
-      load_info.AddResponseHeader(WebString::FromLatin1(it->first),
-                                  WebString::FromLatin1(it->second));
+    for (auto& header : head.raw_request_response_info->response_headers) {
+      load_info.AddResponseHeader(WebString::FromLatin1(header->key),
+                                  WebString::FromLatin1(header->value));
     }
     response->SetHTTPLoadInfo(load_info);
   }
 
-  const net::HttpResponseHeaders* headers = info.headers.get();
+  const net::HttpResponseHeaders* headers = head.headers.get();
   if (!headers)
     return;
 
@@ -1204,10 +1200,10 @@ void WebURLLoaderImpl::LoadSynchronously(
     return;
   }
 
-  PopulateURLResponse(final_url, sync_load_response.info, &response,
+  PopulateURLResponse(final_url, *sync_load_response.head, &response,
                       request.ReportRawHeaders(), context_->request_id());
-  encoded_data_length = sync_load_response.info.encoded_data_length;
-  encoded_body_length = sync_load_response.info.encoded_body_length;
+  encoded_data_length = sync_load_response.head->encoded_data_length;
+  encoded_body_length = sync_load_response.head->encoded_body_length;
   if (sync_load_response.downloaded_blob) {
     downloaded_blob = blink::WebBlobInfo(
         WebString::FromLatin1(sync_load_response.downloaded_blob->uuid),

@@ -74,22 +74,30 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
+namespace content {
 namespace {
-
-static const char kAddNamedFrameScript[] =
-    "var f = document.createElement('iframe');"
-    "f.name = 'foo-frame-name';"
-    "document.body.appendChild(f);";
-static const char kRemoveFrameScript[] =
-    "var f = document.querySelector('iframe');"
-    "f.parentNode.removeChild(f);";
 
 using testing::ElementsAre;
 using testing::IsEmpty;
 
-}  // namespace
+const char kAddNamedFrameScript[] =
+    "var f = document.createElement('iframe');"
+    "f.name = 'foo-frame-name';"
+    "document.body.appendChild(f);";
+const char kRemoveFrameScript[] =
+    "var f = document.querySelector('iframe');"
+    "f.parentNode.removeChild(f);";
 
-namespace content {
+const char kAddEmptyFrameScript[] =
+    "let iframe = document.createElement('iframe');"
+    "document.body.appendChild(iframe);";
+
+const char kAddFrameWithSrcScript[] =
+    "let iframe = document.createElement('iframe');"
+    "iframe.src = $1;"
+    "document.body.appendChild(iframe);";
+
+}  // namespace
 
 class NavigationControllerBrowserTest : public ContentBrowserTest {
  protected:
@@ -552,8 +560,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UniqueIDsOnFrames) {
 // list.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        DontIgnoreBackAfterNavEntryLimit) {
-  NavigationController& controller =
-      shell()->web_contents()->GetController();
+  NavigationController& controller = shell()->web_contents()->GetController();
 
   const int kMaxEntryCount =
       static_cast<int>(NavigationControllerImpl::max_entry_count());
@@ -567,8 +574,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(controller.GetEntryCount(), kMaxEntryCount);
 
   // Navigate twice more more.
-  for (int url_index = kMaxEntryCount;
-       url_index < kMaxEntryCount + 2; ++url_index) {
+  for (int url_index = kMaxEntryCount; url_index < kMaxEntryCount + 2;
+       ++url_index) {
     GURL url(base::StringPrintf("data:text/html,page%d", url_index));
     EXPECT_TRUE(NavigateToURL(shell(), url));
   }
@@ -609,8 +616,7 @@ bool RendererLocationReplace(Shell* shell, const GURL& url) {
 // that the browser and renderer agree, and that both get it right.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        CorrectLengthWithCurrentItemReplacement) {
-  NavigationController& controller =
-      shell()->web_contents()->GetController();
+  NavigationController& controller = shell()->web_contents()->GetController();
 
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("/simple_page.html")));
@@ -706,17 +712,9 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
         wait_for_load_(true),
         message_loop_runner_(new MessageLoopRunner) {}
 
-  void set_navigations_remaining(int count) {
-    navigations_remaining_ = count;
-  }
-
-  void set_wait_for_load(bool ignore) {
-    wait_for_load_ = ignore;
-  }
-
-  void Wait() {
-    message_loop_runner_->Run();
-  }
+  void set_navigations_remaining(int count) { navigations_remaining_ = count; }
+  void set_wait_for_load(bool ignore) { wait_for_load_ = ignore; }
+  void Wait() { message_loop_runner_->Run(); }
 
   ui::PageTransition transition() {
     EXPECT_EQ(1U, transitions_.size());
@@ -871,13 +869,9 @@ class LoadCommittedCapturer : public WebContentsObserver {
         frame_tree_node_id_(0),
         message_loop_runner_(new MessageLoopRunner) {}
 
-  void Wait() {
-    message_loop_runner_->Run();
-  }
+  void Wait() { message_loop_runner_->Run(); }
 
-  ui::PageTransition transition_type() const {
-    return transition_type_;
-  }
+  ui::PageTransition transition_type() const { return transition_type_; }
 
  private:
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
@@ -908,7 +902,7 @@ class LoadCommittedCapturer : public WebContentsObserver {
 
     DCHECK_NE(0, frame_tree_node_id_);
     if (navigation_handle->GetRenderFrameHost()->GetFrameTreeNodeId() !=
-            frame_tree_node_id_) {
+        frame_tree_node_id_) {
       return;
     }
 
@@ -964,9 +958,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, SubframeOnEmptyPage) {
   NoNavigationsObserver observer(new_shell->web_contents());
   {
     LoadCommittedCapturer capturer(new_shell->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = 'data:text/html,<p>some page</p>';"
-                         "document.body.appendChild(iframe);";
+    std::string script =
+        JsReplace(kAddFrameWithSrcScript, "data:text/html,<p>some page</p>");
     EXPECT_TRUE(ExecJs(new_root, script));
     capturer.Wait();
   }
@@ -992,10 +985,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, SubframeOnEmptyPage) {
       "bar.com", "/navigation_controller/simple_page_1.html"));
   {
     LoadCommittedCapturer capturer(new_shell->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + grandchild_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(new_root->child_at(0), script));
+    EXPECT_TRUE(ExecJs(new_root->child_at(0),
+                       JsReplace(kAddFrameWithSrcScript, grandchild_url)));
     capturer.Wait();
   }
   ASSERT_EQ(1U, new_root->child_at(0)->child_count());
@@ -1085,8 +1076,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(new_root->current_frame_host()->IsRenderFrameLive());
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       ErrorPageReplacement) {
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ErrorPageReplacement) {
   NavigationController& controller = shell()->web_contents()->GetController();
   GURL error_url = embedded_test_server()->GetURL("/close-socket");
   base::PostTask(FROM_HERE, {BrowserThread::IO},
@@ -1095,9 +1085,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
   EXPECT_EQ(1, controller.GetEntryCount());
 
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   // Navigate to a page that fails to load. It must result in an error page, the
   // NEW_PAGE navigation type, and an addition to the history list.
@@ -1170,9 +1160,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        NavigationTypeClassification_NewPage) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   {
     // Simple load.
@@ -1271,9 +1261,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "/navigation_controller/simple_page_2.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url2));
 
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   {
     // Back from the browser side.
@@ -1511,9 +1501,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "/navigation_controller/simple_page_1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url1));
 
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   {
     // Simple load.
@@ -1616,9 +1606,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "/navigation_controller/simple_page_1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url1));
 
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   {
     // Load an (invalid) empty GURL.  Blink will treat this as an inert commit,
@@ -1641,9 +1631,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   ASSERT_EQ(1U, root->child_count());
   ASSERT_NE(nullptr, root->child_at(0));
@@ -1776,10 +1766,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     LoadCommittedCapturer capturer(shell()->web_contents());
     GURL frame_url(embedded_test_server()->GetURL(
         "/navigation_controller/simple_page_1.html"));
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + frame_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root, script));
+    EXPECT_TRUE(ExecJs(root, JsReplace(kAddFrameWithSrcScript, frame_url)));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -1793,9 +1780,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   {
     // Load the redirecting page.
@@ -1829,9 +1816,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), links_url));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   {
     // Do a fragment link click.
@@ -1863,8 +1850,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "/navigation_controller/page_with_iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), iframe_url));
 
-  root = static_cast<WebContentsImpl*>(shell()->web_contents())->
-      GetFrameTree()->root();
+  root = static_cast<WebContentsImpl*>(shell()->web_contents())
+             ->GetFrameTree()
+             ->root();
 
   ASSERT_EQ(1U, root->child_count());
   ASSERT_NE(nullptr, root->child_at(0));
@@ -1907,9 +1895,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
   url::Origin main_origin =
       root->current_frame_host()->GetLastCommittedOrigin();
   EXPECT_EQ(url::Origin::Create(main_url), main_origin);
@@ -1917,9 +1905,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // 1. Create a iframe with no URL.
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root, script));
+    EXPECT_TRUE(ExecJs(root, kAddEmptyFrameScript));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -1949,9 +1935,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // count as a real load.
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root->child_at(0), script));
+    EXPECT_TRUE(ExecJs(root->child_at(0), kAddEmptyFrameScript));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -1970,10 +1954,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // 2. Create another iframe with an explicit about:blank URL.
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = 'about:blank';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root, script));
+    EXPECT_TRUE(ExecJs(root, JsReplace(kAddFrameWithSrcScript, "about:blank")));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -2061,8 +2042,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // not the initial blank page.
   {
     LoadCommittedCapturer capturer(root->child_at(0)->child_at(0));
-    std::string script = "var frames = document.getElementsByTagName('iframe');"
-                         "frames[0].src = 'about:blank';";
+    std::string script =
+        "var frames = document.getElementsByTagName('iframe');"
+        "frames[0].src = 'about:blank';";
     EXPECT_TRUE(ExecJs(root->child_at(0), script));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
@@ -2249,9 +2231,12 @@ IN_PROC_BROWSER_TEST_F(
   // 1. Create a iframe with a URL that doesn't commit.
   GURL no_commit_url(embedded_test_server()->GetURL("/nocontent"));
   {
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + no_commit_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
+    std::string script =
+        "var iframe = document.createElement('iframe');"
+        "iframe.src = '" +
+        no_commit_url.spec() +
+        "';"
+        "document.body.appendChild(iframe);";
     EXPECT_TRUE(ExecJs(root, script));
   }
   EXPECT_EQ(GURL(), root->child_at(0)->current_url());
@@ -2261,10 +2246,8 @@ IN_PROC_BROWSER_TEST_F(
       "foo.com", "/navigation_controller/simple_page_1.html"));
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + foo_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root->child_at(0), script));
+    EXPECT_TRUE(
+        ExecJs(root->child_at(0), JsReplace(kAddFrameWithSrcScript, foo_url)));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -2303,10 +2286,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "/navigation_controller/simple_page_2.html"));
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + child_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root, script));
+    EXPECT_TRUE(ExecJs(root, JsReplace(kAddFrameWithSrcScript, child_url)));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -2324,10 +2304,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "foo.com", "/navigation_controller/simple_page_1.html"));
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + grandchild_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root->child_at(0), script));
+    EXPECT_TRUE(ExecJs(root->child_at(0),
+                       JsReplace(kAddFrameWithSrcScript, grandchild_url)));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -2355,10 +2333,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "/navigation_controller/simple_page_2.html"));
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + child_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root, script));
+    EXPECT_TRUE(ExecJs(root, JsReplace(kAddFrameWithSrcScript, child_url)));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -2372,10 +2347,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "bar.com", "/navigation_controller/simple_page_1.html"));
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + bar_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root->child_at(0), script));
+    EXPECT_TRUE(
+        ExecJs(root->child_at(0), JsReplace(kAddFrameWithSrcScript, bar_url)));
 
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
@@ -2397,19 +2370,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   // 1. Create a same-site iframe.
   GURL frame_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_2.html"));
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + frame_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root, script));
+    EXPECT_TRUE(ExecJs(root, JsReplace(kAddFrameWithSrcScript, frame_url)));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -2439,10 +2409,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "foo.com", "/navigation_controller/simple_page_1.html"));
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + foo_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root, script));
+    EXPECT_TRUE(ExecJs(root, JsReplace(kAddFrameWithSrcScript, foo_url)));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -2469,10 +2436,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // 3. Create a nested iframe in the second subframe.
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + foo_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root->child_at(1), script));
+    EXPECT_TRUE(
+        ExecJs(root->child_at(1), JsReplace(kAddFrameWithSrcScript, foo_url)));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -2499,10 +2464,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // the commit type is correct even when the subframe process already exists.
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + foo_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root, script));
+    EXPECT_TRUE(ExecJs(root, JsReplace(kAddFrameWithSrcScript, foo_url)));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -2527,11 +2489,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // 5. Create a nested iframe on the original site (A-B-A).
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + frame_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
     FrameTreeNode* child = root->child_at(2);
-    EXPECT_TRUE(ExecJs(child, script));
+    EXPECT_TRUE(ExecJs(child, JsReplace(kAddFrameWithSrcScript, frame_url)));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -2579,19 +2538,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   // 1. Create a same-site iframe.
   GURL frame_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_2.html"));
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + frame_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root, script));
+    EXPECT_TRUE(ExecJs(root, JsReplace(kAddFrameWithSrcScript, frame_url)));
     capturer.Wait();
   }
   NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
@@ -2627,10 +2583,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "foo.com", "/navigation_controller/simple_page_1.html"));
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + foo_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root, script));
+    EXPECT_TRUE(ExecJs(root, JsReplace(kAddFrameWithSrcScript, foo_url)));
     capturer.Wait();
   }
 
@@ -2638,10 +2591,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // commit, then navigate it again cross-site.
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + foo_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root->child_at(1), script));
+    EXPECT_TRUE(
+        ExecJs(root->child_at(1), JsReplace(kAddFrameWithSrcScript, foo_url)));
     capturer.Wait();
   }
   GURL bar_url(embedded_test_server()->GetURL(
@@ -2684,8 +2635,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     FrameNavigateParamsCapturer capturer(root->child_at(1));
     RenderFrameDeletedObserver deleted_observer(
         root->child_at(1)->current_frame_host());
-    std::string script = "var frames = document.getElementsByTagName('iframe');"
-                         "frames[1].src = '" + baz_url.spec() + "';";
+    std::string script =
+        "var frames = document.getElementsByTagName('iframe');"
+        "frames[1].src = '" +
+        baz_url.spec() + "';";
     EXPECT_TRUE(ExecJs(root, script));
     // Wait for the RenderFrame to go away, if this will be cross-process.
     if (AreAllSitesIsolatedForTesting())
@@ -2734,9 +2687,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   ASSERT_EQ(1U, root->child_count());
   ASSERT_NE(nullptr, root->child_at(0));
@@ -2766,10 +2719,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // 3. Add a nested subframe.
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + subframe_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root->child_at(0), script));
+    EXPECT_TRUE(ExecJs(root->child_at(0),
+                       JsReplace(kAddFrameWithSrcScript, subframe_url)));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -2802,10 +2753,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "/navigation_controller/simple_page_2.html"));
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + frame_url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root, script));
+    EXPECT_TRUE(ExecJs(root, JsReplace(kAddFrameWithSrcScript, frame_url)));
     capturer.Wait();
   }
   NavigationEntryImpl* entry1 = controller.GetLastCommittedEntry();
@@ -4162,13 +4110,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/navigation_controller/inject_into_blank_iframe.html"));
   GURL blank_url(url::kAboutBlankURL);
-  NavigationControllerImpl& controller =
-      static_cast<NavigationControllerImpl&>(
-          shell()->web_contents()->GetController());
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())
-          ->GetFrameTree()
-          ->root();
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   // Create a NavigationEntry to restore, as if it had been loaded before.  The
   // page has an about:blank iframe and injects content into it, but the
@@ -4241,10 +4187,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // 2. Add an unnamed subframe, which does an AUTO_SUBFRAME navigation.
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root, script));
+    EXPECT_TRUE(ExecJs(root, JsReplace(kAddFrameWithSrcScript, url)));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -4266,10 +4209,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // 3. Add a named subframe.
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + url.spec() + "';"
-                         "iframe.name = 'foo';"
-                         "document.body.appendChild(iframe);";
+    std::string script = JsReplace(
+        "var iframe = document.createElement('iframe');"
+        "iframe.src = $1;"
+        "iframe.name = 'foo';"
+        "document.body.appendChild(iframe);",
+        url);
     EXPECT_TRUE(ExecJs(root, script));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
@@ -4886,9 +4831,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // 2. Add a cross-site subframe.
   GURL frame_url(embedded_test_server()->GetURL(
       "foo.com", "/navigation_controller/simple_page_1.html"));
-  std::string script = "var iframe = document.createElement('iframe');"
-                       "iframe.src = '" + frame_url.spec() + "';"
-                       "document.body.appendChild(iframe);";
+  std::string script = JsReplace(kAddFrameWithSrcScript, frame_url);
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
     EXPECT_TRUE(ExecJs(root, script));
@@ -4968,10 +4911,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // 3. Add a subframe, which does an AUTO_SUBFRAME navigation.
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string add_script = "var iframe = document.createElement('iframe');"
-                             "iframe.src = '" + url.spec() + "';"
-                             "document.body.appendChild(iframe);";
-    EXPECT_TRUE(ExecJs(root, add_script));
+    EXPECT_TRUE(ExecJs(root, JsReplace(kAddFrameWithSrcScript, url)));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
@@ -5182,13 +5122,12 @@ void DoReplaceStateWhilePending(Shell* shell,
                                 const GURL& start_url,
                                 const GURL& stalled_url,
                                 const std::string& replace_state_filename) {
-  NavigationControllerImpl& controller =
-      static_cast<NavigationControllerImpl&>(
-          shell->web_contents()->GetController());
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell->web_contents()->GetController());
 
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   // Start with one page.
   EXPECT_TRUE(NavigateToURL(shell, start_url));
@@ -5483,8 +5422,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   {
     // history.replaceState().
     FrameNavigateParamsCapturer capturer(root);
-    std::string script =
-        "history.replaceState({}, 'replaced', 'replaced')";
+    std::string script = "history.replaceState({}, 'replaced', 'replaced')";
     EXPECT_TRUE(ExecJs(root, script));
     capturer.Wait();
   }
@@ -5515,9 +5453,7 @@ class FailureWatcher : public WebContentsObserver {
         frame_tree_node_id_(node->frame_tree_node_id()),
         message_loop_runner_(new MessageLoopRunner) {}
 
-  void Wait() {
-    message_loop_runner_->Run();
-  }
+  void Wait() { message_loop_runner_->Run(); }
 
  private:
   void DidFailLoad(RenderFrameHost* render_frame_host,
@@ -5552,13 +5488,12 @@ class FailureWatcher : public WebContentsObserver {
 
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        StopCausesFailureDespiteJavaScriptURL) {
-  NavigationControllerImpl& controller =
-      static_cast<NavigationControllerImpl&>(
-          shell()->web_contents()->GetController());
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
 
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   // Start with a normal page.
   GURL url1(embedded_test_server()->GetURL(
@@ -5824,11 +5759,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   GURL frame_url_1 = embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html");
-  std::string script =
+  std::string script = JsReplace(
       "var iframe = document.createElement('iframe');"
-      "iframe.src = '" + frame_url_1.spec() + "';"
+      "iframe.src = $1;"
       "iframe.id = 'frame';"
-      "document.body.appendChild(iframe);";
+      "document.body.appendChild(iframe);",
+      frame_url_1);
   EXPECT_TRUE(ExecJs(root, script));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
@@ -5949,11 +5885,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   GURL frame_url_1 = embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html");
-  std::string script =
+  std::string script = JsReplace(
       "var iframe = document.createElement('iframe');"
-      "iframe.src = '" + frame_url_1.spec() + "';"
+      "iframe.src = $1;"
       "iframe.id = 'frame';"
-      "document.body.appendChild(iframe);";
+      "document.body.appendChild(iframe);",
+      frame_url_1);
   EXPECT_TRUE(ExecJs(root->current_frame_host(), script));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
@@ -6623,8 +6560,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Tests that when using FrameNavigationEntries, knowledge of POST navigations
 // is recorded on a subframe level.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       PostInSubframe) {
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, PostInSubframe) {
   GURL page_with_form_url = embedded_test_server()->GetURL(
       "/navigation_controller/subframe_form.html");
   EXPECT_TRUE(NavigateToURL(shell(), page_with_form_url));
@@ -7657,8 +7593,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Tests that a 204 response to a browser-initiated navigation does not result
 // in a new NavigationEntry being committed.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       204Navigation) {
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, 204Navigation) {
   const GURL kURL = embedded_test_server()->GetURL("/title1.html");
   const GURL kURL204 = embedded_test_server()->GetURL("/page204.html");
 

@@ -213,6 +213,9 @@ std::unique_ptr<TestURLLoaderClient> FetchRequest(
   auto params = mojom::URLLoaderFactoryParams::New();
   params->process_id = process_id;
   params->is_corb_enabled = false;
+  params->network_isolation_key =
+      net::NetworkIsolationKey(url::Origin::Create(GURL("https://abc.com")),
+                               url::Origin::Create(GURL("https://xyz.com")));
   network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
                                           std::move(params));
 
@@ -1365,10 +1368,14 @@ TEST_F(NetworkContextTest, NotifyExternalCacheHit) {
     network_context->NotifyExternalCacheHit(test_url, test_url.scheme(), key);
     EXPECT_EQ(i + 1, mock_cache.disk_cache()->GetExternalCacheHits().size());
 
-    // Potentially a brittle check as the value sent to disk_cache is a "key."
-    // This key just happens to be the same as the GURL from the test input.
-    // So if this breaks check HttpCache::GenerateCacheKey() for changes.
-    EXPECT_EQ(test_url, mock_cache.disk_cache()->GetExternalCacheHits().back());
+    // Note: if this breaks check HttpCache::GenerateCacheKey() for changes.
+    std::string expected_key_prefix =
+        base::FeatureList::IsEnabled(
+            net::features::kSplitCacheByNetworkIsolationKey)
+            ? base::StrCat({"_dk_", key.ToString(), " "})
+            : "";
+    EXPECT_EQ(expected_key_prefix + test_url.spec(),
+              mock_cache.disk_cache()->GetExternalCacheHits().back());
   }
 }
 

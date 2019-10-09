@@ -130,7 +130,8 @@ class CONTENT_EXPORT RenderFrameHostManager
         int parent_routing_id,
         int previous_sibling_routing_id) = 0;
     virtual void BeforeUnloadFiredFromRenderManager(
-        bool proceed, const base::TimeTicks& proceed_time,
+        bool proceed,
+        const base::TimeTicks& proceed_time,
         bool* proceed_to_fire_unload) = 0;
     virtual void RenderProcessGoneFromRenderManager(
         RenderViewHost* render_view_host) = 0;
@@ -144,13 +145,12 @@ class CONTENT_EXPORT RenderFrameHostManager
     virtual void NotifyMainFrameSwappedFromRenderManager(
         RenderFrameHost* old_host,
         RenderFrameHost* new_host) = 0;
-    virtual NavigationControllerImpl&
-        GetControllerForRenderManager() = 0;
+    virtual NavigationControllerImpl& GetControllerForRenderManager() = 0;
 
     // Returns the navigation entry of the current navigation, or NULL if there
     // is none.
     virtual NavigationEntry*
-        GetLastCommittedNavigationEntryForRenderManager() = 0;
+    GetLastCommittedNavigationEntryForRenderManager() = 0;
 
     // Returns the interstitial page showing in the delegate, or null if there
     // is none.
@@ -311,8 +311,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   RenderViewHostImpl* GetSwappedOutRenderViewHost(SiteInstance* instance) const;
 
   // Returns the RenderFrameProxyHost for the given SiteInstance, if any.
-  RenderFrameProxyHost* GetRenderFrameProxyHost(
-      SiteInstance* instance) const;
+  RenderFrameProxyHost* GetRenderFrameProxyHost(SiteInstance* instance) const;
 
   // If |render_frame_host| is on the pending deletion list, this deletes it.
   // Returns whether it was deleted.
@@ -499,7 +498,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // used to route IPC messages when in swapped out state.  Returns early if the
   // RenderViewHost has already been initialized for another RenderFrameHost.
   bool InitRenderView(RenderViewHostImpl* render_view_host,
-    RenderFrameProxyHost* proxy);
+                      RenderFrameProxyHost* proxy);
 
   // Returns the SiteInstance that should be used to host the navigation handled
   // by |navigation_request|.

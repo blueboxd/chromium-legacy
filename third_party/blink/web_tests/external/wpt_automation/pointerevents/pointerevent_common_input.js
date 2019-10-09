@@ -279,57 +279,6 @@ function touchTapInTarget(targetSelector, targetFrame) {
   });
 }
 
-function twoPointerDragInTarget(pointerType, targetSelector, direction) {
-  return new Promise(function(resolve, reject) {
-    if (window.chrome && chrome.gpuBenchmarking) {
-      scrollPageIfNeeded(targetSelector, document);
-      var target = document.querySelector(targetSelector);
-      var targetRect = target.getBoundingClientRect();
-      var xPosition1 = targetRect.left + boundaryOffset + scrollOffset;
-      var yPosition1 = targetRect.top + boundaryOffset + scrollOffset;
-      var xPosition2 = xPosition1;
-      var yPosition2 = yPosition1;
-      var xPosition3 = xPosition1;
-      var yPosition3 = yPosition1;
-      if (direction == "down") {
-        yPosition1 -= scrollOffset;
-        yPosition3 += scrollOffset;
-      } else if (direction == "up") {
-        yPosition1 += scrollOffset;
-        yPosition3 -= scrollOffset;
-      } else if (direction == "right") {
-        xPosition1 -= scrollOffset;
-        xPosition3 += scrollOffset;
-      } else if (direction == "left") {
-        xPosition1 += scrollOffset;
-        xPosition3 -= scrollOffset;
-      } else {
-        throw("drag direction '" + direction + "' is not expected, direction should be 'down', 'up', 'left' or 'right'");
-      }
-
-      chrome.gpuBenchmarking.pointerActionSequence( [
-        {source: pointerType,
-         actions: [
-            { name: 'pointerDown', x: xPosition1, y: yPosition1 },
-            { name: 'pointerMove', x: xPosition2, y: yPosition2 },
-            { name: 'pointerMove', x: xPosition3, y: yPosition3 },
-            { name: 'pause', duration: 100 },
-            { name: 'pointerUp' }
-        ]},
-        {source: pointerType,
-         actions: [
-            { name: 'pointerDown', x: xPosition1 + boundaryOffset, y: yPosition1 },
-            { name: 'pointerMove', x: xPosition2 + boundaryOffset, y: yPosition2 },
-            { name: 'pointerMove', x: xPosition3 + boundaryOffset, y: yPosition3 },
-            { name: 'pause', duration: 100 },
-            { name: 'pointerUp' }
-        ]}], resolve);
-    } else {
-      reject();
-    }
-  });
-}
-
 function pointerDragInTarget(pointerType, targetSelector, direction) {
   return new Promise(function(resolve, reject) {
     if (window.chrome && chrome.gpuBenchmarking) {

@@ -124,3 +124,22 @@ body.controls-refresh {
 .controls-refresh .other-color:hover {
     background-color: #f3f3f3;
 }
+
+@media (forced-colors: active) {
+    .controls-refresh .color-swatch {
+        forced-color-adjust: none;
+        border-color: WindowText;
+    }
+
+    .controls-refresh .color-swatch:focus {
+        border-color: Highlight;
+    }
+
+    .controls-refresh .color-swatch-container {
+        forced-color-adjust: none;
+    }
+
+    .controls-refresh .color-swatch-container::-webkit-scrollbar-thumb {
+        background-color: WindowText;
+    }
+}

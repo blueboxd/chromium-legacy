@@ -35,6 +35,12 @@ namespace display {
 class Screen;
 }
 
+namespace net {
+namespace test {
+class MockNetworkChangeNotifier;
+}
+}  // namespace net
+
 namespace ui {
 class ScopedOleInitializer;
 }
@@ -260,6 +266,15 @@ class RenderViewHostTestHarness : public testing::Test {
   std::unique_ptr<BrowserTaskEnvironment> task_environment_;
 
   std::unique_ptr<ContentBrowserSanityChecker> sanity_checker_;
+
+  // TODO(crbug.com/1011275): This is a temporary work around to fix flakiness
+  // on tests. The default behavior of the network stack is to allocate a
+  // leaking SystemDnsConfigChangeNotifier. This holds on to a set of
+  // FilePathWatchers on Posix and ObjectWatchers on Windows that outlive
+  // the message queues of the task_environment_ and may post messages after
+  // their death.
+  std::unique_ptr<net::test::MockNetworkChangeNotifier>
+      network_change_notifier_;
 
   std::unique_ptr<BrowserContext> browser_context_;
 

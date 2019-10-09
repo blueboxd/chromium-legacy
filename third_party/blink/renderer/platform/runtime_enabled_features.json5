@@ -99,6 +99,10 @@
       status: "stable",
     },
     {
+      name: "AccessibilityExposeARIAAnnotations",
+      status: "experimental",
+    },
+    {
       name: "AccessibilityExposeDisplayNone",
       status: "test",
     },
@@ -502,10 +506,6 @@
     {
       name: "CustomElementsV0",
       origin_trial_feature_name: "WebComponentsV0",
-      status: "stable",
-    },
-    {
-      name: "CustomUserTiming",
       status: "stable",
     },
     {

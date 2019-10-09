@@ -15,7 +15,6 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
 namespace feedback {
@@ -60,11 +59,9 @@ GURL GetFeedbackPostGURL() {
 }  // namespace
 
 FeedbackUploader::FeedbackUploader(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     content::BrowserContext* context,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : url_loader_factory_(std::move(url_loader_factory)),
-      context_(context),
+    : context_(context),
       feedback_reports_path_(GetPathFromContext(context)),
       task_runner_(task_runner),
       feedback_post_url_(GetFeedbackPostGURL()),
@@ -189,6 +186,15 @@ void FeedbackUploader::DispatchReport() {
                                            kProtoBufMimeType);
   auto it = uploads_in_progress_.insert(uploads_in_progress_.begin(),
                                         std::move(simple_url_loader));
+
+  // Creating the StoragePartitionImpl is costly, so don't do it until
+  // necessary (most importantly, avoid doing so during startup).
+  if (!url_loader_factory_) {
+    url_loader_factory_ =
+        content::BrowserContext::GetDefaultStoragePartition(context_)
+            ->GetURLLoaderFactoryForBrowserProcess();
+  }
+
   simple_url_loader_ptr->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&FeedbackUploader::OnDispatchComplete,

@@ -47,8 +47,7 @@ FrameNavigationEntry::FrameNavigationEntry(
     committed_origin_ = *origin;
 }
 
-FrameNavigationEntry::~FrameNavigationEntry() {
-}
+FrameNavigationEntry::~FrameNavigationEntry() {}
 
 scoped_refptr<FrameNavigationEntry> FrameNavigationEntry::Clone() const {
   auto copy = base::MakeRefCounted<FrameNavigationEntry>();

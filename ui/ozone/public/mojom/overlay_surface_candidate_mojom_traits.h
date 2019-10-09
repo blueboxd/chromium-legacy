@@ -80,10 +80,6 @@ struct StructTraits<ui::ozone::mojom::OverlaySurfaceCandidateDataView,
     return osc.is_clipped;
   }
 
-  static bool is_opaque(const ui::OverlaySurfaceCandidate& osc) {
-    return osc.is_opaque;
-  }
-
   static int plane_z_order(const ui::OverlaySurfaceCandidate& osc) {
     return osc.plane_z_order;
   }
@@ -95,7 +91,6 @@ struct StructTraits<ui::ozone::mojom::OverlaySurfaceCandidateDataView,
   static bool Read(ui::ozone::mojom::OverlaySurfaceCandidateDataView data,
                    ui::OverlaySurfaceCandidate* out) {
     out->is_clipped = data.is_clipped();
-    out->is_opaque = data.is_opaque();
     out->plane_z_order = data.plane_z_order();
     out->overlay_handled = data.overlay_handled();
     return data.ReadTransform(&out->transform) &&

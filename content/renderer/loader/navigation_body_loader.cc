@@ -53,9 +53,8 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     NotifyResourceRedirectReceived(render_frame_id, resource_load_info.get(),
                                    redirect_info, redirect_response);
     WebURLLoaderImpl::PopulateURLResponse(
-        url, network::ResourceResponseHead(redirect_response),
-        &redirect.redirect_response, response_head.ssl_info.has_value(),
-        request_id);
+        url, *redirect_response, &redirect.redirect_response,
+        response_head.ssl_info.has_value(), request_id);
     if (url.SchemeIs(url::kDataScheme))
       redirect.redirect_response.SetHttpStatusCode(200);
     redirect.new_url = redirect_info.new_url;
@@ -70,8 +69,9 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
   }
 
   WebURLLoaderImpl::PopulateURLResponse(
-      url, response_head, &navigation_params->response,
-      response_head.ssl_info.has_value(), request_id);
+      url, *network::mojom::URLResponseHeadPtr(response_head),
+      &navigation_params->response, response_head.ssl_info.has_value(),
+      request_id);
   if (url.SchemeIs(url::kDataScheme))
     navigation_params->response.SetHttpStatusCode(200);
 

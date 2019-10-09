@@ -364,7 +364,7 @@ void BookmarkEditorView::Init() {
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
                         views::GridLayout::kFixedSize,
                         views::GridLayout::USE_PREF, 0, 0);
-  column_set->LinkColumnSizes(0, 2, 4, -1);
+  column_set->LinkColumnSizes({0, 2, 4});
 
   layout->StartRow(views::GridLayout::kFixedSize, labels_column_set_id);
   layout->AddView(std::make_unique<views::Label>(

@@ -1,8 +1,11 @@
 # Commit Checklist for Chromium Workflow
 
-Here is a helpful checklist to go through before uploading change lists (CLs)
-on Gerrit. This checklist is designed to be streamlined. See [contributing to
-Chromium][contributing] for a more thorough reference.
+Here is a helpful checklist to go through before uploading change lists (CLs) on
+Gerrit, which is the code review platform for the Chromium project. This
+checklist is designed to be streamlined. See
+[contributing to Chromium][contributing] for a more thorough reference. The
+intended audience is software engineers who are unfamiliar with contributing to
+the Chromium project.
 
 [TOC]
 
@@ -48,14 +51,14 @@ Run `git cl format --js`. The `--js` option also formats JavaScript changes.
 
 ## 7. Check over your changes
 
-Run `git upstream-diff` to check over all of the changes you've made from
-the most recent checkpoint on the remote repository.
+Run `git upstream-diff` to check over all of the changes you've made from the
+most recent checkpoint on the remote repository.
 
 ## 8. Stage relevant files for commit
 
 Run `git add <path_to_file>` for all of the relevant files you've modified.
-Unlike other version-control systems such as svn, you have to specifically
-`git add` the files you want to commit before calling `git commit`.
+Unlike other version-control systems such as svn, you have to specifically `git
+add` the files you want to commit before calling `git commit`.
 
 ## 9. Commit your changes
 
@@ -67,20 +70,22 @@ Run `git commit`. Here are some
 If you have many commits on your current branch, and you want to avoid some
 nasty commit-by-commit merge conflicts in the next step, it is recommended to
 squash your commits into a single commit. This is done by running `git rebase -i
-origin/master`. You should see a list of commits, each commit starting with the
-word "pick". Make sure the first commit says "pick" and change the rest from
-"pick" to "squash". This will squash each commit into the previous commit,
-which will continue until each commit is squashed into the first commit.
+<upstream-branch>`. The upstream branch is usually origin/master, but check `git
+branch -vv` to make sure. After running the git rebase command, you should see a
+list of commits, each commit starting with the word "pick". Make sure the first
+commit says "pick" and change the rest from "pick" to "squash". This will squash
+each commit into the previous commit, which will continue until each commit is
+squashed into the first commit.
 
 ## 11. Rebase your local repository
 
 Run `git rebase-update`. This command updates all of your local branches with
 remote changes that have landed since you started development work, which
 could've been a while ago. It also deletes any branches that match the remote
-repository, such as after the CL associated with that branch had merged. You
-may run into rebase conflicts which should be manually fixed before proceeding
-with `git rebase --continue`. Rebasing prevents unintended changes from creeping
-into your CL.
+repository, such as after the CL associated with that branch had merged. You may
+run into rebase conflicts which should be manually fixed before proceeding with
+`git rebase --continue`. Rebasing prevents unintended changes from creeping into
+your CL.
 
 Note that rebasing has the potential to break your build, so you might want to
 try re-building afterwards.
@@ -89,17 +94,17 @@ try re-building afterwards.
 
 Run `git cl upload`. Some useful options include:
 
-* `--cq-dry-run` (or `-d`) will set the patchset to do a CQ Dry Run.
-* `-r <chromium_username>` will add reviewers.
-* `-b <bug_number>` automatically populates the bug reference line of the commit
-message.
+*   `--cq-dry-run` (or `-d`) will set the patchset to do a CQ Dry Run.
+*   `-r <chromium_username>` will add reviewers.
+*   `-b <bug_number>` automatically populates the bug reference line of the
+    commit message.
 
 ## 13. Check the CL again in Gerrit
 
 Run `git cl web` to go to the Gerrit URL associated with the current branch.
-Open the latest patch set and verify that all of the uploaded files are
-correct. Click `Expand All` to check over all of the individual line-by-line
-changes again.
+Open the latest patch set and verify that all of the uploaded files are correct.
+Click `Expand All` to check over all of the individual line-by-line changes
+again.
 
 ## 14. Make sure all auto-regression tests pass
 
@@ -111,10 +116,11 @@ notifying your reviewers, in case the results require major changes in your CL.
 
 Click `Find Owners` or run `git cl owners` to find file owners to review your
 code and instruct them about which parts you want them to focus on. Add anyone
-else you think should review your code. For your CL to land, you need an
-approval from an owner for each file you've changed, unless you are an owner of
-some files, in which case you don't need separate owner approval for those
-files.
+else you think should review your code. The blame functionality in Code Search
+is a good way to identify reviewers who may be familiar with the parts of code
+your CL touches. For your CL to land, you need an approval from an owner for
+each file you've changed, unless you are an owner of some files, in which case
+you don't need separate owner approval for those files.
 
 ## 16. Implement feedback from your reviewers
 

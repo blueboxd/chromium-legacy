@@ -18,23 +18,30 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
         android:importantForAccessibility="no"
         app:srcCompat="@drawable/drag_handlebar" />
 
-    <org.chromium.ui.widget.TextViewWithLeading
-        android:layout_width="match_parent"
+    <ImageView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAlignment="center"
+        android:layout_gravity="center_horizontal"
+        android:importantForAccessibility="no"
+        app:srcCompat="@drawable/touch_to_fill_header_image" />
+
+    <org.chromium.ui.widget.TextViewWithLeading
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:text="@string/touch_to_fill_sheet_title"
         android:textAppearance="@style/TextAppearance.BlackHeadline" />
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/touch_to_fill_sheet_subtitle"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAlignment="center"
+        android:layout_gravity="center_horizontal"
         android:textAppearance="@style/TextAppearance.BlackHint1" />
 
     <ListView
@@ -42,8 +49,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:divider="@null"
-        android:dividerHeight="6dp"
+        android:dividerHeight="8dp"
         android:paddingTop="16dp"
-        android:paddingBottom="16dp"
         tools:listitem="@layout/touch_to_fill_credential_item"/>
 </LinearLayout>

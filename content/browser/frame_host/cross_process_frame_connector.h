@@ -67,7 +67,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector
       RenderFrameProxyHost* frame_proxy_in_parent_renderer);
   ~CrossProcessFrameConnector() override;
 
-  bool OnMessageReceived(const IPC::Message &msg);
+  bool OnMessageReceived(const IPC::Message& msg);
 
   // |view| corresponds to B2's RenderWidgetHostViewChildFrame in the example
   // above.

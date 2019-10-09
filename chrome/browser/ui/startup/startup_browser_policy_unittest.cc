@@ -27,12 +27,11 @@ class UnittestProfileManager : public ProfileManagerWithoutInit {
   ~UnittestProfileManager() override = default;
 
  protected:
-  Profile* CreateProfileHelper(const base::FilePath& file_path) override {
-    if (!base::PathExists(file_path)) {
-      if (!base::CreateDirectory(file_path))
-        return nullptr;
-    }
-    return new TestingProfile(file_path, nullptr);
+  std::unique_ptr<Profile> CreateProfileHelper(
+      const base::FilePath& path) override {
+    if (!base::PathExists(path) && !base::CreateDirectory(path))
+      return nullptr;
+    return std::make_unique<TestingProfile>(path);
   }
 
   std::unique_ptr<Profile> CreateProfileAsyncHelper(

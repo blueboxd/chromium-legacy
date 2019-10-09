@@ -114,6 +114,7 @@ struct GPU_EXPORT VideoDecodeAcceleratorCapabilities {
 // Specification of an encoding profile supported by a hardware encoder.
 struct GPU_EXPORT VideoEncodeAcceleratorSupportedProfile {
   VideoCodecProfile profile;
+  gfx::Size min_resolution;
   gfx::Size max_resolution;
   uint32_t max_framerate_numerator;
   uint32_t max_framerate_denominator;

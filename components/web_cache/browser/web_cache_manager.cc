@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/system/sys_info.h"
@@ -19,8 +18,6 @@
 #include "base/time/time.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -57,17 +54,12 @@ int GetDefaultCacheSize() {
 
 // static
 WebCacheManager* WebCacheManager::GetInstance() {
-  return base::Singleton<WebCacheManager>::get();
+  static base::NoDestructor<WebCacheManager> s_instance;
+  return s_instance.get();
 }
 
 WebCacheManager::WebCacheManager()
     : global_size_limit_(GetDefaultGlobalSizeLimit()) {
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 WebCacheManager::~WebCacheManager() {
@@ -164,27 +156,22 @@ void WebCacheManager::ClearCacheOnNavigation() {
   ClearRendererCache(inactive_renderers_, ON_NAVIGATION);
 }
 
-void WebCacheManager::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      content::RenderProcessHost* process =
-          content::Source<content::RenderProcessHost>(source).ptr();
-      Add(process->GetID());
-      break;
-    }
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
-    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
-      content::RenderProcessHost* process =
-          content::Source<content::RenderProcessHost>(source).ptr();
-      Remove(process->GetID());
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
+void WebCacheManager::OnRenderProcessHostCreated(
+    content::RenderProcessHost* process_host) {
+  Add(process_host->GetID());
+  rph_observers_.Add(process_host);
+}
+
+void WebCacheManager::RenderProcessExited(
+    content::RenderProcessHost* process_host,
+    const content::ChildProcessTerminationInfo& info) {
+  RenderProcessHostDestroyed(process_host);
+}
+
+void WebCacheManager::RenderProcessHostDestroyed(
+    content::RenderProcessHost* process_host) {
+  rph_observers_.Remove(process_host);
+  Remove(process_host->GetID());
 }
 
 // static

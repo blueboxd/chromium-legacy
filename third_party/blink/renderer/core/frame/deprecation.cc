@@ -665,6 +665,9 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               WillBeRemoved("'-webkit-appearance: textarea' for "
                             "elements other than textarea",
                             kM79, "5070237827334144")};
+    case WebFeature::kARIAHelpAttribute:
+      return {"ARIAHelpAttribute", kM80,
+              WillBeRemoved("'aria-help'", kM80, "5645050857914368")};
 
     case WebFeature::kXRSupportsSession:
       return {"XRSupportsSession", kM80,

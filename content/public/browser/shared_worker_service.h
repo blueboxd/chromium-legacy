@@ -12,9 +12,13 @@
 
 class GURL;
 
+namespace base {
+class UnguessableToken;
+}
+
 namespace url {
 class Origin;
-}  // namespace url
+}
 
 namespace content {
 

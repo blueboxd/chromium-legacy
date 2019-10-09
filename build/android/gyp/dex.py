@@ -45,6 +45,10 @@ def _ParseArgs(args):
       '--incremental-dir',
       help='Path of directory to put intermediate dex files.')
   parser.add_argument(
+      '--merge-incrementals',
+      action='store_true',
+      help='Combine all per-class .dex files into a single classes.dex')
+  parser.add_argument(
       '--main-dex-list-path',
       help='File containing a list of the classes to include in the main dex.')
   parser.add_argument(
@@ -269,24 +273,30 @@ def _PerformDexlayout(tmp_dir, tmp_dex_output, options):
 
 
 def _CreateFinalDex(options, d8_inputs, tmp_dir, dex_cmd):
-  if options.multi_dex and options.main_dex_list_path:
-    # Provides a list of classes that should be included in the main dex file.
-    dex_cmd = dex_cmd + ['--main-dex-list', options.main_dex_list_path]
+  tmp_dex_output = os.path.join(tmp_dir, 'tmp_dex_output.zip')
+  if (options.merge_incrementals or options.output.endswith('.dex')
+      or not all(f.endswith('.dex') for f in d8_inputs)):
+    if options.multi_dex and options.main_dex_list_path:
+      # Provides a list of classes that should be included in the main dex file.
+      dex_cmd = dex_cmd + ['--main-dex-list', options.main_dex_list_path]
 
-  tmp_dex_dir = os.path.join(tmp_dir, 'tmp_dex_dir')
-  os.mkdir(tmp_dex_dir)
-  _RunD8(dex_cmd, d8_inputs, tmp_dex_dir)
+    tmp_dex_dir = os.path.join(tmp_dir, 'tmp_dex_dir')
+    os.mkdir(tmp_dex_dir)
+    _RunD8(dex_cmd, d8_inputs, tmp_dex_dir)
+    logging.info('Performed dex merging')
 
-  dex_files = [os.path.join(tmp_dex_dir, f) for f in os.listdir(tmp_dex_dir)]
+    dex_files = [os.path.join(tmp_dex_dir, f) for f in os.listdir(tmp_dex_dir)]
 
-  if not options.output.endswith('.dex'):
-    tmp_dex_output = os.path.join(tmp_dir, 'tmp_dex_output.zip')
-    _ZipAligned(sorted(dex_files), tmp_dex_output)
+    if options.output.endswith('.dex'):
+      if len(dex_files) > 1:
+        raise Exception('%d files created, expected 1' % len(dex_files))
+      tmp_dex_output = dex_files[0]
+    else:
+      _ZipAligned(sorted(dex_files), tmp_dex_output)
   else:
-    # Output to a .dex file.
-    if len(dex_files) > 1:
-      raise Exception('%d files created, expected 1' % len(dex_files))
-    tmp_dex_output = dex_files[0]
+    # Skip dexmerger. Just put all incrementals into the .jar individually.
+    _ZipAligned(sorted(d8_inputs), tmp_dex_output)
+    logging.info('Quick-zipped %d files', len(d8_inputs))
 
   if options.dexlayout_profile:
     tmp_dex_output = _PerformDexlayout(tmp_dir, tmp_dex_output, options)
@@ -344,15 +354,18 @@ def _CreateIntermediateDexFiles(changes, options, tmp_dir, dex_cmd):
     changes = None
   class_files = _ExtractClassFiles(changes, tmp_extract_dir,
                                    options.class_inputs)
+  logging.info('Extracted class files: %d', len(class_files))
 
   # If the only change is deleting a file, class_files will be empty.
   if class_files:
     # Dex necessary classes into intermediate dex files.
     dex_cmd = dex_cmd + ['--intermediate', '--file-per-class']
     _RunD8(dex_cmd, class_files, options.incremental_dir)
+    logging.info('Dexed class files.')
 
 
 def _OnStaleMd5(changes, options, final_dex_inputs, dex_cmd):
+  logging.info('_OnStaleMd5')
   with build_utils.TempDir() as tmp_dir:
     if options.incremental_dir:
       # Create directory for all intermediate dex files.
@@ -360,14 +373,16 @@ def _OnStaleMd5(changes, options, final_dex_inputs, dex_cmd):
         os.makedirs(options.incremental_dir)
 
       _DeleteStaleIncrementalDexFiles(options.incremental_dir, final_dex_inputs)
+      logging.info('Stale files deleted')
       _CreateIntermediateDexFiles(changes, options, tmp_dir, dex_cmd)
 
     _CreateFinalDex(options, final_dex_inputs, tmp_dir, dex_cmd)
+  logging.info('Dex finished for: %s', options.output)
 
 
 def main(args):
   logging.basicConfig(
-      level=logging.INFO,
+      level=logging.INFO if os.environ.get('DEX_DEBUG') else logging.WARNING,
       format='%(levelname).1s %(relativeCreated)6d %(message)s')
   options = _ParseArgs(args)
 

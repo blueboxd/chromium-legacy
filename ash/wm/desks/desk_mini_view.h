@@ -86,6 +86,11 @@ class ASH_EXPORT DeskMiniView
 
   bool IsPointOnMiniView(const gfx::Point& screen_location) const;
 
+  bool IsLabelVisibleForTesting() const { return label_->GetVisible(); }
+  const DeskPreviewView* GetDeskPreviewForTesting() const {
+    return desk_preview_.get();
+  }
+
  private:
   void OnCloseButtonPressed();
 

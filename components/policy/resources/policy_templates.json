@@ -969,6 +969,7 @@
         'PrintingBackgroundGraphicsDefault',
         'PrintingSizeDefault',
         'PrintingSendUsernameAndFilenameEnabled',
+        'PrintJobHistoryExpirationPeriod',
         'CloudPrintSubmitEnabled',
         'DisablePrintPreview',
         'PrintHeaderFooter',
@@ -2397,6 +2398,28 @@
       'desc': '''Send username and filename to native printers server with every print job. The default is not to send.
 
       Setting this policy to true also disables printers that use protocols other than IPPS, USB, or IPP-over-USB since username and filename shouldn't be sent over the network openly.''',
+    },
+    {
+      'name': 'PrintJobHistoryExpirationPeriod',
+      'owners': ['nikitapodguzov@chromium.org'],
+      'type': 'int',
+      'schema': { 'type': 'integer', 'minimum': -1 },
+      'supported_on': ['chrome_os:79-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 90,
+      'id': 625,
+      'caption': '''Set the time period in days for storing print jobs metadata''',
+      'tags': [],
+      'desc': '''This policy controls how long print jobs metadata is stored on the device, in days.
+
+      When this policy is set to a value of -1, the print jobs metadata is stored indefinitely. When this policy is set to a value of 0, the print jobs metadata is not stored at all. When this policy is set to any other value, it specifies the period of time during which the metadata of completed print jobs is stored on the device.
+
+      If not set, the default period of 90 days is used for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.
+
+      The policy value should be specified in days.''',
     },
     {
       'name': 'ForceSafeSearch',
@@ -19115,6 +19138,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 624,
+  'highest_id_currently_used': 625,
   'highest_atomic_group_id_currently_used': 38
 }

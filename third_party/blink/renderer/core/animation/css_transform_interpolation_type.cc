@@ -93,8 +93,10 @@ InterpolationValue CSSTransformInterpolationType::MaybeConvertValue(
       }
       for (const CSSValue* argument : transform_function) {
         const auto& primitive_value = To<CSSPrimitiveValue>(*argument);
-        if (!primitive_value.IsLength())
+        if (!primitive_value.IsLength() &&
+            !primitive_value.IsCalculatedPercentageWithLength()) {
           continue;
+        }
         primitive_value.AccumulateLengthUnitTypes(types);
       }
     }

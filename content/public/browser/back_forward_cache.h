@@ -28,12 +28,12 @@ class RenderFrameHost;
 // All methods of this class should be called from the UI thread.
 class CONTENT_EXPORT BackForwardCache {
  public:
-  // Prevents the frame for the given |id| from entering the BackForwardCache. A
-  // document can only enter the BackForwardCache if the root frame and all its
-  // children can. This action can not be undone. Any document that is assigned
-  // to this same frame in the future will not be cached either. In practice
-  // this is not a big deal as only navigations that use a new frame can be
-  // cached.
+  // Prevents the |render_frame_host| from entering the BackForwardCache. A
+  // RenderFrameHost can only enter the BackForwardCache if the main one and all
+  // its children can. This action can not be undone. Any document that is
+  // assigned to this same RenderFrameHost in the future will not be cached
+  // either. In practice this is not a big deal as only navigations that use a
+  // new frame can be cached.
   //
   // This might be needed for example by components that listen to events via a
   // WebContentsObserver and keep some sort of per frame state, as this state
@@ -41,13 +41,15 @@ class CONTENT_EXPORT BackForwardCache {
   //
   // If the page is already in the cache an eviction is triggered.
   //
-  // |id|: If no RenderFrameHost can be found for the given id nothing happens.
+  // |render_frame_host|: non-null.
   // |reason|: Free form string to be used in logging and metrics.
-  virtual void DisableForRenderFrameHost(GlobalFrameRoutingId id,
-                                         base::StringPiece reason) = 0;
-
-  // Convenience static method for calling DisableForRenderFameHost.
   static void DisableForRenderFrameHost(RenderFrameHost* render_frame_host,
+                                        base::StringPiece reason);
+
+  // Helper function to be used when it is not always possible to guarantee the
+  // |render_frame_host| to be still alive when this is called. In this case,
+  // its |id| can be used.
+  static void DisableForRenderFrameHost(GlobalFrameRoutingId id,
                                         base::StringPiece reason);
 
   // List of reasons the BackForwardCache was disabled for a specific test. If a

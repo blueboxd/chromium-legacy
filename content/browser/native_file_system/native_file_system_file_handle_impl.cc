@@ -109,11 +109,16 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
 
   std::string uuid = base::GenerateGUID();
   auto blob_builder = std::make_unique<storage::BlobDataBuilder>(uuid);
-  // Use AppendFileSystemFile here, since we're streaming the file directly
-  // from the file system backend, and the file thus might not actually be
-  // backed by a file on disk.
-  blob_builder->AppendFileSystemFile(url().ToGURL(), 0, -1, info.last_modified,
-                                     file_system_context());
+
+  // Only append if the file has data.
+  if (info.size > 0) {
+    // Use AppendFileSystemFile here, since we're streaming the file directly
+    // from the file system backend, and the file thus might not actually be
+    // backed by a file on disk.
+    blob_builder->AppendFileSystemFile(url().ToGURL(), 0, info.size,
+                                       info.last_modified,
+                                       file_system_context());
+  }
 
   base::FilePath::StringType extension = url().path().Extension();
   if (!extension.empty()) {

@@ -2527,7 +2527,6 @@
 <translation id="5447306928176905178">在網頁上回報記憶體資訊 (JavaScript 堆積大小) (已不適用)</translation>
 <translation id="5457065417344056871">在瀏覽器中啟用訪客模式</translation>
 <translation id="5457924070961220141">允許你在安裝「<ph name="PRODUCT_FRAME_NAME" />」之後，設定預設的 HTML 轉譯器。如果未設定這項政策，系統就會使用預設設定，允許主機瀏覽器進行轉譯，但是你可以覆寫這項預設，改由「<ph name="PRODUCT_FRAME_NAME" />」轉譯 HTML 網頁。</translation>
-<translation id="5458584148602890023">開啟用電尖峰轉移功能</translation>
 <translation id="5464816904705580310">為管理化環境下的使用者調整設定。</translation>
 <translation id="546726650689747237">在 AC 供電環境下執行時的螢幕調暗延遲時間</translation>
 <translation id="5469143988693423708">已允許使用者執行 Crostini</translation>

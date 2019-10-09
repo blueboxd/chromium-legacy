@@ -49,7 +49,6 @@
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
-#include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
@@ -380,11 +379,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void SuddenTerminationDisablerChanged(
       bool present,
       WebSuddenTerminationDisablerType) {}
-
-  // Returns the PreviewsState active for the frame.
-  virtual WebURLRequest::PreviewsState GetPreviewsStateForFrame() const {
-    return WebURLRequest::kPreviewsUnspecified;
-  }
 
   // Overwrites the given URL to use an HTML5 embed if possible. An empty URL is
   // returned if the URL is not overriden.

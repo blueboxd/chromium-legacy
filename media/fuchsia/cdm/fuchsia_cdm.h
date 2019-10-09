@@ -14,9 +14,9 @@
 #include "media/base/cdm_promise_adapter.h"
 #include "media/base/content_decryption_module.h"
 #include "media/fuchsia/cdm/fuchsia_cdm_context.h"
+#include "media/fuchsia/cdm/fuchsia_decryptor.h"
 
 namespace media {
-class FuchsiaDecryptor;
 
 class FuchsiaCdm : public ContentDecryptionModule,
                    public CdmContext,
@@ -68,7 +68,7 @@ class FuchsiaCdm : public ContentDecryptionModule,
   FuchsiaCdmContext* GetFuchsiaCdmContext() override;
 
   // FuchsiaCdmContext implementation:
-  std::unique_ptr<FuchsiaSecureStreamDecryptor> CreateSecureDecryptor(
+  std::unique_ptr<FuchsiaSecureStreamDecryptor> CreateVideoDecryptor(
       FuchsiaSecureStreamDecryptor::Client* client) override;
 
  private:
@@ -87,7 +87,7 @@ class FuchsiaCdm : public ContentDecryptionModule,
       uint32_t promise_id,
       base::Optional<CdmPromise::Exception> exception);
 
-  void OnCdmError(zx_status_t status);
+  void OnNewKey();
 
   CdmPromiseAdapter promises_;
   base::flat_map<std::string, std::unique_ptr<CdmSession>> session_map_;
@@ -95,7 +95,11 @@ class FuchsiaCdm : public ContentDecryptionModule,
   fuchsia::media::drm::ContentDecryptionModulePtr cdm_;
   SessionCallbacks session_callbacks_;
 
-  std::unique_ptr<FuchsiaDecryptor> decryptor_;
+  FuchsiaDecryptor decryptor_;
+
+  base::Lock new_key_cb_for_video_lock_;
+  base::RepeatingClosure new_key_cb_for_video_
+      GUARDED_BY(new_key_cb_for_video_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(FuchsiaCdm);
 };

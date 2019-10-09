@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "media/video/gpu_video_accelerator_factories.h"
-#include "third_party/blink/public/platform/modules/peerconnection/rtc_video_decoder_factory_util.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_video_decoder_adapter.h"
 
 namespace blink {
@@ -58,11 +57,6 @@ class ScopedVideoDecoder : public webrtc::VideoDecoder {
 };
 
 }  // namespace
-
-std::unique_ptr<webrtc::VideoDecoderFactory> CreateRTCVideoDecoderFactory(
-    media::GpuVideoAcceleratorFactories* gpu_factories) {
-  return std::make_unique<RTCVideoDecoderFactory>(gpu_factories);
-}
 
 RTCVideoDecoderFactory::RTCVideoDecoderFactory(
     media::GpuVideoAcceleratorFactories* gpu_factories)

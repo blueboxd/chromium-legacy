@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ui.widget;
 import android.content.Context;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.view.ViewCompat;
+import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -100,7 +101,12 @@ public final class PromoDialogLayout extends BoundedLinearLayout {
         mHeaderView.setText(mParams.headerStringResource);
 
         // Set up the subheader text.
-        if (mParams.subheaderStringResource == 0) {
+        if (mParams.subheaderCharSequence != null) {
+            mSubheaderView.setText(mParams.subheaderCharSequence);
+            if (mParams.subheaderIsLink) {
+                mSubheaderView.setMovementMethod(LinkMovementMethod.getInstance());
+            }
+        } else if (mParams.subheaderStringResource == 0) {
             ((ViewGroup) mSubheaderView.getParent()).removeView(mSubheaderView);
         } else {
             mSubheaderView.setText(mParams.subheaderStringResource);

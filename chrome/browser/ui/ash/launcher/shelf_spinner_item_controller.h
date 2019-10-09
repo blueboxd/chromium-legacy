@@ -29,7 +29,7 @@ class ShelfSpinnerItemController : public ash::ShelfItemDelegate {
 
   virtual void SetHost(const base::WeakPtr<ShelfSpinnerController>& host);
 
-  base::TimeDelta GetActiveTime() const;
+  base::Time start_time() const { return start_time_; }
 
   // ash::ShelfItemDelegate:
   void ExecuteCommand(bool from_context_menu,

@@ -147,6 +147,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                size_t index = 0);
 
   // Similar to the above function, but adds the window at the end of the grid.
+  // This will use the spawn-item animation.
+  // TODO(afakhry): Expose |use_spawn_animation| if needed.
   void AppendItem(aura::Window* window, bool reposition, bool animate);
 
   // Removes |overview_item| from the corresponding grid. No items are

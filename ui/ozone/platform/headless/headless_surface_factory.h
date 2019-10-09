@@ -20,8 +20,6 @@ class HeadlessSurfaceFactory : public SurfaceFactoryOzone {
   explicit HeadlessSurfaceFactory(base::FilePath base_path);
   ~HeadlessSurfaceFactory() override;
 
-  base::FilePath GetPathForWidget(gfx::AcceleratedWidget widget);
-
   // SurfaceFactoryOzone:
   std::vector<gl::GLImplementation> GetAllowedGLImplementations() override;
   GLOzone* GetGLOzone(gl::GLImplementation implementation) override;

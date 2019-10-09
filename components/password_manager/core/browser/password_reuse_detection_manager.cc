@@ -90,28 +90,32 @@ void PasswordReuseDetectionManager::OnReuseFound(
     const std::vector<std::string>& matching_domains,
     int saved_passwords) {
   reuse_on_this_page_was_found_ = true;
-  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   metrics_util::PasswordType reused_password_type = GetReusedPasswordType(
       reused_protected_password_hash, matching_domains.size());
 
   if (password_manager_util::IsLoggingActive(client_)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
     std::vector<std::string> domains_to_log(matching_domains);
-    if (reused_password_type ==
-        metrics_util::PasswordType::PRIMARY_ACCOUNT_PASSWORD) {
-      domains_to_log.push_back("CHROME SYNC PASSWORD");
-    } else if (reused_password_type ==
-               metrics_util::PasswordType::OTHER_GAIA_PASSWORD) {
-      domains_to_log.push_back("OTHER GAIA PASSWORD");
-    } else if (reused_password_type ==
-               metrics_util::PasswordType::ENTERPRISE_PASSWORD) {
-      domains_to_log.push_back("ENTERPRISE PASSWORD");
+    switch (reused_password_type) {
+      case metrics_util::PasswordType::PRIMARY_ACCOUNT_PASSWORD:
+        domains_to_log.push_back("CHROME SYNC PASSWORD");
+        break;
+      case metrics_util::PasswordType::OTHER_GAIA_PASSWORD:
+        domains_to_log.push_back("OTHER GAIA PASSWORD");
+        break;
+      case metrics_util::PasswordType::ENTERPRISE_PASSWORD:
+        domains_to_log.push_back("ENTERPRISE PASSWORD");
+        break;
+      case metrics_util::PasswordType::SAVED_PASSWORD:
+        domains_to_log.push_back("SAVED PASSWORD");
+        break;
+      default:
+        break;
     }
-    // TODO(nparker): Implement LogList() to log all domains in one call.
+
     for (const auto& domain : domains_to_log) {
-      logger->LogString(BrowserSavePasswordProgressLogger::STRING_REUSE_FOUND,
-                        domain);
+      logger.LogString(BrowserSavePasswordProgressLogger::STRING_REUSE_FOUND,
+                       domain);
     }
   }
 

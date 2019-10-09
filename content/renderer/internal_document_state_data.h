@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "content/public/common/previews_state.h"
 #include "net/nqe/effective_connection_type.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
@@ -35,11 +34,6 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   static InternalDocumentStateData* FromDocumentState(DocumentState* ds);
 
   void CopyFrom(InternalDocumentStateData* other);
-
-  int http_status_code() const { return http_status_code_; }
-  void set_http_status_code(int http_status_code) {
-    http_status_code_ = http_status_code;
-  }
 
   // True if the user agent was overridden for this page.
   bool is_overriding_user_agent() const { return is_overriding_user_agent_; }
@@ -82,11 +76,6 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
     effective_connection_type_ = effective_connection_type;
   }
 
-  PreviewsState previews_state() const { return previews_state_; }
-  void set_previews_state(PreviewsState previews_state) {
-    previews_state_ = previews_state;
-  }
-
   // This is a fake navigation request id, which we send to the browser process
   // together with metrics. Note that renderer does not actually issue a request
   // for navigation (browser does it instead), but still reports metrics for it.
@@ -98,14 +87,12 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   void set_navigation_state(std::unique_ptr<NavigationState> navigation_state);
 
  private:
-  int http_status_code_;
   bool is_overriding_user_agent_;
   bool must_reset_scroll_and_scale_state_;
   bool cache_policy_override_set_;
   blink::mojom::FetchCacheMode cache_policy_override_;
   net::EffectiveConnectionType effective_connection_type_ =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-  PreviewsState previews_state_ = PREVIEWS_UNSPECIFIED;
   int request_id_ = -1;
   std::unique_ptr<NavigationState> navigation_state_;
 

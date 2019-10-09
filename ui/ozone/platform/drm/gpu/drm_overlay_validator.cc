@@ -5,7 +5,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_overlay_validator.h"
 
 #include <drm_fourcc.h>
-
 #include <memory>
 #include <utility>
 
@@ -86,10 +85,7 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
 
     scoped_refptr<DrmFramebuffer> buffer = GetBufferForPageFlipTest(
         drm, params[i].buffer_size,
-        params[i].is_opaque
-            ? GetFourCCFormatForOpaqueFramebuffer(params[i].format)
-            : GetFourCCFormatFromBufferFormat(params[i].format),
-        &reusable_buffers);
+        GetFourCCFormatFromBufferFormat(params[i].format), &reusable_buffers);
 
     DrmOverlayPlane plane(buffer, params[i].plane_z_order, params[i].transform,
                           params[i].display_rect, params[i].crop_rect,

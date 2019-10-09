@@ -133,8 +133,6 @@ bool ShouldOverrideUserAgent(
       return true;
     case NavigationController::UA_OVERRIDE_FALSE:
       return false;
-    default:
-      break;
   }
   NOTREACHED();
   return false;
@@ -578,9 +576,7 @@ void NavigationControllerImpl::Reload(ReloadType reload_type,
     NavigationEntryImpl* transient_entry = GetTransientEntry();
     if (!transient_entry)
       return;
-    LoadURL(transient_entry->GetURL(),
-            Referrer(),
-            ui::PAGE_TRANSITION_RELOAD,
+    LoadURL(transient_entry->GetURL(), Referrer(), ui::PAGE_TRANSITION_RELOAD,
             transient_entry->extra_headers());
     return;
   }
@@ -622,8 +618,7 @@ void NavigationControllerImpl::Reload(ReloadType reload_type,
   // Set ReloadType for |entry|.
   entry->set_reload_type(reload_type);
 
-  if (g_check_for_repost && check_for_repost &&
-      entry->GetHasPostData()) {
+  if (g_check_for_repost && check_for_repost && entry->GetHasPostData()) {
     // The user is asking to reload a page with POST data. Prompt to make sure
     // they really want to do this. If they do, the dialog will call us back
     // with check_for_repost = false.
@@ -669,8 +664,8 @@ bool NavigationControllerImpl::IsInitialBlankNavigation() {
   return IsInitialNavigation() && GetEntryCount() == 0;
 }
 
-NavigationEntryImpl*
-NavigationControllerImpl::GetEntryWithUniqueID(int nav_entry_id) const {
+NavigationEntryImpl* NavigationControllerImpl::GetEntryWithUniqueID(
+    int nav_entry_id) const {
   int index = GetEntryIndexWithUniqueID(nav_entry_id);
   return (index != -1) ? entries_[index].get() : nullptr;
 }
@@ -681,8 +676,7 @@ void NavigationControllerImpl::SetPendingEntry(
   pending_entry_ = entry.release();
   DCHECK_EQ(-1, pending_entry_index_);
   NotificationService::current()->Notify(
-      NOTIFICATION_NAV_ENTRY_PENDING,
-      Source<NavigationController>(this),
+      NOTIFICATION_NAV_ENTRY_PENDING, Source<NavigationController>(this),
       Details<NavigationEntry>(pending_entry_));
 }
 
@@ -715,11 +709,8 @@ NavigationEntryImpl* NavigationControllerImpl::GetVisibleEntry() {
   // Also allow showing the pending entry for history navigations in a new tab,
   // such as Ctrl+Back.  In this case, no existing page is visible and no one
   // can script the new tab before it commits.
-  if (!safe_to_show_pending &&
-      pending_entry_ &&
-      pending_entry_index_ != -1 &&
-      IsInitialNavigation() &&
-      !pending_entry_->is_renderer_initiated())
+  if (!safe_to_show_pending && pending_entry_ && pending_entry_index_ != -1 &&
+      IsInitialNavigation() && !pending_entry_->is_renderer_initiated())
     safe_to_show_pending = true;
 
   if (safe_to_show_pending)
@@ -747,7 +738,7 @@ bool NavigationControllerImpl::CanViewSource() {
                                !media::IsSupportedMediaMimeType(mime_type);
   NavigationEntry* visible_entry = GetVisibleEntry();
   return visible_entry && !visible_entry->IsViewSourceMode() &&
-      is_viewable_mime_type && !delegate_->GetInterstitialPage();
+         is_viewable_mime_type && !delegate_->GetInterstitialPage();
 }
 
 int NavigationControllerImpl::GetLastCommittedEntryIndex() {
@@ -808,8 +799,8 @@ void NavigationControllerImpl::GoBack() {
   // history intervention is enabled.
   int count_entries_skipped = 0;
   bool all_skippable_entries = true;
-  bool history_intervention_enabled = base::FeatureList::IsEnabled(
-              features::kHistoryManipulationIntervention);
+  bool history_intervention_enabled =
+      base::FeatureList::IsEnabled(features::kHistoryManipulationIntervention);
   for (int index = target_index; index >= 0; index--) {
     if (GetEntryAtIndex(index)->should_skip_on_back_forward_ui()) {
       count_entries_skipped++;
@@ -844,8 +835,8 @@ void NavigationControllerImpl::GoForward() {
   // entries are marked skippable only when they add another entry because of
   // redirect or pushState.
   int count_entries_skipped = 0;
-  bool history_intervention_enabled = base::FeatureList::IsEnabled(
-              features::kHistoryManipulationIntervention);
+  bool history_intervention_enabled =
+      base::FeatureList::IsEnabled(features::kHistoryManipulationIntervention);
   for (size_t index = target_index; index < entries_.size(); index++) {
     if (GetEntryAtIndex(index)->should_skip_on_back_forward_ui()) {
       count_entries_skipped++;
@@ -905,8 +896,7 @@ void NavigationControllerImpl::GoToOffset(int offset) {
 }
 
 bool NavigationControllerImpl::RemoveEntryAtIndex(int index) {
-  if (index == last_committed_entry_index_ ||
-      index == pending_entry_index_)
+  if (index == last_committed_entry_index_ || index == pending_entry_index_)
     return false;
 
   RemoveEntryAtIndexInternal(index);
@@ -924,8 +914,8 @@ void NavigationControllerImpl::PruneForwardEntries() {
                       num_removed /* count */);
 }
 
-void NavigationControllerImpl::UpdateVirtualURLToURL(
-    NavigationEntryImpl* entry, const GURL& new_url) {
+void NavigationControllerImpl::UpdateVirtualURLToURL(NavigationEntryImpl* entry,
+                                                     const GURL& new_url) {
   GURL new_virtual_url(new_url);
   if (BrowserURLHandlerImpl::GetInstance()->ReverseURLRewrite(
           &new_virtual_url, entry->GetVirtualURL(), browser_context_)) {
@@ -933,11 +923,10 @@ void NavigationControllerImpl::UpdateVirtualURLToURL(
   }
 }
 
-void NavigationControllerImpl::LoadURL(
-    const GURL& url,
-    const Referrer& referrer,
-    ui::PageTransition transition,
-    const std::string& extra_headers) {
+void NavigationControllerImpl::LoadURL(const GURL& url,
+                                       const Referrer& referrer,
+                                       ui::PageTransition transition,
+                                       const std::string& extra_headers) {
   LoadURLParams params(url);
   params.referrer = referrer;
   params.transition_type = transition;
@@ -950,8 +939,8 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
     DCHECK(params.initiator_origin.has_value());
 
   TRACE_EVENT1("browser,navigation",
-               "NavigationControllerImpl::LoadURLWithParams",
-               "url", params.url.possibly_invalid_spec());
+               "NavigationControllerImpl::LoadURLWithParams", "url",
+               params.url.possibly_invalid_spec());
   bool is_explicit_navigation =
       GetContentClient()->browser()->IsExplicitNavigation(
           params.transition_type);
@@ -974,9 +963,6 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
         NOTREACHED() << "Data load must use data scheme.";
         return;
       }
-      break;
-    default:
-      NOTREACHED();
       break;
   }
 
@@ -1132,8 +1118,9 @@ bool NavigationControllerImpl::RendererDidNavigate(
       if (pending_entry_)
         DiscardNonCommittedEntries();
       return false;
-    default:
+    case NAVIGATION_TYPE_UNKNOWN:
       NOTREACHED();
+      break;
   }
 
   // At this point, we know that the navigation has just completed, so
@@ -1983,9 +1970,8 @@ void NavigationControllerImpl::CopyStateFrom(NavigationController* temp,
                 RestoreType::CURRENT_SESSION);
 }
 
-void NavigationControllerImpl::CopyStateFromAndPrune(
-    NavigationController* temp,
-    bool replace_entry) {
+void NavigationControllerImpl::CopyStateFromAndPrune(NavigationController* temp,
+                                                     bool replace_entry) {
   // It is up to callers to check the invariants before calling this.
   CHECK(CanPruneAllButLastCommitted());
 
@@ -2356,29 +2342,28 @@ void NavigationControllerImpl::SetSessionStorageNamespace(
   // We can't overwrite an existing SessionStorage without violating spec.
   // Attempts to do so may give a tab access to another tab's session storage
   // so die hard on an error.
-  bool successful_insert = session_storage_namespace_map_.insert(
-      make_pair(partition_id,
-                static_cast<SessionStorageNamespaceImpl*>(
-                    session_storage_namespace)))
+  bool successful_insert =
+      session_storage_namespace_map_
+          .insert(
+              make_pair(partition_id, static_cast<SessionStorageNamespaceImpl*>(
+                                          session_storage_namespace)))
           .second;
   CHECK(successful_insert) << "Cannot replace existing SessionStorageNamespace";
 }
 
 bool NavigationControllerImpl::IsUnmodifiedBlankTab() {
-  return IsInitialNavigation() &&
-         !GetLastCommittedEntry() &&
+  return IsInitialNavigation() && !GetLastCommittedEntry() &&
          !delegate_->HasAccessedInitialDocument();
 }
 
-SessionStorageNamespace*
-NavigationControllerImpl::GetSessionStorageNamespace(SiteInstance* instance) {
+SessionStorageNamespace* NavigationControllerImpl::GetSessionStorageNamespace(
+    SiteInstance* instance) {
   std::string partition_id;
   if (instance) {
     // TODO(ajwong): When GetDefaultSessionStorageNamespace() goes away, remove
     // this if statement so |instance| must not be NULL.
-    partition_id =
-        GetContentClient()->browser()->GetStoragePartitionIdForSite(
-            browser_context_, instance->GetSiteURL());
+    partition_id = GetContentClient()->browser()->GetStoragePartitionIdForSite(
+        browser_context_, instance->GetSiteURL());
   }
 
   // TODO(ajwong): Should this use the |partition_id| directly rather than
@@ -2392,8 +2377,8 @@ NavigationControllerImpl::GetSessionStorageNamespace(SiteInstance* instance) {
       session_storage_namespace_map_.find(partition_id);
   if (it != session_storage_namespace_map_.end()) {
     // Ensure that this namespace actually belongs to this partition.
-    DCHECK(static_cast<SessionStorageNamespaceImpl*>(it->second.get())->
-        IsFromContext(context_wrapper));
+    DCHECK(static_cast<SessionStorageNamespaceImpl*>(it->second.get())
+               ->IsFromContext(context_wrapper));
     return it->second.get();
   }
 
@@ -3047,9 +3032,6 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
 #endif
       entry->SetCanLoadLocalResources(params.can_load_local_resources);
       break;
-    default:
-      NOTREACHED();
-      break;
   }
 
   // TODO(clamy): NavigationEntry is meant for information that will be kept
@@ -3355,16 +3337,15 @@ void NavigationControllerImpl::NotifyNavigationEntryCommitted(
   // TODO(avi): Remove. http://crbug.com/170921
   NotificationDetails notification_details =
       Details<LoadCommittedDetails>(details);
-  NotificationService::current()->Notify(
-      NOTIFICATION_NAV_ENTRY_COMMITTED,
-      Source<NavigationController>(this),
-      notification_details);
+  NotificationService::current()->Notify(NOTIFICATION_NAV_ENTRY_COMMITTED,
+                                         Source<NavigationController>(this),
+                                         notification_details);
 }
 
 // static
 size_t NavigationControllerImpl::max_entry_count() {
   if (max_entry_count_for_testing_ != kMaxEntryCountForTestingNotSet)
-     return max_entry_count_for_testing_;
+    return max_entry_count_for_testing_;
   return kMaxSessionHistoryEntries;
 }
 
@@ -3428,8 +3409,7 @@ void NavigationControllerImpl::LoadPostCommitErrorPage(
 void NavigationControllerImpl::NotifyEntryChanged(NavigationEntry* entry) {
   EntryChangedDetails det;
   det.changed_entry = entry;
-  det.index = GetIndexOfEntry(
-      NavigationEntryImpl::FromNavigationEntry(entry));
+  det.index = GetIndexOfEntry(NavigationEntryImpl::FromNavigationEntry(entry));
   delegate_->NotifyNavigationEntryChanged(det);
 }
 

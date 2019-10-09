@@ -2,22 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
 export class TabsApiProxy {
-  constructor() {
-    /** @type {!Object<string, !ChromeEvent>} */
-    this.callbackRouter = {
-      onActivated: chrome.tabs.onActivated,
-      onAttached: chrome.tabs.onAttached,
-      onCreated: chrome.tabs.onCreated,
-      onDetached: chrome.tabs.onDetached,
-      onMoved: chrome.tabs.onMoved,
-      onRemoved: chrome.tabs.onRemoved,
-      onUpdated: chrome.tabs.onUpdated,
-    };
-  }
-
   /**
    * @param {number} tabId
    * @return {!Promise<!Tab>}
@@ -29,26 +16,10 @@ export class TabsApiProxy {
   }
 
   /**
-   * @return {!Promise<!ChromeWindow>}
+   * @return {!Promise<!Array<!Tab>>}
    */
-  getCurrentWindow() {
-    const options = {
-      populate: true,           // populate window data with tabs data
-      windowTypes: ['normal'],  // prevent devtools from being returned
-    };
-    return new Promise(resolve => {
-      chrome.windows.getCurrent(options, currentWindow => {
-        resolve(currentWindow);
-      });
-    });
-  }
-
-  /**
-   * @param {number} tabId
-   * @return {!Promise<!Tab>}
-   */
-  getTab(tabId) {
-    return new Promise(resolve => chrome.tabs.get(tabId, resolve));
+  getTabs() {
+    return sendWithPromise('getTabs');
   }
 
   /**

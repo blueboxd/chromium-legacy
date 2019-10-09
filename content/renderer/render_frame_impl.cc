@@ -476,6 +476,11 @@ void FillNavigationParamsRequest(
     }
   }
 
+  if (common_params.previews_state & kDisabledPreviewsBits) {
+    // Sanity check disabled vs. enabled bits here before passing on.
+    DCHECK(!(common_params.previews_state & ~kDisabledPreviewsBits))
+        << common_params.previews_state;
+  }
   navigation_params->previews_state =
       static_cast<WebURLRequest::PreviewsState>(common_params.previews_state);
 
@@ -502,9 +507,8 @@ void FillNavigationParamsRequest(
     for (const auto& exchange : commit_params.prefetched_signed_exchanges) {
       blink::WebURLResponse web_response;
       WebURLLoaderImpl::PopulateURLResponse(
-          exchange->inner_url,
-          network::ResourceResponseHead(exchange->inner_response),
-          &web_response, false /* report_security_info*/, -1 /* request_id */);
+          exchange->inner_url, *exchange->inner_response, &web_response,
+          false /* report_security_info*/, -1 /* request_id */);
       navigation_params->prefetched_signed_exchanges.emplace_back(
           std::make_unique<
               blink::WebNavigationParams::PrefetchedSignedExchange>(
@@ -930,14 +934,9 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
   internal_data->set_must_reset_scroll_and_scale_state(
       common_params.navigation_type ==
       mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL);
-  internal_data->set_previews_state(common_params.previews_state);
   internal_data->set_request_id(request_id);
 
   if (head) {
-    if (head->headers)
-      internal_data->set_http_status_code(head->headers->response_code());
-    else if (common_params.url.SchemeIs(url::kDataScheme))
-      internal_data->set_http_status_code(200);
     document_state->set_was_fetched_via_spdy(head->was_fetched_via_spdy);
     document_state->set_was_alpn_negotiated(head->was_alpn_negotiated);
     document_state->set_alpn_negotiated_protocol(
@@ -1871,7 +1870,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       selection_range_(gfx::Range::InvalidRange()),
       handling_select_range_(false),
       render_accessibility_(nullptr),
-      previews_state_(PREVIEWS_UNSPECIFIED),
       is_pasting_(false),
       suppress_further_dialogs_(false),
       blame_context_(nullptr),
@@ -1965,12 +1963,6 @@ void RenderFrameImpl::Initialize() {
   is_main_frame_ = !frame_->Parent();
 
   GetLocalRootRenderWidget()->RegisterRenderFrame(this);
-
-  RenderFrameImpl* parent_frame =
-      RenderFrameImpl::FromWebFrame(frame_->Parent());
-  if (parent_frame) {
-    previews_state_ = parent_frame->GetPreviewsState();
-  }
 
   bool is_tracing_rail = false;
   bool is_tracing_navigation = false;
@@ -3015,36 +3007,6 @@ void RenderFrameImpl::NotifyObserversOfFailedProvisionalLoad() {
     observer.DidFailProvisionalLoad();
 }
 
-void RenderFrameImpl::LoadNavigationErrorPage(
-    WebDocumentLoader* document_loader,
-    const WebURLError& error,
-    const base::Optional<std::string>& error_page_content,
-    bool replace_current_item) {
-  std::string error_html;
-  if (error_page_content) {
-    error_html = error_page_content.value();
-  } else {
-    GetContentClient()->renderer()->PrepareErrorPage(
-        this, error, document_loader->HttpMethod().Ascii(), &error_html);
-  }
-
-  // Make sure we never show errors in view source mode.
-  frame_->EnableViewSourceMode(false);
-
-  auto navigation_params = WebNavigationParams::CreateForErrorPage(
-      document_loader, error_html, GURL(kUnreachableWebDataURL), error.url(),
-      error.reason());
-  if (replace_current_item)
-    navigation_params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-  navigation_params->service_worker_network_provider =
-      ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
-
-  // The load of the error page can result in this frame being removed.
-  frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState(),
-                           base::DoNothing::Once());
-  // Do not access |this| or |frame_| without checking weak self.
-}
-
 void RenderFrameImpl::DidMeaningfulLayout(
     blink::WebMeaningfulLayout layout_type) {
   for (auto& observer : observers_)
@@ -3276,7 +3238,9 @@ void RenderFrameImpl::AddMessageToConsole(
 }
 
 PreviewsState RenderFrameImpl::GetPreviewsState() {
-  return previews_state_;
+  WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
+  return document_loader ? document_loader->GetPreviewsState()
+                         : PREVIEWS_UNSPECIFIED;
 }
 
 bool RenderFrameImpl::IsPasting() {
@@ -4739,13 +4703,6 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   NavigationState* navigation_state = internal_data->navigation_state();
   DCHECK(!navigation_state->WasWithinSameDocument());
 
-  // Only update the PreviewsState and effective connection type states for new
-  // main frame documents. Subframes inherit from the main frame and should not
-  // change at commit time.
-  if (is_main_frame_) {
-    previews_state_ = internal_data->previews_state();
-  }
-
   if (previous_routing_id_ != MSG_ROUTING_NONE) {
     // If this is a provisional frame associated with a proxy (i.e., a frame
     // created for a remote-to-local navigation), swap it into the frame tree
@@ -5026,30 +4983,34 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
   // If this is an empty document with an http status code indicating an error,
   // we may want to display our own error page, so the user doesn't end up
   // with an unexplained blank page.
-  if (!document_is_empty)
+  if (!document_is_empty || !IsMainFrame())
     return;
 
   // Display error page instead of a blank page, if appropriate.
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentLoader(
-          frame_->GetDocumentLoader());
-  int http_status_code = internal_data->http_status_code();
-  if (GetContentClient()->renderer()->HasErrorPage(http_status_code)) {
-    WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
-    WebURL unreachable_url = frame_->GetDocument().Url();
-    std::string error_html;
-    GetContentClient()->renderer()->PrepareErrorPageForHttpStatusError(
-        this, unreachable_url, document_loader->HttpMethod().Ascii(),
-        http_status_code, &error_html);
-    // This call may run scripts, e.g. via the beforeunload event, and possibly
-    // delete |this|.
-    LoadNavigationErrorPage(document_loader,
-                            WebURLError(net::ERR_FAILED, unreachable_url),
-                            error_html, true /* replace_current_item */);
-    if (!weak_self)
-      return;
-    // Do not use |this| or |frame_| here without checking |weak_self|.
-  }
+  WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
+  int http_status_code = document_loader->GetResponse().HttpStatusCode();
+  if (!GetContentClient()->renderer()->HasErrorPage(http_status_code))
+    return;
+
+  WebURL unreachable_url = frame_->GetDocument().Url();
+  std::string error_html;
+  GetContentClient()->renderer()->PrepareErrorPageForHttpStatusError(
+      this, unreachable_url, document_loader->HttpMethod().Ascii(),
+      http_status_code, &error_html);
+  // Make sure we never show errors in view source mode.
+  frame_->EnableViewSourceMode(false);
+
+  auto navigation_params = WebNavigationParams::CreateForErrorPage(
+      document_loader, error_html, GURL(kUnreachableWebDataURL),
+      unreachable_url, net::ERR_FAILED);
+  navigation_params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+  navigation_params->service_worker_network_provider =
+      ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
+
+  frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState(),
+                           base::DoNothing::Once());
+  // WARNING: The previous call may have have deleted |this|.
+  // Do not use |this| or |frame_| here without checking |weak_self|.
 }
 
 void RenderFrameImpl::RunScriptsAtDocumentIdle() {
@@ -5149,17 +5110,6 @@ void RenderFrameImpl::ForwardResourceTimingToParent(
 
 void RenderFrameImpl::DispatchLoad() {
   Send(new FrameHostMsg_DispatchLoad(routing_id_));
-}
-
-blink::WebURLRequest::PreviewsState RenderFrameImpl::GetPreviewsStateForFrame()
-    const {
-  PreviewsState disabled_state = previews_state_ & kDisabledPreviewsBits;
-  if (disabled_state) {
-    // Sanity check disabled vs. enabled bits here before passing on.
-    DCHECK(!(previews_state_ & ~kDisabledPreviewsBits)) << previews_state_;
-    return disabled_state;
-  }
-  return static_cast<WebURLRequest::PreviewsState>(previews_state_);
 }
 
 void RenderFrameImpl::DidBlockNavigation(
@@ -5431,7 +5381,7 @@ void RenderFrameImpl::WillSendRequestInternal(
           navigation_state->common_params().previews_state));
     } else {
       WebURLRequest::PreviewsState request_previews_state =
-          static_cast<WebURLRequest::PreviewsState>(previews_state_);
+          static_cast<WebURLRequest::PreviewsState>(GetPreviewsState());
 
       // The decision of whether or not to enable Client Lo-Fi is made earlier
       // in the request lifetime, in LocalFrame::MaybeAllowImagePlaceholder(),

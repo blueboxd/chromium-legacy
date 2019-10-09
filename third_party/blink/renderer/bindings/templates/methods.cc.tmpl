@@ -507,7 +507,6 @@ void {{v8_class_or_partial}}::{{method.camel_case_name}}MethodCallback{{world_su
 {##############################################################################}
 {% macro origin_safe_method_getter(method, world_suffix) %}
 static void {{method.camel_case_name}}OriginSafeMethodGetter{{world_suffix}}(const v8::PropertyCallbackInfo<v8::Value>& info) {
-  static int dom_template_key; // This address is used for a key to look up the dom template.
   v8::Isolate* isolate = info.GetIsolate();
   V8PerIsolateData* data = V8PerIsolateData::From(isolate);
   const DOMWrapperWorld& world =
@@ -517,6 +516,32 @@ static void {{method.camel_case_name}}OriginSafeMethodGetter{{world_suffix}}(con
   v8::Local<v8::Signature> signature =
       v8::Signature::New(isolate, interface_template);
 
+  {{cpp_class}}* impl = {{v8_class}}::ToImpl(info.Holder());
+  // Different FunctionTemplates should be used between cross-origin access and
+  // same-origin access.
+  if (!BindingSecurity::ShouldAllowAccessTo(
+          CurrentDOMWindow(isolate), impl,
+          BindingSecurity::ErrorReportOption::kDoNotReport)) {
+    static int dom_template_key; // This address is used for a key to look up the dom template.
+
+    v8::Local<v8::FunctionTemplate> method_template =
+        data->FindOrCreateOperationTemplate(
+            world,
+            &dom_template_key,
+            {{v8_class_or_partial}}::{{method.camel_case_name}}MethodCallback{{world_suffix}},
+            v8::Local<v8::Value>(),
+            signature,
+            {{method.length}});
+
+    V8SetReturnValue(
+        info,
+        method_template->GetFunction(
+            isolate->GetCurrentContext()).ToLocalChecked());
+    return;
+  }
+
+  static int dom_template_key; // This address is used for a key to look up the dom template.
+
   v8::Local<v8::FunctionTemplate> method_template =
       data->FindOrCreateOperationTemplate(
           world,
@@ -525,17 +550,6 @@ static void {{method.camel_case_name}}OriginSafeMethodGetter{{world_suffix}}(con
           v8::Local<v8::Value>(),
           signature,
           {{method.length}});
-
-  {{cpp_class}}* impl = {{v8_class}}::ToImpl(info.Holder());
-  if (!BindingSecurity::ShouldAllowAccessTo(
-          CurrentDOMWindow(isolate), impl,
-          BindingSecurity::ErrorReportOption::kDoNotReport)) {
-    V8SetReturnValue(
-        info,
-        method_template->GetFunction(
-            isolate->GetCurrentContext()).ToLocalChecked());
-    return;
-  }
 
   // When the web author overwrote the property, return the overwriting value.
   //

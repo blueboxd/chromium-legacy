@@ -16,9 +16,9 @@ import androidx.annotation.ColorInt;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.favicon.FaviconUtils;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.tab_ui.R;
 
 /**
@@ -66,9 +66,8 @@ public class TabListFaviconProvider {
     }
 
     private Drawable processBitmap(Bitmap bitmap) {
-        return ViewUtils.createRoundedBitmapDrawable(
-                Bitmap.createScaledBitmap(bitmap, mFaviconSize, mFaviconSize, true),
-                ViewUtils.DEFAULT_FAVICON_CORNER_RADIUS);
+        return FaviconUtils.createRoundedBitmapDrawable(
+                Bitmap.createScaledBitmap(bitmap, mFaviconSize, mFaviconSize, true));
     }
 
     /**

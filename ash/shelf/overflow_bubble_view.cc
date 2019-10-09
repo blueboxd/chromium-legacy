@@ -110,6 +110,7 @@ class OverflowBubbleView::OverflowShelfContainerView
   void UpdateShelfIconsOpacity();
 
   // views::View:
+  void Layout() override;
   const char* GetClassName() const override;
 
   int first_visible_index() const { return first_visible_index_; }
@@ -141,6 +142,10 @@ OverflowBubbleView::OverflowShelfContainerView::OverflowShelfContainerView(
     ShelfView* shelf_view,
     OverflowBubbleView* bubble_view)
     : ShelfContainerView(shelf_view), bubble_view_(bubble_view) {}
+
+void OverflowBubbleView::OverflowShelfContainerView::Layout() {
+  shelf_view_->SetBoundsRect(gfx::Rect(CalculateIdealSize()));
+}
 
 const char* OverflowBubbleView::OverflowShelfContainerView::GetClassName()
     const {

@@ -14,7 +14,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/ios/browser/autofill_switches.h"
 #include "components/keyed_service/core/service_access_type.h"
-#import "ios/chrome/browser/autofill/form_suggestion_view.h"
+#import "ios/chrome/browser/autofill/form_suggestion_constants.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_view_controller.h"

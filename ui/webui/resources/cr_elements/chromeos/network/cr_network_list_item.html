@@ -43,7 +43,7 @@
         font-weight: 400;
       }
 
-      #networkStateText[connected] {
+      #networkStateText[active] {
         color: var(--google-green-500);
       }
 
@@ -71,8 +71,9 @@
         <div aria-hidden="true">[[getItemName_(item)]]</div>
         <div id="networkStateText"
             hidden$="[[!isStateTextVisible_(networkState)]]"
-            connected$="[[isConnected_(networkState)]]">
-          [[getNetworkStateText_(networkState)]]
+            active$="[[isStateTextActive_(networkState,
+                         activationUnavailable)]]">
+          [[getNetworkStateText_(networkState, cellActivationAvailable)]]
         </div>
       </div>
       <template is="dom-if" if="[[isPolicySource(networkState.source)]]">

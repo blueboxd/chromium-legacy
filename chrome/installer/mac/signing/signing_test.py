@@ -120,7 +120,7 @@ class TestSignPart(unittest.TestCase):
         ])
 
     def test_sign_part_no_keychain(self, run_command):
-        config = test_config.TestConfig('[IDENTITY]', None)
+        config = test_config.TestConfig(identity='[IDENTITY]', keychain=None)
         part = model.CodeSignedProduct('Test.app', 'test.signing.app')
         signing.sign_part(self.paths, config, part)
         run_command.assert_called_once_with([

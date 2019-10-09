@@ -112,7 +112,7 @@ void KSVSearchBoxView::SetupCloseButton() {
   close->SetImage(
       views::ImageButton::STATE_NORMAL,
       gfx::CreateVectorIcon(kKsvSearchCloseIcon, gfx::kGoogleGrey700));
-  close->SetSize(gfx::Size(kIconSize, kIconSize));
+  close->SetPreferredSize(gfx::Size(kIconSize, kIconSize));
   close->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   close->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   const base::string16 close_button_label(
@@ -127,7 +127,7 @@ void KSVSearchBoxView::SetupBackButton() {
   back->SetImage(
       views::ImageButton::STATE_NORMAL,
       gfx::CreateVectorIcon(kKsvSearchBackIcon, gfx::kGoogleBlue500));
-  back->SetSize(gfx::Size(kIconSize, kIconSize));
+  back->SetPreferredSize(gfx::Size(kIconSize, kIconSize));
   back->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   back->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   const base::string16 back_button_label(

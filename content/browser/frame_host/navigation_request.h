@@ -48,7 +48,7 @@
 namespace network {
 class ResourceRequestBody;
 struct URLLoaderCompletionStatus;
-}
+}  // namespace network
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 

@@ -15,20 +15,21 @@ namespace content {
 // A struct containing information about a running service worker.
 struct CONTENT_EXPORT ServiceWorkerRunningInfo {
   ServiceWorkerRunningInfo(const GURL& script_url,
-                           int64_t id,
-                           int64_t process_id)
-      : script_url(script_url), version_id(id), process_id(process_id) {}
-
-  ServiceWorkerRunningInfo() = default;
+                           const GURL& scope,
+                           int64_t render_process_id);
+  ServiceWorkerRunningInfo(ServiceWorkerRunningInfo&& other) noexcept;
+  ServiceWorkerRunningInfo& operator=(
+      ServiceWorkerRunningInfo&& other) noexcept;
+  ~ServiceWorkerRunningInfo();
 
   // The service worker script URL.
-  const GURL script_url;
+  GURL script_url;
 
-  // The unique identifier for this service worker within the same
-  // ServiceWorkerContext.
-  const int64_t version_id = blink::mojom::kInvalidServiceWorkerVersionId;
+  // The scope that this service worker handles.
+  GURL scope;
 
-  const int process_id = content::ChildProcessHost::kInvalidUniqueID;
+  // The ID of the render process on which this service worker lives.
+  int render_process_id = content::ChildProcessHost::kInvalidUniqueID;
 };
 
 }  // namespace content

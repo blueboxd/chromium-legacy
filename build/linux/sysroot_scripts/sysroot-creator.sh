@@ -48,6 +48,7 @@ readonly HAS_ARCH_AMD64=${HAS_ARCH_AMD64:=0}
 readonly HAS_ARCH_I386=${HAS_ARCH_I386:=0}
 readonly HAS_ARCH_ARM=${HAS_ARCH_ARM:=0}
 readonly HAS_ARCH_ARM64=${HAS_ARCH_ARM64:=0}
+readonly HAS_ARCH_ARMEL=${HAS_ARCH_ARMEL:=0}
 readonly HAS_ARCH_MIPS=${HAS_ARCH_MIPS:=0}
 readonly HAS_ARCH_MIPS64EL=${HAS_ARCH_MIPS64EL:=0}
 
@@ -65,6 +66,7 @@ readonly DEBIAN_DEP_LIST_AMD64="generated_package_lists/${DIST}.amd64"
 readonly DEBIAN_DEP_LIST_I386="generated_package_lists/${DIST}.i386"
 readonly DEBIAN_DEP_LIST_ARM="generated_package_lists/${DIST}.arm"
 readonly DEBIAN_DEP_LIST_ARM64="generated_package_lists/${DIST}.arm64"
+readonly DEBIAN_DEP_LIST_ARMEL="generated_package_lists/${DIST}.armel"
 readonly DEBIAN_DEP_LIST_MIPS="generated_package_lists/${DIST}.mipsel"
 readonly DEBIAN_DEP_LIST_MIPS64EL="generated_package_lists/${DIST}.mips64el"
 
@@ -147,6 +149,9 @@ SetEnvironmentVariables() {
       ;;
     *ARM64)
       ARCH=ARM64
+      ;;
+    *ARMEL)
+      ARCH=ARMEL
       ;;
     *)
       echo "ERROR: Unable to determine architecture based on: $1"
@@ -267,6 +272,11 @@ GeneratePackageListARM64() {
     ${DEBIAN_PACKAGES_ARM64:=}"
 }
 
+GeneratePackageListARMEL() {
+  GeneratePackageListCommon "$1" armel "${DEBIAN_PACKAGES}
+    ${DEBIAN_PACKAGES_ARMEL:=}"
+}
+
 GeneratePackageListMips() {
   GeneratePackageListCommon "$1" mipsel "${DEBIAN_PACKAGES}"
 }
@@ -350,13 +360,15 @@ HacksAndPatchesARM() {
   HacksAndPatchesCommon arm linux-gnueabihf arm-linux-gnueabihf-strip
 }
 
-
 HacksAndPatchesARM64() {
   # Use the unstripped libdbus for arm64 to prevent linker errors.
   # https://bugs.chromium.org/p/webrtc/issues/detail?id=8535
   HacksAndPatchesCommon aarch64 linux-gnu true
 }
 
+HacksAndPatchesARMEL() {
+  HacksAndPatchesCommon arm linux-gnueabi arm-linux-gnueabi-strip
+}
 
 HacksAndPatchesMips() {
   HacksAndPatchesCommon mipsel linux-gnu mipsel-linux-gnu-strip
@@ -423,6 +435,7 @@ CleanupJailSymlinks() {
   if [ "${ARCH}" != "MIPS" ]; then
     libdirs="${libdirs} lib64"
   fi
+
   find $libdirs -type l -printf '%p %l\n' | while read link target; do
     # skip links with non-absolute paths
     echo "${target}" | grep -qs ^/ || continue
@@ -485,6 +498,9 @@ VerifyLibraryDepsARM64() {
   VerifyLibraryDepsCommon aarch64 linux-gnu
 }
 
+VerifyLibraryDepsARMEL() {
+  VerifyLibraryDepsCommon arm linux-gnueabi
+}
 
 VerifyLibraryDepsMips() {
   VerifyLibraryDepsCommon mipsel linux-gnu
@@ -577,6 +593,26 @@ BuildSysrootARM64() {
 }
 
 #@
+#@ BuildSysrootARMEL
+#@
+#@    Build everything and package it
+BuildSysrootARMEL() {
+  if [ "$HAS_ARCH_ARMEL" = "0" ]; then
+    return
+  fi
+  ClearInstallDir
+  local package_file="${DEBIAN_DEP_LIST_ARMEL}"
+  GeneratePackageListARMEL "$package_file"
+  local files_and_sha256sums="$(cat ${package_file})"
+  StripChecksumsFromPackageList "$package_file"
+  InstallIntoSysroot ${files_and_sha256sums}
+  CleanupJailSymlinks
+  HacksAndPatchesARMEL
+  VerifyLibraryDepsARMEL
+  CreateTarBall
+}
+
+#@
 #@ BuildSysrootMips
 #@
 #@    Build everything and package it
@@ -625,6 +661,7 @@ BuildSysrootAll() {
   RunCommand BuildSysrootI386
   RunCommand BuildSysrootARM
   RunCommand BuildSysrootARM64
+  RunCommand BuildSysrootARMEL
   RunCommand BuildSysrootMips
   RunCommand BuildSysrootMips64el
 }
@@ -678,6 +715,16 @@ UploadSysrootARM64() {
 }
 
 #@
+#@ UploadSysrootARMEL
+#@
+UploadSysrootARMEL() {
+  if [ "$HAS_ARCH_ARMEL" = "0" ]; then
+    return
+  fi
+  UploadSysroot "$@"
+}
+
+#@
 #@ UploadSysrootMips
 #@
 UploadSysrootMips() {
@@ -706,6 +753,7 @@ UploadSysrootAll() {
   RunCommand UploadSysrootI386 "$@"
   RunCommand UploadSysrootARM "$@"
   RunCommand UploadSysrootARM64 "$@"
+  RunCommand UploadSysrootARMEL "$@"
   RunCommand UploadSysrootMips "$@"
   RunCommand UploadSysrootMips64el "$@"
 
@@ -811,6 +859,9 @@ PrintArchitectures() {
   fi
   if [ "$HAS_ARCH_ARM64" = "1" ]; then
     echo ARM64
+  fi
+  if [ "$HAS_ARCH_ARMEL" = "1" ]; then
+    echo ARMEL
   fi
   if [ "$HAS_ARCH_MIPS" = "1" ]; then
     echo Mips

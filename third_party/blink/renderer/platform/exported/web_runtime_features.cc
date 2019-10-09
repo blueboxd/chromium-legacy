@@ -96,6 +96,10 @@ void WebRuntimeFeatures::EnableAccelerated2dCanvas(bool enable) {
   RuntimeEnabledFeatures::SetAccelerated2dCanvasEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableAccessibilityExposeARIAAnnotations(bool enable) {
+  RuntimeEnabledFeatures::SetAccessibilityExposeARIAAnnotationsEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableAccessibilityExposeDisplayNone(bool enable) {
   RuntimeEnabledFeatures::SetAccessibilityExposeDisplayNoneEnabled(enable);
 }

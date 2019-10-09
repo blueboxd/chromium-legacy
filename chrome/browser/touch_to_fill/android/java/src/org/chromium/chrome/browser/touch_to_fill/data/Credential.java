@@ -12,6 +12,7 @@ import org.chromium.base.annotations.CalledByNative;
 public class Credential {
     private final String mUsername;
     private final String mPassword;
+    private final String mFormattedUsername;
     private final String mOriginUrl;
     private final boolean mIsPublicSuffixMatch;
 
@@ -21,10 +22,11 @@ public class Credential {
      * @param originUrl Origin URL shown to the user in case this credential is a PSL match.
      * @param isPublicSuffixMatch Indicating whether the credential is a PSL match.
      */
-    public Credential(
-            String username, String password, String originUrl, boolean isPublicSuffixMatch) {
+    public Credential(String username, String password, String formattedUsername, String originUrl,
+            boolean isPublicSuffixMatch) {
         mUsername = username;
         mPassword = password;
+        mFormattedUsername = formattedUsername;
         mOriginUrl = originUrl;
         mIsPublicSuffixMatch = isPublicSuffixMatch;
     }
@@ -37,6 +39,10 @@ public class Credential {
     @CalledByNative
     public String getPassword() {
         return mPassword;
+    }
+
+    public String getFormattedUsername() {
+        return mFormattedUsername;
     }
 
     @CalledByNative

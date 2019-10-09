@@ -1094,6 +1094,10 @@ VaapiWrapper::GetSupportedEncodeProfiles() {
       if (profile_info.va_profile == va_profile) {
         VideoEncodeAccelerator::SupportedProfile profile;
         profile.profile = kProfileMap[i].profile;
+        // Using VA-API for accelerated encoding frames smaller than a certain
+        // size is less efficient than using a software encoder.
+        const gfx::Size kMinEncodeResolution = gfx::Size(320 + 1, 240 + 1);
+        profile.min_resolution = kMinEncodeResolution;
         profile.max_resolution = profile_info.max_resolution;
         profile.max_framerate_numerator = kMaxEncoderFramerate;
         profile.max_framerate_denominator = 1;

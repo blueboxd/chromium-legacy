@@ -112,9 +112,7 @@ class RenderMessageCompletionCallback {
  public:
   RenderMessageCompletionCallback(RenderFrameMessageFilter* filter,
                                   IPC::Message* reply_msg)
-      : filter_(filter),
-        reply_msg_(reply_msg) {
-  }
+      : filter_(filter), reply_msg_(reply_msg) {}
 
   virtual ~RenderMessageCompletionCallback() {
     if (reply_msg_) {
@@ -148,9 +146,7 @@ class RenderFrameMessageFilter::OpenChannelToPpapiBrokerCallback
  public:
   OpenChannelToPpapiBrokerCallback(RenderFrameMessageFilter* filter,
                                    int routing_id)
-      : filter_(filter),
-        routing_id_(routing_id) {
-  }
+      : filter_(filter), routing_id_(routing_id) {}
 
   ~OpenChannelToPpapiBrokerCallback() override {}
 
@@ -166,8 +162,7 @@ class RenderFrameMessageFilter::OpenChannelToPpapiBrokerCallback
   void OnPpapiChannelOpened(const IPC::ChannelHandle& channel_handle,
                             base::ProcessId plugin_pid,
                             int /* plugin_child_id */) override {
-    filter_->Send(new ViewMsg_PpapiBrokerChannelCreated(routing_id_,
-                                                        plugin_pid,
+    filter_->Send(new ViewMsg_PpapiBrokerChannelCreated(routing_id_, plugin_pid,
                                                         channel_handle));
     delete this;
   }
@@ -390,8 +385,8 @@ void RenderFrameMessageFilter::OnDidDeleteOutOfProcessPepperInstance(
     if (host)
       host->DeleteInstance(pp_instance);
   } else {
-    PpapiPluginProcessHost::DidDeleteOutOfProcessInstance(
-        plugin_child_id, pp_instance);
+    PpapiPluginProcessHost::DidDeleteOutOfProcessInstance(plugin_child_id,
+                                                          pp_instance);
   }
 }
 

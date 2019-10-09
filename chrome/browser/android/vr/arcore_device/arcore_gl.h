@@ -140,6 +140,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
 
   bool InitializeGl(gfx::AcceleratedWidget drawing_widget);
   bool IsOnGlThread() const;
+  void CopyCameraImageToFramebuffer();
 
   base::OnceClosure session_shutdown_callback_;
 
@@ -172,7 +173,14 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   std::unique_ptr<vr::WebXrPresentationState> webxr_;
 
   // Default dummy values to ensure consistent behaviour.
+
+  // Transfer size is the size of the WebGL framebuffer, this may be
+  // smaller than the camera image if framebufferScaleFactor is < 1.0.
   gfx::Size transfer_size_ = gfx::Size(0, 0);
+
+  // The camera image size stays locked to the screen size even if
+  // framebufferScaleFactor changes.
+  gfx::Size camera_image_size_ = gfx::Size(0, 0);
   display::Display::Rotation display_rotation_ = display::Display::ROTATE_0;
   bool should_update_display_geometry_ = true;
 

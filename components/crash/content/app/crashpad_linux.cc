@@ -4,9 +4,13 @@
 
 #include "components/crash/content/app/crashpad.h"
 
+#include <pthread.h>
+#include <sys/prctl.h>
+
 #include <limits>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
 #include "base/strings/string_number_conversions.h"
@@ -14,7 +18,6 @@
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/content/app/crash_switches.h"
 #include "content/public/common/content_descriptors.h"
-#include "content/public/common/content_switches.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 
@@ -37,6 +40,16 @@ bool GetHandlerSocket(int* fd, pid_t* pid) {
   return crashpad::CrashpadClient::GetHandlerSocket(fd, pid);
 }
 
+void SetPtracerAtFork() {
+  pid_t pid;
+  if (!GetHandlerSocket(nullptr, &pid)) {
+    return;
+  }
+  if (pid > 0 && prctl(PR_SET_PTRACER, pid, 0, 0, 0) != 0) {
+    PLOG(ERROR) << "prctl";
+  }
+}
+
 namespace internal {
 
 base::FilePath PlatformCrashpadInitialization(
@@ -57,7 +70,7 @@ base::FilePath PlatformCrashpadInitialization(
 #if defined(OS_CHROMEOS)
   std::string crash_loop_before =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          ::switches::kCrashLoopBefore);
+          switches::kCrashLoopBefore);
   if (!crash_loop_before.empty()) {
     uint64_t crash_loop_before_time;
     if (!base::StringToUint64(crash_loop_before, &crash_loop_before_time)) {
@@ -131,6 +144,7 @@ base::FilePath PlatformCrashpadInitialization(
                             annotations, arguments, false, false);
     DCHECK(result);
 
+    pthread_atfork(nullptr, nullptr, SetPtracerAtFork);
     return database_path;
   }
 
@@ -151,6 +165,7 @@ base::FilePath PlatformCrashpadInitialization(
 
   client.SetHandlerSocket(crashpad::ScopedFileHandle(fd), pid);
 
+  pthread_atfork(nullptr, nullptr, SetPtracerAtFork);
   return base::FilePath();
 }
 

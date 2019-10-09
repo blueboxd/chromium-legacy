@@ -501,7 +501,7 @@ def _ParseOptions(argv):
 
 def main(argv):
   logging.basicConfig(
-      level=logging.INFO if os.environ.get('_JAVAC_DEBUG') else logging.WARNING,
+      level=logging.INFO if os.environ.get('JAVAC_DEBUG') else logging.WARNING,
       format='%(levelname).1s %(relativeCreated)6d %(message)s')
   colorama.init()
 

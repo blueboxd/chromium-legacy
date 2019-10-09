@@ -10,6 +10,7 @@ import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//build/nocompile.gni")
+import("//content/common/features.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//net/features.gni")
@@ -1087,6 +1088,7 @@ test("content_browsertests") {
     "../browser/webrtc/webrtc_webcam_browsertest.cc",
     "../browser/webrtc/webrtc_webcam_browsertest.h",
     "../browser/webui/web_ui_mojo_browsertest.cc",
+    "../browser/webui/web_ui_security_browsertest.cc",
     "../browser/worker_host/worker_browsertest.cc",
     "../browser/worker_network_isolation_key_browsertest.cc",
     "../child/webthemeengine_impl_default_browsertest.cc",
@@ -2046,6 +2048,7 @@ test("content_unittests") {
     "//content/browser/service_worker:service_worker_proto",
     "//content/browser/speech/proto",
     "//content/child:for_content_tests",
+    "//content/common:buildflags",
     "//content/gpu",
     "//content/public/browser",
     "//content/public/child",
@@ -2201,9 +2204,9 @@ test("content_unittests") {
   }
 
   # Screen capture unit tests.
-  if (is_linux || is_mac || is_win) {
-    defines += [ "ENABLE_SCREEN_CAPTURE=1" ]
+  if (enable_screen_capture && !is_android) {
     deps += [
+      "//content/common:buildflags",
       "//media/capture:test_support",
       "//third_party/libyuv",
       "//third_party/webrtc/modules/desktop_capture",

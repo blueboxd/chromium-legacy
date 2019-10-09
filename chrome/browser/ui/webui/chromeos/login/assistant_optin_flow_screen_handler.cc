@@ -144,6 +144,14 @@ void AssistantOptInFlowScreenHandler::RegisterMessages() {
               &AssistantOptInFlowScreenHandler::HandleFlowInitialized);
 }
 
+void AssistantOptInFlowScreenHandler::GetAdditionalParameters(
+    base::DictionaryValue* dict) {
+  dict->SetBoolean("hotwordDspAvailable", chromeos::IsHotwordDspAvailable());
+  dict->SetBoolean("voiceMatchDisabled",
+                   chromeos::assistant::features::IsVoiceMatchDisabled());
+  BaseScreenHandler::GetAdditionalParameters(dict);
+}
+
 void AssistantOptInFlowScreenHandler::Bind(AssistantOptInFlowScreen* screen) {
   BaseScreenHandler::SetBaseScreen(screen);
   screen_ = screen;

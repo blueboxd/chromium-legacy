@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -88,8 +89,13 @@ class DefaultIceTransportAdapterCrossThreadFactory
     DCHECK(!port_allocator_);
     DCHECK(!worker_thread_rtc_thread_);
     DCHECK(!async_resolver_factory_);
-    port_allocator_ = Platform::Current()->CreateWebRtcPortAllocator(
+
+    auto* rtc_dependency_factory =
+        blink::PeerConnectionDependencyFactory::GetInstance();
+    rtc_dependency_factory->EnsureInitialized();
+    port_allocator_ = rtc_dependency_factory->CreatePortAllocator(
         frame.Client()->GetWebFrame());
+
     async_resolver_factory_ =
         Platform::Current()->CreateWebRtcAsyncResolverFactory();
     worker_thread_rtc_thread_ =

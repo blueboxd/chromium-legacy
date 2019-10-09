@@ -658,8 +658,6 @@ void CastWebContentsImpl::UpdatePageState() {
 }
 
 void CastWebContentsImpl::NotifyPageState() {
-  if (!delegate_)
-    return;
   // Don't notify if the page state didn't change.
   if (last_state_ == page_state_)
     return;

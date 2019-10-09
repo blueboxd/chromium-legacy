@@ -41,9 +41,10 @@ class MockFeedbackUploader : public FeedbackUploader {
   MockFeedbackUploader(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       content::BrowserContext* context)
-      : FeedbackUploader(url_loader_factory,
-                         context,
-                         FeedbackUploaderFactory::CreateUploaderTaskRunner()) {}
+      : FeedbackUploader(context,
+                         FeedbackUploaderFactory::CreateUploaderTaskRunner()) {
+    set_url_loader_factory_for_test(url_loader_factory);
+  }
   ~MockFeedbackUploader() override {}
 
   void RunMessageLoop() {

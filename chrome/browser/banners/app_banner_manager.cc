@@ -550,11 +550,8 @@ void AppBannerManager::DidFinishNavigation(content::NavigationHandle* handle) {
   // installable_web_app_check_result_ to kNo.
   if (installable_web_app_check_result_ != InstallableWebAppCheckResult::kNo &&
       state_ != State::INACTIVE) {
-    web_contents()
-        ->GetController()
-        .GetBackForwardCache()
-        .DisableForRenderFrameHost(handle->GetPreviousRenderFrameHostId(),
-                                   "banners::AppBannerManager");
+    content::BackForwardCache::DisableForRenderFrameHost(
+        handle->GetPreviousRenderFrameHostId(), "banners::AppBannerManager");
   }
 
   if (state_ != State::COMPLETE && state_ != State::INACTIVE)

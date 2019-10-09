@@ -29,13 +29,13 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.DefaultFaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
+import org.chromium.chrome.browser.favicon.FaviconUtils;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionWindow;
 import org.chromium.chrome.browser.signin.SyncPromoView;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.mojom.WindowOpenDisposition;
@@ -682,7 +682,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         mDefaultFaviconHelper = new DefaultFaviconHelper();
         mFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
 
-        mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(activity.getResources(), true);
+        mIconGenerator = FaviconUtils.createCircularIconGenerator(activity.getResources());
 
         RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
                 OtherSessionsActions.MENU_INITIALIZED, OtherSessionsActions.NUM_ENTRIES);
@@ -714,9 +714,8 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     private Drawable getRoundedFavicon(Bitmap image, int size) {
         // TODO(injae): Move shared code between Bookmarks/History/Downloads/here to ViewUtils.java.
         // Also applies to RoundedIconGenerator. crbug.com/829550
-        return ViewUtils.createRoundedBitmapDrawable(
-                Bitmap.createScaledBitmap(image, size, size, true),
-                ViewUtils.DEFAULT_FAVICON_CORNER_RADIUS);
+        return FaviconUtils.createRoundedBitmapDrawable(
+                Bitmap.createScaledBitmap(image, size, size, true));
     }
 
     private void loadForeignFavicon(final ViewHolder viewHolder, final String url) {

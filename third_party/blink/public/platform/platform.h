@@ -125,7 +125,6 @@ class WebLocalFrame;
 class WebMediaCapabilitiesClient;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
-class WebRtcAudioDeviceImpl;
 class WebRTCCertificateGenerator;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
@@ -630,10 +629,6 @@ class BLINK_PLATFORM_EXPORT Platform {
     return media::AudioLatency::LATENCY_PLAYBACK;
   }
 
-  virtual blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice() {
-    return nullptr;
-  }
-
   virtual base::Optional<std::string> GetWebRTCAudioProcessingConfiguration() {
     return base::nullopt;
   }
@@ -648,6 +643,8 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual bool UsesFakeCodecForPeerConnection() { return false; }
 
   virtual bool IsWebRtcEncryptionEnabled() { return true; }
+
+  virtual bool IsWebRtcStunOriginEnabled() { return false; }
 
   virtual base::Optional<std::string> WebRtcStunProbeTrialParameter() {
     return base::nullopt;

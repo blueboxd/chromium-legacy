@@ -43,6 +43,7 @@ if (safe_browsing_mode == 1) {
     deps = [
       ":cpp",
       "//chrome/services/file_util",
+      "//content/test:test_support",
       "//crypto:platform",
       "//skia",
       "//testing/gmock",

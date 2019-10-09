@@ -111,6 +111,8 @@ class BASE_EXPORT Value {
   // Adaptors for converting from the old way to the new way and vice versa.
   static Value FromUniquePtrValue(std::unique_ptr<Value> val);
   static std::unique_ptr<Value> ToUniquePtrValue(Value val);
+  static const DictionaryValue& AsDictionaryValue(const Value& val);
+  static const ListValue& AsListValue(const Value& val);
 
   Value(Value&& that) noexcept;
   Value() noexcept {}  // A null value

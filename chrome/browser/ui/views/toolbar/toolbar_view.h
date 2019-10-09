@@ -192,7 +192,6 @@ class ToolbarView : public views::AccessiblePaneView,
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   void Layout() override;
-  void OnPaintBackground(gfx::Canvas* canvas) override;
   void OnThemeChanged() override;
   const char* GetClassName() const override;
   bool AcceleratorPressed(const ui::Accelerator& acc) override;

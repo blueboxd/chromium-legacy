@@ -5,7 +5,9 @@
 #ifndef CONTENT_BROWSER_PERMISSIONS_PERMISSION_SERVICE_CONTEXT_H_
 #define CONTENT_BROWSER_PERMISSIONS_PERMISSION_SERVICE_CONTEXT_H_
 
-#include "base/macros.h"
+#include <memory>
+#include <unordered_map>
+
 #include "content/common/content_export.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -32,6 +34,8 @@ class CONTENT_EXPORT PermissionServiceContext : public WebContentsObserver {
  public:
   explicit PermissionServiceContext(RenderFrameHost* render_frame_host);
   explicit PermissionServiceContext(RenderProcessHost* render_process_host);
+  PermissionServiceContext(const PermissionServiceContext&) = delete;
+  PermissionServiceContext& operator=(const PermissionServiceContext&) = delete;
   ~PermissionServiceContext() override;
 
   void CreateService(
@@ -55,7 +59,7 @@ class CONTENT_EXPORT PermissionServiceContext : public WebContentsObserver {
 
   GURL GetEmbeddingOrigin() const;
 
-  RenderFrameHost* render_frame_host() const;
+  RenderFrameHost* render_frame_host() const { return render_frame_host_; }
   RenderProcessHost* render_process_host() const {
     return render_process_host_;
   }
@@ -69,15 +73,13 @@ class CONTENT_EXPORT PermissionServiceContext : public WebContentsObserver {
   void FrameDeleted(RenderFrameHost* render_frame_host) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
-  void CloseBindings(RenderFrameHost*);
+  void CloseBindings(RenderFrameHost* render_frame_host);
 
-  RenderFrameHost* render_frame_host_;
-  RenderProcessHost* render_process_host_;
+  RenderFrameHost* const render_frame_host_;
+  RenderProcessHost* const render_process_host_;
   mojo::UniqueReceiverSet<blink::mojom::PermissionService> services_;
   std::unordered_map<int, std::unique_ptr<PermissionSubscription>>
       subscriptions_;
-
-  DISALLOW_COPY_AND_ASSIGN(PermissionServiceContext);
 };
 
 }  // namespace content

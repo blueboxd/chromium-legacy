@@ -34,6 +34,7 @@ namespace test {
 
 VideoDecoderClient::VideoDecoderClient(
     const VideoPlayer::EventCallback& event_cb,
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     std::unique_ptr<FrameRenderer> renderer,
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
     const VideoDecoderClientConfig& config)
@@ -42,7 +43,8 @@ VideoDecoderClient::VideoDecoderClient(
       frame_processors_(std::move(frame_processors)),
       decoder_client_config_(config),
       decoder_client_thread_("VDAClientDecoderThread"),
-      decoder_client_state_(VideoDecoderClientState::kUninitialized) {
+      decoder_client_state_(VideoDecoderClientState::kUninitialized),
+      gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {
   DETACH_FROM_SEQUENCE(decoder_client_sequence_checker_);
 
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -67,12 +69,13 @@ VideoDecoderClient::~VideoDecoderClient() {
 // static
 std::unique_ptr<VideoDecoderClient> VideoDecoderClient::Create(
     const VideoPlayer::EventCallback& event_cb,
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     std::unique_ptr<FrameRenderer> frame_renderer,
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
     const VideoDecoderClientConfig& config) {
-  auto decoder_client = base::WrapUnique(
-      new VideoDecoderClient(event_cb, std::move(frame_renderer),
-                             std::move(frame_processors), config));
+  auto decoder_client = base::WrapUnique(new VideoDecoderClient(
+      event_cb, gpu_memory_buffer_factory, std::move(frame_renderer),
+      std::move(frame_processors), config));
   if (!decoder_client->CreateDecoder()) {
     return nullptr;
   }
@@ -167,7 +170,7 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
     if (decoder_client_config_.allocation_mode == AllocationMode::kImport) {
       decoder_ = ChromeosVideoDecoderFactory::Create(
           base::ThreadTaskRunnerHandle::Get(),
-          std::make_unique<PlatformVideoFramePool>(),
+          std::make_unique<PlatformVideoFramePool>(gpu_memory_buffer_factory_),
           std::make_unique<VideoFrameConverter>());
     } else {
       LOG(ERROR) << "VD-based video decoders only support import mode";
@@ -179,7 +182,7 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
     // decoders.
     decoder_ = std::make_unique<TestVDAVideoDecoder>(
         decoder_client_config_.allocation_mode, gfx::ColorSpace(),
-        frame_renderer_.get());
+        frame_renderer_.get(), gpu_memory_buffer_factory_);
   }
 
   *success = (decoder_ != nullptr);

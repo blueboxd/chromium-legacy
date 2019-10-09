@@ -348,7 +348,6 @@ test.customizeMenu.testMenu_BackgroundPreviewApplied = function() {
   assertFalse(document.body.classList.contains('alternate-logo'));
   assertEquals(null, $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE1));
   assertEquals(null, $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE2));
-  assertEquals('', $(test.customizeMenu.IDS.CUSTOM_BG_ATTR).href);
 
   // Select a background and check that correct styling and attributes are
   // applied to the page.
@@ -363,7 +362,10 @@ test.customizeMenu.testMenu_BackgroundPreviewApplied = function() {
       $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE2).innerText);
   assertEquals(
       image_tile.dataset.attributionActionUrl,
-      $(test.customizeMenu.IDS.CUSTOM_BG_ATTR).href);
+      $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE1).href);
+  assertEquals(
+      image_tile.dataset.attributionActionUrl,
+      $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE2).href);
 };
 
 /**

@@ -2536,7 +2536,6 @@
 <translation id="5447306928176905178">メモリ情報（JavaScript のヒープ サイズ）がページに報告されるようにする（サポート終了）</translation>
 <translation id="5457065417344056871">ブラウザでゲストモードを有効にする</translation>
 <translation id="5457924070961220141"><ph name="PRODUCT_FRAME_NAME" /> がインストールされている場合、デフォルトの HTML レンダラを設定できます。このポリシーが未設定の場合はデフォルトの設定が使用されホスト ブラウザがレンダリングを実行しますが、この設定をオーバーライドしてデフォルトで <ph name="PRODUCT_FRAME_NAME" /> に HTML ページのレンダリングを実行させることもできます。</translation>
-<translation id="5458584148602890023">電力ピークシフトを有効にする</translation>
 <translation id="5464816904705580310">管理対象ユーザーの設定を行います。</translation>
 <translation id="546726650689747237">画面が暗くなるまでの時間（AC 電源での実行時）</translation>
 <translation id="5469143988693423708">ユーザーは Crostini を実行できます</translation>

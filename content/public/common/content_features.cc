@@ -5,6 +5,10 @@
 #include "content/public/common/content_features.h"
 #include "build/build_config.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace features {
 
 // All features in alphabetical order.
@@ -819,6 +823,10 @@ VideoCaptureServiceConfiguration GetVideoCaptureServiceConfiguration() {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   return VideoCaptureServiceConfiguration::kEnabledForBrowserProcess;
 #else
+#if defined(OS_WIN)
+  if (base::win::GetVersion() <= base::win::Version::WIN7)
+    return VideoCaptureServiceConfiguration::kEnabledForBrowserProcess;
+#endif
   return base::FeatureList::IsEnabled(
              features::kRunVideoCaptureServiceInBrowserProcess)
              ? VideoCaptureServiceConfiguration::kEnabledForBrowserProcess

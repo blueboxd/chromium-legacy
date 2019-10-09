@@ -148,9 +148,6 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
     cache_size_limit_for_testing_ = cache_size_limit_for_testing;
   }
 
-  // BackForwardCache:
-  void DisableForRenderFrameHost(GlobalFrameRoutingId id,
-                                 base::StringPiece reason) override;
   void DisableForTesting(DisableForTestingReason reason) override;
 
  private:

@@ -20,5 +20,13 @@ const char kCrashpadHandler[] = "crashpad-handler";
 const char kCrashpadHandlerPid[] = "crashpad-handler-pid";
 #endif
 
+#if defined(OS_CHROMEOS)
+// A time_t. Passed by session_manager into the Chrome user session, indicating
+// that if Chrome crashes before the indicated time, session_manager will
+// consider this to be a crash-loop situation and log the user out. Chrome
+// mostly just passes this to crash_reporter if it crashes.
+const char kCrashLoopBefore[] = "crash-loop-before";
+#endif
+
 }  // namespace switches
 }  // namespace crash_reporter

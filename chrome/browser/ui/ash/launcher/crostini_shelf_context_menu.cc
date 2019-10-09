@@ -67,10 +67,12 @@ bool CrostiniShelfContextMenu::IsCommandIdEnabled(int command_id) const {
 }
 
 void CrostiniShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
-  if (ExecuteCommonCommand(command_id, event_flags))
-    return;
-
   switch (command_id) {
+    case ash::UNINSTALL:
+      DCHECK_NE(item().id.app_id, crostini::kCrostiniTerminalId);
+      crostini::ShowCrostiniAppUninstallerView(controller()->profile(),
+                                               item().id.app_id);
+      return;
     case ash::STOP_APP:
       if (item().id.app_id == crostini::kCrostiniTerminalId) {
         crostini::CrostiniManager::GetForProfile(controller()->profile())
@@ -93,7 +95,7 @@ void CrostiniShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
       return;
     }
     default:
-      NOTREACHED();
+      ExecuteCommonCommand(command_id, event_flags);
   }
 }
 

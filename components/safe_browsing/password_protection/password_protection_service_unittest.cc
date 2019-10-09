@@ -802,8 +802,8 @@ TEST_P(PasswordProtectionServiceTest,
                reused_password_account_type,
                LoginReputationClientResponse::LOW_REPUTATION, 10 * kMinute,
                GURL(kTargetUrl).host().append("/"), base::Time::Now());
-  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
-                                           10000 /* timeout in ms*/,
+  InitializeAndStartPasswordOnFocusRequest(/*match_whitelist=*/false,
+                                           /*timeout_in_ms=*/10000,
                                            web_contents.get());
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
@@ -821,8 +821,8 @@ TEST_P(PasswordProtectionServiceTest, TestResponseFetchFailed) {
       url_, network::mojom::URLResponseHead::New(), std::string(), status);
   std::unique_ptr<content::WebContents> web_contents = GetWebContents();
 
-  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
-                                           10000 /* timeout in ms */,
+  InitializeAndStartPasswordOnFocusRequest(/*match_whitelist=*/false,
+                                           /*timeout_in_ms=*/10000,
                                            web_contents.get());
   password_protection_service_->WaitForResponse();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
@@ -837,8 +837,8 @@ TEST_P(PasswordProtectionServiceTest, TestMalformedResponse) {
   test_url_loader_factory_.AddResponse(url_.spec(), "invalid response");
   std::unique_ptr<content::WebContents> web_contents = GetWebContents();
 
-  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
-                                           10000 /* timeout in ms */,
+  InitializeAndStartPasswordOnFocusRequest(/*match_whitelist=*/false,
+                                           /*timeout_in_ms=*/10000,
                                            web_contents.get());
   password_protection_service_->WaitForResponse();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
@@ -850,8 +850,8 @@ TEST_P(PasswordProtectionServiceTest, TestMalformedResponse) {
 TEST_P(PasswordProtectionServiceTest, TestRequestTimedout) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
   std::unique_ptr<content::WebContents> web_contents = GetWebContents();
-  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
-                                           0 /* timeout immediately */,
+  InitializeAndStartPasswordOnFocusRequest(/*match_whitelist=*/false,
+                                           /*timeout_in_ms=*/0,
                                            web_contents.get());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
@@ -871,8 +871,8 @@ TEST_P(PasswordProtectionServiceTest,
                                        expected_response.SerializeAsString());
   std::unique_ptr<content::WebContents> web_contents = GetWebContents();
 
-  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
-                                           10000 /* timeout in ms */,
+  InitializeAndStartPasswordOnFocusRequest(/*match_whitelist=*/false,
+                                           /*timeout_in_ms=*/10000,
                                            web_contents.get());
   password_protection_service_->WaitForResponse();
   EXPECT_THAT(
@@ -912,8 +912,8 @@ TEST_P(PasswordProtectionServiceTest,
 
   InitializeAndStartPasswordEntryRequest(
       PasswordType::OTHER_GAIA_PASSWORD, {"gmail.com"},
-      false /* match whitelist */, 10000 /* timeout in ms*/,
-      web_contents.get());
+      /*match_whitelist=*/false,
+      /*timeout_in_ms=*/10000, web_contents.get());
   password_protection_service_->WaitForResponse();
 
   // UMA: request outcomes
@@ -953,8 +953,9 @@ TEST_P(PasswordProtectionServiceTest,
   // Initiate a sync password entry request (w/ no saved password).
   std::unique_ptr<content::WebContents> web_contents = GetWebContents();
   InitializeAndStartPasswordEntryRequest(
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD, {}, false /* match whitelist */,
-      10000 /* timeout in ms*/, web_contents.get());
+      PasswordType::PRIMARY_ACCOUNT_PASSWORD, {},
+      /*match_whitelist=*/false,
+      /*timeout_in_ms=*/10000, web_contents.get());
   password_protection_service_->WaitForResponse();
 
   // UMA: request outcomes
@@ -1005,8 +1006,8 @@ TEST_P(PasswordProtectionServiceTest, VerifyPasswordOnFocusRequestProto) {
                                        expected_response.SerializeAsString());
   std::unique_ptr<content::WebContents> web_contents = GetWebContents();
 
-  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
-                                           100000 /* timeout in ms */,
+  InitializeAndStartPasswordOnFocusRequest(/*match_whitelist=*/false,
+                                           /*timeout_in_ms=*/10000,
                                            web_contents.get());
   password_protection_service_->WaitForResponse();
 
@@ -1022,6 +1023,30 @@ TEST_P(PasswordProtectionServiceTest, VerifyPasswordOnFocusRequestProto) {
   ASSERT_EQ(1, actual_request->frames(1).forms_size());
   EXPECT_EQ(kFormActionUrl, actual_request->frames(1).forms(0).action_url());
   VerifyContentAreaSizeCollection(*actual_request);
+}
+
+TEST_P(PasswordProtectionServiceTest,
+       VerifyPasswordOnFocusRequestProtoForAllowlistMatch) {
+  // Set up valid response.
+  LoginReputationClientResponse expected_response =
+      CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
+                         GURL(kTargetUrl).host());
+  test_url_loader_factory_.AddResponse(url_.spec(),
+                                       expected_response.SerializeAsString());
+  std::unique_ptr<content::WebContents> web_contents = GetWebContents();
+
+  EXPECT_CALL(*password_protection_service_, CanSendSamplePing())
+      .WillRepeatedly(Return(true));
+  InitializeAndStartPasswordOnFocusRequest(/*match_whitelist=*/true,
+                                           /*timeout_in_ms=*/10000,
+                                           web_contents.get());
+  password_protection_service_->WaitForResponse();
+
+  const LoginReputationClientRequest* actual_request =
+      password_protection_service_->GetLatestRequestProto();
+  EXPECT_EQ(kTargetUrl, actual_request->page_url());
+  ASSERT_EQ(1, actual_request->frames_size());
+  EXPECT_EQ(kTargetUrl, actual_request->frames(0).url());
 }
 
 TEST_P(PasswordProtectionServiceTest,

@@ -267,9 +267,11 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
   bool IsDucking() const { return media_session_->is_ducking_; }
 
   base::string16 GetExpectedSourceTitle() {
-    return base::StrCat(
-        {kExpectedSourceTitlePrefix,
-         base::NumberToString16(embedded_test_server()->port())});
+    base::string16 expected_title =
+        base::StrCat({kExpectedSourceTitlePrefix,
+                      base::NumberToString16(embedded_test_server()->port())});
+
+    return expected_title.substr(strlen("http://"));
   }
 
  protected:

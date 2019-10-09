@@ -2624,7 +2624,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5457065417344056871">Bật chế độ khách trong trình duyệt</translation>
 <translation id="5457924070961220141">Cho phép bạn định cấu hình trình kết xuất HTML mặc định khi  <ph name="PRODUCT_FRAME_NAME" /> được cài đặt.
           Cài đặt mặc định, được sử dụng khi không thiết lập chính sách này, cho phép trình duyệt chính thực hiện chức năng hiển thị nhưng bạn có thể tùy chọn ghi đè cài đặt này và yêu cầu  <ph name="PRODUCT_FRAME_NAME" /> hiển thị các trang HTML theo mặc định.</translation>
-<translation id="5458584148602890023">Bật chế độ chuyển đổi điện năng cao điểm</translation>
 <translation id="5464816904705580310">Định cấu hình cài đặt cho người dùng được quản lý.</translation>
 <translation id="546726650689747237">Độ trễ mờ màn hình khi chạy trên nguồn AC</translation>
 <translation id="5469143988693423708">Người dùng được phép chạy Crostini</translation>

@@ -40,6 +40,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
     ~Params();
     base::Optional<int> default_button = base::nullopt;
     bool round_corners = true;
+    bool draggable = false;
   };
 
   DialogDelegate();
@@ -113,10 +114,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // must remain open.
   virtual bool Close();
 
-  // Dialogs should not be draggable unless the dialog can be created with no
-  // parent browser window.
-  virtual bool IsDialogDraggable() const;
-
   // Updates the properties and appearance of |button| which has been created
   // for type |type|. Override to do special initialization above and beyond
   // the typical.
@@ -156,6 +153,8 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   void set_default_button(int button) { params_.default_button = button; }
   void set_use_round_corners(bool round) { params_.round_corners = round; }
+  void set_draggable(bool draggable) { params_.draggable = draggable; }
+  bool draggable() const { return params_.draggable; }
 
  protected:
   ~DialogDelegate() override;

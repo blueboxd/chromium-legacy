@@ -207,9 +207,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // In default Chrome, this tree only has a root node with an unshared
   // FrameNavigationEntry.  Subframes are only added to the tree if the
   // --site-per-process flag is passed.
-  TreeNode* root_node() const {
-    return frame_tree_.get();
-  }
+  TreeNode* root_node() const { return frame_tree_.get(); }
 
   // Finds the TreeNode associated with |frame_tree_node|, if any.
   NavigationEntryImpl::TreeNode* GetTreeNode(
@@ -266,9 +264,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   void RemoveEntryForFrame(FrameTreeNode* frame_tree_node,
                            bool only_if_different_position);
 
-  void set_unique_id(int unique_id) {
-    unique_id_ = unique_id;
-  }
+  void set_unique_id(int unique_id) { unique_id_ = unique_id; }
 
   void set_started_from_context_menu(bool started_from_context_menu) {
     started_from_context_menu_ = started_from_context_menu;
@@ -302,17 +298,11 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // of commit, to ensure that we do not grant it additional bindings if we
   // navigate back to it in the future.  This can only be changed once.
   void SetBindings(int bindings);
-  int bindings() const {
-    return bindings_;
-  }
+  int bindings() const { return bindings_; }
 
-  void set_page_type(PageType page_type) {
-    page_type_ = page_type;
-  }
+  void set_page_type(PageType page_type) { page_type_ = page_type; }
 
-  bool has_virtual_url() const {
-    return !virtual_url_.is_empty();
-  }
+  bool has_virtual_url() const { return !virtual_url_.is_empty(); }
 
   bool update_virtual_url_with_url() const {
     return update_virtual_url_with_url_;
@@ -325,18 +315,14 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   void set_extra_headers(const std::string& extra_headers) {
     extra_headers_ = extra_headers;
   }
-  const std::string& extra_headers() const {
-    return extra_headers_;
-  }
+  const std::string& extra_headers() const { return extra_headers_; }
 
   // Whether this (pending) navigation is renderer-initiated.  Resets to false
   // for all types of navigations after commit.
   void set_is_renderer_initiated(bool is_renderer_initiated) {
     is_renderer_initiated_ = is_renderer_initiated;
   }
-  bool is_renderer_initiated() const {
-    return is_renderer_initiated_;
-  }
+  bool is_renderer_initiated() const { return is_renderer_initiated_; }
 
   void set_user_typed_url(const GURL& user_typed_url) {
     user_typed_url_ = user_typed_url;
@@ -344,12 +330,8 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
 
   // The RestoreType for this entry. This is set if the entry was retored. This
   // is set to RestoreType::NONE once the entry is loaded.
-  void set_restore_type(RestoreType type) {
-    restore_type_ = type;
-  }
-  RestoreType restore_type() const {
-    return restore_type_;
-  }
+  void set_restore_type(RestoreType type) { restore_type_ = type; }
+  RestoreType restore_type() const { return restore_type_; }
 
   // The ReloadType for this entry.  This is set when a reload is requested.
   // This is set to ReloadType::NONE if the entry isn't for a reload, or once
@@ -359,9 +341,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
 
   // Whether this (pending) navigation needs to replace current entry.
   // Resets to false after commit.
-  bool should_replace_entry() const {
-    return should_replace_entry_;
-  }
+  bool should_replace_entry() const { return should_replace_entry_; }
 
   void set_should_replace_entry(bool should_replace_entry) {
     should_replace_entry_ = should_replace_entry;
@@ -369,18 +349,14 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
 
   // Whether this (pending) navigation should clear the session history. Resets
   // to false after commit.
-  bool should_clear_history_list() const {
-    return should_clear_history_list_;
-  }
+  bool should_clear_history_list() const { return should_clear_history_list_; }
   void set_should_clear_history_list(bool should_clear_history_list) {
     should_clear_history_list_ = should_clear_history_list;
   }
 
   // Indicates which FrameTreeNode to navigate.  Currently only used if the
   // --site-per-process flag is passed.
-  int frame_tree_node_id() const {
-    return frame_tree_node_id_;
-  }
+  int frame_tree_node_id() const { return frame_tree_node_id_; }
   void set_frame_tree_node_id(int frame_tree_node_id) {
     frame_tree_node_id_ = frame_tree_node_id;
   }
@@ -393,9 +369,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   void set_ssl_error(bool error) { ssl_error_ = error; }
   bool ssl_error() const { return ssl_error_; }
 
-  bool has_user_gesture() const {
-    return has_user_gesture_;
-  }
+  bool has_user_gesture() const { return has_user_gesture_; }
 
   void set_has_user_gesture(bool has_user_gesture) {
     has_user_gesture_ = has_user_gesture;

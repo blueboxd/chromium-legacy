@@ -343,6 +343,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/display/display.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/caption_style.h"
 #include "ui/native_theme/native_theme.h"
@@ -2239,7 +2240,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if defined(OS_CHROMEOS)
   if (ChromeCrashReporterClient::ShouldPassCrashLoopBefore(process_type)) {
     static const char* const kSwitchNames[] = {
-        switches::kCrashLoopBefore,
+        crash_reporter::switches::kCrashLoopBefore,
     };
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    base::size(kSwitchNames));
@@ -5599,6 +5600,13 @@ ChromeContentBrowserClient::GetWideColorGamutHeuristic() {
   if (features::UseDisplayWideColorGamut()) {
     return WideColorGamutHeuristic::kUseDisplay;
   }
+
+  if (display::Display::HasForceDisplayColorProfile() &&
+      display::Display::GetForcedDisplayColorProfile() ==
+          gfx::ColorSpace::CreateDisplayP3D65()) {
+    return WideColorGamutHeuristic::kUseDisplay;
+  }
+
   return WideColorGamutHeuristic::kNone;
 }
 #endif

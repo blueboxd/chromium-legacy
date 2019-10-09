@@ -25,6 +25,7 @@
 namespace ash {
 
 class HomeLauncherGestureHandlerObserver;
+class DragWindowFromShelfController;
 
 // HomeLauncherGestureHandler makes modifications to a window's transform and
 // opacity when gesture drag events are received and forwarded to it.
@@ -60,7 +61,8 @@ class ASH_EXPORT HomeLauncherGestureHandler
   // was not processed.
   bool OnPressEvent(Mode mode, const gfx::Point& location);
   bool OnScrollEvent(const gfx::Point& location, float scroll_y);
-  bool OnReleaseEvent(const gfx::Point& location);
+  bool OnReleaseEvent(const gfx::Point& location,
+                      base::Optional<float> velocity_y);
 
   // Cancel a current drag and animates the items to their final state based on
   // |last_event_location_|.
@@ -101,7 +103,6 @@ class ASH_EXPORT HomeLauncherGestureHandler
 
  private:
   class ScopedWindowModifier;
-  class DragWindowFromShelfController;
 
   FRIEND_TEST_ALL_PREFIXES(HomeLauncherModeGestureHandlerTest,
                            AnimatingToEndResetsState);
@@ -157,8 +158,10 @@ class ASH_EXPORT HomeLauncherGestureHandler
   // Called by OnPress/Scroll/ReleaseEvent() when the drag from the shelf or
   // from the top starts/continues/ends. |location| is in screen coordinate.
   void OnDragStarted(const gfx::Point& location);
-  void OnDragContinued(const gfx::Point& location);
-  bool OnDragEnded(const gfx::Point& location);
+  void OnDragContinued(const gfx::Point& location, float scroll_y);
+  bool OnDragEnded(const gfx::Point& location,
+                   base::Optional<float> velocity_y);
+  void OnDragCancelled();
 
   Mode mode_ = Mode::kNone;
 

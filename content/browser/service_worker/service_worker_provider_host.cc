@@ -122,7 +122,7 @@ void CreateIDBFactoryImpl(
   if (!process)
     return;
 
-  process->BindIndexedDB(origin, std::move(receiver));
+  process->BindIndexedDB(MSG_ROUTING_NONE, origin, std::move(receiver));
 }
 
 void CreatePermissionServiceImpl(

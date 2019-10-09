@@ -17,6 +17,7 @@ import android.webkit.WebSettings;
 
 import androidx.annotation.IntDef;
 
+import org.chromium.android_webview.safe_browsing.AwSafeBrowsingConfigHelper;
 import org.chromium.android_webview.settings.ForceDarkBehavior;
 import org.chromium.android_webview.settings.ForceDarkMode;
 import org.chromium.base.ContextUtils;

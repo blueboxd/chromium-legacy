@@ -229,8 +229,8 @@
 <translation id="4261870227682513959">Hiển thị các tùy chọn cài đặt thông báo. Thông báo hiện đang tắt</translation>
 <translation id="4269883910223712419">Quản trị viên của thiết bị này có thể:</translation>
 <translation id="4279490309300973883">Đang phản chiếu</translation>
-<translation id="4281007048406351813">Thêm 1 phút vào bộ hẹn giờ</translation>
 <translation id="4296136865091727875">Xóa tất cả <ph name="COUNT" /> thông báo</translation>
+<translation id="4303223480529385476">Mở rộng khu vực trạng thái</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Bạn đã nhấn phím tắt của chế độ tương phản cao. Bạn có muốn bật chế độ này không?</translation>
 <translation id="4331809312908958774">Hệ điều hành Chrome</translation>
@@ -406,6 +406,7 @@
 <translation id="7015766095477679451">Quay lại lúc <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Kết nối <ph name="DEVICE_NAME" /> với điện thoại của bạn</translation>
 <translation id="7029814467594812963">Thoát khỏi phiên</translation>
+<translation id="7042322267639375032">Thu gọn khu vực trạng thái</translation>
 <translation id="7066646422045619941">Mạng này bị quản trị viên của bạn tắt.</translation>
 <translation id="7067196344162293536">Tự động xoay</translation>
 <translation id="7068360136237591149">Mở tệp</translation>
@@ -417,7 +418,6 @@
 <translation id="7143207342074048698">Đang kết nối</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7222902781030499995">Dừng lịch hẹn giờ</translation>
 <translation id="7256634071279256947">Micrô mặt sau</translation>
 <translation id="726276584504105859">Kéo vào đây để sử dụng chế độ chia đôi màn hình</translation>
 <translation id="7262906531272962081">Tạo lời nhắc</translation>

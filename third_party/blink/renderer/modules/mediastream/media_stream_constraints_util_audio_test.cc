@@ -34,22 +34,6 @@ using blink::AudioCaptureSettings;
 using blink::AudioProcessingProperties;
 using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
 
-// Test blink::Platform imlementation that overrides the known methods needed
-// by the tests, including creation of WebRtcAudioDevice instances.
-class WebRtcAudioDeviceTestingPlatformSupport
-    : public IOTaskRunnerTestingPlatformSupport {
- public:
-  WebRtcAudioDeviceTestingPlatformSupport()
-      : webrtc_audio_device_(
-            new rtc::RefCountedObject<WebRtcAudioDeviceImpl>()) {}
-  blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice() override {
-    return webrtc_audio_device_.get();
-  }
-
- private:
-  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device_;
-};
-
 namespace {
 
 using BoolSetFunction = void (blink::BooleanConstraint::*)(bool);
@@ -450,8 +434,7 @@ class MediaStreamConstraintsUtilAudioTestBase {
       blink::WebString::FromASCII("system")};
 
  private:
-  ScopedTestingPlatformSupport<WebRtcAudioDeviceTestingPlatformSupport>
-      platform_;
+  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
 };
 
 class MediaStreamConstraintsUtilAudioTest

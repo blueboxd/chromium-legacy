@@ -139,7 +139,8 @@ BrowserViewLayout::BrowserViewLayout(
     InfoBarContainerView* infobar_container,
     views::View* contents_container,
     ImmersiveModeController* immersive_mode_controller,
-    views::View* web_footer_experiment)
+    views::View* web_footer_experiment,
+    views::View* contents_separator)
     : delegate_(std::move(delegate)),
       browser_(browser),
       browser_view_(browser_view),
@@ -151,6 +152,7 @@ BrowserViewLayout::BrowserViewLayout(
       contents_container_(contents_container),
       immersive_mode_controller_(immersive_mode_controller),
       web_footer_experiment_(web_footer_experiment),
+      contents_separator_(contents_separator),
       tab_strip_(tab_strip),
       dialog_host_(std::make_unique<WebContentsModalDialogHostViews>(this)) {}
 
@@ -188,10 +190,8 @@ gfx::Size BrowserViewLayout::GetMinimumSize(const views::View* host) const {
                              ? toolbar_->GetMinimumSize()
                              : gfx::Size());
   gfx::Size bookmark_bar_size;
-  if (has_bookmarks_bar) {
+  if (has_bookmarks_bar)
     bookmark_bar_size = bookmark_bar_->GetMinimumSize();
-    bookmark_bar_size.Enlarge(0, -bookmark_bar_->GetToolbarOverlap());
-  }
   gfx::Size infobar_container_size(infobar_container_->GetMinimumSize());
   // TODO(pkotwicz): Adjust the minimum height for the find bar.
 
@@ -435,30 +435,38 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top, int browser_view_y) {
     top = std::max(toolbar_->bounds().bottom(), LayoutBookmarkBar(top));
   }
 
+  if ((toolbar_->GetVisible() || bookmark_bar_) && top > 0) {
+    contents_separator_->SetVisible(true);
+    const int separator_height =
+        contents_separator_->GetPreferredSize().height();
+    contents_separator_->SetBounds(vertical_layout_rect_.x(), top,
+                                   vertical_layout_rect_.width(),
+                                   separator_height);
+    top += separator_height;
+  } else {
+    contents_separator_->SetVisible(false);
+  }
+
   return LayoutInfoBar(top);
 }
 
 int BrowserViewLayout::LayoutBookmarkBar(int top) {
-  int y = top;
   if (!delegate_->IsBookmarkBarVisible()) {
     bookmark_bar_->SetVisible(false);
     // TODO(jamescook): Don't change the bookmark bar height when it is
     // invisible, so we can use its height for layout even in that state.
-    bookmark_bar_->SetBounds(0, y, browser_view_->width(), 0);
-    return y;
+    bookmark_bar_->SetBounds(0, top, browser_view_->width(), 0);
+    return top;
   }
 
   bookmark_bar_->SetInfoBarVisible(IsInfobarVisible());
   int bookmark_bar_height = bookmark_bar_->GetPreferredSize().height();
-  y -= bookmark_bar_->GetToolbarOverlap();
-  bookmark_bar_->SetBounds(vertical_layout_rect_.x(),
-                           y,
-                           vertical_layout_rect_.width(),
-                           bookmark_bar_height);
+  bookmark_bar_->SetBounds(vertical_layout_rect_.x(), top,
+                           vertical_layout_rect_.width(), bookmark_bar_height);
   // Set visibility after setting bounds, as the visibility update uses the
   // bounds to determine if the mouse is hovering over a button.
   bookmark_bar_->SetVisible(true);
-  return y + bookmark_bar_height;
+  return top + bookmark_bar_height;
 }
 
 int BrowserViewLayout::LayoutInfoBar(int top) {

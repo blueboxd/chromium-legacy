@@ -20,6 +20,12 @@ message FlaggedPage {
   optional FlagType type = 2;
 }
 
+message UrlPattern {
+  // |pattern| is a full URL, without scheme/username/password/port, such as
+  // example.test/test-path-for-safety-tips/test.html.
+  optional string pattern = 1;
+}
+
 // Configuration for the safety tips component. A binary version of this proto
 // will be distributed to Chrome clients via component updater. The binary will
 // contain a single instance of this message.
@@ -28,6 +34,10 @@ message SafetyTipsConfig {
 
   // List of flagged pages on which to show an experimental Safety Tip UX that
   // warns the user about possible unwanted behavior or deception.
-  // This does not need to be sorted and can contain duplicates.
+  // This needs to be sorted and can contain duplicates.
   repeated FlaggedPage flagged_page = 2;
+
+  // List of URL patterns that must be explicitly allowed. This needs to be
+  // sorted and can contain duplicates.
+  repeated UrlPattern allowed_pattern = 3;
 }

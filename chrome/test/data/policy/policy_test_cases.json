@@ -411,6 +411,14 @@
     ]
   },
 
+  "PrintJobHistoryExpirationPeriod": {
+    "os": ["chromeos"],
+    "test_policy": { "PrintJobHistoryExpirationPeriod": 90 },
+    "pref_mappings": [
+      { "pref": "printing.print_job_history_expiration_period" }
+    ]
+  },
+
   "CloudPrintSubmitEnabled": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "CloudPrintSubmitEnabled": false },

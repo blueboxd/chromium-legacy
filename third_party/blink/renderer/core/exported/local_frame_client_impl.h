@@ -239,8 +239,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   BlameContext* GetFrameBlameContext() override;
 
-  WebURLRequest::PreviewsState GetPreviewsStateForFrame() const override;
-
   KURL OverrideFlashEmbedWithHTML(const KURL&) override;
 
   void NotifyUserActivation(bool need_browser_verification) override;

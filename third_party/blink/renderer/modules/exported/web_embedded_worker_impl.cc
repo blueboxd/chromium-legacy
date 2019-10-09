@@ -35,6 +35,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"

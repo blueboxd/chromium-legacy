@@ -122,6 +122,11 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   static std::unique_ptr<content::NavigationThrottle>
   MaybeCreateNavigationThrottle(content::NavigationHandle* handle);
 
+  // Updates the WebContents inspected by the DevToolsWindow by reattaching
+  // the binding to |new_web_contents|. Called when swapping an outer
+  // WebContents with its inner WebContents.
+  void UpdateInspectedWebContents(content::WebContents* new_web_contents);
+
   // Sets closure to be called after load is done. If already loaded, calls
   // closure immediately.
   void SetLoadCompletedCallback(const base::Closure& closure);

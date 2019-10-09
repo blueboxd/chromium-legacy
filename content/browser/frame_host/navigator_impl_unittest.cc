@@ -46,13 +46,9 @@ class NavigatorTest : public RenderViewHostImplTestHarness {
   using SiteInstanceDescriptor = RenderFrameHostManager::SiteInstanceDescriptor;
   using SiteInstanceRelation = RenderFrameHostManager::SiteInstanceRelation;
 
-  void SetUp() override {
-    RenderViewHostImplTestHarness::SetUp();
-  }
+  void SetUp() override { RenderViewHostImplTestHarness::SetUp(); }
 
-  void TearDown() override {
-    RenderViewHostImplTestHarness::TearDown();
-  }
+  void TearDown() override { RenderViewHostImplTestHarness::TearDown(); }
 
   TestNavigationURLLoader* GetLoaderForNavigationRequest(
       NavigationRequest* request) const {

@@ -17,8 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @optional
 
 // Called when sync has started. Check |syncController|'s |passphraseNeeded|
-// property to see if |unlockWithPassphrase:| is necessary, and also check
-// |consentNeeded| to see if |consent| is necessary.
+// property to see if |unlockWithPassphrase:| is necessary.
 - (void)syncControllerDidStartSync:(CWVSyncController*)syncController;
 
 // Called when sync fails. |error|'s code is a CWVSyncError.

@@ -380,11 +380,13 @@ void ServiceWorkerContextWrapper::OnStarted(int64_t version_id,
                                             const GURL& script_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  bool inserted = running_service_workers_.emplace(version_id).second;
-  DCHECK(inserted);
+  auto insertion_result = running_service_workers_.insert(std::make_pair(
+      version_id, ServiceWorkerRunningInfo(script_url, scope, process_id)));
+  DCHECK(insertion_result.second);
+
+  const auto& running_info = insertion_result.first->second;
   for (auto& observer : observer_list_) {
-    observer.OnVersionStartedRunning(this, version_id, scope, process_id,
-                                     script_url);
+    observer.OnVersionStartedRunning(this, version_id, running_info);
   }
 }
 
@@ -402,10 +404,10 @@ void ServiceWorkerContextWrapper::OnStopped(int64_t version_id) {
 void ServiceWorkerContextWrapper::OnDeleteAndStartOver() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  for (int version_id : running_service_workers_) {
-    for (auto& observer : observer_list_) {
+  for (const auto& kv : running_service_workers_) {
+    int64_t version_id = kv.first;
+    for (auto& observer : observer_list_)
       observer.OnVersionStoppedRunning(this, version_id);
-    }
   }
   running_service_workers_.clear();
 }
@@ -797,26 +799,9 @@ void ServiceWorkerContextWrapper::StopAllServiceWorkers(
           std::move(callback), base::ThreadTaskRunnerHandle::Get()));
 }
 
-void ServiceWorkerContextWrapper::GetAllServiceWorkerRunningInfos(
-    GetAllServiceWorkerRunningInfosCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RunOrPostTaskOnCoreThread(
-      FROM_HERE, base::BindOnce(&ServiceWorkerContextWrapper::
-                                    GetAllServiceWorkerRunningInfosOnCoreThread,
-                                this, std::move(callback),
-                                base::ThreadTaskRunnerHandle::Get()));
-}
-
-void ServiceWorkerContextWrapper::GetServiceWorkerRunningInfo(
-    int64_t version_id,
-    GetServiceWorkerRunningInfoCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RunOrPostTaskOnCoreThread(
-      FROM_HERE,
-      base::BindOnce(
-          &ServiceWorkerContextWrapper::GetServiceWorkerRunningInfoOnCoreThread,
-          this, version_id, std::move(callback),
-          base::ThreadTaskRunnerHandle::Get()));
+const base::flat_map<int64_t, ServiceWorkerRunningInfo>&
+ServiceWorkerContextWrapper::GetRunningServiceWorkerInfos() {
+  return running_service_workers_;
 }
 
 ServiceWorkerRegistration* ServiceWorkerContextWrapper::GetLiveRegistration(
@@ -1794,59 +1779,6 @@ void ServiceWorkerContextWrapper::StopAllServiceWorkersOnCoreThread(
 ServiceWorkerContextCore* ServiceWorkerContextWrapper::context() {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
   return context_core_.get();
-}
-
-void ServiceWorkerContextWrapper::GetAllServiceWorkerRunningInfosOnCoreThread(
-    GetAllServiceWorkerRunningInfosCallback callback,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback) {
-  DCHECK_CURRENTLY_ON(GetCoreThreadId());
-  std::vector<ServiceWorkerVersionInfo> live_versions = GetAllLiveVersionInfo();
-  std::vector<ServiceWorkerRunningInfo> live_versions_running_info;
-  for (const auto& version_info : live_versions) {
-    if (IsRunningStatus(version_info.running_status)) {
-      live_versions_running_info.emplace_back(
-          ExtractServiceWorkerRunningInfoFromVersionInfo(version_info));
-    }
-  }
-
-  task_runner_for_callback->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback),
-                                static_cast<ServiceWorkerContext*>(this),
-                                std::move(live_versions_running_info)));
-}
-
-void ServiceWorkerContextWrapper::GetServiceWorkerRunningInfoOnCoreThread(
-    int64_t version_id,
-    GetServiceWorkerRunningInfoCallback callback,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback) {
-  DCHECK_CURRENTLY_ON(GetCoreThreadId());
-  ServiceWorkerVersion* version = GetLiveVersion(version_id);
-  if (version && IsRunningStatus(version->running_status())) {
-    ServiceWorkerVersionInfo info = version->GetInfo();
-    task_runner_for_callback->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback),
-                       static_cast<ServiceWorkerContext*>(this),
-                       ExtractServiceWorkerRunningInfoFromVersionInfo(info)));
-  } else {
-    task_runner_for_callback->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  static_cast<ServiceWorkerContext*>(this),
-                                  ServiceWorkerRunningInfo()));
-  }
-}
-
-ServiceWorkerRunningInfo
-ServiceWorkerContextWrapper::ExtractServiceWorkerRunningInfoFromVersionInfo(
-    const ServiceWorkerVersionInfo& version_info) {
-  return ServiceWorkerRunningInfo(version_info.script_url,
-                                  version_info.version_id,
-                                  version_info.process_id);
-}
-
-bool ServiceWorkerContextWrapper::IsRunningStatus(EmbeddedWorkerStatus status) {
-  return status == EmbeddedWorkerStatus::RUNNING ||
-         status == EmbeddedWorkerStatus::STOPPING;
 }
 
 std::unique_ptr<blink::URLLoaderFactoryBundleInfo> ServiceWorkerContextWrapper::

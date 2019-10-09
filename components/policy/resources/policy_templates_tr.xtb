@@ -2613,7 +2613,6 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
 <translation id="5457065417344056871">Tarayıcıda misafir modunu etkinleştir</translation>
 <translation id="5457924070961220141"><ph name="PRODUCT_FRAME_NAME" /> yüklendiğinde varsayılan HTML oluşturucusunu yapılandırabilmenizi sağlar.
           Bu politika ayarlanmadan bırakılırsa kullanılan varsayılan ayar, oluşturma işlemini ana makine tarayıcısının yapmasına izin vermektir, ancak isteğe bağlı olarak bu ayarı geçersiz kılabilir ve HTML sayfalarını oluşturma işleminin varsayılan olarak <ph name="PRODUCT_FRAME_NAME" /> tarafından yapılmasını sağlayabilirsiniz.</translation>
-<translation id="5458584148602890023">Güç tüketimi en üst düzeydeyken pil kullanımına geçmeyi etkinleştir</translation>
 <translation id="5464816904705580310">Yönetilen kullanıcılar için ayarları yapılandırın.</translation>
 <translation id="546726650689747237">AC güçle çalışırken ekran karartma gecikmesi</translation>
 <translation id="5469143988693423708">Kullanıcının Crostini'yi çalıştırmasına izin verilir</translation>

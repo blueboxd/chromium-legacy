@@ -304,13 +304,9 @@ std::string ContainerIdToString(const ContainerId& container_id) {
 }
 
 bool IsUninstallable(Profile* profile, const std::string& app_id) {
-  if (!CrostiniFeatures::Get()->IsEnabled(profile))
+  if (!CrostiniFeatures::Get()->IsEnabled(profile) ||
+      app_id == kCrostiniTerminalId) {
     return false;
-  if (app_id == kCrostiniTerminalId &&
-      !crostini::CrostiniManager::GetForProfile(profile)
-           ->GetInstallerViewStatus()) {
-    // Crostini should not be uninstalled if the installer is still running.
-    return true;
   }
   CrostiniRegistryService* registry_service =
       CrostiniRegistryServiceFactory::GetForProfile(profile);

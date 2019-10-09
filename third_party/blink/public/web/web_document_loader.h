@@ -39,6 +39,7 @@
 #include "third_party/blink/public/platform/web_archive_info.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_source_location.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 
@@ -151,6 +152,9 @@ class BLINK_EXPORT WebDocumentLoader {
   // loading was successful, more information about the archive. Note that this
   // can return true even if archive loading ended up failing.
   virtual bool HasBeenLoadedAsWebArchive() const = 0;
+
+  // Returns the previews state for the document.
+  virtual WebURLRequest::PreviewsState GetPreviewsState() const = 0;
 
   // Returns archive info for the archive.
   virtual WebArchiveInfo GetArchiveInfo() const = 0;

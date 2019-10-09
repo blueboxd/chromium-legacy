@@ -2276,6 +2276,8 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
     } else if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
                name == html_names::kRendersubtreeAttr &&
                params.old_value != params.new_value) {
+      UseCounter::Count(GetDocument(), WebFeature::kRenderSubtreeAttribute);
+
       // This is needed to ensure that proper containment is put in place.
       SetNeedsStyleRecalc(kLocalStyleChange,
                           StyleChangeReasonForTracing::FromAttribute(name));

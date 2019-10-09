@@ -82,6 +82,7 @@ Polymer({
    */
   reloadContent: function(data) {
     this.voiceMatchEnforcedOff = data['voiceMatchEnforcedOff'];
+    this.voiceMatchDisabled = loadTimeData.getBoolean('voiceMatchDisabled');
     data['flowType'] = this.flowType;
     this.$['value-prop'].reloadContent(data);
     this.$['third-party'].reloadContent(data);
@@ -118,7 +119,7 @@ Polymer({
         this.showScreen(this.$['third-party']);
         break;
       case this.$['third-party']:
-        if (this.voiceMatchEnforcedOff) {
+        if (this.voiceMatchEnforcedOff || this.voiceMatchDisabled) {
           this.showScreen(this.$['get-more']);
         } else {
           this.showScreen(this.$['voice-match']);

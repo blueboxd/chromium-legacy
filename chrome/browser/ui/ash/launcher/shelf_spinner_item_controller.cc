@@ -25,10 +25,6 @@ void ShelfSpinnerItemController::SetHost(
   host_ = host;
 }
 
-base::TimeDelta ShelfSpinnerItemController::GetActiveTime() const {
-  return base::Time::Now() - start_time_;
-}
-
 void ShelfSpinnerItemController::ExecuteCommand(bool from_context_menu,
                                                 int64_t command_id,
                                                 int32_t event_flags,

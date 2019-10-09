@@ -58,7 +58,7 @@ ThreadManager::ThreadManager(base::TimeTicks initial_time,
                                      test_task_runner_->GetMockTickClock());
 
   TaskQueue::Spec spec = TaskQueue::Spec("default_task_queue");
-  task_queues_.emplace_back(std::make_unique<TaskQueueWithVoters>(
+  task_queues_.emplace_back(MakeRefCounted<TaskQueueWithVoters>(
       manager_->CreateTaskQueueWithType<TestTaskQueue>(spec)));
 }
 
@@ -157,7 +157,7 @@ void ThreadManager::ExecuteCreateTaskQueueAction(
   TestTaskQueue* chosen_task_queue;
   {
     AutoLock lock(lock_);
-    task_queues_.emplace_back(std::make_unique<TaskQueueWithVoters>(
+    task_queues_.emplace_back(MakeRefCounted<TaskQueueWithVoters>(
         manager_->CreateTaskQueueWithType<TestTaskQueue>(spec)));
     chosen_task_queue = task_queues_.back()->queue.get();
   }
@@ -197,7 +197,10 @@ void ThreadManager::PostDelayedTask(
     uint64_t task_queue_id,
     uint32_t delay_ms,
     const SequenceManagerTestDescription::Task& task) {
-  TestTaskQueue* chosen_task_queue =
+  // PostDelayedTask could be called cross-thread - therefore we need a
+  // refptr to the TestTaskQueue which could potentially be deleted by the
+  // thread on which ThreadManager lives.
+  scoped_refptr<TestTaskQueue> chosen_task_queue =
       GetTaskQueueFor(task_queue_id)->queue.get();
 
   std::unique_ptr<Task> pending_task = std::make_unique<Task>(this);
@@ -240,7 +243,7 @@ void ThreadManager::ExecuteSetQueueEnabledAction(
                                   ActionForTest::ActionType::kSetQueueEnabled,
                                   NowTicks());
 
-  TaskQueueWithVoters* chosen_task_queue =
+  scoped_refptr<TaskQueueWithVoters> chosen_task_queue =
       GetTaskQueueFor(action.task_queue_id());
 
   if (chosen_task_queue->voters.IsEmpty()) {
@@ -261,7 +264,7 @@ void ThreadManager::ExecuteCreateQueueVoterAction(
                                   ActionForTest::ActionType::kCreateQueueVoter,
                                   NowTicks());
 
-  TaskQueueWithVoters* chosen_task_queue =
+  scoped_refptr<TaskQueueWithVoters> chosen_task_queue =
       GetTaskQueueFor(action.task_queue_id());
   chosen_task_queue->voters.push_back(
       chosen_task_queue->queue.get()->CreateQueueEnabledVoter());
@@ -326,7 +329,7 @@ void ThreadManager::ExecuteInsertFenceAction(
                                   ActionForTest::ActionType::kInsertFence,
                                   NowTicks());
 
-  TestTaskQueue* chosen_task_queue =
+  scoped_refptr<TestTaskQueue> chosen_task_queue =
       GetTaskQueueFor(action.task_queue_id())->queue.get();
 
   if (action.position() ==
@@ -347,7 +350,7 @@ void ThreadManager::ExecuteRemoveFenceAction(
                                   ActionForTest::ActionType::kRemoveFence,
                                   NowTicks());
 
-  TestTaskQueue* chosen_task_queue =
+  scoped_refptr<TestTaskQueue> chosen_task_queue =
       GetTaskQueueFor(action.task_queue_id())->queue.get();
   chosen_task_queue->RemoveFence();
 }
@@ -391,7 +394,8 @@ void ThreadManager::DeleteTask(Task* task) {
     pending_tasks_.erase(pending_tasks_.begin() + i);
 }
 
-TaskQueueWithVoters* ThreadManager::GetTaskQueueFor(uint64_t task_queue_id) {
+scoped_refptr<TaskQueueWithVoters> ThreadManager::GetTaskQueueFor(
+    uint64_t task_queue_id) {
   AutoLock lock(lock_);
   DCHECK(!task_queues_.IsEmpty());
   return task_queues_[task_queue_id % task_queues_.size()].get();

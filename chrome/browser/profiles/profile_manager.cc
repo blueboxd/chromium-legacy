@@ -371,7 +371,7 @@ ProfileManager::~ProfileManager() {
 // static
 void ProfileManager::ShutdownSessionServices() {
   ProfileManager* pm = g_browser_process->profile_manager();
-  if (!pm)  // Is NULL when running unit tests.
+  if (!pm)  // Is nullptr when running unit tests.
     return;
   std::vector<Profile*> profiles(pm->GetLoadedProfiles());
   for (size_t i = 0; i < profiles.size(); ++i)
@@ -549,13 +549,13 @@ void ProfileManager::CreateProfileAsync(const base::FilePath& profile_path,
   // Make sure that this profile is not pending deletion.
   if (IsProfileDirectoryMarkedForDeletion(profile_path)) {
     if (!callback.is_null())
-      callback.Run(NULL, Profile::CREATE_STATUS_LOCAL_FAIL);
+      callback.Run(nullptr, Profile::CREATE_STATUS_LOCAL_FAIL);
     return;
   }
 
   // Create the profile if needed and collect its ProfileInfo.
   auto iter = profiles_info_.find(profile_path);
-  ProfileInfo* info = NULL;
+  ProfileInfo* info = nullptr;
 
   if (iter != profiles_info_.end()) {
     info = iter->second.get();
@@ -1133,7 +1133,7 @@ void ProfileManager::OnProfileCreated(Profile* profile,
     if (go_off_the_record)
       profile = profile->GetOffTheRecordProfile();
   } else {
-    profile = NULL;
+    profile = nullptr;
     profiles_info_.erase(iter);
   }
 
@@ -1154,11 +1154,12 @@ void ProfileManager::OnProfileCreated(Profile* profile,
                          Profile::CREATE_STATUS_LOCAL_FAIL);
 }
 
-Profile* ProfileManager::CreateProfileHelper(const base::FilePath& path) {
+std::unique_ptr<Profile> ProfileManager::CreateProfileHelper(
+    const base::FilePath& path) {
   TRACE_EVENT0("browser", "ProfileManager::CreateProfileHelper");
 
-  return Profile::CreateProfile(path, nullptr, Profile::CREATE_MODE_SYNCHRONOUS)
-      .release();
+  return Profile::CreateProfile(path, nullptr,
+                                Profile::CREATE_MODE_SYNCHRONOUS);
 }
 
 std::unique_ptr<Profile> ProfileManager::CreateProfileAsyncHelper(
@@ -1392,12 +1393,14 @@ Profile* ProfileManager::CreateAndInitializeProfile(
   // already started loading the profile but it is not fully initialized yet,
   // which would make Bad Things happen if we returned it.
   CHECK(!GetProfileByPathInternal(profile_dir));
-  Profile* profile = CreateProfileHelper(profile_dir);
-  if (profile) {
-    bool result = AddProfile(base::WrapUnique(profile));
-    DCHECK(result);
-  }
-  return profile;
+  std::unique_ptr<Profile> profile = CreateProfileHelper(profile_dir);
+  if (!profile)
+    return nullptr;
+
+  Profile* profile_ptr = profile.get();
+  bool result = AddProfile(std::move(profile));
+  DCHECK(result);
+  return profile_ptr;
 }
 
 #if !defined(OS_ANDROID)
@@ -1410,8 +1413,7 @@ void ProfileManager::EnsureActiveProfileExistsBeforeDeletion(
   const base::FilePath guest_profile_path = GetGuestProfilePath();
   Profile* last_used_profile = GetProfileByPath(last_used_profile_path);
   if (last_used_profile_path != profile_dir &&
-      last_used_profile_path != guest_profile_path &&
-      last_used_profile != nullptr &&
+      last_used_profile_path != guest_profile_path && last_used_profile &&
       !last_used_profile->IsLegacySupervised()) {
     FinishDeletingProfile(profile_dir, last_used_profile_path);
     return;
@@ -1563,8 +1565,8 @@ ProfileManager::ProfileInfo* ProfileManager::RegisterProfile(
 
 ProfileManager::ProfileInfo* ProfileManager::GetProfileInfoByPath(
     const base::FilePath& path) const {
-  auto iter = profiles_info_.find(path);
-  return (iter == profiles_info_.end()) ? NULL : iter->second.get();
+  auto it = profiles_info_.find(path);
+  return it != profiles_info_.end() ? it->second.get() : nullptr;
 }
 
 void ProfileManager::AddProfileToStorage(Profile* profile) {

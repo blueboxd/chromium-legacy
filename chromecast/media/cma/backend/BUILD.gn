@@ -51,20 +51,6 @@ cast_source_set("backend") {
 # libcast_media_1.0.so. This target is only used to build executables
 # with correct linkage information.
 cast_shared_library("libcast_media_1.0") {
-  if (is_cast_desktop_build) {
-    deps = [
-      "//chromecast/media/cma/backend/desktop",
-    ]
-  } else {
-    deps = [
-      ":dummy",
-    ]
-  }
-}
-
-# Dummy implementation of media backend used on chromecast devices.
-# Must not depend on anything outside //chromecast/public.
-cast_source_set("dummy") {
   sources = [
     "cast_media_dummy.cc",
   ]

@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -180,6 +181,8 @@ class RenderingHelper {
 
   scoped_refptr<gl::GLContext> gl_context_;
   scoped_refptr<gl::GLSurface> gl_surface_;
+
+  std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 
   std::vector<RenderedVideo> videos_;
 

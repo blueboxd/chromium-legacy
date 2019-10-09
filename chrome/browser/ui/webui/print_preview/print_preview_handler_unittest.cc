@@ -701,7 +701,7 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
 
   // Simulate renderer responses: PageLayoutReady, PageCountReady,
   // PagePreviewReady, and OnPrintPreviewReady will be called in that order.
-  base::DictionaryValue layout;
+  base::Value layout(base::Value::Type::DICTIONARY);
   layout.SetDoubleKey(kSettingMarginTop, 34.0);
   layout.SetDoubleKey(kSettingMarginLeft, 34.0);
   layout.SetDoubleKey(kSettingMarginBottom, 34.0);
@@ -712,7 +712,8 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
   layout.SetIntKey(kSettingPrintableAreaY, 17);
   layout.SetIntKey(kSettingPrintableAreaWidth, 578);
   layout.SetIntKey(kSettingPrintableAreaHeight, 734);
-  handler()->SendPageLayoutReady(layout, /*has_custom_page_size_style,=*/false,
+  handler()->SendPageLayoutReady(base::Value::AsDictionaryValue(layout),
+                                 /*has_custom_page_size_style,=*/false,
                                  preview_request_id);
 
   // Verify that page-layout-ready webUI event was fired.

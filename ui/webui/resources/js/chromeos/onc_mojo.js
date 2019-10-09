@@ -481,9 +481,10 @@ class OncMojo {
       return OncMojo.getNetworkTypeDisplayName(network.type);
     }
     const mojom = chromeos.networkConfig.mojom;
-    if (network.type == mojom.NetworkType.kVPN && network.vpn.providerName) {
+    if (network.type == mojom.NetworkType.kVPN &&
+        network.typeProperties.vpn.providerName) {
       return OncMojo.getVpnDisplayName(
-          network.name.activeValue, network.vpn.providerName);
+          network.name.activeValue, network.typeProperties.vpn.providerName);
     }
     return network.name.activeValue;
   }
@@ -505,6 +506,22 @@ class OncMojo {
     }
     assertNotReached();
     return 0;
+  }
+
+  /**
+   * This is a bit of a hack. To avoid adding 'typeProperties' to every type
+   * specific field name and translated string, we check for type specific
+   * key names and prepend 'typeProperties' for them.
+   * @param {string} key
+   * @return {string}
+   */
+  static getManagedPropertyKey(key) {
+    if (key.startsWith('cellular') || key.startsWith('ethernet') ||
+        key.startsWith('tether') || key.startsWith('vpn') ||
+        key.startsWith('wifi')) {
+      key = 'typeProperties.' + key;
+    }
+    return key;
   }
 
   /**
@@ -596,42 +613,45 @@ class OncMojo {
 
     switch (properties.type) {
       case mojom.NetworkType.kCellular:
+        const cellularProperties = properties.typeProperties.cellular;
         networkState.typeState.cellular.activationState =
-            properties.cellular.activationState;
+            cellularProperties.activationState;
         networkState.typeState.cellular.networkTechnology =
-            properties.cellular.networkTechnology || '';
+            cellularProperties.networkTechnology || '';
         networkState.typeState.cellular.roaming =
-            properties.cellular.roamingState == 'Roaming';
+            cellularProperties.roamingState == 'Roaming';
         networkState.typeState.cellular.signalStrength =
-            properties.cellular.signalStrength;
+            cellularProperties.signalStrength;
         break;
       case mojom.NetworkType.kEthernet:
         networkState.typeState.ethernet.authentication =
-            properties.ethernet.authentication == '8021X' ?
+            properties.typeProperties.ethernet.authentication == '8021X' ?
             mojom.AuthenticationType.k8021x :
             mojom.AuthenticationType.kNone;
         break;
       case mojom.NetworkType.kTether:
-        if (properties.tether) {
+        if (properties.typeProperties.tether) {
           networkState.typeState.tether =
               /** @type {!mojom.TetherStateProperties}*/ (
-                  Object.assign({}, properties.tether));
+                  Object.assign({}, properties.typeProperties.tether));
         }
         break;
       case mojom.NetworkType.kVPN:
-        networkState.typeState.vpn.providerName = properties.vpn.providerName;
-        networkState.typeState.vpn.vpnType = properties.vpn.type;
+        networkState.typeState.vpn.providerName =
+            properties.typeProperties.vpn.providerName;
+        networkState.typeState.vpn.vpnType = properties.typeProperties.vpn.type;
         break;
       case mojom.NetworkType.kWiFi:
-        networkState.typeState.wifi.bssid = properties.wifi.bssid || '';
-        networkState.typeState.wifi.frequency = properties.wifi.frequency;
+        const wifiProperties = properties.typeProperties.wifi;
+        networkState.typeState.wifi.bssid = wifiProperties.bssid || '';
+        networkState.typeState.wifi.frequency = wifiProperties.frequency;
         networkState.typeState.wifi.hexSsid =
-            OncMojo.getActiveString(properties.wifi.hexSsid);
-        networkState.typeState.wifi.security = properties.wifi.security;
+            OncMojo.getActiveString(wifiProperties.hexSsid);
+        networkState.typeState.wifi.security = wifiProperties.security;
         networkState.typeState.wifi.signalStrength =
-            properties.wifi.signalStrength;
+            wifiProperties.signalStrength;
         networkState.typeState.wifi.ssid =
-            OncMojo.getActiveString(properties.wifi.ssid);
+            OncMojo.getActiveString(wifiProperties.ssid);
         break;
     }
     return networkState;
@@ -658,40 +678,50 @@ class OncMojo {
     };
     switch (type) {
       case mojom.NetworkType.kCellular:
-        result.cellular = {
-          activationState: mojom.ActivationStateType.kUnknown,
-          allowRoaming: false,
-          prlVersion: 0,
-          scanning: false,
-          signalStrength: 0,
-          supportNetworkScan: false,
+        result.typeProperties = {
+          cellular: {
+            activationState: mojom.ActivationStateType.kUnknown,
+            allowRoaming: false,
+            prlVersion: 0,
+            scanning: false,
+            signalStrength: 0,
+            supportNetworkScan: false,
+          }
         };
         break;
       case mojom.NetworkType.kEthernet:
-        result.ethernet = {};
+        result.typeProperties = {
+          ethernet: {},
+        };
         break;
       case mojom.NetworkType.kTether:
-        result.tether = {
-          batteryPercentage: 0,
-          carrier: '',
-          hasConnectedToHost: false,
-          signalStrength: 0,
+        result.typeProperties = {
+          tether: {
+            batteryPercentage: 0,
+            carrier: '',
+            hasConnectedToHost: false,
+            signalStrength: 0,
+          }
         };
         break;
       case mojom.NetworkType.kVPN:
-        result.vpn = {
-          providerName: '',
-          type: mojom.VpnType.kOpenVPN,
-          openVpn: {},
+        result.typeProperties = {
+          vpn: {
+            providerName: '',
+            type: mojom.VpnType.kOpenVPN,
+            openVpn: {},
+          }
         };
         break;
       case mojom.NetworkType.kWiFi:
-        result.wifi = {
-          bssid: '',
-          frequency: 0,
-          ssid: OncMojo.createManagedString(''),
-          security: mojom.SecurityType.kNone,
-          signalStrength: 0,
+        result.typeProperties = {
+          wifi: {
+            bssid: '',
+            frequency: 0,
+            ssid: OncMojo.createManagedString(''),
+            security: mojom.SecurityType.kNone,
+            signalStrength: 0,
+          }
         };
         break;
     }
@@ -926,11 +956,11 @@ class OncMojo {
     const type = properties.type;
     switch (type) {
       case NetworkType.kCellular:
-        return properties.cellular.autoConnect;
+        return properties.typeProperties.cellular.autoConnect;
       case NetworkType.kVPN:
-        return properties.vpn.autoConnect;
+        return properties.typeProperties.vpn.autoConnect;
       case NetworkType.kWiFi:
-        return properties.wifi.autoConnect;
+        return properties.typeProperties.wifi.autoConnect;
     }
     return undefined;
   }

@@ -63,14 +63,10 @@ CWV_EXPORT
 // is invoked in |delegate|.
 @property(nonatomic, readonly, getter=isPassphraseNeeded) BOOL passphraseNeeded;
 
-// Whether or not |currentIdentity| has opted into sync. Not meaningful
-// until |currentIdentity| is set and |syncControllerDidStartSync:| callback in
-// is invoked in |delegate|.
-@property(nonatomic, readonly, getter=isConsentNeeded) BOOL consentNeeded;
-
 - (instancetype)init NS_UNAVAILABLE;
 
 // Start syncing with |identity|.
+// Call this only after receiving explicit consent from the user.
 // |identity| will be persisted as |currentIdentity| and continue syncing until
 // |stopSyncAndClearIdentity| is called.
 // Make sure |dataSource| is set so access tokens can be fetched.
@@ -84,14 +80,6 @@ CWV_EXPORT
 // |syncControllerDidStartSync:| callback in |delegate|.
 // No op if |passphraseNeeded| is |NO|. Returns |YES| if successful.
 - (BOOL)unlockWithPassphrase:(NSString*)passphrase;
-
-// If |consentNeeded| is |YES|, call this method to opt the |currentIdentity|
-// into sync. Notes:
-// - Only call after calling |startSyncWithIdentity:| and receiving
-//   |syncControllerDidStartSync:| callback in |delegate|.
-// - Only call after receiving explicit consent from the user. For example,
-//   user accepts an opt-in UI prompt.
-- (void)consent;
 
 @end
 

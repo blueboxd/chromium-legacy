@@ -138,6 +138,7 @@ class CORE_EXPORT NGLineBreaker {
                         const ShapeResult&,
                         LayoutUnit available_width,
                         NGLineInfo*);
+  bool BreakTextAtPreviousBreakOpportunity(NGInlineItemResult* item_result);
   bool ShouldHangTraillingSpaces(const NGInlineItem&);
   bool HandleTextForFastMinContent(NGInlineItemResult*,
                                    const NGInlineItem&,

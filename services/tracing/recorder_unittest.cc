@@ -27,12 +27,12 @@ class RecorderTest : public testing::Test {
 
   void CreateRecorder(mojo::PendingReceiver<mojom::Recorder> receiver,
                       mojom::TraceDataType data_type,
-                      const base::Closure& callback) {
+                      const base::RepeatingClosure& callback) {
     recorder_.reset(new Recorder(std::move(receiver), data_type, callback));
   }
 
   void CreateRecorder(mojom::TraceDataType data_type,
-                      const base::Closure& callback) {
+                      const base::RepeatingClosure& callback) {
     CreateRecorder(mojo::NullReceiver(), data_type, callback);
   }
 
@@ -118,13 +118,14 @@ TEST_F(RecorderTest, OnConnectionError) {
   {
     mojo::PendingRemote<mojom::Recorder> remote;
     auto receiver = remote.InitWithNewPipeAndPassReceiver();
-    CreateRecorder(std::move(receiver), mojom::TraceDataType::STRING,
-                   base::BindRepeating(
-                       [](size_t* num_calls, base::Closure quit_closure) {
-                         (*num_calls)++;
-                         quit_closure.Run();
-                       },
-                       base::Unretained(&num_calls), run_loop.QuitClosure()));
+    CreateRecorder(
+        std::move(receiver), mojom::TraceDataType::STRING,
+        base::BindRepeating(
+            [](size_t* num_calls, base::RepeatingClosure quit_closure) {
+              (*num_calls)++;
+              quit_closure.Run();
+            },
+            base::Unretained(&num_calls), run_loop.QuitClosure()));
   }
   // |remote| is deleted at this point and so the recorder should notify us that
   // the client is not going to send any more data by running the callback.

@@ -486,7 +486,7 @@ void ImageLoader::DoUpdateFromElement(
     resource_request.SetReferrerPolicy(referrer_policy);
 
     // Correct the RequestContext if necessary.
-    if (IsHTMLPictureElement(GetElement()->parentNode()) ||
+    if (IsA<HTMLPictureElement>(GetElement()->parentNode()) ||
         !GetElement()->FastGetAttribute(html_names::kSrcsetAttr).IsNull()) {
       resource_request.SetRequestContext(mojom::RequestContextType::IMAGE_SET);
     } else if (IsHTMLObjectElement(GetElement())) {

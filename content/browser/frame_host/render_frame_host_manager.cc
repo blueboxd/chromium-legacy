@@ -187,8 +187,8 @@ void RenderFrameHostManager::Init(SiteInstance* site_instance,
   // Do this only for subframes, as the main frame case is taken care of by
   // WebContentsImpl::Init.
   if (!frame_tree_node_->IsMainFrame()) {
-    delegate_->NotifySwappedFromRenderManager(
-        nullptr, render_frame_host_.get(), false);
+    delegate_->NotifySwappedFromRenderManager(nullptr, render_frame_host_.get(),
+                                              false);
   }
 }
 
@@ -1207,8 +1207,8 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // current_effective_url here, which uses the SiteInstance's site if there is
   // no current_entry.
   if (GetContentClient()->browser()->ShouldSwapBrowsingInstancesForNavigation(
-          render_frame_host_->GetSiteInstance(),
-          current_effective_url, new_effective_url)) {
+          render_frame_host_->GetSiteInstance(), current_effective_url,
+          new_effective_url)) {
     return true;
   }
 
@@ -1294,8 +1294,9 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   // https://crbug.com/766630.
   NavigationEntry* current_entry =
       delegate_->GetLastCommittedNavigationEntryForRenderManager();
-  bool current_is_view_source_mode = current_entry ?
-      current_entry->IsViewSourceMode() : dest_is_view_source_mode;
+  bool current_is_view_source_mode = current_entry
+                                         ? current_entry->IsViewSourceMode()
+                                         : dest_is_view_source_mode;
 
   bool force_swap = ShouldSwapBrowsingInstancesForNavigation(
       current_effective_url, current_is_view_source_mode, dest_instance,
@@ -2481,7 +2482,6 @@ void RenderFrameHostManager::CommitPending(
 #endif  // defined(OS_MACOSX)
 
   RenderWidgetHostView* old_view = render_frame_host_->GetView();
-  RenderWidgetHostView* new_view = pending_rfh->GetView();
   bool is_main_frame = frame_tree_node_->IsMainFrame();
 
   // First check whether we're going to want to focus the location bar after
@@ -2544,13 +2544,16 @@ void RenderFrameHostManager::CommitPending(
 
   // For top-level frames, the RenderWidget{Host} will not be destroyed when the
   // local frame is detached. https://crbug.com/419087
+  //
   // To work around that, we hide it here. Truly this is to hit all the hide
   // paths in the browser side, but has a side effect of also hiding the
   // renderer side RenderWidget, even though it will get frozen anyway in the
   // future. However freezing doesn't do all the things hiding does at this time
   // so that's probably good.
+  //
   // Note the RenderWidgetHostView can be missing if the process for the old
   // RenderFrameHost crashed.
+  //
   // TODO(crbug.com/419087): This is only done for the main frame, as for sub
   // frames the RenderWidget and its view will be destroyed when the frame is
   // detached, but for the main frame it is not. This call to Hide() can go away
@@ -2561,10 +2564,13 @@ void RenderFrameHostManager::CommitPending(
   // without success in r426913 (https://crbug.com/658688) and r438516 (broke
   // assumptions about RenderWidgetHosts not changing RenderWidgetHostViews over
   // time).
-  // |old_view| and |new_view| can be the same when navigating same-site from a
+  //
+  // |old_rvh| and |new_rvh| can be the same when navigating same-site from a
   // crashed RenderFrameHost. When RenderDocument will be implemented, this will
   // happen for each same-site navigation.
-  if (is_main_frame && old_view && old_view != new_view) {
+  RenderViewHostImpl* old_rvh = old_render_frame_host->render_view_host();
+  RenderViewHostImpl* new_rvh = render_frame_host_->render_view_host();
+  if (is_main_frame && old_view && old_rvh != new_rvh) {
     // Note that this hides the RenderWidget but does not hide the Page. If it
     // did hide the Page then making a new RenderFrameHost on another call to
     // here would need to make sure it showed the RenderView when the
@@ -2575,6 +2581,7 @@ void RenderFrameHostManager::CommitPending(
   // Make sure the size is up to date.  (Fix for bug 1079768.)
   delegate_->UpdateRenderViewSizeForRenderManager(is_main_frame);
 
+  RenderWidgetHostView* new_view = render_frame_host_->GetView();
   if (will_focus_location_bar) {
     delegate_->SetFocusToLocationBar();
   } else if (focus_render_view && new_view) {
@@ -2609,9 +2616,6 @@ void RenderFrameHostManager::CommitPending(
   // useful to show.
   if (is_main_frame && old_view && new_view && old_view != new_view)
     new_view->TakeFallbackContentFrom(old_view);
-
-  RenderViewHostImpl* old_rvh = old_render_frame_host->render_view_host();
-  RenderViewHostImpl* new_rvh = render_frame_host_->render_view_host();
 
   // The RenderViewHost keeps track of the main RenderFrameHost routing id.
   // If this is committing a main frame navigation, update it and set the
@@ -2729,12 +2733,12 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
     // count top-level ones.  This makes the value easier for consumers to
     // interpret.
     if (render_frame_host_) {
-      render_frame_host_->GetSiteInstance()->
-          IncrementRelatedActiveContentsCount();
+      render_frame_host_->GetSiteInstance()
+          ->IncrementRelatedActiveContentsCount();
     }
     if (old_render_frame_host) {
-      old_render_frame_host->GetSiteInstance()->
-          DecrementRelatedActiveContentsCount();
+      old_render_frame_host->GetSiteInstance()
+          ->DecrementRelatedActiveContentsCount();
     }
   }
 
@@ -2838,8 +2842,8 @@ void RenderFrameHostManager::CreateOpenerProxies(
     int opener_routing_id =
         node->render_manager()->GetOpenerRoutingID(instance);
     DCHECK_NE(opener_routing_id, MSG_ROUTING_NONE);
-    proxy->Send(new FrameMsg_UpdateOpener(proxy->GetRoutingID(),
-                                          opener_routing_id));
+    proxy->Send(
+        new FrameMsg_UpdateOpener(proxy->GetRoutingID(), opener_routing_id));
   }
 }
 
@@ -2888,8 +2892,7 @@ void RenderFrameHostManager::SendPageMessage(IPC::Message* msg,
     return;
   }
 
-  auto send_msg = [instance_to_skip](IPC::Sender* sender,
-                                     int routing_id,
+  auto send_msg = [instance_to_skip](IPC::Sender* sender, int routing_id,
                                      IPC::Message* msg,
                                      SiteInstance* sender_instance) {
     if (sender_instance == instance_to_skip)

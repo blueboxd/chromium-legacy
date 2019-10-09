@@ -217,6 +217,16 @@ void SplitViewHighlightView::OnIndicatorTypeChanged(
     return;
   }
 
+  // Having ruled out kNone and the "preview area" states, we know that
+  // |indicator_state| is either a "drag area" state or a "cannot snap" state.
+  // If there is an indicator on only one side, and if this, in the sense of the
+  // C++ keyword this, is the indicator on the opposite side, then bail out.
+  if (is_right_or_bottom_
+          ? SplitViewDragIndicators::IsLeftIndicatorState(indicator_state)
+          : SplitViewDragIndicators::IsRightIndicatorState(indicator_state)) {
+    return;
+  }
+
   if (SplitViewDragIndicators::IsPreviewAreaState(previous_indicator_state)) {
     const bool was_this_the_preview =
         is_right_or_bottom_ !=
@@ -231,15 +241,6 @@ void SplitViewHighlightView::OnIndicatorTypeChanged(
     return;
   }
 
-  // Having ruled out kNone and the "preview area" states, we know that
-  // |indicator_state| is either a "drag area" state or a "cannot snap" state.
-  // If there is an indicator on only one side, and if this, in the sense of the
-  // C++ keyword this, is the indicator on the opposite side, then bail out.
-  if (is_right_or_bottom_
-          ? SplitViewDragIndicators::IsLeftIndicatorState(indicator_state)
-          : SplitViewDragIndicators::IsRightIndicatorState(indicator_state)) {
-    return;
-  }
   SetColor(SplitViewDragIndicators::IsCannotSnapState(indicator_state)
                ? SK_ColorBLACK
                : SK_ColorWHITE);

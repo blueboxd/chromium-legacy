@@ -53,8 +53,10 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
       scoped_refptr<ChromeBlobStorageContext> blob_storage_context);
 
   void AddReceiver(
-      mojo::PendingReceiver<blink::mojom::IDBFactory> pending_receiver,
-      const url::Origin& origin);
+      int render_process_id,
+      int render_frame_id,
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::IDBFactory> pending_receiver);
 
   void AddDatabaseBinding(
       std::unique_ptr<blink::mojom::IDBDatabase> database,
@@ -139,6 +141,9 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   // State for each client held in |receivers_|.
   struct ReceiverState {
     url::Origin origin;
+    // The frame identifier, or MSG_ROUTING_NONE if this describes a worker
+    // (this means that dedicated/shared/service workers are not distinguished).
+    int render_frame_id;
   };
 
   mojo::ReceiverSet<blink::mojom::IDBFactory, ReceiverState> receivers_;

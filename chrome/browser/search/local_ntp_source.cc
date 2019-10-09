@@ -117,7 +117,6 @@ const struct Resource{
     {"customize.js", IDR_LOCAL_NTP_CUSTOMIZE_JS, "application/javascript"},
     {"doodles.css", IDR_LOCAL_NTP_DOODLES_CSS, "text/css"},
     {"doodles.js", IDR_LOCAL_NTP_DOODLES_JS, "application/javascript"},
-    {"images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png"},
     {"images/ntp_default_favicon.png", IDR_NTP_DEFAULT_FAVICON, "image/png"},
     {"local-ntp.css", IDR_LOCAL_NTP_CSS, "text/css"},
     {"local-ntp.js", IDR_LOCAL_NTP_JS, "application/javascript"},

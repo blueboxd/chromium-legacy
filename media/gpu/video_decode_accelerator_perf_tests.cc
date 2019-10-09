@@ -322,8 +322,9 @@ class VideoDecoderTest : public ::testing::Test {
     if (!g_env->ImportSupported())
       config.allocation_mode = AllocationMode::kAllocate;
 
-    auto video_player = VideoPlayer::Create(config, std::move(frame_renderer),
-                                            std::move(frame_processors));
+    auto video_player = VideoPlayer::Create(
+        config, g_env->GetGpuMemoryBufferFactory(), std::move(frame_renderer),
+        std::move(frame_processors));
     LOG_ASSERT(video_player);
     LOG_ASSERT(video_player->Initialize(video));
 

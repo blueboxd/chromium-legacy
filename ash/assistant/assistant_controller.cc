@@ -32,13 +32,6 @@
 
 namespace ash {
 
-namespace {
-
-// Scheme of the Android intent url.
-constexpr char kAndroidIntentScheme[] = "intent";
-
-}  // namespace
-
 AssistantController::AssistantController() {
   assistant_state_controller_.AddObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
@@ -234,7 +227,7 @@ void AssistantController::OpenUrl(const GURL& url,
   }
 
   auto* android_helper = AndroidIntentHelper::GetInstance();
-  if (url.SchemeIs(kAndroidIntentScheme) && !android_helper) {
+  if (IsAndroidIntent(url) && !android_helper) {
     NOTREACHED();
     return;
   }
@@ -243,7 +236,7 @@ void AssistantController::OpenUrl(const GURL& url,
   // open the specified |url| in a new browser tab.
   NotifyOpeningUrl(url, in_background, from_server);
 
-  if (url.SchemeIs(kAndroidIntentScheme)) {
+  if (IsAndroidIntent(url)) {
     android_helper->LaunchAndroidIntent(url.spec());
   } else {
     // The new tab should be opened with a user activation since the user

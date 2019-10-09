@@ -127,6 +127,9 @@ COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsStereoAudioInputEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsWarmerWelcomeEnabled();
 
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+bool IsVoiceMatchDisabled();
+
 }  // namespace features
 }  // namespace assistant
 }  // namespace chromeos

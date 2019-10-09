@@ -51,7 +51,7 @@ constexpr int KScrollOffsetThreshold = 20;
 constexpr int kArrowButtonTapAreaHorizontal = 32;
 
 // Length of the fade in/out zone.
-constexpr int kGradientZoneLength = 24;
+constexpr int kGradientZoneLength = 26;
 
 // Sum of the shelf button size and the gap between shelf buttons.
 int GetUnit() {
@@ -286,6 +286,15 @@ void ScrollableShelfView::Init() {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
+  // Initialize the shelf container view.
+  // Note that |shelf_container_view_| should be under the arrow buttons. It
+  // ensures that the arrow button receives the tapping events which happen
+  // within the overlapping zone between the arrow button's tapping area and
+  // the bounds of |shelf_container_view_|.
+  shelf_container_view_ =
+      AddChildView(std::make_unique<ShelfContainerView>(shelf_view_));
+  shelf_container_view_->Initialize();
+
   // Initialize the left arrow button.
   left_arrow_ = AddChildView(std::make_unique<ScrollableShelfArrowView>(
       ScrollArrowView::kLeft, GetShelf()->IsHorizontalAlignment(), GetShelf(),
@@ -295,11 +304,6 @@ void ScrollableShelfView::Init() {
   right_arrow_ = AddChildView(std::make_unique<ScrollableShelfArrowView>(
       ScrollArrowView::kRight, GetShelf()->IsHorizontalAlignment(), GetShelf(),
       this));
-
-  // Initialize the shelf container view.
-  shelf_container_view_ =
-      AddChildView(std::make_unique<ShelfContainerView>(shelf_view_));
-  shelf_container_view_->Initialize();
 
   gradient_layer_delegate_ = std::make_unique<GradientLayerDelegate>();
   layer()->SetMaskLayer(gradient_layer_delegate_->layer());
@@ -371,6 +375,10 @@ gfx::Rect ScrollableShelfView::GetHotseatBackgroundBounds() {
 
 views::View* ScrollableShelfView::GetShelfContainerViewForTest() {
   return shelf_container_view_;
+}
+
+bool ScrollableShelfView::ShouldAdjustForTest() const {
+  return CalculateAdjustedOffset();
 }
 
 int ScrollableShelfView::CalculateScrollUpperBound() const {
@@ -568,13 +576,15 @@ void ScrollableShelfView::Layout() {
   }
 
   shelf_container_bounds.Inset(
-      shelf_container_before_offset + (left_arrow_bounds.IsEmpty()
-                                           ? GetAppIconEndPadding()
-                                           : kArrowButtonGroupWidth),
+      shelf_container_before_offset +
+          (left_arrow_bounds.IsEmpty() ? GetAppIconEndPadding()
+                                       : kArrowButtonGroupWidth) -
+          ShelfConfig::Get()->scrollable_shelf_ripple_padding(),
       0,
-      shelf_container_after_offset + (right_arrow_bounds.IsEmpty()
-                                          ? GetAppIconEndPadding()
-                                          : kArrowButtonGroupWidth),
+      shelf_container_after_offset +
+          (right_arrow_bounds.IsEmpty() ? GetAppIconEndPadding()
+                                        : kArrowButtonGroupWidth) -
+          ShelfConfig::Get()->scrollable_shelf_ripple_padding(),
       0);
 
   // Adjust the bounds when not showing in the horizontal
@@ -638,6 +648,19 @@ void ScrollableShelfView::Layout() {
             : gfx::Vector2d(0, shelf_container_bounds.y() -
                                    GetAppIconEndPadding() - before_padding);
   }
+
+  // If |layout_strategy_| is kShowLeftArrowButton, apply extra translation
+  // offset on |shelf_view_|, which assures the enough space for the ripple
+  // ring of the last shelf item.
+  if (layout_strategy_ == kShowLeftArrowButton) {
+    translate_vector +=
+        GetShelf()->IsHorizontalAlignment()
+            ? gfx::Vector2d(
+                  ShelfConfig::Get()->scrollable_shelf_ripple_padding(), 0)
+            : gfx::Vector2d(
+                  0, ShelfConfig::Get()->scrollable_shelf_ripple_padding());
+  }
+
   gfx::Vector2dF total_offset = scroll_offset_ + translate_vector;
   if (ShouldAdaptToRTL())
     total_offset = -total_offset;
@@ -645,15 +668,16 @@ void ScrollableShelfView::Layout() {
   shelf_container_view_->TranslateShelfView(total_offset);
 
   UpdateTappableIconIndices();
+
+  // Ensures that the app icons are shown correctly when the scrollable shelf
+  // is idle (not under scrolling or during animation process).
+  if (!during_scrolling_animation_ && scroll_status_ == kNotInScroll)
+    AdjustOffset();
 }
 
 void ScrollableShelfView::ChildPreferredSizeChanged(views::View* child) {
   // Add/remove a shelf icon may change the layout strategy.
   Layout();
-
-  // Ensures that the app icons are shown correctly when the layout strategy
-  // changes.
-  AdjustOffsetAfterScrolling();
 }
 
 void ScrollableShelfView::OnMouseEvent(ui::MouseEvent* event) {
@@ -891,7 +915,7 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
   }
 
   if (event.type() == ui::ET_GESTURE_END) {
-    AdjustOffsetAfterScrolling();
+    AdjustOffset();
     return true;
   }
 
@@ -1207,22 +1231,13 @@ bool ScrollableShelfView::ShouldHandleScroll(const gfx::Vector2dF& offset,
   return abs(main_axis_offset) > threshold;
 }
 
-void ScrollableShelfView::AdjustOffsetAfterScrolling() {
+void ScrollableShelfView::AdjustOffset() {
   // The type of scrolling offset is float to ensure that ScrollableShelfView
-  // is responsive to slow gesture scrolling. However, when scrolling ends, the
-  // scrolling offset should be floored.
+  // is responsive to slow gesture scrolling. However, after offset adjustment,
+  // the scrolling offset should be floored.
   scroll_offset_ = gfx::ToFlooredVector2d(scroll_offset_);
 
-  // Returns early when it does not need to adjust the shelf view's location.
-  const int scroll_distance = GetShelf()->IsHorizontalAlignment()
-                                  ? scroll_offset_.x()
-                                  : scroll_offset_.y();
-  if (scroll_distance >= CalculateScrollUpperBound())
-    return;
-
-  const int residue = GetActualScrollOffset() % GetUnit();
-  int offset =
-      residue > GetGestureDragThreshold() ? GetUnit() - residue : -residue;
+  const int offset = CalculateAdjustedOffset();
 
   // Returns early when it does not need to adjust the shelf view's location.
   if (!offset)
@@ -1232,6 +1247,21 @@ void ScrollableShelfView::AdjustOffsetAfterScrolling() {
     ScrollByXOffset(offset, /*animate=*/true);
   else
     ScrollByYOffset(offset, /*animate=*/true);
+}
+
+int ScrollableShelfView::CalculateAdjustedOffset() const {
+  // Returns early when it does not need to adjust the shelf view's location.
+  const int scroll_distance = GetShelf()->IsHorizontalAlignment()
+                                  ? scroll_offset_.x()
+                                  : scroll_offset_.y();
+  if (scroll_distance >= CalculateScrollUpperBound())
+    return 0;
+
+  const int remainder = GetActualScrollOffset() % GetUnit();
+  int offset = remainder > GetGestureDragThreshold() ? GetUnit() - remainder
+                                                     : -remainder;
+
+  return offset;
 }
 
 }  // namespace ash

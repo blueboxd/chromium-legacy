@@ -26,9 +26,10 @@
 
 namespace IPC {
 class Message;
-}
+}  // namespace IPC
 
 namespace content {
+
 class BrowserPluginGuest;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;

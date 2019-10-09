@@ -23,7 +23,6 @@ namespace feedback {
 class FeedbackUploaderChrome : public FeedbackUploader {
  public:
   FeedbackUploaderChrome(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       content::BrowserContext* context,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~FeedbackUploaderChrome() override;

@@ -14,6 +14,7 @@
 #include "chrome/services/printing/public/mojom/pdf_to_emf_converter.mojom.h"
 #include "content/public/common/child_process_host_delegate.h"
 #include "ipc/ipc_platform_file.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/service_manager/public/cpp/identity.h"
 
@@ -143,7 +144,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
 
   // PdfToEmfState callbacks:
   void OnRenderPDFPagesToMetafilesPageCount(
-      printing::mojom::PdfToEmfConverterPtr converter,
+      mojo::PendingRemote<printing::mojom::PdfToEmfConverter> converter,
       uint32_t page_count);
   void OnRenderPDFPagesToMetafilesPageDone(
       base::ReadOnlySharedMemoryRegion emf_region,

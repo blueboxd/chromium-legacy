@@ -14,13 +14,13 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 namespace net {
 struct RedirectInfo;
 }
 
 namespace network {
-struct ResourceResponseInfo;
 struct URLLoaderCompletionStatus;
 }
 
@@ -40,17 +40,15 @@ class CONTENT_EXPORT RequestPeer {
   virtual void OnUploadProgress(uint64_t position, uint64_t size) = 0;
 
   // Called when a redirect occurs.  The implementation may return false to
-  // suppress the redirect.  The ResourceResponseInfo provides information about
+  // suppress the redirect.  The URLResponseHead provides information about
   // the redirect response and the RedirectInfo includes information about the
   // request to be made if the method returns true.
-  virtual bool OnReceivedRedirect(
-      const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseInfo& info) = 0;
+  virtual bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
+                                  network::mojom::URLResponseHeadPtr head) = 0;
 
   // Called when response headers are available (after all redirects have
   // been followed).
-  virtual void OnReceivedResponse(
-      const network::ResourceResponseInfo& info) = 0;
+  virtual void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) = 0;
 
   // Called when the response body becomes available.
   virtual void OnStartLoadingResponseBody(

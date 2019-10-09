@@ -129,6 +129,14 @@ void aura_surface_unset_occlusion_tracking(wl_client* client,
   GetUserDataAs<AuraSurface>(resource)->SetOcclusionTracking(false);
 }
 
+void aura_surface_activate(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<AuraSurface>(resource)->Activate();
+}
+
+void aura_surface_draw_attention(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<AuraSurface>(resource)->DrawAttention();
+}
+
 const struct zaura_surface_interface aura_surface_implementation = {
     aura_surface_set_frame,
     aura_surface_set_parent,
@@ -137,7 +145,9 @@ const struct zaura_surface_interface aura_surface_implementation = {
     aura_surface_set_application_id,
     aura_surface_set_client_surface_id,
     aura_surface_set_occlusion_tracking,
-    aura_surface_unset_occlusion_tracking};
+    aura_surface_unset_occlusion_tracking,
+    aura_surface_activate,
+    aura_surface_draw_attention};
 
 }  // namespace
 
@@ -193,6 +203,20 @@ void AuraSurface::SetClientSurfaceId(int client_surface_id) {
 void AuraSurface::SetOcclusionTracking(bool tracking) {
   if (surface_)
     surface_->SetOcclusionTracking(tracking);
+}
+
+void AuraSurface::Activate() {
+  if (!surface_)
+    return;
+  // TODO(hollingum): implement me.
+  LOG(WARNING) << "Surface requested focus, but that is not implemented";
+}
+
+void AuraSurface::DrawAttention() {
+  if (!surface_)
+    return;
+  // TODO(hollingum): implement me.
+  LOG(WARNING) << "Surface requested attention, but that is not implemented";
 }
 
 // Overridden from SurfaceObserver:

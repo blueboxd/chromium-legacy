@@ -81,6 +81,7 @@ std::string GetThreatTypeStringForInterstitial(
     case safe_browsing::SB_THREAT_TYPE_CSD_WHITELIST:
     case safe_browsing::
         DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
+    case safe_browsing::SB_THREAT_TYPE_SAVED_PASSWORD_REUSE:
     case safe_browsing::SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE:
     case safe_browsing::SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
     case safe_browsing::SB_THREAT_TYPE_AD_SAMPLE:

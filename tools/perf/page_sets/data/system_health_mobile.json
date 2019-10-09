@@ -120,6 +120,9 @@
         "browse:social:twitter": {
             "DEFAULT": "system_health_mobile_023.wprgo"
         },
+        "browse:social:twitter:2019": {
+            "DEFAULT": "system_health_mobile_34b94b48e8.wprgo"
+        },
         "browse:tech:discourse_infinite_scroll": {
             "DEFAULT": "system_health_mobile_062.wprgo"
         },
@@ -134,6 +137,9 @@
         },
         "load:games:bubbles": {
             "DEFAULT": "system_health_mobile_005.wprgo"
+        },
+        "load:games:bubbles:2019": {
+            "DEFAULT": "system_health_mobile_43f2372bc8.wprgo"
         },
         "load:games:lazors": {
             "DEFAULT": "system_health_mobile_005.wprgo"

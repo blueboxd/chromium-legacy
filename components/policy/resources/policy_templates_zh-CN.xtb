@@ -2490,7 +2490,6 @@
 <translation id="5447306928176905178">向网页报告内存信息（JS堆内存大小）（已停止使用）</translation>
 <translation id="5457065417344056871">在浏览器中启用访客模式</translation>
 <translation id="5457924070961220141">可让您在安装 <ph name="PRODUCT_FRAME_NAME" />时配置默认 HTML 呈现器。如果未设置此政策，则使用默认设置，即允许托管浏览器进行呈现。不过您可以视情况替换此设置，让 <ph name="PRODUCT_FRAME_NAME" />默认呈现 HTML 网页。</translation>
-<translation id="5458584148602890023">启用用电高峰转移</translation>
 <translation id="5464816904705580310">为托管用户配置设置。</translation>
 <translation id="546726650689747237">使用交流电源供电时的屏幕变暗延迟时间</translation>
 <translation id="5469143988693423708">允许用户运行 Crostini</translation>

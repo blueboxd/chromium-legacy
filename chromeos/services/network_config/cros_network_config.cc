@@ -1217,7 +1217,9 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       const base::Value* cellular_dict =
           GetDictionary(properties, ::onc::network_config::kCellular);
       if (!cellular_dict) {
-        result->cellular = std::move(cellular);
+        result->type_properties =
+            mojom::NetworkTypeManagedProperties::NewCellular(
+                std::move(cellular));
         break;
       }
       cellular->auto_connect =
@@ -1272,7 +1274,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
           GetInt32(cellular_dict, ::onc::cellular::kSignalStrength);
       cellular->support_network_scan =
           GetBoolean(cellular_dict, ::onc::cellular::kSupportNetworkScan);
-      result->cellular = std::move(cellular);
+      result->type_properties =
+          mojom::NetworkTypeManagedProperties::NewCellular(std::move(cellular));
       break;
     }
     case mojom::NetworkType::kEthernet: {
@@ -1285,7 +1288,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
         ethernet->eap =
             GetManagedEAPProperties(ethernet_dict, ::onc::ethernet::kEAP);
       }
-      result->ethernet = std::move(ethernet);
+      result->type_properties =
+          mojom::NetworkTypeManagedProperties::NewEthernet(std::move(ethernet));
       break;
     }
     case mojom::NetworkType::kTether: {
@@ -1296,7 +1300,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       tether->has_connected_to_host =
           network_state->tether_has_connected_to_host();
       tether->signal_strength = network_state->signal_strength();
-      result->tether = std::move(tether);
+      result->type_properties =
+          mojom::NetworkTypeManagedProperties::NewTether(std::move(tether));
       break;
     }
     case mojom::NetworkType::kVPN: {
@@ -1304,7 +1309,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       const base::Value* vpn_dict =
           GetDictionary(properties, ::onc::network_config::kVPN);
       if (!vpn_dict) {
-        result->vpn = std::move(vpn);
+        result->type_properties =
+            mojom::NetworkTypeManagedProperties::NewVpn(std::move(vpn));
         break;
       }
       mojom::ManagedStringPtr managed_type =
@@ -1352,7 +1358,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
           }
           break;
       }
-      result->vpn = std::move(vpn);
+      result->type_properties =
+          mojom::NetworkTypeManagedProperties::NewVpn(std::move(vpn));
       break;
     }
     case mojom::NetworkType::kWiFi: {
@@ -1362,7 +1369,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       const base::Value* wifi_dict =
           GetDictionary(properties, ::onc::network_config::kWiFi);
       if (!wifi_dict) {
-        result->wifi = std::move(wifi);
+        result->type_properties =
+            mojom::NetworkTypeManagedProperties::NewWifi(std::move(wifi));
         break;
       }
       wifi->allow_gateway_arp_polling =
@@ -1385,7 +1393,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       wifi->signal_strength = GetInt32(wifi_dict, ::onc::wifi::kSignalStrength);
       wifi->tethering_state =
           GetString(wifi_dict, ::onc::wifi::kTetheringState);
-      result->wifi = std::move(wifi);
+      result->type_properties =
+          mojom::NetworkTypeManagedProperties::NewWifi(std::move(wifi));
       break;
     }
     case mojom::NetworkType::kAll:
@@ -1816,12 +1825,14 @@ void CrosNetworkConfig::GetManagedPropertiesSuccess(
   // For Ethernet networks with no authentication, check for a separate
   // EthernetEAP configuration.
   const NetworkState* eap_state = nullptr;
-  if (managed_properties->type == mojom::NetworkType::kEthernet &&
-      (!managed_properties->ethernet->authentication ||
-       managed_properties->ethernet->authentication->active_value ==
-           ::onc::ethernet::kAuthenticationNone)) {
-    eap_state = network_state_handler_->GetEAPForEthernet(
-        network_state->path(), /*connected_only=*/false);
+  if (managed_properties->type == mojom::NetworkType::kEthernet) {
+    mojom::ManagedEthernetPropertiesPtr& ethernet =
+        managed_properties->type_properties->get_ethernet();
+    if (!ethernet->authentication || ethernet->authentication->active_value ==
+                                         ::onc::ethernet::kAuthenticationNone) {
+      eap_state = network_state_handler_->GetEAPForEthernet(
+          network_state->path(), /*connected_only=*/false);
+    }
   }
   if (!eap_state) {
     // No EAP properties, return the managed properties as-is.
@@ -1866,7 +1877,8 @@ void CrosNetworkConfig::GetManagedPropertiesSuccessEap(
         GetManagedString(ethernet_dict, ::onc::ethernet::kAuthentication);
     ethernet->eap =
         GetManagedEAPProperties(ethernet_dict, ::onc::ethernet::kEAP);
-    managed_properties->ethernet = std::move(ethernet);
+    managed_properties->type_properties =
+        mojom::NetworkTypeManagedProperties::NewEthernet(std::move(ethernet));
   }
 
   std::move(iter->second).Run(std::move(managed_properties));

@@ -6,12 +6,17 @@ package org.chromium.chrome.browser.datareduction;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.view.View;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ui.widget.PromoDialog;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
+import org.chromium.ui.text.SpanApplier;
+import org.chromium.ui.text.SpanApplier.SpanInfo;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -69,6 +74,20 @@ public class DataReductionPromoScreen extends PromoDialog {
         params.subheaderStringResource = R.string.data_reduction_promo_summary_lite_mode;
         params.primaryButtonStringResource = R.string.data_reduction_enable_button_lite_mode;
         params.secondaryButtonStringResource = R.string.no_thanks;
+
+        // Make 'Learn more' link clickable in subheader.
+        Activity activity = getOwnerActivity();
+        Resources resources = activity.getResources();
+        NoUnderlineClickableSpan clickablePromoLearnMoreSpan =
+                new NoUnderlineClickableSpan(resources, (view1) -> {
+                    CustomTabActivity.showInfoPage(activity,
+                            resources.getString((R.string.data_reduction_promo_learn_more_url)));
+                });
+        params.subheaderCharSequence = SpanApplier.applySpans(
+                resources.getString(R.string.data_reduction_promo_summary_lite_mode),
+                new SpanInfo("<link>", "</link>", clickablePromoLearnMoreSpan));
+        params.subheaderIsLink = true;
+
         return params;
     }
 

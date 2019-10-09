@@ -30,5 +30,5 @@
  ConstructorCallWith=ScriptState,
  RaisesException=Constructor]
 interface PerformanceMark : PerformanceEntry {
-    [CallWith=ScriptState, RuntimeEnabled=CustomUserTiming] readonly attribute any detail;
+    [CallWith=ScriptState] readonly attribute any detail;
 };

@@ -20,7 +20,6 @@ namespace features {
 extern const base::Feature kOptimizationHints;
 extern const base::Feature kOptimizationHintsExperiments;
 constexpr char kOptimizationHintsExperimentNameParam[] = "experiment_name";
-extern const base::Feature kSlowPageTriggering;
 extern const base::Feature kOptimizationHintsFetching;
 extern const base::Feature kOptimizationGuideKeyedService;
 

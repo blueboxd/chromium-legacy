@@ -77,6 +77,12 @@ const char kHttpOkResponseHeader[] =
     "Content-Type: text/html; charset=utf-8\r\n"
     "\r\n";
 
+// Use the maximum possible threshold so tests are deterministic.
+const int kMaxHeavyAdNetworkSize =
+    heavy_ad_thresholds::kMaxNetworkBytes +
+    AdsPageLoadMetricsObserver::HeavyAdThresholdNoiseProvider::
+        kMaxNetworkThresholdNoiseBytes;
+
 void LoadLargeResource(net::test_server::ControllableHttpResponse* response,
                        int bytes) {
   response->WaitForRequest();
@@ -891,22 +897,16 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Load a resource large enough to trigger the intervention.
-  LoadLargeResource(incomplete_resource_response.get(),
-                    heavy_ad_thresholds::kMaxNetworkBytes);
-
-  // Wait for the resource update to be received for the large resource.
-  waiter->AddMinimumNetworkBytesExpectation(
-      heavy_ad_thresholds::kMaxNetworkBytes);
-  waiter->Wait();
-
-  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
-                                      FrameData::HeavyAdStatus::kNetwork, 1);
+  LoadLargeResource(incomplete_resource_response.get(), kMaxHeavyAdNetworkSize);
 
   // Wait for the intervention page navigation to finish on the frame.
   error_observer.WaitForNavigationFinished();
 
   // Check that the ad frame was navigated to the intervention page.
   EXPECT_FALSE(error_observer.last_navigation_succeeded());
+
+  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
+                                      FrameData::HeavyAdStatus::kNetwork, 1);
 }
 
 // Check that when the heavy ad feature is disabled we don't navigate
@@ -928,12 +928,10 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Load a resource large enough to trigger the intervention.
-  LoadLargeResource(incomplete_resource_response.get(),
-                    heavy_ad_thresholds::kMaxNetworkBytes);
+  LoadLargeResource(incomplete_resource_response.get(), kMaxHeavyAdNetworkSize);
 
   // Wait for the resource update to be received for the large resource.
-  waiter->AddMinimumNetworkBytesExpectation(
-      heavy_ad_thresholds::kMaxNetworkBytes);
+  waiter->AddMinimumNetworkBytesExpectation(kMaxHeavyAdNetworkSize);
   waiter->Wait();
 
   // We can't check whether the navigation didn't occur because the error page
@@ -961,11 +959,10 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 
   // Load a resource not large enough to trigger the intervention.
   LoadLargeResource(incomplete_resource_response.get(),
-                    heavy_ad_thresholds::kMaxNetworkBytes / 2);
+                    kMaxHeavyAdNetworkSize / 2);
 
   // Wait for the resource update to be received for the large resource.
-  waiter->AddMinimumNetworkBytesExpectation(
-      heavy_ad_thresholds::kMaxNetworkBytes / 2);
+  waiter->AddMinimumNetworkBytesExpectation(kMaxHeavyAdNetworkSize / 2);
   waiter->Wait();
 
   histogram_tester.ExpectTotalCount(kHeavyAdInterventionTypeHistogramId, 0);
@@ -1009,14 +1006,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       "createAdFrame('/ads_observer/ad_with_incomplete_resource.html', '');"));
 
   // Load a resource large enough to trigger the intervention.
-  LoadLargeResource(large_resource_1.get(),
-                    heavy_ad_thresholds::kMaxNetworkBytes);
-  waiter->AddMinimumNetworkBytesExpectation(
-      heavy_ad_thresholds::kMaxNetworkBytes);
-  waiter->Wait();
-
-  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
-                                      FrameData::HeavyAdStatus::kNetwork, 1);
+  LoadLargeResource(large_resource_1.get(), kMaxHeavyAdNetworkSize);
 
   // Wait for the intervention page navigation to finish on the frame.
   error_observer.WaitForNavigationFinished();
@@ -1024,15 +1014,21 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   // Check that the ad frame was navigated to the intervention page.
   EXPECT_FALSE(error_observer.last_navigation_succeeded());
 
+  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
+                                      FrameData::HeavyAdStatus::kNetwork, 1);
+
   EXPECT_TRUE(ExecJs(
       web_contents,
       "createAdFrame('/ads_observer/ad_with_incomplete_resource.html', '');"));
 
+  // Use the current network bytes because the ad could have been unloaded
+  // before loading the entire large resource.
+  int64_t current_network_bytes = waiter->current_network_bytes();
+
   // Load a resource large enough to trigger the intervention.
-  LoadLargeResource(large_resource_2.get(),
-                    heavy_ad_thresholds::kMaxNetworkBytes);
-  waiter->AddMinimumNetworkBytesExpectation(
-      2 * heavy_ad_thresholds::kMaxNetworkBytes);
+  LoadLargeResource(large_resource_2.get(), kMaxHeavyAdNetworkSize);
+  waiter->AddMinimumNetworkBytesExpectation(current_network_bytes +
+                                            kMaxHeavyAdNetworkSize);
   waiter->Wait();
 
   // Check that the intervention did not trigger on this frame.

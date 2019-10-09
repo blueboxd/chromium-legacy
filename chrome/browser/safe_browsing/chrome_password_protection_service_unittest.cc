@@ -542,6 +542,35 @@ TEST_F(ChromePasswordProtectionServiceTest,
   EXPECT_EQ(RequestOutcome::MATCHED_ENTERPRISE_LOGIN_URL, reason);
 }
 
+TEST_F(ChromePasswordProtectionServiceTest, VerifyCanSendSamplePing) {
+  // If experiment is not enabled, do not send ping.
+  service_->ConfigService(/*is_incognito=*/false,
+                          /*is_extended_reporting=*/true);
+  service_->set_bypass_probability_for_tests(true);
+  EXPECT_FALSE(service_->CanSendSamplePing());
+
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        safe_browsing::kSendSampledPingsForAllowlistDomains);
+    EXPECT_TRUE(service_->CanSendSamplePing());
+
+    // If not SBER, do not send sample ping.
+    service_->ConfigService(/*is_incognito=*/false,
+                            /*is_extended_reporting=*/false);
+    EXPECT_FALSE(service_->CanSendSamplePing());
+
+    // If incognito, do not send sample ping.
+    service_->ConfigService(/*is_incognito=*/true,
+                            /*is_extended_reporting=*/true);
+    EXPECT_FALSE(service_->CanSendSamplePing());
+
+    service_->ConfigService(/*is_incognito=*/true,
+                            /*is_extended_reporting=*/false);
+    EXPECT_FALSE(service_->CanSendSamplePing());
+  }
+}
+
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetOrganizationTypeGmail) {
   ReusedPasswordAccountType reused_password_type;
   reused_password_type.set_account_type(ReusedPasswordAccountType::GMAIL);
@@ -1136,6 +1165,18 @@ TEST_F(ChromePasswordProtectionServiceTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, test_event_router_->GetEventCount(
                    OnPolicySpecifiedPasswordReuseDetected::kEventName));
+}
+
+TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextSaved) {
+  base::string16 warning_text =
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      safe_browsing::kPasswordProtectionForSavedPasswords);
+  ReusedPasswordAccountType reused_password_type;
+  reused_password_type.set_account_type(
+      ReusedPasswordAccountType::SAVED_PASSWORD);
+  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,

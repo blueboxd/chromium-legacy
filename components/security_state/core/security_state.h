@@ -98,6 +98,7 @@ enum MaliciousContentStatus {
   MALICIOUS_CONTENT_STATUS_MALWARE,
   MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE,
   MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING,
+  MALICIOUS_CONTENT_STATUS_SAVED_PASSWORD_REUSE,
   MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE,
   MALICIOUS_CONTENT_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE,
   MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE,
@@ -120,9 +121,12 @@ enum class SafetyTipStatus {
   kNone = 1,
   // The current page triggered a Safety Tip because it was bad reputation.
   kBadReputation = 2,
-  // The current page trigged a Safety Tip because it had a lookalike URL.
+  // The current page triggered a Safety Tip because it had a lookalike URL.
   kLookalike = 3,
-  kMaxValue = kLookalike,
+  // The current page triggered a Safety Tip because a suspicious keyword was
+  // found in its hostname.
+  kBadKeyword = 4,
+  kMaxValue = kBadKeyword,
 };
 
 // Contains the security state relevant to computing the SecurityLevel

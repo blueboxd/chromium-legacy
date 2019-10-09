@@ -319,7 +319,6 @@ extern const char kStartupBrowserWindowLaunchSuppressed[];
 extern const char kLoginExtensionApiDataForNextLoginAttempt[];
 extern const char kSettingsShowBrowserBanner[];
 extern const char kSettingsShowOSBanner[];
-extern const char kSettingsShowAboutOSBanner[];
 extern const char kDeviceLoginScreenWebUsbAllowDevicesForUrls[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
@@ -436,6 +435,7 @@ extern const char kPrintingPinDefault[];
 extern const char kPrintingBackgroundGraphicsDefault[];
 extern const char kPrintingSizeDefault[];
 extern const char kPrintingSendUsernameAndFilenameEnabled[];
+extern const char kPrintJobHistoryExpirationPeriod[];
 #endif  // OS_CHROMEOS
 
 extern const char kDefaultSupervisedUserFilteringBehavior[];

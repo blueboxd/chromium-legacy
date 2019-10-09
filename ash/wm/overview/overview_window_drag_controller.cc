@@ -68,6 +68,11 @@ void UnpauseOcclusionTracker() {
       kOcclusionPauseDurationForDrag);
 }
 
+bool GetVirtualDesksBarEnabled(OverviewItem* item) {
+  return desks_util::ShouldDesksBarBeCreated() &&
+         item->overview_grid()->IsDesksBarViewActive();
+}
+
 // Returns the scaled-down size of the dragged item that should be used when
 // it's dragged over the DesksBarView.
 gfx::SizeF GetItemSizeWhenOnDesksBar(OverviewItem* item) {
@@ -78,7 +83,15 @@ gfx::SizeF GetItemSizeWhenOnDesksBar(OverviewItem* item) {
   const aura::Window* window = item->GetWindow();
   DCHECK(window);
   const float root_height = window->GetRootWindow()->bounds().height();
-  const float scale_factor = DeskPreviewView::GetHeight() / float{root_height};
+  const OverviewGrid* overview_grid = item->overview_grid();
+  DCHECK(overview_grid);
+  const DesksBarView* desks_bar_view = overview_grid->desks_bar_view();
+  if (!desks_bar_view) {
+    DCHECK(!GetVirtualDesksBarEnabled(item));
+    return gfx::SizeF();
+  }
+  const float scale_factor =
+      desks_bar_view->bounds().height() / float{root_height};
   const gfx::SizeF window_size(window->bounds().size());
   gfx::SizeF scaled_size = gfx::ScaleSize(window_size, scale_factor);
   // Add the margins overview mode adds around the window's contents.
@@ -92,11 +105,6 @@ float GetManhattanDistanceX(float point_x, const gfx::RectF& rect) {
 
 float GetManhattanDistanceY(float point_y, const gfx::RectF& rect) {
   return std::max(rect.y() - point_y, point_y - rect.bottom());
-}
-
-bool GetVirtualDesksBarEnabled(OverviewItem* item) {
-  return desks_util::ShouldDesksBarBeCreated() &&
-         item->overview_grid()->IsDesksBarViewActive();
 }
 
 // Runs the given |callback| when this object goes out of scope.
@@ -129,6 +137,7 @@ OverviewWindowDragController::OverviewWindowDragController(
       is_touch_dragging_(is_touch_dragging),
       should_allow_split_view_(ShouldAllowSplitView()),
       virtual_desks_bar_enabled_(GetVirtualDesksBarEnabled(item)) {
+  DCHECK(!Shell::Get()->overview_controller()->IsInStartAnimation());
   DCHECK(!Shell::Get()->split_view_controller()->IsDividerAnimating());
 }
 

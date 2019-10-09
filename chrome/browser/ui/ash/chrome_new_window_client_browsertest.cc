@@ -290,7 +290,7 @@ void TestAllOSSettingPages(const GURL& base_url) {
   TestOpenChromePage(ChromePage::KEYBOARDOVERLAY,
                      base_url.Resolve(chrome::kKeyboardOverlaySubPage));
   TestOpenChromePage(ChromePage::LANGUAGES,
-                     base_url.Resolve(chrome::kLanguageOptionsSubPage));
+                     base_url.Resolve(chrome::kLanguageSubPage));
   TestOpenChromePage(ChromePage::LOCKSCREEN,
                      base_url.Resolve(chrome::kLockScreenSubPage));
   TestOpenChromePage(ChromePage::MANAGEACCESSIBILITY,

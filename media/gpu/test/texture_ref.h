@@ -14,6 +14,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
+namespace gpu {
+class GpuMemoryBufferFactory;
+}
+
 namespace media {
 namespace test {
 
@@ -26,6 +30,7 @@ class TextureRef : public base::RefCounted<TextureRef> {
       base::OnceClosure no_longer_needed_cb);
 
   static scoped_refptr<TextureRef> CreatePreallocated(
+      gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
       uint32_t texture_id,
       base::OnceClosure no_longer_needed_cb,
       VideoPixelFormat pixel_format,

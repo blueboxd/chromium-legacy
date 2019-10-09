@@ -32,10 +32,12 @@ VideoPlayer::~VideoPlayer() {
 // static
 std::unique_ptr<VideoPlayer> VideoPlayer::Create(
     const VideoDecoderClientConfig& config,
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     std::unique_ptr<FrameRenderer> frame_renderer,
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors) {
   auto video_player = base::WrapUnique(new VideoPlayer());
-  if (!video_player->CreateDecoderClient(config, std::move(frame_renderer),
+  if (!video_player->CreateDecoderClient(config, gpu_memory_buffer_factory,
+                                         std::move(frame_renderer),
                                          std::move(frame_processors))) {
     return nullptr;
   }
@@ -44,6 +46,7 @@ std::unique_ptr<VideoPlayer> VideoPlayer::Create(
 
 bool VideoPlayer::CreateDecoderClient(
     const VideoDecoderClientConfig& config,
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     std::unique_ptr<FrameRenderer> frame_renderer,
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -55,7 +58,8 @@ bool VideoPlayer::CreateDecoderClient(
       base::BindRepeating(&VideoPlayer::NotifyEvent, base::Unretained(this));
 
   decoder_client_ = VideoDecoderClient::Create(
-      event_cb, std::move(frame_renderer), std::move(frame_processors), config);
+      event_cb, gpu_memory_buffer_factory, std::move(frame_renderer),
+      std::move(frame_processors), config);
   if (!decoder_client_) {
     VLOGF(1) << "Failed to create video decoder client";
     return false;

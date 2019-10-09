@@ -137,16 +137,6 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   TransformNode* FindNodeFromElementId(ElementId id);
   bool OnTransformAnimated(ElementId element_id,
                            const gfx::Transform& transform);
-  // Computes the change of basis transform from node |source_id| to |dest_id|.
-  // This is used by scroll children to compute transform from their scroll
-  // parent space (source) to their parent space (destination) and it can atmost
-  // be a translation. This function assumes that the path from source to
-  // destination has only translations. So, it should not be called when there
-  // can be intermediate 3d transforms but the end result is a translation.
-  bool ComputeTranslation(int source_id,
-                          int dest_id,
-                          gfx::Transform* transform) const;
-
   void ResetChangeTracking();
   // Updates the parent, target, and screen space transforms and snapping.
   void UpdateTransforms(int id);

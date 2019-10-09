@@ -38,17 +38,11 @@ const struct {
 } kConcerningHeaders[] = {
     {net::HttpRequestHeaders::kConnection, ConcerningHeaderId::kConnection},
     {net::HttpRequestHeaders::kCookie, ConcerningHeaderId::kCookie},
-    {"Cookie2", ConcerningHeaderId::kCookie2},
-    {"Content-transfer-encoding", ConcerningHeaderId::kContentTransferEncoding},
     {"Date", ConcerningHeaderId::kDate},
     {"Expect", ConcerningHeaderId::kExpect},
-    {"Keep-alive", ConcerningHeaderId::kKeepAlive},
     // The referer is passed in from the caller on a per-request basis, but
     // there's a separate field for it that should be used instead.
     {net::HttpRequestHeaders::kReferer, ConcerningHeaderId::kReferer},
-    {"Te", ConcerningHeaderId::kTe},
-    {net::HttpRequestHeaders::kTransferEncoding,
-     ConcerningHeaderId::kTransferEncoding},
     {"Via", ConcerningHeaderId::kVia},
 };
 

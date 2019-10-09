@@ -75,7 +75,8 @@ suite('network-config', function() {
           chromeos.networkConfig.mojom.NetworkType.kWiFi, 'someguid', '');
       wifi1.name = OncMojo.createManagedString('somename');
       wifi1.source = chromeos.networkConfig.mojom.OncSource.kDevice;
-      wifi1.wifi.security = chromeos.networkConfig.mojom.SecurityType.kWepPsk;
+      wifi1.typeProperties.wifi.security =
+          chromeos.networkConfig.mojom.SecurityType.kWepPsk;
       setNetworkConfig(wifi1);
       initNetworkConfig();
     });
@@ -186,7 +187,8 @@ suite('network-config', function() {
       const wifi1 = OncMojo.getDefaultManagedProperties(
           chromeos.networkConfig.mojom.NetworkType.kWiFi, 'someguid', '');
       wifi1.source = chromeos.networkConfig.mojom.OncSource.kUser;
-      wifi1.wifi.security = chromeos.networkConfig.mojom.SecurityType.kWepPsk;
+      wifi1.typeProperties.wifi.security =
+          chromeos.networkConfig.mojom.SecurityType.kWepPsk;
       setNetworkConfig(wifi1);
       setAuthenticated();
       initNetworkConfig();
@@ -199,7 +201,8 @@ suite('network-config', function() {
       const eth = OncMojo.getDefaultManagedProperties(
           chromeos.networkConfig.mojom.NetworkType.kEthernet, 'ethernetguid',
           '');
-      eth.ethernet.authentication = OncMojo.createManagedString('None');
+      eth.typeProperties.ethernet.authentication =
+          OncMojo.createManagedString('None');
       setNetworkConfig(eth);
       initNetworkConfig();
       return flushAsync().then(() => {
@@ -215,8 +218,11 @@ suite('network-config', function() {
     test('Ethernet EAP', function() {
       const eth = OncMojo.getDefaultManagedProperties(
           chromeos.networkConfig.mojom.NetworkType.kEthernet, 'eapguid', '');
-      eth.ethernet.authentication = OncMojo.createManagedString('8021x');
-      eth.ethernet.eap = {outer: OncMojo.createManagedString('PEAP')};
+      eth.typeProperties.ethernet.authentication =
+          OncMojo.createManagedString('8021x');
+      eth.typeProperties.ethernet.eap = {
+        outer: OncMojo.createManagedString('PEAP')
+      };
       setNetworkConfig(eth);
       initNetworkConfig();
       return flushAsync().then(() => {
@@ -226,7 +232,8 @@ suite('network-config', function() {
             networkConfig.securityType);
         assertEquals(
             'PEAP',
-            networkConfig.managedProperties.ethernet.eap.outer.activeValue);
+            networkConfig.managedProperties.typeProperties.ethernet.eap.outer
+                .activeValue);
         let outer = networkConfig.$$('#outer');
         assertTrue(!!outer);
         assertTrue(!outer.disabled);

@@ -364,7 +364,7 @@ Polymer({
       // Allow wifi securityType to be set externally (e.g. in tests).
       if (mojoType == mojom.NetworkType.kWiFi &&
           this.securityType !== undefined) {
-        managedProperties.wifi.security = this.securityType;
+        managedProperties.typeProperties.wifi.security = this.securityType;
       }
       this.managedProperties_ = managedProperties;
       this.mojoType_ = mojoType;
@@ -583,13 +583,12 @@ Polymer({
 
     if (this.mojoType_ == mojom.NetworkType.kVPN) {
       let saveCredentials = false;
-      if (managedProperties.vpn.type == mojom.VpnType.kOpenVPN) {
-        saveCredentials = this.getActiveBoolean_(
-            managedProperties.vpn.openVpn.saveCredentials);
-      } else if (managedProperties.vpn.type == mojom.VpnType.kL2TPIPsec) {
-        saveCredentials = this.getActiveBoolean_(
-                              managedProperties.vpn.ipSec.saveCredentials) ||
-            this.getActiveBoolean_(managedProperties.vpn.l2tp.saveCredentials);
+      const vpn = managedProperties.typeProperties.vpn;
+      if (vpn.type == mojom.VpnType.kOpenVPN) {
+        saveCredentials = this.getActiveBoolean_(vpn.openVpn.saveCredentials);
+      } else if (vpn.type == mojom.VpnType.kL2TPIPsec) {
+        saveCredentials = this.getActiveBoolean_(vpn.ipSec.saveCredentials) ||
+            this.getActiveBoolean_(vpn.l2tp.saveCredentials);
       }
       this.vpnSaveCredentials_ = saveCredentials;
     }
@@ -638,7 +637,8 @@ Polymer({
     if (this.shareAllowEnable) {
       // New insecure WiFi networks are always shared.
       if (this.mojoType_ == mojom.NetworkType.kWiFi &&
-          this.managedProperties_.wifi.security == mojom.SecurityType.kNone) {
+          this.managedProperties_.typeProperties.wifi.security ==
+              mojom.SecurityType.kNone) {
         this.shareNetwork_ = true;
         return;
       }
@@ -750,25 +750,27 @@ Polymer({
     let security = mojom.SecurityType.kNone;
     switch (managedProperties.type) {
       case mojom.NetworkType.kWiFi:
-        autoConnect =
-            this.getActiveBoolean_(managedProperties.wifi.autoConnect);
+        autoConnect = this.getActiveBoolean_(
+            managedProperties.typeProperties.wifi.autoConnect);
         configProperties.wifi = {
           passphrase: '',
-          ssid: OncMojo.getActiveString(managedProperties.wifi.ssid),
-          security: managedProperties.wifi.security,
+          ssid: OncMojo.getActiveString(
+              managedProperties.typeProperties.wifi.ssid),
+          security: managedProperties.typeProperties.wifi.security,
         };
-        if (managedProperties.wifi.eap) {
-          configProperties.wifi.eap =
-              this.getEAPConfigProperties_(managedProperties.wifi.eap);
+        if (managedProperties.typeProperties.wifi.eap) {
+          configProperties.wifi.eap = this.getEAPConfigProperties_(
+              managedProperties.typeProperties.wifi.eap);
         }
         security = configProperties.wifi.security;
         // updateSecurity_ will ensure that EAP properties are set correctly.
         break;
       case mojom.NetworkType.kEthernet:
-        autoConnect =
-            this.getActiveBoolean_(managedProperties.ethernet.autoConnect);
-        const eap = managedProperties.ethernet.eap ?
-            this.getEAPConfigProperties_(managedProperties.ethernet.eap) :
+        autoConnect = this.getActiveBoolean_(
+            managedProperties.typeProperties.ethernet.autoConnect);
+        const eap = managedProperties.typeProperties.ethernet.eap ?
+            this.getEAPConfigProperties_(
+                managedProperties.typeProperties.ethernet.eap) :
             undefined;
         security = eap ? mojom.SecurityType.kWpaEap : mojom.SecurityType.kNone;
         const auth = security == mojom.SecurityType.kWpaEap ? '8021X' : 'None';
@@ -778,23 +780,23 @@ Polymer({
         };
         break;
       case mojom.NetworkType.kVPN:
-        const vpnType = managedProperties.vpn.type;
+        const vpn = managedProperties.typeProperties.vpn;
+        const vpnType = vpn.type;
         configProperties.vpn = {
-          host: OncMojo.getActiveString(managedProperties.vpn.host),
+          host: OncMojo.getActiveString(vpn.host),
           type: vpnType,
         };
         if (vpnType == mojom.VpnType.kL2TPIPsec) {
-          assert(managedProperties.vpn.ipSec);
+          assert(vpn.ipSec);
           configProperties.vpn.ipSec =
-              this.getIPSecConfigProperties_(managedProperties.vpn.ipSec);
-          assert(managedProperties.vpn.l2tp);
-          configProperties.vpn.l2tp =
-              this.getL2TPConfigProperties_(managedProperties.vpn.l2tp);
+              this.getIPSecConfigProperties_(vpn.ipSec);
+          assert(vpn.l2tp);
+          configProperties.vpn.l2tp = this.getL2TPConfigProperties_(vpn.l2tp);
         } else {
           assert(vpnType == mojom.VpnType.kOpenVPN);
-          assert(managedProperties.vpn.openVpn);
+          assert(vpn.openVpn);
           configProperties.vpn.openVpn =
-              this.getOpenVPNConfigProperties_(managedProperties.vpn.openVpn);
+              this.getOpenVPNConfigProperties_(vpn.openVpn);
         }
         security = mojom.SecurityType.kNone;
         break;
@@ -947,10 +949,10 @@ Polymer({
     let managedEap;
     switch (managedProperties.type) {
       case mojom.NetworkType.kWiFi:
-        managedEap = managedProperties.wifi.eap;
+        managedEap = managedProperties.typeProperties.wifi.eap;
         break;
       case mojom.NetworkType.kEthernet:
-        managedEap = managedProperties.ethernet.eap;
+        managedEap = managedProperties.typeProperties.ethernet.eap;
         break;
     }
     return managedEap || null;
@@ -1660,15 +1662,15 @@ Polymer({
     switch (managedProperties.type) {
       case mojom.NetworkType.kWiFi:
         return {
-          activeValue:
-              OncMojo.getSecurityTypeString(managedProperties.wifi.security),
+          activeValue: OncMojo.getSecurityTypeString(
+              managedProperties.typeProperties.wifi.security),
           policySource: policySource,
         };
         break;
       case mojom.NetworkType.kEthernet:
         return {
           activeValue: OncMojo.getActiveString(
-              managedProperties.ethernet.authentication),
+              managedProperties.typeProperties.ethernet.authentication),
           policySource: policySource,
         };
         break;
@@ -1682,7 +1684,7 @@ Polymer({
    * @private
    */
   getManagedVpnSaveCredentials_: function(managedProperties) {
-    const vpn = managedProperties.vpn;
+    const vpn = managedProperties.typeProperties.vpn;
     switch (vpn.type) {
       case mojom.VpnType.kOpenVPN:
         return vpn.openVpn.saveCredentials;
@@ -1699,7 +1701,7 @@ Polymer({
    * @private
    */
   getManagedVpnServerCaRefs_: function(managedProperties) {
-    const vpn = managedProperties.vpn;
+    const vpn = managedProperties.typeProperties.vpn;
     switch (vpn.type) {
       case mojom.VpnType.kOpenVPN:
         return vpn.openVpn.serverCaRefs;
@@ -1716,7 +1718,7 @@ Polymer({
    * @private
    */
   getManagedVpnClientCertType_: function(managedProperties) {
-    const vpn = managedProperties.vpn;
+    const vpn = managedProperties.typeProperties.vpn;
     switch (vpn.type) {
       case mojom.VpnType.kOpenVPN:
         return vpn.openVpn.clientCertType;

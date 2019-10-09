@@ -46,6 +46,8 @@ void EnumerateVideoEncodeAcceleratorSupportedProfile(
     gpu::GPUInfo::Enumerator* enumerator) {
   enumerator->BeginVideoEncodeAcceleratorSupportedProfile();
   enumerator->AddInt("profile", profile.profile);
+  enumerator->AddInt("minResolutionWidth", profile.min_resolution.width());
+  enumerator->AddInt("minResolutionHeight", profile.min_resolution.height());
   enumerator->AddInt("maxResolutionWidth", profile.max_resolution.width());
   enumerator->AddInt("maxResolutionHeight", profile.max_resolution.height());
   enumerator->AddInt("maxFramerateNumerator", profile.max_framerate_numerator);

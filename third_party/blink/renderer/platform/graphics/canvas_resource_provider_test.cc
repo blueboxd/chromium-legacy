@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/test/gpu_memory_buffer_test_platform.h"
+#include "third_party/blink/renderer/platform/graphics/test/gpu_test_utils.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using testing::_;
@@ -35,93 +36,14 @@ class MockCanvasResourceDispatcherClient
   MOCK_METHOD0(BeginFrame, bool());
 };
 
-class MockWebGraphisContext3DProviderWrapper
-    : public WebGraphicsContext3DProvider {
- public:
-  MockWebGraphisContext3DProviderWrapper(cc::ImageDecodeCache* cache = nullptr)
-      : image_decode_cache_(cache ? cache : &stub_image_decode_cache_) {
-    // enable all gpu features.
-    for (unsigned feature = 0; feature < gpu::NUMBER_OF_GPU_FEATURE_TYPES;
-         ++feature) {
-      gpu_feature_info_.status_values[feature] = gpu::kGpuFeatureStatusEnabled;
-    }
-  }
-  ~MockWebGraphisContext3DProviderWrapper() override = default;
-
-  GrContext* GetGrContext() override {
-    return GetTestContextProvider()->GrContext();
-  }
-
-  const gpu::Capabilities& GetCapabilities() const override {
-    return capabilities_;
-  }
-  void SetCapabilities(const gpu::Capabilities& c) { capabilities_ = c; }
-
-  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override {
-    return gpu_feature_info_;
-  }
-
-  const WebglPreferences& GetWebglPreferences() const override {
-    return webgl_preferences_;
-  }
-
-  viz::GLHelper* GetGLHelper() override { return nullptr; }
-
-  gpu::gles2::GLES2Interface* ContextGL() override {
-    return GetTestContextProvider()->ContextGL();
-  }
-
-  gpu::webgpu::WebGPUInterface* WebGPUInterface() override { return nullptr; }
-
-  scoped_refptr<viz::TestContextProvider> GetTestContextProvider() {
-    if (!test_context_provider_) {
-      test_context_provider_ = viz::TestContextProvider::Create();
-      // Needed for CanvasResourceProviderDirect2DGpuMemoryBuffer.
-      test_context_provider_->UnboundTestContextGL()
-          ->set_support_texture_format_bgra8888(true);
-      test_context_provider_->BindToCurrentThread();
-    }
-    return test_context_provider_;
-  }
-
-  bool BindToCurrentThread() override { return false; }
-  void SetLostContextCallback(base::RepeatingClosure) override {}
-  void SetErrorMessageCallback(
-      base::RepeatingCallback<void(const char*, int32_t id)>) override {}
-  cc::ImageDecodeCache* ImageDecodeCache(SkColorType color_type) override {
-    return image_decode_cache_;
-  }
-  viz::TestSharedImageInterface* SharedImageInterface() override {
-    return GetTestContextProvider()->SharedImageInterface();
-  }
-  void CopyVideoFrame(media::PaintCanvasVideoRenderer* video_render,
-                      media::VideoFrame* video_frame,
-                      cc::PaintCanvas* canvas) override {}
-
- private:
-  cc::StubDecodeCache stub_image_decode_cache_;
-
-  scoped_refptr<viz::TestContextProvider> test_context_provider_;
-  gpu::Capabilities capabilities_;
-  gpu::GpuFeatureInfo gpu_feature_info_;
-  WebglPreferences webgl_preferences_;
-  cc::ImageDecodeCache* image_decode_cache_;
-};
-
 }  // anonymous namespace
 
 class CanvasResourceProviderTest : public Test {
  public:
   void SetUp() override {
-    // Install our mock GL context so that it gets served by SharedGpuContext.
-    auto factory = [](bool* gpu_compositing_disabled)
-        -> std::unique_ptr<WebGraphicsContext3DProvider> {
-      *gpu_compositing_disabled = false;
-      // Unretained is safe since TearDown() cleans up the SharedGpuContext.
-      return std::make_unique<MockWebGraphisContext3DProviderWrapper>();
-    };
-    SharedGpuContext::SetContextProviderFactoryForTesting(
-        WTF::BindRepeating(factory));
+    test_context_provider_ = viz::TestContextProvider::Create();
+    InitializeSharedGpuContext(test_context_provider_.get(),
+                               &image_decode_cache_);
     context_provider_wrapper_ = SharedGpuContext::ContextProviderWrapper();
   }
 
@@ -138,7 +60,7 @@ class CanvasResourceProviderTest : public Test {
     auto capabilities = context_provider->GetCapabilities();
     capabilities.gpu_memory_buffer_formats.Add(buffer_format);
 
-    static_cast<MockWebGraphisContext3DProviderWrapper*>(context_provider)
+    static_cast<FakeWebGraphicsContext3DProvider*>(context_provider)
         ->SetCapabilities(capabilities);
   }
 
@@ -147,7 +69,7 @@ class CanvasResourceProviderTest : public Test {
     auto capabilities = context_provider->GetCapabilities();
     capabilities.texture_storage_image = true;
     capabilities.max_texture_size = 1024;
-    static_cast<MockWebGraphisContext3DProviderWrapper*>(context_provider)
+    static_cast<FakeWebGraphicsContext3DProvider*>(context_provider)
         ->SetCapabilities(capabilities);
   }
 
@@ -159,6 +81,8 @@ class CanvasResourceProviderTest : public Test {
   }
 
  protected:
+  cc::StubDecodeCache image_decode_cache_;
+  scoped_refptr<viz::TestContextProvider> test_context_provider_;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform_;
 };
@@ -341,11 +265,11 @@ TEST_F(CanvasResourceProviderTest,
 
 TEST_F(CanvasResourceProviderTest,
        CanvasResourceProviderSharedImageCopyOnWriteDisabled) {
-  auto* mock_context = static_cast<MockWebGraphisContext3DProviderWrapper*>(
+  auto* fake_context = static_cast<FakeWebGraphicsContext3DProvider*>(
       context_provider_wrapper_->ContextProvider());
-  auto caps = mock_context->GetCapabilities();
+  auto caps = fake_context->GetCapabilities();
   caps.disable_2d_canvas_copy_on_write = true;
-  mock_context->SetCapabilities(caps);
+  fake_context->SetCapabilities(caps);
 
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
@@ -540,6 +464,74 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderDirect3D) {
   EXPECT_TRUE(transferable_resource.mailbox_holder.mailbox.IsSharedImage());
   EXPECT_FALSE(transferable_resource.is_overlay_candidate);
   callback->Run(gpu::SyncToken(), true /* is_lost */);
+}
+
+TEST_F(CanvasResourceProviderTest, DimensionsExceedMaxTextureSize) {
+  const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
+                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+  const int max_texture_size = context_provider_wrapper_->ContextProvider()
+                                   ->GetCapabilities()
+                                   .max_texture_size;
+  EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
+  EnsureOverlaysSupported();
+
+  for (int i = 0;
+       i < static_cast<int>(CanvasResourceProvider::ResourceUsage::kMaxValue);
+       ++i) {
+    SCOPED_TRACE(i);
+    auto usage = static_cast<CanvasResourceProvider::ResourceUsage>(i);
+    bool should_support_compositing = false;
+    switch (usage) {
+      case CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage:
+        should_support_compositing = false;
+        break;
+      case CanvasResourceProvider::ResourceUsage::
+          kSoftwareCompositedResourceUsage:
+        FALLTHROUGH;
+      case CanvasResourceProvider::ResourceUsage::
+          kSoftwareCompositedDirect2DResourceUsage:
+        should_support_compositing = PlatformSupportsGMBs();
+        break;
+      case CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage:
+        FALLTHROUGH;
+      case CanvasResourceProvider::ResourceUsage::
+          kAcceleratedCompositedResourceUsage:
+        FALLTHROUGH;
+      case CanvasResourceProvider::ResourceUsage::
+          kAcceleratedDirect2DResourceUsage:
+        FALLTHROUGH;
+      case CanvasResourceProvider::ResourceUsage::
+          kAcceleratedDirect3DResourceUsage:
+        should_support_compositing = true;
+        break;
+    }
+
+    auto provider = CanvasResourceProvider::Create(
+        IntSize(max_texture_size - 1, max_texture_size), usage,
+        context_provider_wrapper_, 0 /* msaa_sample_count */,
+        kLow_SkFilterQuality, kColorParams,
+        CanvasResourceProvider::kAllowImageChromiumPresentationMode,
+        nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+    EXPECT_EQ(provider->SupportsDirectCompositing(),
+              should_support_compositing);
+
+    provider = CanvasResourceProvider::Create(
+        IntSize(max_texture_size, max_texture_size), usage,
+        context_provider_wrapper_, 0 /* msaa_sample_count */,
+        kLow_SkFilterQuality, kColorParams,
+        CanvasResourceProvider::kAllowImageChromiumPresentationMode,
+        nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+    EXPECT_EQ(provider->SupportsDirectCompositing(),
+              should_support_compositing);
+
+    provider = CanvasResourceProvider::Create(
+        IntSize(max_texture_size + 1, max_texture_size), usage,
+        context_provider_wrapper_, 0 /* msaa_sample_count */,
+        kLow_SkFilterQuality, kColorParams,
+        CanvasResourceProvider::kAllowImageChromiumPresentationMode,
+        nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+    EXPECT_FALSE(provider->SupportsDirectCompositing());
+  }
 }
 
 }  // namespace blink

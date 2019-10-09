@@ -69,6 +69,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   gfx::Rect GetHotseatBackgroundBounds();
 
   views::View* GetShelfContainerViewForTest();
+  bool ShouldAdjustForTest() const;
 
   ShelfView* shelf_view() { return shelf_view_; }
   ShelfContainerView* shelf_container_view() { return shelf_container_view_; }
@@ -249,8 +250,12 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   bool ShouldHandleScroll(const gfx::Vector2dF& offset,
                           bool is_gesture_fling) const;
 
-  // Ensures that the app icons are shown correctly when scrolling ends.
-  void AdjustOffsetAfterScrolling();
+  // Ensures that the app icons are shown correctly.
+  void AdjustOffset();
+
+  // Returns the offset by which the shelf view should be translated to ensure
+  // the correct UI.
+  int CalculateAdjustedOffset() const;
 
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 

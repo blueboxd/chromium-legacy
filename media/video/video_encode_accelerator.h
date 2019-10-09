@@ -77,6 +77,7 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
                      uint32_t max_framerate_denominator = 1u);
     ~SupportedProfile();
     VideoCodecProfile profile;
+    gfx::Size min_resolution;
     gfx::Size max_resolution;
     uint32_t max_framerate_numerator;
     uint32_t max_framerate_denominator;

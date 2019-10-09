@@ -73,7 +73,6 @@ struct OverlayCheck_Params {
   gfx::BufferFormat format = gfx::BufferFormat::BGRA_8888;
   gfx::Rect display_rect;
   gfx::RectF crop_rect;
-  bool is_opaque = false;
   int plane_z_order = 0;
   // By default we mark this configuration valid for promoting it to an overlay.
   bool is_overlay_candidate = true;

@@ -202,7 +202,7 @@ class FuchsiaVideoDecoderTest : public testing::Test {
             &init_cb_result, &run_loop),
         base::BindRepeating(&FuchsiaVideoDecoderTest::OnVideoFrame,
                             weak_factory_.GetWeakPtr()),
-        base::NullCallback());
+        base::DoNothing());
 
     run_loop.Run();
     return init_cb_result;

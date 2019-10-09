@@ -44,6 +44,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/cdm_context.h"
@@ -1736,6 +1737,9 @@ class VEAClient : public VEAClientBase {
 
   // The last timestamp popped from |frame_timestamps_|.
   base::TimeDelta previous_timestamp_;
+
+  // Buffer factory for use with CloneVideoFrame.
+  std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 };
 
 VEAClient::VEAClient(TestStream* test_stream,
@@ -1810,6 +1814,9 @@ VEAClient::VEAClient(TestStream* test_stream,
     // Without it, AppendToFile() will not work.
     EXPECT_EQ(0, base::WriteFile(out_filename, NULL, 0));
   }
+
+  gpu_memory_buffer_factory_ =
+      gpu::GpuMemoryBufferFactory::CreateNativeType(nullptr);
 
   // Initialize the parameters of the test streams.
   UpdateTestStreamData(mid_stream_bitrate_switch, mid_stream_framerate_switch);
@@ -2147,8 +2154,8 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
   if (video_frame && g_native_input) {
 #if defined(OS_LINUX)
     video_frame = test::CloneVideoFrame(
-        video_frame.get(), video_frame->layout(),
-        VideoFrame::STORAGE_GPU_MEMORY_BUFFER,
+        gpu_memory_buffer_factory_.get(), video_frame.get(),
+        video_frame->layout(), VideoFrame::STORAGE_GPU_MEMORY_BUFFER,
         gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
 #else
     video_frame = nullptr;

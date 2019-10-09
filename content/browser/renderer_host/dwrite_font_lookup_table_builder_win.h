@@ -201,6 +201,8 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   Microsoft::WRL::ComPtr<IDWriteFactory3> factory3_;
   SlowDownMode slow_down_mode_for_testing_ = SlowDownMode::kNoSlowdown;
   uint32_t outstanding_family_results_ = 0;
+  uint32_t family_results_non_empty_ = 0;
+  uint32_t family_results_empty_ = 0;
   base::TimeTicks start_time_table_ready_;
   base::TimeTicks start_time_table_build_;
   base::FilePath cache_directory_;

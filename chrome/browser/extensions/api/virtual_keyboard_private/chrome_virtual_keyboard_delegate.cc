@@ -257,7 +257,7 @@ bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
 
   base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
   chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        chrome::kLanguageOptionsSubPage);
+                                        chrome::kLanguageSubPage);
   return true;
 }
 
@@ -385,6 +385,10 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features->AppendString(GenerateFeatureFlag(
       "fstnonenglish",
       base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicFst)));
+  features->AppendString(GenerateFeatureFlag(
+      "floatingkeyboarddefault",
+      base::FeatureList::IsEnabled(
+          chromeos::features::kVirtualKeyboardFloatingDefault)));
 
   results->Set("features", std::move(features));
 

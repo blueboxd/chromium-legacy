@@ -14,6 +14,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/animation/bounds_animator.h"
@@ -57,9 +58,16 @@ class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
   Delegate(Shelf* shelf, ShelfView* shelf_view);
   ~Delegate() override;
 
+  // Initializes the view.
+  void Init(ui::Layer* parent_layer);
+
+  void UpdateOpaqueBackground();
+
   // views::View:
   FocusTraversable* GetPaneFocusTraversable() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void ReorderChildLayers(ui::Layer* parent_layer) override;
+  void OnBoundsChanged(const gfx::Rect& old_bounds) override;
 
   // views::AccessiblePaneView:
   View* GetDefaultFocusableChild() override;
@@ -77,16 +85,22 @@ class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
   }
 
  private:
+  void SetParentLayer(ui::Layer* layer);
+
   BackButton* back_button_ = nullptr;
   HomeButton* home_button_ = nullptr;
   // When true, the default focus of the navigation widget is the last
   // focusable child.
   bool default_last_focusable_child_ = false;
 
+  // A background layer that may be visible depending on shelf state.
+  ui::Layer opaque_background_;
+
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
-ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view) {
+ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view)
+    : opaque_background_(ui::LAYER_SOLID_COLOR) {
   set_allow_deactivate_on_esc(true);
 
   const int control_size = ShelfConfig::Get()->control_size();
@@ -108,6 +122,31 @@ ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view) {
 
 ShelfNavigationWidget::Delegate::~Delegate() = default;
 
+void ShelfNavigationWidget::Delegate::Init(ui::Layer* parent_layer) {
+  SetParentLayer(parent_layer);
+  UpdateOpaqueBackground();
+}
+
+void ShelfNavigationWidget::Delegate::UpdateOpaqueBackground() {
+  opaque_background_.SetColor(ShelfConfig::Get()->GetShelfControlButtonColor());
+
+  if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletMode() &&
+      ShelfConfig::Get()->is_in_app()) {
+    opaque_background_.SetVisible(false);
+    return;
+  }
+  opaque_background_.SetVisible(true);
+
+  int radius = ShelfConfig::Get()->control_border_radius();
+  gfx::RoundedCornersF rounded_corners = {radius, radius, radius, radius};
+  if (opaque_background_.rounded_corner_radii() != rounded_corners)
+    opaque_background_.SetRoundedCornerRadius(rounded_corners);
+
+  opaque_background_.SetBounds(GetLocalBounds());
+  opaque_background_.SetBackgroundBlur(
+      ShelfConfig::Get()->GetShelfControlButtonBlurRadius());
+}
+
 bool ShelfNavigationWidget::Delegate::CanActivate() const {
   // We don't want mouse clicks to activate us, but we need to allow
   // activation when the user is using the keyboard (FocusCycler).
@@ -125,9 +164,25 @@ void ShelfNavigationWidget::Delegate::GetAccessibleNodeData(
   node_data->SetName(l10n_util::GetStringUTF8(IDS_ASH_SHELF_ACCESSIBLE_NAME));
 }
 
+void ShelfNavigationWidget::Delegate::ReorderChildLayers(
+    ui::Layer* parent_layer) {
+  views::View::ReorderChildLayers(parent_layer);
+  parent_layer->StackAtBottom(&opaque_background_);
+}
+
+void ShelfNavigationWidget::Delegate::OnBoundsChanged(
+    const gfx::Rect& old_bounds) {
+  UpdateOpaqueBackground();
+}
+
 views::View* ShelfNavigationWidget::Delegate::GetDefaultFocusableChild() {
   return default_last_focusable_child_ ? GetLastFocusableChild()
                                        : GetFirstFocusableChild();
+}
+
+void ShelfNavigationWidget::Delegate::SetParentLayer(ui::Layer* layer) {
+  layer->Add(&opaque_background_);
+  ReorderLayers();
 }
 
 ShelfNavigationWidget::ShelfNavigationWidget(Shelf* shelf,
@@ -160,6 +215,7 @@ void ShelfNavigationWidget::Initialize(aura::Window* container) {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = container;
   Init(std::move(params));
+  delegate_->Init(GetLayer());
   set_focus_on_creation(false);
   GetFocusManager()->set_arrow_key_traversal_enabled_for_widget(true);
   SetContentsView(delegate_);
@@ -247,9 +303,7 @@ void ShelfNavigationWidget::UpdateLayout() {
       tablet_mode ? GetSecondButtonBounds() : GetFirstButtonBounds());
   GetBackButton()->SetBoundsRect(GetFirstButtonBounds());
 
-  delegate_->SetBackground(views::CreateRoundedRectBackground(
-      ShelfConfig::Get()->GetShelfControlButtonColor(),
-      ShelfConfig::Get()->control_border_radius()));
+  delegate_->UpdateOpaqueBackground();
 }
 
 }  // namespace ash

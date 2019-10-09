@@ -29,6 +29,7 @@ HAS_ARCH_AMD64=1
 HAS_ARCH_I386=1
 HAS_ARCH_ARM=1
 HAS_ARCH_ARM64=1
+HAS_ARCH_ARMEL=1
 HAS_ARCH_MIPS=1
 HAS_ARCH_MIPS64EL=1
 
@@ -392,6 +393,15 @@ DEBIAN_PACKAGES_ARM64="
   libgmp10
   libitm1
   libthai0
+  libubsan0
+"
+
+DEBIAN_PACKAGES_ARMEL="
+  libasan3
+  libdrm-exynos1
+  libdrm-freedreno1
+  libdrm-omap1
+  libdrm-tegra0
   libubsan0
 "
 

@@ -39,10 +39,19 @@ void ShelfContainerView::Layout() {
   const gfx::Rect ideal_bounds = gfx::Rect(CalculateIdealSize());
 
   const gfx::Rect local_bounds = GetLocalBounds();
-  if (local_bounds.Contains(ideal_bounds))
-    shelf_view_->SetBoundsRect(local_bounds);
+  gfx::Rect shelf_view_bounds =
+      local_bounds.Contains(ideal_bounds) ? local_bounds : ideal_bounds;
+
+  // Offsets |shelf_view_bounds| to ensure the sufficient space for the ripple
+  // ring of the first shelf item.
+  if (shelf_view_->shelf()->IsHorizontalAlignment())
+    shelf_view_bounds.Offset(
+        ShelfConfig::Get()->scrollable_shelf_ripple_padding(), 0);
   else
-    shelf_view_->SetBoundsRect(ideal_bounds);
+    shelf_view_bounds.Offset(
+        0, ShelfConfig::Get()->scrollable_shelf_ripple_padding());
+
+  shelf_view_->SetBoundsRect(shelf_view_bounds);
 }
 
 const char* ShelfContainerView::GetClassName() const {

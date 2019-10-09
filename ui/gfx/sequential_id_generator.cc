@@ -55,6 +55,13 @@ void SequentialIDGenerator::ReleaseNumber(uint32_t number) {
   }
 }
 
+void SequentialIDGenerator::ReleaseID(uint32_t id) {
+  if (id_to_number_.count(id) > 0U) {
+    UpdateNextAvailableIDAfterRelease(id);
+    Remove(id_to_number_[id], &number_to_id_, &id_to_number_);
+  }
+}
+
 void SequentialIDGenerator::ResetForTest() {
   number_to_id_.clear();
   id_to_number_.clear();

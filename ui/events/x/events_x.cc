@@ -89,10 +89,6 @@ void ReleaseCopiedNativeEvent(const PlatformEvent& native_event) {
   delete native_event;
 }
 
-void ClearTouchIdIfReleased(const PlatformEvent& native_event) {
-  ClearTouchIdIfReleasedFromXEvent(*native_event);
-}
-
 int GetTouchId(const PlatformEvent& native_event) {
   return GetTouchIdFromXEvent(*native_event);
 }

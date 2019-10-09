@@ -70,7 +70,7 @@ Polymer({
       return;
     }
     const key = event.target.id;
-    let curValue = this.get(key, this.propertyDict);
+    let curValue = this.getProperty_(key);
     if (typeof curValue == 'object' && !Array.isArray(curValue)) {
       // Extract the property from an ONC managed dictionary.
       curValue = OncMojo.getActiveValue(
@@ -133,18 +133,17 @@ Polymer({
 
   /**
    * @param {string} key The property key.
-   * @param {string} prefix
    * @return {string} The text to display for the property label.
    * @private
    */
-  getPropertyLabel_: function(key, prefix) {
-    const oncKey = this.getOncKey_(key, prefix);
+  getPropertyLabel_: function(key) {
+    const oncKey = this.getOncKey_(key, this.prefix);
     if (this.i18nExists(oncKey)) {
       return this.i18n(oncKey);
     }
     // We do not provide translations for every possible network property key.
     // For keys specific to a type, strip the type prefix.
-    const result = prefix + key;
+    const result = this.prefix + key;
     for (const type of ['cellular', 'ethernet', 'tether', 'vpn', 'wifi']) {
       if (result.startsWith(type + '.')) {
         return result.substr(type.length + 1);
@@ -155,39 +154,33 @@ Polymer({
 
   /**
    * Generates a filter function dependent on propertyDict and editFieldTypes.
-   * @param {string} prefix
-   * @param {!Object} propertyDict
-   * @param {!Object} editFieldTypes
    * @return {!Object} A filter used by dom-repeat.
    * @private
    */
-  computeFilter_: function(prefix, propertyDict, editFieldTypes) {
+  computeFilter_: function() {
     return key => {
-      if (editFieldTypes.hasOwnProperty(key)) {
+      if (this.editFieldTypes.hasOwnProperty(key)) {
         return true;
       }
-      const value = this.getPropertyValue_(key, prefix, propertyDict);
+      const value = this.getPropertyValue_(key);
       return value !== '';
     };
   },
 
   /**
    * @param {string} key The property key.
-   * @param {!Object} propertyDict
    * @return {boolean}
    * @private
    */
-  isPropertyEditable_: function(key, propertyDict) {
-    if (!propertyDict) {
+  isPropertyEditable_: function(key) {
+    if (!this.propertyDict) {
       return false;
     }
-    const property =
-        /** @type{OncMojo.ManagedProperty|undefined} */ (
-            this.get(key, propertyDict));
+    const property = this.getProperty_(key);
     if (property === undefined || property === null) {
       // Unspecified properties in policy configurations are not user
       // modifiable. https://crbug.com/819837.
-      const source = propertyDict.source;
+      const source = this.propertyDict.source;
       return source != chromeos.networkConfig.mojom.OncSource.kUserPolicy &&
           source != chromeos.networkConfig.mojom.OncSource.kDevicePolicy;
     }
@@ -196,60 +189,73 @@ Polymer({
 
   /**
    * @param {string} key The property key.
-   * @param {!Object} editFieldTypes
    * @return {boolean} True if the edit type for the key is a valid type.
    * @private
    */
-  isEditType_: function(key, editFieldTypes) {
-    const editType = editFieldTypes[key];
+  isEditType_: function(key) {
+    const editType = this.editFieldTypes[key];
     return editType == 'String' || editType == 'StringArray' ||
         editType == 'Password';
   },
 
   /**
    * @param {string} key The property key.
-   * @param {!Object} propertyDict
-   * @param {!Object} editFieldTypes
    * @return {boolean}
    * @private
    */
-  isEditable_: function(key, propertyDict, editFieldTypes) {
-    return propertyDict && this.isEditType_(key, editFieldTypes) &&
-        this.isPropertyEditable_(key, propertyDict);
+  isEditable_: function(key) {
+    return this.isEditType_(key) && this.isPropertyEditable_(key);
   },
 
   /**
    * @param {string} key The property key.
-   * @param {!Object} propertyDict
-   * @param {!Object} editFieldTypes
    * @return {boolean}
    * @private
    */
-  showEditable_: function(key, propertyDict, editFieldTypes) {
-    return this.isEditable_(key, propertyDict, editFieldTypes);
+  showEditable_: function(key) {
+    return this.isEditable_(key);
   },
 
   /**
    * @param {string} key The property key.
-   * @param {!Object} editFieldTypes
    * @return {string}
    * @private
    */
-  getEditInputType_: function(key, editFieldTypes) {
-    return editFieldTypes[key] == 'Password' ? 'password' : 'text';
+  getEditInputType_: function(key) {
+    return this.editFieldTypes[key] == 'Password' ? 'password' : 'text';
   },
 
   /**
    * @param {string} key The property key.
-   * @param {!Object} propertyDict
+   * @return {!OncMojo.ManagedProperty|undefined}
+   * @private
+   */
+  getProperty_: function(key) {
+    if (!this.propertyDict) {
+      return undefined;
+    }
+    key = OncMojo.getManagedPropertyKey(key);
+    const property = this.get(key, this.propertyDict);
+    if (property === null || property === undefined) {
+      return undefined;
+    }
+    return /** @type{!OncMojo.ManagedProperty}*/ (property);
+  },
+
+  /**
+   * @param {string} key The property key.
    * @return {*} The managed property dictionary associated with |key|.
    * @private
    */
-  getProperty_: function(key, propertyDict) {
-    const property = this.get(key, this.propertyDict);
-    if (property === undefined || property === null) {
-      const policySource =
-          OncMojo.getEnforcedPolicySourceFromOncSource(propertyDict.source);
+  getIndicatorProperty_: function(key) {
+    if (!this.propertyDict) {
+      return undefined;
+    }
+    const property = this.getProperty_(key);
+    if ((property === undefined || property === null) &&
+        this.propertyDict.source) {
+      const policySource = OncMojo.getEnforcedPolicySourceFromOncSource(
+          this.propertyDict.source);
       if (policySource != chromeos.networkConfig.mojom.PolicySource.kNone) {
         // If the dictionary is policy controlled, provide an empty property
         // object with the network policy source. See https://crbug.com/819837
@@ -266,13 +272,11 @@ Polymer({
 
   /**
    * @param {string} key The property key.
-   * @param {string} prefix
-   * @param {!Object} propertyDict
    * @return {string} The text to display for the property value.
    * @private
    */
-  getPropertyValue_: function(key, prefix, propertyDict) {
-    let value = this.get(key, propertyDict);
+  getPropertyValue_: function(key) {
+    let value = this.getProperty_(key);
     if (value === undefined || value === null) {
       return '';
     }
@@ -313,7 +317,7 @@ Polymer({
       assert(typeof value == 'string');
       valueStr = /** @type {string} */ (value);
     }
-    const oncKey = this.getOncKey_(key, prefix) + '_' + valueStr;
+    const oncKey = this.getOncKey_(key, this.prefix) + '_' + valueStr;
     if (this.i18nExists(oncKey)) {
       return this.i18n(oncKey);
     }

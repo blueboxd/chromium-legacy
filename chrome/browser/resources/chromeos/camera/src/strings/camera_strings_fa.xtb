@@ -26,7 +26,7 @@
 <translation id="3183731565330012717">نوع جدول</translation>
 <translation id="3227137524299004712">میکروفن</translation>
 <translation id="3259149966178251584">وضوح دوربین</translation>
-<translation id="3517926952904427380">عدم‌امکان گرفتن عکس چهره</translation>
+<translation id="3517926952904427380">عکس عمودی ممکن نیست</translation>
 <translation id="3569311554794739032">واقعاً می‌خواهید <ph name="FILE" /> را بردارید؟</translation>
 <translation id="3810838688059735925">فیلم</translation>
 <translation id="4279490309300973883">بازتاب می‌شود</translation>
@@ -69,7 +69,7 @@
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">پیش‌نمایش فراداده</translation>
-<translation id="8815966864175525708">تغییر وضعیت به گرفتن عکس چهره</translation>
+<translation id="8815966864175525708">تغییر به گرفتن عکس عمودی</translation>
 <translation id="8870695351537079478">شروع ضبط انجام نشد</translation>
 <translation id="9045155556724273246">۱۰ ثانیه</translation>
 <translation id="945522503751344254">ارسال بازخورد</translation>

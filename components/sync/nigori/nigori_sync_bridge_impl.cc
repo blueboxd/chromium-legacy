@@ -400,7 +400,7 @@ bool UpdateEncryptedTypes(const NigoriSpecifics& specifics,
 void UpdateNigoriSpecificsFromEncryptedTypes(
     ModelTypeSet encrypted_types,
     sync_pb::NigoriSpecifics* specifics) {
-  static_assert(39 == ModelType::NUM_ENTRIES,
+  static_assert(42 == ModelType::NUM_ENTRIES,
                 "If adding an encryptable type, update handling below.");
   specifics->set_encrypt_bookmarks(encrypted_types.Has(BOOKMARKS));
   specifics->set_encrypt_preferences(encrypted_types.Has(PREFERENCES));
@@ -418,6 +418,8 @@ void UpdateNigoriSpecificsFromEncryptedTypes(
   specifics->set_encrypt_app_settings(encrypted_types.Has(APP_SETTINGS));
   specifics->set_encrypt_extension_settings(
       encrypted_types.Has(EXTENSION_SETTINGS));
+  specifics->set_encrypt_app_notifications(
+      encrypted_types.Has(DEPRECATED_APP_NOTIFICATIONS));
   specifics->set_encrypt_dictionary(encrypted_types.Has(DICTIONARY));
   specifics->set_encrypt_favicon_images(encrypted_types.Has(FAVICON_IMAGES));
   specifics->set_encrypt_favicon_tracking(

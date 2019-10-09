@@ -9,9 +9,12 @@
 // no-include-guard-because-multiply-included
 // NOLINT(build/header_guard)
 
-// In the event of a failure, a many end events will have a |net_error|
+// In the event of a failure, many end events will have a |net_error|
 // parameter with the integer error code associated with the failure.  Most
 // of these parameters are not individually documented.
+//
+// For best practices on how to add new NetLog events see:
+// https://chromium.googlesource.com/chromium/src/+/HEAD/net/docs/net-log.md
 
 // --------------------------------------------------------------------------
 // General pseudo-events

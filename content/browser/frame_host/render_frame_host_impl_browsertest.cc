@@ -163,8 +163,7 @@ class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
 };
 
 // Test that when creating a new window, the main frame is correctly focused.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       IsFocused_AtLoad) {
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, IsFocused_AtLoad) {
   EXPECT_TRUE(
       NavigateToURL(shell(), GetTestUrl("render_frame_host", "focus.html")));
 
@@ -174,17 +173,16 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 }
 
 // Test that if the content changes the focused frame, it is correctly exposed.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       IsFocused_Change) {
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, IsFocused_Change) {
   EXPECT_TRUE(
       NavigateToURL(shell(), GetTestUrl("render_frame_host", "focus.html")));
 
   WebContents* web_contents = shell()->web_contents();
 
-  std::string frames[2] = { "frame1", "frame2" };
+  std::string frames[2] = {"frame1", "frame2"};
   for (const std::string& frame : frames) {
-    ExecuteScriptAndGetValue(
-        web_contents->GetMainFrame(), "focus" + frame + "()");
+    ExecuteScriptAndGetValue(web_contents->GetMainFrame(),
+                             "focus" + frame + "()");
 
     // The main frame is not the focused frame in the frame tree but the main
     // frame is focused per RFHI rules because one of its descendant is focused.

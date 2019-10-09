@@ -35,10 +35,6 @@
 [ mac ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 
-# TODO(crbug.com/1011653): re-enable these tests after ANGLE roll.
-crbug.com/1011653 [ android ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
-crbug.com/1011653 [ android ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
-
 # Disabling all multiview checks temporarily while ANGLE side changes
 # get merged in.
 crbug.com/864524 [ win ] WebglExtension_OVR_multiview2 [ Skip ]

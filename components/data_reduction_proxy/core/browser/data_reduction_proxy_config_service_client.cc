@@ -33,6 +33,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/previews/core/previews_experiments.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -178,7 +179,8 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
   DCHECK(config);
   DCHECK(service);
   DCHECK(config_service_url_.is_valid());
-  DCHECK(!params::IsIncludedInHoldbackFieldTrial());
+  DCHECK(!params::IsIncludedInHoldbackFieldTrial() ||
+         previews::params::IsLitePageServerPreviewsEnabled());
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -241,6 +243,22 @@ void DataReductionProxyConfigServiceClient::Initialize(
 void DataReductionProxyConfigServiceClient::SetEnabled(bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
   enabled_ = enabled;
+}
+
+void DataReductionProxyConfigServiceClient::InvalidateAndRetrieveNewConfig() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  InvalidateConfig();
+  DCHECK(config_->GetProxiesForHttp().empty());
+
+  if (fetch_in_progress_) {
+    // If a client config fetch is already in progress, then do not start
+    // another fetch since starting a new fetch will cause extra data
+    // usage, and also cancel the ongoing fetch.
+    return;
+  }
+
+  RetrieveConfig();
 }
 
 void DataReductionProxyConfigServiceClient::RetrieveConfig() {
@@ -415,7 +433,8 @@ void DataReductionProxyConfigServiceClient::OnURLLoadComplete(
 
 void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!params::IsIncludedInHoldbackFieldTrial());
+  DCHECK(!params::IsIncludedInHoldbackFieldTrial() ||
+         previews::params::IsLitePageServerPreviewsEnabled());
 
   CreateClientConfigRequest request;
   std::string serialized_request;

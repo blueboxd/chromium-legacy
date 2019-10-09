@@ -15,9 +15,9 @@
 #include "components/sync/model/model_type_store_service.h"
 
 // static
-sync_wifi::WifiConfigurationSyncService*
+chromeos::sync_wifi::WifiConfigurationSyncService*
 WifiConfigurationSyncServiceFactory::GetForProfile(Profile* profile) {
-  return static_cast<sync_wifi::WifiConfigurationSyncService*>(
+  return static_cast<chromeos::sync_wifi::WifiConfigurationSyncService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
@@ -39,7 +39,7 @@ WifiConfigurationSyncServiceFactory::~WifiConfigurationSyncServiceFactory() =
 
 KeyedService* WifiConfigurationSyncServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new sync_wifi::WifiConfigurationSyncService(
+  return new chromeos::sync_wifi::WifiConfigurationSyncService(
       chrome::GetChannel(), ModelTypeStoreServiceFactory::GetForProfile(
                                 Profile::FromBrowserContext(context))
                                 ->GetStoreFactory());
@@ -47,6 +47,6 @@ KeyedService* WifiConfigurationSyncServiceFactory::BuildServiceInstanceFor(
 
 void WifiConfigurationSyncServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  sync_wifi::PendingNetworkConfigurationTrackerImpl::RegisterProfilePrefs(
-      registry);
+  chromeos::sync_wifi::PendingNetworkConfigurationTrackerImpl::
+      RegisterProfilePrefs(registry);
 }

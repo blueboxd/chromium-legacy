@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "chrome/browser/android/dev_ui/dev_ui_module_provider.h"
+#include "chrome/android/modules/dev_ui/provider/dev_ui_module_provider.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/safe_browsing/web_ui/constants.h"
 #include "content/public/common/url_constants.h"
@@ -78,13 +78,18 @@ bool HandleDfmifiedDevUiPageURL(
     GURL* url,
     content::BrowserContext* /* browser_context */) {
   if (!url->SchemeIs(content::kChromeUIScheme) ||
-      !IsWebUiHostInDevUiDfm(url->host()) ||
-      dev_ui::DevUiModuleProvider::GetInstance().ModuleLoaded()) {
-    // No need to check ModuleInstalled(): It's implied by ModuleLoaded().
+      !IsWebUiHostInDevUiDfm(url->host())) {
+    return false;
+  }
+
+  // If module is already installed, ensure that it is loaded.
+  if (dev_ui::DevUiModuleProvider::ModuleInstalled()) {
+    // Synchronously load module (if not already loaded).
+    dev_ui::DevUiModuleProvider::LoadModule();
     return false;
   }
   // Create URL to the DevUI loader with "?url=<escaped original URL>" so that
-  // after install / load, the loader can redirect to the original URL.
+  // after install, the loader can redirect to the original URL.
   *url = net::AppendQueryParameter(
       GURL(std::string(kChromeUIDevUiLoaderURL) + "dev_ui_loader.html"), "url",
       url->spec());

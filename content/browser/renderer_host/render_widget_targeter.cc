@@ -290,10 +290,23 @@ void RenderWidgetTargeter::ResolveTargetingRequest(TargetingRequest request) {
 
 void RenderWidgetTargeter::ViewWillBeDestroyed(RenderWidgetHostViewBase* view) {
   unresponsive_views_.erase(view);
+
+  if (is_autoscroll_in_progress_ && middle_click_result_.view == view) {
+    SetIsAutoScrollInProgress(false);
+  }
 }
 
 bool RenderWidgetTargeter::HasEventsPendingDispatch() const {
   return request_in_flight_ || !requests_.empty();
+}
+
+void RenderWidgetTargeter::SetIsAutoScrollInProgress(
+    bool autoscroll_in_progress) {
+  is_autoscroll_in_progress_ = autoscroll_in_progress;
+
+  // If middle click autoscroll ends, reset |middle_click_result_|.
+  if (!autoscroll_in_progress)
+    middle_click_result_ = RenderWidgetTargetResult();
 }
 
 void RenderWidgetTargeter::QueryClientInternal(

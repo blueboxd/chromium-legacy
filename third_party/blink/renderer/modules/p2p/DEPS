@@ -1,0 +1,4 @@
+include_rules = [
+    # TODO(crbug.com/787254): Remove use of GURL.
+    "+url/gurl.h",
+]

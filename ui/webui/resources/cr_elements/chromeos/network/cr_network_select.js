@@ -47,6 +47,9 @@ Polymer({
      */
     showScanProgress: {type: Boolean, value: false},
 
+    /** Whether cellular activation is unavailable in the current context. */
+    activationUnavailable: Boolean,
+
     /**
      * List of all network state data for all visible networks.
      * @private {!Array<!OncMojo.NetworkStateProperties>}

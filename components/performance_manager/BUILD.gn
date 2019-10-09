@@ -43,6 +43,8 @@ static_library("performance_manager") {
     "performance_manager_lock_observer.h",
     "performance_manager_tab_helper.cc",
     "performance_manager_tab_helper.h",
+    "process_node_source.cc",
+    "process_node_source.h",
     "public/frame_priority/frame_priority.h",
     "public/frame_priority/max_vote_aggregator.h",
     "public/frame_priority/override_vote_aggregator.h",
@@ -61,6 +63,10 @@ static_library("performance_manager") {
     "render_process_host_proxy.cc",
     "render_process_user_data.cc",
     "render_process_user_data.h",
+    "shared_worker_watcher.cc",
+    "shared_worker_watcher.h",
+    "tab_helper_frame_node_source.cc",
+    "tab_helper_frame_node_source.h",
     "web_contents_proxy.cc",
     "web_contents_proxy_impl.cc",
     "web_contents_proxy_impl.h",
@@ -99,6 +105,7 @@ source_set("unit_tests") {
     "performance_manager_tab_helper_unittest.cc",
     "performance_manager_test_harness.cc",
     "performance_manager_test_harness.h",
+    "shared_worker_watcher_unittest.cc",
     "web_contents_proxy_unittest.cc",
   ]
 

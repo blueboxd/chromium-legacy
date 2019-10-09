@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/android/dev_ui/dev_ui_module_provider.h"
+#include "chrome/android/modules/dev_ui/provider/dev_ui_module_provider.h"
 
 DevUiLoaderMessageHandler::DevUiLoaderMessageHandler() = default;
 
@@ -19,21 +19,18 @@ void DevUiLoaderMessageHandler::RegisterMessages() {
       base::BindRepeating(&DevUiLoaderMessageHandler::HandleGetDevUiDfmState,
                           weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
-      "installAndLoadDevUiDfm",
-      base::BindRepeating(
-          &DevUiLoaderMessageHandler::HandleInstallAndLoadDevUiDfm,
-          weak_ptr_factory_.GetWeakPtr()));
+      "installDevUiDfm",
+      base::BindRepeating(&DevUiLoaderMessageHandler::HandleInstallDevUiDfm,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DevUiLoaderMessageHandler::HandleGetDevUiDfmState(
     const base::ListValue* args) {
   const base::Value* callback_id = nullptr;
   CHECK(args->Get(0, &callback_id));
-  const char* response = "ready";
-  if (!dev_ui::DevUiModuleProvider::GetInstance().ModuleInstalled())
-    response = "not-installed";
-  else if (!dev_ui::DevUiModuleProvider::GetInstance().ModuleLoaded())
-    response = "not-loaded";
+  const char* response = dev_ui::DevUiModuleProvider::ModuleInstalled()
+                             ? "installed"
+                             : "not-installed";
   AllowJavascript();
   ResolveJavascriptCallback(*callback_id, base::Value(response));
 }
@@ -47,21 +44,15 @@ void DevUiLoaderMessageHandler::ReplyToJavaScript(
   ResolveJavascriptCallback(callback_id, response);
 }
 
-void DevUiLoaderMessageHandler::HandleInstallAndLoadDevUiDfm(
+void DevUiLoaderMessageHandler::HandleInstallDevUiDfm(
     const base::ListValue* args) {
   const base::Value* callback_id = nullptr;
   CHECK(args->Get(0, &callback_id));
 
-  if (!dev_ui::DevUiModuleProvider::GetInstance().ModuleInstalled()) {
-    dev_ui::DevUiModuleProvider::GetInstance().InstallModule(base::BindOnce(
+  if (!dev_ui::DevUiModuleProvider::ModuleInstalled()) {
+    dev_ui::DevUiModuleProvider::InstallModule(base::BindOnce(
         &DevUiLoaderMessageHandler::OnDevUiDfmInstallWithStatus,
         weak_ptr_factory_.GetWeakPtr(), callback_id->GetString()));
-
-  } else if (!dev_ui::DevUiModuleProvider::GetInstance().ModuleLoaded()) {
-    dev_ui::DevUiModuleProvider::GetInstance().LoadModule(base::BindOnce(
-        &DevUiLoaderMessageHandler::OnDevUiResourceLoaded,
-        weak_ptr_factory_.GetWeakPtr(), callback_id->GetString()));
-
   } else {
     ReplyToJavaScript(*callback_id, "noop");
   }
@@ -70,16 +61,7 @@ void DevUiLoaderMessageHandler::HandleInstallAndLoadDevUiDfm(
 void DevUiLoaderMessageHandler::OnDevUiDfmInstallWithStatus(
     std::string callback_id_string,
     bool success) {
-  if (success) {
-    dev_ui::DevUiModuleProvider::GetInstance().LoadModule(
-        base::BindOnce(&DevUiLoaderMessageHandler::OnDevUiResourceLoaded,
-                       weak_ptr_factory_.GetWeakPtr(), callback_id_string));
-  } else {
-    ReplyToJavaScript(base::Value(callback_id_string), "failure");
-  }
+  ReplyToJavaScript(base::Value(callback_id_string),
+                    success ? "success" : "failure");
 }
 
-void DevUiLoaderMessageHandler::OnDevUiResourceLoaded(
-    std::string callback_id_string) {
-  ReplyToJavaScript(base::Value(callback_id_string), "success");
-}

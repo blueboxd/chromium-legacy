@@ -30,6 +30,11 @@ class ASH_EXPORT NewDeskButton
 
   void OnButtonPressed();
 
+  void SetLabelVisible(bool visible);
+
+  gfx::Size CalculatePreferredSize() const override;
+  void Layout() override;
+
   // LabelButton:
   const char* GetClassName() const override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
@@ -51,6 +56,7 @@ class ASH_EXPORT NewDeskButton
   void OnViewUnhighlighted() override;
 
   SkColor GetBackgroundColorForTesting() const { return background_color_; }
+  bool IsLabelVisibleForTesting() const;
 
  private:
   void UpdateBorderState();

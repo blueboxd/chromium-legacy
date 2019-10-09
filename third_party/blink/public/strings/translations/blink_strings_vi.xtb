@@ -54,7 +54,7 @@
 <translation id="2674318244760992338">chân trang</translation>
 <translation id="2709516037105925701">Tự động điền</translation>
 <translation id="2723001399770238859">âm thanh</translation>
-<translation id="2725963129578236554">bình luận</translation>
+<translation id="2725963129578236554">nhận xét</translation>
 <translation id="2746543609216772311">Giá trị phải là <ph name="MINIMUM_DATE_OR_TIME" /> hoặc muộn hơn.</translation>
 <translation id="2759744352195237655">nút cửa sổ bật lên</translation>
 <translation id="2761667185364618470">Vui lòng chọn hộp kiểm này nếu bạn muốn tiếp tục.</translation>
@@ -134,6 +134,7 @@
 <translation id="5516424706154626233">bộ chọn ngày</translation>
 <translation id="5537725057119320332">Truyền</translation>
 <translation id="5546461542133609677">bật tiếng</translation>
+<translation id="5608153257855394627">nội dung nổi bật</translation>
 <translation id="561939826962581046">thời gian</translation>
 <translation id="5630795885300617244">Nhấn đúp vào bên trái hoặc phải để bỏ qua sau 10 giây</translation>
 <translation id="5631759159893697722">bản tóm tắt</translation>
@@ -185,8 +186,7 @@
 <translation id="6941933287844615239">tải xuống phương tiện</translation>
 <translation id="6981594929165378967">chèn</translation>
 <translation id="6989848892321993519">Vui lòng kéo dài văn bản này thành <ph name="MIN_CHARACTERS" /> ký tự trở lên (bạn hiện đang sử dụng 1 ký tự).</translation>
-<translation id="7033340931668032222">lên và xuống để thay đổi âm lượng</translation>
-<translation id="7034405885550056553">thay đổi đề xuất</translation>
+<translation id="7034405885550056553">đề xuất</translation>
 <translation id="709897737746224366">Vui lòng khớp với định dạng được yêu cầu.</translation>
 <translation id="7118469954320184356">Không có nội dung mô tả.</translation>
 <translation id="7139483182332611405">lời nói đầu</translation>
@@ -226,6 +226,7 @@
 <translation id="8208673686607688524">bộ chọn ngày và giờ địa phương</translation>
 <translation id="8261464734335370856">Chính tả không hợp lệ</translation>
 <translation id="8284326494547611709">Phụ đề</translation>
+<translation id="8346634859695247203">phần mục</translation>
 <translation id="835897206747267392">Giá trị không hợp lệ.</translation>
 <translation id="8403857369060869934">thời gian trôi qua: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">phần</translation>
@@ -240,7 +241,6 @@
 <translation id="8550857728288566671">biểu tượng đồ họa</translation>
 <translation id="8583702881314752957">danh sách định nghĩa</translation>
 <translation id="8597182159515967513">đầu đề</translation>
-<translation id="8603553056539299761">trái và phải để tìm kiếm</translation>
 <translation id="860475260694818407">mục lục</translation>
 <translation id="8613126697340063924">điều khiển phát lại từ xa</translation>
 <translation id="862370744433916922">phụ đề</translation>
@@ -257,7 +257,6 @@
 <translation id="901834265349196618">email</translation>
 <translation id="9048119486235211610">điều hướng</translation>
 <translation id="9062295712474918030">tài liệu</translation>
-<translation id="9062307380734144336">chọn để phát/tạm dừng</translation>
 <translation id="9093215626363556771">thoát chế độ hình trong hình</translation>
 <translation id="9108370397979208512">toán học</translation>
 <translation id="9132465097189459683">Khác...</translation>

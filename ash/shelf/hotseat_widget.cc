@@ -117,6 +117,8 @@ void HotseatWidget::DelegateView::UpdateOpaqueBackground() {
       scrollable_shelf_view_->GetHotseatBackgroundBounds();
   if (opaque_background_.bounds() != background_bounds)
     opaque_background_.SetBounds(background_bounds);
+
+  opaque_background_.SetBackgroundBlur(ShelfConfig::Get()->shelf_blur_radius());
 }
 
 void HotseatWidget::DelegateView::OnTabletModeChanged() {

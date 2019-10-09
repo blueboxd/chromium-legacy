@@ -10,16 +10,37 @@
     <style include="settings-shared">
       .preview-box {
         align-items: center;
-        border: var(--cr-separator-line);
-        border-radius: var(--cr-card-border-radius);
+        background-image:
+          url(chrome://theme/IDR_ACCESSIBILITY_CAPTIONS_PREVIEW_BACKGROUND);
+        background-position: center;
+        background-size: cover;
         display: flex;
         height: 112px;
         justify-content: center;
-        margin: var(--cr-section-padding);
+        margin: 0 var(--cr-section-padding) var(--cr-section-padding);
         text-align: center;
       }
     </style>
     <div class="settings-box first">
+      <h2 class="start">$i18n{captionsPreview}</h2>
+    </div>
+    <div class="preview-box">
+      <span style="
+          font-size:[[prefs.accessibility.captions.text_size.value]];
+          font-family:[[prefs.accessibility.captions.text_font.value]];
+          background-color: [[computeBackgroundColor_(
+              prefs.accessibility.captions.background_opacity.value,
+              prefs.accessibility.captions.background_color.value)]];
+          color: [[computeTextColor_(
+              prefs.accessibility.captions.text_opacity.value,
+              prefs.accessibility.captions.text_color.value)]];
+          text-shadow: [[prefs.accessibility.captions.text_shadow.value]];
+          padding: [[computePadding_(
+              prefs.accessibility.captions.text_size.value)]]">
+        $i18n{quickBrownFox}
+      </span>
+    </div>
+    <div class="settings-box continuation">
       <h2 class="start">$i18n{captionsSettings}</h2>
     </div>
     <div class="list-frame">
@@ -49,12 +70,11 @@
       </div>
       <div class="list-item underbar">
         <div class="start settings-box-text">$i18n{captionsTextOpacity}</div>
-        <settings-slider id="captionsTextOpacity"
-            ticks="[[textOpacityRange_]]"
-            label-min="$i18n{captionsOpacityMin}"
-            label-max="$i18n{captionsOpacityMax}"
-            pref="{{prefs.accessibility.captions.text_opacity}}">
-        </settings-slider>
+        <settings-dropdown-menu id="captionsTextOpacity"
+            label="$i18n{captionsTextOpacity}"
+            pref="{{prefs.accessibility.captions.text_opacity}}"
+            menu-options="[[textOpacityOptions_]]">
+        </settings-dropdown-menu>
       </div>
       <div class="list-item underbar">
         <div class="start settings-box-text">$i18n{captionsTextShadow}</div>
@@ -78,32 +98,12 @@
         <div class="start settings-box-text">
           $i18n{captionsBackgroundOpacity}
         </div>
-        <settings-slider id="captionsBackgroundOpacity"
-            ticks="[[textOpacityRange_]]"
-            label-min="$i18n{captionsOpacityMin}"
-            label-max="$i18n{captionsOpacityMax}"
-            pref="{{prefs.accessibility.captions.background_opacity}}">
-        </settings-slider>
+        <settings-dropdown-menu id="captionsBackgroundOpacity"
+            label="$i18n{captionsBackgroundOpacity}"
+            pref="{{prefs.accessibility.captions.background_opacity}}"
+            menu-options="[[backgroundOpacityOptions_]]">
+        </settings-dropdown-menu>
       </div>
-    </div>
-    <div class="settings-box continuation">
-      <h2 class="start">$i18n{captionsPreview}</h2>
-    </div>
-    <div class="preview-box">
-      <span style="
-          font-size:[[prefs.accessibility.captions.text_size.value]];
-          font-family:[[prefs.accessibility.captions.text_font.value]];
-          background-color: [[computeBackgroundColor_(
-              prefs.accessibility.captions.background_opacity.value,
-              prefs.accessibility.captions.background_color.value)]];
-          color: [[computeTextColor_(
-              prefs.accessibility.captions.text_opacity.value,
-              prefs.accessibility.captions.text_color.value)]];
-          text-shadow: [[prefs.accessibility.captions.text_shadow.value]];
-          padding: [[computePadding_(
-              prefs.accessibility.captions.text_size.value)]]">
-        $i18n{quickBrownFox}
-      </span>
     </div>
   </template>
   <script src="captions_subpage.js"></script>

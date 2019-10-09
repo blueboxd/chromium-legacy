@@ -350,10 +350,12 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFTextStore
   // composition string twice. |previous_composition_selection_range_| indicates
   // the selection range during composition. We want to send the selection
   // change to blink if IME only change the selection range but not the
-  // composition text.
+  // composition text. |previous_text_spans_| saves the IME spans in previous
+  // edit session during same composition.
   base::string16 previous_composition_string_;
   size_t previous_composition_start_ = 0;
   gfx::Range previous_composition_selection_range_ = gfx::Range::InvalidRange();
+  ImeTextSpans previous_text_spans_;
 
   // |new_text_inserted_| indicates there is text to be inserted
   // into blink during ITextStoreACP::SetText().

@@ -693,17 +693,13 @@ std::string TestURLLoader::TestTrustedHttpRequests() {
     ASSERT_EQ(PP_OK, OpenTrusted("GET", "Accept-Encoding:\n"));
     ASSERT_EQ(PP_OK, OpenTrusted("GET", "Connection:\n"));
     ASSERT_EQ(PP_OK, OpenTrusted("GET", "Cookie:\n"));
-    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Cookie2:\n"));
-    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Content-Transfer-Encoding:\n"));
     ASSERT_EQ(PP_OK, OpenTrusted("GET", "Date:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "DNT:\n"));
     ASSERT_EQ(PP_OK, OpenTrusted("GET", "Expect:\n"));
 
     // Host header is still forbidden because it can conflict with specific URL.
 
-    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Keep-Alive:\n"));
     ASSERT_EQ(PP_OK, OpenTrusted("GET", "Referer:\n"));
-    ASSERT_EQ(PP_OK, OpenTrusted("GET", "TE:\n"));
-    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Transfer-Encoding:\n"));
     ASSERT_EQ(PP_OK, OpenTrusted("GET", "User-Agent:\n"));
     ASSERT_EQ(PP_OK, OpenTrusted("GET", "Via:\n"));
     ASSERT_EQ(PP_OK, OpenTrusted("GET", "Sec-foo:\n"));

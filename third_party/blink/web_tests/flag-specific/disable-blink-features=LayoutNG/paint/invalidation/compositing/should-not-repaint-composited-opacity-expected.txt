@@ -9,7 +9,6 @@
     {
       "name": "LayoutBlockFlow DIV id='composited-box'",
       "bounds": [100, 100],
-      "opacity": 0.5,
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#008000",

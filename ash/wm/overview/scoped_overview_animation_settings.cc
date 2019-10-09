@@ -60,6 +60,7 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
     case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_EXIT:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO:
+    case OVERVIEW_ANIMATION_SPAWN_ITEM_IN_OVERVIEW:
       return kTransition;
     case OVERVIEW_ANIMATION_CLOSING_OVERVIEW_ITEM:
       return kCloseScale;
@@ -132,6 +133,7 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
     case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW:
     case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_EXIT:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
+    case OVERVIEW_ANIMATION_SPAWN_ITEM_IN_OVERVIEW:
       animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);

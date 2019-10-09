@@ -9,7 +9,6 @@
     {
       "name": "LayoutNGBlockFlow DIV",
       "bounds": [240, 240],
-      "opacity": 0.899999976158142,
       "transform": 2
     },
     {

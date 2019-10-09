@@ -31,10 +31,6 @@
       #feature-items-container {
         @apply --settings-list-frame-padding;
       }
-
-      #forget-device-container {
-        border-top: var(--cr-separator-line);
-      }
     </style>
     <div class="settings-box first">
       <div id="status-text-container"
@@ -99,11 +95,17 @@
         </template>
       </div>
     </template>
-    <div id="forget-device-container">
-      <cr-link-row id="forget-device" class="hr"
-          on-click="handleForgetDeviceClick_"
-          label="$i18n{multideviceForgetDevice}"
-          sub-label="$i18n{multideviceForgetDeviceSummary}"></cr-link-row>
+    <div class="settings-box two-line">
+        <div id="forget-device-label" class="start">
+            $i18n{multideviceForgetDevice}
+            <div class="secondary">
+                $i18n{multideviceForgetDeviceSummary}
+            </div>
+        </div>
+        <cr-button on-click="handleForgetDeviceClick_"
+          aria-labelledby="forgetDeviceLabel">
+           $i18n{multideviceForgetDeviceDisconnect}
+        </cr-button>
     </div>
     <cr-dialog id="forgetDeviceDialog">
       <div slot="title">$i18n{multideviceForgetDevice}</div>
@@ -120,7 +122,7 @@
         <cr-button id="confirmButton"
             class="action-button"
             on-click="onForgetDeviceDialogConfirmClick_">
-          $i18n{confirm}
+          $i18n{multideviceForgetDeviceDisconnect}
         </cr-button>
       </div>
     </cr-dialog>

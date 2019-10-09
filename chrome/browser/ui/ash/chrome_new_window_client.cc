@@ -78,7 +78,7 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
      {ChromePage::CHANGEPICTURE, chrome::kChangePictureSubPage},
      {ChromePage::CUPSPRINTERS, chrome::kNativePrintingSettingsSubPage},
      {ChromePage::KEYBOARDOVERLAY, chrome::kKeyboardOverlaySubPage},
-     {ChromePage::LANGUAGES, chrome::kLanguageOptionsSubPage},
+     {ChromePage::LANGUAGES, chrome::kLanguageSubPage},
      {ChromePage::LOCKSCREEN, chrome::kLockScreenSubPage},
      {ChromePage::MANAGEACCESSIBILITY, chrome::kManageAccessibilitySubPage},
      {ChromePage::NETWORKSTYPEVPN, chrome::kVPNSettingsSubPage},

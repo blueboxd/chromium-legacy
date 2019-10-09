@@ -164,9 +164,10 @@ callee to trust the caller.
 
 ### Do not send unnecessary or privilege-presuming data
 
-> Note: there is currently work in progress to associate origins with the
-> `InterfaceProvider`s for frames and workers: <https://crbug.com/734210> and
-> <https://crbug.com/775792/>.
+> Each `InterfaceProvider` for frames and workers is strongly associated with an
+> origin. Where possible, prefer to use this associated origin rather than
+> sending it over IPC. (See <https://crbug.com/734210> and
+> <https://crbug.com/775792/>).
 
 For example, the browser process must not (fully) trust the renderer's claims
 about origins. The browser process should already know what origin the renderer

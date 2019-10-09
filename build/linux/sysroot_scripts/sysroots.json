@@ -14,6 +14,11 @@
         "SysrootDir": "debian_sid_arm64-sysroot",
         "Tarball": "debian_sid_arm64_sysroot.tar.xz"
     },
+    "sid_armel": {
+        "Sha1Sum": "07a9da7e88e8b6fa550b053e4338c2caa4db15f0",
+        "SysrootDir": "debian_sid_armel-sysroot",
+        "Tarball": "debian_sid_armel_sysroot.tar.xz"
+    },
     "sid_i386": {
         "Sha1Sum": "9e6279438ece6fb42b5333ca90d5e9d0c188a403",
         "SysrootDir": "debian_sid_i386-sysroot",

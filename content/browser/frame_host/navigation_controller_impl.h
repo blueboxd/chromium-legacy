@@ -68,9 +68,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
     DISALLOW_COPY_AND_ASSIGN(PendingEntryRef);
   };
 
-  NavigationControllerImpl(
-      NavigationControllerDelegate* delegate,
-      BrowserContext* browser_context);
+  NavigationControllerImpl(NavigationControllerDelegate* delegate,
+                           BrowserContext* browser_context);
   ~NavigationControllerImpl() override;
 
   // NavigationController implementation:
@@ -170,8 +169,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // The session storage namespace that all child RenderViews belonging to
   // |instance| should use.
-  SessionStorageNamespace* GetSessionStorageNamespace(
-      SiteInstance* instance);
+  SessionStorageNamespace* GetSessionStorageNamespace(SiteInstance* instance);
 
   // Returns the index of the specified entry, or -1 if entry is not contained
   // in this NavigationController.
@@ -183,9 +181,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Return the entry with the given unique id, or null if not found.
   NavigationEntryImpl* GetEntryWithUniqueID(int nav_entry_id) const;
 
-  NavigationControllerDelegate* delegate() const {
-    return delegate_;
-  }
+  NavigationControllerDelegate* delegate() const { return delegate_; }
 
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -464,8 +460,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // Updates the virtual URL of an entry to match a new URL, for cases where
   // the real renderer URL is derived from the virtual URL, like view-source:
-  void UpdateVirtualURLToURL(NavigationEntryImpl* entry,
-                             const GURL& new_url);
+  void UpdateVirtualURLToURL(NavigationEntryImpl* entry, const GURL& new_url);
 
   // Invoked after session/tab restore or cloning a tab. Resets the transition
   // type of the entries, updates the max page id and creates the active

@@ -46,9 +46,11 @@ class CORE_EXPORT TextElementTiming final
       const PropertyTreeState&,
       const LocalFrameView*);
 
+  bool CanReportElements() const;
+
   // Called when the swap promise queued by TextPaintTimingDetector has been
   // resolved. Dispatches PerformanceElementTiming entries to WindowPerformance.
-  void OnTextObjectsPainted(const Deque<base::WeakPtr<TextRecord>>&);
+  void OnTextObjectPainted(const TextRecord&);
 
   void Trace(blink::Visitor* visitor) override;
 

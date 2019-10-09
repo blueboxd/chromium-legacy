@@ -217,8 +217,10 @@ class IndexedDBDispatcherHostTest : public testing::Test {
     base::RunLoop loop;
     context_impl_->TaskRunner()->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
-          host_->AddReceiver(idb_mojo_factory_.BindNewPipeAndPassReceiver(),
-                             {url::Origin::Create(GURL(kOrigin))});
+          constexpr int kRenderFrameId = 42;
+          host_->AddReceiver(kFakeProcessId, kRenderFrameId,
+                             url::Origin::Create(GURL(kOrigin)),
+                             idb_mojo_factory_.BindNewPipeAndPassReceiver());
           loop.Quit();
         }));
     loop.Run();

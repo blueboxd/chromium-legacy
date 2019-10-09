@@ -239,6 +239,10 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
         return security_state::MALICIOUS_CONTENT_STATUS_MALWARE;
       case safe_browsing::SB_THREAT_TYPE_URL_UNWANTED:
         return security_state::MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE;
+      case safe_browsing::SB_THREAT_TYPE_SAVED_PASSWORD_REUSE:
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+        return security_state::MALICIOUS_CONTENT_STATUS_SAVED_PASSWORD_REUSE;
+#endif
       case safe_browsing::SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
         if (safe_browsing::ChromePasswordProtectionService::

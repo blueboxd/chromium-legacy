@@ -66,7 +66,16 @@ Polymer({
     connectionState_: Number,
 
     /** Whether to show technology badge on mobile network icon. */
-    showTechnologyBadge: {type: Boolean, value: true},
+    showTechnologyBadge: {
+      type: Boolean,
+      value: true,
+    },
+
+    /** Whether cellular activation is unavailable in the current context. */
+    activationUnavailable: {
+      type: Boolean,
+      value: false,
+    }
   },
 
   /** @override */
@@ -140,6 +149,9 @@ Polymer({
     }
     const connectionState = this.networkState.connectionState;
     if (this.networkState.type == mojom.NetworkType.kCellular) {
+      if (this.shouldShowNotAvailableText_()) {
+        return CrOncStrings.networkListItemNotAvailable;
+      }
       if (this.networkState.typeState.cellular.scanning) {
         return CrOncStrings.networkListItemScanning;
       }
@@ -169,11 +181,16 @@ Polymer({
   },
 
   /**
-   * @return {boolean}
+   * @return {boolean} Whether this element's contents describe an "active"
+   *     network. In this case, an active network is connected and may have
+   *     additional properties (e.g., must be activated for cellular networks).
    * @private
    */
-  isConnected_: function() {
+  isStateTextActive_: function() {
     if (!this.networkState) {
+      return false;
+    }
+    if (this.shouldShowNotAvailableText_()) {
       return false;
     }
     return OncMojo.connectionStateIsConnected(
@@ -219,5 +236,22 @@ Polymer({
     assert(this.networkState);
     this.fire('show-detail', this.networkState);
     event.stopPropagation();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowNotAvailableText_: function() {
+    if (!this.networkState || !this.activationUnavailable) {
+      return false;
+    }
+
+    // If cellular activation is not currently available and |this.networkState|
+    // describes an unactivated cellular network, the text should be shown.
+    const mojom = chromeos.networkConfig.mojom;
+    return this.networkState.type == mojom.NetworkType.kCellular &&
+        this.networkState.typeState.cellular.activationState !=
+        mojom.ActivationStateType.kActivated;
   },
 });

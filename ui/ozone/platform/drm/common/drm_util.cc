@@ -10,7 +10,6 @@
 #include <sys/mman.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
-
 #include <algorithm>
 #include <memory>
 #include <utility>
@@ -609,7 +608,6 @@ OverlaySurfaceCandidateList CreateOverlaySurfaceCandidateListFrom(
     osc.format = p.format;
     osc.display_rect = gfx::RectF(p.display_rect);
     osc.crop_rect = p.crop_rect;
-    osc.is_opaque = p.is_opaque;
     osc.plane_z_order = p.plane_z_order;
     osc.overlay_handled = p.is_overlay_candidate;
     candidates.push_back(osc);

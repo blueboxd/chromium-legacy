@@ -49,6 +49,8 @@ ChromeCleanerRebootDialog::ChromeCleanerRebootDialog(
     : dialog_controller_(dialog_controller) {
   DCHECK(dialog_controller_);
 
+  DialogDelegate::set_draggable(true);
+
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
 }
@@ -114,10 +116,6 @@ bool ChromeCleanerRebootDialog::Cancel() {
 
 bool ChromeCleanerRebootDialog::Close() {
   HandleDialogInteraction(DialogInteractionResult::kClose);
-  return true;
-}
-
-bool ChromeCleanerRebootDialog::IsDialogDraggable() const {
   return true;
 }
 

@@ -20,11 +20,9 @@ class ImageView;
 class ExtensionsContainer;
 class ExtensionsMenuItemView;
 
-// This bubble view displays a list of user extensions.
-// TODO(pbos): Once there's more functionality in here (getting to
-// chrome://extensions, pinning, extension settings), update this comment.
-class ExtensionsMenuView : public views::ButtonListener,
-                           public views::BubbleDialogDelegateView,
+// This bubble view displays a list of user extensions and a button to get to
+// managing the user's extensions (chrome://extensions).
+class ExtensionsMenuView : public views::BubbleDialogDelegateView,
                            public ToolbarActionsModel::Observer {
  public:
   static constexpr gfx::Size kExtensionsMenuIconSize = gfx::Size(28, 28);
@@ -41,9 +39,6 @@ class ExtensionsMenuView : public views::ButtonListener,
   static void Hide();
   static ExtensionsMenuView* GetExtensionsMenuViewForTesting();
   static std::unique_ptr<views::ImageView> CreateFixedSizeIconView();
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::BubbleDialogDelegateView:
   base::string16 GetWindowTitle() const override;
@@ -78,6 +73,17 @@ class ExtensionsMenuView : public views::ButtonListener,
   }
 
  private:
+  class ButtonListener : public views::ButtonListener {
+   public:
+    explicit ButtonListener(Browser* browser);
+
+    // views::ButtonListener:
+    void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+   private:
+    Browser* const browser_;
+  };
+
   void Repopulate();
   std::unique_ptr<views::View> CreateExtensionButtonsContainer();
 
@@ -86,6 +92,7 @@ class ExtensionsMenuView : public views::ButtonListener,
   ToolbarActionsModel* const model_;
   ScopedObserver<ToolbarActionsModel, ToolbarActionsModel::Observer>
       model_observer_;
+  ButtonListener button_listener_;
   std::vector<ExtensionsMenuItemView*> extensions_menu_items_;
 
   views::Button* manage_extensions_button_for_testing_ = nullptr;

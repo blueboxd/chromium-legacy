@@ -13,14 +13,11 @@
 #include "content/public/renderer/request_peer.h"
 #include "net/base/load_timing_info.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 namespace net {
 struct RedirectInfo;
 }  // namespace net
-
-namespace network {
-struct ResourceResponseInfo;
-}
 
 namespace content {
 
@@ -36,8 +33,8 @@ class TestRequestPeer : public RequestPeer {
 
   void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          const network::ResourceResponseInfo& info) override;
-  void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
+                          network::mojom::URLResponseHeadPtr head) override;
+  void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;

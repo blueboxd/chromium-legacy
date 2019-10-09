@@ -436,6 +436,10 @@ class FileURLLoader : public network::mojom::URLLoader {
              LinkFollowingPolicy link_following_policy,
              std::unique_ptr<FileURLLoaderObserver> observer,
              scoped_refptr<net::HttpResponseHeaders> extra_response_headers) {
+    // ClusterFuzz depends on the following VLOG to get resource dependencies.
+    // See crbug.com/715656.
+    VLOG(1) << "FileURLLoader::Start: " << request.url;
+
     network::ResourceResponseHead head;
     head.request_start = base::TimeTicks::Now();
     head.response_start = base::TimeTicks::Now();

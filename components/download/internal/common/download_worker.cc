@@ -8,6 +8,7 @@
 #include "components/download/internal/common/resource_downloader.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/input_stream.h"
@@ -125,8 +126,8 @@ void DownloadWorker::OnUrlDownloadStarted(
     return;
   }
 
-  // TODO(xingliu): Add metric for error handling.
   if (create_info->result != DOWNLOAD_INTERRUPT_REASON_NONE) {
+    RecordParallelRequestCreationFailure(create_info->result);
     VLOG(kWorkerVerboseLevel)
         << "Parallel download sub-request failed. reason = "
         << create_info->result;

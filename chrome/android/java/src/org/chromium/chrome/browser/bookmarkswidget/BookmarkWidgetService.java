@@ -31,6 +31,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
+import org.chromium.chrome.browser.favicon.FaviconUtils;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
@@ -39,7 +40,6 @@ import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -186,7 +186,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
             mMinIconSizeDp = (int) res.getDimension(R.dimen.default_favicon_min_size);
             mDisplayedIconSize = res.getDimensionPixelSize(R.dimen.default_favicon_size);
             mIconGenerator =
-                    ViewUtils.createDefaultRoundedIconGenerator(context.getResources(), false);
+                    FaviconUtils.createRoundedRectangleIconGenerator(context.getResources());
 
             mRemainingTaskCount = 1;
             mBookmarkModel = new BookmarkModel();

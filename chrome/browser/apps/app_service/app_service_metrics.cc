@@ -4,14 +4,48 @@
 
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "extensions/common/constants.h"
 
-namespace apps {
+namespace {
+
+// The built-in app's histogram name. This is used for logging so do not change
+// the order of this enum.
+// This is the copy from
+// src/chrome/browser/ui/app_list/internal_app/internal_app_metadata.h
+enum class BuiltInAppName {
+  kKeyboardShortcutViewer = 0,
+  kSettings = 1,
+  kContinueReading = 2,
+  kCamera = 3,
+  kDiscover = 4,
+  kPluginVm = 5,
+  kReleaseNotes = 6,
+  kMaxValue = kReleaseNotes,
+};
+
+// The default Essential app's histogram name. This is used for logging so do
+// not change the order of this enum.
+// https://docs.google.com/document/d/1WJ-BjlVOM87ygIsdDBCyXxdKw3iS5EtNGm1fWiWhfIs
+enum class DefaultAppName {
+  kCalculator = 10,
+  kText = 11,
+  kGetHelp = 12,
+  kGallery = 13,
+  kVideoPlayer = 14,
+  kAudioPlayer = 15,
+  kChromeCanvas = 16,
+  kCamera = 17,
+  // Add any new values above this one, and update kMaxValue to the highest
+  // enumerator value.
+  kMaxValue = kCamera,
+};
 
 void RecordDefaultAppLaunch(DefaultAppName default_app_name,
                             apps::mojom::LaunchSource launch_source) {
@@ -51,6 +85,33 @@ void RecordDefaultAppLaunch(DefaultAppName default_app_name,
   }
 }
 
+void RecordBuiltInAppLaunch(BuiltInAppName built_in_app_name,
+                            apps::mojom::LaunchSource launch_source) {
+  switch (launch_source) {
+    case apps::mojom::LaunchSource::kUnknown:
+    case apps::mojom::LaunchSource::kFromParentalControls:
+      break;
+    case apps::mojom::LaunchSource::kFromAppListGrid:
+    case apps::mojom::LaunchSource::kFromAppListGridContextMenu:
+      UMA_HISTOGRAM_ENUMERATION("Apps.AppListInternalApp.Activate",
+                                built_in_app_name);
+      break;
+    case apps::mojom::LaunchSource::kFromAppListQuery:
+    case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
+    case apps::mojom::LaunchSource::kFromAppListRecommendation:
+      UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Open",
+                                built_in_app_name);
+      break;
+    case apps::mojom::LaunchSource::kFromShelf:
+    case apps::mojom::LaunchSource::kFromFileManager:
+      break;
+  }
+}
+
+}  // namespace
+
+namespace apps {
+
 void RecordAppLaunch(const std::string& app_id,
                      apps::mojom::LaunchSource launch_source) {
   if (app_id == extension_misc::kCalculatorAppId)
@@ -69,6 +130,22 @@ void RecordAppLaunch(const std::string& app_id,
     RecordDefaultAppLaunch(DefaultAppName::kChromeCanvas, launch_source);
   else if (app_id == extension_misc::kCameraAppId)
     RecordDefaultAppLaunch(DefaultAppName::kCamera, launch_source);
+
+  // Above are default Essential apps; below are built-in apps.
+
+  else if (app_id == app_list::kInternalAppIdKeyboardShortcutViewer)
+    RecordBuiltInAppLaunch(BuiltInAppName::kKeyboardShortcutViewer,
+                           launch_source);
+  else if (app_id == app_list::kReleaseNotesAppId)
+    RecordBuiltInAppLaunch(BuiltInAppName::kReleaseNotes, launch_source);
+  else if (app_id == app_list::kInternalAppIdCamera)
+    RecordBuiltInAppLaunch(BuiltInAppName::kCamera, launch_source);
+  else if (app_id == app_list::kInternalAppIdDiscover)
+    RecordBuiltInAppLaunch(BuiltInAppName::kDiscover, launch_source);
+  else if (app_id == app_list::kInternalAppIdSettings)
+    RecordBuiltInAppLaunch(BuiltInAppName::kSettings, launch_source);
+  else if (app_id == plugin_vm::kPluginVmAppId)
+    RecordBuiltInAppLaunch(BuiltInAppName::kPluginVm, launch_source);
 }
 
 }  // namespace apps

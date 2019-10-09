@@ -748,6 +748,31 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
   return inline_size <= available_width ? kSuccess : kOverflow;
 }
 
+// Breaks the text item at the previous break opportunity from
+// |item_result->end_offset|. Returns false if there were no previous break
+// opportunities.
+bool NGLineBreaker::BreakTextAtPreviousBreakOpportunity(
+    NGInlineItemResult* item_result) {
+  DCHECK(item_result->item);
+  DCHECK(item_result->may_break_inside);
+  const NGInlineItem& item = *item_result->item;
+  DCHECK_EQ(item.Type(), NGInlineItem::kText);
+  DCHECK(item.Style() && item.Style()->AutoWrap());
+
+  unsigned break_opportunity = break_iterator_.PreviousBreakOpportunity(
+      item_result->end_offset - 1, item_result->start_offset);
+  if (break_opportunity <= item_result->start_offset)
+    return false;
+  item_result->end_offset = break_opportunity;
+  item_result->shape_result =
+      ShapeResultView::Create(item.TextShapeResult(), item_result->start_offset,
+                              item_result->end_offset);
+  item_result->inline_size =
+      item_result->shape_result->SnappedWidth().ClampNegativeToZero();
+  item_result->can_break_after = true;
+  return true;
+}
+
 // This function handles text item for min-content. The specialized logic is
 // because min-content is very expensive by breaking at every break opportunity
 // and producing as many lines as the number of break opportunities.
@@ -1596,10 +1621,24 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
       // If space is available, and if this text is breakable, part of the text
       // may fit. Try to break this item.
       if (width_to_rewind < 0 && item_result->may_break_inside) {
-        // When the text fits but its right margin does not, the break point
-        // must not be at the end.
-        LayoutUnit item_available_width =
-            std::min(-width_to_rewind, item_result->inline_size - 1);
+        LayoutUnit item_available_width = -width_to_rewind;
+        // Make sure the available width is smaller than the current width. The
+        // break point must not be at the end when e.g., the text fits but its
+        // right margin does not or following items do not.
+        const LayoutUnit min_available_width = item_result->inline_size - 1;
+        if (item_available_width > min_available_width) {
+          item_available_width = min_available_width;
+          // If |inline_size| is zero (e.g., `font-size: 0`), |BreakText| cannot
+          // make it shorter. Take the previous break opportunity.
+          if (UNLIKELY(item_available_width <= 0)) {
+            if (BreakTextAtPreviousBreakOpportunity(item_result)) {
+              state_ = LineBreakState::kTrailing;
+              Rewind(i + 1, line_info);
+              return;
+            }
+            continue;
+          }
+        }
         auto was_current_style = current_style_;
         SetCurrentStyle(*item.Style());
         BreakResult break_result =

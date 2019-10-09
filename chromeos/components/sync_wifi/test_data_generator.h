@@ -7,6 +7,8 @@
 
 #include "components/sync/protocol/wifi_configuration_specifics.pb.h"
 
+namespace chromeos {
+
 namespace sync_wifi {
 
 class NetworkIdentifier;
@@ -20,5 +22,7 @@ sync_pb::WifiConfigurationSpecificsData GenerateTestWifiSpecifics(
     const NetworkIdentifier& id);
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos
 
 #endif  // CHROMEOS_COMPONENTS_SYNC_WIFI_TEST_DATA_GENERATOR_H_

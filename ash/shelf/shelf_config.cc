@@ -53,10 +53,12 @@ ShelfConfig::ShelfConfig()
       shelf_ink_drop_visible_opacity_(0.2f),
       shelf_icon_color_(SK_ColorWHITE),
       status_indicator_offset_from_shelf_edge_(1),
+      scrollable_shelf_ripple_padding_(2),
       shelf_tooltip_preview_height_(128),
       shelf_tooltip_preview_max_width_(192),
-      shelf_tooltip_preview_max_ratio_(1.5),     // = 3/2
-      shelf_tooltip_preview_min_ratio_(0.666) {  // = 2/3
+      shelf_tooltip_preview_max_ratio_(1.5),    // = 3/2
+      shelf_tooltip_preview_min_ratio_(0.666),  // = 2/3
+      shelf_blur_radius_(30) {
   UpdateIsDense();
 }
 
@@ -250,8 +252,7 @@ SkColor ShelfConfig::GetMaximizedShelfColor() const {
 }
 
 SkColor ShelfConfig::GetDefaultShelfColor() const {
-  if (!features::IsBackgroundBlurEnabled() ||
-      chromeos::switches::ShouldShowShelfHotseat()) {
+  if (!features::IsBackgroundBlurEnabled()) {
     return AshColorProvider::Get()->GetBaseLayerColor(
         AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
         AshColorProvider::AshColorMode::kDark);
@@ -277,6 +278,15 @@ SkColor ShelfConfig::GetDefaultShelfColor() const {
       SkColorSetA(SK_ColorBLACK, 127), dark_muted_color);
 
   return SkColorSetA(final_color, 189);  // 74% opacity
+}
+
+int ShelfConfig::GetShelfControlButtonBlurRadius() const {
+  if (features::IsBackgroundBlurEnabled() &&
+      chromeos::switches::ShouldShowShelfHotseat() && IsTabletMode() &&
+      !is_in_app()) {
+    return shelf_blur_radius_;
+  }
+  return 0;
 }
 
 void ShelfConfig::OnShelfConfigUpdated() {

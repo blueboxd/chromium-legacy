@@ -70,7 +70,11 @@ int64_t GetCacheStorageSize(const base::FilePath& base_path,
   // have a modified time older than the index's modified time.  Modifying
   // the index should update the directories time as well.  Therefore we
   // should be guaranteed that the time is equal here.
-  DCHECK_EQ(base_path_time, index_time);
+  //
+  // In practice, though, there can be a few microseconds difference on
+  // some operating systems so we can't do an exact DCHECK here.  Instead
+  // we do a fuzzy DCHECK allowing some microseconds difference.
+  DCHECK_LE((index_time - base_path_time).magnitude().InMicroseconds(), 10);
 
   int64_t storage_size = 0;
   for (int i = 0, max = index.cache_size(); i < max; ++i) {

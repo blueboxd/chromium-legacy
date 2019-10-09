@@ -195,7 +195,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, Authorization) {
   test_context_->RunUntilIdle();
 
   // Now set a key.
-  request_options()->SetKey(kTestKey2);
+  request_options()->SetKeyForTesting(kTestKey2);
 
   // Write headers.
   VerifyExpectedHeader(expected_header, kPageIdValue);
@@ -211,7 +211,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
 
   // Now set an empty key. The auth handler should ignore that, and the key
   // remains |kTestKey|.
-  request_options()->SetKey(std::string());
+  request_options()->SetKeyForTesting(std::string());
   VerifyExpectedHeader(expected_header, kPageIdValue);
 }
 

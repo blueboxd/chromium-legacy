@@ -28,11 +28,13 @@ base::ScopedFD CreateTmpHandle() {
   return base::ScopedFD(file.TakePlatformFile());
 }
 
-scoped_refptr<VideoFrame> CreateDmabufVideoFrame(VideoPixelFormat format,
-                                                 const gfx::Size& coded_size,
-                                                 const gfx::Rect& visible_rect,
-                                                 const gfx::Size& natural_size,
-                                                 base::TimeDelta timestamp) {
+scoped_refptr<VideoFrame> CreateDmabufVideoFrame(
+    gpu::GpuMemoryBufferFactory* factory,
+    VideoPixelFormat format,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    base::TimeDelta timestamp) {
   base::Optional<VideoFrameLayout> layout =
       VideoFrameLayout::Create(format, coded_size);
   DCHECK(layout);

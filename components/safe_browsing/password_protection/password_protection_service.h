@@ -20,6 +20,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/safe_browsing/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -268,6 +269,13 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       PasswordProtectionRequest* request,
       RequestOutcome outcome,
       std::unique_ptr<LoginReputationClientResponse> response);
+
+  // Called by a PasswordProtectionRequest instance to check if a sample ping
+  // can be sent to Safe Browsing.
+  virtual bool CanSendSamplePing() = 0;
+
+  // Sanitize referrer chain by only keeping origin information of all URLs.
+  virtual void SanitizeReferrerChain(ReferrerChain* referrer_chain) = 0;
 
   // Cancels all requests in |requests_|, empties it, and releases references to
   // the requests.

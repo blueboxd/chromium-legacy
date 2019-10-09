@@ -21,6 +21,7 @@
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_audio_processor.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_local_frame_wrapper.h"
@@ -202,7 +203,7 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
   // Create the MediaStreamAudioProcessor, bound to the WebRTC audio device
   // module.
   WebRtcAudioDeviceImpl* const rtc_audio_device =
-      Platform::Current()->GetWebRtcAudioDevice();
+      PeerConnectionDependencyFactory::GetInstance()->GetWebRtcAudioDevice();
   if (!rtc_audio_device) {
     blink::WebRtcLogMessage(
         "ProcessedLocalAudioSource::EnsureSourceIsStarted() fails"
@@ -326,7 +327,8 @@ void ProcessedLocalAudioSource::EnsureSourceIsStopped() {
   scoped_refptr<media::AudioCapturerSource> source_to_stop(std::move(source_));
 
   if (WebRtcAudioDeviceImpl* rtc_audio_device =
-          Platform::Current()->GetWebRtcAudioDevice()) {
+          PeerConnectionDependencyFactory::GetInstance()
+              ->GetWebRtcAudioDevice()) {
     rtc_audio_device->RemoveAudioCapturer(this);
   }
 

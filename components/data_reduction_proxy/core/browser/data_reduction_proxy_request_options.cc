@@ -159,7 +159,8 @@ void DataReductionProxyRequestOptions::UpdateCredentials() {
   RegenerateRequestHeaderValue();
 }
 
-void DataReductionProxyRequestOptions::SetKey(const std::string& key) {
+void DataReductionProxyRequestOptions::SetKeyForTesting(
+    const std::string& key) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if(!key.empty()) {
     key_ = key;

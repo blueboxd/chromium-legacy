@@ -315,6 +315,16 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
     Vector<KURL> values;
     switch (entry.second->GetType()) {
       case JSONValue::ValueType::kTypeNull:
+        if (!support_builtin_modules) {
+          // <spec step="2.3">If value is not a string, then:</spec>
+          //
+          // <spec step="2.3.1">Report a warning to the console that addresses
+          // must be strings.</spec>
+          AddIgnoredValueMessage(logger, entry.first, "Invalid value type.");
+
+          // <spec step="2.3.2">Continue.</spec>
+          continue;
+        }
         // [Spec w/ Built-in] Otherwise, if value is null, then set
         // normalized[normalizedSpecifierKey] to a new empty list.
         break;
@@ -353,6 +363,17 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
       }
 
       case JSONValue::ValueType::kTypeArray: {
+        if (!support_builtin_modules) {
+          // <spec step="2.3">If value is not a string, then:</spec>
+          //
+          // <spec step="2.3.1">Report a warning to the console that addresses
+          // must be strings.</spec>
+          AddIgnoredValueMessage(logger, entry.first, "Invalid value type.");
+
+          // <spec step="2.3.2">Continue.</spec>
+          continue;
+        }
+
         // [Spec w/ Built-in] Otherwise, if value is a list, then set
         // normalized[normalizedSpecifierKey] to value.
         JSONArray* array = imports->GetArray(entry.first);
@@ -382,6 +403,10 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
         }
         break;
       }
+    }
+
+    if (!support_builtin_modules) {
+      DCHECK_LE(values.size(), 1u);
     }
 
     // TODO(hiroshige): Move these checks to resolution time.

@@ -384,7 +384,7 @@ void FrameSerializer::AddResourceForElement(Document& document,
   if (const auto* image = ToHTMLImageElementOrNull(element)) {
     AtomicString image_url_value;
     const Element* parent = element.parentElement();
-    if (parent && IsHTMLPictureElement(parent)) {
+    if (parent && IsA<HTMLPictureElement>(parent)) {
       // If parent element is <picture>, use ImageSourceURL() to get best fit
       // image URL from sibling source.
       image_url_value = image->ImageSourceURL();

@@ -492,20 +492,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_offsetAtPoint(
     LONG y,
     IA2CoordinateType coord_type,
     LONG* offset) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_OFFSET_AT_POINT);
-  AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
-                            ui::AXMode::kInlineTextBoxes);
-  if (!owner())
-    return E_FAIL;
-
-  if (!offset)
-    return E_INVALIDARG;
-
-  // TODO(dmazzoni): implement this. We're returning S_OK for now so that
-  // screen readers still return partially accurate results rather than
-  // completely failing.
-  *offset = 0;
-  return S_OK;
+  return AXPlatformNodeWin::get_offsetAtPoint(x, y, coord_type, offset);
 }
 
 IFACEMETHODIMP BrowserAccessibilityComWin::scrollSubstringTo(

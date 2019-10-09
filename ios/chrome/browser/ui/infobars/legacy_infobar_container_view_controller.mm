@@ -108,11 +108,15 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
       CGRectGetMaxY([self.positioner parentView].frame) - height;
   containerFrame.size.height = height;
 
+  __weak __typeof(self) weakSelf = self;
   auto completion = ^(BOOL finished) {
-    if (!self.visible)
+    __typeof(self) strongSelf = weakSelf;
+    // Return if weakSelf has been niled or is not visible since there's no view
+    // to send an A11y post notification to.
+    if (!strongSelf.visible)
       return;
     UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
-                                    self.view);
+                                    strongSelf.view);
   };
 
   ProceduralBlock frameUpdates = ^{

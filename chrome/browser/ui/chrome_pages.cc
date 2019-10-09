@@ -95,11 +95,6 @@ void OpenBookmarkManagerForNode(Browser* browser, int64_t node_id) {
 }
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-void LaunchReleaseNotesInTab(Profile* profile) {
-  GURL url(kChromeReleaseNotesURL);
-  auto displayer = std::make_unique<ScopedTabbedBrowserDisplayer>(profile);
-  ShowSingletonTab(displayer->browser(), url);
-}
 
 const std::string BuildQueryString(Profile* profile) {
   const std::string board_name = base::SysInfo::GetLsbReleaseBoard();
@@ -130,9 +125,13 @@ const std::string BuildQueryString(Profile* profile) {
        ",", region, ",", language, ",", channel_name, ",", user_type});
   return query_string;
 }
-#endif
 
-#if defined(OS_CHROMEOS) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+void LaunchReleaseNotesInTab(Profile* profile) {
+  GURL url(BuildQueryString(profile));
+  auto displayer = std::make_unique<ScopedTabbedBrowserDisplayer>(profile);
+  ShowSingletonTab(displayer->browser(), url);
+}
+
 void LaunchReleaseNotesImpl(Profile* profile) {
   base::RecordAction(UserMetricsAction("ReleaseNotes.ShowReleaseNotes"));
   const extensions::Extension* extension =
@@ -150,6 +149,7 @@ void LaunchReleaseNotesImpl(Profile* profile) {
   DVLOG(1) << "ReleaseNotes App Not Found";
   LaunchReleaseNotesInTab(profile);
 }
+
 #endif
 
 // Shows either the help app or the appropriate help page for |source|. If

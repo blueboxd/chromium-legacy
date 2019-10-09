@@ -79,7 +79,7 @@ void StartNewButtonColumnSet(views::GridLayout* layout,
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                         views::GridLayout::kFixedSize,
                         views::GridLayout::USE_PREF, 0, 0);
-  column_set->LinkColumnSizes(0, 2, -1);
+  column_set->LinkColumnSizes({0, 2});
   column_set->set_linked_column_size_limit(button_size_limit);
   layout->StartRow(views::GridLayout::kFixedSize, column_layout_id);
 }

@@ -28,6 +28,8 @@ class PermissionServiceContext::PermissionSubscription {
     observer_.set_disconnect_handler(base::BindOnce(
         &PermissionSubscription::OnConnectionError, base::Unretained(this)));
   }
+  PermissionSubscription(const PermissionSubscription&) = delete;
+  PermissionSubscription& operator=(const PermissionSubscription&) = delete;
 
   ~PermissionSubscription() {
     DCHECK_NE(id_, 0);
@@ -50,7 +52,7 @@ class PermissionServiceContext::PermissionSubscription {
   void set_id(int id) { id_ = id; }
 
  private:
-  PermissionServiceContext* context_;
+  PermissionServiceContext* const context_;
   mojo::Remote<blink::mojom::PermissionObserver> observer_;
   int id_ = 0;
 };
@@ -110,16 +112,16 @@ void PermissionServiceContext::CreateSubscription(
       PermissionControllerImpl::FromBrowserContext(browser_context)
           ->SubscribePermissionStatusChange(
               permission_type, render_frame_host_, requesting_origin,
-              base::Bind(&PermissionSubscription::OnPermissionStatusChanged,
-                         base::Unretained(subscription.get())));
+              base::BindRepeating(
+                  &PermissionSubscription::OnPermissionStatusChanged,
+                  base::Unretained(subscription.get())));
   subscription->set_id(subscription_id);
   subscriptions_[subscription_id] = std::move(subscription);
 }
 
 void PermissionServiceContext::ObserverHadConnectionError(int subscription_id) {
-  auto it = subscriptions_.find(subscription_id);
-  DCHECK(it != subscriptions_.end());
-  subscriptions_.erase(it);
+  size_t erased = subscriptions_.erase(subscription_id);
+  DCHECK_EQ(1u, erased);
 }
 
 void PermissionServiceContext::RenderFrameHostChanged(
@@ -168,8 +170,4 @@ GURL PermissionServiceContext::GetEmbeddingOrigin() const {
                         : GURL();
 }
 
-RenderFrameHost* PermissionServiceContext::render_frame_host() const {
-  return render_frame_host_;
-}
-
-} // namespace content
+}  // namespace content

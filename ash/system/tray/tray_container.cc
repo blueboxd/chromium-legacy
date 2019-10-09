@@ -20,6 +20,8 @@ TrayContainer::TrayContainer(Shelf* shelf) : shelf_(shelf) {
 
   ShelfConfig::Get()->AddObserver(this);
 
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
   UpdateLayout();
 }
 

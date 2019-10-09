@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "chrome/browser/chromeos/concierge_helper_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/crostini/throttle/crostini_active_window_throttle_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -77,6 +78,7 @@ CrostiniThrottle* CrostiniThrottle::GetForBrowserContext(
 CrostiniThrottle::CrostiniThrottle(content::BrowserContext* context)
     : ThrottleService(context),
       delegate_(std::make_unique<DefaultDelegateImpl>(context)) {
+  AddObserver(std::make_unique<CrostiniActiveWindowThrottleObserver>());
   StartObservers();
 }
 

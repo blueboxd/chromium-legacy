@@ -1068,6 +1068,18 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
       *details =
           l10n_util::GetStringUTF16(IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
       break;
+    case security_state::MALICIOUS_CONTENT_STATUS_SAVED_PASSWORD_REUSE:
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+      *status = PageInfo::SAFE_BROWSING_STATUS_SAVED_PASSWORD_REUSE;
+      // |password_protection_service_| may be null in test.
+      *details =
+          password_protection_service_
+              ? password_protection_service_->GetWarningDetailText(
+                    password_protection_service_
+                        ->reused_password_account_type_for_last_shown_warning())
+              : base::string16();
+#endif
+      break;
     case security_state::MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
       *status = PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE;

@@ -20,11 +20,15 @@
 #include "base/task/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "chrome/browser/previews/previews_lite_page_redirect_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
@@ -112,6 +116,35 @@ void ReportDataSavings(int64_t network_bytes,
       FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&ReportDataSavingsOnUIThread, network_bytes,
                      original_bytes, std::move(host), frame_tree_node_id));
+}
+
+void InvalidateDRPConfigOnUIThread(int frame_tree_node_id) {
+  auto* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  // If the WebContents has been closed this may be null.
+  if (!web_contents)
+    return;
+
+  DataReductionProxyChromeSettings* drp_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
+
+  if (!drp_settings)
+    return;
+  if (!drp_settings->data_reduction_proxy_service())
+    return;
+  if (!drp_settings->data_reduction_proxy_service()->config_client())
+    return;
+
+  drp_settings->data_reduction_proxy_service()
+      ->config_client()
+      ->InvalidateAndRetrieveNewConfig();
+}
+
+void InvalidateDRPConfig(int frame_tree_node_id) {
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&InvalidateDRPConfigOnUIThread, frame_tree_node_id));
 }
 
 const base::TimeDelta kBlacklistDuration = base::TimeDelta::FromDays(30);
@@ -271,6 +304,11 @@ void PreviewsLitePageRedirectServingURLLoader::OnReceiveResponse(
       UMA_HISTOGRAM_ENUMERATION(
           "Previews.ServerLitePage.ServerResponse",
           previews::LitePageRedirectServerResponse::kAuthFailure);
+
+      // This should disable future preview attempts until a new DRP Session Key
+      // is retrieved since the PreviewsLitePageRedirectDecider checks for valid
+      // session keys before triggering the preview.
+      InvalidateDRPConfig(frame_tree_node_id_);
     } else {
       UMA_HISTOGRAM_ENUMERATION(
           "Previews.ServerLitePage.ServerResponse",

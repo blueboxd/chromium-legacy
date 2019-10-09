@@ -8,8 +8,9 @@
 #include "url/gurl.h"
 
 namespace content {
-struct ConsoleMessage;
 class ServiceWorkerContext;
+struct ConsoleMessage;
+struct ServiceWorkerRunningInfo;
 
 class ServiceWorkerContextObserver {
  public:
@@ -46,11 +47,10 @@ class ServiceWorkerContextObserver {
   // TODO(minggang): Create a new observer to listen to the events when the
   // process of the service worker is allocated/released, instead of using the
   // running status of the embedded worker.
-  virtual void OnVersionStartedRunning(ServiceWorkerContext* context,
-                                       int64_t version_id,
-                                       const GURL& scope,
-                                       int process_id,
-                                       const GURL& script_url) {}
+  virtual void OnVersionStartedRunning(
+      ServiceWorkerContext* context,
+      int64_t version_id,
+      const ServiceWorkerRunningInfo& running_info) {}
   virtual void OnVersionStoppedRunning(ServiceWorkerContext* context,
                                        int64_t version_id) {}
 

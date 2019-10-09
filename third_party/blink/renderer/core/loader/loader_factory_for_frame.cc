@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/loader/loader_factory_for_frame.h"
 
 #include "base/single_thread_task_runner.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"

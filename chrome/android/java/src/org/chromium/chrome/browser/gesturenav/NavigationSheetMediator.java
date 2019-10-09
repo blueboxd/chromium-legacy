@@ -15,11 +15,11 @@ import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.favicon.FaviconUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.util.UrlConstants;
-import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
@@ -76,7 +76,7 @@ class NavigationSheetMediator {
         mModelList = modelList;
         mClickListener = listener;
         mFaviconHelper = new FaviconHelper();
-        mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(context.getResources(), true);
+        mIconGenerator = FaviconUtils.createCircularIconGenerator(context.getResources());
         mFaviconSize = context.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
         mHistoryIcon = TintedDrawable.constructTintedDrawable(
                 context, R.drawable.ic_history_googblue_24dp, R.color.default_icon_color);

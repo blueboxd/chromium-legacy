@@ -572,11 +572,10 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // done yet.
   std::unique_ptr<RenderWidget> render_widget_;
 
-  // This is purely used as storage for a |render_widget_| instance when the
-  // main frame has moved out of process. It is a transitional construct
-  // to help figure out many things access |render_widget_| while the main
-  // frame remote. Almost no code should ever follow this pointer.
-  //
+  // Instances of RenderViewImpl with a proxy main frame do not need a
+  // RenderWidget. Unfortunately, we can't delete the object because the browser
+  // side RenderWidgetHost/RenderViewHost lifetimes are still entangled. We
+  // store the RenderWidget in this member, but it should not be used.
   // TODO(crbug.com/419087): Remove this once RenderWidgets are owned by the
   // main frame.
   std::unique_ptr<RenderWidget> undead_render_widget_;

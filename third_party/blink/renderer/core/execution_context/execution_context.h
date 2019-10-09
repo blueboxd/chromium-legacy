@@ -71,7 +71,6 @@ class DOMTimerCoordinator;
 class ErrorEvent;
 class EventTarget;
 class FrameOrWorkerScheduler;
-class InterfaceInvalidator;
 class KURL;
 class LocalDOMWindow;
 class OriginTrialContext;
@@ -287,8 +286,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       TaskType) = 0;
 
-  InterfaceInvalidator* GetInterfaceInvalidator() { return invalidator_.get(); }
-
   v8::Isolate* GetIsolate() const { return isolate_; }
   Agent* GetAgent() const { return agent_; }
 
@@ -351,8 +348,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   int window_interaction_tokens_;
 
   network::mojom::ReferrerPolicy referrer_policy_;
-
-  std::unique_ptr<InterfaceInvalidator> invalidator_;
 
   // Tracks which feature policies have already been parsed, so as not to count
   // them multiple times.

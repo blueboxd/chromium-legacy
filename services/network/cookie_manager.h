@@ -56,6 +56,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
 
   // mojom::CookieManager
   void GetAllCookies(GetAllCookiesCallback callback) override;
+  void GetAllCookiesWithAccessSemantics(
+      GetAllCookiesWithAccessSemanticsCallback callback) override;
   void GetCookieList(const GURL& url,
                      const net::CookieOptions& cookie_options,
                      GetCookieListCallback callback) override;

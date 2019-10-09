@@ -163,7 +163,13 @@ DocumentLoader::DocumentLoader(
   origin_policy_ = params_->origin_policy;
   requestor_origin_ = params_->requestor_origin;
   unreachable_url_ = params_->unreachable_url;
-  previews_state_ = params_->previews_state;
+  if (frame_->IsMainFrame()) {
+    previews_state_ = params_->previews_state;
+  } else {
+    // Subframes inherit previews state from the main frame.
+    if (auto* parent = DynamicTo<LocalFrame>(frame_->Tree().Parent()))
+      previews_state_ = parent->Loader().GetDocumentLoader()->previews_state_;
+  }
   ip_address_space_ = params_->ip_address_space;
   grant_load_local_resources_ = params_->grant_load_local_resources;
 

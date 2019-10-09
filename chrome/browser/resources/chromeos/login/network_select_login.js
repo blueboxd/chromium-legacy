@@ -123,6 +123,8 @@
             loadTimeData.getString('networkListItemConnectingTo'),
         networkListItemInitializing:
             loadTimeData.getString('networkListItemInitializing'),
+        networkListItemNotAvailable:
+            loadTimeData.getString('networkListItemNotAvailable'),
         networkListItemScanning:
             loadTimeData.getString('networkListItemScanning'),
         networkListItemSimCardLocked:

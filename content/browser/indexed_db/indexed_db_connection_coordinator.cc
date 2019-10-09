@@ -173,7 +173,7 @@ class IndexedDBConnectionCoordinator::OpenRequest
       pending_->callbacks->OnSuccess(
           db_->CreateConnection(std::move(origin_state_handle_),
                                 pending_->database_callbacks,
-                                pending_->child_process_id),
+                                pending_->execution_context),
           db_->metadata_);
       state_ = RequestState::kDone;
       return;
@@ -185,7 +185,7 @@ class IndexedDBConnectionCoordinator::OpenRequest
       pending_->callbacks->OnSuccess(
           db_->CreateConnection(std::move(origin_state_handle_),
                                 pending_->database_callbacks,
-                                pending_->child_process_id),
+                                pending_->execution_context),
           db_->metadata_);
       state_ = RequestState::kDone;
       return;
@@ -280,7 +280,7 @@ class IndexedDBConnectionCoordinator::OpenRequest
     DCHECK(!lock_receiver_.locks.empty());
     connection_ = db_->CreateConnection(std::move(origin_state_handle_),
                                         pending_->database_callbacks,
-                                        pending_->child_process_id);
+                                        pending_->execution_context);
     DCHECK(!connection_ptr_for_close_comparision_);
     connection_ptr_for_close_comparision_ = connection_.get();
     DCHECK_EQ(db_->connections().count(connection_.get()), 1UL);

@@ -14,8 +14,8 @@
 #include "content/public/renderer/request_peer.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-#include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace IPC {
 class Sender;
@@ -56,8 +56,8 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
   // content::RequestPeer methods.
   void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          const network::ResourceResponseInfo& info) override;
-  void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
+                          network::mojom::URLResponseHeadPtr head) override;
+  void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
@@ -87,7 +87,7 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
   std::unique_ptr<content::RequestPeer> original_peer_;
 
   // We just pass though the response info. This holds the copy of the original.
-  network::ResourceResponseInfo response_info_;
+  network::mojom::URLResponseHeadPtr response_head_;
 
   struct DataPipeState {
     DataPipeState();

@@ -1265,4 +1265,24 @@ TEST_F(BubbleFrameViewTest, IgnorePossiblyUnintendedClicks) {
   EXPECT_TRUE(bubble->IsClosed());
 }
 
+// Ensures that layout is correct when the progress indicator is visible.
+TEST_F(BubbleFrameViewTest, LayoutWithProgressIndicator) {
+  TestBubbleDialogDelegateView delegate;
+  TestAnchor anchor(CreateParams(Widget::InitParams::TYPE_WINDOW));
+  delegate.SetAnchorView(anchor.widget().GetContentsView());
+  Widget* bubble = BubbleDialogDelegateView::CreateBubble(&delegate);
+  bubble->Show();
+
+  BubbleFrameView* frame = delegate.GetBubbleFrameView();
+  frame->SetProgress(/*infinite animation*/ -1);
+  View* progress_indicator = frame->progress_indicator_;
+
+  // Ensures the progress indicator is visible and takes full widget width.
+  EXPECT_TRUE(progress_indicator->GetVisible());
+  EXPECT_EQ(progress_indicator->x(), 0);
+  EXPECT_EQ(progress_indicator->y(), 0);
+  EXPECT_EQ(progress_indicator->width(),
+            bubble->GetWindowBoundsInScreen().width());
+}
+
 }  // namespace views

@@ -7,13 +7,13 @@
 
 #include <string>
 
-namespace chromeos {
-class NetworkState;
-}
-
 namespace sync_pb {
 class WifiConfigurationSpecificsData;
 }
+
+namespace chromeos {
+
+class NetworkState;
 
 namespace sync_wifi {
 
@@ -54,5 +54,7 @@ class NetworkIdentifier {
 };
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos
 
 #endif  // CHROMEOS_COMPONENTS_SYNC_WIFI_NETWORK_IDENTIFIER_H_

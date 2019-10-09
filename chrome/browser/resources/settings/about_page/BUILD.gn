@@ -23,7 +23,6 @@ js_library("about_page") {
     ":about_page_browser_proxy",
     "..:lifetime_browser_proxy",
     "..:route",
-    "../prefs:prefs_behavior",
     "../settings_page:main_page_behavior",
     "../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:assert",

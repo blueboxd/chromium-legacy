@@ -82,7 +82,10 @@ std::string GetHistogramSuffixForSafetyTipStatus(
       return "SafetyTip_BadReputation";
     case security_state::SafetyTipStatus::kLookalike:
       return "SafetyTip_Lookalike";
-  };
+    case security_state::SafetyTipStatus::kBadKeyword:
+      NOTREACHED();
+      return std::string();
+  }
   NOTREACHED();
   return std::string();
 }

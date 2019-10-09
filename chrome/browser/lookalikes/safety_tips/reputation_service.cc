@@ -70,6 +70,15 @@ bool ShouldTriggerSafetyTipFromLookalike(
   return true;
 }
 
+// TODO(crbug/984725): Implement Keyword Check
+bool ShouldTriggerSafetyTipFromKeywordInURL(
+    const GURL& url,
+    const DomainInfo& navigated_domain,
+    const std::vector<DomainInfo>& engaged_sites) {
+  // TODO(crbug/987754): Record metrics here.
+  return false;
+}
+
 // This factory helps construct and find the singleton ReputationService linked
 // to a Profile.
 class ReputationServiceFactory : public BrowserContextKeyedServiceFactory {
@@ -251,7 +260,15 @@ void ReputationService::GetReputationStatusWithEngagedSites(
     return;
   }
 
-  // TODO(crbug/984725): 5. Additional client-side heuristics
+  // 5. Keyword heuristics.
+  if (ShouldTriggerSafetyTipFromKeywordInURL(url, navigated_domain,
+                                             engaged_sites)) {
+    std::move(callback).Run(security_state::SafetyTipStatus::kBadKeyword,
+                            IsIgnored(url), url, GURL());
+    return;
+  }
+
+  // TODO(crbug/984725): 6. Additional client-side heuristics.
   std::move(callback).Run(security_state::SafetyTipStatus::kNone,
                           IsIgnored(url), url, GURL());
 }

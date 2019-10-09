@@ -24,13 +24,14 @@ class CodeSignConfig(object):
     There is a class hierarchy of CodeSignConfig objects, with the
     build_props_config.BuildPropsConfig containing injected variables from the
     build process. Configs for Chromium and Google Chrome subclass that to
-    control signing options further. ANd then derived configurations are
+    control signing options further. And then derived configurations are
     created for internal signing artifacts and when using |model.Distribution|
     objects.
     """
 
     def __init__(self,
                  identity,
+                 installer_identity=None,
                  keychain=None,
                  notary_user=None,
                  notary_password=None,
@@ -40,9 +41,16 @@ class CodeSignConfig(object):
         constructor, which is found in the specified keychain.
 
         Args:
-            identity: The name of the code signing identity to use. This can
-                be any value that `codesign -s <identity>` accepts, like the
-                hex-encoded SHA1 hash of the certificate. Must not be None.
+            identity: The name of the code signing identity to use for non-PKG
+                files. This can be any value that `codesign -s <identity>`
+                accepts, like the hex-encoded SHA1 hash of the certificate. Must
+                not be None.
+            installer_identity: The name of the code signing identity to use for
+                PKG files. This will be passed as the parameter for the call to
+                `productbuild --sign <identity>`. Note that a hex-encoded SHA1
+                hash is not a valid option, as it is for |identity| above. The
+                common name of the cert will work. If there is any distribution
+                that is packaged in a PKG this must not be None.
             keychain: Optional path to the keychain file, in which the signing
                 |identity| will be searched for.
             notary_user: Optional string username that will be used to
@@ -56,6 +64,7 @@ class CodeSignConfig(object):
         """
         assert identity
         self._identity = identity
+        self._installer_identity = installer_identity
         self._keychain = keychain
         self._notary_user = notary_user
         self._notary_password = notary_password
@@ -64,9 +73,16 @@ class CodeSignConfig(object):
     @property
     def identity(self):
         """Returns the code signing identity that will be used to sign the
-        products.
+        products, everything but PKG files.
         """
         return self._identity
+
+    @property
+    def installer_identity(self):
+        """Returns the code signing identity that will be used to sign the
+        PKG file products.
+        """
+        return self._installer_identity
 
     @property
     def keychain(self):

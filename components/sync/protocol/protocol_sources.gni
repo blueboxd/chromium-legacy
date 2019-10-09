@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 sync_protocol_bases = [
+  "app_notification_specifics",
   "app_setting_specifics",
   "app_specifics",
   "app_list_specifics",
@@ -47,6 +48,8 @@ sync_protocol_bases = [
   "session_specifics",
   "sync",
   "sync_enums",
+  "synced_notification_app_info_specifics",
+  "synced_notification_specifics",
   "test",
   "theme_specifics",
   "typed_url_specifics",

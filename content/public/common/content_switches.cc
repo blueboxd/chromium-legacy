@@ -977,14 +977,6 @@ const char kEnableAutomation[] = "enable-automation";
 const char kEnableSpeechDispatcher[] = "enable-speech-dispatcher";
 #endif
 
-#if defined(OS_CHROMEOS)
-// A time_t. Passed by session_manager into the Chrome user session, indicating
-// that if Chrome crashes before the indicated time, session_manager will
-// consider this to be a crash-loop situation and log the user out. Chrome
-// mostly just passes this to crash_reporter if it crashes.
-const char kCrashLoopBefore[] = "crash-loop-before";
-#endif
-
 #if defined(OS_WIN)
 // /prefetch:# arguments to use when launching various process types. It has
 // been observed that when file reads are consistent for 3 process launches with

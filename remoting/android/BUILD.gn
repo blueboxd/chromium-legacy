@@ -17,6 +17,7 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chromoting/jni/GlDisplay.java",
     "java/src/org/chromium/chromoting/jni/JniInterface.java",
     "java/src/org/chromium/chromoting/jni/JniOAuthTokenGetter.java",
+    "java/src/org/chromium/chromoting/jni/NotificationPresenter.java",
     "java/src/org/chromium/chromoting/jni/TouchEventData.java",
   ]
 }

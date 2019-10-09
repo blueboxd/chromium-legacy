@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("eg_tests") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [

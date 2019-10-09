@@ -225,6 +225,11 @@ class URLDatabase {
       int max_count,
       std::vector<KeywordSearchTermVisit>* matches);
 
+  // Returns up to max_count of the most recent search terms.
+  std::vector<KeywordSearchTermVisit> GetMostRecentKeywordSearchTerms(
+      KeywordID keyword_id,
+      int max_count);
+
   // Deletes all searches matching |term|.
   bool DeleteKeywordSearchTerm(const base::string16& term);
 
@@ -298,6 +303,11 @@ class URLDatabase {
   // Returns the database for the functions in this interface. The decendent of
   // this class implements these functions to return its objects.
   virtual sql::Database& GetDB() = 0;
+
+  // Replaces the lower_term column in the keyword search terms table with
+  // normalized_term which contains the search term, in lower case, and with
+  // whitespaces collapsed for migration to version 42.
+  bool MigrateKeywordsSearchTermsLowerTermColumn();
 
  private:
   // True if InitKeywordSearchTermsTable() has been invoked. Not all subclasses

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_TASK_MANAGER_PROVIDERS_SERVICE_WORKER_TASK_H_
 
 #include "chrome/browser/task_manager/providers/task.h"
-#include "content/public/browser/service_worker_running_info.h"
+#include "url/gurl.h"
 
 namespace task_manager {
 
@@ -14,9 +14,9 @@ namespace task_manager {
 // https://w3c.github.io/ServiceWorker/
 class ServiceWorkerTask : public Task {
  public:
-  ServiceWorkerTask(
-      const content::ServiceWorkerRunningInfo& service_worker_running_info,
-      base::ProcessHandle handle);
+  ServiceWorkerTask(base::ProcessHandle handle,
+                    int render_process_id,
+                    const GURL& script_url);
   ~ServiceWorkerTask() override;
 
   // task_manager::Task implementation:

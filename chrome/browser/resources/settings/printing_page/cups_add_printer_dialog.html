@@ -78,7 +78,8 @@
   <template>
     <style include="cups-printer-shared"></style>
     <add-printer-dialog>
-      <div slot="dialog-title">$i18n{addPrintersManuallyTitle}</div>
+      <div slot="dialog-title">
+        $i18n{addPrintersManuallyTitle}
         <div id="general-error-container" hidden="[[!errorText_]]">
           <div id="general-error">
             <iron-icon id="general-error-icon" icon="cr:warning"></iron-icon>
@@ -87,6 +88,7 @@
             </div>
           </div>
         </div>
+      </div>
       <div slot="dialog-body">
         <div class="settings-box first two-line">
           <cr-input class="printer-name-input" autofocus

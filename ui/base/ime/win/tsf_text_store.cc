@@ -626,20 +626,23 @@ STDMETHODIMP TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   // (composition_string) is not the same as previous composition string
   // (prev_composition_string_) during same composition or the composition
   // string is the same for different composition or selection is changed during
-  // composition. If composition_string is empty and there is an existing
-  // composition going on, we still need to call into blink to complete the
-  // composition started by TSF.
+  // composition or IME spans are changed during same composition. If
+  // composition_string is empty and there is an existing composition going on,
+  // we still need to call into blink to complete the composition started by
+  // TSF.
   if ((has_composition_range_ &&
        (previous_composition_start_ != composition_range_.start() ||
         previous_composition_string_ != composition_string ||
         !previous_composition_selection_range_.EqualsIgnoringDirection(
-            selection_))) ||
+            selection_) ||
+        previous_text_spans_ != text_spans_)) ||
       ((wparam_keydown_fired_ != 0) &&
        text_input_client_->HasCompositionText() &&
        composition_string.empty())) {
     previous_composition_string_ = composition_string;
     previous_composition_start_ = composition_range_.start();
     previous_composition_selection_range_ = selection_;
+    previous_text_spans_ = text_spans_;
 
     // We need to remove replacing text first before starting new composition if
     // there are any.
@@ -910,6 +913,7 @@ STDMETHODIMP TSFTextStore::OnEndEdit(ITfContext* context,
     previous_composition_string_.clear();
     previous_composition_start_ = 0;
     previous_composition_selection_range_ = gfx::Range::InvalidRange();
+    previous_text_spans_.clear();
   }
 
   return S_OK;
@@ -1197,6 +1201,7 @@ bool TSFTextStore::ConfirmComposition() {
   previous_composition_string_.clear();
   previous_composition_start_ = 0;
   previous_composition_selection_range_ = gfx::Range::InvalidRange();
+  previous_text_spans_.clear();
   string_pending_insertion_.clear();
   composition_start_ = selection_.end();
 

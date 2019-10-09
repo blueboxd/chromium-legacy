@@ -60,12 +60,12 @@ Polymer({
   },
 
   /**
-   * @return {!OncMojo.ManagedProperty|undefined}
+   * @return {!mojom.ManagedString|undefined}
    * @private
    */
   getProxySettingsTypeProperty_: function() {
-    return /** @type {!OncMojo.ManagedProperty|undefined} */ (
-        this.get('proxySettings.type', this.managedProperties));
+    const proxySettings = this.managedProperties.proxySettings;
+    return proxySettings ? proxySettings.type : undefined;
   },
 
   /**

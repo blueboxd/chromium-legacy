@@ -241,6 +241,7 @@ TEST_F(ErrorRetryStateMachineTest, RetryPlaceholderNavigation) {
   ASSERT_EQ(ErrorRetryState::kNewRequest, machine.state());
 
   // First trigger the cached placeholder load.
+  machine.SetNoNavigationError();
   const GURL placeholder_url =
       wk_navigation_util::CreatePlaceholderUrlForUrl(test_url);
   ASSERT_EQ(ErrorRetryCommand::kDoNothing,

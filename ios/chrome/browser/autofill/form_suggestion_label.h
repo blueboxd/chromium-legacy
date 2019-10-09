@@ -7,9 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-// a11y identifier used to locate the autofill suggestion in automation
-extern NSString* const kFormSuggestionLabelAccessibilityIdentifier;
-
 @class FormSuggestion;
 @protocol FormSuggestionClient;
 

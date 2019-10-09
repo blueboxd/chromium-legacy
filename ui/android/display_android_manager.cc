@@ -80,13 +80,11 @@ void DisplayAndroidManager::DoUpdateDisplay(display::Display* display,
                                             bool isWideColorGamut) {
   if (!Display::HasForceDeviceScaleFactor())
     display->set_device_scale_factor(dipScale);
-  if (!Display::HasForceDisplayColorProfile()) {
     if (isWideColorGamut) {
       display->set_color_space(gfx::ColorSpace::CreateDisplayP3D65());
     } else {
       display->set_color_space(gfx::ColorSpace::CreateSRGB());
     }
-  }
 
   display->set_size_in_pixels(size_in_pixels);
   display->SetRotationAsDegree(rotationDegrees);

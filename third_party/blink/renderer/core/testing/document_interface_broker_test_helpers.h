@@ -9,7 +9,7 @@
 
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_host_test_interface.mojom-blink.h"
 #include "third_party/blink/renderer/core/testing/test_document_interface_broker.h"
 

@@ -952,14 +952,6 @@ need to be translated for each locale.-->
         {UNREAD_NOTIFICATIONS, plural, =1 {1 Unread Notification} other {# Unread Notifications}}
       </message>
 
-      <!-- Send Tab To Self -->
-      <message name="IDS_SEND_TAB_TO_SELF_INFOBAR_MESSAGE" desc="The message text for the infobar when a user receives a shared tab from another device.">
-        Tab received.
-      </message>
-      <message name="IDS_SEND_TAB_TO_SELF_INFOBAR_MESSAGE_URL" desc="Clickable text displayed as part of a URL in the inforbar displayed when a user receives a shared tab from another device.">
-        Open
-      </message>
-
       <!-- Browser sharing messages -->
       <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_LABEL" desc="The label to be shown as the title of the dialog when user click on a phone number, which means which device from the dialog to use for telephony service.">
         Make a call from

@@ -332,11 +332,10 @@ class VIEWS_EXPORT ColumnSet {
                  int min_width);
 
   // Forces the specified columns to have the same size. The size of
-  // linked columns is that of the max of the specified columns. This
-  // must end with -1. For example, the following forces the first and
-  // second column to have the same size:
-  // LinkColumnSizes(0, 1, -1);
-  void LinkColumnSizes(int first, ...);
+  // linked columns is that of the max of the specified columns.
+  // For example, the following forces the first and
+  // second column to have the same size: LinkColumnSizes({0, 1});
+  void LinkColumnSizes(const std::vector<int>& columns);
 
   // When sizing linked columns, columns wider than |size_limit| are ignored.
   void set_linked_column_size_limit(int size_limit) {

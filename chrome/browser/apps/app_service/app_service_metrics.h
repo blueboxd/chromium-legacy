@@ -12,25 +12,6 @@
 
 namespace apps {
 
-// The app's histogram name. This is used for logging so do not change the
-// order of this enum.
-enum class DefaultAppName {
-  kCalculator = 0,
-  kText = 1,
-  kGetHelp = 2,
-  kGallery = 3,
-  kVideoPlayer = 4,
-  kAudioPlayer = 5,
-  kChromeCanvas = 6,
-  kCamera = 7,
-  // Add any new values above this one, and update kMaxValue to the highest
-  // enumerator value.
-  kMaxValue = kCamera,
-};
-
-void RecordDefaultAppLaunch(DefaultAppName default_app_name,
-                            apps::mojom::LaunchSource launch_source);
-
 void RecordAppLaunch(const std::string& app_id,
                      apps::mojom::LaunchSource launch_source);
 

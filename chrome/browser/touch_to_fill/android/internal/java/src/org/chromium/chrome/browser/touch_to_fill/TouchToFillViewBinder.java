@@ -42,7 +42,7 @@ class TouchToFillViewBinder {
      */
     static void bindCredentialView(View view, Credential credential) {
         TextView usernameText = view.findViewById(R.id.username);
-        usernameText.setText(credential.getUsername());
+        usernameText.setText(credential.getFormattedUsername());
 
         TextView passwordText = view.findViewById(R.id.password);
         passwordText.setText(credential.getPassword());

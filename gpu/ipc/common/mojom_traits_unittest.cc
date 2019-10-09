@@ -415,14 +415,15 @@ TEST_F(StructTraitsTest, VideoDecodeAcceleratorCapabilities) {
 }
 
 TEST_F(StructTraitsTest, VideoEncodeAcceleratorSupportedProfile) {
-  const gpu::VideoCodecProfile profile =
-      gpu::VideoCodecProfile::H264PROFILE_MAIN;
+  const gpu::VideoCodecProfile profile = VideoCodecProfile::H264PROFILE_MAIN;
+  const gfx::Size min_resolution(320, 180);
   const gfx::Size max_resolution(1920, 1080);
   const uint32_t max_framerate_numerator = 144;
   const uint32_t max_framerate_denominator = 12;
 
   gpu::VideoEncodeAcceleratorSupportedProfile input;
   input.profile = profile;
+  input.min_resolution = min_resolution;
   input.max_resolution = max_resolution;
   input.max_framerate_numerator = max_framerate_numerator;
   input.max_framerate_denominator = max_framerate_denominator;
@@ -431,6 +432,7 @@ TEST_F(StructTraitsTest, VideoEncodeAcceleratorSupportedProfile) {
   gpu::VideoEncodeAcceleratorSupportedProfile output;
   proxy->EchoVideoEncodeAcceleratorSupportedProfile(input, &output);
   EXPECT_EQ(profile, output.profile);
+  EXPECT_EQ(min_resolution, output.min_resolution);
   EXPECT_EQ(max_resolution, output.max_resolution);
   EXPECT_EQ(max_framerate_numerator, output.max_framerate_numerator);
   EXPECT_EQ(max_framerate_denominator, output.max_framerate_denominator);

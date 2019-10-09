@@ -314,7 +314,8 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
               mask_layer->GetImage()->IsPendingImage()) {
             mask_layer->SetImage(LoadPendingImage(
                 style, To<StylePendingImage>(mask_layer->GetImage()),
-                FetchParameters::kAllowPlaceholder));
+                FetchParameters::kAllowPlaceholder,
+                kCrossOriginAttributeAnonymous));
           }
         }
         break;

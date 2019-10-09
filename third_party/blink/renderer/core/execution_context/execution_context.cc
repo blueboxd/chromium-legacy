@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
-#include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
@@ -64,8 +63,7 @@ ExecutionContext::ExecutionContext(v8::Isolate* isolate,
       agent_(agent),
       origin_trial_context_(origin_trial_context),
       window_interaction_tokens_(0),
-      referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
-      invalidator_(std::make_unique<InterfaceInvalidator>()) {
+      referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {
   if (origin_trial_context_)
     origin_trial_context_->BindExecutionContext(this);
 }
@@ -107,7 +105,6 @@ void ExecutionContext::SetLifecycleState(mojom::FrameLifecycleState state) {
 
 void ExecutionContext::NotifyContextDestroyed() {
   is_context_destroyed_ = true;
-  invalidator_.reset();
   ContextLifecycleNotifier::NotifyContextDestroyed();
 }
 

@@ -241,6 +241,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       handled_result_(false),
       install_button_enabled_(false) {
   DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
+  DialogDelegate::set_draggable(true);
   set_close_on_deactivate(false);
   CreateContents();
 
@@ -394,13 +395,6 @@ bool ExtensionInstallDialogView::Accept() {
   UpdateInstallResultHistogram(true);
   std::move(done_callback_).Run(ExtensionInstallPrompt::Result::ACCEPTED);
   return true;
-}
-
-// parent_window() may be null if an upgrade permissions prompt is triggered
-// when launching via a desktop shortcut. In that case, there is no browser
-// window to move (which would move the dialog), so allow dragging in this case.
-bool ExtensionInstallDialogView::IsDialogDraggable() const {
-  return !parent_window();
 }
 
 int ExtensionInstallDialogView::GetDialogButtons() const {

@@ -1,7 +1,5 @@
 <style>
   :host {
-    --tabstrip-tab-height: 216px;
-    --tabstrip-tab-width: 288px;
     --tabstrip-tab-title-height: 40px;
     --tabstrip-tab-transition-duration: 250ms;
 
@@ -187,8 +185,8 @@
 
   /* Pinned tab styles */
   :host([pinned]) {
-    height: 50px;
-    width: 50px;
+    height: var(--tabstrip-pinned-tab-size);
+    width: var(--tabstrip-pinned-tab-size);
   }
 
   :host([pinned]) #title {

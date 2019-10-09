@@ -4,7 +4,6 @@
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../lifetime_browser_proxy.html">
-<link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_page/main_page_behavior.html">
@@ -34,15 +33,6 @@
     <style include="settings-shared settings-page-styles">
       :host {
         --about-page-image-space: 10px;
-      }
-
-      #aboutOSBanner {
-        @apply --cr-card-elevation;
-        align-items: center;
-        background-color: white;
-        border-radius: 2px;
-        display: flex;
-        margin-top: 21px;
       }
 
       .info-section {
@@ -97,19 +87,6 @@
       }
 </if>
     </style>
-<if expr="chromeos">
-    <template is="dom-if" if="[[showAboutOSBanner_]]">
-      <div id="aboutOSBanner" class="settings-box">
-        <div class="start">
-          $i18nRaw{aboutOSBanner}
-        </div>
-        <cr-icon-button class="icon-clear"
-            aria-label="$i18n{clear}"
-            on-click="onAboutOSBannerClosed_">
-        </cr-icon-button>
-      </div>
-    </template>
-</if>
     <settings-section page-title="$i18n{aboutPageTitle}" section="about">
       <settings-animated-pages id="pages" section="about"
           focus-config="[[focusConfig_]]">

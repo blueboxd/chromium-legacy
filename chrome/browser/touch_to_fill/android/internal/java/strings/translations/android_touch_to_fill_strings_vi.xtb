@@ -1,10 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
-<translation id="1717486229951421299">Danh sách các thông tin xác thực mà bạn có thể chạm để điền đã mở ở nửa dưới của màn hình.</translation>
-<translation id="207576718733492531">Danh sách các thông tin xác thực mà bạn có thể chạm để điền đã đóng.</translation>
-<translation id="2410754283952462441">Chọn một tài khoản</translation>
-<translation id="3399357656427473483">Danh sách các thông tin xác thực mà bạn có thể chạm để điền.</translation>
-<translation id="5441504010984421144">Danh sách các thông tin xác thực mà bạn có thể chạm để điền đã mở trên toàn màn hình.</translation>
-<translation id="5458743933922296641">Đăng nhập vào <ph name="SITE_NAME" /> bằng Chrome</translation>
+<translation id="1717486229951421299">Danh sách thông tin đăng nhập mà bạn có thể chạm để điền đã được mở ở nửa dưới của màn hình.</translation>
+<translation id="207576718733492531">Danh sách thông tin đăng nhập mà bạn có thể chạm để điền đã bị đóng.</translation>
+<translation id="3399357656427473483">Danh sách các thông tin đăng nhập mà bạn có thể chạm để điền.</translation>
+<translation id="5441504010984421144">Danh sách các thông tin xác thực mà bạn có thể chạm để điền đã được mở ở toàn độ cao.</translation>
 </translationbundle>

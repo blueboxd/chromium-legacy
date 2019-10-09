@@ -1158,7 +1158,7 @@ void PrintRenderFrameHelper::ScriptedPrint(bool user_initiated) {
 }
 
 bool PrintRenderFrameHelper::OnMessageReceived(const IPC::Message& message) {
-  IPCReceived();
+  ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintRenderFrameHelper, message)
@@ -1175,7 +1175,6 @@ bool PrintRenderFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  IPCProcessed();
   return handled;
 }
 
@@ -1196,12 +1195,10 @@ void PrintRenderFrameHelper::InitiatePrintPreview(
     mojom::PrintRendererAssociatedPtrInfo print_renderer,
     bool has_selection) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  IPCReceived();
+  ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
 
-  if (ipc_nesting_level_ > 1) {
-    IPCProcessed();
+  if (ipc_nesting_level_ > 1)
     return;
-  }
 
   if (print_renderer)
     print_renderer_.Bind(std::move(print_renderer));
@@ -1213,14 +1210,12 @@ void PrintRenderFrameHelper::InitiatePrintPreview(
   auto plugin = delegate_->GetPdfElement(frame);
   if (!plugin.IsNull()) {
     PrintNode(plugin);
-    IPCProcessed();
     return;
   }
   print_preview_context_.InitWithFrame(frame);
   RequestPrintPreview(has_selection
                           ? PRINT_PREVIEW_USER_INITIATED_SELECTION
                           : PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME);
-  IPCProcessed();
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 }
 
@@ -2573,6 +2568,18 @@ void PrintRenderFrameHelper::SetPrintPagesParams(
   print_pages_params_ = std::make_unique<PrintMsg_PrintPages_Params>(settings);
   Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
                                              settings.params.document_cookie));
+}
+
+PrintRenderFrameHelper::ScopedIPC::ScopedIPC(
+    base::WeakPtr<PrintRenderFrameHelper> weak_this)
+    : weak_this_(std::move(weak_this)) {
+  DCHECK(weak_this_);
+  weak_this_->IPCReceived();
+}
+
+PrintRenderFrameHelper::ScopedIPC::~ScopedIPC() {
+  if (weak_this_)
+    weak_this_->IPCProcessed();
 }
 
 PrintRenderFrameHelper::ScriptingThrottler::ScriptingThrottler() = default;

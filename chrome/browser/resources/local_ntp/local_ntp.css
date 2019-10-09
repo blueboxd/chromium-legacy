@@ -217,6 +217,9 @@ body.hide-fakebox #fakebox {
 }
 
 #realbox-matches a {
+  background-position: 16px center;
+  background-repeat: no-repeat;
+  background-size: 24px;
   font-size: 16px;
   overflow: hidden;
   padding-bottom: 8px;
@@ -229,6 +232,10 @@ body.hide-fakebox #fakebox {
   white-space: nowrap;
 }
 
+[dir=rtl] #realbox-matches a {
+  background-position-x: calc(100% - 16px);
+}
+
 #realbox-matches a.removable {
   padding-inline-end: 48px;
 }
@@ -237,7 +244,8 @@ body.hide-fakebox #fakebox {
   -webkit-mask-size: 16px;
 }
 
-#realbox-matches :-webkit-any(.clock-icon, .url-icon) {
+#realbox-matches .clock-icon {
+  -webkit-mask-image: url(icons/clock.svg);
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 16px;
@@ -249,24 +257,16 @@ body.hide-fakebox #fakebox {
   width: 24px;
 }
 
-#realbox-matches .clock-icon {
-  -webkit-mask-image: url(icons/clock.svg);
-}
-
-#realbox-matches .url-icon {
-  -webkit-mask-image: url(../../../../components/neterror/resources/images/generic-globe.svg);
-}
-
-html[dir=rtl] #realbox-matches :-webkit-any(.clock-icon, .url-icon) {
+html[dir=rtl] #realbox-matches .clock-icon {
   right: 16px;
 }
 
 #realbox-matches a:hover {
-  background: rgb(var(--GG100-rgb));
+  background-color: rgb(var(--GG100-rgb));
 }
 
 #realbox-matches a.selected {
-  background: rgb(var(--GG200-rgb));
+  background-color: rgb(var(--GG200-rgb));
 }
 
 #realbox-matches .match {
@@ -296,11 +296,11 @@ html[dir=rtl] #realbox-matches :-webkit-any(.clock-icon, .url-icon) {
 }
 
 #realbox-matches .remove-match:hover {
-  background: rgba(var(--GG900-rgb), .08);
+  background-color: rgba(var(--GG900-rgb), .08);
 }
 
 #realbox-matches .remove-match:focus-within {
-  background: rgba(var(--GG900-rgb), .16);
+  background-color: rgba(var(--GG900-rgb), .16);
 }
 
 #realbox-matches .remove-icon {

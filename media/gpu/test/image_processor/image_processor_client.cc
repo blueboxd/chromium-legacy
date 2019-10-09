@@ -49,7 +49,9 @@ std::unique_ptr<ImageProcessorClient> ImageProcessorClient::Create(
 
 ImageProcessorClient::ImageProcessorClient(
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors)
-    : frame_processors_(std::move(frame_processors)),
+    : gpu_memory_buffer_factory_(
+          gpu::GpuMemoryBufferFactory::CreateNativeType(nullptr)),
+      frame_processors_(std::move(frame_processors)),
       image_processor_client_thread_("ImageProcessorClientThread"),
       output_cv_(&output_lock_),
       num_processed_frames_(0),
@@ -114,7 +116,8 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
   const auto& input_layout = image_processor_->input_layout();
   if (VideoFrame::IsStorageTypeMappable(
           image_processor_->input_storage_type())) {
-    return CloneVideoFrame(CreateVideoFrameFromImage(input_image).get(),
+    return CloneVideoFrame(gpu_memory_buffer_factory_.get(),
+                           CreateVideoFrameFromImage(input_image).get(),
                            input_layout, VideoFrame::STORAGE_OWNED_MEMORY);
   } else {
 #if defined(OS_CHROMEOS)
@@ -127,7 +130,8 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
         IsYuvPlanar(input_image.PixelFormat())
             ? gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE
             : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
-    return CloneVideoFrame(CreateVideoFrameFromImage(input_image).get(),
+    return CloneVideoFrame(gpu_memory_buffer_factory_.get(),
+                           CreateVideoFrameFromImage(input_image).get(),
                            input_layout, VideoFrame::STORAGE_DMABUFS,
                            dst_buffer_usage);
 #endif
@@ -152,8 +156,9 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateOutputFrame(
     LOG_ASSERT(image_processor_->output_storage_type() ==
                VideoFrame::STORAGE_DMABUFS);
     return CreatePlatformVideoFrame(
-        output_layout.format(), output_layout.coded_size(),
-        gfx::Rect(output_image.Size()), output_image.Size(), base::TimeDelta(),
+        gpu_memory_buffer_factory_.get(), output_layout.format(),
+        output_layout.coded_size(), gfx::Rect(output_image.Size()),
+        output_image.Size(), base::TimeDelta(),
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     return nullptr;

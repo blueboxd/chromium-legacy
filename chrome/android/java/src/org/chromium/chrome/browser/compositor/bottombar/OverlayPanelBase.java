@@ -361,6 +361,11 @@ abstract class OverlayPanelBase {
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT);
     }
 
+    /** @return The offset for the page content in DPs. */
+    protected float getLayoutOffsetYDps() {
+        return mLayoutYOffset * mPxToDp;
+    }
+
     // ============================================================================================
     // UI States
     // ============================================================================================
@@ -1109,7 +1114,7 @@ abstract class OverlayPanelBase {
      * portion of the Base Page visible when a Panel is in expanded state. To facilitate the
      * calculation, the first argument contains the height of the Panel in the expanded state.
      *
-     * @return The desired offset for the Base Page
+     * @return The desired offset for the Base Page in DPs
      */
     protected float calculateBasePageDesiredOffset() {
         return 0.f;
@@ -1131,7 +1136,7 @@ abstract class OverlayPanelBase {
      * consideration the Toolbar height, and adjust the offset accordingly, in order to
      * move the Toolbar out of the view as the Panel expands.
      *
-     * @return The target offset Y.
+     * @return The target offset Y in DPs.
      */
     private float calculateBasePageTargetY() {
         // Only a fullscreen wide Panel should offset the base page. A small panel should
@@ -1140,7 +1145,7 @@ abstract class OverlayPanelBase {
 
         // Start with the desired offset taking viewport offset into consideration and make sure
         // the result is <= 0 so the page moves up and not down.
-        float offset = Math.min(calculateBasePageDesiredOffset() - mLayoutYOffset, 0.0f);
+        float offset = Math.min(calculateBasePageDesiredOffset() - getLayoutOffsetYDps(), 0.0f);
 
         // Make sure the offset is not greater than the expanded height, because
         // there's nothing to render below the Page.

@@ -414,5 +414,16 @@ TEST_F(OfflinePageTabHelperTest, TestNotifyMhtmlPageLoadAttempted_Untrusted) {
                                       MHTMLLoadResult::kSuccess, 1);
 }
 
+TEST_F(OfflinePageTabHelperTest, AbortedNavigationDoesNotResetOfflineInfo) {
+  GURL mhtml_url("https://www.example.com");
+  SimulateOfflinePageLoad(mhtml_url, kTestMhtmlCreationTime,
+                          MHTMLLoadResult::kUrlSchemeNotAllowed);
+  auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
+      kTestPageUrl, web_contents());
+  navigation->Start();
+  navigation->AbortCommit();
+  EXPECT_TRUE(tab_helper()->offline_page());
+}
+
 }  // namespace
 }  // namespace offline_pages

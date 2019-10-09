@@ -59,7 +59,8 @@ class BrowserViewLayout : public views::LayoutManager {
                     InfoBarContainerView* infobar_container,
                     views::View* contents_container,
                     ImmersiveModeController* immersive_mode_controller,
-                    views::View* web_footer_experiment);
+                    views::View* web_footer_experiment,
+                    views::View* contents_separator);
   ~BrowserViewLayout() override;
 
   // Sets or updates views that are not available when |this| is initialized.
@@ -152,6 +153,7 @@ class BrowserViewLayout : public views::LayoutManager {
   views::View* const contents_container_;
   ImmersiveModeController* const immersive_mode_controller_;
   views::View* const web_footer_experiment_;
+  views::View* const contents_separator_;
 
   TabStrip* tab_strip_ = nullptr;
   BookmarkBarView* bookmark_bar_ = nullptr;

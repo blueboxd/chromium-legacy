@@ -25,7 +25,8 @@ enum class RevertReason {
   SEARCH_PROVIDER_CHANGE = 1,
   TAB_CLOSED = 2,
   NAVIGATION = 3,
-  kMaxValue = NAVIGATION,
+  SHUTDOWN = 4,
+  kMaxValue = SHUTDOWN,
 };
 
 // Supports theme changes originating from the NTP customization menu. Users can

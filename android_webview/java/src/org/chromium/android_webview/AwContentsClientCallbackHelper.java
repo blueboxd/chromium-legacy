@@ -10,6 +10,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 
+import org.chromium.android_webview.safe_browsing.AwSafeBrowsingResponse;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 

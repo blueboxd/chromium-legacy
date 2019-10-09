@@ -594,6 +594,10 @@ std::unique_ptr<WebContents> Shell::SwapWebContents(
   DCHECK_EQ(old_contents, web_contents_.get());
   new_contents->SetDelegate(this);
   web_contents_->SetDelegate(nullptr);
+  for (auto* shell_devtools_bindings :
+       ShellDevToolsBindings::GetInstancesForWebContents(old_contents)) {
+    shell_devtools_bindings->UpdateInspectedWebContents(new_contents.get());
+  }
   std::swap(web_contents_, new_contents);
   PlatformSetContents();
   PlatformSetAddressBarURL(web_contents_->GetVisibleURL());

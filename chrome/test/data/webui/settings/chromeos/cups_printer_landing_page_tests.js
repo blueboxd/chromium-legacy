@@ -730,30 +730,4 @@ suite('CupsNearbyPrintersTests', function() {
         });
   });
 
-  test('No Nearby Printers', function() {
-    const automaticPrinterList = [];
-    const discoveredPrinterList = [createCupsPrinterInfo('test3', '3', 'id3')];
-
-    return test_util.flushTasks().then(() => {
-      nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
-      assertTrue(!!nearbyPrintersElement);
-
-      // Assert that there are no nearby printers.
-      let nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
-      assertEquals(0, nearbyPrinterEntries.length);
-
-      // Check that the "No available printers" message is shown.
-      assertFalse(nearbyPrintersElement.$$('#noPrinterMessage').hidden);
-
-      // Simuluate finding nearby printers.
-      cr.webUIListenerCallback(
-          'on-nearby-printers-changed', automaticPrinterList,
-          discoveredPrinterList);
-
-      Polymer.dom.flush();
-
-      // Check that the "No available printers" message is not shown.
-      assertTrue(nearbyPrintersElement.$$('#noPrinterMessage').hidden);
-    });
-  });
 });

@@ -68,4 +68,22 @@ serial_test(async (t, fake) => {
   compareArrays(data, value);
 }, 'Can read a large amount of data');
 
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+
+  await port.open({ baudrate: 9600 });
+  assert_true(port.writable instanceof WritableStream);
+
+  const encoder = new TextEncoderStream();
+  encoder.readable.pipeTo(port.writable);
+  const writer = encoder.writable.getWriter();
+  let writePromise = writer.write("Hello world!");
+  let { value, done } = await fakePort.read();
+  await writePromise;
+  assert_equals("Hello world!", new TextDecoder().decode(value));
+
+  port.close();
+  assert_equals(null, port.writable);
+}, 'Can pipe a stream to writable');
+
 </script>

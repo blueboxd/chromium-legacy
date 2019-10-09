@@ -22,6 +22,12 @@ const char kAcceleratedVideoEncodeName[] = "Hardware-accelerated video encode";
 const char kAcceleratedVideoEncodeDescription[] =
     "Hardware-accelerated video encode where available.";
 
+const char kAccessibilityExposeARIAAnnotationsName[] =
+    "Expose ARIA Annotation roles";
+const char kAccessibilityExposeARIAAnnotationsDescription[] =
+    "Expose annotation- prefixed roles from ARIA Annotations draft "
+    "specification at https://w3c.github.io/annotation-aria/.";
+
 const char kAccessibilityExposeDisplayNoneName[] =
     "Expose 'display: none' nodes for accessibility";
 const char kAccessibilityExposeDisplayNoneDescription[] =

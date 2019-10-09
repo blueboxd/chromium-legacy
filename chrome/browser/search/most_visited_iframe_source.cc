@@ -28,6 +28,8 @@ const char kSingleJSPath[] = "/single.js";
 // Multi-iframe version, used by third party remote NTPs.
 const char kAssertJsPath[] = "/assert.js";
 const char kCommonCSSPath[] = "/common.css";
+const char kDontShowPngPath[] = "/dont_show.png";
+const char kDontShow2XPngPath[] = "/dont_show_2x.png";
 const char kTitleHTMLPath[] = "/title.html";
 const char kTitleCSSPath[] = "/title.css";
 const char kTitleJSPath[] = "/title.js";
@@ -81,6 +83,10 @@ void MostVisitedIframeSource::StartDataRequest(
     SendJSWithOrigin(IDR_MOST_VISITED_UTIL_JS, wc_getter, callback);
   } else if (path == kCommonCSSPath) {
     SendResource(IDR_MOST_VISITED_IFRAME_CSS, callback);
+  } else if (path == kDontShowPngPath) {
+    SendResource(IDR_MOST_VISITED_DONT_SHOW_PNG, callback);
+  } else if (path == kDontShow2XPngPath) {
+    SendResource(IDR_MOST_VISITED_DONT_SHOW_2X_PNG, callback);
   } else if (path == kEditHTMLPath) {
     SendResource(IDR_CUSTOM_LINKS_EDIT_HTML, callback);
   } else if (path == kEditCSSPath) {
@@ -151,7 +157,8 @@ bool MostVisitedIframeSource::ServesPath(const std::string& path) const {
          path == kAddWhiteSvgPath || path == kEditMenuSvgPath ||
          path == kLocalNTPCommonCSSPath || path == kAnimationsCSSPath ||
          path == kAnimationsJSPath || path == kLocalNTPUtilsJSPath ||
-         path == kAssertJsPath;
+         path == kAssertJsPath || path == kDontShowPngPath ||
+         path == kDontShow2XPngPath;
 }
 
 void MostVisitedIframeSource::SendResource(

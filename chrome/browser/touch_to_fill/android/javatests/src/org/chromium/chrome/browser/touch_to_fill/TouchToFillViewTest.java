@@ -111,8 +111,8 @@ public class TouchToFillViewTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTouchToFillView.setVisible(true);
             mModel.get(CREDENTIAL_LIST)
-                    .addAll(Arrays.asList(new Credential("Ana", "S3cr3t", null, false),
-                            new Credential("Bob", "***", "m.example.xyz", true)));
+                    .addAll(Arrays.asList(new Credential("Ana", "S3cr3t", "Ana", null, false),
+                            new Credential("", "***", "No Username", "m.example.xyz", true)));
         });
 
         pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
@@ -121,7 +121,7 @@ public class TouchToFillViewTest {
         assertThat(getCredentialPasswordAt(0).getText(), is("S3cr3t"));
         assertThat(getCredentialPasswordAt(0).getTransformationMethod(),
                 instanceOf(PasswordTransformationMethod.class));
-        assertThat(getCredentialNameAt(1).getText(), is("Bob"));
+        assertThat(getCredentialNameAt(1).getText(), is("No Username"));
         assertThat(getCredentialPasswordAt(1).getText(), is("***"));
         assertThat(getCredentialPasswordAt(1).getTransformationMethod(),
                 instanceOf(PasswordTransformationMethod.class));
@@ -132,8 +132,8 @@ public class TouchToFillViewTest {
     public void testCredentialsAreClickable() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.get(CREDENTIAL_LIST)
-                    .addAll(Arrays.asList(new Credential("Carl", "G3h3!m", "", false),
-                            new Credential("Bob", "***", "m.example.xyz", true)));
+                    .addAll(Arrays.asList(new Credential("Carl", "G3h3!m", "Carl", "", false),
+                            new Credential("Bob", "***", "Bob", "m.example.xyz", true)));
             mModel.set(VISIBLE, true);
         });
         pollUiThread(() -> getBottomSheetState() == SheetState.FULL);

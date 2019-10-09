@@ -665,8 +665,7 @@ html[dir=rtl] .selected-check {
   color: white;
   font-weight: 500;
   left: 16px;
-  max-width: 80%;
-  padding: 8px 8px 8px 8px;
+  padding: 8px;
   position: fixed;
   text-shadow: 0 0 16px rgba(0, 0, 0, .3);
   z-index: -1;
@@ -678,28 +677,35 @@ html[dir=rtl] #custom-bg-attr {
   right: 16px;
 }
 
-.attr-common {
+#custom-bg-attr a {
+  clear: both;
+  color: inherit;
+  float: left;
   font-size: 13px;
   height: 20px;
   line-height: 20px;
+  max-width: 50vw;
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: middle;
   white-space: nowrap;
-  width: -webkit-fill-available;
 }
 
-.attr-common.attr-small {
+[dir=rtl] #custom-bg-attr a {
+  float: right;
+}
+
+#custom-bg-attr a[href=''] {
+  cursor: auto;
+  text-decoration: none;
+}
+
+#custom-bg-attr a ~ a {
   font-size: 11px;
 }
 
 #custom-bg-attr.attr-link:hover {
   background: rgba(var(--GG900-rgb), .1);
-}
-
-.attr-link {
-  display: inline-block;
-  text-decoration: underline;
 }
 
 #link-icon {

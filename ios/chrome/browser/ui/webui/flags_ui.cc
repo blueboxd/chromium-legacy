@@ -218,6 +218,7 @@ void FlagsUI::AddFlagsIOSStrings(web::WebUIIOSDataSource* source) {
   source->AddLocalizedString("enabled", IDS_FLAGS_UI_ENABLED_FEATURE);
   source->AddLocalizedString("experiment-enabled",
                              IDS_FLAGS_UI_EXPERIMENT_ENABLED);
+  source->AddLocalizedString("heading", IDS_FLAGS_UI_TITLE);
   source->AddLocalizedString("no-results", IDS_FLAGS_UI_NO_RESULTS);
   source->AddLocalizedString("not-available-platform",
                              IDS_FLAGS_UI_NOT_AVAILABLE_ON_PLATFORM);

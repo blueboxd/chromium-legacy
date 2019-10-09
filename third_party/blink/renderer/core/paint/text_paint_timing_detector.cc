@@ -237,10 +237,14 @@ void TextRecordsManager::RemoveInvisibleRecord(const LayoutObject& object) {
 
 void TextRecordsManager::AssignPaintTimeToQueuedRecords(
     const base::TimeTicks& timestamp) {
-  // If texts_queued_for_paint_time_.size == 0, it means the array has been
+  // If the number of TextRecords to be processed is 0, it means they have been
   // consumed in a callback earlier than this one. That violates the assumption
   // that only one or zero callback will be called after one OnPaintFinished.
-  DCHECK_GT(texts_queued_for_paint_time_.size(), 0UL);
+  DCHECK_GT(texts_queued_for_paint_time_.size() +
+                size_zero_texts_queued_for_paint_time_.size(),
+            0UL);
+  bool can_report_element_timing =
+      text_element_timing_ ? text_element_timing_->CanReportElements() : false;
   for (auto iterator = texts_queued_for_paint_time_.begin();
        iterator != texts_queued_for_paint_time_.end(); ++iterator) {
     // The record may have been removed between the callback registration and
@@ -252,10 +256,17 @@ void TextRecordsManager::AssignPaintTimeToQueuedRecords(
     }
     DCHECK_EQ(record->paint_time, base::TimeTicks());
     record->paint_time = timestamp;
+    if (can_report_element_timing)
+      text_element_timing_->OnTextObjectPainted(*record);
   }
-  if (text_element_timing_)
-    text_element_timing_->OnTextObjectsPainted(texts_queued_for_paint_time_);
+  if (can_report_element_timing) {
+    for (const auto& record : size_zero_texts_queued_for_paint_time_) {
+      record->paint_time = timestamp;
+      text_element_timing_->OnTextObjectPainted(*record);
+    }
+  }
   texts_queued_for_paint_time_.clear();
+  size_zero_texts_queued_for_paint_time_.clear();
   if (ltp_manager_)
     ltp_manager_->SetCachedResultInvalidated(true);
 }
@@ -278,6 +289,20 @@ void TextRecordsManager::RecordVisibleObject(
 
   QueueToMeasurePaintTime(record_weak_ptr);
   visible_objects_.insert(&object, std::move(record));
+}
+
+void TextRecordsManager::RecordInvisibleObject(const LayoutObject& object) {
+  invisible_objects_.insert(&object);
+  Node* node = object.GetNode();
+  DCHECK(node);
+  if (!TextElementTiming::NeededForElementTiming(*node))
+    return;
+  DOMNodeId node_id = DOMNodeIds::IdForNode(node);
+  DCHECK_NE(node_id, kInvalidDOMNodeId);
+  // Since it is invisible, the record will have a size of 0 and an empty rect.
+  std::unique_ptr<TextRecord> record =
+      std::make_unique<TextRecord>(node_id, 0, FloatRect());
+  size_zero_texts_queued_for_paint_time_.push_back(std::move(record));
 }
 
 base::WeakPtr<TextRecord> LargestTextPaintManager::FindLargestPaintCandidate() {

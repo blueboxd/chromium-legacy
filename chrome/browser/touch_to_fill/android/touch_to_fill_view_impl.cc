@@ -13,6 +13,7 @@
 #include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/browser/touch_to_fill/android/jni_headers/Credential_jni.h"
 #include "chrome/browser/touch_to_fill/android/jni_headers/TouchToFillBridge_jni.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
@@ -70,6 +71,7 @@ void TouchToFillViewImpl::Show(
         env, credential_array, i,
         ConvertUTF16ToJavaString(env, credential.username),
         ConvertUTF16ToJavaString(env, credential.password),
+        ConvertUTF16ToJavaString(env, GetDisplayUsername(credential)),
         ConvertUTF8ToJavaString(env, credential.origin_url.spec()),
         credential.is_public_suffix_match);
   }

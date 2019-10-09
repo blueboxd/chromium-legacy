@@ -13,6 +13,8 @@
 #include "chromeos/components/sync_wifi/network_identifier.h"
 #include "components/sync/protocol/wifi_configuration_specifics.pb.h"
 
+namespace chromeos {
+
 namespace sync_wifi {
 
 // Represents a change to the local network stack which hasn't been saved yet,
@@ -54,5 +56,7 @@ class PendingNetworkConfigurationUpdate {
 };
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos
 
 #endif  // CHROMEOS_COMPONENTS_SYNC_WIFI_PENDING_NETWORK_CONFIGURATION_UPDATE_H_

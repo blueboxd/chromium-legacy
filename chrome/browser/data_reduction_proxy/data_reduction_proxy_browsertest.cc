@@ -35,6 +35,8 @@
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/prefs/pref_service.h"
+#include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_features.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/variations/variations_associated_data.h"
@@ -299,17 +301,27 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
 
   void SetConfig(const ClientConfig& config) {
     config_ = config;
-    // Config is not fetched in the holdback group. So, return early.
-    if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial())
+    // Config is not fetched if the holdback group is enabled and lite page
+    // redirect previews are not enabled. So, return early.
+    if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() &&
+        !previews::params::IsLitePageServerPreviewsEnabled()) {
       return;
+    }
 
     config_waiter_ = std::make_unique<ScopedConfigWaiter>(browser()->profile());
   }
 
   void WaitForConfig() {
-    // Config is not fetched in the holdback group. So, return early.
-    if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial())
+    // Config is not fetched if the holdback group is enabled and lite page
+    // redirect previews are not enabled. So, return early.
+    if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() &&
+        !previews::params::IsLitePageServerPreviewsEnabled()) {
       return;
+    }
+    // Destructor of |config_waiter_| waits for the config fetch request to
+    // arrive. For that check to work correctly, |config_waiter_| should be
+    // non-null.
+    ASSERT_TRUE(config_waiter_ != nullptr);
     config_waiter_.reset();
   }
 
@@ -320,11 +332,14 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
+  // Called when |config_server_| receives a request for config fetch.
   std::unique_ptr<net::test_server::HttpResponse> GetConfigResponse(
       const net::test_server::HttpRequest& request) {
-    // Config should not be fetched when in holdback.
-    EXPECT_FALSE(
-        data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial());
+    // Config should be fetched only when holdback is disabled or lite page
+    // redirect previews are enabled.
+    EXPECT_TRUE(
+        !data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() ||
+        previews::params::IsLitePageServerPreviewsEnabled());
 
     auto response = std::make_unique<net::test_server::BasicHttpResponse>();
     response->set_content(config_.SerializeAsString());
@@ -658,29 +673,38 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UMAMetricsRecorded) {
       1);
 }
 
-// Test that enabling the holdback disables the proxy.
-// Parameter is true if the data reduction proxy holdback should be enabled.
+// Test that enabling the holdback disables the proxy and that the client config
+// is fetched when lite page redirect preview is enabled.
+// First parameter is true if the data reduction proxy holdback should be
+// enabled. Second parameter is true if lite page redirect preview is enabled.
 class DataReductionProxyWithHoldbackBrowsertest
-    : public ::testing::WithParamInterface<bool>,
+    : public ::testing::WithParamInterface<std::tuple<bool, bool>>,
       public DataReductionProxyBrowsertest {
  public:
   DataReductionProxyWithHoldbackBrowsertest()
       : DataReductionProxyBrowsertest(),
-        data_reduction_proxy_holdback_enabled_(GetParam()) {}
+        data_reduction_proxy_holdback_enabled_(std::get<0>(GetParam())),
+        lite_page_redirect_previews_enabled_(std::get<1>(GetParam())) {}
 
   void SetUp() override {
     if (data_reduction_proxy_holdback_enabled_) {
       scoped_feature_list_.InitAndEnableFeature(
           data_reduction_proxy::features::kDataReductionProxyHoldback);
     }
+    if (lite_page_redirect_previews_enabled_) {
+      previews_lite_page_redirect_feature_list_.InitAndEnableFeature(
+          previews::features::kLitePageServerPreviews);
+    }
 
     InProcessBrowserTest::SetUp();
   }
 
   const bool data_reduction_proxy_holdback_enabled_;
+  const bool lite_page_redirect_previews_enabled_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList previews_lite_page_redirect_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_P(DataReductionProxyWithHoldbackBrowsertest,
@@ -697,6 +721,8 @@ IN_PROC_BROWSER_TEST_P(DataReductionProxyWithHoldbackBrowsertest,
   // A network change forces the config to be fetched.
   SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
 
+  // Ensure that the client config is fetched when lite page redirect preview is
+  // enabled or DRP holdback is disabled.
   WaitForConfig();
 
   // Load a webpage in holdback group as well. This ensures that while in
@@ -705,17 +731,19 @@ IN_PROC_BROWSER_TEST_P(DataReductionProxyWithHoldbackBrowsertest,
   // holdback is not enabled would trigger and cause the test to fail.
   ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
 
-  if (GetParam()) {
+  if (data_reduction_proxy_holdback_enabled_) {
     EXPECT_NE(GetBody(), kPrimaryResponse);
   } else {
     EXPECT_EQ(GetBody(), kPrimaryResponse);
   }
 }
 
-// Parameter is true if the data reduction proxy holdback should be enabled.
+// First parameter is true if the data reduction proxy holdback should be
+// enabled. Second parameter is true if lite page redirect preview is enabled.
 INSTANTIATE_TEST_SUITE_P(,
                          DataReductionProxyWithHoldbackBrowsertest,
-                         ::testing::Values(false, true));
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 
 class DataReductionProxyExpBrowsertest : public DataReductionProxyBrowsertest {
  public:

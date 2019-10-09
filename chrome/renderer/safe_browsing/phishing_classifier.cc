@@ -114,7 +114,6 @@ void PhishingClassifier::BeginFeatureExtraction() {
 
   blink::WebDocumentLoader* document_loader = frame->GetDocumentLoader();
   if (!document_loader || document_loader->HttpMethod().Ascii() != "GET") {
-    if (document_loader)
     RunFailureCallback();
     return;
   }

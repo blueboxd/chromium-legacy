@@ -1,0 +1,53 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_COMPRESSION_DEFLATE_TRANSFORMER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_COMPRESSION_DEFLATE_TRANSFORMER_H_
+
+#include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
+
+#include "third_party/zlib/zlib.h"
+
+namespace blink {
+
+class DeflateTransformer final : public TransformStreamTransformer {
+ public:
+  enum class Format { Gzip, Deflate };
+
+  DeflateTransformer(ScriptState*, Format, int level);
+  ~DeflateTransformer() override;
+
+  void Transform(v8::Local<v8::Value> chunk,
+                 TransformStreamDefaultControllerInterface*,
+                 ExceptionState&) override;
+
+  void Flush(TransformStreamDefaultControllerInterface*,
+             ExceptionState&) override;
+
+  ScriptState* GetScriptState() override { return script_state_; }
+
+  void Trace(Visitor*) override;
+
+ private:
+  void Deflate(const DOMUint8Array* data,
+               bool finished,
+               TransformStreamDefaultControllerInterface*,
+               ExceptionState&);
+
+  Member<ScriptState> script_state_;
+
+  Vector<uint8_t> buffer_;
+
+  z_stream stream_;
+
+  bool is_stream_freed_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(DeflateTransformer);
+};
+
+}  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_COMPRESSION_DEFLATE_TRANSFORMER_H_

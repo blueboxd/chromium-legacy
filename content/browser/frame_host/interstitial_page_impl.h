@@ -40,11 +40,7 @@ namespace mojom {
 class CreateNewWindowParams;
 }
 
-enum ResourceRequestAction {
-  BLOCK,
-  RESUME,
-  CANCEL
-};
+enum ResourceRequestAction { BLOCK, RESUME, CANCEL };
 
 class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
                                             public NotificationObserver,
@@ -95,9 +91,8 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
 
   // TODO(nasko): This should move to InterstitialPageNavigatorImpl, but in
   // the meantime make it public, so it can be called directly.
-  void DidNavigate(
-      RenderViewHost* render_view_host,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
+  void DidNavigate(RenderViewHost* render_view_host,
+                   const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
 
   // NavigatorDelegate implementation.
   WebContents* OpenURL(const OpenURLParams& params) override;

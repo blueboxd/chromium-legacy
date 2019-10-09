@@ -186,7 +186,6 @@
 <translation id="6941933287844615239">미디어 다운로드</translation>
 <translation id="6981594929165378967">삽입</translation>
 <translation id="6989848892321993519">이 텍스트를 <ph name="MIN_CHARACTERS" />자 이상으로 늘리세요(현재 1자 사용 중).</translation>
-<translation id="7033340931668032222">위아래로 볼륨 조정</translation>
 <translation id="7034405885550056553">추천</translation>
 <translation id="709897737746224366">요청한 형식과 일치시키세요.</translation>
 <translation id="7118469954320184356">설명이 없습니다.</translation>
@@ -242,7 +241,6 @@
 <translation id="8550857728288566671">그래픽 기호</translation>
 <translation id="8583702881314752957">정의 목록</translation>
 <translation id="8597182159515967513">항목</translation>
-<translation id="8603553056539299761">좌우로 검색</translation>
 <translation id="860475260694818407">목차</translation>
 <translation id="8613126697340063924">원격 재생 제어</translation>
 <translation id="862370744433916922">부제</translation>
@@ -259,7 +257,6 @@
 <translation id="901834265349196618">이메일</translation>
 <translation id="9048119486235211610">탐색</translation>
 <translation id="9062295712474918030">문서</translation>
-<translation id="9062307380734144336">선택하여 재생/일시중지 전환</translation>
 <translation id="9093215626363556771">PIP 모드 종료</translation>
 <translation id="9108370397979208512">math</translation>
 <translation id="9132465097189459683">다른 달...</translation>

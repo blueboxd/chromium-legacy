@@ -665,22 +665,6 @@ bool GraphicsLayer::BackfaceVisibility() const {
   return CcLayer()->double_sided();
 }
 
-void GraphicsLayer::SetOpacity(float opacity) {
-  CcLayer()->SetOpacity(opacity);
-}
-
-float GraphicsLayer::Opacity() const {
-  return CcLayer()->opacity();
-}
-
-void GraphicsLayer::SetBlendMode(BlendMode blend_mode) {
-  CcLayer()->SetBlendMode(WebCoreBlendModeToSkBlendMode(blend_mode));
-}
-
-BlendMode GraphicsLayer::GetBlendMode() const {
-  return BlendModeFromSkBlendMode(CcLayer()->blend_mode());
-}
-
 void GraphicsLayer::SetHitTestable(bool should_hit_test) {
   if (hit_testable_ == should_hit_test)
     return;

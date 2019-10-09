@@ -1256,8 +1256,9 @@ bool LocalFrame::ShouldForceDeferScript() const {
   // Check if enabled by runtime feature (for testing/evaluation) or if enabled
   // by PreviewsState (for live intervention).
   return RuntimeEnabledFeatures::ForceDeferScriptInterventionEnabled() ||
-         (Client() && Client()->GetPreviewsStateForFrame() ==
-                          WebURLRequest::kDeferAllScriptOn);
+         (Loader().GetDocumentLoader() &&
+          Loader().GetDocumentLoader()->GetPreviewsState() ==
+              WebURLRequest::kDeferAllScriptOn);
 }
 
 WebURLLoaderFactory* LocalFrame::GetURLLoaderFactory() {
@@ -1373,16 +1374,6 @@ bool LocalFrame::IsProvisional() const {
 
   DCHECK(Owner());
   return Owner()->ContentFrame() != this;
-}
-
-bool LocalFrame::IsUsingDataSavingPreview() const {
-  if (!Client())
-    return false;
-
-  WebURLRequest::PreviewsState previews_state =
-      Client()->GetPreviewsStateForFrame();
-  // Check for any data saving type of preview.
-  return previews_state & WebURLRequest::kNoScriptOn;
 }
 
 bool LocalFrame::IsAdSubframe() const {

@@ -151,9 +151,6 @@ class BookmarkBarView : public views::AccessiblePaneView,
       const GURL& url,
       const base::string16& title);
 
-  // Returns the current amount of overlap atop the browser toolbar.
-  int GetToolbarOverlap() const;
-
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;

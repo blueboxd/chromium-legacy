@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,6 +18,8 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_network_state.h"
+#include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -25,6 +28,8 @@
 #include "chrome/grit/tab_strip_resources.h"
 #include "chrome/grit/tab_strip_resources_map.h"
 #include "components/favicon_base/favicon_url_parser.h"
+#include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -66,22 +71,82 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   explicit TabStripUIHandler(Browser* browser)
       : browser_(browser),
         thumbnail_tracker_(base::Bind(&TabStripUIHandler::HandleThumbnailUpdate,
-                                      base::Unretained(this))) {
-    browser_->tab_strip_model()->AddObserver(this);
-  }
+                                      base::Unretained(this))) {}
   ~TabStripUIHandler() override = default;
 
+  void OnJavascriptAllowed() override {
+    browser_->tab_strip_model()->AddObserver(this);
+  }
+
   // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (tab_strip_model->empty())
+      return;
+
+    switch (change.type()) {
+      case TabStripModelChange::kInserted: {
+        for (const auto& contents : change.GetInsert()->contents) {
+          FireWebUIListener("tab-created",
+                            GetTabData(contents.contents, contents.index));
+        }
+        break;
+      }
+      case TabStripModelChange::kRemoved: {
+        for (const auto& contents : change.GetRemove()->contents) {
+          FireWebUIListener("tab-removed",
+                            base::Value(extensions::ExtensionTabUtil::GetTabId(
+                                contents.contents)));
+        }
+        break;
+      }
+      case TabStripModelChange::kMoved: {
+        auto* move = change.GetMove();
+        FireWebUIListener(
+            "tab-moved",
+            base::Value(extensions::ExtensionTabUtil::GetTabId(move->contents)),
+            base::Value(move->to_index));
+        break;
+      }
+
+      case TabStripModelChange::kReplaced:
+      case TabStripModelChange::kGroupChanged:
+      case TabStripModelChange::kSelectionOnly:
+        // Not yet implemented.
+        break;
+    }
+
+    if (selection.active_tab_changed()) {
+      content::WebContents* new_contents = selection.new_contents;
+      int index = selection.new_model.active();
+      if (new_contents && index != TabStripModel::kNoTab) {
+        FireWebUIListener(
+            "tab-active-changed",
+            base::Value(extensions::ExtensionTabUtil::GetTabId(new_contents)));
+      }
+    }
+  }
+
   void TabChangedAt(content::WebContents* contents,
                     int index,
                     TabChangeType change_type) override {
-    // TODO(crbug.com/1006946): re-fetch the TabRendererData using
-    // |TabRendererData::FromTabInModel()|.
+    FireWebUIListener("tab-updated", GetTabData(contents, index));
+  }
+
+  void TabPinnedStateChanged(TabStripModel* tab_strip_model,
+                             content::WebContents* contents,
+                             int index) override {
+    FireWebUIListener("tab-updated", GetTabData(contents, index));
   }
 
  protected:
   // content::WebUIMessageHandler:
   void RegisterMessages() override {
+    web_ui()->RegisterMessageCallback(
+        "getTabs",
+        base::Bind(&TabStripUIHandler::HandleGetTabs, base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
         "getThemeColors", base::Bind(&TabStripUIHandler::HandleGetThemeColors,
                                      base::Unretained(this)));
@@ -94,6 +159,45 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   }
 
  private:
+  base::DictionaryValue GetTabData(content::WebContents* contents, int index) {
+    base::DictionaryValue tab_data;
+
+    tab_data.SetBoolean("active",
+                        browser_->tab_strip_model()->active_index() == index);
+    tab_data.SetInteger("id", extensions::ExtensionTabUtil::GetTabId(contents));
+    tab_data.SetInteger("index", index);
+    tab_data.SetString("status", extensions::ExtensionTabUtil::GetTabStatusText(
+                                     contents->IsLoading()));
+
+    // TODO(johntlee): Replace with favicon from TabRendererData
+    content::NavigationEntry* visible_entry =
+        contents->GetController().GetVisibleEntry();
+    if (visible_entry && visible_entry->GetFavicon().valid) {
+      tab_data.SetString("favIconUrl", visible_entry->GetFavicon().url.spec());
+    }
+
+    TabRendererData tab_renderer_data =
+        TabRendererData::FromTabInModel(browser_->tab_strip_model(), index);
+    tab_data.SetBoolean("pinned", tab_renderer_data.pinned);
+    tab_data.SetString("title", tab_renderer_data.title);
+    tab_data.SetString("url", tab_renderer_data.visible_url.GetContent());
+    // TODO(johntlee): Add the rest of TabRendererData
+
+    return tab_data;
+  }
+
+  void HandleGetTabs(const base::ListValue* args) {
+    AllowJavascript();
+    const base::Value& callback_id = args->GetList()[0];
+
+    base::ListValue tabs;
+    TabStripModel* tab_strip_model = browser_->tab_strip_model();
+    for (int i = 0; i < tab_strip_model->count(); ++i) {
+      tabs.Append(GetTabData(tab_strip_model->GetWebContentsAt(i), i));
+    }
+    ResolveJavascriptCallback(callback_id, tabs);
+  }
+
   void HandleGetThemeColors(const base::ListValue* args) {
     AllowJavascript();
     const base::Value& callback_id = args->GetList()[0];

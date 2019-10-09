@@ -99,7 +99,7 @@ class MediaSessionImplServiceRoutingTest
     sub_frame_ = main_frame_->AppendChild("sub_frame");
 
     empty_metadata_.title = contents()->GetTitle();
-    empty_metadata_.source_title = base::ASCIIToUTF16("http://www.example.com");
+    empty_metadata_.source_title = base::ASCIIToUTF16("example.com");
   }
 
   void TearDown() override {
@@ -780,7 +780,7 @@ TEST_F(MediaSessionImplServiceRoutingTest, NotifyObserverOnNavigation) {
 
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = contents()->GetTitle();
-  expected_metadata.source_title = base::ASCIIToUTF16("http://www.google.com");
+  expected_metadata.source_title = base::ASCIIToUTF16("google.com");
   observer.WaitForExpectedMetadata(expected_metadata);
 }
 

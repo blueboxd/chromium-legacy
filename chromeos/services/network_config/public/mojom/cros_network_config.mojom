@@ -269,6 +269,8 @@ struct NetworkStateProperties {
   // True for visible networks that are blocked / disallowed by policy.
   bool prohibited_by_policy = false;
   OncSource source;
+  // |type| is explicitly provided here to simplify UI code and will always
+  // match the type of |type_state|, which will always be provided.
   NetworkType type;
   NetworkTypeStateProperties type_state;
 };
@@ -605,18 +607,25 @@ struct ManagedWiFiProperties {
   string? tethering_state;
 };
 
+union NetworkTypeManagedProperties {
+  ManagedCellularProperties cellular;
+  ManagedEthernetProperties ethernet;
+  // Tether has no managed properties. Provide TetherStateProperties for display
+  // purposes.
+  TetherStateProperties tether;
+  ManagedVPNProperties vpn;
+  ManagedWiFiProperties wifi;
+};
+
 // Managed properties provided by getManagedProperties. See onc_spec.md for
 // details about each property.
 struct ManagedProperties {
   // Typed properties for compatibility with NetworkStateProperties.
   ConnectionStateType connection_state = kNotConnected;
   OncSource source;
-  NetworkType type;
   // Other properties and property dictionaries use ONC strings for values.
-  ManagedCellularProperties? cellular;
   bool connectable = false;
   string? error_state;
-  ManagedEthernetProperties? ethernet;
   string guid;
   ManagedString? ip_address_config_type;
   array<IPConfigProperties>? ip_configs;
@@ -627,11 +636,10 @@ struct ManagedProperties {
   bool restricted_connectivity = false;
   ManagedIPConfigProperties? static_ip_config;
   IPConfigProperties? saved_ip_config;
-  // Tether has no managed properties. Provide TetherStateProperties for display
-  // purposes.
-  TetherStateProperties? tether;
-  ManagedVPNProperties? vpn;
-  ManagedWiFiProperties? wifi;
+  // |type| is explicitly provided here to simplify UI code and will always
+  // match the type of |type_properties|, which will always be provided.
+  NetworkType type;
+  NetworkTypeManagedProperties type_properties;
 };
 
 // Properties for SetProperties and ConfigureNetwork. All of the top level

@@ -484,6 +484,12 @@ class LoadBubblesStory(_LoadingStory):
     action_runner.WaitForJavaScriptCondition(
         'document.getElementById("logo") === null')
 
+class LoadBubblesStory2019(_LoadingStory):
+  """Load "smarty bubbles" game on famobi.com"""
+  NAME = 'load:games:bubbles:2019'
+  URL = (
+      'https://games.cdn.famobi.com/html5games/s/smarty-bubbles/v010/?fg_domain=play.famobi.com&fg_uid=d8f24956-dc91-4902-9096-a46cb1353b6f&fg_pid=4638e320-4444-4514-81c4-d80a8c662371&fg_beat=620')
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
 
 class LoadLazorsStory(_LoadingStory):
   NAME = 'load:games:lazors'

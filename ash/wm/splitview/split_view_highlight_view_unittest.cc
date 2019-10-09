@@ -5,6 +5,7 @@
 #include "ash/wm/splitview/split_view_highlight_view.h"
 
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_highlight_view_test_api.h"
 #include "base/test/icu_test_util.h"
 #include "ui/gfx/transform.h"
@@ -204,6 +205,42 @@ TEST_F(SplitViewHighlightViewTest, RightBounds) {
   EXPECT_TRUE(GetTransform(test_api.GetMiddleView())
                   .ApproximatelyEqual(expected_middle_transform));
   EXPECT_TRUE(GetTransform(test_api.GetRightBottomView()).IsIdentity());
+}
+
+// Test when there is only one indicator is visible, the other indicator should
+// always have 0 opacity.
+TEST_F(SplitViewHighlightViewTest, SingleIndicatorOpacityTest) {
+  const gfx::Rect bounds(100, 0, 100, 100);
+  left_highlight()->SetBounds(bounds, /*landscape=*/false,
+                              /*animation_type=*/base::nullopt);
+  left_highlight()->SetPaintToLayer();
+  left_highlight()->layer()->SetOpacity(0.f);
+  right_highlight()->SetBounds(bounds, /*landscape=*/false,
+                               /*animation_type=*/base::nullopt);
+  right_highlight()->SetPaintToLayer();
+  right_highlight()->layer()->SetOpacity(0.f);
+
+  left_highlight()->OnIndicatorTypeChanged(IndicatorState::kDragAreaRight,
+                                           IndicatorState::kNone);
+  EXPECT_EQ(0.f, left_highlight()->layer()->opacity());
+  right_highlight()->OnIndicatorTypeChanged(IndicatorState::kDragAreaRight,
+                                            IndicatorState::kNone);
+  EXPECT_EQ(kHighlightOpacity, right_highlight()->layer()->opacity());
+
+  left_highlight()->OnIndicatorTypeChanged(IndicatorState::kPreviewAreaRight,
+                                           IndicatorState::kDragAreaRight);
+  EXPECT_EQ(0.f, left_highlight()->layer()->opacity());
+  right_highlight()->OnIndicatorTypeChanged(IndicatorState::kPreviewAreaRight,
+                                            IndicatorState::kDragAreaRight);
+  EXPECT_EQ(kPreviewAreaHighlightOpacity,
+            right_highlight()->layer()->opacity());
+
+  left_highlight()->OnIndicatorTypeChanged(IndicatorState::kDragAreaRight,
+                                           IndicatorState::kPreviewAreaRight);
+  EXPECT_EQ(0.f, left_highlight()->layer()->opacity());
+  right_highlight()->OnIndicatorTypeChanged(IndicatorState::kDragAreaRight,
+                                            IndicatorState::kPreviewAreaRight);
+  EXPECT_EQ(kHighlightOpacity, right_highlight()->layer()->opacity());
 }
 
 }  // namespace ash

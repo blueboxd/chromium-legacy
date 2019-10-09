@@ -211,7 +211,12 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   // If this is a placeholder navigation, pass through.
   if (IsPlaceholderUrl(requestURL)) {
-    decisionHandler(WKNavigationActionPolicyAllow);
+    if (action.sourceFrame.mainFrame) {
+      // Disallow renderer initiated navigations to placeholder URLs.
+      decisionHandler(WKNavigationActionPolicyCancel);
+    } else {
+      decisionHandler(WKNavigationActionPolicyAllow);
+    }
     return;
   }
 

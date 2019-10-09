@@ -23,6 +23,7 @@ import jinja2
 FIRST_REVISION = '08a37e09f110ab9cb2af3180f054f26a2fd274d6'
 TEST_SUBDIR = 'webxr-samples'
 INDEX_TEMPLATE = 'bucket_index.html'
+LATEST_TEMPLATE = 'bucket_latest.html'
 
 # Google Cloud storage bucket destination.
 BUCKET = 'gs://chromium-webxr-test'
@@ -193,6 +194,32 @@ def write_index():
     finally:
       os.unlink(temp.name)
 
+def write_latest():
+  """Updates Cloud Storage latest.html based on available test copies, pointing
+  to the latest copy."""
+  cr_positions = get_bucket_copies()
+  cr_positions.sort(key=int, reverse=True)
+  logging.debug('Index: %s', cr_positions)
+
+  if not cr_positions:
+    logging.debug('No cr_positions found, skipping generation of latest.html')
+    return
+
+  logging.debug('Latest cr position: %s', cr_positions[0])
+
+  template = jinja2.Template(open(LATEST_TEMPLATE).read())
+  content = template.render({'revisionString' : cr_positions[0]})
+  logging.debug('latest.html content:\n%s', content)
+
+  with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as temp:
+    try:
+      temp.write(content)
+      temp.seek(0)
+      temp.close()
+      run_modify('gsutil.py', 'cp', temp.name, BUCKET + '/latest.html')
+    finally:
+      os.unlink(temp.name)
+
 def update_test_copies():
   """Uploads a new test copy if available"""
 
@@ -313,8 +340,9 @@ content from failed uploads using the cloud console before retrying.
   # Create an index.html file covering all found test copies.
   if need_index_update:
     write_index()
+    write_latest()
   else:
-    logging.info('No changes, skipping index update.')
+    logging.info('No changes, skipping index.html and latest.html update.')
 
 
 if __name__ == '__main__':

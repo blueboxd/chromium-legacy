@@ -33,6 +33,7 @@
 
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/messaging/message_channel.h"

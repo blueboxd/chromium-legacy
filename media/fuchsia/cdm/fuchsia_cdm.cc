@@ -10,7 +10,6 @@
 #include "fuchsia/base/mem_buffer_util.h"
 #include "media/base/callback_registry.h"
 #include "media/base/cdm_promise.h"
-#include "media/fuchsia/cdm/fuchsia_decryptor.h"
 
 #define REJECT_PROMISE_AND_RETURN_IF_BAD_CDM(promise, cdm)         \
   if (!cdm) {                                                      \
@@ -115,8 +114,9 @@ class FuchsiaCdm::CdmSession {
   using ResultCB =
       base::OnceCallback<void(base::Optional<CdmPromise::Exception>)>;
 
-  explicit CdmSession(const FuchsiaCdm::SessionCallbacks* callbacks)
-      : session_callbacks_(callbacks) {
+  CdmSession(const FuchsiaCdm::SessionCallbacks* callbacks,
+             base::RepeatingClosure on_new_key)
+      : session_callbacks_(callbacks), on_new_key_(on_new_key) {
     // License session events, e.g. license request message, key status change.
     // Fuchsia CDM service guarantees callback of functions (e.g.
     // GenerateLicenseRequest) are called before event callbacks. So it's safe
@@ -195,6 +195,9 @@ class FuchsiaCdm::CdmSession {
 
     session_callbacks_->keys_change_cb.Run(
         session_id_, has_additional_usable_key, std::move(keys_info));
+
+    if (has_additional_usable_key)
+      on_new_key_.Run();
   }
 
   void OnSessionError(zx_status_t status) {
@@ -212,13 +215,16 @@ class FuchsiaCdm::CdmSession {
                  : base::nullopt);
   }
 
+  const SessionCallbacks* const session_callbacks_;
+  base::RepeatingClosure on_new_key_;
+
   fuchsia::media::drm::LicenseSessionPtr session_;
   std::string session_id_;
 
   // Callback for license operation.
   ResultCB result_cb_;
 
-  const SessionCallbacks* session_callbacks_;
+  DISALLOW_COPY_AND_ASSIGN(CdmSession);
 };
 
 FuchsiaCdm::SessionCallbacks::SessionCallbacks() = default;
@@ -231,7 +237,7 @@ FuchsiaCdm::FuchsiaCdm(fuchsia::media::drm::ContentDecryptionModulePtr cdm,
                        SessionCallbacks callbacks)
     : cdm_(std::move(cdm)),
       session_callbacks_(std::move(callbacks)),
-      decryptor_(new FuchsiaDecryptor(cdm_.get())) {
+      decryptor_(cdm_.get()) {
   DCHECK(cdm_);
   cdm_.set_error_handler([this](zx_status_t status) {
     ZX_LOG(ERROR, status) << "The fuchsia.media.drm.ContentDecryptionModule"
@@ -244,9 +250,28 @@ FuchsiaCdm::FuchsiaCdm(fuchsia::media::drm::ContentDecryptionModulePtr cdm,
 
 FuchsiaCdm::~FuchsiaCdm() = default;
 
-std::unique_ptr<FuchsiaSecureStreamDecryptor> FuchsiaCdm::CreateSecureDecryptor(
+std::unique_ptr<FuchsiaSecureStreamDecryptor> FuchsiaCdm::CreateVideoDecryptor(
     FuchsiaSecureStreamDecryptor::Client* client) {
-  return FuchsiaSecureStreamDecryptor::Create(cdm_.get(), client);
+  fuchsia::media::drm::DecryptorParams params;
+
+  // TODO(crbug.com/997853): Enable secure mode when it's implemented in sysmem.
+  params.set_require_secure_mode(false);
+
+  params.mutable_input_details()->set_format_details_version_ordinal(0);
+  fuchsia::media::StreamProcessorPtr stream_processor;
+  cdm_->CreateDecryptor(std::move(params), stream_processor.NewRequest());
+
+  auto decryptor = std::make_unique<FuchsiaSecureStreamDecryptor>(
+      std::move(stream_processor), client);
+
+  // Save callback to use to notify the decryptor about a new key.
+  auto new_key_cb = decryptor->GetOnNewKeyClosure();
+  {
+    base::AutoLock auto_lock(new_key_cb_for_video_lock_);
+    new_key_cb_for_video_ = new_key_cb;
+  }
+
+  return decryptor;
 }
 
 void FuchsiaCdm::SetServerCertificate(
@@ -293,7 +318,9 @@ void FuchsiaCdm::CreateSessionAndGenerateRequest(
 
   uint32_t promise_id = promises_.SavePromise(std::move(promise));
 
-  auto session = std::make_unique<CdmSession>(&session_callbacks_);
+  auto session = std::make_unique<CdmSession>(
+      &session_callbacks_,
+      base::BindRepeating(&FuchsiaCdm::OnNewKey, base::Unretained(this)));
   CdmSession* session_ptr = session.get();
 
   cdm_->CreateLicenseSession(
@@ -419,8 +446,7 @@ std::unique_ptr<CallbackRegistration> FuchsiaCdm::RegisterEventCB(
 }
 
 Decryptor* FuchsiaCdm::GetDecryptor() {
-  DCHECK(decryptor_);
-  return decryptor_.get();
+  return &decryptor_;
 }
 
 int FuchsiaCdm::GetCdmId() const {
@@ -429,6 +455,15 @@ int FuchsiaCdm::GetCdmId() const {
 
 FuchsiaCdmContext* FuchsiaCdm::GetFuchsiaCdmContext() {
   return this;
+}
+
+void FuchsiaCdm::OnNewKey() {
+  decryptor_.OnNewKey();
+  {
+    base::AutoLock auto_lock(new_key_cb_for_video_lock_);
+    if (new_key_cb_for_video_)
+      new_key_cb_for_video_.Run();
+  }
 }
 
 }  // namespace media

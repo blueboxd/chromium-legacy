@@ -11,7 +11,6 @@ Hi!
       "name": "LayoutNGBlockFlow (positioned) DIV id='fixed'",
       "position": [-360, -90],
       "bounds": [360, 90],
-      "opacity": 0.990000009536743,
       "contentsOpaque": true,
       "transform": 1
     }

@@ -9,6 +9,7 @@ files.
 
 from __future__ import print_function
 
+import collections
 import os
 import struct
 import sys
@@ -23,6 +24,10 @@ from grit.node import structure
 
 PACK_FILE_VERSION = 5
 BINARY, UTF8, UTF16 = range(3)
+
+
+GrdInfoItem = collections.namedtuple('GrdInfoItem',
+                                     ['textual_id', 'id', 'path'])
 
 
 class WrongFileVersion(Exception):
@@ -198,6 +203,15 @@ def WriteDataPack(resources, output_file, encoding):
   content = WriteDataPackToString(resources, encoding)
   with open(output_file, 'wb') as file:
     file.write(content)
+
+
+def ReadGrdInfo(grd_file):
+  info_dict = {}
+  with open(grd_file + '.info', 'rt') as f:
+    for line in f:
+      item = GrdInfoItem._make(line.strip().split(','))
+      info_dict[int(item.id)] = item
+  return info_dict
 
 
 def RePack(output_file, input_files, whitelist_file=None,

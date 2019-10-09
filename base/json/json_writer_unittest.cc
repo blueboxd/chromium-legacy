@@ -154,4 +154,36 @@ TEST(JSONWriterTest, DoublesAsInts) {
   EXPECT_EQ("10000000000", output_js);
 }
 
+TEST(JSONWriterTest, StackOverflow) {
+  std::string output_js;
+  ListValue deep_list;
+  ListValue* next_list = &deep_list;
+
+  const size_t max_depth = 100000;
+
+  for (size_t i = 0; i < max_depth; ++i) {
+    ListValue inner_list;
+    next_list->Append(std::move(inner_list));
+    next_list->GetList(0, &next_list);
+  }
+
+  EXPECT_FALSE(JSONWriter::Write(deep_list, &output_js));
+  EXPECT_FALSE(JSONWriter::WriteWithOptions(
+      deep_list, JSONWriter::OPTIONS_PRETTY_PRINT, &output_js));
+
+  // We cannot just let deep_list tear down since it
+  // would cause a stack overflow. Therefore, we tear
+  // down from the inner lists outwards safely.
+  const size_t step = 200;
+  for (size_t i = max_depth - step; i > 0; i -= step) {
+    next_list = &deep_list;
+    for (size_t curr_depth = 0; curr_depth < i && next_list; ++curr_depth) {
+      if (!next_list->GetList(0, &next_list))
+        next_list = nullptr;
+    }
+    if (next_list)
+      next_list->Remove(0, nullptr);
+  }
+}
+
 }  // namespace base

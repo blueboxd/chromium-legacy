@@ -909,4 +909,29 @@ TEST_F(RenderWidgetHostInputEventRouterTest, CanCallShowContextMenuAtPoint) {
                                    view_root_.get());
 }
 
+// Input events get latched to a target when middle click autoscroll is in
+// progress. This tests enusres that autoscroll latched target state is cleared
+// when the view, input events are latched to is destroyed.
+TEST_F(RenderWidgetHostInputEventRouterTest,
+       EnsureAutoScrollLatchedTargetIsCleared) {
+  ChildViewState child = MakeChildView(view_root_.get());
+
+  // Simulate middle click mouse event.
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = blink::WebPointerProperties::Button::kMiddle;
+
+  view_root_->SetHittestResult(child.view.get(), false);
+  RenderWidgetTargeter* targeter = rwhier()->GetRenderWidgetTargeterForTests();
+  rwhier()->RouteMouseEvent(view_root_.get(), &mouse_event,
+                            ui::LatencyInfo(ui::SourceEventType::MOUSE));
+  // Set middle click autoscroll in progress to true.
+  rwhier()->SetAutoScrollInProgress(true);
+  // Destroy the view/target, middle click autoscroll is latched to.
+  rwhier()->OnRenderWidgetHostViewBaseDestroyed(child.view.get());
+
+  EXPECT_FALSE(targeter->is_auto_scroll_in_progress());
+}
+
 }  // namespace content

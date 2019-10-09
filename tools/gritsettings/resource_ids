@@ -166,6 +166,9 @@
   "chrome/browser/resources/bluetooth_internals/resources.grd": {
     "includes": [13970],
   },
+  "chrome/browser/resources/omnibox/resources.grd": {
+    "includes": [14000],
+  },
   "chrome/browser/resources/usb_internals/resources.grd": {
     "includes": [14030],
   },

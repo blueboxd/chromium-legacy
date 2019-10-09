@@ -524,7 +524,7 @@ CheckBool DisassemblerElf32ARM::ParseRel32RelocsFromSection(
       // 0        | 0          1
       // 0        | 1          0
       // 1        | 1          1
-      on_32bit = (~(on_32bit ^ (op_size == 4))) != 0;
+      on_32bit = (on_32bit == (op_size == 4));
     } else {
       // Move 2 bytes at a time, but track 32-bit boundaries
       p += 2;

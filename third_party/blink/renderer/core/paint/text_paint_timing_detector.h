@@ -109,14 +109,13 @@ class CORE_EXPORT TextRecordsManager {
 
   void RemoveVisibleRecord(const LayoutObject&);
   void RemoveInvisibleRecord(const LayoutObject&);
-  inline void RecordInvisibleObject(const LayoutObject& object) {
-    invisible_objects_.insert(&object);
-  }
   void RecordVisibleObject(const LayoutObject&,
                            const uint64_t& visual_size,
                            const FloatRect& element_timing_rect);
+  void RecordInvisibleObject(const LayoutObject& object);
   bool NeedMeausuringPaintTime() const {
-    return !texts_queued_for_paint_time_.IsEmpty();
+    return !texts_queued_for_paint_time_.IsEmpty() ||
+           !size_zero_texts_queued_for_paint_time_.IsEmpty();
   }
   void AssignPaintTimeToQueuedRecords(const base::TimeTicks&);
 
@@ -165,6 +164,11 @@ class CORE_EXPORT TextRecordsManager {
   HashSet<const LayoutObject*> invisible_objects_;
 
   Deque<base::WeakPtr<TextRecord>> texts_queued_for_paint_time_;
+  // These are text records created to notify Element Timing of texts which are
+  // first painted outside of the viewport. These have size 0 for the purpose of
+  // LCP computations, even if the size of the text itself is not 0. They are
+  // considered invisible objects by Largest Contentful Paint.
+  Deque<std::unique_ptr<TextRecord>> size_zero_texts_queued_for_paint_time_;
   base::Optional<LargestTextPaintManager> ltp_manager_;
   Member<TextElementTiming> text_element_timing_;
 

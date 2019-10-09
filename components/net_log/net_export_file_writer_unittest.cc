@@ -22,7 +22,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_capture_mode.h"
@@ -84,14 +84,14 @@ class FakeNetworkContext : public network::TestNetworkContext {
  public:
   void CreateNetLogExporter(
       mojo::PendingReceiver<network::mojom::NetLogExporter> receiver) override {
-    binding_ = mojo::StrongBinding<network::mojom::NetLogExporter>::Create(
+    receiver_ = mojo::MakeSelfOwnedReceiver<network::mojom::NetLogExporter>(
         std::make_unique<FakeNetLogExporter>(), std::move(receiver));
   }
 
-  void Disconnect() { binding_->Close(); }
+  void Disconnect() { receiver_->Close(); }
 
  private:
-  mojo::StrongBindingPtr<network::mojom::NetLogExporter> binding_;
+  mojo::SelfOwnedReceiverRef<network::mojom::NetLogExporter> receiver_;
 };
 
 // Sets |path| to |path_to_return| and always returns true. This function is

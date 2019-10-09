@@ -245,6 +245,7 @@ class FuchsiaVideoDecoder : public VideoDecoder,
   const bool enable_sw_decoding_;
 
   OutputCB output_cb_;
+  WaitingCB waiting_cb_;
 
   // Aspect ratio specified in container, or 1.0 if it's not specified. This
   // value is used only if the aspect ratio is not specified in the bitstream.
@@ -331,6 +332,8 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                      InitCB init_cb,
                                      const OutputCB& output_cb,
                                      const WaitingCB& waiting_cb) {
+  DCHECK(output_cb);
+  DCHECK(waiting_cb);
   DCHECK(decode_callbacks_.empty());
 
   auto done_callback = BindToCurrentLoop(std::move(init_cb));
@@ -341,6 +344,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(result);
 
   output_cb_ = output_cb;
+  waiting_cb_ = waiting_cb;
   container_pixel_aspect_ratio_ = config.GetPixelAspectRatio();
 
   // If we already have |decoder_| that was initialized for the same codec then
@@ -502,7 +506,7 @@ bool FuchsiaVideoDecoder::InitializeDecryptor(CdmContext* cdm_context) {
     return false;
   }
 
-  decryptor_ = fuchsia_cdm->CreateSecureDecryptor(this);
+  decryptor_ = fuchsia_cdm->CreateVideoDecryptor(this);
 
   return true;
 }
@@ -521,8 +525,7 @@ void FuchsiaVideoDecoder::OnDecryptorError() {
 }
 
 void FuchsiaVideoDecoder::OnDecryptorNoKey() {
-  NOTIMPLEMENTED();
-  OnError();
+  waiting_cb_.Run(WaitingReason::kNoDecryptionKey);
 }
 
 void FuchsiaVideoDecoder::OnStreamFailed(uint64_t stream_lifetime_ordinal,

@@ -55,6 +55,7 @@ namespace content {
 class IndexedDBClassFactory;
 class IndexedDBConnection;
 class IndexedDBDatabaseCallbacks;
+struct IndexedDBExecutionContext;
 class IndexedDBFactory;
 class IndexedDBMetadataCoding;
 class IndexedDBOriginStateHandle;
@@ -358,7 +359,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
   std::unique_ptr<IndexedDBConnection> CreateConnection(
       IndexedDBOriginStateHandle origin_state_handle,
       scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
-      int child_process_id);
+      const IndexedDBExecutionContext& execution_context);
 
   // Ack that one of the connections notified with a "versionchange" event did
   // not promptly close. Therefore a "blocked" event should be fired at the

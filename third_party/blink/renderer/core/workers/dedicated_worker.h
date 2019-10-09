@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_dedicated_worker.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"

@@ -24,6 +24,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace chromeos {
+
 namespace sync_wifi {
 
 namespace {
@@ -266,3 +268,5 @@ TEST_F(WifiConfigurationBridgeTest, ApplySyncChangesOneDeletion) {
 }  // namespace
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos

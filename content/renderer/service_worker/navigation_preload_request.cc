@@ -33,9 +33,9 @@ void NavigationPreloadRequest::OnReceiveResponse(
   response_ = std::make_unique<blink::WebURLResponse>();
   // TODO(horo): Set report_security_info to true when DevTools is attached.
   const bool report_security_info = false;
-  WebURLLoaderImpl::PopulateURLResponse(
-      url_, network::ResourceResponseHead(response_head), response_.get(),
-      report_security_info, -1 /* request_id */);
+  WebURLLoaderImpl::PopulateURLResponse(url_, *response_head, response_.get(),
+                                        report_security_info,
+                                        -1 /* request_id */);
   MaybeReportResponseToOwner();
 }
 
@@ -47,9 +47,9 @@ void NavigationPreloadRequest::OnReceiveRedirect(
       response_head->headers->response_code()));
 
   response_ = std::make_unique<blink::WebURLResponse>();
-  WebURLLoaderImpl::PopulateURLResponse(
-      url_, network::ResourceResponseHead(response_head), response_.get(),
-      false /* report_security_info */, -1 /* request_id */);
+  WebURLLoaderImpl::PopulateURLResponse(url_, *response_head, response_.get(),
+                                        false /* report_security_info */,
+                                        -1 /* request_id */);
   owner_->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
                                       mojo::ScopedDataPipeConsumerHandle());
   // This will delete |this|.

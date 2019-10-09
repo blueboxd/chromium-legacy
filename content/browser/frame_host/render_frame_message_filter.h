@@ -107,8 +107,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter : public BrowserMessageFilter {
   void OnDidDeleteOutOfProcessPepperInstance(int plugin_child_id,
                                              int32_t pp_instance,
                                              bool is_external);
-  void OnOpenChannelToPpapiBroker(int routing_id,
-                                  const base::FilePath& path);
+  void OnOpenChannelToPpapiBroker(int routing_id, const base::FilePath& path);
   void OnPluginInstanceThrottleStateChange(int plugin_child_id,
                                            int32_t pp_instance,
                                            bool is_throttled);

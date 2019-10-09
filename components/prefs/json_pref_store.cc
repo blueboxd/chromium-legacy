@@ -54,6 +54,13 @@ namespace {
 // Some extensions we'll tack on to copies of the Preferences files.
 const base::FilePath::CharType kBadExtension[] = FILE_PATH_LITERAL("bad");
 
+bool BackupPrefsFile(const base::FilePath& path) {
+  const base::FilePath bad = path.ReplaceExtension(kBadExtension);
+  const bool bad_existed = base::PathExists(bad);
+  base::Move(path, bad);
+  return bad_existed;
+}
+
 PersistentPrefStore::PrefReadError HandleReadErrors(
     const base::Value* value,
     const base::FilePath& path,
@@ -78,13 +85,10 @@ PersistentPrefStore::PrefReadError HandleReadErrors(
         // We keep the old file for possible support and debugging assistance
         // as well as to detect if they're seeing these errors repeatedly.
         // TODO(erikkay) Instead, use the last known good file.
-        base::FilePath bad = path.ReplaceExtension(kBadExtension);
-
         // If they've ever had a parse error before, put them in another bucket.
         // TODO(erikkay) if we keep this error checking for very long, we may
         // want to differentiate between recent and long ago errors.
-        bool bad_existed = base::PathExists(bad);
-        base::Move(path, bad);
+        const bool bad_existed = BackupPrefsFile(path);
         return bad_existed ? PersistentPrefStore::PREF_READ_ERROR_JSON_REPEAT
                            : PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE;
     }
@@ -476,8 +480,16 @@ bool JsonPrefStore::SerializeData(std::string* output) {
   // readable prefs for debugging purposes, you can dump your prefs into any
   // command-line or online JSON pretty printing tool.
   serializer.set_pretty_print(false);
-  bool success = serializer.Serialize(*prefs_);
-  DCHECK(success);
+  const bool success = serializer.Serialize(*prefs_);
+  if (!success) {
+    // Failed to serialize prefs file. Backup the existing prefs file and
+    // reset our existing prefs.
+    BackupPrefsFile(path_);
+    CHECK(false) << "Failed to serialize preferences : " << path_
+                 << "\nBacked up under "
+                 << path_.ReplaceExtension(kBadExtension);
+    prefs_.reset(new base::DictionaryValue());
+  }
   return success;
 }
 

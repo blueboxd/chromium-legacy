@@ -15,13 +15,10 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
-
-namespace network {
-struct ResourceResponseInfo;
-}
 
 namespace content {
 
@@ -60,7 +57,7 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
   ~WebURLLoaderImpl() override;
 
   static void PopulateURLResponse(const blink::WebURL& url,
-                                  const network::ResourceResponseInfo& info,
+                                  const network::mojom::URLResponseHead& head,
                                   blink::WebURLResponse* response,
                                   bool report_security_info,
                                   int request_id);

@@ -236,9 +236,7 @@ class RenderViewHostDeletedObserver : public WebContentsObserver {
     }
   }
 
-  bool deleted() {
-    return deleted_;
-  }
+  bool deleted() { return deleted_; }
 
  private:
   int process_id_;
@@ -259,9 +257,7 @@ class RenderFrameHostCreatedObserver : public WebContentsObserver {
     created_ = true;
   }
 
-  bool created() {
-    return created_;
-  }
+  bool created() { return created_; }
 
  private:
   bool created_;
@@ -315,13 +311,8 @@ class PluginFaviconMessageObserver : public WebContentsObserver {
     favicon_received_ = true;
   }
 
-  bool plugin_crashed() {
-    return plugin_crashed_;
-  }
-
-  bool favicon_received() {
-    return favicon_received_;
-  }
+  bool plugin_crashed() { return plugin_crashed_; }
+  bool favicon_received() { return favicon_received_; }
 
  private:
   bool plugin_crashed_;
@@ -464,8 +455,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
   }
 
   // Returns the speculative RenderFrameHost.
-  RenderFrameHostImpl* GetPendingFrameHost(
-      RenderFrameHostManager* manager) {
+  RenderFrameHostImpl* GetPendingFrameHost(RenderFrameHostManager* manager) {
     return manager->speculative_render_frame_host_.get();
   }
 
@@ -494,8 +484,7 @@ TEST_F(RenderFrameHostManagerTest, ChromeSchemeProcesses) {
   // Navigate our first tab to the chrome url and then to the destination,
   // ensuring we grant bindings to the chrome URL.
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kChromeUrl);
-  EXPECT_TRUE(main_rfh()->GetEnabledBindings() &
-              BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(main_rfh()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kDestUrl);
 
   EXPECT_FALSE(contents()->GetPendingMainFrame());
@@ -528,7 +517,7 @@ TEST_F(RenderFrameHostManagerTest, ChromeSchemeProcesses) {
   EXPECT_NE(contents()->GetMainFrame()->GetSiteInstance(),
             dest_rfh2->GetSiteInstance());
   EXPECT_FALSE(dest_rfh2->GetSiteInstance()->IsRelatedSiteInstance(
-                   contents()->GetMainFrame()->GetSiteInstance()));
+      contents()->GetMainFrame()->GetSiteInstance()));
 
   // Navigate both to a chrome://... URL, and verify that they have a separate
   // RenderProcessHost and a separate SiteInstance.
@@ -1240,14 +1229,14 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
 
   // No scripting is allowed across BrowsingInstances, so we should not create
   // swapped out RVHs for the opener chain in this case.
-  EXPECT_FALSE(opener1_manager->GetRenderFrameProxyHost(
-                   rfh3->GetSiteInstance()));
-  EXPECT_FALSE(opener1_manager->GetSwappedOutRenderViewHost(
-                   rfh3->GetSiteInstance()));
-  EXPECT_FALSE(opener2_manager->GetRenderFrameProxyHost(
-                   rfh3->GetSiteInstance()));
-  EXPECT_FALSE(opener2_manager->GetSwappedOutRenderViewHost(
-                   rfh3->GetSiteInstance()));
+  EXPECT_FALSE(
+      opener1_manager->GetRenderFrameProxyHost(rfh3->GetSiteInstance()));
+  EXPECT_FALSE(
+      opener1_manager->GetSwappedOutRenderViewHost(rfh3->GetSiteInstance()));
+  EXPECT_FALSE(
+      opener2_manager->GetRenderFrameProxyHost(rfh3->GetSiteInstance()));
+  EXPECT_FALSE(
+      opener2_manager->GetSwappedOutRenderViewHost(rfh3->GetSiteInstance()));
 }
 
 // Test that a page can disown the opener of the WebContents.
@@ -1478,8 +1467,8 @@ TEST_F(RenderFrameHostManagerTest, EnableWebUIWithSwappedOutOpener) {
   contents()->NavigateAndCommit(kPluginUrl);
   TestRenderViewHost* rvh2 = test_rvh();
   EXPECT_NE(rvh1->GetSiteInstance(), rvh2->GetSiteInstance());
-  EXPECT_TRUE(rvh1->GetSiteInstance()->IsRelatedSiteInstance(
-                  rvh2->GetSiteInstance()));
+  EXPECT_TRUE(
+      rvh1->GetSiteInstance()->IsRelatedSiteInstance(rvh2->GetSiteInstance()));
 
   // Ensure a proxy and swapped out RVH are created in the first opener tab.
   EXPECT_TRUE(
@@ -1652,8 +1641,8 @@ TEST_F(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
   EXPECT_TRUE(rfh1->render_view_host()->is_waiting_for_close_ack());
 
   // Start a navigation to a new site.
-  controller().LoadURL(
-      kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  controller().LoadURL(kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK,
+                       std::string());
   rfh1->PrepareForCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
@@ -1750,8 +1739,7 @@ TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
 // new renderer commits before sending the SwapOut message to the old renderer.
 // This simulates a cross-site navigation to a synchronously committing URL
 // (e.g., a data URL) and ensures it works properly.
-TEST_F(RenderFrameHostManagerTest,
-       CommitNewNavigationBeforeSendingSwapOut) {
+TEST_F(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingSwapOut) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
 
@@ -1788,14 +1776,16 @@ TEST_F(RenderFrameHostManagerTest,
 
   // rfh1 should be deleted.
   EXPECT_TRUE(rfh_deleted_observer.deleted());
-  EXPECT_TRUE(contents()->GetFrameTree()->root()->render_manager()
-              ->GetRenderFrameProxyHost(site_instance.get()));
+  EXPECT_TRUE(contents()
+                  ->GetFrameTree()
+                  ->root()
+                  ->render_manager()
+                  ->GetRenderFrameProxyHost(site_instance.get()));
 }
 
 // Test that a RenderFrameHost is properly deleted when a cross-site navigation
 // is cancelled.
-TEST_F(RenderFrameHostManagerTest,
-       CancelPendingProperlyDeletesOrSwaps) {
+TEST_F(RenderFrameHostManagerTest, CancelPendingProperlyDeletesOrSwaps) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
   RenderFrameHostImpl* pending_rfh = nullptr;
@@ -1807,8 +1797,8 @@ TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(rfh1->is_active());
 
   // Navigate to a new site, starting a cross-site navigation.
-  controller().LoadURL(
-      kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  controller().LoadURL(kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK,
+                       std::string());
   {
     pending_rfh = contents()->GetPendingMainFrame();
     RenderFrameDeletedObserver rfh_deleted_observer(pending_rfh);
@@ -1824,8 +1814,8 @@ TEST_F(RenderFrameHostManagerTest,
   }
 
   // Start another cross-site navigation.
-  controller().LoadURL(
-      kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  controller().LoadURL(kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK,
+                       std::string());
   {
     pending_rfh = contents()->GetPendingMainFrame();
     RenderFrameDeletedObserver rfh_deleted_observer(pending_rfh);
@@ -1842,8 +1832,11 @@ TEST_F(RenderFrameHostManagerTest,
     EXPECT_FALSE(contents()->CrossProcessNavigationPending());
 
     EXPECT_TRUE(rfh_deleted_observer.deleted());
-    EXPECT_TRUE(contents()->GetFrameTree()->root()->render_manager()
-                ->GetRenderFrameProxyHost(site_instance.get()));
+    EXPECT_TRUE(contents()
+                    ->GetFrameTree()
+                    ->root()
+                    ->render_manager()
+                    ->GetRenderFrameProxyHost(site_instance.get()));
   }
 }
 
@@ -1931,7 +1924,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
   EXPECT_NE(iframe1->current_frame_host(), GetPendingFrameHost(iframe1));
   EXPECT_NE(iframe2->current_frame_host(), GetPendingFrameHost(iframe2));
   EXPECT_FALSE(contents()->CrossProcessNavigationPending())
-    << "There should be no top-level pending navigation.";
+      << "There should be no top-level pending navigation.";
 
   RenderFrameDeletedObserver delete_watcher1(GetPendingFrameHost(iframe1));
   RenderFrameDeletedObserver delete_watcher2(GetPendingFrameHost(iframe2));
@@ -1948,10 +1941,8 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
   // Proxies should exist.
   EXPECT_NE(nullptr,
             root_manager->GetRenderFrameProxyHost(site_instance.get()));
-  EXPECT_NE(nullptr,
-            iframe1->GetRenderFrameProxyHost(site_instance.get()));
-  EXPECT_NE(nullptr,
-            iframe2->GetRenderFrameProxyHost(site_instance.get()));
+  EXPECT_NE(nullptr, iframe1->GetRenderFrameProxyHost(site_instance.get()));
+  EXPECT_NE(nullptr, iframe2->GetRenderFrameProxyHost(site_instance.get()));
 
   // Detach the first child FrameTreeNode. This should kill the pending host but
   // not yet destroy proxies in |site_instance| since the other child remains.
@@ -1966,8 +1957,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
   // Proxies should still exist.
   EXPECT_NE(nullptr,
             root_manager->GetRenderFrameProxyHost(site_instance.get()));
-  EXPECT_NE(nullptr,
-            iframe2->GetRenderFrameProxyHost(site_instance.get()));
+  EXPECT_NE(nullptr, iframe2->GetRenderFrameProxyHost(site_instance.get()));
 
   // Detach the second child FrameTreeNode. This should trigger cleanup of
   // RenderFrameProxyHosts in |site_instance|.
@@ -1979,8 +1969,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
   EXPECT_TRUE(delete_watcher2.deleted());
 
   EXPECT_EQ(0U, site_instance->active_frame_count());
-  EXPECT_EQ(nullptr,
-            root_manager->GetRenderFrameProxyHost(site_instance.get()))
+  EXPECT_EQ(nullptr, root_manager->GetRenderFrameProxyHost(site_instance.get()))
       << "Proxies should have been cleaned up";
   EXPECT_TRUE(site_instance->HasOneRef())
       << "This SiteInstance should be destroyable now.";
@@ -2631,7 +2620,7 @@ TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI1) {
   EXPECT_FALSE(host2->pending_web_ui());
   EXPECT_NE(web_ui, host2->web_ui());
 
-    // The current RenderFrameHost commits; its WebUI should still be in place.
+  // The current RenderFrameHost commits; its WebUI should still be in place.
   reload->Commit();
   EXPECT_EQ(host1, manager->current_frame_host());
   EXPECT_EQ(web_ui, host1->web_ui());
@@ -2755,7 +2744,7 @@ TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs1) {
   EXPECT_EQ(web_ui2, host2->web_ui());
   EXPECT_FALSE(host2->pending_web_ui());
 
-    // The current RenderFrameHost commits; its WebUI should still be active.
+  // The current RenderFrameHost commits; its WebUI should still be active.
   reload->Commit();
   EXPECT_EQ(host1, manager->current_frame_host());
   EXPECT_EQ(web_ui1, host1->web_ui());
@@ -2840,22 +2829,22 @@ TEST_F(RenderFrameHostManagerTest, CanCommitOrigin) {
     const char* const origin;
     bool mismatch;
   } cases[] = {
-    // Positive case where the two match.
-    { "http://a.com/foo.html", "http://a.com", false },
+      // Positive case where the two match.
+      {"http://a.com/foo.html", "http://a.com", false},
 
-    // Host mismatches.
-    { "http://a.com/", "http://b.com", true },
-    { "http://b.com/", "http://a.com", true },
+      // Host mismatches.
+      {"http://a.com/", "http://b.com", true},
+      {"http://b.com/", "http://a.com", true},
 
-    // Scheme mismatches.
-    { "file://", "http://a.com", true },
-    { "https://a.com/", "http://a.com", true },
+      // Scheme mismatches.
+      {"file://", "http://a.com", true},
+      {"https://a.com/", "http://a.com", true},
 
-    // about:blank URLs inherit the origin of the context that navigated them.
-    { "about:blank", "http://a.com", false },
+      // about:blank URLs inherit the origin of the context that navigated them.
+      {"about:blank", "http://a.com", false},
 
-    // Unique origin.
-    { "http://a.com", "null", false },
+      // Unique origin.
+      {"http://a.com", "null", false},
   };
 
   for (const auto& test_case : cases) {
@@ -2875,9 +2864,8 @@ TEST_F(RenderFrameHostManagerTest, CanCommitOrigin) {
     navigation->Commit();
 
     EXPECT_EQ(expected_bad_msg_count, process()->bad_msg_count())
-      << " url:" << test_case.url
-      << " origin:" << test_case.origin
-      << " mismatch:" << test_case.mismatch;
+        << " url:" << test_case.url << " origin:" << test_case.origin
+        << " mismatch:" << test_case.mismatch;
   }
 }
 

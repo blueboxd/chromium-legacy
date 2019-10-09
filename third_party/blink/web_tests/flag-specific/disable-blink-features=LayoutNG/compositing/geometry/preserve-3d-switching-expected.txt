@@ -24,7 +24,6 @@ transform: translateZ(-100px) rotateY(45deg);
     {
       "name": "LayoutBlockFlow (positioned) DIV",
       "bounds": [200, 200],
-      "opacity": 0.699999988079071,
       "contentsOpaque": true,
       "backgroundColor": "#008000",
       "transform": 9

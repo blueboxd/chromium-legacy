@@ -658,9 +658,7 @@ PerformanceMark* Performance::mark(ScriptState* script_state,
     GetUserTiming().AddMarkToPerformanceTimeline(*performance_mark);
     NotifyObserversOfEntry(*performance_mark);
   }
-  if (RuntimeEnabledFeatures::CustomUserTimingEnabled())
-    return performance_mark;
-  return nullptr;
+  return performance_mark;
 }
 
 void Performance::clearMarks(const AtomicString& mark_name) {
@@ -721,78 +719,57 @@ PerformanceMeasure* Performance::MeasureInternal(
     base::Optional<String> end_mark,
     ExceptionState& exception_state) {
   DCHECK(!start_or_options.IsNull());
-  if (RuntimeEnabledFeatures::CustomUserTimingEnabled()) {
-    // An empty option is treated with no difference as null, undefined.
-    if (start_or_options.IsPerformanceMeasureOptions() &&
-        !IsMeasureOptionsEmpty(
-            *start_or_options.GetAsPerformanceMeasureOptions())) {
-      // measure("name", { start, end }, *)
-      if (end_mark) {
-        exception_state.ThrowTypeError(
-            "If a non-empty PerformanceMeasureOptions object was passed, "
-            "|end_mark| must not be passed.");
-        return nullptr;
-      }
-      const PerformanceMeasureOptions* options =
-          start_or_options.GetAsPerformanceMeasureOptions();
-      if (!options->hasStart() && !options->hasEnd()) {
-        exception_state.ThrowTypeError(
-            "If a non-empty PerformanceMeasureOptions object was passed, at "
-            "least one of its 'start' or 'end' properties must be present.");
-        return nullptr;
-      }
-
-      if (options->hasStart() && options->hasDuration() && options->hasEnd()) {
-        exception_state.ThrowTypeError(
-            "If a non-empty PerformanceMeasureOptions object was passed, it "
-            "must not have all of its 'start', 'duration', and 'end' "
-            "properties defined");
-        return nullptr;
-      }
-
-      base::Optional<double> duration = base::nullopt;
-      if (options->hasDuration()) {
-        duration = options->duration();
-      }
-
-      return MeasureWithDetail(script_state, measure_name, options->start(),
-                               std::move(duration), options->end(),
-                               options->detail(), exception_state);
+  // An empty option is treated with no difference as null, undefined.
+  if (start_or_options.IsPerformanceMeasureOptions() &&
+      !IsMeasureOptionsEmpty(
+          *start_or_options.GetAsPerformanceMeasureOptions())) {
+    // measure("name", { start, end }, *)
+    if (end_mark) {
+      exception_state.ThrowTypeError(
+          "If a non-empty PerformanceMeasureOptions object was passed, "
+          "|end_mark| must not be passed.");
+      return nullptr;
     }
-    // measure("name", "mark1", *)
-    StringOrDouble converted_start;
-    if (start_or_options.IsString()) {
-      converted_start =
-          StringOrDouble::FromString(start_or_options.GetAsString());
+    const PerformanceMeasureOptions* options =
+        start_or_options.GetAsPerformanceMeasureOptions();
+    if (!options->hasStart() && !options->hasEnd()) {
+      exception_state.ThrowTypeError(
+          "If a non-empty PerformanceMeasureOptions object was passed, at "
+          "least one of its 'start' or 'end' properties must be present.");
+      return nullptr;
     }
-    // We let |end_mark| behave the same whether it's empty, undefined or null
-    // in JS, as long as |end_mark| is null in C++.
-    return MeasureWithDetail(
-        script_state, measure_name, converted_start,
-        /* duration = */ base::nullopt,
-        end_mark ? StringOrDouble::FromString(*end_mark)
-                 : NativeValueTraits<StringOrDouble>::NullValue(),
-        ScriptValue::CreateNull(script_state->GetIsolate()), exception_state);
+
+    if (options->hasStart() && options->hasDuration() && options->hasEnd()) {
+      exception_state.ThrowTypeError(
+          "If a non-empty PerformanceMeasureOptions object was passed, it "
+          "must not have all of its 'start', 'duration', and 'end' "
+          "properties defined");
+      return nullptr;
+    }
+
+    base::Optional<double> duration = base::nullopt;
+    if (options->hasDuration()) {
+      duration = options->duration();
+    }
+
+    return MeasureWithDetail(script_state, measure_name, options->start(),
+                             std::move(duration), options->end(),
+                             options->detail(), exception_state);
   }
-  // For consistency with UserTimingL2: the L2 API took |start| as a string,
-  // so any object passed in became a string '[object, object]', null became
-  // string 'null'.
+  // measure("name", "mark1", *)
   StringOrDouble converted_start;
-  if (!start_or_options.IsPerformanceMeasureOptions()) {
-    // |start_or_options| is not nullable.
-    DCHECK(start_or_options.IsString());
+  if (start_or_options.IsString()) {
     converted_start =
         StringOrDouble::FromString(start_or_options.GetAsString());
   }
-
-  MeasureWithDetail(script_state, measure_name, converted_start,
-                    /* duration = */ base::nullopt,
-                    end_mark ? StringOrDouble::FromString(*end_mark)
-                             : NativeValueTraits<StringOrDouble>::NullValue(),
-                    ScriptValue::CreateNull(script_state->GetIsolate()),
-                    exception_state);
-  // Return nullptr to distinguish from L3.
-  return nullptr;
+  // We let |end_mark| behave the same whether it's empty, undefined or null
+  // in JS, as long as |end_mark| is null in C++.
+  return MeasureWithDetail(
+      script_state, measure_name, converted_start,
+      /* duration = */ base::nullopt,
+      end_mark ? StringOrDouble::FromString(*end_mark)
+               : NativeValueTraits<StringOrDouble>::NullValue(),
+      ScriptValue::CreateNull(script_state->GetIsolate()), exception_state);
 }
 
 PerformanceMeasure* Performance::MeasureWithDetail(

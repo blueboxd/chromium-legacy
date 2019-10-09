@@ -8,9 +8,9 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/display/screen_orientation_controller.h"
+#include "ash/home_screen/drag_window_from_shelf_controller.h"
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/home_screen/home_screen_controller.h"
-#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
@@ -18,7 +18,6 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
-#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/window_state.h"
@@ -33,13 +32,11 @@
 #include "base/numerics/ranges.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/scoped_window_event_targeting_blocker.h"
-#include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_util.h"
 
@@ -63,9 +60,6 @@ constexpr int kScrollVelocityThreshold = 6;
 // The width of the target of screen bounds will be the work area width times
 // this ratio.
 constexpr float kWidthRatio = 0.8f;
-
-// The minimum window scale factor when dragging a window from shelf.
-constexpr float kMinimumWindowScaleDuringDragging = 0.2f;
 
 bool IsTabletMode() {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
@@ -330,102 +324,6 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
   DISALLOW_COPY_AND_ASSIGN(ScopedWindowModifier);
 };
 
-// The window drag controller for a window that's being dragging from swiping
-// up from the shelf.
-class HomeLauncherGestureHandler::DragWindowFromShelfController {
- public:
-  explicit DragWindowFromShelfController(aura::Window* window)
-      : window_(window) {}
-  ~DragWindowFromShelfController() { EndDrag(gfx::Point()); }
-
-  // Called during swiping up on the shelf.
-  void Drag(const gfx::Point& location_in_screen) {
-    if (!drag_started_) {
-      // Do not start drag until the drag goes above the shelf.
-      const gfx::Rect work_area =
-          screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-              window_);
-      if (location_in_screen.y() > work_area.bottom())
-        return;
-      OnDragStarted(location_in_screen);
-    }
-    UpdateDraggedWindow(location_in_screen);
-  }
-
-  void EndDrag(const gfx::Point& location_in_screen) {
-    if (!drag_started_)
-      return;
-
-    drag_started_ = false;
-    WindowState::Get(window_)->DeleteDragDetails();
-    SetTransform(window_, gfx::Transform());
-    window_->SetProperty(kBackdropWindowMode, original_backdrop_mode_);
-
-    // Re-show the home launcher after drag ends.
-    HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
-    DCHECK(home_screen_delegate);
-    aura::Window* home_screen_window =
-        home_screen_delegate->GetHomeScreenWindow();
-    DCHECK(home_screen_window);
-    home_screen_window->Show();
-  }
-
- private:
-  void OnDragStarted(const gfx::Point& location_in_screen) {
-    drag_started_ = true;
-    initial_location_in_screen_ = location_in_screen;
-    WindowState::Get(window_)->CreateDragDetails(
-        initial_location_in_screen_, HTCLIENT, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
-
-    // Disable the backdrop on the dragged window during dragging.
-    original_backdrop_mode_ = window_->GetProperty(kBackdropWindowMode);
-    window_->SetProperty(kBackdropWindowMode, BackdropWindowMode::kDisabled);
-
-    // Hide the home launcher until it's eligible to show it.
-    HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
-    DCHECK(home_screen_delegate);
-    aura::Window* home_screen_window =
-        home_screen_delegate->GetHomeScreenWindow();
-    DCHECK(home_screen_window);
-    home_screen_window->Hide();
-  }
-
-  void UpdateDraggedWindow(const gfx::Point& location_in_screen) {
-    gfx::Rect bounds = window_->bounds();
-    ::wm::ConvertRectToScreen(window_->parent(), &bounds);
-
-    // Calculate the window's transform based on the location.
-    // For scale, at |initial_location_in_screen_|, the scale is 1.0, and at the
-    // middle y position of its bounds, it reaches to its minimum scale 0.2.
-    // Calculate the desired scale based on the current y position.
-    int y_full = bounds.bottom() - bounds.CenterPoint().y();
-    int y_diff = location_in_screen.y() - bounds.CenterPoint().y();
-    float scale = (1.0f - kMinimumWindowScaleDuringDragging) * y_diff / y_full +
-                  kMinimumWindowScaleDuringDragging;
-    scale = base::ClampToRange(scale, /*min=*/kMinimumWindowScaleDuringDragging,
-                               /*max=*/1.f);
-
-    // Calculate the desired translation so that the dragged window stays under
-    // the finger during the dragging.
-    gfx::Transform transform;
-    transform.Translate(
-        (location_in_screen.x() - bounds.x()) -
-            (initial_location_in_screen_.x() - bounds.x()) * scale,
-        (location_in_screen.y() - bounds.y()) -
-            (initial_location_in_screen_.y() - bounds.y()) * scale);
-    transform.Scale(scale, scale);
-
-    SetTransform(window_, transform);
-  }
-
-  aura::Window* const window_;
-  gfx::Point initial_location_in_screen_;
-  bool drag_started_ = false;
-  BackdropWindowMode original_backdrop_mode_ = BackdropWindowMode::kAuto;
-
-  DISALLOW_COPY_AND_ASSIGN(DragWindowFromShelfController);
-};
-
 HomeLauncherGestureHandler::HomeLauncherGestureHandler() {
   tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
 }
@@ -467,27 +365,24 @@ bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
 
   DCHECK(display_.is_valid());
 
-  OnDragContinued(location);
+  OnDragContinued(location, scroll_y);
   return true;
 }
 
-bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
+bool HomeLauncherGestureHandler::OnReleaseEvent(
+    const gfx::Point& location,
+    base::Optional<float> velocity_y) {
   if (IsAnimating())
     return false;
 
-  return OnDragEnded(location);
+  return OnDragEnded(location, velocity_y);
 }
 
 void HomeLauncherGestureHandler::Cancel() {
   if (!IsDragInProgress())
     return;
 
-  HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
-  DCHECK(home_screen_delegate);
-  home_screen_delegate->OnHomeLauncherDragEnd();
-
-  AnimateToFinalState(AnimationTrigger::kDragRelease);
-  return;
+  OnDragCancelled();
 }
 
 bool HomeLauncherGestureHandler::ShowHomeLauncher(
@@ -925,9 +820,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(
   }
 
   if (IsTabletMode() && overview_active_on_gesture_start_ &&
-      !split_view_active) {
-    DCHECK(mode == Mode::kSlideUpToShow ||
-           mode == Mode::kDragWindowToHomeOrOverview);
+      !split_view_active && mode == Mode::kSlideUpToShow) {
     active_window_.reset();
     return true;
   }
@@ -999,8 +892,11 @@ bool HomeLauncherGestureHandler::SetUpWindows(
         window->AddObserver(this);
       }
     }
-    window_util::HideAndMaybeMinimizeWithoutAnimation(hidden_windows_,
-                                                      /*minimize=*/false);
+    // Minimize the hidden windows instead of hiding so that they can show up
+    // in overview later.
+    window_util::HideAndMaybeMinimizeWithoutAnimation(
+        hidden_windows_,
+        /*minimize=*/(mode == Mode::kDragWindowToHomeOrOverview));
   }
 
   // In kDragWindowToHomeOrOverview mode, no need to calculate the desired
@@ -1070,8 +966,8 @@ bool HomeLauncherGestureHandler::SetUpWindows(
 
 void HomeLauncherGestureHandler::OnDragStarted(const gfx::Point& location) {
   if (mode_ == Mode::kDragWindowToHomeOrOverview) {
-    window_drag_controller_ =
-        std::make_unique<DragWindowFromShelfController>(GetActiveWindow());
+    window_drag_controller_ = std::make_unique<DragWindowFromShelfController>(
+        GetActiveWindow(), hidden_windows_);
   } else {
     NotifyHomeLauncherTargetPositionChanged(
         mode_ == Mode::kSlideUpToShow /*showing*/, display_.id());
@@ -1084,9 +980,10 @@ void HomeLauncherGestureHandler::OnDragStarted(const gfx::Point& location) {
   }
 }
 
-void HomeLauncherGestureHandler::OnDragContinued(const gfx::Point& location) {
+void HomeLauncherGestureHandler::OnDragContinued(const gfx::Point& location,
+                                                 float scroll_y) {
   if (mode_ == Mode::kDragWindowToHomeOrOverview) {
-    window_drag_controller_->Drag(location);
+    window_drag_controller_->Drag(location, scroll_y);
   } else {
     HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
     DCHECK(home_screen_delegate);
@@ -1098,17 +995,12 @@ void HomeLauncherGestureHandler::OnDragContinued(const gfx::Point& location) {
   }
 }
 
-bool HomeLauncherGestureHandler::OnDragEnded(const gfx::Point& location) {
+bool HomeLauncherGestureHandler::OnDragEnded(const gfx::Point& location,
+                                             base::Optional<float> velocity_y) {
   if (mode_ == Mode::kDragWindowToHomeOrOverview) {
     last_event_location_ = base::make_optional(location);
 
-    // Reshow all windows previously hidden before dragging.
-    for (auto* window : hidden_windows_) {
-      ScopedAnimationDisabler disable(window);
-      window->Show();
-    }
-
-    window_drag_controller_->EndDrag(location);
+    window_drag_controller_->EndDrag(location, velocity_y);
     RemoveObserversAndStopTracking();
   } else {
     // In clamshell mode, AppListView::SetIsInDrag is called explicitly so it
@@ -1137,6 +1029,19 @@ bool HomeLauncherGestureHandler::OnDragEnded(const gfx::Point& location) {
   }
 
   return true;
+}
+
+void HomeLauncherGestureHandler::OnDragCancelled() {
+  if (mode_ == Mode::kDragWindowToHomeOrOverview) {
+    window_drag_controller_->CancelDrag();
+    RemoveObserversAndStopTracking();
+  } else {
+    HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
+    DCHECK(home_screen_delegate);
+    home_screen_delegate->OnHomeLauncherDragEnd();
+
+    AnimateToFinalState(AnimationTrigger::kDragRelease);
+  }
 }
 
 }  // namespace ash

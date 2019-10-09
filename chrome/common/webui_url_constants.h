@@ -356,6 +356,7 @@ extern const char kHelpSubPage[];
 extern const char kInternetSubPage[];
 extern const char kKerberosAccountsSubPage[];
 extern const char kKeyboardOverlaySubPage[];
+extern const char kLanguageSubPage[];
 extern const char kLockScreenSubPage[];
 extern const char kManageAccessibilitySubPage[];
 extern const char kMultideviceSubPage[];

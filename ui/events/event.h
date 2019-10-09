@@ -653,7 +653,6 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
       : LocatedEvent(model, source, target),
         unique_event_id_(model.unique_event_id_),
         may_cause_scrolling_(model.may_cause_scrolling_),
-        should_remove_native_touch_id_mapping_(false),
         hovering_(false),
         pointer_details_(model.pointer_details_) {}
 
@@ -684,15 +683,6 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   void set_hovering(bool hovering) { hovering_ = hovering; }
   bool hovering() const { return hovering_; }
 
-  void set_should_remove_native_touch_id_mapping(
-      bool should_remove_native_touch_id_mapping) {
-    should_remove_native_touch_id_mapping_ =
-        should_remove_native_touch_id_mapping;
-  }
-  bool should_remove_native_touch_id_mapping() const {
-    return should_remove_native_touch_id_mapping_;
-  }
-
   // Overridden from LocatedEvent.
   void UpdateForRootTransform(
       const gfx::Transform& inverted_root_transform,
@@ -720,13 +710,6 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   // touchmove that exceeds the platform slop region, or a touchend that
   // causes a fling). Defaults to false.
   bool may_cause_scrolling_;
-
-  // True if this event should remove the mapping between the native
-  // event id and the touch_id_. This should only be the case for
-  // release and cancel events where the associated touch press event
-  // created a mapping between the native id and the touch_id_.
-  // NOTE: this is not serialized, as it's generally unique to the source.
-  bool should_remove_native_touch_id_mapping_;
 
   // True for devices like some pens when they support hovering over
   // digitizer and they send events while hovering.
@@ -894,7 +877,9 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // Determine key_ on a keystroke event from code_ and flags().
   void ApplyLayout() const;
 
-  static bool IsRepeated(const KeyEvent& event);
+  // Tells if this is a repeated KeyEvent based on |last_key_event|, which is
+  // then updated with the new last KeyEvent address.
+  bool IsRepeated(KeyEvent** last_key_event);
 
   KeyboardCode key_code_;
 

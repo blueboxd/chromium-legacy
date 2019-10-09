@@ -974,10 +974,40 @@ static const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSaf
 {% set getter_callback_for_main_world = '%sForMainWorld' % getter_callback %}
 {% set setter_callback_for_main_world = '%sForMainWorld' % setter_callback
        if not method.is_unforgeable else 'nullptr' %}
-    {"{{method.name}}", {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::MainWorld},
-    {"{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::NonMainWorlds}}
+    {
+        "{{method.name}}",
+        {{getter_callback_for_main_world}},
+        {{setter_callback_for_main_world}},
+        {{property_attribute}},
+        {{property_location(method)}},
+        {{holder_check}},
+        V8DOMConfiguration::kHasSideEffect,
+        V8DOMConfiguration::kAlwaysCallGetter,
+        V8DOMConfiguration::MainWorld,
+    },
+    {
+        "{{method.name}}",
+        {{getter_callback}},
+        {{setter_callback}},
+        {{property_attribute}},
+        {{property_location(method)}},
+        {{holder_check}},
+        V8DOMConfiguration::kHasSideEffect,
+        V8DOMConfiguration::kAlwaysCallGetter,
+        V8DOMConfiguration::NonMainWorlds,
+    }
 {% else %}
-    {"{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds}
+    {
+        "{{method.name}}",
+        {{getter_callback}},
+        {{setter_callback}},
+        {{property_attribute}},
+        {{property_location(method)}},
+        {{holder_check}},
+        V8DOMConfiguration::kHasSideEffect,
+        V8DOMConfiguration::kAlwaysCallGetter,
+        V8DOMConfiguration::kAllWorlds,
+    }
 {% endif %}
 };
  for (const auto& attributeConfig : {{method.name}}OriginSafeAttributeConfiguration)

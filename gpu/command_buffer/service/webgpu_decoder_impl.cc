@@ -636,8 +636,7 @@ error::Error WebGPUDecoderImpl::HandleDawnCommands(
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
                "WebGPUDecoderImpl::HandleDawnCommands", "bytes", size);
-  std::vector<char> commands(shm_commands, shm_commands + size);
-  if (!wire_server_->HandleCommands(commands.data(), size)) {
+  if (!wire_server_->HandleCommands(shm_commands, size)) {
     NOTREACHED();
     return error::kLostContext;
   }

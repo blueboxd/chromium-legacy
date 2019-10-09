@@ -167,12 +167,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   bool BackfaceVisibility() const;
 
-  float Opacity() const;
-  void SetOpacity(float);
-
-  BlendMode GetBlendMode() const;
-  void SetBlendMode(BlendMode);
-
   void SetHitTestable(bool);
   bool GetHitTestable() const { return hit_testable_; }
 

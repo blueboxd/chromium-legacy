@@ -145,7 +145,7 @@
       <if expr="enable_printing">
         <include name="IDR_CLOUDPRINT_MANIFEST" file="resources\cloud_print_app\manifest.json" type="BINDATA" />
       </if>
-      <include name="IDR_DEVTOOLS_DISCOVERY_PAGE_HTML" file="devtools\frontend\devtools_discovery_page.html" type="BINDATA"/>
+      <include name="IDR_DEVTOOLS_DISCOVERY_PAGE_HTML" file="devtools\frontend\devtools_discovery_page.html" type="BINDATA" compress="gzip"/>
       <include name="IDR_DOMAIN_RELIABILITY_INTERNALS_HTML" file="resources\domain_reliability_internals\domain_reliability_internals.html" compress="gzip" type="BINDATA" />
       <include name="IDR_DOMAIN_RELIABILITY_INTERNALS_CSS" file="resources\domain_reliability_internals\domain_reliability_internals.css" compress="gzip" type="BINDATA" />
       <include name="IDR_DOMAIN_RELIABILITY_INTERNALS_JS" file="resources\domain_reliability_internals\domain_reliability_internals.js" compress="gzip" type="BINDATA" />
@@ -288,16 +288,6 @@
       <include name="IDR_LOCAL_STATE_HTML" file="resources\local_state\local_state.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_LOCAL_STATE_JS" file="resources\local_state\local_state.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_DESKTOP_HATS_HTML" file="resources\hats\hats.html" type="BINDATA" />
-      <include name="IDR_OMNIBOX_HTML" file="resources\omnibox\omnibox.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
-      <include name="IDR_OMNIBOX_CSS" file="resources\omnibox\omnibox.css" type="BINDATA" compress="gzip" />
-      <include name="IDR_OMNIBOX_INPUT_CSS" file="resources\omnibox\omnibox_input.css" type="BINDATA" compress="gzip" />
-      <include name="IDR_OUTPUT_RESULTS_GROUP_CSS" file="resources\omnibox\output_results_group.css" type="BINDATA" compress="gzip" />
-      <include name="IDR_OMNIBOX_OUTPUT_COLUMN_WIDTHS_CSS" file="resources\omnibox\omnibox_output_column_widths.css" type="BINDATA" compress="gzip" />
-      <include name="IDR_OMNIBOX_ELEMENT_JS" file="resources\omnibox\omnibox_element.js" type="BINDATA" compress="gzip" />
-      <include name="IDR_OMNIBOX_INPUT_JS" file="resources\omnibox\omnibox_input.js" type="BINDATA" compress="gzip" />
-      <include name="IDR_OMNIBOX_OUTPUT_JS" file="resources\omnibox\omnibox_output.js" type="BINDATA" compress="gzip" />
-      <include name="IDR_OMNIBOX_JS" file="resources\omnibox\omnibox.js" type="BINDATA" compress="gzip" />
-      <include name="IDR_OMNIBOX_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\omnibox\omnibox.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_ORIGIN_MOJO_JS" file="${root_gen_dir}\url\mojom\origin.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip"/>
       <include name="IDR_COMPONENTS_HTML" file="resources\components.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_COMPONENTS_JS" file="resources\components.js" type="BINDATA" compress="gzip" />
@@ -555,7 +545,7 @@
         <include name="IDR_IME_WINDOW_CLOSE_C" file="resources\input_ime\ime_window_close_click.png" type="BINDATA" />
         <include name="IDR_IME_WINDOW_CLOSE_H" file="resources\input_ime\ime_window_close_hover.png" type="BINDATA" />
       </if>
-      <include name="IDR_SSL_ERROR_ASSISTANT_PB" file="${root_gen_dir}/chrome/browser/resources/ssl/ssl_error_assistant/ssl_error_assistant.pb" use_base_dir="false" type="BINDATA" />
+      <include name="IDR_SSL_ERROR_ASSISTANT_PB" file="${root_gen_dir}/chrome/browser/resources/ssl/ssl_error_assistant/ssl_error_assistant.pb" use_base_dir="false" type="BINDATA" compress="gzip" />
       <if expr="is_android or is_linux">
         <include name="IDR_SANDBOX_INTERNALS_HTML" file="resources\sandbox_internals\sandbox_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
         <include name="IDR_SANDBOX_INTERNALS_JS" file="resources\sandbox_internals\sandbox_internals.js" type="BINDATA" compress="gzip" />

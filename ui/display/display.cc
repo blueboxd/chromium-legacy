@@ -215,9 +215,16 @@ Display::Display(int64_t id, const gfx::Rect& bounds)
       bounds_(bounds),
       work_area_(bounds),
       device_scale_factor_(GetForcedDeviceScaleFactor()) {
-  SetColorSpaceAndDepth(HasForceDisplayColorProfile()
-                            ? GetForcedDisplayColorProfile()
-                            : gfx::ColorSpace::CreateSRGB());
+  // On Android we need to ensure the platform supports a color profile before
+  // using it. Using a not supported profile can result in fatal errors in the
+  // GPU process.
+  auto color_space = gfx::ColorSpace::CreateSRGB();
+#if !defined(OS_ANDROID)
+  if (HasForceDisplayColorProfile())
+    color_space = GetForcedDisplayColorProfile();
+#endif
+  SetColorSpaceAndDepth(color_space);
+
 #if defined(USE_AURA)
   SetScaleAndBounds(device_scale_factor_, bounds);
 #endif

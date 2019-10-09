@@ -4,7 +4,10 @@
 
 #include "ash/wm/back_gesture_affordance.h"
 
+#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/window_util.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/aura/window.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -12,6 +15,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/view.h"
 
 namespace ash {
 
@@ -46,21 +50,96 @@ constexpr base::TimeDelta kCompleteAnimationTimeout =
 
 constexpr SkColor kRippleColor = SkColorSetA(gfx::kGoogleBlue600, 0x4C);  // 30%
 
-}  // namespace
+class AffordanceView : public views::View {
+ public:
+  AffordanceView() {
+    SetPaintToLayer(ui::LAYER_TEXTURED);
+    layer()->SetFillsBoundsOpaquely(false);
+  }
 
-BackGestureAffordance::BackGestureAffordance(const gfx::Point& location)
-    : painted_layer_(ui::LAYER_TEXTURED) {
-  painted_layer_.SetFillsBoundsOpaquely(false);
-  gfx::Rect painted_layer_bounds(
+  ~AffordanceView() override = default;
+
+  // Schedule painting on given |drag_progress| and |abort_progress|.
+  void Paint(float drag_progress, float abort_progress) {
+    drag_progress_ = drag_progress;
+    abort_progress_ = abort_progress;
+    SchedulePaint();
+  }
+
+ private:
+  // views::View:
+  void OnPaint(gfx::Canvas* canvas) override {
+    views::View::OnPaint(canvas);
+
+    const gfx::PointF center_point(kRippleBurstRadius, kRippleBurstRadius);
+    const float progress = (1 - abort_progress_) * drag_progress_;
+
+    // Draw the ripple.
+    cc::PaintFlags ripple_flags;
+    ripple_flags.setAntiAlias(true);
+    ripple_flags.setStyle(cc::PaintFlags::kFill_Style);
+    ripple_flags.setColor(kRippleColor);
+
+    const bool exceed_full_progress = progress >= 1.f;
+    float ripple_radius = 0.f;
+    if (exceed_full_progress) {
+      const float factor = (kRippleBurstRadius - kRippleMaxRadius) /
+                           (kBurstTransform / kMaxTransform - 1);
+      ripple_radius = (kRippleMaxRadius - factor) + factor * progress;
+    } else {
+      ripple_radius =
+          kBackgroundRadius + progress * (kRippleMaxRadius - kBackgroundRadius);
+    }
+    canvas->DrawCircle(center_point, ripple_radius, ripple_flags);
+
+    // Draw the arrow background circle.
+    cc::PaintFlags bg_flags;
+    bg_flags.setAntiAlias(true);
+    bg_flags.setStyle(cc::PaintFlags::kFill_Style);
+
+    bg_flags.setColor(exceed_full_progress ? gfx::kGoogleBlue600
+                                           : SK_ColorWHITE);
+    canvas->DrawCircle(center_point, kBackgroundRadius, bg_flags);
+
+    // Draw the arrow.
+    const float arrow_x = center_point.x() - kArrowSize / 2.f;
+    const float arrow_y = center_point.y() - kArrowSize / 2.f;
+    if (exceed_full_progress) {
+      canvas->DrawImageInt(gfx::CreateVectorIcon(vector_icons::kBackArrowIcon,
+                                                 kArrowSize, SK_ColorWHITE),
+                           static_cast<int>(arrow_x),
+                           static_cast<int>(arrow_y));
+    } else {
+      canvas->DrawImageInt(
+          gfx::CreateVectorIcon(vector_icons::kBackArrowIcon, kArrowSize,
+                                gfx::kGoogleBlue600),
+          static_cast<int>(arrow_x), static_cast<int>(arrow_y));
+    }
+  }
+
+  float drag_progress_ = 0.f;
+  float abort_progress_ = 0.f;
+
+  DISALLOW_COPY_AND_ASSIGN(AffordanceView);
+};
+
+// Get the bounds of the affordance widget, which is outside of the left edge of
+// the display.
+gfx::Rect GetWidgetBounds(const gfx::Point& location) {
+  gfx::Rect widget_bounds(
       gfx::Rect(2 * kRippleBurstRadius, 2 * kRippleBurstRadius));
   gfx::Point origin;
   // TODO(crbug.com/1002733): Handle the case while origin y is outside display.
   origin.set_y(location.y() - kArrowAboveStartPosition - kRippleBurstRadius);
   origin.set_x(-kRippleBurstRadius - kBackgroundRadius);
-  painted_layer_bounds.set_origin(origin);
-  painted_layer_.SetBounds(painted_layer_bounds);
+  widget_bounds.set_origin(origin);
+  return widget_bounds;
+}
 
-  painted_layer_.set_delegate(this);
+}  // namespace
+
+BackGestureAffordance::BackGestureAffordance(const gfx::Point& location) {
+  CreateAffordanceWidget(location);
 }
 
 BackGestureAffordance::~BackGestureAffordance() {}
@@ -99,15 +178,34 @@ void BackGestureAffordance::Complete() {
   animation_->Start();
 }
 
+void BackGestureAffordance::CreateAffordanceWidget(const gfx::Point& location) {
+  affordance_widget_ = std::make_unique<views::Widget>();
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.accept_events = true;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.name = "BackGestureAffordance";
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.parent = window_util::GetRootWindowAt(location)->GetChildById(
+      kShellWindowId_AlwaysOnTopContainer);
+  affordance_widget_->Init(std::move(params));
+  affordance_widget_->SetContentsView(new AffordanceView());
+  affordance_widget_->SetBounds(GetWidgetBounds(location));
+  affordance_widget_->Show();
+  affordance_widget_->SetOpacity(1.f);
+}
+
 void BackGestureAffordance::UpdateTransform() {
   const float offset = (1 - abort_progress_) * drag_progress_ * kMaxTransform;
   gfx::Transform transform;
   transform.Translate(offset, 0);
-  painted_layer_.SetTransform(transform);
+  affordance_widget_->GetContentsView()->SetTransform(transform);
 }
 
 void BackGestureAffordance::SchedulePaint() {
-  painted_layer_.SchedulePaint(gfx::Rect(painted_layer_.size()));
+  static_cast<AffordanceView*>(affordance_widget_->GetContentsView())
+      ->Paint(drag_progress_, abort_progress_);
 }
 
 void BackGestureAffordance::SetAbortProgress(float progress) {
@@ -132,62 +230,12 @@ void BackGestureAffordance::SetCompleteProgress(float progress) {
     return;
   complete_progress_ = progress;
 
-  painted_layer_.SetOpacity(gfx::Tween::CalculateValue(
-      gfx::Tween::FAST_OUT_SLOW_IN, 1 - complete_progress_));
+  affordance_widget_->GetContentsView()->layer()->SetOpacity(
+      gfx::Tween::CalculateValue(gfx::Tween::FAST_OUT_SLOW_IN,
+                                 1 - complete_progress_));
 
   SchedulePaint();
 }
-
-void BackGestureAffordance::OnPaintLayer(const ui::PaintContext& context) {
-  ui::PaintRecorder recorder(context, painted_layer_.size());
-  gfx::Canvas* canvas = recorder.canvas();
-
-  const gfx::PointF center_point(kRippleBurstRadius, kRippleBurstRadius);
-  const float progress = (1 - abort_progress_) * drag_progress_;
-
-  // Draw the ripple.
-  cc::PaintFlags ripple_flags;
-  ripple_flags.setAntiAlias(true);
-  ripple_flags.setStyle(cc::PaintFlags::kFill_Style);
-  ripple_flags.setColor(kRippleColor);
-
-  const bool exceed_full_progress = progress >= 1.f;
-  float ripple_radius = 0.f;
-  if (exceed_full_progress) {
-    const float factor = (kRippleBurstRadius - kRippleMaxRadius) /
-                         (kBurstTransform / kMaxTransform - 1);
-    ripple_radius = (kRippleMaxRadius - factor) + factor * progress;
-  } else {
-    ripple_radius =
-        kBackgroundRadius + progress * (kRippleMaxRadius - kBackgroundRadius);
-  }
-  canvas->DrawCircle(center_point, ripple_radius, ripple_flags);
-
-  // Draw the arrow background circle.
-  cc::PaintFlags bg_flags;
-  bg_flags.setAntiAlias(true);
-  bg_flags.setStyle(cc::PaintFlags::kFill_Style);
-
-  bg_flags.setColor(exceed_full_progress ? gfx::kGoogleBlue600 : SK_ColorWHITE);
-  canvas->DrawCircle(center_point, kBackgroundRadius, bg_flags);
-
-  // Draw the arrow.
-  const float arrow_x = center_point.x() - kArrowSize / 2.f;
-  const float arrow_y = center_point.y() - kArrowSize / 2.f;
-  if (exceed_full_progress) {
-    canvas->DrawImageInt(gfx::CreateVectorIcon(vector_icons::kBackArrowIcon,
-                                               kArrowSize, SK_ColorWHITE),
-                         static_cast<int>(arrow_x), static_cast<int>(arrow_y));
-  } else {
-    canvas->DrawImageInt(gfx::CreateVectorIcon(vector_icons::kBackArrowIcon,
-                                               kArrowSize, gfx::kGoogleBlue600),
-                         static_cast<int>(arrow_x), static_cast<int>(arrow_y));
-  }
-}
-
-void BackGestureAffordance::OnDeviceScaleFactorChanged(
-    float old_device_scale_factor,
-    float new_device_scale_factor) {}
 
 void BackGestureAffordance::AnimationEnded(const gfx::Animation* animation) {}
 

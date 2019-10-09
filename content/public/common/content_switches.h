@@ -271,10 +271,6 @@ CONTENT_EXPORT extern const char kRendererWaitForJavaDebugger[];
 CONTENT_EXPORT extern const char kEnableSpeechDispatcher[];
 #endif
 
-#if defined(OS_CHROMEOS)
-CONTENT_EXPORT extern const char kCrashLoopBefore[];
-#endif
-
 #if defined(OS_WIN)
 CONTENT_EXPORT extern const char kPrefetchArgumentRenderer[];
 CONTENT_EXPORT extern const char kPrefetchArgumentGpu[];

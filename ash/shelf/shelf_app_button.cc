@@ -51,9 +51,6 @@ constexpr SkColor kIndicatorColor = SK_ColorWHITE;
 constexpr SkColor kIndicatorColorActive = kIndicatorColor;
 constexpr SkColor kIndicatorColorRunning = SkColorSetA(SK_ColorWHITE, 0x7F);
 
-// Shelf item ripple size.
-constexpr int kInkDropLargeSize = 60;
-
 // The time threshold before an item can be dragged.
 constexpr int kDragTimeThresholdMs = 300;
 
@@ -65,6 +62,12 @@ constexpr float kAppIconScale = 1.2f;
 
 // The drag and drop app icon scaling up or down animation transition duration.
 constexpr int kDragDropAppIconScaleTransitionMs = 200;
+
+// Shelf item ripple size.
+int GetInkDropLargeSize() {
+  return ash::ShelfConfig::Get()->button_size() +
+         2 * ash::ShelfConfig::Get()->scrollable_shelf_ripple_padding();
+}
 
 // Simple AnimationDelegate that owns a single ThrobAnimation instance to
 // keep all Draw Attention animations in sync.
@@ -723,7 +726,7 @@ std::unique_ptr<views::InkDropRipple> ShelfAppButton::CreateInkDropRipple()
     const {
   const int ink_drop_small_size = ash::ShelfConfig::Get()->hotseat_size();
   return std::make_unique<views::SquareInkDropRipple>(
-      gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
+      gfx::Size(GetInkDropLargeSize(), GetInkDropLargeSize()),
       ink_drop_large_corner_radius(),
       gfx::Size(ink_drop_small_size, ink_drop_small_size),
       ink_drop_small_corner_radius(), GetLocalBounds().CenterPoint(),

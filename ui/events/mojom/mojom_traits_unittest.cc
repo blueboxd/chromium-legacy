@@ -385,17 +385,11 @@ TEST(StructTraitsTest, UnserializedTouchEventFields) {
   std::unique_ptr<TouchEvent> touch_event =
       std::make_unique<TouchEvent>(ET_TOUCH_CANCELLED, gfx::Point(),
                                    base::TimeTicks::Now(), PointerDetails());
-  touch_event->set_should_remove_native_touch_id_mapping(true);
   std::unique_ptr<Event> expected = std::move(touch_event);
   std::unique_ptr<Event> output;
   ASSERT_TRUE(
       mojo::test::SerializeAndDeserialize<mojom::Event>(&expected, &output));
   ExpectEventsEqual(*expected, *output);
-  // Have to set this back to false, else the destructor tries to access
-  // state not setup in tests.
-  expected->AsTouchEvent()->set_should_remove_native_touch_id_mapping(false);
-  // See comments in TouchEvent for why these two fields are not persisted.
-  EXPECT_FALSE(output->AsTouchEvent()->should_remove_native_touch_id_mapping());
   EXPECT_NE(expected->AsTouchEvent()->unique_event_id(),
             output->AsTouchEvent()->unique_event_id());
 }

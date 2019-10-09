@@ -31,14 +31,14 @@ class ASH_EXPORT ShelfContainerView : public views::View {
   const char* GetClassName() const override;
 
  protected:
-  // Owned by views hierarchy.
-  ShelfView* shelf_view_ = nullptr;
-
- private:
   // Calculates the ideal size of |shelf_view_| to accommodate all of app icons
   // without scrolling.
   gfx::Size CalculateIdealSize() const;
 
+  // Owned by views hierarchy.
+  ShelfView* shelf_view_ = nullptr;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(ShelfContainerView);
 };
 

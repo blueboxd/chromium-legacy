@@ -229,7 +229,6 @@
 <translation id="4261870227682513959">Afficher les paramètres de notification. Les notifications sont désactivées</translation>
 <translation id="4269883910223712419">L'administrateur de cet appareil peut :</translation>
 <translation id="4279490309300973883">Mise en miroir</translation>
-<translation id="4281007048406351813">Ajouter une minute au minuteur</translation>
 <translation id="4296136865091727875">Effacer les <ph name="COUNT" /> notifications</translation>
 <translation id="4303223480529385476">Développer la zone d'état</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -419,7 +418,6 @@
 <translation id="7143207342074048698">Connexion en cours</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Rétablissement de la résolution précédente dans <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7222902781030499995">Arrête le minuteur</translation>
 <translation id="7256634071279256947">Micro arrière</translation>
 <translation id="726276584504105859">Faire glisser ici pour utiliser l'écran partagé</translation>
 <translation id="7262906531272962081">Créer un rappel</translation>

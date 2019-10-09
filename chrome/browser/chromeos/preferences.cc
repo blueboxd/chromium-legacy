@@ -115,25 +115,6 @@ void TryMigrateToResolveTimezoneByGeolocationMethod(PrefService* prefs) {
                     static_cast<int>(method));
 }
 
-// Whitelist synable preferences that may be registered after sync system init.
-void WhitelistLateRegistrationPrefsForSync(
-    user_prefs::PrefRegistrySyncable* registry) {
-  // These foreign syncable preferences are registered asynchronously by Ash,
-  // perhaps after sync system initialization. Whitelist these prefs so that any
-  // values obtained via sync before the prefs are registered will be stored.
-  const char* const kAshForeignSyncablePrefs[] = {
-      ash::prefs::kEnableAutoScreenLock,
-      ash::prefs::kEnableStylusTools,
-      ash::prefs::kLaunchPaletteOnEjectEvent,
-      ash::prefs::kMessageCenterLockScreenMode,
-      ash::prefs::kShelfAlignment,
-      ash::prefs::kShelfAutoHideBehavior,
-      ash::prefs::kTapDraggingEnabled,
-  };
-  for (const auto* pref : kAshForeignSyncablePrefs)
-    registry->WhitelistLateRegistrationPrefForSync(pref);
-}
-
 }  // namespace
 
 Preferences::Preferences()
@@ -184,8 +165,6 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
 // static
 void Preferences::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  WhitelistLateRegistrationPrefsForSync(registry);
-
   std::string hardware_keyboard_id;
   // TODO(yusukes): Remove the runtime hack.
   if (IsRunningAsSystemCompositor()) {
@@ -587,7 +566,6 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kSettingsShowBrowserBanner, true);
   registry->RegisterBooleanPref(prefs::kSettingsShowOSBanner, true);
-  registry->RegisterBooleanPref(prefs::kSettingsShowAboutOSBanner, true);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {

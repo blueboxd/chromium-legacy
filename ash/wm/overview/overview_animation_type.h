@@ -19,6 +19,9 @@ enum OverviewAnimationType {
   OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER,
   OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW,
   OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_EXIT,
+  // Used to add an item to an active overview session using the spawn
+  // animation.
+  OVERVIEW_ANIMATION_SPAWN_ITEM_IN_OVERVIEW,
   // Used to restore windows to their original position when exiting overview
   // mode.
   OVERVIEW_ANIMATION_RESTORE_WINDOW,

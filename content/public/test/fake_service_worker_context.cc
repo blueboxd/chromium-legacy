@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "content/public/browser/service_worker_context_observer.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 
@@ -104,15 +105,13 @@ void FakeServiceWorkerContext::StopAllServiceWorkers(base::OnceClosure) {
   NOTREACHED();
 }
 
-void FakeServiceWorkerContext::GetAllServiceWorkerRunningInfos(
-    GetAllServiceWorkerRunningInfosCallback callback) {
+const base::flat_map<int64_t, ServiceWorkerRunningInfo>&
+FakeServiceWorkerContext::GetRunningServiceWorkerInfos() {
   NOTREACHED();
-}
-
-void FakeServiceWorkerContext::GetServiceWorkerRunningInfo(
-    int64_t service_worker_version_id,
-    GetServiceWorkerRunningInfoCallback callback) {
-  NOTREACHED();
+  static const base::NoDestructor<
+      base::flat_map<int64_t, ServiceWorkerRunningInfo>>
+      empty_running_workers;
+  return *empty_running_workers;
 }
 
 void FakeServiceWorkerContext::NotifyObserversOnVersionActivated(

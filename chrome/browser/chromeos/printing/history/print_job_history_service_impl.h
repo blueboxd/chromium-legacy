@@ -7,7 +7,10 @@
 
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 #include "chrome/browser/chromeos/printing/history/print_job_database.h"
+#include "chrome/browser/chromeos/printing/history/print_job_history_cleaner.h"
 #include "chrome/browser/chromeos/printing/history/print_job_history_service.h"
+
+class PrefService;
 
 namespace chromeos {
 
@@ -22,7 +25,8 @@ class PrintJobHistoryServiceImpl
  public:
   PrintJobHistoryServiceImpl(
       std::unique_ptr<PrintJobDatabase> print_job_database,
-      CupsPrintJobManager* print_job_manager);
+      CupsPrintJobManager* print_job_manager,
+      PrefService* pref_service);
   ~PrintJobHistoryServiceImpl() override;
 
   // PrintJobHistoryService:
@@ -36,11 +40,14 @@ class PrintJobHistoryServiceImpl
 
   void SavePrintJob(base::WeakPtr<CupsPrintJob> job);
 
+  void OnPrintJobDatabaseInitialized(bool success);
+
   void OnPrintJobSaved(const printing::proto::PrintJobInfo& print_job_info,
                        bool success);
 
   std::unique_ptr<PrintJobDatabase> print_job_database_;
   CupsPrintJobManager* print_job_manager_;
+  PrintJobHistoryCleaner print_job_history_cleaner_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintJobHistoryServiceImpl);
 };

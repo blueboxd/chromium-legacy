@@ -103,7 +103,7 @@ Polymer({
 
   /** @private*/
   managedPropertiesChanged_: function() {
-    const cellular = this.managedProperties.cellular;
+    const cellular = this.managedProperties.typeProperties.cellular;
     /** @type {!chromeos.networkConfig.mojom.ApnProperties|undefined} */ let
         activeApn;
     if (cellular.apn) {
@@ -184,7 +184,7 @@ Polymer({
     if (!this.managedProperties) {
       return [];
     }
-    const apnList = this.managedProperties.cellular.apnList;
+    const apnList = this.managedProperties.typeProperties.cellular.apnList;
     if (!apnList) {
       return [];
     }

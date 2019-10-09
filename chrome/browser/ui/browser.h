@@ -182,10 +182,6 @@ class Browser : public TabStripModelObserver,
   struct CreateParams {
     explicit CreateParams(Profile* profile, bool user_gesture);
     CreateParams(Type type, Profile* profile, bool user_gesture);
-    CreateParams(Type type,
-                 Profile* profile,
-                 bool user_gesture,
-                 bool in_tab_dragging);
     CreateParams(const CreateParams& other);
 
     static CreateParams CreateForApp(const std::string& app_name,
@@ -290,6 +286,7 @@ class Browser : public TabStripModelObserver,
 
   // Accessors ////////////////////////////////////////////////////////////////
 
+  const CreateParams& create_params() const { return create_params_; }
   Type type() const { return type_; }
   const std::string& app_name() const { return app_name_; }
   bool is_trusted_source() const { return is_trusted_source_; }
@@ -1017,6 +1014,9 @@ class Browser : public TabStripModelObserver,
   content::NotificationRegistrar registrar_;
 
   PrefChangeRegistrar profile_pref_registrar_;
+
+  // This Browser's create params.
+  const CreateParams create_params_;
 
   // This Browser's type.
   const Type type_;

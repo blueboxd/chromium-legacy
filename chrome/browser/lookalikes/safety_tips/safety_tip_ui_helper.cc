@@ -66,6 +66,7 @@ base::string16 GetSafetyTipTitle(
           security_interstitials::common_string_util::GetFormattedHostName(
               url));
 #endif
+    case security_state::SafetyTipStatus::kBadKeyword:
     case security_state::SafetyTipStatus::kUnknown:
     case security_state::SafetyTipStatus::kNone:
       NOTREACHED();
@@ -87,6 +88,7 @@ base::string16 GetSafetyTipDescription(
           IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_DESCRIPTION,
           security_interstitials::common_string_util::GetFormattedHostName(
               url));
+    case security_state::SafetyTipStatus::kBadKeyword:
     case security_state::SafetyTipStatus::kNone:
     case security_state::SafetyTipStatus::kUnknown:
       NOTREACHED();
@@ -106,6 +108,7 @@ int GetSafetyTipLeaveButtonId(security_state::SafetyTipStatus warning_type) {
     case security_state::SafetyTipStatus::kLookalike:
       return IDS_PAGE_INFO_SAFETY_TIP_LEAVE_BUTTON;
 #endif
+    case security_state::SafetyTipStatus::kBadKeyword:
     case security_state::SafetyTipStatus::kUnknown:
     case security_state::SafetyTipStatus::kNone:
       NOTREACHED();

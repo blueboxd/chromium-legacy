@@ -36,8 +36,9 @@ class ProfileManager : public ::ProfileManagerWithoutInit {
       : ::ProfileManagerWithoutInit(user_data_dir) {}
 
  protected:
-  Profile* CreateProfileHelper(const base::FilePath& file_path) override {
-    return new TestingProfile(file_path);
+  std::unique_ptr<Profile> CreateProfileHelper(
+      const base::FilePath& path) override {
+    return std::make_unique<TestingProfile>(path);
   }
 };
 

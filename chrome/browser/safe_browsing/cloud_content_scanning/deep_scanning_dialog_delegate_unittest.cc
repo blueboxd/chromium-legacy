@@ -68,7 +68,7 @@ class BaseTest : public testing::Test {
     updater->GetList().emplace_back(url.host());
   }
 
-  Profile* profile() { return profile_; }
+  TestingProfile* profile() { return profile_; }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
@@ -228,6 +228,22 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareEnabled) {
   EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
   EXPECT_FALSE(data.do_dlp_scan);
   EXPECT_TRUE(data.do_malware_scan);
+}
+
+TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoScanInIncognito) {
+  GURL url(kTestUrl);
+  EnableFeatures({kDeepScanningOfUploads});
+  SetDMToken(kDmToken);
+  SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
+  SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
+  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent, url);
+
+  DeepScanningDialogDelegate::Data data;
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
+
+  // The same URL should not trigger a scan in incognito.
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile()->GetOffTheRecordProfile(), url, &data));
 }
 
 class DeepScanningDialogDelegateAuditOnlyTest : public BaseTest {

@@ -315,6 +315,10 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   if (base::FeatureList::IsEnabled(features::kFeaturePolicyForSandbox))
     WebRuntimeFeatures::EnableFeaturePolicyForSandbox(true);
 
+  WebRuntimeFeatures::EnableAccessibilityExposeARIAAnnotations(
+      base::FeatureList::IsEnabled(
+          features::kEnableAccessibilityExposeARIAAnnotations));
+
   WebRuntimeFeatures::EnableAccessibilityExposeDisplayNone(
       base::FeatureList::IsEnabled(
           features::kEnableAccessibilityExposeDisplayNone));

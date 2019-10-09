@@ -19,6 +19,7 @@
 #include "ash/wm/desks/close_desk_button.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_mini_view.h"
+#include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_test_util.h"
@@ -202,6 +203,20 @@ bool IsStackedBelow(aura::Window* win1, aura::Window* win2) {
   return win1_iter < win2_iter;
 }
 
+// Verifies DesksBarView layout under different screen sizes
+void DesksBarViewLayoutTestHelper(const DesksBarView* desks_bar_view,
+                                  bool use_small_screen_layout) {
+  DCHECK(desks_bar_view);
+  const NewDeskButton* button = desks_bar_view->new_desk_button();
+  EXPECT_EQ(button->IsLabelVisibleForTesting(), !use_small_screen_layout);
+
+  for (const auto& mini_view : desks_bar_view->mini_views()) {
+    EXPECT_EQ(mini_view->GetDeskPreviewForTesting()->height(),
+              DeskPreviewView::GetHeight(use_small_screen_layout));
+    EXPECT_EQ(mini_view->IsLabelVisibleForTesting(), !use_small_screen_layout);
+  }
+}
+
 // Defines an observer to test DesksController notifications.
 class TestObserver : public DesksController::Observer {
  public:
@@ -304,7 +319,6 @@ TEST_F(DesksTest, DesksCreationAndRemoval) {
 }
 
 TEST_F(DesksTest, DesksBarViewDeskCreation) {
-  TestObserver observer;
   auto* controller = DesksController::Get();
 
   auto* overview_controller = Shell::Get()->overview_controller();
@@ -381,6 +395,40 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   DCHECK(desks_bar_view);
   EXPECT_EQ(controller->desks().size(), desks_bar_view->mini_views().size());
   EXPECT_TRUE(desks_bar_view->new_desk_button()->GetEnabled());
+}
+
+TEST_F(DesksTest, DesksBarViewScreenLayoutTest) {
+  UpdateDisplay("1600x1200");
+  DesksController* controller = DesksController::Get();
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  const OverviewGrid* overview_grid =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+
+  EXPECT_FALSE(overview_grid->IsDesksBarViewActive());
+  const DesksBarView* desks_bar_view = overview_grid->desks_bar_view();
+  while (controller->CanCreateDesks()) {
+    NewDesk();
+    DesksBarViewLayoutTestHelper(desks_bar_view,
+                                 /*use_small_screen_layout=*/false);
+  };
+
+  UpdateDisplay("500x480");
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  while (controller->CanRemoveDesks()) {
+    DesksBarViewLayoutTestHelper(desks_bar_view,
+                                 /*use_small_screen_layout=*/true);
+    RemoveDesk(controller->desks().back().get());
+  }
+
+  UpdateDisplay("1600x480");
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  while (controller->CanCreateDesks()) {
+    DesksBarViewLayoutTestHelper(desks_bar_view,
+                                 /*use_small_screen_layout=*/false);
+    NewDesk();
+  }
 }
 
 TEST_F(DesksTest, DeskActivation) {

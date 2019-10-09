@@ -147,6 +147,11 @@ const base::Feature kImeInputLogicFstNonEnglish{
 const base::Feature kImeDecoderWithSandbox{"ImeDecoderWithSandbox",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable or disable using the floating virtual keyboard as the default option
+// on Chrome OS.
+const base::Feature kVirtualKeyboardFloatingDefault{
+    "VirtualKeyboardFloatingDefault", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables Instant Tethering on Chrome OS.
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

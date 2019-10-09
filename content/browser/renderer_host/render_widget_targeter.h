@@ -134,13 +134,7 @@ class RenderWidgetTargeter {
     return request_in_flight_.has_value();
   }
 
-  void set_is_auto_scroll_in_progress(bool autoscroll_in_progress) {
-    is_autoscroll_in_progress_ = autoscroll_in_progress;
-
-    // If middle click autoscroll ends, reset |middle_click_result_|.
-    if (!autoscroll_in_progress)
-      middle_click_result_ = RenderWidgetTargetResult();
-  }
+  void SetIsAutoScrollInProgress(bool autoscroll_in_progress);
 
   bool is_auto_scroll_in_progress() const { return is_autoscroll_in_progress_; }
 

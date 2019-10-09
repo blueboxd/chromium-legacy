@@ -186,8 +186,7 @@ NavigationEntryImpl::TreeNode::TreeNode(
     scoped_refptr<FrameNavigationEntry> frame_entry)
     : parent(parent), frame_entry(std::move(frame_entry)) {}
 
-NavigationEntryImpl::TreeNode::~TreeNode() {
-}
+NavigationEntryImpl::TreeNode::~TreeNode() {}
 
 bool NavigationEntryImpl::TreeNode::MatchesFrame(
     FrameTreeNode* frame_tree_node) const {
@@ -333,8 +332,7 @@ NavigationEntryImpl::NavigationEntryImpl(
       ssl_error_(false),
       should_skip_on_back_forward_ui_(false) {}
 
-NavigationEntryImpl::~NavigationEntryImpl() {
-}
+NavigationEntryImpl::~NavigationEntryImpl() {}
 
 int NavigationEntryImpl::GetUniqueID() {
   return unique_id_;

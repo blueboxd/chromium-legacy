@@ -9,10 +9,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
+#include "content/common/buildflags.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/media_buildflags.h"
 
-#if defined(ENABLE_SCREEN_CAPTURE) && !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_SCREEN_CAPTURE) && !defined(OS_ANDROID)
 #include "content/browser/media/capture/desktop_capture_device.h"
 #endif
 

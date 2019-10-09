@@ -75,21 +75,15 @@ class RenderFrameProxyHost : public IPC::Listener,
                        FrameTreeNode* frame_tree_node);
   ~RenderFrameProxyHost() override;
 
-  RenderProcessHost* GetProcess() {
-    return process_;
-  }
+  RenderProcessHost* GetProcess() { return process_; }
 
   // Initializes the object and creates the RenderFrameProxy in the process
   // for the SiteInstance.
   bool InitRenderFrameProxy();
 
-  int GetRoutingID() {
-    return routing_id_;
-  }
+  int GetRoutingID() { return routing_id_; }
 
-  SiteInstance* GetSiteInstance() {
-    return site_instance_.get();
-  }
+  SiteInstance* GetSiteInstance() { return site_instance_.get(); }
 
   FrameTreeNode* frame_tree_node() const { return frame_tree_node_; }
 
@@ -201,6 +195,6 @@ class RenderFrameProxyHost : public IPC::Listener,
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxyHost);
 };
 
-}  // namespace
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_PROXY_HOST_H_

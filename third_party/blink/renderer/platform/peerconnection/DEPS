@@ -3,6 +3,7 @@ include_rules = [
     "-third_party/blink/renderer/platform",
 
     # Module.
+    "+third_party/blink/renderer/platform/p2p",
     "+third_party/blink/renderer/platform/peerconnection",
     "+third_party/blink/renderer/platform/media_capabilities",
     "+third_party/blink/renderer/platform/webrtc",

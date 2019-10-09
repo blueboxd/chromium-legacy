@@ -24,25 +24,25 @@ of **messages**. Each interface message is roughly analogous to a single proto
 message, for developers who are familiar with Google protobufs.
 
 Given a mojom interface and a message pipe, one of the endpoints
-can be designated as a **Remote** and is used to *send* messages described by
-the interface. The other endpoint can be designated as a **Receiver** and is used
+can be designated as a **`Remote`** and is used to *send* messages described by
+the interface. The other endpoint can be designated as a **`Receiver`** and is used
 to *receive* interface messages.
 
 *** aside
 NOTE: The above generalization is a bit oversimplified. Remember that the
 message pipe is still bidirectional, and it's possible for a mojom message to
-expect a reply. Replies are sent from the Receiver endpoint and received by the
-Remote endpoint.
+expect a reply. Replies are sent from the `Receiver` endpoint and received by the
+`Remote` endpoint.
 ***
 
-The Receiver endpoint must be associated with (*i.e.* **bound** to) an
+The `Receiver` endpoint must be associated with (*i.e.* **bound** to) an
 **implementation** of its mojom interface in order to process received messages.
 A received message is dispatched as a scheduled task invoking the corresponding
 interface method on the implementation object.
 
-Another way to think about all this is simply that **a Remote makes
+Another way to think about all this is simply that **a `Remote` makes
 calls on a remote implementation of its interface associated with a
-corresponding remote Receiver.**
+corresponding remote `Receiver`.**
 
 ## Example: Defining a New Frame Interface
 
@@ -85,43 +85,45 @@ Now let's create a message pipe to use this interface.
 
 *** aside
 As a general rule and as a matter of convenience when
-using Mojo, the *client* of an interface (*i.e.* the Remote side) is
+using Mojo, the *client* of an interface (*i.e.* the `Remote` side) is
 typically the party who creates a new pipe. This is convenient because the
-Remote may be used to start sending messages immediately without waiting
+`Remote` may be used to start sending messages immediately without waiting
 for the InterfaceRequest endpoint to be transferred or bound anywhere.
 ***
 
 This code would be placed somewhere in the renderer:
 
 ```cpp
+// src/third_party/blink/example/public/ping_responder.h
 mojo::Remote<example::mojom::PingResponder> ping_responder;
 mojo::PendingReceiver<example::mojom::PingResponder> receiver =
     ping_responder.BindNewPipeAndPassReceiver();
 ```
 
-In this example, ```ping_responder``` is the Remote, and ```receiver```
-is a PendingReceiver, which is a Receiver precursor that will eventually
-be turned into a Receiver. `BindNewPipeAndPassReceiver` is the most common way to create
+In this example, ```ping_responder``` is the `Remote`, and ```receiver```
+is a `PendingReceiver`, which is a `Receiver` precursor that will eventually
+be turned into a `Receiver`. `BindNewPipeAndPassReceiver` is the most common way to create
 a message pipe: it yields the `PendingReceiver` as the return
 value.
 
 *** aside
-NOTE: A PendingReceiver doesn't actually **do** anything. It is an
+NOTE: A `PendingReceiver` doesn't actually **do** anything. It is an
 inert holder of a single message pipe endpoint. It exists only to make its
 endpoint more strongly-typed at compile-time, indicating that the endpoint
-expects to be bound by a Receiver of the same interface type.
+expects to be bound by a `Receiver` of the same interface type.
 ***
 
 ### Sending a Message
 
-Finally, we can call the `Ping()` method on our Remote to send a message:
+Finally, we can call the `Ping()` method on our `Remote` to send a message:
 
 ```cpp
+// src/third_party/blink/example/public/ping_responder.h
 ping_responder->Ping(base::BindOnce(&OnPong));
 ```
 
 *** aside
-**IMPORTANT:** If we want to receive the the response, we must keep the
+**IMPORTANT:** If we want to receive the response, we must keep the
 `ping_responder` object alive until `OnPong` is invoked. After all,
 `ping_responder` *owns* its message pipe endpoint. If it's destroyed then so is
 the endpoint, and there will be nothing to receive the response message.
@@ -131,14 +133,14 @@ We're almost done! Of course, if everything were this easy, this document
 wouldn't need to exist. We've taken the hard problem of sending a message from
 a renderer process to the browser process, and transformed it into a problem
 where we just need to take the `receiver` object from above and pass it to the
-browser process somehow where it can be turned into a Receiver that dispatches
+browser process somehow where it can be turned into a `Receiver` that dispatches
 its received messages.
 
-### Sending a PendingReceiver to the Browser
+### Sending a `PendingReceiver` to the Browser
 
-It's worth noting that PendingReceivers (and message pipe endpoints in general)
+It's worth noting that `PendingReceiver`s (and message pipe endpoints in general)
 are just another type of object that can be freely sent over mojom messages.
-The most common way to get a PendingReceiver somewhere is to pass it as a
+The most common way to get a `PendingReceiver` somewhere is to pass it as a
 method argument on some other already-connected interface.
 
 One such interface which we always have connected between a renderer's
@@ -155,7 +157,7 @@ interface BrowserInterfaceBroker {
 }
 ```
 Since `GenericPendingReceiver` can be implicitly constructed from any specific
-`PendingReceiver`, can call this method with the `receiver` object it created
+`PendingReceiver`, it can call this method with the `receiver` object it created
 earlier via `BindNewPipeAndPassReceiver`:
 
 ``` cpp
@@ -163,7 +165,7 @@ RenderFrame* my_frame = GetMyFrame();
 my_frame->GetBrowserInterfaceBrokerProxy()->GetInterface(std::move(receiver));
 ```
 
-This will transfer the PendingReceiver endpoint to the browser process
+This will transfer the `PendingReceiver` endpoint to the browser process
 where it will be received by the corresponding `BrowserInterfaceBroker`
 implementation. More on that below.
 
@@ -186,7 +188,7 @@ class PingResponderImpl : example::mojom::PingResponder {
   }
 
  private:
-  mojo::Receiver<example::mojom::PingResponder> Receiver_;
+  mojo::Receiver<example::mojom::PingResponder> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(PingResponderImpl);
 };

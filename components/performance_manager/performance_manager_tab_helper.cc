@@ -5,6 +5,7 @@
 #include "components/performance_manager/performance_manager_tab_helper.h"
 
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -86,8 +87,16 @@ void PerformanceManagerTabHelper::TearDown() {
   // incineration.
   std::vector<std::unique_ptr<NodeBase>> nodes;
   nodes.push_back(std::move(page_node_));
-  for (auto& kv : frames_)
-    nodes.push_back(std::move(kv.second));
+  for (auto& kv : frames_) {
+    std::unique_ptr<FrameNodeImpl> frame_node = std::move(kv.second);
+
+    // Notify observers.
+    for (Observer& observer : observers_)
+      observer.OnBeforeFrameNodeRemoved(this, frame_node.get());
+
+    // Ensure the node will be deleted on the graph sequence.
+    nodes.push_back(std::move(frame_node));
+  }
 
   frames_.clear();
 
@@ -169,7 +178,14 @@ void PerformanceManagerTabHelper::RenderFrameDeleted(
   }
   DCHECK(it != frames_.end());
 
-  performance_manager_->DeleteNode(std::move(it->second));
+  std::unique_ptr<FrameNodeImpl> frame_node = std::move(it->second);
+
+  // Notify observers.
+  for (Observer& observer : observers_)
+    observer.OnBeforeFrameNodeRemoved(this, frame_node.get());
+
+  // Then delete the node.
+  performance_manager_->DeleteNode(std::move(frame_node));
   frames_.erase(it);
 }
 
@@ -228,7 +244,7 @@ void PerformanceManagerTabHelper::RenderFrameHostChanged(
                          new_frame->SetIsCurrent(true);
                        }
                      },
-                     base::Unretained(old_frame), base::Unretained(new_frame)));
+                     old_frame, new_frame));
 }
 
 void PerformanceManagerTabHelper::DidStartLoading() {
@@ -350,6 +366,26 @@ content::WebContents* PerformanceManagerTabHelper::GetWebContents() const {
 
 int64_t PerformanceManagerTabHelper::LastNavigationId() const {
   return last_navigation_id_;
+}
+
+FrameNodeImpl* PerformanceManagerTabHelper::GetFrameNode(
+    content::RenderFrameHost* render_frame_host) {
+  auto it = frames_.find(render_frame_host);
+  if (it == frames_.end()) {
+    // Avoid dereferencing an invalid iterator because it produces hard to debug
+    // crashes.
+    NOTREACHED();
+    return nullptr;
+  }
+  return it->second.get();
+}
+
+void PerformanceManagerTabHelper::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void PerformanceManagerTabHelper::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 template <typename Functor, typename NodeType, typename... Args>

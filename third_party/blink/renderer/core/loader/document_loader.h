@@ -220,6 +220,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
     return client_hints_preferences_;
   }
 
+  WebURLRequest::PreviewsState GetPreviewsState() const {
+    return previews_state_;
+  }
+
   struct InitialScrollState {
     DISALLOW_NEW();
     InitialScrollState()

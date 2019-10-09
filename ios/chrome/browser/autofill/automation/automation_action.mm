@@ -15,7 +15,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
-#import "ios/chrome/browser/autofill/form_suggestion_label.h"
+#import "ios/chrome/browser/autofill/form_suggestion_constants.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"

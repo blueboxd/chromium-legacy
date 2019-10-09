@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/modules/peerconnection/video_codec_factory.h"
+#include "third_party/blink/renderer/platform/peerconnection/video_codec_factory.h"
 
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "media/video/gpu_video_accelerator_factories.h"
-#include "third_party/blink/public/platform/modules/peerconnection/rtc_video_decoder_factory_util.h"
-#include "third_party/blink/public/platform/modules/peerconnection/rtc_video_encoder_factory_util.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_video_decoder_factory.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_video_encoder_factory.h"
 #include "third_party/webrtc/api/video_codecs/video_decoder_software_fallback_wrapper.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder_software_fallback_wrapper.h"
 #include "third_party/webrtc/media/base/codec.h"
@@ -178,7 +178,7 @@ std::unique_ptr<webrtc::VideoEncoderFactory> CreateWebrtcVideoEncoderFactory(
 
   if (gpu_factories && gpu_factories->IsGpuVideoAcceleratorEnabled() &&
       Platform::Current()->IsWebRtcHWEncodingEnabled()) {
-    encoder_factory = blink::CreateRTCVideoEncoderFactory(gpu_factories);
+    encoder_factory = std::make_unique<RTCVideoEncoderFactory>(gpu_factories);
   }
 
 #if defined(OS_ANDROID)
@@ -195,7 +195,7 @@ std::unique_ptr<webrtc::VideoDecoderFactory> CreateWebrtcVideoDecoderFactory(
 
   if (gpu_factories && gpu_factories->IsGpuVideoAcceleratorEnabled() &&
       Platform::Current()->IsWebRtcHWDecodingEnabled()) {
-    decoder_factory = blink::CreateRTCVideoDecoderFactory(gpu_factories);
+    decoder_factory = std::make_unique<RTCVideoDecoderFactory>(gpu_factories);
   }
 
   return std::make_unique<DecoderAdapter>(std::move(decoder_factory));

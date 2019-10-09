@@ -328,14 +328,20 @@ void LayerTreeView::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
 
 std::unique_ptr<cc::BeginMainFrameMetrics>
 LayerTreeView::GetBeginMainFrameMetrics() {
+  if (!delegate_)
+    return nullptr;
   return delegate_->GetBeginMainFrameMetrics();
 }
 
 void LayerTreeView::DidScheduleBeginMainFrame() {
+  if (!delegate_)
+    return;
   web_main_thread_scheduler_->DidScheduleBeginMainFrame();
 }
 
 void LayerTreeView::DidRunBeginMainFrame() {
+  if (!delegate_)
+    return;
   web_main_thread_scheduler_->DidRunBeginMainFrame();
 }
 

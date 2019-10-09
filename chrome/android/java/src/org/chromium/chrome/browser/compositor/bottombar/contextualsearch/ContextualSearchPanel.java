@@ -789,6 +789,7 @@ public class ContextualSearchPanel extends OverlayPanel {
             // Calculate the offset to center the selection on the available area.
             final float availableHeight = getTabHeight() - getExpandedHeight();
             offset = -selectionY + availableHeight / 2;
+            offset += getLayoutOffsetYDps();
         }
         return offset;
     }

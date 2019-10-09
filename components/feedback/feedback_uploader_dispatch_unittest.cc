@@ -92,8 +92,8 @@ TEST_F(FeedbackUploaderDispatchTest, VariationHeaders) {
   CreateFieldTrialWithId("Test", "Group1", 123);
 
   FeedbackUploader uploader(
-      shared_url_loader_factory(), context(),
-      FeedbackUploaderFactory::CreateUploaderTaskRunner());
+      context(), FeedbackUploaderFactory::CreateUploaderTaskRunner());
+  uploader.set_url_loader_factory_for_test(shared_url_loader_factory());
 
   net::HttpRequestHeaders headers;
   test_url_loader_factory()->SetInterceptor(
@@ -110,8 +110,8 @@ TEST_F(FeedbackUploaderDispatchTest, VariationHeaders) {
 TEST_F(FeedbackUploaderDispatchTest, 204Response) {
   FeedbackUploader::SetMinimumRetryDelayForTesting(kTestRetryDelay);
   FeedbackUploader uploader(
-      shared_url_loader_factory(), context(),
-      FeedbackUploaderFactory::CreateUploaderTaskRunner());
+      context(), FeedbackUploaderFactory::CreateUploaderTaskRunner());
+  uploader.set_url_loader_factory_for_test(shared_url_loader_factory());
 
   EXPECT_EQ(kTestRetryDelay, uploader.retry_delay());
   // Successful reports should not introduce any retries, and should not
@@ -133,8 +133,8 @@ TEST_F(FeedbackUploaderDispatchTest, 204Response) {
 TEST_F(FeedbackUploaderDispatchTest, 400Response) {
   FeedbackUploader::SetMinimumRetryDelayForTesting(kTestRetryDelay);
   FeedbackUploader uploader(
-      shared_url_loader_factory(), context(),
-      FeedbackUploaderFactory::CreateUploaderTaskRunner());
+      context(), FeedbackUploaderFactory::CreateUploaderTaskRunner());
+  uploader.set_url_loader_factory_for_test(shared_url_loader_factory());
 
   EXPECT_EQ(kTestRetryDelay, uploader.retry_delay());
   // Failed reports due to client errors are not retried. No backoff delay
@@ -156,8 +156,8 @@ TEST_F(FeedbackUploaderDispatchTest, 400Response) {
 TEST_F(FeedbackUploaderDispatchTest, 500Response) {
   FeedbackUploader::SetMinimumRetryDelayForTesting(kTestRetryDelay);
   FeedbackUploader uploader(
-      shared_url_loader_factory(), context(),
-      FeedbackUploaderFactory::CreateUploaderTaskRunner());
+      context(), FeedbackUploaderFactory::CreateUploaderTaskRunner());
+  uploader.set_url_loader_factory_for_test(shared_url_loader_factory());
 
   EXPECT_EQ(kTestRetryDelay, uploader.retry_delay());
   // Failed reports due to server errors are retried.

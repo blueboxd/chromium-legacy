@@ -6,7 +6,7 @@
 
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "net/url_request/redirect_info.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
@@ -24,23 +24,23 @@ void TestRequestPeer::OnUploadProgress(uint64_t position, uint64_t size) {
 
 bool TestRequestPeer::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseInfo& info) {
+    network::mojom::URLResponseHeadPtr head) {
   EXPECT_FALSE(context_->cancelled);
   EXPECT_FALSE(context_->complete);
   ++context_->seen_redirects;
-  context_->last_load_timing = info.load_timing;
+  context_->last_load_timing = head->load_timing;
   if (context_->defer_on_redirect)
     dispatcher_->SetDefersLoading(context_->request_id, true);
   return context_->follow_redirects;
 }
 
 void TestRequestPeer::OnReceivedResponse(
-    const network::ResourceResponseInfo& info) {
+    network::mojom::URLResponseHeadPtr head) {
   EXPECT_FALSE(context_->cancelled);
   EXPECT_FALSE(context_->received_response);
   EXPECT_FALSE(context_->complete);
   context_->received_response = true;
-  context_->last_load_timing = info.load_timing;
+  context_->last_load_timing = head->load_timing;
   if (context_->cancel_on_receive_response) {
     dispatcher_->Cancel(
         context_->request_id,

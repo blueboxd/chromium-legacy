@@ -53,12 +53,21 @@ class SysmemBufferWriterQueue {
   // be sent once the new collection is allocated and passed to Start().
   void ResetBuffers();
 
+  // Resets pending queue position to the start of the queue and pauses the
+  // writer. All pending buffers will be resent when Unpause() is
+  // called.
+  void ResetPositionAndPause();
+
+  // Normally this should be called after restarting a stream in a
+  // StreamProcessor.
+  void Unpause();
+
   // Number of buffers in the sysmem collection or 0 if sysmem buffers has not
   // been allocated (i.e. before Start()).
   size_t num_buffers() const;
 
  private:
-  class PendingBuffer;
+  struct PendingBuffer;
   class SysmemBuffer;
 
   // Pumps pending buffers to SendPacketCB.
@@ -68,8 +77,16 @@ class SysmemBufferWriterQueue {
   // and tries to reuse it for other buffers if any.
   void ReleaseBuffer(size_t buffer_index);
 
-  // Buffers that are waiting to be sent.
+  // Buffers that are waiting to be sent. A buffer is removed from the queue
+  // when it and all previous buffers have finished decoding.
   std::deque<PendingBuffer> pending_buffers_;
+
+  // Position of the current buffer in |pending_buffers_|.
+  size_t input_queue_position_ = 0;
+
+  // Indicates that the stream is paused and no packets should be sent until
+  // Unpause() is called.
+  bool is_paused_ = false;
 
   // Buffers for sysmem buffer collection. Not set until Start() is called.
   std::unique_ptr<SysmemBufferWriter> writer_;

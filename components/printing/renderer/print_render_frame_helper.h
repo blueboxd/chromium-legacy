@@ -186,6 +186,18 @@ class PrintRenderFrameHelper
     kScripted,
   };
 
+  // Helper to make it easy to correctly call IPCReceived() and IPCProcessed().
+  class ScopedIPC {
+   public:
+    explicit ScopedIPC(base::WeakPtr<PrintRenderFrameHelper> weak_this);
+    ScopedIPC(const ScopedIPC&) = delete;
+    ScopedIPC& operator=(const ScopedIPC&) = delete;
+    ~ScopedIPC();
+
+   private:
+    const base::WeakPtr<PrintRenderFrameHelper> weak_this_;
+  };
+
   // RenderFrameObserver implementation.
   void OnDestruct() override;
   void DidStartNavigation(

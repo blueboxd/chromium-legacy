@@ -26,6 +26,7 @@ GpuServiceFactory::GpuServiceFactory(
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
     const gpu::GpuFeatureInfo& gpu_feature_info,
     base::WeakPtr<media::MediaGpuChannelManager> media_gpu_channel_manager,
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     media::AndroidOverlayMojoFactoryCB android_overlay_factory_cb) {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   gpu_preferences_ = gpu_preferences;
@@ -33,6 +34,7 @@ GpuServiceFactory::GpuServiceFactory(
   gpu_feature_info_ = gpu_feature_info;
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
   media_gpu_channel_manager_ = std::move(media_gpu_channel_manager);
+  gpu_memory_buffer_factory_ = gpu_memory_buffer_factory;
   android_overlay_factory_cb_ = std::move(android_overlay_factory_cb);
 #endif
 }
@@ -70,8 +72,8 @@ void GpuServiceFactory::RunService(
     FactoryCallback factory = base::BindOnce(
         &media::CreateGpuMediaService, std::move(request), gpu_preferences_,
         gpu_workarounds_, gpu_feature_info_, task_runner_,
-        media_gpu_channel_manager_, android_overlay_factory_cb_,
-        std::move(cdm_proxy_factory_cb));
+        media_gpu_channel_manager_, gpu_memory_buffer_factory_,
+        android_overlay_factory_cb_, std::move(cdm_proxy_factory_cb));
     task_runner->PostTask(
         FROM_HERE, base::BindOnce(
                        [](FactoryCallback factory) {

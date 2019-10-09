@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/worker_module_script_fetcher.h"
 
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"

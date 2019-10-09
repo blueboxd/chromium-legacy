@@ -75,15 +75,20 @@ class PlistContext(object):
     """
     PlistContext is a context manager that reads a plist on entry, providing
     the contents as a dictionary. If |rewrite| is True, then the same dictionary
-    is re-serialized on exit.
+    is re-serialized on exit. If |create_new| is True, then the file is not read
+    but rather an empty dictionary is created.
     """
 
-    def __init__(self, plist_path, rewrite=False):
+    def __init__(self, plist_path, rewrite=False, create_new=False):
         self._path = plist_path
         self._rewrite = rewrite
+        self._create_new = create_new
 
     def __enter__(self):
-        self._plist = plistlib.readPlist(self._path)
+        if self._create_new:
+            self._plist = {}
+        else:
+            self._plist = plistlib.readPlist(self._path)
         return self._plist
 
     def __exit__(self, exc_type, exc_value, exc_tb):

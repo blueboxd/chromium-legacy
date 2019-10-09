@@ -493,10 +493,14 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) = 0;
 
-  // Binds |receiver| to the IndexedDBDispatcherHost instance. The
-  // receiver is sent to the IO thread. This is for internal use only, and is
-  // only exposed here to support MockRenderProcessHost usage in tests.
+  // Binds |receiver| to the IndexedDBDispatcherHost instance. The receiver is
+  // sent to the IO thread. This is for internal use only, and is only exposed
+  // here to support MockRenderProcessHost usage in tests.
+  //
+  // |render_frame_id| is the frame associated with |receiver|, or
+  // MSG_ROUTING_NONE if |receiver| is associated with a worker.
   virtual void BindIndexedDB(
+      int render_frame_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) = 0;
 

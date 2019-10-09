@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "ios/chrome/browser/autofill/form_suggestion_client.h"
+#import "ios/chrome/browser/autofill/form_suggestion_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
@@ -26,10 +27,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-// a11y identifier used to locate the autofill suggestion in automation
-NSString* const kFormSuggestionLabelAccessibilityIdentifier =
-    @"formSuggestionLabelAXID";
 
 namespace {
 

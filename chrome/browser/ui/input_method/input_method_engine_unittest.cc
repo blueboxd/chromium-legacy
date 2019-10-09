@@ -102,7 +102,6 @@ class TestObserver : public InputMethodEngineBase::Observer {
     calls_bitmap_ |= ONCOMPOSITIONBOUNDSCHANGED;
     composition_bounds_ = bounds;
   }
-  bool IsInterestedInKeyEvent() const override { return true; }
   void OnSurroundingTextChanged(const std::string& engine_id,
                                 const std::string& text,
                                 int cursor_pos,

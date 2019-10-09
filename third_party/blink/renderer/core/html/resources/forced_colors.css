@@ -95,6 +95,10 @@
     forced-color-adjust: none;
   }
 
+  input[type="color"]::-webkit-color-swatch {
+    border-color: WindowText !important;
+  }
+
   button,
   input[type="button"],
   input[type="submit"],

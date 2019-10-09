@@ -151,11 +151,11 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const media::AudioSinkParameters& params) override;
   media::AudioLatency::LatencyType GetAudioSourceLatencyType(
       blink::WebAudioDeviceSourceType source_type) override;
-  blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice() override;
   base::Optional<std::string> GetWebRTCAudioProcessingConfiguration() override;
   bool ShouldEnforceWebRTCRoutingPreferences() override;
   bool UsesFakeCodecForPeerConnection() override;
   bool IsWebRtcEncryptionEnabled() override;
+  bool IsWebRtcStunOriginEnabled() override;
   base::Optional<std::string> WebRtcStunProbeTrialParameter() override;
   media::MediaPermission* GetWebRTCMediaPermission(
       blink::WebLocalFrame* web_frame) override;

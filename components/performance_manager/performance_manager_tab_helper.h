@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "components/performance_manager/web_contents_proxy_impl.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -66,6 +67,21 @@ class PerformanceManagerTabHelper
 
   void SetUkmSourceIdForTesting(ukm::SourceId id) { ukm_source_id_ = id; }
 
+  // Retrieves the frame node associated with |render_frame_host|.
+  FrameNodeImpl* GetFrameNode(content::RenderFrameHost* render_frame_host);
+
+  class Observer : public base::CheckedObserver {
+   public:
+    // Invoked when a frame node is about to be removed from the graph.
+    virtual void OnBeforeFrameNodeRemoved(
+        PerformanceManagerTabHelper* performance_manager,
+        FrameNodeImpl* frame_node) = 0;
+  };
+
+  // Adds/removes an observer.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  private:
   friend class content::WebContentsUserData<PerformanceManagerTabHelper>;
   friend class WebContentsProxyImpl;
@@ -101,6 +117,8 @@ class PerformanceManagerTabHelper
 
   // Maps from RenderFrameHost to the associated PM node.
   std::map<content::RenderFrameHost*, std::unique_ptr<FrameNodeImpl>> frames_;
+
+  base::ObserverList<Observer, true, false> observers_;
 
   // All instances are linked together in a doubly linked list to allow orderly
   // destruction at browser shutdown time.

@@ -7,8 +7,16 @@
 
 namespace ash {
 namespace {
+
 AndroidIntentHelper* g_android_intent_helper = nullptr;
-}
+
+// Scheme of the Android intent url.
+constexpr char kAndroidIntentScheme[] = "intent";
+
+// Prefix of the Android intent ref fragment.
+constexpr char kAndroidIntentPrefix[] = "Intent;";
+
+}  // namespace
 
 // static
 AndroidIntentHelper* AndroidIntentHelper::GetInstance() {
@@ -23,6 +31,12 @@ AndroidIntentHelper::AndroidIntentHelper() {
 AndroidIntentHelper::~AndroidIntentHelper() {
   DCHECK_EQ(g_android_intent_helper, this);
   g_android_intent_helper = nullptr;
+}
+
+bool IsAndroidIntent(const GURL& url) {
+  return url.SchemeIs(kAndroidIntentScheme) ||
+         base::StartsWith(url.ref(), kAndroidIntentPrefix,
+                          base::CompareCase::SENSITIVE);
 }
 
 }  // namespace ash

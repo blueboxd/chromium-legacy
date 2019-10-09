@@ -607,7 +607,7 @@ bool InitializeAccessibilityTreeSearch(OneShotAccessibilityTreeSearch* search,
   if ([immediateDescendantsOnlyParameter isKindOfClass:[NSNumber class]])
     immediateDescendantsOnly = [immediateDescendantsOnlyParameter boolValue];
 
-  bool visibleOnly = true;  // Default to visible only.
+  bool visibleOnly = false;
   NSNumber* visibleOnlyParameter = [dictionary objectForKey:@"AXVisibleOnly"];
   if ([visibleOnlyParameter isKindOfClass:[NSNumber class]])
     visibleOnly = [visibleOnlyParameter boolValue];

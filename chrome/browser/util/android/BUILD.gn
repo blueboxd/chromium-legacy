@@ -20,6 +20,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/util/PlatformUtil.java",
     "java/src/org/chromium/chrome/browser/util/UrlConstants.java",
     "java/src/org/chromium/chrome/browser/util/UrlUtilities.java",
+    "java/src/org/chromium/chrome/browser/util/ViewUtils.java",
   ]
   deps = [
     "//base:base_java",

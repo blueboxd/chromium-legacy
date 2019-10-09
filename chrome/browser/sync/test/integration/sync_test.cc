@@ -930,6 +930,12 @@ void SyncTest::SetUpInProcessBrowserTestFixture() {
 
 void SyncTest::OnWillCreateBrowserContextServices(
     content::BrowserContext* context) {
+  if (UsingExternalServers()) {
+    // DO NOTHING. External live sync servers use GCM to notify profiles of
+    // any invalidations in sync'ed data. No need to provide a testing
+    // factory the ProfileInvalidationProvider.
+    return;
+  }
   invalidation::ProfileInvalidationProviderFactory::GetInstance()
       ->SetTestingFactory(
           context,

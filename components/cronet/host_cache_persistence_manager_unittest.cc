@@ -45,14 +45,14 @@ class HostCachePersistenceManagerTest : public testing::Test {
   // not the full contents, since the tests in this file are only intended
   // to test that writes happen when they're supposed to, not serialization
   // correctness.
-  void CheckPref(size_t size) {
+  void CheckPref(size_t expected_size) {
     const base::Value* value = pref_service_->GetUserPref(kPrefName);
-    base::ListValue list;
+    base::Value list(base::Value::Type::LIST);
     if (value)
-      list = base::ListValue(value->GetList());
+      list = base::Value(value->GetList());
     net::HostCache temp_cache(10);
-    temp_cache.RestoreFromListValue(list);
-    ASSERT_EQ(size, temp_cache.size());
+    temp_cache.RestoreFromListValue(base::Value::AsListValue(list));
+    ASSERT_EQ(expected_size, temp_cache.size());
   }
 
   // Generates a temporary HostCache with a few entries and uses it to

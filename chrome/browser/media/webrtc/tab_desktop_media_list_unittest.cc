@@ -39,8 +39,8 @@ using content::WebContentsTester;
 
 namespace {
 
-static const int kDefaultSourceCount = 2;
-static const int kThumbnailSize = 50;
+constexpr int kDefaultSourceCount = 2;
+constexpr int kThumbnailSize = 50;
 
 class UnittestProfileManager : public ::ProfileManagerWithoutInit {
  public:
@@ -48,12 +48,11 @@ class UnittestProfileManager : public ::ProfileManagerWithoutInit {
       : ::ProfileManagerWithoutInit(user_data_dir) {}
 
  protected:
-  Profile* CreateProfileHelper(const base::FilePath& file_path) override {
-    if (!base::PathExists(file_path)) {
-      if (!base::CreateDirectory(file_path))
-        return NULL;
-    }
-    return new TestingProfile(file_path, NULL);
+  std::unique_ptr<Profile> CreateProfileHelper(
+      const base::FilePath& path) override {
+    if (!base::PathExists(path) && !base::CreateDirectory(path))
+      return nullptr;
+    return std::make_unique<TestingProfile>(path);
   }
 };
 

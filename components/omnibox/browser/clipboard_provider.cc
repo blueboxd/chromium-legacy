@@ -129,22 +129,20 @@ void ClipboardProvider::Start(const AutocompleteInput& input,
   field_trial_triggered_ = false;
 
   // If the user started typing, do not offer clipboard based match.
-  if (!input.from_omnibox_focus()) {
+  if (!input.from_omnibox_focus())
     return;
-  }
 
   // Image matched was kicked off asynchronously, so proceed when that ends.
-  if (CreateImageMatch(input)) {
+  if (CreateImageMatch(input))
     return;
-  }
+
   base::Optional<AutocompleteMatch> optional_match = CreateURLMatch(input);
-  if (!optional_match) {
+  if (!optional_match)
     optional_match = CreateTextMatch(input);
-  }
+
   // The clipboard does not contain any suggestions
-  if (!optional_match) {
+  if (!optional_match)
     return;
-  }
 
   AddCreatedMatchWithTracking(input, std::move(optional_match).value(),
                               clipboard_content_->GetClipboardContentAge());
@@ -240,9 +238,9 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateURLMatch(
   // The clipboard does not contain a URL worth suggesting.
   base::Optional<GURL> optional_gurl =
       clipboard_content_->GetRecentURLFromClipboard();
-  if (!optional_gurl) {
+  if (!optional_gurl)
     return base::nullopt;
-  }
+
   GURL url = std::move(optional_gurl).value();
 
   // The URL on the page is the same as the URL in the clipboard.  Don't
@@ -281,15 +279,14 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateTextMatch(
 
   base::Optional<base::string16> optional_text =
       clipboard_content_->GetRecentTextFromClipboard();
-  if (!optional_text) {
+  if (!optional_text)
     return base::nullopt;
-  }
+
   base::string16 text = std::move(optional_text).value();
 
   // The clipboard can contain the empty string, which shouldn't be suggested.
-  if (text.empty()) {
+  if (text.empty())
     return base::nullopt;
-  }
 
   // The text in the clipboard is a url. We don't want to prompt the user to
   // search for a url.
@@ -301,6 +298,9 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateTextMatch(
                           AutocompleteMatchType::CLIPBOARD_TEXT);
   TemplateURLService* url_service = client_->GetTemplateURLService();
   const TemplateURL* default_url = url_service->GetDefaultSearchProvider();
+  if (!default_url)
+    return base::nullopt;
+
   DCHECK(!default_url->url().empty());
   DCHECK(default_url->url_ref().IsValid(url_service->search_terms_data()));
   TemplateURLRef::SearchTermsArgs search_args(text);
@@ -327,9 +327,9 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateTextMatch(
       "ClipboardProviderTextSuggestionsCounterfactualArm", false);
   field_trial_triggered_ = true;
   field_trial_triggered_in_session_ = true;
-  if (in_counterfactual_group) {
+  if (in_counterfactual_group)
     return base::nullopt;
-  }
+
   return match;
 }
 
@@ -342,9 +342,8 @@ bool ClipboardProvider::CreateImageMatch(const AutocompleteInput& input) {
 
   base::Optional<gfx::Image> optional_image =
       clipboard_content_->GetRecentImageFromClipboard();
-  if (!optional_image) {
+  if (!optional_image)
     return false;
-  }
 
   // Make sure current provider supports image search
   TemplateURLService* url_service = client_->GetTemplateURLService();
@@ -384,6 +383,7 @@ void ClipboardProvider::ConstructImageMatchCallback(
     base::TimeDelta clipboard_contents_age,
     scoped_refptr<base::RefCountedMemory> image_bytes) {
   const TemplateURL* default_url = url_service->GetDefaultSearchProvider();
+  DCHECK(default_url);
   // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
   AutocompleteMatch match(this, 800, false,
                           AutocompleteMatchType::CLIPBOARD_IMAGE);

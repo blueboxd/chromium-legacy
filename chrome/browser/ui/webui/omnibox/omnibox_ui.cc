@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/webui/version_handler.h"
 #include "chrome/browser/ui/webui/version_ui.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/browser_resources.h"
+#include "chrome/grit/omnibox_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"

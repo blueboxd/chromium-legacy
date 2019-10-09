@@ -633,18 +633,15 @@ void FrameSinkManagerImpl::CacheBackBuffer(
   auto it = root_sink_map_.find(root_frame_sink_id);
 
   DCHECK(it != root_sink_map_.end());
-  // TODO(khushalsagar) : Temp CHECKs for debugging. See crbug.com/992626.
-  CHECK(cached_back_buffers_.find(cache_id) == cached_back_buffers_.end());
+  DCHECK(cached_back_buffers_.find(cache_id) == cached_back_buffers_.end());
 
   cached_back_buffers_[cache_id] = it->second->GetCacheBackBufferCb();
-  CHECK(!cached_back_buffers_[cache_id].is_null());
 }
 
 void FrameSinkManagerImpl::EvictBackBuffer(uint32_t cache_id,
                                            EvictBackBufferCallback callback) {
   auto it = cached_back_buffers_.find(cache_id);
-  // TODO(khushalsagar) : Temp CHECKs for debugging. See crbug.com/992626.
-  CHECK(it != cached_back_buffers_.end());
+  DCHECK(it != cached_back_buffers_.end());
 
   it->second.RunAndReset();
   cached_back_buffers_.erase(it);

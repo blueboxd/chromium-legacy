@@ -75,10 +75,7 @@ message NigoriSpecifics {
   optional bool encrypt_everything = 24;
 
   optional bool encrypt_extension_settings = 25;
-
-  reserved 26;
-  reserved "encrypt_app_notifications";
-
+  optional bool encrypt_app_notifications = 26 [deprecated = true];
   optional bool encrypt_app_settings = 27;
 
   // User device information. Contains information about each device that has a

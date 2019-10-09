@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/public/mojom/overlay_surface_candidate_mojom_traits.h"
-
 #include <utility>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/ozone/public/mojom/overlay_surface_candidate.mojom.h"
+#include "ui/ozone/public/mojom/overlay_surface_candidate_mojom_traits.h"
 #include "ui/ozone/public/overlay_surface_candidate.h"
 
 namespace ui {
@@ -23,7 +22,6 @@ TEST(OverlaySurfaceCandidateStructTraitsTest, FieldsEqual) {
   input.crop_rect = gfx::RectF(10., 20., 30., 40.);
   input.clip_rect = gfx::Rect(11, 21, 31, 41);
   input.is_clipped = true;
-  input.is_opaque = true;
   input.plane_z_order = 42;
   input.overlay_handled = true;
 
@@ -41,7 +39,6 @@ TEST(OverlaySurfaceCandidateStructTraitsTest, FieldsEqual) {
   EXPECT_EQ(input.crop_rect, output.crop_rect);
   EXPECT_EQ(input.clip_rect, output.clip_rect);
   EXPECT_EQ(input.is_clipped, output.is_clipped);
-  EXPECT_EQ(input.is_opaque, output.is_opaque);
   EXPECT_EQ(input.plane_z_order, output.plane_z_order);
   EXPECT_EQ(input.overlay_handled, output.overlay_handled);
 }
@@ -50,7 +47,6 @@ TEST(OverlaySurfaceCandidateStructTraitsTest, FalseBools) {
   ui::OverlaySurfaceCandidate input;
 
   input.is_clipped = false;
-  input.is_opaque = false;
   input.overlay_handled = false;
 
   ui::OverlaySurfaceCandidate output;
@@ -60,7 +56,6 @@ TEST(OverlaySurfaceCandidateStructTraitsTest, FalseBools) {
 
   EXPECT_TRUE(success);
   EXPECT_EQ(input.is_clipped, output.is_clipped);
-  EXPECT_EQ(input.is_opaque, output.is_opaque);
   EXPECT_EQ(input.overlay_handled, output.overlay_handled);
 }
 

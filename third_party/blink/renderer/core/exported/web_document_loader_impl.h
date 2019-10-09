@@ -82,6 +82,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   void BlockParser() override;
   void ResumeParser() override;
   bool HasBeenLoadedAsWebArchive() const override;
+  WebURLRequest::PreviewsState GetPreviewsState() const override;
   WebArchiveInfo GetArchiveInfo() const override;
   bool HadUserGesture() const override;
   bool IsListingFtpDirectory() const override;

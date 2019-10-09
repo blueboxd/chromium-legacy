@@ -81,6 +81,12 @@ constexpr int kSplitviewWhiteBarSpawnLongSideLength = 2;
 // The distance from the divider to where its handler spawns.
 constexpr int kSplitviewWhiteBarSpawnUnsignedOffset = 2;
 
+// The opacity of the drag-to-snap or cannot-snap drag indicator.
+constexpr float kHighlightOpacity = 0.3f;
+
+// The opacity of the split view snap preview area.
+constexpr float kPreviewAreaHighlightOpacity = 0.18f;
+
 }  // namespace ash
 
 #endif  // ASH_WM_SPLITVIEW_SPLIT_VIEW_CONSTANTS_H_

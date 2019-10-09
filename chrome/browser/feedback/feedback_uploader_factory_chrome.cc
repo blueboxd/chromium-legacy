@@ -8,7 +8,6 @@
 #include "chrome/browser/feedback/feedback_uploader_chrome.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/storage_partition.h"
 
 namespace feedback {
 
@@ -46,10 +45,7 @@ bool FeedbackUploaderFactoryChrome::ServiceIsNULLWhileTesting() const {
 
 KeyedService* FeedbackUploaderFactoryChrome::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new FeedbackUploaderChrome(
-      content::BrowserContext::GetDefaultStoragePartition(context)
-          ->GetURLLoaderFactoryForBrowserProcess(),
-      context, task_runner_);
+  return new FeedbackUploaderChrome(context, task_runner_);
 }
 
 }  // namespace feedback

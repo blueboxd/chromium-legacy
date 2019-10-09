@@ -210,7 +210,7 @@ TEST_F(GridLayoutTest, LinkedSizes) {
   auto* v3 = layout()->AddView(CreateSizedView(gfx::Size(0, 20)));
 
   // Link all the columns.
-  c1->LinkColumnSizes(0, 1, 2, -1);
+  c1->LinkColumnSizes({0, 1, 2});
   gfx::Size pref = GetPreferredSize();
 
   // |v1| and |v3| should obtain the same width as |v2|, since |v2| is largest.
@@ -376,7 +376,7 @@ TEST_F(GridLayoutTest, SameSizeColumns) {
                 0, GridLayout::USE_PREF, 0, 0);
   c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
                 0, GridLayout::USE_PREF, 0, 0);
-  c1->LinkColumnSizes(0, 1, -1);
+  c1->LinkColumnSizes({0, 1});
   layout()->StartRow(0, 0);
   auto* v1 = layout()->AddView(CreateSizedView(gfx::Size(50, 20)));
   auto* v2 = layout()->AddView(CreateSizedView(gfx::Size(10, 10)));

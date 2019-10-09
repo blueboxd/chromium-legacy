@@ -1599,6 +1599,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<PrintingBackgroundGraphicsDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingSizeDefaultPolicyHandler>());
+  handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
+      key::kPrintJobHistoryExpirationPeriod,
+      prefs::kPrintJobHistoryExpirationPeriod, -1, INT_MAX, true));
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kNetworkFileSharesPreconfiguredShares,
       prefs::kNetworkFileSharesPreconfiguredShares, chrome_schema,

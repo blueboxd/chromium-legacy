@@ -12,6 +12,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,7 +36,7 @@ class PrintJobHistoryServiceImplTest : public ::testing::Test {
         std::make_unique<TestPrintJobDatabase>();
     print_job_manager_ = std::make_unique<TestCupsPrintJobManager>(&profile_);
     print_job_history_service_ = std::make_unique<PrintJobHistoryServiceImpl>(
-        std::move(print_job_database), print_job_manager_.get());
+        std::move(print_job_database), print_job_manager_.get(), &test_prefs_);
   }
 
   void TearDown() override {
@@ -64,6 +66,7 @@ class PrintJobHistoryServiceImplTest : public ::testing::Test {
 
  private:
   TestingProfile profile_;
+  TestingPrefServiceSimple test_prefs_;
 };
 
 TEST_F(PrintJobHistoryServiceImplTest, SaveObservedCupsPrintJob) {

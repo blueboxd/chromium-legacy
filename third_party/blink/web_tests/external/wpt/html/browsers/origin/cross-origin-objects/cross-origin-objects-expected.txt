@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 90 tests; 42 PASS, 48 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 90 tests; 45 PASS, 45 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Basic sanity-checking (cross-origin)
 PASS Basic sanity-checking (same-origin + document.domain)
 PASS Basic sanity-checking (cross-site)
@@ -66,9 +66,9 @@ PASS Cross-origin functions get local Function.prototype (cross-site)
 FAIL Cross-origin Window accessors get local Function.prototype (cross-origin) Cannot read property 'name' of undefined
 FAIL Cross-origin Window accessors get local Function.prototype (same-origin + document.domain) Cannot read property 'name' of undefined
 FAIL Cross-origin Window accessors get local Function.prototype (cross-site) Cannot read property 'name' of undefined
-FAIL Same-origin observers get different functions for cross-origin objects (cross-origin) assert_not_equals: cross-origin Window functions get their own object got disallowed value function "function () { [native code] }"
-FAIL Same-origin observers get different functions for cross-origin objects (same-origin + document.domain) assert_not_equals: cross-origin Window functions get their own object got disallowed value function "function () { [native code] }"
-FAIL Same-origin observers get different functions for cross-origin objects (cross-site) assert_not_equals: cross-origin Window functions get their own object got disallowed value function "function () { [native code] }"
+PASS Same-origin observers get different functions for cross-origin objects (cross-origin)
+PASS Same-origin observers get different functions for cross-origin objects (same-origin + document.domain)
+PASS Same-origin observers get different functions for cross-origin objects (cross-site)
 FAIL Same-origin observers get different accessors for cross-origin Window (cross-origin) assert_not_equals: different Window accessors per-incumbent script settings object got disallowed value undefined
 FAIL Same-origin observers get different accessors for cross-origin Window (same-origin + document.domain) assert_not_equals: different Window accessors per-incumbent script settings object got disallowed value undefined
 FAIL Same-origin observers get different accessors for cross-origin Window (cross-site) assert_not_equals: different Window accessors per-incumbent script settings object got disallowed value undefined

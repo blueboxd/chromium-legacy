@@ -67,8 +67,7 @@ class CrostiniPackageService : public KeyedService,
                                   int progress_percent) override;
 
   // PendingAppListUpdatesObserver:
-  void OnPendingAppListUpdates(const std::string& vm_name,
-                               const std::string& container_name,
+  void OnPendingAppListUpdates(const ContainerId& container_id,
                                int count) override;
 
   // VmShutdownObserver

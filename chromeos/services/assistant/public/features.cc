@@ -72,6 +72,10 @@ const base::Feature kEnableMediaSessionIntegration{
     "AssistantEnableMediaSessionIntegration",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Disable voice match for test purpose.
+const base::Feature kDisableVoiceMatch{"DisableVoiceMatch",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 int GetProactiveSuggestionsMaxWidth() {
   return kAssistantProactiveSuggestionsMaxWidth.Get();
 }
@@ -142,6 +146,10 @@ bool IsStereoAudioInputEnabled() {
 
 bool IsWarmerWelcomeEnabled() {
   return base::FeatureList::IsEnabled(kAssistantWarmerWelcomeFeature);
+}
+
+bool IsVoiceMatchDisabled() {
+  return base::FeatureList::IsEnabled(kDisableVoiceMatch);
 }
 
 }  // namespace features

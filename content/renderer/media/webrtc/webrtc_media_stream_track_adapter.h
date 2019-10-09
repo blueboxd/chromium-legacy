@@ -18,9 +18,12 @@
 #include "third_party/blink/public/web/modules/mediastream/remote_media_stream_track_adapter.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
+namespace blink {
+class PeerConnectionDependencyFactory;
+}
+
 namespace content {
 
-class PeerConnectionDependencyFactory;
 struct WebRtcMediaStreamTrackAdapterTraits;
 
 // This is a mapping between a webrtc and blink media stream track. It takes
@@ -36,7 +39,7 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapter
   // Invoke on the main thread. The returned adapter is fully initialized, see
   // |is_initialized|. The adapter will keep a reference to the |main_thread|.
   static scoped_refptr<WebRtcMediaStreamTrackAdapter> CreateLocalTrackAdapter(
-      PeerConnectionDependencyFactory* factory,
+      blink::PeerConnectionDependencyFactory* factory,
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
       const blink::WebMediaStreamTrack& web_track);
   // Invoke on the webrtc signaling thread. Initialization finishes on the main
@@ -44,7 +47,7 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapter
   // in posts to the main thread, see |is_initialized|. The adapter will keep
   // references to the |main_thread| and |webrtc_track|.
   static scoped_refptr<WebRtcMediaStreamTrackAdapter> CreateRemoteTrackAdapter(
-      PeerConnectionDependencyFactory* factory,
+      blink::PeerConnectionDependencyFactory* factory,
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
       const scoped_refptr<webrtc::MediaStreamTrackInterface>& webrtc_track);
   // Must be called before all external references are released (i.e. before
@@ -83,7 +86,7 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapter
   friend struct WebRtcMediaStreamTrackAdapterTraits;
 
   WebRtcMediaStreamTrackAdapter(
-      PeerConnectionDependencyFactory* factory,
+      blink::PeerConnectionDependencyFactory* factory,
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread);
   virtual ~WebRtcMediaStreamTrackAdapter();
 
@@ -112,7 +115,7 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapter
 
   // Pointer to a |PeerConnectionDependencyFactory| owned by the |RenderThread|.
   // It's valid for the lifetime of |RenderThread|.
-  PeerConnectionDependencyFactory* const factory_;
+  blink::PeerConnectionDependencyFactory* const factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
 
   // Part of the initialization of remote tracks occurs on the signaling thread.

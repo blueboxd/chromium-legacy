@@ -328,7 +328,7 @@ ImageCandidate HTMLImageElement::FindBestFitImageFromPictureParent() {
   DCHECK(IsMainThread());
   Node* parent = parentNode();
   source_ = nullptr;
-  if (!parent || !IsHTMLPictureElement(*parent))
+  if (!parent || !IsA<HTMLPictureElement>(*parent))
     return ImageCandidate();
   for (Node* child = parent->firstChild(); child;
        child = child->nextSibling()) {
@@ -418,7 +418,7 @@ Node::InsertionNotificationRequest HTMLImageElement::InsertedInto(
   if (listener_)
     GetDocument().GetMediaQueryMatcher().AddViewportListener(listener_);
   bool was_added_to_picture_parent = false;
-  if (auto* picture_parent = ToHTMLPictureElementOrNull(parentNode())) {
+  if (auto* picture_parent = DynamicTo<HTMLPictureElement>(parentNode())) {
     picture_parent->AddListenerToSourceChildren();
     was_added_to_picture_parent = picture_parent == insertion_point;
   }
@@ -446,7 +446,7 @@ void HTMLImageElement::RemovedFrom(ContainerNode& insertion_point) {
     ResetFormOwner();
   if (listener_) {
     GetDocument().GetMediaQueryMatcher().RemoveViewportListener(listener_);
-    if (auto* picture_parent = ToHTMLPictureElementOrNull(parentNode()))
+    if (auto* picture_parent = DynamicTo<HTMLPictureElement>(parentNode()))
       picture_parent->RemoveListenerFromSourceChildren();
   }
   HTMLElement::RemovedFrom(insertion_point);

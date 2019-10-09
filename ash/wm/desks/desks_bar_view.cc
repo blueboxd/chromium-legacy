@@ -34,6 +34,8 @@ namespace ash {
 namespace {
 
 constexpr int kBarHeight = 104;
+constexpr int kBarHeightInSmallScreens = 64;
+constexpr int kUseSmallScreenLayoutWidthThreshold = 600;
 
 base::string16 GetMiniViewTitle(int mini_view_index) {
   DCHECK_GE(mini_view_index, 0);
@@ -141,8 +143,10 @@ DesksBarView::~DesksBarView() {
 }
 
 // static
-int DesksBarView::GetBarHeight() {
-  return kBarHeight;
+int DesksBarView::GetBarHeight(int desks_bar_view_width) {
+  return desks_bar_view_width <= kUseSmallScreenLayoutWidthThreshold
+             ? kBarHeightInSmallScreens
+             : kBarHeight;
 }
 
 // static
@@ -212,9 +216,16 @@ void DesksBarView::Layout() {
   constexpr int kIconAndTextHorizontalPadding = 16;
   constexpr int kIconAndTextVerticalPadding = 8;
 
+  const bool uses_small_screen_layout = UsesSmallScreenLayout();
+  new_desk_button_->SetLabelVisible(!uses_small_screen_layout);
   gfx::Size new_desk_button_size = new_desk_button_->GetPreferredSize();
-  new_desk_button_size.Enlarge(2 * kIconAndTextHorizontalPadding,
-                               2 * kIconAndTextVerticalPadding);
+  if (uses_small_screen_layout) {
+    new_desk_button_size.Enlarge(2 * kIconAndTextVerticalPadding,
+                                 2 * kIconAndTextVerticalPadding);
+  } else {
+    new_desk_button_size.Enlarge(2 * kIconAndTextHorizontalPadding,
+                                 2 * kIconAndTextVerticalPadding);
+  }
 
   const gfx::Rect button_bounds{
       bounds().right() - new_desk_button_size.width() - kButtonRightMargin,
@@ -240,6 +251,10 @@ void DesksBarView::Layout() {
     mini_view->SetBoundsRect(gfx::Rect(gfx::Point(x, y), mini_view_size));
     x += (mini_view_size.width() + kMiniViewsSpacing);
   }
+}
+
+bool DesksBarView::UsesSmallScreenLayout() const {
+  return width() <= kUseSmallScreenLayoutWidthThreshold;
 }
 
 void DesksBarView::ButtonPressed(views::Button* sender,
@@ -323,7 +338,7 @@ void DesksBarView::UpdateNewMiniViews(bool animate) {
 
     // The bar background is initially translated off the screen.
     gfx::Transform translate;
-    translate.Translate(0, -kBarHeight);
+    translate.Translate(0, -GetBarHeight(width()));
     background_view_->layer()->SetTransform(translate);
     background_view_->layer()->SetOpacity(0);
 

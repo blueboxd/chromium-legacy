@@ -22,6 +22,8 @@
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 
+namespace chromeos {
+
 namespace sync_wifi {
 
 namespace {
@@ -198,3 +200,5 @@ std::vector<NetworkIdentifier> WifiConfigurationBridge::GetAllIdsForTesting() {
 }
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos

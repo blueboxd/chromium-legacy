@@ -101,10 +101,11 @@ class UnittestProfileManager : public ProfileManagerWithoutInit {
       : ProfileManagerWithoutInit(user_data_dir) {}
 
  protected:
-  Profile* CreateProfileHelper(const base::FilePath& file_path) override {
-    if (!base::PathExists(file_path) && !base::CreateDirectory(file_path))
+  std::unique_ptr<Profile> CreateProfileHelper(
+      const base::FilePath& path) override {
+    if (!base::PathExists(path) && !base::CreateDirectory(path))
       return nullptr;
-    return BuildTestingProfile(file_path, /*delegate=*/nullptr).release();
+    return BuildTestingProfile(path, /*delegate=*/nullptr);
   }
 
   std::unique_ptr<Profile> CreateProfileAsyncHelper(

@@ -11,6 +11,10 @@
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
+namespace chromeos {
+
+namespace sync_wifi {
+
 namespace {
 
 const char kDelimeter[] = "_";
@@ -29,8 +33,6 @@ std::string GetSecurityType(
 }
 
 }  // namespace
-
-namespace sync_wifi {
 
 // static
 NetworkIdentifier NetworkIdentifier::FromProto(
@@ -76,3 +78,5 @@ bool NetworkIdentifier::operator==(const NetworkIdentifier& o) const {
 }
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos

@@ -176,7 +176,8 @@ void AssistantSettingsManagerImpl::SyncSpeakerIdEnrollmentStatus() {
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
 
   if (assistant_state()->allowed_state() !=
-      ash::mojom::AssistantAllowedState::ALLOWED) {
+          ash::mojom::AssistantAllowedState::ALLOWED ||
+      features::IsVoiceMatchDisabled()) {
     return;
   }
 

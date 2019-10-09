@@ -229,7 +229,6 @@
 <translation id="4261870227682513959">Mostra la configuració de notificacions. Les notificacions estan desactivades.</translation>
 <translation id="4269883910223712419">L'administrador d'aquest dispositiu pot dur a terme les accions següents:</translation>
 <translation id="4279490309300973883">S'està creant una rèplica</translation>
-<translation id="4281007048406351813">Afegeix 1 minut al temporitzador</translation>
 <translation id="4296136865091727875">Esborra les <ph name="COUNT" /> notificacions</translation>
 <translation id="4303223480529385476">Desplega l'àrea d'estat</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -419,7 +418,6 @@
 <translation id="7143207342074048698">S'està connectant</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7222902781030499995">Atura el temporitzador</translation>
 <translation id="7256634071279256947">Micròfon posterior</translation>
 <translation id="726276584504105859">Arrossega-la aquí per utilitzar la pantalla dividida</translation>
 <translation id="7262906531272962081">Crea un recordatori</translation>

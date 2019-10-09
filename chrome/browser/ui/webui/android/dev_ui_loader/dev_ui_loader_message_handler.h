@@ -36,8 +36,7 @@ class DevUiLoaderMessageHandler : public content::WebUIMessageHandler {
   // Called from JavaScript. |args| specifies id for callback, which receives
   // one of the following responses:
   // * "not-installed" if the DevUI DFM is not installed.
-  // * "not-loaded" if the DevUI DFM is installed, but not loaded.
-  // * "ready" if the DevUI DFM is installed and loaded.
+  // * "installed" if the DevUI DFM is installed.
   void HandleGetDevUiDfmState(const base::ListValue* args);
 
   // Helper for HandleInstallAndLoadDevUiDfm().
@@ -47,16 +46,13 @@ class DevUiLoaderMessageHandler : public content::WebUIMessageHandler {
   // Called from JavaScript. |args| specifies id for callback, which receives
   // one of the following responses:
   // * "noop" if the DevUI DFM is already installed and loaded.
-  // * "success" if DevUI DFM install / load takes place, and succeeds.
-  // * "failure" if DevUI DFM install / load takes place, but fails.
-  void HandleInstallAndLoadDevUiDfm(const base::ListValue* args);
+  // * "success" if DevUI DFM install takes place, and succeeds.
+  // * "failure" if DevUI DFM install takes place, but fails.
+  void HandleInstallDevUiDfm(const base::ListValue* args);
 
   // Callback for dev_ui::DevUiModuleProvider::InstallModule().
   void OnDevUiDfmInstallWithStatus(std::string callback_id_string,
                                    bool success);
-
-  // Callback for dev_ui::DevUiModuleProvider::LoadModule().
-  void OnDevUiResourceLoaded(std::string callback_id_string);
 
   // Factory for creating references in callbacks.
   base::WeakPtrFactory<DevUiLoaderMessageHandler> weak_ptr_factory_{this};

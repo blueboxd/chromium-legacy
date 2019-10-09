@@ -10,6 +10,10 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
+namespace chromeos {
+
+namespace sync_wifi {
+
 namespace {
 
 const char kPendingNetworkConfigurationsPref[] =
@@ -18,15 +22,15 @@ const char kChangeGuidKey[] = "ChangeGuid";
 const char kCompletedAttemptsKey[] = "CompletedAttempts";
 const char kSpecificsKey[] = "Specifics";
 
-std::string GeneratePath(const sync_wifi::NetworkIdentifier& id,
+std::string GeneratePath(const NetworkIdentifier& id,
                          const std::string& subkey) {
   return base::StringPrintf("%s.%s", id.SerializeToString().c_str(),
                             subkey.c_str());
 }
 
-sync_wifi::PendingNetworkConfigurationUpdate ConvertToPendingUpdate(
+PendingNetworkConfigurationUpdate ConvertToPendingUpdate(
     base::Value* dict,
-    const sync_wifi::NetworkIdentifier& id) {
+    const NetworkIdentifier& id) {
   std::string* change_guid = dict->FindStringKey(kChangeGuidKey);
   base::Optional<sync_pb::WifiConfigurationSpecificsData> specifics;
   std::string* specifics_string = dict->FindStringKey(kSpecificsKey);
@@ -41,13 +45,11 @@ sync_wifi::PendingNetworkConfigurationUpdate ConvertToPendingUpdate(
   DCHECK(change_guid);
   DCHECK(completed_attempts);
 
-  return sync_wifi::PendingNetworkConfigurationUpdate(
-      id, *change_guid, specifics, completed_attempts.value());
+  return PendingNetworkConfigurationUpdate(id, *change_guid, specifics,
+                                           completed_attempts.value());
 }
 
 }  // namespace
-
-namespace sync_wifi {
 
 // static
 void PendingNetworkConfigurationTrackerImpl::RegisterProfilePrefs(
@@ -122,3 +124,5 @@ PendingNetworkConfigurationTrackerImpl::GetPendingUpdate(
 }
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos

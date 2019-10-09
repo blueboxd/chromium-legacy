@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_GLOBAL_MEDIA_CONTROLS_MEDIA_TOOLBAR_BUTTON_VIEW_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller_delegate.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 
@@ -20,6 +19,7 @@ class Connector;
 
 class Browser;
 class GlobalMediaControlsPromoController;
+class MediaToolbarButtonController;
 class MediaToolbarButtonObserver;
 
 // Media icon shown in the trusted area of toolbar. Its lifetime is tied to that
@@ -82,7 +82,7 @@ class MediaToolbarButtonView : public ToolbarButton,
   bool is_promo_showing_ = false;
 
   service_manager::Connector* const connector_;
-  MediaToolbarButtonController controller_;
+  std::unique_ptr<MediaToolbarButtonController> controller_;
   const Browser* const browser_;
 
   base::ObserverList<MediaToolbarButtonObserver> observers_;

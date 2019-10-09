@@ -89,12 +89,11 @@ class UnittestProfileManager : public ProfileManagerWithoutInit {
   ~UnittestProfileManager() override = default;
 
  protected:
-  Profile* CreateProfileHelper(const base::FilePath& file_path) override {
-    if (!base::PathExists(file_path)) {
-      if (!base::CreateDirectory(file_path))
-        return nullptr;
-    }
-    return new TestingProfile(file_path, nullptr);
+  std::unique_ptr<Profile> CreateProfileHelper(
+      const base::FilePath& path) override {
+    if (!base::PathExists(path) && !base::CreateDirectory(path))
+      return nullptr;
+    return std::make_unique<TestingProfile>(path);
   }
 
   std::unique_ptr<Profile> CreateProfileAsyncHelper(
@@ -579,12 +578,12 @@ class UnittestGuestProfileManager : public UnittestProfileManager {
       : UnittestProfileManager(user_data_dir) {}
 
  protected:
-  Profile* CreateProfileHelper(const base::FilePath& file_path) override {
+  std::unique_ptr<Profile> CreateProfileHelper(
+      const base::FilePath& path) override {
     TestingProfile::Builder builder;
     builder.SetGuestSession();
-    builder.SetPath(file_path);
-    TestingProfile* testing_profile = builder.Build().release();
-    return testing_profile;
+    builder.SetPath(path);
+    return builder.Build();
   }
 };
 

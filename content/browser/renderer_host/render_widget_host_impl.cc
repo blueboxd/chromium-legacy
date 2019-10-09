@@ -795,6 +795,9 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   // This is only called while the RenderWidgetHost is attached to a delegate
   // still.
   DCHECK(delegate_);
+  // When the renderer process is gone, there's no need for VisualProperties
+  // which are to be sent to the renderer process.
+  DCHECK(view_);
 
   VisualProperties visual_properties;
 
@@ -833,29 +836,25 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   visual_properties.page_scale_factor = page_scale_factor_;
   visual_properties.is_pinch_gesture_active = is_pinch_gesture_active_;
 
-  if (view_) {
-    visual_properties.new_size = view_->GetRequestedRendererSize();
-    visual_properties.capture_sequence_number =
-        view_->GetCaptureSequenceNumber();
-    // For OOPIFs, use the compositor viewport received from the FrameConnector.
-    visual_properties.compositor_viewport_pixel_rect =
-        view_->IsRenderWidgetHostViewChildFrame() &&
-                !view_->IsRenderWidgetHostViewGuest()
-            ? gfx::ScaleToEnclosingRect(
-                  compositor_viewport_,
-                  IsUseZoomForDSFEnabled()
-                      ? 1.f
-                      : visual_properties.screen_info.device_scale_factor)
-            : gfx::Rect(view_->GetCompositorViewportPixelSize());
-    visual_properties.visible_viewport_size = view_->GetVisibleViewportSize();
-    // TODO(ccameron): GetLocalSurfaceId is not synchronized with the device
-    // scale factor of the surface. Fix this.
-    viz::LocalSurfaceIdAllocation local_surface_id_allocation =
-        view_->GetLocalSurfaceIdAllocation();
-    if (local_surface_id_allocation.IsValid()) {
-      visual_properties.local_surface_id_allocation =
-          local_surface_id_allocation;
-    }
+  visual_properties.new_size = view_->GetRequestedRendererSize();
+  visual_properties.capture_sequence_number = view_->GetCaptureSequenceNumber();
+  // For OOPIFs, use the compositor viewport received from the FrameConnector.
+  visual_properties.compositor_viewport_pixel_rect =
+      view_->IsRenderWidgetHostViewChildFrame() &&
+              !view_->IsRenderWidgetHostViewGuest()
+          ? gfx::ScaleToEnclosingRect(
+                compositor_viewport_,
+                IsUseZoomForDSFEnabled()
+                    ? 1.f
+                    : visual_properties.screen_info.device_scale_factor)
+          : gfx::Rect(view_->GetCompositorViewportPixelSize());
+  visual_properties.visible_viewport_size = view_->GetVisibleViewportSize();
+  // TODO(ccameron): GetLocalSurfaceId is not synchronized with the device
+  // scale factor of the surface. Fix this.
+  viz::LocalSurfaceIdAllocation local_surface_id_allocation =
+      view_->GetLocalSurfaceIdAllocation();
+  if (local_surface_id_allocation.IsValid()) {
+    visual_properties.local_surface_id_allocation = local_surface_id_allocation;
   }
 
   if (screen_orientation_type_for_testing_) {

@@ -120,8 +120,7 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
 
 // TODO(wjmaclean): we should restructure RenderWidgetHostViewChildFrameTest to
 // look more like this one, and then this one could be derived from it.
-class RenderWidgetHostViewGuestSurfaceTest
-    : public testing::Test {
+class RenderWidgetHostViewGuestSurfaceTest : public testing::Test {
  public:
   RenderWidgetHostViewGuestSurfaceTest()
       : widget_host_(nullptr), view_(nullptr) {}

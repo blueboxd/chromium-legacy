@@ -1965,11 +1965,10 @@ Browser* TabDragController::CreateBrowserForDrag(
       CalculateDraggedBrowserBounds(source, point_in_screen, drag_bounds));
   *drag_offset = point_in_screen - new_bounds.origin();
 
-  Profile* profile =
-      Profile::FromBrowserContext(drag_data_[0].contents->GetBrowserContext());
-  Browser::CreateParams create_params(Browser::TYPE_NORMAL, profile,
-                                      /*user_gesture=*/true,
-                                      /*in_tab_dragging=*/true);
+  Browser::CreateParams create_params =
+      BrowserList::GetInstance()->GetLastActive()->create_params();
+  create_params.user_gesture = true;
+  create_params.in_tab_dragging = true;
   create_params.initial_bounds = new_bounds;
   Browser* browser = new Browser(create_params);
   is_dragging_new_browser_ = true;

@@ -17,10 +17,10 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.favicon.FaviconUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
-import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -201,8 +201,7 @@ public class EphemeralTabCoordinator {
             mContext = context;
             mFaviconHelper = new FaviconHelper();
             mDefaultFaviconHelper = new FaviconHelper.DefaultFaviconHelper();
-            mIconGenerator =
-                    ViewUtils.createDefaultRoundedIconGenerator(mContext.getResources(), true);
+            mIconGenerator = FaviconUtils.createCircularIconGenerator(mContext.getResources());
             mFaviconSize =
                     mContext.getResources().getDimensionPixelSize(R.dimen.preview_tab_favicon_size);
         }
@@ -239,9 +238,8 @@ public class EphemeralTabCoordinator {
                         Bitmap.createScaledBitmap(image, mFaviconSize, mFaviconSize, true));
             }
 
-            return ViewUtils.createRoundedBitmapDrawable(
-                    Bitmap.createScaledBitmap(image, mFaviconSize, mFaviconSize, true),
-                    ViewUtils.DEFAULT_FAVICON_CORNER_RADIUS);
+            return FaviconUtils.createRoundedBitmapDrawable(
+                    Bitmap.createScaledBitmap(image, mFaviconSize, mFaviconSize, true));
         }
     }
 }

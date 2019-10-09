@@ -1974,7 +1974,7 @@ TEST_F(URLLoaderTest, RedirectLogsModifiedConcerningHeader) {
   net::HttpRequestHeaders redirect_headers;
   redirect_headers.SetHeader(net::HttpRequestHeaders::kReferer,
                              "https://somewhere.test/");
-  redirect_headers.SetHeader(net::HttpRequestHeaders::kTransferEncoding, "Hat");
+  redirect_headers.SetHeader("Via", "Albuquerque");
   loader->FollowRedirect({}, redirect_headers, base::nullopt);
 
   client.RunUntilComplete();
@@ -1989,7 +1989,7 @@ TEST_F(URLLoaderTest, RedirectLogsModifiedConcerningHeader) {
       "NetworkService.ConcerningRequestHeader.AddedOnRedirect", false, 0);
   for (int i = 0; i < static_cast<int>(ConcerningHeaderId::kMaxValue); ++i) {
     if (i == static_cast<int>(ConcerningHeaderId::kReferer) ||
-        i == static_cast<int>(ConcerningHeaderId::kTransferEncoding)) {
+        i == static_cast<int>(ConcerningHeaderId::kVia)) {
       histograms.ExpectBucketCount(
           "NetworkService.ConcerningRequestHeader.HeaderAddedOnRedirect", i, 1);
     } else {

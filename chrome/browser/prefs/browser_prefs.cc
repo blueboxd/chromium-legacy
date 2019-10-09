@@ -284,6 +284,7 @@
 #include "chrome/browser/chromeos/power/power_metrics_reporter.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
+#include "chrome/browser/chromeos/printing/history/print_job_history_service.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/release_notes/release_notes_storage.h"
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
@@ -923,6 +924,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   chromeos::quick_unlock::FingerprintStorage::RegisterProfilePrefs(registry);
   chromeos::quick_unlock::PinStoragePrefs::RegisterProfilePrefs(registry);
   chromeos::Preferences::RegisterProfilePrefs(registry);
+  chromeos::PrintJobHistoryService::RegisterProfilePrefs(registry);
   chromeos::SyncedPrintersManager::RegisterProfilePrefs(registry);
   chromeos::parent_access::ParentAccessService::RegisterProfilePrefs(registry);
   chromeos::quick_unlock::RegisterProfilePrefs(registry);

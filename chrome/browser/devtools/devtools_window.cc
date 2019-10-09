@@ -770,6 +770,16 @@ DevToolsWindow::MaybeCreateNavigationThrottle(
   return std::make_unique<Throttle>(handle, window);
 }
 
+void DevToolsWindow::UpdateInspectedWebContents(
+    content::WebContents* new_web_contents) {
+  inspected_contents_observer_ =
+      std::make_unique<ObserverWithAccessor>(new_web_contents);
+  bindings_->AttachTo(
+      content::DevToolsAgentHost::GetOrCreateFor(new_web_contents));
+  bindings_->CallClientFunction("DevToolsAPI.reattachMainTarget", nullptr,
+                                nullptr, nullptr);
+}
+
 void DevToolsWindow::ScheduleShow(const DevToolsToggleAction& action) {
   if (life_stage_ == kLoadCompleted) {
     Show(action);

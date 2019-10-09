@@ -162,6 +162,7 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="1219695476179627719">Consente di specificare se il dispositivo deve eseguire il rollback alla versione impostata da <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> nel caso in cui sia già in esecuzione una versione successiva.
 
       L'impostazione predefinita è RollbackDisabled.</translation>
+<translation id="1220047093962987554">Verifica lo stato degli URL visitati in tempo reale con Navigazione sicura</translation>
 <translation id="1221359380862872747">Carica gli URL specificati all'accesso demo</translation>
 <translation id="1223789468190631420">Stato attivazione Navigazione sicura per origini attendibili</translation>
 <translation id="122899932962115297">Una whitelist che consente di stabilire quali modalità di sblocco rapido possono essere configurate e usate dagli utenti per sbloccare la schermata di blocco.
@@ -182,11 +183,14 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="1243570869342663665">Controlla il filtro dei contenuti per adulti di SafeSites.</translation>
 <translation id="1257550411839719984">Imposta directory di download predefinita</translation>
 <translation id="1265053460044691532">Limita il tempo per cui un utente autenticato tramite SAML può eseguire l'accesso offline</translation>
+<translation id="127264587838521316">Attiva le richieste di installazione delle estensioni di<ph name="PRODUCT_NAME" /></translation>
 <translation id="1290634681382861275">Consente di gestire varie impostazioni, tra cui USB, Bluetooth, aggiornamento delle norme, modalità sviluppatore e altre ancora.</translation>
 <translation id="1291880496936992484">Avviso. RC4 sarà rimosso completamente da <ph name="PRODUCT_NAME" /> dopo la versione 52 (nel periodo di settembre 2016), dopodiché questa norma non sarà più attiva.
 
       Se la norma non viene impostata o se viene impostata su false, i pacchetti di crittografia RC4 in TLS non saranno attivati. In alternativa, la norma può essere impostata su true per mantenere la compatibilità con un server obsoleto. Si tratta di una soluzione temporanea ed è necessario configurare nuovamente il server.</translation>
+<translation id="1295737447968372331">Attiva la dettatura sulla schermata di accesso</translation>
 <translation id="1297182715641689552">Utilizza uno script proxy .pac</translation>
+<translation id="1297961932043741908">Imposta un limite nei megabyte di memoria che una istanza singola di Chrome può usare.</translation>
 <translation id="1304973015437969093">ID app/estensioni e URL di aggiornamento da installare automaticamente</translation>
 <translation id="1307454923744766368">Origini o schemi di nomi host a cui non dovrebbero essere applicate limitazioni previste per le origini non sicure.</translation>
 <translation id="1312799700549720683">Consente di gestire le impostazioni di visualizzazione.</translation>
@@ -572,6 +576,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se attivi o disattivi questa impostazione, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />.
 
       Se questa impostazione non è impostata, l'utente può decidere se usare o meno tale funzione.</translation>
+<translation id="1999000620918508488">Forza la schermata di accesso a visualizzare o nascondere le informazioni di sistema.</translation>
 <translation id="2006530844219044261">Gestione dell'alimentazione</translation>
 <translation id="2014757022750736514">Consente di stabilire il comportamento della schermata di accesso, da cui gli utenti possono accedere ai propri account. Le impostazioni consentono di decidere chi può accedere, che tipi di account sono consentiti, quali metodi di autenticazione devono essere usati. Sono disponibili anche impostazioni generali relative ad accessibilità, metodo di immissione e lingue.</translation>
 <translation id="201557587962247231">Frequenza dei caricamenti del rapporto sullo stato del dispositivo</translation>
@@ -587,12 +592,18 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2024476116966025075">Configura il nome di dominio richiesto per i client di accesso remoto</translation>
 <translation id="2030905906517501646">Parola chiave del provider di ricerca predefinito</translation>
 <translation id="203096360153626918">Questa norma non ha effetto sulle app Android, che saranno in grado di entrare in modalità a schermo intero anche se la norma viene impostata su <ph name="FALSE" />.</translation>
+<translation id="2043749682619281558">Attiva l'evidenziazione del cursore sulla schermata di accesso</translation>
 <translation id="2043770014371753404">Stampanti aziendali disattivate</translation>
 <translation id="2050629715135525072">Controlla la capacità di un utente connesso a un host di accesso remoto di trasferire file dal client all'host e viceversa. Questa norma non si applica alle connessioni di assistenza remota, le quali non supportano il trasferimento di file.
 
           Se questa impostazione è disattivata, il trasferimento di file non sarà concesso. Se questa impostazione è attivata o non configurata, il trasferimento di file sarà concesso.</translation>
 <translation id="2057317273526988987">Consenti l'accesso a un elenco di URL</translation>
 <translation id="2061810934846663491">Configura i nomi di dominio richiesti per gli host di accesso remoto</translation>
+<translation id="2063663607822994541">Consente di configurare la quantità di memoria che una singola istanza di <ph name="PRODUCT_NAME" /> può utilizzare prima che le schede vengano ignorate per risparmiare memoria, ossia la memoria utilizzata dalla scheda verrà liberata e la scheda dovrà essere ricaricata quando si passerà a tale scheda.
+
+      Se il criterio viene impostato, il browser inizierà a ignorare le schede per risparmiare memoria una volta superato il limite. Non vi è, tuttavia, alcuna garanzia che il browser venga sempre eseguito al di sotto di tale limite. Qualsiasi valore inferiore a 2048 verrà arrotondato per eccesso a 2048.
+
+      Se questo criterio non viene impostato, il browser farà dei tentativi per risparmiare memoria solo una volta rilevato che la memoria fisica del computer è in esaurimento.</translation>
 <translation id="206623763829450685">Consente di specificare gli schemi di autenticazione HTTP supportati da <ph name="PRODUCT_NAME" />.
 
           I valori possibili sono "basic", "digest", "ntlm" e "negotiate". Separa i valori con la virgola.
@@ -603,6 +614,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2077129598763517140">Usa accelerazione hardware quando disponibile</translation>
 <translation id="2077273864382355561">Ritardo disattivazione schermo in caso di utilizzo della batteria</translation>
 <translation id="2082205219176343977">Configura la versione minima di Chrome consentita per il dispositivo.</translation>
+<translation id="2084647819368766928">Elenco di domini per i quali non è necessario verificare eventuali violazioni delle regole relative alla protezione dei dati sensibili dei contenuti caricati.</translation>
 <translation id="209586405398070749">Canale stabile</translation>
 <translation id="2098658257603918882">Attiva rapporti sull'utilizzo e sui dati relativi agli arresti anomali</translation>
 <translation id="2104418465060359056">Segnala i dati delle estensioni e dei plug-in</translation>
@@ -758,6 +770,16 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa impostazione è attivata, la cronologia di navigazione non viene salvata. Con questa impostazione viene disattivata anche la sincronizzazione delle schede.
 
       Se questa impostazione è disattivata o non viene impostata, la cronologia di navigazione viene salvata.</translation>
+<translation id="2423038190900972331">Consente il controllo su come <ph name="PRODUCT_NAME" /> verifica i dati che vengono caricati, scaricati, incollati dagli appunti o trascinati per eventuali violazioni delle regole relative alla protezione dei dati sensibili.
+
+      Se questo criterio non è impostato o è impostato su "Nessuno", <ph name="PRODUCT_NAME" /> non verificherà nessun dato per eventuali violazioni delle regole relative alla protezione dei dati sensibili.
+
+      Se questo criterio è impostato su "Verifica download" e l'utente tenta di scaricare un file da un URL incluso nel criterio <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" />, <ph name="PRODUCT_NAME" /> verificherà la conformità dei dati scaricati rispetto alle regole aziendali.
+
+      Se questo criterio è impostato su "Verifica caricamenti" e l'utente tenta di caricare un file in un dominio che non è incluso nel criterio <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" />, <ph name="PRODUCT_NAME" /> verificherà la conformità del file caricato, dei dati copiati dagli appunti o dei dati trascinati rispetto alle regole aziendali.
+
+      Se questo criterio viene impostato su "Verifica caricamenti e download", <ph name="PRODUCT_NAME" /> si comporta secondo le regole descritte nelle impostazioni "Verifica download" e "Verifica caricamenti".
+      </translation>
 <translation id="2426782419955104525">Consente di attivare la funzione Instant di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare l'impostazione.
 
       Se l'impostazione viene attivata, la funzione Instant di <ph name="PRODUCT_NAME" /> viene attivata.
@@ -898,6 +920,10 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa norma viene impostata, l'utente non potrà modificarla o eseguirne l'override.
 
       Dopo avere attivato il Bluetooth, l'utente deve uscire e accedere di nuovo per applicare le modifiche (questa operazione non è necessaria se il Bluetooth viene disattivato).</translation>
+<translation id="2570498106495954914">Elenco di domini per i quali è necessario verificare eventuali violazioni delle regole relative alla protezione dei dati sensibili dei contenuti scaricati prima che vengano salvati nello spazio di archiviazione locale.  Questo criterio viene utilizzato solo se il criterio <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> è attivato.
+
+      Se questo criterio non viene impostato o viene impostato su un elenco di domini vuoto, non verranno verificate eventuali violazioni delle regole relative alla protezione dei dati sensibili di nessun contenuto scaricato.
+      </translation>
 <translation id="2571066091915960923">Consente di attivare o disattivare il proxy di compressione dei dati e di impedire agli utenti di cambiare questa impostazione.
 
 Se attivi o disattivi questa impostazione, gli utenti non potranno cambiarla o ignorarla.
@@ -961,6 +987,23 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="268577405881275241">Attiva la funzione proxy di compressione dei dati</translation>
 <translation id="2693108589792503178">Configura l'URL di modifica della password.</translation>
 <translation id="2694143893026486692">Lente d'ingrandimento ancorata attivata</translation>
+<translation id="2694188263972877487">Consente di configurare il tipo di download che <ph name="PRODUCT_NAME" /> bloccherà completamente senza che gli utenti possano ignorare la decisione di sicurezza.
+
+      Se imposti questo criterio, <ph name="PRODUCT_NAME" /> impedirà tipi di download specifici e non consentirà all'utente di aggirare gli avvisi di sicurezza.
+
+      Se viene selezionata l'opzione "Blocca download pericolosi", tutti i download sono consentiti, tranne quelli per cui vengono visualizzati avvisi di Navigazione sicura.
+
+      Se viene selezionata l'opzione "Blocca download potenzialmente dannosi", tutti i download sono consentiti, tranne quelli per cui vengono visualizzati avvisi di Navigazione sicura o di download potenzialmente dannosi.
+
+      Se viene selezionata l'opzione "Blocca tutti i download", tutti i download vengono bloccati.
+
+      Se viene selezionata l'opzione "Blocca i download dannosi", tutti i download sono consentiti tranne quelli che secondo la valutazione di Navigazione sicura sono con molta probabilità malware. A differenza dei download pericolosi, questa opzione non prende in considerazione il tipo di file bensì l'host.
+
+      Se questo criterio non viene impostato o viene scelta l'opzione "Senza particolari limitazioni", i download saranno sottoposti alle normali limitazioni di sicurezza in base ai risultati dell'analisi di Navigazione sicura.
+
+      Tieni presente che tali limitazioni vengono applicate ai download attivati dai contenuti delle pagine web, nonché all'opzione del menu contestuale "Scarica link...". Tali limitazioni non vengono applicate al salvataggio o al download della pagina visualizzata né all'opzione di stampa relativa al salvataggio in PDF.
+
+      Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="2706708761587205154">Consenti la stampa solo con PIN</translation>
 <translation id="2710534340210290498">Se la norma viene impostata su false, gli utenti non potranno bloccare lo schermo (sarà possibile solo la disconnessione dalla sessione utente). Se l'impostazione viene impostata su true o non viene configurata, gli utenti autenticati mediante password potranno bloccare lo schermo.</translation>
 <translation id="2731627323327011390">Disattiva l'utilizzo dei certificati <ph name="PRODUCT_OS_NAME" /> per le app ARC</translation>
@@ -1397,6 +1440,15 @@ Se questa norma viene impostata su True, i ritardi di gestione dell'alimentazion
 Se questa norma viene impostata su False o non viene impostata, i ritardi di gestione dell'alimentazione e il limite di durata delle sessioni iniziano immediatamente all'avvio della sessione.</translation>
 <translation id="3478024346823118645">Cancella dati utente all'uscita</translation>
 <translation id="3480961938508521469">Carica completamente la batteria con la modalità standard.</translation>
+<translation id="348110646151632565">Consente di attivare la funzione di accessibilità Seleziona per ascoltare sulla schermata di accesso.
+
+          Se questo criterio è impostato su true, Seleziona per ascoltare sarà sempre attivato nella schermata di accesso.
+
+          Se questo criterio è impostato su false, Seleziona per ascoltare sarà sempre disattivato nella schermata di accesso.
+
+          Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+          Se questo criterio non viene impostato, inizialmente Seleziona per ascoltare è disattivato, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="3483729306380590354">Consente di impostare il valore personalizzato espresso in percentuale raggiunto il quale viene avviata la ricarica della batteria.
 
           La batteria inizia a caricarsi quando raggiunge il valore di avvio della ricarica personalizzato.
@@ -1434,6 +1486,7 @@ Questa norma è facoltativa. Se non viene impostata, non verrà utilizzata la ri
 
 Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Abilita traduzione</translation>
+<translation id="3508047333410537654">Attiva l'audio in formato mono sulla schermata di accesso</translation>
 <translation id="3513655665999652754">Quirks Server fornisce file di configurazione specifici per l'hardware, ad esempio
       profili ICC per regolare la calibrazione del monitor.
 
@@ -1484,6 +1537,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3591527072193107424">Attiva la funzionalità Supporto dei browser precedenti.</translation>
 <translation id="3591584750136265240">Configura il comportamento di autenticazione dell'accesso</translation>
 <translation id="3617743504695003280">Consente a una pagina di fare richieste XHR sincrone durante l'uscita dalla pagina.</translation>
+<translation id="3624515566460517364">Verifica eventuali violazioni delle regole relative alla protezione dei dati sensibili di caricamenti e download</translation>
 <translation id="3627678165642179114">Attiva o disattiva il servizio web di controllo ortografico</translation>
 <translation id="3628480121685794414">Attiva stampa su un lato</translation>
 <translation id="3631099945620529777">Se la norma è impostata su false, il pulsante "Termina processo" in Task Manager viene disattivato.
@@ -1569,6 +1623,15 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Se la norma non viene impostata, viene utilizzata la directory di download predefinita e l'utente può modificarla.</translation>
 <translation id="3805659594028420438">Attiva estensione di certificati associati al dominio TLS (obsoleta)</translation>
 <translation id="3808945828600697669">Specifica un elenco dei plug-in disattivati</translation>
+<translation id="3810642039169532482">Consente di attivare la funzioni di accessibilità di dettatura nella schermata di accesso.
+
+          Se questo criterio è impostato su true, la dettatura sarà sempre attivata nella schermata di accesso.
+
+          Se questo criterio è impostato su false, la dettatura sarà sempre disattivata nella schermata di accesso.
+
+          Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+          Se questo criterio non viene impostato, inizialmente la dettatura è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="3811562426301733860">Consenti annunci su tutti i siti</translation>
 <translation id="3816312845600780067">Attivazione scorciatoia da tastiera bailout per accesso automatico</translation>
 <translation id="3820526221169548563">Attiva la funzione di accessibilità della tastiera sullo schermo.
@@ -1633,6 +1696,7 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Ogni voce dell'elenco contiene un dizionario che deve includere l'ID dell'estensione nel campo "extension-id" e il relativo URL di aggiornamento nel campo "update-url".</translation>
 <translation id="3874773863217952418">Attiva Tocca per cercare</translation>
 <translation id="3877517141460819966">Modalità di autenticazione a due fattori integrata</translation>
+<translation id="3879196885908353077">Verifica eventuali violazioni delle regole relative alla protezione dei dati sensibili dei download</translation>
 <translation id="3879208481373875102">Configura l'elenco delle app web con installazione forzata</translation>
 <translation id="388237772682176890">Questa norma è stata ritirata in M53 e rimossa in M54 perché è stato rimosso il supporto di SPDY/3.1.
 
@@ -1734,6 +1798,7 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
 <translation id="4027608872760987929">Attiva il provider di ricerca predefinito</translation>
 <translation id="4039085364173654945">Consente di stabilire se per i contenuti secondari di terze parti presenti in una pagina è consentita la visualizzazione di una finestra di dialogo Autorizzazione di base HTTP. Generalmente questa norma non è attiva per tutela dal phishing. Se questa norma non viene impostata, l'impostazione verrà disattivata e per i contenuti secondari di terze parti non potrà essere visualizzata una finestra di dialogo Autorizzazione di base HTTP.</translation>
 <translation id="4056910949759281379">Disabilita protocollo SPDY</translation>
+<translation id="4075864623710596000">I nomi host specificati in questo elenco saranno esenti dalla verifica dei criteri HSTS che potrebbero eseguire l'upgrade delle richieste da http a https. Solo i nomi host con etichetta singola sono consentiti in questo criterio. I nomi host devono essere canonicalizzati, ogni IDN deve essere convertito nel relativo formato A-label e tutte le lettere ASCII devono essere minuscole. Questo criterio si applica soltanto ai nomi host specificati e non ai relativi sottodomini.</translation>
 <translation id="408029843066770167">Consenti query a un servizio orario di Google</translation>
 <translation id="408076456549153854">Attiva accesso al browser</translation>
 <translation id="40853027210512570">Consente di sostituire le regole di selezione della stampante predefinita di <ph name="PRODUCT_NAME" />.
@@ -1831,6 +1896,15 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="4171331498167688968">Se il criterio viene impostato su false, i programmi software di terze parti potranno inserire codice eseguibile nei processi di Chrome. Se il criterio non viene impostato o viene impostato su true, i programmi software di terze parti non potranno inserire codice eseguibile nei processi di Chrome.
 
       A prescindere dal valore di questo criterio, il browser al momento non impedisce a software di terze parti di inserire codice eseguibile nei propri processi su una macchina collegata a un dominio <ph name="MS_AD_NAME" />.</translation>
+<translation id="417956245902013347">Consente di attivare la funzione di accessibilità di evidenziazione del cursore di testo.
+
+          Se questo criterio è impostato su true, l'evidenziazione del cursore di testo sarà sempre attivata sulla schermata di avvio.
+
+          Se questo criterio è impostato su false, l'evidenziazione del cursore di testo sarà sempre disattivata sulla schermata di avvio.
+
+          Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+          Se questo criterio non viene impostato, inizialmente l'evidenziazione del cursore di testo è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="4183229833636799228">Impostazione predefinita per il plug-in <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL per la convalida del token di autenticazione del client di accesso remoto</translation>
 <translation id="420007931282384740">Consente di impostare lo stato predefinito della funzione di accessibilità della tastiera sullo schermo nella schermata di accesso.
@@ -2031,6 +2105,7 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 
           Se questa norma viene impostata su false, <ph name="PRODUCT_NAME" /> sarà disattivato.</translation>
 <translation id="4510923771103268849">L'utente può avere accesso root ai contenitori Crostini</translation>
+<translation id="4513262269532252501">Elenco di domini per i quali è necessario verificare eventuali violazioni delle regole relative alla protezione dei dati sensibili dei contenuti scaricati</translation>
 <translation id="4515404363392014383">Attiva Navigazione sicura per le origini attendibili</translation>
 <translation id="4517928394515633751">Analizza i download degli utenti tramite Navigazione sicura</translation>
 <translation id="4518251772179446575">Chiedi ogni volta che un sito desidera monitorare la posizione fisica degli utenti</translation>
@@ -2069,6 +2144,14 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
           Se questa norma è impostata su "true", i tasti della fila superiore della tastiera riprodurranno i comandi dei tasti funzione per impostazione predefinita. Per ripristinare il comportamento dei tasti multimediali, è necessario premere il tasto per la ricerca.
 
           Se questa norma è impostata su "false" o non viene impostata, la tastiera riprodurrà i comandi dei tasti multimediali per impostazione predefinita e i comandi dei tasti funzione quando viene premuto il tasto per la ricerca.</translation>
+<translation id="4636613705027089602">Questo criterio controlla le richieste di installazione delle estensioni di <ph name="PRODUCT_NAME" /> permettendo l'invio di richieste di approvazione da parte degli utenti alla Console di amministrazione Google.
+
+      Se il criterio non è impostato o è impostato su Disattivato, le richieste di installazione delle estensioni non vengono create né caricate.
+      Se il criterio è impostato su Attivato, le richieste di installazione delle estensioni vengono create e caricate sulla Console di amministrazione Google
+
+      Le richieste di installazione delle estensioni vengono create quando gli utenti tentano di installare un'estensione non autorizzata da <ph name="EXTENSION_INSTALL_WHITELIST" /> o <ph name="EXTENSION_SETTINGS" />.
+
+      Questo criterio viene applicato soltanto se il computer viene registrato con la norma <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> e <ph name="CLOUD_REPORTING_ENABLED" /> è attivato.</translation>
 <translation id="4639407427807680016">Nomi degli host di messaggi nativi da escludere dalla lista nera.</translation>
 <translation id="4650759511838826572">Disabilita schemi di protocollo dell'URL</translation>
 <translation id="465099050592230505">URL del web store dell'azienda (obsoleta)</translation>
@@ -2174,6 +2257,10 @@ Se la norma non viene impostata, il puntatore grande sarà inizialmente disattiv
 <translation id="4874982543810021567">Blocca WebUSB su questi siti</translation>
 <translation id="4876805738539874299">Versione SSL massima abilitata</translation>
 <translation id="4887274746092315609">Attiva una pagina per la modifica della password all'interno della sessione per gli utenti SAML</translation>
+<translation id="4887863670424903990">Se questo criterio viene attivato, <ph name="PRODUCT_NAME" /> segnala a Google eventi non sicuri da analizzare, come il riutilizzo di password, il download di malware, la presenza di interstitial, eventuali violazioni delle regole relative alla protezione dei dati sensibili ecc.  Alcuni eventi non sicuri, come eventuali violazioni delle regole relative alla protezione dei dati sensibili, dipendono da altri criteri che attivano l'analisi.
+
+      Se questo criterio viene disattivato o non viene impostato, <ph name="PRODUCT_NAME" /> non segnalerà alcun evento non sicuro.
+      </translation>
 <translation id="4897928009230106190">Consente di specificare i parametri utilizzati durante la ricerca di suggerimenti con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {searchTerms} nell'esempio precedente, verrà sostituito con i dati dei termini di ricerca reali.
 
 Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca di suggerimenti verrà inviata utilizzando il metodo GET.
@@ -2192,6 +2279,17 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4906194810004762807">Frequenza di aggiornamento per norma dispositivo</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4923806312383904642">Consenti a WebDriver di eseguire l'override delle norme non compatibili</translation>
+<translation id="4929721861648439998">Consente di attivare la funzione di accessibilità di audio in formato mono nella schermata di accesso.
+
+          Questa funzione consente di cambiare la modalità del dispositivo dall'audio in formato stereo predefinito all'audio in formato mono.
+
+          Se questo criterio è impostato su true, l'audio in formato mono sarà sempre attivato nella schermata di accesso.
+
+          Se questo criterio è impostato su false, l'audio in formato mono sarà sempre disattivato nella schermata di accesso.
+
+          Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+          Se questo criterio non viene impostato, inizialmente l'audio in formato mono è disattivato, ma l'utente può attivarlo in qualsiasi momento.</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="494924690085329212">Riavvia all'uscita dell'utente se Android è stato avviato.</translation>
 <translation id="4962262530309732070">Se questo criterio è impostato su true o non viene configurato, su <ph name="PRODUCT_NAME" /> sarà possibile aggiungere persone con la funzione Aggiungi persona di Gestione utenti.
@@ -2384,6 +2482,15 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 <translation id="5272684451155669299">Se questa opzione viene impostata su true, l'utente può usare l'hardware su dispositivi Chrome per attestare da remoto la propria identità all'autorità di certificazione della privacy utilizzando la funzione <ph name="CHALLENGE_USER_KEY_FUNCTION" /> dell'<ph name="ENTERPRISE_PLATFORM_KEYS_API" />.
 
           Se viene impostata su false o non viene impostata, le chiamate all'API non vanno a buon fine e viene generato un codice di errore.</translation>
+<translation id="5273744932022326215">Consente di attivare la funzione di accessibilità di evidenziazione del cursore.
+
+          Se questo criterio è impostato su true, l'evidenziazione del cursore sarà sempre attivata sulla schermata di avvio.
+
+          Se questo criterio è impostato su false, l'evidenziazione del cursore sarà sempre disattivata sulla schermata di avvio.
+
+          Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+          Se questo criterio non viene impostato, inizialmente l'evidenziazione del cursore è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="5277806246014825877">Questa norma consente all'utente di eseguire Crostini.
 
       Se la norma viene impostata su False, Crostini non è abilitato per l'utente.
@@ -2391,6 +2498,7 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
       Le tre norme, VirtualMachinesAllowed, CrostiniAllowed e DeviceUnaffiliatedCrostiniAllowed devono essere impostate su True affinché Crostini possa essere eseguito.
       Quando l'impostazione di questa norma viene modificata in False, la norma viene applicata all'avvio di nuovi contenitori Crostini, ma non determina l'arresto dei contenitori già in esecuzione.</translation>
 <translation id="5283457834853986457">Disattiva la ricerca dei plug-in (ritirata)</translation>
+<translation id="5285315763984334157">Blocca download dannosi</translation>
 <translation id="5288772341821359899">Se la norma viene impostata, l'intervallo di porte UDP utilizzato da WebRTC viene limitato all'intervallo di porte specificato (endpoint inclusi).
 
       Se la norma non viene impostata oppure è impostata sulla stringa vuota o su un intervallo di porte non valido, WebRTC è autorizzato a utilizzare qualsiasi porta UDP locale disponibile.</translation>
@@ -2435,6 +2543,17 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 
           Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> sostituisce questo criterio.</translation>
 <translation id="538108065117008131">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i seguenti tipi di contenuto.</translation>
+<translation id="538768040137709073">Consente di attivare la funzione Appunti condivisi che consente agli utenti di inviare messaggi tra computer desktop Chrome e un dispositivo Android quando la sincronizzazione è attivata e l'utente ha effettuato l'accesso.
+
+          Se il criterio è impostato su true, la funzionalità di invio messaggi, cross-device, è attivata per gli utenti Chrome.
+
+          Se il criterio è impostato su false, la funzionalità di invio messaggi, cross-device, è disattivata per gli utenti Chrome.
+
+          Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+          Se questo criterio non viene impostato, la funzione Appunti condivisi è attivata per impostazione predefinita.
+
+          La scelta se impostare dei criteri su tutte le piattaforme che interessano loro di più spetta agli amministratori. Consigliamo di impostare questo criterio su un valore unico per tutte le piattaforme.</translation>
 <translation id="5391388690191341203">Account locale del dispositivo per l'accesso automatico</translation>
 <translation id="5392172595902933844">Le informazioni sullo stato di Android vengono rimandate al server.
 
@@ -2518,7 +2637,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5447306928176905178">Attiva le informazioni relative ai rapporti sulla memoria (dimensioni heap JS) per la pagina (obsoleto)</translation>
 <translation id="5457065417344056871">Attiva modalità ospite nel browser</translation>
 <translation id="5457924070961220141">Consente di configurare il renderer HTML predefinito se <ph name="PRODUCT_FRAME_NAME" /> è installato. Se questa norma non viene impostata, per impostazione predefinita il rendering viene eseguito dal browser host; tuttavia, in alternativa, puoi sostituire tale impostazione e consentire che l'esecuzione del rendering delle pagine HTML venga eseguita, per impostazione predefinita, da <ph name="PRODUCT_FRAME_NAME" />.</translation>
-<translation id="5458584148602890023">Attiva la variazione dei picchi energetici</translation>
 <translation id="5464816904705580310">Configurazione delle impostazioni per gli utenti gestiti.</translation>
 <translation id="546726650689747237">Ritardo oscuramento schermo in caso di utilizzo di CA</translation>
 <translation id="5469143988693423708">L'utente è abilitato a eseguire Crostini</translation>
@@ -2673,6 +2791,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
           Nelle versioni precedenti alla 75, l'utilizzo di diversi ID estensione separati da virgole non è supportato e verrà ignorato. Il resto del criterio continuerà a essere applicato.</translation>
 <translation id="5645779841392247734">Consenti i cookie in questi siti</translation>
+<translation id="5656177735561364047">Attiva la funzione Appunti condivisi</translation>
 <translation id="5666457529647159548">Consenti agli utenti di gestire i certificati client installati.</translation>
 <translation id="5689430183304951538">Dimensioni predefinite delle pagine di stampa</translation>
 <translation id="5693469654327063861">Consenti migrazione dei dati</translation>
@@ -2714,6 +2833,13 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se questa norma non viene impostata o se viene impostata su false, <ph name="PRODUCT_NAME" /> utilizzerà le impostazioni di controllo delle revoche online esistenti.</translation>
 <translation id="5728154254076636808">Consente la creazione di copie di roaming per i dati dei profili <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importa i dati della compilazione automatica dei moduli dal browser predefinito alla prima esecuzione</translation>
+<translation id="574098933844699859">Consente di specificare se le informazioni di sistema (ad es. la versione di Chrome OS, il numero seriale
+      del dispositivo) debbano essere sempre mostrate (o nascoste) nella schermata di accesso.
+
+      Se il criterio viene impostato su true, le informazioni di sistema vengono visualizzate forzatamente.
+      Se il criterio viene impostato su false, le informazioni di sistema vengono nascoste forzatamente.
+      Se il criterio non viene impostato, ha validità il comportamento predefinito (visualizzato per Canary/canale Dev)
+      . Gli utenti possono attivare/disattivare la visibilità tramite operazioni specifiche (ad esempio Alt-V).</translation>
 <translation id="5741810844420698449">Quando questa norma è impostata, specifica l'azione che <ph name="PRODUCT_OS_NAME" /> compie quando l'utente chiude il coperchio del dispositivo.
 
           Quando la norma non è impostata, viene eseguita l'azione predefinita, ossia la sospensione.
@@ -2831,6 +2957,16 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="6076099373507468537">Definisce l'elenco di dispositivi USB che possono essere scollegati dal driver del kernel per essere utilizzati tramite l'API chrome.usb direttamente all'interno di un'applicazione web. Le voci sono coppie costituite dall'ID fornitore USB e dall'ID prodotto per identificare un hardware specifico.
 
       Se la norma non è configurata, l'elenco di dispositivi USB scollegabili è vuoto.</translation>
+<translation id="607726879389885889">Questo criterio consente di controllare il modo in cui<ph name="PRODUCT_NAME" /> si comporta quando un utente tenta di caricare o scaricare file troppo grandi per essere sottoposti all'analisi antimalware o della protezione dei dati sensibili (50MB o più grandi).  Tale limitazione si applica esclusivamente ai file che dovrebbero essere analizzati secondo quanto stabilito da <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> e dai criteri che controllano l'elenco di domini per i quali è attiva l'analisi.
+
+      Se questo criterio non viene impostato o se viene impostato su "Nessuno", <ph name="PRODUCT_NAME" /> consente all'utente di caricare o scaricare file di qualsiasi dimensione.
+
+      Se questo criterio viene impostato su "Blocca download di grandi dimensioni", i file che sono troppo grandi per essere analizzati vengono eliminati prima di essere resi disponibili per l'utente.  Poiché le dimensioni non possono sempre essere determinate prima del download, <ph name="PRODUCT_NAME" /> potrebbe scaricare i file e stabilire successivamente che superano il limite di dimensioni consentito.
+
+      Se il criterio viene impostato su "Blocca caricamenti di grandi dimensioni", i file troppo grandi per essere analizzati non possono essere selezionati.
+
+      Se questo criterio viene impostato su "Blocca caricamenti e download di grandi dimensioni", <ph name="PRODUCT_NAME" /> si comporta secondo le regole descritte nelle impostazioni "Blocca download di grandi dimensioni" e "Blocca caricamenti di grandi dimensioni".
+      </translation>
 <translation id="6083631234867522991">Windows (client Windows):</translation>
 <translation id="608788685013546076">Imposta un valore percentuale per il limite di consumo della batteria per la variazione dei picchi energetici</translation>
 <translation id="6089679180657323464">Consente di stabilire le impostazioni del controller DTC (Diagnostics and Telemetry Controller) wilco.</translation>
@@ -2977,6 +3113,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa norma viene impostata, puoi stabilire se un utente può accedere o meno a <ph name="PRODUCT_NAME" />. Se la norma viene impostata su "False", le app e le estensioni che utilizzano l'API chrome.identity non funzioneranno, pertanto è consigliabile utilizzare la norma SyncDisabled.</translation>
 <translation id="6378076389057087301">Specifica se l'attività audio incide sulla gestione dell'alimentazione</translation>
 <translation id="637934607141010488">Consente di indicare un elenco di utenti del dispositivo che hanno eseguito l'accesso di recente. Se la norma è impostata su False, gli utenti non vengono indicati.</translation>
+<translation id="638668187106406971">Verifica eventuali violazioni delle regole relative alla protezione dei dati sensibili dei caricamenti</translation>
 <translation id="6394350458541421998">La norma non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_OS_NAME" />. Utilizza la norma PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Disconnetti l'utente</translation>
 <translation id="6406448383934634215">Se come azione all'avvio è stato impostato "Apri un elenco di URL", puoi specificare l'elenco degli URL che vengono aperti. Se questa norma non viene impostata, all'avvio non verrà aperto alcun URL.
@@ -3223,6 +3360,7 @@ Se la norma non viene configurata, la lettura vocale viene inizialmente disattiv
       </translation>
 <translation id="6922884955650325312">Blocca il plug-in <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Consente di specificare il nome del provider di ricerca predefinito. Se il nome non viene impostato verrà utilizzato il nome host specificato nell'URL di ricerca. Questa norma viene considerata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
+<translation id="6923731550900440989">Attiva l'evidenziazione del cursore del testo sulla schermata di accesso</translation>
 <translation id="6924223708804692571">Forza la disattivazione delle lingue per correttore ortografico. Le lingue non riconosciute di quell'elenco verranno ignorate.
 
       Se il criterio viene attivato, il correttore ortografico verrà disattivato per le lingue specificate. L'utente può comunque attivare o disattivare il correttore ortografico per le lingue che non sono nell'elenco.
@@ -3589,6 +3727,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="7433714841194914373">Abilita Instant</translation>
 <translation id="7434202861148928348">Configura i nomi di dominio richiesti per i client di accesso remoto</translation>
 <translation id="7443616896860707393">Richieste di autenticazione di base HTTP tra origini</translation>
+<translation id="7448430478749155471">Attiva Seleziona per ascoltare nella schermata di accesso</translation>
 <translation id="7454519673779830548">Aggiungi account Kerberos compilati automaticamente. Se le credenziali di Kerberos corrispondono alle credenziali di accesso, un account può essere configurato in modo da riutilizzare le credenziali di accesso specificando "${{LOGIN_EMAIL}}" e "${{PASSWORD}}" rispettivamente per l'account principale e la password, in modo che le richieste di Kerberos possano essere recuperate automaticamente, a meno che non sia configurata l'autenticazione a due fattori. Gli utenti non possono modificare gli account aggiunti tramite questo criterio.
 
           Se questo criterio è attivato, l'elenco degli account definiti dal criterio viene aggiunto alle impostazioni Account Kerberos.
@@ -3858,6 +3997,10 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 <translation id="7974114691960514888">Questa norma non è più supportata. Consente di attivare l'utilizzo di server relay e STUN durante la connessione a un client remoto. Se questa impostazione viene attivata, questo computer potrà rilevare i computer host remoti e collegarsi a essi anche se sono separati da un firewall. Se questa impostazione viene disattivata e le connessioni UDP in uscita vengono filtrate dal firewall, questo computer potrà collegarsi ai computer host soltanto all'interno della rete locale.</translation>
 <translation id="7976157349247117979">Nome della destinazione di <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Nessuna limitazione speciale</translation>
+<translation id="7983900606645681371">Elenco di domini per i quali non è necessario verificare eventuali violazioni delle regole relative alla protezione dei dati sensibili dei file caricati, dei dati incollati dagli appunti o trascinati.  Questo criterio viene utilizzato solo se il criterio <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> è attivato.
+
+      Se questo criterio non viene impostato o viene impostato su un elenco di domini vuoto, verranno verificate eventuali violazioni delle regole relative alla protezione dei dati sensibili di tutti i contenuti.
+      </translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="798856998567564266">Se attivi questa impostazione, è possibile aggiungere, rimuovere o modificare i preferiti. Questa è l'impostazione predefinita quando la norma non è impostata.
 
@@ -3871,6 +4014,7 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
       Quando questa norma non è impostata su un dispositivo gestito, il dispositivo non può eseguire macchine virtuali.
        I dispositivi non gestiti sono autorizzati a eseguire macchine virtuali.</translation>
 <translation id="8001701200415781021">Limita gli Account Google che è possibile impostare come account principali del browser in <ph name="PRODUCT_NAME" /></translation>
+<translation id="8003853057959146975">Invia file per l'ispezione di eventuali violazioni delle regole relative alla protezione dei dati sensibili</translation>
 <translation id="8009554972280451023">Se attivi questa impostazione, le impostazioni memorizzate nei profili <ph name="PRODUCT_NAME" />, come i preferiti, i dati della compilazione automatica, le password e così via, saranno scritte anche in un file memorizzato nella cartella del profilo utente Roaming o in una posizione specificata dall'amministratore tramite la norma <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Se si attiva questa norma, viene disattivata la sincronizzazione nella cloud.
 
       Se questa norma viene disattivata o non viene impostata, saranno utilizzati solo i normali profili locali.
@@ -4332,6 +4476,7 @@ Se questa norma non viene impostata, viene utilizzato un periodo di tempo predef
 Il metodo consigliato per bloccare lo schermo in caso di inattività consiste nell'attivare il blocco dello schermo in caso di sospensione e fare in modo che <ph name="PRODUCT_OS_NAME" /> sospenda dopo il ritardo di inattività. Questa norma dovrebbe essere utilizzata soltanto quando il blocco dello schermo dovrebbe avvenire molto tempo prima della sospensione o quando non si desidera affatto la sospensione in caso di inattività.
 
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere inferiori al ritardo di inattività.</translation>
+<translation id="8911348623012274122">Imposta un limite di memoria per le istanze di Chrome</translation>
 <translation id="891435090623616439">codificato sotto forma di stringa JSON; per informazioni dettagliate, visita la pagina <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Consenti agli utenti di gestire i certificati CA installati.</translation>
 <translation id="8934944553121392674">Consente di stabilire quali stampanti della norma <ph name="DEVICE_PRINTERS_POLICY" /> mettere a disposizione degli utenti.
@@ -4356,6 +4501,7 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="8942616385591203339">Questa norma consente di controllare se il consenso alla sincronizzazione può essere mostrato all'utente durante il primo accesso. Dovrebbe essere impostata su false se tale consenso non è mai necessario per l'utente.
       Se impostata su false, il consenso alla sincronizzazione non verrà visualizzato.
       Se impostata su true o non viene impostata, il consenso alla sincronizzazione può essere visualizzato.</translation>
+<translation id="8943934315109955032">Non verificare eventuali violazioni delle regole relative alla protezione dei dati sensibili</translation>
 <translation id="894510252300143386">Configura le impostazioni di gestione delle estensioni per <ph name="PRODUCT_NAME" />.
 
           Questo criterio controlla più impostazioni, tra cui quelle controllate da criteri correlati alle estensioni già presenti. Questo criterio sostituirà tutti i criteri precedenti se vengono impostati entrambi.

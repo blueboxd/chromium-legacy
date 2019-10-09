@@ -114,6 +114,8 @@ void ChromeColorsService::SaveThemeRevertState(content::WebContents* tab) {
   }
 }
 
-void ChromeColorsService::Shutdown() {}
+void ChromeColorsService::Shutdown() {
+  RevertThemeChangesWithReason(RevertReason::SHUTDOWN);
+}
 
 }  // namespace chrome_colors

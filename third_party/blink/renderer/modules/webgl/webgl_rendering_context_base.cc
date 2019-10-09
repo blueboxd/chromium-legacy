@@ -445,6 +445,7 @@ void StripComments::Process(UChar c) {
       break;
 
     case kMiddleOfLine:
+    case kInPreprocessorDirective:
       if (c == '/' && Peek(temp)) {
         if (temp == '/') {
           parse_state_ = kInSingleLineComment;
@@ -465,14 +466,6 @@ void StripComments::Process(UChar c) {
         }
       }
 
-      Emit(c);
-      break;
-
-    case kInPreprocessorDirective:
-      // No matter what the character is, just pass it
-      // through. Do not parse comments in this state. This
-      // might not be the right thing to do long term, but it
-      // should handle the #error preprocessor directive.
       Emit(c);
       break;
 

@@ -467,8 +467,8 @@ void ResourceDispatcher::StartSync(
 
   while (response->context_for_redirect) {
     DCHECK(response->redirect_info);
-    bool follow_redirect =
-        peer->OnReceivedRedirect(*response->redirect_info, response->info);
+    bool follow_redirect = peer->OnReceivedRedirect(*response->redirect_info,
+                                                    response->head.Clone());
     redirect_or_response_event.Reset();
     if (follow_redirect) {
       task_runner->PostTask(

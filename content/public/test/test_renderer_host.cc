@@ -33,6 +33,7 @@
 #include "content/test/test_render_view_host_factory.h"
 #include "content/test/test_render_widget_host_factory.h"
 #include "content/test/test_web_contents.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "ui/base/material_design/material_design_controller.h"
 
 #if defined(OS_ANDROID)
@@ -250,6 +251,10 @@ void RenderViewHostTestHarness::SetUp() {
 #endif
 
   sanity_checker_.reset(new ContentBrowserSanityChecker());
+
+#if !defined(OS_ANDROID)
+  network_change_notifier_ = net::test::MockNetworkChangeNotifier::Create();
+#endif
 
   DCHECK(!browser_context_);
   browser_context_ = CreateBrowserContext();

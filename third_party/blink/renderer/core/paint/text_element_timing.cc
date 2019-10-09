@@ -51,34 +51,30 @@ FloatRect TextElementTiming::ComputeIntersectionRect(
       &frame_view->GetFrame(), aggregated_visual_rect, property_tree_state);
 }
 
-void TextElementTiming::OnTextObjectsPainted(
-    const Deque<base::WeakPtr<TextRecord>>& text_nodes_painted) {
+bool TextElementTiming::CanReportElements() const {
   DCHECK(performance_);
-  // If the entries cannot be exposed via PerformanceObserver nor added to the
-  // buffer, bail out.
-  if (!performance_->HasObserverFor(PerformanceEntry::kElement) &&
-      performance_->IsElementTimingBufferFull()) {
+  return performance_->HasObserverFor(PerformanceEntry::kElement) ||
+         !performance_->IsElementTimingBufferFull();
+}
+
+void TextElementTiming::OnTextObjectPainted(const TextRecord& record) {
+  Node* node = DOMNodeIds::NodeForId(record.node_id);
+  if (!node || node->IsInShadowTree())
     return;
-  }
-  for (const auto record : text_nodes_painted) {
-    Node* node = DOMNodeIds::NodeForId(record->node_id);
-    if (!node || node->IsInShadowTree())
-      continue;
 
-    // Text aggregators should be Elements!
-    DCHECK(node->IsElementNode());
-    auto* element = To<Element>(node);
-    const AtomicString& attr =
-        element->FastGetAttribute(html_names::kElementtimingAttr);
-    if (attr.IsEmpty())
-      continue;
+  // Text aggregators should be Elements!
+  DCHECK(node->IsElementNode());
+  auto* element = To<Element>(node);
+  const AtomicString& attr =
+      element->FastGetAttribute(html_names::kElementtimingAttr);
+  if (attr.IsEmpty())
+    return;
 
-    const AtomicString& id = element->GetIdAttribute();
-    DEFINE_STATIC_LOCAL(const AtomicString, kTextPaint, ("text-paint"));
-    performance_->AddElementTiming(
-        kTextPaint, g_empty_string, record->element_timing_rect_,
-        record->paint_time, base::TimeTicks(), attr, IntSize(), id, element);
-  }
+  const AtomicString& id = element->GetIdAttribute();
+  DEFINE_STATIC_LOCAL(const AtomicString, kTextPaint, ("text-paint"));
+  performance_->AddElementTiming(
+      kTextPaint, g_empty_string, record.element_timing_rect_,
+      record.paint_time, base::TimeTicks(), attr, IntSize(), id, element);
 }
 
 void TextElementTiming::Trace(blink::Visitor* visitor) {

@@ -18,7 +18,7 @@
 <translation id="1176932207622159128">Không thể lưu ảnh</translation>
 <translation id="1180526666083833456">Đồng bộ hóa và cá nhân hóa trên các thiết bị.</translation>
 <translation id="1181037720776840403">Xóa</translation>
-<translation id="1207113853726624428">Tìm thông tin mới</translation>
+<translation id="1207113853726624428">Lượt tìm kiếm mới</translation>
 <translation id="1209206284964581585">Ẩn ngay bây giờ</translation>
 <translation id="1219674500290482172">Không thể kết nối Internet.</translation>
 <translation id="122699739164161391">Đóng tất cả các tab</translation>
@@ -129,7 +129,7 @@
 <translation id="2712127207578915686">Không thể mở tệp</translation>
 <translation id="2718352093833049315">Chỉ trên Wi-Fi</translation>
 <translation id="2747003861858887689">Trường trước</translation>
-<translation id="2773292004659987824">Tìm kiếm ẩn danh</translation>
+<translation id="2773292004659987824">Lượt tìm kiếm ẩn danh</translation>
 <translation id="2780046210906776326">Ko có TK email nào</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Rời khỏi Trình chuyển đổi tab</translation>
@@ -412,6 +412,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6858855187367714033">Đã quét</translation>
 <translation id="6859944681507688231">Để quét mã QR hoặc thẻ tín dụng, hãy bật máy ảnh trong phần cài đặt.</translation>
 <translation id="6873263987691478642">Chế độ xem phân tách</translation>
+<translation id="6888009575607455378">Bạn có chắc chắn muốn hủy các nội dung mình thay đổi không?</translation>
 <translation id="6896758677409633944">Sao chép</translation>
 <translation id="6903907808598579934">Bật đồng bộ hóa</translation>
 <translation id="6914583639806229067">Tìm kiếm hình ảnh bạn đã sao chép</translation>
@@ -475,6 +476,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7859704718976024901">Lịch sử duyệt web</translation>
 <translation id="7887198238286927132">Để bảo vệ quyền riêng tư của bạn, Chrome sẽ không tự động điền trường này.</translation>
 <translation id="7918293828610777738">Danh sách đọc của bạn vẫn dùng được khi không có mạng. Để thêm một trang vào danh sách đọc, hãy nhấn vào biểu tượng <ph name="SHARE_OPENING_ICON" /> rồi nhấn vào <ph name="READ_LATER_TEXT" />.</translation>
+<translation id="7930681627240672853">Kiểm tra độ an toàn của mật khẩu</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Xuất mật khẩu...</translation>
 <translation id="7947953824732555851">Chấp nhận &amp; đăng nhập</translation>

@@ -49,6 +49,15 @@ public abstract class PromoDialog extends AlwaysDismissedDialog
         /** Resource ID of the String to show as the promo title. */
         public int headerStringResource;
 
+        /**
+         * Optional: CharSequence to show as descriptive text.
+         * This parameter takes precedence over {@link #subheaderStringResoruce}
+         */
+        public CharSequence subheaderCharSequence;
+
+        /** Optional: Boolean flag set to true if descriptive text has a link. */
+        public boolean subheaderIsLink;
+
         /** Optional: Resource ID of the String to show as descriptive text. */
         public int subheaderStringResource;
 

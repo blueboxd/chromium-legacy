@@ -6,6 +6,8 @@ package org.chromium.android_webview;
 
 import android.content.Context;
 
+import org.chromium.android_webview.safe_browsing.AwSafeBrowsingConfigHelper;
+
 /**
  * Manages clients and settings for Service Workers.
  */

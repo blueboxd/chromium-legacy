@@ -462,7 +462,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     VLOG(1) << "Eol date received: " << status.eol_date();
 
     EolInfo eol_info;
-    if (status.eol_date() > -1) {
+    if (status.eol_date() > 0) {
       eol_info.eol_date = base::Time::UnixEpoch() +
                           base::TimeDelta::FromDays(status.eol_date());
     }

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -52,4 +53,33 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MAYBE_PortalActivation) {
   EXPECT_TRUE(content::ExecJs(contents, "activate()"));
   EXPECT_EQ(1, tab_strip_model->count());
   EXPECT_EQ(portal_contents, tab_strip_model->GetActiveWebContents());
+}
+
+// TODO(crbug.com/1006633): Test fails on Chrome OS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_DevToolsWindowStaysOpenAfterActivation \
+  DISABLED_DevToolsWindowStaysOpenAfterActivation
+#else
+#define MAYBE_DevToolsWindowStaysOpenAfterActivation \
+  DevToolsWindowStaysOpenAfterActivation
+#endif
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
+                       MAYBE_DevToolsWindowStaysOpenAfterActivation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/portal/activate.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+
+  EXPECT_TRUE(content::ExecJs(contents, "loadPromise"));
+  DevToolsWindow* dev_tools_window =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), true);
+  WebContents* main_web_contents =
+      DevToolsWindowTesting::Get(dev_tools_window)->main_web_contents();
+  EXPECT_EQ(main_web_contents,
+            DevToolsWindow::GetInTabWebContents(contents, nullptr));
+
+  EXPECT_TRUE(content::ExecJs(contents, "activate()"));
+  EXPECT_EQ(main_web_contents,
+            DevToolsWindow::GetInTabWebContents(
+                browser()->tab_strip_model()->GetActiveWebContents(), nullptr));
 }

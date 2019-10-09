@@ -9,7 +9,6 @@
 #include "remoting/ios/app/notification_presenter.h"
 
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "remoting/ios/app/notification_dialog_view_controller.h"
 #import "remoting/ios/facade/remoting_authentication.h"
 #import "remoting/ios/facade/remoting_service.h"
@@ -141,53 +140,19 @@ void NotificationPresenter::OnNotificationFetched(
     [RemotingPreferences.instance synchronizeFlags];
   }
 
-  NSURL* url =
-      [NSURL URLWithString:base::SysUTF8ToNSString(notification->link_url)];
-
-  NSString* message_text_nsstring =
-      base::SysUTF8ToNSString(notification->message_text);
-  NSString* link_text_nsstring =
-      base::SysUTF8ToNSString(notification->link_text);
-
-  switch (notification->appearance) {
-    case NotificationMessage::Appearance::TOAST: {
-      MDCSnackbarMessage* message = [MDCSnackbarMessage new];
-      message.text = message_text_nsstring;
-      MDCSnackbarMessageAction* action = [MDCSnackbarMessageAction new];
-      action.handler = ^{
-        [[UIApplication sharedApplication] openURL:url
-                                           options:@{}
-                                 completionHandler:nil];
-      };
-      action.title = link_text_nsstring;
-      message.action = action;
-      message.duration = MDCSnackbarMessageDurationMax;
-      [MDCSnackbarManager showMessage:message];
-      break;
-    }
-    case NotificationMessage::Appearance::DIALOG: {
-      BOOL shouldShowDontShowAgain = notification->allow_dont_show_again &&
-                                     ui_state == SHOWN_AT_LEAST_ONCE;
-      NotificationDialogViewController* dialogVc =
-          [[NotificationDialogViewController alloc]
-                initWithNotificationMessage:*notification
-              shouldShowDontShowAgainToggle:shouldShowDontShowAgain];
-      [dialogVc presentOnTopVCWithCompletion:^(BOOL isDontShowAgainOn) {
-        NotificationUiState new_ui_state = isDontShowAgainOn
-                                               ? USER_CHOSE_DONT_SHOW_AGAIN
-                                               : SHOWN_AT_LEAST_ONCE;
-        [RemotingPreferences.instance
-            setObject:UiStateToNSNumber(new_ui_state)
-              forFlag:RemotingFlagNotificationUiState];
-        [RemotingPreferences.instance synchronizeFlags];
-      }];
-      break;
-    }
-    default:
-      LOG(DFATAL) << "Unknown appearance: "
-                  << static_cast<int>(notification->appearance);
-      break;
-  }
+  BOOL shouldShowDontShowAgain =
+      notification->allow_dont_show_again && ui_state == SHOWN_AT_LEAST_ONCE;
+  NotificationDialogViewController* dialogVc =
+      [[NotificationDialogViewController alloc]
+            initWithNotificationMessage:*notification
+          shouldShowDontShowAgainToggle:shouldShowDontShowAgain];
+  [dialogVc presentOnTopVCWithCompletion:^(BOOL isDontShowAgainOn) {
+    NotificationUiState new_ui_state =
+        isDontShowAgainOn ? USER_CHOSE_DONT_SHOW_AGAIN : SHOWN_AT_LEAST_ONCE;
+    [RemotingPreferences.instance setObject:UiStateToNSNumber(new_ui_state)
+                                    forFlag:RemotingFlagNotificationUiState];
+    [RemotingPreferences.instance synchronizeFlags];
+  }];
 }
 
 }  // namespace remoting

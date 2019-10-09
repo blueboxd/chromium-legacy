@@ -88,8 +88,8 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
   // RequestPeer implementation:
   void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          const network::ResourceResponseInfo& info) override;
-  void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
+                          network::mojom::URLResponseHeadPtr head) override;
+  void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;

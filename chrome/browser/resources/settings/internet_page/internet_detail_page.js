@@ -521,15 +521,15 @@ Polymer({
     managedProperties.connectionState = networkState.connectionState;
     switch (networkState.type) {
       case mojom.NetworkType.kCellular:
-        managedProperties.cellular.signalStrength =
+        managedProperties.typeProperties.cellular.signalStrength =
             networkState.typeState.cellular.signalStrength;
         break;
       case mojom.NetworkType.kTether:
-        managedProperties.tether.signalStrength =
+        managedProperties.typeProperties.tether.signalStrength =
             networkState.typeState.tether.signalStrength;
         break;
       case mojom.NetworkType.kWiFi:
-        managedProperties.wifi.signalStrength =
+        managedProperties.typeProperties.wifi.signalStrength =
             networkState.typeState.wifi.signalStrength;
         break;
     }
@@ -598,11 +598,11 @@ Polymer({
 
     if (managedProperties.type == mojom.NetworkType.kCellular &&
         !managedProperties.connectable) {
-      if (managedProperties.cellular.homeProvider &&
-          managedProperties.cellular.homeProvider.name) {
+      if (managedProperties.typeProperties.cellular.homeProvider &&
+          managedProperties.typeProperties.cellular.homeProvider.name) {
         return this.i18n(
             'cellularContactSpecificCarrier',
-            managedProperties.cellular.homeProvider.name);
+            managedProperties.typeProperties.cellular.homeProvider.name);
       }
       return this.i18n('cellularContactDefaultCarrier');
     }
@@ -631,11 +631,11 @@ Polymer({
     if (!this.isCellular_(managedProperties)) {
       return '';
     }
-    if (!managedProperties.cellular.allowRoaming) {
+    if (!managedProperties.typeProperties.cellular.allowRoaming) {
       return this.i18n('networkAllowDataRoamingDisabled');
     }
 
-    return managedProperties.cellular.roamingState == 'Roaming' ?
+    return managedProperties.typeProperties.cellular.roamingState == 'Roaming' ?
         this.i18n('networkAllowDataRoamingEnabledRoaming') :
         this.i18n('networkAllowDataRoamingEnabledHome');
   },
@@ -729,7 +729,8 @@ Polymer({
         this.isPolicySource(managedProperties.source)) {
       return false;
     }
-    const hexSsid = OncMojo.getActiveString(managedProperties.wifi.hexSsid);
+    const hexSsid =
+        OncMojo.getActiveString(managedProperties.typeProperties.wifi.hexSsid);
     return !!globalPolicy.allowOnlyPolicyNetworksToConnect ||
         (!!globalPolicy.allowOnlyPolicyNetworksToConnectIfAvailable &&
          !!managedNetworkAvailable) ||
@@ -830,7 +831,8 @@ Polymer({
     if (!this.isCellular_(managedProperties)) {
       return false;
     }
-    const activation = managedProperties.cellular.activationState;
+    const activation =
+        managedProperties.typeProperties.cellular.activationState;
     return activation == mojom.ActivationStateType.kNotActivated ||
         activation == mojom.ActivationStateType.kPartiallyActivated;
   },
@@ -857,7 +859,8 @@ Polymer({
       return false;
     }
     if (type == mojom.NetworkType.kWiFi &&
-        managedProperties.wifi.security == mojom.SecurityType.kNone) {
+        managedProperties.typeProperties.wifi.security ==
+            mojom.SecurityType.kNone) {
       return false;
     }
     if (type == mojom.NetworkType.kWiFi &&
@@ -945,18 +948,20 @@ Polymer({
       return false;
     }
 
-    const paymentPortal = managedProperties.cellular.paymentPortal;
+    const paymentPortal =
+        managedProperties.typeProperties.cellular.paymentPortal;
     if (!paymentPortal || !paymentPortal.url) {
       return false;
     }
 
     // Only show for connected networks or LTE networks with a valid MDN.
     if (!this.isConnectedState_(managedProperties)) {
-      const technology = managedProperties.cellular.networkTechnology;
+      const technology =
+          managedProperties.typeProperties.cellular.networkTechnology;
       if (technology != 'LTE' && technology != 'LTEAdvanced') {
         return false;
       }
-      if (!managedProperties.cellular.mdn) {
+      if (!managedProperties.typeProperties.cellular.mdn) {
         return false;
       }
     }
@@ -1048,7 +1053,7 @@ Polymer({
   /** @private */
   onConnectTap_: function() {
     if (this.managedProperties_.type == mojom.NetworkType.kTether &&
-        (!this.managedProperties_.tether.hasConnectedToHost)) {
+        (!this.managedProperties_.typeProperties.tether.hasConnectedToHost)) {
       this.showTetherDialog_();
       return;
     }
@@ -1137,8 +1142,9 @@ Polymer({
     return loadTimeData.getBoolean('showHiddenNetworkWarning') &&
         !!this.autoConnectPref_ && !!this.autoConnectPref_.value &&
         !!this.managedProperties_ &&
-        !!this.managedProperties_.type == mojom.NetworkType.kWiFi &&
-        !!OncMojo.getActiveValue(this.managedProperties_.wifi.hiddenSsid);
+        this.managedProperties_.type == mojom.NetworkType.kWiFi &&
+        !!OncMojo.getActiveValue(
+            this.managedProperties_.typeProperties.wifi.hiddenSsid);
   },
 
   /**
@@ -1165,10 +1171,17 @@ Polymer({
       return;
     }
     OncMojo.setConfigProperty(config, field, value);
-    // Ensure any required configuration properties are also set.
-    if (this.managedProperties_.vpn && config.vpn &&
-        config.vpn.type === undefined) {
-      config.vpn.type = this.managedProperties_.vpn.type;
+    // Ensure that any required configuration properties for partial
+    // configurations are set.
+    if (config.vpn) {
+      config.vpn.type = this.managedProperties_.typeProperties.vpn.type;
+      if (config.vpn.openVpn &&
+          config.vpn.openVpn.saveCredentials == undefined) {
+        config.vpn.openVpn.saveCredentials = false;
+      }
+      if (config.vpn.l2tp && config.vpn.l2tp.saveCredentials == undefined) {
+        config.vpn.l2tp.saveCredentials = false;
+      }
     }
     this.setMojoNetworkProperties_(config);
   },
@@ -1264,7 +1277,7 @@ Polymer({
     return this.isArcVpn_(managedProperties) && this.prefs.arc &&
         this.prefs.arc.vpn && this.prefs.arc.vpn.always_on &&
         this.prefs.arc.vpn.always_on.vpn_package &&
-        OncMojo.getActiveValue(managedProperties.vpn.host) ===
+        OncMojo.getActiveValue(managedProperties.typeProperties.vpn.host) ===
         this.prefs.arc.vpn.always_on.vpn_package.value;
   },
 
@@ -1327,7 +1340,8 @@ Polymer({
    */
   hasVisibleFields_: function(fields) {
     for (let i = 0; i < fields.length; ++i) {
-      const value = this.get(fields[i], this.managedProperties_);
+      const key = OncMojo.getManagedPropertyKey(fields[i]);
+      const value = this.get(key, this.managedProperties_);
       if (value !== undefined && value !== '') {
         return true;
       }
@@ -1368,7 +1382,7 @@ Polymer({
             'tether.carrier');
         break;
       case mojom.NetworkType.kVPN:
-        const vpnType = this.managedProperties_.vpn.type;
+        const vpnType = this.managedProperties_.typeProperties.vpn.type;
         switch (vpnType) {
           case mojom.VpnType.kExtension:
             fields.push('vpn.providerName');
@@ -1411,7 +1425,7 @@ Polymer({
     /** @dict */ const editFields = {};
     const type = this.managedProperties_.type;
     if (type == mojom.NetworkType.kVPN) {
-      const vpnType = this.managedProperties_.vpn.type;
+      const vpnType = this.managedProperties_.typeProperties.vpn.type;
       if (vpnType != mojom.VpnType.kExtension) {
         editFields['vpn.host'] = 'String';
       }
@@ -1567,7 +1581,7 @@ Polymer({
   showCellularChooseNetwork_: function(managedProperties) {
     return !!managedProperties &&
         managedProperties.type == mojom.NetworkType.kCellular &&
-        managedProperties.cellular.supportNetworkScan;
+        managedProperties.typeProperties.cellular.supportNetworkScan;
   },
 
   /**
@@ -1590,7 +1604,7 @@ Polymer({
   showCellularSim_: function(managedProperties) {
     return !!managedProperties &&
         managedProperties.type == mojom.NetworkType.kCellular &&
-        managedProperties.cellular.family != 'CDMA';
+        managedProperties.typeProperties.cellular.family != 'CDMA';
   },
 
   /**
@@ -1601,7 +1615,7 @@ Polymer({
   isArcVpn_: function(managedProperties) {
     return !!managedProperties &&
         managedProperties.type == mojom.NetworkType.kVPN &&
-        managedProperties.vpn.type == mojom.VpnType.kArc;
+        managedProperties.typeProperties.vpn.type == mojom.VpnType.kArc;
   },
 
   /**
@@ -1612,7 +1626,7 @@ Polymer({
   isThirdPartyVpn_: function(managedProperties) {
     return !!managedProperties &&
         managedProperties.type == mojom.NetworkType.kVPN &&
-        managedProperties.vpn.type == mojom.VpnType.kExtension;
+        managedProperties.typeProperties.vpn.type == mojom.VpnType.kExtension;
   },
 
   /**

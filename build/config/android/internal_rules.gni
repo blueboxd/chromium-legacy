@@ -1359,6 +1359,11 @@ if (enable_java_templates) {
             "--incremental-dir",
             rebase_path("$target_out_dir/$target_name", root_build_dir),
           ]
+          if (is_java_debug) {
+            # The performance of incremental install is unbearable if each
+            # lib.dex.jar file has multiple classes.dex files in it.
+            args += [ "--merge-incrementals" ]
+          }
         }
 
         if (_enable_multidex) {

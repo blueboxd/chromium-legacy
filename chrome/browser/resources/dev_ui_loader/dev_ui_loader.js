@@ -29,7 +29,7 @@ function redirectToChromePage() {
 }
 
 function doInstall() {
-  cr.sendWithPromise('installAndLoadDevUiDfm').then((response) => {
+  cr.sendWithPromise('installDevUiDfm').then((response) => {
     const status = response[0];
     if (status === 'success' || status === 'noop') {
       redirectToChromePage();
@@ -41,9 +41,9 @@ function doInstall() {
 
 document.addEventListener('DOMContentLoaded', () => {
   cr.sendWithPromise('getDevUiDfmState').then((state) => {
-    if (state === 'ready') {
+    if (state === 'installed') {
       redirectToChromePage();
-    } else if (state === 'not-installed' || 'not-loaded') {
+    } else if (state === 'not-installed') {
       doInstall();
     }
   });

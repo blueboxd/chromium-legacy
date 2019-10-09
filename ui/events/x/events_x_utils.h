@@ -49,9 +49,6 @@ EVENTS_X_EXPORT int GetChangedMouseButtonFlagsFromXEvent(const XEvent& xev);
 // Gets the mouse wheel offsets from a XEvent.
 EVENTS_X_EXPORT gfx::Vector2d GetMouseWheelOffsetFromXEvent(const XEvent& xev);
 
-// Clear the touch id from bookkeeping if it is a release/cancel event.
-EVENTS_X_EXPORT void ClearTouchIdIfReleasedFromXEvent(const XEvent& xev);
-
 // Gets the touch id from a XEvent.
 EVENTS_X_EXPORT int GetTouchIdFromXEvent(const XEvent& xev);
 

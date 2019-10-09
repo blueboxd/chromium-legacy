@@ -246,8 +246,13 @@ void WKBasedNavigationManagerImpl::CommitPendingItem() {
 
   // CommitPendingItem may be called multiple times. Do nothing if there is no
   // pending item.
-  if (pending_item_index_ == -1 && !pending_item_)
+  if (pending_item_index_ == -1 && !pending_item_) {
+    // Per crbug.com/1010765, it is sometimes possible for pending items to
+    // never commit. If a previous pending item was copied into
+    // empty_window_open_item_, clear it here.
+    empty_window_open_item_.reset();
     return;
+  }
 
   bool last_committed_item_was_empty_window_open_item =
       empty_window_open_item_ != nullptr;

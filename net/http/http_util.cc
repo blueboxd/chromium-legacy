@@ -387,29 +387,31 @@ namespace {
 
 // A header string containing any of the following fields will cause
 // an error. The list comes from the XMLHttpRequest standard.
-// http://www.w3.org/TR/XMLHttpRequest/#the-setrequestheader-method
+// https://fetch.spec.whatwg.org/#forbidden-header-name
 const char* const kForbiddenHeaderFields[] = {
-  "accept-charset",
-  "accept-encoding",
-  "access-control-request-headers",
-  "access-control-request-method",
-  "connection",
-  "content-length",
-  "cookie",
-  "cookie2",
-  "content-transfer-encoding",
-  "date",
-  "expect",
-  "host",
-  "keep-alive",
-  "origin",
-  "referer",
-  "te",
-  "trailer",
-  "transfer-encoding",
-  "upgrade",
-  "user-agent",
-  "via",
+    "accept-charset",
+    "accept-encoding",
+    "access-control-request-headers",
+    "access-control-request-method",
+    "connection",
+    "content-length",
+    "cookie",
+    "cookie2",
+    "date",
+    "dnt",
+    "expect",
+    "host",
+    "keep-alive",
+    "origin",
+    "referer",
+    "te",
+    "trailer",
+    "transfer-encoding",
+    "upgrade",
+    // TODO(mmenke): This is no longer banned, but still here due to issues
+    // mentioned in https://crbug.com/571722.
+    "user-agent",
+    "via",
 };
 
 }  // namespace

@@ -19,12 +19,6 @@ UI_BASE_EXPORT void LoadMainAndroidPackFile(
     const char* path_within_apk,
     const base::FilePath& disk_file_path);
 
-// Loads "dev_ui_resources.apk" from the .apk, for the DevUI DFM. Falls back to
-// loading from disk.
-UI_BASE_EXPORT void LoadAndroidDevUiPackFile(
-    const char* path_within_apk,
-    const base::FilePath& disk_file_path);
-
 // Loads a PAK file from the APK and makes the contained resources accessible.
 UI_BASE_EXPORT void LoadPackFileFromApk(const std::string& path);
 

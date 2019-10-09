@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/gpu/test/video_frame_helpers.h"
 
 #if defined(OS_LINUX)
@@ -42,6 +43,7 @@ scoped_refptr<TextureRef> TextureRef::Create(
 
 // static
 scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     uint32_t texture_id,
     base::OnceClosure no_longer_needed_cb,
     VideoPixelFormat pixel_format,
@@ -54,9 +56,9 @@ scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
   LOG_ASSERT(texture_ref);
   // We set visible size to coded_size. The correct visible rectangle is set
   // later in ExportVideoFrame().
-  texture_ref->frame_ =
-      CreatePlatformVideoFrame(pixel_format, size, gfx::Rect(size), size,
-                               base::TimeDelta(), buffer_usage);
+  texture_ref->frame_ = CreatePlatformVideoFrame(
+      gpu_memory_buffer_factory, pixel_format, size, gfx::Rect(size), size,
+      base::TimeDelta(), buffer_usage);
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
   return texture_ref;

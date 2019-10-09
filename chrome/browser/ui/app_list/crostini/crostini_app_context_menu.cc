@@ -32,12 +32,8 @@ bool CrostiniAppContextMenu::IsCommandIdEnabled(int command_id) const {
 void CrostiniAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case ash::UNINSTALL:
-      if (app_id() == crostini::kCrostiniTerminalId) {
-        crostini::ShowCrostiniUninstallerView(
-            profile(), crostini::CrostiniUISurface::kAppList);
-      } else {
-        crostini::ShowCrostiniAppUninstallerView(profile(), app_id());
-      }
+      DCHECK_NE(app_id(), crostini::kCrostiniTerminalId);
+      crostini::ShowCrostiniAppUninstallerView(profile(), app_id());
       return;
 
     case ash::STOP_APP:

@@ -43,13 +43,21 @@ class SafetyTipsProtoGenerator(BinaryProtoGenerator):
 
   def ValidatePb(self, opts, pb):
     assert pb.version_id > 0
+
     for flagged_page in pb.flagged_page:
       assert flagged_page.pattern
       assert flagged_page.type != safety_tips_pb2.FlaggedPage.UNKNOWN
 
-    flagged_patterns = [page.pattern for page in pb.flagged_page]
+    for allowed_pattern in pb.allowed_pattern:
+      assert allowed_pattern.pattern
+
+    flagged_patterns = [p.pattern for p in pb.flagged_page]
     assert sorted(flagged_patterns) == flagged_patterns, (
         "Please sort flagged_page entries by pattern.")
+
+    allowed_patterns = [p.pattern for p in pb.allowed_pattern]
+    assert sorted(allowed_patterns) == allowed_patterns, (
+        "Please sort allowed_pattern entries by pattern.")
 
   def ProcessPb(self, opts, pb):
     binary_pb_str = pb.SerializeToString()

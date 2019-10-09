@@ -335,12 +335,10 @@ void CrostiniExportImport::OnExportComplete(
 }
 
 void CrostiniExportImport::OnExportContainerProgress(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     ExportContainerProgressStatus status,
     int progress_percent,
     uint64_t progress_speed) {
-  ContainerId container_id(vm_name, container_name);
   auto it = notifications_.find(container_id);
   if (it == notifications_.end()) {
     NOTREACHED() << ContainerIdToString(container_id)
@@ -363,10 +361,8 @@ void CrostiniExportImport::OnExportContainerProgress(
 }
 
 void CrostiniExportImport::OnExportContainerProgress(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     const StreamingExportStatus& status) {
-  ContainerId container_id(vm_name, container_name);
   auto it = notifications_.find(container_id);
   if (it == notifications_.end()) {
     NOTREACHED() << ContainerIdToString(container_id)
@@ -501,8 +497,7 @@ void CrostiniExportImport::OnImportComplete(
 }
 
 void CrostiniExportImport::OnImportContainerProgress(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     ImportContainerProgressStatus status,
     int progress_percent,
     uint64_t progress_speed,
@@ -510,7 +505,6 @@ void CrostiniExportImport::OnImportContainerProgress(
     const std::string& architecture_container,
     uint64_t available_space,
     uint64_t minimum_required_space) {
-  ContainerId container_id(vm_name, container_name);
   auto it = notifications_.find(container_id);
   if (it == notifications_.end()) {
     NOTREACHED() << ContainerIdToString(container_id)

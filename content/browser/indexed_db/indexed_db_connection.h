@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
+#include "content/browser/indexed_db/indexed_db_execution_context.h"
 #include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
@@ -26,7 +27,7 @@ class IndexedDBOriginStateHandle;
 
 class CONTENT_EXPORT IndexedDBConnection {
  public:
-  IndexedDBConnection(int child_process_id,
+  IndexedDBConnection(const IndexedDBExecutionContext& execution_context,
                       IndexedDBOriginStateHandle origin_state_handle,
                       IndexedDBClassFactory* indexed_db_class_factory,
                       base::WeakPtr<IndexedDBDatabase> database,
@@ -58,7 +59,7 @@ class CONTENT_EXPORT IndexedDBConnection {
   virtual void RemoveObservers(const std::vector<int32_t>& remove_observer_ids);
 
   int32_t id() const { return id_; }
-  int child_process_id() const { return child_process_id_; }
+  int child_process_id() const { return execution_context_.render_process_id; }
 
   base::WeakPtr<IndexedDBDatabase> database() const { return database_; }
   IndexedDBDatabaseCallbacks* callbacks() const { return callbacks_.get(); }
@@ -105,9 +106,8 @@ class CONTENT_EXPORT IndexedDBConnection {
 
   const int32_t id_;
 
-  // The process id of the child process this connection is associated with.
-  // Tracked for IndexedDBContextImpl::GetAllOriginsDetails and debugging.
-  const int child_process_id_;
+  // The frame or worker that owns this connection.
+  const IndexedDBExecutionContext execution_context_;
 
   // Keeps the factory for this origin alive.
   IndexedDBOriginStateHandle origin_state_handle_;

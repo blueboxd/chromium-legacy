@@ -21,7 +21,6 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV",
       "bounds": [100, 100],
-      "opacity": 0.990000009536743,
       "contentsOpaque": true,
       "backgroundColor": "#008000",
       "transform": 4

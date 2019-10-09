@@ -21,7 +21,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_LOADER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_LOADER_H_
 
-#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
 #include "third_party/blink/renderer/core/core_export.h"

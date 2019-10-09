@@ -15,7 +15,6 @@ Polymer({
     settings.MainPageBehavior,
     settings.RouteObserverBehavior,
     I18nBehavior,
-    PrefsBehavior,
   ],
 
   properties: {
@@ -43,13 +42,6 @@ Polymer({
     },
 
     // <if expr="chromeos">
-    /** @private */
-    showAboutOSBanner_: {
-      type: Boolean,
-      computed: 'computeShowAboutOSBanner_(' +
-          'prefs.settings.cros.show_about_os_banner.value)',
-    },
-
     /** @private */
     hasCheckedForUpdates_: {
       type: Boolean,
@@ -565,21 +557,6 @@ Polymer({
   },
 
   // <if expr="chromeos">
-  /**
-   * @return {boolean}
-   * @private
-   */
-  computeShowAboutOSBanner_: function() {
-    // Show when SplitSettings is off and the user hasn't closed it.
-    return !this.showOsSettings_ && /** @type {boolean} */
-        (this.getPref('settings.cros.show_about_os_banner').value);
-  },
-
-  /** @private */
-  onAboutOSBannerClosed_: function() {
-    this.setPrefValue('settings.cros.show_about_os_banner', false);
-  },
-
   /**
    * @return {boolean}
    * @private

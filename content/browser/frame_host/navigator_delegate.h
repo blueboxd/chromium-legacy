@@ -130,6 +130,6 @@ class CONTENT_EXPORT NavigatorDelegate {
   virtual bool ShowingInterstitialPage() = 0;
 };
 
-}  // namspace content
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_DELEGATE_H_

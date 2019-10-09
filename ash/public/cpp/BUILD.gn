@@ -308,6 +308,7 @@ source_set("manifest_for_tests") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "android_intent_helper_unittest.cc",
     "app_list/app_list_config_provider_unittest.cc",
     "default_scale_factor_retriever_unittest.cc",
     "pagination/pagination_model_unittest.cc",

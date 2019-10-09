@@ -349,7 +349,8 @@ gfx::Rect GetDesksWidgetBounds(aura::Window* root,
                                const gfx::Rect& overview_grid_screen_bounds) {
   gfx::Rect desks_widget_root_bounds = overview_grid_screen_bounds;
   ::wm::ConvertRectFromScreen(root, &desks_widget_root_bounds);
-  desks_widget_root_bounds.set_height(DesksBarView::GetBarHeight());
+  desks_widget_root_bounds.set_height(
+      DesksBarView::GetBarHeight(desks_widget_root_bounds.width()));
 
   // Shift the widget down to make room for the splitview indicator guidance
   // when it's shown at the top of the screen when in portrait mode and no other
@@ -556,6 +557,9 @@ void OverviewGrid::PositionWindows(
   bool has_non_cover_animating = false;
   std::vector<OverviewAnimationType> animation_types(rects.size());
 
+  const bool can_do_spawn_animation =
+      animate && transition == OverviewSession::OverviewTransition::kInOverview;
+
   for (size_t i = 0; i < window_list_.size(); ++i) {
     OverviewItem* window_item = window_list_[i].get();
     if (window_item->animating_to_close() ||
@@ -582,6 +586,10 @@ void OverviewGrid::PositionWindows(
         ++animate_count;
       }
     }
+
+    if (can_do_spawn_animation && window_item->should_use_spawn_animation())
+      animation_type = OVERVIEW_ANIMATION_SPAWN_ITEM_IN_OVERVIEW;
+
     animation_types[i] =
         should_animate_item ? animation_type : OVERVIEW_ANIMATION_NONE;
   }
@@ -622,22 +630,26 @@ void OverviewGrid::AddItem(aura::Window* window,
                            bool reposition,
                            bool animate,
                            const base::flat_set<OverviewItem*>& ignored_items,
-                           size_t index) {
+                           size_t index,
+                           bool use_spawn_animation) {
   DCHECK(!GetOverviewItemContaining(window));
   DCHECK_LE(index, window_list_.size());
 
   window_list_.insert(
       window_list_.begin() + index,
       std::make_unique<OverviewItem>(window, overview_session_, this));
-  window_list_[index]->PrepareForOverview();
+  auto* item = window_list_[index].get();
+  item->PrepareForOverview();
 
-  if (!animate) {
+  if (animate && use_spawn_animation && reposition) {
+    item->set_should_use_spawn_animation(true);
+  } else {
     // The item is added after overview enter animation is complete, so
-    // just call OnStartingAnimationComplete() only if we won't animate it,
-    // otherwise, OnStartingAnimationComplete() will be called when the
-    // add-item-to-overview animation completes
-    // (See OverviewItem::OnItemAddedAnimationCompleted()).
-    window_list_[index]->OnStartingAnimationComplete();
+    // just call OnStartingAnimationComplete() only if we won't animate it with
+    // with the spawn animation. Otherwise, OnStartingAnimationComplete() will
+    // be called when the spawn-item-animation completes (See
+    // OverviewItem::OnItemSpawnedAnimationCompleted()).
+    item->OnStartingAnimationComplete();
   }
 
   if (reposition)
@@ -646,9 +658,10 @@ void OverviewGrid::AddItem(aura::Window* window,
 
 void OverviewGrid::AppendItem(aura::Window* window,
                               bool reposition,
-                              bool animate) {
+                              bool animate,
+                              bool use_spawn_animation) {
   AddItem(window, reposition, animate, /*ignored_items=*/{},
-          window_list_.size());
+          window_list_.size(), use_spawn_animation);
 }
 
 void OverviewGrid::RemoveItem(OverviewItem* overview_item,
@@ -1366,7 +1379,7 @@ gfx::Rect OverviewGrid::GetGridEffectiveBounds() const {
     return bounds_;
 
   gfx::Rect effective_bounds = bounds_;
-  effective_bounds.Inset(0, DesksBarView::GetBarHeight(), 0, 0);
+  effective_bounds.Inset(0, DesksBarView::GetBarHeight(bounds_.width()), 0, 0);
   return effective_bounds;
 }
 

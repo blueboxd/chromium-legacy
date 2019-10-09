@@ -10,19 +10,17 @@
 
 namespace task_manager {
 
-ServiceWorkerTask::ServiceWorkerTask(
-    const content::ServiceWorkerRunningInfo& service_worker_running_info,
-    base::ProcessHandle handle)
-    : Task(
-          l10n_util::GetStringFUTF16(
-              IDS_TASK_MANAGER_SERVICE_WORKER_PREFIX,
-              base::UTF8ToUTF16(service_worker_running_info.script_url.spec())),
-          service_worker_running_info.script_url.spec(),
-          nullptr /* icon */,
-          handle),
-      render_process_id_(service_worker_running_info.process_id) {}
+ServiceWorkerTask::ServiceWorkerTask(base::ProcessHandle handle,
+                                     int render_process_id,
+                                     const GURL& script_url)
+    : Task(l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_SERVICE_WORKER_PREFIX,
+                                      base::UTF8ToUTF16(script_url.spec())),
+           script_url.spec(),
+           nullptr /* icon */,
+           handle),
+      render_process_id_(render_process_id) {}
 
-ServiceWorkerTask::~ServiceWorkerTask() {}
+ServiceWorkerTask::~ServiceWorkerTask() = default;
 
 Task::Type ServiceWorkerTask::GetType() const {
   return Task::SERVICE_WORKER;

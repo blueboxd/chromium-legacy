@@ -31,9 +31,13 @@ def _RepackMain(args):
 
 def _ExtractMain(args):
   pak = data_pack.ReadDataPack(args.pak_file)
-
+  if args.textual_id:
+    info_dict = data_pack.ReadGrdInfo(args.pak_file)
   for resource_id, payload in pak.resources.items():
-    path = os.path.join(args.output_dir, str(resource_id))
+    filename = (
+        info_dict[resource_id].textual_id
+        if args.textual_id else str(resource_id))
+    path = os.path.join(args.output_dir, filename)
     with open(path, 'w') as f:
       f.write(payload)
 
@@ -54,6 +58,8 @@ def _CreateMain(args):
 
 def _PrintMain(args):
   pak = data_pack.ReadDataPack(args.pak_file)
+  if args.textual_id:
+    info_dict = data_pack.ReadGrdInfo(args.pak_file)
   output = args.output
   encoding = 'binary'
   if pak.encoding == 1:
@@ -86,15 +92,34 @@ def _PrintMain(args):
       except UnicodeDecodeError:
         pass
     sha1 = hashlib.sha1(data).hexdigest()[:10]
-    output.write(
-        u'Entry(id={}, canonical_id={}, size={}, sha1={}): {}\n'.format(
-            resource_id, canonical_id, len(data), sha1, desc).encode('utf-8'))
+    if args.textual_id:
+      textual_id = info_dict[resource_id].textual_id
+      canonical_textual_id = info_dict[canonical_id].textual_id
+      output.write(
+          u'Entry(id={}, canonical_id={}, size={}, sha1={}): {}\n'.format(
+              textual_id, canonical_textual_id, len(data), sha1,
+              desc).encode('utf-8'))
+    else:
+      output.write(
+          u'Entry(id={}, canonical_id={}, size={}, sha1={}): {}\n'.format(
+              resource_id, canonical_id, len(data), sha1, desc).encode('utf-8'))
 
 
 def _ListMain(args):
   pak = data_pack.ReadDataPack(args.pak_file)
-  for resource_id in sorted(pak.resources):
-    args.output.write('%d\n' % resource_id)
+  if args.textual_id or args.path:
+    info_dict = data_pack.ReadGrdInfo(args.pak_file)
+    fmt = ''.join([
+        '{id}', ' = {textual_id}' if args.textual_id else '',
+        ' @ {path}' if args.path else '', '\n'
+    ])
+    for resource_id in sorted(pak.resources):
+      item = info_dict[resource_id]
+      args.output.write(
+          fmt.format(textual_id=item.textual_id, id=item.id, path=item.path))
+  else:
+    for resource_id in sorted(pak.resources):
+      args.output.write('%d\n' % resource_id)
 
 
 def main():
@@ -121,6 +146,11 @@ def main():
   sub_parser.add_argument('pak_file')
   sub_parser.add_argument('-o', '--output-dir', default='.',
                           help='Directory to extract to.')
+  sub_parser.add_argument(
+      '-t',
+      '--textual-id',
+      action='store_true',
+      help='Use textual resource ID (name) (from .info file) as filenames.')
   sub_parser.set_defaults(func=_ExtractMain)
 
   sub_parser = sub_parsers.add_parser('create',
@@ -138,6 +168,11 @@ def main():
       help='The resource list path to write (default stdout)')
   sub_parser.add_argument('--no-decode', dest='decode', action='store_false',
       default=True, help='Do not print entry data.')
+  sub_parser.add_argument(
+      '-t',
+      '--textual-id',
+      action='store_true',
+      help='Print textual ID (name) (from .info file) instead of the ID.')
   sub_parser.set_defaults(func=_PrintMain)
 
   sub_parser = sub_parsers.add_parser('list-id',
@@ -146,6 +181,16 @@ def main():
   sub_parser.add_argument('--output', type=argparse.FileType('w'),
       default=sys.stdout,
       help='The resource list path to write (default stdout)')
+  sub_parser.add_argument(
+      '-t',
+      '--textual-id',
+      action='store_true',
+      help='Print the textual resource ID (from .info file).')
+  sub_parser.add_argument(
+      '-p',
+      '--path',
+      action='store_true',
+      help='Print the resource path (from .info file).')
   sub_parser.set_defaults(func=_ListMain)
 
   args = parser.parse_args()

@@ -39,6 +39,7 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MOCK_CONST_METHOD2(IsURLWhitelistedForPasswordEntry,
                      bool(const GURL&, RequestOutcome*));
 
+  MOCK_METHOD0(CanSendSamplePing, bool());
   MOCK_METHOD0(IsExtendedReporting, bool());
   MOCK_METHOD0(IsIncognito, bool());
   MOCK_METHOD0(IsHistorySyncEnabled, bool());
@@ -46,6 +47,7 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MOCK_METHOD0(ReportPasswordChanged, void());
   MOCK_METHOD1(UserClickedThroughSBInterstitial, bool(content::WebContents*));
   MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(content::WebContents*));
+  MOCK_METHOD1(SanitizeReferrerChain, void(ReferrerChain*));
   MOCK_METHOD2(ShowInterstitial,
                void(content::WebContents*, ReusedPasswordAccountType));
   MOCK_METHOD3(IsPingingEnabled,

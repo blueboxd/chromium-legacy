@@ -32,7 +32,7 @@ int GetLayoutConstant(LayoutConstant constant) {
     case BOOKMARK_BAR_HEIGHT:
       // The fixed margin ensures the bookmark buttons appear centered relative
       // to the white space above and below.
-      static constexpr int kBookmarkBarAttachedVerticalMargin = 5;
+      static constexpr int kBookmarkBarAttachedVerticalMargin = 4;
       return GetLayoutConstant(BOOKMARK_BAR_BUTTON_HEIGHT) +
              kBookmarkBarAttachedVerticalMargin;
     case BOOKMARK_BAR_BUTTON_HEIGHT:
@@ -98,7 +98,7 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
     }
 
     case TOOLBAR_INTERIOR_MARGIN:
-      return touch_ui ? gfx::Insets() : gfx::Insets(4, 8, 5, 8);
+      return touch_ui ? gfx::Insets() : gfx::Insets(4, 8);
   }
   NOTREACHED();
   return gfx::Insets();

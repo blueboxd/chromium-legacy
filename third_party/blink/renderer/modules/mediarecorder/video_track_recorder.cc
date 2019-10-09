@@ -125,6 +125,8 @@ VideoTrackRecorder::CodecEnumerator::CodecEnumerator(
       if (codec >= codec_id_and_profile.min_profile &&
           codec <= codec_id_and_profile.max_profile) {
         DVLOG(2) << "Accelerated codec found: " << media::GetProfileName(codec)
+                 << ", min_resolution: "
+                 << supported_profile.min_resolution.ToString()
                  << ", max_resolution: "
                  << supported_profile.max_resolution.ToString()
                  << ", max_framerate: "
@@ -414,16 +416,20 @@ bool VideoTrackRecorder::CanUseAcceleratedEncoder(CodecId codec,
   if (profile.profile == media::VIDEO_CODEC_PROFILE_UNKNOWN)
     return false;
 
+  const gfx::Size& min_resolution = profile.min_resolution;
+  const size_t min_width = static_cast<size_t>(
+      std::max(kVEAEncoderMinResolutionWidth, min_resolution.width()));
+  const size_t min_height = static_cast<size_t>(
+      std::max(kVEAEncoderMinResolutionHeight, min_resolution.height()));
+
   const gfx::Size& max_resolution = profile.max_resolution;
   DCHECK_GE(max_resolution.width(), 0);
   const size_t max_width = static_cast<size_t>(max_resolution.width());
   DCHECK_GE(max_resolution.height(), 0);
   const size_t max_height = static_cast<size_t>(max_resolution.height());
 
-  const bool width_within_range =
-      max_width >= width && width >= kVEAEncoderMinResolutionWidth;
-  const bool height_within_range =
-      max_height >= height && height >= kVEAEncoderMinResolutionHeight;
+  const bool width_within_range = max_width >= width && width >= min_width;
+  const bool height_within_range = max_height >= height && height >= min_height;
   const bool valid_framerate = framerate * profile.max_framerate_denominator <=
                                profile.max_framerate_numerator;
   return width_within_range && height_within_range && valid_framerate;

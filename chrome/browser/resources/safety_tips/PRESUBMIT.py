@@ -24,17 +24,12 @@ def CheckVersionUpdatedInProto(input_api, output_api):
     return []
 
   contents = safety_tips_proto[0].ChangedContents()
-  # Must not have any changes containing flagged_page:
-  if ContainsLine(contents, 'flagged_page:'):
+  # Must not have any changes containing flagged_page or allowed_pattern:
+  if (ContainsLine(contents, 'flagged_page:') or
+      ContainsLine(contents, 'allowed_pattern:')):
       return [output_api.PresubmitError(
       'Do not check in the full safety_tips.asciipb proto. '
       'Only increment |version_id|.')]
-
-  # This proto should not contain any actually-flagged pages. ContainsLine
-  # checks if any line *starts with* the given string.
-  if ContainsLine(contents, 'flagged_page:'):
-    return [output_api.PresubmitError(
-        'Remove entries from Chromium safety_tips.asciipb before submitting.')]
 
   # It's enticing to do something fancy like checking whether the ID was in fact
   # incremented or whether this is a whitespace-only or comment-only change.

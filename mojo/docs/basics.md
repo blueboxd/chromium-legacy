@@ -2,7 +2,7 @@
 
 This document aims to provide a brief overview of the different concepts in Mojo
 and how they work together.  For more details about more complex and/or
-Chrome-specific Mojo use cases, please consult the [Mojo cookbook](cookbook.md).
+Chrome-specific Mojo use cases, please consult [Intro to Mojo & Services](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/mojo_and_services.md).
 
 [TOC]
 

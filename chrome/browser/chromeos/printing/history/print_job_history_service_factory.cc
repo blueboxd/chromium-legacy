@@ -49,7 +49,7 @@ KeyedService* PrintJobHistoryServiceFactory::BuildServiceInstanceFor(
       chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(profile);
 
   return new PrintJobHistoryServiceImpl(std::move(print_job_database),
-                                        print_job_manager);
+                                        print_job_manager, profile->GetPrefs());
 }
 
 }  // namespace chromeos

@@ -320,7 +320,6 @@ std::ostream& operator<<(std::ostream& os, const FeatureUsage& usage) {
 
 std::vector<FeatureUsage> GetFeatureUsageMetrics(
     ukm::TestAutoSetUkmRecorder* recorder) {
-
   std::vector<FeatureUsage> result;
   for (const auto& entry :
        GetEntries(recorder, "HistoryNavigation",

@@ -215,21 +215,6 @@ TEST_F(CWVSyncControllerTest, CurrentIdentity) {
   EXPECT_FALSE(sync_controller_.currentIdentity);
 }
 
-// Verifies CWVSyncController's consent API.
-TEST_F(CWVSyncControllerTest, Consent) {
-  EXPECT_CALL(*mock_sync_service()->GetMockUserSettings(),
-              IsFirstSetupComplete())
-      .WillOnce(Return(false));
-  EXPECT_TRUE(sync_controller_.consentNeeded);
-  EXPECT_CALL(*mock_sync_service()->GetMockUserSettings(),
-              SetFirstSetupComplete(_));
-  [sync_controller_ consent];
-  EXPECT_CALL(*mock_sync_service()->GetMockUserSettings(),
-              IsFirstSetupComplete())
-      .WillOnce(Return(true));
-  EXPECT_FALSE(sync_controller_.consentNeeded);
-}
-
 // Verifies CWVSyncController's passphrase API.
 TEST_F(CWVSyncControllerTest, Passphrase) {
   EXPECT_CALL(*mock_sync_service()->GetMockUserSettings(),

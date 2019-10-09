@@ -32,8 +32,6 @@ struct OverlaySurfaceCandidate {
   gfx.mojom.Rect clip_rect;
   // If the quad is clipped after composition.
   bool is_clipped;
-  // If the quad doesn't require blending.
-  bool is_opaque;
   // Stacking order of the overlay plane relative to the main surface,
   // which is 0. Signed to allow for "underlays".
  int32 plane_z_order = 0;

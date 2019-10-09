@@ -1,10 +1,5 @@
 # Reproducing libFuzzer and AFL crashes
 
-libFuzzer and AFL crashes can be reproduced easily with the
-[ClusterFuzz Reproduce Tool]. However, if you are unable to use the tool (e.g.
-unsupported platform, some other tool issue), you can still reproduce the crash
-manually using the steps below:
-
 *** note
 **Requirements:** For Windows, you must convert the forward slashes (/) to
 backslashes (\\) in the commands below and use `set` command instead of `export`
@@ -133,7 +128,6 @@ cause of a crash. You can leave the minimization running locally for a while
 (e.g. overnight) for better results.
 
 
-[ClusterFuzz Reproduce Tool]: https://github.com/google/clusterfuzz-tools
 [File a bug]: https://bugs.chromium.org/p/chromium/issues/entry?component=Tools%3EStability%3ElibFuzzer&comment=What%20problem%20are%20you%20seeing
 [here]: getting_started.md#symbolize-stacktrace
 [these tips]: https://github.com/google/sanitizers/wiki/AddressSanitizerWindowsPort#debugging

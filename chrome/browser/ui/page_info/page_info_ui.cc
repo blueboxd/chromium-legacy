@@ -35,7 +35,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/vector_icons/vector_icons.h"
 #include "media/base/media_switches.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -265,6 +264,7 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
       return CreateSecurityDescription(SecuritySummaryColor::RED,
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
+    case PageInfo::SAFE_BROWSING_STATUS_SAVED_PASSWORD_REUSE:
     case PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE:
     case PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
     case PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE:
@@ -288,6 +288,9 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
     case security_state::SafetyTipStatus::kLookalike:
       // Lookalikes have their own strings, but they're suggestions, not
       // warnings, so we leave Page Info alone.
+    case security_state::SafetyTipStatus::kBadKeyword:
+      // Keyword safety tips are only used to collect metrics for now and are
+      // not visible to the user, so don't affect Page Info.
     case security_state::SafetyTipStatus::kNone:
     case security_state::SafetyTipStatus::kUnknown:
       break;

@@ -126,6 +126,8 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature
     kLowerJavaScriptPriorityWhenForceDeferred;
 
+BLINK_COMMON_EXPORT extern const base::Feature kARIAAnnotationRoles;
+
 }  // namespace features
 }  // namespace blink
 

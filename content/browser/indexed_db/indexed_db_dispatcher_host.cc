@@ -19,6 +19,7 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
+#include "content/browser/indexed_db/indexed_db_execution_context.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/transaction_impl.h"
@@ -80,11 +81,14 @@ IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
 }
 
 void IndexedDBDispatcherHost::AddReceiver(
-    mojo::PendingReceiver<blink::mojom::IDBFactory> pending_receiver,
-    const url::Origin& origin) {
+    int render_process_id,
+    int render_frame_id,
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::IDBFactory> pending_receiver) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  receivers_.Add(this, std::move(pending_receiver), {origin});
+  DCHECK_EQ(render_process_id, ipc_process_id_);
+  receivers_.Add(this, std::move(pending_receiver), {origin, render_frame_id});
 }
 
 void IndexedDBDispatcherHost::AddDatabaseBinding(
@@ -190,10 +194,13 @@ void IndexedDBDispatcherHost::Open(
   auto create_transaction_callback = base::BindOnce(
       &IndexedDBDispatcherHost::CreateAndBindTransactionImpl, AsWeakPtr(),
       std::move(transaction_receiver), context.origin);
+  const IndexedDBExecutionContext execution_context(ipc_process_id_,
+                                                    context.render_frame_id);
   std::unique_ptr<IndexedDBPendingConnection> connection =
       std::make_unique<IndexedDBPendingConnection>(
-          std::move(callbacks), std::move(database_callbacks), ipc_process_id_,
-          transaction_id, version, std::move(create_transaction_callback));
+          std::move(callbacks), std::move(database_callbacks),
+          execution_context, transaction_id, version,
+          std::move(create_transaction_callback));
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
   indexed_db_context_->GetIDBFactory()->Open(name, std::move(connection),

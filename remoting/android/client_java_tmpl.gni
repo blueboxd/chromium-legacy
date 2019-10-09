@@ -75,6 +75,7 @@ template("remoting_android_client_java_tmpl") {
       "jni/DirectoryService.java",
       "jni/JniInterface.java",
       "jni/JniOAuthTokenGetter.java",
+      "jni/NotificationPresenter.java",
       "jni/TouchEventData.java",
     ]
 

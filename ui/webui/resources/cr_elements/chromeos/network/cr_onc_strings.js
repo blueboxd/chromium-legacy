@@ -19,6 +19,7 @@
  *   networkListItemConnecting: string,
  *   networkListItemConnectingTo: string,
  *   networkListItemInitializing: string,
+ *   networkListItemNotAvailable: string,
  *   networkListItemScanning: string,
  *   networkListItemSimCardLocked: string,
  *   networkListItemNotConnected: string,

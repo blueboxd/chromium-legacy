@@ -48,6 +48,9 @@ enum class ErrorRetryState {
   kNavigatingToFailedNavigationItem,
   // This navigation item is ready to be reloaded in web view.
   kRetryFailedNavigationItem,
+  // Test only, used to ignore a placeholder navigation used to support
+  // LoadHtml.
+  kIgnorePlaceholderNavigation,
 };
 
 // Commands for CRWWebController to execute the state transition.
@@ -92,6 +95,10 @@ class ErrorRetryStateMachine {
 
   // Transitions the state machine to kRetryPlaceholderNavigation.
   void SetRetryPlaceholderNavigation();
+
+  // Only used for testing. Sets state to kIgnorePlaceholderNavigation, which
+  // will ignore the placeholder navigation used to support LoadHtml in tests.
+  void SetIgnorePlaceholderNavigation();
 
   // Runs state transitions upon a failed provisional navigation.
   ErrorRetryCommand DidFailProvisionalNavigation(const GURL& web_view_url,

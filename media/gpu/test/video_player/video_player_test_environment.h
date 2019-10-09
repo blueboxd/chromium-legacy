@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/gpu/test/video_frame_file_writer.h"
 #include "media/gpu/test/video_test_environment.h"
 
@@ -73,6 +74,12 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
   // Whether import mode is supported, valid after SetUp() has been called.
   bool ImportSupported() const;
 
+  // Get the GpuMemoryBufferFactory for doing buffer allocations. This needs to
+  // survive as long as the process is alive just like in production which is
+  // why it's in here as there are threads that won't immediately die when an
+  // individual test is completed.
+  gpu::GpuMemoryBufferFactory* GetGpuMemoryBufferFactory() const;
+
  private:
   VideoPlayerTestEnvironment(std::unique_ptr<media::test::Video> video,
                              bool enable_validator,
@@ -89,6 +96,8 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
 
   // TODO(dstaessens): Remove this once all allocate-only platforms reached EOL.
   bool import_supported_ = false;
+
+  std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 };
 }  // namespace test
 }  // namespace media

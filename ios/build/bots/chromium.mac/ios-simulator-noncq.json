@@ -78,7 +78,8 @@
       "device type": "iPad (6th generation)",
       "os": "12.2",
       "xcode build version": "11a420a",
-      "pool":"Chrome"
+      "pool":"Chrome",
+      "host os": "Mac-10.14.6"
     },
     {
       "xcode parallelization": true,
@@ -86,7 +87,8 @@
       "device type": "iPad Air 2",
       "os": "12.2",
       "xcode build version": "11a420a",
-      "pool":"Chrome"
+      "pool":"Chrome",
+      "host os": "Mac-10.14.6"
     }
   ]
 }

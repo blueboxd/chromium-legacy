@@ -41,7 +41,8 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -117,8 +118,8 @@ class ServicePdfToEmfConverterClientImpl
     : public printing::mojom::PdfToEmfConverterClient {
  public:
   explicit ServicePdfToEmfConverterClientImpl(
-      printing::mojom::PdfToEmfConverterClientRequest request)
-      : binding_(this, std::move(request)) {}
+      mojo::PendingReceiver<printing::mojom::PdfToEmfConverterClient> receiver)
+      : receiver_(this, std::move(receiver)) {}
 
  private:
   // mojom::PdfToEmfConverterClient:
@@ -129,7 +130,7 @@ class ServicePdfToEmfConverterClientImpl
     std::move(callback).Run();
   }
 
-  mojo::Binding<printing::mojom::PdfToEmfConverterClient> binding_;
+  mojo::Receiver<printing::mojom::PdfToEmfConverterClient> receiver_;
 };
 
 }  // namespace
@@ -145,31 +146,34 @@ class ServiceUtilityProcessHost::PdfToEmfState {
              const printing::PdfRenderSettings& conversion_settings) {
     weak_host_->BindInterface(
         printing::mojom::PdfToEmfConverterFactory::Name_,
-        mojo::MakeRequest(&pdf_to_emf_converter_factory_).PassMessagePipe());
+        pdf_to_emf_converter_factory_.BindNewPipeAndPassReceiver().PassPipe());
 
-    pdf_to_emf_converter_factory_.set_connection_error_handler(base::BindOnce(
+    pdf_to_emf_converter_factory_.set_disconnect_handler(base::BindOnce(
         &PdfToEmfState::OnFailed, weak_host_,
         std::string("Connection to PdfToEmfConverterFactory error.")));
 
-    printing::mojom::PdfToEmfConverterClientPtr pdf_to_emf_converter_client_ptr;
+    mojo::PendingRemote<printing::mojom::PdfToEmfConverterClient>
+        pdf_to_emf_converter_client_remote;
     pdf_to_emf_converter_client_impl_ =
         std::make_unique<ServicePdfToEmfConverterClientImpl>(
-            mojo::MakeRequest(&pdf_to_emf_converter_client_ptr));
+            pdf_to_emf_converter_client_remote
+                .InitWithNewPipeAndPassReceiver());
 
     pdf_to_emf_converter_factory_->CreateConverter(
         std::move(pdf_region), conversion_settings,
-        std::move(pdf_to_emf_converter_client_ptr),
+        std::move(pdf_to_emf_converter_client_remote),
         base::BindOnce(
             &ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesPageCount,
             weak_host_));
     return true;
   }
 
-  void GotPageCount(printing::mojom::PdfToEmfConverterPtr converter,
-                    uint32_t page_count) {
+  void GotPageCount(
+      mojo::PendingRemote<printing::mojom::PdfToEmfConverter> converter,
+      uint32_t page_count) {
     DCHECK(!pdf_to_emf_converter_.is_bound());
-    pdf_to_emf_converter_ = std::move(converter);
-    pdf_to_emf_converter_.set_connection_error_handler(
+    pdf_to_emf_converter_.Bind(std::move(converter));
+    pdf_to_emf_converter_.set_disconnect_handler(
         base::BindOnce(&PdfToEmfState::OnFailed, weak_host_,
                        std::string("Connection to PdfToEmfConverter error.")));
     page_count_ = page_count;
@@ -223,9 +227,10 @@ class ServiceUtilityProcessHost::PdfToEmfState {
   std::unique_ptr<ServicePdfToEmfConverterClientImpl>
       pdf_to_emf_converter_client_impl_;
 
-  printing::mojom::PdfToEmfConverterPtr pdf_to_emf_converter_;
+  mojo::Remote<printing::mojom::PdfToEmfConverter> pdf_to_emf_converter_;
 
-  printing::mojom::PdfToEmfConverterFactoryPtr pdf_to_emf_converter_factory_;
+  mojo::Remote<printing::mojom::PdfToEmfConverterFactory>
+      pdf_to_emf_converter_factory_;
 };
 
 ServiceUtilityProcessHost::ServiceUtilityProcessHost(
@@ -492,7 +497,7 @@ void ServiceUtilityProcessHost::OnMetafileSpooled(bool success) {
 }
 
 void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesPageCount(
-    printing::mojom::PdfToEmfConverterPtr converter,
+    mojo::PendingRemote<printing::mojom::PdfToEmfConverter> converter,
     uint32_t page_count) {
   DCHECK(waiting_for_reply_);
   if (page_count == 0 || pdf_to_emf_state_->has_page_count())

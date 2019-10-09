@@ -978,7 +978,13 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       "parameters": {"pointerType": "touch"},
       "id": "pointer2"}]})
     self._driver.PerformActions(actions)
-    events = self._driver.ExecuteScript('return window.events')
+    for _ in range(5):
+      events = self._driver.ExecuteScript('return window.events')
+      if len(events) == 4:
+        break
+      # Wait 10 ms for the event handler to be executed.
+      time.sleep(0.01)
+
     self.assertEquals(4, len(events))
     self.assertEquals("touchstart", events[0]['type'])
     self.assertEquals("touchstart", events[1]['type'])

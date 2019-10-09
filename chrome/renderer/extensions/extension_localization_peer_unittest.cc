@@ -71,9 +71,9 @@ class MockRequestPeer : public content::RequestPeer {
   MOCK_METHOD2(OnUploadProgress, void(uint64_t position, uint64_t size));
   MOCK_METHOD2(OnReceivedRedirect,
                bool(const net::RedirectInfo& redirect_info,
-                    const network::ResourceResponseInfo& info));
+                    network::mojom::URLResponseHeadPtr head));
   MOCK_METHOD1(OnReceivedResponse,
-               void(const network::ResourceResponseInfo& info));
+               void(network::mojom::URLResponseHeadPtr head));
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override {
     body_handle_ = std::move(body);

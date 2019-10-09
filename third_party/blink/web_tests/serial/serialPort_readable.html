@@ -98,4 +98,23 @@ serial_test(async (t, fake) => {
   assert_equals(undefined, value);
 }, 'Parity error closes readable and replaces it with a new stream');
 
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+  // Select a buffer size larger than the amount of data transferred.
+  await port.open({ baudrate: 9600, buffersize: 64 });
+
+  fakePort.write(new TextEncoder().encode("Hello world!"));
+
+  const reader = port.readable.pipeThrough(new TextDecoderStream()).getReader();
+  let { value, done } = await reader.read();
+  assert_false(done);
+  assert_equals("Hello world!", value);
+
+  port.close();
+
+  ({ value, done } = await reader.read());
+  assert_true(done);
+  assert_equals(undefined, value);
+}, 'Can pipe readable through a transform stream.')
+
 </script>

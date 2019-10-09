@@ -318,6 +318,7 @@ jumbo_component("base") {
     "ios/scoped_critical_action.mm",
     "ios/weak_nsobject.h",
     "ios/weak_nsobject.mm",
+    "json/json_common.h",
     "json/json_file_value_serializer.cc",
     "json/json_file_value_serializer.h",
     "json/json_parser.cc",
@@ -2167,6 +2168,11 @@ static_library("base_static") {
   ]
 
   if (is_win) {
+    sources += [
+      "win/static_constants.cc",
+      "win/static_constants.h",
+    ]
+
     public_deps = [
       "//base/win:pe_image",
     ]

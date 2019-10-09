@@ -409,14 +409,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
                               }]];
 
     __weak ShellViewController* weakSelf = self;
-    if (syncController.consentNeeded) {
-      [alertController
-          addAction:[UIAlertAction actionWithTitle:@"Opt into sync"
-                                             style:UIAlertActionStyleDefault
-                                           handler:^(UIAlertAction* action) {
-                                             [syncController consent];
-                                           }]];
-    } else if (syncController.passphraseNeeded) {
+    if (syncController.passphraseNeeded) {
       [alertController
           addAction:[UIAlertAction
                         actionWithTitle:@"Unlock using passphrase"

@@ -6,6 +6,22 @@ import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
 
+declare_args() {
+  if (is_cast_desktop_build) {
+    # Desktop builds should set cast_static_media_lib_target explicitly if
+    # desired.
+    cast_static_media_lib_target = ""
+  } else if (is_cast_audio_only) {
+    cast_static_media_lib_target =
+        "//chromecast/media/cma/backend/alsa:libcast_media_1.0_audio"
+  } else if (enable_video_with_mixed_audio) {
+    cast_static_media_lib_target =
+        "//chromecast/media/cma/backend/video:libcast_media_1.0_avsync"
+  } else {
+    cast_static_media_lib_target = ""
+  }
+}
+
 group("media") {
   public_deps = [
     "//chromecast/media/audio",
@@ -27,14 +43,22 @@ group("libcast_media") {
     deps = [
       "//chromecast/media/cma/backend/fuchsia:media_backend",
     ]
+  } else if (cast_static_media_lib_target != "") {
+    deps = [
+      "$cast_static_media_lib_target",
+    ]
+  } else if (is_cast_desktop_build) {
+    deps = [
+      "//chromecast/media/cma/backend/desktop",
+    ]
   } else {
     deps = [
       "//chromecast/media/cma/backend:libcast_media_1.0",
     ]
+  }
 
-    if (cast_volume_control_in_avsettings) {
-      deps += [ "//chromecast/media/avsettings:libcast_avsettings_1.0" ]
-    }
+  if (cast_volume_control_in_avsettings) {
+    deps += [ "//chromecast/media/avsettings:libcast_avsettings_1.0" ]
   }
 }
 

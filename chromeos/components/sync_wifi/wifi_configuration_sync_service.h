@@ -18,6 +18,8 @@ namespace syncer {
 class ModelTypeControllerDelegate;
 }  // namespace syncer
 
+namespace chromeos {
+
 namespace sync_wifi {
 
 class WifiConfigurationBridge;
@@ -40,5 +42,7 @@ class WifiConfigurationSyncService : public KeyedService {
 };
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos
 
 #endif  // CHROMEOS_COMPONENTS_SYNC_WIFI_WIFI_CONFIGURATION_SYNC_SERVICE_H_

@@ -19,12 +19,12 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.DefaultFaviconHelper;
+import org.chromium.chrome.browser.favicon.FaviconUtils;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
-import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 
 /**
@@ -51,7 +51,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
 
         mMinIconSize = getResources().getDimensionPixelSize(R.dimen.default_favicon_min_size);
         mDisplayedIconSize = getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
-        mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(getResources(), true);
+        mIconGenerator = FaviconUtils.createCircularIconGenerator(getResources());
         mEndPadding = context.getResources().getDimensionPixelSize(
                 R.dimen.selectable_list_layout_row_padding);
 
@@ -169,9 +169,8 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
             icon = mIconGenerator.generateIconForUrl(getItem().getUrl());
             setIconDrawable(new BitmapDrawable(getResources(), icon));
         } else {
-            setIconDrawable(ViewUtils.createRoundedBitmapDrawable(
-                    Bitmap.createScaledBitmap(icon, mDisplayedIconSize, mDisplayedIconSize, false),
-                    ViewUtils.DEFAULT_FAVICON_CORNER_RADIUS));
+            setIconDrawable(FaviconUtils.createRoundedBitmapDrawable(Bitmap.createScaledBitmap(
+                    icon, mDisplayedIconSize, mDisplayedIconSize, false)));
         }
     }
 

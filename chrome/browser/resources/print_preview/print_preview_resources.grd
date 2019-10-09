@@ -432,8 +432,8 @@
       <structure name="IDR_PRINT_PREVIEW_UI_STRINGS_HTML"
                  file="ui/strings.html"
                  type="chrome_html" />
-      <structure name="IDR_PRINT_PREVIEW_ICONS_HTML"
-                 file="icons.html"
+      <structure name="IDR_PRINT_PREVIEW_UI_ICONS_HTML"
+                 file="ui/icons.html"
                  type="chrome_html" />
 
       <if expr="not optimize_webui">

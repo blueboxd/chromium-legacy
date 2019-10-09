@@ -172,6 +172,7 @@
 #include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/views/accessibility/view_accessibility_utils.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/external_focus_tracker.h"
@@ -255,48 +256,6 @@ void InsertIntoFocusOrderAfter(views::View* insert_after,
     old_prev->SetNextFocusableView(old_next);
 }
 
-// Paints the background (including the theme image behind content area) for
-// the Bookmarks Bar.
-// |background_origin| is the origin to use for painting the theme image.
-void PaintBackground(gfx::Canvas* canvas,
-                     const ui::ThemeProvider* theme_provider,
-                     const gfx::Rect& bounds,
-                     const gfx::Point& background_origin) {
-  canvas->DrawColor(theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
-
-  // If there's a non-default background image, tile it.
-  if (theme_provider->HasCustomImage(IDR_THEME_TOOLBAR)) {
-    canvas->TileImageInt(*theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
-                         background_origin.x(),
-                         background_origin.y(),
-                         bounds.x(),
-                         bounds.y(),
-                         bounds.width(),
-                         bounds.height());
-  }
-}
-
-void PaintBookmarkBar(gfx::Canvas* canvas,
-                      BookmarkBarView* view,
-                      BrowserView* browser_view,
-                      int toolbar_overlap) {
-  // Paint background for attached state.
-  gfx::Point background_image_offset =
-      browser_view->OffsetPointForToolbarBackgroundImage(
-          gfx::Point(view->GetMirroredX(), view->y()));
-  PaintBackground(canvas, view->GetThemeProvider(), view->GetLocalBounds(),
-                  background_image_offset);
-
-  if (view->height() >= toolbar_overlap) {
-    const SkColor separator_color = view->GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR);
-    const gfx::Rect bounds = view->GetLocalBounds();
-    canvas->DrawLine(gfx::Point(bounds.x(), bounds.bottom() - 1),
-                     gfx::Point(bounds.right(), bounds.bottom() - 1),
-                     separator_color);
-  }
-}
-
 bool GetGestureCommand(ui::GestureEvent* event, int* command) {
   DCHECK(command);
   *command = 0;
@@ -344,6 +303,18 @@ class OverlayViewTargeterDelegate : public views::ViewTargeterDelegate {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OverlayViewTargeterDelegate);
+};
+
+class ContentsSeparator : public views::Separator {
+ private:
+  // views::View:
+  void OnThemeChanged() override { UpdateColor(); }
+  void AddedToWidget() override { UpdateColor(); }
+
+  void UpdateColor() {
+    SetColor(GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR));
+  }
 };
 
 }  // namespace
@@ -413,36 +384,6 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewLayoutDelegateImpl);
 };
-
-// This class is used to paint the background for Bookmarks Bar.
-class BookmarkBarViewBackground : public views::Background {
- public:
-  BookmarkBarViewBackground(BrowserView* browser_view,
-                            BookmarkBarView* bookmark_bar_view);
-
-  // views:Background:
-  void Paint(gfx::Canvas* canvas, views::View* view) const override;
-
- private:
-  BrowserView* browser_view_;
-
-  // The view hosting this background.
-  BookmarkBarView* bookmark_bar_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkBarViewBackground);
-};
-
-BookmarkBarViewBackground::BookmarkBarViewBackground(
-    BrowserView* browser_view,
-    BookmarkBarView* bookmark_bar_view)
-    : browser_view_(browser_view), bookmark_bar_view_(bookmark_bar_view) {}
-
-void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
-                                      views::View* view) const {
-  int toolbar_overlap = bookmark_bar_view_->GetToolbarOverlap();
-
-  PaintBookmarkBar(canvas, bookmark_bar_view_, browser_view_, toolbar_overlap);
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, public:
@@ -545,17 +486,6 @@ int BrowserView::GetTabStripHeight() const {
   // of layout, when that hasn't yet been updated to reflect the current state.
   // So return what the tabstrip height _ought_ to be right now.
   return IsTabStripVisible() ? tabstrip_->GetPreferredSize().height() : 0;
-}
-
-gfx::Point BrowserView::OffsetPointForToolbarBackgroundImage(
-    const gfx::Point& point) const {
-  // The background image starts tiling horizontally at the window left edge and
-  // vertically at the top edge of the horizontal tab strip (or where it would
-  // be).  We expect our parent's origin to be the window origin.
-  gfx::Point window_point(point + GetMirroredPosition().OffsetFromOrigin());
-  window_point.Offset(frame_->GetThemeBackgroundXInset(),
-                      -frame_->GetTopInset());
-  return window_point;
 }
 
 bool BrowserView::IsTabStripVisible() const {
@@ -2042,14 +1972,6 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
   return base::string16();
 }
 
-int BrowserView::GetBookmarkBarContentVerticalOffset() const {
-  if (!bookmark_bar_view_.get()) {
-    return 0;
-  }
-
-  return -GetBottomInsetOfLocationBarWithinToolbar() / 2;
-}
-
 std::vector<views::NativeViewHost*>
 BrowserView::GetNativeViewHostsForTopControlsSlide() const {
   std::vector<views::NativeViewHost*> results;
@@ -2061,12 +1983,6 @@ BrowserView::GetNativeViewHostsForTopControlsSlide() const {
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
   return results;
-}
-
-int BrowserView::GetBottomInsetOfLocationBarWithinToolbar() const {
-  return (toolbar_->height() - GetLocationBarView()->height() -
-          bookmark_bar_view_->GetToolbarOverlap()) /
-         2;
 }
 
 void BrowserView::ReparentTopContainerForEndOfImmersive() {
@@ -2634,9 +2550,12 @@ void BrowserView::InitViews() {
   }
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
-  toolbar_ = new ToolbarView(browser_.get(), this);
-  top_container_->AddChildView(toolbar_);
+  toolbar_ = top_container_->AddChildView(
+      std::make_unique<ToolbarView>(browser_.get(), this));
   toolbar_->Init();
+
+  contents_separator_ =
+      top_container_->AddChildView(std::make_unique<ContentsSeparator>());
 
   // This browser view may already have a custom button provider set (e.g the
   // hosted app frame).
@@ -2688,7 +2607,8 @@ void BrowserView::InitViews() {
       std::make_unique<BrowserViewLayoutDelegateImpl>(this), browser(), this,
       top_container_, tab_strip_region_view_, tabstrip_, webui_tab_strip_view,
       toolbar_, infobar_container_, contents_container_,
-      immersive_mode_controller_.get(), web_footer_experiment);
+      immersive_mode_controller_.get(), web_footer_experiment,
+      contents_separator_);
   SetLayoutManager(std::move(browser_view_layout));
 
   EnsureFocusOrder();
@@ -2752,9 +2672,6 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
     bookmark_bar_view_ =
         std::make_unique<BookmarkBarView>(browser_.get(), this);
     bookmark_bar_view_->set_owned_by_client();
-    bookmark_bar_view_->SetBackground(
-        std::make_unique<BookmarkBarViewBackground>(this,
-                                                    bookmark_bar_view_.get()));
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(),
         BookmarkBar::DONT_ANIMATE_STATE_CHANGE);

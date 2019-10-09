@@ -147,6 +147,9 @@ public class Module<T> {
             loadLibrary = true;
             loadResources = true;
         }
+        if ("dev_ui".equals(name)) {
+            loadResources = true;
+        }
         if (loadLibrary || loadResources) {
             ModuleJni.get().loadNative(name, loadLibrary, loadResources);
         }

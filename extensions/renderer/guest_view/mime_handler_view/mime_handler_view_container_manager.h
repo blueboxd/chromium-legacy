@@ -80,6 +80,8 @@ class MimeHandlerViewContainerManager
       v8::Isolate* isolate);
   // Removes the |frame_container| from |frame_containers_| and destroys it. The
   // |reason| is emitted for UMA.
+  // Note: Calling this function may delete |this| if we are removing the last
+  // frame container.
   void RemoveFrameContainerForReason(
       MimeHandlerViewFrameContainer* frame_container,
       MimeHandlerViewUMATypes::Type reason);
@@ -100,6 +102,9 @@ class MimeHandlerViewContainerManager
   void LoadEmptyPage(const GURL& resource_url) override;
   void CreateBeforeUnloadControl(
       CreateBeforeUnloadControlCallback callback) override;
+
+  // Note: Calling this function may delete |this| if we are destroying the last
+  // frame container.
   void DestroyFrameContainer(int32_t element_instance_id) override;
   void DidLoad(int32_t mime_handler_view_guest_element_instance_id,
                const GURL& resource_url) override;
@@ -111,6 +116,8 @@ class MimeHandlerViewContainerManager
   bool IsEmbedded() const override;
   bool IsResourceAccessibleBySource() const override;
 
+  // Note: Calling this function may delete |this| if we are removing the last
+  // frame container.
   bool RemoveFrameContainer(MimeHandlerViewFrameContainer* frame_container);
   // mime_handler::BeforeUnloadControl implementation.
   void SetShowBeforeUnloadDialog(
@@ -137,7 +144,7 @@ class MimeHandlerViewContainerManager
   // Used to match against plugin elements that request a scriptable object. The
   // one that matches is the one inserted in the HTML string injected by the
   // MimeHandlerViewAttachHelper (and hence requires a scriptable object to for
-  // postMessage purposes).
+  // postMessage purposes). This will only be non-empty for full-page MHV.
   std::string internal_id_;
   // The plugin element that is managed by MimeHandlerViewContainerManager.
   blink::WebElement plugin_element_;

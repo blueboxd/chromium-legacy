@@ -254,7 +254,6 @@ base::Optional<NotificationMessage> NotificationClient::ParseAndMatchRule(
     const std::string& user_email,
     std::string* out_message_text_filename,
     std::string* out_link_text_filename) {
-  std::string appearance_string;
   std::string target_platform;
   std::string version_spec_string;
   std::string message_id;
@@ -262,8 +261,7 @@ base::Optional<NotificationMessage> NotificationClient::ParseAndMatchRule(
   std::string link_text_filename;
   std::string link_url;
   int percent;
-  if (!FindKeyAndGet(rule, "appearance", &appearance_string) ||
-      !FindKeyAndGet(rule, "target_platform", &target_platform) ||
+  if (!FindKeyAndGet(rule, "target_platform", &target_platform) ||
       !FindKeyAndGet(rule, "version", &version_spec_string) ||
       !FindKeyAndGet(rule, "message_id", &message_id) ||
       !FindKeyAndGet(rule, "message_text", &message_text_filename) ||
@@ -304,14 +302,6 @@ base::Optional<NotificationMessage> NotificationClient::ParseAndMatchRule(
   }
 
   auto message = base::make_optional<NotificationMessage>();
-  if (appearance_string == "TOAST") {
-    message->appearance = NotificationMessage::Appearance::TOAST;
-  } else if (appearance_string == "DIALOG") {
-    message->appearance = NotificationMessage::Appearance::DIALOG;
-  } else {
-    LOG(ERROR) << "Unknown appearance: " << appearance_string;
-    return base::nullopt;
-  }
   message->message_id = message_id;
   message->link_url = link_url;
   message->allow_dont_show_again = false;

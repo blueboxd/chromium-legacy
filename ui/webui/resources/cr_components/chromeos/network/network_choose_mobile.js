@@ -78,7 +78,7 @@ Polymer({
    * @private
    */
   managedPropertiesChanged_: function() {
-    const cellular = this.managedProperties.cellular;
+    const cellular = this.managedProperties.typeProperties.cellular;
     this.mobileNetworkList_ = cellular.foundNetworks || [];
     if (!this.mobileNetworkList_.length) {
       this.mobileNetworkList_ = [
@@ -128,8 +128,8 @@ Polymer({
         !!this.deviceState && !this.deviceState.scanning &&
         properties.connectionState ==
             chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected &&
-        !!properties.cellular.foundNetworks &&
-        properties.cellular.foundNetworks.length > 0);
+        !!properties.typeProperties.cellular.foundNetworks &&
+        properties.typeProperties.cellular.foundNetworks.length > 0);
   },
 
   /**

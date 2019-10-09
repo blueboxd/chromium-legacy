@@ -15,7 +15,6 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/waiting.h"
-#include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/test/video_player/frame_renderer.h"
@@ -37,12 +36,16 @@ constexpr size_t kTimestampCacheSize = 128;
 TestVDAVideoDecoder::TestVDAVideoDecoder(
     AllocationMode allocation_mode,
     const gfx::ColorSpace& target_color_space,
-    FrameRenderer* const frame_renderer)
+    FrameRenderer* const frame_renderer,
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : output_mode_(allocation_mode == AllocationMode::kAllocate
                        ? VideoDecodeAccelerator::Config::OutputMode::ALLOCATE
                        : VideoDecodeAccelerator::Config::OutputMode::IMPORT),
       target_color_space_(target_color_space),
       frame_renderer_(frame_renderer),
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+      gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
       decode_start_timestamps_(kTimestampCacheSize) {
   DETACH_FROM_SEQUENCE(vda_wrapper_sequence_checker_);
 
@@ -220,8 +223,9 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
         video_frame = CreatePlatformVideoFrame(
-            format, dimensions, visible_rect, visible_rect.size(),
-            base::TimeDelta(), gfx::BufferUsage::SCANOUT_VDA_WRITE);
+            gpu_memory_buffer_factory_, format, dimensions, visible_rect,
+            visible_rect.size(), base::TimeDelta(),
+            gfx::BufferUsage::SCANOUT_VDA_WRITE);
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
         LOG_ASSERT(video_frame) << "Failed to create video frame";

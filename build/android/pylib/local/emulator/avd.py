@@ -9,6 +9,7 @@ import os
 import socket
 import stat
 import subprocess
+import textwrap
 import threading
 
 from google.protobuf import text_format  # pylint: disable=import-error
@@ -217,6 +218,7 @@ class AvdConfig(object):
     try:
       logging.info('Modifying AVD configuration.')
 
+      # Clear out any previous configuration or state from this AVD.
       root_ini = os.path.join(android_avd_home,
                               '%s.ini' % self._config.avd_name)
       avd_dir = os.path.join(android_avd_home, '%s.avd' % self._config.avd_name)
@@ -226,16 +228,27 @@ class AvdConfig(object):
         root_ini_file.write('path.rel=avd/%s.avd\n' % self._config.avd_name)
 
       with open(config_ini, 'a') as config_ini_file:
-        config_ini_file.write('disk.dataPartition.size=4G\n')
+        config_ini_file.write(
+            textwrap.dedent("""\
+                disk.dataPartition.size=4G
+                """))
 
       # Start & stop the AVD.
       self._Initialize()
       instance = _AvdInstance(self._emulator_path, self._config.avd_name,
                               self._emulator_home)
-      instance.Start(read_only=not snapshot)
+      instance.Start(read_only=False, snapshot_save=snapshot)
       device_utils.DeviceUtils(instance.serial).WaitUntilFullyBooted(
           timeout=180, retries=0)
       instance.Stop()
+
+      # The multiinstance lock file seems to interfere with the emulator's
+      # operation in some circumstances (beyond the obvious -read-only ones),
+      # and there seems to be no mechanism by which it gets closed or deleted.
+      # See https://bit.ly/2pWQTH7 for context.
+      multiInstanceLockFile = os.path.join(avd_dir, 'multiinstance.lock')
+      if os.path.exists(multiInstanceLockFile):
+        os.unlink(multiInstanceLockFile)
 
       package_def_content = {
           'package':
@@ -339,9 +352,10 @@ class AvdConfig(object):
     for dirname, _, filenames in os.walk(self._emulator_home):
       for f in filenames:
         path = os.path.join(dirname, f)
-        if (os.lstat(path).st_mode &
-            (stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO) == stat.S_IRUSR):
-          os.chmod(path, stat.S_IRUSR | stat.S_IWUSR)
+        mode = os.lstat(path).st_mode
+        if mode & stat.S_IRUSR:
+          mode = mode | stat.S_IWUSR
+        os.chmod(path, mode)
 
   def _Initialize(self):
     if self._initialized:
@@ -411,19 +425,23 @@ class _AvdInstance(object):
   def __str__(self):
     return '%s|%s' % (self._avd_name, (self._emulator_serial or id(self)))
 
-  def Start(self, read_only=True):
+  def Start(self, read_only=True, snapshot_save=False):
     """Starts the emulator running an instance of the given AVD."""
     with tempfile_ext.TemporaryFileName() as socket_path, (contextlib.closing(
         socket.socket(socket.AF_UNIX))) as sock:
       sock.bind(socket_path)
       emulator_cmd = [
-          self._emulator_path, '-avd', self._avd_name, '-report-console',
-          'unix:%s' % socket_path, '-no-window'
+          self._emulator_path,
+          '-avd',
+          self._avd_name,
+          '-report-console',
+          'unix:%s' % socket_path,
+          '-no-window',
       ]
       if read_only:
-        emulator_cmd += [
-            '-read-only',
-        ]
+        emulator_cmd.append('-read-only')
+      if not snapshot_save:
+        emulator_cmd.append('-no-snapshot-save')
       emulator_env = {}
       if self._emulator_home:
         emulator_env['ANDROID_EMULATOR_HOME'] = self._emulator_home

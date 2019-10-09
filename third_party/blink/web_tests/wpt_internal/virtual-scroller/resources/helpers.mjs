@@ -93,9 +93,12 @@ export function inNFrames(n, callback) {
 }
 
 /**
- * Allow the current frame to end and then call |callback| asap in the
+ * Returns a promise which will resolve as soon as possible after |n|
+ * RAFs have completed. So if |n| is 1, this will resolve ASAP in the
  * next frame.
  */
-export function nextFrame(callback) {
-  inNFrames(1, callback);
+export function nFrames(n) {
+  return new Promise(resolve => {
+    inNFrames(n, () => resolve());
+  });
 }

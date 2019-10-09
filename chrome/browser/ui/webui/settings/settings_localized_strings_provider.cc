@@ -208,8 +208,10 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"captionsTextColor", IDS_SETTINGS_CAPTIONS_TEXT_COLOR},
     {"captionsTextOpacity", IDS_SETTINGS_CAPTIONS_TEXT_OPACITY},
     {"captionsBackgroundOpacity", IDS_SETTINGS_CAPTIONS_BACKGROUND_OPACITY},
-    {"captionsOpacityMin", IDS_SETTINGS_CAPTIONS_OPACITY_MIN},
-    {"captionsOpacityMax", IDS_SETTINGS_CAPTIONS_OPACITY_MAX},
+    {"captionsOpacityOpaque", IDS_SETTINGS_CAPTIONS_OPACITY_OPAQUE},
+    {"captionsOpacitySemiTransparent",
+     IDS_SETTINGS_CAPTIONS_OPACITY_SEMI_TRANSPARENT},
+    {"captionsOpacityTransparent", IDS_SETTINGS_CAPTIONS_OPACITY_TRANSPARENT},
     {"captionsTextShadow", IDS_SETTINGS_CAPTIONS_TEXT_SHADOW},
     {"captionsTextShadowNone", IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_NONE},
     {"captionsTextShadowRaised", IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_RAISED},
@@ -439,7 +441,6 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
     {"aboutCheckForUpdates", IDS_SETTINGS_ABOUT_PAGE_CHECK_FOR_UPDATES},
     {"aboutCurrentlyOnChannel", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL},
     {"aboutDetailedBuildInfo", IDS_SETTINGS_ABOUT_PAGE_DETAILED_BUILD_INFO},
-    {"aboutOSBanner", IDS_SETTINGS_ABOUT_OS_BANNER},
     {"aboutEndOfLifeTitle", IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_TITLE},
     {"aboutRelaunchAndPowerwash",
      IDS_SETTINGS_ABOUT_PAGE_RELAUNCH_AND_POWERWASH},
@@ -1613,6 +1614,8 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_LANGUAGES_ADD_DICTIONARY_WORD_DUPLICATE_ERROR},
     {"addDictionaryWordLengthError",
      IDS_SETTINGS_LANGUAGES_ADD_DICTIONARY_WORD_LENGTH_ERROR},
+    {"deleteDictionaryWordButton",
+     IDS_SETTINGS_LANGUAGES_DELETE_DICTIONARY_WORD_BUTTON},
     {"customDictionaryWords", IDS_SETTINGS_LANGUAGES_DICTIONARY_WORDS},
     {"noCustomDictionaryWordsFound",
      IDS_SETTINGS_LANGUAGES_DICTIONARY_WORDS_NONE},
@@ -2707,6 +2710,9 @@ void AddGoogleAssistantStrings(content::WebUIDataSource* html_source,
 
   html_source->AddBoolean("hotwordDspAvailable",
                           chromeos::IsHotwordDspAvailable());
+  html_source->AddBoolean(
+      "voiceMatchDisabled",
+      chromeos::assistant::features::IsVoiceMatchDisabled());
 }
 #endif
 
@@ -3221,6 +3227,8 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
       {"multideviceForgetDevice", IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE},
       {"multideviceSmartLockOptions",
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_OPTIONS_LOCK},
+      {"multideviceForgetDeviceDisconnect",
+       IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE_DISCONNECT},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));

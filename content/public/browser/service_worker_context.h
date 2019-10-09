@@ -75,12 +75,6 @@ class CONTENT_EXPORT ServiceWorkerContext {
 
   using StartWorkerCallback = base::OnceCallback<
       void(int64_t version_id, int process_id, int thread_id)>;
-  using GetAllServiceWorkerRunningInfosCallback =
-      base::OnceCallback<void(ServiceWorkerContext*,
-                              const std::vector<ServiceWorkerRunningInfo>)>;
-  using GetServiceWorkerRunningInfoCallback =
-      base::OnceCallback<void(ServiceWorkerContext*,
-                              const ServiceWorkerRunningInfo&)>;
 
   // Temporary for crbug.com/824858. The thread the context core lives on.
   static bool IsServiceWorkerOnUIEnabled();
@@ -229,16 +223,9 @@ class CONTENT_EXPORT ServiceWorkerContext {
   // Gets info about all running workers.
   //
   // Must be called on the UI thread. The callback is called on the UI thread.
-  virtual void GetAllServiceWorkerRunningInfos(
-      GetAllServiceWorkerRunningInfosCallback callback) = 0;
-
-  // Gets info of the running worker whose version id is
-  // |service_worker_version_id|.
-  //
-  // Must be called on the UI thread. The callback is called on the UI thread.
-  virtual void GetServiceWorkerRunningInfo(
-      int64_t service_worker_version_id,
-      GetServiceWorkerRunningInfoCallback callback) = 0;
+  virtual const base::flat_map<int64_t /* version_id */,
+                               ServiceWorkerRunningInfo>&
+  GetRunningServiceWorkerInfos() = 0;
 
  protected:
   ServiceWorkerContext() {}

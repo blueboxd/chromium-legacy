@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/encryption_pattern.h"
@@ -125,6 +126,9 @@ void FuchsiaStreamDecryptorBase::AllocateInputBuffers(
       base::BindOnce(&FuchsiaStreamDecryptorBase::OnInputBufferPoolCreated,
                      base::Unretained(this)));
 }
+
+void FuchsiaStreamDecryptorBase::OnOutputFormat(
+    fuchsia::media::StreamOutputFormat format) {}
 
 void FuchsiaStreamDecryptorBase::OnInputBufferPoolCreated(
     std::unique_ptr<SysmemBufferPool> pool) {
@@ -247,9 +251,6 @@ void FuchsiaClearStreamDecryptor::OnProcessEos() {
   NOTREACHED();
 }
 
-void FuchsiaClearStreamDecryptor::OnOutputFormat(
-    fuchsia::media::StreamOutputFormat format) {}
-
 void FuchsiaClearStreamDecryptor::OnOutputPacket(
     StreamProcessorHelper::IoPacket packet) {
   DCHECK(decrypt_cb_);
@@ -311,6 +312,10 @@ void FuchsiaClearStreamDecryptor::OnOutputPacket(
 }
 
 void FuchsiaClearStreamDecryptor::OnNoKey() {
+  // Reset the queue. The client is expected to call Decrypt() with the same
+  // buffer again when it gets kNoKey.
+  input_writer_queue_.ResetQueue();
+
   if (decrypt_cb_)
     std::move(decrypt_cb_).Run(Decryptor::kNoKey, nullptr);
 }
@@ -356,26 +361,6 @@ void FuchsiaClearStreamDecryptor::OnOutputBufferPoolReaderCreated(
   output_reader_ = std::move(reader);
 }
 
-// static
-std::unique_ptr<FuchsiaSecureStreamDecryptor>
-FuchsiaSecureStreamDecryptor::Create(
-    fuchsia::media::drm::ContentDecryptionModule* cdm,
-    Client* client) {
-  DCHECK(cdm);
-
-  fuchsia::media::drm::DecryptorParams params;
-
-  // TODO(crbug.com/997853): Enable secure mode when it's implemented in sysmem.
-  params.set_require_secure_mode(false);
-
-  params.mutable_input_details()->set_format_details_version_ordinal(0);
-  fuchsia::media::StreamProcessorPtr stream_processor;
-  cdm->CreateDecryptor(std::move(params), stream_processor.NewRequest());
-
-  return std::make_unique<FuchsiaSecureStreamDecryptor>(
-      std::move(stream_processor), client);
-}
-
 FuchsiaSecureStreamDecryptor::FuchsiaSecureStreamDecryptor(
     fuchsia::media::StreamProcessorPtr processor,
     Client* client)
@@ -405,6 +390,7 @@ void FuchsiaSecureStreamDecryptor::Decrypt(
 
 void FuchsiaSecureStreamDecryptor::Reset() {
   ResetStream();
+  waiting_for_key_ = false;
 }
 
 void FuchsiaSecureStreamDecryptor::AllocateOutputBuffers(
@@ -420,21 +406,51 @@ void FuchsiaSecureStreamDecryptor::OnProcessEos() {
   client_->OnDecryptorEndOfStreamPacket();
 }
 
-void FuchsiaSecureStreamDecryptor::OnOutputFormat(
-    fuchsia::media::StreamOutputFormat format) {}
-
 void FuchsiaSecureStreamDecryptor::OnOutputPacket(
     StreamProcessorHelper::IoPacket packet) {
   client_->OnDecryptorOutputPacket(std::move(packet));
 }
 
-void FuchsiaSecureStreamDecryptor::OnNoKey() {
-  client_->OnDecryptorNoKey();
+base::RepeatingClosure FuchsiaSecureStreamDecryptor::GetOnNewKeyClosure() {
+  return BindToCurrentLoop(base::BindRepeating(
+      &FuchsiaSecureStreamDecryptor::OnNewKey, weak_factory_.GetWeakPtr()));
 }
 
 void FuchsiaSecureStreamDecryptor::OnError() {
   ResetStream();
+
+  // No need to reset other fields since OnError() is called for non-recoverable
+  // errors.
+
   client_->OnDecryptorError();
+}
+
+void FuchsiaSecureStreamDecryptor::OnNoKey() {
+  DCHECK(!waiting_for_key_);
+
+  // Reset stream position, but keep all pending buffers. They will be
+  // resubmitted later, when we have a new key.
+  input_writer_queue_.ResetPositionAndPause();
+
+  if (retry_on_no_key_) {
+    retry_on_no_key_ = false;
+    input_writer_queue_.Unpause();
+    return;
+  }
+
+  waiting_for_key_ = true;
+  client_->OnDecryptorNoKey();
+}
+
+void FuchsiaSecureStreamDecryptor::OnNewKey() {
+  if (!waiting_for_key_) {
+    retry_on_no_key_ = true;
+    return;
+  }
+
+  DCHECK(!retry_on_no_key_);
+  waiting_for_key_ = false;
+  input_writer_queue_.Unpause();
 }
 
 }  // namespace media

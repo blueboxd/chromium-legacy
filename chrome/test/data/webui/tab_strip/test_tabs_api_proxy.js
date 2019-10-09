@@ -4,45 +4,17 @@
 
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 
-class EventDispatcher {
-  constructor() {
-    this.eventListeners_ = [];
-  }
-
-  addListener(callback) {
-    this.eventListeners_.push(callback);
-  }
-
-  dispatchEvent() {
-    this.eventListeners_.forEach((callback) => {
-      callback(...arguments);
-    });
-  }
-}
-
 export class TestTabsApiProxy extends TestBrowserProxy {
   constructor() {
     super([
       'activateTab',
       'closeTab',
-      'getCurrentWindow',
-      'getTab',
+      'getTabs',
       'moveTab',
       'trackThumbnailForTab',
     ]);
 
-    this.callbackRouter = {
-      onActivated: new EventDispatcher(),
-      onAttached: new EventDispatcher(),
-      onCreated: new EventDispatcher(),
-      onDetached: new EventDispatcher(),
-      onMoved: new EventDispatcher(),
-      onRemoved: new EventDispatcher(),
-      onUpdated: new EventDispatcher(),
-    };
-
-    this.currentWindow_;
-    this.tab_;
+    this.tabs_;
   }
 
   activateTab(tabId) {
@@ -55,14 +27,9 @@ export class TestTabsApiProxy extends TestBrowserProxy {
     return Promise.resolve();
   }
 
-  getCurrentWindow() {
-    this.methodCalled('getCurrentWindow');
-    return Promise.resolve(this.currentWindow_);
-  }
-
-  getTab(tabId) {
-    this.methodCalled('getTab', tabId);
-    return Promise.resolve(this.tab_);
+  getTabs() {
+    this.methodCalled('getTabs');
+    return Promise.resolve(this.tabs_.slice());
   }
 
   moveTab(tabId, newIndex) {
@@ -70,12 +37,8 @@ export class TestTabsApiProxy extends TestBrowserProxy {
     return Promise.resolve();
   }
 
-  setCurrentWindow(currentWindow) {
-    this.currentWindow_ = currentWindow;
-  }
-
-  setTab(tab) {
-    this.tab_ = tab;
+  setTabs(tabs) {
+    this.tabs_ = tabs;
   }
 
   trackThumbnailForTab(tabId) {

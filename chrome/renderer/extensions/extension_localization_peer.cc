@@ -61,14 +61,14 @@ void ExtensionLocalizationPeer::OnUploadProgress(uint64_t position,
 
 bool ExtensionLocalizationPeer::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseInfo& info) {
+    network::mojom::URLResponseHeadPtr head) {
   NOTREACHED();
   return false;
 }
 
 void ExtensionLocalizationPeer::OnReceivedResponse(
-    const network::ResourceResponseInfo& info) {
-  response_info_ = info;
+    network::mojom::URLResponseHeadPtr head) {
+  response_head_ = std::move(head);
 }
 
 void ExtensionLocalizationPeer::OnStartLoadingResponseBody(
@@ -180,7 +180,7 @@ void ExtensionLocalizationPeer::StartSendingBody() {
     return;
   }
 
-  original_peer_->OnReceivedResponse(response_info_);
+  original_peer_->OnReceivedResponse(std::move(response_head_));
   original_peer_->OnStartLoadingResponseBody(std::move(consumer_to_send));
 
   data_pipe_state_.destination_watcher_.Watch(

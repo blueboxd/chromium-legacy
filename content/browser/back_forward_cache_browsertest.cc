@@ -2394,11 +2394,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImpl* rfh_a = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
-  web_contents()
-      ->GetController()
-      .GetBackForwardCache()
-      .DisableForRenderFrameHost(rfh_a->GetGlobalFrameRoutingId(),
-                                 "DisabledByBackForwardCacheBrowserTest");
+  BackForwardCache::DisableForRenderFrameHost(
+      rfh_a, "DisabledByBackForwardCacheBrowserTest");
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
@@ -2423,22 +2420,16 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   RenderFrameHostImpl* rfh_a = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
   GlobalFrameRoutingId rfh_a_id = rfh_a->GetGlobalFrameRoutingId();
-  web_contents()
-      ->GetController()
-      .GetBackForwardCache()
-      .DisableForRenderFrameHost(rfh_a_id,
-                                 "DisabledByBackForwardCacheBrowserTest");
+  BackForwardCache::DisableForRenderFrameHost(
+      rfh_a_id, "DisabledByBackForwardCacheBrowserTest");
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   EXPECT_TRUE(delete_observer_rfh_a.deleted());
 
   // This should not die
-  web_contents()
-      ->GetController()
-      .GetBackForwardCache()
-      .DisableForRenderFrameHost(rfh_a_id,
-                                 "DisabledByBackForwardCacheBrowserTest");
+  BackForwardCache::DisableForRenderFrameHost(
+      rfh_a_id, "DisabledByBackForwardCacheBrowserTest");
 
   // 3) Go back to A.
   web_contents()->GetController().GoBack();
@@ -2460,7 +2451,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
   RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
 
-  BackForwardCache::DisableForRenderFrameHost(rfh_b, "test");
+  BackForwardCache::DisableForRenderFrameHost(
+      rfh_b, "DisabledByBackForwardCacheBrowserTest");
 
   // 2) Navigate to C. A and B are immediately deleted.
   EXPECT_TRUE(NavigateToURL(shell(), url_c));
@@ -2488,11 +2480,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
   EXPECT_FALSE(rfh_a->is_evicted_from_back_forward_cache());
 
-  web_contents()
-      ->GetController()
-      .GetBackForwardCache()
-      .DisableForRenderFrameHost(rfh_a->GetGlobalFrameRoutingId(),
-                                 "DisabledByBackForwardCacheBrowserTest");
+  BackForwardCache::DisableForRenderFrameHost(
+      rfh_a, "DisabledByBackForwardCacheBrowserTest");
 
   EXPECT_TRUE(rfh_a->is_evicted_from_back_forward_cache());
   delete_observer_rfh_a.WaitUntilDeleted();

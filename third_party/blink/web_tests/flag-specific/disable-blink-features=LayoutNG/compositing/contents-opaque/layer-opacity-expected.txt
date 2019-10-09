@@ -9,7 +9,6 @@
     {
       "name": "LayoutBlockFlow DIV class='box opaque-background translucent composited'",
       "bounds": [100, 100],
-      "opacity": 0.5,
       "contentsOpaque": true,
       "backgroundColor": "#008000",
       "transform": 1

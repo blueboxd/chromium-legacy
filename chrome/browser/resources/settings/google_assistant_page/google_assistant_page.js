@@ -196,6 +196,7 @@ Polymer({
     this.refreshDspHotwordState_();
 
     this.shouldShowVoiceMatchSettings_ =
+        !loadTimeData.getBoolean('voiceMatchDisabled') &&
         this.getPref('settings.voice_interaction.hotword.enabled.value') &&
         (this.getPref(
           'settings.voice_interaction.activity_control.consent_status.value') ==

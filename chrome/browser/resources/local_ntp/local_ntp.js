@@ -100,7 +100,6 @@ const CLASSES = {
   SHOW_ELEMENT: 'show-element',
   // When the realbox has matches to show.
   SHOW_MATCHES: 'show-matches',
-  URL_ICON: 'url-icon',  // Global/favicon/url icon.
   // Applied when the doodle notifier should be shown instead of the doodle.
   USE_NOTIFIER: 'use-notifier',
 };
@@ -1400,17 +1399,20 @@ function populateAutocompleteMatches(matches) {
     matchEl.href = match.destinationUrl;
     matchEl.role = 'option';
 
-    let iconClass;
     if (match.isSearchType) {
+      const icon = document.createElement('div');
       const isSearchHistory = SEARCH_HISTORY_MATCH_TYPES.includes(match.type);
-      iconClass = isSearchHistory ? CLASSES.CLOCK_ICON : CLASSES.SEARCH_ICON;
+      icon.classList.add(
+          isSearchHistory ? CLASSES.CLOCK_ICON : CLASSES.SEARCH_ICON);
+      matchEl.appendChild(icon);
     } else {
       // TODO(crbug.com/997229): use chrome://favicon/<url> when perms allow.
-      iconClass = CLASSES.URL_ICON;
+      const iconUrl = new URL('chrome-search://ntpicon/');
+      iconUrl.searchParams.set('show_fallback_monogram', 'false');
+      iconUrl.searchParams.set('size', '24@' + window.devicePixelRatio + 'x');
+      iconUrl.searchParams.set('url', match.destinationUrl);
+      matchEl.style.backgroundImage = 'url(' + iconUrl.toString() + ')';
     }
-    const icon = document.createElement('div');
-    icon.classList.add(assert(iconClass));
-    matchEl.appendChild(icon);
 
     const contentsEls =
         renderMatchClassifications(match.contents, match.contentsClass);

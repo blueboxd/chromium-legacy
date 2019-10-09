@@ -3,12 +3,23 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/printing/history/print_job_history_service.h"
+#include "chrome/browser/chromeos/printing/history/print_job_history_cleaner.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
 
 namespace chromeos {
 
 PrintJobHistoryService::PrintJobHistoryService() = default;
 
 PrintJobHistoryService::~PrintJobHistoryService() = default;
+
+// static
+void PrintJobHistoryService::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(
+      prefs::kPrintJobHistoryExpirationPeriod,
+      PrintJobHistoryCleaner::kDefaultPrintJobHistoryExpirationPeriodDays);
+}
 
 void PrintJobHistoryService::AddObserver(
     PrintJobHistoryService::Observer* observer) {

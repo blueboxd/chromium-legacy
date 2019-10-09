@@ -125,6 +125,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   int status_indicator_offset_from_shelf_edge() const {
     return status_indicator_offset_from_shelf_edge_;
   }
+  int scrollable_shelf_ripple_padding() const {
+    return scrollable_shelf_ripple_padding_;
+  }
   int shelf_tooltip_preview_height() const {
     return shelf_tooltip_preview_height_;
   }
@@ -137,6 +140,7 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   float shelf_tooltip_preview_min_ratio() const {
     return shelf_tooltip_preview_min_ratio_;
   }
+  int shelf_blur_radius() const { return shelf_blur_radius_; }
 
   // Gets the current color for the shelf control buttons.
   SkColor GetShelfControlButtonColor() const;
@@ -150,6 +154,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Gets the default shelf color, calculated using the wallpaper color if
   // available.
   SkColor GetDefaultShelfColor() const;
+
+  // Returns the current blur radius to use for the control buttons.
+  int GetShelfControlButtonBlurRadius() const;
 
  private:
   friend class ShelfConfigTest;
@@ -214,11 +221,18 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // The distance between the edge of the shelf and the status indicators.
   const int status_indicator_offset_from_shelf_edge_;
 
+  // Padding between the shelf container view and the edging app icon in order
+  // to show the app icon's ripple correctly.
+  const int scrollable_shelf_ripple_padding_;
+
   // Dimensions for hover previews.
   const int shelf_tooltip_preview_height_;
   const int shelf_tooltip_preview_max_width_;
   const float shelf_tooltip_preview_max_ratio_;
   const float shelf_tooltip_preview_min_ratio_;
+
+  // The blur radius used for the shelf.
+  const int shelf_blur_radius_;
 
   base::ObserverList<Observer> observers_;
 

@@ -4,6 +4,8 @@
 
 #include "chromeos/components/sync_wifi/pending_network_configuration_update.h"
 
+namespace chromeos {
+
 namespace sync_wifi {
 
 PendingNetworkConfigurationUpdate::PendingNetworkConfigurationUpdate(
@@ -27,3 +29,5 @@ bool PendingNetworkConfigurationUpdate::IsDeleteOperation() const {
 }
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos

@@ -227,9 +227,8 @@ ChromeDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
 }
 
 std::string ChromeDevToolsManagerDelegate::GetDiscoveryPageHTML() {
-  return ui::ResourceBundle::GetSharedInstance()
-      .GetRawDataResource(IDR_DEVTOOLS_DISCOVERY_PAGE_HTML)
-      .as_string();
+  return ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      IDR_DEVTOOLS_DISCOVERY_PAGE_HTML);
 }
 
 std::vector<content::BrowserContext*>

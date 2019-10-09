@@ -113,7 +113,7 @@
         },
         "browse:tools:maps:2019": {
             "DEFAULT": "system_health_desktop_feb332ef0c.wprgo"
-	},
+        },
         "browse:tools:sheets:2019": {
             "DEFAULT": "system_health_desktop_d7b02362d8.wprgo"
         },
@@ -134,6 +134,9 @@
         },
         "load:games:bubbles": {
             "DEFAULT": "system_health_desktop_005.wprgo"
+        },
+        "load:games:bubbles:2019": {
+            "DEFAULT": "system_health_desktop_615d4e02e4.wprgo"
         },
         "load:games:lazors": {
             "DEFAULT": "system_health_desktop_005.wprgo"

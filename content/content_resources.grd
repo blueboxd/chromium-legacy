@@ -30,6 +30,7 @@
       <include name="IDR_INDEXED_DB_INTERNALS_CSS" file="browser/resources/indexed_db/indexeddb_internals.css" flattenhtml="true" compress="gzip" type="BINDATA" />
       <include name="IDR_MEDIA_INTERNALS_HTML" file="browser/resources/media/media_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_MEDIA_INTERNALS_JS" file="browser/resources/media/media_internals.js" flattenhtml="true" compress="gzip" type="BINDATA" />
+      <include name="IDR_MEDIA_INTERNALS_JS_DISABLED" file="browser/resources/media/media_internals_disabled.js" flattenhtml="true" compress="gzip" type="BINDATA" />
       <include name="IDR_NETWORK_ERROR_LISTING_HTML" file="browser/resources/net/network_errors_listing.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_NETWORK_ERROR_LISTING_JS" file="browser/resources/net/network_errors_listing.js" flattenhtml="true" type="BINDATA" compress="gzip" />
       <include name="IDR_NETWORK_ERROR_LISTING_CSS" file="browser/resources/net/network_errors_listing.css" flattenhtml="true" type="BINDATA" compress="gzip" />

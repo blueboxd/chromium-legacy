@@ -10,6 +10,8 @@
 #include "chrome/browser/chromeos/printing/history/print_job_database.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class PrefRegistrySimple;
+
 namespace chromeos {
 
 // This service is responsible for maintaining print job history.
@@ -23,6 +25,9 @@ class PrintJobHistoryService : public KeyedService {
 
   PrintJobHistoryService();
   ~PrintJobHistoryService() override;
+
+  // Register the print job history preferences with the |registry|.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Retrieves all print jobs from the database.
   virtual void GetPrintJobs(

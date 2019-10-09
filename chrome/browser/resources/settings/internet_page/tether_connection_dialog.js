@@ -79,27 +79,20 @@ Polymer({
    * @private
    */
   getBatteryPercentageAsString_: function(managedProperties) {
-    const percentage = this.get('tether.batteryPercentage', managedProperties);
-    if (percentage === undefined) {
-      return '';
-    }
-    return percentage.toString();
+    return managedProperties.typeProperties.tether.batteryPercentage.toString();
   },
 
   /**
    * Retrieves an image that corresponds to signal strength of the tether host.
    * Custom icons are used here instead of a <cr-network-icon> because this
    * dialog uses a special color scheme.
-   *
    * @param {!mojom.ManagedProperties} managedProperties
    * @return {string} The name of the icon to be used to represent the network's
-   * signal strength.
+   *     signal strength.
    */
   getSignalStrengthIconName_: function(managedProperties) {
-    let signalStrength = this.get('tether.signalStrength', managedProperties);
-    if (signalStrength === undefined) {
-      signalStrength = 4;
-    }
+    const signalStrength =
+        managedProperties.typeProperties.tether.signalStrength;
     return 'os-settings:signal-cellular-' +
         Math.min(4, Math.max(signalStrength, 0)) + '-bar';
   },

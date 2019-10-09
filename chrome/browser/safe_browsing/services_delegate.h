@@ -148,16 +148,16 @@ class ServicesDelegate {
   // Unowned pointer
   ServicesCreator* const services_creator_;
 
-  // TODO(xinghuilu@): Change it to base::map<>
   // Tracks existing Profiles, and their corresponding
   // ChromePasswordProtectionService instances.
   // Accessed on UI thread.
-  std::map<Profile*, std::unique_ptr<ChromePasswordProtectionService>>
+  base::flat_map<Profile*, std::unique_ptr<ChromePasswordProtectionService>>
       password_protection_service_map_;
 
   // Tracks existing Profiles, and their corresponding VerdictCacheManager
   // instances. Accessed on UI thread.
-  std::map<Profile*, std::unique_ptr<VerdictCacheManager>> cache_manager_map_;
+  base::flat_map<Profile*, std::unique_ptr<VerdictCacheManager>>
+      cache_manager_map_;
 };
 
 }  // namespace safe_browsing

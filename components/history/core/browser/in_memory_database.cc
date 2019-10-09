@@ -54,7 +54,6 @@ bool InMemoryDatabase::InitFromScratch() {
   // InitDB doesn't create the index so in the disk-loading case, it can be
   // added afterwards.
   CreateMainURLIndex();
-  CreateKeywordSearchTermsIndices();
   return true;
 }
 
@@ -139,7 +138,6 @@ bool InMemoryDatabase::InitFromDisk(const base::FilePath& history_name) {
   // Index the table, this is faster than creating the index first and then
   // inserting into it.
   CreateMainURLIndex();
-  CreateKeywordSearchTermsIndices();
 
   return true;
 }

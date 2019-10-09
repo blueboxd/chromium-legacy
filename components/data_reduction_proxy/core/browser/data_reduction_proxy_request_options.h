@@ -79,7 +79,7 @@ class DataReductionProxyRequestOptions {
   // this class has been constructed. Android WebView is a platform that does
   // this. The caller needs to make sure |this| pointer is valid when
   // SetKey is called.
-  void SetKey(const std::string& key);
+  void SetKeyForTesting(const std::string& key);
 
   // Sets the credentials for sending to the Data Reduction Proxy.
   void SetSecureSession(const std::string& secure_session);

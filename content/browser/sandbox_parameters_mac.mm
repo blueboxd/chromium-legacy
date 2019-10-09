@@ -25,11 +25,15 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/pepper_plugin_info.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/public/common/pepper_plugin_info.h"
+#endif
 
 namespace content {
 
@@ -162,6 +166,7 @@ void SetupNetworkSandboxParameters(sandbox::SeatbeltExecClient* client) {
   }
 }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
 void SetupPPAPISandboxParameters(sandbox::SeatbeltExecClient* client) {
   SetupCommonSandboxParameters(client);
 
@@ -186,6 +191,7 @@ void SetupPPAPISandboxParameters(sandbox::SeatbeltExecClient* client) {
   // to n+1 more than the plugins added.
   CHECK(index <= 5);
 }
+#endif
 
 void SetupCDMSandboxParameters(sandbox::SeatbeltExecClient* client) {
   SetupCommonSandboxParameters(client);
@@ -226,9 +232,11 @@ void SetupSandboxParameters(service_manager::SandboxType sandbox_type,
     case service_manager::SANDBOX_TYPE_NETWORK:
       SetupNetworkSandboxParameters(client);
       break;
+#if BUILDFLAG(ENABLE_PLUGINS)
     case service_manager::SANDBOX_TYPE_PPAPI:
       SetupPPAPISandboxParameters(client);
       break;
+#endif
     case service_manager::SANDBOX_TYPE_PROFILING:
     case service_manager::SANDBOX_TYPE_UTILITY:
       SetupUtilitySandboxParameters(client, command_line);

@@ -142,6 +142,16 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
     GURL placeholder_url = wk_navigation_util::CreatePlaceholderUrlForUrl(url);
     NavigationManager::WebLoadParams params(placeholder_url);
     web_state()->GetNavigationManager()->LoadURLWithParams(params);
+
+    // Set NoNavigationError so the placeHolder doesn't trigger a
+    // kNavigatingToFailedNavigationItem.
+    web::WebStateImpl* web_state_impl =
+        static_cast<web::WebStateImpl*>(web_state());
+    web_state_impl->GetNavigationManagerImpl()
+        .GetCurrentItemImpl()
+        ->error_retry_state_machine()
+        .SetIgnorePlaceholderNavigation();
+
     ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
       return web_controller.navigationState == web::WKNavigationState::FINISHED;
     }));

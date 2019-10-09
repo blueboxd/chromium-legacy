@@ -61,6 +61,8 @@ class MEDIA_GPU_EXPORT MailboxVideoFrameConverter : public VideoFrameConverter {
   bool HasPendingFrames() const override;
 
  private:
+  friend class MailboxVideoFrameConverterTest;
+
   // Use VideoFrame::unique_id() as internal VideoFrame indexing.
   using UniqueID = decltype(std::declval<VideoFrame>().unique_id());
 

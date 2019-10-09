@@ -52,7 +52,7 @@ class Message;
 namespace gfx {
 class Rect;
 class Size;
-}
+}  // namespace gfx
 
 namespace url {
 class Origin;
@@ -63,7 +63,7 @@ struct WebFullscreenOptions;
 namespace mojom {
 class FileChooserParams;
 }
-}
+}  // namespace blink
 
 namespace content {
 class FileSelectListener;

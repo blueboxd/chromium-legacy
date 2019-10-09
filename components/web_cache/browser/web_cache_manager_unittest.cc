@@ -93,8 +93,10 @@ class WebCacheManagerTest : public testing::Test {
   WebCacheManager* manager() { return &manager_; }
 
  private:
-  WebCacheManager manager_;
+  // Create the environment before creating the WebCacheManager, because the
+  // latter depends on the UI thread to have been set up correctly.
   content::BrowserTaskEnvironment task_environment_;
+  WebCacheManager manager_;
 };
 
 // static

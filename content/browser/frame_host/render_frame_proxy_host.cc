@@ -135,11 +135,12 @@ RenderViewHostImpl* RenderFrameProxyHost::GetRenderViewHost() {
 }
 
 RenderWidgetHostView* RenderFrameProxyHost::GetRenderWidgetHostView() {
-  return frame_tree_node_->parent()->render_manager()
+  return frame_tree_node_->parent()
+      ->render_manager()
       ->GetRenderWidgetHostView();
 }
 
-bool RenderFrameProxyHost::Send(IPC::Message *msg) {
+bool RenderFrameProxyHost::Send(IPC::Message* msg) {
   return GetProcess()->Send(msg);
 }
 
@@ -215,7 +216,8 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
   }
 
   int view_routing_id = frame_tree_node_->frame_tree()
-      ->GetRenderViewHost(site_instance_.get())->GetRoutingID();
+                            ->GetRenderViewHost(site_instance_.get())
+                            ->GetRoutingID();
   GetProcess()->GetRendererInterface()->CreateFrameProxy(
       routing_id_, view_routing_id, opener_routing_id, parent_routing_id,
       frame_tree_node_->current_replication_state(),
@@ -514,11 +516,10 @@ void RenderFrameProxyHost::OnAdvanceFocus(blink::WebFocusType type,
   RenderFrameHostImpl* source_rfh =
       RenderFrameHostImpl::FromID(GetProcess()->GetID(), source_routing_id);
   RenderFrameProxyHost* source_proxy =
-      source_rfh
-          ? source_rfh->frame_tree_node()
-                ->render_manager()
-                ->GetRenderFrameProxyHost(target_rfh->GetSiteInstance())
-          : nullptr;
+      source_rfh ? source_rfh->frame_tree_node()
+                       ->render_manager()
+                       ->GetRenderFrameProxyHost(target_rfh->GetSiteInstance())
+                 : nullptr;
 
   target_rfh->AdvanceFocus(type, source_proxy);
   frame_tree_node_->current_frame_host()->delegate()->OnAdvanceFocus(

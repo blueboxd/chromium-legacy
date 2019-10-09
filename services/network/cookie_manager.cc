@@ -73,6 +73,11 @@ void CookieManager::GetAllCookies(GetAllCookiesCallback callback) {
   cookie_store_->GetAllCookiesAsync(std::move(callback));
 }
 
+void CookieManager::GetAllCookiesWithAccessSemantics(
+    GetAllCookiesWithAccessSemanticsCallback callback) {
+  cookie_store_->GetAllCookiesWithAccessSemanticsAsync(std::move(callback));
+}
+
 void CookieManager::GetCookieList(const GURL& url,
                                   const net::CookieOptions& cookie_options,
                                   GetCookieListCallback callback) {

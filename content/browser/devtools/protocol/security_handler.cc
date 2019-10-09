@@ -195,12 +195,9 @@ void SecurityHandler::DidChangeVisibleSecurityState() {
 
 void SecurityHandler::DidFinishNavigation(NavigationHandle* navigation_handle) {
   if (cert_error_override_mode_ == CertErrorOverrideMode::kHandleEvents) {
-    web_contents()
-        ->GetController()
-        .GetBackForwardCache()
-        .DisableForRenderFrameHost(
-            navigation_handle->GetPreviousRenderFrameHostId(),
-            "content::protocol::SecurityHandler");
+    BackForwardCache::DisableForRenderFrameHost(
+        navigation_handle->GetPreviousRenderFrameHostId(),
+        "content::protocol::SecurityHandler");
     FlushPendingCertificateErrorNotifications();
   }
 }

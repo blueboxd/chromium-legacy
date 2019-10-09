@@ -8,10 +8,8 @@
 #include <map>
 #include <memory>
 #include <utility>
-#include <vector>
 
-#include "base/containers/flat_set.h"
-#include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/task_manager/providers/service_worker_task.h"
 #include "chrome/browser/task_manager/providers/task_provider.h"
 #include "content/public/browser/notification_observer.h"
@@ -44,11 +42,10 @@ class ServiceWorkerTaskProvider : public TaskProvider,
                const content::NotificationDetails& details) override;
 
   // content::ServiceWorkerContextObserver:
-  void OnVersionStartedRunning(content::ServiceWorkerContext* context,
-                               int64_t version_id,
-                               const GURL& scope,
-                               int process_id,
-                               const GURL& script_url) override;
+  void OnVersionStartedRunning(
+      content::ServiceWorkerContext* context,
+      int64_t version_id,
+      const content::ServiceWorkerRunningInfo& running_info) override;
   void OnVersionStoppedRunning(content::ServiceWorkerContext* context,
                                int64_t version_id) override;
   void OnDestruct(content::ServiceWorkerContext* context) override;
@@ -65,27 +62,12 @@ class ServiceWorkerTaskProvider : public TaskProvider,
   // Creates a ServiceWorkerTask from the given |running_info| and notifies the
   // observer of its addition.
   void CreateTask(content::ServiceWorkerContext* context,
+                  int64_t version_id,
                   const content::ServiceWorkerRunningInfo& running_info);
 
   // Deletes a ServiceWorkerTask with the |version_id| after notifying the
   // observer of its deletion.
   void DeleteTask(content::ServiceWorkerContext* context, int version_id);
-
-  // Deletes all ServiceWorkerTasks which relate to |context| after notifying
-  // the observer of their deletions.
-  void DeleteAllTasks(content::ServiceWorkerContext* context);
-
-  // Called back on the UI thread when the infos of multiple existing running
-  // service workers in |context| have been retrieved on the IO thread.
-  void OnDidGetAllServiceWorkerRunningInfos(
-      content::ServiceWorkerContext* context,
-      std::vector<content::ServiceWorkerRunningInfo> running_infos);
-
-  // Called back on the UI thread when the info of a single existing running
-  // service worker in |context| has been retrieved on the IO thread.
-  void OnDidGetServiceWorkerRunningInfo(
-      content::ServiceWorkerContext* context,
-      const content::ServiceWorkerRunningInfo& running_info);
 
   // Called after a profile has been created.
   void OnProfileCreated(Profile* profile);
@@ -96,15 +78,13 @@ class ServiceWorkerTaskProvider : public TaskProvider,
       std::map<ServiceWorkerTaskKey, std::unique_ptr<ServiceWorkerTask>>;
   ServiceWorkerTaskMap service_worker_task_map_;
 
-  base::flat_set<
-      std::pair<content::ServiceWorkerContext*, int64_t /*version_id*/>>
-      tasks_to_be_created_;
-
-  base::flat_set<content::ServiceWorkerContext*> observed_contexts_;
-
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<ServiceWorkerTaskProvider> weak_ptr_factory_{this};
+  ScopedObserver<content::ServiceWorkerContext,
+                 content::ServiceWorkerContextObserver>
+      scoped_context_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerTaskProvider);
 };
 
 }  // namespace task_manager

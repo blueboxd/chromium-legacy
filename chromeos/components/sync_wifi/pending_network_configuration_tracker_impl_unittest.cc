@@ -14,6 +14,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
+namespace chromeos {
+
+namespace sync_wifi {
+
 namespace {
 
 const char kFredSsid[] = "Fred";
@@ -26,8 +30,6 @@ const char kPendingNetworkConfigurationsPref[] =
 const char kChangeGuidKey[] = "ChangeGuid";
 
 }  // namespace
-
-namespace sync_wifi {
 
 class PendingNetworkConfigurationTrackerImplTest : public testing::Test {
  public:
@@ -198,3 +200,5 @@ TEST_F(PendingNetworkConfigurationTrackerImplTest, TestRetryCounting) {
 }
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos

@@ -505,10 +505,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void SetEffectiveConnectionTypeForTesting(
       WebEffectiveConnectionType) {}
 
-  virtual WebURLRequest::PreviewsState GetPreviewsStateForFrame() const {
-    return WebURLRequest::kPreviewsUnspecified;
-  }
-
   // This frame tried to perform a navigation from |initiator_url| to
   // |blocked_url| but was blocked because of |reason|.
   virtual void DidBlockNavigation(const WebURL& blocked_url,

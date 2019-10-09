@@ -99,6 +99,8 @@ bool MimeHandlerViewContainerManager::CreateFrameContainer(
       // This should translate into a same document navigation.
       return true;
     }
+    // Make sure we're not eligible to self-delete.
+    DCHECK(!internal_id_.empty());
     // If there is already a MHVFC for this |plugin_element|, destroy it.
     RemoveFrameContainerForReason(old_frame_container,
                                   UMAType::kRemoveFrameContainerUpdatePlugin);
@@ -268,6 +270,15 @@ bool MimeHandlerViewContainerManager::RemoveFrameContainer(
   if (it == frame_containers_.cend())
     return false;
   frame_containers_.erase(it);
+
+  if (!frame_containers_.size() && internal_id_.empty()) {
+    // There are no frame containers left, and we're not serving a full-page
+    // MimeHandlerView, so we remove ourselves from the map.
+    auto& map = *GetRenderFrameMap();
+    map.erase(std::remove_if(map.begin(), map.end(), [this](const auto& iter) {
+      return iter.second.get() == this;
+    }));
+  }
   return true;
 }
 

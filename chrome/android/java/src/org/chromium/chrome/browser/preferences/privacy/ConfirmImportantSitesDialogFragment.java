@@ -30,13 +30,13 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.favicon.FaviconUtils;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.util.ConversionUtils;
-import org.chromium.chrome.browser.util.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,7 +65,7 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
             mDomains = domains;
             mFaviconURLs = faviconURLs;
             mFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
-            mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(getResources(), false);
+            mIconGenerator = FaviconUtils.createRoundedRectangleIconGenerator(getResources());
         }
 
         @Override
@@ -130,9 +130,8 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
                 icon = mIconGenerator.generateIconForUrl(url);
                 return new BitmapDrawable(getResources(), icon);
             } else {
-                return ViewUtils.createRoundedBitmapDrawable(
-                        Bitmap.createScaledBitmap(icon, mFaviconSize, mFaviconSize, false),
-                        ViewUtils.DEFAULT_FAVICON_CORNER_RADIUS);
+                return FaviconUtils.createRoundedBitmapDrawable(
+                        Bitmap.createScaledBitmap(icon, mFaviconSize, mFaviconSize, false));
             }
         }
     }

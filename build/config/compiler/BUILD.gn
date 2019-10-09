@@ -1538,13 +1538,6 @@ config("default_warnings") {
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",
         ]
-
-        if (llvm_force_head_revision) {
-          cflags += [
-            # TODO(https://crbug.com/1011810): Re-enable once fix is in.
-            "-Wno-error=bool-operation",
-          ]
-        }
       }
     }
   }

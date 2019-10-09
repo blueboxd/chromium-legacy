@@ -129,6 +129,7 @@ void ArCoreGl::Initialize(vr::ArCoreSessionUtils* session_utils,
   DCHECK(!is_initialized_);
 
   transfer_size_ = frame_size;
+  camera_image_size_ = frame_size;
   display_rotation_ = display_rotation;
   should_update_display_geometry_ = true;
 
@@ -338,7 +339,7 @@ void ArCoreGl::GetFrameData(
   if (should_update_display_geometry_) {
     // Set display geometry before calling Update. It's a pending request that
     // applies to the next frame.
-    arcore_->SetDisplayGeometry(transfer_size_, display_rotation_);
+    arcore_->SetDisplayGeometry(camera_image_size_, display_rotation_);
 
     // Tell the uvs to recalculate on the next animation frame, by which time
     // SetDisplayGeometry will have set the new values in arcore_.
@@ -440,6 +441,18 @@ bool ArCoreGl::IsSubmitFrameExpected(int16_t frame_index) {
   return true;
 }
 
+void ArCoreGl::CopyCameraImageToFramebuffer() {
+  // Draw the current camera texture to the output default framebuffer now, if
+  // available.
+  if (!have_camera_image_)
+    return;
+
+  glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
+  ar_image_transport_->CopyCameraImageToFramebuffer(camera_image_size_,
+                                                    uv_transform_);
+  have_camera_image_ = false;
+}
+
 void ArCoreGl::SubmitFrameMissing(int16_t frame_index,
                                   const gpu::SyncToken& sync_token) {
   DVLOG(2) << __func__;
@@ -450,13 +463,7 @@ void ArCoreGl::SubmitFrameMissing(int16_t frame_index,
   webxr_->RecycleUnusedAnimatingFrame();
   ar_image_transport_->WaitSyncToken(sync_token);
 
-  // Draw the current camera texture to the output default framebuffer now.
-  if (have_camera_image_) {
-    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
-    ar_image_transport_->CopyCameraImageToFramebuffer(transfer_size_,
-                                                      uv_transform_);
-    have_camera_image_ = false;
-  }
+  CopyCameraImageToFramebuffer();
 
   // We're done with the camera image for this frame, start the next ARCore
   // update if we had deferred it. This will get the next frame's camera image
@@ -492,13 +499,7 @@ void ArCoreGl::SubmitFrameDrawnIntoTexture(int16_t frame_index,
 
   TRACE_EVENT0("gpu", "ArCore SubmitFrame");
 
-  // Draw the current camera texture to the output default framebuffer now.
-  if (have_camera_image_) {
-    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
-    ar_image_transport_->CopyCameraImageToFramebuffer(transfer_size_,
-                                                      uv_transform_);
-    have_camera_image_ = false;
-  }
+  CopyCameraImageToFramebuffer();
 
   // We're done with the camera image for this frame, start the next ARCore
   // update if we had deferred it. This will get the next frame's camera image
@@ -519,7 +520,7 @@ void ArCoreGl::OnWebXrTokenSignaled(int16_t frame_index,
   webxr_->TransitionFrameProcessingToRendering();
 
   glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
-  ar_image_transport_->CopyDrawnImageToFramebuffer(transfer_size_,
+  ar_image_transport_->CopyDrawnImageToFramebuffer(camera_image_size_,
                                                    webxr_transform_);
   surface_->SwapBuffers(base::DoNothing());
   DVLOG(3) << __func__ << ": frame=" << frame_index << " SwapBuffers";
@@ -539,8 +540,9 @@ void ArCoreGl::UpdateLayerBounds(int16_t frame_index,
                                  const gfx::RectF& left_bounds,
                                  const gfx::RectF& right_bounds,
                                  const gfx::Size& source_size) {
-  DVLOG(2) << __func__;
-  // Nothing to do
+  DVLOG(2) << __func__ << " source_size=" << source_size.ToString();
+
+  transfer_size_ = source_size;
 }
 
 void ArCoreGl::GetEnvironmentIntegrationProvider(

@@ -42,10 +42,6 @@ crbug.com/angleproject/2672 [ vulkan passthrough ] WebglExtension_WEBGL_multi_dr
 crbug.com/808744 [ android ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
 
-# TODO(crbug.com/1011653): re-enable these tests after ANGLE roll.
-crbug.com/1011653 [ android ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
-crbug.com/1011653 [ android ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
-
 # Extensions not available under D3D9
 [ win d3d9 ] WebglExtension_EXT_sRGB [ Failure ]
 crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure ]

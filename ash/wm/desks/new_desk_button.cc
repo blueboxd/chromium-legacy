@@ -105,6 +105,37 @@ void NewDeskButton::OnButtonPressed() {
   }
 }
 
+void NewDeskButton::SetLabelVisible(bool visible) {
+  label()->SetVisible(visible);
+}
+
+gfx::Size NewDeskButton::CalculatePreferredSize() const {
+  if (!label()->GetVisible()) {
+    gfx::Size size = image()->GetPreferredSize();
+    const gfx::Insets insets(GetInsets());
+    size.Enlarge(insets.width(), insets.height());
+
+    if (border())
+      size.SetToMax(border()->GetMinimumSize());
+
+    return size;
+  }
+
+  return views::LabelButton::CalculatePreferredSize();
+}
+
+void NewDeskButton::Layout() {
+  if (!label()->GetVisible()) {
+    gfx::Rect bounds = GetLocalBounds();
+    ink_drop_container()->SetBoundsRect(bounds);
+    bounds.ClampToCenteredSize(image()->GetPreferredSize());
+    image()->SetBoundsRect(bounds);
+    return;
+  }
+
+  views::LabelButton::Layout();
+}
+
 const char* NewDeskButton::GetClassName() const {
   return "NewDeskButton";
 }
@@ -185,6 +216,10 @@ void NewDeskButton::UpdateBorderState() {
                 ui::NativeTheme::kColorId_FocusedBorderColor)
           : SK_ColorTRANSPARENT);
   SchedulePaint();
+}
+
+bool NewDeskButton::IsLabelVisibleForTesting() const {
+  return label()->GetVisible();
 }
 
 }  // namespace ash

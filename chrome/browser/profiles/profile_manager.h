@@ -36,9 +36,9 @@ class ProfileManagerObserver;
 class ProfileManager : public content::NotificationObserver,
                        public Profile::Delegate {
  public:
-  typedef base::RepeatingCallback<void(Profile*, Profile::CreateStatus)>
-      CreateCallback;
-  typedef base::OnceCallback<void(Profile*)> ProfileLoadedCallback;
+  using CreateCallback =
+      base::RepeatingCallback<void(Profile*, Profile::CreateStatus)>;
+  using ProfileLoadedCallback = base::OnceCallback<void(Profile*)>;
 
   explicit ProfileManager(const base::FilePath& user_data_dir);
   ~ProfileManager() override;
@@ -254,7 +254,8 @@ class ProfileManager : public content::NotificationObserver,
   // Creates a new profile by calling into the profile's profile creation
   // method. Virtual so that unittests can return a TestingProfile instead
   // of the Profile's result. Returns null if creation fails.
-  virtual Profile* CreateProfileHelper(const base::FilePath& path);
+  virtual std::unique_ptr<Profile> CreateProfileHelper(
+      const base::FilePath& path);
 
   // Creates a new profile asynchronously by calling into the profile's
   // asynchronous profile creation method. Virtual so that unittests can return

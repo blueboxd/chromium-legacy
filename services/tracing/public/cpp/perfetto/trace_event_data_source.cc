@@ -392,6 +392,11 @@ base::ThreadLocalStorage::Slot* ThreadLocalEventSinkSlot() {
 
 TraceEventDataSource* g_trace_event_data_source_for_testing = nullptr;
 
+// crbug.com/914092: This has to be large enough for DevTools to be able to
+// start up and telemetry to start tracing through it before the buffer is
+// exhausted.
+constexpr size_t kMaxStartupWriterBufferSize = 10 * 1024 * 1024;
+
 }  // namespace
 
 // static
@@ -759,7 +764,7 @@ TraceEventDataSource::CreateTraceWriterLocked() {
     // service.
     auto buffer_exhausted_policy = perfetto::BufferExhaustedPolicy::kDrop;
     trace_writer = startup_writer_registry_->CreateUnboundTraceWriter(
-        buffer_exhausted_policy);
+        buffer_exhausted_policy, kMaxStartupWriterBufferSize);
   } else if (producer_) {
     trace_writer = std::make_unique<perfetto::StartupTraceWriter>(
         producer_->CreateTraceWriter(target_buffer_));

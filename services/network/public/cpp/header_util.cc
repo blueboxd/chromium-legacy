@@ -13,7 +13,12 @@ namespace {
 
 // Headers that consumers are not trusted to set. All "Proxy-" prefixed messages
 // are blocked inline. The"Authorization" auth header is deliberately not
-// included, since OAuth requires websites be able to set it directly.
+// included, since OAuth requires websites be able to set it directly. These are
+// a subset of headers forbidden by the fetch spec.
+//
+// This list has some values in common with
+// https://fetch.spec.whatwg.org/#forbidden-header-name, but excludes some
+// values that are still set by the caller in Chrome.
 const char* kUnsafeHeaders[] = {
     // This is determined by the upload body and set by net/. A consumer
     // overriding that could allow for Bad Things.
@@ -24,13 +29,22 @@ const char* kUnsafeHeaders[] = {
     net::HttpRequestHeaders::kHost,
 
     // Trailers are not supported.
-    "Trailer",
+    "Trailer", "Te",
 
     // Websockets use a different API.
     "Upgrade",
 
-    // TODO(mmenke): Gather stats on the following headers before adding them:
-    // Cookie, Cookie2, Referer, TE, Keep-Alive, Via.
+    // Obsolete header, and network stack manages headers itself.
+    "Cookie2",
+
+    // Not supported by net/.
+    "Keep-Alive",
+
+    // Forbidden by the fetch spec.
+    net::HttpRequestHeaders::kTransferEncoding,
+
+    // TODO(mmenke): Figure out what to do about the remaining headers:
+    // Connection, Cookie, Date, Expect, Referer, Via.
 };
 
 // Headers that consumers are currently allowed to set, with the exception of
@@ -43,10 +57,6 @@ const struct {
 } kUnsafeHeaderValues[] = {
     // Websockets use a different API.
     {net::HttpRequestHeaders::kConnection, "Upgrade"},
-
-    // Telling a server a non-chunked upload is chunked has similar implications
-    // as sending the wrong Content-Length.
-    {net::HttpRequestHeaders::kTransferEncoding, "Chunked"},
 };
 
 }  // namespace

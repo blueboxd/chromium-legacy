@@ -72,14 +72,6 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
   if (layer->Size() != gfx::Size())
     json->SetArray("bounds", SizeAsJSONArray(IntSize(layer->Size())));
 
-  if (layer->Opacity() != 1)
-    json->SetDouble("opacity", layer->Opacity());
-
-  if (layer->GetBlendMode() != BlendMode::kNormal) {
-    json->SetString("blendMode", CompositeOperatorName(kCompositeSourceOver,
-                                                       layer->GetBlendMode()));
-  }
-
   if (layer->ContentsOpaque())
     json->SetBoolean("contentsOpaque", true);
 

@@ -58,7 +58,7 @@
 # FATAL:casting.h Security DCHECK failed: IsA<Derived>(from).
 # In content::RenderFrameProxy::OnSetFrameOwnerProperties()
 # https://crbug.com/999849
--WebContentsSplitCacheWithFrameOriginBrowserTest.SplitCache
+-WebContentsSplitCacheWithFrameOriginBrowserTest.SplitCache*
 
 # Histogram "PrefetchedSignedExchangeCache.Count" is recorded when the document
 # in the RenderFrameHost is replaced, or when the RenderFrameHost is deleted.
@@ -95,16 +95,25 @@
 # Failing on android only, need to be triaged, see https://crbug.com/1006267.
 -BackForwardCacheMetricsBrowserTest.Fetch
 -BackForwardCacheMetricsBrowserTest.XHR
--MSE_ClearKey/EncryptedMediaTest.ConfigChangeVideo_ClearToEncrypted/0
--WebContentsSplitCacheBrowserTestEnabled.SplitCache/1
 -WebRtcBrowserTest.CanSetupH264VideoCallOnSupportedDevice
 -WithoutCORBProtectionSniffing/CrossSiteDocumentBlockingTest.*
 -WithCORBProtectionSniffing/CrossSiteDocumentBlockingTest.*
 
 # Flaky on android only, need to be triaged, see https://crbug.com/1006267.
--IndexedDBBrowserTestWithVersion987654SSVData.DestroyTest
--MSE_ClearKey/EncryptedMediaTest.Playback_VideoAudio_WebM/0
+-IndexedDBBrowserTest*
+-MediaCanPlayTypeTest.*
 -MediaSessionImplBrowserTest.*
--MidiBrowserTest.RequestMIDIAccess
+-MediaSessionImplParamBrowserTest.*
+-MediaSourceTest.*
+-MidiBrowserTest.*
+-MHTMLGenerationTest/MHTMLGenerationTest.*
+-MSE_ClearKey/EncryptedMediaTest.*
+-MSE_ExternalClearKey/EncryptedMediaTest.*
+-NavigationControllerBrowserTest.BackOnBrowserInitiatedErrorPageNavigation
+-NavigationControllerBrowserTest.BackSameDocumentAfterBlockedSubframe
+-NavigationControllerBrowserTest.BrowserInitiatedLoadPostCommitErrorPageForSubframe
+-NavigationControllerBrowserTest.PageStateAfterForwardInCompetingFrames
+-NavigationControllerBrowserTest.ReplacedNavigationEntryData_Back
 -RenderViewHostTest.IsFocusedElementEditable
+-TouchInputBrowserTest.*
 -TouchpadPinchBrowserTest.*

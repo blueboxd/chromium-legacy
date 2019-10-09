@@ -19,6 +19,7 @@ import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.common.ServiceNames;
 import org.chromium.android_webview.metrics.AwMetricsServiceClient;
 import org.chromium.android_webview.policy.AwPolicyProvider;
+import org.chromium.android_webview.safe_browsing.AwSafeBrowsingConfigHelper;
 import org.chromium.android_webview.services.ICrashReceiverService;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;

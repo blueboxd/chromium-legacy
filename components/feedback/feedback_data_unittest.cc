@@ -34,10 +34,11 @@ class MockUploader : public FeedbackUploader {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       content::BrowserContext* context,
       base::OnceClosure on_report_sent)
-      : FeedbackUploader(url_loader_factory,
-                         context,
+      : FeedbackUploader(context,
                          FeedbackUploaderFactory::CreateUploaderTaskRunner()),
-        on_report_sent_(std::move(on_report_sent)) {}
+        on_report_sent_(std::move(on_report_sent)) {
+    set_url_loader_factory_for_test(url_loader_factory);
+  }
   ~MockUploader() override {}
 
   // feedback::FeedbackUploader:

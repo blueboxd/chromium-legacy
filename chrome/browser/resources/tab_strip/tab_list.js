@@ -46,17 +46,6 @@ class TabListElement extends CustomElement {
     this.animationPromises = Promise.resolve();
 
     /**
-     * Attach and detach callbacks require async requests and therefore may
-     * cause race conditions in which the async requests complete after another
-     * event has been dispatched. Therefore, this object is necessary to keep
-     * track of the recent attached or detached state of each tab to ensure
-     * elements are not created when they should not be. A truthy value
-     * signifies the tab is attached to the current window.
-     * @private {!Object<number, boolean>}
-     */
-    this.attachmentStates_ = {};
-
-    /**
      * The TabElement that is currently being dragged.
      * @private {!TabElement|undefined}
      */
@@ -76,16 +65,10 @@ class TabListElement extends CustomElement {
     /** @private {!TabsApiProxy} */
     this.tabsApi_ = TabsApiProxy.getInstance();
 
-    /** @private {!Object} */
-    this.tabsApiHandler_ = this.tabsApi_.callbackRouter;
-
     /** @private {!Element} */
     this.tabsContainerElement_ =
         /** @type {!Element} */ (
             this.shadowRoot.querySelector('#tabsContainer'));
-
-    /** @private {number} */
-    this.windowId_;
 
     addWebUIListener('theme-changed', () => this.fetchAndUpdateColors_());
     this.tabStripViewProxy_.observeThemeChanges();
@@ -113,39 +96,17 @@ class TabListElement extends CustomElement {
 
   connectedCallback() {
     this.fetchAndUpdateColors_();
-    this.tabsApi_.getCurrentWindow().then((currentWindow) => {
-      this.windowId_ = currentWindow.id;
+    this.tabsApi_.getTabs().then(tabs => {
+      tabs.forEach(tab => this.onTabCreated_(tab));
+      this.moveOrScrollToActiveTab_();
 
-      // TODO(johntlee): currentWindow.tabs is guaranteed to be defined because
-      // `populate: true` is passed in as part of the arguments to the API.
-      // Once the closure compiler is able to type `assert` to return a truthy
-      // type even when being used with modules, the conditionals should be
-      // replaced with `assert` (b/138729777).
-      if (currentWindow.tabs) {
-        for (const tab of currentWindow.tabs) {
-          if (tab) {
-            this.onTabCreated_(tab);
-          }
-        }
-
-        this.moveOrScrollToActiveTab_();
-      }
-
-      this.tabsApiHandler_.onAttached.addListener(
-          (tabId, attachedInfo) => this.onTabAttached_(tabId, attachedInfo));
-      this.tabsApiHandler_.onActivated.addListener(
-          (activeInfo) => this.onTabActivated_(activeInfo));
-      this.tabsApiHandler_.onCreated.addListener(
-          (tab) => this.onTabCreated_(tab));
-      this.tabsApiHandler_.onDetached.addListener(
-          (tabId, detachInfo) => this.onTabDetached_(tabId, detachInfo));
-      this.tabsApiHandler_.onMoved.addListener(
-          (tabId, moveInfo) => this.onTabMoved_(tabId, moveInfo));
-      this.tabsApiHandler_.onRemoved.addListener(
-          (tabId, removeInfo) => this.onTabRemoved_(tabId, removeInfo));
-      this.tabsApiHandler_.onUpdated.addListener(
-          (tabId, changeInfo, tab) =>
-              this.onTabUpdated_(tabId, changeInfo, tab));
+      addWebUIListener('tab-created', tab => this.onTabCreated_(tab));
+      addWebUIListener(
+          'tab-moved', (tabId, newIndex) => this.onTabMoved_(tabId, newIndex));
+      addWebUIListener('tab-removed', tabId => this.onTabRemoved_(tabId));
+      addWebUIListener('tab-updated', tab => this.onTabUpdated_(tab));
+      addWebUIListener(
+          'tab-active-changed', tabId => this.onTabActivated_(tabId));
     });
   }
 
@@ -281,21 +242,17 @@ class TabListElement extends CustomElement {
   }
 
   /**
-   * @param {!TabActivatedInfo} activeInfo
+   * @param {number} tabId
    * @private
    */
-  onTabActivated_(activeInfo) {
-    if (activeInfo.windowId !== this.windowId_) {
-      return;
-    }
-
+  onTabActivated_(tabId) {
     const previouslyActiveTab = this.getActiveTab_();
     if (previouslyActiveTab) {
       previouslyActiveTab.tab = /** @type {!Tab} */ (
           Object.assign({}, previouslyActiveTab.tab, {active: false}));
     }
 
-    const newlyActiveTab = this.findTabElement_(activeInfo.tabId);
+    const newlyActiveTab = this.findTabElement_(tabId);
     if (newlyActiveTab) {
       newlyActiveTab.tab = /** @type {!Tab} */ (
           Object.assign({}, newlyActiveTab.tab, {active: true}));
@@ -304,32 +261,10 @@ class TabListElement extends CustomElement {
   }
 
   /**
-   * @param {number} tabId
-   * @param {!TabAttachedInfo} attachInfo
-   * @private
-   */
-  async onTabAttached_(tabId, attachInfo) {
-    if (attachInfo.newWindowId !== this.windowId_) {
-      return;
-    }
-
-    this.attachmentStates_[tabId] = true;
-    const tab = await this.tabsApi_.getTab(tabId);
-    if (this.attachmentStates_[tabId] && !this.findTabElement_(tabId)) {
-      const tabElement = this.createTabElement_(tab);
-      this.insertTabOrMoveTo_(tabElement, attachInfo.newPosition);
-    }
-  }
-
-  /**
    * @param {!Tab} tab
    * @private
    */
   onTabCreated_(tab) {
-    if (tab.windowId !== this.windowId_) {
-      return;
-    }
-
     const tabElement = this.createTabElement_(tab);
 
     if (tab.active && !tab.pinned &&
@@ -351,34 +286,13 @@ class TabListElement extends CustomElement {
 
   /**
    * @param {number} tabId
-   * @param {!TabDetachedInfo} detachInfo
+   * @param {number} newIndex
    * @private
    */
-  onTabDetached_(tabId, detachInfo) {
-    if (detachInfo.oldWindowId !== this.windowId_) {
-      return;
-    }
-
-    this.attachmentStates_[tabId] = false;
-    const tabElement = this.findTabElement_(tabId);
-    if (tabElement) {
-      tabElement.remove();
-    }
-  }
-
-  /**
-   * @param {number} tabId
-   * @param {!TabMovedInfo} moveInfo
-   * @private
-   */
-  onTabMoved_(tabId, moveInfo) {
-    if (moveInfo.windowId !== this.windowId_) {
-      return;
-    }
-
+  onTabMoved_(tabId, newIndex) {
     const movedTab = this.findTabElement_(tabId);
     if (movedTab) {
-      this.insertTabOrMoveTo_(movedTab, moveInfo.toIndex);
+      this.insertTabOrMoveTo_(movedTab, newIndex);
       if (movedTab.tab.active) {
         this.scrollToTab_(movedTab);
       }
@@ -387,54 +301,34 @@ class TabListElement extends CustomElement {
 
   /**
    * @param {number} tabId
-   * @param {!WindowRemoveInfo} removeInfo
    * @private
    */
-  onTabRemoved_(tabId, removeInfo) {
-    if (removeInfo.windowId !== this.windowId_) {
-      return;
-    }
-
+  onTabRemoved_(tabId) {
     const tabElement = this.findTabElement_(tabId);
     if (tabElement) {
-      this.addAnimationPromise_(new Promise(async resolve => {
-        await tabElement.slideOut();
-        resolve();
-      }));
+      this.addAnimationPromise_(tabElement.slideOut());
     }
   }
 
   /**
-   * @param {number} tabId
-   * @param {!Tab} changeInfo
    * @param {!Tab} tab
    * @private
    */
-  onTabUpdated_(tabId, changeInfo, tab) {
-    if (tab.windowId !== this.windowId_) {
+  onTabUpdated_(tab) {
+    const tabElement = this.findTabElement_(tab.id);
+    if (!tabElement) {
       return;
     }
 
-    const tabElement = this.findTabElement_(tabId);
-    if (tabElement) {
-      // While a tab may go in and out of a loading state, the Extensions API
-      // only dispatches |onUpdated| events up until the first time a tab
-      // reaches a non-loading state. Therefore, the UI should ignore any
-      // updates to a |status| of a tab unless the API specifically has
-      // dispatched an event indicating the status has changed.
-      if (!changeInfo.status) {
-        tab.status = tabElement.tab.status;
-      }
+    const previousTab = tabElement.tab;
+    tabElement.tab = tab;
 
-      tabElement.tab = tab;
-
-      if (changeInfo.pinned !== undefined) {
-        // If the tab is being pinned or unpinned, we need to move it to its new
-        // location
-        this.insertTabOrMoveTo_(tabElement, tab.index);
-        if (tab.active) {
-          this.scrollToTab_(tabElement);
-        }
+    if (previousTab.pinned !== tab.pinned) {
+      // If the tab is being pinned or unpinned, we need to move it to its new
+      // location
+      this.insertTabOrMoveTo_(tabElement, tab.index);
+      if (tab.active) {
+        this.scrollToTab_(tabElement);
       }
     }
   }

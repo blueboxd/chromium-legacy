@@ -75,10 +75,6 @@ const base::Feature kPasswordManagerOnboardingAndroid = {
 const base::Feature kRecoverPasswordsForSyncUsers = {
     "RecoverPasswordsForSyncUsers", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the touch to fill feature for Android.
-const base::Feature kTouchToFillAndroid = {"TouchToFillAndroid",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables support of filling and saving on username first flow.
 const base::Feature kUsernameFirstFlow = {"UsernameFirstFlow",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

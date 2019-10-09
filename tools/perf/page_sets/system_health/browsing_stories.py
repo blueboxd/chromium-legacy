@@ -271,6 +271,17 @@ class TwitterMobileStory(_ArticleBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.YEAR_2016]
 
+class TwitterMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:social:twitter:2019'
+  URL = 'https://www.twitter.com/nasa'
+  ITEM_SELECTOR = ('[class="css-901oao r-hkyrab r-1qd0xha r-1b43r93 r-16dba41 '
+      'r-ad9z0x r-bcqeeo r-bnwqim r-qvutc0"]')
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.YEAR_2019]
+
+  def _WaitForNavigation(self, action_runner):
+    action_runner.WaitForElement(selector=('[class="css-901oao css-16my406 '
+        'r-1qd0xha r-ad9z0x r-bcqeeo r-qvutc0"]'))
 
 class TwitterDesktopStory2018(_ArticleBrowsingStory):
   NAME = 'browse:social:twitter:2018'

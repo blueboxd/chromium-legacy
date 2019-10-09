@@ -18,6 +18,7 @@ option optimize_for = LITE_RUNTIME;
 package sync_pb;
 
 import "app_list_specifics.proto";
+import "app_notification_specifics.proto";
 import "app_setting_specifics.proto";
 import "app_specifics.proto";
 import "arc_package_specifics.proto";
@@ -50,6 +51,8 @@ import "security_event_specifics.proto";
 import "send_tab_to_self_specifics.proto";
 import "session_specifics.proto";
 import "sync_enums.proto";
+import "synced_notification_app_info_specifics.proto";
+import "synced_notification_specifics.proto";
 import "theme_specifics.proto";
 import "typed_url_specifics.proto";
 import "unique_position.proto";
@@ -112,6 +115,7 @@ message EntitySpecifics {
     PreferenceSpecifics preference = 37702;
     TypedUrlSpecifics typed_url = 40781;
     ThemeSpecifics theme = 41210;
+    AppNotification app_notification = 45184;
     PasswordSpecifics password = 45873;
     NigoriSpecifics nigori = 47745;
     ExtensionSpecifics extension = 48119;
@@ -122,6 +126,8 @@ message EntitySpecifics {
     ExtensionSettingSpecifics extension_setting = 96159;
     AppSettingSpecifics app_setting = 103656;
     HistoryDeleteDirectiveSpecifics history_delete_directive = 150251;
+    SyncedNotificationSpecifics synced_notification = 153108;
+    SyncedNotificationAppInfoSpecifics synced_notification_app_info = 235816;
     DeviceInfoSpecifics device_info = 154522;
     ExperimentsSpecifics experiments = 161496;
     PriorityPreferenceSpecifics priority_preference = 163425;
@@ -147,18 +153,12 @@ message EntitySpecifics {
     WebAppSpecifics web_app = 673225;
     WifiConfigurationSpecifics wifi_configuration = 662827;
   }
-  reserved 45184;
-  reserved "app_notification";
-  reserved 153108;
-  reserved "synced_notification";
   reserved 194582;
   reserved "managed_user";
   reserved 202026;
   reserved "managed_user_shared_setting";
   reserved 218175;
   reserved "wifi_credential";
-  reserved 235816;
-  reserved "synced_notification_app_info";
 }
 
 message SyncEntity {

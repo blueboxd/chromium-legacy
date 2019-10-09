@@ -267,6 +267,11 @@ void GpuServiceImpl::UpdateGPUInfo() {
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
   gpu_info_.initialization_time = base::Time::Now() - start_time_;
+
+  // For the GPU watchdog - how long the init might take on a slow machine?
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "GPU.GPUInitializationTime", gpu_info_.initialization_time,
+      base::TimeDelta::FromSeconds(1), base::TimeDelta::FromSeconds(60), 50);
 }
 
 void GpuServiceImpl::InitializeWithHost(

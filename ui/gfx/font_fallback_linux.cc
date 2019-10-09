@@ -10,12 +10,19 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/mru_cache.h"
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/trace_event/trace_event.h"
+#include "third_party/icu/source/common/unicode/uchar.h"
+#include "third_party/icu/source/common/unicode/utf16.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/font_fallback.h"
 #include "ui/gfx/linux/fontconfig_util.h"
+#include "ui/gfx/platform_font.h"
 
 namespace gfx {
 
@@ -44,13 +51,169 @@ bool IsValidFontFromPattern(FcPattern* pattern) {
   return true;
 }
 
-}  // namespace
+// This class uniquely identified a typeface. A typeface can be identified by
+// its file path and it's ttc index.
+class TypefaceCacheKey {
+ public:
+  TypefaceCacheKey(const base::FilePath& font_path, int ttc_index)
+      : font_path_(font_path), ttc_index_(ttc_index) {}
 
-FallbackFontsCache* GetFallbackFontsCacheInstance() {
+  const base::FilePath& font_path() const { return font_path_; }
+  int ttc_index() const { return ttc_index_; }
+
+  bool operator<(const TypefaceCacheKey& other) const {
+    return std::tie(ttc_index_, font_path_) <
+           std::tie(other.ttc_index_, other.font_path_);
+  }
+
+ private:
+  base::FilePath font_path_;
+  int ttc_index_;
+
+  DISALLOW_ASSIGN(TypefaceCacheKey);
+};
+
+// Returns a SkTypeface for a given font path and ttc_index. The typeface is
+// cached to avoid reloading the font from file. SkTypeface is not caching
+// these requests.
+sk_sp<SkTypeface> GetSkTypefaceFromPathAndIndex(const base::FilePath& font_path,
+                                                int ttc_index) {
+  using TypefaceCache = std::map<TypefaceCacheKey, sk_sp<SkTypeface>>;
+  static base::NoDestructor<TypefaceCache> typeface_cache;
+
+  if (font_path.empty())
+    return nullptr;
+
+  TypefaceCache* cache = typeface_cache.get();
+  TypefaceCacheKey key(font_path, ttc_index);
+  TypefaceCache::iterator entry = cache->find(key);
+  if (entry != cache->end())
+    return sk_sp<SkTypeface>(entry->second);
+
+  std::string filename = font_path.AsUTF8Unsafe();
+  sk_sp<SkTypeface> typeface =
+      SkTypeface::MakeFromFile(filename.c_str(), ttc_index);
+  (*cache)[key] = typeface;
+
+  return sk_sp<SkTypeface>(typeface);
+}
+
+// Implements a fallback font cache over FontConfig API.
+//
+// A MRU cache is kept from a font to its potential fallback fonts.
+// The key (e.g. FallbackFontEntry) contains the font for which
+// fallback font must be returned.
+//
+// For each key, the cache is keeping a set (e.g. FallbackFontEntries) of
+// potential fallback font (e.g. FallbackFontEntry). Each fallback font entry
+// contains the supported codepoints (e.g. charset). The fallback font returned
+// by GetFallbackFont(...) depends on the input text and is using the charset
+// to determine the best candidate.
+class FallbackFontKey {
+ public:
+  FallbackFontKey(std::string locale, Font font)
+      : locale_(locale), font_(font) {}
+
+  FallbackFontKey(const FallbackFontKey&) = default;
+  ~FallbackFontKey() = default;
+
+  bool operator<(const FallbackFontKey& other) const {
+    if (font_.GetFontSize() != other.font_.GetFontSize())
+      return font_.GetFontSize() < other.font_.GetFontSize();
+    if (font_.GetStyle() != other.font_.GetStyle())
+      return font_.GetStyle() < other.font_.GetStyle();
+    if (font_.GetFontName() != other.font_.GetFontName())
+      return font_.GetFontName() < other.font_.GetFontName();
+    return locale_ < other.locale_;
+  }
+
+ private:
+  std::string locale_;
+  Font font_;
+
+  DISALLOW_ASSIGN(FallbackFontKey);
+};
+
+class FallbackFontEntry {
+ public:
+  FallbackFontEntry(const base::FilePath& font_path,
+                    int ttc_index,
+                    FontRenderParams font_params,
+                    FcCharSet* charset)
+      : font_path_(font_path),
+        ttc_index_(ttc_index),
+        font_params_(font_params),
+        charset_(FcCharSetCopy(charset)) {}
+
+  FallbackFontEntry(const FallbackFontEntry& other)
+      : font_path_(other.font_path_),
+        ttc_index_(other.ttc_index_),
+        font_params_(other.font_params_),
+        charset_(FcCharSetCopy(other.charset_)) {}
+
+  ~FallbackFontEntry() { FcCharSetDestroy(charset_); }
+
+  const base::FilePath& font_path() const { return font_path_; }
+  int ttc_index() const { return ttc_index_; }
+  FontRenderParams font_params() const { return font_params_; }
+
+  // Returns whether the fallback font support the codepoint.
+  bool HasGlyphForCharacter(UChar32 c) const {
+    return FcCharSetHasChar(charset_, static_cast<FcChar32>(c));
+  }
+
+ private:
+  // Font identity fields.
+  base::FilePath font_path_;
+  int ttc_index_;
+
+  // Font rendering parameters.
+  FontRenderParams font_params_;
+
+  // Font code points coverage.
+  FcCharSet* charset_;
+
+  DISALLOW_ASSIGN(FallbackFontEntry);
+};
+
+using FallbackFontEntries = std::vector<FallbackFontEntry>;
+using FallbackFontEntriesCache =
+    base::MRUCache<FallbackFontKey, FallbackFontEntries>;
+
+// The fallback font cache is a mapping from a font to the potential fallback
+// fonts with their codepoint coverage.
+FallbackFontEntriesCache* GetFallbackFontEntriesCacheInstance() {
+  constexpr int kFallbackFontCacheSize = 256;
+  static base::NoDestructor<FallbackFontEntriesCache> cache(
+      kFallbackFontCacheSize);
+  return cache.get();
+}
+
+// The fallback fonts cache is a mapping from a font family name to its
+// potential fallback fonts.
+using FallbackFontList = std::vector<Font>;
+using FallbackFontListCache = base::MRUCache<std::string, FallbackFontList>;
+
+FallbackFontListCache* GetFallbackFontListCacheInstance() {
   constexpr int kFallbackCacheSize = 64;
-  static base::NoDestructor<FallbackFontsCache> fallback_cache(
+  static base::NoDestructor<FallbackFontListCache> fallback_cache(
       kFallbackCacheSize);
   return fallback_cache.get();
+}
+
+}  // namespace
+
+size_t GetFallbackFontEntriesCacheSizeForTesting() {
+  return GetFallbackFontEntriesCacheInstance()->size();
+}
+
+size_t GetFallbackFontListCacheSizeForTesting() {
+  return GetFallbackFontListCacheInstance()->size();
+}
+
+void ClearAllFontFallbackCachesForTesting() {
+  GetFallbackFontEntriesCacheInstance()->Clear();
+  GetFallbackFontListCacheInstance()->Clear();
 }
 
 bool GetFallbackFont(const Font& font,
@@ -63,54 +226,107 @@ bool GetFallbackFont(const Font& font,
   if (text.empty())
     return false;
 
-  ScopedFcPattern pattern(FcPatternCreate());
+  FallbackFontEntriesCache* cache = GetFallbackFontEntriesCacheInstance();
+  FallbackFontKey key(locale, font);
+  FallbackFontEntriesCache::iterator cache_entry = cache->Get(key);
 
-  // Add pattern for family name.
-  std::string font_family = font.GetFontName();
-  FcPatternAddString(pattern.get(), FC_FAMILY,
-                     reinterpret_cast<const FcChar8*>(font_family.c_str()));
+  // The cache entry for this font is missing, build it.
+  if (cache_entry == cache->end()) {
+    ScopedFcPattern pattern(FcPatternCreate());
 
-  // Prefer scalable font.
-  FcPatternAddBool(pattern.get(), FC_SCALABLE, FcTrue);
+    // Add pattern for family name.
+    std::string font_family = font.GetFontName();
+    FcPatternAddString(pattern.get(), FC_FAMILY,
+                       reinterpret_cast<const FcChar8*>(font_family.c_str()));
 
-  // Add pattern for locale.
-  FcPatternAddString(pattern.get(), FC_LANG,
-                     reinterpret_cast<const FcChar8*>(locale.c_str()));
+    // Prefer scalable font.
+    FcPatternAddBool(pattern.get(), FC_SCALABLE, FcTrue);
 
-  // Add pattern for font style.
-  if ((font.GetStyle() & gfx::Font::ITALIC) != 0)
-    FcPatternAddInteger(pattern.get(), FC_SLANT, FC_SLANT_ITALIC);
+    // Add pattern for locale.
+    FcPatternAddString(pattern.get(), FC_LANG,
+                       reinterpret_cast<const FcChar8*>(locale.c_str()));
 
-  // Add pattern for characters.
-  FcCharSet* charset = FcCharSetCreate();
-  size_t offset = 0;
-  while (offset < text.length()) {
-    UChar32 code_point;
-    U16_NEXT(text.data(), offset, text.length(), code_point);
-    FcCharSetAddChar(charset, code_point);
+    // Add pattern for font style.
+    if ((font.GetStyle() & gfx::Font::ITALIC) != 0)
+      FcPatternAddInteger(pattern.get(), FC_SLANT, FC_SLANT_ITALIC);
+
+    // Match a font fallback.
+    FcConfig* config = GetGlobalFontConfig();
+    FcConfigSubstitute(config, pattern.get(), FcMatchPattern);
+    FcDefaultSubstitute(pattern.get());
+
+    FallbackFontEntries fallback_font_entries;
+    FcResult fc_result;
+    FcFontSet* fonts =
+        FcFontSort(config, pattern.get(), FcTrue, nullptr, &fc_result);
+    if (fonts) {
+      // Add each potential fallback font returned by font-config to the
+      // set of fallback fonts and keep track of their codepoints coverage.
+      for (int i = 0; i < fonts->nfont; ++i) {
+        FcPattern* current_font = fonts->fonts[i];
+        if (!IsValidFontFromPattern(current_font))
+          continue;
+
+        // Retrieve the font identity fields.
+        base::FilePath font_path = GetFontPath(current_font);
+        int font_ttc_index = GetFontTtcIndex(current_font);
+
+        // Retrieve the charset of the current font.
+        FcCharSet* char_set = nullptr;
+        fc_result = FcPatternGetCharSet(current_font, FC_CHARSET, 0, &char_set);
+        if (fc_result != FcResultMatch || char_set == nullptr)
+          continue;
+
+        // Retrieve the font render params.
+        FontRenderParams font_params;
+        GetFontRenderParamsFromFcPattern(current_font, &font_params);
+
+        fallback_font_entries.push_back(FallbackFontEntry(
+            font_path, font_ttc_index, font_params, char_set));
+      }
+      FcFontSetDestroy(fonts);
+    }
+
+    cache_entry = cache->Put(key, std::move(fallback_font_entries));
   }
-  FcPatternAddCharSet(pattern.get(), "charset", charset);
-  FcCharSetDestroy(charset);
 
-  // Match a font fallback.
-  FcConfig* config = GetGlobalFontConfig();
-  FcConfigSubstitute(config, pattern.get(), FcMatchPattern);
-  FcDefaultSubstitute(pattern.get());
+  // Try each font in the cache to find the one with the highest coverage.
+  size_t fewest_missing_glyphs = text.length() + 1;
+  const FallbackFontEntry* prefered_entry = nullptr;
 
-  FcResult fc_result;
-  ScopedFcPattern matched_pattern(
-      FcFontMatch(config, pattern.get(), &fc_result));
-  if (!matched_pattern || !IsValidFontFromPattern(matched_pattern.get()))
-    return false;
+  for (const auto& entry : cache_entry->second) {
+    // Validate that every character has a known glyph in the font.
+    size_t missing_glyphs = 0;
+    size_t i = 0;
+    while (i < text.length()) {
+      UChar32 c = 0;
+      U16_NEXT(text.data(), i, text.length(), c);
+      if (!entry.HasGlyphForCharacter(c))
+        ++missing_glyphs;
+    }
 
-  FcChar8* fallback_family = nullptr;
-  FcPatternGetString(matched_pattern.get(), FC_FAMILY, 0, &fallback_family);
-  if (!fallback_family)
-    return false;
+    if (missing_glyphs < fewest_missing_glyphs) {
+      fewest_missing_glyphs = missing_glyphs;
+      prefered_entry = &entry;
+    }
 
-  *result =
-      Font(reinterpret_cast<const char*>(fallback_family), font.GetFontSize());
-  return true;
+    // The font is a valid fallback font for the given text.
+    if (missing_glyphs == 0)
+      break;
+  }
+
+  if (prefered_entry) {
+    sk_sp<SkTypeface> typeface = GetSkTypefaceFromPathAndIndex(
+        prefered_entry->font_path(), prefered_entry->ttc_index());
+
+    Font fallback_font(PlatformFont::CreateFromSkTypeface(
+        typeface, font.GetFontSize(), prefered_entry->font_params()));
+
+    *result = fallback_font;
+    return true;
+  }
+
+  return false;
 }
 
 std::vector<Font> GetFallbackFonts(const Font& font) {
@@ -119,7 +335,7 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
   std::string font_family = font.GetFontName();
 
   // Lookup in the cache for already processed family.
-  FallbackFontsCache* font_cache = GetFallbackFontsCacheInstance();
+  FallbackFontListCache* font_cache = GetFallbackFontListCacheInstance();
   auto cached_fallback_fonts = font_cache->Get(font_family);
   if (cached_fallback_fonts != font_cache->end()) {
     // Already in cache.
@@ -127,7 +343,7 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
   }
 
   // Retrieve the font fallbacks for a given family name.
-  std::vector<Font> fallback_fonts;
+  FallbackFontList fallback_fonts;
   FcPattern* pattern = FcPatternCreate();
   FcPatternAddString(pattern, FC_FAMILY,
                      reinterpret_cast<const FcChar8*>(font_family.c_str()));

@@ -27,7 +27,7 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/ppapi_plugin_process_host.h"  // nogncheck
-#include "ppapi/proxy/ppapi_messages.h"  // nogncheck
+#include "ppapi/proxy/ppapi_messages.h"                 // nogncheck
 #endif
 
 #if defined(OS_WIN)
@@ -59,8 +59,8 @@ void HandlePpapiFlashDebugURL(const GURL& url) {
   bool crash = url == kChromeUIPpapiFlashCrashURL;
 
   std::vector<PpapiPluginProcessHost*> hosts;
-  PpapiPluginProcessHost::FindByName(
-      base::UTF8ToUTF16(kFlashPluginName), &hosts);
+  PpapiPluginProcessHost::FindByName(base::UTF8ToUTF16(kFlashPluginName),
+                                     &hosts);
   for (auto iter = hosts.begin(); iter != hosts.end(); ++iter) {
     if (crash)
       (*iter)->Send(new PpapiMsg_Crash());
@@ -72,8 +72,7 @@ void HandlePpapiFlashDebugURL(const GURL& url) {
 
 bool IsAsanDebugURL(const GURL& url) {
   if (!(url.is_valid() && url.SchemeIs(kChromeUIScheme) &&
-        url.DomainIs(kAsanCrashDomain) &&
-        url.has_path())) {
+        url.DomainIs(kAsanCrashDomain) && url.has_path())) {
     return false;
   }
 

@@ -144,7 +144,6 @@ void DrmOverlayValidatorTest::SetUp() {
   ui::OverlayCheck_Params primary_candidate;
   primary_candidate.buffer_size = primary_rect_.size();
   primary_candidate.display_rect = primary_rect_;
-  primary_candidate.is_opaque = true;
   primary_candidate.format = gfx::BufferFormat::BGRX_8888;
   overlay_params_.push_back(primary_candidate);
   AddPlane(primary_candidate);
@@ -153,7 +152,6 @@ void DrmOverlayValidatorTest::SetUp() {
   overlay_candidate.buffer_size = overlay_rect_.size();
   overlay_candidate.display_rect = overlay_rect_;
   overlay_candidate.plane_z_order = 1;
-  primary_candidate.is_opaque = true;
   overlay_candidate.format = gfx::BufferFormat::BGRX_8888;
   overlay_params_.push_back(overlay_candidate);
   AddPlane(overlay_candidate);
@@ -227,7 +225,7 @@ void DrmOverlayValidatorTest::AddPlane(const ui::OverlayCheck_Params& params) {
       ui::GetFourCCFormatFromBufferFormat(params.format), params.buffer_size);
   plane_list_.push_back(ui::DrmOverlayPlane(
       std::move(drm_framebuffer), params.plane_z_order, params.transform,
-      params.display_rect, params.crop_rect, !params.is_opaque, nullptr));
+      params.display_rect, params.crop_rect, true, nullptr));
 }
 
 void DrmOverlayValidatorTest::TearDown() {
@@ -304,7 +302,6 @@ TEST_F(DrmOverlayValidatorTest, OverlayFormat_YUV) {
   overlay_params_.back().buffer_size = overlay_rect_.size();
   overlay_params_.back().display_rect = overlay_rect_;
   overlay_params_.back().crop_rect = crop_rect;
-  overlay_params_.back().is_opaque = false;
   overlay_params_.back().format = gfx::BufferFormat::YUV_420_BIPLANAR;
   plane_list_.pop_back();
   AddPlane(overlay_params_.back());

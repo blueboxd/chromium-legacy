@@ -235,6 +235,10 @@ bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
   if (!base::FeatureList::IsEnabled(kDeepScanningOfUploads))
     return false;
 
+  // If this is an incognitio profile, don't perform scans.
+  if (profile->IsOffTheRecord())
+    return false;
+
   // If there's no DM token, the upload will fail.
   if (GetDMToken().empty())
     return false;

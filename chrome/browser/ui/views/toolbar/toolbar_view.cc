@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/top_container_background.h"
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
@@ -149,6 +150,9 @@ ToolbarView::ToolbarView(Browser* browser, BrowserView* browser_view)
 
   UpgradeDetector::GetInstance()->AddObserver(this);
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
+
+  if (display_mode_ == DisplayMode::NORMAL)
+    SetBackground(std::make_unique<TopContainerBackground>(browser_view));
 }
 
 ToolbarView::~ToolbarView() {
@@ -630,38 +634,6 @@ void ToolbarView::Layout() {
   // Call super implementation to ensure layout manager and child layouts
   // happen.
   AccessiblePaneView::Layout();
-}
-
-void ToolbarView::OnPaintBackground(gfx::Canvas* canvas) {
-  if (display_mode_ != DisplayMode::NORMAL)
-    return;
-
-  const ui::ThemeProvider* tp = GetThemeProvider();
-
-  // If the toolbar has a theme image, it gets composited against the toolbar
-  // background color when it's imported, so we only need to specificallh draw
-  // the background color if there is no custom image.
-  if (tp->HasCustomImage(IDR_THEME_TOOLBAR)) {
-    const int x_offset =
-        GetMirroredX() + browser_view_->GetMirroredX() +
-        browser_view_->frame()->GetFrameView()->GetThemeBackgroundXInset();
-    const int y_offset = GetLayoutConstant(TAB_HEIGHT) -
-                         browser_view_->tabstrip()->GetStrokeThickness() -
-                         GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
-    canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR), x_offset,
-                         y_offset, 0, 0, width(), height());
-  } else {
-    canvas->FillRect(GetLocalBounds(),
-                     tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
-  }
-
-  // Toolbar/content separator.
-  const SkColor separator_color =
-      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR);
-  const gfx::Rect local_bounds = GetLocalBounds();
-  canvas->DrawLine(gfx::Point(local_bounds.x(), local_bounds.bottom() - 1),
-                   gfx::Point(local_bounds.right(), local_bounds.bottom() - 1),
-                   separator_color);
 }
 
 void ToolbarView::OnThemeChanged() {

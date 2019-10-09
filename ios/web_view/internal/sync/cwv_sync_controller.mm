@@ -182,10 +182,6 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
       ->IsPassphraseRequiredForPreferredDataTypes();
 }
 
-- (BOOL)isConsentNeeded {
-  return !_syncService->GetUserSettings()->IsFirstSetupComplete();
-}
-
 - (void)startSyncWithIdentity:(CWVIdentity*)identity {
   DCHECK(!_currentIdentity)
       << "Already syncing! Call -stopSyncAndClearIdentity first.";
@@ -204,6 +200,8 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
   CHECK_EQ(_identityManager->GetPrimaryAccountId(), accountId);
 
   _syncService->GetUserSettings()->SetSyncRequested(true);
+  _syncService->GetUserSettings()->SetFirstSetupComplete(
+      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
 }
 
 - (void)stopSyncAndClearIdentity {
@@ -224,11 +222,6 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
 - (BOOL)unlockWithPassphrase:(NSString*)passphrase {
   return _syncService->GetUserSettings()->SetDecryptionPassphrase(
       base::SysNSStringToUTF8(passphrase));
-}
-
-- (void)consent {
-  _syncService->GetUserSettings()->SetFirstSetupComplete(
-      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
 }
 
 #pragma mark - Private Methods

@@ -58,7 +58,6 @@ class ImeObserver : public input_method::InputMethodEngineBase::Observer {
   void OnDeactivated(const std::string& component_id) override;
   void OnCompositionBoundsChanged(
       const std::vector<gfx::Rect>& bounds) override;
-  bool IsInterestedInKeyEvent() const override;
   void OnSurroundingTextChanged(const std::string& component_id,
                                 const std::string& text,
                                 int cursor_pos,

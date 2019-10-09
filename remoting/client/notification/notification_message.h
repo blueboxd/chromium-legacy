@@ -10,11 +10,6 @@
 namespace remoting {
 
 struct NotificationMessage final {
-  enum class Appearance {
-    TOAST,
-    DIALOG,
-  };
-
   NotificationMessage();
   NotificationMessage(const NotificationMessage&);
   NotificationMessage(NotificationMessage&&);
@@ -23,7 +18,6 @@ struct NotificationMessage final {
   NotificationMessage& operator=(const NotificationMessage&);
   NotificationMessage& operator=(NotificationMessage&&);
 
-  Appearance appearance;
   std::string message_id;
   std::string message_text;
   std::string link_text;

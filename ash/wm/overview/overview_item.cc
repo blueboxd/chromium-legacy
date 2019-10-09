@@ -161,8 +161,12 @@ void SetWidgetBoundsAndMaybeAnimateTransform(
   window->SetBoundsInScreen(
       new_bounds_in_screen,
       display::Screen::GetScreen()->GetDisplayNearestWindow(window));
-  if (animation_type == OVERVIEW_ANIMATION_NONE)
+  if (animation_type == OVERVIEW_ANIMATION_NONE) {
+    // Make sure that |observer|, which could be a self-deleting object, will
+    // not be leaked.
+    DCHECK(!observer);
     return;
+  }
 
   // For animations, compute the transform needed to place the widget at its
   // new bounds back to the old bounds, and then apply the idenity
@@ -438,10 +442,9 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
       if (!should_animate_when_entering_) {
         item_widget_->GetNativeWindow()->layer()->SetOpacity(1.f);
       } else {
-        if (new_animation_type ==
-            OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW) {
-          PerformItemAddedAnimation(item_widget_->GetNativeWindow(),
-                                    gfx::Transform{});
+        if (new_animation_type == OVERVIEW_ANIMATION_SPAWN_ITEM_IN_OVERVIEW) {
+          PerformItemSpawnedAnimation(item_widget_->GetNativeWindow(),
+                                      gfx::Transform{});
         } else {
           FadeInWidgetAndMaybeSlideOnEnter(
               item_widget_.get(),
@@ -1070,7 +1073,7 @@ void OverviewItem::OnWindowCloseAnimationCompleted() {
   transform_window_.Close();
 }
 
-void OverviewItem::OnItemAddedAnimationCompleted() {
+void OverviewItem::OnItemSpawnedAnimationCompleted() {
   UpdateRoundedCornersAndShadow();
   OnDragAnimationCompleted();
   OnStartingAnimationComplete();
@@ -1089,9 +1092,12 @@ void OverviewItem::OnItemBoundsAnimationEnded() {
   OnDragAnimationCompleted();
 }
 
-void OverviewItem::PerformItemAddedAnimation(
+void OverviewItem::PerformItemSpawnedAnimation(
     aura::Window* window,
     const gfx::Transform& target_transform) {
+  DCHECK(should_use_spawn_animation_);
+  should_use_spawn_animation_ = false;
+
   constexpr float kInitialScaler = 0.1f;
   constexpr float kTargetScaler = 1.0f;
 
@@ -1105,14 +1111,14 @@ void OverviewItem::PerformItemAddedAnimation(
   ScopedOverviewTransformWindow::ScopedAnimationSettings animation_settings;
   for (auto* window_iter : GetVisibleTransientTreeIterator(window)) {
     auto settings = std::make_unique<ScopedOverviewAnimationSettings>(
-        OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW, window_iter);
+        OVERVIEW_ANIMATION_SPAWN_ITEM_IN_OVERVIEW, window_iter);
     settings->DeferPaint();
     animation_settings.push_back(std::move(settings));
   }
 
   if (!animation_settings.empty()) {
     animation_settings.front()->AddObserver(new AnimationObserver{
-        base::BindOnce(&OverviewItem::OnItemAddedAnimationCompleted,
+        base::BindOnce(&OverviewItem::OnItemSpawnedAnimationCompleted,
                        weak_ptr_factory_.GetWeakPtr())});
   }
   SetTransform(window, target_transform);
@@ -1122,8 +1128,7 @@ void OverviewItem::PerformItemAddedAnimation(
     aura::Window* cannot_snap_window = cannot_snap_widget_->GetNativeWindow();
     cannot_snap_window->layer()->SetOpacity(kInitialScaler);
     ScopedOverviewAnimationSettings label_animation_settings(
-        OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW,
-        cannot_snap_window);
+        OVERVIEW_ANIMATION_SPAWN_ITEM_IN_OVERVIEW, cannot_snap_window);
     cannot_snap_window->layer()->SetOpacity(kTargetScaler);
   }
 }
@@ -1156,8 +1161,8 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
       gfx::TransformBetweenRects(screen_rect, overview_item_bounds);
 
   if (is_first_update &&
-      animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW) {
-    PerformItemAddedAnimation(window, transform);
+      animation_type == OVERVIEW_ANIMATION_SPAWN_ITEM_IN_OVERVIEW) {
+    PerformItemSpawnedAnimation(window, transform);
     return;
   }
 

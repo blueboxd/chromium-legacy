@@ -2541,7 +2541,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5447306928176905178">Habilitar el suministro de información sobre la memoria (tamaño de pila de archivos JavaScript) a las páginas (obsoleto)</translation>
 <translation id="5457065417344056871">Habilitar modo de invitado en el navegador</translation>
 <translation id="5457924070961220141">Te permite configurar el procesador HTML predeterminado cuando se instala <ph name="PRODUCT_FRAME_NAME" />. La configuración predeterminada que se usa cuando esta política no se configura es permitir que el navegador del host realice la representación, pero puedes anular esta opción y hacer que <ph name="PRODUCT_FRAME_NAME" /> muestre páginas HTML de forma predeterminada.</translation>
-<translation id="5458584148602890023">Habilitar el cambio de pico de consumo de energía</translation>
 <translation id="5464816904705580310">Permite establecer parámetros de configuración para los usuarios administrados.</translation>
 <translation id="546726650689747237">Demora de atenuación de pantalla con alimentación de CA</translation>
 <translation id="5469143988693423708">Permitir que el usuario ejecute Crostini</translation>

@@ -108,10 +108,10 @@
     <messages fallback_to_english="true">
       <!-- Touch To Fill -->
       <message name="IDS_TOUCH_TO_FILL_SHEET_TITLE" desc="Header for Touch To Fill sheet where users can pick a credential to fill into a form to.">
-        Pick your account
+        Choose an account
       </message>
       <message name="IDS_TOUCH_TO_FILL_SHEET_SUBTITLE" desc="Subtitle for Touch To Fill sheet where users can pick a credential to fill into a form to.">
-        Sign in to <ph name="SITE_NAME">%1$s<ex>airbnb.com</ex></ph> using Chrome
+        for <ph name="SITE_NAME">%1$s<ex>airbnb.com</ex></ph>
       </message>
       <message name="IDS_TOUCH_TO_FILL_CONTENT_DESCRIPTION" desc="Accessibility string read when the Touch To Fill bottom sheet is opened. It describes the bottom sheet where a user can pick a credential to fill into a password form.">
         List of credentials to be filled on touch.
@@ -124,9 +124,6 @@
       </message>
       <message name="IDS_TOUCH_TO_FILL_SHEET_CLOSED" desc="Accessibility string read when the Touch To Fill bottom sheet showing a list of the user's credentials is closed.">
         List of credentials to be filled on touch is closed.
-      </message>
-      <message name="IDS_TOUCH_TO_FILL_USE_CREDENTIAL" desc="Text that is shown on every credential entry in Touch To Fill bottom sheet. Tapping on the credential entry will use that credential entry to sign into the currently opened website.">
-        Use
       </message>
     </messages>
   </release>

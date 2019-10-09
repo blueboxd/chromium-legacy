@@ -372,10 +372,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // be removed.
   bool IsProvisional() const;
 
-  // Returns whether the frame is trying to save network data by showing a
-  // preview.
-  bool IsUsingDataSavingPreview() const;
-
   // True if AdTracker heuristics have determined that this frame is an ad.
   // Calculated in the constructor but LocalFrames created on behalf of OOPIF
   // aren't set until just before commit (ReadyToCommitNavigation time) by the

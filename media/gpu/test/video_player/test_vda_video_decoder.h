@@ -13,7 +13,9 @@
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/base/video_decoder.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/test/video_player/video_decoder_client.h"
 #include "media/video/video_decode_accelerator.h"
 
@@ -36,7 +38,8 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   // delegated to the underlying VDA.
   TestVDAVideoDecoder(AllocationMode allocation_mode,
                       const gfx::ColorSpace& target_color_space,
-                      FrameRenderer* const frame_renderer);
+                      FrameRenderer* const frame_renderer,
+                      gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
   ~TestVDAVideoDecoder() override;
 
   // media::VideoDecoder implementation
@@ -97,6 +100,11 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
 
   // Frame renderer used to manage GL context.
   FrameRenderer* const frame_renderer_;
+
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+  // Owned by VideoDecoderClient.
+  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
   // Map of video frames the decoder uses as output, keyed on picture buffer id.
   std::map<int32_t, scoped_refptr<VideoFrame>> video_frames_;

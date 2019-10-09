@@ -108,6 +108,10 @@ void DumpAccessibilityTestBase::SetUp() {
 
   // Enable exposing "display: none" nodes to the browser process for testing.
   enabled_features.emplace_back(
+      features::kEnableAccessibilityExposeARIAAnnotations);
+
+  // Enable exposing ARIA Annotation roles.
+  enabled_features.emplace_back(
       features::kEnableAccessibilityExposeDisplayNone);
 
   // TODO(dmazzoni): DumpAccessibilityTree expectations are based on the

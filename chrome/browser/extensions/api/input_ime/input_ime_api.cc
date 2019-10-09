@@ -154,10 +154,6 @@ void ImeObserver::OnDeactivated(const std::string& component_id) {
 void ImeObserver::OnCompositionBoundsChanged(
     const std::vector<gfx::Rect>& bounds) {}
 
-bool ImeObserver::IsInterestedInKeyEvent() const {
-  return ShouldForwardKeyEvent();
-}
-
 void ImeObserver::OnSurroundingTextChanged(const std::string& component_id,
                                            const std::string& text,
                                            int cursor_pos,

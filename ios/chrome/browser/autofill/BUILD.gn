@@ -76,6 +76,9 @@ source_set("autofill") {
     "//ui/base",
     "//url",
   ]
+  public_deps = [
+    ":constants",
+  ]
   libs = [ "QuartzCore.framework" ]
 }
 
@@ -123,6 +126,14 @@ source_set("autofill_internal") {
     "//url",
   ]
   libs = [ "UIKit.framework" ]
+}
+
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "form_suggestion_constants.h",
+    "form_suggestion_constants.mm",
+  ]
 }
 
 source_set("unit_tests") {

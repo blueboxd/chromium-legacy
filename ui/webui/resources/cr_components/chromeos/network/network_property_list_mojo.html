@@ -24,7 +24,7 @@
       }
     </style>
     <template is="dom-repeat" items="[[fields]]"
-        filter="[[computeFilter_(prefix, propertyDict, editFieldTypes)]]">
+        filter="[[computeFilter_(prefix, editFieldTypes, propertyDict)]]">
       <div class="property-box single-column two-line stretch">
         <!-- Property label -->
         <div class="layout horizontal center">
@@ -32,22 +32,22 @@
           <template is="dom-if" restamp
               if="[[isEditType_(item, editFieldTypes)]]">
             <cr-policy-network-indicator-mojo
-                property="[[getProperty_(item, propertyDict)]]">
+                property="[[getIndicatorProperty_(item, propertyDict)]]">
             </cr-policy-network-indicator-mojo>
           </template>
         </div>
         <!-- Uneditable property value -->
         <template is="dom-if" restamp
-            if="[[!showEditable_(item, propertyDict, editFieldTypes)]]">
+            if="[[!showEditable_(item, editFieldTypes, propertyDict)]]">
           <div class="secondary">
             [[getPropertyValue_(item, prefix, propertyDict)]]
           </div>
         </template>
         <!-- Editable property value -->
         <template is="dom-if" restamp
-            if="[[showEditable_(item, propertyDict, editFieldTypes)]]">
+            if="[[showEditable_(item, editFieldTypes, propertyDict)]]">
           <cr-input id="[[item]]"
-              readonly="[[!isEditable_(item, propertyDict, editFieldTypes)]]"
+              readonly="[[!isEditable_(item, editFieldTypes, propertyDict)]]"
               value="[[getPropertyValue_(item, prefix, propertyDict)]]"
               on-change="onValueChange_"
               type="[[getEditInputType_(item, editFieldTypes)]]">

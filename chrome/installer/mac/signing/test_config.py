@@ -9,12 +9,14 @@ class TestConfig(config.CodeSignConfig):
 
     def __init__(self,
                  identity='[IDENTITY]',
+                 installer_identity='[INSTALLER-IDENTITY]',
                  keychain='[KEYCHAIN]',
                  notary_user='[NOTARY-USER]',
                  notary_password='[NOTARY-PASSWORD]',
                  notary_asc_provider=None):
-        super(TestConfig, self).__init__(identity, keychain, notary_user,
-                                         notary_password, notary_asc_provider)
+        super(TestConfig,
+              self).__init__(identity, installer_identity, keychain,
+                             notary_user, notary_password, notary_asc_provider)
 
     @property
     def app_product(self):

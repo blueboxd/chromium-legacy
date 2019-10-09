@@ -9,6 +9,7 @@ import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/ui.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//components/ui_devtools/devtools.gni")
+import("//content/common/features.gni")
 import("//gpu/vulkan/features.gni")
 import("//media/media_options.gni")
 import("//net/features.gni")
@@ -993,6 +994,7 @@ jumbo_source_set("browser") {
     "indexed_db/indexed_db_database_error.h",
     "indexed_db/indexed_db_dispatcher_host.cc",
     "indexed_db/indexed_db_dispatcher_host.h",
+    "indexed_db/indexed_db_execution_context.h",
     "indexed_db/indexed_db_factory.h",
     "indexed_db/indexed_db_factory_impl.cc",
     "indexed_db/indexed_db_factory_impl.h",
@@ -2072,8 +2074,7 @@ jumbo_source_set("browser") {
 
   # Desktop/Window/WebContents screen capture implementations, conditionally
   # built depending on the available implementations for each platform.
-  if (is_linux || is_mac || is_win) {
-    defines += [ "ENABLE_SCREEN_CAPTURE=1" ]
+  if (enable_screen_capture && !is_android) {
     sources += [
       "media/capture/desktop_capture_device.cc",
       "media/capture/desktop_capture_device.h",
@@ -2437,10 +2438,7 @@ jumbo_source_set("browser") {
     if (enable_vulkan) {
       deps += [ "//gpu/vulkan/init" ]
     }
-    defines += [
-      "APPCACHE_USE_SIMPLE_CACHE",
-      "ENABLE_SCREEN_CAPTURE=1",
-    ]
+    defines += [ "APPCACHE_USE_SIMPLE_CACHE" ]
     libs += [ "jnigraphics" ]
   } else {
     # Not Android.

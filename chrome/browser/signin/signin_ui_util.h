@@ -53,12 +53,6 @@ void EnableSyncFromPromo(Browser* browser,
                          bool is_default_promo_account);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-// Returns the display email string for the given account.  If the profile
-// has not been migrated to use gaia ids, then its possible for the display
-// to not ne known yet.  In this case, use |account_id|, which is assumed to
-// be an email address.
-std::string GetDisplayEmail(Profile* profile, const std::string& account_id);
-
 // Returns the list of all accounts that have a token. The default account in
 // the Gaia cookies will be the first account in the list.
 std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile);

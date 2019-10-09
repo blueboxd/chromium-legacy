@@ -18,7 +18,7 @@
 #include "base/trace_event/trace_event.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
-#include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_fallback.h"
 #include "ui/gfx/linux/fontconfig_util.h"
@@ -90,9 +90,10 @@ sk_sp<SkTypeface> GetSkTypefaceFromPathAndIndex(const base::FilePath& font_path,
   if (entry != cache->end())
     return sk_sp<SkTypeface>(entry->second);
 
+  sk_sp<SkFontMgr> font_mgr = SkFontMgr::RefDefault();
   std::string filename = font_path.AsUTF8Unsafe();
   sk_sp<SkTypeface> typeface =
-      SkTypeface::MakeFromFile(filename.c_str(), ttc_index);
+      font_mgr->makeFromFile(filename.c_str(), ttc_index);
   (*cache)[key] = typeface;
 
   return sk_sp<SkTypeface>(typeface);

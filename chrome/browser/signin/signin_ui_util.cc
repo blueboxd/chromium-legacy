@@ -175,23 +175,6 @@ void EnableSyncFromPromo(
 }
 }  // namespace internal
 
-std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile);
-  std::string email =
-      identity_manager
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              account_id)
-          ->email;
-  if (email.empty()) {
-    DCHECK_EQ(
-        signin::IdentityManager::AccountIdMigrationState::MIGRATION_NOT_STARTED,
-        identity_manager->GetAccountIdMigrationState());
-    return account_id;
-  }
-  return email;
-}
-
 std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   // Fetch account ids for accounts that have a token.
   signin::IdentityManager* identity_manager =

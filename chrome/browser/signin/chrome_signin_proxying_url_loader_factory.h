@@ -78,10 +78,6 @@ class ProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   void RemoveRequest(InProgressRequest* request);
   void MaybeDestroySelf();
 
-  const content::WebContents::Getter& web_contents_getter() {
-    return web_contents_getter_;
-  }
-
   std::unique_ptr<HeaderModificationDelegate> delegate_;
   content::WebContents::Getter web_contents_getter_;
 

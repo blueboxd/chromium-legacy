@@ -120,11 +120,6 @@ class DiceResponseHandler : public KeyedService {
   // Deletes the token fetcher.
   void DeleteTokenFetcher(DiceTokenFetcher* token_fetcher);
 
-  // Returns true if it is acceptable to get a new token for the account.
-  // Always returns true when using kDice.
-  bool CanGetTokenForAccount(const std::string& gaia_id,
-                             const std::string& email);
-
   // Process the Dice signin action.
   void ProcessDiceSigninHeader(
       const std::string& gaia_id,

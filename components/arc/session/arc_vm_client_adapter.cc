@@ -32,11 +32,19 @@ chromeos::ConciergeClient* GetConciergeClient() {
 }  // namespace
 
 class ArcVmClientAdapter : public ArcClientAdapter,
-                           public chromeos::ConciergeClient::VmObserver {
+                           public chromeos::ConciergeClient::VmObserver,
+                           public chromeos::ConciergeClient::Observer {
  public:
-  ArcVmClientAdapter() { GetConciergeClient()->AddVmObserver(this); }
+  ArcVmClientAdapter() {
+    auto* client = GetConciergeClient();
+    client->AddVmObserver(this);
+    client->AddObserver(this);
+  }
+
   ~ArcVmClientAdapter() override {
-    GetConciergeClient()->RemoveVmObserver(this);
+    auto* client = GetConciergeClient();
+    client->RemoveObserver(this);
+    client->RemoveVmObserver(this);
   }
 
   // chromeos::ConciergeClient::VmObserver overrides:
@@ -95,6 +103,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   void StopArcInstance() override {
     VLOG(1) << "Stopping arcvm";
+    // TODO(yusukes): This method should eventually call ArcInstanceStopped()
+    // even when only the (yet nonexistent) 'mini' VM is running.
     std::vector<std::string> env{{"USER_ID_HASH=" + user_id_hash_}};
     chromeos::UpstartClient::Get()->StopJob(
         "arcvm", env,
@@ -106,6 +116,16 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     DCHECK(!hash.empty());
     user_id_hash_ = hash;
   }
+
+  // chromeos::ConciergeClient::Observer overrides:
+  void ConciergeServiceStopped() override {
+    VLOG(1) << "vm_concierge stopped";
+    // At this point, all crosvm processes are gone. Notify the observer of the
+    // event.
+    OnArcInstanceStopped();
+  }
+
+  void ConciergeServiceRestarted() override {}
 
  private:
   void OnArcInstanceStopped() {

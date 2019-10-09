@@ -47,13 +47,6 @@ bool SigninGlobalError::HasError() {
   return HasMenuItem();
 }
 
-void SigninGlobalError::AttemptToFixError(Browser* browser) {
-  if (!HasError())
-    return;
-
-  ExecuteMenuItem(browser);
-}
-
 void SigninGlobalError::Shutdown() {
   error_controller_->RemoveObserver(this);
   error_controller_ = NULL;

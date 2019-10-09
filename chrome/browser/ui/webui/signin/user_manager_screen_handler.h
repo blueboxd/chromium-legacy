@@ -69,7 +69,6 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
   void HandleRemoveUser(const base::ListValue* args);
   void HandleAreAllProfilesLocked(const base::ListValue* args);
   void HandleRemoveUserWarningLoadStats(const base::ListValue* args);
-  void HandleGetRemoveWarningDialogMessage(const base::ListValue* args);
 
   // Function used to gather statistics from a profile.
   void GatherStatistics(base::Time start_time, Profile* profile);

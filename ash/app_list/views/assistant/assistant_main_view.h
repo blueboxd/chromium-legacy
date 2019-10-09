@@ -13,18 +13,14 @@
 #include "ui/views/view.h"
 
 namespace ash {
+class AssistantDialogPlate;
+class AppListAssistantMainStage;
 class AssistantViewDelegate;
-}  // namespace ash
-
-namespace app_list {
-
-class AssistantMainStage;
-class DialogPlate;
 
 class APP_LIST_EXPORT AssistantMainView : public views::View,
-                                          public ash::AssistantUiModelObserver {
+                                          public AssistantUiModelObserver {
  public:
-  explicit AssistantMainView(ash::AssistantViewDelegate* delegate);
+  explicit AssistantMainView(AssistantViewDelegate* delegate);
   ~AssistantMainView() override;
 
   // views::View:
@@ -33,12 +29,12 @@ class APP_LIST_EXPORT AssistantMainView : public views::View,
   void ChildVisibilityChanged(views::View* child) override;
   void RequestFocus() override;
 
-  // ash::AssistantUiModelObserver:
+  // AssistantUiModelObserver:
   void OnUiVisibilityChanged(
-      ash::AssistantVisibility new_visibility,
-      ash::AssistantVisibility old_visibility,
-      base::Optional<ash::AssistantEntryPoint> entry_point,
-      base::Optional<ash::AssistantExitPoint> exit_point) override;
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
 
   // Returns the first focusable view or nullptr to defer to views::FocusSearch.
   views::View* FindFirstFocusableView();
@@ -46,14 +42,14 @@ class APP_LIST_EXPORT AssistantMainView : public views::View,
  private:
   void InitLayout();
 
-  ash::AssistantViewDelegate* const delegate_;
+  AssistantViewDelegate* const delegate_;
 
-  DialogPlate* dialog_plate_;            // Owned by view hierarchy.
-  AssistantMainStage* main_stage_;       // Owned by view hierarchy.
+  AssistantDialogPlate* dialog_plate_;     // Owned by view hierarchy.
+  AppListAssistantMainStage* main_stage_;  // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(AssistantMainView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_ASSISTANT_ASSISTANT_MAIN_VIEW_H_

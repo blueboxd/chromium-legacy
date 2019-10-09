@@ -15,7 +15,7 @@
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 
-namespace app_list {
+namespace ash {
 namespace test {
 
 namespace {
@@ -124,4 +124,4 @@ void AppsGridViewTestApi::WaitForItemMoveAnimationDone() {
 }
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace ash

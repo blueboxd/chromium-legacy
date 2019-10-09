@@ -29,7 +29,7 @@
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
 
-namespace app_list {
+namespace ash {
 namespace test {
 
 namespace {
@@ -325,7 +325,7 @@ TEST_F(AppListMainViewTest, DISABLED_DragReparentItemOntoPageSwitcher) {
   const int kNumApps = 30;
 
   // Ensure we are on the apps grid view page.
-  app_list::ContentsView* contents_view = GetContentsView();
+  ContentsView* contents_view = GetContentsView();
   contents_view->SetActiveState(ash::AppListState::kStateApps);
   contents_view->Layout();
 
@@ -413,4 +413,4 @@ TEST_F(AppListMainViewTest, DISABLED_ReparentSingleItemOntoSelf) {
 }
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace ash

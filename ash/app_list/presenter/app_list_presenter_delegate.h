@@ -13,7 +13,7 @@ namespace aura {
 class Window;
 }  // namespace aura
 
-namespace app_list {
+namespace ash {
 
 class AppListPresenterImpl;
 class AppListView;
@@ -63,6 +63,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegate {
   virtual bool IsVisible() = 0;
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_DELEGATE_H_

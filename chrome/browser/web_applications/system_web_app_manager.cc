@@ -48,7 +48,7 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
     constexpr char kCameraAppPWAURL[] = "chrome://camera/pwa.html";
     infos[SystemAppType::CAMERA].install_url = GURL(kCameraAppPWAURL);
     infos[SystemAppType::CAMERA].uninstall_and_replace = {
-        app_list::kInternalAppIdCamera};
+        ash::kInternalAppIdCamera};
   }
 
   if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
@@ -56,12 +56,12 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
     infos[SystemAppType::SETTINGS].install_url = GURL(kChromeSettingsPWAURL);
     infos[SystemAppType::SETTINGS].uninstall_and_replace = {
         chromeos::default_web_apps::kSettingsAppId,
-        app_list::kInternalAppIdSettings};
+        ash::kInternalAppIdSettings};
   } else {
     constexpr char kChromeSettingsPWAURL[] = "chrome://settings/pwa.html";
     infos[SystemAppType::SETTINGS].install_url = GURL(kChromeSettingsPWAURL);
     infos[SystemAppType::SETTINGS].uninstall_and_replace = {
-        app_list::kInternalAppIdSettings};
+        ash::kInternalAppIdSettings};
   }
   // Large enough to see the heading text "Settings" in the top-left.
   infos[SystemAppType::SETTINGS].minimum_window_size = {300, 100};

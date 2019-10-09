@@ -322,8 +322,7 @@ TEST_F(ChromeAppIconWithModelTest, IconsTheSame) {
   // Load reference icon sized for the app list.
   TestAppIcon reference_icon_app_list(
       profile(), kTestAppId,
-      app_list::AppListConfig::instance().grid_icon_dimension(),
-      resize_function);
+      ash::AppListConfig::instance().grid_icon_dimension(), resize_function);
 
   // Wait until reference data is loaded.
   reference_icon_app_list.image_skia().EnsureRepsForSupportedScales();
@@ -337,7 +336,7 @@ TEST_F(ChromeAppIconWithModelTest, IconsTheSame) {
   // Load reference icon sized for the search result.
   TestAppIcon reference_icon_search(
       profile(), kTestAppId,
-      app_list::AppListConfig::instance().suggestion_chip_icon_dimension(),
+      ash::AppListConfig::instance().suggestion_chip_icon_dimension(),
       resize_function);
 
   // Wait until reference data is loaded.

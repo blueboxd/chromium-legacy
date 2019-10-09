@@ -13,7 +13,7 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/window/dialog_client_view.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -133,4 +133,4 @@ void RemoveQueryConfirmationDialog::UpdateBounds() {
   widget->SetBounds(widget_rect);
 }
 
-}  // namespace app_list
+}  // namespace ash

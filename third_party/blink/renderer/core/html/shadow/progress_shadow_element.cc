@@ -41,7 +41,7 @@ ProgressShadowElement::ProgressShadowElement(Document& document)
 }
 
 HTMLProgressElement* ProgressShadowElement::ProgressElement() const {
-  return ToHTMLProgressElement(OwnerShadowHost());
+  return To<HTMLProgressElement>(OwnerShadowHost());
 }
 
 scoped_refptr<ComputedStyle>

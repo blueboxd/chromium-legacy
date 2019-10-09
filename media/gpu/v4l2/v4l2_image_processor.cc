@@ -20,6 +20,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/video_types.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
 

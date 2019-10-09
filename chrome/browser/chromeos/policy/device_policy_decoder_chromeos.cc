@@ -435,13 +435,17 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
   }
 
   if (policy.has_device_login_screen_system_info_enforced()) {
-    const em::DeviceLoginScreenSystemInfoEnforcedProto& container(
+    const em::BooleanPolicyProto& container(
         policy.device_login_screen_system_info_enforced());
-    if (container.has_enabled()) {
-      policies->Set(
-          key::kDeviceLoginScreenSystemInfoEnforced, POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-          std::make_unique<base::Value>(container.enabled()), nullptr);
+    if (container.has_value()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(container.has_policy_options(),
+                         container.policy_options(), &level)) {
+        policies->Set(key::kDeviceLoginScreenSystemInfoEnforced, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(container.value()),
+                      nullptr);
+      }
     }
   }
 

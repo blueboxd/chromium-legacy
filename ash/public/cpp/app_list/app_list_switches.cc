@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 
-namespace app_list {
+namespace ash {
 namespace switches {
 
 // Specifies the chrome-extension:// URL for the contents of an additional page
@@ -27,4 +27,4 @@ bool ShouldNotDismissOnBlur() {
 }
 
 }  // namespace switches
-}  // namespace app_list
+}  // namespace ash

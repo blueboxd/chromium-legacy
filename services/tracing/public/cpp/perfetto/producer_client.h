@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
@@ -90,7 +90,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   perfetto::SharedMemoryArbiter* GetInProcessShmemArbiter() override;
 
   void BindClientAndHostPipesForTesting(
-      mojom::ProducerClientRequest,
+      mojo::PendingReceiver<mojom::ProducerClient>,
       mojo::PendingRemote<mojom::ProducerHost>);
   void ResetSequenceForTesting();
 
@@ -100,11 +100,12 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
  private:
   friend class base::NoDestructor<ProducerClient>;
 
-  void BindClientAndHostPipesOnSequence(mojom::ProducerClientRequest,
-                                        mojom::ProducerHostPtrInfo);
+  void BindClientAndHostPipesOnSequence(
+      mojo::PendingReceiver<mojom::ProducerClient>,
+      mojo::PendingRemote<mojom::ProducerHost>);
 
   uint32_t data_sources_tracing_ = 0;
-  std::unique_ptr<mojo::Binding<mojom::ProducerClient>> binding_;
+  std::unique_ptr<mojo::Receiver<mojom::ProducerClient>> receiver_;
   mojom::ProducerHostPtr producer_host_;
   std::unique_ptr<MojoSharedMemory> shared_memory_;
   std::unique_ptr<perfetto::SharedMemoryArbiter> shared_memory_arbiter_;

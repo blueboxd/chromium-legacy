@@ -18,7 +18,7 @@ class AssistantPageViewTest : public AssistantAshTestBase {
 };
 
 TEST_F(AssistantPageViewTest, ShouldStartAtMinimumHeight) {
-  ShowAssistantUi();
+  ShowAssistantUi(AssistantEntryPoint::kLauncherSearchBox);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ash::kMinHeightEmbeddedDip, main_view()->size().height());
@@ -26,7 +26,7 @@ TEST_F(AssistantPageViewTest, ShouldStartAtMinimumHeight) {
 
 TEST_F(AssistantPageViewTest,
        ShouldRemainAtMinimumHeightWhenDisplayingOneLiner) {
-  ShowAssistantUi();
+  ShowAssistantUi(AssistantEntryPoint::kLauncherSearchBox);
 
   MockAssistantInteractionWithResponse("Short one-liner");
 
@@ -35,7 +35,7 @@ TEST_F(AssistantPageViewTest,
 }
 
 TEST_F(AssistantPageViewTest, ShouldGetBiggerWithMultilineText) {
-  ShowAssistantUi();
+  ShowAssistantUi(AssistantEntryPoint::kLauncherSearchBox);
 
   MockAssistantInteractionWithResponse(
       "This\ntext\nhas\na\nlot\nof\nlinebreaks.");
@@ -45,7 +45,7 @@ TEST_F(AssistantPageViewTest, ShouldGetBiggerWithMultilineText) {
 }
 
 TEST_F(AssistantPageViewTest, ShouldGetBiggerWhenWrappingTextLine) {
-  ShowAssistantUi();
+  ShowAssistantUi(AssistantEntryPoint::kLauncherSearchBox);
 
   MockAssistantInteractionWithResponse(
       "This is a very long text without any linebreaks. "

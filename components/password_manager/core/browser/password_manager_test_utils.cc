@@ -64,7 +64,7 @@ std::unique_ptr<PasswordForm> FillPasswordFormWithData(
   return form;
 }
 
-std::pair<std::pair<base::string16, const autofill::PasswordForm*>,
+std::pair<const autofill::PasswordForm*,
           std::unique_ptr<const autofill::PasswordForm>>
 CreateEntry(const std::string& username,
             const std::string& password,
@@ -75,9 +75,8 @@ CreateEntry(const std::string& username,
   form->password_value = base::ASCIIToUTF16(password);
   form->origin = origin_url;
   form->is_public_suffix_match = is_psl_match;
-  auto username_form_pair =
-      std::make_pair(base::ASCIIToUTF16(username), form.get());
-  return {std::move(username_form_pair), std::move(form)};
+  auto* form_raw = form.get();
+  return {form_raw, std::move(form)};
 }
 
 bool ContainsEqualPasswordFormsUnordered(

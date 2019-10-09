@@ -19,7 +19,9 @@
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
@@ -423,6 +425,25 @@ TEST_F(OfflinePageTabHelperTest, AbortedNavigationDoesNotResetOfflineInfo) {
   navigation->Start();
   navigation->AbortCommit();
   EXPECT_TRUE(tab_helper()->offline_page());
+}
+
+TEST_F(OfflinePageTabHelperTest, OfflinePageIsNotStoredInBackForwardCache) {
+  content::BackForwardCacheDisabledTester back_forward_cache_tester;
+
+  CreateNavigationSimulator(kTestPageUrl);
+  navigation_simulator()->Start();
+
+  SimulateOfflinePageLoad(kTestPageUrl, kTestMhtmlCreationTime,
+                          MHTMLLoadResult::kSuccess);
+
+  int process_id = web_contents()->GetMainFrame()->GetProcess()->GetID();
+  int main_frame_id = web_contents()->GetMainFrame()->GetRoutingID();
+
+  // Navigate away.
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                             kTestPageUrl);
+  EXPECT_TRUE(back_forward_cache_tester.IsDisabledForFrameWithReason(
+      process_id, main_frame_id, "OfflinePage"));
 }
 
 }  // namespace

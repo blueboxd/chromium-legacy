@@ -85,7 +85,7 @@ TEST_F(HomeButtonTest, SwipeUpToOpenFullscreenAppList) {
   // Swiping up less than the threshold should trigger a peeking app list.
   gfx::Point end = start;
   end.set_y(shelf->GetIdealBounds().bottom() -
-            app_list::AppListView::kDragSnapToPeekingThreshold + 10);
+            AppListView::kDragSnapToPeekingThreshold + 10);
   GetEventGenerator()->GestureScrollSequence(
       start, end, base::TimeDelta::FromMilliseconds(100), 4 /* steps */);
   GetAppListTestHelper()->WaitUntilIdle();
@@ -99,7 +99,7 @@ TEST_F(HomeButtonTest, SwipeUpToOpenFullscreenAppList) {
 
   // Swiping above the threshold should trigger a fullscreen app list.
   end.set_y(shelf->GetIdealBounds().bottom() -
-            app_list::AppListView::kDragSnapToPeekingThreshold - 10);
+            AppListView::kDragSnapToPeekingThreshold - 10);
   GetEventGenerator()->GestureScrollSequence(
       start, end, base::TimeDelta::FromMilliseconds(100), 4 /* steps */);
   base::RunLoop().RunUntilIdle();

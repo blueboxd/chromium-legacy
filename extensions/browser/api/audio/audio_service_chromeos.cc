@@ -36,6 +36,7 @@ api::audio::DeviceType GetAsAudioApiDeviceType(chromeos::AudioDeviceType type) {
     case chromeos::AUDIO_TYPE_USB:
       return api::audio::DEVICE_TYPE_USB;
     case chromeos::AUDIO_TYPE_BLUETOOTH:
+    case chromeos::AUDIO_TYPE_BLUETOOTH_NB_MIC:
       return api::audio::DEVICE_TYPE_BLUETOOTH;
     case chromeos::AUDIO_TYPE_HDMI:
       return api::audio::DEVICE_TYPE_HDMI;

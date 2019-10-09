@@ -37,7 +37,7 @@ class AppSyncUIStateWatcher;
 class Profile;
 
 class AppListClientImpl
-    : public app_list::AppListClient,
+    : public ash::AppListClient,
       public AppListControllerDelegate,
       public user_manager::UserManager::UserSessionStateObserver,
       public TemplateURLServiceObserver {
@@ -47,7 +47,7 @@ class AppListClientImpl
 
   static AppListClientImpl* GetInstance();
 
-  // app_list::AppListClient:
+  // ash::AppListClient:
   void OnAppListControllerDestroyed() override;
   void StartSearch(const base::string16& trimmed_query) override;
   void OpenSearchResult(const std::string& result_id,
@@ -131,7 +131,7 @@ class AppListClientImpl
   bool app_list_visible() const { return app_list_visible_; }
 
   // Returns a pointer to control the app list views in ash.
-  app_list::AppListController* GetAppListController() const;
+  ash::AppListController* GetAppListController() const;
 
   AppListControllerDelegate* GetControllerDelegate();
   Profile* GetCurrentAppListProfile() const;
@@ -181,7 +181,7 @@ class AppListClientImpl
   ScopedObserver<TemplateURLService, AppListClientImpl>
       template_url_service_observer_{this};
 
-  app_list::AppListController* app_list_controller_ = nullptr;
+  ash::AppListController* app_list_controller_ = nullptr;
 
   bool app_list_target_visibility_ = false;
   bool app_list_visible_ = false;

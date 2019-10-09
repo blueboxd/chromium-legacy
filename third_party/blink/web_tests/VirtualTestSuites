@@ -1090,6 +1090,11 @@
     "args": ["--enable-blink-features=CSSVariables2AtProperty"]
   },
   {
+    "prefix": "cache-storage-sequence",
+    "base": "external/wpt/service-workers",
+    "args": ["--disable-features=CacheStorageSequence"]
+  },
+  {
     "prefix": "conditional-appcache-delay",
     "base": "http/tests/loading/appcache-delay",
     "args": ["--enable-features=VerifyHTMLFetchedFromAppCacheBeforeDelay"]

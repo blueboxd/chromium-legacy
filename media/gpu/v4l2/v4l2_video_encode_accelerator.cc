@@ -32,6 +32,7 @@
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/gpu_video_encode_accelerator_helpers.h"
 #include "media/gpu/image_processor_factory.h"
 #include "media/gpu/linux/platform_video_frame_utils.h"
@@ -1346,7 +1347,7 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
   // First see if the device can use the provided format directly.
   std::vector<uint32_t> pix_fmt_candidates;
   uint32_t pix_fmt =
-      V4L2Device::VideoPixelFormatToV4L2PixFmt(input_format, false);
+      Fourcc::FromVideoPixelFormat(input_format, false).ToV4L2PixFmt();
   if (pix_fmt)
     pix_fmt_candidates.push_back(pix_fmt);
   // Second try preferred input formats for both single-planar and

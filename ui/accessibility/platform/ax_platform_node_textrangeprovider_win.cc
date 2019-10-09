@@ -12,10 +12,30 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 
-#define UIA_VALIDATE_TEXTRANGEPROVIDER_CALL()                        \
-  if (!owner() || !owner()->GetDelegate() || !start_->GetAnchor() || \
-      !end_->GetAnchor())                                            \
+#define UIA_VALIDATE_TEXTRANGEPROVIDER_CALL()              \
+  if (!owner() || !owner()->GetDelegate() || !start_ ||    \
+      !start_->GetAnchor() || !end_ || !end_->GetAnchor()) \
     return UIA_E_ELEMENTNOTAVAILABLE;
+#define UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_IN(in)       \
+  if (!owner() || !owner()->GetDelegate() || !start_ ||    \
+      !start_->GetAnchor() || !end_ || !end_->GetAnchor()) \
+    return UIA_E_ELEMENTNOTAVAILABLE;                      \
+  if (!in)                                                 \
+    return E_POINTER;
+#define UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(out)     \
+  if (!owner() || !owner()->GetDelegate() || !start_ ||    \
+      !start_->GetAnchor() || !end_ || !end_->GetAnchor()) \
+    return UIA_E_ELEMENTNOTAVAILABLE;                      \
+  if (!out)                                                \
+    return E_POINTER;                                      \
+  *out = {};
+#define UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_IN_1_OUT(in, out) \
+  if (!owner() || !owner()->GetDelegate() || !start_ ||         \
+      !start_->GetAnchor() || !end_ || !end_->GetAnchor())      \
+    return UIA_E_ELEMENTNOTAVAILABLE;                           \
+  if (!in || !out)                                              \
+    return E_POINTER;                                           \
+  *out = {};
 
 // Validate bounds calculated by AXPlatformNodeDelegate. Degenerate bounds
 // indicate the interface is not yet supported on the platform.
@@ -87,7 +107,7 @@ ITextRangeProvider* AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Clone(
     ITextRangeProvider** clone) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_CLONE);
-  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(clone);
 
   *clone = CreateTextRangeProvider(owner_, start_->Clone(), end_->Clone());
   return S_OK;
@@ -97,19 +117,16 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Compare(
     ITextRangeProvider* other,
     BOOL* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_COMPARE);
-  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_IN_1_OUT(other, result);
 
   CComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
-  if (other->QueryInterface(&other_provider) != S_OK) {
+  if (other->QueryInterface(&other_provider) != S_OK)
     return UIA_E_INVALIDOPERATION;
-  }
 
-  *result = FALSE;
   if (*start_ == *(other_provider->start_) &&
       *end_ == *(other_provider->end_)) {
     *result = TRUE;
   }
-
   return S_OK;
 }
 
@@ -119,29 +136,30 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::CompareEndpoints(
     TextPatternRangeEndpoint other_endpoint,
     int* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_COMPAREENDPOINTS);
-  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_IN_1_OUT(other, result);
 
   CComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
-  if (other->QueryInterface(&other_provider) != S_OK) {
+  if (other->QueryInterface(&other_provider) != S_OK)
     return UIA_E_INVALIDOPERATION;
-  }
 
   const AXPositionInstance& this_provider_endpoint =
       (this_endpoint == TextPatternRangeEndpoint_Start) ? start_ : end_;
-
   const AXPositionInstance& other_provider_endpoint =
       (other_endpoint == TextPatternRangeEndpoint_Start)
           ? other_provider->start_
           : other_provider->end_;
 
-  if (*this_provider_endpoint < *other_provider_endpoint) {
-    *result = -1;
-  } else if (*this_provider_endpoint > *other_provider_endpoint) {
-    *result = 1;
-  } else {
-    *result = 0;
-  }
+  base::Optional<int> comparison =
+      this_provider_endpoint->CompareTo(*other_provider_endpoint);
+  if (!comparison)
+    return UIA_E_INVALIDOPERATION;
 
+  if (comparison.value() < 0)
+    *result = -1;
+  else if (comparison.value() > 0)
+    *result = 1;
+  else
+    *result = 0;
   return S_OK;
 }
 
@@ -155,14 +173,6 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
   // is on the next TextUnit boundary, if one exists.
   switch (unit) {
     case TextUnit_Character: {
-      // Sometimes, the start endpoint will be positioned at the end of anchor,
-      // meaning the end endpoint will be positioned in another anchor. Because
-      // Windows ATs behave undesirably when the start and end endpoints are not
-      // in the same anchor (for character and word navigation), move the start
-      // endpoint to the start of the other anchor.
-      if (start_->AtEndOfAnchor() && !start_->AtEndOfDocument()) {
-        start_ = start_->AsPositionBeforeCharacter();
-      }
       // For characters, the start endpoint will always be on a TextUnit
       // boundary, thus we only need to move the end position.
       AXPositionInstance end_backup = end_->Clone();
@@ -186,6 +196,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
             AXBoundaryBehavior::CrossBoundary);
         DCHECK(!end_->IsNullPosition());
       }
+
+      NormalizeTextRange();
       break;
     }
     case TextUnit_Format:
@@ -219,15 +231,10 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
           AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       end_ = start_->CreateNextParagraphEndPosition(
           AXBoundaryBehavior::StopIfAlreadyAtBoundary);
-
-      if (!start_->AtEndOfDocument())
-        start_ = start_->AsPositionBeforeCharacter();
-      if (!end_->AtEndOfDocument())
-        end_ = end_->AsPositionBeforeCharacter();
       break;
     case TextUnit_Page: {
-      // If the document doesn't support pagination, default to document units
-      // per UIA spec
+      // Per UIA spec, if the document containing the current range doesn't
+      // support pagination, default to document navigation.
       const AXNode* common_anchor = start_->LowestCommonAnchor(*end_);
       if (common_anchor->tree()->HasPaginationSupport()) {
         start_ = start_->CreatePreviousPageStartPosition(
@@ -245,7 +252,6 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
     default:
       return UIA_E_NOTSUPPORTED;
   }
-
   return S_OK;
 }
 
@@ -283,7 +289,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindAttribute(
   //    match the attribute and value and there is a previously matched range.
   //    The previously matched range is the final match we found.
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_FINDATTRIBUTE);
-  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(result);
+  NormalizeTextRange();
 
   *result = nullptr;
   AXPositionInstance matched_range_start = nullptr;
@@ -370,7 +377,6 @@ HRESULT AXPlatformNodeTextRangeProviderWin::FindAttributeRange(
       break;
     }
   }
-
   return S_OK;
 }
 
@@ -380,13 +386,9 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindText(
     BOOL ignore_case,
     ITextRangeProvider** result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_FINDTEXT);
-  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
-  if (!result || !string)
-    return E_INVALIDARG;
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_IN_1_OUT(string, result);
 
-  *result = nullptr;
   base::string16 search_string(string);
-
   if (search_string.length() <= 0)
     return E_INVALIDARG;
 
@@ -407,6 +409,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
     TEXTATTRIBUTEID attribute_id,
     VARIANT* value) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETATTRIBUTEVALUE);
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(value);
+  NormalizeTextRange();
 
   base::win::ScopedVariant attribute_value_variant;
 
@@ -449,7 +453,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetBoundingRectangles(
     SAFEARRAY** rectangles) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETBOUNDINGRECTANGLES);
-  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(rectangles);
 
   *rectangles = nullptr;
   AXNodeRange range(start_->Clone(), end_->Clone());
@@ -493,7 +497,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetBoundingRectangles(
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetEnclosingElement(
     IRawElementProviderSimple** element) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETENCLOSINGELEMENT);
-  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(element);
 
   AXNode* common_anchor = start_->LowestCommonAnchor(*end_);
   DCHECK(common_anchor);
@@ -528,11 +532,11 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetEnclosingElement(
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetText(int max_count,
                                                          BSTR* text) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETTEXT);
-  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(text);
 
   // -1 is a valid value that signifies that the caller wants complete text.
-  // Any other negative value is invalid.
-  if (max_count < -1 || !text)
+  // Any other negative value is an invalid argument.
+  if (max_count < -1)
     return E_INVALIDARG;
 
   base::string16 full_text = GetString(max_count);
@@ -546,7 +550,6 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetText(int max_count,
   } else {
     *text = SysAllocString(L"");
   }
-
   return S_OK;
 }
 
@@ -554,9 +557,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Move(TextUnit unit,
                                                       int count,
                                                       int* units_moved) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_MOVE);
-  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
-
-  *units_moved = 0;
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(units_moved);
 
   // Per MSDN, move with zero count has no effect.
   if (count == 0)
@@ -618,7 +619,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
     int count,
     int* units_moved) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_MOVEENDPOINTBYUNIT);
-  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(units_moved);
 
   // Per MSDN, MoveEndpointByUnit with zero count has no effect.
   if (count == 0) {
@@ -660,12 +661,11 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
     default:
       return UIA_E_NOTSUPPORTED;
   }
-
   position_to_move = std::move(new_position);
 
   // If the start was moved past the end, create a degenerate range with the end
   // equal to the start. Do the equivalent if the end moved past the start.
-  if (*start_ > *end_) {
+  if (*end_->AsTreePosition() < *start_->AsTreePosition() || *end_ < *start_) {
     if (is_start_endpoint)
       end_ = start_->Clone();
     else
@@ -679,12 +679,11 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByRange(
     ITextRangeProvider* other,
     TextPatternRangeEndpoint other_endpoint) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_MOVEENPOINTBYRANGE);
-  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_IN(other);
 
   CComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
-  if (other->QueryInterface(&other_provider) != S_OK) {
+  if (other->QueryInterface(&other_provider) != S_OK)
     return UIA_E_INVALIDOPERATION;
-  }
 
   const AXPositionInstance& other_provider_endpoint =
       (other_endpoint == TextPatternRangeEndpoint_Start)
@@ -700,7 +699,6 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByRange(
     if (*start_ > *end_)
       start_ = end_->Clone();
   }
-
   return S_OK;
 }
 
@@ -819,7 +817,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ScrollIntoView(
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetChildren(
     SAFEARRAY** children) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETCHILDREN);
-  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(children);
 
   std::vector<gfx::NativeViewAccessible> descendants;
 
@@ -1003,6 +1001,19 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnitHelper(
 
   *units_moved = count;
   return current_endpoint;
+}
+
+void AXPlatformNodeTextRangeProviderWin::NormalizeTextRange() {
+  // Only normalize non-degenerate ranges.
+  if (*start_ != *end_) {
+    AXPositionInstance normalized_start = start_->AsPositionBeforeCharacter();
+    AXPositionInstance normalized_end = end_->AsPositionAfterCharacter();
+    DCHECK_EQ(*start_, *normalized_start);
+    DCHECK_EQ(*end_, *normalized_end);
+
+    start_ = std::move(normalized_start);
+    end_ = std::move(normalized_end);
+  }
 }
 
 }  // namespace ui

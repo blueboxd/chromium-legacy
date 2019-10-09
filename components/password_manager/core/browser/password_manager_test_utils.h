@@ -64,10 +64,10 @@ std::unique_ptr<autofill::PasswordForm> FillPasswordFormWithData(
     const PasswordFormData& form_data,
     bool use_federated_login = false);
 
-// Creates a new map entry in the |first| element of the returned pair. The
+// Creates a new vector entry in the |first| element of the returned pair. The
 // |second| element holds the PasswordForm that the |first| element points to.
 // That way, the pointer only points to a valid address in the called scope.
-std::pair<std::pair<base::string16, const autofill::PasswordForm*>,
+std::pair<const autofill::PasswordForm*,
           std::unique_ptr<const autofill::PasswordForm>>
 CreateEntry(const std::string& username,
             const std::string& password,

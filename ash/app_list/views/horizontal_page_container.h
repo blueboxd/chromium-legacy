@@ -15,13 +15,10 @@
 #include "base/macros.h"
 
 namespace ash {
-class PaginationController;
-}
-
-namespace app_list {
 
 class AppsContainerView;
 class HorizontalPage;
+class PaginationController;
 
 // HorizontalPageContainer contains a list of HorizontalPage that are
 // horizontally laid out. These pages can be switched with gesture scrolling.
@@ -94,6 +91,6 @@ class APP_LIST_EXPORT HorizontalPageContainer
   DISALLOW_COPY_AND_ASSIGN(HorizontalPageContainer);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_HORIZONTAL_PAGE_CONTAINER_H_

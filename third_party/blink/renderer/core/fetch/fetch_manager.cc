@@ -561,13 +561,12 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
     return;
   }
 
-  // "- |request|'s url's origin is |request|'s origin and the |CORS flag| is
-  //    unset"
-  // "- |request|'s url's scheme is 'data' and |request|'s same-origin data
-  //    URL flag is set"
-  // "- |request|'s url's scheme is 'about'"
+  // "- |request|'s url's origin is same origin with |request|'s origin,
+  //    |request|'s tainted origin flag is unset, and the CORS flag is unset"
+  // Note tainted origin flag is always unset here.
   // Note we don't support to call this method with |CORS flag|
-  // "- |request|'s mode is |navigate|".
+  // "- |request|'s current URL's scheme is |data|"
+  // "- |request|'s mode is |navigate| or |websocket|".
   bool is_target_same_origin_as_initiator =
       SecurityOrigin::Create(fetch_request_data_->Url())
           ->IsSameSchemeHostPort(fetch_request_data_->Origin().get());
@@ -578,8 +577,7 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
               fetch_request_data_->IsolatedWorldOrigin().get());
   if (is_target_same_origin_as_initiator ||
       is_target_same_origin_as_isolated_world ||
-      (fetch_request_data_->Url().ProtocolIsData() &&
-       fetch_request_data_->SameOriginDataURLFlag()) ||
+      fetch_request_data_->Url().ProtocolIsData() ||
       network::IsNavigationRequestMode(fetch_request_data_->Mode())) {
     // "The result of performing a scheme fetch using request."
     PerformSchemeFetch(exception_state);
@@ -707,8 +705,6 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   request.SetRequestContext(fetch_request_data_->Context());
   request.SetHttpMethod(fetch_request_data_->Method());
   request.SetFetchWindowId(fetch_request_data_->WindowId());
-  request.SetShouldAlsoUseFactoryBoundOriginForCors(
-      fetch_request_data_->ShouldAlsoUseFactoryBoundOriginForCors());
 
   switch (fetch_request_data_->Mode()) {
     case RequestMode::kSameOrigin:

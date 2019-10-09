@@ -131,17 +131,17 @@ std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
 // parameter is first for binding purposes.
 base::Optional<ModelError> ParseSpecificsOnBackendSequence(
     ClientIdToSpecifics* all_data,
-    std::string* local_session_name,
+    std::string* local_personalizable_device_name,
     std::unique_ptr<ModelTypeStore::RecordList> record_list) {
   DCHECK(all_data);
   DCHECK(all_data->empty());
-  DCHECK(local_session_name);
+  DCHECK(local_personalizable_device_name);
   DCHECK(record_list);
 
-  // For convenience, we get the session name (i.e. local device name) here,
+  // For convenience, we get the user personalized local device name here,
   // since we're running on the backend sequence, because the function is
   // blocking.
-  *local_session_name = GetSessionNameBlocking();
+  *local_personalizable_device_name = GetPersonalizableDeviceNameBlocking();
 
   for (const Record& r : *record_list) {
     std::unique_ptr<DeviceInfoSpecifics> specifics =
@@ -210,7 +210,7 @@ base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
   DCHECK(!local_cache_guid_.empty());
 
   local_device_info_provider_->Initialize(local_cache_guid_,
-                                          local_session_name_);
+                                          local_personalizable_device_name_);
 
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   for (const auto& change : entity_data) {
@@ -402,24 +402,25 @@ void DeviceInfoSyncBridge::OnStoreCreated(
   auto all_data = std::make_unique<ClientIdToSpecifics>();
   ClientIdToSpecifics* all_data_copy = all_data.get();
 
-  auto local_session_name = std::make_unique<std::string>();
-  std::string* local_session_name_copy = local_session_name.get();
+  auto local_personalizable_device_name = std::make_unique<std::string>();
+  std::string* local_personalizable_device_name_copy =
+      local_personalizable_device_name.get();
 
   store_->ReadAllDataAndPreprocess(
       base::BindOnce(&ParseSpecificsOnBackendSequence,
                      base::Unretained(all_data_copy),
-                     base::Unretained(local_session_name_copy)),
+                     base::Unretained(local_personalizable_device_name_copy)),
       base::BindOnce(&DeviceInfoSyncBridge::OnReadAllData,
                      weak_ptr_factory_.GetWeakPtr(), std::move(all_data),
-                     std::move(local_session_name)));
+                     std::move(local_personalizable_device_name)));
 }
 
 void DeviceInfoSyncBridge::OnReadAllData(
     std::unique_ptr<ClientIdToSpecifics> all_data,
-    std::unique_ptr<std::string> local_session_name,
+    std::unique_ptr<std::string> local_personalizable_device_name,
     const base::Optional<syncer::ModelError>& error) {
   DCHECK(all_data);
-  DCHECK(local_session_name);
+  DCHECK(local_personalizable_device_name);
 
   if (error) {
     change_processor()->ReportError(*error);
@@ -427,7 +428,8 @@ void DeviceInfoSyncBridge::OnReadAllData(
   }
 
   all_data_ = std::move(*all_data);
-  local_session_name_ = std::move(*local_session_name);
+  local_personalizable_device_name_ =
+      std::move(*local_personalizable_device_name);
 
   store_->ReadAllMetadata(
       base::BindOnce(&DeviceInfoSyncBridge::OnReadAllMetadata,
@@ -479,7 +481,7 @@ void DeviceInfoSyncBridge::OnReadAllMetadata(
   // initialize the provider immediately.
   local_cache_guid_ = local_cache_guid_in_metadata;
   local_device_info_provider_->Initialize(local_cache_guid_,
-                                          local_session_name_);
+                                          local_personalizable_device_name_);
 
   // This probably isn't strictly needed, but in case the cache_guid has changed
   // we save the new one to prefs.

@@ -199,10 +199,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static bool is_revalidating(const network::ResourceRequest& request) {
     return request.is_revalidating;
   }
-  static bool should_also_use_factory_bound_origin_for_cors(
-      const network::ResourceRequest& request) {
-    return request.should_also_use_factory_bound_origin_for_cors;
-  }
   static const base::Optional<base::UnguessableToken>& throttling_profile_id(
       const network::ResourceRequest& request) {
     return request.throttling_profile_id;

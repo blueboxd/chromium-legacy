@@ -20,6 +20,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/color_plane_layout.h"
 #include "media/base/video_types.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/generic_v4l2_device.h"
 #include "media/gpu/v4l2/v4l2_decode_surface.h"
@@ -1152,69 +1153,11 @@ scoped_refptr<V4L2Device> V4L2Device::Create() {
 }
 
 // static
-VideoPixelFormat V4L2Device::V4L2PixFmtToVideoPixelFormat(uint32_t pix_fmt) {
-  switch (pix_fmt) {
-    case V4L2_PIX_FMT_NV12:
-    case V4L2_PIX_FMT_NV12M:
-      return PIXEL_FORMAT_NV12;
-
-    // V4L2_PIX_FMT_MT21C is only used for MT8173 hardware video decoder output
-    // and should be converted by MT8173 image processor for compositor to
-    // render. Since it is an intermediate format for video decoder,
-    // VideoPixelFormat shall not have its mapping. However, we need to create a
-    // VideoFrameLayout for the format to process the intermediate frame. Hence
-    // we map V4L2_PIX_FMT_MT21C to PIXEL_FORMAT_NV12 as their layout are the
-    // same.
-    case V4L2_PIX_FMT_MT21C:
-    // V4L2_PIX_FMT_MM21 is used for MT8183 hardware video decoder. It is
-    // similar to V4L2_PIX_FMT_MT21C but is not compressed ; thus it can also
-    // be mapped to PIXEL_FORMAT_NV12.
-    case V4L2_PIX_FMT_MM21:
-      return PIXEL_FORMAT_NV12;
-
-    case V4L2_PIX_FMT_YUV420:
-    case V4L2_PIX_FMT_YUV420M:
-      return PIXEL_FORMAT_I420;
-
-    case V4L2_PIX_FMT_YVU420:
-    case V4L2_PIX_FMT_YVU420M:
-      return PIXEL_FORMAT_YV12;
-
-    case V4L2_PIX_FMT_YUV422M:
-      return PIXEL_FORMAT_I422;
-
-    case V4L2_PIX_FMT_RGB32:
-      return PIXEL_FORMAT_BGRA;
-
-    default:
-      DVLOGF(1) << "Add more cases as needed";
-      return PIXEL_FORMAT_UNKNOWN;
-  }
-}
-
-// static
-uint32_t V4L2Device::VideoPixelFormatToV4L2PixFmt(const VideoPixelFormat format,
-                                                  bool single_planar) {
-  switch (format) {
-    case PIXEL_FORMAT_NV12:
-      return single_planar ? V4L2_PIX_FMT_NV12 : V4L2_PIX_FMT_NV12M;
-    case PIXEL_FORMAT_I420:
-      return single_planar ? V4L2_PIX_FMT_YUV420 : V4L2_PIX_FMT_YUV420M;
-    case PIXEL_FORMAT_YV12:
-      return single_planar ? V4L2_PIX_FMT_YVU420 : V4L2_PIX_FMT_YVU420M;
-    default:
-      LOG(ERROR) << "Add more cases as needed, format: "
-                 << VideoPixelFormatToString(format)
-                 << ", single_planar: " << single_planar;
-      return 0;
-  }
-}
-
-// static
 uint32_t V4L2Device::VideoFrameLayoutToV4L2PixFmt(
     const VideoFrameLayout& layout) {
-  return VideoPixelFormatToV4L2PixFmt(layout.format(),
-                                      !layout.is_multi_planar());
+  return Fourcc::FromVideoPixelFormat(layout.format(),
+                                      !layout.is_multi_planar())
+      .ToV4L2PixFmt();
 }
 
 // static
@@ -1439,15 +1382,15 @@ gfx::Size V4L2Device::AllocatedSizeFromV4L2Format(struct v4l2_format format) {
     }
     visible_size.SetSize(base::checked_cast<int>(format.fmt.pix_mp.width),
                          base::checked_cast<int>(format.fmt.pix_mp.height));
-    frame_format =
-        V4L2Device::V4L2PixFmtToVideoPixelFormat(format.fmt.pix_mp.pixelformat);
+    frame_format = Fourcc::FromV4L2PixFmt(format.fmt.pix_mp.pixelformat)
+                       .ToVideoPixelFormat();
   } else {
     bytesperline = base::checked_cast<int>(format.fmt.pix.bytesperline);
     sizeimage = base::checked_cast<int>(format.fmt.pix.sizeimage);
     visible_size.SetSize(base::checked_cast<int>(format.fmt.pix.width),
                          base::checked_cast<int>(format.fmt.pix.height));
     frame_format =
-        V4L2Device::V4L2PixFmtToVideoPixelFormat(format.fmt.pix.pixelformat);
+        Fourcc::FromV4L2PixFmt(format.fmt.pix.pixelformat).ToVideoPixelFormat();
   }
 
   // V4L2 does not provide per-plane bytesperline (bpl) when different
@@ -1589,7 +1532,7 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
   const v4l2_pix_format_mplane& pix_mp = format.fmt.pix_mp;
   const uint32_t& pix_fmt = pix_mp.pixelformat;
   const VideoPixelFormat video_format =
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(pix_fmt);
+      Fourcc::FromV4L2PixFmt(pix_fmt).ToVideoPixelFormat();
   if (video_format == PIXEL_FORMAT_UNKNOWN) {
     VLOGF(1) << "Failed to convert pixel format to VideoPixelFormat: "
              << FourccToString(pix_fmt);
@@ -1686,7 +1629,8 @@ bool V4L2Device::IsMultiPlanarV4L2PixFmt(uint32_t pix_fmt) {
 // static
 size_t V4L2Device::GetNumPlanesOfV4L2PixFmt(uint32_t pix_fmt) {
   if (IsMultiPlanarV4L2PixFmt(pix_fmt)) {
-    return VideoFrame::NumPlanes(V4L2PixFmtToVideoPixelFormat(pix_fmt));
+    return VideoFrame::NumPlanes(
+        Fourcc::FromV4L2PixFmt(pix_fmt).ToVideoPixelFormat());
   }
   return 1u;
 }

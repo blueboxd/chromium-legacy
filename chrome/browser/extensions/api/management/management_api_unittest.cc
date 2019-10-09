@@ -549,6 +549,53 @@ TEST_F(ManagementApiUnitTest, ExtensionInfo_MayEnable) {
   }
 }
 
+TEST_F(ManagementApiUnitTest, ExtensionInfo_MayDisable) {
+  using ExtensionInfo = api::management::ExtensionInfo;
+
+  scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
+  service()->AddExtension(extension.get());
+
+  const std::string args =
+      base::StringPrintf("[\"%s\"]", extension->id().c_str());
+
+  // Initially the extension should show as enabled, so it may be disabled
+  // freely.
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
+  {
+    scoped_refptr<ExtensionFunction> function = new ManagementGetFunction();
+    std::unique_ptr<base::Value> value(
+        extension_function_test_utils::RunFunctionAndReturnSingleResult(
+            function.get(), args, browser()));
+    ASSERT_TRUE(value);
+    std::unique_ptr<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
+    ASSERT_TRUE(info);
+    EXPECT_TRUE(info->enabled);
+    EXPECT_TRUE(info->may_disable);
+  }
+
+  // Simulate forcing the extension and verify that the extension shows with
+  // a false value of |may_disable|.
+  ManagementPolicy* policy =
+      ExtensionSystem::Get(profile())->management_policy();
+  policy->UnregisterAllProviders();
+  TestManagementPolicyProvider provider(
+      TestManagementPolicyProvider::MUST_REMAIN_ENABLED);
+  policy->RegisterProvider(&provider);
+  service()->CheckManagementPolicy();
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
+  {
+    scoped_refptr<ExtensionFunction> function = new ManagementGetFunction();
+    std::unique_ptr<base::Value> value(
+        extension_function_test_utils::RunFunctionAndReturnSingleResult(
+            function.get(), args, browser()));
+    ASSERT_TRUE(value);
+    std::unique_ptr<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
+    ASSERT_TRUE(info);
+    EXPECT_TRUE(info->enabled);
+    EXPECT_FALSE(info->may_disable);
+  }
+}
+
 // Tests enabling an extension via management API after it was disabled due to
 // permission increase.
 TEST_F(ManagementApiUnitTest, SetEnabledAfterIncreasedPermissions) {

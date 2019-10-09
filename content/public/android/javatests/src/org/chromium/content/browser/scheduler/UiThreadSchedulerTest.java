@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.SingleThreadTaskRunner;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
@@ -155,6 +156,103 @@ public class UiThreadSchedulerTest {
         } finally {
             uiThreadTaskRunner.destroy();
         }
+    }
+
+    @Test
+    @MediumTest
+    public void testPostTaskCurrentThreadBeforeNativeLoaded() throws Exception {
+        // This should not timeout.
+        final Object lock = new Object();
+        final AtomicBoolean taskExecuted = new AtomicBoolean();
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+            @Override
+            public void run() {
+                PostTask.postTask(TaskTraits.CURRENT_THREAD, new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (lock) {
+                            taskExecuted.set(true);
+                            lock.notify();
+                        }
+                    }
+                });
+            }
+        });
+
+        synchronized (lock) {
+            while (!taskExecuted.get()) {
+                lock.wait();
+            }
+        }
+    }
+
+    @Test
+    @MediumTest
+    public void testPostTaskCurrentThreadAfterNativeLoaded() throws Exception {
+        startContentMainOnUiThread();
+
+        // This should not timeout.
+        final Object lock = new Object();
+        final AtomicBoolean taskExecuted = new AtomicBoolean();
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+            @Override
+            public void run() {
+                PostTask.postTask(TaskTraits.CURRENT_THREAD, new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (lock) {
+                            taskExecuted.set(true);
+                            lock.notify();
+                        }
+                    }
+                });
+            }
+        });
+
+        synchronized (lock) {
+            while (!taskExecuted.get()) {
+                lock.wait();
+            }
+        }
+    }
+
+    @Test
+    @MediumTest
+    public void testPostTaskCurrentThreadInThreadpoolAfterNativeLoaded() throws Exception {
+        startContentMainOnUiThread();
+        SingleThreadTaskRunner threadpoolTaskRunner =
+                PostTask.createSingleThreadTaskRunner(TaskTraits.THREAD_POOL_USER_BLOCKING);
+        SingleThreadTaskRunner uiThreadTaskRunner =
+                PostTask.createSingleThreadTaskRunner(UiThreadTaskTraits.DEFAULT);
+
+        // This should not timeout.
+        final Object lock = new Object();
+        final AtomicBoolean taskExecuted = new AtomicBoolean();
+        threadpoolTaskRunner.postTask(new Runnable() {
+            @Override
+            public void run() {
+                PostTask.postTask(TaskTraits.CURRENT_THREAD, new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (lock) {
+                            Assert.assertTrue(threadpoolTaskRunner.belongsToCurrentThread());
+                            Assert.assertFalse(uiThreadTaskRunner.belongsToCurrentThread());
+                            taskExecuted.set(true);
+                            lock.notify();
+                        }
+                    }
+                });
+            }
+        });
+
+        synchronized (lock) {
+            while (!taskExecuted.get()) {
+                lock.wait();
+            }
+        }
+
+        uiThreadTaskRunner.destroy();
+        threadpoolTaskRunner.destroy();
     }
 
     @Test

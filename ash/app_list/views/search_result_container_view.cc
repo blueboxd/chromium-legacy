@@ -9,7 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 
-namespace app_list {
+namespace ash {
 
 SearchResultContainerView::SearchResultContainerView(
     AppListViewDelegate* view_delegate)
@@ -122,4 +122,4 @@ void SearchResultContainerView::ScheduleUpdate() {
   }
 }
 
-}  // namespace app_list
+}  // namespace ash

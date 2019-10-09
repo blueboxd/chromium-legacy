@@ -35,6 +35,7 @@
 #include "media/base/scopedfd_helper.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_types.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_decode_surface.h"
 #include "media/gpu/v4l2/v4l2_h264_accelerator.h"
@@ -706,7 +707,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
             << ", coded size=" << coded_size_.ToString();
 
   VideoPixelFormat pixel_format =
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(gl_image_format_fourcc_);
+      Fourcc::FromV4L2PixFmt(gl_image_format_fourcc_).ToVideoPixelFormat();
   child_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -1430,7 +1431,8 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
       }
 
       int plane_horiz_bits_per_pixel = VideoFrame::PlaneHorizontalBitsPerPixel(
-          V4L2Device::V4L2PixFmtToVideoPixelFormat(gl_image_format_fourcc_), 0);
+          Fourcc::FromV4L2PixFmt(gl_image_format_fourcc_).ToVideoPixelFormat(),
+          0);
       ImportBufferForPictureTask(
           output_record.picture_id, std::move(passed_dmabuf_fds),
           gl_image_size_.width() * plane_horiz_bits_per_pixel / 8);
@@ -1513,7 +1515,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureForImportTask(
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   if (pixel_format !=
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(gl_image_format_fourcc_)) {
+      Fourcc::FromV4L2PixFmt(gl_image_format_fourcc_).ToVideoPixelFormat()) {
     VLOGF(1) << "Unsupported import format: "
              << VideoPixelFormatToString(pixel_format);
     NOTIFY_ERROR(INVALID_ARGUMENT);
@@ -1583,7 +1585,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
   // However the size of PictureBuffer might not be adjusted by ARC++. So we
   // keep this until ARC++ side is fixed.
   int plane_horiz_bits_per_pixel = VideoFrame::PlaneHorizontalBitsPerPixel(
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(gl_image_format_fourcc_), 0);
+      Fourcc::FromV4L2PixFmt(gl_image_format_fourcc_).ToVideoPixelFormat(), 0);
   if (plane_horiz_bits_per_pixel == 0 ||
       (stride * 8) % plane_horiz_bits_per_pixel != 0) {
     VLOGF(1) << "Invalid format " << gl_image_format_fourcc_ << " or stride "
@@ -1628,7 +1630,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
     // of assuming the image size will be enough (we may have extra information
     // between planes).
     auto layout = VideoFrameLayout::Create(
-        V4L2Device::V4L2PixFmtToVideoPixelFormat(gl_image_format_fourcc_),
+        Fourcc::FromV4L2PixFmt(gl_image_format_fourcc_).ToVideoPixelFormat(),
         gl_image_size_);
     if (!layout) {
       VLOGF(1) << "Cannot create layout!";

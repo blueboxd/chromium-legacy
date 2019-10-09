@@ -51,8 +51,8 @@ void SettingsShortcutResult::GetContextMenuModel(
   std::move(callback).Run(nullptr);
 }
 
-SearchResultType SettingsShortcutResult::GetSearchResultType() const {
-  return SETTINGS_SHORTCUT;
+ash::SearchResultType SettingsShortcutResult::GetSearchResultType() const {
+  return ash::SETTINGS_SHORTCUT;
 }
 
 }  // namespace app_list

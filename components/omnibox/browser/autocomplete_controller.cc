@@ -669,6 +669,10 @@ void AutocompleteController::UpdateAssociatedKeywords(
     // available.
     if (!exact_keyword.empty() && !keywords.count(exact_keyword)) {
       keywords.insert(exact_keyword);
+      // If the match has an answer, it will look strange to try to display
+      // it along with a keyword hint. Prefer the keyword hint, and revert
+      // to a typical search.
+      match->answer.reset();
       match->associated_keyword.reset(new AutocompleteMatch(
           keyword_provider_->CreateVerbatimMatch(exact_keyword,
                                                  exact_keyword, input_)));

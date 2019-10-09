@@ -34,16 +34,15 @@ void AppListTestHelper::WaitUntilIdle() {
 }
 
 void AppListTestHelper::ShowAndRunLoop(uint64_t display_id) {
-  ShowAndRunLoop(display_id, app_list::AppListShowSource::kSearchKey);
+  ShowAndRunLoop(display_id, AppListShowSource::kSearchKey);
 }
 
 void AppListTestHelper::Show(uint64_t display_id) {
-  ShowAndRunLoop(display_id, app_list::AppListShowSource::kSearchKey);
+  ShowAndRunLoop(display_id, AppListShowSource::kSearchKey);
 }
 
-void AppListTestHelper::ShowAndRunLoop(
-    uint64_t display_id,
-    app_list::AppListShowSource show_source) {
+void AppListTestHelper::ShowAndRunLoop(uint64_t display_id,
+                                       AppListShowSource show_source) {
   app_list_controller_->Show(display_id, show_source, base::TimeTicks());
   WaitUntilIdle();
 }
@@ -58,12 +57,11 @@ void AppListTestHelper::Dismiss() {
 }
 
 void AppListTestHelper::ToggleAndRunLoop(uint64_t display_id) {
-  ToggleAndRunLoop(display_id, app_list::AppListShowSource::kSearchKey);
+  ToggleAndRunLoop(display_id, AppListShowSource::kSearchKey);
 }
 
-void AppListTestHelper::ToggleAndRunLoop(
-    uint64_t display_id,
-    app_list::AppListShowSource show_source) {
+void AppListTestHelper::ToggleAndRunLoop(uint64_t display_id,
+                                         AppListShowSource show_source) {
   app_list_controller_->ToggleAppList(display_id, show_source,
                                       base::TimeTicks());
   WaitUntilIdle();
@@ -78,7 +76,7 @@ void AppListTestHelper::CheckState(ash::AppListViewState state) {
   EXPECT_EQ(state, app_list_controller_->GetAppListViewState());
 }
 
-app_list::AppListView* AppListTestHelper::GetAppListView() {
+AppListView* AppListTestHelper::GetAppListView() {
   return app_list_controller_->presenter()->GetView();
 }
 

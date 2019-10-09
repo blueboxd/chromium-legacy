@@ -22,7 +22,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/range/range.h"
 
-namespace app_list {
+namespace ash {
 
 class SearchResultObserver;
 
@@ -31,7 +31,7 @@ class SearchResultObserver;
 // default style.
 class APP_LIST_MODEL_EXPORT SearchResult {
  public:
-  using ResultType = ash::SearchResultType;
+  using ResultType = ash::AppListSearchResultType;
   using DisplayType = ash::SearchResultDisplayType;
   using Tag = ash::SearchResultTag;
   using Tags = ash::SearchResultTags;
@@ -200,6 +200,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   DISALLOW_COPY_AND_ASSIGN(SearchResult);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_MODEL_SEARCH_SEARCH_RESULT_H_

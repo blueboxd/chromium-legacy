@@ -42,6 +42,7 @@
 #include "net/base/network_isolation_key.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/coalescing_cert_verifier.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/cert_net/cert_net_fetcher_impl.h"
 #include "net/cookies/cookie_monster.h"
@@ -1541,14 +1542,18 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 #elif BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
     if (params_->trial_comparison_cert_verifier_params) {
       cert_verifier = std::make_unique<net::CachingCertVerifier>(
-          std::make_unique<TrialComparisonCertVerifierMojo>(
-              params_->trial_comparison_cert_verifier_params->initial_allowed,
-              std::move(params_->trial_comparison_cert_verifier_params
-                            ->config_client_request),
-              std::move(params_->trial_comparison_cert_verifier_params
-                            ->report_client),
-              net::CertVerifyProc::CreateSystemVerifyProc(cert_net_fetcher_),
-              net::CertVerifyProc::CreateBuiltinVerifyProc(cert_net_fetcher_)));
+          std::make_unique<net::CoalescingCertVerifier>(
+              std::make_unique<TrialComparisonCertVerifierMojo>(
+                  params_->trial_comparison_cert_verifier_params
+                      ->initial_allowed,
+                  std::move(params_->trial_comparison_cert_verifier_params
+                                ->config_client_request),
+                  std::move(params_->trial_comparison_cert_verifier_params
+                                ->report_client),
+                  net::CertVerifyProc::CreateSystemVerifyProc(
+                      cert_net_fetcher_),
+                  net::CertVerifyProc::CreateBuiltinVerifyProc(
+                      cert_net_fetcher_))));
     }
 #endif
     if (!cert_verifier)

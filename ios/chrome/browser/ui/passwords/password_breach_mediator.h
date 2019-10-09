@@ -12,6 +12,7 @@
 
 class GURL;
 
+@protocol ApplicationCommands;
 @protocol PasswordBreachConsumer;
 
 // Object presenting the feature.
@@ -27,12 +28,17 @@ class GURL;
 
 - (instancetype)initWithConsumer:(id<PasswordBreachConsumer>)consumer
                        presenter:(id<PasswordBreachPresenter>)presenter
+                      dispatcher:(id<ApplicationCommands>)dispatcher
                              URL:(const GURL&)URL
                         leakType:(password_manager::CredentialLeakType)leakType;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 - (instancetype)initWithCoder NS_UNAVAILABLE;
+
+// Informs the mediator that its about to be destroyed, so it can perform any
+// logging or clean up needed.
+- (void)disconnect;
 
 @end
 

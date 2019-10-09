@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
 
-#include <map>
 #include <utility>
 
 #include "base/bind.h"
@@ -79,10 +78,10 @@ void ManagePasswordsTest::ExecuteManagePasswordsCommand() {
 }
 
 void ManagePasswordsTest::SetupManagingPasswords() {
-  std::map<base::string16, const autofill::PasswordForm*> map;
+  std::vector<const autofill::PasswordForm*> forms;
   for (auto* form : {&password_form_, &federated_form_}) {
-    map.insert(std::make_pair(form->username_value, form));
-    GetController()->OnPasswordAutofilled(map, form->origin, nullptr);
+    forms.push_back(form);
+    GetController()->OnPasswordAutofilled(forms, form->origin, nullptr);
   }
 }
 

@@ -13,7 +13,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -449,4 +449,4 @@ TEST_F(AppListConfigProviderTest, CreateScaledConfigByDisplayWorkAreaPortrait) {
                                 "Horizontal and vertical scaling");
 }
 
-}  // namespace app_list
+}  // namespace ash

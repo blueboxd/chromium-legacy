@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/task/sequence_manager/test/fake_task.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/task/task_executor.h"
@@ -2122,6 +2123,16 @@ TEST_P(MainThreadSchedulerImplTest,
       }));
 
   run_loop.Run();
+}
+
+TEST_P(MainThreadSchedulerImplTest, CurrentThread) {
+  EXPECT_EQ(scheduler_->DeprecatedDefaultTaskRunner(),
+            base::CreateSingleThreadTaskRunner({base::CurrentThread()}));
+
+  // base::TaskPriority is currently ignored in blink.
+  EXPECT_EQ(scheduler_->DeprecatedDefaultTaskRunner(),
+            base::CreateSingleThreadTaskRunner(
+                {base::CurrentThread(), base::TaskPriority::BEST_EFFORT}));
 }
 
 class MainThreadSchedulerImplWithMessageLoopTest

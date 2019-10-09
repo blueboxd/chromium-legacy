@@ -45,7 +45,7 @@
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/drag_controller.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -961,4 +961,4 @@ void AppListItemView::AdaptBoundsForSelectionHighlight(gfx::Rect* bounds) {
   bounds->ClampToCenteredSize(GetAppListConfig().grid_focus_size());
 }
 
-}  // namespace app_list
+}  // namespace ash

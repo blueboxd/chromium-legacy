@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_MANAGER_FOR_UI_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_MANAGER_FOR_UI_H_
 
-#include <map>
 #include <vector>
 
 #include "base/containers/span.h"
@@ -32,9 +31,8 @@ class PasswordFormManagerForUI {
   virtual const GURL& GetOrigin() const = 0;
 
   // Returns the best saved matches for the observed form.
-  // TODO(crbug.com/1011399): it should return a reference to a vector.
-  virtual std::map<base::string16, const autofill::PasswordForm*>
-  GetBestMatches() const = 0;
+  virtual const std::vector<const autofill::PasswordForm*>& GetBestMatches()
+      const = 0;
 
   // Returns the federated saved matches for the observed form.
   // TODO(crbug.com/831123): merge with GetBestMatches.

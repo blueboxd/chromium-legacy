@@ -98,12 +98,8 @@ void PasswordAccessoryControllerImpl::OnFillingTriggered(
   password_manager::ContentPasswordManagerDriverFactory* factory =
       password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
           web_contents_);
-  DCHECK(factory);
   password_manager::ContentPasswordManagerDriver* driver =
       factory->GetDriverForFrame(web_contents_->GetFocusedFrame());
-  if (!driver) {
-    return;
-  }  // |driver| can be NULL if the tab is being closed.
   driver->FillIntoFocusedField(selection.is_obfuscated(),
                                selection.display_text());
 }

@@ -121,7 +121,7 @@ base::Optional<syncer::ModelError> ParseInitialDataOnBackendSequence(
     (*initial_data)[storage_key] = std::move(specifics);
   }
 
-  *session_name = syncer::GetSessionNameBlocking();
+  *session_name = syncer::GetPersonalizableDeviceNameBlocking();
 
   return base::nullopt;
 }

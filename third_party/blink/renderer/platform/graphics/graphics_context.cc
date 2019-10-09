@@ -30,6 +30,7 @@
 
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "components/paint_preview/common/paint_preview_tracker.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -89,12 +90,14 @@ class GraphicsContext::DarkModeFlags final {
 
 GraphicsContext::GraphicsContext(PaintController& paint_controller,
                                  DisabledMode disable_context_or_painting,
-                                 printing::MetafileSkia* metafile)
+                                 printing::MetafileSkia* metafile,
+                                 paint_preview::PaintPreviewTracker* tracker)
     : canvas_(nullptr),
       paint_controller_(paint_controller),
       paint_state_stack_(),
       paint_state_index_(0),
       metafile_(metafile),
+      tracker_(tracker),
 #if DCHECK_IS_ON()
       layer_count_(0),
       disable_destruction_checks_(false),
@@ -102,6 +105,7 @@ GraphicsContext::GraphicsContext(PaintController& paint_controller,
       disabled_state_(disable_context_or_painting),
       device_scale_factor_(1.0f),
       printing_(false),
+      is_painting_preview_(false),
       in_drawing_recorder_(false) {
   // FIXME: Do some tests to determine how many states are typically used, and
   // allocate several here.
@@ -1368,6 +1372,12 @@ void GraphicsContext::SetURLForRect(const KURL& link,
     return;
   DCHECK(canvas_);
 
+  // Intercept URL rects when painting previews.
+  if (IsPaintingPreview() && tracker_) {
+    tracker_->AnnotateLink(link.GetString().Utf8(), dest_rect);
+    return;
+  }
+
   sk_sp<SkData> url(SkData::MakeWithCString(link.GetString().Utf8().c_str()));
   canvas_->Annotate(cc::PaintCanvas::AnnotationType::URL, dest_rect,
                     std::move(url));
@@ -1378,6 +1388,12 @@ void GraphicsContext::SetURLFragmentForRect(const String& dest_name,
   if (ContextDisabled())
     return;
   DCHECK(canvas_);
+
+  // Intercept URL rects when painting previews.
+  if (IsPaintingPreview() && tracker_) {
+    tracker_->AnnotateLink(dest_name.Utf8(), rect);
+    return;
+  }
 
   sk_sp<SkData> sk_dest_name(SkData::MakeWithCString(dest_name.Utf8().c_str()));
   canvas_->Annotate(cc::PaintCanvas::AnnotationType::LINK_TO_DESTINATION, rect,

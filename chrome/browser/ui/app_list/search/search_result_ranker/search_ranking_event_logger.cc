@@ -93,11 +93,12 @@ int ExtensionTypeFromFileName(const std::string& file_name) {
                 file_name.substr(found)));
 }
 
-Category CategoryFromResultType(ash::SearchResultType type, int subtype) {
-  if (type == ash::SearchResultType::kLauncher)
+Category CategoryFromResultType(ash::AppListSearchResultType type,
+                                int subtype) {
+  if (type == ash::AppListSearchResultType::kLauncher)
     return Category::FILE;
 
-  if (type == ash::SearchResultType::kOmnibox) {
+  if (type == ash::AppListSearchResultType::kOmnibox) {
     switch (static_cast<AutocompleteMatchType::Type>(subtype)) {
       case AutocompleteMatchType::Type::HISTORY_URL:
       case AutocompleteMatchType::Type::HISTORY_TITLE:
@@ -261,7 +262,7 @@ void SearchRankingEventLogger::PopulateSearchRankingItem(
     features.set_file_extension(ExtensionTypeFromFileName(search_result->id()));
   }
 
-  if (search_result->result_type() == ash::SearchResultType::kOmnibox) {
+  if (search_result->result_type() == ash::AppListSearchResultType::kOmnibox) {
     // The id metadata of an OmniboxResult is a stripped URL, which does not
     // correspond to the URL that will be navigated to.
     proto->set_target(
@@ -391,7 +392,7 @@ void SearchRankingEventLogger::Log(
     // Omnibox results have associated URLs, so are logged keyed on the URL
     // after validating that it exists in the history service. Other results
     // have no associated URL, so use a blank source ID.
-    if (result->result_type() == ash::SearchResultType::kOmnibox) {
+    if (result->result_type() == ash::AppListSearchResultType::kOmnibox) {
       // When an omnibox result is launched, we need to retrieve a source ID
       // using the history service. This may be the first time the URL is used
       // and so it must be committed to the history service database before we

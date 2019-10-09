@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
@@ -38,14 +39,16 @@ bool IsSupported(VideoPixelFormat input_format,
                  VideoPixelFormat output_format,
                  gfx::Size input_size,
                  gfx::Size output_size) {
-  const uint32_t input_va_fourcc = VideoPixelFormatToVAFourCC(input_format);
+  const uint32_t input_va_fourcc =
+      Fourcc::FromVideoPixelFormat(input_format).ToVAFourCC();
   if (!VaapiWrapper::IsVppFormatSupported(input_va_fourcc)) {
     VLOGF(2) << "Unsupported input format: " << input_format << " (VA_FOURCC_"
              << FourccToString(input_va_fourcc) << ")";
     return false;
   }
 
-  const uint32_t output_va_fourcc = VideoPixelFormatToVAFourCC(output_format);
+  const uint32_t output_va_fourcc =
+      Fourcc::FromVideoPixelFormat(output_format).ToVAFourCC();
   if (!VaapiWrapper::IsVppFormatSupported(output_va_fourcc)) {
     VLOGF(2) << "Unsupported output format: " << output_format << " (VA_FOURCC_"
              << FourccToString(output_va_fourcc) << ")";

@@ -1149,7 +1149,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"First line of text\n");
 
   // Moving the start by two lines will create a degenerate range positioned
-  // at the next paragraph (skipping the newline)
+  // at the next paragraph (skipping the newline).
   ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
       TextPatternRangeEndpoint_Start, TextUnit_Line, /*count*/ 2, &count));
   EXPECT_EQ(2, count);
@@ -1172,10 +1172,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                   /*expected_count*/ 1);
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Paragraph));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"bold text\n");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"bold text");
 
   // Create a degenerate range at the end of the document, then expand by
-  // paragraph
+  // paragraph.
   ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
       TextPatternRangeEndpoint_Start, TextUnit_Document, /*count*/ 1, &count));
   EXPECT_EQ(1, count);
@@ -3286,6 +3286,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                                       0xDEADBEEFU);
   list_item_text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor,
                                       0xDEADC0DEU);
+  list_item_text_data.SetName("list item");
 
   ui::AXNodeData list_item2_data;
   list_item2_data.id = 10;
@@ -3305,6 +3306,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       ax::mojom::IntAttribute::kBackgroundColor, 0xDEADBEEFU);
   list_item2_text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor,
                                        0xDEADC0DEU);
+  list_item2_text_data.SetName("list item 2");
 
   ui::AXNodeData root_data;
   root_data.id = 1;
@@ -3514,6 +3516,47 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       text_range_provider, UIA_TextFlowDirectionsAttributeId, expected_variant);
   EXPECT_UIA_TEXTATTRIBUTE_MIXED(document_range_provider,
                                  UIA_TextFlowDirectionsAttributeId);
+  expected_variant.Reset();
+
+  // Move the start endpoint back and forth one character to force such endpoint
+  // to be located at the end of the previous anchor, this shouldn't cause
+  // GetAttributeValue to include the previous anchor's attributes.
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(mark_text_range_provider,
+                                   TextPatternRangeEndpoint_Start,
+                                   TextUnit_Character,
+                                   /*count*/ -1,
+                                   /*expected_text*/ L"tmarked text",
+                                   /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(mark_text_range_provider,
+                                   TextPatternRangeEndpoint_Start,
+                                   TextUnit_Character,
+                                   /*count*/ 1,
+                                   /*expected_text*/ L"marked text",
+                                   /*expected_count*/ 1);
+  expected_variant.Set(false);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(mark_text_range_provider,
+                              UIA_IsSuperscriptAttributeId, expected_variant);
+  expected_variant.Reset();
+
+  // Same idea as above, but moving forth and back the end endpoint to force it
+  // to be located at the start of the next anchor.
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(mark_text_range_provider,
+                                   TextPatternRangeEndpoint_End,
+                                   TextUnit_Character,
+                                   /*count*/ 1,
+                                   /*expected_text*/ L"marked textl",
+                                   /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(mark_text_range_provider,
+                                   TextPatternRangeEndpoint_End,
+                                   TextUnit_Character,
+                                   /*count*/ -1,
+                                   /*expected_text*/ L"marked text",
+                                   /*expected_count*/ -1);
+  expected_variant.Set(
+      static_cast<int32_t>(FlowDirections::FlowDirections_RightToLeft));
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(mark_text_range_provider,
+                              UIA_TextFlowDirectionsAttributeId,
+                              expected_variant);
   expected_variant.Reset();
 }
 

@@ -424,14 +424,6 @@ void FrameFetchContext::PrepareRequest(
 
   if (GetResourceFetcherProperties().IsDetached())
     return;
-
-  if (!frame_or_imported_document_->GetDocumentLoader()) {
-    // When HTML imports are involved, it is dangerous to rely on the
-    // factory bound origin.
-    DCHECK(frame_or_imported_document_->GetDocument().ImportsController());
-    request.SetShouldAlsoUseFactoryBoundOriginForCors(false);
-  }
-
   GetLocalFrameClient()->DispatchWillSendRequest(request);
   FrameScheduler* frame_scheduler = GetFrame()->GetFrameScheduler();
   if (!for_redirect && frame_scheduler) {

@@ -92,8 +92,8 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     // It's safe to use base::Unretained since the NavigationHandle is owned by
     // the NavigationRequestTest.
     request_->WillStartRequest(
-        base::Bind(&NavigationRequestTest::UpdateThrottleCheckResult,
-                   base::Unretained(this)));
+        base::BindOnce(&NavigationRequestTest::UpdateThrottleCheckResult,
+                       base::Unretained(this)));
   }
 
   // Helper function to call WillRedirectRequest on |handle|. If this function
@@ -109,8 +109,8 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     // the NavigationRequestTest.
     request_->WillRedirectRequest(
         GURL(), nullptr,
-        base::Bind(&NavigationRequestTest::UpdateThrottleCheckResult,
-                   base::Unretained(this)));
+        base::BindOnce(&NavigationRequestTest::UpdateThrottleCheckResult,
+                       base::Unretained(this)));
   }
 
   // Helper function to call WillFailRequest on |handle|. If this function
@@ -126,8 +126,8 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     // It's safe to use base::Unretained since the NavigationHandle is owned by
     // the NavigationRequestTest.
     request_->WillFailRequest(
-        base::Bind(&NavigationRequestTest::UpdateThrottleCheckResult,
-                   base::Unretained(this)));
+        base::BindOnce(&NavigationRequestTest::UpdateThrottleCheckResult,
+                       base::Unretained(this)));
   }
 
   // Helper function to call WillProcessResponse on |handle|. If this function
@@ -144,8 +144,8 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     // to WillRedirectRequest to verify that it's correctly plumbed in both
     // cases.
     request_->WillProcessResponse(
-        base::Bind(&NavigationRequestTest::UpdateThrottleCheckResult,
-                   base::Unretained(this)));
+        base::BindOnce(&NavigationRequestTest::UpdateThrottleCheckResult,
+                       base::Unretained(this)));
   }
 
   // Whether the callback was called.

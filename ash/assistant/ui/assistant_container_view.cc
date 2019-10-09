@@ -332,7 +332,7 @@ void AssistantContainerView::Init() {
   layer()->SetFillsBoundsOpaquely(false);
 
   // Main view.
-  assistant_main_view_ = new AssistantMainView(delegate_);
+  assistant_main_view_ = new AssistantMainViewDeprecated(delegate_);
   AddChildView(assistant_main_view_);
 
   // Mini view.

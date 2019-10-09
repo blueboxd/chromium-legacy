@@ -67,13 +67,6 @@ class ReadableStreamNative : public ReadableStream {
 
   ReadableStreamNative();
 
-  // https://streams.spec.whatwg.org/#rs-constructor
-  ReadableStreamNative(ScriptState*,
-                       ScriptValue raw_underlying_source,
-                       ScriptValue raw_strategy,
-                       bool created_by_ua,
-                       ExceptionState&);
-
   ~ReadableStreamNative() override;
 
   // https://streams.spec.whatwg.org/#rs-constructor
@@ -207,6 +200,13 @@ class ReadableStreamNative : public ReadableStream {
   class PipeToEngine;
   class ReadHandleImpl;
   class TeeEngine;
+
+  // https://streams.spec.whatwg.org/#rs-constructor
+  void InitInternal(ScriptState*,
+                    ScriptValue raw_underlying_source,
+                    ScriptValue raw_strategy,
+                    bool created_by_ua,
+                    ExceptionState&);
 
   // https://streams.spec.whatwg.org/#initialize-readable-stream
   static void Initialize(ReadableStreamNative*);

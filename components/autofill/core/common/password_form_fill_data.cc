@@ -24,7 +24,7 @@ PasswordFormFillData::PasswordFormFillData() = default;
 
 PasswordFormFillData::PasswordFormFillData(
     const PasswordForm& form_on_page,
-    const std::map<base::string16, const PasswordForm*>& matches,
+    const std::vector<const PasswordForm*>& matches,
     const PasswordForm& preferred_match,
     bool wait_for_username)
     : form_renderer_id(form_on_page.form_data.unique_renderer_id),
@@ -65,13 +65,13 @@ PasswordFormFillData::PasswordFormFillData(
     preferred_realm = preferred_match.signon_realm;
 
   // Copy additional username/value pairs.
-  for (const auto& it : matches) {
-    if (it.second != &preferred_match) {
-      PasswordAndRealm& value = additional_logins[it.first];
-      value.password = it.second->password_value;
-      if (IsPublicSuffixMatchOrAffiliationBasedMatch(*it.second))
-        value.realm = it.second->signon_realm;
-    }
+  for (const PasswordForm* match : matches) {
+    if (match == &preferred_match)
+      continue;
+    PasswordAndRealm& value = additional_logins[match->username_value];
+    value.password = match->password_value;
+    if (IsPublicSuffixMatchOrAffiliationBasedMatch(*match))
+      value.realm = match->signon_realm;
   }
 }
 

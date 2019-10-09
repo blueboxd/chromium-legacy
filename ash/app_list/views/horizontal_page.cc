@@ -6,7 +6,7 @@
 
 #include "ui/views/focus/focus_manager.h"
 
-namespace app_list {
+namespace ash {
 
 void HorizontalPage::OnWillBeHidden() {}
 
@@ -36,4 +36,4 @@ HorizontalPage::HorizontalPage() = default;
 
 HorizontalPage::~HorizontalPage() = default;
 
-}  // namespace app_list
+}  // namespace ash

@@ -74,61 +74,6 @@ cr.define('app_management', function() {
     }
   };
 
-  const CurrentPageState = {};
-
-  /**
-   * @param {AppMap} apps
-   * @param {Object} action
-   * @return {Page}
-   */
-  CurrentPageState.changePage = function(apps, action) {
-    if (action.pageType === PageType.DETAIL && apps[action.id]) {
-      return {
-        pageType: PageType.DETAIL,
-        selectedAppId: action.id,
-      };
-    } else {
-      return {
-        pageType: PageType.MAIN,
-        selectedAppId: null,
-      };
-    }
-  };
-
-  /**
-   * @param {Page} currentPage
-   * @param {Object} action
-   * @return {Page}
-   */
-  CurrentPageState.removeApp = function(currentPage, action) {
-    if (currentPage.pageType === PageType.DETAIL &&
-        currentPage.selectedAppId === action.id) {
-      return {
-        pageType: PageType.MAIN,
-        selectedAppId: null,
-      };
-    } else {
-      return currentPage;
-    }
-  };
-
-  /**
-   * @param {AppMap} apps
-   * @param {Page} currentPage
-   * @param {Object} action
-   * @return {Page}
-   */
-  CurrentPageState.updateCurrentPage = function(apps, currentPage, action) {
-    switch (action.name) {
-      case 'change-page':
-        return CurrentPageState.changePage(apps, action);
-      case 'remove-app':
-        return CurrentPageState.removeApp(currentPage, action);
-      default:
-        return currentPage;
-    }
-  };
-
   const ArcSupported = {};
 
   /**
@@ -145,6 +90,27 @@ cr.define('app_management', function() {
     }
   };
 
+  const SelectedAppId = {};
+
+  /**
+   * @param {?string} selectedAppId
+   * @param {Object} action
+   * @return {?string}
+   */
+  SelectedAppId.updateSelectedAppId = function(selectedAppId, action) {
+    switch (action.name) {
+      case 'update-selected-app-id':
+        return action.value;
+      case 'remove-app':
+        if (selectedAppId === action.id) {
+          return null;
+        }
+        return selectedAppId;
+      default:
+        return selectedAppId;
+    }
+  };
+
   /**
    * Root reducer for the App Management page. This is called by the store in
    * response to an action, and the return value is used to update the UI.
@@ -155,16 +121,16 @@ cr.define('app_management', function() {
   function reduceAction(state, action) {
     return {
       apps: AppState.updateApps(state.apps, action),
-      currentPage: CurrentPageState.updateCurrentPage(
-          state.apps, state.currentPage, action),
       arcSupported: ArcSupported.updateArcSupported(state.arcSupported, action),
+      selectedAppId:
+          SelectedAppId.updateSelectedAppId(state.selectedAppId, action),
     };
   }
 
   return {
     reduceAction: reduceAction,
     AppState: AppState,
-    CurrentPageState: CurrentPageState,
     ArcSupported: ArcSupported,
+    SelectedAppId: SelectedAppId,
   };
 });

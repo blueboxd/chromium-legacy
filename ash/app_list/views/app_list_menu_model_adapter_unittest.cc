@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/views_test_base.h"
 
-namespace app_list {
+namespace ash {
 
 class AppListMenuModelAdapterTest : public views::ViewsTestBase {
  public:
@@ -37,4 +37,4 @@ TEST_F(AppListMenuModelAdapterTest, NotificationContainerEnabled) {
       ash::NOTIFICATION_CONTAINER));
 }
 
-}  // namespace app_list
+}  // namespace ash

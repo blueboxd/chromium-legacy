@@ -95,7 +95,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   int previews_state = 0;
   bool upgrade_if_insecure = false;
   bool is_revalidating = false;
-  bool should_also_use_factory_bound_origin_for_cors = false;
   base::Optional<base::UnguessableToken> throttling_profile_id;
   net::HttpRequestHeaders custom_proxy_pre_cache_headers;
   net::HttpRequestHeaders custom_proxy_post_cache_headers;

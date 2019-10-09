@@ -14,7 +14,7 @@
 namespace syncer {
 
 // Declared here but defined in platform-specific files.
-std::string GetSessionNameInternal();
+std::string GetPersonalizableDeviceNameInternal();
 
 sync_pb::SyncEnums::DeviceType GetLocalDeviceType() {
 #if defined(OS_CHROMEOS)
@@ -34,17 +34,17 @@ sync_pb::SyncEnums::DeviceType GetLocalDeviceType() {
 #endif
 }
 
-std::string GetSessionNameBlocking() {
+std::string GetPersonalizableDeviceNameBlocking() {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  std::string session_name = GetSessionNameInternal();
+  std::string device_name = GetPersonalizableDeviceNameInternal();
 
-  if (session_name == "Unknown" || session_name.empty()) {
-    session_name = base::SysInfo::OperatingSystemName();
+  if (device_name == "Unknown" || device_name.empty()) {
+    device_name = base::SysInfo::OperatingSystemName();
   }
 
-  DCHECK(base::IsStringUTF8(session_name));
-  return session_name;
+  DCHECK(base::IsStringUTF8(device_name));
+  return device_name;
 }
 
 }  // namespace syncer

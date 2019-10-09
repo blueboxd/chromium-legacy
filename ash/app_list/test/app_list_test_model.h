@@ -17,7 +17,7 @@ namespace ui {
 class SimpleMenuModel;
 }  // namespace ui
 
-namespace app_list {
+namespace ash {
 
 namespace test {
 
@@ -92,6 +92,6 @@ class AppListTestModel : public AppListModel {
 };
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_TEST_APP_LIST_TEST_MODEL_H_

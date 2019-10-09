@@ -603,6 +603,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   self.swipeRecognizerProvider = nil;
   [self.legacyNativeController close];
   [self.requestController close];
+  [self.webViewNavigationObserver close];
 
   // Mark the destruction sequence has started, in case someone else holds a
   // strong reference and tries to continue using the tab.
@@ -1792,6 +1793,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                       ofObject:(id)object
                         change:(NSDictionary*)change
                        context:(void*)context {
+  DCHECK(!self.beingDestroyed);
   NSString* dispatcherSelectorName = self.WKWebViewObservers[keyPath];
   DCHECK(dispatcherSelectorName);
   if (dispatcherSelectorName) {

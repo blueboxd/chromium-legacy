@@ -13,7 +13,7 @@ namespace syncer {
 
 sync_pb::SyncEnums::DeviceType GetLocalDeviceType();
 
-std::string GetSessionNameBlocking();
+std::string GetPersonalizableDeviceNameBlocking();
 
 }  // namespace syncer
 

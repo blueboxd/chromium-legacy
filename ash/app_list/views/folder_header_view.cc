@@ -25,7 +25,7 @@
 #include "ui/views/painter.h"
 #include "ui/views/view_targeter_delegate.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -322,4 +322,4 @@ void FolderHeaderView::SetPreviousFolderNameForTest(
   previous_folder_name_ = previous_name;
 }
 
-}  // namespace app_list
+}  // namespace ash

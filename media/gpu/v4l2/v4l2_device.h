@@ -381,9 +381,6 @@ class MEDIA_GPU_EXPORT V4L2Device
     : public base::RefCountedThreadSafe<V4L2Device> {
  public:
   // Utility format conversion functions
-  static VideoPixelFormat V4L2PixFmtToVideoPixelFormat(uint32_t format);
-  static uint32_t VideoPixelFormatToV4L2PixFmt(VideoPixelFormat format,
-                                               bool single_planar);
   // Returns v4l2 pixel format from |layout|. If there is no corresponding
   // single- or multi-planar format or |layout| is invalid, returns 0.
   static uint32_t VideoFrameLayoutToV4L2PixFmt(const VideoFrameLayout& layout);

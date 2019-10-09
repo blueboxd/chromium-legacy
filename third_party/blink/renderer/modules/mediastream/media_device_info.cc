@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/modules/mediastream/media_device_info.h"
 
+#include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"

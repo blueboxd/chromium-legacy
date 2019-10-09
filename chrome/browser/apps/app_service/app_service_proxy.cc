@@ -12,7 +12,6 @@
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/app_service_impl.h"
 #include "chrome/services/app_service/public/cpp/intent_util.h"
@@ -247,6 +246,18 @@ std::vector<std::string> AppServiceProxy::GetAppIdsForIntent(
   return app_ids;
 }
 
+void AppServiceProxy::SetArcIsRegistered() {
+#if defined(OS_CHROMEOS)
+  if (arc_is_registered_) {
+    return;
+  }
+
+  arc_is_registered_ = true;
+  extension_apps_->ObserveArc();
+  extension_web_apps_->ObserveArc();
+#endif
+}
+
 void AppServiceProxy::AddAppIconSource(Profile* profile) {
   // Make the chrome://app-icon/ resource available.
   content::URLDataSource::Add(profile,
@@ -270,17 +281,5 @@ void AppServiceProxy::Clone(
     mojo::PendingReceiver<apps::mojom::Subscriber> receiver) {
   receivers_.Add(this, std::move(receiver));
 }
-
-#if defined(OS_CHROMEOS)
-void AppServiceProxy::ApplyChromeBadge(Profile* profile,
-                                       const std::string& arc_package_name) {
-  const std::vector<std::string> extension_ids =
-      extensions::util::GetEquivalentInstalledExtensions(profile,
-                                                         arc_package_name);
-  for (auto app_id : extension_ids) {
-    this->extension_apps_->ApplyChromeBadge(app_id);
-  }
-}
-#endif  // OS_CHROMEOS
 
 }  // namespace apps

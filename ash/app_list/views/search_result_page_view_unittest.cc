@@ -35,7 +35,7 @@ enum class AnswerCardState {
 
 }  // namespace
 
-namespace app_list {
+namespace ash {
 namespace test {
 
 class SearchResultPageViewTest
@@ -167,4 +167,4 @@ TEST_P(SearchResultPageViewTest, ResultsSorted) {
 }
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace ash

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+
+<!--
+Copyright 2019 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Autofill Assistant Test</title>
+
+    <script>
+      var removeDiv = function() {
+        var div = document.getElementById("div");
+        div.parentNode.removeChild(div);
+      }
+    </script>
+  </head>
+  <body>
+    <button id="button" type="button" onclick="removeDiv()">Button</button>
+    <div id="div">Text</div>
+
+    <input id="input" type="text" />
+  </body>
+</html>

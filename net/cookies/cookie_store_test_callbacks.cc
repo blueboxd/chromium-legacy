@@ -80,21 +80,4 @@ void GetAllCookiesCallback::Run(const CookieList& cookies) {
   CallbackEpilogue();
 }
 
-GetAllCookiesWithAccessSemanticsCallback::
-    GetAllCookiesWithAccessSemanticsCallback() = default;
-GetAllCookiesWithAccessSemanticsCallback::
-    GetAllCookiesWithAccessSemanticsCallback(base::Thread* run_in_thread)
-    : CookieCallback(run_in_thread) {}
-
-GetAllCookiesWithAccessSemanticsCallback::
-    ~GetAllCookiesWithAccessSemanticsCallback() = default;
-
-void GetAllCookiesWithAccessSemanticsCallback::Run(
-    const CookieList& cookies,
-    const std::vector<CookieAccessSemantics>& access_semantics_list) {
-  cookies_ = cookies;
-  access_semantics_list_ = access_semantics_list;
-  CallbackEpilogue();
-}
-
 }  // namespace net

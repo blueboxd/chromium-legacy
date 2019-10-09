@@ -99,6 +99,10 @@ void MockCertVerifier::AddResultForCertAndHost(
   rules_.push_back(Rule(std::move(cert), host_pattern, verify_result, rv));
 }
 
+void MockCertVerifier::ClearRules() {
+  rules_.clear();
+}
+
 int MockCertVerifier::VerifyImpl(const RequestParams& params,
                                  CertVerifyResult* verify_result) {
   for (const Rule& rule : rules_) {

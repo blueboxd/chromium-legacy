@@ -8,7 +8,7 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "build/build_config.h"
 
-namespace app_list {
+namespace ash {
 namespace switches {
 
 // Please keep these flags sorted (but keep enable/disable pairs together).
@@ -26,6 +26,6 @@ bool ASH_PUBLIC_EXPORT IsFolderUIEnabled();
 bool ASH_PUBLIC_EXPORT ShouldNotDismissOnBlur();
 
 }  // namespace switches
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_SWITCHES_H_

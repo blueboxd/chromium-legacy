@@ -265,10 +265,11 @@ int32_t RTCVideoDecoderAdapter::Decode(const webrtc::EncodedImage& input_image,
   }
 
   std::vector<uint32_t> spatial_layer_frame_size;
-  for (int i = 0;; i++) {
+  size_t max_sl_index = input_image.SpatialIndex().value_or(0);
+  for (size_t i = 0; i <= max_sl_index; i++) {
     auto frame_size = input_image.SpatialLayerFrameSize(i);
     if (!frame_size)
-      break;
+      continue;
     spatial_layer_frame_size.push_back(*frame_size);
   }
 

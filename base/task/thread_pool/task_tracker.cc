@@ -120,9 +120,11 @@ class EphemeralTaskExecutor : public TaskExecutor {
   // |sequenced_task_runner| and |single_thread_task_runner| must outlive this
   // EphemeralTaskExecutor.
   EphemeralTaskExecutor(SequencedTaskRunner* sequenced_task_runner,
-                        SingleThreadTaskRunner* single_thread_task_runner)
+                        SingleThreadTaskRunner* single_thread_task_runner,
+                        const TaskTraits* sequence_traits)
       : sequenced_task_runner_(sequenced_task_runner),
-        single_thread_task_runner_(single_thread_task_runner) {
+        single_thread_task_runner_(single_thread_task_runner),
+        sequence_traits_(sequence_traits) {
     SetTaskExecutorForCurrentThread(this);
   }
 
@@ -135,23 +137,27 @@ class EphemeralTaskExecutor : public TaskExecutor {
                        const TaskTraits& traits,
                        OnceClosure task,
                        TimeDelta delay) override {
+    CheckTraitsCompatibleWithSequenceTraits(traits);
     return sequenced_task_runner_->PostDelayedTask(from_here, std::move(task),
                                                    delay);
   }
 
   scoped_refptr<TaskRunner> CreateTaskRunner(
       const TaskTraits& traits) override {
+    CheckTraitsCompatibleWithSequenceTraits(traits);
     return sequenced_task_runner_;
   }
 
   scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunner(
       const TaskTraits& traits) override {
+    CheckTraitsCompatibleWithSequenceTraits(traits);
     return sequenced_task_runner_;
   }
 
   scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunner(
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode) override {
+    CheckTraitsCompatibleWithSequenceTraits(traits);
     return single_thread_task_runner_;
   }
 
@@ -159,13 +165,30 @@ class EphemeralTaskExecutor : public TaskExecutor {
   scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunner(
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode) override {
+    CheckTraitsCompatibleWithSequenceTraits(traits);
     return single_thread_task_runner_;
   }
 #endif  // defined(OS_WIN)
 
  private:
-  SequencedTaskRunner* sequenced_task_runner_;
-  SingleThreadTaskRunner* single_thread_task_runner_;
+  // Currently ignores |traits.priority()|.
+  void CheckTraitsCompatibleWithSequenceTraits(const TaskTraits& traits) {
+    if (traits.shutdown_behavior_set_explicitly()) {
+      DCHECK_EQ(traits.shutdown_behavior(),
+                sequence_traits_->shutdown_behavior());
+    }
+
+    DCHECK(!traits.may_block() ||
+           traits.may_block() == sequence_traits_->may_block());
+
+    DCHECK(!traits.with_base_sync_primitives() ||
+           traits.with_base_sync_primitives() ==
+               sequence_traits_->with_base_sync_primitives());
+  }
+
+  SequencedTaskRunner* const sequenced_task_runner_;
+  SingleThreadTaskRunner* const single_thread_task_runner_;
+  const TaskTraits* const sequence_traits_;
 };
 
 }  // namespace
@@ -547,7 +570,7 @@ void TaskTracker::RunTask(Task task,
             static_cast<SequencedTaskRunner*>(task_source->task_runner()));
         ephemiral_task_executor.emplace(
             static_cast<SequencedTaskRunner*>(task_source->task_runner()),
-            nullptr);
+            nullptr, &traits);
         break;
       case TaskSourceExecutionMode::kSingleThread:
         DCHECK(task_source->task_runner());
@@ -555,7 +578,8 @@ void TaskTracker::RunTask(Task task,
             static_cast<SingleThreadTaskRunner*>(task_source->task_runner()));
         ephemiral_task_executor.emplace(
             static_cast<SequencedTaskRunner*>(task_source->task_runner()),
-            static_cast<SingleThreadTaskRunner*>(task_source->task_runner()));
+            static_cast<SingleThreadTaskRunner*>(task_source->task_runner()),
+            &traits);
         break;
     }
 

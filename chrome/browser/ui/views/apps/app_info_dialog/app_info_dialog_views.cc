@@ -50,7 +50,7 @@
 namespace {
 
 // The color of the separator used inside the dialog - should match the app
-// list's app_list::kDialogSeparatorColor
+// list's ash::kDialogSeparatorColor
 constexpr SkColor kDialogSeparatorColor = SkColorSetRGB(0xD1, 0xD1, 0xD1);
 constexpr gfx::Size kDialogSize = gfx::Size(380, 490);
 

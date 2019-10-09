@@ -30,6 +30,7 @@
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -183,6 +184,15 @@ void OfflinePageTabHelper::DidFinishNavigation(
 
   if (navigation_handle->IsSameDocument())
     return;
+
+  if (offline_info_.IsValid()) {
+    // Do not store the offline page we are navigating away from in bfcache.
+    // If we managed to establish a network connection, we should reload the
+    // full page on back navigation. If not, offline page is fast to load,
+    // so back-forward cache is not going to be useful here.
+    content::BackForwardCache::DisableForRenderFrameHost(
+        navigation_handle->GetPreviousRenderFrameHostId(), "OfflinePage");
+  }
 
   // This is a new navigation so we can invalidate any previously scheduled
   // operations.

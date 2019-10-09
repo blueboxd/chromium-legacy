@@ -19,7 +19,7 @@
 #include "base/macros.h"
 #include "ui/events/event.h"
 
-namespace app_list {
+namespace ash {
 namespace {
 
 class TestResultViewWithActions;
@@ -72,15 +72,13 @@ class TestResultViewWithActions : public TestResultView,
 class TestContainerDelegateHarness {
  public:
   TestContainerDelegateHarness() {
-    app_list_test_delegate_ =
-        std::make_unique<app_list::test::AppListTestViewDelegate>();
+    app_list_test_delegate_ = std::make_unique<test::AppListTestViewDelegate>();
   }
 
   ~TestContainerDelegateHarness() = default;
 
  protected:
-  std::unique_ptr<app_list::test::AppListTestViewDelegate>
-      app_list_test_delegate_;
+  std::unique_ptr<test::AppListTestViewDelegate> app_list_test_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContainerDelegateHarness);
 };
@@ -1458,4 +1456,4 @@ TEST_F(ResultSelectionTest, MoveNullSelectionWithSelectionChangesBlocked) {
   EXPECT_TRUE(result_selection_controller_->selected_result());
 }
 
-}  // namespace app_list
+}  // namespace ash

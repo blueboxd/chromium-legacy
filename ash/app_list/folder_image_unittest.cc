@@ -20,7 +20,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/skia_util.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -441,4 +441,4 @@ TEST_P(FolderImageTest, GetTargetIconRectInFolderWithFiveItems) {
   }
 }
 
-}  // namespace app_list
+}  // namespace ash

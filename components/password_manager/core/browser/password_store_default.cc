@@ -244,12 +244,13 @@ PasswordStoreDefault::GetAllLeakedCredentialsImpl() {
                    : std::vector<LeakedCredentials>();
 }
 
-void PasswordStoreDefault::RemoveLeakedCredentialsCreatedBetweenImpl(
+void PasswordStoreDefault::RemoveLeakedCredentialsByUrlAndTimeImpl(
+    const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time remove_begin,
     base::Time remove_end) {
   if (login_db_) {
-    login_db_->leaked_credentials_table().RemoveRowsCreatedBetween(remove_begin,
-                                                                   remove_end);
+    login_db_->leaked_credentials_table().RemoveRowsByUrlAndTime(
+        url_filter, remove_begin, remove_end);
   }
 }
 

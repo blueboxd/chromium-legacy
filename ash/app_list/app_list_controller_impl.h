@@ -49,10 +49,10 @@ class AppListControllerObserver;
 // functions that allow Chrome to modify and observe the Shelf and AppListModel
 // state.
 class ASH_EXPORT AppListControllerImpl
-    : public app_list::AppListController,
+    : public AppListController,
       public SessionObserver,
-      public app_list::AppListModelObserver,
-      public app_list::AppListViewDelegate,
+      public AppListModelObserver,
+      public AppListViewDelegate,
       public ash::ShellObserver,
       public OverviewObserver,
       public TabletModeObserver,
@@ -71,11 +71,11 @@ class ASH_EXPORT AppListControllerImpl
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  app_list::AppListPresenterImpl* presenter() { return &presenter_; }
+  AppListPresenterImpl* presenter() { return &presenter_; }
 
-  // app_list::AppListController:
-  void SetClient(app_list::AppListClient* client) override;
-  app_list::AppListClient* GetClient() override;
+  // AppListController:
+  void SetClient(AppListClient* client) override;
+  AppListClient* GetClient() override;
   void AddItem(std::unique_ptr<ash::AppListItemMetadata> app_item) override;
   void AddItemToFolder(std::unique_ptr<ash::AppListItemMetadata> app_item,
                        const std::string& folder_id) override;
@@ -127,10 +127,10 @@ class ASH_EXPORT AppListControllerImpl
   aura::Window* GetWindow() override;
   bool IsVisible() override;
 
-  // app_list::AppListModelObserver:
-  void OnAppListItemAdded(app_list::AppListItem* item) override;
-  void OnAppListItemWillBeDeleted(app_list::AppListItem* item) override;
-  void OnAppListItemUpdated(app_list::AppListItem* item) override;
+  // AppListModelObserver:
+  void OnAppListItemAdded(AppListItem* item) override;
+  void OnAppListItemWillBeDeleted(AppListItem* item) override;
+  void OnAppListItemUpdated(AppListItem* item) override;
   void OnAppListStateChanged(ash::AppListState new_state,
                              ash::AppListState old_state) override;
 
@@ -140,20 +140,20 @@ class ASH_EXPORT AppListControllerImpl
   // Methods used in ash:
   bool GetTargetVisibility() const;
   void Show(int64_t display_id,
-            app_list::AppListShowSource show_source,
+            AppListShowSource show_source,
             base::TimeTicks event_time_stamp);
   void UpdateYPositionAndOpacity(int y_position_in_screen,
                                  float background_opacity);
   void EndDragFromShelf(ash::AppListViewState app_list_state);
   void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
   ash::ShelfAction ToggleAppList(int64_t display_id,
-                                 app_list::AppListShowSource show_source,
+                                 AppListShowSource show_source,
                                  base::TimeTicks event_time_stamp);
   ash::AppListViewState GetAppListViewState();
 
-  // app_list::AppListViewDelegate:
-  app_list::AppListModel* GetModel() override;
-  app_list::SearchModel* GetSearchModel() override;
+  // AppListViewDelegate:
+  AppListModel* GetModel() override;
+  SearchModel* GetSearchModel() override;
   void StartAssistant() override;
   void StartSearch(const base::string16& raw_query) override;
   void OpenSearchResult(const std::string& result_id,
@@ -161,9 +161,8 @@ class ASH_EXPORT AppListControllerImpl
                         AppListLaunchedFrom launched_from,
                         AppListLaunchType launch_type,
                         int suggestion_index) override;
-  void LogResultLaunchHistogram(
-      app_list::SearchResultLaunchLocation launch_location,
-      int suggestion_index) override;
+  void LogResultLaunchHistogram(SearchResultLaunchLocation launch_location,
+                                int suggestion_index) override;
   void LogSearchAbandonHistogram() override;
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
@@ -209,7 +208,7 @@ class ASH_EXPORT AppListControllerImpl
   void OnStateTransitionAnimationCompleted(
       ash::AppListViewState state) override;
   void GetAppLaunchedMetricParams(
-      app_list::AppLaunchedMetricParams* metric_params) override;
+      AppLaunchedMetricParams* metric_params) override;
   gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) override;
   int GetShelfHeight() override;
 
@@ -287,7 +286,7 @@ class ASH_EXPORT AppListControllerImpl
   // |show_source| is the source of the event. |event_time_stamp| records the
   // event timestamp.
   ash::ShelfAction OnHomeButtonPressed(int64_t display_id,
-                                       app_list::AppListShowSource show_source,
+                                       AppListShowSource show_source,
                                        base::TimeTicks event_time_stamp);
 
   // Returns current visibility of the Assistant page.
@@ -298,7 +297,7 @@ class ASH_EXPORT AppListControllerImpl
       const ui::LocatedEvent& event_in_screen,
       float launcher_above_shelf_bottom_amount) const;
 
-  void SetAppListModelForTest(std::unique_ptr<app_list::AppListModel> model);
+  void SetAppListModelForTest(std::unique_ptr<AppListModel> model);
 
   using StateTransitionAnimationCallback =
       base::RepeatingCallback<void(ash::AppListViewState)>;
@@ -331,9 +330,9 @@ class ASH_EXPORT AppListControllerImpl
   void OnHomeLauncherDragEnd() override;
 
   syncer::StringOrdinal GetOemFolderPos();
-  std::unique_ptr<app_list::AppListItem> CreateAppListItem(
+  std::unique_ptr<AppListItem> CreateAppListItem(
       std::unique_ptr<ash::AppListItemMetadata> metadata);
-  app_list::AppListFolderItem* FindFolderItem(const std::string& folder_id);
+  AppListFolderItem* FindFolderItem(const std::string& folder_id);
 
   // Update the visibility of Assistant functionality.
   void UpdateAssistantVisibility();
@@ -354,14 +353,14 @@ class ASH_EXPORT AppListControllerImpl
   // Record the app launch for AppListAppLaunchedV2 metric.
   void RecordAppLaunched(AppListLaunchedFrom launched_from);
 
-  app_list::AppListClient* client_ = nullptr;
+  AppListClient* client_ = nullptr;
 
-  std::unique_ptr<app_list::AppListModel> model_;
-  app_list::SearchModel search_model_;
+  std::unique_ptr<AppListModel> model_;
+  SearchModel search_model_;
 
   // |presenter_| should be put below |client_| and |model_| to prevent a crash
   // in destruction.
-  app_list::AppListPresenterImpl presenter_;
+  AppListPresenterImpl presenter_;
 
   // True if the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;

@@ -26,8 +26,11 @@ class CookieControlsController {
  public:
   enum class Status {
     kUninitialized,
+    // Cookie blocking is enabled.
     kEnabled,
+    // Cookie blocking is disabled.
     kDisabled,
+    // Cookie blocking is enabled in general but was disabled for this site.
     kDisabledForSite,
   };
 
@@ -46,6 +49,9 @@ class CookieControlsController {
 
   // Returns the number of registrable domains with blocked cookies.
   int GetBlockedDomainCount();
+
+  // Returns the number of blocked cookies.
+  int GetBlockedCookieCount();
 
   void AddObserver(CookieControlsView* obs);
   void RemoveObserver(CookieControlsView* obs);

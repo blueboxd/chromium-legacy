@@ -4,6 +4,9 @@
 
 #include "components/password_manager/core/browser/leaked_credentials_table.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
 #include "sql/database.h"
@@ -15,6 +18,7 @@ namespace {
 
 const char kTestDomain[] = "http://example.com";
 const char kTestDomain2[] = "http://test.com";
+const char kTestDomain3[] = "http://google.com";
 const char kUsername[] = "user";
 const char kUsername2[] = "user2";
 const char kUsername3[] = "user3";
@@ -116,8 +120,9 @@ TEST_F(LeakedCredentialsTableTest, RemoveRowsCreatedBetween) {
               ElementsAre(leaked_credentials1, leaked_credentials2,
                           leaked_credentials3));
 
-  EXPECT_TRUE(db()->RemoveRowsCreatedBetween(base::Time::FromTimeT(15),
-                                             base::Time::FromTimeT(25)));
+  EXPECT_TRUE(db()->RemoveRowsByUrlAndTime(base::NullCallback(),
+                                           base::Time::FromTimeT(15),
+                                           base::Time::FromTimeT(25)));
 
   EXPECT_THAT(db()->GetAllRows(),
               ElementsAre(leaked_credentials1, leaked_credentials3));
@@ -138,7 +143,8 @@ TEST_F(LeakedCredentialsTableTest, RemoveRowsCreatedBetweenEdgeCase) {
   EXPECT_THAT(db()->GetAllRows(),
               ElementsAre(leaked_credentials_begin, leaked_credentials_end));
 
-  EXPECT_TRUE(db()->RemoveRowsCreatedBetween(begin_time, end_time));
+  EXPECT_TRUE(
+      db()->RemoveRowsByUrlAndTime(base::NullCallback(), begin_time, end_time));
   // RemoveRowsCreatedBetween takes |begin_time| inclusive and |end_time|
   // exclusive, hence the credentials with |end_time| should remain in the
   // database.
@@ -163,9 +169,37 @@ TEST_F(LeakedCredentialsTableTest, RemoveRowsCreatedUpUntilNow) {
               ElementsAre(leaked_credentials1, leaked_credentials2,
                           leaked_credentials3));
 
-  EXPECT_TRUE(db()->RemoveRowsCreatedBetween(base::Time(), base::Time()));
+  EXPECT_TRUE(db()->RemoveRowsByUrlAndTime(base::NullCallback(), base::Time(),
+                                           base::Time()));
 
   EXPECT_THAT(db()->GetAllRows(), IsEmpty());
+}
+
+TEST_F(LeakedCredentialsTableTest, RemoveRowsByUrlAndTime) {
+  LeakedCredentials leaked_credentials1 = test_data();
+  LeakedCredentials leaked_credentials2 = test_data();
+  LeakedCredentials leaked_credentials3 = test_data();
+  LeakedCredentials leaked_credentials4 = test_data();
+  leaked_credentials2.username = base::ASCIIToUTF16(kUsername2);
+  leaked_credentials3.url = GURL(kTestDomain2);
+  leaked_credentials4.url = GURL(kTestDomain3);
+
+  EXPECT_TRUE(db()->AddRow(leaked_credentials1));
+  EXPECT_TRUE(db()->AddRow(leaked_credentials2));
+  EXPECT_TRUE(db()->AddRow(leaked_credentials3));
+  EXPECT_TRUE(db()->AddRow(leaked_credentials4));
+
+  EXPECT_THAT(db()->GetAllRows(),
+              ElementsAre(leaked_credentials1, leaked_credentials2,
+                          leaked_credentials3, leaked_credentials4));
+
+  EXPECT_TRUE(db()->RemoveRowsByUrlAndTime(
+      base::BindRepeating(std::not_equal_to<GURL>(), leaked_credentials1.url),
+      base::Time(), base::Time()));
+  // With unbounded time range and given url filter all rows that are not
+  // matching the |leaked_credentials1.url| should be removed.
+  EXPECT_THAT(db()->GetAllRows(),
+              ElementsAre(leaked_credentials1, leaked_credentials2));
 }
 
 TEST_F(LeakedCredentialsTableTest, BadURL) {

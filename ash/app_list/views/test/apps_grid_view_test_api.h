@@ -16,7 +16,7 @@ namespace views {
 class View;
 }
 
-namespace app_list {
+namespace ash {
 
 class AppListItemView;
 class AppsGridView;
@@ -57,6 +57,6 @@ class AppsGridViewTestApi {
 };
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_TEST_APPS_GRID_VIEW_TEST_API_H_

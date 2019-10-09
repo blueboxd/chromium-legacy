@@ -35,13 +35,8 @@ WritableStream* WritableStream::Create(ScriptState* script_state,
                                        ScriptValue underlying_sink,
                                        ScriptValue strategy,
                                        ExceptionState& exception_state) {
-  WritableStream* stream = MakeGarbageCollected<WritableStreamNative>(
-      script_state, underlying_sink, strategy, exception_state);
-
-  if (exception_state.HadException())
-    return nullptr;
-
-  return stream;
+  return WritableStreamNative::Create(script_state, underlying_sink, strategy,
+                                      exception_state);
 }
 
 WritableStream* WritableStream::CreateWithCountQueueingStrategy(

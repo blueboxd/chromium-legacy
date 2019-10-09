@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -174,6 +175,52 @@ TEST(BrowserTaskEnvironmentTest, TraitsConstructorOverrideMainThreadType) {
 
   // There should be a mock clock.
   EXPECT_THAT(task_environment.GetMockClock(), testing::NotNull());
+}
+
+TEST(BrowserTaskEnvironmentTest, CurrentThread) {
+  BrowserTaskEnvironment task_environment;
+  base::RunLoop run_loop;
+
+  base::PostTask(FROM_HERE, {base::CurrentThread()},
+                 base::BindLambdaForTesting([&]() {
+                   base::PostTask(FROM_HERE, {base::CurrentThread()},
+                                  run_loop.QuitClosure());
+                 }));
+
+  run_loop.Run();
+}
+
+TEST(BrowserTaskEnvironmentTest, CurrentThreadIO) {
+  BrowserTaskEnvironment task_environment;
+  base::RunLoop run_loop;
+
+  auto io_task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+
+  base::PostTask(
+      FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
+        EXPECT_EQ(io_task_runner,
+                  base::CreateSingleThreadTaskRunner({base::CurrentThread()}));
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
+}
+
+TEST(BrowserTaskEnvironmentTest, CurrentThreadIOWithRealIOThread) {
+  BrowserTaskEnvironment task_environment(
+      BrowserTaskEnvironment::Options::REAL_IO_THREAD);
+  base::RunLoop run_loop;
+
+  auto io_task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+
+  base::PostTask(
+      FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
+        EXPECT_EQ(io_task_runner,
+                  base::CreateSingleThreadTaskRunner({base::CurrentThread()}));
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
 }
 
 }  // namespace content

@@ -233,6 +233,11 @@ class URLDatabase {
   // Deletes all searches matching |term|.
   bool DeleteKeywordSearchTerm(const base::string16& term);
 
+  // Deletes any search corresponding to |normalized_term|.
+  bool DeleteKeywordSearchTermForNormalizedTerm(
+      KeywordID keyword_id,
+      const base::string16& normalized_term);
+
   // Deletes any search corresponding to |url_id|.
   bool DeleteKeywordSearchTermForURL(URLID url_id);
 

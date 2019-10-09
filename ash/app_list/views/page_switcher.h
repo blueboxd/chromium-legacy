@@ -11,9 +11,6 @@
 
 namespace ash {
 class PaginationModel;
-}
-
-namespace app_list {
 
 // PageSwitcher represents its underlying PaginationModel with a button
 // strip. Each page in the PageinationModel has a button in the strip and
@@ -61,6 +58,6 @@ class PageSwitcher : public views::View,
   DISALLOW_COPY_AND_ASSIGN(PageSwitcher);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_PAGE_SWITCHER_H_

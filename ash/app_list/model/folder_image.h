@@ -20,7 +20,7 @@ namespace gfx {
 class Rect;
 }
 
-namespace app_list {
+namespace ash {
 
 class AppListConfig;
 class AppListItem;
@@ -118,6 +118,6 @@ class APP_LIST_MODEL_EXPORT FolderImage : public AppListItemListObserver,
   base::ObserverList<FolderImageObserver>::Unchecked observers_;
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_MODEL_FOLDER_IMAGE_H_

@@ -48,7 +48,7 @@ suite('<app-management-arc-permission-view>', () => {
     // Add an arc app, and make it the currently selected app.
     const app = await fakeHandler.addApp(null, arcOptions);
     app_management.Store.getInstance().dispatch(
-        app_management.actions.changePage(PageType.DETAIL, app.id));
+        app_management.actions.updateSelectedAppId(app.id));
 
     arcPermissionView =
         document.createElement('app-management-arc-permission-view');
@@ -57,7 +57,7 @@ suite('<app-management-arc-permission-view>', () => {
 
   test('App is rendered correctly', () => {
     assertEquals(
-        app_management.Store.getInstance().data.currentPage.selectedAppId,
+        app_management.Store.getInstance().data.selectedAppId,
         arcPermissionView.app_.id);
   });
 

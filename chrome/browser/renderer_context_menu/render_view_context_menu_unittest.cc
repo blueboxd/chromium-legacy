@@ -544,9 +544,6 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswords) {
   // Set up password manager stuff.
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents(), nullptr);
-  password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
-      web_contents())
-      ->RenderFrameCreated(web_contents()->GetMainFrame());
 
   NavigateAndCommit(GURL("http://www.foo.com/"));
   content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
@@ -568,9 +565,6 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswordsIncognito) {
   // Set up password manager stuff.
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       incognito_web_contents.get(), nullptr);
-  password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
-      incognito_web_contents.get())
-      ->RenderFrameCreated(incognito_web_contents->GetMainFrame());
 
   content::WebContentsTester::For(incognito_web_contents.get())
       ->NavigateAndCommit(GURL("http://www.foo.com/"));

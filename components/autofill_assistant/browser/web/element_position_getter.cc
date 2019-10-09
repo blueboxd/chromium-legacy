@@ -24,11 +24,14 @@ const char* const kScrollIntoViewIfNeededScript =
 
 namespace autofill_assistant {
 
-ElementPositionGetter::ElementPositionGetter(DevtoolsClient* devtools_client,
-                                             const ClientSettings& settings)
+ElementPositionGetter::ElementPositionGetter(
+    DevtoolsClient* devtools_client,
+    const ClientSettings& settings,
+    const std::string& optional_node_frame_id)
     : check_interval_(settings.box_model_check_interval),
       max_rounds_(settings.box_model_check_count),
       devtools_client_(devtools_client),
+      node_frame_id_(optional_node_frame_id),
       weak_ptr_factory_(this) {}
 
 ElementPositionGetter::~ElementPositionGetter() = default;
@@ -64,6 +67,7 @@ void ElementPositionGetter::OnVisualStateUpdatedCallback(bool success) {
 void ElementPositionGetter::GetAndWaitBoxModelStable() {
   devtools_client_->GetDOM()->GetBoxModel(
       dom::GetBoxModelParams::Builder().SetObjectId(object_id_).Build(),
+      node_frame_id_,
       base::BindOnce(&ElementPositionGetter::OnGetBoxModelForStableCheck,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -124,6 +128,7 @@ void ElementPositionGetter::OnGetBoxModelForStableCheck(
             .SetFunctionDeclaration(std::string(kScrollIntoViewIfNeededScript))
             .SetReturnByValue(true)
             .Build(),
+        node_frame_id_,
         base::BindOnce(&ElementPositionGetter::OnScrollIntoView,
                        weak_ptr_factory_.GetWeakPtr()));
     return;

@@ -965,8 +965,9 @@ ReadableStreamNative* ReadableStreamNative::Create(
     ScriptValue underlying_source,
     ScriptValue strategy,
     ExceptionState& exception_state) {
-  auto* stream = MakeGarbageCollected<ReadableStreamNative>(
-      script_state, underlying_source, strategy, false, exception_state);
+  auto* stream = MakeGarbageCollected<ReadableStreamNative>();
+  stream->InitInternal(script_state, underlying_source, strategy, false,
+                       exception_state);
   if (exception_state.HadException()) {
     return nullptr;
   }
@@ -1001,7 +1002,8 @@ ReadableStreamNative* ReadableStreamNative::CreateWithCountQueueingStrategy(
   v8::Local<v8::Value> underlying_source_v8 =
       ToV8(underlying_source, script_state);
 
-  auto* stream = MakeGarbageCollected<ReadableStreamNative>(
+  auto* stream = MakeGarbageCollected<ReadableStreamNative>();
+  stream->InitInternal(
       script_state,
       ScriptValue(script_state->GetIsolate(), underlying_source_v8),
       ScriptValue(script_state->GetIsolate(), strategy_object), true,
@@ -1059,99 +1061,6 @@ ReadableStreamNative* ReadableStreamNative::Create(
 }
 
 ReadableStreamNative::ReadableStreamNative() = default;
-
-ReadableStreamNative::ReadableStreamNative(ScriptState* script_state,
-                                           ScriptValue raw_underlying_source,
-                                           ScriptValue raw_strategy,
-                                           bool created_by_ua,
-                                           ExceptionState& exception_state) {
-  if (!created_by_ua) {
-    // TODO(ricea): Move this to IDL once blink::ReadableStreamOperations is
-    // no longer using the public constructor.
-    UseCounter::Count(ExecutionContext::From(script_state),
-                      WebFeature::kReadableStreamConstructor);
-  }
-
-  // https://streams.spec.whatwg.org/#rs-constructor
-  //  1. Perform ! InitializeReadableStream(this).
-  Initialize(this);
-
-  // The next part of this constructor corresponds to the object conversions
-  // that are implicit in the definition in the standard.
-  DCHECK(!raw_underlying_source.IsEmpty());
-  DCHECK(!raw_strategy.IsEmpty());
-
-  auto context = script_state->GetContext();
-  auto* isolate = script_state->GetIsolate();
-
-  v8::Local<v8::Object> underlying_source;
-  ScriptValueToObject(script_state, raw_underlying_source, &underlying_source,
-                      exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  // 2. Let size be ? GetV(strategy, "size").
-  // 3. Let highWaterMark be ? GetV(strategy, "highWaterMark").
-  StrategyUnpacker strategy_unpacker(script_state, raw_strategy,
-                                     exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  // 4. Let type be ? GetV(underlyingSource, "type").
-  v8::TryCatch try_catch(isolate);
-  v8::Local<v8::Value> type;
-  if (!underlying_source->Get(context, V8AtomicString(isolate, "type"))
-           .ToLocal(&type)) {
-    exception_state.RethrowV8Exception(try_catch.Exception());
-    return;
-  }
-
-  if (!type->IsUndefined()) {
-    // 5. Let typeString be ? ToString(type).
-    v8::Local<v8::String> type_string;
-    if (!type->ToString(context).ToLocal(&type_string)) {
-      exception_state.RethrowV8Exception(try_catch.Exception());
-      return;
-    }
-
-    // 6. If typeString is "bytes",
-    if (type_string == V8AtomicString(isolate, "bytes")) {
-      // TODO(ricea): Implement bytes type.
-      exception_state.ThrowRangeError("bytes type is not yet implemented");
-      return;
-    }
-
-    // 8. Otherwise, throw a RangeError exception.
-    exception_state.ThrowRangeError("Invalid type is specified");
-    return;
-  }
-
-  // 7. Otherwise, if type is undefined,
-  //   a. Let sizeAlgorithm be ? MakeSizeAlgorithmFromSizeFunction(size).
-  auto* size_algorithm =
-      strategy_unpacker.MakeSizeAlgorithm(script_state, exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-  DCHECK(size_algorithm);
-
-  //   b. If highWaterMark is undefined, let highWaterMark be 1.
-  //   c. Set highWaterMark to ? ValidateAndNormalizeHighWaterMark(
-  //      highWaterMark).
-  double high_water_mark =
-      strategy_unpacker.GetHighWaterMark(script_state, 1, exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  // 4. Perform ? SetUpReadableStreamDefaultControllerFromUnderlyingSource
-  //  (this, underlyingSource, highWaterMark, sizeAlgorithm).
-  ReadableStreamDefaultController::SetUpFromUnderlyingSource(
-      script_state, this, underlying_source, high_water_mark, size_algorithm,
-      exception_state);
-}
 
 ReadableStreamNative::~ReadableStreamNative() = default;
 
@@ -1294,6 +1203,102 @@ ScriptPromise ReadableStreamNative::pipeTo(ScriptState* script_state,
 ScriptValue ReadableStreamNative::tee(ScriptState* script_state,
                                       ExceptionState& exception_state) {
   return CallTeeAndReturnBranchArray(script_state, this, exception_state);
+}
+
+// Unlike in the standard, this is defined as a separate method from the
+// constructor. This prevents problems when garbage collection happens
+// re-entrantly during construction.
+void ReadableStreamNative::InitInternal(ScriptState* script_state,
+                                        ScriptValue raw_underlying_source,
+                                        ScriptValue raw_strategy,
+                                        bool created_by_ua,
+                                        ExceptionState& exception_state) {
+  if (!created_by_ua) {
+    // TODO(ricea): Move this to IDL once blink::ReadableStreamOperations is
+    // no longer using the public constructor.
+    UseCounter::Count(ExecutionContext::From(script_state),
+                      WebFeature::kReadableStreamConstructor);
+  }
+
+  // https://streams.spec.whatwg.org/#rs-constructor
+  //  1. Perform ! InitializeReadableStream(this).
+  Initialize(this);
+
+  // The next part of this constructor corresponds to the object conversions
+  // that are implicit in the definition in the standard.
+  DCHECK(!raw_underlying_source.IsEmpty());
+  DCHECK(!raw_strategy.IsEmpty());
+
+  auto context = script_state->GetContext();
+  auto* isolate = script_state->GetIsolate();
+
+  v8::Local<v8::Object> underlying_source;
+  ScriptValueToObject(script_state, raw_underlying_source, &underlying_source,
+                      exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // 2. Let size be ? GetV(strategy, "size").
+  // 3. Let highWaterMark be ? GetV(strategy, "highWaterMark").
+  StrategyUnpacker strategy_unpacker(script_state, raw_strategy,
+                                     exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // 4. Let type be ? GetV(underlyingSource, "type").
+  v8::TryCatch try_catch(isolate);
+  v8::Local<v8::Value> type;
+  if (!underlying_source->Get(context, V8AtomicString(isolate, "type"))
+           .ToLocal(&type)) {
+    exception_state.RethrowV8Exception(try_catch.Exception());
+    return;
+  }
+
+  if (!type->IsUndefined()) {
+    // 5. Let typeString be ? ToString(type).
+    v8::Local<v8::String> type_string;
+    if (!type->ToString(context).ToLocal(&type_string)) {
+      exception_state.RethrowV8Exception(try_catch.Exception());
+      return;
+    }
+
+    // 6. If typeString is "bytes",
+    if (type_string == V8AtomicString(isolate, "bytes")) {
+      // TODO(ricea): Implement bytes type.
+      exception_state.ThrowRangeError("bytes type is not yet implemented");
+      return;
+    }
+
+    // 8. Otherwise, throw a RangeError exception.
+    exception_state.ThrowRangeError("Invalid type is specified");
+    return;
+  }
+
+  // 7. Otherwise, if type is undefined,
+  //   a. Let sizeAlgorithm be ? MakeSizeAlgorithmFromSizeFunction(size).
+  auto* size_algorithm =
+      strategy_unpacker.MakeSizeAlgorithm(script_state, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+  DCHECK(size_algorithm);
+
+  //   b. If highWaterMark is undefined, let highWaterMark be 1.
+  //   c. Set highWaterMark to ? ValidateAndNormalizeHighWaterMark(
+  //      highWaterMark).
+  double high_water_mark =
+      strategy_unpacker.GetHighWaterMark(script_state, 1, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // 4. Perform ? SetUpReadableStreamDefaultControllerFromUnderlyingSource
+  //  (this, underlyingSource, highWaterMark, sizeAlgorithm).
+  ReadableStreamDefaultController::SetUpFromUnderlyingSource(
+      script_state, this, underlying_source, high_water_mark, size_algorithm,
+      exception_state);
 }
 
 //

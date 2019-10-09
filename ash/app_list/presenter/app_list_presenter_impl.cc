@@ -30,7 +30,7 @@
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/public/activation_client.h"
 
-namespace app_list {
+namespace ash {
 namespace {
 
 inline ui::Layer* GetLayer(views::Widget* widget) {
@@ -169,7 +169,7 @@ bool AppListPresenterImpl::HandleCloseOpenSearchBox() {
 
 ash::ShelfAction AppListPresenterImpl::ToggleAppList(
     int64_t display_id,
-    app_list::AppListShowSource show_source,
+    AppListShowSource show_source,
     base::TimeTicks event_time_stamp) {
   bool request_fullscreen = show_source == kSearchKeyFullscreen ||
                             show_source == kShelfButtonFullscreen;
@@ -463,4 +463,4 @@ void AppListPresenterImpl::RequestPresentationTime(
                      is_target_visibility_show_));
 }
 
-}  // namespace app_list
+}  // namespace ash

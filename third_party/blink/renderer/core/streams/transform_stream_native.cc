@@ -151,9 +151,9 @@ void TransformStreamNative::InitFromJS(ScriptState* script_state,
                                        Member<ReadableStream>* readable,
                                        Member<WritableStream>* writable,
                                        ExceptionState& exception_state) {
-  const auto* stream = MakeGarbageCollected<TransformStreamNative>(
-      script_state, raw_transformer, raw_writable_strategy,
-      raw_readable_strategy, exception_state);
+  auto* stream = MakeGarbageCollected<TransformStreamNative>();
+  stream->InitInternal(script_state, raw_transformer, raw_writable_strategy,
+                       raw_readable_strategy, exception_state);
   *readable = stream->readable_;
   *writable = stream->writable_;
   // We no longer need a direct reference to |stream|.
@@ -254,149 +254,6 @@ TransformStreamNative* TransformStreamNative::Create(
 
 // This constructor is only used internally.
 TransformStreamNative::TransformStreamNative() = default;
-
-TransformStreamNative::TransformStreamNative(ScriptState* script_state,
-                                             ScriptValue raw_transformer,
-                                             ScriptValue raw_writable_strategy,
-                                             ScriptValue raw_readable_strategy,
-                                             ExceptionState& exception_state) {
-  // TODO(ricea): Move this to IDL.
-  UseCounter::Count(ExecutionContext::From(script_state),
-                    WebFeature::kTransformStreamConstructor);
-
-  DCHECK(!raw_transformer.IsEmpty());
-  DCHECK(!raw_writable_strategy.IsEmpty());
-  DCHECK(!raw_readable_strategy.IsEmpty());
-
-  auto context = script_state->GetContext();
-  auto* isolate = script_state->GetIsolate();
-
-  // https://streams.spec.whatwg.org/#ts-constructor
-  // Perform the "transformer = {}" step from the function signature.
-  v8::Local<v8::Object> transformer;
-  ScriptValueToObject(script_state, raw_transformer, &transformer,
-                      exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  // Perform the "writableStrategy = {}" step from the function signature, and
-  // 1. Let writableSizeFunction be ? GetV(writableStrategy, "size").
-  // 2. Let writableHighWaterMark be ? GetV(writableStrategy, "highWaterMark").
-  StrategyUnpacker writable_strategy_unpacker(
-      script_state, raw_writable_strategy, exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  // Perform the "readableStrategy = {}" step from the function signature, and
-  // 3. Let readableSizeFunction be ? GetV(readableStrategy, "size").
-  // 4. Let readableHighWaterMark be ? GetV(readableStrategy, "highWaterMark").
-  StrategyUnpacker readable_strategy_unpacker(
-      script_state, raw_readable_strategy, exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  v8::TryCatch try_catch(isolate);
-
-  // 5. Let writableType be ? GetV(transformer, "writableType").
-  v8::Local<v8::Value> writable_type;
-  if (!transformer->Get(context, V8AtomicString(isolate, "writableType"))
-           .ToLocal(&writable_type)) {
-    exception_state.RethrowV8Exception(try_catch.Exception());
-    return;
-  }
-
-  // 6. If writableType is not undefined, throw a RangeError exception.
-  if (!writable_type->IsUndefined()) {
-    exception_state.ThrowRangeError("Invalid writableType was specified");
-    return;
-  }
-
-  // 7. Let writableSizeAlgorithm be ? MakeSizeAlgorithmFromSizeFunction(
-  //    writableSizeFunction).
-  auto* writable_size_algorithm = writable_strategy_unpacker.MakeSizeAlgorithm(
-      script_state, exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  // 8. If writableHighWaterMark is undefined, set writableHighWaterMark to 1.
-  // 9. Set writableHighWaterMark to ? ValidateAndNormalizeHighWaterMark(
-  //    writableHighWaterMark).
-  double writable_high_water_mark = writable_strategy_unpacker.GetHighWaterMark(
-      script_state, 1, exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  // 10. Let readableType be ? GetV(transformer, "readableType").
-  v8::Local<v8::Value> readable_type;
-  if (!transformer->Get(context, V8AtomicString(isolate, "readableType"))
-           .ToLocal(&readable_type)) {
-    exception_state.RethrowV8Exception(try_catch.Exception());
-    return;
-  }
-
-  // 11. If readableType is not undefined, throw a RangeError exception.
-  if (!readable_type->IsUndefined()) {
-    exception_state.ThrowRangeError("Invalid readableType was specified");
-    return;
-  }
-
-  // 12. Let readableSizeAlgorithm be ? MakeSizeAlgorithmFromSizeFunction(
-  //     readableSizeFunction).
-  auto* readable_size_algorithm = readable_strategy_unpacker.MakeSizeAlgorithm(
-      script_state, exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  // 13. If readableHighWaterMark is undefined, set readableHighWaterMark to 0.
-  // 14. Set readableHighWaterMark be ? ValidateAndNormalizeHighWaterMark(
-  //     readableHighWaterMark).
-  double readable_high_water_mark = readable_strategy_unpacker.GetHighWaterMark(
-      script_state, 0, exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  // 15. Let startPromise be a new promise.
-  auto* start_promise =
-      MakeGarbageCollected<StreamPromiseResolver>(script_state);
-
-  // 16. Perform ! InitializeTransformStream(this, startPromise,
-  //     writableHighWaterMark, writableSizeAlgorithm, readableHighWaterMark,
-  //     readableSizeAlgorithm).
-  Initialize(script_state, this, start_promise, writable_high_water_mark,
-             writable_size_algorithm, readable_high_water_mark,
-             readable_size_algorithm);
-
-  // 17. Perform ? SetUpTransformStreamDefaultControllerFromTransformer(this,
-  //     transformer).
-  const auto controller_value =
-      TransformStreamDefaultController::SetUpFromTransformer(
-          script_state, this, transformer, exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  // 18. Let startResult be ? InvokeOrNoop(transformer, "start", « this.
-  //     [[transformStreamController]] »).
-  v8::MaybeLocal<v8::Value> start_result_maybe =
-      CallOrNoop1(script_state, transformer, "start", "transformer.start",
-                  controller_value, exception_state);
-  v8::Local<v8::Value> start_result;
-  if (!start_result_maybe.ToLocal(&start_result)) {
-    CHECK(exception_state.HadException());
-    return;
-  }
-  DCHECK(!exception_state.HadException());
-
-  // 19. Resolve startPromise with startResult.
-  start_promise->Resolve(script_state, start_result);
-}
 
 void TransformStreamNative::Trace(Visitor* visitor) {
   visitor->Trace(backpressure_change_promise_);
@@ -736,6 +593,151 @@ class TransformStreamNative::DefaultSourceCancelAlgorithm final
  private:
   Member<TransformStreamNative> stream_;
 };
+
+// This is split out from the constructor in this implementation as calling
+// JavaScript from inside a C++ constructor can cause GC problems.
+void TransformStreamNative::InitInternal(ScriptState* script_state,
+                                         ScriptValue raw_transformer,
+                                         ScriptValue raw_writable_strategy,
+                                         ScriptValue raw_readable_strategy,
+                                         ExceptionState& exception_state) {
+  // TODO(ricea): Move this to IDL.
+  UseCounter::Count(ExecutionContext::From(script_state),
+                    WebFeature::kTransformStreamConstructor);
+
+  DCHECK(!raw_transformer.IsEmpty());
+  DCHECK(!raw_writable_strategy.IsEmpty());
+  DCHECK(!raw_readable_strategy.IsEmpty());
+
+  auto context = script_state->GetContext();
+  auto* isolate = script_state->GetIsolate();
+
+  // https://streams.spec.whatwg.org/#ts-constructor
+  // Perform the "transformer = {}" step from the function signature.
+  v8::Local<v8::Object> transformer;
+  ScriptValueToObject(script_state, raw_transformer, &transformer,
+                      exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // Perform the "writableStrategy = {}" step from the function signature, and
+  // 1. Let writableSizeFunction be ? GetV(writableStrategy, "size").
+  // 2. Let writableHighWaterMark be ? GetV(writableStrategy, "highWaterMark").
+  StrategyUnpacker writable_strategy_unpacker(
+      script_state, raw_writable_strategy, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // Perform the "readableStrategy = {}" step from the function signature, and
+  // 3. Let readableSizeFunction be ? GetV(readableStrategy, "size").
+  // 4. Let readableHighWaterMark be ? GetV(readableStrategy, "highWaterMark").
+  StrategyUnpacker readable_strategy_unpacker(
+      script_state, raw_readable_strategy, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  v8::TryCatch try_catch(isolate);
+
+  // 5. Let writableType be ? GetV(transformer, "writableType").
+  v8::Local<v8::Value> writable_type;
+  if (!transformer->Get(context, V8AtomicString(isolate, "writableType"))
+           .ToLocal(&writable_type)) {
+    exception_state.RethrowV8Exception(try_catch.Exception());
+    return;
+  }
+
+  // 6. If writableType is not undefined, throw a RangeError exception.
+  if (!writable_type->IsUndefined()) {
+    exception_state.ThrowRangeError("Invalid writableType was specified");
+    return;
+  }
+
+  // 7. Let writableSizeAlgorithm be ? MakeSizeAlgorithmFromSizeFunction(
+  //    writableSizeFunction).
+  auto* writable_size_algorithm = writable_strategy_unpacker.MakeSizeAlgorithm(
+      script_state, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // 8. If writableHighWaterMark is undefined, set writableHighWaterMark to 1.
+  // 9. Set writableHighWaterMark to ? ValidateAndNormalizeHighWaterMark(
+  //    writableHighWaterMark).
+  double writable_high_water_mark = writable_strategy_unpacker.GetHighWaterMark(
+      script_state, 1, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // 10. Let readableType be ? GetV(transformer, "readableType").
+  v8::Local<v8::Value> readable_type;
+  if (!transformer->Get(context, V8AtomicString(isolate, "readableType"))
+           .ToLocal(&readable_type)) {
+    exception_state.RethrowV8Exception(try_catch.Exception());
+    return;
+  }
+
+  // 11. If readableType is not undefined, throw a RangeError exception.
+  if (!readable_type->IsUndefined()) {
+    exception_state.ThrowRangeError("Invalid readableType was specified");
+    return;
+  }
+
+  // 12. Let readableSizeAlgorithm be ? MakeSizeAlgorithmFromSizeFunction(
+  //     readableSizeFunction).
+  auto* readable_size_algorithm = readable_strategy_unpacker.MakeSizeAlgorithm(
+      script_state, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // 13. If readableHighWaterMark is undefined, set readableHighWaterMark to 0.
+  // 14. Set readableHighWaterMark be ? ValidateAndNormalizeHighWaterMark(
+  //     readableHighWaterMark).
+  double readable_high_water_mark = readable_strategy_unpacker.GetHighWaterMark(
+      script_state, 0, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // 15. Let startPromise be a new promise.
+  auto* start_promise =
+      MakeGarbageCollected<StreamPromiseResolver>(script_state);
+
+  // 16. Perform ! InitializeTransformStream(this, startPromise,
+  //     writableHighWaterMark, writableSizeAlgorithm, readableHighWaterMark,
+  //     readableSizeAlgorithm).
+  Initialize(script_state, this, start_promise, writable_high_water_mark,
+             writable_size_algorithm, readable_high_water_mark,
+             readable_size_algorithm);
+
+  // 17. Perform ? SetUpTransformStreamDefaultControllerFromTransformer(this,
+  //     transformer).
+  const auto controller_value =
+      TransformStreamDefaultController::SetUpFromTransformer(
+          script_state, this, transformer, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // 18. Let startResult be ? InvokeOrNoop(transformer, "start", « this.
+  //     [[transformStreamController]] »).
+  v8::MaybeLocal<v8::Value> start_result_maybe =
+      CallOrNoop1(script_state, transformer, "start", "transformer.start",
+                  controller_value, exception_state);
+  v8::Local<v8::Value> start_result;
+  if (!start_result_maybe.ToLocal(&start_result)) {
+    CHECK(exception_state.HadException());
+    return;
+  }
+  DCHECK(!exception_state.HadException());
+
+  // 19. Resolve startPromise with startResult.
+  start_promise->Resolve(script_state, start_result);
+}
 
 void TransformStreamNative::Initialize(
     ScriptState* script_state,

@@ -72,8 +72,8 @@ void ZeroStateFileResult::Open(int event_flags) {
                           platform_util::OpenOperationCallback());
 }
 
-SearchResultType ZeroStateFileResult::GetSearchResultType() const {
-  return ZERO_STATE_FILE;
+ash::SearchResultType ZeroStateFileResult::GetSearchResultType() const {
+  return ash::ZERO_STATE_FILE;
 }
 
 ::std::ostream& operator<<(::std::ostream& os,

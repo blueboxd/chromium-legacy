@@ -4177,7 +4177,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcCameraAppOpenAndClose) {
   // After starting the ARC camera app, it's actually the internal camera app
   // being put onto the shelf. Therefore, we need to specify the internal
   // camera app shelf ID to access it.
-  const std::string intern_app_id(app_list::kInternalAppIdCamera);
+  const std::string intern_app_id(ash::kInternalAppIdCamera);
   const ash::ShelfID intern_shelf_id(intern_app_id);
   EXPECT_TRUE(launcher_controller_->IsOpen(intern_shelf_id));
 
@@ -4203,7 +4203,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcCameraAppMenuItemsCount) {
   // After starting the ARC camera app, it's actually the internal camera app
   // being put onto the shelf. Therefore, we need to specify the internal
   // camera app shelf ID to access it.
-  const std::string intern_app_id(app_list::kInternalAppIdCamera);
+  const std::string intern_app_id(ash::kInternalAppIdCamera);
   ash::ShelfItemDelegate* item_delegate =
       model_->GetShelfItemDelegate(ash::ShelfID(intern_app_id));
   ASSERT_TRUE(item_delegate);
@@ -4449,7 +4449,7 @@ TEST_F(ChromeLauncherControllerTest, InternalAppPinUnpin) {
   // The model should only contain the browser shortcut item.
   EXPECT_EQ(1, model_->item_count());
 
-  const std::string app_id = app_list::kInternalAppIdSettings;
+  const std::string app_id = ash::kInternalAppIdSettings;
   EXPECT_FALSE(launcher_controller_->IsAppPinned(app_id));
 
   // Pin Settings.

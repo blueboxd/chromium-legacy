@@ -9,7 +9,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ui/events/event.h"
 
-namespace app_list {
+namespace ash {
 
 class AppListModel;
 class SearchModel;
@@ -270,8 +270,8 @@ void RecordFolderShowHideAnimationSmoothness(int actual_frames,
                                              base::TimeDelta ideal_duration,
                                              float refresh_rate);
 
-void RecordPageSwitcherSourceByEventType(ui::EventType type,
-                                         bool is_tablet_mode);
+void AppListRecordPageSwitcherSourceByEventType(ui::EventType type,
+                                                bool is_tablet_mode);
 
 void RecordPageSwitcherSource(AppListPageSwitcherSource source,
                               bool is_tablet_mode);
@@ -308,6 +308,6 @@ APP_LIST_EXPORT void RecordAppListAppLaunched(
 
 APP_LIST_EXPORT bool IsCommandIdAnAppLaunch(int command_id);
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_APP_LIST_METRICS_H_

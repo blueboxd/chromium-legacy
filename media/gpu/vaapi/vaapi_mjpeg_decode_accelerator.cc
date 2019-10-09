@@ -32,7 +32,7 @@
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
-#include "media/base/video_types.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
@@ -460,7 +460,7 @@ void VaapiMjpegDecodeAccelerator::DecodeImpl(
   // VPP to convert the decoded |surface| into it, if the formats and sizes are
   // supported.
   const uint32_t video_frame_va_fourcc =
-      VideoPixelFormatToVAFourCC(dst_frame->format());
+      Fourcc::FromVideoPixelFormat(dst_frame->format()).ToVAFourCC();
   if (video_frame_va_fourcc == kInvalidVaFourcc) {
     VLOGF(1) << "Unsupported video frame format: " << dst_frame->format();
     NotifyError(task_id, PLATFORM_FAILURE);

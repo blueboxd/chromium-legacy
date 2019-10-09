@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_CORE_COMMON_PASSWORD_FORM_FILL_DATA_H_
 
 #include <map>
+#include <vector>
 
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -32,11 +33,10 @@ struct PasswordFormFillData {
   // not autofill anything until the user typed in a valid username and blurred
   // the field. If |enable_possible_usernames| is true, we will populate
   // possible_usernames.
-  PasswordFormFillData(
-      const PasswordForm& form_on_page,
-      const std::map<base::string16, const PasswordForm*>& matches,
-      const PasswordForm& preferred_match,
-      bool wait_for_username);
+  PasswordFormFillData(const PasswordForm& form_on_page,
+                       const std::vector<const PasswordForm*>& matches,
+                       const PasswordForm& preferred_match,
+                       bool wait_for_username);
 
   PasswordFormFillData(const PasswordFormFillData&);
   PasswordFormFillData& operator=(const PasswordFormFillData&);

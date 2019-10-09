@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/task_executor.h"
 #include "base/test/bind_test_util.h"
@@ -530,12 +531,33 @@ TEST_F(ThreadTest, GetTaskExecutorForCurrentThread) {
   Thread a("GetTaskExecutorForCurrentThread");
   ASSERT_TRUE(a.Start());
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent event;
 
   a.task_runner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
         EXPECT_THAT(base::GetTaskExecutorForCurrentThread(), NotNull());
+        event.Signal();
+      }));
+
+  event.Wait();
+  a.Stop();
+}
+
+TEST_F(ThreadTest, CurrentThread) {
+  Thread a("CurrentThread");
+  ASSERT_TRUE(a.Start());
+
+  base::WaitableEvent event;
+
+  a.task_runner()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        EXPECT_EQ(a.task_runner(),
+                  base::CreateSingleThreadTaskRunner({base::CurrentThread()}));
+
+        // There's only a single task runner so base::TaskPriority is ignored.
+        EXPECT_EQ(a.task_runner(), base::CreateSingleThreadTaskRunner(
+                                       {base::CurrentThread(),
+                                        base::TaskPriority::BEST_EFFORT}));
         event.Signal();
       }));
 

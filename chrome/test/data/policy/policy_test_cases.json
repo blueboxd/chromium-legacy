@@ -428,7 +428,13 @@
   },
 
   "ExternalPrintServers": {
-    "note": "This policy will be added in R-79"
+    "os": ["chromeos"],
+    "test_policy": {
+      "ExternalPrintServers": {
+        "url": "https://example.com/policyfile",
+        "hash": "deadbeefdeadbeefdeadbeef"
+      }
+    }
   },
 
   "NativePrinters": {

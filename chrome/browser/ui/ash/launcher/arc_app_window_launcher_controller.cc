@@ -40,7 +40,7 @@ constexpr size_t kMaxIconPngSize = 64 * 1024;  // 64 kb
 // Map any ARC Camera app to internal Camera app.
 ash::ShelfID MaybeMapShelfId(const arc::ArcAppShelfId& arc_app_shelf_id) {
   if (IsCameraApp(arc_app_shelf_id.app_id()))
-    return ash::ShelfID(app_list::kInternalAppIdCamera);
+    return ash::ShelfID(ash::kInternalAppIdCamera);
   return ash::ShelfID(arc_app_shelf_id.ToString());
 }
 

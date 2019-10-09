@@ -4,6 +4,7 @@
 
 package org.chromium.base.task;
 
+import android.os.Handler;
 import android.view.Choreographer;
 
 import org.chromium.base.ThreadUtils;
@@ -20,22 +21,26 @@ class DefaultTaskExecutor implements TaskExecutor {
     @Override
     public TaskRunner createTaskRunner(TaskTraits taskTraits) {
         if (taskTraits.mIsChoreographerFrame) return createChoreographerTaskRunner();
+        if (taskTraits.mUseCurrentThread) return postCurrentThreadTask(taskTraits);
         return new TaskRunnerImpl(taskTraits);
     }
 
     @Override
     public SequencedTaskRunner createSequencedTaskRunner(TaskTraits taskTraits) {
         if (taskTraits.mIsChoreographerFrame) return createChoreographerTaskRunner();
+        if (taskTraits.mUseCurrentThread) return postCurrentThreadTask(taskTraits);
         return new SequencedTaskRunnerImpl(taskTraits);
     }
 
     /**
-     * This maps to a single thread within the native thread pool. Due to that contract we
-     * can't run tasks posted on it until native has started.
+     * If CurrentThread is not specified, or we are being called from within a threadpool task
+     * this maps to a single thread within the native thread pool. If so we can't run tasks
+     * posted on it until native has started.
      */
     @Override
     public SingleThreadTaskRunner createSingleThreadTaskRunner(TaskTraits taskTraits) {
         if (taskTraits.mIsChoreographerFrame) return createChoreographerTaskRunner();
+        if (taskTraits.mUseCurrentThread) return postCurrentThreadTask(taskTraits);
         // Tasks posted via this API will not execute until after native has started.
         return new SingleThreadTaskRunnerImpl(null, taskTraits);
     }
@@ -62,6 +67,16 @@ class DefaultTaskExecutor implements TaskExecutor {
     @Override
     public boolean canRunTaskImmediately(TaskTraits traits) {
         return false;
+    }
+
+    private SingleThreadTaskRunner postCurrentThreadTask(TaskTraits taskTraits) {
+        // Until native has loaded we only support CurrentThread on the UI thread, migration from
+        // threadpool or other java threads adds a lot of complexity for likely zero usage.
+        assert PostTask.getNativeSchedulerReady() || ThreadUtils.runningOnUiThread();
+        // A handler is only needed before the native scheduler is ready.
+        Handler preNativeHandler =
+                PostTask.getNativeSchedulerReady() ? null : ThreadUtils.getUiThreadHandler();
+        return new SingleThreadTaskRunnerImpl(preNativeHandler, taskTraits);
     }
 
     private synchronized ChoreographerTaskRunner createChoreographerTaskRunner() {

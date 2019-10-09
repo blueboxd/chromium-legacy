@@ -12,6 +12,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -41,7 +42,8 @@ class ExtensionAppsEnableFlow;
 class ExtensionApps : public apps::mojom::Publisher,
                       public extensions::ExtensionPrefsObserver,
                       public extensions::ExtensionRegistryObserver,
-                      public content_settings::Observer {
+                      public content_settings::Observer,
+                      public ArcAppListPrefs::Observer {
  public:
   ExtensionApps(const mojo::Remote<apps::mojom::AppService>& app_service,
                 Profile* profile,
@@ -52,7 +54,7 @@ class ExtensionApps : public apps::mojom::Publisher,
 
   void Shutdown();
 
-  void ApplyChromeBadge(const std::string& app_id);
+  void ObserveArc();
 
  private:
   void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
@@ -105,6 +107,13 @@ class ExtensionApps : public apps::mojom::Publisher,
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
 
+  // ArcAppListPrefs::Observer overrides.
+  void OnPackageInstalled(
+      const arc::mojom::ArcPackageInfo& package_info) override;
+  void OnPackageRemoved(const std::string& package_name,
+                        bool uninstalled) override;
+  void OnPackageListInitialRefreshed() override;
+
   void Publish(apps::mojom::AppPtr app);
 
   // Checks if extension is disabled and if enable flow should be started.
@@ -133,7 +142,14 @@ class ExtensionApps : public apps::mojom::Publisher,
                      apps::mojom::Readiness readiness,
                      std::vector<apps::mojom::AppPtr>* apps_out);
 
-  IconEffects GetIconEffect(const extensions::Extension* extension);
+  // Calculate the icon effects for the extension.
+  IconEffects GetIconEffects(const extensions::Extension* extension);
+
+  // Get the equivalent Chrome app from |arc_package_name| and set the Chrome
+  // app badge on the icon effects for the equivalent Chrome apps. If the
+  // equivalent ARC app is installed, add the Chrome app badge, otherwise,
+  // remove the Chrome app badge.
+  void ApplyChromeBadge(const std::string& arc_package_name);
 
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
@@ -154,6 +170,8 @@ class ExtensionApps : public apps::mojom::Publisher,
 
   using EnableFlowPtr = std::unique_ptr<ExtensionAppsEnableFlow>;
   std::map<std::string, EnableFlowPtr> enable_flow_map_;
+
+  ArcAppListPrefs* arc_prefs_;
 
   base::WeakPtrFactory<ExtensionApps> weak_factory_{this};
 

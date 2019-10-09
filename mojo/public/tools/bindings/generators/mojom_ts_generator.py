@@ -40,9 +40,7 @@ class TypescriptStylizer(generator.Stylizer):
                         for word in mojom_namespace.split('.'))
 
   def StylizeConstant(self, mojom_name):
-    # TODO(crbug.com/1009251): Constant names should be changed to match the
-    # style guide.
-    return mojom_name
+    return generator.ToConstantCase(mojom_name)
 
 class Generator(generator.Generator):
   def _GetParameters(self, use_es_modules=False):

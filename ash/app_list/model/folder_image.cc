@@ -23,7 +23,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/scoped_canvas.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -352,4 +352,4 @@ void FolderImage::RedrawIconAndNotify() {
     observer.OnFolderImageUpdated(app_list_config_->type());
 }
 
-}  // namespace app_list
+}  // namespace ash

@@ -99,33 +99,15 @@ _java_reserved_types = [
   'R'
 ]
 
-def NameToComponent(name):
-  """ Returns a list of lowercase words corresponding to a given name. """
-  # Add underscores after uppercase letters when appropriate. An uppercase
-  # letter is considered the end of a word if it is followed by an upper and a
-  # lower. E.g. URLLoaderFactory -> URL_LoaderFactory
-  name = re.sub('([A-Z][0-9]*)(?=[A-Z][0-9]*[a-z])', r'\1_', name)
-  # Add underscores after lowercase letters when appropriate. A lowercase letter
-  # is considered the end of a word if it is followed by an upper.
-  # E.g. URLLoaderFactory -> URLLoader_Factory
-  name = re.sub('([a-z][0-9]*)(?=[A-Z])', r'\1_', name)
-  return [x.lower() for x in name.split('_')]
-
 def UpperCamelCase(name):
-  return ''.join([x.capitalize() for x in NameToComponent(name)])
+  return ''.join([x.capitalize() for x in generator.SplitCamelCase(name)])
 
 def CamelCase(name):
   uccc = UpperCamelCase(name)
   return uccc[0].lower() + uccc[1:]
 
 def ConstantStyle(name):
-  components = NameToComponent(name)
-  if components[0] == 'k' and len(components) > 1:
-    components = components[1:]
-  # variable cannot starts with a digit.
-  if components[0][0].isdigit():
-    components[0] = '_' + components[0]
-  return '_'.join([x.upper() for x in components])
+  return generator.ToConstantCase(name)
 
 def GetNameForElement(element):
   if (mojom.IsEnumKind(element) or mojom.IsInterfaceKind(element) or

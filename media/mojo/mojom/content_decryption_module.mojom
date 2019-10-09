@@ -72,7 +72,7 @@ interface ContentDecryptionModule {
   // Sets ContentDecryptionModuleClient. Must be called before any other calls.
   // Use associated interface to ensure ordering, e.g. events on the client
   // interface and promise fulfillment.
-  SetClient(associated ContentDecryptionModuleClient client);
+  SetClient(pending_associated_remote<ContentDecryptionModuleClient> client);
 
   // Initializes the CDM. If initialization failed (e.g. |key_system| or
   // |cdm_config| is not supported), |result.success| will be false and |cdm_id|
@@ -146,5 +146,5 @@ interface CdmFactory {
   // It should be a reverse domain name, e.g. "com.example.somesystem". However,
   // this call may be initiated by an untrusted process (e.g. renderer), so the
   // implementation must fully validate |key_system| before creating the CDM.
-  CreateCdm(string key_system, ContentDecryptionModule& cdm);
+  CreateCdm(string key_system, pending_receiver<ContentDecryptionModule> cdm);
 };

@@ -352,15 +352,17 @@ void MojoVideoDecoder::BindRemoteDecoder() {
   mojom::MediaLogAssociatedPtrInfo media_log_ptr_info;
   media_log_binding_.Bind(mojo::MakeRequest(&media_log_ptr_info));
 
-  // Create |video_frame_handle_releaser| interface request, and bind
+  // Create |video_frame_handle_releaser| interface receiver, and bind
   // |mojo_video_frame_handle_releaser_| to it.
-  mojom::VideoFrameHandleReleaserRequest video_frame_handle_releaser_request;
-  mojom::VideoFrameHandleReleaserPtrInfo video_frame_handle_releaser_ptr_info;
-  video_frame_handle_releaser_request =
-      mojo::MakeRequest(&video_frame_handle_releaser_ptr_info);
+  mojo::PendingRemote<mojom::VideoFrameHandleReleaser>
+      video_frame_handle_releaser_pending_remote;
+  mojo::PendingReceiver<mojom::VideoFrameHandleReleaser>
+      video_frame_handle_releaser_receiver =
+          video_frame_handle_releaser_pending_remote
+              .InitWithNewPipeAndPassReceiver();
   mojo_video_frame_handle_releaser_ =
       base::MakeRefCounted<MojoVideoFrameHandleReleaser>(
-          std::move(video_frame_handle_releaser_ptr_info), task_runner_);
+          std::move(video_frame_handle_releaser_pending_remote), task_runner_);
 
   mojo::ScopedDataPipeConsumerHandle remote_consumer_handle;
   mojo_decoder_buffer_writer_ = MojoDecoderBufferWriter::Create(
@@ -379,7 +381,7 @@ void MojoVideoDecoder::BindRemoteDecoder() {
 
   remote_decoder_->Construct(
       std::move(client_ptr_info), std::move(media_log_ptr_info),
-      std::move(video_frame_handle_releaser_request),
+      std::move(video_frame_handle_releaser_receiver),
       std::move(remote_consumer_handle), std::move(command_buffer_id),
       video_decoder_implementation_, target_color_space_);
 }

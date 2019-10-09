@@ -29,7 +29,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/layout/box_layout.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -295,4 +295,4 @@ void PageSwitcher::SelectedPageChanged(int old_selected, int new_selected) {
     GetButtonByIndex(buttons_, size_t{new_selected})->SetSelected(true);
 }
 
-}  // namespace app_list
+}  // namespace ash

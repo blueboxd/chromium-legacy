@@ -15,7 +15,7 @@ class ImageView;
 class StyledLabel;
 }  // namespace views
 
-namespace app_list {
+namespace ash {
 
 class AppListViewDelegate;
 class SearchResultPageView;
@@ -63,6 +63,6 @@ class PrivacyInfoView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(PrivacyInfoView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_ASSISTANT_PRIVACY_INFO_VIEW_H_

@@ -12,7 +12,7 @@
 #include "base/stl_util.h"
 #include "ui/views/view_model.h"
 
-namespace app_list {
+namespace ash {
 
 PagedViewStructure::PagedViewStructure(AppsGridView* apps_grid_view)
     : apps_grid_view_(apps_grid_view) {}
@@ -360,4 +360,4 @@ bool PagedViewStructure::ClearEmptyPages() {
   return changed;
 }
 
-}  // namespace app_list
+}  // namespace ash

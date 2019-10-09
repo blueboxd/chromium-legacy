@@ -135,10 +135,11 @@ void ElementFinder::Start(Callback callback) {
     SendResult(ClientStatus(INVALID_SELECTOR));
     return;
   }
+
   devtools_client_->GetRuntime()->Evaluate(
-      std::string(kGetDocumentElement),
+      std::string(kGetDocumentElement), /* node_frame_id= */ std::string(),
       base::BindOnce(&ElementFinder::OnGetDocumentElement,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), 0));
 }
 
 void ElementFinder::SendResult(const ClientStatus& status) {
@@ -148,6 +149,7 @@ void ElementFinder::SendResult(const ClientStatus& status) {
 }
 
 void ElementFinder::OnGetDocumentElement(
+    size_t index,
     const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::EvaluateResult> result) {
   ClientStatus status =
@@ -163,10 +165,14 @@ void ElementFinder::OnGetDocumentElement(
     SendResult(ClientStatus(ELEMENT_RESOLUTION_FAILED));
     return;
   }
+
+  // The frame gets set again when we encounter an iFrame, even an OOPIF.
+  // Setting the correct host frame is handled by
+  // FindCorrespondingRenderFrameHost further down.
   element_result_->container_frame_host = web_contents_->GetMainFrame();
-  element_result_->container_frame_selector_index = 0;
-  element_result_->object_id = "";
-  RecursiveFindElement(object_id, 0);
+  element_result_->container_frame_selector_index = index;
+  element_result_->object_id = std::string();
+  RecursiveFindElement(object_id, index);
 }
 
 void ElementFinder::RecursiveFindElement(const std::string& object_id,
@@ -214,6 +220,7 @@ void ElementFinder::RecursiveFindElement(const std::string& object_id,
           .SetArguments(std::move(argument))
           .SetFunctionDeclaration(function)
           .Build(),
+      element_result_->node_frame_id,
       base::BindOnce(&ElementFinder::OnQuerySelectorAll,
                      weak_ptr_factory_.GetWeakPtr(), index));
 }
@@ -273,6 +280,7 @@ void ElementFinder::OnQuerySelectorAll(
 
     devtools_client_->GetDOM()->DescribeNode(
         dom::DescribeNodeParams::Builder().SetObjectId(object_id).Build(),
+        element_result_->node_frame_id,
         base::BindOnce(&ElementFinder::OnDescribeNodeForPseudoElement,
                        weak_ptr_factory_.GetWeakPtr(), pseudo_type));
     return;
@@ -280,6 +288,7 @@ void ElementFinder::OnQuerySelectorAll(
 
   devtools_client_->GetDOM()->DescribeNode(
       dom::DescribeNodeParams::Builder().SetObjectId(object_id).Build(),
+      element_result_->node_frame_id,
       base::BindOnce(&ElementFinder::OnDescribeNode,
                      weak_ptr_factory_.GetWeakPtr(), object_id, index));
 }
@@ -303,6 +312,7 @@ void ElementFinder::OnDescribeNodeForPseudoElement(
             dom::ResolveNodeParams::Builder()
                 .SetBackendNodeId(pseudo_element->GetBackendNodeId())
                 .Build(),
+            element_result_->node_frame_id,
             base::BindOnce(&ElementFinder::OnResolveNodeForPseudoElement,
                            weak_ptr_factory_.GetWeakPtr()));
         return;
@@ -366,9 +376,14 @@ void ElementFinder::OnDescribeNode(
       return;
     }
   } else if (node->HasFrameId()) {
-    // TODO(crbug.com/806868): Support out-of-process iframe.
-    DVLOG(3) << "Warning (unsupported): the element is inside an OOPIF.";
-    SendResult(ClientStatus(UNSUPPORTED));
+    element_result_->container_frame_selector_index = index;
+    element_result_->node_frame_id = node->GetFrameId();
+
+    // Kick off another find element chain to walk down the OOP iFrame.
+    devtools_client_->GetRuntime()->Evaluate(
+        std::string(kGetDocumentElement), element_result_->node_frame_id,
+        base::BindOnce(&ElementFinder::OnGetDocumentElement,
+                       weak_ptr_factory_.GetWeakPtr(), index + 1));
     return;
   }
 
@@ -383,6 +398,7 @@ void ElementFinder::OnDescribeNode(
         dom::ResolveNodeParams::Builder()
             .SetBackendNodeId(backend_ids[0])
             .Build(),
+        element_result_->node_frame_id,
         base::BindOnce(&ElementFinder::OnResolveNode,
                        weak_ptr_factory_.GetWeakPtr(), index));
     return;

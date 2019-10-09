@@ -53,6 +53,28 @@ void _NSDrawCarbonThemeListBox(NSRect frame,
 
 namespace blink {
 
+class ScopedColorSchemeAppearance {
+ public:
+  ScopedColorSchemeAppearance(WebColorScheme color_scheme) {
+    if (@available(macOS 10.14, *)) {
+      old_appearance = [NSAppearance currentAppearance];
+      [NSAppearance
+          setCurrentAppearance:
+              [NSAppearance
+                  appearanceNamed:color_scheme == WebColorScheme::kDark
+                                      ? NSAppearanceNameDarkAqua
+                                      : NSAppearanceNameAqua]];
+    }
+  }
+  ~ScopedColorSchemeAppearance() {
+    if (@available(macOS 10.14, *))
+      [NSAppearance setCurrentAppearance:old_appearance];
+  }
+
+ private:
+  NSAppearance* old_appearance;
+};
+
 ThemePainterMac::ThemePainterMac(LayoutThemeMac& layout_theme)
     : ThemePainter(), layout_theme_(layout_theme) {}
 
@@ -60,6 +82,7 @@ bool ThemePainterMac::PaintTextField(const Node* node,
                                      const ComputedStyle& style,
                                      const PaintInfo& paint_info,
                                      const IntRect& r) {
+  ScopedColorSchemeAppearance appearance(style.UsedColorScheme());
   LocalCurrentGraphicsContext local_context(paint_info.context, r);
 
   bool use_ns_text_field_cell =
@@ -97,6 +120,7 @@ bool ThemePainterMac::PaintCapsLockIndicator(const LayoutObject& o,
                                              const IntRect& r) {
   // This draws the caps lock indicator as it was done by
   // WKDrawCapsLockIndicator.
+  ScopedColorSchemeAppearance appearance(o.StyleRef().UsedColorScheme());
   LocalCurrentGraphicsContext local_context(paint_info.context, r);
   CGContextRef c = local_context.CgContext();
   CGMutablePathRef shape = CGPathCreateMutable();
@@ -160,6 +184,7 @@ bool ThemePainterMac::PaintTextArea(const Node* node,
                                     const ComputedStyle& style,
                                     const PaintInfo& paint_info,
                                     const IntRect& r) {
+  ScopedColorSchemeAppearance appearance(style.UsedColorScheme());
   LocalCurrentGraphicsContext local_context(paint_info.context, r);
   _NSDrawCarbonThemeListBox(
       CGRect(r),
@@ -173,6 +198,7 @@ bool ThemePainterMac::PaintMenuList(const Node* node,
                                     const ComputedStyle& style,
                                     const PaintInfo& paint_info,
                                     const IntRect& r) {
+  ScopedColorSchemeAppearance appearance(style.UsedColorScheme());
   layout_theme_.SetPopupButtonCellState(node, style, r);
 
   NSPopUpButtonCell* popup_button = layout_theme_.PopupButton();
@@ -215,6 +241,8 @@ bool ThemePainterMac::PaintProgressBar(const LayoutObject& layout_object,
   if (!layout_object.IsProgress())
     return true;
 
+  ScopedColorSchemeAppearance appearance(
+      layout_object.StyleRef().UsedColorScheme());
   const LayoutProgress& layout_progress = ToLayoutProgress(layout_object);
   HIThemeTrackDrawInfo track_info;
   track_info.version = 0;
@@ -266,6 +294,7 @@ bool ThemePainterMac::PaintMenuListButton(const Node* node,
                                           const ComputedStyle& style,
                                           const PaintInfo& paint_info,
                                           const IntRect& r) {
+  ScopedColorSchemeAppearance appearance(style.UsedColorScheme());
   IntRect bounds =
       IntRect(r.X() + style.BorderLeftWidth(), r.Y() + style.BorderTopWidth(),
               r.Width() - style.BorderLeftWidth() - style.BorderRightWidth(),
@@ -322,6 +351,7 @@ bool ThemePainterMac::PaintMenuListButton(const Node* node,
 bool ThemePainterMac::PaintSliderTrack(const LayoutObject& o,
                                        const PaintInfo& paint_info,
                                        const IntRect& r) {
+  ScopedColorSchemeAppearance appearance(o.StyleRef().UsedColorScheme());
   PaintSliderTicks(o, paint_info, r);
 
   float zoom_level = o.StyleRef().EffectiveZoom();
@@ -418,6 +448,7 @@ bool ThemePainterMac::PaintSliderThumb(const Node* node,
                                        const ComputedStyle& style,
                                        const PaintInfo& paint_info,
                                        const IntRect& r) {
+  ScopedColorSchemeAppearance appearance(style.UsedColorScheme());
   GraphicsContextStateSaver state_saver(paint_info.context);
   float zoom_level = style.EffectiveZoom();
 
@@ -521,6 +552,7 @@ bool ThemePainterMac::PaintSearchField(const Node* node,
                                        const ComputedStyle& style,
                                        const PaintInfo& paint_info,
                                        const IntRect& r) {
+  ScopedColorSchemeAppearance appearance(style.UsedColorScheme());
   LocalCurrentGraphicsContext local_context(paint_info.context, r);
 
   NSSearchFieldCell* search = layout_theme_.Search();
@@ -560,6 +592,8 @@ bool ThemePainterMac::PaintSearchFieldCancelButton(
   if (!cancel_button.GetNode())
     return false;
 
+  ScopedColorSchemeAppearance appearance(
+      cancel_button.StyleRef().UsedColorScheme());
   GraphicsContextStateSaver state_saver(paint_info.context);
 
   float zoom_level = cancel_button.StyleRef().EffectiveZoom();
@@ -616,6 +650,7 @@ bool ThemePainterMac::PaintCheckbox(const Node* node,
                                     const IntRect& zoomed_rect) {
   BEGIN_BLOCK_OBJC_EXCEPTIONS
 
+  ScopedColorSchemeAppearance appearance(style.UsedColorScheme());
   ControlStates states = LayoutTheme::ControlStatesForNode(node, style);
   float zoom_factor = style.EffectiveZoom();
 
@@ -659,6 +694,7 @@ bool ThemePainterMac::PaintRadio(const Node* node,
                                  const ComputedStyle& style,
                                  const PaintInfo& paint_info,
                                  const IntRect& zoomed_rect) {
+  ScopedColorSchemeAppearance appearance(style.UsedColorScheme());
   ControlStates states = LayoutTheme::ControlStatesForNode(node, style);
   float zoom_factor = style.EffectiveZoom();
 
@@ -705,6 +741,7 @@ bool ThemePainterMac::PaintButton(const Node* node,
                                   const IntRect& zoomed_rect) {
   BEGIN_BLOCK_OBJC_EXCEPTIONS
 
+  ScopedColorSchemeAppearance appearance(style.UsedColorScheme());
   ControlStates states = LayoutTheme::ControlStatesForNode(node, style);
   float zoom_factor = style.EffectiveZoom();
 
@@ -781,6 +818,7 @@ bool ThemePainterMac::PaintInnerSpinButton(const Node* node,
                                            const ComputedStyle& style,
                                            const PaintInfo& paint_info,
                                            const IntRect& zoomed_rect) {
+  ScopedColorSchemeAppearance appearance(style.UsedColorScheme());
   ControlStates states = LayoutTheme::ControlStatesForNode(node, style);
   float zoom_factor = style.EffectiveZoom();
 

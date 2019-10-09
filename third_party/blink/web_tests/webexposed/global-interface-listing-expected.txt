@@ -1109,11 +1109,6 @@ interface CompositionEvent : UIEvent
     getter data
     method constructor
     method initCompositionEvent
-interface CompressionStream
-    attribute @@toStringTag
-    getter readable
-    getter writable
-    method constructor
 interface ComputedAccessibleNode
     attribute @@toStringTag
     getter atomic
@@ -2234,6 +2229,7 @@ interface ElementInternals
     getter form
     getter labels
     getter role
+    getter states
     getter validationMessage
     getter validity
     getter willValidate

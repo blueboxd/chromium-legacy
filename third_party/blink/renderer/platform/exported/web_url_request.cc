@@ -398,10 +398,6 @@ bool WebURLRequest::IsRevalidating() const {
   return resource_request_->IsRevalidating();
 }
 
-bool WebURLRequest::ShouldAlsoUseFactoryBoundOriginForCors() const {
-  return resource_request_->ShouldAlsoUseFactoryBoundOriginForCors();
-}
-
 const base::Optional<base::UnguessableToken>& WebURLRequest::GetDevToolsToken()
     const {
   return resource_request_->GetDevToolsToken();

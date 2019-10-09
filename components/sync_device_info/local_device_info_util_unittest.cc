@@ -18,30 +18,30 @@
 namespace syncer {
 namespace {
 
-// Call GetSessionNameBlocking and make sure its return
+// Call GetPersonalizableDeviceNameBlocking and make sure its return
 // value looks sane.
-TEST(GetSessionNameTest, GetSessionNameBlocking) {
-  const std::string& session_name = GetSessionNameBlocking();
+TEST(GetSessionNameTest, GetPersonalizableDeviceNameBlocking) {
+  const std::string& session_name = GetPersonalizableDeviceNameBlocking();
   EXPECT_FALSE(session_name.empty());
 }
 
 #if defined(OS_CHROMEOS)
 
-// Call GetSessionNameBlocking on ChromeOS where the board type
-// is CHROMEBOOK and make sure the return value is "Chromebook".
-TEST(GetSessionNameTest, GetSessionNameBlockingChromebook) {
+// Call GetPersonalizableDeviceNameBlocking on ChromeOS where the
+// board type is CHROMEBOOK and make sure the return value is "Chromebook".
+TEST(GetSessionNameTest, GetPersonalizableDeviceNameBlockingChromebook) {
   const char* kLsbRelease = "DEVICETYPE=CHROMEBOOK\n";
   base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
-  const std::string& session_name = GetSessionNameBlocking();
+  const std::string& session_name = GetPersonalizableDeviceNameBlocking();
   EXPECT_EQ("Chromebook", session_name);
 }
 
-// Call GetSessionNameBlocking on ChromeOS where the board type
-// is a CHROMEBOX and make sure the return value is "Chromebox".
-TEST(GetSessionNameTest, GetSessionNameBlockingChromebox) {
+// Call GetPersonalizableDeviceNameBlocking on ChromeOS where the
+// board type is a CHROMEBOX and make sure the return value is "Chromebox".
+TEST(GetSessionNameTest, GetPersonalizableDeviceNameBlockingChromebox) {
   const char* kLsbRelease = "DEVICETYPE=CHROMEBOX\n";
   base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
-  const std::string& session_name = GetSessionNameBlocking();
+  const std::string& session_name = GetPersonalizableDeviceNameBlocking();
   EXPECT_EQ("Chromebox", session_name);
 }
 

@@ -42,7 +42,7 @@
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -888,4 +888,4 @@ void AppListFolderView::CreateOpenOrCloseFolderAccessibilityEvent(bool open) {
   announcement_view->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
-}  // namespace app_list
+}  // namespace ash

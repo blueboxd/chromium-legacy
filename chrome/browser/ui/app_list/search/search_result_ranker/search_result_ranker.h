@@ -174,12 +174,11 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   base::OnceClosure json_config_parsed_for_testing_;
 
   // Logs launch events and stores feature data for aggregated model.
-  std::unique_ptr<app_list::AppLaunchEventLogger> app_launch_event_logger_;
+  std::unique_ptr<AppLaunchEventLogger> app_launch_event_logger_;
   bool using_aggregated_app_inference_ = false;
 
   // Logs impressions and stores feature data for aggregated model.
-  std::unique_ptr<app_list::SearchRankingEventLogger>
-      search_ranking_event_logger_;
+  std::unique_ptr<SearchRankingEventLogger> search_ranking_event_logger_;
   bool use_aggregated_search_ranking_inference_ = false;
 
   // Stores the time of the last histogram logging event for each zero state

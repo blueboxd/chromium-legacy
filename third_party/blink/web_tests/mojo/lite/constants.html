@@ -7,31 +7,31 @@
 'use strict';
 
 [{
-  constant: mojo.tstest.kBoolValue,
+  constant: mojo.tstest.BOOL_VALUE,
   expectedValue: true,
   type: 'boolean'
 }, {
-  constant: mojo.tstest.kInt8Value,
+  constant: mojo.tstest.INT8_VALUE,
   expectedValue: -2,
   type: 'int8'
 }, {
-  constant: mojo.tstest.kUint8Value,
+  constant: mojo.tstest.UINT8_VALUE,
   expectedValue: 128,
   type: 'uint8'
 }, {
-  constant: mojo.tstest.kInt16Value,
+  constant: mojo.tstest.INT16_VALUE,
   expectedValue: -233,
   type: 'int16'
 }, {
-  constant: mojo.tstest.kUint16Value,
+  constant: mojo.tstest.UINT16_VALUE,
   expectedValue: 44204,
   type: 'uint16'
 }, {
-  constant: mojo.tstest.kInt32Value,
+  constant: mojo.tstest.INT32_VALUE,
   expectedValue: -44204,
   type: 'int32'
 }, {
-  constant: mojo.tstest.kUint32Value,
+  constant: mojo.tstest.UINT32_VALUE,
   expectedValue: 4294967295,
   type: 'uint32'
 }, {
@@ -46,39 +46,39 @@
   //  expectedValue: 9999999999999999999n,
   //  type: 'uint64'
   //}, {
-  constant: mojo.tstest.kDoubleValue,
+  constant: mojo.tstest.DOUBLE_VALUE,
   expectedValue: 3.14159,
   type: 'double'
 }, {
-  constant: mojo.tstest.kDoubleInfinity,
+  constant: mojo.tstest.DOUBLE_INFINITY,
   expectedValue: Infinity,
   type: 'double infinity'
 }, {
-  constant: mojo.tstest.kDoubleNegativeInfinity,
+  constant: mojo.tstest.DOUBLE_NEGATIVE_INFINITY,
   expectedValue: -Infinity,
   type: 'double negative infinity'
 }, {
-  constant: mojo.tstest.kDoubleNaN,
+  constant: mojo.tstest.DOUBLE_NA_N,
   expectedValue: NaN,
   type: 'double NaN'
 }, {
-  constant: mojo.tstest.kFloatValue,
+  constant: mojo.tstest.FLOAT_VALUE,
   expectedValue: 2.71828,
   type: 'float'
 }, {
-  constant: mojo.tstest.kFloatInfinity,
+  constant: mojo.tstest.FLOAT_INFINITY,
   expectedValue: Infinity,
   type: 'float infinity'
 }, {
-  constant: mojo.tstest.kFloatNegativeInfinity,
+  constant: mojo.tstest.FLOAT_NEGATIVE_INFINITY,
   expectedValue: -Infinity,
   type: 'float negative infinity'
 }, {
-  constant: mojo.tstest.kFloatNaN,
+  constant: mojo.tstest.FLOAT_NA_N,
   expectedValue: NaN,
   type: 'NaN'
 }, {
-  constant: mojo.tstest.kStringValue,
+  constant: mojo.tstest.STRING_VALUE,
   expectedValue: "test string contents",
   type: 'string'
 }].forEach(testCase => {

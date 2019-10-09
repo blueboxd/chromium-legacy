@@ -32,7 +32,7 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -623,4 +623,4 @@ AppsContainerView::GridLayout AppsContainerView::CalculateGridLayout() const {
   return result;
 }
 
-}  // namespace app_list
+}  // namespace ash

@@ -90,43 +90,6 @@ class MultiThreadedCertVerifierTest : public TestWithTaskEnvironment {
   MultiThreadedCertVerifier verifier_;
 };
 
-// Tests an inflight join.
-TEST_F(MultiThreadedCertVerifierTest, InflightJoin) {
-  base::FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> test_cert(
-      ImportCertFromFile(certs_dir, "ok_cert.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
-
-  int error;
-  CertVerifyResult verify_result;
-  TestCompletionCallback callback;
-  std::unique_ptr<CertVerifier::Request> request;
-  CertVerifyResult verify_result2;
-  TestCompletionCallback callback2;
-  std::unique_ptr<CertVerifier::Request> request2;
-
-  error = verifier_.Verify(
-      CertVerifier::RequestParams(test_cert, "www.example.com", 0,
-                                  /*ocsp_response=*/std::string(),
-                                  /*sct_list=*/std::string()),
-      &verify_result, callback.callback(), &request, NetLogWithSource());
-  ASSERT_THAT(error, IsError(ERR_IO_PENDING));
-  EXPECT_TRUE(request);
-  error = verifier_.Verify(
-      CertVerifier::RequestParams(test_cert, "www.example.com", 0,
-                                  /*ocsp_response=*/std::string(),
-                                  /*sct_list=*/std::string()),
-      &verify_result2, callback2.callback(), &request2, NetLogWithSource());
-  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
-  EXPECT_TRUE(request2);
-  error = callback.WaitForResult();
-  EXPECT_TRUE(IsCertificateError(error));
-  error = callback2.WaitForResult();
-  ASSERT_TRUE(IsCertificateError(error));
-  ASSERT_EQ(2u, verifier_.requests());
-  ASSERT_EQ(1u, verifier_.inflight_joins());
-}
-
 // Tests that the callback of a canceled request is never made.
 TEST_F(MultiThreadedCertVerifierTest, CancelRequest) {
   base::FilePath certs_dir = GetTestCertsDirectory();
@@ -193,89 +156,6 @@ TEST_F(MultiThreadedCertVerifierTest, CancelRequestThenQuit) {
   EXPECT_TRUE(request);
   request.reset();
   // Destroy |verifier| by going out of scope.
-}
-
-// Tests de-duplication of requests.
-// Starts up 5 requests, of which 3 are unique.
-TEST_F(MultiThreadedCertVerifierTest, MultipleInflightJoin) {
-  base::FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> test_cert(
-      ImportCertFromFile(certs_dir, "ok_cert.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
-
-  int error;
-  CertVerifyResult verify_result1;
-  TestCompletionCallback callback1;
-  std::unique_ptr<CertVerifier::Request> request1;
-  CertVerifyResult verify_result2;
-  TestCompletionCallback callback2;
-  std::unique_ptr<CertVerifier::Request> request2;
-  CertVerifyResult verify_result3;
-  TestCompletionCallback callback3;
-  std::unique_ptr<CertVerifier::Request> request3;
-  CertVerifyResult verify_result4;
-  TestCompletionCallback callback4;
-  std::unique_ptr<CertVerifier::Request> request4;
-  CertVerifyResult verify_result5;
-  TestCompletionCallback callback5;
-  std::unique_ptr<CertVerifier::Request> request5;
-
-  const char domain1[] = "www.example1.com";
-  const char domain2[] = "www.exampleB.com";
-  const char domain3[] = "www.example3.com";
-
-  // Start 3 unique requests.
-  error = verifier_.Verify(
-      CertVerifier::RequestParams(test_cert, domain2, 0,
-                                  /*ocsp_response=*/std::string(),
-                                  /*sct_list=*/std::string()),
-      &verify_result1, callback1.callback(), &request1, NetLogWithSource());
-  ASSERT_THAT(error, IsError(ERR_IO_PENDING));
-  EXPECT_TRUE(request1);
-
-  error = verifier_.Verify(
-      CertVerifier::RequestParams(test_cert, domain2, 0,
-                                  /*ocsp_response=*/std::string(),
-                                  /*sct_list=*/std::string()),
-      &verify_result2, callback2.callback(), &request2, NetLogWithSource());
-  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
-  EXPECT_TRUE(request2);
-
-  error = verifier_.Verify(
-      CertVerifier::RequestParams(test_cert, domain3, 0,
-                                  /*ocsp_response=*/std::string(),
-                                  /*sct_list=*/std::string()),
-      &verify_result3, callback3.callback(), &request3, NetLogWithSource());
-  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
-  EXPECT_TRUE(request3);
-
-  // Start duplicate requests (which should join to existing jobs).
-  error = verifier_.Verify(
-      CertVerifier::RequestParams(test_cert, domain1, 0,
-                                  /*ocsp_response=*/std::string(),
-                                  /*sct_list=*/std::string()),
-      &verify_result4, callback4.callback(), &request4, NetLogWithSource());
-  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
-  EXPECT_TRUE(request4);
-
-  error = verifier_.Verify(
-      CertVerifier::RequestParams(test_cert, domain2, 0,
-                                  /*ocsp_response=*/std::string(),
-                                  /*sct_list=*/std::string()),
-      &verify_result5, callback5.callback(), &request5, NetLogWithSource());
-  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
-  EXPECT_TRUE(request5);
-
-  error = callback1.WaitForResult();
-  EXPECT_TRUE(IsCertificateError(error));
-  error = callback2.WaitForResult();
-  ASSERT_TRUE(IsCertificateError(error));
-  error = callback4.WaitForResult();
-  ASSERT_TRUE(IsCertificateError(error));
-
-  // Let the other requests automatically cancel.
-  ASSERT_EQ(5u, verifier_.requests());
-  ASSERT_EQ(2u, verifier_.inflight_joins());
 }
 
 // Tests propagation of configuration options into CertVerifyProc flags

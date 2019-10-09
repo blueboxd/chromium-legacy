@@ -33,83 +33,6 @@ namespace autofill {
 
 namespace {
 
-constexpr char kAutocompleteUsername[] = "username";
-constexpr char kAutocompleteCurrentPassword[] = "current-password";
-constexpr char kAutocompleteNewPassword[] = "new-password";
-constexpr char kAutocompleteCreditCardPrefix[] = "cc-";
-
-// Parses the string with the value of an autocomplete attribute. If any of the
-// tokens "username", "current-password" or "new-password" are present, returns
-// an appropriate enum value, picking an arbitrary one if more are applicable.
-// Otherwise, it returns CREDIT_CARD if a token with a "cc-" prefix is found.
-// Otherwise, returns NONE.
-AutocompleteFlag ExtractAutocompleteFlag(const std::string& attribute) {
-  std::vector<base::StringPiece> tokens =
-      base::SplitStringPiece(attribute, base::kWhitespaceASCII,
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  bool cc_seen = false;
-  for (base::StringPiece token : tokens) {
-    if (base::LowerCaseEqualsASCII(token, kAutocompleteUsername))
-      return AutocompleteFlag::USERNAME;
-    if (base::LowerCaseEqualsASCII(token, kAutocompleteCurrentPassword))
-      return AutocompleteFlag::CURRENT_PASSWORD;
-    if (base::LowerCaseEqualsASCII(token, kAutocompleteNewPassword))
-      return AutocompleteFlag::NEW_PASSWORD;
-
-    if (!cc_seen) {
-      cc_seen = base::StartsWith(token, kAutocompleteCreditCardPrefix,
-                                 base::CompareCase::SENSITIVE);
-    }
-  }
-  return cc_seen ? AutocompleteFlag::CREDIT_CARD : AutocompleteFlag::NONE;
-}
-
-// Helper to spare map::find boilerplate when caching field's autocomplete
-// attributes.
-class AutocompleteCache {
- public:
-  AutocompleteCache();
-
-  ~AutocompleteCache();
-
-  // Computes and stores the AutocompleteFlag for |field| based on its
-  // autocomplete attribute. Note that this cannot be done on-demand during
-  // RetrieveFor, because the cache spares space and look-up time by not storing
-  // AutocompleteFlag::NONE values, hence for all elements without an
-  // autocomplete attribute, every retrieval would result in a new computation.
-  void Store(const FormFieldData* field);
-
-  // Retrieves the value previously stored for |field|.
-  AutocompleteFlag RetrieveFor(const FormFieldData* field) const;
-
- private:
-  std::map<const FormFieldData*, AutocompleteFlag> cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteCache);
-};
-
-AutocompleteCache::AutocompleteCache() = default;
-
-AutocompleteCache::~AutocompleteCache() = default;
-
-void AutocompleteCache::Store(const FormFieldData* field) {
-  const AutocompleteFlag flag =
-      ExtractAutocompleteFlag(field->autocomplete_attribute);
-  // Only store non-trivial flags. Most of the elements will have the NONE
-  // value, so spare storage and lookup time by assuming anything not stored in
-  // |cache_| has the NONE flag.
-  if (flag != AutocompleteFlag::NONE)
-    cache_[field] = flag;
-}
-
-AutocompleteFlag AutocompleteCache::RetrieveFor(
-    const FormFieldData* field) const {
-  auto it = cache_.find(field);
-  if (it == cache_.end())
-    return AutocompleteFlag::NONE;
-  return it->second;
-}
-
 const char kPasswordSiteUrlRegex[] =
     "passwords(?:-[a-z-]+\\.corp)?\\.google\\.com";
 
@@ -150,13 +73,6 @@ bool HasGaiaSchemeAndHost(const WebFormElement& form) {
 }
 
 }  // namespace
-
-AutocompleteFlag AutocompleteFlagForElement(const WebInputElement& element) {
-  static const base::NoDestructor<WebString> kAutocomplete(("autocomplete"));
-  return ExtractAutocompleteFlag(
-      element.GetAttribute(*kAutocomplete)
-          .Utf8(WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD));
-}
 
 re2::RE2* CreateMatcher(void* instance, const char* pattern) {
   re2::RE2::Options options;

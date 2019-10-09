@@ -373,10 +373,9 @@ void ManagePasswordsUIControllerTest::TestNotChangingStateOnAutofill(
   ASSERT_EQ(state, controller()->GetState());
 
   // Autofill happens.
-  std::map<base::string16, const PasswordForm*> map;
-  map.insert(
-      std::make_pair(test_local_form().username_value, &test_local_form()));
-  controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
+  std::vector<const PasswordForm*> forms;
+  forms.push_back(&test_local_form());
+  controller()->OnPasswordAutofilled(forms, forms.front()->origin, nullptr);
 
   // State shouldn't changed.
   ExpectIconAndControllerStateIs(state);
@@ -391,10 +390,10 @@ TEST_F(ManagePasswordsUIControllerTest, DefaultState) {
 TEST_F(ManagePasswordsUIControllerTest, PasswordAutofilled) {
   const PasswordForm* test_form_ptr = &test_local_form();
   base::string16 kTestUsername = test_form_ptr->username_value;
-  std::map<base::string16, const PasswordForm*> map;
-  map.insert(std::make_pair(kTestUsername, test_form_ptr));
+  std::vector<const PasswordForm*> forms;
+  forms.push_back(test_form_ptr);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
+  controller()->OnPasswordAutofilled(forms, forms.front()->origin, nullptr);
 
   EXPECT_EQ(test_form_ptr->origin, controller()->GetOrigin());
   ASSERT_EQ(1u, controller()->GetCurrentForms().size());
@@ -662,10 +661,10 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedToNonWebbyURL) {
 
 TEST_F(ManagePasswordsUIControllerTest, BlacklistedElsewhere) {
   base::string16 kTestUsername = ASCIIToUTF16("test_username");
-  std::map<base::string16, const PasswordForm*> map;
-  map.insert(std::make_pair(kTestUsername, &test_local_form()));
+  std::vector<const PasswordForm*> forms;
+  forms.push_back(&test_local_form());
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
+  controller()->OnPasswordAutofilled(forms, forms.front()->origin, nullptr);
 
   test_local_form().blacklisted_by_user = true;
   password_manager::PasswordStoreChange change(
@@ -859,10 +858,10 @@ TEST_F(ManagePasswordsUIControllerTest, AutoSigninFirstRunAfterAutofill) {
   // Setup the managed state first.
   const PasswordForm* test_form_ptr = &test_local_form();
   const base::string16 kTestUsername = test_form_ptr->username_value;
-  std::map<base::string16, const PasswordForm*> map;
-  map.insert(std::make_pair(kTestUsername, test_form_ptr));
+  std::vector<const PasswordForm*> forms;
+  forms.push_back(test_form_ptr);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  controller()->OnPasswordAutofilled(map, test_form_ptr->origin, nullptr);
+  controller()->OnPasswordAutofilled(forms, test_form_ptr->origin, nullptr);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->GetState());
 
   // Pop up the autosignin promo. The state should stay intact.
@@ -902,22 +901,22 @@ TEST_F(ManagePasswordsUIControllerTest, AutofillDuringAutoSignin) {
   controller()->OnAutoSignin(std::move(local_credentials),
                              test_local_form().origin);
   ExpectIconAndControllerStateIs(password_manager::ui::AUTO_SIGNIN_STATE);
-  std::map<base::string16, const PasswordForm*> map;
+  std::vector<const PasswordForm*> forms;
   base::string16 kTestUsername = test_local_form().username_value;
-  map.insert(std::make_pair(kTestUsername, &test_local_form()));
-  controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
+  forms.push_back(&test_local_form());
+  controller()->OnPasswordAutofilled(forms, forms.front()->origin, nullptr);
 
   ExpectIconAndControllerStateIs(password_manager::ui::AUTO_SIGNIN_STATE);
 }
 
 TEST_F(ManagePasswordsUIControllerTest, InactiveOnPSLMatched) {
   base::string16 kTestUsername = ASCIIToUTF16("test_username");
-  std::map<base::string16, const PasswordForm*> map;
+  std::vector<const PasswordForm*> forms;
   PasswordForm psl_matched_test_form(test_local_form());
   psl_matched_test_form.is_public_suffix_match = true;
-  map.insert(std::make_pair(kTestUsername, &psl_matched_test_form));
+  forms.push_back(&psl_matched_test_form);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
+  controller()->OnPasswordAutofilled(forms, forms.front()->origin, nullptr);
 
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());
 }
@@ -1254,10 +1253,9 @@ TEST_F(ManagePasswordsUIControllerTest, AutofillDuringSignInPromo) {
   ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);
   // The controller shouldn't force close the bubble if an autofill happened.
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility()).Times(0);
-  std::map<base::string16, const PasswordForm*> map;
-  base::string16 test_username = test_local_form().username_value;
-  map.insert(std::make_pair(test_username, &test_local_form()));
-  controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
+  std::vector<const PasswordForm*> forms;
+  forms.push_back(&test_local_form());
+  controller()->OnPasswordAutofilled(forms, forms.front()->origin, nullptr);
 
   // Once the bubble is closed the controller is reacting again.
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());

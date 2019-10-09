@@ -74,7 +74,8 @@ class CrostiniExportImportTest : public testing::Test {
     fake_cicerone_client_->NotifyImportLxdContainerProgress(signal);
   }
 
-  CrostiniExportImportTest() {
+  CrostiniExportImportTest()
+      : container_id_(kCrostiniDefaultVmName, kCrostiniDefaultContainerName) {
     chromeos::DBusThreadManager::Initialize();
     fake_seneschal_client_ = static_cast<chromeos::FakeSeneschalClient*>(
         chromeos::DBusThreadManager::Get()->GetSeneschalClient());
@@ -95,8 +96,6 @@ class CrostiniExportImportTest : public testing::Test {
     CrostiniManager::GetForProfile(profile())->set_skip_restart_for_testing();
     profile()->GetPrefs()->SetBoolean(
         crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, true);
-    container_id_ =
-        ContainerId(kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
 
     storage::ExternalMountPoints* mount_points =
         storage::ExternalMountPoints::GetSystemInstance();

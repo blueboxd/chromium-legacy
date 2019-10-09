@@ -13,7 +13,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 
-namespace app_list {
+namespace ash {
 
 TopIconAnimationView::TopIconAnimationView(AppsGridView* grid,
                                            const gfx::ImageSkia& icon,
@@ -146,4 +146,4 @@ bool TopIconAnimationView::RequiresNotificationWhenAnimatorDestroyed() const {
   return true;
 }
 
-}  // namespace app_list
+}  // namespace ash

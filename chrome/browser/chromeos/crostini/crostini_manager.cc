@@ -82,7 +82,7 @@ void InvokeAndErasePendingCallbacks(
     const std::string& vm_name,
     Arguments&&... arguments) {
   for (auto it = vm_keyed_map->begin(); it != vm_keyed_map->end();) {
-    if (it->first.first == vm_name) {
+    if (it->first.vm_name == vm_name) {
       std::move(it->second).Run(arguments...);
       vm_keyed_map->erase(it++);
     } else {
@@ -572,14 +572,14 @@ void CrostiniManager::SetContainerOsRelease(
     std::string vm_name,
     std::string container_name,
     const vm_tools::cicerone::OsRelease& os_release) {
-  container_os_releases_.emplace(ContainerId(vm_name, container_name),
-                                 os_release);
-  VLOG(1) << "vm_name: " << vm_name << " container_name: " << container_name;
+  ContainerId container_id(vm_name, container_name);
+  VLOG(1) << container_id;
   VLOG(1) << "os_release.pretty_name " << os_release.pretty_name();
   VLOG(1) << "os_release.name " << os_release.name();
   VLOG(1) << "os_release.version " << os_release.version();
   VLOG(1) << "os_release.version_id " << os_release.version_id();
   VLOG(1) << "os_release.id " << os_release.id();
+  container_os_releases_.emplace(std::move(container_id), os_release);
 }
 
 const vm_tools::cicerone::OsRelease* CrostiniManager::GetContainerOsRelease(
@@ -1075,10 +1075,10 @@ void CrostiniManager::OnDeleteLxdContainer(
 
   if (response->status() ==
       vm_tools::cicerone::DeleteLxdContainerResponse::DELETING) {
-    VLOG(1) << "Awaiting LxdContainerDeletedSignal for " << vm_name << ", "
-            << container_name;
-    delete_lxd_container_callbacks_.emplace(
-        ContainerId(vm_name, container_name), std::move(callback));
+    ContainerId container_id(vm_name, container_name);
+    VLOG(1) << "Awaiting LxdContainerDeletedSignal for " << container_id;
+    delete_lxd_container_callbacks_.emplace(std::move(container_id),
+                                            std::move(callback));
 
   } else if (response->status() ==
              vm_tools::cicerone::DeleteLxdContainerResponse::DOES_NOT_EXIST) {
@@ -1183,8 +1183,7 @@ void CrostiniManager::ExportLxdContainer(
   ContainerId key(vm_name, container_name);
   if (export_lxd_container_callbacks_.find(key) !=
       export_lxd_container_callbacks_.end()) {
-    LOG(ERROR) << "Export currently in progress for " << vm_name << ", "
-               << container_name;
+    LOG(ERROR) << "Export currently in progress for " << key;
     std::move(callback).Run(CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED, 0,
                             0);
     return;
@@ -1225,8 +1224,7 @@ void CrostiniManager::ImportLxdContainer(std::string vm_name,
   ContainerId key(vm_name, container_name);
   if (import_lxd_container_callbacks_.find(key) !=
       import_lxd_container_callbacks_.end()) {
-    LOG(ERROR) << "Import currently in progress for " << vm_name << ", "
-               << container_name;
+    LOG(ERROR) << "Import currently in progress for " << key;
     std::move(callback).Run(CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED);
     return;
   }
@@ -1245,8 +1243,8 @@ void CrostiniManager::ImportLxdContainer(std::string vm_name,
 }
 
 void CrostiniManager::CancelExportLxdContainer(ContainerId key) {
-  const auto& vm_name = key.first;
-  const auto& container_name = key.second;
+  const auto& vm_name = key.vm_name;
+  const auto& container_name = key.container_name;
   if (vm_name.empty()) {
     LOG(ERROR) << "vm_name is required";
     return;
@@ -1258,8 +1256,7 @@ void CrostiniManager::CancelExportLxdContainer(ContainerId key) {
 
   auto it = export_lxd_container_callbacks_.find(key);
   if (it == export_lxd_container_callbacks_.end()) {
-    LOG(ERROR) << "No export currently in progress for " << vm_name << ", "
-               << container_name;
+    LOG(ERROR) << "No export currently in progress for " << key;
     return;
   }
 
@@ -1274,8 +1271,8 @@ void CrostiniManager::CancelExportLxdContainer(ContainerId key) {
 }
 
 void CrostiniManager::CancelImportLxdContainer(ContainerId key) {
-  const auto& vm_name = key.first;
-  const auto& container_name = key.second;
+  const auto& vm_name = key.vm_name;
+  const auto& container_name = key.container_name;
   if (vm_name.empty()) {
     LOG(ERROR) << "vm_name is required";
     return;
@@ -1287,8 +1284,7 @@ void CrostiniManager::CancelImportLxdContainer(ContainerId key) {
 
   auto it = import_lxd_container_callbacks_.find(key);
   if (it == import_lxd_container_callbacks_.end()) {
-    LOG(ERROR) << "No import currently in progress for " << vm_name << ", "
-               << container_name;
+    LOG(ERROR) << "No import currently in progress for " << key;
     return;
   }
 
@@ -1636,8 +1632,7 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostini(
   restarters_by_container_.emplace(key, restarter->restart_id());
   restarters_by_id_[restarter->restart_id()] = restarter;
   if (restarters_by_container_.count(key) > 1) {
-    VLOG(1) << "Already restarting vm " << vm_name << ", container "
-            << container_name;
+    VLOG(1) << "Already restarting " << key;
   } else {
     restarter->Restart();
   }
@@ -2165,12 +2160,13 @@ void CrostiniManager::OnCreateLxdContainer(
 
   if (response->status() ==
       vm_tools::cicerone::CreateLxdContainerResponse::CREATING) {
+    ContainerId container_id(vm_name, container_name);
     VLOG(1) << "Awaiting LxdContainerCreatedSignal for " << owner_id_ << ", "
-            << vm_name << ", " << container_name;
+            << container_id;
     // The callback will be called when we receive the LxdContainerCreated
     // signal.
-    create_lxd_container_callbacks_.emplace(
-        ContainerId(vm_name, container_name), std::move(callback));
+    create_lxd_container_callbacks_.emplace(std::move(container_id),
+                                            std::move(callback));
     return;
   }
   if (response->status() !=
@@ -2213,14 +2209,16 @@ void CrostiniManager::OnStartLxdContainer(
       // signal.
       // Then perform the same steps as for starting.
       FALLTHROUGH;
-    case vm_tools::cicerone::StartLxdContainerResponse::STARTING:
+    case vm_tools::cicerone::StartLxdContainerResponse::STARTING: {
+      ContainerId container_id(vm_name, container_name);
       VLOG(1) << "Awaiting LxdContainerStartingSignal for " << owner_id_ << ", "
-              << vm_name << ", " << container_name;
+              << container_id;
       // The callback will be called when we receive the LxdContainerStarting
       // signal and (if successful) the ContainerStarted signal from Garcon..
-      start_container_callbacks_.emplace(ContainerId(vm_name, container_name),
+      start_container_callbacks_.emplace(std::move(container_id),
                                          std::move(callback));
       break;
+    }
     default:
       NOTREACHED();
       break;
@@ -2293,19 +2291,19 @@ void CrostiniManager::OnLxdContainerDeleted(
   if (signal.owner_id() != owner_id_)
     return;
 
+  ContainerId container_id(signal.vm_name(), signal.container_name());
   bool success =
       signal.status() == vm_tools::cicerone::LxdContainerDeletedSignal::DELETED;
   if (success) {
     RemoveLxdContainerFromPrefs(profile_, signal.vm_name(),
                                 signal.container_name());
   } else {
-    LOG(ERROR) << "Failed to delete container (" << signal.vm_name() << ","
-               << signal.container_name() << ") : " << signal.failure_reason();
+    LOG(ERROR) << "Failed to delete container " << container_id << " : "
+               << signal.failure_reason();
   }
 
   // Find the callbacks to call, then erase them from the map.
-  auto range = delete_lxd_container_callbacks_.equal_range(
-      ContainerId(signal.vm_name(), signal.container_name()));
+  auto range = delete_lxd_container_callbacks_.equal_range(container_id);
   for (auto it = range.first; it != range.second; ++it) {
     std::move(it->second).Run(success);
   }
@@ -2552,8 +2550,7 @@ void CrostiniManager::OnExportLxdContainer(
   ContainerId key(vm_name, container_name);
   auto it = export_lxd_container_callbacks_.find(key);
   if (it == export_lxd_container_callbacks_.end()) {
-    LOG(ERROR) << "No export callback for " << vm_name << ", "
-               << container_name;
+    LOG(ERROR) << "No export callback for " << key;
     return;
   }
 
@@ -2630,8 +2627,7 @@ void CrostiniManager::OnExportLxdContainerProgress(
   // Invoke original callback with either success or failure.
   auto it = export_lxd_container_callbacks_.find(container_id);
   if (it == export_lxd_container_callbacks_.end()) {
-    LOG(ERROR) << "No export callback for " << signal.vm_name() << ", "
-               << signal.container_name();
+    LOG(ERROR) << "No export callback for " << container_id;
     return;
   }
   std::move(it->second)
@@ -2646,8 +2642,7 @@ void CrostiniManager::OnImportLxdContainer(
   ContainerId key(vm_name, container_name);
   auto it = import_lxd_container_callbacks_.find(key);
   if (it == import_lxd_container_callbacks_.end()) {
-    LOG(ERROR) << "No import callback for " << vm_name << ", "
-               << container_name;
+    LOG(ERROR) << "No import callback for " << key;
     return;
   }
 
@@ -2731,8 +2726,7 @@ void CrostiniManager::OnImportLxdContainerProgress(
   if (call_original_callback) {
     auto it = import_lxd_container_callbacks_.find(container_id);
     if (it == import_lxd_container_callbacks_.end()) {
-      LOG(ERROR) << "No import callback for " << signal.vm_name() << ", "
-                 << signal.container_name();
+      LOG(ERROR) << "No import callback for " << container_id;
       return;
     }
     std::move(it->second).Run(result);
@@ -2746,7 +2740,7 @@ void CrostiniManager::OnCancelExportLxdContainer(
         response) {
   auto it = export_lxd_container_callbacks_.find(key);
   if (it == export_lxd_container_callbacks_.end()) {
-    LOG(ERROR) << "No export callback for " << key.first << ", " << key.second;
+    LOG(ERROR) << "No export callback for " << key;
     return;
   }
 
@@ -2769,7 +2763,7 @@ void CrostiniManager::OnCancelImportLxdContainer(
         response) {
   auto it = import_lxd_container_callbacks_.find(key);
   if (it == import_lxd_container_callbacks_.end()) {
-    LOG(ERROR) << "No import callback for " << key.first << ", " << key.second;
+    LOG(ERROR) << "No import callback for " << key;
     return;
   }
 

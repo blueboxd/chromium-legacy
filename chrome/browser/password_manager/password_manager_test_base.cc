@@ -130,8 +130,7 @@ class CustomManagePasswordsUIController : public ManagePasswordsUIController {
       const GURL& origin,
       const ManagePasswordsState::CredentialsCallback& callback) override;
   void OnPasswordAutofilled(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          password_form_map,
+      const std::vector<const autofill::PasswordForm*>& password_forms,
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches)
       override;
@@ -260,13 +259,12 @@ bool CustomManagePasswordsUIController::OnChooseCredentials(
 }
 
 void CustomManagePasswordsUIController::OnPasswordAutofilled(
-    const std::map<base::string16, const autofill::PasswordForm*>&
-        password_form_map,
+    const std::vector<const autofill::PasswordForm*>& password_forms,
     const GURL& origin,
     const std::vector<const autofill::PasswordForm*>* federated_matches) {
   ProcessStateExpectations(password_manager::ui::MANAGE_STATE);
   return ManagePasswordsUIController::OnPasswordAutofilled(
-      password_form_map, origin, federated_matches);
+      password_forms, origin, federated_matches);
 }
 
 void CustomManagePasswordsUIController::DidFinishNavigation(

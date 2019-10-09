@@ -30,7 +30,7 @@ class CrostiniAppResult : public AppResult {
   void Open(int event_flags) override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
   void ExecuteLaunchCommand(int event_flags) override;
-  SearchResultType GetSearchResultType() const override;
+  ash::SearchResultType GetSearchResultType() const override;
 
  private:
   // ChromeSearchResult overrides:

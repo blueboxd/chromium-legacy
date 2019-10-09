@@ -62,9 +62,7 @@
 #include "ui/wm/core/ime_util_chromeos.h"
 #include "ui/wm/core/shadow_types.h"
 
-using ash::ColorProfileType;
-
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -159,8 +157,8 @@ SkColor GetBackgroundShieldColor(const std::vector<SkColor>& colors,
                                  float color_opacity) {
   const U8CPU sk_opacity_value = static_cast<U8CPU>(255 * color_opacity);
 
-  const SkColor default_color = SkColorSetA(
-      app_list::AppListView::kDefaultBackgroundColor, sk_opacity_value);
+  const SkColor default_color =
+      SkColorSetA(AppListView::kDefaultBackgroundColor, sk_opacity_value);
 
   if (colors.empty())
     return default_color;
@@ -2300,4 +2298,4 @@ void AppListView::EndDragFromShelf(ash::AppListViewState app_list_state) {
   UpdateChildViewsYPositionAndOpacity();
 }
 
-}  // namespace app_list
+}  // namespace ash

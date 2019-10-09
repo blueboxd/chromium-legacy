@@ -518,7 +518,7 @@ const NetworkUI = (function() {
         .getNetworkStateList({
           filter: mojom.FilterType.kVisible,
           networkType: mojom.NetworkType.kAll,
-          limit: mojom.kNoLimit,
+          limit: mojom.NO_LIMIT,
         })
         .then((responseParams) => {
           onVisibleNetworksReceived(responseParams.result);
@@ -528,7 +528,7 @@ const NetworkUI = (function() {
         .getNetworkStateList({
           filter: mojom.FilterType.kConfigured,
           networkType: mojom.NetworkType.kAll,
-          limit: mojom.kNoLimit,
+          limit: mojom.NO_LIMIT,
         })
         .then((responseParams) => {
           onFavoriteNetworksReceived(responseParams.result);

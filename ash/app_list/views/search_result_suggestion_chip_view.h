@@ -20,7 +20,7 @@ class InkDropRipple;
 class Label;
 }  // namespace views
 
-namespace app_list {
+namespace ash {
 
 class AppListViewDelegate;
 
@@ -88,6 +88,6 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
   DISALLOW_COPY_AND_ASSIGN(SearchResultSuggestionChipView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_SEARCH_RESULT_SUGGESTION_CHIP_VIEW_H_

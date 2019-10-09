@@ -440,6 +440,11 @@ base::FilePath GetLocalizableAppShortcutsSubdirName() {
   }
 }
 
+base::FilePath* GetOverriddenApplicationsFolder() {
+  static base::NoDestructor<base::FilePath> overridden_path;
+  return overridden_path.get();
+}
+
 // Creates a canvas the same size as |overlay|, copies the appropriate
 // representation from |backgound| into it (according to Cocoa), then draws
 // |overlay| over it using NSCompositeSourceOver.
@@ -627,6 +632,21 @@ bool AppShimLaunchDisabled() {
          !g_app_shims_allow_update_and_launch_in_tests;
 }
 
+base::FilePath GetChromeAppsFolder() {
+  if (!GetOverriddenApplicationsFolder()->empty())
+    return *GetOverriddenApplicationsFolder();
+
+  base::FilePath path = GetWritableApplicationsDirectory();
+  if (path.empty())
+    return path;
+
+  return path.Append(GetLocalizableAppShortcutsSubdirName());
+}
+
+void SetChromeAppsFolderForTesting(const base::FilePath& path) {
+  *GetOverriddenApplicationsFolder() = path;
+}
+
 WebAppShortcutCreator::WebAppShortcutCreator(const base::FilePath& app_data_dir,
                                              const ShortcutInfo* shortcut_info)
     : app_data_dir_(app_data_dir), info_(shortcut_info) {
@@ -640,7 +660,7 @@ base::FilePath WebAppShortcutCreator::GetApplicationsShortcutPath(
   if (g_app_shims_allow_update_and_launch_in_tests)
     return app_data_dir_.Append(GetShortcutBasename());
 
-  base::FilePath applications_dir = GetApplicationsDirname();
+  base::FilePath applications_dir = GetChromeAppsFolder();
   if (applications_dir.empty())
     return base::FilePath();
 
@@ -828,21 +848,11 @@ bool WebAppShortcutCreator::CreateShortcuts(
 }
 
 void WebAppShortcutCreator::DeleteShortcuts() {
-  base::FilePath apps_dir = GetApplicationsDirname();
-  bool deleted_instance_in_apps_dir = false;
-
   // Remove all instances found by LaunchServices.
   std::vector<base::FilePath> bundle_paths = GetAppBundlesById();
   for (const auto& bundle_path : bundle_paths) {
-    deleted_instance_in_apps_dir |= apps_dir.IsParent(bundle_path);
     base::DeleteFile(bundle_path, true);
   }
-
-  // If we just deleted the last entry in Chrome's apps directory, remove the
-  // apps directory itself. In practice, we never do this, because the the apps
-  // directory still has its .DS_Store and .localized files.
-  if (deleted_instance_in_apps_dir && base::IsDirectoryEmpty(apps_dir))
-    base::DeleteFile(apps_dir, false);
 }
 
 bool WebAppShortcutCreator::UpdateShortcuts(
@@ -851,7 +861,7 @@ bool WebAppShortcutCreator::UpdateShortcuts(
   DCHECK(updated_paths && updated_paths->empty());
 
   if (create_if_needed) {
-    const base::FilePath applications_dir = GetApplicationsDirname();
+    const base::FilePath applications_dir = GetChromeAppsFolder();
     if (applications_dir.empty() ||
         !base::DirectoryExists(applications_dir.DirName())) {
       LOG(ERROR) << "Couldn't find an Applications directory to copy app to.";
@@ -879,14 +889,6 @@ bool WebAppShortcutCreator::UpdateShortcuts(
 
   CreateShortcutsAt(app_paths, updated_paths);
   return updated_paths->size() == app_paths.size();
-}
-
-base::FilePath WebAppShortcutCreator::GetApplicationsDirname() const {
-  base::FilePath path = GetWritableApplicationsDirectory();
-  if (path.empty())
-    return path;
-
-  return path.Append(GetLocalizableAppShortcutsSubdirName());
 }
 
 bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
@@ -962,7 +964,7 @@ bool WebAppShortcutCreator::UpdateDisplayName(
   NSString* bundle_name = base::SysUTF16ToNSString(info_->title);
   NSString* display_name = base::SysUTF16ToNSString(info_->title);
   if (HasExistingExtensionShimForDifferentProfile(
-          GetApplicationsDirname(), info_->extension_id, info_->profile_path)) {
+          GetChromeAppsFolder(), info_->extension_id, info_->profile_path)) {
     display_name = [bundle_name
         stringByAppendingString:base::SysUTF8ToNSString(
                                     " (" + info_->profile_name + ")")];
@@ -1021,7 +1023,7 @@ std::vector<base::FilePath> WebAppShortcutCreator::GetAppBundlesByIdUnsorted()
   // https://crbug.com/937703
   if (paths.empty()) {
     std::list<BundleInfoPlist> bundles_info = BundleInfoPlist::GetAllInPath(
-        GetApplicationsDirname(), false /* recursive */);
+        GetChromeAppsFolder(), false /* recursive */);
     for (const auto& info : bundles_info) {
       if (info.IsForCurrentUserDataDir() && info.GetBundleId() == bundle_id)
         paths.push_back(info.bundle_path());
@@ -1046,7 +1048,7 @@ std::vector<base::FilePath> WebAppShortcutCreator::GetAppBundlesById() const {
     return paths;
   }
 
-  base::FilePath apps_dir = GetApplicationsDirname();
+  base::FilePath apps_dir = GetChromeAppsFolder();
   auto compare = [default_path, apps_dir](const base::FilePath& a,
                                           const base::FilePath& b) {
     if (a == b)
@@ -1101,12 +1103,11 @@ void WebAppShortcutCreator::RevealAppShimInFinder() const {
     return;
   }
 
-  // Otherwise, open the Chrome apps folder.
-  base::FilePath apps_path = GetApplicationsDirname();
-
-  // Check if the Chrome apps folder exists, otherwise go up to ~/Applications.
+  // Otherwise, open the Chrome apps folder, in the hopes that the app shim is
+  // being asynchronously created there.
+  base::FilePath apps_path = GetChromeAppsFolder();
   if (!base::PathExists(apps_path))
-    apps_path = apps_path.DirName();
+    return;
 
   // Since |app_path| is a directory, use openFile to show the contents of
   // that directory in Finder.
@@ -1178,7 +1179,7 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   std::list<BundleInfoPlist> bundles_info = BundleInfoPlist::GetAllInPath(
-      profile_path.Append(chrome::kWebAppDirname), true /* recursive */);
+      GetChromeAppsFolder(), true /* recursive */);
   for (const auto& info : bundles_info) {
     if (!info.IsForCurrentUserDataDir())
       continue;

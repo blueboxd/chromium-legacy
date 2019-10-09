@@ -23,7 +23,7 @@ class InkDropMask;
 class InkDropRipple;
 }  // namespace views
 
-namespace app_list {
+namespace ash {
 
 class AppListView;
 class ContentsView;
@@ -100,6 +100,6 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   DISALLOW_COPY_AND_ASSIGN(ExpandArrowView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_EXPAND_ARROW_VIEW_H_

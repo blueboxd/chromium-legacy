@@ -70,14 +70,10 @@ class CORE_EXPORT ScriptValue final {
 
   ScriptValue() = default;
 
-  // TODO(rikaf): Forbid passing empty v8::Local<v8::Value> to ScriptValue's
-  // ctor.
   ScriptValue(v8::Isolate* isolate, v8::Local<v8::Value> value)
       : isolate_(isolate),
-        value_(value.IsEmpty()
-                   ? MakeGarbageCollected<WorldSafeV8ReferenceWrapper>()
-                   : MakeGarbageCollected<WorldSafeV8ReferenceWrapper>(isolate,
-                                                                       value)) {
+        value_(
+            MakeGarbageCollected<WorldSafeV8ReferenceWrapper>(isolate, value)) {
     DCHECK(isolate_);
   }
 

@@ -196,7 +196,7 @@ TEST_F(SessionStoreOpenTest, ShouldCreateStore) {
   completion.Wait();
   ASSERT_THAT(completion.GetResult(), NotNull());
   EXPECT_THAT(completion.GetResult()->local_session_info().client_name,
-              Eq(syncer::GetSessionNameBlocking()));
+              Eq(syncer::GetPersonalizableDeviceNameBlocking()));
   EXPECT_THAT(session_sync_prefs_.GetSyncSessionsGUID(),
               Eq(std::string("session_sync") + kCacheGuid));
 }

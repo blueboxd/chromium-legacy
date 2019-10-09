@@ -478,8 +478,8 @@ TEST_F(AppListInternalAppSyncableServiceTest, DefaultPageBreakFirstTimeUser) {
 
   // Since internal apps are added by default, we'll use the camera and the
   // settings apps to test the ordering.
-  auto* settings_app_sync_item = GetSyncItem(app_list::kInternalAppIdSettings);
-  auto* camera_app_sync_item = GetSyncItem(app_list::kInternalAppIdCamera);
+  auto* settings_app_sync_item = GetSyncItem(ash::kInternalAppIdSettings);
+  auto* camera_app_sync_item = GetSyncItem(ash::kInternalAppIdCamera);
   ASSERT_TRUE(settings_app_sync_item);
   ASSERT_TRUE(camera_app_sync_item);
 
@@ -790,7 +790,7 @@ TEST_F(AppListSyncableServiceTest, FirstAvailablePosition) {
 
   // Populate the first page with items and leave 1 empty slot at the end.
   const int max_items_in_first_page =
-      app_list::AppListConfig::instance().GetMaxNumOfItemsPerPage(0);
+      ash::AppListConfig::instance().GetMaxNumOfItemsPerPage(0);
   syncer::StringOrdinal last_app_position =
       syncer::StringOrdinal::CreateInitialOrdinal();
   for (int i = 0; i < max_items_in_first_page - 1; ++i) {
@@ -838,7 +838,7 @@ TEST_F(AppListSyncableServiceTest, FirstAvailablePositionNotExist) {
 
   // Populate the first page with items and leave 1 empty slot at the end.
   const int max_items_in_first_page =
-      app_list::AppListConfig::instance().GetMaxNumOfItemsPerPage(0);
+      ash::AppListConfig::instance().GetMaxNumOfItemsPerPage(0);
   syncer::StringOrdinal last_app_position =
       syncer::StringOrdinal::CreateInitialOrdinal();
   for (int i = 0; i < max_items_in_first_page - 1; ++i) {

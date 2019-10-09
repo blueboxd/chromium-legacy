@@ -69,7 +69,6 @@ struct CookieStoreIOSTestTraits {
   static const bool has_exact_change_cause = false;
   static const bool has_exact_change_ordering = false;
   static const int creation_time_granularity_in_ms = 1000;
-  static const bool supports_cookie_access_semantics = false;
 
   base::test::SingleThreadTaskEnvironment task_environment_;
 };

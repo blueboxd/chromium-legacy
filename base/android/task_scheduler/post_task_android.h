@@ -28,6 +28,7 @@ class BASE_EXPORT PostTaskAndroid {
       jint priority,
       jboolean may_block,
       jboolean use_thread_pool,
+      jboolean current_thread,
       jbyte extension_id,
       const base::android::JavaParamRef<jbyteArray>& extension_data);
 

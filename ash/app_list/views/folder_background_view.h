@@ -7,7 +7,7 @@
 
 #include "ui/views/view.h"
 
-namespace app_list {
+namespace ash {
 
 class AppListFolderView;
 
@@ -38,6 +38,6 @@ class FolderBackgroundView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(FolderBackgroundView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_FOLDER_BACKGROUND_VIEW_H_

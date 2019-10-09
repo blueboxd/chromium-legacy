@@ -132,7 +132,7 @@ enum class AppListLaunchType {
 };
 
 // Type of the search result, which is set in Chrome.
-enum class SearchResultType {
+enum class AppListSearchResultType {
   kUnknown,       // Unknown type. Don't use over IPC
   kInstalledApp,  // Installed apps.
   kPlayStoreApp,  // Installable apps from PlayStore.
@@ -270,7 +270,7 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
   base::string16 formatted_price;
 
   // The type of this result.
-  SearchResultType result_type = SearchResultType::kUnknown;
+  AppListSearchResultType result_type = AppListSearchResultType::kUnknown;
 
   // The subtype of this result. Derived search result classes can use this to
   // represent their own subtypes. Currently, OmniboxResult sets this to

@@ -41,6 +41,13 @@ TaskTraits GetTaskTraitsWithExplicitPriority(TaskTraits traits) {
 }
 
 TaskExecutor* GetTaskExecutorForTraits(const TaskTraits& traits) {
+  if (traits.use_current_thread()) {
+    TaskExecutor* executor = GetTaskExecutorForCurrentThread();
+    DCHECK(executor) << "Couldn't find a TaskExecutor for this thread. Note "
+                        "you can't use base::CurrentThread in a one-off "
+                        "base::ThreadPool task.";
+    return executor;
+  }
   TaskExecutor* executor = GetRegisteredTaskExecutorForTraits(traits);
   DCHECK(executor || ThreadPoolInstance::Get())
       << "Ref. Prerequisite section of post_task.h.\n\n"

@@ -53,9 +53,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-using ash::ColorProfileType;
-
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -76,8 +74,8 @@ constexpr float kOpacityEndFraction = 1.0f;
 // Minimum amount of characters required to enable autocomplete.
 constexpr int kMinimumLengthToAutocomplete = 2;
 
-float GetAssistantButtonOpacityForState(ash::AppListState state) {
-  if (state == ash::AppListState::kStateSearchResults)
+float GetAssistantButtonOpacityForState(AppListState state) {
+  if (state == AppListState::kStateSearchResults)
     return .0f;
   return 1.f;
 }
@@ -316,8 +314,8 @@ void SearchBoxView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void SearchBoxView::UpdateBackground(double progress,
-                                     ash::AppListState current_state,
-                                     ash::AppListState target_state) {
+                                     AppListState current_state,
+                                     AppListState target_state) {
   SetSearchBoxBackgroundCornerRadius(gfx::Tween::LinearIntValueBetween(
       progress, GetSearchBoxBorderCornerRadiusForState(current_state),
       GetSearchBoxBorderCornerRadiusForState(target_state)));
@@ -328,9 +326,9 @@ void SearchBoxView::UpdateBackground(double progress,
 }
 
 void SearchBoxView::UpdateLayout(double progress,
-                                 ash::AppListState current_state,
+                                 AppListState current_state,
                                  int current_state_height,
-                                 ash::AppListState target_state,
+                                 AppListState target_state,
                                  int target_state_height) {
   // Horizontal margins are selected to match search box icon's vertical
   // margins.
@@ -352,17 +350,16 @@ void SearchBoxView::UpdateLayout(double progress,
 }
 
 int SearchBoxView::GetSearchBoxBorderCornerRadiusForState(
-    ash::AppListState state) const {
-  if (state == ash::AppListState::kStateSearchResults &&
+    AppListState state) const {
+  if (state == AppListState::kStateSearchResults &&
       !app_list_view_->is_in_drag()) {
     return search_box::kSearchBoxBorderCornerRadiusSearchResult;
   }
   return search_box::kSearchBoxBorderCornerRadius;
 }
 
-SkColor SearchBoxView::GetBackgroundColorForState(
-    ash::AppListState state) const {
-  if (state == ash::AppListState::kStateSearchResults)
+SkColor SearchBoxView::GetBackgroundColorForState(AppListState state) const {
+  if (state == AppListState::kStateSearchResults)
     return AppListConfig::instance().card_background_color();
   return search_box::kSearchBoxBackgroundDefault;
 }
@@ -392,7 +389,7 @@ void SearchBoxView::UpdateOpacity() {
   AppListView* app_list_view = contents_view_->app_list_view();
   bool should_restore_opacity =
       !app_list_view->is_in_drag() &&
-      (app_list_view->app_list_state() != ash::AppListViewState::kClosed);
+      (app_list_view->app_list_state() != AppListViewState::kClosed);
   // Restores the opacity of searchbox if the gesture dragging ends.
   this->layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
   contents_view_->search_results_page_view()->layer()->SetOpacity(
@@ -735,7 +732,7 @@ void SearchBoxView::ButtonPressed(views::Button* sender,
 
 void SearchBoxView::UpdateSearchBoxTextForSelectedResult(
     SearchResult* selected_result) {
-  if (selected_result->result_type() == ash::SearchResultType::kOmnibox &&
+  if (selected_result->result_type() == AppListSearchResultType::kOmnibox &&
       !selected_result->is_omnibox_search() &&
       !selected_result->details().empty()) {
     // If set, use details to ensure url results fill url.
@@ -746,8 +743,7 @@ void SearchBoxView::UpdateSearchBoxTextForSelectedResult(
 }
 
 void SearchBoxView::HintTextChanged() {
-  const app_list::SearchBoxModel* search_box_model =
-      search_model_->search_box();
+  const SearchBoxModel* search_box_model = search_model_->search_box();
   search_box()->SetPlaceholderText(search_box_model->hint_text());
   search_box()->SetAccessibleName(search_box_model->accessible_name());
   SchedulePaint();
@@ -797,7 +793,7 @@ void SearchBoxView::SetupAssistantButton() {
   views::ImageButton* assistant = assistant_button();
   assistant->SetImage(
       views::ImageButton::STATE_NORMAL,
-      gfx::CreateVectorIcon(ash::kAssistantIcon, search_box::kIconSize,
+      gfx::CreateVectorIcon(kAssistantIcon, search_box::kIconSize,
                             gfx::kGoogleGrey700));
   base::string16 assistant_button_label(
       l10n_util::GetStringUTF16(IDS_APP_LIST_START_ASSISTANT));
@@ -892,4 +888,4 @@ bool SearchBoxView::HandleKeyEventForDisabledSearchBoxSelection(
   return true;
 }
 
-}  // namespace app_list
+}  // namespace ash

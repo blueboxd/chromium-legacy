@@ -31,6 +31,7 @@
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/image_processor_factory.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
@@ -445,7 +446,7 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
         return;
       }
       int plane_horiz_bits_per_pixel = VideoFrame::PlaneHorizontalBitsPerPixel(
-          V4L2Device::V4L2PixFmtToVideoPixelFormat(egl_image_format_fourcc_),
+          Fourcc::FromV4L2PixFmt(egl_image_format_fourcc_).ToVideoPixelFormat(),
           0);
       ImportBufferForPictureTask(
           output_record.picture_id, std::move(dmabuf_fds),
@@ -574,7 +575,7 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureForImportTask(
   // the final output format from the image processor (if exists).
   // Use |egl_image_format_fourcc_|, it will be the final output format.
   if (pixel_format !=
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(egl_image_format_fourcc_)) {
+      Fourcc::FromV4L2PixFmt(egl_image_format_fourcc_).ToVideoPixelFormat()) {
     VLOGF(1) << "Unsupported import format: " << pixel_format;
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
@@ -645,7 +646,7 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
   // However the size of PictureBuffer might not be adjusted by ARC++. So we
   // keep this until ARC++ side is fixed.
   int plane_horiz_bits_per_pixel = VideoFrame::PlaneHorizontalBitsPerPixel(
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(egl_image_format_fourcc_), 0);
+      Fourcc::FromV4L2PixFmt(egl_image_format_fourcc_).ToVideoPixelFormat(), 0);
   if (plane_horiz_bits_per_pixel == 0 ||
       (stride * 8) % plane_horiz_bits_per_pixel != 0) {
     VLOGF(1) << "Invalid format " << egl_image_format_fourcc_ << " or stride "
@@ -683,7 +684,7 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     DCHECK(!iter->output_frame);
 
     auto layout = VideoFrameLayout::Create(
-        V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
+        Fourcc::FromV4L2PixFmt(output_format_fourcc_).ToVideoPixelFormat(),
         coded_size_);
     if (!layout) {
       VLOGF(1) << "Cannot create layout!";
@@ -2477,7 +2478,8 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
   // know the precise format.
   VideoPixelFormat pixel_format =
       (output_mode_ == Config::OutputMode::IMPORT)
-          ? V4L2Device::V4L2PixFmtToVideoPixelFormat(egl_image_format_fourcc_)
+          ? Fourcc::FromV4L2PixFmt(egl_image_format_fourcc_)
+                .ToVideoPixelFormat()
           : PIXEL_FORMAT_UNKNOWN;
 
   child_task_runner_->PostTask(

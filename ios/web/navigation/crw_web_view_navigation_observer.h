@@ -18,6 +18,9 @@
 // The webView to observe.
 @property(nonatomic, weak) WKWebView* webView;
 
+// Instructs this handler to close.
+- (void)close;
+
 @end
 
 #endif  // IOS_WEB_NAVIGATION_CRW_WEB_VIEW_NAVIGATION_OBSERVER_H_

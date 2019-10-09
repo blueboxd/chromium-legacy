@@ -117,11 +117,11 @@ PasswordFormFillData GetTestPasswordFormFillData() {
   preferred_match.password_value = ASCIIToUTF16("test");
   preferred_match.preferred = true;
 
-  std::map<base::string16, const PasswordForm*> matches;
+  std::vector<const PasswordForm*> matches;
   PasswordForm non_preferred_match = preferred_match;
   non_preferred_match.username_value = ASCIIToUTF16("test1@gmail.com");
   non_preferred_match.password_value = ASCIIToUTF16("test1");
-  matches[non_preferred_match.username_value] = &non_preferred_match;
+  matches.push_back(&non_preferred_match);
 
   return PasswordFormFillData(form_on_page, matches, preferred_match, true);
 }

@@ -17,14 +17,66 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
+// The BrowserTaskExecutor's job is to map base::TaskTraits to actual task
+// queues for the browser process.
+//
+// We actually have three TaskExecutors:
+// * BrowserTaskExecutor registered for BrowserTaskTraitsExtension.
+// * BrowserTaskExecutor::UIThreadExecutor registered with UI thread TLS.
+// * BrowserTaskExecutor::IOThreadExecutor registered with IO thread TLS.
+//
+// This lets us efficiently implement base::CurrentThread on UI and IO threads.
 namespace content {
 
 class BrowserTaskExecutorTest;
 class BrowserProcessSubThread;
 
-// This class's job is to map base::TaskTraits to actual task queues for the
-// browser process.
-class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
+class CONTENT_EXPORT BaseBrowserTaskExecutor : public base::TaskExecutor {
+ public:
+  BaseBrowserTaskExecutor();
+  ~BaseBrowserTaskExecutor() override;
+
+  // base::TaskExecutor implementation.
+  bool PostDelayedTask(const base::Location& from_here,
+                       const base::TaskTraits& traits,
+                       base::OnceClosure task,
+                       base::TimeDelta delay) override;
+
+  scoped_refptr<base::TaskRunner> CreateTaskRunner(
+      const base::TaskTraits& traits) override;
+
+  scoped_refptr<base::SequencedTaskRunner> CreateSequencedTaskRunner(
+      const base::TaskTraits& traits) override;
+
+  scoped_refptr<base::SingleThreadTaskRunner> CreateSingleThreadTaskRunner(
+      const base::TaskTraits& traits,
+      base::SingleThreadTaskRunnerThreadMode thread_mode) override;
+
+#if defined(OS_WIN)
+  scoped_refptr<base::SingleThreadTaskRunner> CreateCOMSTATaskRunner(
+      const base::TaskTraits& traits,
+      base::SingleThreadTaskRunnerThreadMode thread_mode) override;
+#endif  // defined(OS_WIN)
+
+  struct ThreadIdAndQueueType {
+    BrowserThread::ID thread_id;
+    BrowserTaskQueues::QueueType queue_type;
+  };
+
+  ThreadIdAndQueueType GetThreadIdAndQueueType(
+      const base::TaskTraits& traits) const;
+
+ protected:
+  virtual BrowserThread::ID GetCurrentThreadID() const = 0;
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
+      const base::TaskTraits& traits) const;
+
+  scoped_refptr<BrowserUIThreadScheduler::Handle> browser_ui_thread_handle_;
+  scoped_refptr<BrowserIOThreadDelegate::Handle> browser_io_thread_handle_;
+};
+
+class CONTENT_EXPORT BrowserTaskExecutor : public BaseBrowserTaskExecutor {
  public:
   // Creates and registers a BrowserTaskExecutor on the current thread which
   // owns a BrowserUIThreadScheduler. This facilitates posting tasks to a
@@ -74,10 +126,14 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   // Can be called multiple times.
   static void EnableAllQueues();
 
-  // As Create but with the user provided objects.
+  // As Create but with the user provided objects. Must call
+  // BindToUIThreadForTesting before tasks can be run on the UI thread.
   static void CreateForTesting(
       std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler,
       std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate);
+
+  // Completes ui-thread set up. Must be called on the UI thread.
+  static void BindToUIThreadForTesting();
 
   // This must be called after the FeatureList has been initialized in order
   // for scheduling experiments to function.
@@ -104,36 +160,6 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   static void RunAllPendingTasksOnThreadForTesting(
       BrowserThread::ID identifier);
 
-  struct ThreadIdAndQueueType {
-    BrowserThread::ID thread_id;
-    BrowserTaskQueues::QueueType queue_type;
-  };
-
-  static ThreadIdAndQueueType GetThreadIdAndQueueType(
-      const base::TaskTraits& traits);
-
-  // base::TaskExecutor implementation.
-  bool PostDelayedTask(const base::Location& from_here,
-                       const base::TaskTraits& traits,
-                       base::OnceClosure task,
-                       base::TimeDelta delay) override;
-
-  scoped_refptr<base::TaskRunner> CreateTaskRunner(
-      const base::TaskTraits& traits) override;
-
-  scoped_refptr<base::SequencedTaskRunner> CreateSequencedTaskRunner(
-      const base::TaskTraits& traits) override;
-
-  scoped_refptr<base::SingleThreadTaskRunner> CreateSingleThreadTaskRunner(
-      const base::TaskTraits& traits,
-      base::SingleThreadTaskRunnerThreadMode thread_mode) override;
-
-#if defined(OS_WIN)
-  scoped_refptr<base::SingleThreadTaskRunner> CreateCOMSTATaskRunner(
-      const base::TaskTraits& traits,
-      base::SingleThreadTaskRunnerThreadMode thread_mode) override;
-#endif  // defined(OS_WIN)
-
 #if DCHECK_IS_ON()
   // Adds a Validator for |traits|. It is assumed the lifetime of |validator| is
   // is longer than that of the BrowserTaskExecutor unless RemoveValidator
@@ -151,6 +177,55 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   friend class BrowserIOThreadDelegate;
   friend class BrowserTaskExecutorTest;
 
+  // Constructed on UI thread and registered with UI thread TLS. This backs the
+  // implementation of base::CurrentThread for the browser UI thread.
+  class UIThreadExecutor : public BaseBrowserTaskExecutor {
+   public:
+    explicit UIThreadExecutor(
+        std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler);
+
+    ~UIThreadExecutor() override;
+
+    scoped_refptr<BrowserUIThreadScheduler::Handle> GetUIThreadHandle();
+
+    void SetIOThreadHandle(
+        scoped_refptr<BrowserUIThreadScheduler::Handle> io_thread_handle);
+
+    void BindToCurrentThread();
+
+   private:
+    BrowserThread::ID GetCurrentThreadID() const override;
+
+    std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler_;
+    bool bound_to_thread_ = false;
+  };
+
+  // Constructed on UI thread and later registered with IO thread TLS. This
+  // backs the implementation of base::CurrentThread for the browser IO thread.
+  class IOThreadExecutor : public BaseBrowserTaskExecutor {
+   public:
+    explicit IOThreadExecutor(
+        std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate);
+
+    ~IOThreadExecutor() override;
+
+    scoped_refptr<BrowserUIThreadScheduler::Handle> GetIOThreadHandle();
+
+    void SetUIThreadHandle(
+        scoped_refptr<BrowserUIThreadScheduler::Handle> ui_thread_handle);
+
+    std::unique_ptr<BrowserIOThreadDelegate> TakeDelegate() {
+      return std::move(browser_io_thread_delegate_);
+    }
+
+    bool HasDelegateForTesting() const { return !!browser_io_thread_delegate_; }
+
+   private:
+    BrowserThread::ID GetCurrentThreadID() const override;
+
+    std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate_;
+  };
+
   static void CreateInternal(
       std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler,
       std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate);
@@ -166,22 +241,17 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   // For Get();
   FRIEND_TEST_ALL_PREFIXES(BrowserTaskExecutorTest,
                            RegisterExecutorForBothThreads);
-
   explicit BrowserTaskExecutor(
       std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler,
       std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate);
   ~BrowserTaskExecutor() override;
 
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
-      const base::TaskTraits& traits) const;
+  BrowserThread::ID GetCurrentThreadID() const override;
 
   static BrowserTaskExecutor* Get();
 
-  std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler_;
-  scoped_refptr<BrowserUIThreadScheduler::Handle> browser_ui_thread_handle_;
-
-  std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate_;
-  scoped_refptr<BrowserIOThreadDelegate::Handle> browser_io_thread_handle_;
+  std::unique_ptr<UIThreadExecutor> ui_thread_executor_;
+  std::unique_ptr<IOThreadExecutor> io_thread_executor_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTaskExecutor);
 };

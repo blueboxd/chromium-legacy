@@ -10,6 +10,7 @@
 
 #include "base/containers/small_map.h"
 #include "base/memory/ptr_util.h"
+#include "media/base/video_types.h"
 #include "media/gpu/macros.h"
 #include "media/parsers/vp8_parser.h"
 #include "media/video/video_decode_accelerator.h"

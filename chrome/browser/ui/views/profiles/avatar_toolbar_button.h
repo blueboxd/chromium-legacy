@@ -109,8 +109,12 @@ class AvatarToolbarButton : public ToolbarButton,
 
   base::string16 GetAvatarTooltipText() const;
   base::string16 GetProfileName() const;
-  gfx::ImageSkia GetAvatarIcon(const gfx::Image& gaia_image) const;
-  gfx::Image GetGaiaImage() const;
+  gfx::ImageSkia GetAvatarIcon(const gfx::Image& user_identity_image) const;
+
+  // Returns the image of the unconsented primary account (if exists and already
+  // loaded), otherwise empty.
+  gfx::Image GetUserIdentityImage() const;
+
   State GetState() const;
 
   void SetInsets();

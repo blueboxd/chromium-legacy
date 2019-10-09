@@ -19,7 +19,7 @@
 #include "ui/views/background.h"
 #include "ui/views/test/views_test_base.h"
 
-namespace app_list {
+namespace ash {
 namespace test {
 
 namespace {
@@ -182,4 +182,4 @@ TEST_F(SearchResultAnswerCardViewTest, RemoveEquivalent) {
 }
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace ash

@@ -13,7 +13,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/color_palette.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -520,4 +520,4 @@ int AppListConfig::GetMaxNumOfItemsPerPage(int /* page */) const {
   return preferred_cols_ * preferred_rows_;
 }
 
-}  // namespace app_list
+}  // namespace ash

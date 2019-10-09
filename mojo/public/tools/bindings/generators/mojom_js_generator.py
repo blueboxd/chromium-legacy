@@ -221,7 +221,7 @@ def GetRelativeUrl(module, base_module):
 
 class JavaScriptStylizer(generator.Stylizer):
   def StylizeConstant(self, mojom_name):
-    return mojom_name
+    return generator.ToConstantCase(mojom_name)
 
   def StylizeField(self, mojom_name):
     return generator.ToCamel(mojom_name, lower_initial=True)

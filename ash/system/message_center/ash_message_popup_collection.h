@@ -15,6 +15,7 @@
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/views/message_popup_collection.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace display {
 class Screen;
@@ -30,7 +31,8 @@ class Shelf;
 class ASH_EXPORT AshMessagePopupCollection
     : public message_center::MessagePopupCollection,
       public ShelfObserver,
-      public display::DisplayObserver {
+      public display::DisplayObserver,
+      public views::WidgetObserver {
  public:
   explicit AshMessagePopupCollection(Shelf* shelf);
   ~AshMessagePopupCollection() override;
@@ -42,7 +44,7 @@ class ASH_EXPORT AshMessagePopupCollection
   // bubble) so that notification toasts can avoid it.
   void SetTrayBubbleHeight(int height);
 
-  // Overridden from message_center::MessagePopupCollection:
+  // message_center::MessagePopupCollection:
   int GetToastOriginX(const gfx::Rect& toast_bounds) const override;
   int GetBaseline() const override;
   gfx::Rect GetWorkArea() const override;
@@ -72,14 +74,20 @@ class ASH_EXPORT AshMessagePopupCollection
   // ShelfObserver:
   void OnShelfWorkAreaInsetsChanged() override;
 
-  // Overridden from display::DisplayObserver:
+  // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
+
+  // views::WidgetObserver:
+  void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   display::Screen* screen_;
   gfx::Rect work_area_;
   Shelf* shelf_;
   int tray_bubble_height_;
+
+  std::set<views::Widget*> tracked_widgets_;
 
   DISALLOW_COPY_AND_ASSIGN(AshMessagePopupCollection);
 };

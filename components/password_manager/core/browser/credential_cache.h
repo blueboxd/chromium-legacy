@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_CACHE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_CACHE_H_
 
-#include <map>
+#include <vector>
 
 #include "base/strings/string16.h"
 #include "url/origin.h"
@@ -28,7 +28,7 @@ class CredentialCache {
 
   // Saves credentials for an origin so that they can be used in the sheet.
   void SaveCredentialsForOrigin(
-      const std::map<base::string16, const autofill::PasswordForm*>& matches,
+      const std::vector<const autofill::PasswordForm*>& matches,
       const url::Origin& origin);
 
   // Returns the credential store for a given origin. If it does not exist, an

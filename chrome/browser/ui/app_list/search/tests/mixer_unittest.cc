@@ -30,7 +30,7 @@ class FakeAppListModelUpdater;
 namespace app_list {
 namespace test {
 
-using ResultType = ash::SearchResultType;
+using ResultType = ash::AppListSearchResultType;
 
 // Maximum number of results to show in each mixer group.
 const size_t kMaxAppsGroupResults = 4;
@@ -50,8 +50,8 @@ class TestSearchResult : public ChromeSearchResult {
   // ChromeSearchResult overrides:
   void Open(int event_flags) override {}
   void InvokeAction(int action_index, int event_flags) override {}
-  SearchResultType GetSearchResultType() const override {
-    return app_list::SEARCH_RESULT_TYPE_BOUNDARY;
+  ash::SearchResultType GetSearchResultType() const override {
+    return ash::SEARCH_RESULT_TYPE_BOUNDARY;
   }
 
   // For reference equality testing. (Addresses cannot be used to test reference
@@ -169,7 +169,7 @@ class MixerTest : public testing::Test {
     for (size_t i = 0; i < providers_.size(); ++i)
       providers_[i]->Start(query);
 
-    mixer_->MixAndPublish(AppListConfig::instance().max_search_results(),
+    mixer_->MixAndPublish(ash::AppListConfig::instance().max_search_results(),
                           base::string16());
   }
 

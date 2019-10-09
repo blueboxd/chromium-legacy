@@ -1494,14 +1494,6 @@ message DeviceLoginScreenWebUsbAllowDevicesForUrlsProto {
   optional string device_login_screen_webusb_allow_devices_for_urls = 1;
 }
 
-// Settings that control if the device is enforced to show (or hide) system
-// information.
-message DeviceLoginScreenSystemInfoEnforcedProto {
-  // Determines whether the system information is always shown (or hidden) on
-  // the login screen.
-  optional bool enabled = 1;
-}
-
 message ChromeDeviceSettingsProto {
   reserved 61, 90;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1616,6 +1608,5 @@ message ChromeDeviceSettingsProto {
   optional DevicePowerwashAllowedProto device_powerwash_allowed = 91;
   optional DeviceLoginScreenWebUsbAllowDevicesForUrlsProto
       device_login_screen_webusb_allow_devices_for_urls = 92;
-  optional DeviceLoginScreenSystemInfoEnforcedProto
-      device_login_screen_system_info_enforced = 93;
+  optional BooleanPolicyProto device_login_screen_system_info_enforced = 93;
 }

@@ -38,15 +38,18 @@ class MessageDispatcher {
   virtual void SendMessage(
       const char* method,
       std::unique_ptr<base::Value> params,
+      const std::string& optional_node_frame_id,
       base::OnceCallback<void(const ReplyStatus&, const base::Value&)>
           callback) = 0;
   virtual void SendMessage(const char* method,
                            std::unique_ptr<base::Value> params,
+                           const std::string& optional_node_frame_id,
                            base::OnceClosure callback) = 0;
 
   virtual void RegisterEventHandler(
       const char* method,
       base::RepeatingCallback<void(const base::Value&)> callback) = 0;
+  virtual void UnregisterEventHandler(const char* method) = 0;
 
  protected:
   virtual ~MessageDispatcher() {}

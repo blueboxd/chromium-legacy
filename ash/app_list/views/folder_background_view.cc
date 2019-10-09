@@ -7,7 +7,7 @@
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 
-namespace app_list {
+namespace ash {
 
 FolderBackgroundView::FolderBackgroundView(AppListFolderView* folder_view)
     : folder_view_(folder_view) {}
@@ -44,4 +44,4 @@ void FolderBackgroundView::HandleClickOrTap() {
   folder_view_->CloseFolderPage();
 }
 
-}  // namespace app_list
+}  // namespace ash

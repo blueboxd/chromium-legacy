@@ -15,7 +15,7 @@ class GURL;
 
 namespace app_list {
 class AppLaunchEventLogger;
-}
+}  // namespace app_list
 
 namespace ukm {
 

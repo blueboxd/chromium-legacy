@@ -17,12 +17,9 @@
 #include "base/macros.h"
 #include "ui/views/widget/widget.h"
 
-namespace app_list {
-class ApplicationDragAndDropHost;
-}
-
 namespace ash {
 enum class AnimationChangeType;
+class ApplicationDragAndDropHost;
 class BackButton;
 class FocusCycler;
 class HomeButton;
@@ -102,7 +99,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   BackButton* GetBackButton() const;
 
   // Returns the ApplicationDragAndDropHost for this shelf.
-  app_list::ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
+  ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
 
   // Fetch the LoginShelfView instance.
   LoginShelfView* login_shelf_view() { return login_shelf_view_; }

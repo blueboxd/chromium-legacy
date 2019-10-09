@@ -13,11 +13,8 @@ cr.define('app_management.util', function() {
   function createEmptyState() {
     return {
       apps: {},
-      currentPage: {
-        pageType: PageType.MAIN,
-        selectedAppId: null,
-      },
       arcSupported: false,
+      selectedAppId: null,
     };
   }
 
@@ -144,7 +141,7 @@ cr.define('app_management.util', function() {
    * @return {?App}
    */
   function getSelectedApp(state) {
-    const selectedAppId = state.currentPage.selectedAppId;
+    const selectedAppId = state.selectedAppId;
     return selectedAppId ? state.apps[selectedAppId] : null;
   }
 
@@ -190,6 +187,24 @@ cr.define('app_management.util', function() {
     }
   }
 
+  /**
+   * Navigates to the App Detail page.
+   *
+   * @param {string} appId
+   */
+  function openAppDetailPage(appId) {
+    const params = new URLSearchParams;
+    params.append('id', appId);
+    settings.navigateTo(settings.routes.APP_MANAGEMENT_DETAIL, params);
+  }
+
+  /**
+   * Navigates to the main App Management list page.
+   */
+  function openMainPage() {
+    settings.navigateTo(settings.routes.APP_MANAGEMENT);
+  }
+
   return {
     addIfNeeded: addIfNeeded,
     alphabeticalSort: alphabeticalSort,
@@ -201,6 +216,8 @@ cr.define('app_management.util', function() {
     getPermission: getPermission,
     getPermissionValueBool: getPermissionValueBool,
     getSelectedApp: getSelectedApp,
+    openAppDetailPage: openAppDetailPage,
+    openMainPage: openMainPage,
     permissionTypeHandle: permissionTypeHandle,
     removeIfNeeded: removeIfNeeded,
     toggleOptionalBool: toggleOptionalBool,

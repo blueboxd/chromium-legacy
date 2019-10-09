@@ -10,7 +10,7 @@
 #include "base/optional.h"
 #include "ui/views/controls/button/button.h"
 
-namespace app_list {
+namespace ash {
 
 class SearchResult;
 class SearchResultActionsView;
@@ -108,6 +108,6 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
   DISALLOW_COPY_AND_ASSIGN(SearchResultBaseView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_SEARCH_RESULT_BASE_VIEW_H_

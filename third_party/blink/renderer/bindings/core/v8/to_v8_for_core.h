@@ -77,8 +77,10 @@ inline v8::Local<v8::Value> ToV8(const DisallowNewWrapper<ScriptValue>* value,
 // and ScriptValue
 template <typename T>
 inline ScriptValue ScriptValue::From(ScriptState* script_state, T&& value) {
-  return ScriptValue(script_state->GetIsolate(),
-                     ToV8(std::forward<T>(value), script_state));
+  v8::Local<v8::Value> v8_value = ToV8(std::forward<T>(value), script_state);
+  if (v8_value.IsEmpty())
+    return ScriptValue();
+  return ScriptValue(script_state->GetIsolate(), v8_value);
 }
 
 }  // namespace blink

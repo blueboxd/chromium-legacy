@@ -12,15 +12,12 @@
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 
-namespace app_list {
-class AssistantMainView;
-class AssistantPageView;
-class ContentsView;
-}  // namespace app_list
-
 namespace ash {
 
 class AssistantController;
+class AssistantMainView;
+class AssistantPageView;
+class ContentsView;
 
 // Helper class to make testing the Assistant Ash UI easier.
 class AssistantAshTestBase : public AshTestBase {
@@ -33,11 +30,11 @@ class AssistantAshTestBase : public AshTestBase {
 
   // Return the actual displayed Assistant main view.
   // Can only be used after |ShowAssistantUi| has been called.
-  const app_list::AssistantMainView* main_view() const;
+  const AssistantMainView* main_view() const;
 
   // This is the top-level Assistant specific view.
   // Can only be used after |ShowAssistantUi| has been called.
-  const app_list::AssistantPageView* page_view() const;
+  const AssistantPageView* page_view() const;
 
   // Spoof sending a request to the Assistant service,
   // and receiving |response_text| as a response to display.
@@ -47,7 +44,7 @@ class AssistantAshTestBase : public AshTestBase {
       AssistantEntryPoint entry_point = AssistantEntryPoint::kUnspecified);
 
  private:
-  const app_list::ContentsView* contents_view() const;
+  const ContentsView* contents_view() const;
 
   void DisableAnimations();
 

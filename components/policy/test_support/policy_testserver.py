@@ -208,6 +208,15 @@ LICENSE_TYPES = {
 
 INVALID_ENROLLMENT_TOKEN = 'invalid_enrollment_token'
 
+POLICY_COMMON_DEFINITIONS_TYPES = [
+  'StringList',
+  'PolicyOptions',
+  'BooleanPolicyProto',
+  'IntegerPolicyProto',
+  'StringPolicyProto',
+  'StringListPolicyProto'
+]
+
 class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
   """Decodes and handles device management requests from clients.
 
@@ -988,6 +997,17 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       self.SetProtobufMessageField(settings, field_descriptor,
                                    field_value)
 
+  def GetMessageDefinitionSource(self, message_type):
+    """Retrieve either policy_common_defintions, or chrome_device_policy
+    proto file, which contains the definition of the message.
+
+    Args:
+      message_type: name of the message definition type.
+    """
+    if message_type in POLICY_COMMON_DEFINITIONS_TYPES:
+      return 'cd'
+    return 'dp'
+
   def GatherDevicePolicySettings(self, settings, policies):
     """Copies all the policies from a dictionary into a protobuf of type
     CloudDeviceSettingsProto.
@@ -998,7 +1018,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """
     for group in settings.DESCRIPTOR.fields:
       # Create protobuf message for group.
-      group_message = eval('dp.' + group.message_type.name + '()')
+      group_message = eval(self.GetMessageDefinitionSource(
+          group.message_type.name) + '.' + group.message_type.name + '()')
       # Indicates if at least one field was set in |group_message|.
       got_fields = False
       # Iterate over fields of the message and feed them from the

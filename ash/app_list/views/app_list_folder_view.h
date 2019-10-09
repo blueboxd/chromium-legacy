@@ -19,7 +19,7 @@
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
-namespace app_list {
+namespace ash {
 
 class AppsContainerView;
 class AppsGridView;
@@ -196,6 +196,6 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(AppListFolderView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_APP_LIST_FOLDER_VIEW_H_

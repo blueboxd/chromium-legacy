@@ -17747,7 +17747,6 @@
       },
       'id': 572,
       'supported_on': ['chrome_os:79-'],
-      'future': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,

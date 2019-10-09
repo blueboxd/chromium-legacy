@@ -55,6 +55,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupView : public views::WidgetDelegateView,
   const char* GetClassName() const override;
   void OnDisplayChanged() override;
   void OnWorkAreaChanged() override;
+  void OnFocus() override;
 
   // views::WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;

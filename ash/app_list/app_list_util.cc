@@ -7,7 +7,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
 
-namespace app_list {
+namespace ash {
 
 bool IsUnhandledUnmodifiedEvent(const ui::KeyEvent& event) {
   if (event.handled() || event.type() != ui::ET_KEY_PRESSED)
@@ -100,4 +100,4 @@ bool ProcessLeftRightKeyTraversalForTextfield(views::Textfield* textfield,
   return true;
 }
 
-}  // namespace app_list
+}  // namespace ash

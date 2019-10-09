@@ -30,7 +30,7 @@
 namespace app_list {
 namespace {
 
-using LaunchInfo = ::app_list::AppListLaunchRecorder::LaunchInfo;
+using LaunchInfo = AppListLaunchRecorder::LaunchInfo;
 
 using ::metrics::ChromeOSAppListLaunchEventProto;
 using ::metrics::ChromeUserMetricsExtension;

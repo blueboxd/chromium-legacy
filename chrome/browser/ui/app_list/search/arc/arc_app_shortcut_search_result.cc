@@ -36,7 +36,7 @@ ArcAppShortcutSearchResult::ArcAppShortcutSearchResult(
   SetTitle(base::UTF8ToUTF16(data_->short_label));
   set_id(kAppShortcutSearchPrefix + GetAppId() + "/" + data_->shortcut_id);
   SetAccessibleName(ComputeAccessibleName());
-  SetResultType(ash::SearchResultType::kArcAppShortcut);
+  SetResultType(ash::AppListSearchResultType::kArcAppShortcut);
 
   if (is_recommendation) {
     SetDisplayType(ash::SearchResultDisplayType::kRecommendation);
@@ -45,7 +45,7 @@ ArcAppShortcutSearchResult::ArcAppShortcutSearchResult(
   }
 
   const int icon_dimension =
-      app_list::AppListConfig::instance().search_tile_icon_dimension();
+      ash::AppListConfig::instance().search_tile_icon_dimension();
   icon_decode_request_ = std::make_unique<arc::IconDecodeRequest>(
       base::BindOnce(&ArcAppShortcutSearchResult::SetIcon,
                      base::Unretained(this)),
@@ -54,8 +54,7 @@ ArcAppShortcutSearchResult::ArcAppShortcutSearchResult(
 
   badge_icon_loader_ = std::make_unique<ArcAppIconLoader>(
       profile_,
-      app_list::AppListConfig::instance().search_tile_badge_icon_dimension(),
-      this);
+      ash::AppListConfig::instance().search_tile_badge_icon_dimension(), this);
   badge_icon_loader_->FetchImage(GetAppId());
 }
 
@@ -66,8 +65,8 @@ void ArcAppShortcutSearchResult::Open(int event_flags) {
                              list_controller_->GetAppListDisplayId());
 }
 
-SearchResultType ArcAppShortcutSearchResult::GetSearchResultType() const {
-  return PLAY_STORE_APP_SHORTCUT;
+ash::SearchResultType ArcAppShortcutSearchResult::GetSearchResultType() const {
+  return ash::PLAY_STORE_APP_SHORTCUT;
 }
 
 void ArcAppShortcutSearchResult::OnAppImageUpdated(

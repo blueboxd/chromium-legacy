@@ -18,6 +18,7 @@
 #include "media/base/scopedfd_helper.h"
 #include "media/base/video_util.h"
 #include "media/gpu/accelerated_video_decoder.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/linux/dmabuf_video_frame_pool.h"
 #include "media/gpu/macros.h"
@@ -581,7 +582,7 @@ V4L2SliceVideoDecoder::UpdateVideoFramePoolFormat(
     const gfx::Size& size,
     const gfx::Rect& visible_rect) {
   VideoPixelFormat output_format =
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc);
+      Fourcc::FromV4L2PixFmt(output_format_fourcc).ToVideoPixelFormat();
   if (output_format == PIXEL_FORMAT_UNKNOWN) {
     return base::nullopt;
   }

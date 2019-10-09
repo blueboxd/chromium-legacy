@@ -18,7 +18,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace app_list {
+namespace ash {
 namespace test {
 
 gfx::ImageSkia CreateImageSkia(int width, int height) {
@@ -171,4 +171,4 @@ void AppListTestModel::ItemActivated(AppListTestItem* item) {
 }
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace ash

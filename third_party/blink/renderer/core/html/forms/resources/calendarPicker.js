@@ -868,6 +868,9 @@ function closePicker() {
 
 function openSuggestionPicker() {
   closePicker();
+  if (global.params.isFormControlsRefreshEnabled) {
+    document.body.classList.add('controls-refresh');
+  }
   global.picker = new SuggestionPicker($('main'), global.params);
 };
 

@@ -54,7 +54,7 @@ class ASH_EXPORT HomeButton : public ShelfControlButton,
   // True if the app list is shown for the display containing this button.
   bool IsShowingAppList() const;
 
-  virtual void OnPressed(app_list::AppListShowSource show_source,
+  virtual void OnPressed(AppListShowSource show_source,
                          base::TimeTicks time_stamp);
 
   // Returns the display which contains this view.

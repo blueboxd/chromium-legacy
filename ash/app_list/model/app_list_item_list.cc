@@ -10,7 +10,7 @@
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 
-namespace app_list {
+namespace ash {
 
 AppListItemList::AppListItemList() = default;
 
@@ -304,4 +304,4 @@ void AppListItemList::FixItemPosition(size_t index) {
     observer.OnListItemMoved(index, index, item);
 }
 
-}  // namespace app_list
+}  // namespace ash

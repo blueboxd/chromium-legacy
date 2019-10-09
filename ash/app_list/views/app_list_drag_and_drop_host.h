@@ -17,7 +17,7 @@ namespace views {
 class View;
 }  // namespace views
 
-namespace app_list {
+namespace ash {
 
 // This class will get used by the AppListView to drag and drop Application
 // shortcuts onto another host (the launcher).
@@ -82,6 +82,6 @@ class ApplicationDragAndDropHost {
   virtual void EndDrag(bool cancel) = 0;
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_APP_LIST_DRAG_AND_DROP_HOST_H_

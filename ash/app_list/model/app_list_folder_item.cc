@@ -11,7 +11,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace app_list {
+namespace ash {
 
 AppListFolderItem::AppListFolderItem(const std::string& id)
     : AppListItem(id),
@@ -125,4 +125,4 @@ void AppListFolderItem::EnsureIconsForAvailableConfigTypes(
   }
 }
 
-}  // namespace app_list
+}  // namespace ash

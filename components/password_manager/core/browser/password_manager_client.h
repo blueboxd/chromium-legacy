@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -206,8 +205,7 @@ class PasswordManagerClient {
   // They are never filled, but might be needed in the UI, for example. Default
   // implementation is a noop.
   virtual void PasswordWasAutofilled(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
+      const std::vector<const autofill::PasswordForm*>& best_matches,
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches);
 

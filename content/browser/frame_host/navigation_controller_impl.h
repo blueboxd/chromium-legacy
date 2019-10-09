@@ -276,7 +276,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   static size_t max_entry_count();
 
   void SetGetTimestampCallbackForTest(
-      const base::Callback<base::Time()>& get_timestamp_callback);
+      const base::RepeatingCallback<base::Time()>& get_timestamp_callback);
 
   // Discards only the pending entry. |was_failure| should be set if the pending
   // entry is being discarded because it failed to load.
@@ -619,7 +619,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   ReloadType pending_reload_;
 
   // Used to get timestamps for newly-created navigation entries.
-  base::Callback<base::Time()> get_timestamp_callback_;
+  base::RepeatingCallback<base::Time()> get_timestamp_callback_;
 
   // Used to smooth out timestamps from |get_timestamp_callback_|.
   // Without this, whenever there is a run of redirects or

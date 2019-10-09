@@ -26,11 +26,8 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace ash {
-enum class AppListViewState;
-}
-
-namespace app_list {
 class AppListView;
+enum class AppListViewState;
 
 // Manages app list UI. Creates AppListView and schedules showing/hiding
 // animation. While the UI is visible, it monitors things such as app list
@@ -80,7 +77,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // |event_time_stamp| is not 0, it means |ToggleAppList()| was triggered by
   // one of the AppListShowSources: kSearchKey or kShelfButton.
   ash::ShelfAction ToggleAppList(int64_t display_id,
-                                 app_list::AppListShowSource show_source,
+                                 AppListShowSource show_source,
                                  base::TimeTicks event_time_stamp);
 
   // Returns current visibility of the app list. Deprecated, use
@@ -181,6 +178,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterImpl);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_

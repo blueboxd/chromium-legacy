@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "ui/compositor/compositor.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -129,8 +129,8 @@ void RecordPaginationAnimationSmoothness(int actual_frames,
   }
 }
 
-void RecordPageSwitcherSourceByEventType(ui::EventType type,
-                                         bool is_tablet_mode) {
+void AppListRecordPageSwitcherSourceByEventType(ui::EventType type,
+                                                bool is_tablet_mode) {
   AppListPageSwitcherSource source;
 
   switch (type) {
@@ -343,4 +343,4 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
   return false;
 }
 
-}  // namespace app_list
+}  // namespace ash

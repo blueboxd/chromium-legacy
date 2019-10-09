@@ -14,9 +14,9 @@
 #include "base/observer_list.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 
-namespace app_list {
+namespace ash {
 class AppListController;
-}  // namespace app_list
+}  // namespace ash
 
 class ChromeAppListItem;
 
@@ -124,7 +124,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   std::map<std::string, std::unique_ptr<ChromeAppListItem>> items_;
   Profile* const profile_ = nullptr;
   base::ObserverList<AppListModelUpdaterObserver> observers_;
-  app_list::AppListController* app_list_controller_ = nullptr;
+  ash::AppListController* app_list_controller_ = nullptr;
   bool search_engine_is_google_ = false;
 
   base::WeakPtrFactory<ChromeAppListModelUpdater> weak_ptr_factory_{this};

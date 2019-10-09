@@ -10,8 +10,7 @@
 #include "components/remote_cocoa/app_shim/select_file_dialog_bridge.h"
 #include "components/remote_cocoa/browser/window.h"
 #include "components/remote_cocoa/common/native_widget_ns_window.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 
 using remote_cocoa::mojom::SelectFileDialogType;
@@ -92,14 +91,14 @@ void SelectFileDialogImpl::SelectFileImpl(
 
   // Create a NSSavePanel for it.
   auto* mojo_window = remote_cocoa::GetWindowMojoInterface(gfx_window);
-  auto request = mojo::MakeRequest(&dialog_data.select_file_dialog);
+  auto receiver = dialog_data.select_file_dialog.BindNewPipeAndPassReceiver();
   if (mojo_window) {
-    mojo_window->CreateSelectFileDialog(std::move(request));
+    mojo_window->CreateSelectFileDialog(std::move(receiver));
   } else {
     NSWindow* ns_window = gfx_window.GetNativeNSWindow();
-    mojo::MakeStrongBinding(
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<remote_cocoa::SelectFileDialogBridge>(ns_window),
-        std::move(request));
+        std::move(receiver));
   }
 
   // Show the panel.

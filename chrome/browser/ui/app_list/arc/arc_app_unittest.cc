@@ -130,7 +130,7 @@ class FakeAppIconLoaderDelegate : public AppIconLoaderDelegate {
 
 ArcAppIconDescriptor GetAppListIconDescriptor(ui::ScaleFactor scale_factor) {
   return ArcAppIconDescriptor(
-      app_list::AppListConfig::instance().grid_icon_dimension(), scale_factor);
+      ash::AppListConfig::instance().grid_icon_dimension(), scale_factor);
 }
 
 bool IsIconCreated(ArcAppListPrefs* prefs,
@@ -155,8 +155,7 @@ void WaitForIconCreation(ArcAppListPrefs* prefs,
 void WaitForIconUpdates(Profile* profile, const std::string& app_id) {
   FakeAppIconLoaderDelegate delegate;
   ArcAppIconLoader icon_loader(
-      profile, app_list::AppListConfig::instance().grid_icon_dimension(),
-      &delegate);
+      profile, ash::AppListConfig::instance().grid_icon_dimension(), &delegate);
 
   // |FetchImage| ensures all supported factors are loaded.
   const std::vector<ui::ScaleFactor>& scale_factors =
@@ -193,9 +192,9 @@ void OnPaiStartedCallback(bool* started_flag) {
 int GetAppListIconDimensionForScaleFactor(ui::ScaleFactor scale_factor) {
   switch (scale_factor) {
     case ui::SCALE_FACTOR_100P:
-      return app_list::AppListConfig::instance().grid_icon_dimension();
+      return ash::AppListConfig::instance().grid_icon_dimension();
     case ui::SCALE_FACTOR_200P:
-      return app_list::AppListConfig::instance().grid_icon_dimension() * 2;
+      return ash::AppListConfig::instance().grid_icon_dimension() * 2;
     default:
       NOTREACHED();
       return 0;
@@ -449,7 +448,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   // Validates that provided image is acceptable as ARC app icon.
   void ValidateIcon(const gfx::ImageSkia& image) {
     const int icon_dimension =
-        app_list::AppListConfig::instance().grid_icon_dimension();
+        ash::AppListConfig::instance().grid_icon_dimension();
     EXPECT_EQ(icon_dimension, image.width());
     EXPECT_EQ(icon_dimension, image.height());
 
@@ -1868,7 +1867,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
 
   FakeAppIconLoaderDelegate delegate;
   ArcAppIconLoader icon_loader(
-      profile(), app_list::AppListConfig::instance().grid_icon_dimension(),
+      profile(), ash::AppListConfig::instance().grid_icon_dimension(),
       &delegate);
   EXPECT_EQ(0UL, delegate.update_image_count());
 
@@ -1928,7 +1927,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderForSuspendedApps) {
 
   FakeAppIconLoaderDelegate delegate;
   ArcAppIconLoader icon_loader(
-      profile(), app_list::AppListConfig::instance().grid_icon_dimension(),
+      profile(), ash::AppListConfig::instance().grid_icon_dimension(),
       &delegate);
 
   app_instance()->SendRefreshAppList({app});
@@ -1991,7 +1990,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderWithBadIcon) {
 
   FakeAppIconLoaderDelegate delegate;
   ArcAppIconLoader icon_loader(
-      profile(), app_list::AppListConfig::instance().grid_icon_dimension(),
+      profile(), ash::AppListConfig::instance().grid_icon_dimension(),
       &delegate);
   icon_loader.FetchImage(app_id);
 
@@ -2043,7 +2042,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoader) {
 
   FakeAppIconLoaderDelegate delegate;
   ArcAppIconLoader icon_loader(
-      profile(), app_list::AppListConfig::instance().grid_icon_dimension(),
+      profile(), ash::AppListConfig::instance().grid_icon_dimension(),
       &delegate);
   EXPECT_EQ(0UL, delegate.update_image_count());
   icon_loader.FetchImage(app_id);
@@ -2077,8 +2076,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoader) {
 TEST_P(ArcAppModelBuilderTest, IconLoaderCompressed) {
   const arc::mojom::AppInfo& app = fake_apps()[0];
   const std::string app_id = ArcAppTest::GetAppId(app);
-  const int icon_size =
-      app_list::AppListConfig::instance().grid_icon_dimension();
+  const int icon_size = ash::AppListConfig::instance().grid_icon_dimension();
   const std::vector<ui::ScaleFactor>& scale_factors =
       ui::GetSupportedScaleFactors();
 
@@ -2222,7 +2220,7 @@ TEST_P(ArcAppModelIconTest, MAYBE_IconLoadNonSupportedScales) {
 
   FakeAppIconLoaderDelegate delegate;
   ArcAppIconLoader icon_loader(
-      profile(), app_list::AppListConfig::instance().grid_icon_dimension(),
+      profile(), ash::AppListConfig::instance().grid_icon_dimension(),
       &delegate);
   icon_loader.FetchImage(app_id);
   // Expected 1 update with default image and 2 representations should be
@@ -2651,7 +2649,7 @@ TEST_P(ArcAppLauncherForDefaultAppTest, AppIconUpdated) {
   FakeAppIconLoaderDelegate icon_delegate;
   std::unique_ptr<ArcAppIconLoader> icon_loader =
       std::make_unique<ArcAppIconLoader>(
-          profile(), app_list::AppListConfig::instance().grid_icon_dimension(),
+          profile(), ash::AppListConfig::instance().grid_icon_dimension(),
           &icon_delegate);
   icon_loader->FetchImage(app_id);
   icon_delegate.WaitForIconUpdates(ui::GetSupportedScaleFactors().size());
@@ -2663,7 +2661,7 @@ TEST_P(ArcAppLauncherForDefaultAppTest, AppIconUpdated) {
 
   FakeAppIconLoaderDelegate icon_delegate2;
   icon_loader = std::make_unique<ArcAppIconLoader>(
-      profile(), app_list::AppListConfig::instance().grid_icon_dimension(),
+      profile(), ash::AppListConfig::instance().grid_icon_dimension(),
       &icon_delegate2);
   icon_loader->FetchImage(app_id);
   // Default app icon becomes available once default apps loaded

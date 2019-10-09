@@ -105,7 +105,7 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   void BuildIdentity();
   void BuildGuestIdentity();
   void BuildIncognitoIdentity();
-  gfx::ImageSkia GetIdentityBadge();
+  gfx::ImageSkia GetSyncIcon();
   void BuildAutofillButtons();
   void BuildSyncInfo();
   void BuildAccountFeatureButtons();

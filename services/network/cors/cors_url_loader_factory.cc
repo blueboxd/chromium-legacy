@@ -103,8 +103,8 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
         base::BindOnce(&CorsURLLoaderFactory::DestroyURLLoader,
                        base::Unretained(this)),
         resource_request, std::move(client), traffic_annotation,
-        network_loader_factory_.get(), request_initiator_site_lock_,
-        origin_access_list_, factory_bound_origin_access_list_.get(),
+        network_loader_factory_.get(), origin_access_list_,
+        factory_bound_origin_access_list_.get(),
         context_->cors_preflight_controller());
     auto* raw_loader = loader.get();
     OnLoaderCreated(std::move(loader));

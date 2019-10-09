@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -38,6 +39,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -45,6 +47,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/switches.h"
 
 // TODO(crbug.com/826982): life cycle events. Extensions can be installed and
@@ -154,19 +157,45 @@ ExtensionApps::ExtensionApps(
       prefs_observer_(this),
       registry_observer_(this),
       content_settings_observer_(this),
-      app_type_(app_type) {
+      app_type_(app_type),
+      arc_prefs_(nullptr) {
   Initialize(app_service);
 }
 
-ExtensionApps::~ExtensionApps() = default;
+ExtensionApps::~ExtensionApps() {
+  // In unit tests, AppServiceProxy might be ReInitializeForTesting, so
+  // ExtensionApps might be destroyed without calling Shutdown, so arc_prefs_
+  // needs to be removed from observer in the destructor function.
+  if (arc_prefs_) {
+    arc_prefs_->RemoveObserver(this);
+    arc_prefs_ = nullptr;
+  }
+}
 
 void ExtensionApps::FlushMojoCallsForTesting() {
   receiver_.FlushForTesting();
 }
 
 void ExtensionApps::Shutdown() {
+  if (arc_prefs_) {
+    arc_prefs_->RemoveObserver(this);
+    arc_prefs_ = nullptr;
+  }
+
   if (profile_) {
     content_settings_observer_.RemoveAll();
+  }
+}
+
+void ExtensionApps::ObserveArc() {
+  // Observe the ARC apps to set the badge on the equivalent Chrome app's icon.
+  if (arc_prefs_) {
+    arc_prefs_->RemoveObserver(this);
+  }
+
+  arc_prefs_ = ArcAppListPrefs::Get(profile_);
+  if (arc_prefs_) {
+    arc_prefs_->AddObserver(this);
   }
 }
 
@@ -184,6 +213,13 @@ void ExtensionApps::Initialize(
 }
 
 bool ExtensionApps::Accepts(const extensions::Extension* extension) {
+  // Hangouts is a special extension, which shows an window, so it should be
+  // added to the AppService to show the icon on the shelf, when launching the
+  // hangouts.
+  if (extension->id() == extension_misc::kProdHangoutsExtensionId) {
+    return app_type_ == apps::mojom::AppType::kExtension;
+  }
+
   if (!extension->is_app() || IsBlacklisted(extension->id())) {
     return false;
   }
@@ -543,6 +579,25 @@ void ExtensionApps::Publish(apps::mojom::AppPtr app) {
   }
 }
 
+void ExtensionApps::OnPackageInstalled(
+    const arc::mojom::ArcPackageInfo& package_info) {
+  ApplyChromeBadge(package_info.package_name);
+}
+
+void ExtensionApps::OnPackageRemoved(const std::string& package_name,
+                                     bool uninstalled) {
+  ApplyChromeBadge(package_name);
+}
+
+void ExtensionApps::OnPackageListInitialRefreshed() {
+  if (!arc_prefs_) {
+    return;
+  }
+  for (const auto& app_name : arc_prefs_->GetPackagesFromPrefs()) {
+    ApplyChromeBadge(app_name);
+  }
+}
+
 // static
 bool ExtensionApps::IsBlacklisted(const std::string& app_id) {
   // We blacklist (meaning we don't publish the app, in the App Service sense)
@@ -713,7 +768,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->short_name = extension->short_name();
   app->description = extension->description();
   app->version = extension->GetVersionForDisplay();
-  app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffect(extension));
+  app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffects(extension));
 
   if (profile_) {
     auto* prefs = extensions::ExtensionPrefs::Get(profile_);
@@ -782,7 +837,7 @@ bool ExtensionApps::RunExtensionEnableFlow(
   return true;
 }
 
-IconEffects ExtensionApps::GetIconEffect(
+IconEffects ExtensionApps::GetIconEffects(
     const extensions::Extension* extension) {
   IconEffects icon_effects = IconEffects::kNone;
 #if defined(OS_CHROMEOS)
@@ -802,21 +857,27 @@ IconEffects ExtensionApps::GetIconEffect(
   return icon_effects;
 }
 
-void ExtensionApps::ApplyChromeBadge(const std::string& app_id) {
+void ExtensionApps::ApplyChromeBadge(const std::string& package_name) {
+  const std::vector<std::string> extension_ids =
+      extensions::util::GetEquivalentInstalledExtensions(profile_,
+                                                         package_name);
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile_);
-  const extensions::Extension* extension =
-      registry->GetInstalledExtension(app_id);
-  if (!extension || !Accepts(extension)) {
-    return;
+
+  for (auto& app_id : extension_ids) {
+    const extensions::Extension* extension =
+        registry->GetInstalledExtension(app_id);
+    if (!extension || !Accepts(extension)) {
+      continue;
+    }
+
+    apps::mojom::AppPtr app = apps::mojom::App::New();
+    app->app_type = app_type_;
+    app->app_id = extension->id();
+    app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffects(extension));
+
+    Publish(std::move(app));
   }
-
-  apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_type = app_type_;
-  app->app_id = extension->id();
-  app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffect(extension));
-
-  Publish(std::move(app));
 }
 
 }  // namespace apps

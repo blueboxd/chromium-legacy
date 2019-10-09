@@ -34,6 +34,8 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 
+namespace ash {
+
 namespace {
 
 // Layout constants used when fullscreen app list feature is enabled.
@@ -53,20 +55,18 @@ constexpr SkColor kSeparatorColor = SkColorSetA(gfx::kGoogleGrey900, 0x24);
 constexpr int kPlayStoreImpressionDelayInMs = 1000;
 
 // Returns true if the search result is an installable app.
-bool IsResultAnInstallableApp(app_list::SearchResult* result) {
-  app_list::SearchResult::ResultType result_type = result->result_type();
-  return result_type == ash::SearchResultType::kPlayStoreApp ||
-         result_type == ash::SearchResultType::kPlayStoreReinstallApp ||
-         result_type == ash::SearchResultType::kInstantApp;
+bool IsResultAnInstallableApp(SearchResult* result) {
+  SearchResult::ResultType result_type = result->result_type();
+  return result_type == AppListSearchResultType::kPlayStoreApp ||
+         result_type == AppListSearchResultType::kPlayStoreReinstallApp ||
+         result_type == AppListSearchResultType::kInstantApp;
 }
 
-bool IsPlayStoreApp(app_list::SearchResult* result) {
-  return result->result_type() == ash::SearchResultType::kPlayStoreApp;
+bool IsPlayStoreApp(SearchResult* result) {
+  return result->result_type() == AppListSearchResultType::kPlayStoreApp;
 }
 
 }  // namespace
-
-namespace app_list {
 
 SearchResultTileItemListView::SearchResultTileItemListView(
     SearchResultPageView* search_result_page_view,
@@ -173,7 +173,7 @@ int SearchResultTileItemListView::DoUpdate() {
       app_group_index = playstore_app_index;
       found_playstore_results = true;
     } else if (item->result_type() ==
-               ash::SearchResultType::kPlayStoreReinstallApp) {
+               AppListSearchResultType::kPlayStoreReinstallApp) {
       ++reinstall_app_index;
       app_group_index = playstore_app_index;
     } else {
@@ -259,10 +259,9 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
   auto policy_tiles_filter =
       base::BindRepeating([](const SearchResult& r) -> bool {
         return r.display_location() ==
-                   ash::SearchResultDisplayLocation::kTileListContainer &&
-               r.display_index() != ash::SearchResultDisplayIndex::kUndefined &&
-               r.display_type() ==
-                   ash::SearchResultDisplayType::kRecommendation;
+                   SearchResultDisplayLocation::kTileListContainer &&
+               r.display_index() != SearchResultDisplayIndex::kUndefined &&
+               r.display_type() == SearchResultDisplayType::kRecommendation;
       });
   std::vector<SearchResult*> policy_tiles_results =
       is_app_reinstall_recommendation_enabled_ && query.empty()
@@ -272,9 +271,9 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
 
   SearchResult::DisplayType display_type =
       app_list_features::IsZeroStateSuggestionsEnabled()
-          ? (query.empty() ? ash::SearchResultDisplayType::kRecommendation
-                           : ash::SearchResultDisplayType::kTile)
-          : ash::SearchResultDisplayType::kTile;
+          ? (query.empty() ? SearchResultDisplayType::kRecommendation
+                           : SearchResultDisplayType::kTile)
+          : SearchResultDisplayType::kTile;
   size_t display_num = max_search_result_tiles_ - policy_tiles_results.size();
 
   // Do not display the repeat reinstall results or continue reading app in the
@@ -284,8 +283,8 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
          const SearchResult& r) -> bool {
         return r.display_type() == display_type &&
                r.result_type() !=
-                   ash::SearchResultType::kPlayStoreReinstallApp &&
-               r.id() != app_list::kInternalAppIdContinueReading;
+                   AppListSearchResultType::kPlayStoreReinstallApp &&
+               r.id() != kInternalAppIdContinueReading;
       },
       display_type);
   std::vector<SearchResult*> display_results =
@@ -300,16 +299,16 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
               return r1->display_index() < r2->display_index();
             });
 
-  const ash::SearchResultDisplayIndex display_results_last_index =
-      static_cast<ash::SearchResultDisplayIndex>(display_results.size() - 1);
+  const SearchResultDisplayIndex display_results_last_index =
+      static_cast<SearchResultDisplayIndex>(display_results.size() - 1);
   for (auto* result : policy_tiles_results) {
-    const ash::SearchResultDisplayIndex result_index = result->display_index();
+    const SearchResultDisplayIndex result_index = result->display_index();
     if (result_index > display_results_last_index) {
       display_results.emplace_back(result);
     } else {
       // TODO(newcomer): Remove this check once we determine the root cause for
       // https://crbug.com/992344.
-      CHECK_GE(result_index, ash::SearchResultDisplayIndex::kFirstIndex);
+      CHECK_GE(result_index, SearchResultDisplayIndex::kFirstIndex);
       display_results.emplace(display_results.begin() + result_index, result);
     }
   }
@@ -427,4 +426,4 @@ void SearchResultTileItemListView::VisibilityChanged(View* starting_from,
   }
 }
 
-}  // namespace app_list
+}  // namespace ash

@@ -526,7 +526,7 @@ TEST_F(NavigationControllerTest, LoadURLSameTime) {
 
   // Set the clock to always return a timestamp of 1.
   controller.SetGetTimestampCallbackForTest(
-      base::Bind(&GetFixedTime, InMicrosecondsSinceEpoch(1)));
+      base::BindRepeating(&GetFixedTime, InMicrosecondsSinceEpoch(1)));
 
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
@@ -1442,13 +1442,6 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
   EXPECT_FALSE(committed_entry->should_clear_history_list());
 }
 
-namespace {
-void SetRedirects(const std::vector<GURL>& redirects,
-                  FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
-  params->redirects = redirects;
-}
-}  // namespace
-
 // Test that Redirects are preserved after a commit.
 TEST_F(NavigationControllerTest, RedirectsAreNotResetByCommit) {
   NavigationControllerImpl& controller = controller_impl();
@@ -1461,7 +1454,6 @@ TEST_F(NavigationControllerTest, RedirectsAreNotResetByCommit) {
   // Set up some redirect values.
   std::vector<GURL> redirects;
   redirects.push_back(url2);
-  auto set_redirects_callback = base::Bind(SetRedirects, redirects);
 
   // Set redirects on the pending entry.
   NavigationEntryImpl* pending_entry = controller.GetPendingEntry();

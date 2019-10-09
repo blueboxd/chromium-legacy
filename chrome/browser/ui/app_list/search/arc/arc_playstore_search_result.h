@@ -37,7 +37,7 @@ class ArcPlayStoreSearchResult : public ChromeSearchResult,
   // ChromeSearchResult overrides:
   void GetContextMenuModel(GetMenuModelCallback callback) override;
   void Open(int event_flags) override;
-  SearchResultType GetSearchResultType() const override;
+  ash::SearchResultType GetSearchResultType() const override;
 
   // app_list::AppContextMenuDelegate overrides:
   void ExecuteLaunchCommand(int event_flags) override;

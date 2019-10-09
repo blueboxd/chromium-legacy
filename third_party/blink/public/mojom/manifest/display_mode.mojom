@@ -6,6 +6,7 @@ module blink.mojom;
 
 // This enum should be synced with
 // chrome/android/java/src/org/chromium/chrome/browser/webapps/WebDisplayMode.java
+// and components/sync/protocol/web_app_specifics.proto
 
 enum DisplayMode {
   kUndefined, // User for override setting (ie. not set).

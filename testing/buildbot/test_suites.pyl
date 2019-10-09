@@ -340,6 +340,9 @@
       'chrome_all_tast_tests_informational': {
         'swarming': {
           'idempotent': False,  # https://crbug.com/923426#c27
+          # TODO(crbug.com/968262): Remove timeout and shard the test once
+          # sharding is implemented for tast
+          'hard_timeout': 5400,
         }
       },
       'chrome_login_tast_tests': {

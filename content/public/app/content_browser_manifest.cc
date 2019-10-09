@@ -200,7 +200,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.GeolocationService",
-                  "blink.mojom.InsecureInputService",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.Portal",

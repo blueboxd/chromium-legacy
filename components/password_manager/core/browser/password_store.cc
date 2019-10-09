@@ -358,14 +358,15 @@ void PasswordStore::GetAllLeakedCredentials(
       base::BindOnce(&PasswordStore::GetAllLeakedCredentialsImpl, this));
 }
 
-void PasswordStore::RemoveLeakedCredentialsCreatedBetween(
+void PasswordStore::RemoveLeakedCredentialsByUrlAndTime(
+    base::RepeatingCallback<bool(const GURL&)> url_filter,
     base::Time remove_begin,
     base::Time remove_end,
-    const base::Closure& completion) {
+    base::OnceClosure completion) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(
-      &PasswordStore::RemoveLeakedCredentialsCreatedBetweenInternal, this,
-      remove_begin, remove_end, completion));
+      &PasswordStore::RemoveLeakedCredentialsByUrlAndTimeInternal, this,
+      std::move(url_filter), remove_begin, remove_end, std::move(completion)));
 }
 
 void PasswordStore::AddObserver(Observer* observer) {
@@ -860,14 +861,15 @@ void PasswordStore::UnblacklistInternal(
     main_task_runner_->PostTask(FROM_HERE, std::move(completion));
 }
 
-void PasswordStore::RemoveLeakedCredentialsCreatedBetweenInternal(
+void PasswordStore::RemoveLeakedCredentialsByUrlAndTimeInternal(
+    const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time remove_begin,
     base::Time remove_end,
-    const base::Closure& completion) {
+    base::OnceClosure completion) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  RemoveLeakedCredentialsCreatedBetweenImpl(remove_begin, remove_end);
+  RemoveLeakedCredentialsByUrlAndTimeImpl(url_filter, remove_begin, remove_end);
   if (!completion.is_null())
-    main_task_runner_->PostTask(FROM_HERE, completion);
+    main_task_runner_->PostTask(FROM_HERE, std::move(completion));
 }
 
 std::vector<std::unique_ptr<autofill::PasswordForm>>

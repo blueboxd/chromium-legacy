@@ -25,7 +25,7 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -399,4 +399,4 @@ bool ExpandArrowView::DoesIntersectRect(const views::View* target,
   return button_bounds.Intersects(rect);
 }
 
-}  // namespace app_list
+}  // namespace ash

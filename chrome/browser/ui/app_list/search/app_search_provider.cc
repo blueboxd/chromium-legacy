@@ -160,12 +160,12 @@ class AppSearchProvider::App {
     }
   };
 
-  TokenizedString* GetTokenizedIndexedName() {
+  ash::TokenizedString* GetTokenizedIndexedName() {
     // Tokenizing a string is expensive. Don't pay the price for it at
     // construction of every App, but rather, only when needed (i.e. when the
     // query is not empty and cache the result.
     if (!tokenized_indexed_name_)
-      tokenized_indexed_name_ = std::make_unique<TokenizedString>(name_);
+      tokenized_indexed_name_ = std::make_unique<ash::TokenizedString>(name_);
     return tokenized_indexed_name_.get();
   }
 
@@ -177,16 +177,16 @@ class AppSearchProvider::App {
     return base::Time();
   }
 
-  bool MatchSearchableText(const TokenizedString& query) {
+  bool MatchSearchableText(const ash::TokenizedString& query) {
     if (searchable_text_.empty())
       return false;
     if (tokenized_indexed_searchable_text_.empty()) {
       for (const base::string16& curr_text : searchable_text_) {
         tokenized_indexed_searchable_text_.push_back(
-            std::make_unique<TokenizedString>(curr_text));
+            std::make_unique<ash::TokenizedString>(curr_text));
       }
     }
-    TokenizedStringMatch match;
+    ash::TokenizedStringMatch match;
     for (auto& curr_text : tokenized_indexed_searchable_text_) {
       match.Calculate(query, *curr_text);
       if (match.relevance() > relevance_threshold())
@@ -226,8 +226,8 @@ class AppSearchProvider::App {
 
  private:
   AppSearchProvider::DataSource* data_source_;
-  std::unique_ptr<TokenizedString> tokenized_indexed_name_;
-  std::vector<std::unique_ptr<TokenizedString>>
+  std::unique_ptr<ash::TokenizedString> tokenized_indexed_name_;
+  std::vector<std::unique_ptr<ash::TokenizedString>>
       tokenized_indexed_searchable_text_;
   const std::string id_;
   const base::string16 name_;
@@ -487,7 +487,7 @@ class AppIconDataSource : public AppIconLoaderDelegate {
 
  private:
   int IconSize(bool for_chip) const {
-    const auto& config = AppListConfig::instance();
+    const auto& config = ash::AppListConfig::instance();
     return for_chip ? config.suggestion_chip_icon_dimension()
                     : config.GetPreferredIconDimension(
                           ash::SearchResultDisplayType::kTile);
@@ -689,7 +689,8 @@ class InternalDataSource : public AppSearchProvider::DataSource {
         continue;
       }
 
-      if (!std::strcmp(internal_app.app_id, kInternalAppIdContinueReading)) {
+      if (!std::strcmp(internal_app.app_id,
+                       ash::kInternalAppIdContinueReading)) {
         sync_sessions::SessionSyncService* service =
             SessionSyncServiceFactory::GetInstance()->GetForProfile(profile());
         if (!service || (!service->GetOpenTabsUIDelegate() &&
@@ -911,7 +912,7 @@ void AppSearchProvider::UpdateRecommendedResults(
       continue;
 
     base::string16 title = app->name();
-    if (app->id() == kInternalAppIdContinueReading) {
+    if (app->id() == ash::kInternalAppIdContinueReading) {
       base::string16 navigation_title;
       if (!HasRecommendableForeignTab(profile_, &navigation_title,
                                       /*url=*/nullptr,
@@ -921,7 +922,7 @@ void AppSearchProvider::UpdateRecommendedResults(
         title = navigation_title;
         app->AddSearchableText(title);
       }
-    } else if (app->id() == kReleaseNotesAppId) {
+    } else if (app->id() == ash::kReleaseNotesAppId) {
       auto release_notes_storage =
           std::make_unique<chromeos::ReleaseNotesStorage>(profile_);
       if (!release_notes_storage->ShouldShowSuggestionChip())
@@ -963,14 +964,14 @@ void AppSearchProvider::UpdateQueriedResults() {
   const size_t apps_size = apps_.size();
   new_results.reserve(apps_size);
 
-  const TokenizedString query_terms(query_);
+  const ash::TokenizedString query_terms(query_);
   for (auto& app : apps_) {
     if (!app->searchable())
       continue;
 
-    TokenizedString* indexed_name = app->GetTokenizedIndexedName();
+    ash::TokenizedString* indexed_name = app->GetTokenizedIndexedName();
     if (!app_list_features::IsFuzzyAppSearchEnabled()) {
-      TokenizedStringMatch match;
+      ash::TokenizedStringMatch match;
       if (match.Calculate(query_terms, *indexed_name)) {
         // Exact matches should be shown even if the threshold isn't reached,
         // e.g. due to a localized name being particularly short.

@@ -15,7 +15,7 @@ namespace gfx {
 class FontList;
 }
 
-namespace app_list {
+namespace ash {
 
 // Shared layout type information for app list. Use the instance() method to
 // obtain the AppListConfig.
@@ -436,6 +436,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   DISALLOW_COPY_AND_ASSIGN(AppListConfig);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_CONFIG_H_

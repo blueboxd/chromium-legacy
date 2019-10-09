@@ -225,6 +225,115 @@ TEST_F(PostTaskTestWithExecutor,
   run_loop.Run();
 }
 
+TEST_F(PostTaskTestWithExecutor, ThreadPoolTaskRunnerCurrentThreadTrait) {
+  auto task_runner = CreateTaskRunner({ThreadPool()});
+  RunLoop run_loop;
+
+  EXPECT_TRUE(task_runner->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                                      // CurrentThread is meaningless in this
+                                      // context.
+                                      EXPECT_DCHECK_DEATH(
+                                          PostTask(FROM_HERE, {CurrentThread()},
+                                                   DoNothing()));
+                                      run_loop.Quit();
+                                    })));
+
+  run_loop.Run();
+}
+
+TEST_F(PostTaskTestWithExecutor,
+       ThreadPoolSequencedTaskRunnerCurrentThreadTrait) {
+  auto sequenced_task_runner = CreateSequencedTaskRunner({ThreadPool()});
+  RunLoop run_loop;
+
+  auto current_thread_task = BindLambdaForTesting([&]() {
+    EXPECT_TRUE(sequenced_task_runner->RunsTasksInCurrentSequence());
+    run_loop.Quit();
+  });
+
+  EXPECT_TRUE(sequenced_task_runner->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_TRUE(
+            PostTask(FROM_HERE, {CurrentThread()}, current_thread_task));
+      })));
+
+  run_loop.Run();
+}
+
+TEST_F(PostTaskTestWithExecutor,
+       ThreadPoolSingleThreadTaskRunnerCurrentThreadTrait) {
+  auto single_thread_task_runner = CreateSingleThreadTaskRunner({ThreadPool()});
+  RunLoop run_loop;
+
+  auto current_thread_task = BindLambdaForTesting([&]() {
+    EXPECT_TRUE(single_thread_task_runner->RunsTasksInCurrentSequence());
+    run_loop.Quit();
+  });
+
+  EXPECT_TRUE(single_thread_task_runner->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_TRUE(
+            PostTask(FROM_HERE, {CurrentThread()}, current_thread_task));
+      })));
+
+  run_loop.Run();
+}
+
+TEST_F(PostTaskTestWithExecutor, ThreadPoolCurrentThreadChangePriority) {
+  auto single_thread_task_runner =
+      CreateSingleThreadTaskRunner({ThreadPool(), TaskPriority::USER_BLOCKING});
+  RunLoop run_loop;
+
+  auto current_thread_task = BindLambdaForTesting([&]() {
+    EXPECT_TRUE(single_thread_task_runner->RunsTasksInCurrentSequence());
+    run_loop.Quit();
+  });
+
+  EXPECT_TRUE(single_thread_task_runner->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        // We should be able to request a priority change, although it may be
+        // ignored.
+        EXPECT_TRUE(PostTask(FROM_HERE,
+                             {CurrentThread(), TaskPriority::USER_VISIBLE},
+                             current_thread_task));
+      })));
+
+  run_loop.Run();
+}
+
+TEST_F(PostTaskTestWithExecutor,
+       ThreadPoolCurrentThreadCantChangeShutdownBehavior) {
+  auto single_thread_task_runner = CreateSingleThreadTaskRunner(
+      {ThreadPool(), TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  RunLoop run_loop;
+
+  EXPECT_TRUE(single_thread_task_runner->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_DCHECK_DEATH(PostTask(
+            FROM_HERE, {CurrentThread(), TaskShutdownBehavior::BLOCK_SHUTDOWN},
+            DoNothing()));
+        run_loop.Quit();
+      })));
+
+  run_loop.Run();
+}
+
+TEST_F(PostTaskTestWithExecutor,
+       ThreadPoolCurrentThreadCantSetSyncPrimitivesInNonSyncTaskRunner) {
+  auto single_thread_task_runner = CreateSingleThreadTaskRunner({ThreadPool()});
+  RunLoop run_loop;
+
+  EXPECT_TRUE(single_thread_task_runner->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_DCHECK_DEATH(
+            PostTask(FROM_HERE, {CurrentThread(), WithBaseSyncPrimitives()},
+                     DoNothing()));
+        run_loop.Quit();
+      })));
+
+  run_loop.Run();
+}
+
 TEST_F(PostTaskTestWithExecutor, RegisterExecutorTwice) {
   testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DCHECK_DEATH(

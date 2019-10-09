@@ -392,10 +392,10 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
   }
 
   if (policy.has_device_login_screen_system_info_enforced() &&
-      policy.device_login_screen_system_info_enforced().has_enabled()) {
+      policy.device_login_screen_system_info_enforced().has_value()) {
     new_values_cache->SetBoolean(
         kDeviceLoginScreenSystemInfoEnforced,
-        policy.device_login_screen_system_info_enforced().enabled());
+        policy.device_login_screen_system_info_enforced().value());
   }
 
   if (policy.has_saml_login_authentication_type() &&

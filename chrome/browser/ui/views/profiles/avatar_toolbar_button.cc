@@ -80,6 +80,37 @@ int GetIconSizeForNonTouchUi() {
   return 20;
 }
 
+// Returns the avatar image for the current profile. May be called only in
+// "normal" states where the user is guaranteed to have an avatar image (i.e.
+// not kGenericProfile, not kGuestSession and not kIncognitoProfile).
+const gfx::Image& GetAvatarImage(Profile* profile,
+                                 const gfx::Image& user_identity_image) {
+  ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile);
+  DCHECK(entry);
+  // TODO(crbug.com/1012179): If kPersistUPAInProfileInfoCache feature is on, it
+  // should suffice to call entry->GetAvatarIcon(). For this to work well, this
+  // class needs to observe ProfileAttributesStorage instead of (or on top of)
+  // IdentityManager. Only then we can rely on |entry| being up to date (as the
+  // storage also observes IdentityManager so there's no guarantee on the order
+  // of notifications).
+  if (entry->IsUsingGAIAPicture() && entry->GetGAIAPicture())
+    return *entry->GetGAIAPicture();
+
+  // Show |user_identity_image| when the following conditions are satisfied:
+  //  - the user is migrated to Dice
+  //  - the user isn't syncing
+  //  - the profile icon wasn't explicitly changed
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  if (!user_identity_image.IsEmpty() &&
+      AccountConsistencyModeManager::IsDiceEnabledForProfile(profile) &&
+      !identity_manager->HasPrimaryAccount() && entry->IsUsingDefaultAvatar()) {
+    return user_identity_image;
+  }
+
+  return entry->GetAvatarIcon();
+}
+
 }  // namespace
 
 AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
@@ -155,13 +186,13 @@ void AvatarToolbarButton::UpdateIcon() {
   // button is not yet added to the ToolbarView's hierarchy.
   if (!GetWidget())
     return;
-  gfx::Image gaia_image = GetGaiaImage();
-  SetImage(views::Button::STATE_NORMAL, GetAvatarIcon(gaia_image));
+  gfx::Image user_identity_image = GetUserIdentityImage();
+  SetImage(views::Button::STATE_NORMAL, GetAvatarIcon(user_identity_image));
 
   // TODO(crbug.com/990286): Get rid of this logic completely when we cache the
   // Google account image in the profile cache and thus it is always available.
   if (identity_animation_state_ == IdentityAnimationState::kWaitingForImage &&
-      !gaia_image.IsEmpty()) {
+      !user_identity_image.IsEmpty()) {
     ShowIdentityAnimation();
   }
 }
@@ -448,7 +479,7 @@ base::string16 AvatarToolbarButton::GetProfileName() const {
 }
 
 gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
-    const gfx::Image& gaia_image) const {
+    const gfx::Image& user_identity_image) const {
   const int icon_size = ui::MaterialDesignController::touch_ui()
                             ? kDefaultTouchableIconSize
                             : GetIconSizeForNonTouchUi();
@@ -472,15 +503,10 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
     case State::kSyncError:
     case State::kSyncPaused:
     case State::kNormal:
-      if (!gaia_image.IsEmpty()) {
-        return profiles::GetSizedAvatarIcon(gaia_image, true, icon_size,
-                                            icon_size, profiles::SHAPE_CIRCLE)
-            .AsImageSkia();
-      }
       // Profile attributes are non-null since the state is not kGenericProfile.
-      gfx::Image avatar_icon =
-          GetProfileAttributesEntry(profile_)->GetAvatarIcon();
-      return profiles::GetSizedAvatarIcon(avatar_icon, true, icon_size,
+      const gfx::Image& avatar_image =
+          GetAvatarImage(profile_, user_identity_image);
+      return profiles::GetSizedAvatarIcon(avatar_image, true, icon_size,
                                           icon_size, profiles::SHAPE_CIRCLE)
           .AsImageSkia();
   }
@@ -488,35 +514,10 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
   return gfx::ImageSkia();
 }
 
-gfx::Image AvatarToolbarButton::GetGaiaImage() const {
-  ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile_);
-  if (!entry) {
-    // This can happen if the user deletes the current profile.
-    return gfx::Image();
-  }
-
-  // If there is a GAIA image available, try to use that.
-  if (entry->IsUsingGAIAPicture()) {
-    // The GetGAIAPicture API call will trigger an async image load from disk if
-    // it has not been loaded.
-    const gfx::Image* gaia_image = entry->GetGAIAPicture();
-
-    if (gaia_image)
-      return *gaia_image;
-    return gfx::Image();
-  }
-
-  // Try to show the first account icon of the sync promo when the following
-  // conditions are satisfied:
-  //  - the user is migrated to Dice
-  //  - the user isn't signed in
-  //  - the profile icon wasn't explicitly changed
+gfx::Image AvatarToolbarButton::GetUserIdentityImage() const {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
-  if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
-      !identity_manager->HasPrimaryAccount() &&
-      identity_manager->HasUnconsentedPrimaryAccount() &&
-      entry->IsUsingDefaultAvatar()) {
+  if (identity_manager && identity_manager->HasUnconsentedPrimaryAccount()) {
     base::Optional<AccountInfo> account_info =
         identity_manager
             ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(

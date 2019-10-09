@@ -94,7 +94,7 @@ interface NativeWidgetNSWindow {
   SetParent(uint64 parent_id);
 
   // Open a panel for file selection or creation.
-  CreateSelectFileDialog(SelectFileDialog& dialog);
+  CreateSelectFileDialog(pending_receiver<SelectFileDialog> dialog);
 
   // Places this NativeWidgetNSWindow in front of the NativeWidgetNSWindow
   // indicated by |sibling_id| in z-order.

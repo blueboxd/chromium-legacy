@@ -191,7 +191,7 @@ class CONTENT_EXPORT AppCacheGroup
   // Updates that have been queued for the next run.
   QueuedUpdates queued_updates_;
   base::ObserverList<UpdateObserver>::Unchecked queued_observers_;
-  base::CancelableClosure restart_update_task_;
+  base::CancelableOnceClosure restart_update_task_;
   std::unique_ptr<HostObserver> host_observer_;
 
   // True if we're in our destructor.

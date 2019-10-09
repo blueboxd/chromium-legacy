@@ -55,6 +55,12 @@ std::unique_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
 // testing environment.
 bool AppShimLaunchDisabled();
 
+// Returns a path to the Chrome Apps folder in ~/Applications.
+base::FilePath GetChromeAppsFolder();
+
+// Testing method to override calls to GetChromeAppsFolder.
+void SetChromeAppsFolderForTesting(const base::FilePath& path);
+
 // Creates a shortcut for a web application. The shortcut is a stub app
 // that simply loads the browser framework and runs the given app.
 class WebAppShortcutCreator {
@@ -78,10 +84,6 @@ class WebAppShortcutCreator {
   // of the profile name and extension id. This is used if the app title is
   // unable to be used for the bundle path (e.g: "...").
   base::FilePath GetFallbackBasename() const;
-
-  // Returns a path to the Chrome Apps folder in the relevant applications
-  // folder. E.g. ~/Applications or /Applications.
-  virtual base::FilePath GetApplicationsDirname() const;
 
   // The full path to the app bundle under the relevant Applications folder.
   // If |avoid_conflicts| is true then return a path that does not yet exist (by

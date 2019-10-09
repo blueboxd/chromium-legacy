@@ -11,6 +11,8 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/services/mojo_cdm_service.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_MACOSX)
@@ -41,7 +43,7 @@ constexpr base::TimeDelta kKeepaliveIdleTimeout =
 //     during browser shutdown, when the Cdservice could be destroyed directly,
 //     ignoring any outstanding ServiceKeepaliveRefs.
 //   - mojo::CdmFactory connection error happens, AND CdmFactoryImpl doesn't own
-//     any CDMs (|cdm_bindings_| is empty). This is to prevent destroying the
+//     any CDMs (|cdm_receivers_| is empty). This is to prevent destroying the
 //     CDMs too early (e.g. during page navigation) which could cause errors
 //     (session closed) on the client side. See https://crbug.com/821171 for
 //     details.
@@ -55,35 +57,36 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
         keepalive_ref_(std::move(keepalive_ref)) {
     DVLOG(1) << __func__;
 
-    // base::Unretained is safe because |cdm_bindings_| is owned by |this|. If
-    // |this| is destructed, |cdm_bindings_| will be destructed as well and the
+    // base::Unretained is safe because |cdm_receivers_| is owned by |this|. If
+    // |this| is destructed, |cdm_receivers_| will be destructed as well and the
     // error handler should never be called.
-    cdm_bindings_.set_connection_error_handler(base::BindRepeating(
+    cdm_receivers_.set_disconnect_handler(base::BindRepeating(
         &CdmFactoryImpl::OnBindingConnectionError, base::Unretained(this)));
   }
 
   ~CdmFactoryImpl() final { DVLOG(1) << __func__; }
 
   // mojom::CdmFactory implementation.
-  void CreateCdm(const std::string& key_system,
-                 mojom::ContentDecryptionModuleRequest request) final {
+  void CreateCdm(
+      const std::string& key_system,
+      mojo::PendingReceiver<mojom::ContentDecryptionModule> receiver) final {
     DVLOG(2) << __func__;
 
     auto* cdm_factory = GetCdmFactory();
     if (!cdm_factory)
       return;
 
-    cdm_bindings_.AddBinding(
+    cdm_receivers_.Add(
         std::make_unique<MojoCdmService>(cdm_factory, &cdm_service_context_),
-        std::move(request));
+        std::move(receiver));
   }
 
   // DeferredDestroy<mojom::CdmFactory> implemenation.
   void OnDestroyPending(base::OnceClosure destroy_cb) final {
     destroy_cb_ = std::move(destroy_cb);
-    if (cdm_bindings_.empty())
+    if (cdm_receivers_.empty())
       std::move(destroy_cb_).Run();
-    // else the callback will be called when |cdm_bindings_| become empty.
+    // else the callback will be called when |cdm_receivers_| become empty.
   }
 
  private:
@@ -96,7 +99,7 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
   }
 
   void OnBindingConnectionError() {
-    if (destroy_cb_ && cdm_bindings_.empty())
+    if (destroy_cb_ && cdm_receivers_.empty())
       std::move(destroy_cb_).Run();
   }
 
@@ -107,7 +110,7 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
 
   CdmService::Client* client_;
   service_manager::mojom::InterfaceProviderPtr interfaces_;
-  mojo::StrongBindingSet<mojom::ContentDecryptionModule> cdm_bindings_;
+  mojo::UniqueReceiverSet<mojom::ContentDecryptionModule> cdm_receivers_;
   std::unique_ptr<ServiceKeepaliveRef> keepalive_ref_;
   std::unique_ptr<media::CdmFactory> cdm_factory_;
   base::OnceClosure destroy_cb_;

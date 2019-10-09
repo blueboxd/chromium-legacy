@@ -71,12 +71,12 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
   ~AppListAppLaunchedMetricTest() override = default;
 
   void SetUp() override {
-    app_list::AppListView::SetShortAnimationForTesting(true);
+    AppListView::SetShortAnimationForTesting(true);
     AshTestBase::SetUp();
 
     search_model_ = Shell::Get()->app_list_controller()->GetSearchModel();
 
-    app_list_test_model_ = static_cast<app_list::test::AppListTestModel*>(
+    app_list_test_model_ = static_cast<test::AppListTestModel*>(
         Shell::Get()->app_list_controller()->GetModel());
 
     shelf_test_api_ = std::make_unique<ShelfViewTestAPI>(
@@ -85,7 +85,7 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
 
   void TearDown() override {
     AshTestBase::TearDown();
-    app_list::AppListView::SetShortAnimationForTesting(false);
+    AppListView::SetShortAnimationForTesting(false);
   }
 
  protected:
@@ -124,13 +124,13 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
   void PopulateAndLaunchSearchBoxTileItem() {
     // Populate 4 tile items.
     for (size_t i = 0; i < 4; i++) {
-      auto search_result = std::make_unique<app_list::SearchResult>();
+      auto search_result = std::make_unique<SearchResult>();
       search_result->set_display_type(ash::SearchResultDisplayType::kTile);
       search_model_->results()->Add(std::move(search_result));
     }
     GetAppListTestHelper()->WaitUntilIdle();
 
-    app_list::SearchResultContainerView* search_result_container_view =
+    SearchResultContainerView* search_result_container_view =
         Shell::Get()
             ->app_list_controller()
             ->presenter()
@@ -150,14 +150,14 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
   void PopulateAndLaunchSuggestionChip() {
     // Populate 4 suggestion chips.
     for (size_t i = 0; i < 4; i++) {
-      auto search_result_chip = std::make_unique<app_list::SearchResult>();
+      auto search_result_chip = std::make_unique<SearchResult>();
       search_result_chip->set_display_type(
           ash::SearchResultDisplayType::kRecommendation);
       search_model_->results()->Add(std::move(search_result_chip));
     }
     GetAppListTestHelper()->WaitUntilIdle();
 
-    app_list::SearchResultContainerView* suggestions_container_ =
+    SearchResultContainerView* suggestions_container_ =
         Shell::Get()
             ->app_list_controller()
             ->presenter()
@@ -179,7 +179,7 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
     // Populate apps in the root app grid.
     app_list_test_model_->PopulateApps(4);
 
-    app_list::AppListView::TestApi test_api(
+    AppListView::TestApi test_api(
         Shell::Get()->app_list_controller()->presenter()->GetView());
 
     // Focus the first item in the root app grid.
@@ -190,8 +190,8 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
   }
 
  private:
-  app_list::SearchModel* search_model_ = nullptr;
-  app_list::test::AppListTestModel* app_list_test_model_ = nullptr;
+  SearchModel* search_model_ = nullptr;
+  test::AppListTestModel* app_list_test_model_ = nullptr;
   std::unique_ptr<ShelfViewTestAPI> shelf_test_api_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListAppLaunchedMetricTest);

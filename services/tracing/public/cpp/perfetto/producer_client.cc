@@ -51,12 +51,13 @@ void ProducerClient::Connect(
 }
 
 void ProducerClient::BindClientAndHostPipesForTesting(
-    mojom::ProducerClientRequest producer_client_request,
+    mojo::PendingReceiver<mojom::ProducerClient> producer_client_receiver,
     mojo::PendingRemote<mojom::ProducerHost> producer_host_remote) {
   task_runner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProducerClient::BindClientAndHostPipesOnSequence,
-                     base::Unretained(this), std::move(producer_client_request),
+                     base::Unretained(this),
+                     std::move(producer_client_receiver),
                      std::move(producer_host_remote)));
 }
 
@@ -67,16 +68,16 @@ void ProducerClient::ResetSequenceForTesting() {
 // The Mojo binding should run on the same sequence as the one we get
 // callbacks from Perfetto on, to avoid additional PostTasks.
 void ProducerClient::BindClientAndHostPipesOnSequence(
-    mojom::ProducerClientRequest producer_client_request,
-    mojom::ProducerHostPtrInfo producer_host_info) {
+    mojo::PendingReceiver<mojom::ProducerClient> producer_client_receiver,
+    mojo::PendingRemote<mojom::ProducerHost> producer_host_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(!binding_ || !binding_->is_bound());
+  CHECK(!receiver_ || !receiver_->is_bound());
 
-  binding_ = std::make_unique<mojo::Binding<mojom::ProducerClient>>(
-      this, std::move(producer_client_request));
-  binding_->set_connection_error_handler(base::BindOnce(
+  receiver_ = std::make_unique<mojo::Receiver<mojom::ProducerClient>>(
+      this, std::move(producer_client_receiver));
+  receiver_->set_disconnect_handler(base::BindOnce(
       [](ProducerClient* producer_client) {
-        producer_client->binding_->Close();
+        producer_client->receiver_->reset();
       },
       base::Unretained(this)));
 

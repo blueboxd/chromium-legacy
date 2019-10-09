@@ -174,7 +174,7 @@ bool HandleDebugURL(const GURL& url,
   if (url == kChromeUIGpuCleanURL) {
     GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED,
                              false /* force_create */,
-                             base::Bind([](GpuProcessHost* host) {
+                             base::BindOnce([](GpuProcessHost* host) {
                                if (host)
                                  host->gpu_service()->DestroyAllChannels();
                              }));
@@ -184,7 +184,7 @@ bool HandleDebugURL(const GURL& url,
   if (url == kChromeUIGpuCrashURL) {
     GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED,
                              false /* force_create */,
-                             base::Bind([](GpuProcessHost* host) {
+                             base::BindOnce([](GpuProcessHost* host) {
                                if (host)
                                  host->gpu_service()->Crash();
                              }));
@@ -195,7 +195,7 @@ bool HandleDebugURL(const GURL& url,
   if (url == kChromeUIGpuJavaCrashURL) {
     GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED,
                              false /* force_create */,
-                             base::Bind([](GpuProcessHost* host) {
+                             base::BindOnce([](GpuProcessHost* host) {
                                if (host)
                                  host->gpu_service()->ThrowJavaException();
                              }));
@@ -206,7 +206,7 @@ bool HandleDebugURL(const GURL& url,
   if (url == kChromeUIGpuHangURL) {
     GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED,
                              false /* force_create */,
-                             base::Bind([](GpuProcessHost* host) {
+                             base::BindOnce([](GpuProcessHost* host) {
                                if (host)
                                  host->gpu_service()->Hang();
                              }));

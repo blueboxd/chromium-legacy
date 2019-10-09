@@ -19,7 +19,6 @@
 
 namespace blink {
 class WebFormElement;
-class WebInputElement;
 class WebLocalFrame;
 }
 
@@ -30,22 +29,7 @@ class RE2;
 namespace autofill {
 
 struct PasswordForm;
-
 class FieldDataManager;
-
-// The susbset of autocomplete flags related to passwords.
-enum class AutocompleteFlag {
-  NONE,
-  USERNAME,
-  CURRENT_PASSWORD,
-  NEW_PASSWORD,
-  // Represents the whole family of cc-* flags.
-  CREDIT_CARD
-};
-
-// Returns the AutocompleteFlag derived from |element|'s autocomplete attribute.
-AutocompleteFlag AutocompleteFlagForElement(
-    const blink::WebInputElement& element);
 
 // The caller of this function is responsible for deleting the returned object.
 re2::RE2* CreateMatcher(void* instance, const char* pattern);

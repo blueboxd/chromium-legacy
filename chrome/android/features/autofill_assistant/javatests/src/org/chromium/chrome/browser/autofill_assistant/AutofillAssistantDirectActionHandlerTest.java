@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.contains;
@@ -29,7 +29,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
@@ -43,6 +42,7 @@ import org.chromium.chrome.browser.directactions.DirectActionReporter.Type;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,7 +66,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         mActivity = mActivityTestRule.getActivity();
 
-        mBottomSheetController = ThreadUtils.runOnUiThreadBlocking(
+        mBottomSheetController = TestThreadUtils.runOnUiThreadBlocking(
                 () -> AutofillAssistantUiTestUtil.createBottomSheetController(mActivity));
         mModuleEntryProvider = new TestingAutofillAssistantModuleEntryProvider();
         mModuleEntryProvider.setCannotInstall();
@@ -161,7 +161,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         WaitingCallback<Boolean> onboardingCallback =
                 performActionAsync("onboarding", Bundle.EMPTY);
 
-        waitUntilViewMatchesCondition(withId(R.id.button_init_ok), isDisplayed());
+        waitUntilViewMatchesCondition(withId(R.id.button_init_ok), isCompletelyDisplayed());
 
         assertFalse(onboardingCallback.hasResult());
         onView(withId(R.id.button_init_ok)).perform(click());
@@ -174,7 +174,7 @@ public class AutofillAssistantDirectActionHandlerTest {
     /** Calls list_assistant_actions and returns the result. */
     private List<String> listActions() throws Exception {
         WaitingCallback<Bundle> callback = new WaitingCallback<Bundle>();
-        assertTrue(ThreadUtils.runOnUiThreadBlocking(
+        assertTrue(TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> mHandler.performDirectAction(
                                 "list_assistant_actions", Bundle.EMPTY, callback)));
@@ -196,7 +196,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         WaitingCallback<Boolean> callback = new WaitingCallback<Boolean>();
         Bundle allArguments = new Bundle(arguments);
         if (!name.isEmpty()) allArguments.putString("name", name);
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> mHandler.performDirectAction("perform_assistant_action", allArguments,
                                 (bundle) -> callback.onResult(bundle.getBoolean("success"))));

@@ -11,7 +11,7 @@
 #include "ash/public/cpp/app_list/tokenized_string_match.h"
 #include "ui/base/models/menu_model.h"
 
-namespace app_list {
+namespace ash {
 
 SearchResult::SearchResult()
     : metadata_(std::make_unique<ash::SearchResultMetadata>()) {}
@@ -105,4 +105,4 @@ void SearchResult::Open(int event_flags) {}
 
 void SearchResult::InvokeAction(int action_index, int event_flags) {}
 
-}  // namespace app_list
+}  // namespace ash

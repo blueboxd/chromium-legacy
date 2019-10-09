@@ -941,7 +941,7 @@ void CrostiniRegistryService::RequestIcon(const std::string& app_id,
 
   crostini::CrostiniManager::GetForProfile(profile_)->GetContainerAppIcons(
       registration->VmName(), registration->ContainerName(), desktop_file_ids,
-      app_list::AppListConfig::instance().grid_icon_dimension(), icon_scale,
+      ash::AppListConfig::instance().grid_icon_dimension(), icon_scale,
       base::BindOnce(&CrostiniRegistryService::OnContainerAppIcon,
                      weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor));
 }

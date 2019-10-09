@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "ui/views/window/dialog_delegate.h"
 
-namespace app_list {
+namespace ash {
 
 // RemoveQueryConfirmationDialog displays the confirmation dialog for removing
 // a recent query suggestion.
@@ -63,6 +63,6 @@ class RemoveQueryConfirmationDialog
   DISALLOW_COPY_AND_ASSIGN(RemoveQueryConfirmationDialog);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_REMOVE_QUERY_CONFIRMATION_DIALOG_H_

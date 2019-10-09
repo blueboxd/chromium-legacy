@@ -23,8 +23,7 @@ Polymer({
    * @private
    */
   onClick_: function() {
-    this.dispatch(
-        app_management.actions.changePage(PageType.DETAIL, this.app.id));
+    app_management.util.openAppDetailPage(this.app.id);
   },
 
   /**

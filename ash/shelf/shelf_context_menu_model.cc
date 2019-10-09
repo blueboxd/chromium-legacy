@@ -116,7 +116,7 @@ void ShelfContextMenuModel::ExecuteCommand(int command_id, int event_flags) {
       break;
     default:
       if (delegate_) {
-        if (app_list::IsCommandIdAnAppLaunch(command_id)) {
+        if (IsCommandIdAnAppLaunch(command_id)) {
           shell->app_list_controller()->RecordShelfAppLaunched(
               base::nullopt /* recorded_app_list_view_state */,
               base::nullopt /* recorded_home_launcher_shown */);

@@ -443,7 +443,7 @@ Polymer({
     const filter = {
       filter: mojom.FilterType.kVisible,
       networkType: mojom.NetworkType.kAll,
-      limit: mojom.kNoLimit,
+      limit: mojom.NO_LIMIT,
     };
     this.networkConfig_.getNetworkState(this.guid).then(response => {
       if (response.result) {

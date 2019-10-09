@@ -1468,6 +1468,7 @@ jumbo_component("platform") {
   deps = [
     ":platform_export",
     "//base/allocator:buildflags",
+    "//components/paint_preview/common",
     "//components/viz/client",
     "//components/viz/common",
     "//crypto",

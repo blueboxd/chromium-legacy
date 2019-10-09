@@ -40,7 +40,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/activation_client.h"
 
-namespace app_list {
+namespace ash {
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppListMainView:
@@ -231,4 +231,4 @@ void AppListMainView::BackButtonPressed() {
     app_list_view_->Dismiss();
 }
 
-}  // namespace app_list
+}  // namespace ash

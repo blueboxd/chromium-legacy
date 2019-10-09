@@ -19,7 +19,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -311,4 +311,4 @@ gfx::ImageSkia GhostImageView::GetIconOutline(
   return gfx::ImageSkiaOperations::CreateColorMask(icon_outline, outline_color);
 }
 
-}  // namespace app_list
+}  // namespace ash

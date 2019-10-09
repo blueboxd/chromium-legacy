@@ -154,10 +154,8 @@ void TranslateScript::OnScriptFetchComplete(bool success,
         &data_, "var securityOrigin = '%s';", security_origin.spec().c_str());
 
     // Load embedded translate.js.
-    base::StringPiece str =
-        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_TRANSLATE_JS);
-    str.AppendToString(&data_);
+    data_.append(ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+        IDR_TRANSLATE_JS));
 
 #if defined(OS_IOS)
     // Append snippet to install callbacks on translate.js if available.

@@ -182,7 +182,7 @@ TEST_F(CrostiniInstallerTest, InstallFlow) {
           .WillRepeatedly(SaveArg<1>(&last_progress));
   expectation_set +=
       EXPECT_CALL(*disk_mount_manager_mock_,
-                  MountPath("sshfs://testing_profile@hostname:", _, _, _, _, _))
+                  MountPath("sshfs://test@hostname:", _, _, _, _, _))
           .WillOnce(Invoke(&mount_path_waiter_, &MountPathWaiter::MountPath));
   // |OnProgress()| should not happens after |OnFinished()|
   EXPECT_CALL(mock_callbacks_, OnFinished(InstallerError::kNone))

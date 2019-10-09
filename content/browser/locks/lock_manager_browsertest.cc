@@ -82,6 +82,10 @@ class LockManagerBrowserTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
 
+    // TODO(https://crbug.com/1011765): Navigation fails on Android Kit Kat.
+    if (!ShouldRunTest())
+      return;
+
     original_client_ = SetBrowserClientForTesting(&test_browser_client_);
 
     host_resolver()->AddRule("*", "127.0.0.1");

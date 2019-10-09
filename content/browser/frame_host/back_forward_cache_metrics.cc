@@ -192,8 +192,13 @@ void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
   // TODO(hajimehoshi): Use kNotCachedDueToExperimentCondition if the
   // experiment condition does not match.
   HistoryNavigationOutcome outcome = HistoryNavigationOutcome::kNotCached;
-  if (navigation->is_served_from_back_forward_cache())
+  if (navigation->is_served_from_back_forward_cache()) {
     outcome = HistoryNavigationOutcome::kRestored;
+
+    UMA_HISTOGRAM_ENUMERATION(
+        "BackForwardCache.EvictedAfterDocumentRestoredReason",
+        BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason::kRestored);
+  }
   if (evicted_ || last_committed_main_frame_navigation_id_ == -1) {
     DCHECK(!navigation->is_served_from_back_forward_cache());
     outcome = HistoryNavigationOutcome::kEvicted;
@@ -214,6 +219,12 @@ void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
     histogram->Add(base::HistogramBase::Sample(
         static_cast<int32_t>(base::HashMetricName(reason))));
   }
+}
+
+void BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(
+    EvictedAfterDocumentRestoredReason reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "BackForwardCache.EvictedAfterDocumentRestoredReason", reason);
 }
 
 }  // namespace content

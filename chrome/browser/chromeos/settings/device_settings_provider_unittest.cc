@@ -313,10 +313,10 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
 
   // Helper routine to set DeviceLoginScreenSystemInfoEnforced policy.
   void SetSystemInfoEnforced(bool enabled) {
-    em::DeviceLoginScreenSystemInfoEnforcedProto* proto =
+    em::BooleanPolicyProto* proto =
         device_policy_->payload()
             .mutable_device_login_screen_system_info_enforced();
-    proto->set_enabled(enabled);
+    proto->set_value(enabled);
     BuildAndInstallDevicePolicy();
   }
 

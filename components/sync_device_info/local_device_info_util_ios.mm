@@ -10,7 +10,7 @@
 
 namespace syncer {
 
-std::string GetSessionNameInternal() {
+std::string GetPersonalizableDeviceNameInternal() {
   return base::SysNSStringToUTF8([[UIDevice currentDevice] name]);
 }
 

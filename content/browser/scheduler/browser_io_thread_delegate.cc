@@ -9,6 +9,7 @@
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/task/task_executor.h"
+#include "base/task/task_observer.h"
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -18,29 +19,68 @@ using ::base::sequence_manager::CreateUnboundSequenceManager;
 using ::base::sequence_manager::SequenceManager;
 using ::base::sequence_manager::TaskQueue;
 
-BrowserIOThreadDelegate::BrowserIOThreadDelegate(
-    BrowserTaskExecutorPresent browser_task_executor_present)
-    : sequence_manager_(CreateUnboundSequenceManager(
+class BrowserIOThreadDelegate::TLSMultiplexer : public base::TaskObserver {
+ public:
+  TLSMultiplexer() = default;
+  ~TLSMultiplexer() override = default;
+
+  void SetIOTaskExecutor(base::TaskExecutor* io_task_executor) {
+    io_task_executor_ = io_task_executor;
+  }
+
+  void WillProcessTask(const base::PendingTask& pending_task) override {
+    base::TaskExecutor* previous_executor =
+        base::GetTaskExecutorForCurrentThread();
+    if (previous_executor) {
+      previous_executors_.push_back(previous_executor);
+      base::SetTaskExecutorForCurrentThread(nullptr);
+    }
+    base::SetTaskExecutorForCurrentThread(io_task_executor_);
+  }
+
+  void DidProcessTask(const base::PendingTask& pending_task) override {
+    base::SetTaskExecutorForCurrentThread(nullptr);
+    if (!previous_executors_.empty()) {
+      base::SetTaskExecutorForCurrentThread(previous_executors_.back());
+      previous_executors_.pop_back();
+    }
+  }
+
+  base::TaskExecutor* io_task_executor_ = nullptr;
+  std::vector<base::TaskExecutor*> previous_executors_;
+};
+
+BrowserIOThreadDelegate::BrowserIOThreadDelegate()
+    : owned_sequence_manager_(CreateUnboundSequenceManager(
           SequenceManager::Settings::Builder()
               .SetMessagePumpType(base::MessagePumpType::IO)
               .Build())),
-      browser_task_executor_present_(browser_task_executor_present) {
-  Init(sequence_manager_.get());
+      sequence_manager_(owned_sequence_manager_.get()) {
+  Init();
 }
 
 BrowserIOThreadDelegate::BrowserIOThreadDelegate(
     SequenceManager* sequence_manager)
-    : sequence_manager_(nullptr),
-      browser_task_executor_present_(BrowserTaskExecutorPresent::kYes) {
-  Init(sequence_manager);
+    : sequence_manager_(sequence_manager),
+      tls_multiplexer_(std::make_unique<TLSMultiplexer>()) {
+  sequence_manager_->AddTaskObserver(tls_multiplexer_.get());
+  Init();
 }
 
-void BrowserIOThreadDelegate::Init(
-    base::sequence_manager::SequenceManager* sequence_manager) {
+void BrowserIOThreadDelegate::Init() {
   task_queues_ = std::make_unique<BrowserTaskQueues>(
-      BrowserThread::IO, sequence_manager,
-      sequence_manager->GetRealTimeDomain());
+      BrowserThread::IO, sequence_manager_,
+      sequence_manager_->GetRealTimeDomain());
   default_task_runner_ = task_queues_->GetHandle()->GetDefaultTaskRunner();
+}
+
+void BrowserIOThreadDelegate::SetTaskExecutor(
+    base::TaskExecutor* task_executor) {
+  if (tls_multiplexer_) {
+    tls_multiplexer_->SetIOTaskExecutor(task_executor);
+  } else {
+    task_executor_ = task_executor;
+  }
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -49,8 +89,11 @@ BrowserIOThreadDelegate::GetDefaultTaskRunner() {
 }
 
 BrowserIOThreadDelegate::~BrowserIOThreadDelegate() {
-  if (browser_task_executor_present_ == BrowserTaskExecutorPresent::kYes) {
+  if (task_executor_) {
     base::SetTaskExecutorForCurrentThread(nullptr);
+  }
+  if (tls_multiplexer_) {
+    sequence_manager_->RemoveTaskObserver(tls_multiplexer_.get());
   }
 }
 
@@ -62,8 +105,8 @@ void BrowserIOThreadDelegate::BindToCurrentThread(
   sequence_manager_->SetTimerSlack(timer_slack);
   sequence_manager_->SetDefaultTaskRunner(GetDefaultTaskRunner());
 
-  if (browser_task_executor_present_ == BrowserTaskExecutorPresent::kYes) {
-    base::SetTaskExecutorForCurrentThread(BrowserTaskExecutor::Get());
+  if (task_executor_) {
+    base::SetTaskExecutorForCurrentThread(task_executor_);
   }
 }
 

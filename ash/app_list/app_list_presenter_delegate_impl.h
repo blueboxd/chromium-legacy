@@ -17,41 +17,36 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_handler.h"
 
-namespace app_list {
-class AppListPresenterImpl;
-class AppListView;
-class AppListViewDelegate;
-}  // namespace app_list
-
 namespace ui {
 class LocatedEvent;
 }  // namespace ui
 
 namespace ash {
-
 class AppListControllerImpl;
+class AppListPresenterImpl;
+class AppListView;
+class AppListViewDelegate;
 
 // Responsible for laying out the app list UI as well as updating the Shelf
 // launch icon as the state of the app list changes. Listens to shell events
 // and touches/mouse clicks outside the app list to auto dismiss the UI or
 // update its layout as necessary.
-class ASH_EXPORT AppListPresenterDelegateImpl
-    : public app_list::AppListPresenterDelegate,
-      public ui::EventHandler,
-      public display::DisplayObserver,
-      public ShelfObserver {
+class ASH_EXPORT AppListPresenterDelegateImpl : public AppListPresenterDelegate,
+                                                public ui::EventHandler,
+                                                public display::DisplayObserver,
+                                                public ShelfObserver {
  public:
   explicit AppListPresenterDelegateImpl(AppListControllerImpl* controller);
   ~AppListPresenterDelegateImpl() override;
 
-  // app_list::AppListPresenterDelegate:
-  void SetPresenter(app_list::AppListPresenterImpl* presenter) override;
-  void Init(app_list::AppListView* view, int64_t display_id) override;
+  // AppListPresenterDelegate:
+  void SetPresenter(AppListPresenterImpl* presenter) override;
+  void Init(AppListView* view, int64_t display_id) override;
   void ShowForDisplay(int64_t display_id) override;
   void OnClosing() override;
   void OnClosed() override;
   bool IsTabletMode() const override;
-  app_list::AppListViewDelegate* GetAppListViewDelegate() override;
+  AppListViewDelegate* GetAppListViewDelegate() override;
   bool GetOnScreenKeyboardShown() override;
   aura::Window* GetRootWindowForDisplayId(int64_t display_id) override;
   void OnVisibilityChanged(bool visible, int64_t display_id) override;
@@ -81,10 +76,10 @@ class ASH_EXPORT AppListPresenterDelegateImpl
   bool is_visible_ = false;
 
   // Not owned. Pointer is guaranteed to be valid while this object is alive.
-  app_list::AppListPresenterImpl* presenter_;
+  AppListPresenterImpl* presenter_;
 
   // Owned by its widget.
-  app_list::AppListView* view_ = nullptr;
+  AppListView* view_ = nullptr;
 
   // Not owned, owns this class.
   AppListControllerImpl* const controller_ = nullptr;

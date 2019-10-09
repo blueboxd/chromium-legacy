@@ -29,12 +29,13 @@ TrialComparisonCertVerifierMojo::TrialComparisonCertVerifierMojo(
       report_client_(std::move(report_client)) {
   trial_comparison_cert_verifier_ =
       std::make_unique<net::TrialComparisonCertVerifier>(
-          initial_allowed, primary_verify_proc, trial_verify_proc,
+          primary_verify_proc, trial_verify_proc,
           base::BindRepeating(
               &TrialComparisonCertVerifierMojo::OnSendTrialReport,
               // Unretained safe because the report_callback will not be called
               // after trial_comparison_cert_verifier_ is destroyed.
               base::Unretained(this)));
+  trial_comparison_cert_verifier_->set_trial_allowed(initial_allowed);
 }
 
 TrialComparisonCertVerifierMojo::~TrialComparisonCertVerifierMojo() = default;

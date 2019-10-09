@@ -598,6 +598,18 @@ if (is_win) {
       ldflags = [ "-Wl,-exported_symbols_list," +
                   rebase_path("app/app.exports", root_build_dir) ]
     }
+
+    if (is_component_build) {
+      # The Framework is packaged inside the .app bundle. But when using the
+      # component build, all the dependent shared libraries of :chrome_dll are
+      # not packaged within the framework. This data_deps line makes all of
+      # those dependent libraries runtime dependencies of the .app bundle.
+      # This is a bit of a hack, since GN deliberately terminates its search
+      # for runtime_deps at create_bundle nodes (https://crbug.com/1010347).
+      data_deps = [
+        ":chrome_framework",
+      ]
+    }
   }
 
   compiled_action("chrome_app_strings") {

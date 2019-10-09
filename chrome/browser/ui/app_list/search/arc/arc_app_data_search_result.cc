@@ -98,7 +98,7 @@ ArcAppDataSearchResult::ArcAppDataSearchResult(
   icon_decode_request_ = std::make_unique<arc::IconDecodeRequest>(
       base::BindOnce(&ArcAppDataSearchResult::ApplyIcon,
                      weak_ptr_factory_.GetWeakPtr()),
-      app_list::AppListConfig::instance().search_tile_icon_dimension());
+      ash::AppListConfig::instance().search_tile_icon_dimension());
   icon_decode_request_->StartWithOptions(icon_png_data().value());
 }
 
@@ -124,15 +124,15 @@ void ArcAppDataSearchResult::ApplyIcon(const gfx::ImageSkia& icon) {
   SetIcon(icon);
 }
 
-SearchResultType ArcAppDataSearchResult::GetSearchResultType() const {
+ash::SearchResultType ArcAppDataSearchResult::GetSearchResultType() const {
   switch (data_->type) {
     case arc::mojom::AppDataResultType::PERSON:
-      return APP_DATA_RESULT_PERSON;
+      return ash::APP_DATA_RESULT_PERSON;
     case arc::mojom::AppDataResultType::NOTE_DOCUMENT:
-      return APP_DATA_RESULT_NOTE_DOCUMENT;
+      return ash::APP_DATA_RESULT_NOTE_DOCUMENT;
     default:
       NOTREACHED();
-      return SEARCH_RESULT_TYPE_BOUNDARY;
+      return ash::SEARCH_RESULT_TYPE_BOUNDARY;
   }
 }
 

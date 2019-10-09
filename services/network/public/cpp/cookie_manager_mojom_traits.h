@@ -29,15 +29,6 @@ struct EnumTraits<network::mojom::CookieSameSite, net::CookieSameSite> {
 };
 
 template <>
-struct EnumTraits<network::mojom::CookieAccessSemantics,
-                  net::CookieAccessSemantics> {
-  static network::mojom::CookieAccessSemantics ToMojom(
-      net::CookieAccessSemantics input);
-  static bool FromMojom(network::mojom::CookieAccessSemantics input,
-                        net::CookieAccessSemantics* output);
-};
-
-template <>
 struct EnumTraits<network::mojom::CookieInclusionStatusWarningReason,
                   net::CanonicalCookie::CookieInclusionStatus::WarningReason> {
   static network::mojom::CookieInclusionStatusWarningReason ToMojom(

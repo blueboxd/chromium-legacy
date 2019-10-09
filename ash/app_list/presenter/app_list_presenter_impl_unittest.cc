@@ -23,7 +23,7 @@
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/window_util.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -186,9 +186,9 @@ TEST_F(AppListPresenterImplTest, ClickingContextMenuDoesNotDismiss) {
   ASSERT_TRUE(window);
 
   // Show a context menu for the first app list item view.
-  app_list::AppListView::TestApi test_api(presenter()->GetView());
-  app_list::AppsGridView* grid_view = test_api.GetRootAppsGridView();
-  app_list::AppListItemView* item_view = grid_view->GetItemViewAt(0);
+  AppListView::TestApi test_api(presenter()->GetView());
+  AppsGridView* grid_view = test_api.GetRootAppsGridView();
+  AppListItemView* item_view = grid_view->GetItemViewAt(0);
   DCHECK(item_view);
   item_view->ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
 
@@ -216,4 +216,4 @@ TEST_F(AppListPresenterImplTest, ClickingContextMenuDoesNotDismiss) {
   base::RunLoop().RunUntilIdle();
 }
 
-}  // namespace app_list
+}  // namespace ash

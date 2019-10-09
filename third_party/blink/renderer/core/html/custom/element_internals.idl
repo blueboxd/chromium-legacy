@@ -24,5 +24,9 @@ interface ElementInternals {
   [RaisesException] boolean reportValidity();
 
   [RaisesException] readonly attribute NodeList labels;
+
+  // Custom state
+  // https://github.com/w3c/webcomponents/blob/gh-pages/proposals/custom-states-and-state-pseudo-class.md
+  [RuntimeEnabled=CustomStatePseudoClass] readonly attribute DOMTokenList states;
 };
 

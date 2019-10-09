@@ -21,11 +21,10 @@ class JsTranslateManagerTest : public PlatformTest {
   JsTranslateManagerTest() {
     receiver_ = [[CRWTestJSInjectionReceiver alloc] init];
     manager_ = [[JsTranslateManager alloc] initWithReceiver:receiver_];
-    base::StringPiece script =
-        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+    std::string script =
+        ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
             IDR_TRANSLATE_JS);
-    [manager_ setScript:base::SysUTF8ToNSString(script.as_string() +
-                                                "('DummyKey');")];
+    [manager_ setScript:base::SysUTF8ToNSString(script + "('DummyKey');")];
   }
 
   bool IsDefined(NSString* name) {

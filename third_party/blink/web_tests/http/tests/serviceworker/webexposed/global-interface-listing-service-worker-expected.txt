@@ -144,11 +144,6 @@ interface CloseEvent : Event
     getter reason
     getter wasClean
     method constructor
-interface CompressionStream
-    attribute @@toStringTag
-    getter readable
-    getter writable
-    method constructor
 interface ContentIndex
     attribute @@toStringTag
     method add

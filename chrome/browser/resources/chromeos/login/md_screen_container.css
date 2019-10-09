@@ -114,6 +114,7 @@ html:not([full-screen-dialog]) #oobe.tpm-error-message #inner-container {
   height: 100%;
   max-height: 864px; /* 768 + 48*2 */
   max-width: 864px; /* 768 + 48*2 */
+  min-height: 560px; /* 464 + 48*2 */
   padding-bottom: 48px;
   padding-inline-end: 48px;
   padding-inline-start: 48px;

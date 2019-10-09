@@ -1058,7 +1058,6 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForPattern(
   CHECK_EQ(5U, args->GetSize());
   std::string primary_pattern_string;
   CHECK(args->GetString(0, &primary_pattern_string));
-  // TODO(dschuyler): Review whether |secondary_pattern_string| should be used.
   std::string secondary_pattern_string;
   CHECK(args->GetString(1, &secondary_pattern_string));
   std::string type;

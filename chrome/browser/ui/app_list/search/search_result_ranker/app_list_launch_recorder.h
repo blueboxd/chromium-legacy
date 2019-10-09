@@ -73,7 +73,7 @@ class AppListLaunchRecorder {
   friend class base::NoDestructor<AppListLaunchRecorder>;
 
   // These are the clients of hashed logging:
-  friend class app_list::SearchController;
+  friend class SearchController;
 
   // Adds |launch_info| to the cache of launches to be hashed and provided to
   // the metrics service on a call to ProvideCurrentSessionData.

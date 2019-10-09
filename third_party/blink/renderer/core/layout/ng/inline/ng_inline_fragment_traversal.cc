@@ -122,9 +122,8 @@ class LayoutInlineCollector final : public NGPhysicalFragmentCollectorBase {
   STACK_ALLOCATED();
 
  public:
-  explicit LayoutInlineCollector(const LayoutInline& container) {
-    CollectInclusiveDescendants(container);
-  }
+  explicit LayoutInlineCollector(const LayoutInline& container)
+      : container_(container) {}
 
   Vector<Result> CollectFrom(const NGPhysicalFragment& fragment) final {
     return CollectExclusivelyFrom(fragment);
@@ -133,30 +132,14 @@ class LayoutInlineCollector final : public NGPhysicalFragmentCollectorBase {
  private:
   void Visit() final {
     if (!GetFragment().IsLineBox() &&
-        inclusive_descendants_.Contains(GetFragment().GetLayoutObject())) {
+        GetFragment().GetLayoutObject()->IsDescendantOf(&container_)) {
       Emit();
       return;
     }
     VisitChildren();
   }
 
-  void CollectInclusiveDescendants(const LayoutInline& container) {
-    inclusive_descendants_.insert(&container);
-    for (const LayoutObject* node = container.FirstChild(); node;
-         node = node->NextSibling()) {
-      if (node->IsFloatingOrOutOfFlowPositioned())
-        continue;
-      if (node->IsBox() || node->IsText()) {
-        inclusive_descendants_.insert(node);
-        continue;
-      }
-      if (!node->IsLayoutInline())
-        continue;
-      CollectInclusiveDescendants(ToLayoutInline(*node));
-    }
-  }
-
-  HashSet<const LayoutObject*> inclusive_descendants_;
+  const LayoutInline& container_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutInlineCollector);
 };

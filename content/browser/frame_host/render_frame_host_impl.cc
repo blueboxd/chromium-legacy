@@ -3528,6 +3528,10 @@ void RenderFrameHostImpl::EvictFromBackForwardCache() {
   }
 
   if (!in_back_forward_cache) {
+    BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(
+        BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason::
+            kByJavaScript);
+
     // A document is evicted from the BackForwardCache, but it has already been
     // restored. The current document should be reloaded, because it is not
     // salvageable.
@@ -5229,8 +5233,11 @@ void RenderFrameHostImpl::CommitNavigation(
           bypass_redirect_checks);
     }
 
+    bool navigation_to_bundled_exchanges = false;
+
     if (bundled_exchanges_handle_ &&
         bundled_exchanges_handle_->IsReadyForLoading()) {
+      navigation_to_bundled_exchanges = true;
       mojo::Remote<network::mojom::URLLoaderFactory> fallback_factory(
           std::move(pending_default_factory));
       bundled_exchanges_handle_->CreateURLLoaderFactory(
@@ -5251,7 +5258,10 @@ void RenderFrameHostImpl::CommitNavigation(
     // Other URLs like about:srcdoc or about:blank might be able load files, but
     // only because they will inherit loaders from their parents instead of the
     // ones provided by the browser process here.
-    if (common_params->url.SchemeIsFile()) {
+    //
+    // For loading bundled exchanges files, we don't set FileURLLoaderFactory.
+    // Because loading local files from bundled exchanges file is prohibited.
+    if (common_params->url.SchemeIsFile() && !navigation_to_bundled_exchanges) {
       auto file_factory = std::make_unique<FileURLLoaderFactory>(
           browser_context->GetPath(),
           browser_context->GetSharedCorsOriginAccessList(),
@@ -6235,6 +6245,7 @@ void RenderFrameHostImpl::DeleteWebBluetoothService(
 
 void RenderFrameHostImpl::CreateWebUsbService(
     mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {
+  BackForwardCache::DisableForRenderFrameHost(this, "WebUSB");
   GetContentClient()->browser()->CreateWebUsbService(this, std::move(receiver));
 }
 
@@ -6355,7 +6366,7 @@ void RenderFrameHostImpl::BindSerialService(
   serial_service_->Bind(std::move(receiver));
 }
 
-void RenderFrameHostImpl::BindAuthenticatorRequest(
+void RenderFrameHostImpl::BindAuthenticatorReceiver(
     mojo::PendingReceiver<blink::mojom::Authenticator> receiver) {
   if (!authenticator_impl_)
     authenticator_impl_.reset(new AuthenticatorImpl(this));
@@ -6517,7 +6528,7 @@ void RenderFrameHostImpl::GetAuthenticator(
     mojo::PendingReceiver<blink::mojom::Authenticator> receiver) {
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebAuth)) {
-    BindAuthenticatorRequest(std::move(receiver));
+    BindAuthenticatorReceiver(std::move(receiver));
   }
 #else
   GetJavaInterfaces()->GetInterface(std::move(receiver));

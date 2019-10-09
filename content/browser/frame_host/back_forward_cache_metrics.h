@@ -46,13 +46,22 @@ class BackForwardCacheMetrics
   };
 
   // Please keep in sync with BackForwardCacheHistoryNavigationOutcome in
-  // tools/metrics/histograms/enums.xml.
+  // tools/metrics/histograms/enums.xml. These values should not be renumbered.
   enum class HistoryNavigationOutcome {
     kRestored = 0,
     kNotCached = 1,
     kEvicted = 2,
     kNotCachedDueToExperimentCondition = 3,
     kMaxValue = kNotCachedDueToExperimentCondition,
+  };
+
+  // Please keep in sync with BackForwardCacheEvictedAfterDocumentRestoredReason
+  // in tools/metrics/histograms/enums.xml. These values should not be
+  // renumbered.
+  enum class EvictedAfterDocumentRestoredReason {
+    kRestored = 0,
+    kByJavaScript = 1,
+    kMaxValue = kByJavaScript,
   };
 
   // Creates a potential new metrics object for the navigation.
@@ -68,6 +77,11 @@ class BackForwardCacheMetrics
       NavigationEntryImpl* currently_committed_entry,
       bool is_main_frame_navigation,
       int64_t document_sequence_number);
+
+  // Records when the page is evicted after the document is restored e.g. when
+  // the race condition by JavaScript happens.
+  static void RecordEvictedAfterDocumentRestored(
+      EvictedAfterDocumentRestoredReason reason);
 
   // Notifies that the main frame has started a navigation to an entry
   // associated with |this|.

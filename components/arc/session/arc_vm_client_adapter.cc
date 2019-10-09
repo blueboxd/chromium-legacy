@@ -16,17 +16,43 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/arc/arc_util.h"
 
 namespace arc {
+namespace {
 
-class ArcVmClientAdapter : public ArcClientAdapter {
+chromeos::ConciergeClient* GetConciergeClient() {
+  return chromeos::DBusThreadManager::Get()->GetConciergeClient();
+}
+
+}  // namespace
+
+class ArcVmClientAdapter : public ArcClientAdapter,
+                           public chromeos::ConciergeClient::VmObserver {
  public:
-  ArcVmClientAdapter() {}
-  ~ArcVmClientAdapter() override = default;
+  ArcVmClientAdapter() { GetConciergeClient()->AddVmObserver(this); }
+  ~ArcVmClientAdapter() override {
+    GetConciergeClient()->RemoveVmObserver(this);
+  }
+
+  // chromeos::ConciergeClient::VmObserver overrides:
+  void OnVmStarted(
+      const vm_tools::concierge::VmStartedSignal& signal) override {
+    if (signal.name() == kArcVmName)
+      VLOG(1) << "OnVmStarted: ARCVM cid=" << signal.vm_info().cid();
+  }
+
+  void OnVmStopped(
+      const vm_tools::concierge::VmStoppedSignal& signal) override {
+    if (signal.name() != kArcVmName)
+      return;
+    VLOG(1) << "OnVmStopped: ARCVM";
+    OnArcInstanceStopped();
+  }
 
   // ArcClientAdapter overrides:
   void StartMiniArc(const StartArcMiniContainerRequest& request,
@@ -72,7 +98,7 @@ class ArcVmClientAdapter : public ArcClientAdapter {
     std::vector<std::string> env{{"USER_ID_HASH=" + user_id_hash_}};
     chromeos::UpstartClient::Get()->StopJob(
         "arcvm", env,
-        base::BindOnce(&ArcVmClientAdapter::OnVmStopped,
+        base::BindOnce(&ArcVmClientAdapter::OnArcVmJobStopped,
                        weak_factory_.GetWeakPtr()));
   }
 
@@ -82,18 +108,16 @@ class ArcVmClientAdapter : public ArcClientAdapter {
   }
 
  private:
-  // TODO(yusukes|cmtm): Monitor unexpected crosvm crash/shutdown and call this
-  // method.
   void OnArcInstanceStopped() {
     VLOG(1) << "arcvm stopped.";
     for (auto& observer : observer_list_)
       observer.ArcInstanceStopped();
   }
 
-  void OnVmStopped(bool result) {
+  // TODO(yusukes): Remove this method when we remove arcvm.conf.
+  void OnArcVmJobStopped(bool result) {
     if (!result)
       LOG(ERROR) << "Failed to stop arcvm.";
-    OnArcInstanceStopped();
   }
 
   // A hash of the primary profile user ID.

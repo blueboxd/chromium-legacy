@@ -50,7 +50,7 @@ class AppListLaunchMetricsProvider : public metrics::MetricsProvider {
 
  private:
   friend class ::ChromeMetricsServiceClient;
-  friend class ::app_list::AppListLaunchMetricsProviderTest;
+  friend class app_list::AppListLaunchMetricsProviderTest;
   FRIEND_TEST_ALL_PREFIXES(AppListLaunchMetricsProviderTest, EventsAreCapped);
 
   // Filename for the the state proto within the user's home directory. This is

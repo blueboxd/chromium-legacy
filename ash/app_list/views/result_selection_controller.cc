@@ -7,7 +7,7 @@
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/views/search_result_container_view.h"
 
-namespace app_list {
+namespace ash {
 
 ResultLocationDetails::ResultLocationDetails() = default;
 
@@ -302,4 +302,4 @@ void ResultSelectionController::ChangeContainer(
   location_details->container_index = new_container;
 }
 
-}  // namespace app_list
+}  // namespace ash

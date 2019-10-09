@@ -19,7 +19,7 @@ class DriveQuickAccessResult : public ZeroStateFileResult {
                          Profile* profile);
 
   // ZeroStateFileResult:
-  SearchResultType GetSearchResultType() const override;
+  ash::SearchResultType GetSearchResultType() const override;
 };
 
 }  // namespace app_list

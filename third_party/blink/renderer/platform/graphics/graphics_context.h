@@ -53,6 +53,10 @@ class SkPath;
 class SkRRect;
 struct SkRect;
 
+namespace paint_preview {
+class PaintPreviewTracker;
+}  // namespace paint_preview
+
 namespace blink {
 
 class FloatRect;
@@ -74,7 +78,8 @@ class PLATFORM_EXPORT GraphicsContext {
 
   explicit GraphicsContext(PaintController&,
                            DisabledMode = kNothingDisabled,
-                           printing::MetafileSkia* = nullptr);
+                           printing::MetafileSkia* = nullptr,
+                           paint_preview::PaintPreviewTracker* = nullptr);
 
   ~GraphicsContext();
 
@@ -160,6 +165,19 @@ class PLATFORM_EXPORT GraphicsContext {
   // possible quality.
   bool Printing() const { return printing_; }
   void SetPrinting(bool printing) { printing_ = printing; }
+
+  // Returns if the context is saving a paint preview instead of displaying.
+  // In such cases, clipping should not occur.
+  bool IsPaintingPreview() const { return is_painting_preview_; }
+  void SetIsPaintingPreview(bool is_painting_preview) {
+    is_painting_preview_ = is_painting_preview;
+  }
+
+  // Returns if the context is printing or painting a preview. Many of the
+  // behaviors required for printing and paint previews are shared.
+  bool IsPrintingOrPaintingPreview() const {
+    return Printing() || IsPaintingPreview();
+  }
 
   SkColorFilter* GetColorFilter() const;
   void SetColorFilter(ColorFilter);
@@ -498,6 +516,7 @@ class PLATFORM_EXPORT GraphicsContext {
   PaintRecorder paint_recorder_;
 
   printing::MetafileSkia* metafile_;
+  paint_preview::PaintPreviewTracker* tracker_;
 
 #if DCHECK_IS_ON()
   int layer_count_;
@@ -512,6 +531,7 @@ class PLATFORM_EXPORT GraphicsContext {
   DarkModeFilter dark_mode_filter_;
 
   unsigned printing_ : 1;
+  unsigned is_painting_preview_ : 1;
   unsigned in_drawing_recorder_ : 1;
 
   DISALLOW_COPY_AND_ASSIGN(GraphicsContext);

@@ -99,7 +99,8 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                        const gfx::ImageSkia& badge,
                        const base::string16& title,
                        const base::string16& subtitle = base::string16());
-  void SetSyncInfo(const base::string16& description,
+  void SetSyncInfo(const gfx::ImageSkia& icon,
+                   const base::string16& description,
                    const base::string16& clickable_text,
                    base::RepeatingClosure action);
   void AddShortcutFeatureButton(const gfx::ImageSkia& icon,

@@ -48,8 +48,10 @@
         android:id="@+id/credential_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="16dp"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp"
         android:divider="@null"
         android:dividerHeight="8dp"
-        android:paddingTop="16dp"
         tools:listitem="@layout/touch_to_fill_credential_item"/>
 </LinearLayout>

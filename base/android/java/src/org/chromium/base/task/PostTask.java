@@ -28,6 +28,7 @@ public class PostTask {
     private static final Executor sPrenativeThreadPoolExecutor = new ChromeThreadPoolExecutor();
     private static Executor sPrenativeThreadPoolExecutorOverride;
     private static final TaskExecutor sTaskExecutors[] = getInitialTaskExecutors();
+    private static boolean sNativeSchedulerReady;
 
     private static TaskExecutor[] getInitialTaskExecutors() {
         TaskExecutor taskExecutors[] = new TaskExecutor[TaskTraits.MAX_EXTENSION_ID + 1];
@@ -88,7 +89,8 @@ public class PostTask {
             } else {
                 PostTaskJni.get().postDelayedTask(taskTraits.mPrioritySetExplicitly,
                         taskTraits.mPriority, taskTraits.mMayBlock, taskTraits.mUseThreadPool,
-                        taskTraits.mExtensionId, taskTraits.mExtensionData, task, delay);
+                        taskTraits.mUseCurrentThread, taskTraits.mExtensionId,
+                        taskTraits.mExtensionData, task, delay);
             }
         }
     }
@@ -210,8 +212,9 @@ public class PostTask {
      */
     static Executor getPrenativeThreadPoolExecutor() {
         synchronized (sLock) {
-            if (sPrenativeThreadPoolExecutorOverride != null)
+            if (sPrenativeThreadPoolExecutorOverride != null) {
                 return sPrenativeThreadPoolExecutorOverride;
+            }
             return sPrenativeThreadPoolExecutor;
         }
     }
@@ -237,11 +240,21 @@ public class PostTask {
         return sTaskExecutors[traits.mExtensionId];
     }
 
+    /**
+     * @return True if the native scheduler is ready.
+     */
+    static boolean getNativeSchedulerReady() {
+        synchronized (sLock) {
+            return sNativeSchedulerReady;
+        }
+    }
+
     @CalledByNative
     private static void onNativeSchedulerReady() {
         synchronized (sLock) {
             Set<TaskRunner> preNativeTaskRunners = sPreNativeTaskRunners;
             sPreNativeTaskRunners = null;
+            sNativeSchedulerReady = true;
             for (TaskRunner taskRunner : preNativeTaskRunners) {
                 taskRunner.initNativeTaskRunner();
             }
@@ -254,13 +267,14 @@ public class PostTask {
         synchronized (sLock) {
             sPreNativeTaskRunners =
                     Collections.newSetFromMap(new WeakHashMap<TaskRunner, Boolean>());
+            sNativeSchedulerReady = false;
         }
     }
 
     @NativeMethods
     interface Natives {
         void postDelayedTask(boolean prioritySetExplicitly, int priority, boolean mayBlock,
-                boolean useThreadPool, byte extensionId, byte[] extensionData, Runnable task,
-                long delay);
+                boolean useThreadPool, boolean useCurrentThread, byte extensionId,
+                byte[] extensionData, Runnable task, long delay);
     }
 }

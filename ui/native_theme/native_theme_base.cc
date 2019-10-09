@@ -41,8 +41,6 @@ const int kDefaultScrollbarWidth = 15;
 const int kDefaultScrollbarButtonLength = 14;
 
 // Color constant pairs for light/default and dark color-schemes below.
-// TODO(futhark): replace kPlaceholderColor with appropriate colors for
-// color-scheme:dark.
 constexpr SkColor kThumbActiveColor[2] = {SkColorSetRGB(0xF4, 0xF4, 0xF4),
                                           gfx::kPlaceholderColor};
 constexpr SkColor kThumbInactiveColor[2] = {SkColorSetRGB(0xEA, 0xEA, 0xEA),
@@ -50,68 +48,68 @@ constexpr SkColor kThumbInactiveColor[2] = {SkColorSetRGB(0xEA, 0xEA, 0xEA),
 constexpr SkColor kTrackColor[2] = {SkColorSetRGB(0xD3, 0xD3, 0xD3),
                                     gfx::kPlaceholderColor};
 constexpr SkColor kSliderTrackBackgroundColor[2] = {
-    SkColorSetRGB(0xE3, 0xDD, 0xD8), gfx::kPlaceholderColor};
-constexpr SkColor kSliderThumbBrightColor[2] = {SkColorSetRGB(0xF4, 0xF2, 0xEF),
-                                                gfx::kPlaceholderColor};
-constexpr SkColor kSliderThumbShadedColor[2] = {SkColorSetRGB(0xEA, 0xE5, 0xE0),
-                                                gfx::kPlaceholderColor};
-constexpr SkColor kSliderThumbHoveredBrightColor[2] = {SK_ColorWHITE,
-                                                       gfx::kPlaceholderColor};
+    SkColorSetRGB(0xE3, 0xDD, 0xD8), SkColorSetRGB(0x44, 0x44, 0x44)};
+constexpr SkColor kSliderThumbBrightColor[2] = {
+    SkColorSetRGB(0xF4, 0xF2, 0xEF), SkColorSetRGB(0xD0, 0xD0, 0xD0)};
+constexpr SkColor kSliderThumbShadedColor[2] = {
+    SkColorSetRGB(0xEA, 0xE5, 0xE0), SkColorSetRGB(0xC4, 0xC4, 0xC4)};
+constexpr SkColor kSliderThumbHoveredBrightColor[2] = {
+    SK_ColorWHITE, SkColorSetRGB(0xDD, 0xDD, 0xDD)};
 constexpr SkColor kSliderThumbHoveredShadedColor[2] = {
-    SkColorSetRGB(0xF4, 0xF2, 0xEF), gfx::kPlaceholderColor};
+    SkColorSetRGB(0xF4, 0xF2, 0xEF), SkColorSetRGB(0xD0, 0xD0, 0xD0)};
 constexpr SkColor kSliderThumbBorder[2] = {SkColorSetRGB(0x9D, 0x96, 0x8E),
-                                           gfx::kPlaceholderColor};
+                                           SkColorSetRGB(0x63, 0x6C, 0x72)};
 constexpr SkColor kTextBorderColor[2] = {SkColorSetRGB(0xA9, 0xA9, 0xA9),
-                                         gfx::kPlaceholderColor};
+                                         SkColorSetRGB(0x60, 0x60, 0x60)};
 constexpr SkColor kProgressBorderColor[2] = {SkColorSetRGB(0xA9, 0xA9, 0xA9),
-                                             gfx::kPlaceholderColor};
+                                             SkColorSetRGB(0x60, 0x60, 0x60)};
 constexpr SkColor kProgressTickColor[2] = {SkColorSetRGB(0xED, 0xED, 0xED),
-                                           gfx::kPlaceholderColor};
+                                           SkColorSetRGB(0x20, 0x20, 0x20)};
 constexpr SkColor kProgressValueColor[2] = {gfx::kGoogleBlue300,
-                                            gfx::kPlaceholderColor};
+                                            gfx::kGoogleBlue700};
+// We are currently only painting kMenuPopupBackground with the kDefault
+// scheme. If that changes, we need to replace gfx::kPlaceholderColor with an
+// appropriate dark scheme color. See the DCHECK in PaintMenuPopupBackground().
 constexpr SkColor kMenuPopupBackgroundColor[2] = {SkColorSetRGB(210, 225, 246),
                                                   gfx::kPlaceholderColor};
-constexpr SkColor kCheckboxTinyColor[2] = {SK_ColorGRAY,
-                                           gfx::kPlaceholderColor};
+constexpr SkColor kCheckboxTinyColor[2] = {SK_ColorGRAY, SK_ColorDKGRAY};
 constexpr SkColor kCheckboxShadowColor[2] = {SkColorSetA(SK_ColorBLACK, 0x15),
-                                             gfx::kPlaceholderColor};
+                                             SkColorSetA(SK_ColorWHITE, 0x15)};
 constexpr SkColor kCheckboxShadowHoveredColor[2] = {
-    SkColorSetA(SK_ColorBLACK, 0x1F), gfx::kPlaceholderColor};
+    SkColorSetA(SK_ColorBLACK, 0x1F), SkColorSetA(SK_ColorWHITE, 0x1F)};
 constexpr SkColor kCheckboxShadowDisabledColor[2] = {
-    SkColorSetA(SK_ColorBLACK, 0), gfx::kPlaceholderColor};
+    SK_ColorTRANSPARENT, SkColorSetA(SK_ColorWHITE, 0x1F)};
 constexpr SkColor kCheckboxGradientStartColor[2] = {
-    SkColorSetRGB(0xED, 0xED, 0xED), gfx::kPlaceholderColor};
+    SkColorSetRGB(0xED, 0xED, 0xED), SkColorSetRGB(0x13, 0x13, 0x13)};
 constexpr SkColor kCheckboxGradientEndColor[2] = {
-    SkColorSetRGB(0xDE, 0xDE, 0xDE), gfx::kPlaceholderColor};
+    SkColorSetRGB(0xDE, 0xDE, 0xDE), SkColorSetRGB(0x20, 0x20, 0x20)};
 constexpr U8CPU kCheckboxDisabledGradientAlpha = 0x80;
 constexpr SkColor kCheckboxPressedGradientStartColor[2] = {
-    SkColorSetRGB(0xE7, 0xE7, 0xE7), gfx::kPlaceholderColor};
+    SkColorSetRGB(0xE7, 0xE7, 0xE7), SkColorSetRGB(0x19, 0x19, 0x19)};
 constexpr SkColor kCheckboxPressedGradientEndColor[2] = {
-    SkColorSetRGB(0xD7, 0xD7, 0xD7), gfx::kPlaceholderColor};
+    SkColorSetRGB(0xD7, 0xD7, 0xD7), SkColorSetRGB(0x27, 0x27, 0x27)};
 const SkColor kCheckboxHoveredGradientStartColor[2] = {
-    SkColorSetRGB(0xF0, 0xF0, 0xF0), gfx::kPlaceholderColor};
+    SkColorSetRGB(0xF0, 0xF0, 0xF0), SkColorSetRGB(0x16, 0x16, 0x16)};
 const SkColor kCheckboxHoveredGradientEndColor[2] = {
-    SkColorSetRGB(0xE0, 0xE0, 0xE0), gfx::kPlaceholderColor};
+    SkColorSetRGB(0xE0, 0xE0, 0xE0), SkColorSetRGB(0x20, 0x20, 0x20)};
 constexpr SkColor kCheckboxBorderColor[2] = {SkColorSetA(SK_ColorBLACK, 0x40),
-                                             gfx::kPlaceholderColor};
+                                             SkColorSetA(SK_ColorWHITE, 0x40)};
 constexpr SkColor kCheckboxBorderHoveredColor[2] = {
-    SkColorSetA(SK_ColorBLACK, 0x4D), gfx::kPlaceholderColor};
+    SkColorSetA(SK_ColorBLACK, 0x4D), SkColorSetA(SK_ColorWHITE, 0x4D)};
 constexpr SkColor kCheckboxBorderDisabledColor[2] = {
-    SkColorSetA(SK_ColorBLACK, 0x20), gfx::kPlaceholderColor};
+    SkColorSetA(SK_ColorBLACK, 0x20), SkColorSetA(SK_ColorWHITE, 0x20)};
 constexpr SkColor kCheckboxStrokeColor[2] = {SkColorSetA(SK_ColorBLACK, 0xB3),
-                                             gfx::kPlaceholderColor};
+                                             SkColorSetA(SK_ColorWHITE, 0xB3)};
 constexpr SkColor kCheckboxStrokeDisabledColor[2] = {
-    SkColorSetA(SK_ColorBLACK, 0x59), gfx::kPlaceholderColor};
+    SkColorSetA(SK_ColorBLACK, 0x59), SkColorSetA(SK_ColorWHITE, 0x59)};
 constexpr SkColor kRadioDotColor[2] = {SkColorSetRGB(0x66, 0x66, 0x66),
-                                       gfx::kPlaceholderColor};
+                                       SkColorSetRGB(0xDD, 0xDD, 0xDD)};
 constexpr SkColor kRadioDotDisabledColor[2] = {
-    SkColorSetARGB(0x80, 0x66, 0x66, 0x66), gfx::kPlaceholderColor};
-constexpr SkColor kArrowDisabledColor[2] = {SK_ColorBLACK,
-                                            gfx::kPlaceholderColor};
-constexpr SkColor kButtonBorderColor[2] = {SK_ColorBLACK,
-                                           gfx::kPlaceholderColor};
-constexpr SkColor kProgressBackgroundColor[2] = {SK_ColorWHITE,
-                                                 gfx::kPlaceholderColor};
+    SkColorSetARGB(0x80, 0x66, 0x66, 0x66),
+    SkColorSetARGB(0x80, 0xDD, 0xDD, 0xDD)};
+constexpr SkColor kArrowDisabledColor[2] = {SK_ColorBLACK, SK_ColorWHITE};
+constexpr SkColor kButtonBorderColor[2] = {SK_ColorBLACK, SK_ColorWHITE};
+constexpr SkColor kProgressBackgroundColor[2] = {SK_ColorWHITE, SK_ColorBLACK};
 
 // Get a color constant based on color-scheme
 SkColor GetColor(const SkColor colors[2],
@@ -831,6 +829,10 @@ void NativeThemeBase::PaintMenuPopupBackground(
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background,
     ColorScheme color_scheme) const {
+  // We are currently only painting kMenuPopupBackground with the kDefault
+  // scheme. If that changes, we need to add an appropriate dark scheme color to
+  // kMenuPopupBackgroundColor.
+  DCHECK(color_scheme == ColorScheme::kDefault);
   canvas->drawColor(GetColor(kMenuPopupBackgroundColor, color_scheme),
                     SkBlendMode::kSrc);
 }

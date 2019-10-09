@@ -151,12 +151,6 @@
       <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PAGE_CHROME_APP_PERMISSION_VIEW_HTML"
                  file="chromeos/os_apps_page/app_management_page/chrome_app_permission_view.html"
                  type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PAGE_ROUTER_JS"
-                 file="chromeos/os_apps_page/app_management_page/router.js"
-                 type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PAGE_ROUTER_HTML"
-                 file="chromeos/os_apps_page/app_management_page/router.html"
-                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PAGE_ICONS_HTML"
                  file="chromeos/os_apps_page/app_management_page/icons.html"
                  type="chrome_html" />

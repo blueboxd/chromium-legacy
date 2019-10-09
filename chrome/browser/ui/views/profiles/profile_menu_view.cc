@@ -419,21 +419,21 @@ void ProfileMenuView::BuildIdentity() {
 
   if (account_info.has_value()) {
     SetIdentityInfo(account_info.value().account_image.AsImageSkia(),
-                    GetIdentityBadge(),
+                    GetSyncIcon(),
                     base::UTF8ToUTF16(account_info.value().full_name),
                     base::UTF8ToUTF16(account_info.value().email));
   } else {
     ProfileAttributesEntry* profile_attributes =
         GetProfileAttributesEntry(profile);
     SetIdentityInfo(
-        profile_attributes->GetAvatarIcon().AsImageSkia(), GetIdentityBadge(),
+        profile_attributes->GetAvatarIcon().AsImageSkia(), GetSyncIcon(),
         profile_attributes->GetName(),
         l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE));
   }
 }
 
 void ProfileMenuView::BuildGuestIdentity() {
-  SetIdentityInfo(profiles::GetGuestAvatar(), GetIdentityBadge(),
+  SetIdentityInfo(profiles::GetGuestAvatar(), GetSyncIcon(),
                   l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME));
 }
 
@@ -442,7 +442,7 @@ void ProfileMenuView::BuildIncognitoIdentity() {
       BrowserList::GetIncognitoSessionsActiveForProfile(browser()->profile());
 
   SetIdentityInfo(
-      ImageForMenu(kIncognitoProfileIcon), GetIdentityBadge(),
+      ImageForMenu(kIncognitoProfileIcon), GetSyncIcon(),
       l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_TITLE),
       incognito_window_count > 1
           ? l10n_util::GetPluralStringFUTF16(IDS_INCOGNITO_WINDOW_COUNT_MESSAGE,
@@ -450,7 +450,7 @@ void ProfileMenuView::BuildIncognitoIdentity() {
           : base::string16());
 }
 
-gfx::ImageSkia ProfileMenuView::GetIdentityBadge() {
+gfx::ImageSkia ProfileMenuView::GetSyncIcon() {
   Profile* profile = browser()->profile();
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
@@ -520,6 +520,7 @@ void ProfileMenuView::BuildSyncInfo() {
     switch (error) {
       case sync_ui_util::NO_SYNC_ERROR:
         SetSyncInfo(
+            GetSyncIcon(),
             /*description=*/base::string16(),
             l10n_util::GetStringUTF16(IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE),
             base::BindRepeating(&ProfileMenuView::OnSyncSettingsButtonClicked,
@@ -532,7 +533,7 @@ void ProfileMenuView::BuildSyncInfo() {
       case sync_ui_util::SETTINGS_UNCONFIRMED_ERROR:
       case sync_ui_util::AUTH_ERROR:
         SetSyncInfo(
-            l10n_util::GetStringUTF16(description_string_id),
+            GetSyncIcon(), l10n_util::GetStringUTF16(description_string_id),
             l10n_util::GetStringUTF16(button_string_id),
             base::BindRepeating(&ProfileMenuView::OnSyncErrorButtonClicked,
                                 base::Unretained(this), error));
@@ -550,12 +551,14 @@ void ProfileMenuView::BuildSyncInfo() {
 
   if (account_info.has_value()) {
     SetSyncInfo(
-        /*description=*/base::string16(),
+        GetSyncIcon(),
+        l10n_util::GetStringUTF16(IDS_PROFILES_DICE_NOT_SYNCING_TITLE),
         l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
         base::BindRepeating(&ProfileMenuView::OnSigninAccountButtonClicked,
                             base::Unretained(this), account_info.value()));
   } else {
-    SetSyncInfo(l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO),
+    SetSyncInfo(/*icon=*/gfx::ImageSkia(),
+                l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO),
                 l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
                 base::BindRepeating(&ProfileMenuView::OnSigninButtonClicked,
                                     base::Unretained(this)));

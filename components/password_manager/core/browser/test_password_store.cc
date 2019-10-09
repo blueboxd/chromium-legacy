@@ -242,7 +242,8 @@ TestPasswordStore::GetAllLeakedCredentialsImpl() {
   return std::vector<LeakedCredentials>();
 }
 
-void TestPasswordStore::RemoveLeakedCredentialsCreatedBetweenImpl(
+void TestPasswordStore::RemoveLeakedCredentialsByUrlAndTimeImpl(
+    const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time remove_begin,
     base::Time remove_end) {
   NOTIMPLEMENTED();

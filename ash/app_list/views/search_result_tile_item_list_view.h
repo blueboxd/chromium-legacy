@@ -17,7 +17,7 @@ class Textfield;
 class Separator;
 }  // namespace views
 
-namespace app_list {
+namespace ash {
 
 class AppListViewDelegate;
 class SearchResultPageView;
@@ -86,6 +86,6 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemListView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_SEARCH_RESULT_TILE_ITEM_LIST_VIEW_H_

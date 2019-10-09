@@ -45,14 +45,14 @@ ExtensionAppResult::ExtensionAppResult(Profile* profile,
   is_platform_app_ = extension->is_platform_app();
   icon_ = extensions::ChromeAppIconService::Get(profile)->CreateIcon(
       this, app_id,
-      AppListConfig::instance().GetPreferredIconDimension(display_type()),
+      ash::AppListConfig::instance().GetPreferredIconDimension(display_type()),
       base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd));
   // Load an additional chip icon when it is a recommendation result
   // so that it renders clearly in both a chip and a tile.
   if (display_type() == ash::SearchResultDisplayType::kRecommendation) {
     chip_icon_ = extensions::ChromeAppIconService::Get(profile)->CreateIcon(
         this, app_id,
-        AppListConfig::instance().suggestion_chip_icon_dimension(),
+        ash::AppListConfig::instance().suggestion_chip_icon_dimension(),
         base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd));
   }
 
@@ -96,8 +96,8 @@ void ExtensionAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
   context_menu_->GetMenuModel(std::move(callback));
 }
 
-SearchResultType ExtensionAppResult::GetSearchResultType() const {
-  return EXTENSION_APP;
+ash::SearchResultType ExtensionAppResult::GetSearchResultType() const {
+  return ash::EXTENSION_APP;
 }
 
 void ExtensionAppResult::StartObservingExtensionRegistry() {
@@ -131,11 +131,11 @@ AppContextMenu* ExtensionAppResult::GetAppContextMenu() {
 
 void ExtensionAppResult::OnIconUpdated(extensions::ChromeAppIcon* icon) {
   const gfx::Size icon_size(
-      AppListConfig::instance().GetPreferredIconDimension(display_type()),
-      AppListConfig::instance().GetPreferredIconDimension(display_type()));
+      ash::AppListConfig::instance().GetPreferredIconDimension(display_type()),
+      ash::AppListConfig::instance().GetPreferredIconDimension(display_type()));
   const gfx::Size chip_icon_size(
-      AppListConfig::instance().suggestion_chip_icon_dimension(),
-      AppListConfig::instance().suggestion_chip_icon_dimension());
+      ash::AppListConfig::instance().suggestion_chip_icon_dimension(),
+      ash::AppListConfig::instance().suggestion_chip_icon_dimension());
   DCHECK(icon_size != chip_icon_size);
 
   if (icon->image_skia().size() == icon_size) {

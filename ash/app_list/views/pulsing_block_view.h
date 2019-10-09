@@ -14,7 +14,7 @@ namespace gfx {
 class Size;
 }
 
-namespace app_list {
+namespace ash {
 
 // PulsingBlockView shows a pulsing white block via layer animation.
 class PulsingBlockView : public views::View {
@@ -38,6 +38,6 @@ class PulsingBlockView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(PulsingBlockView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_PULSING_BLOCK_VIEW_H_

@@ -56,7 +56,7 @@ const char* kDefaultPinnedApps10Apps[] = {extension_misc::kGmailAppId,
                                           extension_misc::kGoogleSheetsAppId,
                                           extension_misc::kGoogleSlidesAppId,
                                           extension_misc::kFilesManagerAppId,
-                                          app_list::kInternalAppIdCamera,
+                                          ash::kInternalAppIdCamera,
                                           extension_misc::kGooglePhotosAppId,
                                           arc::kPlayStoreAppId};
 

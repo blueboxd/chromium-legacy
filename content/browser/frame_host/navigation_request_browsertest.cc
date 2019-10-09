@@ -63,19 +63,19 @@ class TestNavigationThrottle : public NavigationThrottle {
       NavigationThrottle::ThrottleCheckResult will_redirect_result,
       NavigationThrottle::ThrottleCheckResult will_fail_result,
       NavigationThrottle::ThrottleCheckResult will_process_result,
-      base::Closure did_call_will_start,
-      base::Closure did_call_will_redirect,
-      base::Closure did_call_will_fail,
-      base::Closure did_call_will_process)
+      base::OnceClosure did_call_will_start,
+      base::OnceClosure did_call_will_redirect,
+      base::OnceClosure did_call_will_fail,
+      base::OnceClosure did_call_will_process)
       : NavigationThrottle(handle),
         will_start_result_(will_start_result),
         will_redirect_result_(will_redirect_result),
         will_fail_result_(will_fail_result),
         will_process_result_(will_process_result),
-        did_call_will_start_(did_call_will_start),
-        did_call_will_redirect_(did_call_will_redirect),
-        did_call_will_fail_(did_call_will_fail),
-        did_call_will_process_(did_call_will_process) {}
+        did_call_will_start_(std::move(did_call_will_start)),
+        did_call_will_redirect_(std::move(did_call_will_redirect)),
+        did_call_will_fail_(std::move(did_call_will_fail)),
+        did_call_will_process_(std::move(did_call_will_process)) {}
   ~TestNavigationThrottle() override {}
 
   const char* GetNameForLogging() override { return "TestNavigationThrottle"; }
@@ -100,7 +100,8 @@ class TestNavigationThrottle : public NavigationThrottle {
              navigation_request->request_context_type());
     request_context_type_ = navigation_request->request_context_type();
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_start_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   std::move(did_call_will_start_));
     return will_start_result_;
   }
 
@@ -109,7 +110,8 @@ class TestNavigationThrottle : public NavigationThrottle {
         NavigationRequest::From(navigation_handle());
     CHECK_EQ(request_context_type_, navigation_request->request_context_type());
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_redirect_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   std::move(did_call_will_redirect_));
     return will_redirect_result_;
   }
 
@@ -118,7 +120,8 @@ class TestNavigationThrottle : public NavigationThrottle {
         NavigationRequest::From(navigation_handle());
     CHECK_EQ(request_context_type_, navigation_request->request_context_type());
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_fail_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   std::move(did_call_will_fail_));
     return will_fail_result_;
   }
 
@@ -127,7 +130,8 @@ class TestNavigationThrottle : public NavigationThrottle {
         NavigationRequest::From(navigation_handle());
     CHECK_EQ(request_context_type_, navigation_request->request_context_type());
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_process_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   std::move(did_call_will_process_));
     return will_process_result_;
   }
 
@@ -135,10 +139,10 @@ class TestNavigationThrottle : public NavigationThrottle {
   NavigationThrottle::ThrottleCheckResult will_redirect_result_;
   NavigationThrottle::ThrottleCheckResult will_fail_result_;
   NavigationThrottle::ThrottleCheckResult will_process_result_;
-  base::Closure did_call_will_start_;
-  base::Closure did_call_will_redirect_;
-  base::Closure did_call_will_fail_;
-  base::Closure did_call_will_process_;
+  base::OnceClosure did_call_will_start_;
+  base::OnceClosure did_call_will_redirect_;
+  base::OnceClosure did_call_will_fail_;
+  base::OnceClosure did_call_will_process_;
   blink::mojom::RequestContextType request_context_type_ =
       blink::mojom::RequestContextType::UNSPECIFIED;
 };
@@ -286,14 +290,17 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
     std::unique_ptr<NavigationThrottle> throttle(new TestNavigationThrottle(
         handle, will_start_result_, will_redirect_result_, will_fail_result_,
         will_process_result_,
-        base::Bind(&TestNavigationThrottleInstaller::DidCallWillStartRequest,
-                   weak_factory_.GetWeakPtr()),
-        base::Bind(&TestNavigationThrottleInstaller::DidCallWillRedirectRequest,
-                   weak_factory_.GetWeakPtr()),
-        base::Bind(&TestNavigationThrottleInstaller::DidCallWillFailRequest,
-                   weak_factory_.GetWeakPtr()),
-        base::Bind(&TestNavigationThrottleInstaller::DidCallWillProcessResponse,
-                   weak_factory_.GetWeakPtr())));
+        base::BindOnce(
+            &TestNavigationThrottleInstaller::DidCallWillStartRequest,
+            weak_factory_.GetWeakPtr()),
+        base::BindOnce(
+            &TestNavigationThrottleInstaller::DidCallWillRedirectRequest,
+            weak_factory_.GetWeakPtr()),
+        base::BindOnce(&TestNavigationThrottleInstaller::DidCallWillFailRequest,
+                       weak_factory_.GetWeakPtr()),
+        base::BindOnce(
+            &TestNavigationThrottleInstaller::DidCallWillProcessResponse,
+            weak_factory_.GetWeakPtr())));
     navigation_throttle_ = static_cast<TestNavigationThrottle*>(throttle.get());
     handle->RegisterThrottleForTesting(std::move(throttle));
     ++install_count_;

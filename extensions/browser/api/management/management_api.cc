@@ -111,8 +111,8 @@ management::ExtensionInfo CreateExtensionInfo(
   info.options_url = OptionsPageInfo::GetOptionsPage(&extension).spec();
   info.homepage_url.reset(
       new std::string(ManifestURL::GetHomepageURL(&extension).spec()));
-  info.may_disable = system->management_policy()->ExtensionMayModifySettings(
-      source_extension, &extension, nullptr);
+  info.may_disable =
+      !system->management_policy()->MustRemainEnabled(&extension, nullptr);
   info.is_app = extension.is_app();
   if (info.is_app) {
     if (extension.is_legacy_packaged_app())

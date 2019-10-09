@@ -35,7 +35,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/focus/focus_manager.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -74,7 +74,7 @@ constexpr SkColor kSearchRatingStarColor = gfx::kGoogleGrey700;
 
 SearchResultTileItemView::SearchResultTileItemView(
     AppListViewDelegate* view_delegate,
-    ash::PaginationModel* pagination_model,
+    PaginationModel* pagination_model,
     bool show_in_apps_page)
     : view_delegate_(view_delegate),
       pagination_model_(pagination_model),
@@ -202,10 +202,10 @@ void SearchResultTileItemView::OnResultChanged() {
 
   title_->SetMaxLines(2);
   title_->SetMultiLine(
-      (result()->display_type() == ash::SearchResultDisplayType::kTile ||
+      (result()->display_type() == SearchResultDisplayType::kTile ||
        (IsSuggestedAppTile() && !show_in_apps_page_)) &&
-      (result()->result_type() == ash::SearchResultType::kInstalledApp ||
-       result()->result_type() == ash::SearchResultType::kArcAppShortcut));
+      (result()->result_type() == AppListSearchResultType::kInstalledApp ||
+       result()->result_type() == AppListSearchResultType::kArcAppShortcut));
 
   // If the new icon is null, it's being decoded asynchronously. Not updating it
   // now to prevent flickering from showing an empty icon while decoding.
@@ -232,7 +232,7 @@ base::string16 SearchResultTileItemView::ComputeAccessibleName() const {
     accessible_name += base::UTF8ToUTF16(", ") + price_->GetText();
 
   if (result()->result_type() ==
-      ash::SearchResultType::kPlayStoreReinstallApp) {
+      AppListSearchResultType::kPlayStoreReinstallApp) {
     accessible_name +=
         base::UTF8ToUTF16(", ") +
         l10n_util::GetStringUTF16(IDS_APP_ACCESSIBILITY_APP_RECOMMENDATION_ARC);
@@ -283,7 +283,7 @@ bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
 
 void SearchResultTileItemView::OnFocus() {
   if (pagination_model_ && IsSuggestedAppTile() &&
-      view_delegate_->GetModel()->state() == ash::AppListState::kStateApps) {
+      view_delegate_->GetModel()->state() == AppListState::kStateApps) {
     // Go back to first page when app in suggestions container is focused.
     pagination_model_->SelectPage(0, false);
   } else {
@@ -362,8 +362,8 @@ void SearchResultTileItemView::OnGetContextMenuModel(
   anchor_rect.ClampToCenteredSize(AppListConfig::instance().grid_focus_size());
 
   AppLaunchedMetricParams metric_params = {
-      ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
-      ash::AppListLaunchType::kAppSearchResult};
+      AppListLaunchedFrom::kLaunchedFromSearchBox,
+      AppListLaunchType::kAppSearchResult};
   view_delegate_->GetAppLaunchedMetricParams(&metric_params);
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
@@ -388,7 +388,7 @@ void SearchResultTileItemView::OnMenuClosed() {
 }
 
 void SearchResultTileItemView::ActivateResult(int event_flags) {
-  if (result()->result_type() == ash::SearchResultType::kPlayStoreApp) {
+  if (result()->result_type() == AppListSearchResultType::kPlayStoreApp) {
     UMA_HISTOGRAM_EXACT_LINEAR(
         "Apps.AppListPlayStoreAppLaunchedIndex",
         group_index_in_container_view(),
@@ -400,9 +400,8 @@ void SearchResultTileItemView::ActivateResult(int event_flags) {
   RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
   view_delegate_->OpenSearchResult(
-      result()->id(), event_flags,
-      ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
-      ash::AppListLaunchType::kAppSearchResult, index_in_container());
+      result()->id(), event_flags, AppListLaunchedFrom::kLaunchedFromSearchBox,
+      AppListLaunchType::kAppSearchResult, index_in_container());
   view_delegate_->LogResultLaunchHistogram(
       SearchResultLaunchLocation::kTileList, index_in_container());
 }
@@ -473,17 +472,17 @@ AppListMenuModelAdapter::AppListViewAppType
 SearchResultTileItemView::GetAppType() const {
   if (IsSuggestedAppTile()) {
     if (view_delegate_->GetModel()->state_fullscreen() ==
-        ash::AppListViewState::kPeeking) {
+        AppListViewState::kPeeking) {
       return AppListMenuModelAdapter::PEEKING_SUGGESTED;
     } else {
       return AppListMenuModelAdapter::FULLSCREEN_SUGGESTED;
     }
   } else {
     if (view_delegate_->GetModel()->state_fullscreen() ==
-        ash::AppListViewState::kHalf) {
+        AppListViewState::kHalf) {
       return AppListMenuModelAdapter::HALF_SEARCH_RESULT;
     } else if (view_delegate_->GetModel()->state_fullscreen() ==
-               ash::AppListViewState::kFullscreenSearch) {
+               AppListViewState::kFullscreenSearch) {
       return AppListMenuModelAdapter::FULLSCREEN_SEARCH_RESULT;
     }
   }
@@ -492,8 +491,8 @@ SearchResultTileItemView::GetAppType() const {
 }
 
 bool SearchResultTileItemView::IsSuggestedAppTile() const {
-  return result() && result()->display_type() ==
-                         ash::SearchResultDisplayType::kRecommendation;
+  return result() &&
+         result()->display_type() == SearchResultDisplayType::kRecommendation;
 }
 
 bool SearchResultTileItemView::IsSuggestedAppTileShownInAppPage() const {
@@ -509,7 +508,7 @@ void SearchResultTileItemView::LogAppLaunchForSuggestedApp() const {
   // record the opening of a fast re-installed app, since the latter is already
   // recorded in ArcAppReinstallAppResult::Open.
   if (result()->result_type() !=
-      ash::SearchResultType::kPlayStoreReinstallApp) {
+      AppListSearchResultType::kPlayStoreReinstallApp) {
     base::RecordAction(
         base::UserMetricsAction("AppList_ZeroStateOpenInstalledApp"));
   }
@@ -618,4 +617,4 @@ base::string16 SearchResultTileItemView::GetTooltipText(
   return tooltip;
 }
 
-}  // namespace app_list
+}  // namespace ash

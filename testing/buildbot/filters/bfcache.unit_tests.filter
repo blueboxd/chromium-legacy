@@ -19,6 +19,5 @@
 -CreditCardAccessoryControllerTest.ServerCardUnmask
 
 # Other failures
--MediaDrmOriginIdManagerTest.NetworkChangeFails
 -OfflinePageUtilsTest.*
 -PreviewsUKMObserverTest.TestPageEndReasonUMA

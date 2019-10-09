@@ -35,6 +35,8 @@ base::string16 GetAudioDeviceName(const chromeos::AudioDevice& device) {
       return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_AUDIO_USB_DEVICE,
                                         base::UTF8ToUTF16(device.display_name));
     case chromeos::AUDIO_TYPE_BLUETOOTH:
+      FALLTHROUGH;
+    case chromeos::AUDIO_TYPE_BLUETOOTH_NB_MIC:
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_AUDIO_BLUETOOTH_DEVICE,
           base::UTF8ToUTF16(device.display_name));

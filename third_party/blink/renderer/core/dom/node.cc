@@ -2567,9 +2567,9 @@ EventTargetData& Node::EnsureEventTargetData() {
   if (HasEventTargetData())
     return *GetEventTargetDataMap().at(this);
   DCHECK(!GetEventTargetDataMap().Contains(this));
-  SetHasEventTargetData(true);
   EventTargetData* data = MakeGarbageCollected<EventTargetData>();
   GetEventTargetDataMap().Set(this, data);
+  SetHasEventTargetData(true);
   return *data;
 }
 

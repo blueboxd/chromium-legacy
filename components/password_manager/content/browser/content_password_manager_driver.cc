@@ -14,7 +14,6 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/browser/bad_message.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
-#include "components/password_manager/content/browser/form_submission_tracker_util.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
@@ -183,19 +182,6 @@ bool ContentPasswordManagerDriver::IsMainFrame() const {
 
 const GURL& ContentPasswordManagerDriver::GetLastCommittedURL() const {
   return render_frame_host_->GetLastCommittedURL();
-}
-
-void ContentPasswordManagerDriver::DidNavigateFrame(
-    content::NavigationHandle* navigation_handle) {
-  // Clear page specific data after main frame navigation.
-  if (navigation_handle->IsInMainFrame() &&
-      !navigation_handle->IsSameDocument()) {
-    NotifyDidNavigateMainFrame(navigation_handle->IsRendererInitiated(),
-                               navigation_handle->GetPageTransition(),
-                               navigation_handle->WasInitiatedByLinkClick(),
-                               GetPasswordManager());
-    GetPasswordAutofillManager()->DidNavigateMainFrame();
-  }
 }
 
 void ContentPasswordManagerDriver::GeneratePassword(

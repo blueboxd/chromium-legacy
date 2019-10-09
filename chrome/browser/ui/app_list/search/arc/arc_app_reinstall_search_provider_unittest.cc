@@ -153,8 +153,8 @@ class TestSearchResult : public ChromeSearchResult {
     // set_id is protected in chromesearchresult.
     ChromeSearchResult::set_id(str);
   }
-  app_list::SearchResultType GetSearchResultType() const override {
-    return app_list::SEARCH_RESULT_TYPE_BOUNDARY;
+  ash::SearchResultType GetSearchResultType() const override {
+    return ash::SEARCH_RESULT_TYPE_BOUNDARY;
   }
 };
 }  // namespace

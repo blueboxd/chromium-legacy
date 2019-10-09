@@ -1630,7 +1630,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnMediaInterfaceFactoryConnectionError();
 
 #if !defined(OS_ANDROID)
-  void BindAuthenticatorRequest(
+  void BindAuthenticatorReceiver(
       mojo::PendingReceiver<blink::mojom::Authenticator> receiver);
 #endif
 

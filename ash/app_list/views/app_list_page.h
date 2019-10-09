@@ -11,7 +11,7 @@
 #include "base/optional.h"
 #include "ui/views/view.h"
 
-namespace app_list {
+namespace ash {
 
 class ContentsView;
 
@@ -42,20 +42,20 @@ class APP_LIST_EXPORT AppListPage : public views::View {
                                   ash::AppListState to_state);
 
   // Returns the search box size that is preferred by the page. Used by
-  // app_list::ContentsView to calculate the search box widget bounds that
+  // ContentsView to calculate the search box widget bounds that
   // should be used on this page.
   //
-  // If this method returns an empty size, the app_list::ContentsView will use
+  // If this method returns an empty size, the ContentsView will use
   // the default search box size.
   // Default implementation returns an empty size.
   virtual gfx::Size GetPreferredSearchBoxSize() const;
 
   // Returns the preferred search box origin's y coordinate within the app list
   // contents view bounds for the provided app list view state. Used by
-  // app_list::ContentsView to calculate the search box widget bounds that
+  // ContentsView to calculate the search box widget bounds that
   // should be used on this page.
   //
-  // If this returns base::nullopt, the app_list::ContentsView will use default
+  // If this returns base::nullopt, the ContentsView will use default
   // y value for the search box origin.
   // The default implementation return base::nullopt.
   //
@@ -131,6 +131,6 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   DISALLOW_COPY_AND_ASSIGN(AppListPage);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_APP_LIST_PAGE_H_

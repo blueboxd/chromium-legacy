@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -29,4 +29,4 @@ AppListController::~AppListController() {
   g_instance = nullptr;
 }
 
-}  // namespace app_list
+}  // namespace ash

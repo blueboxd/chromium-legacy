@@ -122,14 +122,15 @@ std::unique_ptr<syncer::EntityData> CopyToEntityData(
 base::Optional<syncer::ModelError> ParseLocalEntriesOnBackendSequence(
     base::Time now,
     std::map<std::string, std::unique_ptr<SendTabToSelfEntry>>* entries,
-    std::string* local_session_name,
+    std::string* local_personalizable_device_name,
     std::unique_ptr<ModelTypeStore::RecordList> record_list) {
   DCHECK(entries);
   DCHECK(entries->empty());
-  DCHECK(local_session_name);
+  DCHECK(local_personalizable_device_name);
   DCHECK(record_list);
 
-  *local_session_name = syncer::GetSessionNameBlocking();
+  *local_personalizable_device_name =
+      syncer::GetPersonalizableDeviceNameBlocking();
 
   for (const syncer::ModelTypeStore::Record& r : *record_list) {
     auto specifics = std::make_unique<SendTabToSelfLocal>();

@@ -102,8 +102,8 @@ void AnsibleManagementService::OnInstallLinuxPackageProgress(
     const ContainerId& container_id,
     InstallLinuxPackageProgressStatus status,
     int progress_percent) {
-  DCHECK_EQ(container_id.first, kCrostiniDefaultVmName);
-  DCHECK_EQ(container_id.second, kCrostiniDefaultContainerName);
+  DCHECK_EQ(container_id.vm_name, kCrostiniDefaultVmName);
+  DCHECK_EQ(container_id.container_name, kCrostiniDefaultContainerName);
 
   switch (status) {
     case InstallLinuxPackageProgressStatus::SUCCEEDED:

@@ -4,6 +4,7 @@
 
 #include "ash/system/message_center/ash_message_popup_collection.h"
 
+#include "ash/focus_cycler.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -37,6 +38,8 @@ AshMessagePopupCollection::~AshMessagePopupCollection() {
   if (screen_)
     screen_->RemoveObserver(this);
   shelf_->RemoveObserver(this);
+  for (views::Widget* widget : tracked_widgets_)
+    widget->RemoveObserver(this);
 }
 
 void AshMessagePopupCollection::StartObserving(
@@ -115,6 +118,13 @@ void AshMessagePopupCollection::ConfigureWidgetInitParamsForContainer(
   // On ash, popups go in the status container.
   init_params->parent = shelf_->GetWindow()->GetRootWindow()->GetChildById(
       kShellWindowId_StatusContainer);
+
+  // Make the widget activatable so it can receive focus when cycling through
+  // windows (i.e. pressing ctrl + forward/back).
+  init_params->activatable = views::Widget::InitParams::ACTIVATABLE_YES;
+  Shell::Get()->focus_cycler()->AddWidget(widget);
+  widget->AddObserver(this);
+  tracked_widgets_.insert(widget);
 }
 
 bool AshMessagePopupCollection::IsPrimaryDisplayForNotification() const {
@@ -157,6 +167,24 @@ void AshMessagePopupCollection::OnDisplayMetricsChanged(
     uint32_t metrics) {
   if (GetCurrentDisplay().id() == display.id())
     UpdateWorkArea();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// views::WidgetObserver:
+
+void AshMessagePopupCollection::OnWidgetClosing(views::Widget* widget) {
+  Shell::Get()->focus_cycler()->RemoveWidget(widget);
+  widget->RemoveObserver(this);
+  tracked_widgets_.erase(widget);
+}
+
+void AshMessagePopupCollection::OnWidgetActivationChanged(views::Widget* widget,
+                                                          bool active) {
+  // Note: Each pop-up is contained in it's own widget and we need to manually
+  // focus the contained MessageView when the widget is activated through the
+  // FocusCycler.
+  if (active && Shell::Get()->focus_cycler()->widget_activating() == widget)
+    widget->GetFocusManager()->SetFocusedView(widget->GetContentsView());
 }
 
 }  // namespace ash

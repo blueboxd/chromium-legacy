@@ -132,6 +132,7 @@ ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
     return;
   }
   prefs->AddObserver(this);
+  proxy->SetArcIsRegistered();
 
   auto* intent_helper_bridge =
       arc::ArcIntentHelperBridge::GetForBrowserContext(profile_);
@@ -185,7 +186,6 @@ void ArcApps::Connect(
           prefs->GetApp(app_id);
       if (app_info) {
         apps.push_back(Convert(prefs, app_id, *app_info));
-        ApplyChromeBadge(app_info->package_name);
       }
     }
   }
@@ -392,7 +392,6 @@ void ArcApps::OnAppLastLaunchTimeUpdated(const std::string& app_id) {
 
 void ArcApps::OnPackageInstalled(
     const arc::mojom::ArcPackageInfo& package_info) {
-  ApplyChromeBadge(package_info.package_name);
   ConvertAndPublishPackageApps(package_info);
 }
 
@@ -400,11 +399,6 @@ void ArcApps::OnPackageModified(
     const arc::mojom::ArcPackageInfo& package_info) {
   static constexpr bool update_icon = false;
   ConvertAndPublishPackageApps(package_info, update_icon);
-}
-
-void ArcApps::OnPackageRemoved(const std::string& package_name,
-                               bool uninstalled) {
-  ApplyChromeBadge(package_name);
 }
 
 void ArcApps::OnPackageListInitialRefreshed() {
@@ -628,14 +622,6 @@ void ArcApps::UpdateAppIntentFilters(
     }
 
     intent_filters->push_back(std::move(intent_filter));
-  }
-}
-
-void ArcApps::ApplyChromeBadge(const std::string& arc_package_name) {
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile_);
-  if (proxy) {
-    proxy->ApplyChromeBadge(profile_, arc_package_name);
   }
 }
 

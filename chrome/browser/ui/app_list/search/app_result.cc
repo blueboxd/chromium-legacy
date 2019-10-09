@@ -19,7 +19,7 @@ AppResult::AppResult(Profile* profile,
   SetDisplayType(is_recommendation
                      ? ash::SearchResultDisplayType::kRecommendation
                      : ash::SearchResultDisplayType::kTile);
-  SetResultType(ash::SearchResultType::kInstalledApp);
+  SetResultType(ash::AppListSearchResultType::kInstalledApp);
 }
 
 AppResult::~AppResult() {
@@ -43,8 +43,8 @@ void AppResult::UpdateFromLastLaunchedOrInstalledTime(
   set_relevance(1 / (1 + delta.InSecondsF() / kSecondsInWeek));
 }
 
-SearchResultType AppResult::GetSearchResultType() const {
-  return SEARCH_RESULT_TYPE_BOUNDARY;
+ash::SearchResultType AppResult::GetSearchResultType() const {
+  return ash::SEARCH_RESULT_TYPE_BOUNDARY;
 }
 
 }  // namespace app_list

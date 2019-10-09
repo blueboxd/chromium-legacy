@@ -36,15 +36,11 @@
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
-namespace ash {
-class PaginationController;
-}
-
 namespace views {
 class ButtonListener;
 }
 
-namespace app_list {
+namespace ash {
 
 namespace test {
 class AppsGridViewTest;
@@ -56,6 +52,7 @@ class AppListConfig;
 class AppListItemView;
 class AppsGridViewFolderDelegate;
 class ContentsView;
+class PaginationController;
 class PulsingBlockView;
 class GhostImageView;
 
@@ -845,6 +842,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_APPS_GRID_VIEW_H_

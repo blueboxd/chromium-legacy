@@ -8,7 +8,7 @@
 
 namespace syncer {
 
-std::string GetSessionNameInternal() {
+std::string GetPersonalizableDeviceNameInternal() {
   base::android::BuildInfo* android_build_info =
       base::android::BuildInfo::GetInstance();
   return android_build_info->model();

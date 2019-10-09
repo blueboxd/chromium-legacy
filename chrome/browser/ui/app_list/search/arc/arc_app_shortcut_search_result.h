@@ -38,7 +38,7 @@ class ArcAppShortcutSearchResult : public ChromeSearchResult,
 
   // ChromeSearchResult:
   void Open(int event_flags) override;
-  SearchResultType GetSearchResultType() const override;
+  ash::SearchResultType GetSearchResultType() const override;
 
  private:
   // AppIconLoaderDelegate:

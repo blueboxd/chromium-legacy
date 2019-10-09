@@ -20,9 +20,8 @@ namespace {
 TEST(BrowserIOThreadDelegateTest, CanPostTasksToThread) {
   base::Thread thread("my_thread");
 
-  auto delegate = std::make_unique<BrowserIOThreadDelegate>(
-      BrowserIOThreadDelegate::BrowserTaskExecutorPresent::kNoForTesting);
-  auto handle = delegate->CreateHandle();
+  auto delegate = std::make_unique<BrowserIOThreadDelegate>();
+  auto handle = delegate->GetHandle();
   handle->EnableAllQueues();
 
   base::Thread::Options options;
@@ -41,8 +40,7 @@ TEST(BrowserIOThreadDelegateTest, CanPostTasksToThread) {
 TEST(BrowserIOThreadDelegateTest, DefaultTaskRunnerIsAlwaysActive) {
   base::Thread thread("my_thread");
 
-  auto delegate = std::make_unique<BrowserIOThreadDelegate>(
-      BrowserIOThreadDelegate::BrowserTaskExecutorPresent::kNoForTesting);
+  auto delegate = std::make_unique<BrowserIOThreadDelegate>();
   auto task_runner = delegate->GetDefaultTaskRunner();
 
   base::Thread::Options options;

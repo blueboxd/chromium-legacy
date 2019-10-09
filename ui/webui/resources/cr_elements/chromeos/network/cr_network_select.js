@@ -186,7 +186,7 @@ Polymer({
     const filter = {
       filter: chromeos.networkConfig.mojom.FilterType.kVisible,
       networkType: mojom.NetworkType.kAll,
-      limit: chromeos.networkConfig.mojom.kNoLimit,
+      limit: chromeos.networkConfig.mojom.NO_LIMIT,
     };
     this.networkConfig_.getNetworkStateList(filter).then(response => {
       this.onGetNetworkStateList_(deviceStates, response.result);

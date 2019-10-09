@@ -375,7 +375,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
       browser()->profile())->management_policy();
   policy->UnregisterAllProviders();
   extensions::TestManagementPolicyProvider provider(
-    extensions::TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS);
+      extensions::TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS |
+      extensions::TestManagementPolicyProvider::MUST_REMAIN_ENABLED |
+      extensions::TestManagementPolicyProvider::MUST_REMAIN_INSTALLED);
   policy->RegisterProvider(&provider);
   ASSERT_TRUE(RunExtensionSubtest("management/management_policy",
                                   "prohibited.html"));

@@ -118,9 +118,10 @@ void MojoVideoDecoderService::GetSupportedConfigs(
 }
 
 void MojoVideoDecoderService::Construct(
-    mojom::VideoDecoderClientAssociatedPtrInfo client,
-    mojom::MediaLogAssociatedPtrInfo media_log,
-    mojom::VideoFrameHandleReleaserRequest video_frame_handle_releaser,
+    mojo::PendingAssociatedRemote<mojom::VideoDecoderClient> client,
+    mojo::PendingAssociatedRemote<mojom::MediaLog> media_log,
+    mojo::PendingReceiver<mojom::VideoFrameHandleReleaser>
+        video_frame_handle_releaser_receiver,
     mojo::ScopedDataPipeConsumerHandle decoder_buffer_pipe,
     mojom::CommandBufferIdPtr command_buffer_id,
     VideoDecoderImplementation implementation,
@@ -141,9 +142,9 @@ void MojoVideoDecoderService::Construct(
   media_log_ =
       std::make_unique<MojoMediaLog>(std::move(media_log), task_runner);
 
-  video_frame_handle_releaser_ =
-      mojo::MakeStrongBinding(std::make_unique<VideoFrameHandleReleaserImpl>(),
-                              std::move(video_frame_handle_releaser));
+  video_frame_handle_releaser_ = mojo::MakeSelfOwnedReceiver(
+      std::make_unique<VideoFrameHandleReleaserImpl>(),
+      std::move(video_frame_handle_releaser_receiver));
 
   mojo_decoder_buffer_reader_.reset(
       new MojoDecoderBufferReader(std::move(decoder_buffer_pipe)));

@@ -11,7 +11,7 @@
 #include "base/no_destructor.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -162,4 +162,4 @@ void AppListConfigProvider::ResetForTesting() {
   configs_.clear();
 }
 
-}  // namespace app_list
+}  // namespace ash

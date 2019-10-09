@@ -1343,8 +1343,8 @@ void AppListSyncableService::PruneRedundantPageBreakItems() {
 }
 
 void AppListSyncableService::InstallDefaultPageBreaks() {
-  for (size_t i = 0; i < app_list::kDefaultPageBreakAppIdsLength; ++i) {
-    auto* const id = app_list::kDefaultPageBreakAppIds[i];
+  for (size_t i = 0; i < kDefaultPageBreakAppIdsLength; ++i) {
+    auto* const id = kDefaultPageBreakAppIds[i];
     auto* sync_item = GetSyncItem(id);
     if (sync_item) {
       // The user may have cleared their sync from

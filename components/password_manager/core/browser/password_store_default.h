@@ -77,7 +77,8 @@ class PasswordStoreDefault : public PasswordStore {
   void RemoveLeakedCredentialsImpl(const GURL& url,
                                    const base::string16& username) override;
   std::vector<LeakedCredentials> GetAllLeakedCredentialsImpl() override;
-  void RemoveLeakedCredentialsCreatedBetweenImpl(
+  void RemoveLeakedCredentialsByUrlAndTimeImpl(
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end) override;
 

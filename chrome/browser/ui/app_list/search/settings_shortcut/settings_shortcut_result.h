@@ -28,7 +28,7 @@ class SettingsShortcutResult : public ChromeSearchResult {
   // SearchResult overrides:
   void Open(int event_flags) override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
-  SearchResultType GetSearchResultType() const override;
+  ash::SearchResultType GetSearchResultType() const override;
 
  private:
   Profile* const profile_;

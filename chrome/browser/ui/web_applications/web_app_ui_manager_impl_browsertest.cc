@@ -217,13 +217,12 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerMigrationBrowserTest,
   syncer::StringOrdinal pin_position =
       syncer::StringOrdinal::CreateInitialOrdinal();
   pin_position = pin_position.CreateAfter().CreateAfter();
-  app_list_service->SetPinPosition(app_list::kInternalAppIdSettings,
-                                   pin_position);
+  app_list_service->SetPinPosition(ash::kInternalAppIdSettings, pin_position);
 
   // Add the Settings Internal App to a folder.
   AppListModelUpdater* updater =
       test::GetModelUpdater(test::GetAppListClient());
-  updater->MoveItemToFolder(app_list::kInternalAppIdSettings, "asdf");
+  updater->MoveItemToFolder(ash::kInternalAppIdSettings, "asdf");
 
   // Install the Settings System Web App, which should be immediately migrated
   // to the Settings Internal App's details.
@@ -234,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerMigrationBrowserTest,
     const app_list::AppListSyncableService::SyncItem* web_app_item =
         app_list_service->GetSyncItem(settings_system_web_app_id);
     const app_list::AppListSyncableService::SyncItem* internal_app_item =
-        app_list_service->GetSyncItem(app_list::kInternalAppIdSettings);
+        app_list_service->GetSyncItem(ash::kInternalAppIdSettings);
 
     EXPECT_TRUE(internal_app_item->item_pin_ordinal.Equals(
         web_app_item->item_pin_ordinal));

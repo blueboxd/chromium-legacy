@@ -14,8 +14,8 @@
 #define DECLARE_VECTOR_COMMAND(x) using gfx::x;
 DECLARE_VECTOR_COMMANDS
 
-namespace app_list {
+namespace ash {
 
 TEMPLATE_PLACEHOLDER
 
-}  // namespace app_list
+}  // namespace ash

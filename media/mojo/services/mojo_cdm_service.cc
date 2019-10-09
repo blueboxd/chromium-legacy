@@ -51,7 +51,8 @@ MojoCdmService::~MojoCdmService() {
 }
 
 void MojoCdmService::SetClient(
-    mojom::ContentDecryptionModuleClientAssociatedPtrInfo client) {
+    mojo::PendingAssociatedRemote<mojom::ContentDecryptionModuleClient>
+        client) {
   client_.Bind(std::move(client));
 }
 

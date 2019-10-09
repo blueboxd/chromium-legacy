@@ -90,7 +90,7 @@ void SearchController::InitializeRankers(
 
 void SearchController::Start(const base::string16& query) {
   dispatching_query_ = true;
-  RecordLauncherIssuedSearchQueryLength(query.length());
+  ash::RecordLauncherIssuedSearchQueryLength(query.length());
   for (const auto& provider : providers_)
     provider->Start(query);
 
@@ -154,8 +154,8 @@ void SearchController::OnResultsChanged() {
 
   size_t num_max_results =
       query_for_recommendation_
-          ? AppListConfig::instance().num_start_page_tiles()
-          : AppListConfig::instance().max_search_results();
+          ? ash::AppListConfig::instance().num_start_page_tiles()
+          : ash::AppListConfig::instance().max_search_results();
   mixer_->MixAndPublish(num_max_results, last_query_);
 }
 
@@ -197,7 +197,8 @@ ChromeSearchResult* SearchController::GetResultByTitleForTest(
   for (const auto& provider : providers_) {
     for (const auto& result : provider->results()) {
       if (result->title() == target_title &&
-          result->result_type() == ash::SearchResultType::kInstalledApp &&
+          result->result_type() ==
+              ash::AppListSearchResultType::kInstalledApp &&
           result->display_type() !=
               ash::SearchResultDisplayType::kRecommendation) {
         return result.get();

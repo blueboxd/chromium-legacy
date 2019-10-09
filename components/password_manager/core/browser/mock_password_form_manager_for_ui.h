@@ -19,7 +19,7 @@ class MockPasswordFormManagerForUI : public PasswordFormManagerForUI {
 
   MOCK_CONST_METHOD0(GetOrigin, const GURL&());
   MOCK_CONST_METHOD0(GetBestMatches,
-                     std::map<base::string16, const autofill::PasswordForm*>());
+                     const std::vector<const autofill::PasswordForm*>&());
   MOCK_CONST_METHOD0(GetFederatedMatches,
                      std::vector<const autofill::PasswordForm*>());
   MOCK_CONST_METHOD0(GetPendingCredentials, const autofill::PasswordForm&());

@@ -14,7 +14,7 @@
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
 
-namespace app_list {
+namespace ash {
 
 class AppListFolderItem;
 class FolderHeaderViewDelegate;
@@ -110,6 +110,6 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(FolderHeaderView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_FOLDER_HEADER_VIEW_H_

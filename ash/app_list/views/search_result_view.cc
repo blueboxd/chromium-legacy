@@ -28,7 +28,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -504,4 +504,4 @@ void SearchResultView::SetDisplayIcon(const gfx::ImageSkia& source) {
   icon_->SetVisible(source.isNull());
 }
 
-}  // namespace app_list
+}  // namespace ash

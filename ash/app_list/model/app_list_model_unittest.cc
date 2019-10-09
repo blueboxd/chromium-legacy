@@ -24,7 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_model_observer.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -618,4 +618,4 @@ TEST_F(AppListModelFolderTest, DisableFolders) {
   EXPECT_EQ(std::string("folder1,") + ash::kOemFolderId, GetModelContents());
 }
 
-}  // namespace app_list
+}  // namespace ash

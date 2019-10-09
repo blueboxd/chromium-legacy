@@ -23,7 +23,7 @@
 #include "services/content/public/cpp/test/fake_navigable_contents_factory.h"
 #include "ui/base/models/simple_menu_model.h"
 
-namespace app_list {
+namespace ash {
 namespace test {
 
 class AppListTestModel;
@@ -67,9 +67,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                         ash::AppListLaunchedFrom launched_from,
                         ash::AppListLaunchType launch_type,
                         int suggestion_index) override;
-  void LogResultLaunchHistogram(
-      app_list::SearchResultLaunchLocation launch_location,
-      int suggestion_index) override {}
+  void LogResultLaunchHistogram(SearchResultLaunchLocation launch_location,
+                                int suggestion_index) override {}
   void LogSearchAbandonHistogram() override {}
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
@@ -113,7 +112,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void OnStateTransitionAnimationCompleted(
       ash::AppListViewState state) override;
   void GetAppLaunchedMetricParams(
-      app_list::AppLaunchedMetricParams* metric_params) override;
+      AppLaunchedMetricParams* metric_params) override;
   gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) override;
   int GetShelfHeight() override;
 
@@ -146,6 +145,6 @@ class AppListTestViewDelegate : public AppListViewDelegate,
 };
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_TEST_APP_LIST_TEST_VIEW_DELEGATE_H_

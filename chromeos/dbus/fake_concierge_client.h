@@ -103,6 +103,21 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
                   DBusMethodCallback<vm_tools::concierge::StartVmResponse>
                       callback) override;
 
+  const base::ObserverList<Observer>& observer_list() const {
+    return observer_list_;
+  }
+  const base::ObserverList<VmObserver>::Unchecked& vm_observer_list() const {
+    return vm_observer_list_;
+  }
+  const base::ObserverList<ContainerObserver>::Unchecked&
+  container_observer_list() const {
+    return container_observer_list_;
+  }
+  const base::ObserverList<DiskImageObserver>::Unchecked&
+  disk_image_observer_list() const {
+    return disk_image_observer_list_;
+  }
+
   bool wait_for_service_to_be_available_called() const {
     return wait_for_service_to_be_available_called_;
   }

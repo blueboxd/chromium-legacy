@@ -133,16 +133,16 @@ void RecordAppLaunch(const std::string& app_id,
 
   // Above are default Essential apps; below are built-in apps.
 
-  else if (app_id == app_list::kInternalAppIdKeyboardShortcutViewer)
+  else if (app_id == ash::kInternalAppIdKeyboardShortcutViewer)
     RecordBuiltInAppLaunch(BuiltInAppName::kKeyboardShortcutViewer,
                            launch_source);
-  else if (app_id == app_list::kReleaseNotesAppId)
+  else if (app_id == ash::kReleaseNotesAppId)
     RecordBuiltInAppLaunch(BuiltInAppName::kReleaseNotes, launch_source);
-  else if (app_id == app_list::kInternalAppIdCamera)
+  else if (app_id == ash::kInternalAppIdCamera)
     RecordBuiltInAppLaunch(BuiltInAppName::kCamera, launch_source);
-  else if (app_id == app_list::kInternalAppIdDiscover)
+  else if (app_id == ash::kInternalAppIdDiscover)
     RecordBuiltInAppLaunch(BuiltInAppName::kDiscover, launch_source);
-  else if (app_id == app_list::kInternalAppIdSettings)
+  else if (app_id == ash::kInternalAppIdSettings)
     RecordBuiltInAppLaunch(BuiltInAppName::kSettings, launch_source);
   else if (app_id == plugin_vm::kPluginVmAppId)
     RecordBuiltInAppLaunch(BuiltInAppName::kPluginVm, launch_source);

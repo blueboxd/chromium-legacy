@@ -11,6 +11,7 @@ include_rules = [
     "+base/barrier_closure.h",
     "+base/callback_helpers.h",
     "+cc",
+    "+components/paint_preview/common",
     "+components/viz/client",
     "+components/viz/common",
     "+gpu/config",

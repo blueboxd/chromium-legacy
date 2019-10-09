@@ -736,33 +736,27 @@ bool PasswordAutofillAgent::FindPasswordInfoForElement(
   return true;
 }
 
-bool PasswordAutofillAgent::IsUsernameOrPasswordField(
+void PasswordAutofillAgent::MaybeCheckSafeBrowsingReputation(
     const WebInputElement& element) {
+  // Enabled on desktop and Android
+#if BUILDFLAG(FULL_SAFE_BROWSING) || BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
   // Note: A site may use a Password field to collect a CVV or a Credit Card
   // number, but showing a slightly misleading warning here is better than
   // showing no warning at all.
-  if (element.IsPasswordFieldForAutofill())
-    return true;
+  if (!element.IsPasswordFieldForAutofill())
+    return;
+  if (checked_safe_browsing_reputation_)
+    return;
 
-  // If a field declares itself a username input, show the warning.
-  if (AutocompleteFlagForElement(element) == AutocompleteFlag::USERNAME)
-    return true;
-
-  // Otherwise, analyze the form and return true if this input element seems
-  // to be the username field.
-  std::unique_ptr<PasswordForm> password_form;
-  if (element.Form().IsNull()) {
-    // To double check that element's frame and |render_frame()->GetWebFrame()|
-    // which is used in |GetPasswordFormFromUnownedInputElements| are identical.
-    DCHECK_EQ(element.GetDocument().GetFrame(), render_frame()->GetWebFrame());
-    password_form = GetPasswordFormFromUnownedInputElements();
-  } else {
-    password_form = GetPasswordFormFromWebForm(element.Form());
-  }
-
-  if (!password_form)
-    return false;
-  return (password_form->username_element == element.NameForAutofill().Utf16());
+  checked_safe_browsing_reputation_ = true;
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
+  GURL frame_url = GURL(frame->GetDocument().Url());
+  GURL action_url = element.Form().IsNull()
+                        ? GURL()
+                        : form_util::GetCanonicalActionForForm(element.Form());
+  GetPasswordManagerDriver()->CheckSafeBrowsingReputation(action_url,
+                                                          frame_url);
+#endif
 }
 
 bool PasswordAutofillAgent::TryToShowTouchToFill(
@@ -793,22 +787,7 @@ bool PasswordAutofillAgent::ShowSuggestions(const WebInputElement& element,
 
   if (!FindPasswordInfoForElement(element, &username_element, &password_element,
                                   &password_info)) {
-    if (IsUsernameOrPasswordField(element)) {
-      WebLocalFrame* frame = render_frame()->GetWebFrame();
-      GURL frame_url = GURL(frame->GetDocument().Url());
-// Enabled on desktop and Android
-#if BUILDFLAG(FULL_SAFE_BROWSING) || BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
-      if (!checked_safe_browsing_reputation_) {
-        checked_safe_browsing_reputation_ = true;
-        GURL action_url =
-            element.Form().IsNull()
-                ? GURL()
-                : form_util::GetCanonicalActionForForm(element.Form());
-        GetPasswordManagerDriver()->CheckSafeBrowsingReputation(action_url,
-                                                                frame_url);
-      }
-#endif
-    }
+    MaybeCheckSafeBrowsingReputation(element);
     return false;
   }
 

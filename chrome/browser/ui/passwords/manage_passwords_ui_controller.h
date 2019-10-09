@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -84,8 +83,7 @@ class ManagePasswordsUIController
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager)
       override;
   void OnPasswordAutofilled(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          password_form_map,
+      const std::vector<const autofill::PasswordForm*>& password_forms,
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches)
       override;

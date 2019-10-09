@@ -60,6 +60,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/test/widget_test.h"
 
 namespace {
 
@@ -631,7 +632,9 @@ class ProfileMenuClickTest : public SyncTest,
     ASSERT_NO_FATAL_FAILURE(OpenProfileMenu());
     AdvanceFocus(/*count=*/GetParam() + 1);
     ASSERT_TRUE(GetFocusedItem());
-    ClickFocusedItem();
+    Click(GetFocusedItem());
+    LOG(INFO) << "Clicked item at index " << GetParam();
+    base::RunLoop().RunUntilIdle();
 
     histogram_tester_.ExpectUniqueSample(
         "Profile.Menu.ClickedActionableItem",
@@ -655,15 +658,30 @@ class ProfileMenuClickTest : public SyncTest,
   void OpenProfileMenu() {
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(
         target_browser_ ? target_browser_ : browser());
+
+    // Click the avatar button to open the menu.
     views::View* avatar_button =
         browser_view->toolbar()->GetAvatarToolbarButton();
-    DCHECK(avatar_button);
+    ASSERT_TRUE(avatar_button);
+    Click(avatar_button);
 
-    ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
-    avatar_button->OnMousePressed(e);
+    ASSERT_TRUE(profile_menu_view());
+    profile_menu_view()->set_close_on_deactivate(false);
 
-    ASSERT_TRUE(ProfileMenuView::IsShowing());
+#if defined(OS_MACOSX)
+    base::RunLoop().RunUntilIdle();
+#else
+    // If possible wait until the menu is active.
+    views::Widget* menu_widget = profile_menu_view()->GetWidget();
+    ASSERT_TRUE(menu_widget);
+    if (menu_widget->CanActivate()) {
+      views::test::WidgetActivationWaiter(menu_widget, /*active=*/true).Wait();
+    } else {
+      LOG(ERROR) << "menu_widget can not be activated";
+    }
+#endif
+
+    LOG(INFO) << "Opening profile menu was successful";
   }
 
   void AdvanceFocus(int count) {
@@ -675,19 +693,20 @@ class ProfileMenuClickTest : public SyncTest,
     return profile_menu_view()->GetFocusManager()->GetFocusedView();
   }
 
-  void ClickFocusedItem() {
+  void Click(views::View* clickable_view) {
     // Simulate a mouse click. Note: Buttons are either fired when pressed or
     // when released, so the corresponding methods need to be called.
-    GetFocusedItem()->OnMousePressed(
+    clickable_view->OnMousePressed(
         ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
-    GetFocusedItem()->OnMouseReleased(
+    clickable_view->OnMouseReleased(
         ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
   }
 
-  views::View* profile_menu_view() {
-    return ProfileMenuViewBase::GetBubbleForTesting();
+  ProfileMenuView* profile_menu_view() {
+    return static_cast<ProfileMenuView*>(
+        ProfileMenuViewBase::GetBubbleForTesting());
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

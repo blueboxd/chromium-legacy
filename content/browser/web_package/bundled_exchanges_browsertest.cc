@@ -487,6 +487,31 @@ IN_PROC_BROWSER_TEST_P(BundledExchangesFileBrowserTest,
             *finish_navigation_observer.error_code());
 }
 
+IN_PROC_BROWSER_TEST_P(BundledExchangesFileBrowserTest, NoLocalFileScheme) {
+  const GURL test_data_url =
+      GetTestUrlForFile(GetTestDataPath("bundled_exchanges_browsertest.wbn"));
+  NavigateToBundleAndWaitForReady(
+      test_data_url,
+      bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
+          test_data_url, GURL(kTestPageUrl)));
+
+  auto expected_title = base::ASCIIToUTF16("load failed");
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("Local Script"));
+
+  const GURL script_file_url =
+      net::FilePathToFileURL(GetTestDataPath("local_script.js"));
+  const std::string script = base::StringPrintf(R"(
+    const script = document.createElement("script");
+    script.onerror = () => { document.title = "load failed";};
+    script.src = "%s";
+    document.body.appendChild(script);)",
+                                                script_file_url.spec().c_str());
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
+
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
 INSTANTIATE_TEST_SUITE_P(BundledExchangesFileBrowserTest,
                          BundledExchangesFileBrowserTest,
                          testing::Values(TestFilePathMode::kNormalFilePath

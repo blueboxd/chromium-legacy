@@ -20,11 +20,12 @@ jlong JNI_TaskRunnerImpl_Init(
     jint priority,
     jboolean may_block,
     jboolean thread_pool,
+    jboolean current_thread,
     jbyte extension_id,
     const base::android::JavaParamRef<jbyteArray>& extension_data) {
   TaskTraits task_traits = PostTaskAndroid::CreateTaskTraits(
       env, priority_set_explicitly, priority, may_block, thread_pool,
-      extension_id, extension_data);
+      current_thread, extension_id, extension_data);
   scoped_refptr<TaskRunner> task_runner;
   switch (static_cast<TaskRunnerType>(task_runner_type)) {
     case TaskRunnerType::BASE:

@@ -31,7 +31,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/widget_test.h"
 
-namespace app_list {
+namespace ash {
 namespace test {
 
 class KeyPressCounterView : public ContentsView {
@@ -758,4 +758,4 @@ TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAutocompletesNotHandledForIME) {
 }
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace ash

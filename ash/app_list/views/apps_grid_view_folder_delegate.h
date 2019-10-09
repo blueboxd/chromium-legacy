@@ -12,7 +12,7 @@ namespace gfx {
 class Point;
 }
 
-namespace app_list {
+namespace ash {
 
 class AppListItemView;
 
@@ -61,6 +61,6 @@ class APP_LIST_EXPORT AppsGridViewFolderDelegate {
   virtual ~AppsGridViewFolderDelegate() {}
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_APPS_GRID_VIEW_FOLDER_DELEGATE_H_

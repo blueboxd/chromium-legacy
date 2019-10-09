@@ -667,7 +667,7 @@ bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
 }
 
 void HandleToggleAppList(const ui::Accelerator& accelerator,
-                         app_list::AppListShowSource show_source) {
+                         AppListShowSource show_source) {
   if (accelerator.key_code() == ui::VKEY_LWIN)
     base::RecordAction(UserMetricsAction("Accel_Search_LWin"));
 
@@ -1954,10 +1954,10 @@ void AcceleratorControllerImpl::PerformAction(
       HandleTakeWindowScreenshot();
       break;
     case TOGGLE_APP_LIST:
-      HandleToggleAppList(accelerator, app_list::kSearchKey);
+      HandleToggleAppList(accelerator, kSearchKey);
       break;
     case TOGGLE_APP_LIST_FULLSCREEN:
-      HandleToggleAppList(accelerator, app_list::kSearchKeyFullscreen);
+      HandleToggleAppList(accelerator, kSearchKeyFullscreen);
       break;
     case TOGGLE_CAPS_LOCK:
       HandleToggleCapsLock();

@@ -22,14 +22,13 @@
 -org.chromium.chrome.browser.infobar.InfoBarTest.testInfoBarForGeolocationDisappearsOnBack
 -org.chromium.chrome.browser.keyboard_accessory.PasswordGenerationIntegrationTest.testAutomaticGenerationUsePassword
 -org.chromium.chrome.browser.keyboard_accessory.PasswordGenerationIntegrationTest.testManualGenerationUsePassword
--org.chromium.chrome.browser.media.*
 -org.chromium.chrome.browser.notifications.NotificationPlatformBridgeIntentTest.testLaunchNotificationPreferencesForCategory
 -org.chromium.chrome.browser.notifications.NotificationPlatformBridgeIntentTest.testLaunchNotificationPreferencesForWebsite
 -org.chromium.chrome.browser.offlinepages.*
--org.chromium.chrome.browser.password_manager.OnboardingDialogIntegrationTest.testOnboardingAccepted
--org.chromium.chrome.browser.password_manager.OnboardingDialogIntegrationTest.testOnboardingDismissedPressedBack
--org.chromium.chrome.browser.password_manager.OnboardingDialogIntegrationTest.testOnboardingIsShown
--org.chromium.chrome.browser.password_manager.OnboardingDialogIntegrationTest.testOnboardingRejected
 -org.chromium.chrome.browser.profiling_host.ProfilingProcessHostAndroidTest.testModeBrowser
 -org.chromium.chrome.browser.tabmodel.IncognitoTabModelTest.testRecreateInIncognito
 -org.chromium.chrome.browser.toolbar.top.BrandColorTest.testBrandColorInterstitial
+
+# Autofill / password manager.
+# https://crbug.com/1011799
+-org.chromium.chrome.browser.password_manager.OnboardingDialogIntegrationTest.testOnboardingDismissedPressedBack

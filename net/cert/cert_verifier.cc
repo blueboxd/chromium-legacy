@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #else
 #include "net/cert/caching_cert_verifier.h"
+#include "net/cert/coalescing_cert_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
 #endif
 
@@ -101,7 +102,8 @@ std::unique_ptr<CertVerifier> CertVerifier::CreateDefault(
 #endif
 
   return std::make_unique<CachingCertVerifier>(
-      std::make_unique<MultiThreadedCertVerifier>(std::move(verify_proc)));
+      std::make_unique<CoalescingCertVerifier>(
+          std::make_unique<MultiThreadedCertVerifier>(std::move(verify_proc))));
 #endif
 }
 

@@ -15,7 +15,7 @@ class ImageView;
 class Label;
 }  // namespace views
 
-namespace app_list {
+namespace ash {
 
 class AppsGridView;
 class TopIconAnimationView;
@@ -90,6 +90,6 @@ class TopIconAnimationView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(TopIconAnimationView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_TOP_ICON_ANIMATION_VIEW_H_

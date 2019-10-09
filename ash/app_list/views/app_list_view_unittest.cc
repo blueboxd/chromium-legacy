@@ -66,7 +66,7 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_model.h"
 
-namespace app_list {
+namespace ash {
 namespace test {
 
 namespace {
@@ -3032,4 +3032,4 @@ TEST_F(AppListViewFocusTest, PageSwitchingNotRecordingMetric) {
 }
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace ash

@@ -1994,7 +1994,7 @@ bool ShelfLayoutManager::StartAppListDrag(
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(shelf_widget_->GetNativeWindow())
           .id(),
-      app_list::kSwipeFromShelf, event_in_screen.time_stamp());
+      kSwipeFromShelf, event_in_screen.time_stamp());
   Shell::Get()->app_list_controller()->UpdateYPositionAndOpacity(
       shelf_bounds.y(), GetAppListBackgroundOpacityOnShelfOpacity());
   launcher_above_shelf_bottom_amount_ =
@@ -2159,14 +2159,12 @@ float ShelfLayoutManager::GetAppListBackgroundOpacityOnShelfOpacity() {
     return opacity;
   float launcher_above_shelf_amount =
       std::max(0.f, launcher_above_shelf_bottom_amount_ - shelf_size);
-  float coefficient =
-      std::min(launcher_above_shelf_amount /
-                   (app_list::AppListView::kNumOfShelfSize * shelf_size),
-               1.0f);
-  float app_list_view_opacity =
-      is_background_blur_enabled_
-          ? app_list::AppListView::kAppListOpacityWithBlur
-          : app_list::AppListView::kAppListOpacity;
+  float coefficient = std::min(
+      launcher_above_shelf_amount / (AppListView::kNumOfShelfSize * shelf_size),
+      1.0f);
+  float app_list_view_opacity = is_background_blur_enabled_
+                                    ? AppListView::kAppListOpacityWithBlur
+                                    : AppListView::kAppListOpacity;
   return app_list_view_opacity * coefficient + (1 - coefficient) * opacity;
 }
 

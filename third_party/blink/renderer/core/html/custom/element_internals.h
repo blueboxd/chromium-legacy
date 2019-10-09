@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class DOMTokenList;
 class HTMLElement;
 class LabelsNodeList;
 class ValidityStateFlags;
@@ -50,6 +51,7 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
   bool checkValidity(ExceptionState& exception_state);
   bool reportValidity(ExceptionState& exception_state);
   LabelsNodeList* labels(ExceptionState& exception_state);
+  DOMTokenList* states();
 
   // We need these functions because we are reflecting ARIA attributes.
   // See dom/aria_attributes.idl.
@@ -102,6 +104,9 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
   bool is_disabled_ = false;
   Member<ValidityStateFlags> validity_flags_;
   Member<Element> validation_anchor_;
+
+  Member<DOMTokenList> custom_states_;
+
   HashMap<QualifiedName, AtomicString> accessibility_semantics_map_;
 
   // See

@@ -18,7 +18,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/controls/label.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -257,4 +257,4 @@ gfx::Vector2d HorizontalPageContainer::GetOffsetForPageIndex(int index) const {
   return gfx::Vector2d(x_offset, 0);
 }
 
-}  // namespace app_list
+}  // namespace ash

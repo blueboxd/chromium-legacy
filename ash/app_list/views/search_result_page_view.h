@@ -16,13 +16,10 @@
 #include "base/memory/weak_ptr.h"
 
 namespace ash {
-class ViewShadow;
-}
-
-namespace app_list {
 
 class AppListViewDelegate;
 class SearchResultBaseView;
+class ViewShadow;
 
 // The search results page for the app list.
 class APP_LIST_EXPORT SearchResultPageView
@@ -120,6 +117,6 @@ class APP_LIST_EXPORT SearchResultPageView
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_SEARCH_RESULT_PAGE_VIEW_H_

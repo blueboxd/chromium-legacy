@@ -18,7 +18,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 
-namespace app_list {
+namespace ash {
 
 class AppListFolderItem;
 class AppListItem;
@@ -168,6 +168,6 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
   DISALLOW_COPY_AND_ASSIGN(AppListModel);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_MODEL_APP_LIST_MODEL_H_

@@ -1176,8 +1176,8 @@ void NavigationRequest::BeginNavigation() {
   // the NavigationHandle where the callback will be stored.
   // TODO(clamy): pass the method to the NavigationHandle instead of a
   // boolean.
-  WillStartRequest(base::Bind(&NavigationRequest::OnStartChecksComplete,
-                              base::Unretained(this)));
+  WillStartRequest(base::BindOnce(&NavigationRequest::OnStartChecksComplete,
+                                  base::Unretained(this)));
 }
 
 void NavigationRequest::SetWaitingForRendererResponse() {
@@ -1377,8 +1377,8 @@ void NavigationRequest::OnRequestRedirected(
     // (rather than passing the old URL).
     UpdateStateFollowingRedirect(
         GURL(redirect_info.new_referrer),
-        base::Bind(&NavigationRequest::OnRedirectChecksComplete,
-                   base::Unretained(this)));
+        base::BindOnce(&NavigationRequest::OnRedirectChecksComplete,
+                       base::Unretained(this)));
     frame_tree_node_->ResetNavigationRequest(false, true);
     return;
   }
@@ -1523,9 +1523,10 @@ void NavigationRequest::OnRequestRedirected(
 
   // It's safe to use base::Unretained because this NavigationRequest owns the
   // NavigationHandle where the callback will be stored.
-  WillRedirectRequest(common_params_->referrer->url, expected_process,
-                      base::Bind(&NavigationRequest::OnRedirectChecksComplete,
-                                 base::Unretained(this)));
+  WillRedirectRequest(
+      common_params_->referrer->url, expected_process,
+      base::BindOnce(&NavigationRequest::OnRedirectChecksComplete,
+                     base::Unretained(this)));
 }
 
 void NavigationRequest::OnResponseStarted(
@@ -1811,8 +1812,8 @@ void NavigationRequest::OnResponseStarted(
 
   // Check if the navigation should be allowed to proceed.
   WillProcessResponse(
-      base::Bind(&NavigationRequest::OnWillProcessResponseChecksComplete,
-                 base::Unretained(this)));
+      base::BindOnce(&NavigationRequest::OnWillProcessResponseChecksComplete,
+                     base::Unretained(this)));
 }
 
 void NavigationRequest::OnRequestFailed(

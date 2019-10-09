@@ -317,35 +317,58 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
   }
 }
 
-void ProfileMenuViewBase::SetSyncInfo(const base::string16& description,
+void ProfileMenuViewBase::SetSyncInfo(const gfx::ImageSkia& icon,
+                                      const base::string16& description,
                                       const base::string16& clickable_text,
                                       base::RepeatingClosure action) {
-  constexpr int kVerticalPadding = 8;
+  constexpr int kVerticalSpacing = 8;
+  constexpr int kIconSize = 16;
 
   sync_info_container_->RemoveAllChildViews(/*delete_children=*/true);
   sync_info_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
-  views::View* separator =
-      sync_info_container_->AddChildView(std::make_unique<views::Separator>());
-  separator->SetBorder(
-      views::CreateEmptyBorder(0, 0, /*bottom=*/kVerticalPadding, 0));
+  views::LabelButton* button = nullptr;
 
-  if (!description.empty()) {
-    views::Label* label = sync_info_container_->AddChildView(
+  if (description.empty()) {
+    button = sync_info_container_->AddChildView(std::make_unique<HoverButton>(
+        this, SizeImage(icon, kIconSize), clickable_text));
+  } else {
+    // Add icon + description on top.
+    views::View* description_container =
+        sync_info_container_->AddChildView(std::make_unique<views::View>());
+    views::BoxLayout* description_layout =
+        description_container->SetLayoutManager(
+            std::make_unique<views::BoxLayout>(
+                views::BoxLayout::Orientation::kHorizontal,
+                gfx::Insets(kVerticalSpacing, kMenuEdgeMargin),
+                /*between_child_spacing=*/
+                ChromeLayoutProvider::Get()->GetDistanceMetric(
+                    views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
+
+    if (icon.isNull()) {
+      // If there is no image, the description text should be centered.
+      description_layout->set_main_axis_alignment(
+          views::BoxLayout::MainAxisAlignment::kCenter);
+    } else {
+      views::ImageView* icon_view = description_container->AddChildView(
+          std::make_unique<views::ImageView>());
+      icon_view->SetImage(SizeImage(icon, kIconSize));
+    }
+
+    views::Label* label = description_container->AddChildView(
         std::make_unique<views::Label>(description));
     label->SetMultiLine(true);
-    label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     label->SetHandlesTooltips(false);
-    label->SetBorder(views::CreateEmptyBorder(gfx::Insets(0, kMenuEdgeMargin)));
-  }
 
-  views::Button* button = sync_info_container_->AddChildView(
-      views::MdTextButton::CreateSecondaryUiBlueButton(this, clickable_text));
-  button->SetProperty(
-      views::kMarginsKey,
-      gfx::Insets(/*top=*/0, /*left=*/kMenuEdgeMargin,
-                  /*bottom=*/kVerticalPadding, /*right=*/kMenuEdgeMargin));
+    // Add blue button at the bottom.
+    button = sync_info_container_->AddChildView(
+        views::MdTextButton::CreateSecondaryUiBlueButton(this, clickable_text));
+    button->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets(/*top=*/0, /*left=*/kMenuEdgeMargin,
+                    /*bottom=*/kVerticalSpacing, /*right=*/kMenuEdgeMargin));
+  }
 
   RegisterClickAction(button, std::move(action));
 }
@@ -385,9 +408,6 @@ void ProfileMenuViewBase::AddAccountFeatureButton(
         std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kVertical));
   }
-
-  account_features_container_->AddChildView(
-      std::make_unique<views::Separator>());
 
   views::Button* button =
       account_features_container_->AddChildView(std::make_unique<HoverButton>(

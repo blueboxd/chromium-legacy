@@ -1900,7 +1900,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       ObservingAutofillClient::FromWebContents(WebContents());
   password_manager::ContentPasswordManagerDriver* driver =
       driver_factory->GetDriverForFrame(WebContents()->GetMainFrame());
-  DCHECK(driver);
   driver->GetPasswordAutofillManager()->set_autofill_client(
       observing_autofill_client);
 

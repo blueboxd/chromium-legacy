@@ -32,7 +32,7 @@
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -391,4 +391,4 @@ SearchResultAnswerCardView::CreateAnswerCardResponseHeadersForTest(
   return headers;
 }
 
-}  // namespace app_list
+}  // namespace ash

@@ -87,6 +87,14 @@ class CORE_EXPORT TransformStreamNative final
   class DefaultSourcePullAlgorithm;
   class DefaultSourceCancelAlgorithm;
 
+  // Performs the functions performed by the constructor in the standard.
+  // https://streams.spec.whatwg.org/#ts-constructor
+  void InitInternal(ScriptState*,
+                    ScriptValue raw_transformer,
+                    ScriptValue raw_writable_strategy,
+                    ScriptValue raw_readable_strategy,
+                    ExceptionState&);
+
   // https://streams.spec.whatwg.org/#initialize-transform-stream
   static void Initialize(ScriptState*,
                          TransformStreamNative*,

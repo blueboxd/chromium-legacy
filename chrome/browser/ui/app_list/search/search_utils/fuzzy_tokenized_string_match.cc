@@ -26,7 +26,7 @@ constexpr double kFirstCharacterMatchPenalty = 0.2;
 constexpr double kPrefixMatchPenalty = 0.1;
 
 // Returns sorted tokens from a TokenizedString.
-std::vector<base::string16> ProcessAndSort(const TokenizedString& text) {
+std::vector<base::string16> ProcessAndSort(const ash::TokenizedString& text) {
   std::vector<base::string16> result;
   for (const auto& token : text.tokens()) {
     result.emplace_back(token);
@@ -39,8 +39,8 @@ std::vector<base::string16> ProcessAndSort(const TokenizedString& text) {
 namespace internal {
 // Check if the query only contains first characters of the text,
 // e.g. "coc" is a match of "Clash of Clan". Range of the score is [0, 1].
-double FirstCharacterMatch(const TokenizedString& query,
-                           const TokenizedString& text) {
+double FirstCharacterMatch(const ash::TokenizedString& query,
+                           const ash::TokenizedString& text) {
   const base::string16 query_lower = base::i18n::ToLower(query.text());
   size_t query_index = 0;
   for (size_t text_index = 0; text_index < text.tokens().size(); text_index++) {
@@ -61,7 +61,8 @@ double FirstCharacterMatch(const TokenizedString& query,
 
 // Check if tokens of query are prefixes of text's tokens. Range of score is
 // [0, 1].
-double PrefixMatch(const TokenizedString& query, const TokenizedString& text) {
+double PrefixMatch(const ash::TokenizedString& query,
+                   const ash::TokenizedString& text) {
   const std::vector<base::string16> query_tokens(query.tokens());
   const std::vector<base::string16> text_tokens(text.tokens());
   double match_score = kMaxScore;
@@ -94,9 +95,10 @@ double PrefixMatch(const TokenizedString& query, const TokenizedString& text) {
 FuzzyTokenizedStringMatch::~FuzzyTokenizedStringMatch() {}
 FuzzyTokenizedStringMatch::FuzzyTokenizedStringMatch() {}
 
-double FuzzyTokenizedStringMatch::TokenSetRatio(const TokenizedString& query,
-                                                const TokenizedString& text,
-                                                bool partial) {
+double FuzzyTokenizedStringMatch::TokenSetRatio(
+    const ash::TokenizedString& query,
+    const ash::TokenizedString& text,
+    bool partial) {
   std::set<base::string16> query_token(query.tokens().begin(),
                                        query.tokens().end());
   std::set<base::string16> text_token(text.tokens().begin(),
@@ -145,9 +147,10 @@ double FuzzyTokenizedStringMatch::TokenSetRatio(const TokenizedString& query,
                        .Ratio(false /*use_edit_distance*/)});
 }
 
-double FuzzyTokenizedStringMatch::TokenSortRatio(const TokenizedString& query,
-                                                 const TokenizedString& text,
-                                                 bool partial) {
+double FuzzyTokenizedStringMatch::TokenSortRatio(
+    const ash::TokenizedString& query,
+    const ash::TokenizedString& text,
+    bool partial) {
   const base::string16 query_sorted =
       base::JoinString(ProcessAndSort(query), base::UTF8ToUTF16(" "));
   const base::string16 text_sorted =
@@ -196,8 +199,9 @@ double FuzzyTokenizedStringMatch::PartialRatio(const base::string16& query,
   return partial_ratio;
 }
 
-double FuzzyTokenizedStringMatch::WeightedRatio(const TokenizedString& query,
-                                                const TokenizedString& text) {
+double FuzzyTokenizedStringMatch::WeightedRatio(
+    const ash::TokenizedString& query,
+    const ash::TokenizedString& text) {
   const double unbase_scale = 0.95;
   // Since query.text() and text.text() is not normalized, we use query.tokens()
   // and text.tokens() instead.
@@ -233,14 +237,15 @@ double FuzzyTokenizedStringMatch::WeightedRatio(const TokenizedString& query,
   return weighted_ratio;
 }
 
-double FuzzyTokenizedStringMatch::PrefixMatcher(const TokenizedString& query,
-                                                const TokenizedString& text) {
+double FuzzyTokenizedStringMatch::PrefixMatcher(
+    const ash::TokenizedString& query,
+    const ash::TokenizedString& text) {
   return std::max(internal::PrefixMatch(query, text),
                   internal::FirstCharacterMatch(query, text));
 }
 
-bool FuzzyTokenizedStringMatch::IsRelevant(const TokenizedString& query,
-                                           const TokenizedString& text) {
+bool FuzzyTokenizedStringMatch::IsRelevant(const ash::TokenizedString& query,
+                                           const ash::TokenizedString& text) {
   // Find |hits_| using SequenceMatcher on original query and text.
   for (const auto& match :
        SequenceMatcher(query.text(), text.text()).GetMatchingBlocks()) {

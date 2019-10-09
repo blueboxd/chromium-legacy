@@ -1602,6 +1602,10 @@ ImageData* BaseRenderingContext2D::getImageData(
   FinalizeFrame();
   scoped_refptr<StaticBitmapImage> snapshot = GetImage(kPreferNoAcceleration);
 
+  // GetImagedata is faster in Unaccelerated canvases
+  if (IsAccelerated())
+    DisableAcceleration();
+
   if (!StaticBitmapImage::ConvertToArrayBufferContents(
           snapshot, contents, image_data_rect, color_params, IsAccelerated())) {
     exception_state.ThrowRangeError("Out of memory at ImageData creation");

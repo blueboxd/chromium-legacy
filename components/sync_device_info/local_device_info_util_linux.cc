@@ -15,7 +15,7 @@
 
 namespace syncer {
 
-std::string GetSessionNameInternal() {
+std::string GetPersonalizableDeviceNameInternal() {
 #if defined(OS_CHROMEOS)
   switch (chromeos::GetDeviceType()) {
     case chromeos::DeviceType::kChromebase:

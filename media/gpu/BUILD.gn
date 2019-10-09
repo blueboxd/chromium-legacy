@@ -575,7 +575,10 @@ source_set("unit_tests") {
   ]
 
   if (use_v4l2_codec || use_vaapi) {
-    deps += [ "//media/gpu/linux:unit_tests" ]
+    deps += [
+      "//media/gpu/chromeos:unit_tests",
+      "//media/gpu/linux:unit_tests",
+    ]
   }
   if (use_vaapi) {
     deps += [ "//media/gpu/vaapi:unit_test" ]

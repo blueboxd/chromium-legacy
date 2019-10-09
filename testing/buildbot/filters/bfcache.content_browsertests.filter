@@ -95,17 +95,13 @@
 # Failing on android only, need to be triaged, see https://crbug.com/1006267.
 -BackForwardCacheMetricsBrowserTest.Fetch
 -BackForwardCacheMetricsBrowserTest.XHR
+-WebContentsSplitCacheBrowserTestEnabled.SplitCache*
 -WebRtcBrowserTest.CanSetupH264VideoCallOnSupportedDevice
 -WithoutCORBProtectionSniffing/CrossSiteDocumentBlockingTest.*
 -WithCORBProtectionSniffing/CrossSiteDocumentBlockingTest.*
 
 # Flaky on android only, need to be triaged, see https://crbug.com/1006267.
 -IndexedDBBrowserTest*
--MediaCanPlayTypeTest.*
--MediaSessionImplBrowserTest.*
--MediaSessionImplParamBrowserTest.*
--MediaSourceTest.*
--MidiBrowserTest.*
 -MHTMLGenerationTest/MHTMLGenerationTest.*
 -MSE_ClearKey/EncryptedMediaTest.*
 -MSE_ExternalClearKey/EncryptedMediaTest.*

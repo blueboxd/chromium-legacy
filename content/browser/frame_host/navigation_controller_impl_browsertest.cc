@@ -7290,8 +7290,8 @@ class AllowDialogIPCOnCommitFilter : public BrowserMessageFilter,
 
     // Suspend the message.
     web_contents_observer_.SetCallback(
-        base::Bind(&RenderFrameHost::OnMessageReceived,
-                   base::Unretained(render_frame_host_), message));
+        base::BindOnce(&RenderFrameHost::OnMessageReceived,
+                       base::Unretained(render_frame_host_), message));
     return true;
   }
 
@@ -7306,7 +7306,7 @@ class AllowDialogIPCOnCommitFilter : public BrowserMessageFilter,
   // OnMessageReceived function; this is the simplest way to disambiguate.
   class : public WebContentsObserver {
    public:
-    using Callback = base::Callback<bool()>;
+    using Callback = base::OnceCallback<bool()>;
 
     using WebContentsObserver::Observe;
 
@@ -7319,7 +7319,7 @@ class AllowDialogIPCOnCommitFilter : public BrowserMessageFilter,
         return;
 
       // Resume the message.
-      callback_.Run();
+      std::move(callback_).Run();
     }
 
     Callback callback_;
@@ -7409,7 +7409,7 @@ class RequestMonitoringNavigationBrowserTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     // Accumulate all http requests made to |embedded_test_server| into
     // |accumulated_requests_| container.
-    embedded_test_server()->RegisterRequestMonitor(base::Bind(
+    embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
         &RequestMonitoringNavigationBrowserTest::MonitorRequestOnIoThread,
         weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get()));
 

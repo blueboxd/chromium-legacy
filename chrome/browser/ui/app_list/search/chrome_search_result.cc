@@ -160,9 +160,9 @@ void ChromeSearchResult::OnVisibilityChanged(bool visibility) {
 }
 
 void ChromeSearchResult::UpdateFromMatch(
-    const app_list::TokenizedString& title,
-    const app_list::TokenizedStringMatch& match) {
-  const app_list::TokenizedStringMatch::Hits& hits = match.hits();
+    const ash::TokenizedString& title,
+    const ash::TokenizedStringMatch& match) {
+  const ash::TokenizedStringMatch::Hits& hits = match.hits();
 
   Tags tags;
   tags.reserve(hits.size());

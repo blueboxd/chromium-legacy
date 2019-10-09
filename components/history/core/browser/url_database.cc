@@ -669,6 +669,19 @@ bool URLDatabase::DeleteKeywordSearchTerm(const base::string16& term) {
   return statement.Run();
 }
 
+bool URLDatabase::DeleteKeywordSearchTermForNormalizedTerm(
+    KeywordID keyword_id,
+    const base::string16& normalized_term) {
+  sql::Statement statement(
+      GetDB().GetCachedStatement(SQL_FROM_HERE,
+                                 "DELETE FROM keyword_search_terms WHERE "
+                                 "keyword_id = ? AND normalized_term=?"));
+  statement.BindInt64(0, keyword_id);
+  statement.BindString16(1, normalized_term);
+
+  return statement.Run();
+}
+
 bool URLDatabase::DeleteKeywordSearchTermForURL(URLID url_id) {
   sql::Statement statement(GetDB().GetCachedStatement(
       SQL_FROM_HERE, "DELETE FROM keyword_search_terms WHERE url_id=?"));

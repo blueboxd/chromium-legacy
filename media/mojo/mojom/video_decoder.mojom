@@ -99,13 +99,14 @@ interface VideoDecoder {
   //
   // TODO(sandersd): Rename to Initialize() if/when
   // media::VideoDecoder::Initialize() is renamed to Configure().
-  Construct(associated VideoDecoderClient client,
-            associated MediaLog media_log,
-            VideoFrameHandleReleaser& video_frame_handle_releaser,
-            handle<data_pipe_consumer> decoder_buffer_pipe,
-            CommandBufferId? command_buffer_id,
-            VideoDecoderImplementation implementation,
-            gfx.mojom.ColorSpace target_color_space);
+  Construct(
+      pending_associated_remote<VideoDecoderClient> client,
+      pending_associated_remote<MediaLog> media_log,
+      pending_receiver<VideoFrameHandleReleaser> video_frame_handle_releaser,
+      handle<data_pipe_consumer> decoder_buffer_pipe,
+      CommandBufferId? command_buffer_id,
+      VideoDecoderImplementation implementation,
+      gfx.mojom.ColorSpace target_color_space);
 
   // Configure (or reconfigure) the decoder. This must be called before decoding
   // any frames, and must not be called while there are pending Initialize(),

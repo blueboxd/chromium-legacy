@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-namespace app_list {
+namespace ash {
 
 class SearchResultActionsViewDelegate {
  public:
@@ -28,6 +28,6 @@ class SearchResultActionsViewDelegate {
   virtual ~SearchResultActionsViewDelegate() {}
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_SEARCH_RESULT_ACTIONS_VIEW_DELEGATE_H_

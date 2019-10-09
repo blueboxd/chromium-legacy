@@ -27,7 +27,6 @@ struct PasswordForm;
 }
 
 namespace content {
-class NavigationHandle;
 class RenderFrameHost;
 }
 
@@ -78,7 +77,6 @@ class ContentPasswordManagerDriver
   bool IsMainFrame() const override;
   const GURL& GetLastCommittedURL() const override;
 
-  void DidNavigateFrame(content::NavigationHandle* navigation_handle);
   // Notify the renderer that the user wants to generate password manually.
   void GeneratePassword(autofill::mojom::PasswordGenerationAgent::
                             UserTriggeredGeneratePasswordCallback callback);

@@ -62,7 +62,7 @@ class VpnListForwarder
   // initial list. Must only be called when a user is logged in.
   void AttachToPrimaryUserExtensionRegistry();
 
-  // Starts observing the primary user's app_list::ArcVpnProviderManger to
+  // Starts observing the primary user's app_list::ArcVpnProviderManager to
   // detect changes to the list of Arc VPN providers installed in the user's
   // profile. Must only be called when a user is logged in.
   void AttachToPrimaryUserArcVpnProviderManager();
@@ -70,7 +70,7 @@ class VpnListForwarder
   // The primary user's extension registry, if a user is logged in.
   extensions::ExtensionRegistry* extension_registry_ = nullptr;
 
-  // The primary user's app_list::ArcVpnProviderManger, if a user is logged in.
+  // The primary user's app_list::ArcVpnProviderManager, if a user is logged in.
   app_list::ArcVpnProviderManager* arc_vpn_provider_manager_ = nullptr;
 
   std::unique_ptr<

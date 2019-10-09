@@ -77,6 +77,46 @@
 using base::test::ios::WaitUntilConditionOrTimeout;
 using base::test::ios::kWaitForPageLoadTimeout;
 
+// Subclass of WKWebView to check that the observers are removed when the web
+// state is destroyed.
+@interface CRWFakeWKWebViewObserverCount : WKWebView
+
+// Array storing the different key paths observed.
+@property(nonatomic, strong) NSMutableArray<NSString*>* keyPaths;
+// Whether there was observers when the WebView was stopped.
+@property(nonatomic, assign) BOOL hadObserversWhenStopping;
+
+@end
+
+@implementation CRWFakeWKWebViewObserverCount
+
+- (void)stopLoading {
+  [super stopLoading];
+  self.hadObserversWhenStopping =
+      self.hadObserversWhenStopping || self.keyPaths.count > 0;
+}
+
+- (void)removeObserver:(NSObject*)observer forKeyPath:(NSString*)keyPath {
+  [super removeObserver:observer forKeyPath:keyPath];
+  [self.keyPaths removeObject:keyPath];
+}
+
+- (void)addObserver:(NSObject*)observer
+         forKeyPath:(NSString*)keyPath
+            options:(NSKeyValueObservingOptions)options
+            context:(void*)context {
+  [super addObserver:observer
+          forKeyPath:keyPath
+             options:options
+             context:context];
+  if (!self.keyPaths) {
+    self.keyPaths = [[NSMutableArray alloc] init];
+  }
+  [self.keyPaths addObject:keyPath];
+}
+
+@end
+
 namespace web {
 namespace {
 
@@ -1347,6 +1387,42 @@ TEST_P(CRWWebControllerWebProcessTest, Eviction) {
 }
 
 INSTANTIATE_TEST_SUITES(CRWWebControllerWebProcessTest);
+
+// Fixture class to test WKWebView crashes.
+class CRWWebControllerWebViewTest
+    : public ProgrammaticWebTestWithWebController {
+ protected:
+  void SetUp() override {
+    ProgrammaticWebTestWithWebController::SetUp();
+    web::TestBrowserState browser_state;
+    web_view_ = [[CRWFakeWKWebViewObserverCount alloc] init];
+    TestWebViewContentView* webViewContentView = [[TestWebViewContentView alloc]
+        initWithMockWebView:web_view_
+                 scrollView:web_view_.scrollView];
+    [web_controller() injectWebViewContentView:webViewContentView];
+  }
+  CRWFakeWKWebViewObserverCount* web_view_;
+};
+
+// Tests that the KVO for the WebView are removed when the WebState is
+// destroyed. See crbug.com/1002786.
+TEST_P(CRWWebControllerWebViewTest, CheckNoKVOWhenWebStateDestroyed) {
+  // Load a first URL.
+  NSURL* URL = [NSURL URLWithString:@"about:blank"];
+  NSURLRequest* request = [NSURLRequest requestWithURL:URL];
+  [web_view_ loadRequest:request];
+  base::test::ios::WaitUntilCondition(^bool() {
+    return !web_view_.loading;
+  });
+
+  // Destroying the WebState should call stop at a point where all observers are
+  // supposed to be removed.
+  DestroyWebState();
+
+  EXPECT_FALSE(web_view_.hadObserversWhenStopping);
+}
+
+INSTANTIATE_TEST_SUITES(CRWWebControllerWebViewTest);
 
 #undef INSTANTIATE_TEST_SUITES
 

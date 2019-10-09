@@ -91,20 +91,20 @@ void AppServiceAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
   context_menu_->GetMenuModel(std::move(callback));
 }
 
-SearchResultType AppServiceAppResult::GetSearchResultType() const {
+ash::SearchResultType AppServiceAppResult::GetSearchResultType() const {
   switch (app_type_) {
     case apps::mojom::AppType::kArc:
-      return PLAY_STORE_APP;
+      return ash::PLAY_STORE_APP;
     case apps::mojom::AppType::kBuiltIn:
-      return INTERNAL_APP;
+      return ash::INTERNAL_APP;
     case apps::mojom::AppType::kCrostini:
-      return CROSTINI_APP;
+      return ash::CROSTINI_APP;
     case apps::mojom::AppType::kExtension:
     case apps::mojom::AppType::kWeb:
-      return EXTENSION_APP;
+      return ash::EXTENSION_APP;
     default:
       NOTREACHED();
-      return SEARCH_RESULT_TYPE_BOUNDARY;
+      return ash::SEARCH_RESULT_TYPE_BOUNDARY;
   }
 }
 
@@ -133,8 +133,8 @@ void AppServiceAppResult::CallLoadIcon(bool chip, bool allow_placeholder_icon) {
     // that it could be flushed from any caches.
     icon_loader_releaser_ = icon_loader_->LoadIcon(
         app_type_, app_id(), apps::mojom::IconCompression::kUncompressed,
-        chip ? AppListConfig::instance().suggestion_chip_icon_dimension()
-             : AppListConfig::instance().GetPreferredIconDimension(
+        chip ? ash::AppListConfig::instance().suggestion_chip_icon_dimension()
+             : ash::AppListConfig::instance().GetPreferredIconDimension(
                    display_type()),
         allow_placeholder_icon,
         base::BindOnce(&AppServiceAppResult::OnLoadIcon,

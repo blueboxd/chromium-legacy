@@ -270,7 +270,7 @@ Polymer({
     }
     const filter = {
       filter: chromeos.networkConfig.mojom.FilterType.kVisible,
-      limit: chromeos.networkConfig.mojom.kNoLimit,
+      limit: chromeos.networkConfig.mojom.NO_LIMIT,
       networkType: this.deviceState.type,
     };
     this.networkConfig_.getNetworkStateList(filter).then(response => {
@@ -293,7 +293,7 @@ Polymer({
         this.tetherDeviceState) {
       const filter = {
         filter: chromeos.networkConfig.mojom.FilterType.kVisible,
-        limit: chromeos.networkConfig.mojom.kNoLimit,
+        limit: chromeos.networkConfig.mojom.NO_LIMIT,
         networkType: mojom.NetworkType.kTether,
       };
       this.networkConfig_.getNetworkStateList(filter).then(response => {

@@ -24,10 +24,6 @@ class FastShowPickler;
 namespace ash {
 enum class AppListConfigType;
 class AppListControllerImpl;
-}  // namespace ash
-
-namespace app_list {
-
 class AppListItemList;
 class AppListItemListTest;
 class AppListItemObserver;
@@ -150,6 +146,6 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   DISALLOW_COPY_AND_ASSIGN(AppListItem);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_MODEL_APP_LIST_ITEM_H_

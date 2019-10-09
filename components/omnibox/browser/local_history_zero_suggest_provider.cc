@@ -15,8 +15,8 @@
 #include "base/trace_event/trace_event.h"
 #include "components/google/core/common/google_util.h"
 #include "components/history/core/browser/history_database.h"
-#include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -35,68 +35,6 @@ namespace {
 
 // Default relevance for the LocalHistoryZeroSuggestProvider query suggestions.
 const int kLocalHistoryZeroSuggestRelevance = 500;
-
-// ProviderHistoryDBTask wraps two non-null callbacks into a HistoryDBTask to
-// passed to HistoryService::ScheduleDBTask. |request_callback| gets invoked on
-// the history backend thread when the on-disk history database becomes
-// available in order to query the database and populate |url_matches_|.
-// |result_callback_| is then invoked with |url_matches_| back on the main
-// thread.
-class ProviderHistoryDBTask : public history::HistoryDBTask {
- public:
-  using RequestCallback =
-      base::OnceCallback<history::URLRows(history::URLDatabase* url_db)>;
-  using ResultCallback = base::OnceCallback<void(const history::URLRows&)>;
-
-  ProviderHistoryDBTask(RequestCallback request_callback,
-                        ResultCallback result_callback)
-      : request_callback_(std::move(request_callback)),
-        result_callback_(std::move(result_callback)) {
-    DCHECK(!request_callback_.is_null());
-    DCHECK(!result_callback_.is_null());
-  }
-
-  ~ProviderHistoryDBTask() override {}
-
- private:
-  // history::HistoryDBTask
-  bool RunOnDBThread(history::HistoryBackend* history_backend,
-                     history::HistoryDatabase* db) override {
-    // Query the database.
-    if (db)
-      url_matches_ = std::move(request_callback_).Run(db);
-    return true;
-  }
-
-  void DoneRunOnMainThread() override {
-    // Return the query results to the originating thread.
-    std::move(result_callback_).Run(url_matches_);
-  }
-
-  RequestCallback request_callback_;
-  ResultCallback result_callback_;
-  history::URLRows url_matches_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProviderHistoryDBTask);
-};
-
-// Queries |url_db| for URLs matching |google_search_url| prefix and returns
-// the results. |url_db| must not be null. May be called on the history backend
-// thread.
-history::URLRows QueryURLDatabaseOnHistoryThread(
-    const std::string& google_search_url,
-    const size_t provider_max_matches,
-    history::URLDatabase* url_db) {
-  DCHECK(url_db);
-
-  // Request 5x more URLs than the number of matches the provider intends to
-  // return hoping to have enough URLs to work with once duplicates are filtered
-  // out.
-  history::URLRows url_matches;
-  url_db->AutocompleteForPrefix(google_search_url, 5 * provider_max_matches,
-                                false, &url_matches);
-  return url_matches;
-}
 
 // Extracts the search terms from |url|. Collapses whitespaces, converts them to
 // lowercase and returns them. |template_url_service| must not be null.
@@ -126,7 +64,6 @@ void LocalHistoryZeroSuggestProvider::Start(const AutocompleteInput& input,
                                             bool minimal_changes) {
   TRACE_EVENT0("omnibox", "LocalHistoryZeroSuggestProvider::Start");
 
-  history_task_tracker_.TryCancel(history_db_task_id_);
   done_ = true;
   matches_.clear();
 
@@ -159,34 +96,7 @@ void LocalHistoryZeroSuggestProvider::Start(const AutocompleteInput& input,
     return;
   }
 
-  history::HistoryService* const history_service = client_->GetHistoryService();
-  if (!history_service)
-    return;
-
-  GURL google_base_url(
-      template_url_service->search_terms_data().GoogleBaseURLValue());
-  std::string google_search_url =
-      google_util::GetGoogleSearchURL(google_base_url).spec();
-
-  // Query the in-memory URL database, if available. Otherwise, schedule a
-  // task to query the on-disk history database on the history backend thread.
-  history::URLDatabase* url_db = history_service->InMemoryDatabase();
-  if (url_db) {
-    const auto url_matches = QueryURLDatabaseOnHistoryThread(
-        google_search_url, max_matches_, url_db);
-    OnQueryURLDatabaseComplete(input, std::move(url_matches));
-  } else {
-    done_ = false;
-    history_db_task_id_ = history_service->ScheduleDBTask(
-        FROM_HERE,
-        std::make_unique<ProviderHistoryDBTask>(
-            base::BindOnce(QueryURLDatabaseOnHistoryThread, google_search_url,
-                           max_matches_),
-            base::BindOnce(
-                &LocalHistoryZeroSuggestProvider::OnQueryURLDatabaseComplete,
-                weak_ptr_factory_.GetWeakPtr(), input)),
-        &history_task_tracker_);
-  }
+  QueryURLDatabase(input);
 }
 
 void LocalHistoryZeroSuggestProvider::DeleteMatch(
@@ -201,39 +111,35 @@ void LocalHistoryZeroSuggestProvider::DeleteMatch(
     return;
   }
 
-  // Generate a Google search URL for the suggestion by replacing the search
-  // terms in the Google search URL template. Note that the suggestion's
-  // original search URL cannot be used here as it is unique due to the assisted
-  // query stats (aka AQS) query param which contains impressions of
-  // autocomplete matches shown at query submission time.
-  GURL google_search_url;
-  TemplateURLRef::SearchTermsArgs search_terms_args(match.contents);
-  const auto* default_search_provider =
-      template_url_service->GetDefaultSearchProvider();
-  const auto& search_terms_data = template_url_service->search_terms_data();
-  default_search_provider->ReplaceSearchTermsInURL(
-      default_search_provider->GenerateSearchURL(search_terms_data),
-      search_terms_args, search_terms_data, &google_search_url);
+  history::URLDatabase* url_db = history_service->InMemoryDatabase();
+  if (!url_db)
+    return;
 
-  // Query the HistoryService for URLs matching the Google search URL. Note that
-  // this step is necessary here because 1) there may be matching fresh URLs
-  // that were not encountered in the suggestion creation phase due to looking
-  // up a maximum number of URLs in that phase. and 2) the performance overhead
-  // of requerying the HistoryService cannot be tolerated in the suggestion
-  // creation phase. Here on the other hand it can due to the small percentage
-  // of suggestions getting deleted relative to the number of suggestions shown.
+  // Deletes all the search terms matching the query suggestion.
+  url_db->DeleteKeywordSearchTermForNormalizedTerm(
+      template_url_service->GetDefaultSearchProvider()->id(), match.contents);
+
+  // Generate a Google search URL. Note that the search URL returned by
+  // TemplateURL::GenerateSearchURL() cannot be used here as it contains
+  // Chrome specific query params and therefore only matches search queries
+  // issued from Chrome and not those from the Web.
+  GURL google_base_url(
+      template_url_service->search_terms_data().GoogleBaseURLValue());
+  std::string google_search_url =
+      google_util::GetGoogleSearchURL(google_base_url).spec();
+
+  // Query the HistoryService for fresh Google search URLs. Note that the
+  // performance overhead of querying the HistoryService can be tolerated here
+  // due to the small percentage of suggestions getting deleted relative to the
+  // number of suggestions shown and the async nature of this lookup.
   history::QueryOptions opts;
   opts.duplicate_policy = history::QueryOptions::KEEP_ALL_DUPLICATES;
   opts.begin_time = history::AutocompleteAgeThreshold();
   history_service->QueryHistory(
-      base::ASCIIToUTF16(google_search_url.spec()), opts,
+      base::ASCIIToUTF16(google_search_url), opts,
       base::BindOnce(&LocalHistoryZeroSuggestProvider::OnHistoryQueryResults,
                      weak_ptr_factory_.GetWeakPtr(), match.contents),
       &history_task_tracker_);
-
-  // Prevent the deleted suggestion from being resuggested until the
-  // corresponding URLs are asynchronously deleted.
-  deleted_suggestions_set_.insert(match.contents);
 
   // Immediately update the list of matches to reflect the match was deleted.
   base::EraseIf(matches_, [&](const auto& item) {
@@ -252,35 +158,43 @@ LocalHistoryZeroSuggestProvider::LocalHistoryZeroSuggestProvider(
 
 LocalHistoryZeroSuggestProvider::~LocalHistoryZeroSuggestProvider() {}
 
-void LocalHistoryZeroSuggestProvider::OnQueryURLDatabaseComplete(
-    const AutocompleteInput& input,
-    const history::URLRows& url_matches) {
+void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
+    const AutocompleteInput& input) {
   done_ = true;
   matches_.clear();
 
-  // Fail if we can't extract the search terms from the URL matches.
+  history::HistoryService* const history_service = client_->GetHistoryService();
+  if (!history_service)
+    return;
+
+  // Fail if the in-memory URL database is not available.
+  history::URLDatabase* url_db = history_service->InMemoryDatabase();
+  if (!url_db)
+    return;
+
+  // Fail if we can't set the clickthrough URL for query suggestions.
   TemplateURLService* template_url_service = client_->GetTemplateURLService();
   if (!template_url_service ||
       !template_url_service->GetDefaultSearchProvider()) {
     return;
   }
 
+  // Request 5x more search terms than the number of matches the provider
+  // intends to return hoping to have enough left once ineligible ones are
+  // filtered out.
+  const auto& results = url_db->GetMostRecentKeywordSearchTerms(
+      template_url_service->GetDefaultSearchProvider()->id(), max_matches_ * 5);
+
   // Used to filter out duplicate query suggestions.
   std::set<base::string16> seen_suggestions_set;
 
   int relevance = kLocalHistoryZeroSuggestRelevance;
-  for (size_t i = 0; i < url_matches.size(); i++) {
-    const history::URLRow& url_row = url_matches[i];
-    const GURL& url = url_row.url();
-
-    // Discard the URL if it is not valid or fresh enough.
-    if (!url.is_valid() ||
-        url_row.last_visit() < history::AutocompleteAgeThreshold()) {
+  for (const auto& result : results) {
+    // Discard the result if it is fresh enough.
+    if (result.time < history::AutocompleteAgeThreshold())
       continue;
-    }
 
-    base::string16 search_terms =
-        GetSearchTermsFromURL(url, template_url_service);
+    base::string16 search_terms = result.normalized_term;
     if (search_terms.empty())
       continue;
 
@@ -288,10 +202,6 @@ void LocalHistoryZeroSuggestProvider::OnQueryURLDatabaseComplete(
     if (seen_suggestions_set.count(search_terms))
       continue;
     seen_suggestions_set.insert(search_terms);
-
-    // Filter out deleted query suggestions.
-    if (deleted_suggestions_set_.count(search_terms))
-      continue;
 
     SearchSuggestionParser::SuggestResult suggestion(
         /*suggestion=*/search_terms, AutocompleteMatchType::SEARCH_HISTORY,

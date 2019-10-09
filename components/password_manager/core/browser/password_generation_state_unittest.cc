@@ -27,6 +27,7 @@ using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using testing::_;
 using testing::ElementsAre;
+using testing::Field;
 using testing::IsEmpty;
 using testing::Key;
 using testing::Pointee;
@@ -225,7 +226,9 @@ TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_UpdateUI) {
       SetUpOverwritingUI(driver.AsWeakPtr());
   ASSERT_TRUE(ui_form);
   EXPECT_EQ(GURL(kURL), ui_form->GetOrigin());
-  EXPECT_THAT(ui_form->GetBestMatches(), ElementsAre(Key(ASCIIToUTF16(""))));
+  EXPECT_THAT(
+      ui_form->GetBestMatches(),
+      ElementsAre(Field(&PasswordForm::username_value, ASCIIToUTF16(""))));
   EXPECT_THAT(ui_form->GetFederatedMatches(),
               ElementsAre(Pointee(CreateSavedFederated())));
   EXPECT_EQ(ASCIIToUTF16(""), ui_form->GetPendingCredentials().username_value);

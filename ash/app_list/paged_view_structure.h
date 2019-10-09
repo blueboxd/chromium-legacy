@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 
-namespace app_list {
+namespace ash {
 
 class AppsGridView;
 class AppListItemView;
@@ -113,6 +113,6 @@ class APP_LIST_EXPORT PagedViewStructure {
   AppsGridView* const apps_grid_view_;  // Not owned.
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_PAGED_VIEW_STRUCTURE_H_

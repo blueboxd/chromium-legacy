@@ -5,7 +5,9 @@
 #include "components/omnibox/browser/local_history_zero_suggest_provider.h"
 
 #include <memory>
+#include <vector>
 
+#include "base/i18n/case_conversion.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,6 +15,7 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/history/core/test/history_service_test_util.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -69,6 +72,14 @@ class LocalHistoryZeroSuggestProviderTest
     SetZeroSuggestVariant(
         metrics::OmniboxEventProto::NTP_REALBOX,
         LocalHistoryZeroSuggestProvider::kZeroSuggestLocalVariant);
+
+    // Add the fallback default search provider to the TemplateURLService so
+    // that it gets a valid unique identifier. Make the newly added provider the
+    // user selected default search provider.
+    TemplateURL* default_provider = client_->GetTemplateURLService()->Add(
+        std::make_unique<TemplateURL>(default_search_provider()->data()));
+    client_->GetTemplateURLService()->SetUserSelectedDefaultSearchProvider(
+        default_provider);
 
     // Verify that Google is the default search provider.
     ASSERT_EQ(SEARCH_ENGINE_GOOGLE,
@@ -132,7 +143,6 @@ void LocalHistoryZeroSuggestProviderTest::SetZeroSuggestVariant(
 void LocalHistoryZeroSuggestProviderTest::LoadURLs(
     std::vector<TestURLData> url_data_list) {
   const Time now = Time::Now();
-  history::URLRows rows;
   for (const auto& entry : url_data_list) {
     TemplateURLRef::SearchTermsArgs search_terms_args(
         base::UTF8ToUTF16(entry.search_terms));
@@ -141,17 +151,15 @@ void LocalHistoryZeroSuggestProviderTest::LoadURLs(
     std::string search_url =
         entry.search_provider->url_ref().ReplaceSearchTerms(search_terms_args,
                                                             search_terms_data);
-    history::URLRow row(GURL{search_url});
-    row.set_title(base::UTF8ToUTF16(entry.title));
-    row.set_visit_count(entry.visit_count);
-    row.set_typed_count(entry.typed_count);
-    row.set_last_visit(now - TimeDelta::FromDays(entry.age_in_days));
-    row.set_hidden(entry.hidden);
-    rows.push_back(row);
+    client_->GetHistoryService()->AddPageWithDetails(
+        GURL(search_url), base::UTF8ToUTF16(entry.title), entry.visit_count,
+        entry.typed_count, now - TimeDelta::FromDays(entry.age_in_days),
+        entry.hidden, history::SOURCE_BROWSED);
+    client_->GetHistoryService()->SetKeywordSearchTermsForURL(
+        GURL(search_url), entry.search_provider->id(),
+        base::UTF8ToUTF16(entry.search_terms));
+    WaitForHistoryService();
   }
-  client_->GetHistoryService()->AddPagesWithDetails(rows,
-                                                    history::SOURCE_BROWSED);
-  WaitForHistoryService();
 }
 
 void LocalHistoryZeroSuggestProviderTest::WaitForHistoryService() {
@@ -259,7 +267,6 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, DefaultSearchProvider) {
       std::make_unique<TemplateURL>(*GenerateDummyTemplateURLData("other")));
   LoadURLs({
       {default_search_provider(), "hello world", "&foo=bar", 1},
-      {default_search_provider(), "", "&foo=bar", 1},
       {other_search_provider, "does not matter", "&foo=bar", 1},
   });
 
@@ -277,16 +284,14 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, DefaultSearchProvider) {
 }
 
 // Tests that search terms are extracted with the correct encoding, whitespaces
-// are collapsed, search terms are lowercased and duplicated, and empty searches
-// are ignored.
+// are collapsed, and are lowercased and deduplicated.
 TEST_F(LocalHistoryZeroSuggestProviderTest, SearchTerms) {
   LoadURLs({
       {default_search_provider(), "hello world", "&foo=bar", 1},
       {default_search_provider(), "hello   world", "&foo=bar", 1},
       {default_search_provider(), "hello   world", "&foo=bar", 1},
       {default_search_provider(), "hello world", "&foo=bar", 1},
-      {default_search_provider(), "HELLO WORLD", "&foo=bar", 1},
-      {default_search_provider(), "   ", "&foo=bar", 1},
+      {default_search_provider(), "HELLO   WORLD  ", "&foo=bar", 1},
       {default_search_provider(), "سلام دنیا", "&foo=bar", 2},
   });
 
@@ -318,32 +323,53 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Suggestions_Freshness) {
   ExpectMatches({{"fresh search", 500}});
 }
 
-// Tests that all the search URLs that would produce a given suggestion get
-// deleted when the autocomplete match is deleted.
-TEST_F(LocalHistoryZeroSuggestProviderTest, DISABLED_Delete) {
+// Tests that the provider supports deletion of matches.
+TEST_F(LocalHistoryZeroSuggestProviderTest, Delete) {
+  auto* template_url_service = client_->GetTemplateURLService();
+  auto* other_search_provider = template_url_service->Add(
+      std::make_unique<TemplateURL>(*GenerateDummyTemplateURLData("other")));
   LoadURLs({
       {default_search_provider(), "hello   world", "&foo=bar&aqs=1", 1},
-      {default_search_provider(), "HELLO WORLD", "&foo=bar&aqs=12", 1},
+      {default_search_provider(), "HELLO   WORLD  ", "&foo=bar&aqs=12", 1},
       {default_search_provider(), "hello world", "&foo=bar&aqs=123", 1},
       {default_search_provider(), "hello world", "&foo=bar&aqs=1234", 1},
+      {default_search_provider(), "not to be deleted", "&foo=bar&aqs=12345", 1},
+      {other_search_provider, "hello world", "&foo=bar&aqs=123456", 1},
   });
 
   StartProviderAndWaitUntilDone();
-  ExpectMatches({{"hello world", 500}});
+  ExpectMatches({{"hello world", 500}, {"not to be deleted", 499}});
 
   provider_->DeleteMatch(provider_->matches()[0]);
 
   // Make sure the deletion takes effect immediately in the provider before the
   // history service asynchronously performs the deletion or even before the
   // provider is started again.
-  ExpectMatches({});
+  ExpectMatches({{"not to be deleted", 499}});
 
   StartProviderAndWaitUntilDone();
-  ExpectMatches({});
+  ExpectMatches({{"not to be deleted", 500}});
 
   // Wait until the history service performs the deletion.
   WaitForHistoryService();
 
   StartProviderAndWaitUntilDone();
-  ExpectMatches({});
+  ExpectMatches({{"not to be deleted", 500}});
+
+  // Make sure all the search terms for the default search provider that would
+  // produce the deleted match are deleted.
+  history::URLDatabase* url_db =
+      client_->GetHistoryService()->InMemoryDatabase();
+  std::vector<history::KeywordSearchTermVisit> visits =
+      url_db->GetMostRecentKeywordSearchTerms(default_search_provider()->id(),
+                                              /*max_count=*/10);
+  EXPECT_EQ(1U, visits.size());
+  EXPECT_EQ(base::ASCIIToUTF16("not to be deleted"), visits[0].term);
+
+  // Make sure search terms from other search providers that would produce the
+  // deleted match are not deleted.
+  visits = url_db->GetMostRecentKeywordSearchTerms(other_search_provider->id(),
+                                                   /*max_count=*/10);
+  EXPECT_EQ(1U, visits.size());
+  EXPECT_EQ(base::ASCIIToUTF16("hello world"), visits[0].term);
 }

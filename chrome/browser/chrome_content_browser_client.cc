@@ -130,7 +130,6 @@
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
-#include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_client_auth_metrics.h"
@@ -425,7 +424,6 @@
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/java_interfaces.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_paths.h"
 #if BUILDFLAG(DFMIFY_DEV_UI)
@@ -1977,14 +1975,6 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
   command_line->AppendSwitchASCII(switches::kBlinkSettings,
                                   base::JoinString(blink_settings, ","));
 }
-
-#if defined(OS_ANDROID)
-template <typename Interface>
-void ForwardToJavaFrameRegistry(mojo::InterfaceRequest<Interface> request,
-                                content::RenderFrameHost* render_frame_host) {
-  render_frame_host->GetJavaInterfaces()->GetInterface(std::move(request));
-}
-#endif
 
 }  // namespace
 
@@ -4369,14 +4359,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
   // Register mojo ContentTranslateDriver interface only for main frame.
   frame_interfaces_parameterized_->AddInterface(
       base::BindRepeating(&language::BindContentTranslateDriver));
-
-  frame_interfaces_parameterized_->AddInterface(
-      base::BindRepeating(&InsecureSensitiveInputDriverFactory::BindDriver));
-
-#if defined(OS_ANDROID)
-  frame_interfaces_parameterized_->AddInterface(
-      base::Bind(&ForwardToJavaFrameRegistry<blink::mojom::Authenticator>));
-#endif
 
 #if defined(OS_ANDROID)
   frame_interfaces_parameterized_->AddInterface(

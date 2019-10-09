@@ -540,11 +540,13 @@ const char* ProtoEnumToString(
 }
 
 const char* ProtoEnumToString(
-    sync_pb::WebAppSpecifics::LaunchContainer launch_container) {
-  ASSERT_ENUM_BOUNDS(sync_pb::WebAppSpecifics, LaunchContainer, TAB, WINDOW);
-  switch (launch_container) {
-    ENUM_CASE(sync_pb::WebAppSpecifics, TAB);
-    ENUM_CASE(sync_pb::WebAppSpecifics, WINDOW);
+    sync_pb::WebAppSpecifics::DisplayMode display_mode) {
+  ASSERT_ENUM_BOUNDS(sync_pb::WebAppSpecifics, DisplayMode, kBrowser,
+                     kStandalone);
+  switch (display_mode) {
+    ENUM_CASE(sync_pb::WebAppSpecifics, kBrowser);
+    ENUM_CASE(sync_pb::WebAppSpecifics, kMinimalUi);
+    ENUM_CASE(sync_pb::WebAppSpecifics, kStandalone);
   }
   NOTREACHED();
   return "";

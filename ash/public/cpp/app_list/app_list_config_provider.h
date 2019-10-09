@@ -12,17 +12,13 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 
-namespace ash {
-enum class AppListConfigType;
-}
-
 namespace gfx {
 class Size;
 }
 
-namespace app_list {
-
+namespace ash {
 class AppListConfig;
+enum class AppListConfigType;
 
 // Used to create and keep track of existing AppListConfigs.
 class ASH_PUBLIC_EXPORT AppListConfigProvider {
@@ -80,6 +76,6 @@ class ASH_PUBLIC_EXPORT AppListConfigProvider {
   DISALLOW_COPY_AND_ASSIGN(AppListConfigProvider);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_CONFIG_PROVIDER_H_

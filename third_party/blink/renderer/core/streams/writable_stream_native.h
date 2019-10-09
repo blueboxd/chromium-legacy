@@ -33,6 +33,12 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
     kErrored,
   };
 
+  // https://streams.spec.whatwg.org/#ws-constructor
+  static WritableStreamNative* Create(ScriptState*,
+                                      ScriptValue raw_underlying_sink,
+                                      ScriptValue raw_strategy,
+                                      ExceptionState&);
+
   // https://streams.spec.whatwg.org/#create-writable-stream
   // Unlike in the standard, |high_water_mark| and |size_algorithm| are
   // required parameters.
@@ -50,15 +56,8 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
       UnderlyingSinkBase*,
       size_t high_water_mark);
 
-  // Used by Create().
+  // Called by Create().
   WritableStreamNative();
-
-  // Used when creating a stream from JavaScript.
-  // https://streams.spec.whatwg.org/#ws-constructor
-  WritableStreamNative(ScriptState*,
-                       ScriptValue raw_underlying_sink,
-                       ScriptValue raw_strategy,
-                       ExceptionState&);
   ~WritableStreamNative() override;
 
   // IDL defined functions
@@ -200,6 +199,13 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
   using PromiseQueue = HeapDeque<Member<StreamPromiseResolver>>;
 
   class PendingAbortRequest;
+
+  // Used when creating a stream from JavaScript. Called from Create().
+  // https://streams.spec.whatwg.org/#ws-constructor
+  void InitInternal(ScriptState*,
+                    ScriptValue raw_underlying_sink,
+                    ScriptValue raw_strategy,
+                    ExceptionState&);
 
   // https://streams.spec.whatwg.org/#writable-stream-has-operation-marked-in-flight
   static bool HasOperationMarkedInFlight(const WritableStreamNative*);

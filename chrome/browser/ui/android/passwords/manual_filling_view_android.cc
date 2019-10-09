@@ -213,12 +213,12 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
   base::android::AppendJavaStringArrayToStringVector(env, j_passwords,
                                                      &passwords);
   std::vector<autofill::PasswordForm> password_forms(usernames.size());
-  std::map<base::string16, const autofill::PasswordForm*> credentials;
+  std::vector<const autofill::PasswordForm*> credentials;
   for (unsigned int i = 0; i < usernames.size(); ++i) {
     password_forms[i].origin = origin.GetURL();
     password_forms[i].username_value = base::ASCIIToUTF16(usernames[i]);
     password_forms[i].password_value = base::ASCIIToUTF16(passwords[i]);
-    credentials[password_forms[i].username_value] = &password_forms[i];
+    credentials.push_back(&password_forms[i]);
   }
   return ChromePasswordManagerClient::FromWebContents(web_contents)
       ->GetCredentialCacheForTesting()

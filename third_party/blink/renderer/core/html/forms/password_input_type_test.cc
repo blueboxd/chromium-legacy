@@ -10,8 +10,8 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
@@ -22,9 +22,7 @@ namespace blink {
 class MockInsecureInputService : public mojom::blink::InsecureInputService {
  public:
   explicit MockInsecureInputService(LocalFrame& frame) {
-    service_manager::InterfaceProvider::TestApi test_api(
-        &frame.GetInterfaceProvider());
-    test_api.SetBinderForName(
+    frame.GetBrowserInterfaceBroker().SetBinderForTesting(
         mojom::blink::InsecureInputService::Name_,
         WTF::BindRepeating(&MockInsecureInputService::BindReceiver,
                            WTF::Unretained(this)));

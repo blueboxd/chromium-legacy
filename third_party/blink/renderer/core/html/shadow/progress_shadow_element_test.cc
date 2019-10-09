@@ -30,8 +30,8 @@ TEST_F(ProgressShadowElementTest, LayoutObjectIsNeeded) {
     <progress id='prog' style='-webkit-appearance:none' />
   )HTML");
 
-  HTMLProgressElement* progress =
-      ToHTMLProgressElement(GetDocument().getElementById("prog"));
+  auto* progress =
+      To<HTMLProgressElement>(GetDocument().getElementById("prog"));
   ASSERT_TRUE(progress);
 
   auto* shadow_element = To<Element>(progress->GetShadowRoot()->firstChild());

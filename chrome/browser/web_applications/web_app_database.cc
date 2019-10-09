@@ -14,7 +14,6 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/model_error.h"
-#include "components/sync/protocol/web_app_specifics.pb.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
@@ -102,11 +101,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   local_data->set_name(web_app.name());
 
-  DCHECK_NE(blink::mojom::DisplayMode::kUndefined, web_app.display_mode());
-  sync_data->set_launch_container(web_app.display_mode() ==
-                                          blink::mojom::DisplayMode::kStandalone
-                                      ? sync_pb::WebAppSpecifics::WINDOW
-                                      : sync_pb::WebAppSpecifics::TAB);
+  sync_data->set_display_mode(
+      ToWebAppSpecificsDisplayMode(web_app.display_mode()));
 
   DCHECK(web_app.sources_.any());
   local_data->mutable_sources()->set_system(web_app.sources_[Source::kSystem]);
@@ -189,14 +185,11 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
   web_app->SetName(local_data.name());
 
-  if (!sync_data.has_launch_container()) {
-    DLOG(ERROR) << "WebApp proto parse error: no launch_container field";
+  if (!sync_data.has_display_mode()) {
+    DLOG(ERROR) << "WebApp proto parse error: no display_mode field";
     return nullptr;
   }
-  web_app->SetDisplayMode(sync_data.launch_container() ==
-                                  sync_pb::WebAppSpecifics::WINDOW
-                              ? blink::mojom::DisplayMode::kStandalone
-                              : blink::mojom::DisplayMode::kBrowser);
+  web_app->SetDisplayMode(ToMojomDisplayMode(sync_data.display_mode()));
 
   if (!local_data.has_is_locally_installed()) {
     DLOG(ERROR) << "WebApp proto parse error: no is_locally_installed field";
@@ -338,6 +331,35 @@ std::unique_ptr<WebApp> WebAppDatabase::ParseWebApp(const AppId& app_id,
   }
 
   return web_app;
+}
+
+blink::mojom::DisplayMode ToMojomDisplayMode(
+    ::sync_pb::WebAppSpecifics::DisplayMode display_mode) {
+  switch (display_mode) {
+    case ::sync_pb::WebAppSpecifics::kBrowser:
+      return blink::mojom::DisplayMode::kBrowser;
+    case ::sync_pb::WebAppSpecifics::kMinimalUi:
+      return blink::mojom::DisplayMode::kMinimalUi;
+    case ::sync_pb::WebAppSpecifics::kStandalone:
+      return blink::mojom::DisplayMode::kStandalone;
+  }
+}
+
+::sync_pb::WebAppSpecifics::DisplayMode ToWebAppSpecificsDisplayMode(
+    blink::mojom::DisplayMode display_mode) {
+  switch (display_mode) {
+    case blink::mojom::DisplayMode::kBrowser:
+      return ::sync_pb::WebAppSpecifics::kBrowser;
+    case blink::mojom::DisplayMode::kMinimalUi:
+      return ::sync_pb::WebAppSpecifics::kMinimalUi;
+    case blink::mojom::DisplayMode::kUndefined:
+      NOTREACHED();
+      FALLTHROUGH;
+    case blink::mojom::DisplayMode::kFullscreen:
+    case blink::mojom::DisplayMode::kStandalone:
+      // We do not persist kFullscreen - see crbug.com/850465.
+      return ::sync_pb::WebAppSpecifics::kStandalone;
+  }
 }
 
 }  // namespace web_app

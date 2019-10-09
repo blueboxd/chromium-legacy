@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
+#include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -15,6 +16,7 @@
 #include "services/image_annotation/public/mojom/constants.mojom-forward.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
@@ -34,17 +36,6 @@
 namespace chrome {
 namespace internal {
 
-#if defined(OS_ANDROID)
-template <typename Interface>
-void ForwardToJavaWebContents(content::RenderFrameHost* frame_host,
-                              mojo::PendingReceiver<Interface> receiver) {
-  content::WebContents* contents =
-      content::WebContents::FromRenderFrameHost(frame_host);
-  if (contents)
-    contents->GetJavaInterfaces()->GetInterface(std::move(receiver));
-}
-#endif
-
 // Forward image Annotator requests to the image_annotation service.
 void BindImageAnnotator(
     content::RenderFrameHost* const frame_host,
@@ -56,8 +47,17 @@ void BindImageAnnotator(
 
 #if defined(OS_ANDROID)
 template <typename Interface>
-void ForwardToJavaFrameRegistry(content::RenderFrameHost* render_frame_host,
-                                mojo::PendingReceiver<Interface> receiver) {
+void ForwardToJavaWebContents(content::RenderFrameHost* frame_host,
+                              mojo::PendingReceiver<Interface> receiver) {
+  content::WebContents* contents =
+      content::WebContents::FromRenderFrameHost(frame_host);
+  if (contents)
+    contents->GetJavaInterfaces()->GetInterface(std::move(receiver));
+}
+
+template <typename Interface>
+void ForwardToJavaFrame(content::RenderFrameHost* render_frame_host,
+                        mojo::PendingReceiver<Interface> receiver) {
   render_frame_host->GetJavaInterfaces()->GetInterface(std::move(receiver));
 }
 #endif
@@ -69,12 +69,20 @@ void PopulateChromeFrameBinders(
 
   map->Add<blink::mojom::AnchorElementMetricsHost>(
       base::BindRepeating(&NavigationPredictor::Create));
+
+  map->Add<blink::mojom::InsecureInputService>(
+      base::BindRepeating(&InsecureSensitiveInputDriverFactory::BindDriver));
+
 #if defined(OS_ANDROID)
   map->Add<blink::mojom::InstalledAppProvider>(base::BindRepeating(
-      &ForwardToJavaFrameRegistry<blink::mojom::InstalledAppProvider>));
+      &ForwardToJavaFrame<blink::mojom::InstalledAppProvider>));
+#if defined(BROWSER_MEDIA_CONTROLS_MENU)
+  map->Add<blink::mojom::MediaControlsMenuHost>(base::BindRepeating(
+      &ForwardToJavaFrame<blink::mojom::MediaControlsMenuHost>));
+#endif
   if (base::FeatureList::IsEnabled(features::kWebPayments)) {
     map->Add<payments::mojom::PaymentRequest>(base::BindRepeating(
-        &ForwardToJavaFrameRegistry<payments::mojom::PaymentRequest>));
+        &ForwardToJavaFrame<payments::mojom::PaymentRequest>));
   }
   map->Add<blink::mojom::ShareService>(base::BindRepeating(
       &ForwardToJavaWebContents<blink::mojom::ShareService>));

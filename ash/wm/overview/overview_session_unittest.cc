@@ -4759,7 +4759,7 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
       Shell::Get()->app_list_controller();
   app_list_controller->ToggleAppList(
       display::Screen::GetScreen()->GetDisplayNearestWindow(window3.get()).id(),
-      app_list::AppListShowSource::kSearchKey, base::TimeTicks());
+      AppListShowSource::kSearchKey, base::TimeTicks());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
@@ -4770,7 +4770,7 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   // Open app list.
   app_list_controller->ToggleAppList(
       display::Screen::GetScreen()->GetDisplayNearestWindow(window3.get()).id(),
-      app_list::AppListShowSource::kSearchKey, base::TimeTicks());
+      AppListShowSource::kSearchKey, base::TimeTicks());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());

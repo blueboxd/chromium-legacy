@@ -5,7 +5,7 @@
 #ifndef ASH_PUBLIC_CPP_APP_LIST_INTERNAL_APP_ID_CONSTANTS_H_
 #define ASH_PUBLIC_CPP_APP_LIST_INTERNAL_APP_ID_CONSTANTS_H_
 
-namespace app_list {
+namespace ash {
 
 // App ids for internal apps, also used to identify the shelf item.
 // Generated as
@@ -33,6 +33,6 @@ constexpr char kInternalAppIdDiscover[] = "pjdncmlmjhcebmcacdddfacepcjmfaoo";
 // "https://google.com/chromebook/whatsnew/embedded/")).
 constexpr char kReleaseNotesAppId[] = "kddjchdmnnpakappplfnloipgcbioilo";
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_APP_LIST_INTERNAL_APP_ID_CONSTANTS_H_

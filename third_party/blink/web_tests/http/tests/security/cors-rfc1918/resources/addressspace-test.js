@@ -10,6 +10,8 @@ function createIFrame(origin, type) {
         file = "post-addressspace-to-parent-with-appcache.php?csp";
     } else if (type == "worker") {
         file = "post-addressspace-from-worker.html";
+    } else if (type == "module-worker") {
+        file = "post-addressspace-from-worker.html?module";
     } else if (type == "sharedworker") {
         file = "post-addressspace-from-sharedworker.html";
     } else if (type == "serviceworker") {

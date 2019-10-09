@@ -75,8 +75,8 @@ bool IOSChromeUpdatePasswordInfoBarDelegate::ShowMultipleAccounts() const {
 
 NSArray* IOSChromeUpdatePasswordInfoBarDelegate::GetAccounts() const {
   NSMutableArray* usernames = [NSMutableArray array];
-  for (const auto& match : form_to_save()->GetBestMatches()) {
-    [usernames addObject:base::SysUTF16ToNSString(match.first)];
+  for (const auto* match : form_to_save()->GetBestMatches()) {
+    [usernames addObject:base::SysUTF16ToNSString(match->username_value)];
   }
   return usernames;
 }

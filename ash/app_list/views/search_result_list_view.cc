@@ -32,7 +32,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -68,7 +68,7 @@ const gfx::VectorIcon* GetPreviousVectorIcon(
 const gfx::VectorIcon* GetCurrentVectorIcon(
     int continuous_assistant_item_count) {
   if (continuous_assistant_item_count == 1) {
-    return &ash::kAssistantIcon;
+    return &kAssistantIcon;
   } else if (continuous_assistant_item_count == 2) {
     return &kVerticalBarStartIcon;
   } else if (continuous_assistant_item_count > 2) {
@@ -118,27 +118,27 @@ void CalculateDisplayIcons(
   }
 }
 
-ash::SearchResultIdWithPositionIndices GetSearchResultsForLogging(
+SearchResultIdWithPositionIndices GetSearchResultsForLogging(
     std::vector<SearchResultView*> search_result_views) {
-  ash::SearchResultIdWithPositionIndices results;
+  SearchResultIdWithPositionIndices results;
   for (const auto* item : search_result_views) {
     if (item->result()) {
-      results.emplace_back(ash::SearchResultIdWithPositionIndex(
+      results.emplace_back(SearchResultIdWithPositionIndex(
           item->result()->id(), item->index_in_container()));
     }
   }
   return results;
 }
 
-bool IsZeroStateFile(const app_list::SearchResult& result) {
-  return result.result_type() == ash::SearchResultType::kZeroStateFile;
+bool IsZeroStateFile(const SearchResult& result) {
+  return result.result_type() == AppListSearchResultType::kZeroStateFile;
 }
 
-bool IsDriveQuickAccess(const app_list::SearchResult& result) {
-  return result.result_type() == ash::SearchResultType::kDriveQuickAccess;
+bool IsDriveQuickAccess(const SearchResult& result) {
+  return result.result_type() == AppListSearchResultType::kDriveQuickAccess;
 }
 
-void LogFileImpressions(app_list::SearchResultType result_type) {
+void LogFileImpressions(SearchResultType result_type) {
   UMA_HISTOGRAM_ENUMERATION("Apps.AppList.ZeroStateResultsList.FileImpressions",
                             result_type, SEARCH_RESULT_TYPE_BOUNDARY);
 }
@@ -206,7 +206,7 @@ int SearchResultListView::DoUpdate() {
 
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByDisplayType(
-          results(), ash::SearchResultDisplayType::kList, /*excludes=*/{},
+          results(), SearchResultDisplayType::kList, /*excludes=*/{},
           results_container_->children().size());
 
   const size_t display_size = display_results.size();
@@ -229,7 +229,7 @@ int SearchResultListView::DoUpdate() {
       if (assistant_item_icons[i]) {
         result_view->SetDisplayIcon(gfx::CreateVectorIcon(
             *(assistant_item_icons[i]),
-            (assistant_item_icons[i] == &ash::kAssistantIcon)
+            (assistant_item_icons[i] == &kAssistantIcon)
                 ? AppListConfig::instance().search_list_icon_dimension()
                 : AppListConfig::instance()
                       .search_list_icon_vertical_bar_dimension(),
@@ -322,8 +322,8 @@ void SearchResultListView::SearchResultActivated(SearchResultView* view,
         view->index_in_container());
     view_delegate_->OpenSearchResult(
         view->result()->id(), event_flags,
-        ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
-        ash::AppListLaunchType::kSearchResult, -1 /* suggestion_index */);
+        AppListLaunchedFrom::kLaunchedFromSearchBox,
+        AppListLaunchType::kSearchResult, -1 /* suggestion_index */);
   }
 }
 
@@ -331,12 +331,11 @@ void SearchResultListView::SearchResultActionActivated(SearchResultView* view,
                                                        size_t action_index,
                                                        int event_flags) {
   if (view_delegate_ && view->result()) {
-    ash::OmniBoxZeroStateAction action =
-        ash::GetOmniBoxZeroStateAction(action_index);
-    if (action == ash::OmniBoxZeroStateAction::kRemoveSuggestion) {
+    OmniBoxZeroStateAction action = GetOmniBoxZeroStateAction(action_index);
+    if (action == OmniBoxZeroStateAction::kRemoveSuggestion) {
       view_delegate_->InvokeSearchResultAction(view->result()->id(),
                                                action_index, event_flags);
-    } else if (action == ash::OmniBoxZeroStateAction::kAppendSuggestion) {
+    } else if (action == OmniBoxZeroStateAction::kAppendSuggestion) {
       // Make sure ChromeVox will focus on the search box.
       main_view_->search_box_view()->search_box()->NotifyAccessibilityEvent(
           ax::mojom::Event::kSelection, true);
@@ -398,4 +397,4 @@ void SearchResultListView::VisibilityChanged(View* starting_from,
   previous_found_drive_quick_access_ = false;
 }
 
-}  // namespace app_list
+}  // namespace ash

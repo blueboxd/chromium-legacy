@@ -48,14 +48,14 @@ InternalAppResult::InternalAppResult(Profile* profile,
   SetResultType(ResultType::kInternalApp);
   SetIcon(GetIconForResourceId(
       GetIconResourceIdByAppId(app_id),
-      AppListConfig::instance().search_tile_icon_dimension()));
+      ash::AppListConfig::instance().search_tile_icon_dimension()));
   if (display_type() == ash::SearchResultDisplayType::kRecommendation) {
     SetChipIcon(GetIconForResourceId(
         GetIconResourceIdByAppId(app_id),
-        AppListConfig::instance().suggestion_chip_icon_dimension()));
+        ash::AppListConfig::instance().suggestion_chip_icon_dimension()));
   }
 
-  if (id() == kInternalAppIdContinueReading) {
+  if (id() == ash::kInternalAppIdContinueReading) {
     large_icon_service_ =
         LargeIconServiceFactory::GetForBrowserContext(profile);
     UpdateContinueReadingFavicon(/*continue_to_google_server=*/true);
@@ -69,7 +69,7 @@ InternalAppResult::InternalAppResult(Profile* profile,
         ash::SearchResultDisplayLocation::kSuggestionChipContainer);
   }
 
-  if (id() == kReleaseNotesAppId) {
+  if (id() == ash::kReleaseNotesAppId) {
     SetNotifyVisibilityChange(true);
     // Make sure that if both Continue Reading and Release Notes are available,
     // Release Notes shows up first in the suggestion chip container.
@@ -88,7 +88,7 @@ void InternalAppResult::ExecuteLaunchCommand(int event_flags) {
 void InternalAppResult::Open(int event_flags) {
   RecordOpenHistogram(id());
 
-  if (id() == kInternalAppIdContinueReading &&
+  if (id() == ash::kInternalAppIdContinueReading &&
       url_for_continuous_reading_.is_valid()) {
     controller()->OpenURL(profile(), url_for_continuous_reading_,
                           ui::PAGE_TRANSITION_GENERATED,
@@ -180,7 +180,7 @@ void InternalAppResult::OnGetFaviconFromGoogleServerFinished(
 }
 
 void InternalAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
-  const auto* internal_app = app_list::FindInternalApp(id());
+  const auto* internal_app = FindInternalApp(id());
   DCHECK(internal_app);
   if (!internal_app->show_in_launcher) {
     std::move(callback).Run(nullptr);
@@ -195,7 +195,7 @@ void InternalAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
 }
 
 void InternalAppResult::OnVisibilityChanged(bool visibility) {
-  DCHECK_EQ(id(), kReleaseNotesAppId);
+  DCHECK_EQ(id(), ash::kReleaseNotesAppId);
 
   if (visibility) {
     DCHECK(chromeos::ReleaseNotesStorage(profile()).ShouldShowSuggestionChip());
@@ -204,8 +204,8 @@ void InternalAppResult::OnVisibilityChanged(bool visibility) {
   }
 }
 
-SearchResultType InternalAppResult::GetSearchResultType() const {
-  return INTERNAL_APP;
+ash::SearchResultType InternalAppResult::GetSearchResultType() const {
+  return ash::INTERNAL_APP;
 }
 
 AppContextMenu* InternalAppResult::GetAppContextMenu() {

@@ -564,21 +564,27 @@ source_set("blink_headers") {
   ]
 }
 
+if (external_devtools_frontend) {
+  devtools_frontend_path = "//third_party/devtools-frontend"
+} else {
+  devtools_frontend_path = "//third_party/blink/renderer/devtools"
+}
+
 group("blink_devtools_frontend_resources") {
   public_deps = [
-    "//third_party/blink/renderer/devtools:devtools_frontend_resources",
+    "$devtools_frontend_path:devtools_frontend_resources",
   ]
 }
 
 group("blink_devtools_frontend_resources_files") {
   data_deps = [
-    "//third_party/blink/renderer/devtools:devtools_all_files",
+    "$devtools_frontend_path:devtools_all_files",
   ]
 }
 
 group("blink_generate_devtools_grd") {
   public_deps = [
-    "//third_party/blink/renderer/devtools:generate_devtools_grd",
+    "$devtools_frontend_path:generate_devtools_grd",
   ]
 }
 

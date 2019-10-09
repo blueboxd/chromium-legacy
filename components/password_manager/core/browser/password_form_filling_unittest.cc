@@ -50,7 +50,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
   MOCK_METHOD3(PasswordWasAutofilled,
-               void(const std::map<base::string16, const PasswordForm*>&,
+               void(const std::vector<const PasswordForm*>&,
                     const GURL&,
                     const std::vector<const PasswordForm*>*));
 
@@ -100,11 +100,11 @@ class PasswordFormFillingTest : public testing::Test {
   PasswordForm saved_match_;
   PasswordForm psl_saved_match_;
   scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;
-  std::vector<const autofill::PasswordForm*> federated_matches_;
+  std::vector<const PasswordForm*> federated_matches_;
 };
 
 TEST_F(PasswordFormFillingTest, NoSavedCredentials) {
-  std::map<base::string16, const autofill::PasswordForm*> best_matches;
+  std::vector<const PasswordForm*> best_matches;
 
   EXPECT_CALL(driver_, InformNoSavedCredentials());
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
@@ -117,12 +117,12 @@ TEST_F(PasswordFormFillingTest, NoSavedCredentials) {
 }
 
 TEST_F(PasswordFormFillingTest, Autofill) {
-  std::map<base::string16, const autofill::PasswordForm*> best_matches;
-  best_matches[saved_match_.username_value] = &saved_match_;
+  std::vector<const PasswordForm*> best_matches;
+  best_matches.push_back(&saved_match_);
   PasswordForm another_saved_match = saved_match_;
   another_saved_match.username_value += ASCIIToUTF16("1");
   another_saved_match.password_value += ASCIIToUTF16("1");
-  best_matches[another_saved_match.username_value] = &another_saved_match;
+  best_matches.push_back(&another_saved_match);
 
   EXPECT_CALL(driver_, InformNoSavedCredentials()).Times(0);
   PasswordFormFillData fill_data;
@@ -178,8 +178,7 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
   };
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(test_case.description);
-    std::map<base::string16, const PasswordForm*> best_matches;
-    best_matches[saved_match_.username_value] = &saved_match_;
+    std::vector<const PasswordForm*> best_matches = {&saved_match_};
 
     PasswordForm observed_form = observed_form_;
     if (test_case.new_password_present) {
@@ -211,8 +210,7 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
 }
 
 TEST_F(PasswordFormFillingTest, AutofillPSLMatch) {
-  std::map<base::string16, const autofill::PasswordForm*> best_matches;
-  best_matches[saved_match_.username_value] = &psl_saved_match_;
+  std::vector<const PasswordForm*> best_matches = {&psl_saved_match_};
 
   EXPECT_CALL(driver_, InformNoSavedCredentials()).Times(0);
   PasswordFormFillData fill_data;
@@ -249,9 +247,7 @@ TEST_F(PasswordFormFillingTest, NoAutofillOnHttp) {
   saved_http_match.signon_realm = "http://accounts.google.com";
 
   ASSERT_FALSE(GURL(saved_http_match.signon_realm).SchemeIsCryptographic());
-  std::map<base::string16, const autofill::PasswordForm*> best_matches = {
-      {saved_http_match.username_value, &saved_http_match},
-  };
+  std::vector<const PasswordForm*> best_matches = {&saved_http_match};
 
   EXPECT_CALL(client_, IsMainFrameSecure).WillOnce(Return(false));
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
@@ -262,8 +258,7 @@ TEST_F(PasswordFormFillingTest, NoAutofillOnHttp) {
 
 #if defined(OS_ANDROID)
 TEST_F(PasswordFormFillingTest, TouchToFill) {
-  std::map<base::string16, const autofill::PasswordForm*> best_matches;
-  best_matches.emplace(saved_match_.username_value, &saved_match_);
+  std::vector<const PasswordForm*> best_matches = {&saved_match_};
 
   for (bool enable_touch_to_fill : {false, true}) {
     SCOPED_TRACE(testing::Message() << "Enable Touch To Fill: "

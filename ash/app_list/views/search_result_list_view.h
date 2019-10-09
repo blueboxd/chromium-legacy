@@ -15,7 +15,7 @@
 #include "base/timer/timer.h"
 #include "ui/views/view.h"
 
-namespace app_list {
+namespace ash {
 namespace test {
 class SearchResultListViewTest;
 }
@@ -92,6 +92,6 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
   DISALLOW_COPY_AND_ASSIGN(SearchResultListView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_SEARCH_RESULT_LIST_VIEW_H_

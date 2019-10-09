@@ -75,10 +75,7 @@ class AppServiceProxy : public KeyedService,
   void ReInitializeCrostiniForTesting(Profile* profile);
   std::vector<std::string> GetAppIdsForUrl(const GURL& url);
   std::vector<std::string> GetAppIdsForIntent(apps::mojom::IntentPtr intent);
-
-#if defined(OS_CHROMEOS)
-  void ApplyChromeBadge(Profile* profile, const std::string& arc_package_name);
-#endif
+  void SetArcIsRegistered();
 
  private:
   // An adapter, presenting an IconLoader interface based on the underlying
@@ -177,6 +174,7 @@ class AppServiceProxy : public KeyedService,
   std::unique_ptr<CrostiniApps> crostini_apps_;
   std::unique_ptr<ExtensionApps> extension_apps_;
   std::unique_ptr<ExtensionApps> extension_web_apps_;
+  bool arc_is_registered_ = false;
 #endif  // OS_CHROMEOS
 
   Profile* profile_;

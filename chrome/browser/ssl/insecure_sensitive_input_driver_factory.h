@@ -39,8 +39,8 @@ class InsecureSensitiveInputDriverFactory
   // Finds or creates a factory for the |web_contents| and creates an
   // |InsecureSensitiveInputDriver| for the target |render_frame_host|.
   static void BindDriver(
-      mojo::PendingReceiver<blink::mojom::InsecureInputService> receiver,
-      content::RenderFrameHost* render_frame_host);
+      content::RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<blink::mojom::InsecureInputService> receiver);
 
   // Creates a |InsecureSensitiveInputDriver| for the specified
   // |render_frame_host| and adds it to the |frame_driver_map_|.

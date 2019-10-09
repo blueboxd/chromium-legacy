@@ -342,10 +342,6 @@ class WebURLRequest {
   // Returns true when the request is for revalidation.
   BLINK_PLATFORM_EXPORT bool IsRevalidating() const;
 
-  // Returns true if the CORS module should take into account the origin
-  // attached with the URLLoaderFactory.
-  BLINK_PLATFORM_EXPORT bool ShouldAlsoUseFactoryBoundOriginForCors() const;
-
   // Returns the DevTools ID to throttle the network request.
   BLINK_PLATFORM_EXPORT const base::Optional<base::UnguessableToken>&
   GetDevToolsToken() const;

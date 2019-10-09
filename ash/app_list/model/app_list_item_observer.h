@@ -9,9 +9,6 @@
 
 namespace ash {
 enum class AppListConfigType;
-}
-
-namespace app_list {
 
 class APP_LIST_MODEL_EXPORT AppListItemObserver {
  public:
@@ -36,6 +33,6 @@ class APP_LIST_MODEL_EXPORT AppListItemObserver {
   virtual ~AppListItemObserver() {}
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_MODEL_APP_LIST_ITEM_OBSERVER_H_

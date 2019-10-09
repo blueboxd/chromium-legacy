@@ -48,7 +48,7 @@ SettingsWindowObserver::~SettingsWindowObserver() {
 void SettingsWindowObserver::OnNewSettingsWindow(Browser* settings_browser) {
   aura::Window* window = settings_browser->window()->GetNativeWindow();
   window->SetTitle(l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
-  const ash::ShelfID shelf_id(app_list::kInternalAppIdSettings);
+  const ash::ShelfID shelf_id(ash::kInternalAppIdSettings);
   window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
   aura_window_tracker_->Add(window);

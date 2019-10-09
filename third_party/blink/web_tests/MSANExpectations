@@ -158,6 +158,7 @@ crbug.com/856601 [ Linux ] virtual/feature-policy-permissions/external/wpt/media
 crbug.com/856601 [ Linux ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/idlharness.https.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] virtual/service-worker-servicification/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Timeout Pass ]
+crbug.com/856601 [ Linux ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Pass Failure Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/fetch/api/idl.any.sharedworker.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/fetch/cors-rfc1918/idlharness.tentative.https.any.serviceworker.html [ Pass Timeout ]
@@ -275,6 +276,8 @@ crbug.com/856601 [ Linux ] http/tests/devtools/a11y-axe-core/network/network-con
 crbug.com/856601 [ Linux ] virtual/omt-worker-fetch/external/wpt/fetch/api/idl.any.serviceworker.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] virtual/omt-worker-fetch/external/wpt/fetch/api/idl.any.worker.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/interfaces.any.worker.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/webrtc-identity/idlharness.https.window.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.worker.html [ Pass Timeout ]
 
 # Sheriff 2019-06-28
 crbug.com/856601 [ Linux ] external/wpt/battery-status/battery-interface-idlharness.https.window.html [ Pass Timeout ]

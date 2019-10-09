@@ -222,8 +222,7 @@ void ManagePasswordsUIController::OnAutomaticPasswordSave(
 }
 
 void ManagePasswordsUIController::OnPasswordAutofilled(
-    const std::map<base::string16, const autofill::PasswordForm*>&
-        password_form_map,
+    const std::vector<const autofill::PasswordForm*>& password_forms,
     const GURL& origin,
     const std::vector<const autofill::PasswordForm*>* federated_matches) {
   // To change to managed state only when the managed state is more important
@@ -231,7 +230,7 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
   if (passwords_data_.state() == password_manager::ui::INACTIVE_STATE ||
       passwords_data_.state() == password_manager::ui::MANAGE_STATE) {
     ClearPopUpFlagForBubble();
-    passwords_data_.OnPasswordAutofilled(password_form_map, origin,
+    passwords_data_.OnPasswordAutofilled(password_forms, origin,
                                          federated_matches);
     // Don't close the existing bubble. Update the icon later.
     if (bubble_status_ == BubbleStatus::SHOWN)

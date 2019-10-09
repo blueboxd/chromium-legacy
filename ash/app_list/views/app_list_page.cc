@@ -7,7 +7,7 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 
-namespace app_list {
+namespace ash {
 
 AppListPage::AppListPage() : contents_view_(nullptr) {}
 
@@ -88,4 +88,4 @@ const char* AppListPage::GetClassName() const {
   return "AppListPage";
 }
 
-}  // namespace app_list
+}  // namespace ash

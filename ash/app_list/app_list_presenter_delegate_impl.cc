@@ -82,12 +82,11 @@ AppListPresenterDelegateImpl::~AppListPresenterDelegateImpl() {
 }
 
 void AppListPresenterDelegateImpl::SetPresenter(
-    app_list::AppListPresenterImpl* presenter) {
+    AppListPresenterImpl* presenter) {
   presenter_ = presenter;
 }
 
-void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
-                                        int64_t display_id) {
+void AppListPresenterDelegateImpl::Init(AppListView* view, int64_t display_id) {
   view_ = view;
   view->InitView(IsTabletMode(),
                  controller_->GetContainerForDisplayId(display_id));
@@ -143,8 +142,7 @@ bool AppListPresenterDelegateImpl::IsTabletMode() const {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
-app_list::AppListViewDelegate*
-AppListPresenterDelegateImpl::GetAppListViewDelegate() {
+AppListViewDelegate* AppListPresenterDelegateImpl::GetAppListViewDelegate() {
   return controller_;
 }
 
@@ -236,7 +234,7 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
 
   aura::Window* window = view_->GetWidget()->GetNativeView()->parent();
   if (!window->Contains(target) && !presenter_->HandleCloseOpenFolder() &&
-      !app_list::switches::ShouldNotDismissOnBlur() && !IsTabletMode()) {
+      !switches::ShouldNotDismissOnBlur() && !IsTabletMode()) {
     const aura::Window* status_window =
         shelf->shelf_widget()->status_area_widget()->GetNativeWindow();
     // Don't dismiss the auto-hide shelf if event happened in status area. Then
@@ -304,8 +302,7 @@ void AppListPresenterDelegateImpl::OnKeyEvent(ui::KeyEvent* event) {
     return;
 
   // Arrow keys or Tab will engage the traversal mode.
-  if ((app_list::IsUnhandledArrowKeyEvent(*event) ||
-       event->key_code() == ui::VKEY_TAB)) {
+  if ((IsUnhandledArrowKeyEvent(*event) || event->key_code() == ui::VKEY_TAB)) {
     // Handle the first arrow key event to just show the focus rings.
     event->SetHandled();
     controller_->SetKeyboardTraversalMode(true);

@@ -29,7 +29,7 @@ namespace shell {
 
 // WindowTypeShelfItem is an app item of app list. It carries a window
 // launch type and launches corresponding example window when activated.
-class WindowTypeShelfItem : public app_list::AppListItem {
+class WindowTypeShelfItem : public AppListItem {
  public:
   enum Type {
     TOPLEVEL_WINDOW = 0,
@@ -125,7 +125,7 @@ class WindowTypeShelfItem : public app_list::AppListItem {
 };
 
 WindowTypeShelfItem::WindowTypeShelfItem(const std::string& id, Type type)
-    : app_list::AppListItem(id), type_(type) {
+    : AppListItem(id), type_(type) {
   std::string title(GetTitle(type));
   SetIcon(ash::AppListConfigType::kShared, GetIcon(type));
   SetName(title);
@@ -137,7 +137,7 @@ WindowTypeShelfItem::~WindowTypeShelfItem() = default;
 // show, what should title and details text look like. It also carries the
 // matching window launch type so that AppListViewDelegate knows how to open
 // it.
-class ExampleSearchResult : public app_list::SearchResult {
+class ExampleSearchResult : public SearchResult {
  public:
   ExampleSearchResult(WindowTypeShelfItem::Type type,
                       const base::string16& query)

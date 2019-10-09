@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 
-namespace app_list {
+namespace ash {
 
 class SearchResultContainerView;
 
@@ -165,6 +165,6 @@ class APP_LIST_EXPORT ResultSelectionController {
   DISALLOW_COPY_AND_ASSIGN(ResultSelectionController);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_RESULT_SELECTION_CONTROLLER_H_

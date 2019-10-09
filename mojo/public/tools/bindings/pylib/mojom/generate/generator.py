@@ -21,6 +21,20 @@ def ExpectedArraySize(kind):
   return None
 
 
+def SplitCamelCase(identifier):
+  """Splits a camel-cased |identifier| and returns a list of lower-cased
+  strings.
+  """
+  # Add underscores after uppercase letters when appropriate. An uppercase
+  # letter is considered the end of a word if it is followed by an upper and a
+  # lower. E.g. URLLoaderFactory -> URL_LoaderFactory
+  identifier = re.sub('([A-Z][0-9]*)(?=[A-Z][0-9]*[a-z])', r'\1_', identifier)
+  # Add underscores after lowercase letters when appropriate. A lowercase letter
+  # is considered the end of a word if it is followed by an upper.
+  # E.g. URLLoaderFactory -> URLLoader_Factory
+  identifier = re.sub('([a-z][0-9]*)(?=[A-Z])', r'\1_', identifier)
+  return [x.lower() for x in identifier.split('_')]
+
 def ToCamel(identifier, lower_initial=False, dilimiter='_'):
   """Splits |identifier| using |dilimiter|, makes the first character of each
   word uppercased (but makes the first character of the first word lowercased
@@ -33,6 +47,20 @@ def ToCamel(identifier, lower_initial=False, dilimiter='_'):
     result = result[0].lower() + result[1:]
   return result
 
+def ToConstantCase(identifier):
+  """Splits camel-cased |identifier| into lower case words, removes the first
+  word if it's "k" and joins them using "_" e.g. for "URLLoaderFactory", returns
+  "URL_LOADER_FACTORY".
+  """
+  words = SplitCamelCase(identifier)
+  if words[0] == 'k' and len(words) > 1:
+    words = words[1:]
+
+  # Variables cannot start with a digit
+  if (words[0][0].isdigit()):
+    words[0] = '_' + words[0]
+
+  return '_'.join([word.upper() for word in words])
 
 class Stylizer(object):
   """Stylizers specify naming rules to map mojom names to names in generated

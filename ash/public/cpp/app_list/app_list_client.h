@@ -19,7 +19,7 @@
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "ui/base/models/simple_menu_model.h"
 
-namespace app_list {
+namespace ash {
 
 class AppListController;
 
@@ -137,6 +137,6 @@ class ASH_PUBLIC_EXPORT AppListClient {
   virtual ~AppListClient() = default;
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_CLIENT_H_

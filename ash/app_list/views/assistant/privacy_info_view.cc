@@ -23,7 +23,7 @@
 #include "ui/views/vector_icons.h"
 #include "ui/views/view_class_properties.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -204,4 +204,4 @@ void PrivacyInfoView::InitCloseButton() {
   row_container_->AddChildView(close_button_);
 }
 
-}  // namespace app_list
+}  // namespace ash

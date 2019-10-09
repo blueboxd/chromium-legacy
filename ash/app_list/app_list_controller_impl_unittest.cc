@@ -41,15 +41,11 @@ namespace ash {
 
 namespace {
 
-using ::app_list::kAppListResultLaunchIndexAndQueryLength;
-using ::app_list::kAppListTileLaunchIndexAndQueryLength;
-using ::app_list::SearchResultLaunchLocation;
-
 bool IsTabletMode() {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
-app_list::AppListView* GetAppListView() {
+AppListView* GetAppListView() {
   return Shell::Get()->app_list_controller()->presenter()->GetView();
 }
 
@@ -61,7 +57,7 @@ bool GetExpandArrowViewVisibility() {
       ->GetVisible();
 }
 
-app_list::SearchBoxView* GetSearchBoxView() {
+SearchBoxView* GetSearchBoxView() {
   return GetAppListView()
       ->app_list_main_view()
       ->contents_view()
@@ -217,7 +213,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCornersWhenEmojiShows) {
   // Show the app list view and right-click on the search box with mouse. So the
   // text field's context menu shows.
   ShowAppListNow();
-  app_list::SearchBoxView* search_box_view =
+  SearchBoxView* search_box_view =
       GetAppListView()->app_list_main_view()->search_box_view();
   gfx::Point center_point = search_box_view->GetBoundsInScreen().CenterPoint();
   ui::test::EventGenerator* event_generator = GetEventGenerator();
@@ -486,7 +482,7 @@ class AppListAnimationTest : public AshTestBase,
   // The app list view y coordinate in peeking state.
   int PeekingHeightTop() const {
     return shown_shelf_bounds_.bottom() -
-           app_list::AppListConfig::instance().peeking_app_list_height();
+           AppListConfig::instance().peeking_app_list_height();
   }
 
  private:

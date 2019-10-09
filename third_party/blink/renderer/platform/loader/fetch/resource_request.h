@@ -366,13 +366,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
   bool IsAutomaticUpgrade() const { return is_automatic_upgrade_; }
 
-  bool ShouldAlsoUseFactoryBoundOriginForCors() const {
-    return should_also_use_factory_bound_origin_for_cors_;
-  }
-  void SetShouldAlsoUseFactoryBoundOriginForCors(bool value) {
-    should_also_use_factory_bound_origin_for_cors_ = value;
-  }
-
   void SetAllowStaleResponse(bool value) { allow_stale_response_ = value; }
   bool AllowsStaleResponse() const { return allow_stale_response_; }
 
@@ -528,7 +521,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool is_revalidating_ = false;
 
   bool is_automatic_upgrade_ = false;
-  bool should_also_use_factory_bound_origin_for_cors_ = false;
 
   base::Optional<base::UnguessableToken> devtools_token_;
   base::Optional<String> devtools_id_;

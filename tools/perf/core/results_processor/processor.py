@@ -56,6 +56,7 @@ def ProcessResults(options):
                                       options.results_label)
 
   for output_format in options.output_formats:
+    logging.info('Processing format: %s', output_format)
     formatter = formatters.FORMATTERS[output_format]
     if output_format in FORMATS_WITH_METRICS:
       formatter.ProcessHistogramDicts(histogram_dicts, options)

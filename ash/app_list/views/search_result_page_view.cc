@@ -38,7 +38,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -164,8 +164,8 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate)
     contents_view_->AddChildView(assistant_privacy_info_view_);
   }
 
-  view_shadow_ = std::make_unique<ash::ViewShadow>(
-      this, kSearchBoxSearchResultShadowElevation);
+  view_shadow_ =
+      std::make_unique<ViewShadow>(this, kSearchBoxSearchResultShadowElevation);
   view_shadow_->SetRoundedCornerRadius(
       search_box::kSearchBoxBorderCornerRadiusSearchResult);
 
@@ -221,9 +221,9 @@ bool SearchResultPageView::IsFirstResultTile() const {
 
   // |kRecommendation| result type refers to tiles in Zero State.
   return first_result_view_->result()->display_type() ==
-             ash::SearchResultDisplayType::kTile ||
+             SearchResultDisplayType::kTile ||
          first_result_view_->result()->display_type() ==
-             ash::SearchResultDisplayType::kRecommendation;
+             SearchResultDisplayType::kRecommendation;
 }
 
 bool SearchResultPageView::IsFirstResultHighlighted() const {
@@ -409,7 +409,7 @@ void SearchResultPageView::OnSearchResultContainerResultFocused(
   views::Textfield* search_box =
       AppListPage::contents_view()->GetSearchBoxView()->search_box();
   if (focused_result_view->result()->result_type() ==
-          ash::SearchResultType::kOmnibox &&
+          AppListSearchResultType::kOmnibox &&
       !focused_result_view->result()->is_omnibox_search()) {
     search_box->SetText(focused_result_view->result()->details());
   } else {
@@ -438,10 +438,10 @@ void SearchResultPageView::OnShown() {
   }
 }
 
-void SearchResultPageView::OnAnimationStarted(ash::AppListState from_state,
-                                              ash::AppListState to_state) {
-  if (from_state != ash::AppListState::kStateSearchResults &&
-      to_state != ash::AppListState::kStateSearchResults) {
+void SearchResultPageView::OnAnimationStarted(AppListState from_state,
+                                              AppListState to_state) {
+  if (from_state != AppListState::kStateSearchResults &&
+      to_state != AppListState::kStateSearchResults) {
     return;
   }
 
@@ -491,10 +491,10 @@ void SearchResultPageView::OnAnimationStarted(ash::AppListState from_state,
 }
 
 void SearchResultPageView::OnAnimationUpdated(double progress,
-                                              ash::AppListState from_state,
-                                              ash::AppListState to_state) {
-  if (from_state != ash::AppListState::kStateSearchResults &&
-      to_state != ash::AppListState::kStateSearchResults) {
+                                              AppListState from_state,
+                                              AppListState to_state) {
+  if (from_state != AppListState::kStateSearchResults &&
+      to_state != AppListState::kStateSearchResults) {
     return;
   }
   const SearchBoxView* search_box =
@@ -515,21 +515,21 @@ gfx::Size SearchResultPageView::GetPreferredSearchBoxSize() const {
 }
 
 base::Optional<int> SearchResultPageView::GetSearchBoxTop(
-    ash::AppListViewState view_state) const {
-  if (view_state == ash::AppListViewState::kPeeking ||
-      view_state == ash::AppListViewState::kHalf) {
+    AppListViewState view_state) const {
+  if (view_state == AppListViewState::kPeeking ||
+      view_state == AppListViewState::kHalf) {
     return AppListConfig::instance().search_box_fullscreen_top_padding();
   }
-  // For other view states, return base::nullopt so the app_list::ContentsView
+  // For other view states, return base::nullopt so the ContentsView
   // sets the default search box widget origin.
   return base::nullopt;
 }
 
 gfx::Rect SearchResultPageView::GetPageBoundsForState(
-    ash::AppListState state,
+    AppListState state,
     const gfx::Rect& contents_bounds,
     const gfx::Rect& search_box_bounds) const {
-  if (state != ash::AppListState::kStateSearchResults) {
+  if (state != AppListState::kStateSearchResults) {
     // Hides this view behind the search box by using the same bounds.
     return search_box_bounds;
   }
@@ -555,4 +555,4 @@ views::View* SearchResultPageView::GetLastFocusableView() {
       this, GetWidget(), true /* reverse */, false /* dont_loop */);
 }
 
-}  // namespace app_list
+}  // namespace ash

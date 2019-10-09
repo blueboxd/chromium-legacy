@@ -389,7 +389,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
             const std::vector<FormData>& forms) {
     PasswordFormHelper* strongSelf = weakSelf;
     for (const auto& form : forms) {
-      std::map<base::string16, const PasswordForm*> matches;
+      std::vector<const PasswordForm*> matches;
       FormDataParser parser;
       std::unique_ptr<PasswordForm> passwordForm =
           parser.Parse(form, FormDataParser::Mode::kFilling);

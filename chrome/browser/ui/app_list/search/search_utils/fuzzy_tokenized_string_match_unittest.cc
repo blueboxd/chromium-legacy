@@ -37,43 +37,43 @@ TEST_F(FuzzyTokenizedStringMatchTest, TokenSetRatioTest) {
   {
     base::string16 query(base::UTF8ToUTF16("order different in"));
     base::string16 text(base::UTF8ToUTF16("text order"));
-    EXPECT_EQ(match.TokenSetRatio(TokenizedString(query), TokenizedString(text),
-                                  true),
+    EXPECT_EQ(match.TokenSetRatio(ash::TokenizedString(query),
+                                  ash::TokenizedString(text), true),
               1);
-    EXPECT_NEAR(match.TokenSetRatio(TokenizedString(query),
-                                    TokenizedString(text), false),
+    EXPECT_NEAR(match.TokenSetRatio(ash::TokenizedString(query),
+                                    ash::TokenizedString(text), false),
                 0.67, 0.01);
   }
   {
     base::string16 query(base::UTF8ToUTF16("short text"));
     base::string16 text(
         base::UTF8ToUTF16("this text is really really really long"));
-    EXPECT_EQ(match.TokenSetRatio(TokenizedString(query), TokenizedString(text),
-                                  true),
+    EXPECT_EQ(match.TokenSetRatio(ash::TokenizedString(query),
+                                  ash::TokenizedString(text), true),
               1);
-    EXPECT_NEAR(match.TokenSetRatio(TokenizedString(query),
-                                    TokenizedString(text), false),
+    EXPECT_NEAR(match.TokenSetRatio(ash::TokenizedString(query),
+                                    ash::TokenizedString(text), false),
                 0.57, 0.01);
   }
   {
     base::string16 query(base::UTF8ToUTF16("common string"));
     base::string16 text(base::UTF8ToUTF16("nothing is shared"));
-    EXPECT_NEAR(match.TokenSetRatio(TokenizedString(query),
-                                    TokenizedString(text), true),
+    EXPECT_NEAR(match.TokenSetRatio(ash::TokenizedString(query),
+                                    ash::TokenizedString(text), true),
                 0.38, 0.01);
-    EXPECT_NEAR(match.TokenSetRatio(TokenizedString(query),
-                                    TokenizedString(text), false),
+    EXPECT_NEAR(match.TokenSetRatio(ash::TokenizedString(query),
+                                    ash::TokenizedString(text), false),
                 0.33, 0.01);
   }
   {
     base::string16 query(
         base::UTF8ToUTF16("token shared token same shared same"));
     base::string16 text(base::UTF8ToUTF16("token shared token text text long"));
-    EXPECT_EQ(match.TokenSetRatio(TokenizedString(query), TokenizedString(text),
-                                  true),
+    EXPECT_EQ(match.TokenSetRatio(ash::TokenizedString(query),
+                                  ash::TokenizedString(text), true),
               1);
-    EXPECT_NEAR(match.TokenSetRatio(TokenizedString(query),
-                                    TokenizedString(text), false),
+    EXPECT_NEAR(match.TokenSetRatio(ash::TokenizedString(query),
+                                    ash::TokenizedString(text), false),
                 0.83, 0.01);
   }
 }
@@ -83,32 +83,32 @@ TEST_F(FuzzyTokenizedStringMatchTest, TokenSortRatioTest) {
   {
     base::string16 query(base::UTF8ToUTF16("order different in"));
     base::string16 text(base::UTF8ToUTF16("text order"));
-    EXPECT_NEAR(match.TokenSortRatio(TokenizedString(query),
-                                     TokenizedString(text), true),
+    EXPECT_NEAR(match.TokenSortRatio(ash::TokenizedString(query),
+                                     ash::TokenizedString(text), true),
                 0.67, 0.01);
-    EXPECT_NEAR(match.TokenSortRatio(TokenizedString(query),
-                                     TokenizedString(text), false),
+    EXPECT_NEAR(match.TokenSortRatio(ash::TokenizedString(query),
+                                     ash::TokenizedString(text), false),
                 0.36, 0.01);
   }
   {
     base::string16 query(base::UTF8ToUTF16("short text"));
     base::string16 text(
         base::UTF8ToUTF16("this text is really really really long"));
-    EXPECT_EQ(match.TokenSortRatio(TokenizedString(query),
-                                   TokenizedString(text), true),
+    EXPECT_EQ(match.TokenSortRatio(ash::TokenizedString(query),
+                                   ash::TokenizedString(text), true),
               0.5);
-    EXPECT_NEAR(match.TokenSortRatio(TokenizedString(query),
-                                     TokenizedString(text), false),
+    EXPECT_NEAR(match.TokenSortRatio(ash::TokenizedString(query),
+                                     ash::TokenizedString(text), false),
                 0.33, 0.01);
   }
   {
     base::string16 query(base::UTF8ToUTF16("common string"));
     base::string16 text(base::UTF8ToUTF16("nothing is shared"));
-    EXPECT_NEAR(match.TokenSortRatio(TokenizedString(query),
-                                     TokenizedString(text), true),
+    EXPECT_NEAR(match.TokenSortRatio(ash::TokenizedString(query),
+                                     ash::TokenizedString(text), true),
                 0.38, 0.01);
-    EXPECT_NEAR(match.TokenSortRatio(TokenizedString(query),
-                                     TokenizedString(text), false),
+    EXPECT_NEAR(match.TokenSortRatio(ash::TokenizedString(query),
+                                     ash::TokenizedString(text), false),
                 0.33, 0.01);
   }
 }
@@ -118,32 +118,32 @@ TEST_F(FuzzyTokenizedStringMatchTest, WeightedRatio) {
   {
     base::string16 query(base::UTF8ToUTF16("anonymous"));
     base::string16 text(base::UTF8ToUTF16("famous"));
-    EXPECT_NEAR(
-        match.WeightedRatio(TokenizedString(query), TokenizedString(text)),
-        0.67, 0.01);
+    EXPECT_NEAR(match.WeightedRatio(ash::TokenizedString(query),
+                                    ash::TokenizedString(text)),
+                0.67, 0.01);
   }
   {
     base::string16 query(base::UTF8ToUTF16("Clash.of.clan"));
     base::string16 text(base::UTF8ToUTF16("ClashOfTitan"));
-    EXPECT_NEAR(
-        match.WeightedRatio(TokenizedString(query), TokenizedString(text)),
-        0.81, 0.01);
+    EXPECT_NEAR(match.WeightedRatio(ash::TokenizedString(query),
+                                    ash::TokenizedString(text)),
+                0.81, 0.01);
   }
   {
     base::string16 query(base::UTF8ToUTF16("final fantasy"));
     base::string16 text(base::UTF8ToUTF16("finalfantasy"));
-    EXPECT_NEAR(
-        match.WeightedRatio(TokenizedString(query), TokenizedString(text)),
-        0.96, 0.01);
+    EXPECT_NEAR(match.WeightedRatio(ash::TokenizedString(query),
+                                    ash::TokenizedString(text)),
+                0.96, 0.01);
   }
   {
     base::string16 query(base::UTF8ToUTF16("short text!!!"));
     base::string16 text(
         base::UTF8ToUTF16("this sentence is much much much much much longer "
                           "than the text before"));
-    EXPECT_NEAR(
-        match.WeightedRatio(TokenizedString(query), TokenizedString(text)),
-        0.85, 0.01);
+    EXPECT_NEAR(match.WeightedRatio(ash::TokenizedString(query),
+                                    ash::TokenizedString(text)),
+                0.85, 0.01);
   }
 }
 
@@ -151,22 +151,22 @@ TEST_F(FuzzyTokenizedStringMatchTest, FirstCharacterMatchTest) {
   {
     base::string16 query(base::UTF8ToUTF16("COC"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(internal::FirstCharacterMatch(TokenizedString(query),
-                                            TokenizedString(text)),
+    EXPECT_EQ(internal::FirstCharacterMatch(ash::TokenizedString(query),
+                                            ash::TokenizedString(text)),
               1.0);
   }
   {
     base::string16 query(base::UTF8ToUTF16("CC"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(internal::FirstCharacterMatch(TokenizedString(query),
-                                            TokenizedString(text)),
+    EXPECT_EQ(internal::FirstCharacterMatch(ash::TokenizedString(query),
+                                            ash::TokenizedString(text)),
               0.8);
   }
   {
     base::string16 query(base::UTF8ToUTF16("C o C"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(internal::FirstCharacterMatch(TokenizedString(query),
-                                            TokenizedString(text)),
+    EXPECT_EQ(internal::FirstCharacterMatch(ash::TokenizedString(query),
+                                            ash::TokenizedString(text)),
               0.0);
   }
 }
@@ -175,30 +175,30 @@ TEST_F(FuzzyTokenizedStringMatchTest, PrefixMatchTest) {
   {
     base::string16 query(base::UTF8ToUTF16("clas"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(
-        internal::PrefixMatch(TokenizedString(query), TokenizedString(text)),
-        1.0);
+    EXPECT_EQ(internal::PrefixMatch(ash::TokenizedString(query),
+                                    ash::TokenizedString(text)),
+              1.0);
   }
   {
     base::string16 query(base::UTF8ToUTF16("clash clan"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(
-        internal::PrefixMatch(TokenizedString(query), TokenizedString(text)),
-        0.9);
+    EXPECT_EQ(internal::PrefixMatch(ash::TokenizedString(query),
+                                    ash::TokenizedString(text)),
+              0.9);
   }
   {
     base::string16 query(base::UTF8ToUTF16("c o c"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(
-        internal::PrefixMatch(TokenizedString(query), TokenizedString(text)),
-        1.0);
+    EXPECT_EQ(internal::PrefixMatch(ash::TokenizedString(query),
+                                    ash::TokenizedString(text)),
+              1.0);
   }
   {
     base::string16 query(base::UTF8ToUTF16("clam"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(
-        internal::PrefixMatch(TokenizedString(query), TokenizedString(text)),
-        0.0);
+    EXPECT_EQ(internal::PrefixMatch(ash::TokenizedString(query),
+                                    ash::TokenizedString(text)),
+              0.0);
   }
 }
 
@@ -212,20 +212,20 @@ TEST_F(FuzzyTokenizedStringMatchTest, ParamThresholdTest1) {
   {
     base::string16 query(base::UTF8ToUTF16("anonymous"));
     base::string16 text(base::UTF8ToUTF16("famous"));
-    EXPECT_FALSE(
-        match.IsRelevant(TokenizedString(query), TokenizedString(text)));
+    EXPECT_FALSE(match.IsRelevant(ash::TokenizedString(query),
+                                  ash::TokenizedString(text)));
   }
   {
     base::string16 query(base::UTF8ToUTF16("CC"));
     base::string16 text(base::UTF8ToUTF16("Clash Of Clan"));
-    EXPECT_TRUE(
-        match.IsRelevant(TokenizedString(query), TokenizedString(text)));
+    EXPECT_TRUE(match.IsRelevant(ash::TokenizedString(query),
+                                 ash::TokenizedString(text)));
   }
   {
     base::string16 query(base::UTF8ToUTF16("Clash.of.clan"));
     base::string16 text(base::UTF8ToUTF16("ClashOfTitan"));
-    EXPECT_TRUE(
-        match.IsRelevant(TokenizedString(query), TokenizedString(text)));
+    EXPECT_TRUE(match.IsRelevant(ash::TokenizedString(query),
+                                 ash::TokenizedString(text)));
   }
 }
 
@@ -239,20 +239,20 @@ TEST_F(FuzzyTokenizedStringMatchTest, ParamThresholdTest2) {
   {
     base::string16 query(base::UTF8ToUTF16("anonymous"));
     base::string16 text(base::UTF8ToUTF16("famous"));
-    EXPECT_FALSE(
-        match.IsRelevant(TokenizedString(query), TokenizedString(text)));
+    EXPECT_FALSE(match.IsRelevant(ash::TokenizedString(query),
+                                  ash::TokenizedString(text)));
   }
   {
     base::string16 query(base::UTF8ToUTF16("CC"));
     base::string16 text(base::UTF8ToUTF16("Clash Of Clan"));
-    EXPECT_TRUE(
-        match.IsRelevant(TokenizedString(query), TokenizedString(text)));
+    EXPECT_TRUE(match.IsRelevant(ash::TokenizedString(query),
+                                 ash::TokenizedString(text)));
   }
   {
     base::string16 query(base::UTF8ToUTF16("Clash.of.clan"));
     base::string16 text(base::UTF8ToUTF16("ClashOfTitan"));
-    EXPECT_FALSE(
-        match.IsRelevant(TokenizedString(query), TokenizedString(text)));
+    EXPECT_FALSE(match.IsRelevant(ash::TokenizedString(query),
+                                  ash::TokenizedString(text)));
   }
 }
 

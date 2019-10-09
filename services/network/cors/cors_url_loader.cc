@@ -89,7 +89,6 @@ CorsURLLoader::CorsURLLoader(
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::URLLoaderFactory* network_loader_factory,
-    const base::Optional<url::Origin>& factory_bound_origin,
     const OriginAccessList* origin_access_list,
     const OriginAccessList* factory_bound_origin_access_list,
     PreflightController* preflight_controller)
@@ -103,7 +102,6 @@ CorsURLLoader::CorsURLLoader(
       request_(resource_request),
       forwarding_client_(std::move(client)),
       traffic_annotation_(traffic_annotation),
-      factory_bound_origin_(factory_bound_origin),
       origin_access_list_(origin_access_list),
       factory_bound_origin_access_list_(factory_bound_origin_access_list),
       preflight_controller_(preflight_controller) {
@@ -521,18 +519,6 @@ void CorsURLLoader::SetCorsFlagIfNeeded() {
 
   if (!network::cors::ShouldCheckCors(request_.url, request_.request_initiator,
                                       request_.mode)) {
-    return;
-  }
-
-  // In some cases we want to use the origin attached to the URLLoaderFactory
-  // to check same-originness.
-  // TODO(lukasza): https://crbug.com/940068: Revert https://crrev.com/c/1642752
-  // once request_initiator is always set to the webpage (and never to the
-  // isolated world).
-  if (request_.should_also_use_factory_bound_origin_for_cors &&
-      factory_bound_origin_ &&
-      factory_bound_origin_->IsSameOriginWith(
-          url::Origin::Create(request_.url))) {
     return;
   }
 

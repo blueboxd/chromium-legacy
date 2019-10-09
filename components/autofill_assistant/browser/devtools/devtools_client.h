@@ -23,6 +23,7 @@
 #include "components/autofill_assistant/browser/devtools/devtools/domains/input.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/network.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/runtime.h"
+#include "components/autofill_assistant/browser/devtools/devtools/domains/target.h"
 #include "components/autofill_assistant/browser/devtools/message_dispatcher.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
@@ -39,19 +40,23 @@ class DevtoolsClient : public MessageDispatcher,
   dom::Domain* GetDOM();
   runtime::Domain* GetRuntime();
   network::Domain* GetNetwork();
+  target::ExperimentalDomain* GetTarget();
 
   // MessageDispatcher implementation:
   void SendMessage(
       const char* method,
       std::unique_ptr<base::Value> params,
+      const std::string& optional_node_frame_id,
       base::OnceCallback<void(const ReplyStatus&, const base::Value&)> callback)
       override;
   void SendMessage(const char* method,
                    std::unique_ptr<base::Value> params,
+                   const std::string& optional_node_frame_id,
                    base::OnceClosure callback) override;
   void RegisterEventHandler(
       const char* method,
       base::RepeatingCallback<void(const base::Value&)> callback) override;
+  void UnregisterEventHandler(const char* method) override;
 
   // content::DevToolsAgentHostClient overrides:
   void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
@@ -76,9 +81,52 @@ class DevtoolsClient : public MessageDispatcher,
         callback_with_result;
   };
 
+  // Manages a map to retrieve a session id from a given frame id. Registers
+  // itself to client events.
+  class FrameTracker {
+   public:
+    // Register the event handlers and start tracking new targets. |client|
+    // must outlive this frame tracker.
+    FrameTracker(DevtoolsClient* client);
+    ~FrameTracker();
+
+    void Start();
+    void Stop();
+
+    // Returns empty string if there is no session for the given |frame_id|.
+    std::string GetSessionIdForFrame(std::string frame_id) const;
+
+   private:
+    void OnSetAutoAttach(const DevtoolsClient::ReplyStatus& reply_status,
+                         std::unique_ptr<target::SetAutoAttachResult> result);
+    void OnAttachedToTarget(const base::Value& value);
+    void OnDetachedFromTarget(const base::Value& value);
+
+    // Save find of targetInfo.targetId in the given value. Returns
+    // empty string if nothing is found.
+    std::string FindTargetId(const base::Value& value);
+
+    // Find sessionId in the given value. Returns empty string if nothing is
+    // found.
+    std::string FindSessionId(const base::Value& value);
+
+    DevtoolsClient* client_;
+    bool started_ = false;
+
+    // Holds the mappings from frame id to session id.
+    std::unordered_map<std::string, std::string> sessions_map_;
+
+    base::WeakPtrFactory<FrameTracker> weak_ptr_factory_{this};
+    DISALLOW_COPY_AND_ASSIGN(FrameTracker);
+  };
+
+  // If the frame is known to devtools, return the session id for it.
+  std::string GetSessionIdForFrame(const std::string& frame_id) const;
+
   template <typename CallbackType>
   void SendMessageWithParams(const char* method,
                              std::unique_ptr<base::Value> params,
+                             const std::string& optional_node_frame_id,
                              CallbackType callback);
   bool DispatchMessageReply(std::unique_ptr<base::Value> owning_message,
                             const base::DictionaryValue& message_dict);
@@ -105,10 +153,12 @@ class DevtoolsClient : public MessageDispatcher,
   dom::ExperimentalDomain dom_domain_;
   runtime::ExperimentalDomain runtime_domain_;
   network::ExperimentalDomain network_domain_;
+  target::ExperimentalDomain target_domain_;
   std::unordered_map<int, Callback> pending_messages_;
   EventHandlerMap event_handlers_;
   bool renderer_crashed_;
   int next_message_id_;
+  FrameTracker frame_tracker_;
 
   base::WeakPtrFactory<DevtoolsClient> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DevtoolsClient);

@@ -379,7 +379,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
                         IsA<HTMLLegendElement>(html_element) ||
                         IsHTMLImageElement(html_element) ||
                         IsA<HTMLMeterElement>(html_element) ||
-                        IsHTMLProgressElement(html_element))))) {
+                        IsA<HTMLProgressElement>(html_element))))) {
             HandleReplacedElement();
           } else {
             HandleNonTextNode();

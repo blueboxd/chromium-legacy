@@ -21,7 +21,7 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -35,16 +35,16 @@ constexpr int kMinimumSuggestionChipNumber = 3;
 
 bool IsPolicySuggestionChip(const SearchResult& result) {
   return result.display_location() ==
-             ash::SearchResultDisplayLocation::kSuggestionChipContainer &&
-         result.display_index() != ash::SearchResultDisplayIndex::kUndefined;
+             SearchResultDisplayLocation::kSuggestionChipContainer &&
+         result.display_index() != SearchResultDisplayIndex::kUndefined;
 }
 
 struct CompareByDisplayIndexAndThenPositionPriority {
   bool operator()(const SearchResult* result1,
                   const SearchResult* result2) const {
     // Sort increasing by display index, then decreasing by position priority.
-    ash::SearchResultDisplayIndex index1 = result1->display_index();
-    ash::SearchResultDisplayIndex index2 = result2->display_index();
+    SearchResultDisplayIndex index1 = result1->display_index();
+    SearchResultDisplayIndex index2 = result2->display_index();
     float priority1 = result1->position_priority();
     float priority2 = result2->position_priority();
     if (index1 != index2)
@@ -115,8 +115,8 @@ int SuggestionChipContainerView::DoUpdate() {
     if (current_index <= previous_index) {
       current_index = previous_index + 1;
     }
-    ash::SearchResultDisplayIndex final_index =
-        static_cast<ash::SearchResultDisplayIndex>(current_index);
+    SearchResultDisplayIndex final_index =
+        static_cast<SearchResultDisplayIndex>(current_index);
     result->set_display_index(final_index);
     previous_index = current_index;
   }
@@ -125,9 +125,9 @@ int SuggestionChipContainerView::DoUpdate() {
   // if shortcuts are displayed as suggestion chips. Also filter out any
   // duplicate policy chip results.
   auto filter_reinstall_and_shortcut = [](const SearchResult& r) -> bool {
-    return r.display_type() == ash::SearchResultDisplayType::kRecommendation &&
-           r.result_type() != ash::SearchResultType::kPlayStoreReinstallApp &&
-           r.result_type() != ash::SearchResultType::kArcAppShortcut &&
+    return r.display_type() == SearchResultDisplayType::kRecommendation &&
+           r.result_type() != AppListSearchResultType::kPlayStoreReinstallApp &&
+           r.result_type() != AppListSearchResultType::kArcAppShortcut &&
            !IsPolicySuggestionChip(r);
   };
   std::vector<SearchResult*> display_results =
@@ -279,4 +279,4 @@ void SuggestionChipContainerView::OnTabletModeChanged(bool started) {
     chip->SetBackgroundBlurEnabled(started);
 }
 
-}  // namespace app_list
+}  // namespace ash

@@ -106,17 +106,57 @@ bool LeakedCredentialsTable::RemoveRow(const GURL& url,
   return s.Run();
 }
 
-bool LeakedCredentialsTable::RemoveRowsCreatedBetween(base::Time remove_begin,
-                                                      base::Time remove_end) {
-  sql::Statement s(
-      db_->GetCachedStatement(SQL_FROM_HERE,
-                              "DELETE FROM leaked_credentials WHERE "
-                              "create_time >= ? AND create_time < ?"));
-  s.BindInt64(0, remove_begin.ToDeltaSinceWindowsEpoch().InMicroseconds());
-  s.BindInt64(1, remove_end.is_null()
-                     ? std::numeric_limits<int64_t>::max()
-                     : remove_end.ToDeltaSinceWindowsEpoch().InMicroseconds());
-  return s.Run();
+bool LeakedCredentialsTable::RemoveRowsByUrlAndTime(
+    const base::RepeatingCallback<bool(const GURL&)>& url_filter,
+    base::Time remove_begin,
+    base::Time remove_end) {
+  if (remove_end.is_null())
+    remove_end = base::Time::Max();
+
+  const int64_t remove_begin_us =
+      remove_begin.ToDeltaSinceWindowsEpoch().InMicroseconds();
+  const int64_t remove_end_us =
+      remove_end.ToDeltaSinceWindowsEpoch().InMicroseconds();
+
+  // If |url_filter| is null, remove all records in given date range.
+  if (!url_filter) {
+    sql::Statement s(
+        db_->GetCachedStatement(SQL_FROM_HERE,
+                                "DELETE FROM leaked_credentials WHERE "
+                                "create_time >= ? AND create_time < ?"));
+    s.BindInt64(0, remove_begin_us);
+    s.BindInt64(1, remove_end_us);
+    return s.Run();
+  }
+
+  // Otherwise, filter urls.
+  sql::Statement s(db_->GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT DISTINCT url FROM leaked_credentials WHERE "
+      "create_time >= ? AND create_time < ?"));
+  s.BindInt64(0, remove_begin_us);
+  s.BindInt64(1, remove_end_us);
+
+  std::vector<std::string> urls;
+  while (s.Step()) {
+    std::string url = s.ColumnString(0);
+    if (url_filter.Run(GURL(url))) {
+      urls.push_back(std::move(url));
+    }
+  }
+
+  bool success = true;
+  for (const std::string& url : urls) {
+    sql::Statement s(
+        db_->GetCachedStatement(SQL_FROM_HERE,
+                                "DELETE FROM leaked_credentials WHERE url = ? "
+                                "AND create_time >= ? AND create_time < ?"));
+    s.BindString(0, url);
+    s.BindInt64(1, remove_begin_us);
+    s.BindInt64(2, remove_end_us);
+    success = success && s.Run();
+  }
+  return success;
 }
 
 std::vector<LeakedCredentials> LeakedCredentialsTable::GetAllRows() {

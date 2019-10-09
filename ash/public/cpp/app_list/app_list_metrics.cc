@@ -34,7 +34,7 @@ constexpr int kMaxLoggedUserQueryLength = 20;
 
 }  // namespace
 
-namespace app_list {
+namespace ash {
 
 void RecordSearchResultOpenTypeHistogram(
     ash::AppListLaunchedFrom launch_location,
@@ -91,4 +91,4 @@ void RecordLauncherIssuedSearchQueryLength(int query_length) {
   }
 }
 
-}  // namespace app_list
+}  // namespace ash

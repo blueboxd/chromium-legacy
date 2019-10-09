@@ -253,12 +253,15 @@ class PasswordStore : protected PasswordStoreSync,
   // request will be cancelled if the consumer is destroyed.
   void GetAllLeakedCredentials(PasswordLeakHistoryConsumer* consumer);
 
-  // Removes all leaked credentials in the given date range. If |completion| is
-  // not null, it will be posted to the |main_task_runner_| after deletions have
-  // been completed. Should be called on the UI thread.
-  void RemoveLeakedCredentialsCreatedBetween(base::Time remove_begin,
-                                             base::Time remove_end,
-                                             const base::Closure& completion);
+  // Removes all leaked credentials in the given date range. If |url_filter| is
+  // not null, only leaked credentials for matching urls are removed. If
+  // |completion| is not null, it will be posted to the |main_task_runner_|
+  // after deletions have been completed. Should be called on the UI thread.
+  void RemoveLeakedCredentialsByUrlAndTime(
+      base::RepeatingCallback<bool(const GURL&)> url_filter,
+      base::Time remove_begin,
+      base::Time remove_end,
+      base::OnceClosure completion);
 
   // Adds an observer to be notified when the password store data changes.
   void AddObserver(Observer* observer);
@@ -460,7 +463,8 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void RemoveLeakedCredentialsImpl(const GURL& url,
                                            const base::string16& username) = 0;
   virtual std::vector<LeakedCredentials> GetAllLeakedCredentialsImpl() = 0;
-  virtual void RemoveLeakedCredentialsCreatedBetweenImpl(
+  virtual void RemoveLeakedCredentialsByUrlAndTimeImpl(
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end) = 0;
 
@@ -602,10 +606,11 @@ class PasswordStore : protected PasswordStoreSync,
       const base::Closure& completion);
   void UnblacklistInternal(const PasswordStore::FormDigest& form_digest,
                            base::OnceClosure completion);
-  void RemoveLeakedCredentialsCreatedBetweenInternal(
+  void RemoveLeakedCredentialsByUrlAndTimeInternal(
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end,
-      const base::Closure& completion);
+      base::OnceClosure completion);
 
   // Finds all PasswordForms with a signon_realm that is equal to, or is a
   // PSL-match to that of |form|, and takes care of notifying the consumer with

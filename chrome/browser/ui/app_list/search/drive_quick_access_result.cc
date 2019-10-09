@@ -24,8 +24,8 @@ DriveQuickAccessResult::DriveQuickAccessResult(const base::FilePath& filepath,
   SetResultType(ResultType::kDriveQuickAccess);
 }
 
-SearchResultType DriveQuickAccessResult::GetSearchResultType() const {
-  return DRIVE_QUICK_ACCESS;
+ash::SearchResultType DriveQuickAccessResult::GetSearchResultType() const {
+  return ash::DRIVE_QUICK_ACCESS;
 }
 
 }  // namespace app_list

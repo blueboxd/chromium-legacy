@@ -52,9 +52,18 @@ using web::wk_navigation_util::IsPlaceholderUrl;
 // The NavigationManagerImpl associated with the web state.
 @property(nonatomic, readonly) NavigationManagerImpl* navigationManagerImpl;
 
+// Set to YES when [self close] is called.
+@property(nonatomic, assign) BOOL beingDestroyed;
+
 @end
 
 @implementation CRWWebViewNavigationObserver
+
+#pragma mark - Public
+
+- (void)close {
+  self.beingDestroyed = YES;
+}
 
 #pragma mark - Property
 
@@ -103,6 +112,7 @@ using web::wk_navigation_util::IsPlaceholderUrl;
                       ofObject:(id)object
                         change:(NSDictionary*)change
                        context:(void*)context {
+  DCHECK(!self.beingDestroyed);
   NSString* dispatcherSelectorName = self.WKWebViewObservers[keyPath];
   DCHECK(dispatcherSelectorName);
   if (dispatcherSelectorName) {

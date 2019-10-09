@@ -14,7 +14,7 @@
 #include "base/strings/string16.h"
 #include "ui/aura/window.h"
 
-namespace app_list {
+namespace ash {
 
 class AppListClient;
 
@@ -178,6 +178,6 @@ class ASH_PUBLIC_EXPORT AppListController {
   virtual ~AppListController();
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_CONTROLLER_H_

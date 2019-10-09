@@ -26,7 +26,7 @@ namespace gfx {
 class Rect;
 }  // namespace gfx
 
-namespace app_list {
+namespace ash {
 
 class AppListConfig;
 class AppListItemList;
@@ -118,6 +118,6 @@ class APP_LIST_MODEL_EXPORT AppListFolderItem
   DISALLOW_COPY_AND_ASSIGN(AppListFolderItem);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_MODEL_APP_LIST_FOLDER_ITEM_H_

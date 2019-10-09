@@ -1803,4 +1803,56 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       {L"before ", L"bold text", L"italic text", L" after"});
 }
 
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       BoundingRectangleOfWordBeforeListItemMarker) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+        <body>
+          <p>Text before list</p>
+          <ul>
+            <li>First list item</li>
+            <li>Second list item</li>
+          </ul>
+        </body>
+      </html>)HTML");
+
+  BrowserAccessibility* text_before_list =
+      FindNode(ax::mojom::Role::kStaticText, "Text before list");
+  ASSERT_NE(nullptr, text_before_list);
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(*text_before_list, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Character,
+                  /*count*/ 12,
+                  /*expected_text*/ L"l",
+                  /*expected_count*/ 12);
+  text_range_provider->ExpandToEnclosingUnit(TextUnit_Word);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"list");
+
+  base::win::ScopedSafearray rectangles;
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetBoundingRectangles(rectangles.Receive()));
+
+  gfx::Vector2d view_offset =
+      text_before_list->manager()->GetViewBounds().OffsetFromOrigin();
+  std::vector<double> expected_values = {85 + view_offset.x(),
+                                         16 + view_offset.y(), 20, 17};
+  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
+
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Character,
+                  /*count*/ 17,
+                  /*expected_text*/ L"e",
+                  /*expected_count*/ 17);
+  text_range_provider->ExpandToEnclosingUnit(TextUnit_Word);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"item");
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetBoundingRectangles(rectangles.Receive()));
+  expected_values = {105 + view_offset.x(), 50 + view_offset.y(), 28, 17};
+  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
+}
+
 }  // namespace content

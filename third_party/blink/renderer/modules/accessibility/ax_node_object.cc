@@ -602,7 +602,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsA<HTMLMeterElement>(*GetNode()))
     return ax::mojom::Role::kMeter;
 
-  if (IsHTMLProgressElement(*GetNode()))
+  if (IsA<HTMLProgressElement>(*GetNode()))
     return ax::mojom::Role::kProgressIndicator;
 
   if (IsA<HTMLOutputElement>(*GetNode()))

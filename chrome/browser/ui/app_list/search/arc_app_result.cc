@@ -44,8 +44,8 @@ void ArcAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
   context_menu_->GetMenuModel(std::move(callback));
 }
 
-SearchResultType ArcAppResult::GetSearchResultType() const {
-  return PLAY_STORE_APP;
+ash::SearchResultType ArcAppResult::GetSearchResultType() const {
+  return ash::PLAY_STORE_APP;
 }
 
 AppContextMenu* ArcAppResult::GetAppContextMenu() {

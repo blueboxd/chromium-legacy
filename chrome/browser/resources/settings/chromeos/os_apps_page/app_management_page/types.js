@@ -29,17 +29,9 @@ let AppMap;
 
 /**
  * @typedef {{
- *   pageType: PageType,
- *   selectedAppId: ?string,
- * }}
- */
-let Page;
-
-/**
- * @typedef {{
  *   apps: !AppMap,
- *   currentPage: !Page,
  *   arcSupported: boolean,
+ *   selectedAppId: ?string,
  * }}
  */
 let AppManagementPageState;

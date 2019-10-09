@@ -31,7 +31,7 @@ class Layer;
 class ScopedLayerAnimationSettings;
 }  // namespace ui
 
-namespace app_list {
+namespace ash {
 
 class AppListPage;
 class AppListView;
@@ -343,6 +343,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(ContentsView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_CONTENTS_VIEW_H_

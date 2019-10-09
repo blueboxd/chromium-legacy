@@ -47,7 +47,7 @@ TEST(PasswordFormFillDataTest, TestSinglePreferredMatch) {
   preferred_match.preferred = true;
   preferred_match.scheme = PasswordForm::Scheme::kHtml;
 
-  std::map<base::string16, const PasswordForm*> matches;
+  std::vector<const PasswordForm*> matches;
 
   PasswordFormFillData result(form_on_page, matches, preferred_match, true);
 
@@ -127,10 +127,8 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   public_suffix_match.scheme = PasswordForm::Scheme::kHtml;
 
   // Add one exact match and one public suffix match.
-  std::map<base::string16, const PasswordForm*> matches;
-  matches.insert(std::make_pair(exact_match.username_value, &exact_match));
-  matches.insert(
-      std::make_pair(public_suffix_match.username_value, &public_suffix_match));
+  std::vector<const PasswordForm*> matches = {&exact_match,
+                                              &public_suffix_match};
 
   PasswordFormFillData result(form_on_page, matches, preferred_match, true);
   EXPECT_TRUE(result.wait_for_username);
@@ -202,10 +200,7 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
   affiliated_match.scheme = PasswordForm::Scheme::kHtml;
 
   // Add one exact match and one affiliation based match.
-  std::map<base::string16, const PasswordForm*> matches;
-  matches.insert(std::make_pair(exact_match.username_value, &exact_match));
-  matches.insert(
-      std::make_pair(affiliated_match.username_value, &affiliated_match));
+  std::vector<const PasswordForm*> matches = {&exact_match, &affiliated_match};
 
   PasswordFormFillData result(form_on_page, matches, preferred_match, false);
   EXPECT_FALSE(result.wait_for_username);
@@ -249,9 +244,7 @@ TEST(PasswordFormFillDataTest, RendererIDs) {
   form_on_page.username_element_renderer_id = 123;
   form_on_page.password_element_renderer_id = 456;
 
-  std::map<base::string16, const PasswordForm*> matches;
-
-  PasswordFormFillData result(form_on_page, matches, preferred_match, true);
+  PasswordFormFillData result(form_on_page, {}, preferred_match, true);
 
   EXPECT_EQ(form_data.unique_renderer_id, result.form_renderer_id);
   EXPECT_EQ(form_on_page.has_renderer_ids, result.has_renderer_ids);

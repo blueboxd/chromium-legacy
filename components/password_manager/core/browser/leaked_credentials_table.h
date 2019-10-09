@@ -54,8 +54,13 @@ class LeakedCredentialsTable {
 
   // Removes all leaked credentials created between |remove_begin| inclusive and
   // |remove_end| exclusive. Using a null Time value will do an unbounded delete
-  // in either direction.
-  bool RemoveRowsCreatedBetween(base::Time remove_begin, base::Time remove_end);
+  // in either direction. If |url_filter| is not null, only leaked credentials
+  // for matching urls are removed. Returns true if the SQL completed
+  // successfully.
+  bool RemoveRowsByUrlAndTime(
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter,
+      base::Time remove_begin,
+      base::Time remove_end);
 
   // Returns all leaked credentials from the database.
   std::vector<LeakedCredentials> GetAllRows();

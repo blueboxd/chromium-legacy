@@ -186,8 +186,8 @@ void CrostiniPackageNotification::UpdateProgress(PackageOperationStatus status,
           auto registration =
               crostini_registry_service->GetRegistration(app_id);
           if (registration.has_value() &&
-              registration->VmName() == container_id_.first &&
-              registration->ContainerName() == container_id_.second) {
+              registration->VmName() == container_id_.vm_name &&
+              registration->ContainerName() == container_id_.container_name) {
             app_id_ = app_id;
             app_count_++;
           }

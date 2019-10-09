@@ -14,26 +14,28 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 
+using autofill::PasswordForm;
+
 namespace password_manager {
 
 CredentialCache::CredentialCache() = default;
 CredentialCache::~CredentialCache() = default;
 
 void CredentialCache::SaveCredentialsForOrigin(
-    const std::map<base::string16, const autofill::PasswordForm*>& best_matches,
+    const std::vector<const PasswordForm*>& best_matches,
     const url::Origin& origin) {
   std::vector<CredentialPair> credentials;
   credentials.reserve(best_matches.size());
-  for (const auto& pair : best_matches) {
-    const auto& form = *pair.second;
-    credentials.emplace_back(form.username_value, form.password_value,
-                             form.origin, form.is_public_suffix_match);
+  for (const PasswordForm* form : best_matches) {
+    credentials.emplace_back(form->username_value, form->password_value,
+                             form->origin, form->is_public_suffix_match);
   }
-  // Sort by origin (but keep the existing username order).
-  std::stable_sort(credentials.begin(), credentials.end(),
-                   [](const CredentialPair& lhs, const CredentialPair& rhs) {
-                     return lhs.origin_url < rhs.origin_url;
-                   });
+  // Sort by origin, then username.
+  std::sort(credentials.begin(), credentials.end(),
+            [](const CredentialPair& lhs, const CredentialPair& rhs) {
+              return std::tie(lhs.origin_url, lhs.username) <
+                     std::tie(rhs.origin_url, rhs.username);
+            });
   // Move credentials with exactly matching origins to the top.
   const GURL url = origin.GetURL();
   std::stable_partition(

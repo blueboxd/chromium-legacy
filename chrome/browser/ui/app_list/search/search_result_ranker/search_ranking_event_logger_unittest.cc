@@ -43,7 +43,7 @@ namespace {
 
 using ukm::TestUkmRecorder;
 
-using ResultType = ash::SearchResultType;
+using ResultType = ash::AppListSearchResultType;
 using UkmEntry = ukm::builders::AppListNonAppImpression;
 
 std::unique_ptr<KeyedService> BuildHistoryService(
@@ -89,8 +89,8 @@ class TestSearchResult : public ChromeSearchResult {
   // ChromeSearchResult overrides:
   void Open(int event_flags) override {}
   void InvokeAction(int action_index, int event_flags) override {}
-  SearchResultType GetSearchResultType() const override {
-    return app_list::SEARCH_RESULT_TYPE_BOUNDARY;
+  ash::SearchResultType GetSearchResultType() const override {
+    return ash::SEARCH_RESULT_TYPE_BOUNDARY;
   }
 
  private:

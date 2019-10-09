@@ -28,7 +28,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view_class_properties.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -225,7 +225,7 @@ void SearchResultSuggestionChipView::UpdateSuggestionChipView() {
   SetText(result()->title());
 
   base::string16 accessible_name = result()->title();
-  if (result()->id() == app_list::kInternalAppIdContinueReading) {
+  if (result()->id() == kInternalAppIdContinueReading) {
     accessible_name = l10n_util::GetStringFUTF16(
         IDS_APP_LIST_CONTINUE_READING_ACCESSIBILE_NAME, accessible_name);
   }
@@ -276,4 +276,4 @@ void SearchResultSuggestionChipView::SetRoundedCornersForLayer(
       {corner_radius, corner_radius, corner_radius, corner_radius});
 }
 
-}  // namespace app_list
+}  // namespace ash

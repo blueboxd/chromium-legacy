@@ -2498,22 +2498,31 @@ are declared in tools/grit/grit_rule.gni.
 
       <!-- Cookie controls strings. -->
       <message name="IDS_COOKIE_CONTROLS_DIALOG_TITLE" desc="Title of the dialog that allows users to control cookie blocking.">
-        Third-party cookie blocking is on
+        {COUNT, plural,
+              =0 {No third-party cookies}
+              =1 {1 third-party cookie is blocked}
+              other {# third-party cookies are blocked}}
       </message>
       <message name="IDS_COOKIE_CONTROLS_DIALOG_TITLE_OFF" desc="Text shown in the dialog that allows users to control cookie blocking. Shown when cookie blocking was disabled for this specific site.">
-        Third-party cookie blocking is turned off for this site
+        Third-party cookies are allowed on this site
       </message>
       <message name="IDS_COOKIE_CONTROLS_TURN_ON_BUTTON" desc="Label shown on a button that turns cookie blocking on after it was disabled for a specific site.">
-        Turn on
+        Block cookies
       </message>
       <message name="IDS_COOKIE_CONTROLS_TURN_OFF_BUTTON" desc="Label shown on a button that turns off cookie blocking for a specific site.">
         Turn off for this site
       </message>
-      <message name="IDS_COOKIE_CONTROLS_BLOCKED_MESSAGE" desc="Text shown in the dialog that allows users to control cookie blocking. Shows the number of sites for which cookies have been blocked.">
-        {COUNT, plural,
-              =0 {This site doesn't use cookies for cross-site tracking}
-              =1 {Chrome is blocking cookies from 1 site}
-              other {Chrome is blocking cookies from # sites}}
+      <message name="IDS_COOKIE_CONTROLS_NOT_WORKING_TITLE" desc="Label shown on a dialog that allows users to turn off third-party cookie blocking for a specific site.">
+        Site not working?
+      </message>
+     <message name="IDS_COOKIE_CONTROLS_NOT_WORKING_DESCRIPTION" desc="Label shown on a dialog that allows users to turn off third-party cookie blocking for a specific site.">
+        Some sites use third-party cookies to load their pages. If a site isn't working, you can try turning off cookie blocking.
+      </message>
+      <message name="IDS_COOKIE_CONTROLS_NOTHING_BLOCKED_MESSAGE" desc="Text shown in the dialog that allows users to control cookie blocking.">
+        This site is free of cookies that can be used to track you across the web
+      </message>
+      <message name="IDS_COOKIE_CONTROLS_BLOCKED_MESSAGE" desc="Text shown in the dialog that allows users to control cookie blocking.">
+        Chrome is blocking cookies that can be used to track you across the web
       </message>
       <message name="IDS_COOKIE_CONTROLS_TOOLTIP" desc="Tooltip shown on a page action icon that is shown when cookie blocking is enabled.">
         Third-party cookie blocking

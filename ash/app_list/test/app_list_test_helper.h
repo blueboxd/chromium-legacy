@@ -10,13 +10,10 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/test/test_app_list_client.h"
 
-namespace app_list {
-class AppListView;
-}  // namespace app_list
-
 namespace ash {
 
 class AppListControllerImpl;
+class AppListView;
 enum class AppListViewState;
 
 class AppListTestHelper {
@@ -33,8 +30,7 @@ class AppListTestHelper {
 
   // Show the app list in |display_id| triggered with |show_source|, and wait
   // until animation finishes.
-  void ShowAndRunLoop(uint64_t display_id,
-                      app_list::AppListShowSource show_source);
+  void ShowAndRunLoop(uint64_t display_id, AppListShowSource show_source);
 
   // Dismiss the app list, and wait until animation finishes.
   void DismissAndRunLoop();
@@ -48,8 +44,7 @@ class AppListTestHelper {
 
   // Toggle the app list in |display_id| triggered with |show_source|, and wait
   // until animation finishes.
-  void ToggleAndRunLoop(uint64_t display_id,
-                        app_list::AppListShowSource show_source);
+  void ToggleAndRunLoop(uint64_t display_id, AppListShowSource show_source);
 
   // Check the visibility value of the app list and its target.
   // Fails in tests if either one doesn't match |visible|,.
@@ -61,7 +56,7 @@ class AppListTestHelper {
   // Run all pending in message loop to wait for animation to finish.
   void WaitUntilIdle();
 
-  app_list::AppListView* GetAppListView();
+  AppListView* GetAppListView();
 
  private:
   AppListControllerImpl* app_list_controller_ = nullptr;

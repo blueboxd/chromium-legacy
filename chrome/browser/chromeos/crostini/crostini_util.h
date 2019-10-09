@@ -36,14 +36,21 @@ namespace crostini {
 
 struct LinuxPackageInfo;
 
-// A unique identifier for our containers. This is <vm_name, container_name>.
-using ContainerId = std::pair<std::string, std::string>;
+// A unique identifier for our containers.
+struct ContainerId {
+  ContainerId(std::string vm_name, std::string container_name) noexcept;
+
+  std::string vm_name;
+  std::string container_name;
+};
+
+bool operator<(const ContainerId& lhs, const ContainerId& rhs) noexcept;
+
+std::ostream& operator<<(std::ostream& ostream,
+                         const ContainerId& container_id);
 
 using LaunchCrostiniAppCallback =
     base::OnceCallback<void(bool success, const std::string& failure_reason)>;
-
-// Return" (<vm_name>, <container_name>)".
-std::string ContainerIdToString(const ContainerId& container_id);
 
 // Checks if user profile is able to a crostini app with a given app_id.
 bool IsUninstallable(Profile* profile, const std::string& app_id);
@@ -96,8 +103,7 @@ void LoadIcons(Profile* profile,
 // Retrieves cryptohome_id from profile.
 std::string CryptohomeIdForProfile(Profile* profile);
 
-// Retrieves username from profile.  This is the text until '@' in
-// profile->GetProfileUserName() email address.
+// Retrieves username from profile.
 std::string DefaultContainerUserNameForProfile(Profile* profile);
 
 // Returns the mount directory within the container where paths from the Chrome

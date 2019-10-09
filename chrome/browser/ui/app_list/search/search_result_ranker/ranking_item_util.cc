@@ -19,7 +19,7 @@ namespace app_list {
 // on the subtype specified by ChromeSearchResult::result_subtype. Any
 // unanticipated subtypes are converted into RankingItemType::kOmniboxGeneric.
 RankingItemType ExpandOmniboxType(const ChromeSearchResult& result) {
-  if (result.result_type() != ash::SearchResultType::kOmnibox) {
+  if (result.result_type() != ash::AppListSearchResultType::kOmnibox) {
     NOTREACHED();
     return RankingItemType::kUnknown;
   }
@@ -65,26 +65,26 @@ RankingItemType RankingItemTypeFromSearchResult(
       "expand_omnibox_types", false);
 
   switch (result.result_type()) {
-    case ash::SearchResultType::kInstalledApp:
-    case ash::SearchResultType::kInternalApp:
+    case ash::AppListSearchResultType::kInstalledApp:
+    case ash::AppListSearchResultType::kInternalApp:
       return RankingItemType::kApp;
-    case ash::SearchResultType::kOmnibox:
+    case ash::AppListSearchResultType::kOmnibox:
       if (expand_omnibox_types)
         return ExpandOmniboxType(result);
       return RankingItemType::kOmniboxGeneric;
-    case ash::SearchResultType::kLauncher:
+    case ash::AppListSearchResultType::kLauncher:
       return RankingItemType::kFile;
-    case ash::SearchResultType::kUnknown:
-    case ash::SearchResultType::kPlayStoreApp:
-    case ash::SearchResultType::kInstantApp:
-    case ash::SearchResultType::kAnswerCard:
-    case ash::SearchResultType::kPlayStoreReinstallApp:
+    case ash::AppListSearchResultType::kUnknown:
+    case ash::AppListSearchResultType::kPlayStoreApp:
+    case ash::AppListSearchResultType::kInstantApp:
+    case ash::AppListSearchResultType::kAnswerCard:
+    case ash::AppListSearchResultType::kPlayStoreReinstallApp:
       return RankingItemType::kIgnored;
-    case ash::SearchResultType::kArcAppShortcut:
+    case ash::AppListSearchResultType::kArcAppShortcut:
       return RankingItemType::kArcAppShortcut;
-    case ash::SearchResultType::kZeroStateFile:
+    case ash::AppListSearchResultType::kZeroStateFile:
       return RankingItemType::kZeroStateFile;
-    case ash::SearchResultType::kDriveQuickAccess:
+    case ash::AppListSearchResultType::kDriveQuickAccess:
       return RankingItemType::kDriveQuickAccess;
   }
 }

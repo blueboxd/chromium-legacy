@@ -35,7 +35,7 @@ class LauncherSearchResult : public ChromeSearchResult,
 
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
-  SearchResultType GetSearchResultType() const override;
+  ash::SearchResultType GetSearchResultType() const override;
 
   void OnIconImageChanged(LauncherSearchIconImageLoader* image_loader) override;
   void OnBadgeIconImageChanged(

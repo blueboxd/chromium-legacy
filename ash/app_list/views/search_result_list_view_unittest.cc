@@ -21,7 +21,7 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
 
-namespace app_list {
+namespace ash {
 namespace test {
 
 namespace {
@@ -154,4 +154,4 @@ TEST_F(SearchResultListViewTest, ModelObservers) {
 }
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace ash

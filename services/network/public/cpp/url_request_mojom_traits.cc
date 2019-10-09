@@ -216,8 +216,6 @@ bool StructTraits<
   out->previews_state = data.previews_state();
   out->upgrade_if_insecure = data.upgrade_if_insecure();
   out->is_revalidating = data.is_revalidating();
-  out->should_also_use_factory_bound_origin_for_cors =
-      data.should_also_use_factory_bound_origin_for_cors();
   out->is_signed_exchange_prefetch_cache_enabled =
       data.is_signed_exchange_prefetch_cache_enabled();
   out->obey_origin_policy = data.obey_origin_policy();

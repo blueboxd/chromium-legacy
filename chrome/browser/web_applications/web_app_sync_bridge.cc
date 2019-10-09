@@ -40,10 +40,7 @@ std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app) {
       entity_data->specifics.mutable_web_app();
   specifics->set_launch_url(app.launch_url().spec());
   specifics->set_name(app.name());
-  specifics->set_launch_container(app.display_mode() ==
-                                          blink::mojom::DisplayMode::kStandalone
-                                      ? sync_pb::WebAppSpecifics::WINDOW
-                                      : sync_pb::WebAppSpecifics::TAB);
+  specifics->set_display_mode(ToWebAppSpecificsDisplayMode(app.display_mode()));
   if (app.theme_color().has_value())
     specifics->set_theme_color(app.theme_color().value());
 

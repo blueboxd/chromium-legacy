@@ -81,12 +81,11 @@ class PasswordsClientUIDelegate {
 
   // Called when a form is autofilled with login information, so we can manage
   // password credentials for the current site which are stored in
-  // |password_form_map|. This stores a copy of |password_form_map| and shows
+  // |password_forms|. This stores a copy of |password_forms| and shows
   // the manage password icon. |federated_matches| contain the matching stored
   // federated credentials to display in the UI.
   virtual void OnPasswordAutofilled(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          password_form_map,
+      const std::vector<const autofill::PasswordForm*>& password_forms,
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches) = 0;
 

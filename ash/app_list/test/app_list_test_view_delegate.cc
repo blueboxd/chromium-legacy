@@ -16,7 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace app_list {
+namespace ash {
 namespace test {
 
 AppListTestViewDelegate::AppListTestViewDelegate()
@@ -92,7 +92,7 @@ void AppListTestViewDelegate::ActivateItem(
     const std::string& id,
     int event_flags,
     ash::AppListLaunchedFrom launched_from) {
-  app_list::AppListItem* item = model_->FindItem(id);
+  AppListItem* item = model_->FindItem(id);
   if (!item)
     return;
   DCHECK(!item->is_folder());
@@ -103,7 +103,7 @@ void AppListTestViewDelegate::ActivateItem(
 void AppListTestViewDelegate::GetContextMenuModel(
     const std::string& id,
     GetContextMenuModelCallback callback) {
-  app_list::AppListItem* item = model_->FindItem(id);
+  AppListItem* item = model_->FindItem(id);
   // TODO(stevenjb/jennyz): Implement this for folder items
   std::unique_ptr<ui::SimpleMenuModel> menu_model;
   if (item && !item->is_folder()) {
@@ -188,7 +188,7 @@ void AppListTestViewDelegate::OnStateTransitionAnimationCompleted(
     ash::AppListViewState state) {}
 
 void AppListTestViewDelegate::GetAppLaunchedMetricParams(
-    app_list::AppLaunchedMetricParams* metric_params) {}
+    AppLaunchedMetricParams* metric_params) {}
 
 gfx::Rect AppListTestViewDelegate::SnapBoundsToDisplayEdge(
     const gfx::Rect& bounds) {
@@ -203,9 +203,9 @@ int AppListTestViewDelegate::GetShelfHeight() {
 
 void AppListTestViewDelegate::RecordAppLaunched(
     ash::AppListLaunchedFrom launched_from) {
-  app_list::RecordAppListAppLaunched(launched_from, model_->state_fullscreen(),
-                                     false /*tablet mode*/,
-                                     false /*home launcher shown*/);
+  RecordAppListAppLaunched(launched_from, model_->state_fullscreen(),
+                           false /*tablet mode*/,
+                           false /*home launcher shown*/);
 }
 
 bool AppListTestViewDelegate::IsCommandIdChecked(int command_id) const {
@@ -219,4 +219,4 @@ bool AppListTestViewDelegate::IsCommandIdEnabled(int command_id) const {
 void AppListTestViewDelegate::ExecuteCommand(int command_id, int event_flags) {}
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace ash

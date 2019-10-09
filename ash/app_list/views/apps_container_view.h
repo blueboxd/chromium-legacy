@@ -13,7 +13,7 @@
 #include "ash/app_list/views/horizontal_page.h"
 #include "base/macros.h"
 
-namespace app_list {
+namespace ash {
 
 class AppsGridView;
 class ApplicationDragAndDropHost;
@@ -186,6 +186,6 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   DISALLOW_COPY_AND_ASSIGN(AppsContainerView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_APPS_CONTAINER_VIEW_H_

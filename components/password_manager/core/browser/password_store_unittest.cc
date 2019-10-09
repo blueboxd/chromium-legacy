@@ -1303,8 +1303,9 @@ TEST_F(PasswordStoreTest, RemoveLeakedCredentialsCreatedBetween) {
   WaitForPasswordStore();
   testing::Mock::VerifyAndClearExpectations(&consumer);
 
-  store->RemoveLeakedCredentialsCreatedBetween(
-      base::Time::FromTimeT(150), base::Time::FromTimeT(250), base::Closure());
+  store->RemoveLeakedCredentialsByUrlAndTime(
+      base::BindRepeating(std::not_equal_to<GURL>(), leaked_credentials3.url),
+      base::Time::FromTimeT(150), base::Time::FromTimeT(350), base::Closure());
 
   EXPECT_CALL(consumer, OnGetLeakedCredentials(UnorderedElementsAre(
                             leaked_credentials1, leaked_credentials3)));

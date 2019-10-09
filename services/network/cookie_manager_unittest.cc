@@ -23,7 +23,6 @@
 #include "net/cookies/cookie_store_test_callbacks.h"
 #include "net/cookies/cookie_store_test_helpers.h"
 #include "net/cookies/cookie_util.h"
-#include "net/cookies/test_cookie_access_delegate.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/session_cleanup_cookie_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -79,24 +78,6 @@ class SynchronousCookieManager {
           cookies_out = cookies;
           run_loop.Quit();
         }));
-    run_loop.Run();
-    return cookies_out;
-  }
-
-  std::vector<net::CanonicalCookie> GetAllCookiesWithAccessSemantics(
-      std::vector<net::CookieAccessSemantics>* access_semantics_list_out) {
-    base::RunLoop run_loop;
-    std::vector<net::CanonicalCookie> cookies_out;
-    cookie_service_->GetAllCookiesWithAccessSemantics(
-        base::BindLambdaForTesting(
-            [&run_loop, &cookies_out, access_semantics_list_out](
-                const std::vector<net::CanonicalCookie>& cookies,
-                const std::vector<net::CookieAccessSemantics>&
-                    access_semantics_list) {
-              cookies_out = cookies;
-              *access_semantics_list_out = access_semantics_list;
-              run_loop.Quit();
-            }));
     run_loop.Run();
     return cookies_out;
   }
@@ -456,75 +437,6 @@ TEST_F(CookieManagerTest, GetAllCookies) {
   EXPECT_FALSE(cookies[3].IsHttpOnly());
   EXPECT_EQ(net::CookieSameSite::NO_RESTRICTION, cookies[3].SameSite());
   EXPECT_EQ(net::COOKIE_PRIORITY_MEDIUM, cookies[3].Priority());
-}
-
-TEST_F(CookieManagerTest, GetAllCookiesWithAccessSemantics) {
-  auto delegate = std::make_unique<net::TestCookieAccessDelegate>();
-  delegate->SetExpectationForCookieDomain("domain1.test",
-                                          net::CookieAccessSemantics::UNKNOWN);
-  delegate->SetExpectationForCookieDomain("domain2.test",
-                                          net::CookieAccessSemantics::LEGACY);
-  delegate->SetExpectationForCookieDomain(
-      ".domainwithdot.test", net::CookieAccessSemantics::NONLEGACY);
-  cookie_store()->SetCookieAccessDelegate(std::move(delegate));
-
-  // Set some cookies for the test to play with.
-  // TODO(chlily): Because the order of the cookies with respect to the access
-  // semantics entries should match up, for the purposes of this test we need
-  // the cookies to sort in a predictable order. Since the longest path is
-  // first, we can manipulate the path attribute of each cookie set below to get
-  // them in the right order. This will have to change if CookieSorter ever
-  // starts sorting the cookies differently.
-
-  // UNKNOWN
-  EXPECT_TRUE(SetCanonicalCookie(
-      net::CanonicalCookie("A", "B", "domain1.test",
-                           "/this/path/is/the/longest/for/sorting/purposes",
-                           base::Time(), base::Time(), base::Time(),
-                           /*secure=*/false, /*httponly=*/false,
-                           net::CookieSameSite::NO_RESTRICTION,
-                           net::COOKIE_PRIORITY_MEDIUM),
-      "https", true));
-  // LEGACY
-  EXPECT_TRUE(SetCanonicalCookie(
-      net::CanonicalCookie(
-          "C", "D", "domain2.test", "/with/longer/path", base::Time(),
-          base::Time(), base::Time(), /*secure=*/false, /*httponly=*/false,
-          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
-      "https", true));
-  // not set (UNKNOWN)
-  EXPECT_TRUE(SetCanonicalCookie(
-      net::CanonicalCookie(
-          "HttpOnly", "F", "domain3.test", "/with/path", base::Time(),
-          base::Time(), base::Time(), /*secure=*/false,
-          /*httponly=*/true, net::CookieSameSite::NO_RESTRICTION,
-          net::COOKIE_PRIORITY_MEDIUM),
-      "https", true));
-  // NONLEGACY
-  EXPECT_TRUE(SetCanonicalCookie(
-      net::CanonicalCookie(
-          "Secure", "E", ".domainwithdot.test", "/", base::Time(), base::Time(),
-          base::Time(), /*secure=*/true,
-          /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
-          net::COOKIE_PRIORITY_MEDIUM),
-      "https", true));
-
-  std::vector<net::CookieAccessSemantics> access_semantics_list;
-  std::vector<net::CanonicalCookie> cookies =
-      service_wrapper()->GetAllCookiesWithAccessSemantics(
-          &access_semantics_list);
-
-  ASSERT_EQ(4u, cookies.size());
-  EXPECT_EQ(cookies.size(), access_semantics_list.size());
-  EXPECT_EQ("domain1.test", cookies[0].Domain());
-  EXPECT_EQ("domain2.test", cookies[1].Domain());
-  EXPECT_EQ("domain3.test", cookies[2].Domain());
-  EXPECT_EQ(".domainwithdot.test", cookies[3].Domain());
-
-  EXPECT_EQ(net::CookieAccessSemantics::UNKNOWN, access_semantics_list[0]);
-  EXPECT_EQ(net::CookieAccessSemantics::LEGACY, access_semantics_list[1]);
-  EXPECT_EQ(net::CookieAccessSemantics::UNKNOWN, access_semantics_list[2]);
-  EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY, access_semantics_list[3]);
 }
 
 TEST_F(CookieManagerTest, GetCookieList) {

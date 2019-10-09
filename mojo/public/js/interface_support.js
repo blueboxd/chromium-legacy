@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 'use strict';
 
-goog.require('mojo.interfaceControl.kRunMessageId');
+goog.require('mojo.interfaceControl.RUN_MESSAGE_ID');
 goog.require('mojo.interfaceControl.RunResponseMessageParamsSpec');
 goog.require('mojo.internal');
 
@@ -26,7 +26,7 @@ mojo.internal.interfaceSupport.ControlMessageHandler = class {
   sendRunMessage(requestId, input) {
     return new Promise(resolve => {
       mojo.internal.serializeAndSendMessage(
-          this.handle_, mojo.interfaceControl.kRunMessageId, requestId,
+          this.handle_, mojo.interfaceControl.RUN_MESSAGE_ID, requestId,
           mojo.internal.kMessageFlagExpectsResponse,
           mojo.interfaceControl.RunMessageParamsSpec.$, {'input': input});
       this.pendingFlushResolvers_.set(requestId, resolve);
@@ -34,7 +34,7 @@ mojo.internal.interfaceSupport.ControlMessageHandler = class {
   }
 
   maybeHandleControlMessage(header, buffer) {
-    if (header.ordinal === mojo.interfaceControl.kRunMessageId) {
+    if (header.ordinal === mojo.interfaceControl.RUN_MESSAGE_ID) {
       const data = new DataView(buffer, header.headerSize);
       const decoder = new mojo.internal.Decoder(data, []);
       if (header.flags & mojo.internal.kMessageFlagExpectsResponse)
@@ -51,7 +51,7 @@ mojo.internal.interfaceSupport.ControlMessageHandler = class {
         mojo.interfaceControl.RunMessageParamsSpec.$.$.structSpec)['input'];
     if (input.hasOwnProperty('flushForTesting')) {
       mojo.internal.serializeAndSendMessage(
-          this.handle_, mojo.interfaceControl.kRunMessageId, requestId,
+          this.handle_, mojo.interfaceControl.RUN_MESSAGE_ID, requestId,
           mojo.internal.kMessageFlagIsResponse,
           mojo.interfaceControl.RunResponseMessageParamsSpec.$,
           {'output': null});

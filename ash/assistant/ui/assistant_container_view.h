@@ -18,7 +18,7 @@
 namespace ash {
 
 class AssistantContainerViewAnimator;
-class AssistantMainView;
+class AssistantMainViewDeprecated;
 class AssistantMiniView;
 class AssistantViewDelegate;
 class AssistantWebView;
@@ -71,7 +71,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerView
 
   AssistantViewDelegate* const delegate_;
 
-  AssistantMainView* assistant_main_view_;  // Owned by view hierarchy.
+  AssistantMainViewDeprecated*
+      assistant_main_view_;                 // Owned by view hierarchy.
   AssistantMiniView* assistant_mini_view_;  // Owned by view hierarchy.
   AssistantWebView* assistant_web_view_;    // Owned by view hierarchy.
 

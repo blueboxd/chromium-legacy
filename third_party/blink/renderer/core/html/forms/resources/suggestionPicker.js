@@ -72,6 +72,15 @@ SuggestionPicker.validateConfig = function(config) {
   return null;
 };
 
+Object.defineProperty(SuggestionPicker, 'Padding', {
+  get: function() {
+    return Number(
+        window.getComputedStyle(document.querySelector('.suggestion-list'))
+            .getPropertyValue('padding')
+            .replace('px', ''));
+  }
+});
+
 SuggestionPicker.prototype._setColors = function() {
   var text = '.' + SuggestionPicker.ListEntryClass + ':focus {\
         background-color: ' +
@@ -152,11 +161,13 @@ SuggestionPicker.prototype._measureMaxContentWidth = function() {
 
 SuggestionPicker.prototype._fixWindowSize = function() {
   var ListBorder = 2;
+  const ListPadding = 2 * SuggestionPicker.Padding;
   var zoom = this._config.zoomFactor;
-  var desiredWindowWidth = (this._measureMaxContentWidth() + ListBorder) * zoom;
+  var desiredWindowWidth =
+      (this._measureMaxContentWidth() + ListBorder + ListPadding) * zoom;
   if (typeof this._config.inputWidth === 'number')
     desiredWindowWidth = Math.max(this._config.inputWidth, desiredWindowWidth);
-  var totalHeight = ListBorder;
+  var totalHeight = ListBorder + ListPadding;
   var maxHeight = 0;
   var entryCount = 0;
   for (var i = 0; i < this._containerElement.childNodes.length; ++i) {
@@ -170,7 +181,8 @@ SuggestionPicker.prototype._fixWindowSize = function() {
   }
   var desiredWindowHeight = totalHeight * zoom;
   if (maxHeight !== 0 && totalHeight > maxHeight * zoom) {
-    this._containerElement.style.maxHeight = (maxHeight - ListBorder) + 'px';
+    this._containerElement.style.maxHeight =
+        (maxHeight - ListBorder - ListPadding) + 'px';
     desiredWindowWidth += getScrollbarWidth() * zoom;
     desiredWindowHeight = maxHeight * zoom;
     this._containerElement.style.overflowY = 'scroll';
@@ -178,7 +190,7 @@ SuggestionPicker.prototype._fixWindowSize = function() {
   var windowRect = adjustWindowRect(
       desiredWindowWidth, desiredWindowHeight, desiredWindowWidth, 0);
   this._containerElement.style.height =
-      (windowRect.height / zoom - ListBorder) + 'px';
+      (windowRect.height / zoom - ListBorder - ListPadding) + 'px';
   setWindowRect(windowRect);
 };
 
@@ -197,8 +209,10 @@ SuggestionPicker.prototype._layout = function() {
   }
   if (this._config.showOtherDateEntry) {
     // Add separator
-    var separator = createElement('div', 'separator');
-    this._containerElement.appendChild(separator);
+    if (!global.params.isFormControlsRefreshEnabled) {
+      var separator = createElement('div', 'separator');
+      this._containerElement.appendChild(separator);
+    }
 
     // Add "Other..." entry
     var otherEntry = this._createActionEntryElement(

@@ -360,13 +360,12 @@ void DedicatedWorkerHost::CreateWebUsbService(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* ancestor_render_frame_host =
       GetAncestorRenderFrameHost();
-  if (!ancestor_render_frame_host) {
-    // The ancestor frame may have already been closed. In that case, the worker
-    // will soon be terminated too, so abort the connection.
+  // The ancestor frame may have already been closed. In that case, the worker
+  // will soon be terminated too, so abort the connection.
+  if (!ancestor_render_frame_host)
     return;
-  }
-  GetContentClient()->browser()->CreateWebUsbService(ancestor_render_frame_host,
-                                                     std::move(receiver));
+
+  ancestor_render_frame_host->CreateWebUsbService(std::move(receiver));
 }
 
 void DedicatedWorkerHost::CreateWebSocketConnector(

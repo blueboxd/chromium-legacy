@@ -220,6 +220,9 @@ void MediaWebContentsObserver::OnMediaPlaying(
   if (is_remote)
     return;
 
+  BackForwardCache::DisableForRenderFrameHost(
+      render_frame_host, "MediaWebContentsObserver::OnMediaPlaying");
+
   const MediaPlayerId id(render_frame_host, delegate_id);
   if (has_audio)
     AddMediaPlayerEntry(id, &active_audio_players_);

@@ -9,9 +9,7 @@
 
 namespace ash {
 enum class AppListLaunchedFrom;
-}
 
-namespace app_list {
 // The type of the ChromeSearchResult. This is used for logging so do not
 // change the order of this enum. If you add to this enum update
 // AppListSearchResult in enums.xml.
@@ -96,6 +94,6 @@ ASH_PUBLIC_EXPORT void RecordZeroStateSuggestionOpenTypeHistogram(
 
 ASH_PUBLIC_EXPORT void RecordLauncherIssuedSearchQueryLength(int query_length);
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_METRICS_H_

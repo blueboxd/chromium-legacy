@@ -192,6 +192,12 @@ void MessagePopupView::OnWorkAreaChanged() {
   }
 }
 
+void MessagePopupView::OnFocus() {
+  // This view is just a container, so advance focus to the underlying
+  // MessageView.
+  GetFocusManager()->SetFocusedView(message_view_);
+}
+
 void MessagePopupView::OnWidgetActivationChanged(views::Widget* widget,
                                                  bool active) {
   is_active_ = active;

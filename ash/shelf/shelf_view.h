@@ -112,7 +112,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                              public ShellObserver,
                              public views::ContextMenuController,
                              public views::BoundsAnimatorObserver,
-                             public app_list::ApplicationDragAndDropHost,
+                             public ApplicationDragAndDropHost,
                              public ShelfTooltipDelegate,
                              public ash::TabletModeObserver,
                              public VirtualKeyboardModel::Observer,
@@ -200,7 +200,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // AccessiblePaneView:
   views::View* GetDefaultFocusableChild() override;
 
-  // app_list::ApplicationDragAndDropHost:
+  // ApplicationDragAndDropHost:
   void CreateDragIconProxy(const gfx::Point& location_in_screen_coordinates,
                            const gfx::ImageSkia& icon,
                            views::View* replaced_view,

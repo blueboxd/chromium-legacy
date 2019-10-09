@@ -46,7 +46,7 @@ class InternalAppResult : public AppResult {
   void Open(int event_flags) override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
   void OnVisibilityChanged(bool visibility) override;
-  SearchResultType GetSearchResultType() const override;
+  ash::SearchResultType GetSearchResultType() const override;
 
   // AppContextMenuDelegate overrides:
   void ExecuteLaunchCommand(int event_flags) override;

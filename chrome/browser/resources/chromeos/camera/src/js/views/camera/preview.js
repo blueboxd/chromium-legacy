@@ -425,16 +425,16 @@ cca.views.camera.Preview.prototype.onFocusClicked_ = function(event) {
   this.cancelFocus_();
 
   // Normalize to square space coordinates by W3C spec.
-  var x = event.offsetX / this.video_.width;
-  var y = event.offsetY / this.video_.height;
-  var constraints = {advanced: [{pointsOfInterest: [{x, y}]}]};
-  var track = this.video_.srcObject.getVideoTracks()[0];
-  var focus = track.applyConstraints(constraints).then(() => {
+  const x = event.offsetX / this.video_.offsetWidth;
+  const y = event.offsetY / this.video_.offsetHeight;
+  const constraints = {advanced: [{pointsOfInterest: [{x, y}]}]};
+  const track = this.video_.srcObject.getVideoTracks()[0];
+  const focus = track.applyConstraints(constraints).then(() => {
     if (focus != this.focus_) {
       return; // Focus was cancelled.
     }
-    var aim = document.querySelector('#preview-focus-aim');
-    var clone = aim.cloneNode(true);
+    const aim = document.querySelector('#preview-focus-aim');
+    const clone = aim.cloneNode(true);
     clone.style.left = `${event.offsetX + this.video_.offsetLeft}px`;
     clone.style.top = `${event.offsetY + this.video_.offsetTop}px`;
     clone.hidden = false;

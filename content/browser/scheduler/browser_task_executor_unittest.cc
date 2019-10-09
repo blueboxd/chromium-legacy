@@ -33,6 +33,7 @@ using ::base::TaskPriority;
 using ::testing::ElementsAre;
 using ::testing::Invoke;
 using ::testing::Mock;
+using ::testing::NotNull;
 using ::testing::SizeIs;
 
 using QueueType = BrowserTaskQueues::QueueType;
@@ -49,13 +50,13 @@ using StrictMockTask =
 
 TEST_F(BrowserTaskExecutorTest, RegisterExecutorForBothThreads) {
   base::PostTask(FROM_HERE, {BrowserThread::UI}, base::BindOnce([]() {
-                   EXPECT_EQ(BrowserTaskExecutor::Get(),
-                             base::GetTaskExecutorForCurrentThread());
+                   EXPECT_THAT(base::GetTaskExecutorForCurrentThread(),
+                               NotNull());
                  }));
 
   base::PostTask(FROM_HERE, {BrowserThread::IO}, base::BindOnce([]() {
-                   EXPECT_EQ(BrowserTaskExecutor::Get(),
-                             base::GetTaskExecutorForCurrentThread());
+                   EXPECT_THAT(base::GetTaskExecutorForCurrentThread(),
+                               NotNull());
                  }));
 
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
@@ -123,6 +124,16 @@ TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnIOIsReentrant) {
 // Helper to perform the same tets for all BrowserThread::ID values.
 class BrowserTaskTraitsMappingTest : public BrowserTaskExecutorTest {
  protected:
+  class TestExecutor : public BaseBrowserTaskExecutor {
+   public:
+    ~TestExecutor() override = default;
+
+    BrowserThread::ID GetCurrentThreadID() const override {
+      NOTREACHED();
+      return BrowserThread::UI;
+    }
+  };
+
   template <BrowserThread::ID ID>
   void CheckExpectations() {
     EXPECT_EQ(GetQueueType({ID, TaskPriority::BEST_EFFORT}),
@@ -146,8 +157,10 @@ class BrowserTaskTraitsMappingTest : public BrowserTaskExecutorTest {
 
  private:
   QueueType GetQueueType(const base::TaskTraits& traits) {
-    return BrowserTaskExecutor::GetThreadIdAndQueueType(traits).queue_type;
+    return test_executor_.GetThreadIdAndQueueType(traits).queue_type;
   }
+
+  TestExecutor test_executor_;
 };
 
 TEST_F(BrowserTaskTraitsMappingTest, BrowserTaskTraitsMapToProperPriorities) {
@@ -194,9 +207,8 @@ class BrowserTaskExecutorWithCustomSchedulerTest : public testing::Test {
               QueueType::kDefault));
       BrowserTaskExecutor::CreateForTesting(
           std::move(browser_ui_thread_scheduler),
-          std::make_unique<BrowserIOThreadDelegate>(
-              BrowserIOThreadDelegate::BrowserTaskExecutorPresent::
-                  kNoForTesting));
+          BrowserIOThreadDelegate::CreateForTesting(sequence_manager()));
+      BrowserTaskExecutor::BindToUIThreadForTesting();
     }
   };
 
@@ -254,6 +266,48 @@ TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
   BrowserTaskExecutor::EnableAllQueues();
   EXPECT_CALL(best_effort, Run).Times(4);
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+}
+
+TEST_F(BrowserTaskExecutorTest, CurrentThread) {
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI}, base::BindOnce([]() {
+        base::PostTask(
+            FROM_HERE, {base::CurrentThread()}, base::BindOnce([]() {
+              EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+            }));
+      }));
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
+
+  base::PostTask(
+      FROM_HERE, {BrowserThread::IO}, base::BindOnce([]() {
+        base::PostTask(
+            FROM_HERE, {base::CurrentThread()}, base::BindOnce([]() {
+              EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+            }));
+      }));
+
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
+}
+
+TEST_F(BrowserTaskExecutorTest, CurrentThreadAndOtherTraits) {
+  EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  auto ui_task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+  auto ui_best_effort_runner = base::CreateSingleThreadTaskRunner(
+      {BrowserThread::UI, base::TaskPriority::BEST_EFFORT});
+  auto ui_best_navigation_runner = base::CreateSingleThreadTaskRunner(
+      {BrowserThread::UI, BrowserTaskType::kNavigation});
+
+  EXPECT_EQ(ui_task_runner,
+            base::CreateSingleThreadTaskRunner({base::CurrentThread()}));
+
+  EXPECT_EQ(ui_best_effort_runner,
+            base::CreateSingleThreadTaskRunner(
+                {base::CurrentThread(), base::TaskPriority::BEST_EFFORT}));
+
+  EXPECT_EQ(ui_best_navigation_runner,
+            base::CreateSingleThreadTaskRunner(
+                {base::CurrentThread(), BrowserTaskType::kNavigation}));
 }
 
 }  // namespace content

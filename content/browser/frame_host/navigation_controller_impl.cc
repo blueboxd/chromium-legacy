@@ -521,7 +521,7 @@ NavigationControllerImpl::NavigationControllerImpl(
       is_initial_navigation_(true),
       in_navigate_to_pending_entry_(false),
       pending_reload_(ReloadType::NONE),
-      get_timestamp_callback_(base::Bind(&base::Time::Now)),
+      get_timestamp_callback_(base::BindRepeating(&base::Time::Now)),
       entry_replaced_by_post_commit_error_(nullptr) {
   DCHECK(browser_context_);
 }
@@ -3497,7 +3497,7 @@ void NavigationControllerImpl::InsertEntriesFrom(
 }
 
 void NavigationControllerImpl::SetGetTimestampCallbackForTest(
-    const base::Callback<base::Time()>& get_timestamp_callback) {
+    const base::RepeatingCallback<base::Time()>& get_timestamp_callback) {
   get_timestamp_callback_ = get_timestamp_callback;
 }
 

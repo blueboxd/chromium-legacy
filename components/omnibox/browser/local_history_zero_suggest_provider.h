@@ -15,7 +15,6 @@ class AutocompleteProviderClient;
 class AutocompleteProviderListener;
 
 namespace history {
-class HistoryDBTask;
 class QueryResults;
 }  // namespace history
 
@@ -42,9 +41,9 @@ class LocalHistoryZeroSuggestProvider : public AutocompleteProvider {
                                   AutocompleteProviderListener* listener);
   ~LocalHistoryZeroSuggestProvider() override;
 
-  // Creates autocomplete matches from |url_matches| and notifies |listener_|.
-  void OnQueryURLDatabaseComplete(const AutocompleteInput& input,
-                                  const history::URLRows& url_matches);
+  // Queries the keyword search terms table of the in-memory URLDatabase for the
+  // recent search terms submitted to the default search provider.
+  void QueryURLDatabase(const AutocompleteInput& input);
 
   // Called when the query results from HistoryService::QueryHistory are ready.
   // Deletes URLs in |results| that would generate |suggestion|.
@@ -54,10 +53,6 @@ class LocalHistoryZeroSuggestProvider : public AutocompleteProvider {
   // The maximum number of matches to return.
   const size_t max_matches_;
 
-  // Used to filter out deleted query suggestions in order to prevent them from
-  // reappearing before the corresponding URLs are asynchronously deleted.
-  std::set<base::string16> deleted_suggestions_set_;
-
   // Client for accessing TemplateUrlService, prefs, etc.
   AutocompleteProviderClient* const client_;
 
@@ -66,9 +61,6 @@ class LocalHistoryZeroSuggestProvider : public AutocompleteProvider {
 
   // Used for the async tasks querying the HistoryService.
   base::CancelableTaskTracker history_task_tracker_;
-
-  // Task ID for the history::HistoryDBTask running on history backend thread.
-  base::CancelableTaskTracker::TaskId history_db_task_id_;
 
   base::WeakPtrFactory<LocalHistoryZeroSuggestProvider> weak_ptr_factory_{this};
 

@@ -1460,6 +1460,25 @@
             ]
         }
     ],
+    "CacheStorageSequence": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled1",
+                    "enable_features": [
+                        "CacheStorageSequence"
+                    ]
+                }
+            ]
+        }
+    ],
     "CertDualVerificationTrial": [
         {
             "platforms": [

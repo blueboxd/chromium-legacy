@@ -49,7 +49,7 @@ bool IsFillOnAccountSelectFeatureEnabled() {
 void Autofill(PasswordManagerClient* client,
               PasswordManagerDriver* driver,
               const PasswordForm& form_for_autofill,
-              const std::map<base::string16, const PasswordForm*>& best_matches,
+              const std::vector<const PasswordForm*>& best_matches,
               const std::vector<const PasswordForm*>& federated_matches,
               const PasswordForm& preferred_match,
               bool wait_for_username) {
@@ -83,7 +83,7 @@ LikelyFormFilling SendFillInformationToRenderer(
     PasswordManagerClient* client,
     PasswordManagerDriver* driver,
     const PasswordForm& observed_form,
-    const std::map<base::string16, const PasswordForm*>& best_matches,
+    const std::vector<const PasswordForm*>& best_matches,
     const std::vector<const PasswordForm*>& federated_matches,
     const PasswordForm* preferred_match,
     PasswordFormMetricsRecorder* metrics_recorder) {

@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 
-namespace app_list {
+namespace ash {
 
 SearchModel::SearchModel()
     : search_box_(std::make_unique<SearchBoxModel>()),
@@ -128,4 +128,4 @@ void SearchModel::DeleteResultById(const std::string& id) {
   }
 }
 
-}  // namespace app_list
+}  // namespace ash

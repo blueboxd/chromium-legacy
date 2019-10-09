@@ -20,6 +20,7 @@
 namespace base {
 
 class MessagePump;
+class TaskObserver;
 
 namespace sequence_manager {
 
@@ -247,6 +248,14 @@ class BASE_EXPORT SequenceManager {
   // deleted on the main thread.
   virtual std::unique_ptr<NativeWorkHandle> OnNativeWorkPending(
       TaskQueue::QueuePriority priority) = 0;
+
+  // Adds an observer which reports task execution. Can only be called on the
+  // same thread that |this| is running on.
+  virtual void AddTaskObserver(TaskObserver* task_observer) = 0;
+
+  // Removes an observer which reports task execution. Can only be called on the
+  // same thread that |this| is running on.
+  virtual void RemoveTaskObserver(TaskObserver* task_observer) = 0;
 
  protected:
   virtual std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(

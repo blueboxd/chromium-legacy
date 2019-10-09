@@ -3286,11 +3286,9 @@ TEST_F(PasswordAutofillAgentTest,
 
 #if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
 // Verify CheckSafeBrowsingReputation() is called when user starts filling
-// username or password field, and that this function is only called once.
-// TODO(crbug.com/1008402): Enable this test after fixing the linked bug.
-TEST_F(
-    PasswordAutofillAgentTest,
-    DISABLED_CheckSafeBrowsingReputationWhenUserStartsFillingUsernamePassword) {
+// a password field, and that this function is only called once.
+TEST_F(PasswordAutofillAgentTest,
+       CheckSafeBrowsingReputationWhenUserStartsFillingUsernamePassword) {
   ASSERT_EQ(0, fake_driver_.called_check_safe_browsing_reputation_cnt());
   // Simulate a click on password field to set its on focus,
   // CheckSafeBrowsingReputation() should be called.
@@ -3302,14 +3300,20 @@ TEST_F(
   SimulatePasswordTyping("modify");
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, fake_driver_.called_check_safe_browsing_reputation_cnt());
+
+  // No CheckSafeBrowsingReputation() call on username field click.
   SimulateElementClick(kUsernameName);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, fake_driver_.called_check_safe_browsing_reputation_cnt());
 
-  // Navigate to another page and click on username field,
+  SimulateElementClick(kPasswordName);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, fake_driver_.called_check_safe_browsing_reputation_cnt());
+
+  // Navigate to another page and click on password field,
   // CheckSafeBrowsingReputation() should be triggered again.
   LoadHTML(kFormHTML);
-  SimulateElementClick(kUsernameName);
+  SimulateElementClick(kPasswordName);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, fake_driver_.called_check_safe_browsing_reputation_cnt());
 }

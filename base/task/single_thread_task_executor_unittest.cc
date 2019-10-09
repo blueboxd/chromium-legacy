@@ -5,6 +5,7 @@
 #include "base/task/single_thread_task_executor.h"
 
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,6 +41,18 @@ TEST(SingleThreadTaskExecutorTest,
       }));
 
   run_loop.Run();
+}
+
+TEST(SingleThreadTaskExecutorTest, CurrentThread) {
+  SingleThreadTaskExecutor single_thread_task_executor;
+
+  EXPECT_EQ(single_thread_task_executor.task_runner(),
+            base::CreateSingleThreadTaskRunner({base::CurrentThread()}));
+
+  // There's only one task queue so priority is ignored.
+  EXPECT_EQ(single_thread_task_executor.task_runner(),
+            base::CreateSingleThreadTaskRunner(
+                {base::CurrentThread(), base::TaskPriority::BEST_EFFORT}));
 }
 
 }  // namespace base

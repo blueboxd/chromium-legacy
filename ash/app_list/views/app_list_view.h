@@ -36,17 +36,6 @@ class ImplicitAnimationObserver;
 }  // namespace ui
 
 namespace ash {
-class PaginationModel;
-
-FORWARD_DECLARE_TEST(AppListControllerImplTest,
-                     CheckAppListViewBoundsWhenVKeyboardEnabled);
-FORWARD_DECLARE_TEST(AppListControllerImplTest,
-                     CheckAppListViewBoundsWhenDismissVKeyboard);
-FORWARD_DECLARE_TEST(AppListControllerImplMetricsTest,
-                     PresentationTimeRecordedForDragInTabletMode);
-}  // namespace ash
-
-namespace app_list {
 class AppsContainerView;
 class ApplicationDragAndDropHost;
 class AppListBackgroundShieldView;
@@ -55,8 +44,16 @@ class AppListMainView;
 class AppListModel;
 class AppsGridView;
 class BoundsAnimationObserver;
+class PaginationModel;
 class SearchBoxView;
 class SearchModel;
+
+FORWARD_DECLARE_TEST(AppListControllerImplTest,
+                     CheckAppListViewBoundsWhenVKeyboardEnabled);
+FORWARD_DECLARE_TEST(AppListControllerImplTest,
+                     CheckAppListViewBoundsWhenDismissVKeyboard);
+FORWARD_DECLARE_TEST(AppListControllerImplMetricsTest,
+                     PresentationTimeRecordedForDragInTabletMode);
 
 namespace {
 
@@ -565,6 +562,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_APP_LIST_VIEW_H_

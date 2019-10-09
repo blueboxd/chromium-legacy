@@ -12,7 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
-namespace app_list {
+namespace ash {
 
 AppListMenuModelAdapter::AppListMenuModelAdapter(
     const std::string& app_id,
@@ -179,4 +179,4 @@ void AppListMenuModelAdapter::MaybeRecordAppLaunched(int command_id) {
       metric_params_.is_tablet_mode, metric_params_.home_launcher_shown);
 }
 
-}  // namespace app_list
+}  // namespace ash

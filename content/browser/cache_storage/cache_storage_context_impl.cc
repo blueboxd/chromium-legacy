@@ -28,7 +28,7 @@ namespace content {
 namespace {
 
 const base::Feature kCacheStorageSequenceFeature{
-    "CacheStorageSequence", base::FEATURE_ENABLED_BY_DEFAULT};
+    "CacheStorageSequence", base::FEATURE_DISABLED_BY_DEFAULT};
 
 scoped_refptr<base::SequencedTaskRunner> CreateSchedulerTaskRunner() {
   if (!base::FeatureList::IsEnabled(kCacheStorageSequenceFeature))

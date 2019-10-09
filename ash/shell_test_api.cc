@@ -286,7 +286,7 @@ void ShellTestApi::WaitForLauncherAnimationState(
 }
 
 PaginationModel* ShellTestApi::GetAppListPaginationModel() {
-  app_list::AppListView* view =
+  AppListView* view =
       Shell::Get()->app_list_controller()->presenter()->GetView();
   if (!view)
     return nullptr;

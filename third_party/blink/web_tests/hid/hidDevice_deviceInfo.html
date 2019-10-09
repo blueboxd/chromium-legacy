@@ -25,11 +25,11 @@ const kTestDeviceNode = 'test-device-node';
 function createDeviceWithInputReport(fake) {
   const nullUsage = new device.mojom.HidUsageAndPage();
   const buttonUsage = new device.mojom.HidUsageAndPage();
-  buttonUsage.usagePage = device.mojom.kPageButton;
+  buttonUsage.usagePage = device.mojom.PAGE_BUTTON;
   buttonUsage.usage = kButtonPrimary;
   const gamePadUsage = new device.mojom.HidUsageAndPage();
-  gamePadUsage.usagePage = device.mojom.kPageGenericDesktop;
-  gamePadUsage.usage = device.mojom.kGenericDesktopGamePad;
+  gamePadUsage.usagePage = device.mojom.PAGE_GENERIC_DESKTOP;
+  gamePadUsage.usage = device.mojom.GENERIC_DESKTOP_GAME_PAD;
 
   const reportItem = new device.mojom.HidReportItem();
   reportItem.isRange = false;
@@ -65,7 +65,7 @@ function createDeviceWithInputReport(fake) {
   const collection = new device.mojom.HidCollectionInfo();
   collection.usage = gamePadUsage;
   collection.reportIds = [kTestReportId];
-  collection.collectionType = device.mojom.kHIDCollectionTypeApplication;
+  collection.collectionType = device.mojom.HID_COLLECTION_TYPE_APP_APPLICATION;
   collection.inputReports = [report];
   collection.outputReports = [];
   collection.featureReports = [];
@@ -75,7 +75,7 @@ function createDeviceWithInputReport(fake) {
   // The device guid will be set by fake.addDevice().
   deviceInfo.productName = kTestProductName;
   deviceInfo.serialNumber = kTestSerialNumber;
-  deviceInfo.busType = device.mojom.HidBusType.kHIDBusTypeUSB;
+  deviceInfo.busType = device.mojom.HidBusType.HID_BUS_TYPE_USB;
   deviceInfo.reportDescriptor = [];
   deviceInfo.collections = [collection];
   deviceInfo.hasReportId = true;
@@ -105,9 +105,9 @@ hid_test(async (t, fake) => {
   const c = d.collections[0];
   assert_true(c instanceof HIDCollectionInfo,
               'collection instanceof HIDCollectionInfo');
-  assert_equals(c.usagePage, device.mojom.kPageGenericDesktop,
+  assert_equals(c.usagePage, device.mojom.PAGE_GENERIC_DESKTOP,
                 'collection.usagePage');
-  assert_equals(c.usage, device.mojom.kGenericDesktopGamePad,
+  assert_equals(c.usage, device.mojom.GENERIC_DESKTOP_GAME_PAD,
                 'collection.usage');
   assert_equals(c.children.length, 0, 'collection.children.length');
   assert_equals(c.inputReports.length, 1, 'collection.inputReports.length');

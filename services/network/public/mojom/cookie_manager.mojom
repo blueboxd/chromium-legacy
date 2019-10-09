@@ -52,6 +52,7 @@ enum CookieSameSite {
   LAX_MODE = 1,
   STRICT_MODE = 2,
   EXTENDED_MODE = 3,
+  // 4 is reserved: LAX_MODE_ALLOW_UNSAFE is not used here.
 };
 
 enum CookieSameSiteContext {
@@ -59,15 +60,6 @@ enum CookieSameSiteContext {
   SAME_SITE_LAX_METHOD_UNSAFE,
   SAME_SITE_LAX,
   SAME_SITE_STRICT
-};
-
-// What rules to apply when determining whether access to a particular cookie is
-// allowed.
-// Keep in sync with net/cookies/cookie_constants.h.
-enum CookieAccessSemantics {
-  UNKNOWN = -1,
-  NONLEGACY = 0,
-  LEGACY,
 };
 
 // Keep defaults here in sync with net/cookies/cookie_options.cc.
@@ -222,21 +214,6 @@ interface CookieManager {
   // for this function it doesn't make a lot of sense not to also sort
   // on origin.  Should the returned cookies also be sorted by origin?
   GetAllCookies() => (array<CanonicalCookie> cookies);
-
-  // Get all the cookies known to the service.
-  // Returned cookie list is sorted first by path length (longest first)
-  // and second by creation time.
-  // Additionally get a list of the CookieAccessSemantics that applies to each,
-  // if known. The |access_semantics_list| is guaranteed to be the same length
-  // as |cookies|, with each element in |cookies| having the access semantics
-  // which is given by the same index in |access_semantics_list|. If this method
-  // is not implemented in the underlying CookieStore, the returned
-  // |access_semantics_list| will just contain all UNKNOWNs. If it is
-  // supported, the access semantics values will have been determined by
-  // querying the CookieStore's CookieAccessDelegate.
-  GetAllCookiesWithAccessSemantics()
-      => (array<CanonicalCookie> cookies,
-          array<CookieAccessSemantics> access_semantics_list);
 
   // Get all cookies for the specified URL and cookie options.
   // Returned cookie list is sorted first by path length (longest first)

@@ -52,7 +52,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 
-namespace app_list {
+namespace ash {
 namespace test {
 
 namespace {
@@ -2178,4 +2178,4 @@ TEST_P(AppsGridGapTest, MoveItemToPreviousFullPage) {
 }
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace ash

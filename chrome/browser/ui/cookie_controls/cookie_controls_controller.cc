@@ -94,6 +94,13 @@ int CookieControlsController::GetBlockedDomainCount() {
   return blocked_objects.GetDomainCount();
 }
 
+int CookieControlsController::GetBlockedCookieCount() {
+  const LocalSharedObjectsContainer& blocked_objects =
+      tab_observer_->tab_specific_content_settings()
+          ->blocked_local_shared_objects();
+  return blocked_objects.GetObjectCount();
+}
+
 void CookieControlsController::PresentBlockedCookieCounter() {
   const LocalSharedObjectsContainer& blocked_objects =
       tab_observer_->tab_specific_content_settings()

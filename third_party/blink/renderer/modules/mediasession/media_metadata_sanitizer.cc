@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/mediasession/media_metadata_sanitizer.h"
 
+#include "third_party/blink/public/mojom/mediasession/media_session.mojom-blink.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"

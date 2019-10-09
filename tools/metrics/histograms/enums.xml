@@ -4698,6 +4698,11 @@ Unknown properties are collapsed to zero. -->
   <int value="671363579" label="banners::AppBannerManager"/>
 </enum>
 
+<enum name="BackForwardCacheEvictedAfterDocumentRestoredReason">
+  <int value="0" label="Restored"/>
+  <int value="1" label="By JavaScript"/>
+</enum>
+
 <enum name="BackForwardCacheHistoryNavigationOutcome">
   <int value="0" label="Restored"/>
   <int value="1" label="Not cached"/>

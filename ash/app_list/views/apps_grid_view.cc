@@ -61,7 +61,7 @@
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/widget.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -364,7 +364,7 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
                        : ash::PaginationController::SCROLL_AXIS_VERTICAL,
       folder_delegate_
           ? base::DoNothing()
-          : base::BindRepeating(&RecordPageSwitcherSourceByEventType),
+          : base::BindRepeating(&AppListRecordPageSwitcherSourceByEventType),
       IsTabletMode());
   bounds_animator_->AddObserver(this);
 }
@@ -3486,4 +3486,4 @@ bool AppsGridView::ShouldHandleDragEvent(const ui::LocatedEvent& event) {
   return true;
 }
 
-}  // namespace app_list
+}  // namespace ash

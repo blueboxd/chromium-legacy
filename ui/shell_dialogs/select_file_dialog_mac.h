@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/remote_cocoa/common/select_file_dialog.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/shell_dialogs_export.h"
@@ -61,7 +62,7 @@ class SHELL_DIALOGS_EXPORT SelectFileDialogImpl : public ui::SelectFileDialog {
     void* params;
 
     // Bridge to the Cocoa NSSavePanel.
-    remote_cocoa::mojom::SelectFileDialogPtr select_file_dialog;
+    mojo::Remote<remote_cocoa::mojom::SelectFileDialog> select_file_dialog;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(DialogData);

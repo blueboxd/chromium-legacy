@@ -113,18 +113,18 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
          crx_file::id_util::GenerateId(install_intent_uri().value()));
   SetDisplayType(ash::SearchResultDisplayType::kTile);
   SetBadgeIcon(CreateBadgeIcon(
-      is_instant_app() ? kBadgeInstantIcon : kBadgePlayIcon,
-      app_list::AppListConfig::instance().search_tile_badge_icon_dimension(),
+      is_instant_app() ? ash::kBadgeInstantIcon : ash::kBadgePlayIcon,
+      ash::AppListConfig::instance().search_tile_badge_icon_dimension(),
       kBadgePadding, kBadgeIconSize, kBadgeColor));
   SetFormattedPrice(base::UTF8ToUTF16(formatted_price().value()));
   SetRating(review_score());
-  SetResultType(is_instant_app() ? ash::SearchResultType::kInstantApp
-                                 : ash::SearchResultType::kPlayStoreApp);
+  SetResultType(is_instant_app() ? ash::AppListSearchResultType::kInstantApp
+                                 : ash::AppListSearchResultType::kPlayStoreApp);
 
   icon_decode_request_ = std::make_unique<arc::IconDecodeRequest>(
       base::BindOnce(&ArcPlayStoreSearchResult::SetIcon,
                      weak_ptr_factory_.GetWeakPtr()),
-      app_list::AppListConfig::instance().search_tile_icon_dimension());
+      ash::AppListConfig::instance().search_tile_icon_dimension());
   icon_decode_request_->set_normalized(true);
   icon_decode_request_->StartWithOptions(icon_png_data());
 }
@@ -136,8 +136,9 @@ void ArcPlayStoreSearchResult::Open(int event_flags) {
                list_controller_->GetAppListDisplayId());
 }
 
-SearchResultType ArcPlayStoreSearchResult::GetSearchResultType() const {
-  return is_instant_app() ? PLAY_STORE_INSTANT_APP : PLAY_STORE_UNINSTALLED_APP;
+ash::SearchResultType ArcPlayStoreSearchResult::GetSearchResultType() const {
+  return is_instant_app() ? ash::PLAY_STORE_INSTANT_APP
+                          : ash::PLAY_STORE_UNINSTALLED_APP;
 }
 
 void ArcPlayStoreSearchResult::GetContextMenuModel(

@@ -165,8 +165,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                      const CookieOptions& options,
                                      GetCookieListCallback callback) override;
   void GetAllCookiesAsync(GetAllCookiesCallback callback) override;
-  void GetAllCookiesWithAccessSemanticsAsync(
-      GetAllCookiesWithAccessSemanticsCallback callback) override;
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
   void DeleteAllCreatedInTimeRangeAsync(
@@ -359,10 +357,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
                           SetCookiesCallback callback);
 
   void GetAllCookies(GetAllCookiesCallback callback);
-
-  void AttachAccessSemanticsListForCookieList(
-      GetAllCookiesWithAccessSemanticsCallback callback,
-      const CookieList& cookie_list);
 
   void GetCookieListWithOptions(const GURL& url,
                                 const CookieOptions& options,

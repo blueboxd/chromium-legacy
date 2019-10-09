@@ -141,7 +141,7 @@ void AppServiceAppItem::CallLoadIcon(bool allow_placeholder_icon) {
   if (proxy) {
     proxy->LoadIcon(app_type_, id(),
                     apps::mojom::IconCompression::kUncompressed,
-                    app_list::AppListConfig::instance().grid_icon_dimension(),
+                    ash::AppListConfig::instance().grid_icon_dimension(),
                     allow_placeholder_icon,
                     base::BindOnce(&AppServiceAppItem::OnLoadIcon,
                                    weak_ptr_factory_.GetWeakPtr()));

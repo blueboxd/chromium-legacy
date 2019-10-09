@@ -23,19 +23,16 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace ash {
-enum class AppListViewState;
-}
-
 namespace ui {
 class GestureEvent;
 class ImplicitAnimationObserver;
 class SimpleMenuModel;
 }  // namespace ui
 
-namespace app_list {
+namespace ash {
 
 class AppListModel;
+enum class AppListViewState;
 struct AppLaunchedMetricParams;
 class SearchModel;
 
@@ -78,7 +75,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // window. For instance, the first launcher result item is index 0, regardless
   // of if there is an answer card above it.
   virtual void LogResultLaunchHistogram(
-      app_list::SearchResultLaunchLocation launch_location,
+      SearchResultLaunchLocation launch_location,
       int suggestion_index) = 0;
 
   // Logs the UMA histogram metrics for user's abandonment of launcher search.
@@ -214,6 +211,6 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   virtual int GetShelfHeight() = 0;
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_APP_LIST_VIEW_DELEGATE_H_

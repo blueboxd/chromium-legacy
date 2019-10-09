@@ -87,9 +87,8 @@ void HomeButton::ButtonPressed(views::Button* sender,
                                views::InkDrop* ink_drop) {
   Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
-  const app_list::AppListShowSource show_source =
-      event.IsShiftDown() ? app_list::kShelfButtonFullscreen
-                          : app_list::kShelfButton;
+  const AppListShowSource show_source =
+      event.IsShiftDown() ? kShelfButtonFullscreen : kShelfButton;
   OnPressed(show_source, event.time_stamp());
 }
 
@@ -101,7 +100,7 @@ bool HomeButton::IsShowingAppList() const {
   return controller_.is_showing_app_list();
 }
 
-void HomeButton::OnPressed(app_list::AppListShowSource show_source,
+void HomeButton::OnPressed(AppListShowSource show_source,
                            base::TimeTicks time_stamp) {
   ShelfAction shelf_action =
       Shell::Get()->app_list_controller()->OnHomeButtonPressed(

@@ -28,7 +28,7 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -347,4 +347,4 @@ void SearchResultActionsView::ButtonPressed(views::Button* sender,
   delegate_->OnSearchResultActionActivated(sender->tag(), event.flags());
 }
 
-}  // namespace app_list
+}  // namespace ash

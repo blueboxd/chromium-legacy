@@ -37,6 +37,7 @@
 }
 
 - (void)stop {
+  [self.mediator disconnect];
   self.mediator = nil;
   [self.viewController.presentingViewController
       dismissViewControllerAnimated:YES
@@ -62,9 +63,12 @@
 - (void)showPasswordBreachForLeakType:(CredentialLeakType)leakType
                                   URL:(const GURL&)URL {
   self.viewController = [[PasswordBreachViewController alloc] init];
+  id<ApplicationCommands> dispatcher =
+      static_cast<id<ApplicationCommands>>(self.dispatcher);
   self.mediator =
       [[PasswordBreachMediator alloc] initWithConsumer:self.viewController
                                              presenter:self
+                                            dispatcher:dispatcher
                                                    URL:URL
                                               leakType:leakType];
   self.viewController.actionHandler = self.mediator;

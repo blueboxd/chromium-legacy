@@ -1064,7 +1064,6 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   request.SetSkipServiceWorker(is_isolated_world_);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context.GetSecurityContext().AddressSpace());
-  request.SetShouldAlsoUseFactoryBoundOriginForCors(is_isolated_world_);
 
   probe::WillLoadXHR(&execution_context, method_, url_, async_, http_body.get(),
                      request_headers_, with_credentials_);

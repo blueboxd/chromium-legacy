@@ -31,7 +31,7 @@ InternalAppItem::InternalAppItem(
     : ChromeAppListItem(profile, internal_app.app_id) {
   SetIcon(app_list::GetIconForResourceId(
       internal_app.icon_resource_id,
-      app_list::AppListConfig::instance().grid_icon_dimension()));
+      ash::AppListConfig::instance().grid_icon_dimension()));
   SetName(l10n_util::GetStringUTF8(internal_app.name_string_resource_id));
   if (sync_item && sync_item->item_ordinal.IsValid())
     UpdateFromSync(sync_item);

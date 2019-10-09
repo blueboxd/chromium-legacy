@@ -49,10 +49,6 @@ class NET_EXPORT CookieStore {
                               const CookieStatusList& excluded_list)>;
   using GetAllCookiesCallback =
       base::OnceCallback<void(const CookieList& cookies)>;
-  // |access_semantics_list| is guaranteed to the same length as |cookies|.
-  using GetAllCookiesWithAccessSemanticsCallback = base::OnceCallback<void(
-      const CookieList& cookies,
-      const std::vector<CookieAccessSemantics>& access_semantics_list)>;
   using SetCookiesCallback =
       base::OnceCallback<void(CanonicalCookie::CookieInclusionStatus status)>;
   using DeleteCallback = base::OnceCallback<void(uint32_t num_deleted)>;
@@ -86,18 +82,6 @@ class NET_EXPORT CookieStore {
   // the cookies as having been accessed. The returned cookies are ordered by
   // longest path, then by earliest creation date.
   virtual void GetAllCookiesAsync(GetAllCookiesCallback callback) = 0;
-
-  // Returns all the cookies, for use in management UI, etc. This does not mark
-  // the cookies as having been accessed. The returned cookies are ordered by
-  // longest path, then by earliest creation date.
-  // Additionally returns a vector of CookieAccessSemantics values for the
-  // returned cookies, which will be the same length as the vector of returned
-  // cookies. This vector will either contain all CookieAccessSemantics::UNKNOWN
-  // (if the default implementation is used), or each entry in the
-  // vector of CookieAccessSemantics will indicate the access semantics
-  // applicable to the cookie at the same index in the returned CookieList.
-  virtual void GetAllCookiesWithAccessSemanticsAsync(
-      GetAllCookiesWithAccessSemanticsCallback callback);
 
   // Deletes one specific cookie. |cookie| must have been returned by a previous
   // query on this CookieStore. Invokes |callback| with 1 if a cookie was

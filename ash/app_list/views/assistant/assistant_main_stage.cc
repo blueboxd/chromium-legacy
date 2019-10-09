@@ -30,7 +30,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_manager.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -94,41 +94,42 @@ bool IsLayerVisible(views::View* view) {
 
 }  // namespace
 
-// AssistantMainStage ----------------------------------------------------------
+// AppListAssistantMainStage ---------------------------------------------------
 
-AssistantMainStage::AssistantMainStage(ash::AssistantViewDelegate* delegate)
+AppListAssistantMainStage::AppListAssistantMainStage(
+    ash::AssistantViewDelegate* delegate)
     : delegate_(delegate) {
   InitLayout();
 
   // The view hierarchy will be destructed before AssistantController in Shell,
   // which owns AssistantViewDelegate, so AssistantViewDelegate is guaranteed to
-  // outlive the AssistantMainStage.
+  // outlive the AppListAssistantMainStage.
   delegate_->AddInteractionModelObserver(this);
   delegate_->AddUiModelObserver(this);
 }
 
-AssistantMainStage::~AssistantMainStage() {
+AppListAssistantMainStage::~AppListAssistantMainStage() {
   delegate_->RemoveUiModelObserver(this);
   delegate_->RemoveInteractionModelObserver(this);
 }
 
-const char* AssistantMainStage::GetClassName() const {
-  return "AssistantMainStage";
+const char* AppListAssistantMainStage::GetClassName() const {
+  return "AppListAssistantMainStage";
 }
 
-void AssistantMainStage::ChildPreferredSizeChanged(views::View* child) {
+void AppListAssistantMainStage::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-void AssistantMainStage::OnViewPreferredSizeChanged(views::View* view) {
+void AppListAssistantMainStage::OnViewPreferredSizeChanged(views::View* view) {
   PreferredSizeChanged();
   Layout();
   SchedulePaint();
 }
 
-void AssistantMainStage::InitLayout() {
-  // The children of AssistantMainStage will be animated on their own layers and
-  // we want them to be clipped by their parent layer.
+void AppListAssistantMainStage::InitLayout() {
+  // The children of AppListAssistantMainStage will be animated on their own
+  // layers and we want them to be clipped by their parent layer.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetMasksToBounds(true);
@@ -147,7 +148,7 @@ void AssistantMainStage::InitLayout() {
   AddChildView(CreateFooterLayoutContainer());
 }
 
-views::View* AssistantMainStage::CreateContentLayoutContainer() {
+views::View* AppListAssistantMainStage::CreateContentLayoutContainer() {
   // The content layout container stacks two views.
   // On top is a main content container including the line separator, progress
   // indicator query view and |ui_element_container_|.
@@ -181,7 +182,7 @@ views::View* AssistantMainStage::CreateContentLayoutContainer() {
   return content_layout_container;
 }
 
-void AssistantMainStage::InitGreetingLabel() {
+void AppListAssistantMainStage::InitGreetingLabel() {
   // Greeting label, which will be animated on its own layer.
   greeting_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
@@ -198,7 +199,7 @@ void AssistantMainStage::InitGreetingLabel() {
   greeting_label_->layer()->SetFillsBoundsOpaquely(false);
 }
 
-views::View* AssistantMainStage::CreateMainContentLayoutContainer() {
+views::View* AppListAssistantMainStage::CreateMainContentLayoutContainer() {
   views::View* content_layout_container = new views::View();
   views::BoxLayout* content_layout = content_layout_container->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
@@ -227,7 +228,7 @@ views::View* AssistantMainStage::CreateMainContentLayoutContainer() {
   return content_layout_container;
 }
 
-views::View* AssistantMainStage::CreateDividerLayoutContainer() {
+views::View* AppListAssistantMainStage::CreateDividerLayoutContainer() {
   // Dividers: the progress indicator and the horizontal separator will be the
   // separator when querying and showing the results, respectively.
   views::View* divider_container = new views::View();
@@ -249,7 +250,7 @@ views::View* AssistantMainStage::CreateDividerLayoutContainer() {
   return divider_container;
 }
 
-views::View* AssistantMainStage::CreateFooterLayoutContainer() {
+views::View* AppListAssistantMainStage::CreateFooterLayoutContainer() {
   // Footer.
   // Note that the |footer_| is placed within its own view container so that as
   // its visibility changes, its parent container will still reserve the same
@@ -270,7 +271,7 @@ views::View* AssistantMainStage::CreateFooterLayoutContainer() {
   return footer_container;
 }
 
-void AssistantMainStage::OnCommittedQueryChanged(
+void AppListAssistantMainStage::OnCommittedQueryChanged(
     const ash::AssistantQuery& query) {
   // Update the view.
   query_view_->SetQuery(query);
@@ -301,7 +302,7 @@ void AssistantMainStage::OnCommittedQueryChanged(
   MaybeHideGreetingLabel();
 }
 
-void AssistantMainStage::OnPendingQueryChanged(
+void AppListAssistantMainStage::OnPendingQueryChanged(
     const ash::AssistantQuery& query) {
   // Update the view.
   query_view_->SetQuery(query);
@@ -328,7 +329,7 @@ void AssistantMainStage::OnPendingQueryChanged(
     MaybeHideGreetingLabel();
 }
 
-void AssistantMainStage::OnPendingQueryCleared(bool due_to_commit) {
+void AppListAssistantMainStage::OnPendingQueryCleared(bool due_to_commit) {
   // When a pending query is cleared, it may be because the interaction was
   // cancelled, or because the query was committed. If the query was committed,
   // reseting the query here will have no visible effect. If the interaction was
@@ -336,7 +337,7 @@ void AssistantMainStage::OnPendingQueryCleared(bool due_to_commit) {
   query_view_->SetQuery(delegate_->GetInteractionModel()->committed_query());
 }
 
-void AssistantMainStage::OnResponseChanged(
+void AppListAssistantMainStage::OnResponseChanged(
     const scoped_refptr<ash::AssistantResponse>& response) {
   MaybeHideGreetingLabel();
 
@@ -360,7 +361,7 @@ void AssistantMainStage::OnResponseChanged(
           0.f, kDividerAnimationFadeOutDuration)));
 }
 
-void AssistantMainStage::OnUiVisibilityChanged(
+void AppListAssistantMainStage::OnUiVisibilityChanged(
     ash::AssistantVisibility new_visibility,
     ash::AssistantVisibility old_visibility,
     base::Optional<ash::AssistantEntryPoint> entry_point,
@@ -430,7 +431,7 @@ void AssistantMainStage::OnUiVisibilityChanged(
   footer_->set_can_process_events_within_subtree(true);
 }
 
-void AssistantMainStage::MaybeHideGreetingLabel() {
+void AppListAssistantMainStage::MaybeHideGreetingLabel() {
   if (!IsLayerVisible(greeting_label_))
     return;
 
@@ -442,4 +443,4 @@ void AssistantMainStage::MaybeHideGreetingLabel() {
           CreateOpacityElement(0.f, kGreetingAnimationFadeOutDuration)));
 }
 
-}  // namespace app_list
+}  // namespace ash

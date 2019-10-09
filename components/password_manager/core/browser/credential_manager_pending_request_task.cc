@@ -197,14 +197,13 @@ void CredentialManagerPendingRequestTask::ProcessForms(
       get_result = metrics_util::CredentialManagerGetResult::kNoneFirstRun;
 
     if (!local_results.empty()) {
-      std::map<base::string16, const autofill::PasswordForm*>
-          non_federated_matches;
+      std::vector<const autofill::PasswordForm*> non_federated_matches;
       std::vector<const autofill::PasswordForm*> federated_matches;
       for (const auto& result : local_results) {
         if (result->IsFederatedCredential()) {
           federated_matches.emplace_back(result.get());
         } else {
-          non_federated_matches.emplace(result->username_value, result.get());
+          non_federated_matches.emplace_back(result.get());
         }
       }
       delegate_->client()->PasswordWasAutofilled(non_federated_matches, origin_,

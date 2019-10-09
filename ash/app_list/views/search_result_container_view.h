@@ -18,7 +18,7 @@
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
-namespace app_list {
+namespace ash {
 
 // SearchResultContainerView is a base class for views that contain multiple
 // search results. SearchPageView holds these in a list and manages which one is
@@ -140,6 +140,6 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(SearchResultContainerView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_SEARCH_RESULT_CONTAINER_VIEW_H_

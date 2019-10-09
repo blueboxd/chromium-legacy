@@ -39,19 +39,12 @@ cr.define('app_management.actions', function() {
   }
 
   /**
-   * @param {PageType} pageType
-   * @param {string=} id
+   * @param {?string} appId
    */
-  function changePage(pageType, id) {
-    if (pageType === PageType.DETAIL && !id) {
-      console.warn(
-          'Tried to load app detail page without providing an app id.');
-    }
-
+  function updateSelectedAppId(appId) {
     return {
-      name: 'change-page',
-      pageType: pageType,
-      id: id,
+      name: 'update-selected-app-id',
+      value: appId,
     };
   }
 
@@ -71,7 +64,7 @@ cr.define('app_management.actions', function() {
     addApp: addApp,
     changeApp: changeApp,
     removeApp: removeApp,
-    changePage: changePage,
     updateArcSupported: updateArcSupported,
+    updateSelectedAppId: updateSelectedAppId,
   };
 });

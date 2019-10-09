@@ -39,7 +39,7 @@ class ArcAppReinstallAppResult : public ChromeSearchResult {
   // ChromeSearchResult:
   void Open(int event_flags) override;
   void OnVisibilityChanged(bool visibility) override;
-  SearchResultType GetSearchResultType() const override;
+  ash::SearchResultType GetSearchResultType() const override;
 
  private:
   // Observer passed in constructor. not owned.

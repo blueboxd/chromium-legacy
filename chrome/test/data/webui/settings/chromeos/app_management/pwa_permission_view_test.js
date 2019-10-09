@@ -20,8 +20,7 @@ suite('<app-management-pwa-permission-view>', function() {
 
   function getSelectedAppFromStore() {
     const storeData = app_management.Store.getInstance().data;
-    const selectedAppId = storeData.currentPage.selectedAppId;
-    return storeData.apps[selectedAppId];
+    return storeData.apps[storeData.selectedAppId];
   }
 
   setup(async function() {
@@ -31,7 +30,7 @@ suite('<app-management-pwa-permission-view>', function() {
     // Add an app, and make it the currently selected app.
     const app = await fakeHandler.addApp();
     app_management.Store.getInstance().dispatch(
-        app_management.actions.changePage(PageType.DETAIL, app.id));
+        app_management.actions.updateSelectedAppId(app.id));
 
     pwaPermissionView =
         document.createElement('app-management-pwa-permission-view');
@@ -40,7 +39,7 @@ suite('<app-management-pwa-permission-view>', function() {
 
   test('App is rendered correctly', function() {
     assertEquals(
-        app_management.Store.getInstance().data.currentPage.selectedAppId,
+        app_management.Store.getInstance().data.selectedAppId,
         pwaPermissionView.app_.id);
   });
 

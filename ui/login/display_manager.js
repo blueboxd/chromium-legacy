@@ -200,7 +200,16 @@ cr.define('cr.ui.login', function() {
      * Whether the virtual keyboard is displayed.
      * @type {boolean}
      */
-    virtualKeyboardShown: false,
+    virtualKeyboardShown_: false,
+
+    get virtualKeyboardShown() {
+      return this.virtualKeyboardShown_;
+    },
+
+    set virtualKeyboardShown(shown) {
+      this.virtualKeyboardShown_ = shown;
+      document.documentElement.setAttribute('virtual-keyboard', shown);
+    },
 
     /**
      * Type of UI.

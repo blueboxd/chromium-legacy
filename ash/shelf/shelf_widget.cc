@@ -506,8 +506,7 @@ BackButton* ShelfWidget::GetBackButton() const {
   return navigation_widget_.get()->GetBackButton();
 }
 
-app_list::ApplicationDragAndDropHost*
-ShelfWidget::GetDragAndDropHostForAppList() {
+ApplicationDragAndDropHost* ShelfWidget::GetDragAndDropHostForAppList() {
   return hotseat_widget()->GetShelfView();
 }
 

@@ -66,9 +66,8 @@ public class TaskTraits {
     // For tasks that should run on the thread pool instead of the main thread.
     // Note that currently also tasks which lack this trait will execute on the
     // thread pool unless a trait for a named thread is given.
-    // TODO(skyostil@): Make it required to state the thread affinity for all
-    // tasks.
-    public static final TaskTraits THREAD_POOL = new TaskTraits().threadPool();
+    public static final TaskTraits THREAD_POOL =
+            new TaskTraits().threadPool().taskPriority(TaskPriority.USER_BLOCKING);
     public static final TaskTraits THREAD_POOL_USER_BLOCKING =
             THREAD_POOL.taskPriority(TaskPriority.USER_BLOCKING);
     public static final TaskTraits THREAD_POOL_USER_VISIBLE =
@@ -76,12 +75,23 @@ public class TaskTraits {
     public static final TaskTraits THREAD_POOL_BEST_EFFORT =
             THREAD_POOL.taskPriority(TaskPriority.BEST_EFFORT);
 
+    // For tasks that should run on the current thread.
+    public static final TaskTraits CURRENT_THREAD =
+            new TaskTraits().currentThread().taskPriority(TaskPriority.USER_BLOCKING);
+    public static final TaskTraits CURRENT_THREAD_USER_BLOCKING =
+            CURRENT_THREAD.taskPriority(TaskPriority.USER_BLOCKING);
+    public static final TaskTraits CURRENT_THREAD_USER_VISIBLE =
+            CURRENT_THREAD.taskPriority(TaskPriority.USER_VISIBLE);
+    public static final TaskTraits CURRENT_THREAD_BEST_EFFORT =
+            CURRENT_THREAD.taskPriority(TaskPriority.BEST_EFFORT);
+
     // For convenience of the JNI code, we use primitive types only.
     // Note shutdown behavior is not supported on android.
     boolean mPrioritySetExplicitly;
     int mPriority;
     boolean mMayBlock;
     boolean mUseThreadPool;
+    boolean mUseCurrentThread;
     byte mExtensionId;
     byte mExtensionData[];
     boolean mIsChoreographerFrame;
@@ -97,6 +107,7 @@ public class TaskTraits {
         mMayBlock = other.mMayBlock;
         mUseThreadPool = other.mUseThreadPool;
         mExtensionId = other.mExtensionId;
+        mUseCurrentThread = other.mUseCurrentThread;
         mExtensionData = other.mExtensionData;
     }
 
@@ -123,6 +134,12 @@ public class TaskTraits {
     public TaskTraits threadPool() {
         TaskTraits taskTraits = new TaskTraits(this);
         taskTraits.mUseThreadPool = true;
+        return taskTraits;
+    }
+
+    public TaskTraits currentThread() {
+        TaskTraits taskTraits = new TaskTraits(this);
+        taskTraits.mUseCurrentThread = true;
         return taskTraits;
     }
 
@@ -166,8 +183,12 @@ public class TaskTraits {
         } else if (object instanceof TaskTraits) {
             TaskTraits other = (TaskTraits) object;
             return mPrioritySetExplicitly == other.mPrioritySetExplicitly
-                    && mPriority == other.mPriority && mExtensionId == other.mExtensionId
-                    && Arrays.equals(mExtensionData, other.mExtensionData);
+                    && mPriority == other.mPriority && mMayBlock == other.mMayBlock
+                    && mUseThreadPool == other.mUseThreadPool
+                    && mUseCurrentThread == other.mUseCurrentThread
+                    && mExtensionId == other.mExtensionId
+                    && Arrays.equals(mExtensionData, other.mExtensionData)
+                    && mIsChoreographerFrame == other.mIsChoreographerFrame;
         } else {
             return false;
         }
@@ -180,6 +201,7 @@ public class TaskTraits {
         hash = 37 * hash + mPriority;
         hash = 37 * hash + (mMayBlock ? 0 : 1);
         hash = 37 * hash + (mUseThreadPool ? 0 : 1);
+        hash = 37 * hash + (mUseCurrentThread ? 0 : 1);
         hash = 37 * hash + (int) mExtensionId;
         hash = 37 * hash + Arrays.hashCode(mExtensionData);
         hash = 37 * hash + (mIsChoreographerFrame ? 0 : 1);

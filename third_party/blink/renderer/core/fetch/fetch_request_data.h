@@ -62,10 +62,6 @@ class CORE_EXPORT FetchRequestData final
       scoped_refptr<const SecurityOrigin> isolated_world_origin) {
     isolated_world_origin_ = std::move(isolated_world_origin);
   }
-  bool SameOriginDataURLFlag() { return same_origin_data_url_flag_; }
-  void SetSameOriginDataURLFlag(bool flag) {
-    same_origin_data_url_flag_ = flag;
-  }
   const AtomicString& ReferrerString() const { return referrer_string_; }
   void SetReferrerString(const AtomicString& s) { referrer_string_ = s; }
   network::mojom::ReferrerPolicy GetReferrerPolicy() const {
@@ -119,12 +115,6 @@ class CORE_EXPORT FetchRequestData final
   }
   const base::UnguessableToken& WindowId() const { return window_id_; }
   void SetWindowId(const base::UnguessableToken& id) { window_id_ = id; }
-  bool ShouldAlsoUseFactoryBoundOriginForCors() const {
-    return should_also_use_factory_bound_origin_for_cors_;
-  }
-  void SetShouldAlsoUseFactoryBoundOriginForCors(bool value) {
-    should_also_use_factory_bound_origin_for_cors_ = value;
-  }
 
   void Trace(blink::Visitor*);
 
@@ -139,7 +129,6 @@ class CORE_EXPORT FetchRequestData final
   scoped_refptr<const SecurityOrigin> origin_;
   scoped_refptr<const SecurityOrigin> isolated_world_origin_;
   // FIXME: Support m_forceOriginHeaderFlag;
-  bool same_origin_data_url_flag_;
   AtomicString referrer_string_;
   network::mojom::ReferrerPolicy referrer_policy_;
   // FIXME: Support m_authenticationFlag;
@@ -167,7 +156,6 @@ class CORE_EXPORT FetchRequestData final
   // the URL got revoked after creating the request.
   network::mojom::blink::URLLoaderFactoryPtr url_loader_factory_;
   base::UnguessableToken window_id_;
-  bool should_also_use_factory_bound_origin_for_cors_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FetchRequestData);
 };

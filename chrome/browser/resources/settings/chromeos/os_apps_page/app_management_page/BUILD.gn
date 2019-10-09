@@ -22,7 +22,6 @@ js_type_check("closure_compile") {
     ":pin_to_shelf_item",
     ":pwa_permission_view",
     ":reducers",
-    ":router",
     ":store",
     ":store_client",
     ":toggle_row",
@@ -61,7 +60,6 @@ js_library("app_management_page") {
     ":actions",
     ":browser_proxy",
     ":main_view",
-    ":router",
     ":store",
     ":store_client",
   ]
@@ -74,6 +72,7 @@ js_library("app_permission_view") {
     ":dom_switch",
     ":pwa_permission_view",
     ":store_client",
+    "../../..:route",
   ]
 }
 
@@ -161,15 +160,6 @@ js_library("reducers") {
     ":types",
     ":util",
     "//ui/webui/resources/js:cr",
-  ]
-}
-
-js_library("router") {
-  deps = [
-    ":actions",
-    ":constants",
-    ":store_client",
-    "../../..:route",
   ]
 }
 

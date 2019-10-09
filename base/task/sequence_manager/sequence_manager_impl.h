@@ -42,8 +42,6 @@
 
 namespace base {
 
-class TaskObserver;
-
 namespace trace_event {
 class ConvertableToTraceFormat;
 }  // namespace trace_event
@@ -128,6 +126,8 @@ class BASE_EXPORT SequenceManagerImpl
   std::string DescribeAllPendingTasks() const override;
   std::unique_ptr<NativeWorkHandle> OnNativeWorkPending(
       TaskQueue::QueuePriority priority) override;
+  void AddTaskObserver(TaskObserver* task_observer) override;
+  void RemoveTaskObserver(TaskObserver* task_observer) override;
 
   // SequencedTaskSource implementation:
   Task* SelectNextTask() override;
@@ -136,8 +136,6 @@ class BASE_EXPORT SequenceManagerImpl
   bool HasPendingHighResolutionTasks() override;
   bool OnSystemIdle() override;
 
-  void AddTaskObserver(TaskObserver* task_observer);
-  void RemoveTaskObserver(TaskObserver* task_observer);
   void AddDestructionObserver(
       MessageLoopCurrent::DestructionObserver* destruction_observer);
   void RemoveDestructionObserver(

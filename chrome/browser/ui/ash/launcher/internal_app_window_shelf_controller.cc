@@ -43,7 +43,7 @@ void InternalAppWindowShelfController::ActiveUserChanged(
   for (const auto& w : aura_window_to_app_window_) {
     AppWindowBase* app_window = w.second.get();
     if (app_window->shelf_id().app_id ==
-        app_list::kInternalAppIdKeyboardShortcutViewer) {
+        ash::kInternalAppIdKeyboardShortcutViewer) {
       continue;
     }
 
@@ -141,7 +141,7 @@ void InternalAppWindowShelfController::RegisterAppWindow(
   // Keyboard Shortcut Viewer has a global instance so it can be shared with
   // different users.
   const user_manager::User* window_owner = nullptr;
-  if (shelf_id.app_id != app_list::kInternalAppIdKeyboardShortcutViewer) {
+  if (shelf_id.app_id != ash::kInternalAppIdKeyboardShortcutViewer) {
     // Plugin VM is only allowed on the primary profile. If the user switches
     // profile while it is launching, we associate it with the primary profile,
     // which hides the window, and don't show it on the shelf.
@@ -171,7 +171,7 @@ void InternalAppWindowShelfController::AddToShelf(AppWindowBase* app_window) {
   const ash::ShelfID shelf_id = app_window->shelf_id();
   // Internal Camera app does not have own window. Either ARC or extension
   // window controller would add window to controller.
-  if (shelf_id.app_id == app_list::kInternalAppIdCamera)
+  if (shelf_id.app_id == ash::kInternalAppIdCamera)
     return;
 
   AppWindowLauncherItemController* item_controller =
@@ -199,7 +199,7 @@ void InternalAppWindowShelfController::RemoveFromShelf(
   const ash::ShelfID shelf_id = app_window->shelf_id();
   // Internal Camera app does not have own window. Either ARC or extension
   // window controller would remove window from controller.
-  if (shelf_id.app_id == app_list::kInternalAppIdCamera)
+  if (shelf_id.app_id == ash::kInternalAppIdCamera)
     return;
 
   UnregisterAppWindow(app_window);

@@ -57,7 +57,7 @@ const char* const kDefaultAppOrder[] = {
     arc::kPlayGamesAppId,
     arc::kPlayBooksAppId,                   // Play Books ARC app
     extension_misc::kGooglePlayBooksAppId,  // Play Books Chrome app
-    app_list::kInternalAppIdCamera,
+    ash::kInternalAppIdCamera,
     extension_misc::kCameraAppId,
     extension_misc::kGooglePhotosAppId,
     arc::kGoogleDuo,
@@ -65,10 +65,10 @@ const char* const kDefaultAppOrder[] = {
     // TODO(crbug.com/976578): Remove after M78.
     extension_misc::kGoogleMapsAppId,
     default_web_apps::kGoogleMapsAppId,
-    app_list::kInternalAppIdSettings,
+    ash::kInternalAppIdSettings,
     default_web_apps::kSettingsAppId,
     default_web_apps::kOsSettingsAppId,
-    app_list::kInternalAppIdDiscover,
+    ash::kInternalAppIdDiscover,
     extension_misc::kGeniusAppId,
     extension_misc::kCalculatorAppId,
     default_web_apps::kCanvasAppId,

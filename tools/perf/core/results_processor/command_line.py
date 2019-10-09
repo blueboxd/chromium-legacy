@@ -131,11 +131,24 @@ def ProcessOptions(options, standalone=False):
   else:
     chosen_formats = ['html']
 
+  # The following is a temporary hack to switch on native handling of output
+  # formats for two benchmarks. This is an experiment to make sure
+  # that Results Processor is ready to handle output on all platforms.
+  # TODO(crbug.com/981349): Remove this after experiment is finished (i.e.
+  # all formats are considered HANDLED_NATIVELY).
+  force_native = False
+  if 'positional_args' in options.__dict__ and options.positional_args:
+    benchmark_name = options.positional_args[0]
+    if benchmark_name in ['power.desktop', 'startup.mobile']:
+      force_native = True
+      logging.warning('Force native handling of output formats for %s',
+                      benchmark_name)
+
   options.output_formats = []
   for output_format in chosen_formats:
     if output_format == 'none':
       continue
-    elif standalone or output_format in HANDLED_NATIVELY:
+    elif standalone or output_format in HANDLED_NATIVELY or force_native:
       options.output_formats.append(output_format)
     else:
       options.legacy_output_formats.append(output_format)

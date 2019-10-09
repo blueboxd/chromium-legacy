@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/mojom/locks/lock_manager.mojom-blink.h"
+#include "third_party/blink/public/mojom/locks/lock_manager.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_string_sequence.h"
 #include "third_party/blink/renderer/modules/locks/lock.h"
 #include "third_party/blink/renderer/modules/locks/lock_options.h"

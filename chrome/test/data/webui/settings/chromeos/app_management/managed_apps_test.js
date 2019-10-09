@@ -35,7 +35,7 @@ suite('<app-management-managed-apps>', () => {
     const app = await fakeHandler.addApp(null, policyAppOptions);
     // Select created app.
     app_management.Store.getInstance().dispatch(
-        app_management.actions.changePage(PageType.DETAIL, app.id));
+        app_management.actions.updateSelectedAppId(app.id));
     appDetailView =
         document.createElement('app-management-pwa-permission-view');
     replaceBody(appDetailView);

@@ -140,7 +140,7 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
       local_device_info_provider_;
 
   std::string local_cache_guid_;
-  std::string local_session_name_;
+  std::string local_personalizable_device_name_;
   ClientIdToSpecifics all_data_;
 
   // Registered observers, not owned.

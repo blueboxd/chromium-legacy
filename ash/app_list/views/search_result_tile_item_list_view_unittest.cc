@@ -23,7 +23,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 constexpr size_t kInstalledApps = 4;
@@ -98,8 +98,8 @@ class SearchResultTileItemListViewTest
       std::unique_ptr<TestSearchResult> result =
           std::make_unique<TestSearchResult>();
       result->set_result_id("InstalledApp " + base::NumberToString(i));
-      result->set_display_type(ash::SearchResultDisplayType::kTile);
-      result->set_result_type(ash::SearchResultType::kInstalledApp);
+      result->set_display_type(SearchResultDisplayType::kTile);
+      result->set_result_type(AppListSearchResultType::kInstalledApp);
       result->set_title(base::ASCIIToUTF16("InstalledApp ") +
                         base::NumberToString16(i));
       results->Add(std::move(result));
@@ -111,8 +111,8 @@ class SearchResultTileItemListViewTest
         std::unique_ptr<TestSearchResult> result =
             std::make_unique<TestSearchResult>();
         result->set_result_id("PlayStoreApp " + base::NumberToString(i));
-        result->set_display_type(ash::SearchResultDisplayType::kTile);
-        result->set_result_type(ash::SearchResultType::kPlayStoreApp);
+        result->set_display_type(SearchResultDisplayType::kTile);
+        result->set_result_type(AppListSearchResultType::kPlayStoreApp);
         result->set_title(base::ASCIIToUTF16("PlayStoreApp ") +
                           base::NumberToString16(i));
         result->SetRating(1 + i);
@@ -127,11 +127,12 @@ class SearchResultTileItemListViewTest
         std::unique_ptr<TestSearchResult> result =
             std::make_unique<TestSearchResult>();
         result->set_result_id("RecommendedApp " + base::NumberToString(i));
-        result->set_display_type(ash::SearchResultDisplayType::kRecommendation);
-        result->set_result_type(ash::SearchResultType::kPlayStoreReinstallApp);
+        result->set_display_type(SearchResultDisplayType::kRecommendation);
+        result->set_result_type(
+            AppListSearchResultType::kPlayStoreReinstallApp);
         result->set_display_location(
-            ash::SearchResultDisplayLocation::kTileListContainer);
-        result->set_display_index(ash::SearchResultDisplayIndex::kSixthIndex);
+            SearchResultDisplayLocation::kTileListContainer);
+        result->set_display_index(SearchResultDisplayIndex::kSixthIndex);
         result->set_title(base::ASCIIToUTF16("RecommendedApp ") +
                           base::NumberToString16(i));
         result->SetRating(1 + i);
@@ -152,8 +153,8 @@ class SearchResultTileItemListViewTest
       std::unique_ptr<TestSearchResult> result =
           std::make_unique<TestSearchResult>();
       result->set_result_id("InstalledApp " + base::NumberToString(i));
-      result->set_display_type(ash::SearchResultDisplayType::kTile);
-      result->set_result_type(ash::SearchResultType::kInstalledApp);
+      result->set_display_type(SearchResultDisplayType::kTile);
+      result->set_result_type(AppListSearchResultType::kInstalledApp);
       result->set_title(base::ASCIIToUTF16("InstalledApp ") +
                         base::NumberToString16(i));
       results->Add(std::move(result));
@@ -165,8 +166,8 @@ class SearchResultTileItemListViewTest
         std::unique_ptr<TestSearchResult> result =
             std::make_unique<TestSearchResult>();
         result->set_result_id("PlayStoreApp " + base::NumberToString(i));
-        result->set_display_type(ash::SearchResultDisplayType::kTile);
-        result->set_result_type(ash::SearchResultType::kPlayStoreApp);
+        result->set_display_type(SearchResultDisplayType::kTile);
+        result->set_result_type(AppListSearchResultType::kPlayStoreApp);
         result->set_title(base::ASCIIToUTF16("PlayStoreApp ") +
                           base::NumberToString16(i));
         result->SetRating(1 + i);
@@ -176,11 +177,11 @@ class SearchResultTileItemListViewTest
       }
     }
 
-    const ash::SearchResultDisplayIndex
+    const SearchResultDisplayIndex
         display_indexes[kRecommendedAppsWithDisplayIndex] = {
-            ash::SearchResultDisplayIndex::kFourthIndex,
-            ash::SearchResultDisplayIndex::kFifthIndex,
-            ash::SearchResultDisplayIndex::kSixthIndex,
+            SearchResultDisplayIndex::kFourthIndex,
+            SearchResultDisplayIndex::kFifthIndex,
+            SearchResultDisplayIndex::kSixthIndex,
         };
 
     if (IsReinstallAppRecommendationEnabled()) {
@@ -188,10 +189,11 @@ class SearchResultTileItemListViewTest
         std::unique_ptr<TestSearchResult> result =
             std::make_unique<TestSearchResult>();
         result->set_result_id("RecommendedApp " + base::NumberToString(i));
-        result->set_display_type(ash::SearchResultDisplayType::kRecommendation);
-        result->set_result_type(ash::SearchResultType::kPlayStoreReinstallApp);
+        result->set_display_type(SearchResultDisplayType::kRecommendation);
+        result->set_result_type(
+            AppListSearchResultType::kPlayStoreReinstallApp);
         result->set_display_location(
-            ash::SearchResultDisplayLocation::kTileListContainer);
+            SearchResultDisplayLocation::kTileListContainer);
         result->set_display_index(display_indexes[i]);
         result->set_title(base::ASCIIToUTF16("RecommendedApp ") +
                           base::NumberToString16(i));
@@ -344,4 +346,4 @@ INSTANTIATE_TEST_SUITE_P(,
                                             std::make_pair(true, false),
                                             std::make_pair(true, true)}));
 
-}  // namespace app_list
+}  // namespace ash

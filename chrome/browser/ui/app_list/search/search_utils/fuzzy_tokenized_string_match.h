@@ -10,9 +10,11 @@
 #include "base/macros.h"
 #include "ui/gfx/range/range.h"
 
-namespace app_list {
-
+namespace ash {
 class TokenizedString;
+}  // namespace ash
+
+namespace app_list {
 
 // FuzzyTokenizedStringMatch takes two tokenized strings: one as the text and
 // the other one as the query. It matches the query against the text,
@@ -29,7 +31,8 @@ class FuzzyTokenizedStringMatch {
 
   // Calculates the relevance of two strings. Returns true if two strings are
   // somewhat matched, i.e. relevance score is greater than a threshold.
-  bool IsRelevant(const TokenizedString& query, const TokenizedString& text);
+  bool IsRelevant(const ash::TokenizedString& query,
+                  const ash::TokenizedString& text);
   double relevance() const { return relevance_; }
   const Hits& hits() const { return hits_; }
 
@@ -47,26 +50,26 @@ class FuzzyTokenizedStringMatch {
   // and |text| and find the similarity ratio between them. This function
   // assumes that TokenizedString is already normalized (converted to lower
   // case). Duplicates tokens will be removed for ratio computation.
-  double TokenSetRatio(const TokenizedString& query,
-                       const TokenizedString& text,
+  double TokenSetRatio(const ash::TokenizedString& query,
+                       const ash::TokenizedString& text,
                        bool partial);
   // TokenSortRatio takes two set of tokens, sorts them and find the similarity
   // between two sorted strings. This function assumes that TokenizedString is
   // already normalized (converted to lower case)
-  double TokenSortRatio(const TokenizedString& query,
-                        const TokenizedString& text,
+  double TokenSortRatio(const ash::TokenizedString& query,
+                        const ash::TokenizedString& text,
                         bool partial);
   // Combines scores from different ratio functions. This function assumes that
   // TokenizedString is already normalized (converted to lower cases).
   // The return score is in range of [0, 1].
-  double WeightedRatio(const TokenizedString& query,
-                       const TokenizedString& text);
+  double WeightedRatio(const ash::TokenizedString& query,
+                       const ash::TokenizedString& text);
   // Since prefix match should always be favored over other matches, this
   // function is dedicated to calculate a prefix match score in range of [0, 1].
   // This score has two components: first character match and whole prefix
   // match.
-  double PrefixMatcher(const TokenizedString& query,
-                       const TokenizedString& text);
+  double PrefixMatcher(const ash::TokenizedString& query,
+                       const ash::TokenizedString& text);
   // Score in range of [0,1] representing how well the query matches the text.
   double relevance_ = 0;
   Hits hits_;
@@ -75,9 +78,10 @@ class FuzzyTokenizedStringMatch {
 };
 
 namespace internal {
-double FirstCharacterMatch(const TokenizedString& query,
-                           const TokenizedString& text);
-double PrefixMatch(const TokenizedString& query, const TokenizedString& text);
+double FirstCharacterMatch(const ash::TokenizedString& query,
+                           const ash::TokenizedString& text);
+double PrefixMatch(const ash::TokenizedString& query,
+                   const ash::TokenizedString& text);
 }  // namespace internal
 }  // namespace app_list
 

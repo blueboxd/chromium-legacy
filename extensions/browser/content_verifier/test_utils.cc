@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
@@ -199,6 +201,57 @@ void VerifierObserver::OnFetchComplete(const ExtensionId& extension_id,
   completed_fetches_.insert(extension_id);
   if (extension_id == id_to_wait_for_)
     loop_runner_->Quit();
+}
+
+// ContentHashResult ----------------------------------------------------------
+ContentHashResult::ContentHashResult(
+    const ExtensionId& extension_id,
+    bool success,
+    bool was_cancelled,
+    const std::set<base::FilePath> mismatch_paths)
+    : extension_id(extension_id),
+      success(success),
+      was_cancelled(was_cancelled),
+      mismatch_paths(mismatch_paths) {}
+ContentHashResult::~ContentHashResult() = default;
+
+// ContentHashWaiter ----------------------------------------------------------
+ContentHashWaiter::ContentHashWaiter()
+    : reply_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+ContentHashWaiter::~ContentHashWaiter() = default;
+
+std::unique_ptr<ContentHashResult> ContentHashWaiter::CreateAndWaitForCallback(
+    ContentHash::FetchKey key) {
+  GetExtensionFileTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ContentHashWaiter::CreateContentHash,
+                                base::Unretained(this), std::move(key)));
+  run_loop_.Run();
+  DCHECK(result_);
+  return std::move(result_);
+}
+
+void ContentHashWaiter::CreatedCallback(scoped_refptr<ContentHash> content_hash,
+                                        bool was_cancelled) {
+  if (!reply_task_runner_->RunsTasksInCurrentSequence()) {
+    reply_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ContentHashWaiter::CreatedCallback,
+                       base::Unretained(this), content_hash, was_cancelled));
+    return;
+  }
+
+  DCHECK(content_hash);
+  result_ = std::make_unique<ContentHashResult>(
+      content_hash->extension_id(), content_hash->succeeded(), was_cancelled,
+      content_hash->hash_mismatch_unix_paths());
+
+  run_loop_.QuitWhenIdle();
+}
+
+void ContentHashWaiter::CreateContentHash(ContentHash::FetchKey key) {
+  ContentHash::Create(std::move(key), ContentHash::IsCancelledCallback(),
+                      base::BindOnce(&ContentHashWaiter::CreatedCallback,
+                                     base::Unretained(this)));
 }
 
 namespace content_verifier_test_utils {

@@ -12,7 +12,7 @@
 
 namespace syncer {
 
-std::string GetSessionNameInternal() {
+std::string GetPersonalizableDeviceNameInternal() {
   wchar_t computer_name[MAX_COMPUTERNAME_LENGTH + 1] = {0};
   DWORD size = base::size(computer_name);
   if (::GetComputerNameW(computer_name, &size)) {

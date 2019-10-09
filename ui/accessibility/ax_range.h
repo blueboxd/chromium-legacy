@@ -224,12 +224,16 @@ class AXRange {
   };
 
   Iterator begin() const {
+    if (IsNull())
+      return Iterator(nullptr, nullptr);
     AXRange forward_range = AsForwardRange();
     return Iterator(std::move(forward_range.anchor_),
                     std::move(forward_range.focus_));
   }
 
   Iterator end() const {
+    if (IsNull())
+      return Iterator(nullptr, nullptr);
     AXRange forward_range = AsForwardRange();
     return Iterator(nullptr, std::move(forward_range.focus_));
   }

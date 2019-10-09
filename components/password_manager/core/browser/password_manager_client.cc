@@ -37,7 +37,7 @@ void PasswordManagerClient::ShowTouchToFill(PasswordManagerDriver* driver) {}
 void PasswordManagerClient::GeneratePassword() {}
 
 void PasswordManagerClient::PasswordWasAutofilled(
-    const std::map<base::string16, const autofill::PasswordForm*>& best_matches,
+    const std::vector<const autofill::PasswordForm*>& best_matches,
     const GURL& origin,
     const std::vector<const autofill::PasswordForm*>* federated_matches) {}
 

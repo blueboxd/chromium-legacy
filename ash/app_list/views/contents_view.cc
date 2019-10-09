@@ -35,7 +35,7 @@
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -1019,4 +1019,4 @@ int ContentsView::GetSearchBoxTopForViewState(
   return AppListConfig::instance().search_box_fullscreen_top_padding();
 }
 
-}  // namespace app_list
+}  // namespace ash

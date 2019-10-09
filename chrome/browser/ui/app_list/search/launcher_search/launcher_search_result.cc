@@ -41,7 +41,7 @@ LauncherSearchResult::LauncherSearchResult(
 
   icon_image_loader_ = base::MakeRefCounted<LauncherSearchIconImageLoaderImpl>(
       icon_url, profile, extension,
-      AppListConfig::instance().GetPreferredIconDimension(display_type()),
+      ash::AppListConfig::instance().GetPreferredIconDimension(display_type()),
       std::move(error_reporter));
   icon_image_loader_->LoadResources();
 
@@ -66,8 +66,8 @@ void LauncherSearchResult::Open(int event_flags) {
   service->OnOpenResult(extension_->id(), item_id_);
 }
 
-SearchResultType LauncherSearchResult::GetSearchResultType() const {
-  return LAUNCHER_SEARCH_PROVIDER_RESULT;
+ash::SearchResultType LauncherSearchResult::GetSearchResultType() const {
+  return ash::LAUNCHER_SEARCH_PROVIDER_RESULT;
 }
 
 void LauncherSearchResult::OnIconImageChanged(

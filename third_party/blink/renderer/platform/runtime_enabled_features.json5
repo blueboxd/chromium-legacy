@@ -509,6 +509,10 @@
       status: "stable",
     },
     {
+      name: "CustomStatePseudoClass",
+      status: "test",
+    },
+    {
       name: "Database",
       status: "stable",
     },

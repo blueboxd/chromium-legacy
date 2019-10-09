@@ -15,6 +15,8 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/sync/model/model_type_store.h"
+#include "components/sync/protocol/web_app_specifics.pb.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-forward.h"
 
 namespace syncer {
 class ModelError;
@@ -91,6 +93,12 @@ class WebAppDatabase {
 
   DISALLOW_COPY_AND_ASSIGN(WebAppDatabase);
 };
+
+blink::mojom::DisplayMode ToMojomDisplayMode(
+    ::sync_pb::WebAppSpecifics::DisplayMode display_mode);
+
+::sync_pb::WebAppSpecifics::DisplayMode ToWebAppSpecificsDisplayMode(
+    blink::mojom::DisplayMode display_mode);
 
 }  // namespace web_app
 

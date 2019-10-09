@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
@@ -76,6 +76,6 @@ public class AutofillAssistantAutostartTest {
                 new AutofillAssistantTestService(Collections.singletonList(script));
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
-        waitUntilViewMatchesCondition(withText("Hello World!"), isDisplayed());
+        waitUntilViewMatchesCondition(withText("Hello World!"), isCompletelyDisplayed());
     }
 }

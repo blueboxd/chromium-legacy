@@ -493,15 +493,15 @@ TEST_F(AXRangeTest, BeginAndEndIterators) {
       tree_->data().tree_id, check_box1_.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   TestPositionInstance test_position3 = AXNodePosition::CreateTextPosition(
-      tree_->data().tree_id, check_box2_.id, 3 /* text_offset */,
+      tree_->data().tree_id, check_box2_.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   TestPositionInstance test_position4 = AXNodePosition::CreateTextPosition(
       tree_->data().tree_id, inline_box1_.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
 
   TestPositionRange nullptr_and_null_position(nullptr, null_position->Clone());
-  EXPECT_EQ(TestPositionRange::Iterator{}, nullptr_and_null_position.begin());
-  EXPECT_EQ(TestPositionRange::Iterator{}, nullptr_and_null_position.end());
+  EXPECT_EQ(TestPositionRange::Iterator(), nullptr_and_null_position.begin());
+  EXPECT_EQ(TestPositionRange::Iterator(), nullptr_and_null_position.end());
 
   TestPositionRange test_position1_and_nullptr(test_position1->Clone(),
                                                nullptr);
@@ -510,9 +510,9 @@ TEST_F(AXRangeTest, BeginAndEndIterators) {
 
   TestPositionRange null_position_and_test_position2(null_position->Clone(),
                                                      test_position2->Clone());
-  EXPECT_EQ(TestPositionRange::Iterator(nullptr, test_position2->Clone()),
+  EXPECT_EQ(TestPositionRange::Iterator(),
             null_position_and_test_position2.begin());
-  EXPECT_EQ(TestPositionRange::Iterator(nullptr, test_position2->Clone()),
+  EXPECT_EQ(TestPositionRange::Iterator(),
             null_position_and_test_position2.end());
 
   TestPositionRange test_position1_and_test_position2(test_position1->Clone(),

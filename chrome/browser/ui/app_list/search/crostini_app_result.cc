@@ -42,8 +42,8 @@ void CrostiniAppResult::ExecuteLaunchCommand(int event_flags) {
   Open(event_flags);
 }
 
-SearchResultType CrostiniAppResult::GetSearchResultType() const {
-  return CROSTINI_APP;
+ash::SearchResultType CrostiniAppResult::GetSearchResultType() const {
+  return ash::CROSTINI_APP;
 }
 
 AppContextMenu* CrostiniAppResult::GetAppContextMenu() {

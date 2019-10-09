@@ -5,6 +5,7 @@
 #include "media/gpu/v4l2/v4l2_vda_helpers.h"
 
 #include "media/base/color_plane_layout.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
@@ -30,7 +31,7 @@ base::Optional<VideoFrameLayout> CreateLayout(uint32_t fourcc,
 
     default:
       VideoPixelFormat pixel_format =
-          V4L2Device::V4L2PixFmtToVideoPixelFormat(fourcc);
+          Fourcc::FromV4L2PixFmt(fourcc).ToVideoPixelFormat();
       if (pixel_format == PIXEL_FORMAT_UNKNOWN)
         return base::nullopt;
       num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(fourcc);

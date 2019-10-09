@@ -149,7 +149,7 @@ class AutofillAssistantUiTestUtil {
                         try {
                             onView(matcher).check(matches(condition));
                             return true;
-                        } catch (NoMatchingViewException e) {
+                        } catch (NoMatchingViewException | AssertionError e) {
                             // Note: all other exceptions are let through, in particular
                             // AmbiguousViewMatcherException.
                             return false;

@@ -44,6 +44,9 @@ class ElementFinder : public WebControllerWorker {
 
     // The object id of the element.
     std::string object_id;
+
+    // The id of the frame the element's node is in.
+    std::string node_frame_id;
   };
 
   // |web_contents| and |devtools_client| must be valid for the lifetime of the
@@ -62,7 +65,8 @@ class ElementFinder : public WebControllerWorker {
 
  private:
   void SendResult(const ClientStatus& status);
-  void OnGetDocumentElement(const DevtoolsClient::ReplyStatus& reply_status,
+  void OnGetDocumentElement(size_t index,
+                            const DevtoolsClient::ReplyStatus& reply_status,
                             std::unique_ptr<runtime::EvaluateResult> result);
   void RecursiveFindElement(const std::string& object_id, size_t index);
   void OnQuerySelectorAll(
@@ -83,6 +87,7 @@ class ElementFinder : public WebControllerWorker {
   void OnResolveNode(size_t index,
                      const DevtoolsClient::ReplyStatus& reply_status,
                      std::unique_ptr<dom::ResolveNodeResult> result);
+
   content::RenderFrameHost* FindCorrespondingRenderFrameHost(
       std::string name,
       std::string document_url);
@@ -90,6 +95,7 @@ class ElementFinder : public WebControllerWorker {
   content::WebContents* const web_contents_;
   DevtoolsClient* const devtools_client_;
   const Selector selector_;
+
   const bool strict_;
   Callback callback_;
   std::unique_ptr<Result> element_result_;

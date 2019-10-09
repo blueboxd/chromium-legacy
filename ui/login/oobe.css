@@ -21,6 +21,7 @@ html {
   --shelf-area-height: var(--shelf-area-height-base);
 }
 
+html[virtual-keyboard=true],
 html[screen=gaia-signin] {
   --shelf-area-height: 0;
 }

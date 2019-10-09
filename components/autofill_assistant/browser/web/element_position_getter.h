@@ -30,7 +30,8 @@ class ElementPositionGetter : public WebControllerWorker {
  public:
   // |devtools_client| must be valid for the lifetime of the instance.
   ElementPositionGetter(DevtoolsClient* devtools_client,
-                        const ClientSettings& settings);
+                        const ClientSettings& settings,
+                        const std::string& optional_node_frame_id);
   ~ElementPositionGetter() override;
 
   // Callback that receives the position that corresponds to the center
@@ -74,6 +75,8 @@ class ElementPositionGetter : public WebControllerWorker {
   bool has_point_ = false;
   int point_x_ = 0;
   int point_y_ = 0;
+
+  std::string node_frame_id_;
 
   base::WeakPtrFactory<ElementPositionGetter> weak_ptr_factory_;
 };

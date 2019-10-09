@@ -64,6 +64,14 @@ if (_build_custom_webkit) {
       "$_framework_out_dir/WebKit.framework/WebKit",
       "$_framework_out_dir/WebKitLegacy.framework",
       "$_framework_out_dir/WebKitLegacy.framework/WebKitLegacy",
+      "$_framework_out_dir/com.apple.WebKit.Networking.xpc",
+      "$_framework_out_dir/com.apple.WebKit.Networking.xpc/com.apple.WebKit.Networking.Development",
+      "$_framework_out_dir/com.apple.WebKit.Plugin.64.xpc",
+      "$_framework_out_dir/com.apple.WebKit.Plugin.64.xpc/com.apple.WebKit.Plugin.64.Development",
+      "$_framework_out_dir/com.apple.WebKit.WebContent.Development.xpc",
+      "$_framework_out_dir/com.apple.WebKit.WebContent.Development.xpc/com.apple.WebKit.WebContent.Development.Development",
+      "$_framework_out_dir/com.apple.WebKit.WebContent.xpc",
+      "$_framework_out_dir/com.apple.WebKit.WebContent.xpc/com.apple.WebKit.WebContent.Development",
     ]
 
     # TODO(crbug.com/934252): "-j 4" restricts xcodebuild to four simultaneous
@@ -91,6 +99,10 @@ if (_build_custom_webkit) {
       "$_framework_out_dir/WebCore.framework",
       "$_framework_out_dir/WebKit.framework",
       "$_framework_out_dir/WebKitLegacy.framework",
+      "$_framework_out_dir/com.apple.WebKit.Networking.xpc",
+      "$_framework_out_dir/com.apple.WebKit.Plugin.64.xpc",
+      "$_framework_out_dir/com.apple.WebKit.WebContent.Development.xpc",
+      "$_framework_out_dir/com.apple.WebKit.WebContent.xpc",
     ]
     outputs = [
       "{{bundle_contents_dir}}/WebKitFrameworks/{{source_file_part}}",

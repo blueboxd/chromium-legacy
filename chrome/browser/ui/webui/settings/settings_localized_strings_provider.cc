@@ -46,6 +46,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/browsing_data/core/features.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
@@ -3124,6 +3125,12 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "enableInsecureContentContentSetting",
       base::FeatureList::IsEnabled(features::kMixedContentSiteSetting));
+
+  html_source->AddBoolean(
+      "showImprovedCookieControlsForThirdParties",
+      base::FeatureList::IsEnabled(
+          content_settings ::
+              kImprovedCookieControlsForThirdPartyCookieBlocking));
 }
 
 #if defined(OS_CHROMEOS)

@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "media/base/video_types.h"
 #include "media/gpu/buildflags.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/generic_v4l2_device.h"
 #include "ui/gfx/native_pixmap.h"
@@ -227,7 +228,8 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(
     return EGL_NO_IMAGE_KHR;
   }
 
-  VideoPixelFormat vf_format = V4L2PixFmtToVideoPixelFormat(v4l2_pixfmt);
+  VideoPixelFormat vf_format =
+      Fourcc::FromV4L2PixFmt(v4l2_pixfmt).ToVideoPixelFormat();
   // Number of components, as opposed to the number of V4L2 planes, which is
   // just a buffer count.
   size_t num_planes = VideoFrame::NumPlanes(vf_format);
@@ -291,7 +293,8 @@ scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
     const std::vector<base::ScopedFD>& dmabuf_fds) {
   DVLOGF(3);
   DCHECK(CanCreateEGLImageFrom(fourcc));
-  VideoPixelFormat vf_format = V4L2PixFmtToVideoPixelFormat(fourcc);
+  VideoPixelFormat vf_format =
+      Fourcc::FromV4L2PixFmt(fourcc).ToVideoPixelFormat();
   size_t num_planes = VideoFrame::NumPlanes(vf_format);
   DCHECK_LE(num_planes, 3u);
   DCHECK_LE(dmabuf_fds.size(), num_planes);

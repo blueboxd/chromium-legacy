@@ -18,6 +18,7 @@
 #include "components/remote_cocoa/common/native_widget_ns_window.mojom.h"
 #include "components/remote_cocoa/common/text_input_host.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
 #include "ui/base/cocoa/command_dispatcher.h"
@@ -197,7 +198,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   // remote_cocoa::mojom::NativeWidgetNSWindow:
   void CreateWindow(mojom::CreateWindowParamsPtr params) override;
   void SetParent(uint64_t parent_id) override;
-  void CreateSelectFileDialog(mojom::SelectFileDialogRequest request) override;
+  void CreateSelectFileDialog(
+      mojo::PendingReceiver<mojom::SelectFileDialog> receiver) override;
   void StackAbove(uint64_t sibling_id) override;
   void StackAtTop() override;
   void ShowEmojiPanel() override;

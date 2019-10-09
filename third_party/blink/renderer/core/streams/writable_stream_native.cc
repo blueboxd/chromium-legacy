@@ -64,74 +64,21 @@ class WritableStreamNative::PendingAbortRequest final
   DISALLOW_COPY_AND_ASSIGN(PendingAbortRequest);
 };
 
-WritableStreamNative::WritableStreamNative() = default;
-
-WritableStreamNative::WritableStreamNative(ScriptState* script_state,
-                                           ScriptValue raw_underlying_sink,
-                                           ScriptValue raw_strategy,
-                                           ExceptionState& exception_state) {
-  // The first parts of this constructor correspond to the object conversions
-  // that are implicit in the definition in the standard:
-  // https://streams.spec.whatwg.org/#ws-constructor
-  DCHECK(!raw_underlying_sink.IsEmpty());
-  DCHECK(!raw_strategy.IsEmpty());
-
-  auto context = script_state->GetContext();
-  auto* isolate = script_state->GetIsolate();
-
-  v8::Local<v8::Object> underlying_sink;
-  ScriptValueToObject(script_state, raw_underlying_sink, &underlying_sink,
-                      exception_state);
+WritableStreamNative* WritableStreamNative::Create(
+    ScriptState* script_state,
+    ScriptValue raw_underlying_sink,
+    ScriptValue raw_strategy,
+    ExceptionState& exception_state) {
+  auto* stream = MakeGarbageCollected<WritableStreamNative>();
+  stream->InitInternal(script_state, raw_underlying_sink, raw_strategy,
+                       exception_state);
   if (exception_state.HadException()) {
-    return;
+    return nullptr;
   }
-
-  // 2. Let size be ? GetV(strategy, "size").
-  // 3. Let highWaterMark be ? GetV(strategy, "highWaterMark").
-  StrategyUnpacker strategy_unpacker(script_state, raw_strategy,
-                                     exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  // 4. Let type be ? GetV(underlyingSink, "type").
-  v8::TryCatch try_catch(isolate);
-  v8::Local<v8::Value> type;
-  if (!underlying_sink->Get(context, V8AtomicString(isolate, "type"))
-           .ToLocal(&type)) {
-    exception_state.RethrowV8Exception(try_catch.Exception());
-    return;
-  }
-
-  // 5. If type is not undefined, throw a RangeError exception.
-  if (!type->IsUndefined()) {
-    exception_state.ThrowRangeError("Invalid type is specified");
-    return;
-  }
-
-  // 6. Let sizeAlgorithm be ? MakeSizeAlgorithmFromSizeFunction(size).
-  auto* size_algorithm =
-      strategy_unpacker.MakeSizeAlgorithm(script_state, exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-  DCHECK(size_algorithm);
-
-  // 7. If highWaterMark is undefined, let highWaterMark be 1.
-  // 8. Set highWaterMark to ? ValidateAndNormalizeHighWaterMark(highWaterMark).
-  double high_water_mark =
-      strategy_unpacker.GetHighWaterMark(script_state, 1, exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  // 9. Perform ? SetUpWritableStreamDefaultControllerFromUnderlyingSink(this,
-  //    underlyingSink, highWaterMark, sizeAlgorithm).
-  WritableStreamDefaultController::SetUpFromUnderlyingSink(
-      script_state, this, underlying_sink, high_water_mark, size_algorithm,
-      exception_state);
+  return stream;
 }
 
+WritableStreamNative::WritableStreamNative() = default;
 WritableStreamNative::~WritableStreamNative() = default;
 
 bool WritableStreamNative::locked(ScriptState* script_state,
@@ -241,8 +188,9 @@ WritableStreamNative* WritableStreamNative::CreateWithCountQueueingStrategy(
   ExceptionState exception_state(script_state->GetIsolate(),
                                  ExceptionState::kConstructionContext,
                                  "WritableStream");
-  auto* stream = MakeGarbageCollected<WritableStreamNative>(
-      script_state, underlying_sink_value, strategy_value, exception_state);
+  auto* stream = MakeGarbageCollected<WritableStreamNative>();
+  stream->InitInternal(script_state, underlying_sink_value, strategy_value,
+                       exception_state);
   if (exception_state.HadException())
     return nullptr;
   return stream;
@@ -787,6 +735,74 @@ void WritableStreamNative::Trace(Visitor* visitor) {
   visitor->Trace(writer_);
   visitor->Trace(write_requests_);
   WritableStream::Trace(visitor);
+}
+
+// This is not implemented inside the constructor in C++, because calling into
+// JavaScript from the constructor can cause GC problems.
+void WritableStreamNative::InitInternal(ScriptState* script_state,
+                                        ScriptValue raw_underlying_sink,
+                                        ScriptValue raw_strategy,
+                                        ExceptionState& exception_state) {
+  // The first parts of this constructor implementation correspond to the object
+  // conversions that are implicit in the definition in the standard:
+  // https://streams.spec.whatwg.org/#ws-constructor
+  DCHECK(!raw_underlying_sink.IsEmpty());
+  DCHECK(!raw_strategy.IsEmpty());
+
+  auto context = script_state->GetContext();
+  auto* isolate = script_state->GetIsolate();
+
+  v8::Local<v8::Object> underlying_sink;
+  ScriptValueToObject(script_state, raw_underlying_sink, &underlying_sink,
+                      exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // 2. Let size be ? GetV(strategy, "size").
+  // 3. Let highWaterMark be ? GetV(strategy, "highWaterMark").
+  StrategyUnpacker strategy_unpacker(script_state, raw_strategy,
+                                     exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // 4. Let type be ? GetV(underlyingSink, "type").
+  v8::TryCatch try_catch(isolate);
+  v8::Local<v8::Value> type;
+  if (!underlying_sink->Get(context, V8AtomicString(isolate, "type"))
+           .ToLocal(&type)) {
+    exception_state.RethrowV8Exception(try_catch.Exception());
+    return;
+  }
+
+  // 5. If type is not undefined, throw a RangeError exception.
+  if (!type->IsUndefined()) {
+    exception_state.ThrowRangeError("Invalid type is specified");
+    return;
+  }
+
+  // 6. Let sizeAlgorithm be ? MakeSizeAlgorithmFromSizeFunction(size).
+  auto* size_algorithm =
+      strategy_unpacker.MakeSizeAlgorithm(script_state, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+  DCHECK(size_algorithm);
+
+  // 7. If highWaterMark is undefined, let highWaterMark be 1.
+  // 8. Set highWaterMark to ? ValidateAndNormalizeHighWaterMark(highWaterMark).
+  double high_water_mark =
+      strategy_unpacker.GetHighWaterMark(script_state, 1, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // 9. Perform ? SetUpWritableStreamDefaultControllerFromUnderlyingSink(this,
+  //    underlyingSink, highWaterMark, sizeAlgorithm).
+  WritableStreamDefaultController::SetUpFromUnderlyingSink(
+      script_state, this, underlying_sink, high_water_mark, size_algorithm,
+      exception_state);
 }
 
 bool WritableStreamNative::HasOperationMarkedInFlight(

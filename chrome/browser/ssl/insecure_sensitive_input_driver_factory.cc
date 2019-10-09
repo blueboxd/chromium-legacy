@@ -56,8 +56,8 @@ InsecureSensitiveInputDriverFactory::GetOrCreateForWebContents(
 
 // static
 void InsecureSensitiveInputDriverFactory::BindDriver(
-    mojo::PendingReceiver<blink::mojom::InsecureInputService> receiver,
-    content::RenderFrameHost* render_frame_host) {
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<blink::mojom::InsecureInputService> receiver) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   if (!web_contents)

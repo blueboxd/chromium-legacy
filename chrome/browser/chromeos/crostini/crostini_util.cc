@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
@@ -41,6 +40,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -298,9 +298,19 @@ bool IsCrostiniAllowedForProfileImpl(Profile* profile) {
 
 namespace crostini {
 
-std::string ContainerIdToString(const ContainerId& container_id) {
-  return base::StrCat(
-      {"(", container_id.first, ", ", container_id.second, ")"});
+ContainerId::ContainerId(std::string vm_name,
+                         std::string container_name) noexcept
+    : vm_name(std::move(vm_name)), container_name(std::move(container_name)) {}
+
+bool operator<(const ContainerId& lhs, const ContainerId& rhs) noexcept {
+  const auto result = lhs.vm_name.compare(rhs.vm_name);
+  return result < 0 || (result == 0 && lhs.container_name < rhs.container_name);
+}
+
+std::ostream& operator<<(std::ostream& ostream,
+                         const ContainerId& container_id) {
+  return ostream << "(vm: \"" << container_id.vm_name << "\" container: \""
+                 << container_id.container_name << "\")";
 }
 
 bool IsUninstallable(Profile* profile, const std::string& app_id) {
@@ -464,18 +474,12 @@ std::string CryptohomeIdForProfile(Profile* profile) {
 }
 
 std::string DefaultContainerUserNameForProfile(Profile* profile) {
-  // Get rid of the @domain.name in the profile user name (an email address).
-  std::string container_username = profile->GetProfileUserName();
-  if (container_username.empty()) {
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  if (!user) {
     return kCrostiniDefaultUsername;
   }
-  if (container_username.find('@') != std::string::npos) {
-    // gaia::CanonicalizeEmail CHECKs its argument contains'@'.
-    container_username = gaia::CanonicalizeEmail(container_username);
-    // |container_username| may have changed, so we have to find again.
-    return container_username.substr(0, container_username.find('@'));
-  }
-  return container_username;
+  return user->GetAccountName(/*use_display_email=*/false);
 }
 
 base::FilePath ContainerChromeOSBaseDirectory() {

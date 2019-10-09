@@ -57,12 +57,9 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   request->SetOrigin(ExecutionContext::From(script_state)->GetSecurityOrigin());
   // FIXME: Set client.
   DOMWrapperWorld& world = script_state->World();
-  if (world.IsIsolatedWorld()) {
+  if (world.IsIsolatedWorld())
     request->SetIsolatedWorldOrigin(world.IsolatedWorldSecurityOrigin());
-    request->SetShouldAlsoUseFactoryBoundOriginForCors(true);
-  }
   // FIXME: Set ForceOriginHeaderFlag.
-  request->SetSameOriginDataURLFlag(true);
   request->SetReferrerString(original->ReferrerString());
   request->SetReferrerPolicy(original->GetReferrerPolicy());
   request->SetMode(original->Mode());

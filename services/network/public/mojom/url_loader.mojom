@@ -289,10 +289,6 @@ struct URLRequest {
   // some CORS logic for a revalidating request.
   bool is_revalidating;
 
-  // True when the CORS module should *also* use the origin set to the
-  // associated URLLoaderFactory.
-  bool should_also_use_factory_bound_origin_for_cors;
-
   // The profile ID of network conditions to throttle the network request.
   mojo_base.mojom.UnguessableToken? throttling_profile_id;
 

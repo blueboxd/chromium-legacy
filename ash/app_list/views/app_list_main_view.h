@@ -16,15 +16,11 @@
 #include "ui/chromeos/search_box/search_box_view_delegate.h"
 #include "ui/views/view.h"
 
-namespace ash {
-class PaginationModel;
-}  // namespace ash
-
 namespace search_box {
 class SearchBoxViewBase;
 }  // namespace search_box
 
-namespace app_list {
+namespace ash {
 
 class AppListItem;
 class AppListModel;
@@ -32,6 +28,7 @@ class AppListView;
 class AppListViewDelegate;
 class ApplicationDragAndDropHost;
 class ContentsView;
+class PaginationModel;
 class SearchBoxView;
 
 // AppListMainView contains the normal view of the app list, which is shown
@@ -108,6 +105,6 @@ class APP_LIST_EXPORT AppListMainView
   DISALLOW_COPY_AND_ASSIGN(AppListMainView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_APP_LIST_MAIN_VIEW_H_

@@ -54,7 +54,7 @@ bool IsTabletMode() {
 }  // namespace
 
 AppListClientImpl::AppListClientImpl()
-    : app_list_controller_(app_list::AppListController::Get()) {
+    : app_list_controller_(ash::AppListController::Get()) {
   app_list_controller_->SetClient(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 
@@ -412,7 +412,7 @@ Profile* AppListClientImpl::GetCurrentAppListProfile() const {
   return ChromeLauncherController::instance()->profile();
 }
 
-app_list::AppListController* AppListClientImpl::GetAppListController() const {
+ash::AppListController* AppListClientImpl::GetAppListController() const {
   return app_list_controller_;
 }
 

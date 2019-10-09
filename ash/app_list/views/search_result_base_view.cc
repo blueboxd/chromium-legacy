@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
-namespace app_list {
+namespace ash {
 
 SearchResultBaseView::SearchResultBaseView() : Button(this) {
   SetInstallFocusRingOnFocus(false);
@@ -113,4 +113,4 @@ void SearchResultBaseView::ClearSelectedResultAction() {
     actions_view_->ClearSelectedAction();
 }
 
-}  // namespace app_list
+}  // namespace ash

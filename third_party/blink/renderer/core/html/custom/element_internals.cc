@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
@@ -31,6 +32,20 @@ bool IsValidityStateFlagsValid(const ValidityStateFlags* flags) {
 }
 }  // anonymous namespace
 
+class CustomStatesTokenList : public DOMTokenList {
+ public:
+  CustomStatesTokenList(Element& element)
+      : DOMTokenList(element, g_null_name) {}
+
+  AtomicString value() const override { return TokenSet().SerializeToString(); }
+
+  void setValue(const AtomicString& new_value) override {
+    DidUpdateAttributeValue(value(), new_value);
+    // TODO(crbug.com/1012098): Calls GetElement().PseudoStateChanged() for
+    // ':state()'
+  }
+};
+
 ElementInternals::ElementInternals(HTMLElement& target) : target_(target) {
   value_.SetUSVString(String());
 }
@@ -41,6 +56,7 @@ void ElementInternals::Trace(Visitor* visitor) {
   visitor->Trace(state_);
   visitor->Trace(validity_flags_);
   visitor->Trace(validation_anchor_);
+  visitor->Trace(custom_states_);
   visitor->Trace(explicitly_set_attr_elements_map_);
   ListedElement::Trace(visitor);
   ScriptWrappable::Trace(visitor);
@@ -211,6 +227,12 @@ LabelsNodeList* ElementInternals::labels(ExceptionState& exception_state) {
     return nullptr;
   }
   return Target().labels();
+}
+
+DOMTokenList* ElementInternals::states() {
+  if (!custom_states_)
+    custom_states_ = MakeGarbageCollected<CustomStatesTokenList>(Target());
+  return custom_states_;
 }
 
 const AtomicString& ElementInternals::FastGetAttribute(

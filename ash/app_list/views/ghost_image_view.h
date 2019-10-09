@@ -10,7 +10,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/image_view.h"
 
-namespace app_list {
+namespace ash {
 
 class AppListItemView;
 
@@ -82,6 +82,6 @@ class GhostImageView : public views::ImageView,
   DISALLOW_COPY_AND_ASSIGN(GhostImageView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_GHOST_IMAGE_VIEW_H_

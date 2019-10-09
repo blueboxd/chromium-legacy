@@ -111,8 +111,7 @@ class ChromePasswordManagerClient
       std::unique_ptr<password_manager::PasswordFormManagerForUI>
           saved_form_manager) override;
   void PasswordWasAutofilled(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
+      const std::vector<const autofill::PasswordForm*>& best_matches,
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches)
       override;

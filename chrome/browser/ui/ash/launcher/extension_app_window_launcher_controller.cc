@@ -32,7 +32,7 @@ namespace {
 // Get the ShelfID for a given |app_window|.
 ash::ShelfID GetShelfId(AppWindow* app_window) {
   if (IsCameraApp(app_window->extension_id()))
-    return ash::ShelfID(app_list::kInternalAppIdCamera);
+    return ash::ShelfID(ash::kInternalAppIdCamera);
 
   // Set launch_id default value to an empty string. If showInShelf parameter
   // is true and the window key is not empty, its value is appended to the

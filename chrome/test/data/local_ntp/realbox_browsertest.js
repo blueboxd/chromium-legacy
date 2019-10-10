@@ -581,7 +581,21 @@ test.realbox.testRemoveIcon = function() {
   const matchesEl = $(test.realbox.IDS.REALBOX_MATCHES);
   assertTrue(matchesEl.classList.contains(test.realbox.CLASSES.REMOVABLE));
 
-  matchesEl.querySelector(`.${test.realbox.CLASSES.REMOVE_ICON}`).click();
+  const enter = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Enter',
+  });
+
+  let clicked = false;
+  matchesEl.children[0].onclick = () => clicked = true;
+
+  const icon = matchesEl.querySelector(`.${test.realbox.CLASSES.REMOVE_ICON}`);
+  icon.dispatchEvent(enter);
+
+  assertFalse(clicked);
+
+  icon.click();
 
   assertEquals(1, test.realbox.deletedLines.length);
   assertEquals(0, test.realbox.deletedLines[0]);

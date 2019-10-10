@@ -750,6 +750,10 @@ html[dir='rtl'] .top-header-contents .more-options {
   visibility: hidden;  /* Need this for correct positioning. */
 }
 
+#current-wallpaper-info-bar .spacer {
+  flex: 1;
+}
+
 :not(.preview-mode) #current-wallpaper-info-bar.show-info-bar {
   visibility: visible;
 }
@@ -800,12 +804,6 @@ html[dir='rtl'] .top-header-contents .more-options {
   display: flex;
   flex-direction: column;
   font-size: 12px;
-  position: absolute;
-  right: 0;
-}
-
-html[dir='rtl'] #current-wallpaper-more-options {
-  right: 420px;
 }
 
 #current-wallpaper-more-options > div {
@@ -825,7 +823,12 @@ html[dir='rtl'] #current-wallpaper-more-options {
 }
 
 #current-wallpaper-more-options .text {
-  padding-top: 1px;
+  height: 16px;
+  line-height: 16px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #current-wallpaper-more-options .icon {

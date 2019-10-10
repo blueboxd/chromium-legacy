@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "components/payments/mojom/payment_request_data.mojom-blink-forward.h"
+#include "components/payments/mojom/payment_request_data.mojom-blink.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom-blink.h"

@@ -1241,7 +1241,7 @@ function onRealboxKeyDown(e) {
   }
 
   if (key === 'Enter') {
-    if (matchEls[selected]) {
+    if (matchEls[selected] && matchEls.concat(realboxEl).includes(e.target)) {
       // Note: dispatching a MouseEvent here instead of using e.g. .click() as
       // this forwards key modifiers. This enables Shift+Enter to open a match
       // in a new window, for example.

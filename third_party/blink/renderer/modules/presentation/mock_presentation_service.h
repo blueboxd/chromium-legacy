@@ -7,7 +7,7 @@
 
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/mojom/presentation/presentation.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 
 namespace blink {
 

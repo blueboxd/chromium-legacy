@@ -26,7 +26,7 @@ interface StubInterface {};
 // various Cocoa types (NSAlert, NSWindow, NSView, etc) are created.
 interface Application {
   // Create a bridge for an NSAlert. The resulting object owns its own lifetime.
-  CreateAlert(AlertBridge& alert_bridge_request);
+  CreateAlert(pending_receiver<AlertBridge> alert_bridge_receiver);
 
   // Show the NSColorPanel in this application.
   ShowColorPanel(pending_receiver<ColorPanel> receiver,

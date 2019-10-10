@@ -31,6 +31,15 @@ class SiteIsolationPolicy {
   // have been loaded.
   static void ApplyPersistedIsolatedOrigins(Profile* profile);
 
+  // Determines whether Site Isolation should be disabled because the device
+  // does not have the minimum required amount of memory.
+  //
+  // TODO(alexmos): Currently, the memory threshold is shared for all site
+  // isolation modes, including strict site isolation and password site
+  // isolation.  In the future, some site isolation modes may require their own
+  // memory threshold.
+  static bool ShouldDisableSiteIsolationDueToMemoryThreshold();
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SiteIsolationPolicy);
 };

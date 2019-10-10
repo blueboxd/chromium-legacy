@@ -14,12 +14,14 @@
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "components/sync/model/entity_change.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 
 class Profile;
 
 namespace syncer {
 class MetadataBatch;
+class MetadataChangeList;
 class ModelError;
 class ModelTypeChangeProcessor;
 }  // namespace syncer
@@ -27,6 +29,7 @@ class ModelTypeChangeProcessor;
 namespace web_app {
 
 class AbstractWebAppDatabaseFactory;
+class SyncInstallDelegate;
 class WebAppDatabase;
 class WebAppRegistryUpdate;
 struct RegistryUpdateData;
@@ -38,12 +41,14 @@ class WebAppSyncBridge : public AppRegistryController,
  public:
   WebAppSyncBridge(Profile* profile,
                    AbstractWebAppDatabaseFactory* database_factory,
-                   WebAppRegistrarMutable* registrar);
+                   WebAppRegistrarMutable* registrar,
+                   SyncInstallDelegate* install_delegate);
   // Tests may inject mocks using this ctor.
   WebAppSyncBridge(
       Profile* profile,
       AbstractWebAppDatabaseFactory* database_factory,
       WebAppRegistrarMutable* registrar,
+      SyncInstallDelegate* install_delegate,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~WebAppSyncBridge() override;
 
@@ -64,8 +69,15 @@ class WebAppSyncBridge : public AppRegistryController,
 
  private:
   void CheckRegistryUpdateData(const RegistryUpdateData& update_data) const;
-  // Update the in-memory model.
-  void UpdateRegistrar(std::unique_ptr<RegistryUpdateData> update_data);
+
+  // Update the in-memory model. Returns unregistered apps which may be
+  // disposed.
+  std::vector<std::unique_ptr<WebApp>> UpdateRegistrar(
+      std::unique_ptr<RegistryUpdateData> update_data);
+
+  // Update the remote sync server.
+  void UpdateSync(const RegistryUpdateData& update_data,
+                  syncer::MetadataChangeList* metadata_change_list);
 
   void OnDatabaseOpened(base::OnceClosure callback,
                         Registry registry,
@@ -73,6 +85,17 @@ class WebAppSyncBridge : public AppRegistryController,
   void OnDataWritten(CommitCallback callback, bool success);
 
   void ReportErrorToChangeProcessor(const syncer::ModelError& error);
+
+  // Any local entities that don’t exist remotely must be provided to sync.
+  void MergeLocalAppsToSync(const syncer::EntityChangeList& entity_data,
+                            syncer::MetadataChangeList* metadata_change_list);
+
+  void ApplySyncDataChange(const syncer::EntityChange& change,
+                           RegistryUpdateData* update_local_data);
+
+  // Update registrar and Install/Uninstall missing/excessive local apps.
+  void ApplySyncChangesToRegistrar(
+      std::unique_ptr<RegistryUpdateData> update_local_data);
 
   // syncer::ModelTypeSyncBridge:
   std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
@@ -90,6 +113,7 @@ class WebAppSyncBridge : public AppRegistryController,
 
   std::unique_ptr<WebAppDatabase> database_;
   WebAppRegistrarMutable* const registrar_;
+  SyncInstallDelegate* const install_delegate_;
 
   bool is_in_update_ = false;
 

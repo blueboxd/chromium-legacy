@@ -78,8 +78,8 @@ class BatteryMonitorTest : public ContentBrowserTest {
     // it.
     service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
         device::mojom::kServiceName,
-        base::Bind(&MockBatteryMonitor::Bind,
-                   base::Unretained(mock_battery_monitor_.get())));
+        base::BindRepeating(&MockBatteryMonitor::Bind,
+                            base::Unretained(mock_battery_monitor_.get())));
   }
 
   ~BatteryMonitorTest() override {

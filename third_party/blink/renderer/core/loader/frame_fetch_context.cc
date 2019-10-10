@@ -424,6 +424,11 @@ void FrameFetchContext::PrepareRequest(
 
   if (GetResourceFetcherProperties().IsDetached())
     return;
+
+  DocumentLoader* document_loader = MasterDocumentLoader();
+  if (document_loader->ForceFetchCacheMode())
+    request.SetCacheMode(*document_loader->ForceFetchCacheMode());
+
   GetLocalFrameClient()->DispatchWillSendRequest(request);
   FrameScheduler* frame_scheduler = GetFrame()->GetFrameScheduler();
   if (!for_redirect && frame_scheduler) {
@@ -432,14 +437,13 @@ void FrameFetchContext::PrepareRequest(
         WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
   }
 
-  probe::PrepareRequest(Probe(), MasterDocumentLoader(), request,
-                        initiator_info, resource_type);
+  probe::PrepareRequest(Probe(), document_loader, request, initiator_info,
+                        resource_type);
 
   // ServiceWorker hook ups.
-  if (MasterDocumentLoader()->GetServiceWorkerNetworkProvider()) {
+  if (document_loader->GetServiceWorkerNetworkProvider()) {
     WrappedResourceRequest webreq(request);
-    MasterDocumentLoader()->GetServiceWorkerNetworkProvider()->WillSendRequest(
-        webreq);
+    document_loader->GetServiceWorkerNetworkProvider()->WillSendRequest(webreq);
   }
 }
 

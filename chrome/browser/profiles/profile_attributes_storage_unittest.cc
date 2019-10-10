@@ -298,7 +298,7 @@ TEST_F(ProfileAttributesStorageTest, EntryAccessors) {
   EXPECT_EQ(path, entry->GetPath());
 
   EXPECT_CALL(observer(), OnProfileNameChanged(path, _)).Times(2);
-  TEST_STRING16_ACCESSORS(ProfileAttributesEntry, entry, Name);
+  TEST_STRING16_ACCESSORS(ProfileAttributesEntry, entry, LocalProfileName);
   VerifyAndResetCallExpectations();
 
   TEST_STRING16_ACCESSORS(ProfileAttributesEntry, entry, ShortcutName);
@@ -307,8 +307,10 @@ TEST_F(ProfileAttributesStorageTest, EntryAccessors) {
       ProfileAttributesEntry, entry, PasswordChangeDetectionToken);
   TEST_ACCESSORS(ProfileAttributesEntry, entry, BackgroundStatus, true, false);
 
+  EXPECT_CALL(observer(), OnProfileNameChanged(path, _)).Times(4);
   TEST_STRING16_ACCESSORS(ProfileAttributesEntry, entry, GAIAName);
   TEST_STRING16_ACCESSORS(ProfileAttributesEntry, entry, GAIAGivenName);
+  VerifyAndResetCallExpectations();
 
   EXPECT_CALL(observer(), OnProfileAvatarChanged(path)).Times(2);
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsUsingGAIAPicture);
@@ -320,7 +322,6 @@ TEST_F(ProfileAttributesStorageTest, EntryAccessors) {
 
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsEphemeral);
 
-  EXPECT_CALL(observer(), OnProfileNameChanged(path, _)).Times(2);
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsUsingDefaultName);
   VerifyAndResetCallExpectations();
 
@@ -521,7 +522,7 @@ TEST_F(ProfileAttributesStorageTest, ReSortTriggered) {
       GetProfilePath("alpha_path"), &entry));
 
   // Trigger a ProfileInfoCache re-sort.
-  entry->SetName(base::ASCIIToUTF16("zulu_name"));
+  entry->SetLocalProfileName(base::ASCIIToUTF16("zulu_name"));
   EXPECT_EQ(GetProfilePath("alpha_path"), entry->GetPath());
 }
 
@@ -576,7 +577,7 @@ TEST_F(ProfileAttributesStorageTest, AccessFromElsewhere) {
   ASSERT_TRUE(storage()->GetProfileAttributesWithPath(
       GetProfilePath("testing_profile_path0"), &second_entry));
 
-  first_entry->SetName(base::ASCIIToUTF16("NewName"));
+  first_entry->SetLocalProfileName(base::ASCIIToUTF16("NewName"));
   EXPECT_EQ(base::ASCIIToUTF16("NewName"), second_entry->GetName());
   EXPECT_EQ(first_entry, second_entry);
 
@@ -585,9 +586,9 @@ TEST_F(ProfileAttributesStorageTest, AccessFromElsewhere) {
   size_t index = profile_info_cache()->GetIndexOfProfileWithPath(
       GetProfilePath("testing_profile_path0"));
   EXPECT_EQ(base::ASCIIToUTF16("NewName"),
-      profile_info_cache()->GetNameOfProfileAtIndex(index));
+            profile_info_cache()->GetNameToDisplayOfProfileAtIndex(index));
 
-  profile_info_cache()->SetNameOfProfileAtIndex(
+  profile_info_cache()->SetLocalProfileNameOfProfileAtIndex(
       index, base::ASCIIToUTF16("OtherNewName"));
   EXPECT_EQ(base::ASCIIToUTF16("OtherNewName"), first_entry->GetName());
 }

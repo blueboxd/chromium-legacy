@@ -1447,6 +1447,29 @@ void InspectorStyleSheet::InnerSetText(const String& text,
   }
 }
 
+namespace {
+
+TextPosition TextPositionFromOffsetAndLineEndingsRelativeToStartPosition(
+    unsigned offset,
+    const Vector<unsigned>& line_endings,
+    const TextPosition& start_position) {
+  TextPosition position =
+      TextPosition::FromOffsetAndLineEndings(offset, line_endings);
+  unsigned column = position.column_.ZeroBasedInt();
+  // A non-zero `start_position.column_` means that the text started in the
+  // middle of a line, so the start column position must be added if `offset`
+  // translates to a `position` in the first line of the text.
+  if (position.line_.ZeroBasedInt() == 0) {
+    column += start_position.column_.ZeroBasedInt();
+  }
+  unsigned line_index =
+      start_position.line_.ZeroBasedInt() + position.line_.ZeroBasedInt();
+  return TextPosition(OrdinalNumber::FromZeroBasedInt(line_index),
+                      OrdinalNumber::FromZeroBasedInt(column));
+}
+
+}  // namespace
+
 std::unique_ptr<protocol::CSS::CSSStyleSheetHeader>
 InspectorStyleSheet::BuildObjectForStyleSheetInfo() {
   CSSStyleSheet* style_sheet = PageStyleSheet();
@@ -1455,8 +1478,16 @@ InspectorStyleSheet::BuildObjectForStyleSheetInfo() {
 
   Document* document = style_sheet->OwnerDocument();
   LocalFrame* frame = document ? document->GetFrame() : nullptr;
-  String text;
-  GetText(&text);
+  const LineEndings* line_endings = this->GetLineEndings();
+  TextPosition start = style_sheet->StartPositionInSource();
+  TextPosition end = start;
+  unsigned text_length = 0;
+  if (line_endings->size() > 0) {
+    text_length = line_endings->back();
+    end = TextPositionFromOffsetAndLineEndingsRelativeToStartPosition(
+        text_length, *line_endings, start);
+  }
+
   std::unique_ptr<protocol::CSS::CSSStyleSheetHeader> result =
       protocol::CSS::CSSStyleSheetHeader::create()
           .setStyleSheetId(Id())
@@ -1466,11 +1497,11 @@ InspectorStyleSheet::BuildObjectForStyleSheetInfo() {
           .setTitle(style_sheet->title())
           .setFrameId(frame ? IdentifiersFactory::FrameId(frame) : "")
           .setIsInline(style_sheet->IsInline() && !StartsAtZero())
-          .setStartLine(
-              style_sheet->StartPositionInSource().line_.ZeroBasedInt())
-          .setStartColumn(
-              style_sheet->StartPositionInSource().column_.ZeroBasedInt())
-          .setLength(text.length())
+          .setStartLine(start.line_.ZeroBasedInt())
+          .setStartColumn(start.column_.ZeroBasedInt())
+          .setLength(text_length)
+          .setEndLine(end.line_.ZeroBasedInt())
+          .setEndColumn(end.column_.ZeroBasedInt())
           .build();
 
   if (HasSourceURL())

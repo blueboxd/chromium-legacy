@@ -273,10 +273,10 @@ void PrefetchURLLoaderService::EnsureCrossOriginFactory() {
 }
 
 void PrefetchURLLoaderService::Clone(
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   loader_factory_receivers_.Add(
-      this, std::move(request),
+      this, std::move(receiver),
       std::make_unique<BindContext>(
           loader_factory_receivers_.current_context()));
 }

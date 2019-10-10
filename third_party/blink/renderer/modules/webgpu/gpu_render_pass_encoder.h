@@ -47,10 +47,9 @@ class GPURenderPassEncoder : public DawnObject<DawnRenderPassEncoder> {
                    float maxDepth);
   void setScissorRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
   void setIndexBuffer(GPUBuffer* buffer, uint64_t offset);
-  void setVertexBuffers(uint32_t startSlot,
-                        const HeapVector<Member<GPUBuffer>>& buffers,
-                        const Vector<uint64_t>& offsets,
-                        ExceptionState& exception_state);
+  void setVertexBuffer(uint32_t slot,
+                       const GPUBuffer* buffer,
+                       const uint64_t offset);
   void draw(uint32_t vertexCount,
             uint32_t instanceCount,
             uint32_t firstVertex,

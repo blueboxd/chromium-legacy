@@ -865,6 +865,16 @@ void EmbeddedWorkerInstance::SendStartWorker(
       process_id(), MakeRequest(&params->provider_info->interface_provider),
       params->provider_info->browser_interface_broker
           .InitWithNewPipeAndPassReceiver());
+
+  // TODO(bashi): Create correct outside fetch client settings object. We need
+  // to plumb parent's fetch client settings object from renderer.
+  // See crbug.com/937177.
+  params->outside_fetch_client_settings_object =
+      blink::mojom::FetchClientSettingsObject::New(
+          network::mojom::ReferrerPolicy::kDefault,
+          /*outgoing_referrer=*/params->script_url,
+          blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade);
+
   client_->StartWorker(std::move(params));
 
   starting_phase_ = is_script_streaming ? SCRIPT_STREAMING : SENT_START_WORKER;

@@ -24,7 +24,7 @@ GeolocationServiceImplContext::~GeolocationServiceImplContext() {
 void GeolocationServiceImplContext::RequestPermission(
     RenderFrameHost* render_frame_host,
     bool user_gesture,
-    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
+    base::OnceCallback<void(blink::mojom::PermissionStatus)> callback) {
   if (request_id_ != PermissionController::kNoPendingOperation) {
     mojo::ReportBadMessage(
         "GeolocationService client may only create one Geolocation at a "
@@ -35,15 +35,15 @@ void GeolocationServiceImplContext::RequestPermission(
   request_id_ = permission_controller_->RequestPermission(
       PermissionType::GEOLOCATION, render_frame_host,
       render_frame_host->GetLastCommittedOrigin().GetURL(), user_gesture,
-      base::Bind(&GeolocationServiceImplContext::HandlePermissionStatus,
-                 weak_factory_.GetWeakPtr(), std::move(callback)));
+      base::BindOnce(&GeolocationServiceImplContext::HandlePermissionStatus,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void GeolocationServiceImplContext::HandlePermissionStatus(
-    const base::Callback<void(blink::mojom::PermissionStatus)>& callback,
+    base::OnceCallback<void(blink::mojom::PermissionStatus)> callback,
     blink::mojom::PermissionStatus permission_status) {
   request_id_ = PermissionController::kNoPendingOperation;
-  callback.Run(permission_status);
+  std::move(callback).Run(permission_status);
 }
 
 GeolocationServiceImpl::GeolocationServiceImpl(
@@ -86,9 +86,10 @@ void GeolocationServiceImpl::CreateGeolocation(
       render_frame_host_, user_gesture,
       // There is an assumption here that the GeolocationServiceImplContext will
       // outlive the GeolocationServiceImpl.
-      base::Bind(&GeolocationServiceImpl::CreateGeolocationWithPermissionStatus,
-                 base::Unretained(this), base::Passed(&receiver),
-                 base::Passed(&scoped_callback)));
+      base::BindOnce(
+          &GeolocationServiceImpl::CreateGeolocationWithPermissionStatus,
+          base::Unretained(this), base::Passed(&receiver),
+          base::Passed(&scoped_callback)));
 }
 
 void GeolocationServiceImpl::CreateGeolocationWithPermissionStatus(

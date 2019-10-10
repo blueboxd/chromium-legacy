@@ -25,6 +25,8 @@ struct WebFetchClientSettingsObject {
   WebURL outgoing_referrer;
   mojom::InsecureRequestsPolicy insecure_requests_policy;
 
+  WebFetchClientSettingsObject() {}
+
 #if INSIDE_BLINK
   explicit WebFetchClientSettingsObject(
       const FetchClientSettingsObjectSnapshot& snapshot)

@@ -21,14 +21,10 @@ void PerformanceManager::CallOnGraph(const base::Location& from_here,
                                      GraphCallback callback) {
   DCHECK(callback);
 
-  // Passing |pm| unretained is safe as it is actually destroyed on the
-  // destination sequence, and g_performance_manager.Get() would return nullptr
-  // if its deletion task was already posted.
-  auto* pm = PerformanceManagerImpl::GetInstance();
   // TODO(siggi): Unwrap this by binding the loose param.
-  pm->task_runner_->PostTask(
+  PerformanceManagerImpl::GetTaskRunner()->PostTask(
       from_here, base::BindOnce(&PerformanceManagerImpl::RunCallbackWithGraph,
-                                base::Unretained(pm), std::move(callback)));
+                                std::move(callback)));
 }
 
 // static
@@ -36,14 +32,17 @@ void PerformanceManager::PassToGraph(const base::Location& from_here,
                                      std::unique_ptr<GraphOwned> graph_owned) {
   DCHECK(graph_owned);
 
-  // Passing |graph_| unretained is safe as it is actually destroyed on the
-  // destination sequence, and g_performance_manager.Get() would return nullptr
-  // if its deletion task was already posted.
-  auto* pm = PerformanceManagerImpl::GetInstance();
-  pm->task_runner_->PostTask(
+  // PassToGraph() should only be called when a graph is available to take
+  // ownership of |graph_owned|.
+  DCHECK(IsAvailable());
+
+  PerformanceManagerImpl::CallOnGraphImpl(
       from_here,
-      base::BindOnce(&GraphImpl::PassToGraph, base::Unretained(&pm->graph_),
-                     std::move(graph_owned)));
+      base::BindOnce(
+          [](std::unique_ptr<GraphOwned> graph_owned, GraphImpl* graph) {
+            graph->PassToGraph(std::move(graph_owned));
+          },
+          std::move(graph_owned)));
 }
 
 // static

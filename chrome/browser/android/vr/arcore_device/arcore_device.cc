@@ -157,7 +157,7 @@ void ArCoreDevice::RequestSession(
 
   if (session_state_->pending_request_session_callback_) {
     DVLOG(1) << __func__ << ": Rejecting additional session request";
-    std::move(callback).Run(nullptr, nullptr);
+    std::move(callback).Run(nullptr, mojo::NullRemote());
     return;
   }
   session_state_->pending_request_session_callback_ = std::move(callback);
@@ -286,7 +286,7 @@ void ArCoreDevice::CallDeferredRequestSessionCallback(bool success) {
       std::move(session_state_->pending_request_session_callback_);
 
   if (!success) {
-    std::move(deferred_callback).Run(nullptr, nullptr);
+    std::move(deferred_callback).Run(nullptr, mojo::NullRemote());
     return;
   }
 
@@ -311,7 +311,7 @@ void ArCoreDevice::OnCreateSessionCallback(
     mojom::XRRuntime::RequestSessionCallback deferred_callback,
     mojo::PendingRemote<mojom::XRFrameDataProvider> frame_data_provider,
     mojom::VRDisplayInfoPtr display_info,
-    mojom::XRSessionControllerPtrInfo session_controller_info,
+    mojo::PendingRemote<mojom::XRSessionController> session_controller,
     mojom::XRPresentationConnectionPtr presentation_connection) {
   DVLOG(2) << __func__;
   DCHECK(IsOnMainThread());
@@ -321,9 +321,8 @@ void ArCoreDevice::OnCreateSessionCallback(
   session->display_info = std::move(display_info);
   session->submit_frame_sink = std::move(presentation_connection);
 
-  mojom::XRSessionControllerPtr controller(std::move(session_controller_info));
-
-  std::move(deferred_callback).Run(std::move(session), std::move(controller));
+  std::move(deferred_callback)
+      .Run(std::move(session), std::move(session_controller));
 }
 
 void ArCoreDevice::PostTaskToGlThread(base::OnceClosure task) {

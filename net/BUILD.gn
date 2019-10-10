@@ -5855,7 +5855,10 @@ test("net_unittests") {
       "quic/platform/impl/quic_socket_utils_test.cc",
       "third_party/quiche/src/epoll_server/simple_epoll_server_test.cc",
       "third_party/quiche/src/quic/core/chlo_extractor_test.cc",
-      "third_party/quiche/src/quic/core/http/end_to_end_test.cc",
+
+      # EndToEndTestServerPush.ServerPushOverLimitNonBlocking is flaky.
+      # See https://crbug.com/1010206
+      # "third_party/quiche/src/quic/core/http/end_to_end_test.cc",
       "third_party/quiche/src/quic/core/http/quic_spdy_client_session_test.cc",
       "third_party/quiche/src/quic/core/http/quic_spdy_client_stream_test.cc",
       "third_party/quiche/src/quic/core/http/quic_spdy_server_stream_base_test.cc",

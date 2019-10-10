@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/test/test_pending_app_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -30,7 +31,7 @@ class PendingAppManagerTest : public testing::Test {
     std::vector<ExternalInstallOptions> install_options_list;
     for (const auto& url : urls) {
       install_options_list.emplace_back(
-          url, LaunchContainer::kWindow,
+          url, blink::mojom::DisplayMode::kStandalone,
           ExternalInstallSource::kInternalDefault);
     }
 
@@ -80,10 +81,10 @@ TEST_F(PendingAppManagerTest, DestroyDuringInstallInSynchronize) {
 
   std::vector<ExternalInstallOptions> install_options_list;
   install_options_list.emplace_back(GURL("https://foo.example"),
-                                    LaunchContainer::kWindow,
+                                    blink::mojom::DisplayMode::kStandalone,
                                     ExternalInstallSource::kInternalDefault);
   install_options_list.emplace_back(GURL("https://bar.example"),
-                                    LaunchContainer::kWindow,
+                                    blink::mojom::DisplayMode::kStandalone,
                                     ExternalInstallSource::kInternalDefault);
 
   pending_app_manager->SynchronizeInstalledApps(
@@ -107,7 +108,7 @@ TEST_F(PendingAppManagerTest, DestroyDuringUninstallInSynchronize) {
   {
     std::vector<ExternalInstallOptions> install_options_list;
     install_options_list.emplace_back(GURL("https://foo.example"),
-                                      LaunchContainer::kWindow,
+                                      blink::mojom::DisplayMode::kStandalone,
                                       ExternalInstallSource::kInternalDefault);
     base::RunLoop run_loop;
     pending_app_manager->SynchronizeInstalledApps(

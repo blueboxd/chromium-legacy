@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace vr {
 
@@ -110,7 +111,7 @@ class VR_EXPORT VRBrowserRendererThreadWin {
   bool frames_throttled_ = false;
   int current_request_id_ = 0;
 
-  device::mojom::ImmersiveOverlayPtr overlay_;
+  mojo::Remote<device::mojom::ImmersiveOverlay> overlay_;
   device::mojom::VRDisplayInfoPtr display_info_;
 
   base::CancelableOnceClosure webxr_frame_timeout_closure_;

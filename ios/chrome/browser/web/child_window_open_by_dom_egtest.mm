@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/content_settings/core/common/content_settings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -10,11 +11,14 @@
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::OmniboxText;
 using web::test::HttpServer;
 
 namespace {
@@ -28,6 +32,34 @@ const char kWindow1Open[] = "window1.closed: false";
 const char kWindow2Open[] = "window2.closed: false";
 const char kWindow1Closed[] = "window1.closed: true";
 const char kWindow2Closed[] = "window2.closed: true";
+
+// URLs for testWindowOpenWriteAndReload.
+const char kWriteReloadPath[] = "/writeReload.html";
+const char kSlowPath[] = "/slow.html";
+const char kSlowPathContent[] = "Slow Page";
+int kSlowPathDelay = 3;
+
+// net::EmbeddedTestServer handler for kWriteReloadPath and kSlowPath.
+std::unique_ptr<net::test_server::HttpResponse> WriteReloadHandler(
+    const net::test_server::HttpRequest& request) {
+  if (request.GetURL().path() == kSlowPath) {
+    auto slow_http_response =
+        std::make_unique<net::test_server::DelayedHttpResponse>(
+            base::TimeDelta::FromSeconds(kSlowPathDelay));
+    slow_http_response->set_content_type("text/html");
+    slow_http_response->set_content(kSlowPathContent);
+    return std::move(slow_http_response);
+  }
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_content_type("text/html");
+  http_response->set_content(base::StringPrintf(
+      "<html><body><script>function start(){var x = window.open('javascript"
+      ":document.write(1)');setTimeout(function(){x.location='%s'}, "
+      "500);};</script><input onclick='start()' id='button' value='button' "
+      "type='button' /></body></html>",
+      kSlowPath));
+  return std::move(http_response);
+}
 
 }  // namespace
 
@@ -206,6 +238,22 @@ const char kWindow2Closed[] = "window2.closed: true";
   [ChromeEarlGrey closeTabAtIndex:1];
   [ChromeEarlGrey tapWebStateElementWithID:kCheckWindow2Link];
   [ChromeEarlGrey waitForWebStateContainingText:kWindow2Closed];
+}
+
+// Tests that reloading a window.open with a document.write does not leave a
+// dangling pending item. This is a regression test from crbug.com/1011898
+- (void)testWindowOpenWriteAndReload {
+  self.testServer->RegisterRequestHandler(base::Bind(&WriteReloadHandler));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kWriteReloadPath)];
+  [ChromeEarlGrey tapWebStateElementWithID:@"button"];
+  [ChromeEarlGrey reload];
+  [ChromeEarlGrey waitForWebStateContainingText:kSlowPathContent
+                                        timeout:kSlowPathDelay * 2];
+
+  GURL slowURL = self.testServer->GetURL(kSlowPath);
+  [[EarlGrey selectElementWithMatcher:OmniboxText(slowURL.GetContent())]
+      assertWithMatcher:grey_notNil()];
 }
 
 @end

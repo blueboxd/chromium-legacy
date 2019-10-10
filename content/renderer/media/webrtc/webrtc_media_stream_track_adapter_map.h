@@ -11,9 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter.h"
 #include "third_party/blink/public/platform/modules/peerconnection/two_keys_adapter_map.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace blink {
@@ -50,7 +50,7 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapterMap
 
     // Warning: Holding an external reference to the adapter will prevent
     // |~AdapterRef| from disposing the adapter.
-    WebRtcMediaStreamTrackAdapter* GetAdapterForTesting() const {
+    blink::WebRtcMediaStreamTrackAdapter* GetAdapterForTesting() const {
       return adapter_.get();
     }
 
@@ -62,14 +62,14 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapterMap
     // Assumes map's |lock_| is held.
     AdapterRef(scoped_refptr<WebRtcMediaStreamTrackAdapterMap> map,
                Type type,
-               scoped_refptr<WebRtcMediaStreamTrackAdapter> adapter);
+               scoped_refptr<blink::WebRtcMediaStreamTrackAdapter> adapter);
 
     scoped_refptr<WebRtcMediaStreamTrackAdapterMap> map_;
     Type type_;
     // A reference to the entry's adapter, ensures that |HasOneRef()| is false
     // as long as the |AdapterRef| is kept alive (the map entry has one
     // reference to it too).
-    scoped_refptr<WebRtcMediaStreamTrackAdapter> adapter_;
+    scoped_refptr<blink::WebRtcMediaStreamTrackAdapter> adapter_;
   };
 
   // Must be invoked on the main thread.
@@ -128,14 +128,14 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapterMap
   // |webrtc::MediaStreamTrackInterface|s.
   // The adapter keeps the |webrtc::MediaStreamTrackInterface| alive with ref
   // counting making it safe to use a raw pointer for key.
-  using LocalTrackAdapterMap =
-      blink::TwoKeysAdapterMap<int,  // blink::WebMediaStreamTrack::UniqueId()
-                               webrtc::MediaStreamTrackInterface*,
-                               scoped_refptr<WebRtcMediaStreamTrackAdapter>>;
-  using RemoteTrackAdapterMap =
-      blink::TwoKeysAdapterMap<webrtc::MediaStreamTrackInterface*,
-                               int,  // blink::WebMediaStreamTrack::UniqueId()
-                               scoped_refptr<WebRtcMediaStreamTrackAdapter>>;
+  using LocalTrackAdapterMap = blink::TwoKeysAdapterMap<
+      int,  // blink::WebMediaStreamTrack::UniqueId()
+      webrtc::MediaStreamTrackInterface*,
+      scoped_refptr<blink::WebRtcMediaStreamTrackAdapter>>;
+  using RemoteTrackAdapterMap = blink::TwoKeysAdapterMap<
+      webrtc::MediaStreamTrackInterface*,
+      int,  // blink::WebMediaStreamTrack::UniqueId()
+      scoped_refptr<blink::WebRtcMediaStreamTrackAdapter>>;
 
   // Invoke on the main thread.
   virtual ~WebRtcMediaStreamTrackAdapterMap();

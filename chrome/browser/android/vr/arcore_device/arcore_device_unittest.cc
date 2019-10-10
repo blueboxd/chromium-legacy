@@ -18,6 +18,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/test/fake_vr_device.h"
 #include "device/vr/test/fake_vr_service_client.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -123,11 +124,12 @@ class ArCoreDeviceTest : public testing::Test {
   ArCoreDeviceTest() {}
   ~ArCoreDeviceTest() override {}
 
-  void OnSessionCreated(mojom::XRSessionPtr session,
-                        mojom::XRSessionControllerPtr controller) {
+  void OnSessionCreated(
+      mojom::XRSessionPtr session,
+      mojo::PendingRemote<mojom::XRSessionController> controller) {
     DVLOG(1) << __func__;
     session_ = std::move(session);
-    controller_ = std::move(controller);
+    controller_.Bind(std::move(controller));
     // TODO(crbug.com/837834): verify that things fail if restricted.
     // We should think through the right result here for javascript.
     // If an AR page tries to hittest while not focused, should it
@@ -211,7 +213,7 @@ class ArCoreDeviceTest : public testing::Test {
  private:
   std::unique_ptr<ArCoreDevice> device_;
   mojom::XRSessionPtr session_;
-  mojom::XRSessionControllerPtr controller_;
+  mojo::Remote<mojom::XRSessionController> controller_;
 };
 
 TEST_F(ArCoreDeviceTest, RequestSession) {

@@ -18,7 +18,6 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/util/fps_meter.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -53,7 +52,7 @@ class ArImageTransport;
 using ArCoreGlCreateSessionCallback = base::OnceCallback<void(
     mojo::PendingRemote<mojom::XRFrameDataProvider> frame_data_provider,
     mojom::VRDisplayInfoPtr display_info,
-    mojom::XRSessionControllerPtrInfo session_controller_info,
+    mojo::PendingRemote<mojom::XRSessionController> session_controller,
     mojom::XRPresentationConnectionPtr presentation_connection)>;
 
 // All of this class's methods must be called on the same valid GL thread with
@@ -203,7 +202,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   std::vector<std::unique_ptr<ArCoreHitTestRequest>> hit_test_requests_;
 
   mojo::Receiver<mojom::XRFrameDataProvider> frame_data_receiver_{this};
-  mojo::Binding<mojom::XRSessionController> session_controller_binding_;
+  mojo::Receiver<mojom::XRSessionController> session_controller_receiver_{this};
   mojo::AssociatedBinding<mojom::XREnvironmentIntegrationProvider>
       environment_binding_;
 

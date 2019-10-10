@@ -41,6 +41,7 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
@@ -536,7 +537,7 @@ TEST_F(InstallManagerBookmarkAppTest,
                                            /*is_installable=*/true);
 
     web_app::InstallManager::InstallParams params;
-    params.launch_container = web_app::LaunchContainer::kTab;
+    params.display_mode = blink::mojom::DisplayMode::kBrowser;
 
     const Extension* extension =
         InstallWebAppWithParams(WebappInstallSource::INTERNAL_DEFAULT, params);
@@ -549,7 +550,7 @@ TEST_F(InstallManagerBookmarkAppTest,
                                            /*is_installable=*/false);
 
     web_app::InstallManager::InstallParams params;
-    params.launch_container = web_app::LaunchContainer::kWindow;
+    params.display_mode = blink::mojom::DisplayMode::kStandalone;
 
     const Extension* extension =
         InstallWebAppWithParams(WebappInstallSource::INTERNAL_DEFAULT, params);

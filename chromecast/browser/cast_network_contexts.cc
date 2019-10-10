@@ -23,6 +23,7 @@
 #include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -57,10 +58,11 @@ class CastNetworkContexts::URLLoaderFactoryForSystem
         std::move(client), traffic_annotation);
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
     if (!network_context_)
       return;
-    network_context_->GetSystemURLLoaderFactory()->Clone(std::move(request));
+    network_context_->GetSystemURLLoaderFactory()->Clone(std::move(receiver));
   }
 
   // SharedURLLoaderFactory implementation:

@@ -13,7 +13,6 @@
   TestRunner.addResult(`Content:\n${content}`);
   const sourceText = new TextUtils.Text(content);
 
-  TestRunner.addResult(`The following output for css locations on the unformatted source is currently wrong due to BUG(1005708).`)
   await dumpLocations("css", sourceText.lineCount(), source);
   await dumpLocations("script", sourceText.lineCount(), source);
 
@@ -49,9 +48,8 @@
       if (location instanceof SDK.CSSLocation) {
         const h = location.header();
         if (!h) return "invalid css header";
-        const {endLine, endColumn} = await computeEndPosition(h);
-        if (!h.containsLocation(location.lineNumber, location.columnNumber, endLine, endColumn))
-          return `not in css range ${h.startLine}:${h.startColumn}-${endLine}:${endColumn}`;
+        if (!h.containsLocation(location.lineNumber, location.columnNumber))
+          return `not in css range ${h.startLine}:${h.startColumn}-${h.endLine}:${h.endColumn}`;
         return "css";
       }
       if (location instanceof SDK.DebuggerModel.Location) {
@@ -62,14 +60,6 @@
         return "script";
       }
       return "invalid (wrong instance)"
-    }
-    async function computeEndPosition(header) {
-      const content = await header.requestContent();
-      const contentText = new TextUtils.Text(content);
-      const {lineNumber, columnNumber} = contentText.positionFromOffset(header.contentLength);
-      const endLine = lineNumber + header.startLine;
-      const endColumn = columnNumber + (lineNumber == 0 ? header.startColumn : 0);
-      return {endLine, endColumn};
     }
   }
 

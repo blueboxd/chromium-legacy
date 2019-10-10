@@ -255,13 +255,6 @@ bool ShouldCreateShortcutFor(ShortcutCreationReason reason,
   return reason == SHORTCUT_CREATION_BY_USER;
 }
 
-base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
-                                      const extensions::Extension& extension) {
-  return GetWebAppDataDirectory(
-      profile_path, extension.id(),
-      GURL(extensions::AppLaunchInfo::GetLaunchWebURL(&extension)));
-}
-
 void CreateShortcuts(ShortcutCreationReason reason,
                      const ShortcutLocations& locations,
                      Profile* profile,

@@ -916,7 +916,7 @@ void PasswordFormManager::CreatePendingCredentials() {
   // Look for the actually submitted credentials in the list of previously saved
   // credentials that were available to autofilling.
   const PasswordForm* saved_form = password_manager_util::GetMatchForUpdating(
-      *parsed_submitted_form_, ByUsername(GetBestMatches()));
+      *parsed_submitted_form_, GetBestMatches());
   if (saved_form) {
     // A similar credential exists in the store already.
     pending_credentials_ = *saved_form;
@@ -1150,7 +1150,7 @@ void PasswordFormManager::CalculateFillingAssistanceMetric(
 
 void PasswordFormManager::SavePendingToStore(bool update) {
   const PasswordForm* saved_form = password_manager_util::GetMatchForUpdating(
-      *parsed_submitted_form_, ByUsername(GetBestMatches()));
+      *parsed_submitted_form_, GetBestMatches());
   if ((update || password_overridden_) &&
       !pending_credentials_.IsFederatedCredential()) {
     DCHECK(saved_form);

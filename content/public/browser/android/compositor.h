@@ -83,6 +83,9 @@ class CONTENT_EXPORT Compositor {
   // Composite *without* having modified the layer tree.
   virtual void SetNeedsComposite() = 0;
 
+  // Request a draw and swap even if there is no change to the layer tree.
+  virtual void SetNeedsRedraw() = 0;
+
   // Returns the UI resource provider associated with the compositor.
   virtual ui::UIResourceProvider& GetUIResourceProvider() = 0;
 

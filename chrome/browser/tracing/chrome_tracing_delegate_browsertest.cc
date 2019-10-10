@@ -159,9 +159,16 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
       base::Closure(), content::BackgroundTracingManager::NO_DATA_FILTERING));
 }
 
-// Flaky. See https://crbug.com/723933 and https://crbug.com/1012218.
+// Flaky on Linux and Windows. See https://crbug.com/723933.
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_BackgroundTracingThrottleTimeElapsed \
+  DISABLED_BackgroundTracingThrottleTimeElapsed
+#else
+#define MAYBE_BackgroundTracingThrottleTimeElapsed \
+  BackgroundTracingThrottleTimeElapsed
+#endif
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
-                       DISABLED_BackgroundTracingThrottleTimeElapsed) {
+                       MAYBE_BackgroundTracingThrottleTimeElapsed) {
   base::RunLoop wait_for_upload;
 
   EXPECT_TRUE(StartPreemptiveScenario(
@@ -217,12 +224,18 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
       base::Closure(), content::BackgroundTracingManager::ANONYMIZE_DATA));
 }
 
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
 // Flaky on ASAN on Mac. See https://crbug.com/674497.
-// Flaky in general. See https://crbug.com/1012218.
+#define MAYBE_NewIncognitoSessionBlockingTraceFinalization \
+  DISABLED_NewIncognitoSessionBlockingTraceFinalization
+#else
+#define MAYBE_NewIncognitoSessionBlockingTraceFinalization \
+  NewIncognitoSessionBlockingTraceFinalization
+#endif
 // If we need a PII-stripped trace, any new OTR session during tracing should
 // block the finalization of the trace.
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
-                       DISABLED_NewIncognitoSessionBlockingTraceFinalization) {
+                       MAYBE_NewIncognitoSessionBlockingTraceFinalization) {
   EXPECT_TRUE(StartPreemptiveScenario(
       base::Closure(), content::BackgroundTracingManager::ANONYMIZE_DATA));
 

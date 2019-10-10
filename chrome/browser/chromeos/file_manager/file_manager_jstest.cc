@@ -191,6 +191,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileListSelectionModelTest) {
   RunTestURL("foreground/js/ui/file_list_selection_model_unittest_gen.html");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileManagerDialogBaseTest) {
+  RunTestURL("foreground/js/ui/file_manager_dialog_base_unittest_gen.html");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MultiMenu) {
   RunTestURL("foreground/js/ui/multi_menu_unittest_gen.html");
 }

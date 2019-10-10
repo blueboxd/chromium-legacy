@@ -215,7 +215,8 @@ base::string16 ProfileAttributesStorage::ChooseNameForNewProfile(
 
     if (std::none_of(entries.begin(), entries.end(),
                      [name](ProfileAttributesEntry* entry) {
-                       return entry->GetName() == name;
+                       return entry->GetLocalProfileName() == name ||
+                              entry->GetName() == name;
                      })) {
       return name;
     }

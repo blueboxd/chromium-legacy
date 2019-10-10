@@ -6,7 +6,6 @@ Polymer({
   is: 'app-management-uninstall-button',
 
   behaviors: [
-    I18nBehavior,
     app_management.StoreClient,
   ],
 
@@ -50,29 +49,7 @@ Polymer({
   },
 
   /**
-   * Returns string to be shown as a tool tip over the policy indicator.
-   *
-   * @param {App} app
-   * @return {?string}
-   * @private
-   */
-  getTooltip_: function(app) {
-    if (!app) {
-      return '';
-    }
-
-    switch (app.installSource) {
-      case InstallSource.kSystem:
-        return this.i18n('systemAppUninstallPolicy');
-      case InstallSource.kPolicy:
-        return this.i18n('policyAppUninstallPolicy');
-      default:
-        assertNotReached();
-    }
-  },
-
-  /**
-   * Returns true if the app was installed by a policy
+   * Returns true if the app was installed by a policy.
    *
    * @param {App} app
    * @returns {boolean}
@@ -82,8 +59,19 @@ Polymer({
     if (!app) {
       return false;
     }
-    return app.installSource === InstallSource.kPolicy ||
-        app.installSource === InstallSource.kSystem;
+    return app.installSource === InstallSource.kPolicy;
+  },
+
+  /**
+   * Returns true if the uninstall button should be shown.
+   *
+   * @param {App} app
+   */
+  showUninstallButton_: function(app) {
+    if (!app) {
+      return false;
+    }
+    return app.installSource !== InstallSource.kSystem;
   },
 
   /**

@@ -25,43 +25,35 @@ HISTOGRAM_DICTS_FILE = 'histogram_dicts.json'
 
 
 def _PoolWorker(test_result):
-  try:
-    metrics = [tag['value'] for tag in test_result['tags']
-               if tag['key'] == 'tbmv2']
-    html_trace = test_result['outputArtifacts'][HTML_TRACE_NAME]
-    html_local_path = html_trace['filePath']
-    html_remote_url = html_trace['remoteUrl']
+  metrics = [tag['value'] for tag in test_result['tags']
+             if tag['key'] == 'tbmv2']
+  html_trace = test_result['outputArtifacts'][HTML_TRACE_NAME]
+  html_local_path = html_trace['filePath']
+  html_remote_url = html_trace.get('remoteUrl')
 
-    logging.info('%s: Starting to compute metrics on trace.',
-                 test_result['testPath'])
-    start = time.time()
-    # The timeout needs to be coordinated with the Swarming IO timeout for the
-    # task that runs this code. If this timeout is longer or close in length
-    # to the swarming IO timeout then we risk being forcibly killed for not
-    # producing any output. Note that this could be fixed by periodically
-    # outputting logs while waiting for metrics to be calculated.
-    TEN_MINUTES = 60 * 10
-    mre_result = metric_runner.RunMetricOnSingleTrace(
-        html_local_path, metrics, canonical_url=html_remote_url,
-        timeout=TEN_MINUTES,
-        extra_import_options={'trackDetailedModelStats': True})
-    logging.info('%s: Computing metrics took %.3f seconds.' % (
-        test_result['testPath'], time.time() - start))
+  logging.info('%s: Starting to compute metrics on trace.',
+               test_result['testPath'])
+  start = time.time()
+  # The timeout needs to be coordinated with the Swarming IO timeout for the
+  # task that runs this code. If this timeout is longer or close in length
+  # to the swarming IO timeout then we risk being forcibly killed for not
+  # producing any output. Note that this could be fixed by periodically
+  # outputting logs while waiting for metrics to be calculated.
+  TEN_MINUTES = 60 * 10
+  mre_result = metric_runner.RunMetricOnSingleTrace(
+      html_local_path, metrics, canonical_url=html_remote_url,
+      timeout=TEN_MINUTES,
+      extra_import_options={'trackDetailedModelStats': True})
+  logging.info('%s: Computing metrics took %.3f seconds.' % (
+      test_result['testPath'], time.time() - start))
 
-    if mre_result.failures:
-      test_result['status'] = 'FAIL'
-      for f in mre_result.failures:
-        logging.error('Failure recorded for test %s: %s',
-                      test_result['testPath'], f)
+  if mre_result.failures:
+    test_result['status'] = 'FAIL'
+    for f in mre_result.failures:
+      logging.error('Failure recorded for test %s: %s',
+                    test_result['testPath'], f)
 
-    return mre_result.pairs.get('histograms', [])
-  except Exception:  # pylint: disable=broad-except
-    # logging exception here is the only way to get a stack trace since
-    # multiprocessing's pool implementation does not save that data. See
-    # crbug.com/953365.
-    logging.exception('%s: Exception while calculating metric' %
-                      test_result['testPath'])
-    raise
+  return mre_result.pairs.get('histograms', [])
 
 
 def ComputeTBMv2Metrics(intermediate_results):
@@ -103,9 +95,6 @@ def ComputeTBMv2Metrics(intermediate_results):
       continue
 
     work_list.append(test_result)
-
-  if not work_list:
-    return histogram_dicts
 
   for dicts in util.ApplyInParallel(_PoolWorker, work_list):
     histogram_dicts += dicts

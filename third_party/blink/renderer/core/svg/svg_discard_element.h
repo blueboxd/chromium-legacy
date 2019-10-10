@@ -51,7 +51,6 @@ class SVGDiscardElement final : public SVGSMILElement {
 
   bool OverwritesUnderlyingAnimationValue() const override { return false; }
 
-  void StartedActiveInterval() override {}
   void UpdateAnimation(float percent,
                        unsigned repeat,
                        SVGSMILElement* result_element) override {}

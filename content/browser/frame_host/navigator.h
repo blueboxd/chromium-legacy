@@ -10,6 +10,7 @@
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/common/content_export.h"
+#include "content/common/frame_messages.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/navigation_controller.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"

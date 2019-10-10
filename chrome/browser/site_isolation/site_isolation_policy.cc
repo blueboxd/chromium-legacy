@@ -16,9 +16,23 @@
 
 // static
 bool SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled() {
-  // Ignore attempts to add new isolated origins when site isolation is turned
-  // off, for example via a command-line switch, or via a content/ embedder
-  // that turns site isolation off for low-memory devices.
+  // If the user has explicitly enabled site isolation for password sites from
+  // chrome://flags or from the command line, honor this regardless of policies
+  // that may disable site isolation.  In particular, this means that the
+  // chrome://flags switch for this feature takes precedence over any memory
+  // threshold restrictions and over a switch for disabling site isolation.
+  if (base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+          features::kSiteIsolationForPasswordSites.name,
+          base::FeatureList::OVERRIDE_ENABLE_FEATURE)) {
+    return true;
+  }
+
+  // Don't isolate anything when site isolation is turned off by the user or
+  // policy. This includes things like the switches::kDisableSiteIsolation
+  // command-line switch, the corresponding "Disable site isolation" entry in
+  // chrome://flags, enterprise policy controlled via
+  // switches::kDisableSiteIsolationForPolicy, and memory threshold checks in
+  // ShouldDisableSiteIsolationDueToMemoryThreshold().
   if (!content::SiteIsolationPolicy::AreDynamicIsolatedOriginsEnabled())
     return false;
 
@@ -40,6 +54,34 @@ bool SiteIsolationPolicy::IsEnterprisePolicyApplicable() {
 #else
   return true;
 #endif
+}
+
+// static
+bool SiteIsolationPolicy::ShouldDisableSiteIsolationDueToMemoryThreshold() {
+  // Using 1077 rather than 1024 because 1) it helps ensure that devices with
+  // exactly 1GB of RAM won't get included because of inaccuracies or off-by-one
+  // errors and 2) this is the bucket boundary in Memory.Stats.Win.TotalPhys2.
+  // See also https://crbug.com/844118.
+  constexpr int kDefaultMemoryThresholdMb = 1077;
+
+  // TODO(acolwell): Rename feature since it now affects more than just the
+  // site-per-process case.
+  if (base::FeatureList::IsEnabled(
+          features::kSitePerProcessOnlyForHighMemoryClients)) {
+    int memory_threshold_mb = base::GetFieldTrialParamByFeatureAsInt(
+        features::kSitePerProcessOnlyForHighMemoryClients,
+        features::kSitePerProcessOnlyForHighMemoryClientsParamName,
+        kDefaultMemoryThresholdMb);
+    return base::SysInfo::AmountOfPhysicalMemoryMB() <= memory_threshold_mb;
+  }
+
+#if defined(OS_ANDROID)
+  if (base::SysInfo::AmountOfPhysicalMemoryMB() <= kDefaultMemoryThresholdMb) {
+    return true;
+  }
+#endif
+
+  return false;
 }
 
 // static

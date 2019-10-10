@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "chromecast/media/cma/backend/stream_mixer.h"
+#include "chromecast/media/cma/backend/mixer/stream_mixer.h"
 
 namespace chromecast {
 namespace media {

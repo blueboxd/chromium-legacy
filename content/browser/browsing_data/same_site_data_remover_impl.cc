@@ -17,6 +17,7 @@
 #include "content/public/browser/same_site_data_remover.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -26,14 +27,18 @@ namespace content {
 
 namespace {
 
-void OnGetAllCookies(base::OnceClosure closure,
-                     network::mojom::CookieManager* cookie_manager,
-                     std::set<std::string>* same_site_none_domains,
-                     const std::vector<net::CanonicalCookie>& cookies) {
+void OnGetAllCookiesWithAccessSemantics(
+    base::OnceClosure closure,
+    network::mojom::CookieManager* cookie_manager,
+    std::set<std::string>* same_site_none_domains,
+    const std::vector<net::CanonicalCookie>& cookies,
+    const std::vector<net::CookieAccessSemantics>& access_semantics_list) {
+  DCHECK(cookies.size() == access_semantics_list.size());
   base::RepeatingClosure barrier =
       base::BarrierClosure(cookies.size(), std::move(closure));
-  for (const auto& cookie : cookies) {
-    if (cookie.IsEffectivelySameSiteNone()) {
+  for (size_t i = 0; i < cookies.size(); ++i) {
+    const net::CanonicalCookie& cookie = cookies[i];
+    if (cookie.IsEffectivelySameSiteNone(access_semantics_list[i])) {
       same_site_none_domains->emplace(cookie.Domain());
       cookie_manager->DeleteCanonicalCookie(
           cookie, base::BindOnce([](const base::RepeatingClosure& callback,
@@ -94,9 +99,9 @@ void SameSiteDataRemoverImpl::DeleteSameSiteNoneCookies(
   same_site_none_domains_.clear();
   auto* cookie_manager =
       storage_partition_->GetCookieManagerForBrowserProcess();
-  cookie_manager->GetAllCookies(
-      base::BindOnce(&OnGetAllCookies, std::move(closure), cookie_manager,
-                     &same_site_none_domains_));
+  cookie_manager->GetAllCookiesWithAccessSemantics(
+      base::BindOnce(&OnGetAllCookiesWithAccessSemantics, std::move(closure),
+                     cookie_manager, &same_site_none_domains_));
 }
 
 void SameSiteDataRemoverImpl::ClearStoragePartitionData(

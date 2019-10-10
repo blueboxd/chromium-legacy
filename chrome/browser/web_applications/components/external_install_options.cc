@@ -14,11 +14,9 @@ namespace web_app {
 
 ExternalInstallOptions::ExternalInstallOptions(
     const GURL& url,
-    LaunchContainer launch_container,
+    blink::mojom::DisplayMode display_mode,
     ExternalInstallSource install_source)
-    : url(url),
-      launch_container(launch_container),
-      install_source(install_source) {}
+    : url(url), display_mode(display_mode), install_source(install_source) {}
 
 ExternalInstallOptions::~ExternalInstallOptions() = default;
 
@@ -33,13 +31,13 @@ ExternalInstallOptions& ExternalInstallOptions::operator=(
 
 bool ExternalInstallOptions::operator==(
     const ExternalInstallOptions& other) const {
-  return std::tie(url, launch_container, install_source,
-                  add_to_applications_menu, add_to_desktop,
-                  add_to_quick_launch_bar, override_previous_user_uninstall,
-                  bypass_service_worker_check, require_manifest,
-                  force_reinstall, wait_for_windows_closed, install_placeholder,
-                  reinstall_placeholder, uninstall_and_replace) ==
-         std::tie(other.url, other.launch_container, other.install_source,
+  return std::tie(url, display_mode, install_source, add_to_applications_menu,
+                  add_to_desktop, add_to_quick_launch_bar,
+                  override_previous_user_uninstall, bypass_service_worker_check,
+                  require_manifest, force_reinstall, wait_for_windows_closed,
+                  install_placeholder, reinstall_placeholder,
+                  uninstall_and_replace) ==
+         std::tie(other.url, other.display_mode, other.install_source,
                   other.add_to_applications_menu, other.add_to_desktop,
                   other.add_to_quick_launch_bar,
                   other.override_previous_user_uninstall,
@@ -51,8 +49,8 @@ bool ExternalInstallOptions::operator==(
 
 std::ostream& operator<<(std::ostream& out,
                          const ExternalInstallOptions& install_options) {
-  return out << "url: " << install_options.url << "\n launch_container: "
-             << static_cast<int32_t>(install_options.launch_container)
+  return out << "url: " << install_options.url << "\n display_mode: "
+             << static_cast<int32_t>(install_options.display_mode)
              << "\n install_source: "
              << static_cast<int32_t>(install_options.install_source)
              << "\n add_to_applications_menu: "
@@ -80,7 +78,7 @@ InstallManager::InstallParams ConvertExternalInstallOptionsToParams(
     const ExternalInstallOptions& install_options) {
   InstallManager::InstallParams params;
 
-  params.launch_container = install_options.launch_container;
+  params.display_mode = install_options.display_mode;
 
   params.add_to_applications_menu = install_options.add_to_applications_menu;
   params.add_to_desktop = install_options.add_to_desktop;

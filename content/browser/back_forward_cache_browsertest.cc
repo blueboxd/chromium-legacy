@@ -116,6 +116,24 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
         << location.ToString();
   }
 
+  void ExpectEvicted(BackForwardCacheMetrics::EvictedReason reason,
+                     base::Location location) {
+    base::HistogramBase::Sample sample = base::HistogramBase::Sample(reason);
+    AddSampleToBuckets(&expected_eviction_reasons_, sample);
+
+    EXPECT_EQ(expected_eviction_reasons_,
+              histogram_tester_.GetAllSamples(
+                  "BackForwardCache.HistoryNavigationOutcome.EvictedReason"))
+        << location.ToString();
+  }
+
+  void ExpectEvictedIsEmpty(base::Location location) {
+    EXPECT_THAT(histogram_tester_.GetAllSamples(
+                    "BackForwardCache.HistoryNavigationOutcome.EvictedReason"),
+                ElementsAre())
+        << location.ToString();
+  }
+
   void ExpectEvictedAfterCommitted(
       std::vector<BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason>
           reasons,
@@ -150,6 +168,7 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
   base::HistogramTester histogram_tester_;
   std::vector<base::Bucket> expected_outcomes_;
   std::vector<base::Bucket> expected_disabled_reasons_;
+  std::vector<base::Bucket> expected_eviction_reasons_;
   std::vector<base::Bucket> expected_eviction_after_committing_;
 };
 
@@ -532,6 +551,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kEvicted,
                 FROM_HERE);
+  ExpectEvicted(BackForwardCacheMetrics::EvictedReason::kCacheLimit, FROM_HERE);
 }
 
 // Test documents are evicted from the BackForwardCache at some point.
@@ -1413,6 +1433,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kEvicted,
                 FROM_HERE);
+  ExpectEvicted(BackForwardCacheMetrics::EvictedReason::kJavaScriptExecution,
+                FROM_HERE);
 }
 
 // Similar to BackForwardCacheBrowserTest.EvictionOnJavaScriptExecution.
@@ -1452,10 +1474,12 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   delete_observer_rfh_a.WaitUntilDeleted();
   delete_observer_rfh_b.WaitUntilDeleted();
 
-  // 4) Go back to A.
+  // 4) Go back to A(B).
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kEvicted,
+                FROM_HERE);
+  ExpectEvicted(BackForwardCacheMetrics::EvictedReason::kJavaScriptExecution,
                 FROM_HERE);
 }
 
@@ -1496,6 +1520,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kEvicted,
+                FROM_HERE);
+  ExpectEvicted(BackForwardCacheMetrics::EvictedReason::kJavaScriptExecution,
                 FROM_HERE);
 }
 
@@ -1851,6 +1877,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kEvicted,
                 FROM_HERE);
+  ExpectEvicted(BackForwardCacheMetrics::EvictedReason::kJavaScriptExecution,
+                FROM_HERE);
 }
 
 // Test that if the renderer process crashes while a document is in the
@@ -1892,6 +1920,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kEvicted,
+                FROM_HERE);
+  ExpectEvicted(BackForwardCacheMetrics::EvictedReason::kRendererProcessKilled,
                 FROM_HERE);
 }
 
@@ -2405,6 +2435,11 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TimedEviction) {
   EXPECT_TRUE(rfh_a->is_evicted_from_back_forward_cache());
   delete_observer_rfh_a.WaitUntilDeleted();
   EXPECT_EQ(current_frame_host(), rfh_b);
+
+  // 7) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectEvicted(BackForwardCacheMetrics::EvictedReason::kTimeout, FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -2431,6 +2466,7 @@ IN_PROC_BROWSER_TEST_F(
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   ExpectDisabledWithReason("DisabledByBackForwardCacheBrowserTest", FROM_HERE);
+  ExpectEvictedIsEmpty(FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -2461,6 +2497,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   ExpectDisabledWithReason("DisabledByBackForwardCacheBrowserTest", FROM_HERE);
+  ExpectEvictedIsEmpty(FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -2484,6 +2521,11 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url_c));
   EXPECT_TRUE(delete_observer_rfh_a.deleted());
   EXPECT_TRUE(delete_observer_rfh_b.deleted());
+
+  // 3) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectEvictedIsEmpty(FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -2516,6 +2558,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   ExpectDisabledWithReason("DisabledByBackForwardCacheBrowserTest", FROM_HERE);
+  ExpectEvictedIsEmpty(FROM_HERE);
 }
 
 // Confirm that same-document navigation and not history-navigation does not

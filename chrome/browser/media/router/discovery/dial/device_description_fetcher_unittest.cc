@@ -47,7 +47,6 @@ class TestDeviceDescriptionFetcher : public DeviceDescriptionFetcher {
   }
 
  private:
-  std::vector<network::mojom::URLLoaderFactoryRequest> requests_;
   network::TestURLLoaderFactory* const factory_;
 };
 

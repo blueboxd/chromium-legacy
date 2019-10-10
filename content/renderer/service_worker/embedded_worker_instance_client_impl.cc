@@ -175,6 +175,16 @@ EmbeddedWorkerInstanceClientImpl::BuildStartData(
           ? blink::WebEmbeddedWorkerStartData::kWaitForDebugger
           : blink::WebEmbeddedWorkerStartData::kDontWaitForDebugger;
   start_data->devtools_worker_token = params.devtools_worker_token;
+
+  // TODO(bashi): Consider to have a helper function to convert
+  // mojom::FetchClientSettingsObject to WebFetchClientSettingsObject.
+  start_data->outside_fetch_client_settings_object.referrer_policy =
+      params.outside_fetch_client_settings_object->referrer_policy;
+  start_data->outside_fetch_client_settings_object.outgoing_referrer =
+      params.outside_fetch_client_settings_object->outgoing_referrer;
+  start_data->outside_fetch_client_settings_object.insecure_requests_policy =
+      params.outside_fetch_client_settings_object->insecure_requests_policy;
+
   return start_data;
 }
 

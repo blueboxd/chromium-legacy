@@ -87,7 +87,7 @@ void VRBrowserRendererThreadWin::SetWebXrPresenting(bool presenting) {
     return;
 
   if (presenting) {
-    compositor_->CreateImmersiveOverlay(mojo::MakeRequest(&overlay_));
+    compositor_->CreateImmersiveOverlay(overlay_.BindNewPipeAndPassReceiver());
     StartWebXrTimeout();
   } else {
     StopWebXrTimeout();

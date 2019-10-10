@@ -530,7 +530,7 @@ gfx::Size LabelButton::GetUnclampedSizeWithoutLabel() const {
   size.Enlarge(insets.width(), insets.height());
 
   // Accommodate for spacing between image and text if both are present.
-  if (!GetText().empty() && image_size.width() > 0)
+  if (image_size.width() > 0 && !GetText().empty() && !shrinking_down_label_)
     size.Enlarge(GetImageLabelSpacing(), 0);
 
   // Make the size at least as large as the minimum size needed by the border.

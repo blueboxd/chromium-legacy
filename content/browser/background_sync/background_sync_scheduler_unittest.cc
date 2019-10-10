@@ -171,4 +171,16 @@ TEST_F(BackgroundSyncSchedulerTest, MultipleStoragePartitions) {
   run_loop_2.Run();
 }
 
+TEST_F(BackgroundSyncSchedulerTest, ScheduleBothTypesOfSync) {
+  base::RunLoop run_loop_1, run_loop_2;
+  ScheduleDelayedProcessing(
+      GURL(kUrl_1), blink::mojom::BackgroundSyncType::ONE_SHOT,
+      base::TimeDelta::FromMilliseconds(1), run_loop_1.QuitClosure());
+  ScheduleDelayedProcessing(
+      GURL(kUrl_1), blink::mojom::BackgroundSyncType::PERIODIC,
+      base::TimeDelta::FromMilliseconds(1), run_loop_2.QuitClosure());
+  run_loop_1.Run();
+  run_loop_2.Run();
+}
+
 }  // namespace content

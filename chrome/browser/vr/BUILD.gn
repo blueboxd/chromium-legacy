@@ -243,7 +243,6 @@ component("vr_common") {
     "service/browser_xr_runtime.h",
     "service/gvr_consent_helper.cc",
     "service/gvr_consent_helper.h",
-    "service/interface_set.h",
     "service/vr_service_impl.cc",
     "service/vr_service_impl.h",
     "service/xr_device_service.cc",

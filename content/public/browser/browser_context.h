@@ -135,7 +135,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       BrowserContext* browser_context,
       const GURL& site,
       bool can_create = true);
-  using StoragePartitionCallback = base::Callback<void(StoragePartition*)>;
+  using StoragePartitionCallback =
+      base::RepeatingCallback<void(StoragePartition*)>;
   static void ForEachStoragePartition(
       BrowserContext* browser_context,
       const StoragePartitionCallback& callback);

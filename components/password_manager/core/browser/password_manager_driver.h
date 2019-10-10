@@ -62,6 +62,8 @@ class PasswordManagerDriver
                                          uint32_t generation_element_id,
                                          const base::string16& password) {}
 
+  virtual void TouchToFillDismissed() {}
+
   // Tells the driver to fill the form with the |username| and |password|.
   virtual void FillSuggestion(const base::string16& username,
                               const base::string16& password) = 0;

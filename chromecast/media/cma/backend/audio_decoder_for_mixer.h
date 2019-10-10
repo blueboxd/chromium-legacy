@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
-#include "chromecast/media/cma/backend/buffering_mixer_source.h"
+#include "chromecast/media/cma/backend/mixer/buffering_mixer_source.h"
 #include "chromecast/media/cma/decoder/cast_audio_decoder.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_backend.h"

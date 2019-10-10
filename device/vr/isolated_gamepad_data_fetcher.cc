@@ -70,7 +70,8 @@ GamepadSource GamepadSourceFromDeviceId(device::mojom::XRDeviceId id) {
 
 IsolatedGamepadDataFetcher::Factory::Factory(
     device::mojom::XRDeviceId display_id,
-    device::mojom::IsolatedXRGamepadProviderFactoryPtr factory)
+    mojo::PendingRemote<device::mojom::IsolatedXRGamepadProviderFactory>
+        factory)
     : display_id_(display_id), factory_(std::move(factory)) {}
 
 IsolatedGamepadDataFetcher::Factory::~Factory() {}
@@ -291,7 +292,8 @@ void IsolatedGamepadDataFetcher::Factory::RemoveGamepad(
 
 void IsolatedGamepadDataFetcher::Factory::AddGamepad(
     device::mojom::XRDeviceId device_id,
-    device::mojom::IsolatedXRGamepadProviderFactoryPtr gamepad_factory) {
+    mojo::PendingRemote<device::mojom::IsolatedXRGamepadProviderFactory>
+        gamepad_factory) {
   if (!IsValidDeviceId(device_id))
     return;
 

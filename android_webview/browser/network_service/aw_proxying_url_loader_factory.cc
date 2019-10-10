@@ -31,6 +31,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_utils.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -719,7 +720,7 @@ void InterceptedRequest::SendErrorCallback(int error_code,
 
 AwProxyingURLLoaderFactory::AwProxyingURLLoaderFactory(
     int process_id,
-    network::mojom::URLLoaderFactoryRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
     bool intercept_only)
     : process_id_(process_id), intercept_only_(intercept_only) {
@@ -731,8 +732,8 @@ AwProxyingURLLoaderFactory::AwProxyingURLLoaderFactory(
         base::BindOnce(&AwProxyingURLLoaderFactory::OnTargetFactoryError,
                        base::Unretained(this)));
   }
-  proxy_bindings_.AddBinding(this, std::move(loader_request));
-  proxy_bindings_.set_connection_error_handler(
+  proxy_receivers_.Add(this, std::move(loader_receiver));
+  proxy_receivers_.set_disconnect_handler(
       base::BindRepeating(&AwProxyingURLLoaderFactory::OnProxyBindingError,
                           base::Unretained(this)));
 }
@@ -799,14 +800,14 @@ void AwProxyingURLLoaderFactory::OnTargetFactoryError() {
 }
 
 void AwProxyingURLLoaderFactory::OnProxyBindingError() {
-  if (proxy_bindings_.empty())
+  if (proxy_receivers_.empty())
     delete this;
 }
 
 void AwProxyingURLLoaderFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest loader_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  proxy_bindings_.AddBinding(this, std::move(loader_request));
+  proxy_receivers_.Add(this, std::move(loader_receiver));
 }
 
 }  // namespace android_webview

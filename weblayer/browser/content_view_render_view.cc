@@ -87,8 +87,7 @@ void ContentViewRenderView::SurfaceCreated(JNIEnv* env) {
 
 void ContentViewRenderView::SurfaceDestroyed(JNIEnv* env,
                                              jboolean cache_back_buffer) {
-  evict_back_buffer_on_next_swap_ = cache_back_buffer;
-  if (evict_back_buffer_on_next_swap_)
+  if (cache_back_buffer)
     compositor_->CacheBackBufferForCurrentSurface();
   compositor_->SetSurface(nullptr, false);
 }
@@ -116,11 +115,13 @@ void ContentViewRenderView::UpdateLayerTreeHost() {
 
 void ContentViewRenderView::DidSwapFrame(int pending_frames) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContentViewRenderView_didSwapFrame(env, java_obj_);
-  if (evict_back_buffer_on_next_swap_) {
-    compositor_->EvictCachedBackBuffer();
-    evict_back_buffer_on_next_swap_ = false;
+  if (Java_ContentViewRenderView_didSwapFrame(env, java_obj_)) {
+    compositor_->SetNeedsRedraw();
   }
+}
+
+void ContentViewRenderView::EvictCachedSurface(JNIEnv* env) {
+  compositor_->EvictCachedBackBuffer();
 }
 
 void ContentViewRenderView::InitCompositor() {

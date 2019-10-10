@@ -42,7 +42,8 @@ void TestSharedURLLoaderFactory::CreateLoaderAndStart(
       std::move(client), traffic_annotation);
 }
 
-void TestSharedURLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {
+void TestSharedURLLoaderFactory::Clone(
+    mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) {
   NOTIMPLEMENTED();
 }
 

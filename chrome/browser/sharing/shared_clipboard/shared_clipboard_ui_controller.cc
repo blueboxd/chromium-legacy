@@ -37,9 +37,17 @@ void SharedClipboardUiController::OnDeviceSelected(
   OnDeviceChosen(device);
 }
 
-base::string16 SharedClipboardUiController::GetTitle() {
-  // There is no left click dialog - so no title
-  return base::string16();
+base::string16 SharedClipboardUiController::GetTitle(
+    SharingDialogType dialog_type) {
+  // Shared clipboard only shows error dialogs.
+  DCHECK_EQ(SharingDialogType::kErrorDialog, dialog_type);
+
+  if (send_result() == SharingSendMessageResult::kPayloadTooLarge) {
+    return l10n_util::GetStringUTF16(
+        IDS_BROWSER_SHARING_SHARED_CLIPBOARD_ERROR_DIALOG_TITLE_PAYLOAD_TOO_LARGE);
+  }
+
+  return SharingUiController::GetTitle(dialog_type);
 }
 
 PageActionIconType SharedClipboardUiController::GetIconType() {
@@ -73,15 +81,6 @@ base::string16 SharedClipboardUiController::GetContentType() const {
   return l10n_util::GetStringUTF16(IDS_BROWSER_SHARING_CONTENT_TYPE_TEXT);
 }
 
-base::string16 SharedClipboardUiController::GetErrorDialogTitle() const {
-  if (send_result() == SharingSendMessageResult::kPayloadTooLarge) {
-    return l10n_util::GetStringUTF16(
-        IDS_BROWSER_SHARING_SHARED_CLIPBOARD_ERROR_DIALOG_TITLE_PAYLOAD_TOO_LARGE);
-  }
-
-  return SharingUiController::GetErrorDialogTitle();
-}
-
 base::string16 SharedClipboardUiController::GetErrorDialogText() const {
   if (send_result() == SharingSendMessageResult::kPayloadTooLarge) {
     return l10n_util::GetStringUTF16(
@@ -104,19 +103,6 @@ base::string16 SharedClipboardUiController::GetTextForTooltipAndAccessibleName()
 SharingFeatureName SharedClipboardUiController::GetFeatureMetricsPrefix()
     const {
   return SharingFeatureName::kSharedClipboard;
-}
-
-base::string16 SharedClipboardUiController::GetEducationWindowTitleText()
-    const {
-  // No educational window text for shared clipboard.
-  return base::string16();
-}
-
-// There is no Help Text for Shared Clipboard feature.
-std::unique_ptr<views::StyledLabel>
-SharedClipboardUiController::GetHelpTextLabel(
-    views::StyledLabelListener* listener) {
-  return nullptr;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SharedClipboardUiController)

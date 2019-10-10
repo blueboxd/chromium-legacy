@@ -356,7 +356,7 @@ class BrowserView : public BrowserWindow,
   bool IsToolbarVisible() const override;
   bool IsToolbarShowing() const override;
   SharingDialog* ShowSharingDialog(content::WebContents* contents,
-                                   SharingUiController* controller) override;
+                                   SharingDialogData data) override;
   void ShowUpdateChromeDialog() override;
   void ShowIntentPickerBubble(
       std::vector<IntentPickerBubbleView::AppInfo> app_info,

@@ -1094,13 +1094,13 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_GuestProfile) {
   run_loop.Run();
 }
 
-TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_LaunchContainer) {
+TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
   {
     CreateDataToRetrieve(GURL("https://example.com/"),
                          /*open_as_window*/ false);
 
     InstallManager::InstallParams params;
-    params.launch_container = LaunchContainer::kDefault;
+    params.display_mode = blink::mojom::DisplayMode::kUndefined;
     auto app_id = InstallWebAppWithParams(params);
 
     EXPECT_EQ(blink::mojom::DisplayMode::kBrowser,
@@ -1110,7 +1110,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_LaunchContainer) {
     CreateDataToRetrieve(GURL("https://example.org/"), /*open_as_window*/ true);
 
     InstallManager::InstallParams params;
-    params.launch_container = LaunchContainer::kDefault;
+    params.display_mode = blink::mojom::DisplayMode::kUndefined;
     auto app_id = InstallWebAppWithParams(params);
 
     EXPECT_EQ(blink::mojom::DisplayMode::kStandalone,
@@ -1120,7 +1120,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_LaunchContainer) {
     CreateDataToRetrieve(GURL("https://example.au/"), /*open_as_window*/ true);
 
     InstallManager::InstallParams params;
-    params.launch_container = LaunchContainer::kTab;
+    params.display_mode = blink::mojom::DisplayMode::kBrowser;
     auto app_id = InstallWebAppWithParams(params);
 
     EXPECT_EQ(blink::mojom::DisplayMode::kBrowser,
@@ -1131,7 +1131,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_LaunchContainer) {
                          /*open_as_window*/ false);
 
     InstallManager::InstallParams params;
-    params.launch_container = LaunchContainer::kWindow;
+    params.display_mode = blink::mojom::DisplayMode::kStandalone;
     auto app_id = InstallWebAppWithParams(params);
 
     EXPECT_EQ(blink::mojom::DisplayMode::kStandalone,

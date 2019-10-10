@@ -9,6 +9,7 @@
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -39,7 +40,8 @@ class IsolatedVRDeviceProvider
   // IsolatedXRRuntimeProviderClient
   void OnDeviceAdded(
       device::mojom::XRRuntimePtr device,
-      device::mojom::IsolatedXRGamepadProviderFactoryPtr gamepad_factory,
+      mojo::PendingRemote<device::mojom::IsolatedXRGamepadProviderFactory>
+          gamepad_factory,
       device::mojom::XRCompositorHostPtr compositor_host,
       device::mojom::XRDeviceId device_id) override;
   void OnDeviceRemoved(device::mojom::XRDeviceId id) override;

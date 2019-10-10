@@ -40,8 +40,9 @@ class PerformanceManagerImpl : public PerformanceManager {
   ~PerformanceManagerImpl() override;
 
   // Posts a callback that will run on the PM sequence, and be provided a
-  // pointer to the Graph. Valid to be called from the main thread only, and
-  // only if "IsAvailable" returns true.
+  // pointer to the Graph. Valid to call from any sequence, but |graph_callback|
+  // won't run if this is called before Create() or after Destroy().
+  //
   // TODO(chrisha): Move this to the public interface.
   using GraphImplCallback = base::OnceCallback<void(GraphImpl*)>;
   static void CallOnGraphImpl(const base::Location& from_here,
@@ -57,10 +58,10 @@ class PerformanceManagerImpl : public PerformanceManager {
       base::OnceCallback<TaskReturnType(GraphImpl*)> task,
       base::OnceCallback<void(TaskReturnType)> reply);
 
-  // Retrieves the currently registered instance.
-  // The caller needs to ensure that the lifetime of the registered instance
-  // exceeds the use of this function and the retrieved pointer.
-  // This function can be called from any sequence with those caveats.
+  // Retrieves the currently registered instance. Calls must not race with
+  // Create() or Destroy(). The returned pointer must not be used after
+  // Destroy(). This function can be called from any sequence with those
+  // caveats.
   static PerformanceManagerImpl* GetInstance();
 
   // Creates, initializes and registers an instance.
@@ -112,17 +113,16 @@ class PerformanceManagerImpl : public PerformanceManager {
   // in topological order and destroying them.
   void BatchDeleteNodes(std::vector<std::unique_ptr<NodeBase>> nodes);
 
+  // Returns the performance manager TaskRunner.
   // TODO(chrisha): Hide this after the last consumer stops using it!
-  scoped_refptr<base::SequencedTaskRunner> task_runner() const {
-    return task_runner_;
-  }
+  static scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
 
   content::LockObserver* lock_observer() { return &lock_observer_; }
 
   // Indicates whether or not the caller is currently running on the PM task
   // runner.
   bool OnPMTaskRunnerForTesting() const {
-    return task_runner_->RunsTasksInCurrentSequence();
+    return GetTaskRunner()->RunsTasksInCurrentSequence();
   }
 
  private:
@@ -140,15 +140,13 @@ class PerformanceManagerImpl : public PerformanceManager {
   void BatchDeleteNodesImpl(std::vector<std::unique_ptr<NodeBase>> nodes);
 
   void OnStartImpl(GraphImplCallback graph_callback);
-  void RunCallbackWithGraphImpl(GraphImplCallback graph_callback);
-  void RunCallbackWithGraph(GraphCallback graph_callback);
+  static void RunCallbackWithGraphImpl(GraphImplCallback graph_callback);
+  static void RunCallbackWithGraph(GraphCallback graph_callback);
 
   template <typename TaskReturnType>
   TaskReturnType RunCallbackWithGraphAndReplyWithResult(
       base::OnceCallback<TaskReturnType(GraphImpl*)> task);
 
-  // The performance task runner.
-  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   GraphImpl graph_;
 
   // The LockObserver registered with //content to track lock acquisitions.
@@ -171,7 +169,7 @@ void PerformanceManagerImpl::CallOnGraphAndReplyWithResult(
     base::OnceCallback<void(TaskReturnType)> reply) {
   auto* pm = GetInstance();
   base::PostTaskAndReplyWithResult(
-      pm->task_runner_.get(), from_here,
+      GetTaskRunner().get(), from_here,
       base::BindOnce(
           &PerformanceManagerImpl::RunCallbackWithGraphAndReplyWithResult<
               TaskReturnType>,

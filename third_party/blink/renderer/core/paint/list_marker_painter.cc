@@ -155,6 +155,13 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
     text_run.SetText(reversed_text.ToString());
   }
 
+  if (style_category == LayoutListMarker::ListStyleCategory::kStaticString) {
+    // Don't add a suffix.
+    context.DrawText(font, text_run_paint_info, text_origin, kInvalidDOMNodeId);
+    context.GetPaintController().SetTextPainted();
+    return;
+  }
+
   const UChar suffix =
       list_marker_text::Suffix(layout_list_marker_.StyleRef().ListStyleType(),
                                layout_list_marker_.ListItem()->Value());

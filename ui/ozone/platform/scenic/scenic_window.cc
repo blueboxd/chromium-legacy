@@ -184,6 +184,15 @@ gfx::Rect ScenicWindow::GetRestoredBoundsInPixels() const {
   return gfx::Rect();
 }
 
+void ScenicWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
+                                  const gfx::ImageSkia& app_icon) {
+  NOTIMPLEMENTED();
+}
+
+void ScenicWindow::SizeConstraintsChanged() {
+  NOTIMPLEMENTED();
+}
+
 void ScenicWindow::UpdateSize() {
   gfx::SizeF scaled = ScaleSize(size_dips_, device_pixel_ratio_);
   size_pixels_ = gfx::Size(ceilf(scaled.width()), ceilf(scaled.height()));

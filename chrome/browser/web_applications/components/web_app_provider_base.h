@@ -20,6 +20,7 @@ class AppRegistrar;
 class AppRegistryController;
 class FileHandlerManager;
 class AppIconManager;
+class AppShortcutManager;
 class WebAppPolicyManager;
 class ManifestUpdateManager;
 class WebAppAudioFocusIdMap;
@@ -57,6 +58,8 @@ class WebAppProviderBase : public KeyedService {
 
   // Implements fetching of app icons.
   virtual AppIconManager& icon_manager() = 0;
+
+  virtual AppShortcutManager& shortcut_manager() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppProviderBase);
 };

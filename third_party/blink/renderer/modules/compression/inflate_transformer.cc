@@ -16,18 +16,17 @@
 
 namespace blink {
 
-InflateTransformer::InflateTransformer(ScriptState* script_state,
-                                       Algorithm algorithm)
+InflateTransformer::InflateTransformer(ScriptState* script_state, Format format)
     : script_state_(script_state), out_buffer_(kBufferSize) {
   memset(&stream_, 0, sizeof(z_stream));
-  int err;
   constexpr int kWindowBits = 15;
   constexpr int kUseGzip = 16;
-  switch (algorithm) {
-    case Algorithm::kDeflate:
+  int err;
+  switch (format) {
+    case Format::kDeflate:
       err = inflateInit2(&stream_, kWindowBits);
       break;
-    case Algorithm::kGzip:
+    case Format::kGzip:
       err = inflateInit2(&stream_, kWindowBits + kUseGzip);
       break;
   }
@@ -54,14 +53,14 @@ void InflateTransformer::Transform(
   }
   if (buffer_source.IsArrayBufferView()) {
     const auto* view = buffer_source.GetAsArrayBufferView().View();
-    const Bytef* start = static_cast<const Bytef*>(view->BaseAddress());
+    const uint8_t* start = static_cast<const uint8_t*>(view->BaseAddress());
     wtf_size_t length = view->byteLength();
     Inflate(start, length, IsFinished(false), controller, exception_state);
     return;
   }
   DCHECK(buffer_source.IsArrayBuffer());
   const auto* array_buffer = buffer_source.GetAsArrayBuffer();
-  const uint8_t* start = static_cast<const Bytef*>(array_buffer->Data());
+  const uint8_t* start = static_cast<const uint8_t*>(array_buffer->Data());
   wtf_size_t length = array_buffer->ByteLength();
   Inflate(start, length, IsFinished(false), controller, exception_state);
 }
@@ -76,18 +75,17 @@ void InflateTransformer::Flush(
 }
 
 void InflateTransformer::Inflate(
-    const Bytef* start,
+    const uint8_t* start,
     wtf_size_t length,
     IsFinished finished,
     TransformStreamDefaultControllerInterface* controller,
     ExceptionState& exception_state) {
-  unsigned int out_buffer_size = static_cast<unsigned int>(kBufferSize);
   stream_.avail_in = length;
   // Zlib treats this pointer as const, so this cast is safe.
-  stream_.next_in = const_cast<Bytef*>(start);
+  stream_.next_in = const_cast<uint8_t*>(start);
 
   do {
-    stream_.avail_out = out_buffer_size;
+    stream_.avail_out = out_buffer_.size();
     stream_.next_out = out_buffer_.data();
     int err = inflate(&stream_, finished ? Z_FINISH : Z_NO_FLUSH);
     if (err != Z_OK && err != Z_STREAM_END && err != Z_BUF_ERROR) {
@@ -95,7 +93,7 @@ void InflateTransformer::Inflate(
       return;
     }
 
-    wtf_size_t bytes = out_buffer_size - stream_.avail_out;
+    wtf_size_t bytes = out_buffer_.size() - stream_.avail_out;
     if (bytes) {
       controller->Enqueue(
           ToV8(DOMUint8Array::Create(out_buffer_.data(), bytes), script_state_),

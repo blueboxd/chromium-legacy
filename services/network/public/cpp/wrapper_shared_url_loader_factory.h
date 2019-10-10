@@ -6,6 +6,7 @@
 #define SERVICES_NETWORK_PUBLIC_CPP_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
 
 #include "base/component_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -62,10 +63,11 @@ class WrapperSharedURLLoaderFactoryBase
                                        std::move(client), traffic_annotation);
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
     if (!factory_ptr_)
       return;
-    factory_ptr_->Clone(std::move(request));
+    factory_ptr_->Clone(std::move(receiver));
   }
 
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {

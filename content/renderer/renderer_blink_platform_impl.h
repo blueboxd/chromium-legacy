@@ -130,8 +130,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   CreateRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
-  std::unique_ptr<blink::WebRTCCertificateGenerator>
-  CreateRTCCertificateGenerator() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() override;
   rtc::Thread* GetWebRtcWorkerThreadRtcThread() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingTaskRunner()

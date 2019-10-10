@@ -160,6 +160,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoNthLastChild,
     kPseudoNthLastOfType,
     kPseudoPart,
+    kPseudoState,
     kPseudoLink,
     kPseudoVisited,
     kPseudoAny,

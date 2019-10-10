@@ -92,6 +92,16 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindowLinux,
   void SetVisibleOnAllWorkspaces(bool always_visible) override;
   bool IsVisibleOnAllWorkspaces() const override;
   void FlashFrame(bool flash_frame) override;
+  gfx::Rect GetXRootWindowOuterBounds() const override;
+  bool ContainsPointInXRegion(const gfx::Point& point) const override;
+  void SetShape(std::unique_ptr<ShapeRects> native_shape,
+                const gfx::Transform& transform) override;
+  void SetOpacityForXWindow(float opacity) override;
+  void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
+  void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                      const gfx::ImageSkia& app_icon) override;
+  void SizeConstraintsChanged() override;
+  bool IsTranslucentWindowOpacitySupported() const override;
 
  protected:
   PlatformWindowDelegateLinux* platform_window_delegate() const {

@@ -1009,7 +1009,7 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
     // data in the profile attributes storage.
     if (has_entry) {
       avatar_index = entry->GetAvatarIconIndex();
-      profile_name = base::UTF16ToUTF8(entry->GetName());
+      profile_name = base::UTF16ToUTF8(entry->GetLocalProfileName());
       supervised_user_id = entry->GetSupervisedUserId();
     } else if (profile->GetPath() ==
                    profiles::GetDefaultProfileDir(user_data_dir())) {
@@ -1030,8 +1030,9 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileAvatarIndex))
     profile->GetPrefs()->SetInteger(prefs::kProfileAvatarIndex, avatar_index);
 
-  if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileName))
+  if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileName)) {
     profile->GetPrefs()->SetString(prefs::kProfileName, profile_name);
+  }
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   bool force_supervised_user_id =

@@ -669,7 +669,6 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
       {"policyAppUninstallPolicy", IDS_APP_MANAGEMENT_POLICY_APP_POLICY_STRING},
       {"size", IDS_APP_MANAGEMENT_SIZE},
       {"storage", IDS_APP_MANAGEMENT_STORAGE},
-      {"systemAppUninstallPolicy", IDS_APP_MANAGEMENT_SYSTEM_APP_POLICY_STRING},
       {"thisAppCan", IDS_APP_MANAGEMENT_THIS_APP_CAN},
       {"title", IDS_APP_MANAGEMENT_TITLE},
       {"uninstallApp", IDS_APP_MANAGEMENT_UNINSTALL_APP},

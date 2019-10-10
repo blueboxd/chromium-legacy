@@ -18,6 +18,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/content_switches.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -88,11 +89,12 @@ class URLLoaderFactoryGetter::URLLoaderFactoryForIOThread
                                traffic_annotation);
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
     if (!factory_getter_)
       return;
     factory_getter_->GetURLLoaderFactory(is_corb_enabled_)
-        ->Clone(std::move(request));
+        ->Clone(std::move(receiver));
   }
 
   // SharedURLLoaderFactory implementation:

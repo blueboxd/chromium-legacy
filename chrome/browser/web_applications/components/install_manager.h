@@ -13,6 +13,7 @@
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 enum class WebappInstallSource;
 struct WebApplicationInfo;
@@ -88,7 +89,8 @@ class InstallManager {
 
   // These params are a subset of ExternalInstallOptions.
   struct InstallParams {
-    LaunchContainer launch_container = LaunchContainer::kDefault;
+    blink::mojom::DisplayMode display_mode =
+        blink::mojom::DisplayMode::kUndefined;
 
     bool add_to_applications_menu = true;
     bool add_to_desktop = true;

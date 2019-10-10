@@ -192,24 +192,22 @@ void ProcessMirrorHeader(
     return;
 
   // The only allowed operations are:
-  // - Going Incognito.
-  // - Displaying the Account Manager for managing accounts.
-  // - Displaying a reauthentication window: Enterprise GSuite Accounts could
-  // have been forced through an online in-browser sign-in for sensitive
-  // webpages, thereby decreasing their session validity. After their session
-  // expires, they will receive a "Mirror" re-authentication request for all
-  // Google web properties.
+  // 1. Going Incognito.
+  // 2. Displaying a reauthentication window: Enterprise GSuite Accounts could
+  //    have been forced through an online in-browser sign-in for sensitive
+  //    webpages, thereby decreasing their session validity. After their session
+  //    expires, they will receive a "Mirror" re-authentication request for all
+  //    Google web properties.
+  // 3. Displaying the Account Manager for managing accounts.
 
+  // 1. Going incognito.
   if (service_type == GAIA_SERVICE_TYPE_INCOGNITO) {
     chrome::NewIncognitoWindow(profile);
     return;
   }
 
-  if (manage_accounts_params.email.empty()) {
-    // Display Account Manager for managing accounts.
-    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-        profile, chrome::kAccountManagerSubPage);
-  } else {
+  // 2. Displaying a reauthentication window
+  if (!manage_accounts_params.email.empty()) {
     // Do not display the re-authentication dialog if this event was triggered
     // by supervision being enabled for an account.  In this situation, a
     // complete signout is required.
@@ -222,7 +220,12 @@ void ProcessMirrorHeader(
     // Display a re-authentication dialog.
     chromeos::InlineLoginHandlerDialogChromeOS::Show(
         manage_accounts_params.email);
+    return;
   }
+
+  // 3. Displaying the Account Manager for managing accounts.
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      profile, chrome::kAccountManagerSubPage);
   return;
 
 #else   // !defined(OS_CHROMEOS)

@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 
@@ -21,7 +22,7 @@ void TestWebAppRegistryController::SetUp(Profile* profile) {
   mutable_registrar_ = std::make_unique<WebAppRegistrarMutable>(profile);
 
   sync_bridge_ = std::make_unique<WebAppSyncBridge>(
-      profile, database_factory_.get(), mutable_registrar_.get(),
+      profile, database_factory_.get(), mutable_registrar_.get(), this,
       mock_processor_.CreateForwardingProcessor());
 
   ON_CALL(processor(), IsTrackingMetadata())
@@ -50,6 +51,12 @@ void TestWebAppRegistryController::UnregisterAll() {
   for (const AppId& app_id : registrar().GetAppIds())
     update->DeleteApp(app_id);
 }
+
+void TestWebAppRegistryController::InstallWebAppsAfterSync(
+    std::vector<WebApp*> web_apps) {}
+
+void TestWebAppRegistryController::UninstallWebAppsAfterSync(
+    std::vector<std::unique_ptr<WebApp>> web_apps) {}
 
 void TestWebAppRegistryController::DestroySubsystems() {
   mutable_registrar_.reset();

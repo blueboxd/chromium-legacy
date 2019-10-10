@@ -6,8 +6,8 @@
 
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -149,19 +149,19 @@ TEST_F(NotificationResourcesLoaderTest, LargeIconsAreScaledDown) {
   ASSERT_TRUE(Resources());
 
   ASSERT_FALSE(Resources()->icon.drawsNothing());
-  ASSERT_EQ(kWebNotificationMaxIconSizePx, Resources()->icon.width());
-  ASSERT_EQ(kWebNotificationMaxIconSizePx, Resources()->icon.height());
+  ASSERT_EQ(kNotificationMaxIconSizePx, Resources()->icon.width());
+  ASSERT_EQ(kNotificationMaxIconSizePx, Resources()->icon.height());
 
   ASSERT_FALSE(Resources()->badge.drawsNothing());
-  ASSERT_EQ(kWebNotificationMaxBadgeSizePx, Resources()->badge.width());
-  ASSERT_EQ(kWebNotificationMaxBadgeSizePx, Resources()->badge.height());
+  ASSERT_EQ(kNotificationMaxBadgeSizePx, Resources()->badge.width());
+  ASSERT_EQ(kNotificationMaxBadgeSizePx, Resources()->badge.height());
 
   ASSERT_TRUE(Resources()->action_icons.has_value());
   auto& action_icons = Resources()->action_icons.value();
   ASSERT_EQ(1u, action_icons.size());
   ASSERT_FALSE(action_icons[0].drawsNothing());
-  ASSERT_EQ(kWebNotificationMaxActionIconSizePx, action_icons[0].width());
-  ASSERT_EQ(kWebNotificationMaxActionIconSizePx, action_icons[0].height());
+  ASSERT_EQ(kNotificationMaxActionIconSizePx, action_icons[0].width());
+  ASSERT_EQ(kNotificationMaxActionIconSizePx, action_icons[0].height());
 }
 
 TEST_F(NotificationResourcesLoaderTest, DownscalingPreserves3_1AspectRatio) {
@@ -174,8 +174,8 @@ TEST_F(NotificationResourcesLoaderTest, DownscalingPreserves3_1AspectRatio) {
   ASSERT_TRUE(Resources());
 
   ASSERT_FALSE(Resources()->image.drawsNothing());
-  ASSERT_EQ(kWebNotificationMaxImageWidthPx, Resources()->image.width());
-  ASSERT_EQ(kWebNotificationMaxImageWidthPx / 3, Resources()->image.height());
+  ASSERT_EQ(kNotificationMaxImageWidthPx, Resources()->image.width());
+  ASSERT_EQ(kNotificationMaxImageWidthPx / 3, Resources()->image.height());
 }
 
 TEST_F(NotificationResourcesLoaderTest, DownscalingPreserves3_2AspectRatio) {
@@ -188,9 +188,8 @@ TEST_F(NotificationResourcesLoaderTest, DownscalingPreserves3_2AspectRatio) {
   ASSERT_TRUE(Resources());
 
   ASSERT_FALSE(Resources()->image.drawsNothing());
-  ASSERT_EQ(kWebNotificationMaxImageHeightPx * 3 / 2,
-            Resources()->image.width());
-  ASSERT_EQ(kWebNotificationMaxImageHeightPx, Resources()->image.height());
+  ASSERT_EQ(kNotificationMaxImageHeightPx * 3 / 2, Resources()->image.width());
+  ASSERT_EQ(kNotificationMaxImageHeightPx, Resources()->image.height());
 }
 
 TEST_F(NotificationResourcesLoaderTest, EmptyDataYieldsEmptyResources) {

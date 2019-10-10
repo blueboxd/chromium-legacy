@@ -191,6 +191,11 @@ class CreditCardAccessManagerTest : public testing::Test {
     return credit_card_access_manager_->is_authentication_in_progress();
   }
 
+  void ResetPreflightCallLimiter() {
+    credit_card_access_manager_->can_fetch_unmask_details_.Signal();
+    credit_card_access_manager_->is_user_verifiable_ = base::nullopt;
+  }
+
   void CreateLocalCard(std::string guid, std::string number = std::string()) {
     CreditCard local_card = CreditCard();
     test::SetCreditCardInfo(&local_card, "Elvis Presley", number.c_str(),
@@ -505,6 +510,68 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCTryAgainFailure) {
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
   EXPECT_TRUE(accessor_->did_succeed());
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
+}
+
+// Ensures that CardUnmaskPreflightCalled metrics are logged correctly.
+TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
+  std::string preflight_call_metric =
+      "Autofill.BetterAuth.CardUnmaskPreflightCalled";
+
+  {
+    // Create local card and set user as eligible for FIDO auth.
+    base::HistogramTester histogram_tester;
+    CreateLocalCard(kTestGUID, kTestNumber);
+#if !defined(OS_IOS)
+    GetFIDOAuthenticator()->SetUserVerifiable(true);
+#endif
+    ResetPreflightCallLimiter();
+
+    credit_card_access_manager_->PrepareToFetchCreditCard();
+    InvokeUnmaskDetailsTimeout();
+    WaitForCallbacks();
+
+    // If only local cards are available, then no preflight call is made.
+    histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+  }
+
+  {
+    // Create server card and set user as ineligible for FIDO auth.
+    base::HistogramTester histogram_tester;
+    CreateServerCard(kTestGUID, kTestNumber);
+#if !defined(OS_IOS)
+    GetFIDOAuthenticator()->SetUserVerifiable(false);
+#endif
+    ResetPreflightCallLimiter();
+
+    credit_card_access_manager_->PrepareToFetchCreditCard();
+    InvokeUnmaskDetailsTimeout();
+    WaitForCallbacks();
+
+    // If user is not verifiable, then no preflight call is made.
+    histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+  }
+
+  {
+    // Create server card and set user as eligible for FIDO auth.
+    base::HistogramTester histogram_tester;
+    CreateServerCard(kTestGUID, kTestNumber);
+#if !defined(OS_IOS)
+    GetFIDOAuthenticator()->SetUserVerifiable(true);
+#endif
+    ResetPreflightCallLimiter();
+
+    credit_card_access_manager_->PrepareToFetchCreditCard();
+    InvokeUnmaskDetailsTimeout();
+    WaitForCallbacks();
+
+    // Preflight call is made only if a server card is available and the user is
+    // eligible for FIDO authentication, except on iOS.
+#if defined(OS_IOS)
+    histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+#else
+    histogram_tester.ExpectTotalCount(preflight_call_metric, 1);
+#endif
+  }
 }
 
 #if !defined(OS_IOS)

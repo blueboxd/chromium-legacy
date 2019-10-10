@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/lazy_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
@@ -24,80 +25,66 @@ namespace performance_manager {
 
 namespace {
 
-class Singleton {
- public:
-  Singleton() = default;
-  ~Singleton() = default;
+// Singleton instance of PerformanceManagerImpl. Set from
+// PerformanceManagerImpl::StartImpl() and reset from the destructor of
+// PerformanceManagerImpl (PM sequence). Accesses should be on the PM sequence.
+PerformanceManagerImpl* g_performance_manager_from_pm_sequence = nullptr;
 
-  // Safe to call from any thread.
-  PerformanceManagerImpl* Get() {
-    return instance_.load(std::memory_order_acquire);
-  }
+// Singleton instance of PerformanceManagerImpl. Set from Create() and reset
+// from Destroy() (external sequence). Accesses can be on any sequence but must
+// not race with Create() or Destroy().
+//
+// TODO(https://crbug.com/1013127): Get rid of
+// PerformanceManagerImpl::GetInstance(). Callers can probably use
+// PerformanceManagerImpl::CallOnGraphImpl().
+PerformanceManagerImpl* g_performance_manager_from_any_sequence = nullptr;
 
-  // Should be called from the main thread only.
-  void Set(PerformanceManagerImpl* instance) {
-    DCHECK_NE(nullptr, instance);
-    auto* old_value = instance_.exchange(instance, std::memory_order_release);
-    DCHECK_EQ(nullptr, old_value);
-  }
-
-  // Should be called from the main thread only.
-  void Clear(PerformanceManagerImpl* instance) {
-    DCHECK_NE(nullptr, instance);
-    auto* old_value = instance_.exchange(nullptr, std::memory_order_release);
-    DCHECK_EQ(instance, old_value);
-  }
-
- private:
-  std::atomic<PerformanceManagerImpl*> instance_{nullptr};
-};
-Singleton g_performance_manager;
-
-scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
-  return base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock()});
-}
+// The performance manager TaskRunner.
+base::LazySequencedTaskRunner g_performance_manager_task_runner =
+    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::ThreadPool(),
+                         base::TaskPriority::USER_VISIBLE,
+                         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+                         base::MayBlock()));
 
 }  // namespace
 
 PerformanceManagerImpl::~PerformanceManagerImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(g_performance_manager_from_pm_sequence, this);
   // TODO(https://crbug.com/966840): Move this to a TearDown function.
   graph_.TearDown();
+  g_performance_manager_from_pm_sequence = nullptr;
 }
 
 // static
 void PerformanceManagerImpl::CallOnGraphImpl(const base::Location& from_here,
                                              GraphImplCallback callback) {
   DCHECK(callback);
-
-  // Passing |pm| unretained is safe as it is actually destroyed on the
-  // destination sequence, and g_performance_manager.Get() would return nullptr
-  // if its deletion task was already posted.
-  auto* pm = g_performance_manager.Get();
-  pm->task_runner_->PostTask(
+  GetTaskRunner()->PostTask(
       from_here,
       base::BindOnce(&PerformanceManagerImpl::RunCallbackWithGraphImpl,
-                     base::Unretained(pm), std::move(callback)));
+                     std::move(callback)));
 }
 
 PerformanceManagerImpl* PerformanceManagerImpl::GetInstance() {
-  return g_performance_manager.Get();
+  return g_performance_manager_from_any_sequence;
 }
 
 // static
 std::unique_ptr<PerformanceManagerImpl> PerformanceManagerImpl::Create(
     GraphImplCallback on_start) {
+  DCHECK(!g_performance_manager_from_any_sequence);
+
   std::unique_ptr<PerformanceManagerImpl> instance =
       base::WrapUnique(new PerformanceManagerImpl());
 
-  instance->task_runner()->PostTask(
+  g_performance_manager_from_any_sequence = instance.get();
+
+  GetTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&PerformanceManagerImpl::OnStartImpl,
                      base::Unretained(instance.get()), std::move(on_start)));
-
-  g_performance_manager.Set(instance.get());
 
   return instance;
 }
@@ -105,8 +92,9 @@ std::unique_ptr<PerformanceManagerImpl> PerformanceManagerImpl::Create(
 // static
 void PerformanceManagerImpl::Destroy(
     std::unique_ptr<PerformanceManagerImpl> instance) {
-  g_performance_manager.Clear(instance.get());
-  instance->task_runner_->DeleteSoon(FROM_HERE, instance.release());
+  DCHECK_EQ(instance.get(), g_performance_manager_from_any_sequence);
+  g_performance_manager_from_any_sequence = nullptr;
+  GetTaskRunner()->DeleteSoon(FROM_HERE, instance.release());
 }
 
 std::unique_ptr<FrameNodeImpl> PerformanceManagerImpl::CreateFrameNode(
@@ -155,13 +143,12 @@ std::unique_ptr<WorkerNodeImpl> PerformanceManagerImpl::CreateWorkerNode(
 
 void PerformanceManagerImpl::BatchDeleteNodes(
     std::vector<std::unique_ptr<NodeBase>> nodes) {
-  task_runner_->PostTask(
+  GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&PerformanceManagerImpl::BatchDeleteNodesImpl,
                                 base::Unretained(this), std::move(nodes)));
 }
 
-PerformanceManagerImpl::PerformanceManagerImpl()
-    : task_runner_(CreateTaskRunner()) {
+PerformanceManagerImpl::PerformanceManagerImpl() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -187,7 +174,7 @@ std::unique_ptr<NodeType> PerformanceManagerImpl::CreateNodeImpl(
     Args&&... constructor_args) {
   std::unique_ptr<NodeType> new_node = std::make_unique<NodeType>(
       &graph_, std::forward<Args>(constructor_args)...);
-  task_runner_->PostTask(
+  GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&AddNodeAndInvokeCreationCallback<NodeType>,
                                 std::move(creation_callback),
                                 base::Unretained(new_node.get()),
@@ -196,7 +183,7 @@ std::unique_ptr<NodeType> PerformanceManagerImpl::CreateNodeImpl(
 }
 
 void PerformanceManagerImpl::PostDeleteNode(std::unique_ptr<NodeBase> node) {
-  task_runner_->PostTask(
+  GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&PerformanceManagerImpl::DeleteNodeImpl,
                                 base::Unretained(this), std::move(node)));
 }
@@ -269,23 +256,39 @@ void PerformanceManagerImpl::BatchDeleteNodesImpl(
   // When |nodes| goes out of scope, all nodes are deleted.
 }
 
-void PerformanceManagerImpl::RunCallbackWithGraphImpl(
-    GraphImplCallback graph_callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  std::move(graph_callback).Run(&graph_);
+// static
+scoped_refptr<base::SequencedTaskRunner>
+PerformanceManagerImpl::GetTaskRunner() {
+  return g_performance_manager_task_runner.Get();
 }
 
+// static
+void PerformanceManagerImpl::RunCallbackWithGraphImpl(
+    GraphImplCallback graph_callback) {
+  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+
+  if (g_performance_manager_from_pm_sequence) {
+    std::move(graph_callback)
+        .Run(&g_performance_manager_from_pm_sequence->graph_);
+  }
+}
+
+// static
 void PerformanceManagerImpl::RunCallbackWithGraph(
     GraphCallback graph_callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
 
-  std::move(graph_callback).Run(&graph_);
+  if (g_performance_manager_from_pm_sequence) {
+    std::move(graph_callback)
+        .Run(&g_performance_manager_from_pm_sequence->graph_);
+  }
 }
 
 void PerformanceManagerImpl::OnStartImpl(GraphImplCallback on_start) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!g_performance_manager_from_pm_sequence);
 
+  g_performance_manager_from_pm_sequence = this;
   graph_.set_ukm_recorder(ukm::UkmRecorder::Get());
   std::move(on_start).Run(&graph_);
 }

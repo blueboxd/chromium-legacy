@@ -12,8 +12,9 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
@@ -229,7 +230,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override;
 
  private:
   ServiceWorkerSubresourceLoaderFactory(
@@ -238,14 +240,14 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
       network::mojom::URLLoaderFactoryRequest request,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
-  void OnConnectionError();
+  void OnMojoDisconnect();
 
   scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;
 
   // Used when a request falls back to network.
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory_;
 
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
 
   // The task runner where this factory is running.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

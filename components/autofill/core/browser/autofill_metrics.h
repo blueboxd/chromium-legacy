@@ -1033,6 +1033,10 @@ class AutofillMetrics {
   static void LogUserHappinessByProfileFormType(UserHappinessMetric metric,
                                                 uint32_t profile_form_bitmask);
 
+  // Logs the count of calls to PaymentsClient::GetUnmaskDetails() (aka
+  // GetDetailsForGetRealPan).
+  static void LogCardUnmaskPreflightCalled();
+
   // Logs |event| to the unmask prompt events histogram.
   static void LogUnmaskPromptEvent(UnmaskPromptEvent event);
 

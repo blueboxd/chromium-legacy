@@ -252,6 +252,8 @@ bool IsPseudoClassValidAfterPseudoElement(
     case CSSSelector::kPseudoSelection:
       return pseudo_class == CSSSelector::kPseudoWindowInactive;
     case CSSSelector::kPseudoPart:
+      return IsUserActionPseudoClass(pseudo_class) ||
+             pseudo_class == CSSSelector::kPseudoState;
     case CSSSelector::kPseudoWebKitCustomElement:
     case CSSSelector::kPseudoBlinkInternalElement:
       return IsUserActionPseudoClass(pseudo_class);
@@ -599,6 +601,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
       selector->AdoptSelectorVector(selector_vector);
       return selector;
     }
+    case CSSSelector::kPseudoState:
     case CSSSelector::kPseudoPart: {
       const CSSParserToken& ident = block.ConsumeIncludingWhitespace();
       if (ident.GetType() != kIdentToken || !block.AtEnd())

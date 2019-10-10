@@ -6,10 +6,17 @@
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_LINUX_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "ui/aura/scoped_window_targeter.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
 
 class SkPath;
+
+namespace aura {
+class ScopedWindowTargeter;
+}  // namespace aura
 
 namespace ui {
 class PlatformWindowLinux;
@@ -32,6 +39,17 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   // be changed after. Useful for X11. Not in use for Wayland.
   void SetPendingXVisualId(int x_visual_id);
 
+  // Returns the current bounds in terms of the X11 Root Window including the
+  // borders provided by the window manager (if any). Not in use for Wayland.
+  gfx::Rect GetXRootWindowOuterBounds() const;
+
+  // Tells if the point is within X11 Root Window's region. Not in use for
+  // Wayland.
+  bool ContainsPointInXRegion(const gfx::Point& point) const;
+
+  // Disables event listening to make |dialog| modal.
+  base::OnceClosure DisableEventListening();
+
  protected:
   // Overridden from DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
@@ -39,6 +57,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   std::string GetWorkspace() const override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;
   bool IsVisibleOnAllWorkspaces() const override;
+  void SetOpacity(float opacity) override;
+  base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
+  void InitModalType(ui::ModalType modal_type) override;
 
   // PlatformWindowDelegateBase:
   void DispatchEvent(ui::Event* event) override;
@@ -65,6 +86,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   // PlatformWindowDelegateLinux overrides:
   void OnWorkspaceChanged() override;
   void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override;
+  void OnLostMouseGrab() override;
+
+  // Enables event listening after closing |dialog|.
+  void EnableEventListening();
 
   const ui::PlatformWindowLinux* GetPlatformWindowLinux() const;
   ui::PlatformWindowLinux* GetPlatformWindowLinux();
@@ -80,6 +105,13 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   base::Optional<int> pending_x_visual_id_;
 
   std::unique_ptr<CompositorObserver> compositor_observer_;
+
+  std::unique_ptr<aura::ScopedWindowTargeter> targeter_for_modal_;
+
+  uint32_t modal_dialog_counter_ = 0;
+
+  // The display and the native X window hosting the root window.
+  base::WeakPtrFactory<DesktopWindowTreeHostLinux> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostLinux);
 };

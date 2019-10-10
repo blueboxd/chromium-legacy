@@ -331,8 +331,8 @@ AppCacheSubresourceURLFactory::AppCacheSubresourceURLFactory(
     base::WeakPtr<AppCacheHost> host)
     : network_loader_factory_(std::move(network_loader_factory)),
       appcache_host_(host) {
-  bindings_.set_connection_error_handler(
-      base::BindRepeating(&AppCacheSubresourceURLFactory::OnConnectionError,
+  receivers_.set_disconnect_handler(
+      base::BindRepeating(&AppCacheSubresourceURLFactory::OnMojoDisconnect,
                           base::Unretained(this)));
 }
 
@@ -416,8 +416,8 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
 }
 
 void AppCacheSubresourceURLFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 base::WeakPtr<AppCacheSubresourceURLFactory>
@@ -425,8 +425,8 @@ AppCacheSubresourceURLFactory::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void AppCacheSubresourceURLFactory::OnConnectionError() {
-  if (bindings_.empty())
+void AppCacheSubresourceURLFactory::OnMojoDisconnect() {
+  if (receivers_.empty())
     delete this;
 }
 

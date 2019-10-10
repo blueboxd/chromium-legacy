@@ -295,10 +295,8 @@ void AppBannerUiDelegateAndroid::InstallLegacyWebApp(
   AppBannerSettingsHelper::RecordBannerInstallEvent(
       web_contents, shortcut_info_->url.spec(), AppBannerSettingsHelper::WEB);
 
-  // TODO(https://crbug.com/861643): Support maskable icons here.
-  ShortcutHelper::AddToLauncherWithSkBitmap(web_contents, *shortcut_info_,
-                                            primary_icon_,
-                                            /*is_icon_maskable=*/false);
+  ShortcutHelper::AddToLauncherWithSkBitmap(
+      web_contents, *shortcut_info_, primary_icon_, has_primary_maskable_icon_);
 }
 
 void AppBannerUiDelegateAndroid::SendBannerAccepted() {

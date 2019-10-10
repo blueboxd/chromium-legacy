@@ -86,7 +86,6 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
-#include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
@@ -116,7 +115,6 @@
 #include "base/win/windows_version.h"
 #endif
 
-#include "content/renderer/media/webrtc/rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 
 using blink::Platform;
@@ -548,13 +546,6 @@ RendererBlinkPlatformImpl::CreateRTCPeerConnectionHandler(
       blink::PeerConnectionDependencyFactory::GetInstance();
   return std::make_unique<RTCPeerConnectionHandler>(
       client, rtc_dependency_factory, task_runner);
-}
-
-//------------------------------------------------------------------------------
-
-std::unique_ptr<blink::WebRTCCertificateGenerator>
-RendererBlinkPlatformImpl::CreateRTCCertificateGenerator() {
-  return std::make_unique<RTCCertificateGenerator>();
 }
 
 //------------------------------------------------------------------------------

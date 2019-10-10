@@ -407,6 +407,13 @@ bool NGPaintFragment::IsDescendantOfNotSelf(
   return false;
 }
 
+bool NGPaintFragment::IsEllipsis() const {
+  if (auto* text_fragment =
+          DynamicTo<NGPhysicalTextFragment>(PhysicalFragment()))
+    return text_fragment->IsEllipsis();
+  return false;
+}
+
 bool NGPaintFragment::HasSelfPaintingLayer() const {
   return PhysicalFragment().HasSelfPaintingLayer();
 }

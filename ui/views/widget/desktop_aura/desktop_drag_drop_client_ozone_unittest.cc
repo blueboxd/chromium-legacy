@@ -59,6 +59,9 @@ class FakePlatformWindow : public ui::PlatformWindowBase,
   gfx::Rect GetRestoredBoundsInPixels() const override { return gfx::Rect(); }
   void SetUseNativeFrame(bool use_native_frame) override {}
   bool ShouldUseNativeFrame() const override { return false; }
+  void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                      const gfx::ImageSkia& app_icon) override {}
+  void SizeConstraintsChanged() override {}
 
   // ui::WmDragHandler
   void StartDrag(const OSExchangeData& data,

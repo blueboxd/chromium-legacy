@@ -19,6 +19,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/common/content_client.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/file_data_source.h"
@@ -286,8 +287,8 @@ void ContentURLLoaderFactory::CreateLoaderAndStart(
 }
 
 void ContentURLLoaderFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest loader) {
-  bindings_.AddBinding(this, std::move(loader));
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) {
+  receivers_.Add(this, std::move(loader));
 }
 
 }  // namespace content

@@ -90,11 +90,12 @@ TEST_F(TextDetectionImplMacTest, ScanOnce) {
     ASSERT_TRUE(SkCreateBitmapFromCGImage(&bitmap, cg_image));
 
     base::RunLoop run_loop;
-    base::Closure quit_closure = run_loop.QuitClosure();
     // Send the image to Detect() and expect the response in callback.
-    EXPECT_CALL(*this, Detection(1)).WillOnce(RunClosure(quit_closure));
-    impl_->Detect(bitmap, base::Bind(&TextDetectionImplMacTest::DetectCallback,
-                                     base::Unretained(this)));
+    EXPECT_CALL(*this, Detection(1))
+        .WillOnce(RunClosure(run_loop.QuitClosure()));
+    impl_->Detect(bitmap,
+                  base::BindOnce(&TextDetectionImplMacTest::DetectCallback,
+                                 base::Unretained(this)));
 
     run_loop.Run();
   }

@@ -282,6 +282,9 @@ struct BLINK_EXPORT WebNavigationParams {
   WebHistoryItem history_item;
   // Whether this navigation is a result of client redirect.
   bool is_client_redirect = false;
+  // Cache mode to be used for subresources, instead of the one determined
+  // by |frame_load_type|.
+  base::Optional<blink::mojom::FetchCacheMode> force_fetch_cache_mode;
 
   // Miscellaneous parameters.
 

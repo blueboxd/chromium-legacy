@@ -53,7 +53,10 @@ void LayoutNGListItem::StyleDidChange(StyleDifference diff,
 
   UpdateMarker();
 
-  if (old_style && old_style->ListStyleType() != StyleRef().ListStyleType())
+  if (old_style && (old_style->ListStyleType() != StyleRef().ListStyleType() ||
+                    (StyleRef().ListStyleType() == EListStyleType::kString &&
+                     old_style->ListStyleStringValue() !=
+                         StyleRef().ListStyleStringValue())))
     ListStyleTypeChanged();
 }
 
@@ -152,6 +155,11 @@ void LayoutNGListItem::UpdateMarker() {
         LayoutListMarker::InlineMarginsForInside(style, IsMarkerImage());
     marker_style->SetMarginStart(Length::Fixed(margins.first));
     marker_style->SetMarginEnd(Length::Fixed(margins.second));
+    // Markers should have unicode-bidi:isolate according to the spec
+    // (https://drafts.csswg.org/css-lists/#ua-stylesheet).
+    // Note this is only relevant for inside markers with arbitrary strings.
+    if (style.ListStyleType() == EListStyleType::kString)
+      marker_style->SetUnicodeBidi(UnicodeBidi::kIsolate);
   } else {
     if (marker_ && !marker_->IsLayoutBlockFlow())
       DestroyMarker();
@@ -212,11 +220,15 @@ LayoutNGListItem::MarkerType LayoutNGListItem::MarkerText(
   switch (style.ListStyleType()) {
     case EListStyleType::kNone:
       return kStatic;
+    case EListStyleType::kString: {
+      text->Append(style.ListStyleStringValue());
+      return kStatic;
+    }
     case EListStyleType::kDisc:
     case EListStyleType::kCircle:
     case EListStyleType::kSquare:
       // value is ignored for these types
-      text->Append(list_marker_text::GetText(Style()->ListStyleType(), 0));
+      text->Append(list_marker_text::GetText(style.ListStyleType(), 0));
       if (format == kWithSuffix)
         text->Append(' ');
       return kSymbolValue;
@@ -273,9 +285,9 @@ LayoutNGListItem::MarkerType LayoutNGListItem::MarkerText(
     case EListStyleType::kUpperRoman:
     case EListStyleType::kUrdu: {
       int value = Value();
-      text->Append(list_marker_text::GetText(Style()->ListStyleType(), value));
+      text->Append(list_marker_text::GetText(style.ListStyleType(), value));
       if (format == kWithSuffix) {
-        text->Append(list_marker_text::Suffix(Style()->ListStyleType(), value));
+        text->Append(list_marker_text::Suffix(style.ListStyleType(), value));
         text->Append(' ');
       }
       return kOrdinalValue;

@@ -25,6 +25,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
@@ -81,7 +82,7 @@ ExternalInstallOptions CreateInstallOptionsForSystemApp(
   DCHECK_EQ(content::kChromeUIScheme, info.install_url.scheme());
 
   web_app::ExternalInstallOptions install_options(
-      info.install_url, LaunchContainer::kWindow,
+      info.install_url, blink::mojom::DisplayMode::kStandalone,
       ExternalInstallSource::kSystemInstalled);
   install_options.add_to_applications_menu = false;
   install_options.add_to_desktop = false;

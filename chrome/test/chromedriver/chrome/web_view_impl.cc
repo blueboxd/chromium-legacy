@@ -195,10 +195,14 @@ WebViewImpl::~WebViewImpl() {}
 
 WebViewImpl* WebViewImpl::CreateChild(const std::string& session_id,
                                       const std::string& target_id) const {
-  DevToolsClientImpl* parent_client =
-      static_cast<DevToolsClientImpl*>(client_.get());
+  // While there may be a deep hierarchy of WebViewImpl instances, the
+  // hierarchy for DevToolsClientImpl is flat - there's a root which
+  // sends/receives over the socket, and all child sessions are considered
+  // its children (one level deep at most).
+  DevToolsClientImpl* root_client =
+      static_cast<DevToolsClientImpl*>(client_.get())->GetRootClient();
   std::unique_ptr<DevToolsClient> child_client(
-      std::make_unique<DevToolsClientImpl>(parent_client, session_id));
+      std::make_unique<DevToolsClientImpl>(root_client, session_id));
   WebViewImpl* child = new WebViewImpl(target_id, w3c_compliant_, browser_info_,
                                        std::move(child_client), nullptr,
                                        navigation_tracker_->IsNonBlocking()

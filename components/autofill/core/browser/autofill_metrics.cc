@@ -922,6 +922,11 @@ void AutofillMetrics::LogSaveCardWithFirstAndLastNameComplete(bool is_local) {
 }
 
 // static
+void AutofillMetrics::LogCardUnmaskPreflightCalled() {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.BetterAuth.CardUnmaskPreflightCalled", true);
+}
+
+// static
 void AutofillMetrics::LogUnmaskPromptEvent(UnmaskPromptEvent event) {
   UMA_HISTOGRAM_ENUMERATION("Autofill.UnmaskPrompt.Events", event,
                             NUM_UNMASK_PROMPT_EVENTS);

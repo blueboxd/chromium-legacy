@@ -18,6 +18,7 @@
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
 #include "net/http/http_status_code.h"
@@ -117,7 +118,8 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
       ping_loader_ = std::make_unique<MockURLLoader>(std::move(request));
       ping_loader_client_ = std::move(client);
     }
-    void Clone(network::mojom::URLLoaderFactoryRequest request) override {}
+    void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+        override {}
 
     std::unique_ptr<MockURLLoader> ping_loader_;
     network::mojom::URLLoaderClientPtr ping_loader_client_;

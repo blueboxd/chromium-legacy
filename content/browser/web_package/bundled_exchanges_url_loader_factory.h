@@ -8,8 +8,9 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -41,7 +42,8 @@ class CONTENT_EXPORT BundledExchangesURLLoaderFactory final
                             network::mojom::URLLoaderClientPtr loader_client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override;
 
   const scoped_refptr<BundledExchangesReader>& reader() const {
     return reader_;
@@ -51,7 +53,7 @@ class CONTENT_EXPORT BundledExchangesURLLoaderFactory final
   class EntryLoader;
   friend class EntryLoader;
 
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
   scoped_refptr<BundledExchangesReader> reader_;
   mojo::Remote<network::mojom::URLLoaderFactory> fallback_factory_;
 

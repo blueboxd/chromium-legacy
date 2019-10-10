@@ -20,6 +20,7 @@
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -54,8 +55,9 @@ class FakeSharedURLLoaderFactory : public network::SharedURLLoaderFactory {
 
   // network::mojom::URLLoaderFactory:
 
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    test_url_loader_factory_.Clone(std::move(request));
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
+    test_url_loader_factory_.Clone(std::move(receiver));
   }
 
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,

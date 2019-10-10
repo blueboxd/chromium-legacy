@@ -206,7 +206,7 @@ TestBrowserWindow::ShowQRCodeGeneratorBubble(
 
 SharingDialog* TestBrowserWindow::ShowSharingDialog(
     content::WebContents* web_contents,
-    SharingUiController* controller) {
+    SharingDialogData data) {
   return nullptr;
 }
 

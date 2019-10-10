@@ -12,9 +12,9 @@ namespace blink {
 
 class InflateTransformer final : public TransformStreamTransformer {
  public:
-  enum class Algorithm { kDeflate, kGzip };
+  enum class Format { kDeflate, kGzip };
 
-  InflateTransformer(ScriptState*, Algorithm algorithm);
+  InflateTransformer(ScriptState*, Format format);
   ~InflateTransformer() override;
 
   void Transform(v8::Local<v8::Value> chunk,
@@ -31,7 +31,7 @@ class InflateTransformer final : public TransformStreamTransformer {
  private:
   using IsFinished = util::StrongAlias<class IsFinishedTag, bool>;
 
-  void Inflate(const Bytef*,
+  void Inflate(const uint8_t*,
                wtf_size_t,
                IsFinished,
                TransformStreamDefaultControllerInterface*,
@@ -41,10 +41,11 @@ class InflateTransformer final : public TransformStreamTransformer {
 
   z_stream stream_;
 
-  Vector<Bytef> out_buffer_;
+  Vector<uint8_t> out_buffer_;
 
   bool was_flush_called_ = false;
 
+  // This buffer size has been experimentally verified to be optimal.
   static constexpr wtf_size_t kBufferSize = 65536;
 
   DISALLOW_COPY_AND_ASSIGN(InflateTransformer);

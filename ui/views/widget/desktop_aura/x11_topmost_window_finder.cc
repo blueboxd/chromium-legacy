@@ -72,21 +72,16 @@ bool X11TopmostWindowFinder::ShouldStopIteratingAtLocalProcessWindow(
   if (!window->IsVisible())
     return false;
 
-  DesktopWindowTreeHostX11* host =
-      DesktopWindowTreeHostX11::GetHostForXID(
-          window->GetHost()->GetAcceleratedWidget());
-  if (!host->GetX11RootWindowOuterBounds().Contains(screen_loc_in_pixels_))
+  DesktopWindowTreeHostX11* host = DesktopWindowTreeHostX11::GetHostForXID(
+      window->GetHost()->GetAcceleratedWidget());
+  if (!host->GetXRootWindowOuterBounds().Contains(screen_loc_in_pixels_))
     return false;
-
-  ::Region shape = host->GetWindowShape();
-  if (!shape)
-    return true;
 
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(window->GetRootWindow());
   gfx::Point window_loc(screen_loc_in_pixels_);
   screen_position_client->ConvertPointFromScreen(window, &window_loc);
-  return XPointInRegion(shape, window_loc.x(), window_loc.y()) == x11::True;
+  return host->ContainsPointInXRegion(window_loc);
 }
 
 }  // namespace views

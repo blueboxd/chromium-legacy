@@ -14,7 +14,6 @@
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/display/display.h"
@@ -33,7 +32,7 @@ class DEVICE_VR_EXPORT VROrientationSession
  public:
   VROrientationSession(VROrientationDevice* device,
                        mojo::PendingReceiver<mojom::XRFrameDataProvider>,
-                       mojom::XRSessionControllerRequest);
+                       mojo::PendingReceiver<mojom::XRSessionController>);
   ~VROrientationSession() override;
 
   void GetEnvironmentIntegrationProvider(
@@ -54,7 +53,7 @@ class DEVICE_VR_EXPORT VROrientationSession
   void OnMojoConnectionError();
 
   mojo::Receiver<mojom::XRFrameDataProvider> magic_window_receiver_;
-  mojo::Binding<mojom::XRSessionController> session_controller_binding_;
+  mojo::Receiver<mojom::XRSessionController> session_controller_receiver_;
   device::VROrientationDevice* device_;
   bool restrict_frame_data_ = true;
 };

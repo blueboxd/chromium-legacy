@@ -13,7 +13,6 @@
 #include "device/vr/util/fps_meter.h"
 #include "device/vr/util/sliding_average.h"
 #include "device/vr/vr_device.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -79,7 +78,7 @@ class XRCompositorCommon : public base::Thread,
 
   void RequestGamepadProvider(
       mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> receiver);
-  void RequestOverlay(mojom::ImmersiveOverlayRequest request);
+  void RequestOverlay(mojo::PendingReceiver<mojom::ImmersiveOverlay> receiver);
 
  protected:
   virtual bool UsesInputEventing();
@@ -185,7 +184,7 @@ class XRCompositorCommon : public base::Thread,
   mojo::Receiver<mojom::XRFrameDataProvider> frame_data_receiver_{this};
   mojo::Receiver<mojom::IsolatedXRGamepadProvider> gamepad_provider_receiver_{
       this};
-  mojo::Binding<mojom::ImmersiveOverlay> overlay_binding_;
+  mojo::Receiver<mojom::ImmersiveOverlay> overlay_receiver_{this};
   mojom::XRVisibilityState visibility_state_ =
       mojom::XRVisibilityState::VISIBLE;
 

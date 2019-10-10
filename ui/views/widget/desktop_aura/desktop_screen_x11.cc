@@ -31,8 +31,7 @@ namespace {
 float GetDeviceScaleFactor() {
   float device_scale_factor = 1.0f;
   if (views::LinuxUI::instance()) {
-    device_scale_factor =
-      views::LinuxUI::instance()->GetDeviceScaleFactor();
+    device_scale_factor = views::LinuxUI::instance()->GetDeviceScaleFactor();
   } else if (display::Display::HasForceDeviceScaleFactor()) {
     device_scale_factor = display::Display::GetForcedDeviceScaleFactor();
   }
@@ -119,10 +118,10 @@ display::Display DesktopScreenX11::GetDisplayNearestWindow(
   // aura::Window's screen bounds.
   aura::WindowTreeHost* host = window->GetHost();
   if (host) {
-    DesktopWindowTreeHostX11* rwh = DesktopWindowTreeHostX11::GetHostForXID(
-        host->GetAcceleratedWidget());
+    DesktopWindowTreeHostX11* rwh =
+        DesktopWindowTreeHostX11::GetHostForXID(host->GetAcceleratedWidget());
     if (rwh) {
-      const gfx::Rect pixel_rect = rwh->GetX11RootWindowBounds();
+      const gfx::Rect pixel_rect = rwh->GetBoundsInPixels();
       const gfx::Rect dip_rect =
           gfx::ConvertRectToDIP(GetDeviceScaleFactor(), pixel_rect);
       return GetDisplayMatching(dip_rect);

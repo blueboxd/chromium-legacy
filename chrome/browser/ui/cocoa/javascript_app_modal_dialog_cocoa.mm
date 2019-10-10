@@ -22,6 +22,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
@@ -109,7 +110,7 @@ void JavaScriptAppModalDialogCocoa::OnAlertFinished(
   delete this;
 }
 
-void JavaScriptAppModalDialogCocoa::OnConnectionError() {
+void JavaScriptAppModalDialogCocoa::OnMojoDisconnect() {
   dialog()->OnClose();
   delete this;
 }
@@ -134,10 +135,10 @@ int JavaScriptAppModalDialogCocoa::GetAppModalDialogButtons() const {
 void JavaScriptAppModalDialogCocoa::ShowAppModalDialog() {
   is_showing_ = true;
 
-  remote_cocoa::mojom::AlertBridgeRequest bridge_request =
-      mojo::MakeRequest(&alert_bridge_);
-  alert_bridge_.set_connection_error_handler(
-      base::BindOnce(&JavaScriptAppModalDialogCocoa::OnConnectionError,
+  mojo::PendingReceiver<remote_cocoa::mojom::AlertBridge> bridge_receiver =
+      alert_bridge_.BindNewPipeAndPassReceiver();
+  alert_bridge_.set_disconnect_handler(
+      base::BindOnce(&JavaScriptAppModalDialogCocoa::OnMojoDisconnect,
                      weak_factory_.GetWeakPtr()));
   // If the alert is from a window that is out of process then use the
   // remote_cocoa::ApplicationHost for that window to create the alert.
@@ -146,9 +147,9 @@ void JavaScriptAppModalDialogCocoa::ShowAppModalDialog() {
   auto* application_host = remote_cocoa::ApplicationHost::GetForNativeView(
       dialog_->web_contents()->GetNativeView());
   if (application_host)
-    application_host->GetApplication()->CreateAlert(std::move(bridge_request));
+    application_host->GetApplication()->CreateAlert(std::move(bridge_receiver));
   else
-    ignore_result(new remote_cocoa::AlertBridge(std::move(bridge_request)));
+    ignore_result(new remote_cocoa::AlertBridge(std::move(bridge_receiver)));
   alert_bridge_->Show(
       GetAlertParams(),
       base::BindOnce(&JavaScriptAppModalDialogCocoa::OnAlertFinished,

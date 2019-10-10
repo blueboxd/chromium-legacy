@@ -195,6 +195,34 @@ void WinWindow::SetVisibilityChangedAnimationsEnabled(bool enabled) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
+void WinWindow::SetShape(std::unique_ptr<ShapeRects> native_shape,
+                         const gfx::Transform& transform) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WinWindow::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WinWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
+                               const gfx::ImageSkia& app_icon) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WinWindow::SizeConstraintsChanged() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+bool WinWindow::IsAnimatingClosed() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
+bool WinWindow::IsTranslucentWindowOpacitySupported() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
 bool WinWindow::IsFullscreen() const {
   return GetPlatformWindowState() == PlatformWindowState::kFullScreen;
 }

@@ -34,7 +34,7 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
     NetworkContext* context,
     mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
-    mojom::URLLoaderFactoryRequest request,
+    mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
     const OriginAccessList* origin_access_list,
     std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory_for_testing)
     : context_(context),
@@ -60,8 +60,8 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
                 context, std::move(params),
                 std::move(resource_scheduler_client), this);
 
-  bindings_.AddBinding(this, std::move(request));
-  bindings_.set_connection_error_handler(base::BindRepeating(
+  receivers_.Add(this, std::move(receiver));
+  receivers_.set_disconnect_handler(base::BindRepeating(
       &CorsURLLoaderFactory::DeleteIfNeeded, base::Unretained(this)));
 }
 
@@ -116,19 +116,20 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
   }
 }
 
-void CorsURLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {
+void CorsURLLoaderFactory::Clone(
+    mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) {
   // The cloned factories stop working when this factory is destructed.
-  bindings_.AddBinding(this, std::move(request));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void CorsURLLoaderFactory::ClearBindings() {
-  bindings_.CloseAllBindings();
+  receivers_.Clear();
 }
 
 void CorsURLLoaderFactory::DeleteIfNeeded() {
   if (!context_)
     return;
-  if (bindings_.empty() && loaders_.empty())
+  if (receivers_.empty() && loaders_.empty())
     context_->DestroyURLLoaderFactory(this);
 }
 

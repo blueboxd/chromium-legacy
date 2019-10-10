@@ -242,7 +242,6 @@ MutableProfileOAuth2TokenServiceDelegate::
         scoped_refptr<TokenWebData> token_web_data,
         signin::AccountConsistencyMethod account_consistency,
         bool revoke_all_tokens_on_load,
-        bool can_revoke_credentials,
         FixRequestErrorCallback fix_request_error_callback)
     : web_data_service_request_(0),
       backoff_entry_(&backoff_policy_),
@@ -253,7 +252,6 @@ MutableProfileOAuth2TokenServiceDelegate::
       token_web_data_(token_web_data),
       account_consistency_(account_consistency),
       revoke_all_tokens_on_load_(revoke_all_tokens_on_load),
-      can_revoke_credentials_(can_revoke_credentials),
       fix_request_error_callback_(fix_request_error_callback) {
   VLOG(1) << "MutablePO2TS::MutablePO2TS";
   DCHECK(client);
@@ -735,8 +733,6 @@ void MutableProfileOAuth2TokenServiceDelegate::PersistCredentials(
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::RevokeAllCredentials() {
-  if (!can_revoke_credentials_)
-    return;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   VLOG(1) << "MutablePO2TS::RevokeAllCredentials";

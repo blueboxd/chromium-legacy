@@ -309,10 +309,10 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/base/load_flags.h"
@@ -1851,30 +1851,7 @@ bool ChromeContentBrowserClient::ShouldEnableStrictSiteIsolation() {
 }
 
 bool ChromeContentBrowserClient::ShouldDisableSiteIsolation() {
-  // Using 1077 rather than 1024 because 1) it helps ensure that devices with
-  // exactly 1GB of RAM won't get included because of inaccuracies or off-by-one
-  // errors and 2) this is the bucket boundary in Memory.Stats.Win.TotalPhys2.
-  // See also https://crbug.com/844118.
-  constexpr int kDefaultMemoryThresholdMb = 1077;
-
-  // TODO(acolwell): Rename feature since it now affects more than just the
-  // site-per-process case.
-  if (base::FeatureList::IsEnabled(
-          features::kSitePerProcessOnlyForHighMemoryClients)) {
-    int memory_threshold_mb = base::GetFieldTrialParamByFeatureAsInt(
-        features::kSitePerProcessOnlyForHighMemoryClients,
-        features::kSitePerProcessOnlyForHighMemoryClientsParamName,
-        kDefaultMemoryThresholdMb);
-    return base::SysInfo::AmountOfPhysicalMemoryMB() <= memory_threshold_mb;
-  }
-
-#if defined(OS_ANDROID)
-  if (base::SysInfo::AmountOfPhysicalMemoryMB() <= kDefaultMemoryThresholdMb) {
-    return true;
-  }
-#endif
-
-  return false;
+  return SiteIsolationPolicy::ShouldDisableSiteIsolationDueToMemoryThreshold();
 }
 
 std::vector<std::string>
@@ -4627,12 +4604,13 @@ class FileURLLoaderFactory : public network::mojom::URLLoaderFactory {
                                  /* allow_directory_listing */ true);
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest loader) override {
-    bindings_.AddBinding(this, std::move(loader));
+  void Clone(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) override {
+    receivers_.Add(this, std::move(loader));
   }
 
   int child_id_;
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
   DISALLOW_COPY_AND_ASSIGN(FileURLLoaderFactory);
 };
 

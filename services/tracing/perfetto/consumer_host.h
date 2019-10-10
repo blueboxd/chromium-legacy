@@ -40,9 +40,9 @@ class PerfettoService;
 // to act as a Perfetto consumer.
 class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
  public:
-  static void BindConsumerRequest(
+  static void BindConsumerReceiver(
       PerfettoService* service,
-      mojom::ConsumerHostRequest request,
+      mojo::PendingReceiver<mojom::ConsumerHost> receiver,
       const service_manager::BindSourceInfo& source_info);
 
   class StreamWriter;

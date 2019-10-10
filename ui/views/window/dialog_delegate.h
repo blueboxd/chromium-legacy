@@ -41,6 +41,12 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
     base::Optional<int> default_button = base::nullopt;
     bool round_corners = true;
     bool draggable = false;
+
+    // Whether to use the Views-styled frame (if true) or a platform-native
+    // frame if false. In general, dialogs that look like fully separate windows
+    // should use the platform-native frame, and all other dialogs should use
+    // the Views-styled one.
+    bool custom_frame = true;
   };
 
   DialogDelegate();
@@ -131,11 +137,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   static NonClientFrameView* CreateDialogFrameView(Widget* widget);
 
-  // Returns true if this particular dialog should use a Chrome-styled frame
-  // like the one used for bubbles. The alternative is a more platform-native
-  // frame.
-  virtual bool ShouldUseCustomFrame() const;
-
   const gfx::Insets& margins() const { return margins_; }
   void set_margins(const gfx::Insets& margins) { margins_ = margins; }
 
@@ -155,6 +156,8 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   void set_use_round_corners(bool round) { params_.round_corners = round; }
   void set_draggable(bool draggable) { params_.draggable = draggable; }
   bool draggable() const { return params_.draggable; }
+  void set_use_custom_frame(bool use) { params_.custom_frame = use; }
+  bool use_custom_frame() const { return params_.custom_frame; }
 
  protected:
   ~DialogDelegate() override;
@@ -165,10 +168,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   const Params& GetParams() const { return params_; }
 
  private:
-  // A flag indicating whether this dialog is able to use the custom frame
-  // style for dialogs.
-  bool supports_custom_frame_ = true;
-
   // The margins between the content and the inside of the border.
   // TODO(crbug.com/733040): Most subclasses assume they must set their own
   // margins explicitly, so we set them to 0 here for now to avoid doubled

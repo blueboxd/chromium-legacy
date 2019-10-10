@@ -147,5 +147,5 @@ TEST_F(SharedClipboardUiControllerTest, GetSyncedDevices) {
   EXPECT_CALL(*service(),
               GetDeviceCandidates(testing::Eq(
                   sync_pb::SharingSpecificFields::SHARED_CLIPBOARD)));
-  controller_->UpdateAndShowDialog();
+  controller_->GetDevices();
 }

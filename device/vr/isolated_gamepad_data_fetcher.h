@@ -18,19 +18,21 @@ class IsolatedGamepadDataFetcher : public GamepadDataFetcher {
   class DEVICE_VR_EXPORT Factory : public GamepadDataFetcherFactory {
    public:
     Factory(device::mojom::XRDeviceId display_id,
-            device::mojom::IsolatedXRGamepadProviderFactoryPtr factory);
+            mojo::PendingRemote<device::mojom::IsolatedXRGamepadProviderFactory>
+                factory);
     ~Factory() override;
     std::unique_ptr<GamepadDataFetcher> CreateDataFetcher() override;
     GamepadSource source() override;
 
     static void AddGamepad(
         device::mojom::XRDeviceId device_id,
-        device::mojom::IsolatedXRGamepadProviderFactoryPtr gamepad_factory);
+        mojo::PendingRemote<device::mojom::IsolatedXRGamepadProviderFactory>
+            gamepad_factory);
     static void RemoveGamepad(device::mojom::XRDeviceId device_id);
 
    private:
     device::mojom::XRDeviceId display_id_;
-    device::mojom::IsolatedXRGamepadProviderFactoryPtr factory_;
+    mojo::Remote<device::mojom::IsolatedXRGamepadProviderFactory> factory_;
   };
 
   IsolatedGamepadDataFetcher(

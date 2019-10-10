@@ -31,6 +31,7 @@
 #include "extensions/common/extension_paths.h"
 #include "services/network/test/test_cookie_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace chromeos {
 
@@ -44,7 +45,7 @@ const char kTestUrl2[] = "https://test-url-2.com/";
 
 web_app::ExternalInstallOptions GetInstallOptionsForUrl(const GURL& url) {
   web_app::ExternalInstallOptions options(
-      url, web_app::LaunchContainer::kWindow,
+      url, blink::mojom::DisplayMode::kStandalone,
       web_app::ExternalInstallSource::kInternalDefault);
   options.override_previous_user_uninstall = true;
   options.bypass_service_worker_check = true;

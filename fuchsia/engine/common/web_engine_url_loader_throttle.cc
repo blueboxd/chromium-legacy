@@ -91,17 +91,35 @@ void ApplyRewrite(network::ResourceRequest* request,
   }
 }
 
+bool HostMatches(const base::StringPiece& url_host,
+                 const base::StringPiece& rule_host) {
+  const base::StringPiece kWildcard("*.");
+  if (base::StartsWith(rule_host, kWildcard, base::CompareCase::SENSITIVE)) {
+    // |rule_host| starts with a wildcard (e.g. "*.test.xyz"). Check if
+    // |url_host| ends with ".test.xyz". The "." character is included here to
+    // prevent accidentally matching "notatest.xyz".
+    if (base::EndsWith(url_host, rule_host.substr(1),
+                       base::CompareCase::SENSITIVE)) {
+      return true;
+    }
+
+    // Check |url_host| is exactly |rule_host| without the wildcard. i.e. if
+    // |rule_host| is "*.test.xyz", check |url_host| is exactly "test.xyz".
+    return base::CompareCaseInsensitiveASCII(url_host, rule_host.substr(2)) ==
+           0;
+  }
+  return base::CompareCaseInsensitiveASCII(url_host, rule_host) == 0;
+}
+
 void ApplyRule(network::ResourceRequest* request,
                const mojom::UrlRequestRewriteRulePtr& rule) {
   const GURL& url = request->url;
 
   if (rule->hosts_filter) {
     bool found = false;
-    for (const auto& host : rule->hosts_filter.value()) {
-      if (url.host().compare(host) == 0) {
-        found = true;
+    for (const base::StringPiece host : rule->hosts_filter.value()) {
+      if ((found = HostMatches(url.host(), host)))
         break;
-      }
     }
     if (!found)
       return;

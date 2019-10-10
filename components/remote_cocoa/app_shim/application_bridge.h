@@ -42,7 +42,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ApplicationBridge
       WebContentsNSViewCreateCallback web_conents_create_callback);
 
   // mojom::Application:
-  void CreateAlert(mojom::AlertBridgeRequest bridge_request) override;
+  void CreateAlert(
+      mojo::PendingReceiver<mojom::AlertBridge> bridge_receiver) override;
   void ShowColorPanel(mojo::PendingReceiver<mojom::ColorPanel> receiver,
                       mojo::PendingRemote<mojom::ColorPanelHost> host) override;
   void CreateNativeWidgetNSWindow(

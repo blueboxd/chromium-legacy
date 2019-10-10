@@ -29,17 +29,17 @@ DecompressionStream::DecompressionStream(ScriptState* script_state,
                                          const AtomicString& format,
                                          ExceptionState& exception_state)
     : transform_(MakeGarbageCollected<TransformStream>()) {
-  InflateTransformer::Algorithm algorithm =
-      InflateTransformer::Algorithm::kDeflate;
+  InflateTransformer::Format deflate_format =
+      InflateTransformer::Format::kDeflate;
   if (format == "gzip") {
-    algorithm = InflateTransformer::Algorithm::kGzip;
+    deflate_format = InflateTransformer::Format::kGzip;
   } else if (format != "deflate") {
     exception_state.ThrowTypeError("Unsupported format");
     return;
   }
 
   transform_->Init(
-      MakeGarbageCollected<InflateTransformer>(script_state, algorithm),
+      MakeGarbageCollected<InflateTransformer>(script_state, deflate_format),
       script_state, exception_state);
 }
 

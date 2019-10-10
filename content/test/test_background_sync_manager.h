@@ -99,6 +99,17 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
       blink::mojom::BackgroundSyncType sync_type,
       base::Time last_browser_wakeup_for_periodic_sync) override;
 
+  // Override to do not fire any sync events when firing is disabled.
+  void FireReadyEvents(blink::mojom::BackgroundSyncType sync_type,
+                       bool reschedule,
+                       base::OnceClosure callback,
+                       std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive =
+                           nullptr) override;
+
+  void SuspendFiringEvents() { dont_fire_sync_events_ = true; }
+
+  void ResumeFiringEvents() { dont_fire_sync_events_ = false; }
+
  protected:
   // Override to allow delays to be injected by tests.
   void StoreDataInBackend(
@@ -147,6 +158,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   bool delay_backend_ = false;
   bool has_main_frame_provider_host_ = true;
   bool last_chance_ = false;
+  bool dont_fire_sync_events_ = false;
   base::OnceClosure continuation_;
   DispatchSyncCallback dispatch_sync_callback_;
   DispatchSyncCallback dispatch_periodic_sync_callback_;

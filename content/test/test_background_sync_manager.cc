@@ -100,6 +100,20 @@ void TestBackgroundSyncManager::HasMainFrameProviderHost(
   std::move(callback).Run(has_main_frame_provider_host_);
 }
 
+void TestBackgroundSyncManager::FireReadyEvents(
+    blink::mojom::BackgroundSyncType sync_type,
+    bool reschedule,
+    base::OnceClosure callback,
+    std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
+  if (dont_fire_sync_events_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
+  } else {
+    BackgroundSyncManager::FireReadyEvents(
+        sync_type, reschedule, std::move(callback), std::move(keepalive));
+  }
+}
+
 void TestBackgroundSyncManager::StoreDataInBackendContinue(
     int64_t sw_registration_id,
     const url::Origin& origin,

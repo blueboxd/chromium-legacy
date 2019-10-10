@@ -32,9 +32,17 @@ class TouchToFillController {
   ~TouchToFillController();
 
   // Instructs the controller to show the provided |credentials| to the user.
-  // Invokes FillSuggestion() on |driver| once the user made a selection.
   void Show(base::span<const password_manager::CredentialPair> credentials,
             base::WeakPtr<password_manager::PasswordManagerDriver> driver);
+
+  // Informs the controller that the user has made a selection. Invokes both
+  // FillSuggestion() and TouchToFillDismissed() on |driver_|. No-op if invoked
+  // repeatedly.
+  void OnCredentialSelected(const password_manager::CredentialPair& credential);
+
+  // Informs the controller that the user has dismissed the sheet. Invokes
+  // TouchToFillDismissed() on |driver_|. No-op if invoked repeatedly.
+  void OnDismiss();
 
   // The web page view containing the focused field.
   gfx::NativeView GetNativeView();
@@ -50,6 +58,10 @@ class TouchToFillController {
   // of this class is tied to ChromePasswordManagerClient, which implements
   // WebContentsUserData.
   content::WebContents* web_contents_ = nullptr;
+
+  // Driver passed to the latest invocation of Show(). Gets cleared when
+  // OnCredentialSelected() or OnDismissed() gets called.
+  base::WeakPtr<password_manager::PasswordManagerDriver> driver_;
 
   // View used to communicate with the Android frontend. Lazily instantiated so
   // that it can be injected by tests.

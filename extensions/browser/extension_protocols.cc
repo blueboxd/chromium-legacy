@@ -68,7 +68,8 @@
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
@@ -433,8 +434,9 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
                   std::move(directory_path));
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
+    receivers_.Add(this, std::move(receiver));
   }
 
  private:
@@ -603,7 +605,7 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
   // the objects.
   const int render_process_id_;
   scoped_refptr<extensions::InfoMap> extension_info_map_;
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionURLLoaderFactory);
 };

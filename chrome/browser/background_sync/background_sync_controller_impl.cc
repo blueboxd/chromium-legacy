@@ -35,6 +35,8 @@ const char BackgroundSyncControllerImpl::kDisabledParameterName[] = "disabled";
 const char BackgroundSyncControllerImpl::kRelyOnAndroidNetworkDetection[] =
     "rely_on_android_network_detection";
 #endif
+const char BackgroundSyncControllerImpl::kKeepBrowserAwakeParameterName[] =
+    "keep_browser_awake_till_events_complete";
 const char BackgroundSyncControllerImpl::kMaxAttemptsParameterName[] =
     "max_sync_attempts";
 const char BackgroundSyncControllerImpl::
@@ -110,6 +112,11 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
   if (base::LowerCaseEqualsASCII(field_params[kDisabledParameterName],
                                  "true")) {
     parameters->disable = true;
+  }
+
+  if (base::LowerCaseEqualsASCII(field_params[kKeepBrowserAwakeParameterName],
+                                 "true")) {
+    parameters->keep_browser_awake_till_events_complete = true;
   }
 
   if (base::Contains(field_params,

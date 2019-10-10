@@ -26,6 +26,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace web_app {
@@ -424,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   // placeholder app.
   base::RunLoop run_loop;
   ExternalInstallOptions install_options(
-      app_url, LaunchContainer::kWindow,
+      app_url, blink::mojom::DisplayMode::kStandalone,
       ExternalInstallSource::kExternalPolicy);
   install_options.add_to_applications_menu = false;
   install_options.add_to_desktop = false;

@@ -3460,38 +3460,35 @@ const net::HttpResponseHeaders* NavigationRequest::GetResponseHeaders() {
 
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
 NavigationRequest::MakeDidCommitProvisionalLoadParamsForBFCache() {
+  // Use the DidCommitProvisionalLoad_Params last used to commit the frame
+  // being restored as a starting point.
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params =
-      std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>();
+      render_frame_host_->TakeLastCommitParams();
 
-  params->http_status_code = net::HTTP_OK;
-  params->url_is_unreachable = false;
+  // Params must have been set when the RFH being restored from the cache last
+  // navigated.
+  CHECK(params);
+
+  DCHECK_EQ(params->http_status_code, net::HTTP_OK);
+  DCHECK_EQ(params->url_is_unreachable, false);
+
   params->intended_as_new_entry = commit_params().intended_as_new_entry;
   params->should_replace_current_entry =
       common_params().should_replace_current_entry;
-  params->post_id = -1;
+  DCHECK_EQ(params->post_id, -1);
   params->nav_entry_id = commit_params().nav_entry_id;
   params->navigation_token = commit_params().navigation_token;
   params->did_create_new_entry = false;
-  // TODO(crbug.com/1005718): Is origin ever unset?
-  if (commit_params().origin_to_commit.has_value()) {
-    params->origin = commit_params().origin_to_commit.value();
-  }
-  // TODO(crbug.com/1005718): Set insecure_request_policy.
-  // TODO(crbug.com/1005718): Set insecure_navigations_set.
-  // TODO(crbug.com/1005718): Set has_potentially_trustworthy_unique_origin.
-  params->url = common_params().url;
+  DCHECK_EQ(params->origin, commit_params().origin_to_commit.value());
+  DCHECK_EQ(params->url, common_params().url);
   params->should_update_history = true;
   params->gesture = common_params().has_user_gesture ? NavigationGestureUser
                                                      : NavigationGestureAuto;
   params->page_state = commit_params().page_state;
-  params->method = common_params().method;
+  DCHECK_EQ(params->method, common_params().method);
   params->item_sequence_number = frame_entry_item_sequence_number_;
   params->document_sequence_number = frame_entry_document_sequence_number_;
-  // TODO(crbug.com/1005718): Set the actual mime type.
-  params->contents_mime_type = "text/html";
   params->transition = common_params().transition;
-  // TODO(crbug.com/1005718): Set is_overriding_user_agent.
-  // TODO(crbug.com/1005718): Set original_request_url.
   params->history_list_was_cleared = false;
   params->request_id = GetGlobalRequestID().request_id;
 

@@ -151,7 +151,8 @@ void URLLoaderFactory::CreateLoaderAndStart(
   cors_url_loader_factory_->OnLoaderCreated(std::move(loader));
 }
 
-void URLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {
+void URLLoaderFactory::Clone(
+    mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) {
   NOTREACHED();
 }
 

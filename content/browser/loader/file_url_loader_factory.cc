@@ -858,10 +858,10 @@ void FileURLLoaderFactory::CreateLoaderAndStartInternal(
 }
 
 void FileURLLoaderFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest loader) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  bindings_.AddBinding(this, std::move(loader));
+  receivers_.Add(this, std::move(loader));
 }
 
 void CreateFileURLLoader(

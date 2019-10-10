@@ -101,8 +101,8 @@ void BackForwardCacheMetrics::DidCommitNavigation(
   if (navigation->IsInMainFrame() && !navigation->IsSameDocument() &&
       is_history_navigation) {
     RecordMetricsForHistoryNavigationCommit(navigation);
-    evicted_ = false;
     disallowed_reasons_.clear();
+    evicted_reason_ = base::nullopt;
   }
 
   if (last_committed_main_frame_navigation_id_ != -1 &&
@@ -178,13 +178,14 @@ void BackForwardCacheMetrics::CollectFeatureUsageFromSubtree(
   }
 }
 
-void BackForwardCacheMetrics::MarkEvictedFromBackForwardCache() {
-  evicted_ = true;
-}
-
 void BackForwardCacheMetrics::MarkDisableForRenderFrameHost(
     const base::StringPiece& reason) {
   disallowed_reasons_.push_back(reason.as_string());
+}
+
+void BackForwardCacheMetrics::MarkEvictedFromBackForwardCacheWithReason(
+    BackForwardCacheMetrics::EvictedReason reason) {
+  evicted_reason_ = reason;
 }
 
 void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
@@ -199,12 +200,24 @@ void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
         "BackForwardCache.EvictedAfterDocumentRestoredReason",
         BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason::kRestored);
   }
-  if (evicted_ || last_committed_main_frame_navigation_id_ == -1) {
+
+  // |last_committed_main_frame_navigation_id_ == -1| checks the case when the
+  // browser is restored. In this case, the page has history items but does not
+  // have back-forward cache. Just after restoring, |evicted_reason_| does not
+  // have a value.
+  if (evicted_reason_.has_value() ||
+      last_committed_main_frame_navigation_id_ == -1) {
     DCHECK(!navigation->is_served_from_back_forward_cache());
     outcome = HistoryNavigationOutcome::kEvicted;
   }
   UMA_HISTOGRAM_ENUMERATION("BackForwardCache.HistoryNavigationOutcome",
-                            outcome, HistoryNavigationOutcome::kMaxValue);
+                            outcome);
+
+  if (evicted_reason_.has_value()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "BackForwardCache.HistoryNavigationOutcome.EvictedReason",
+        evicted_reason_.value());
+  }
 
   for (const std::string& reason : disallowed_reasons_) {
     // Use SparseHistogram instead of other simple macros for metrics. It is

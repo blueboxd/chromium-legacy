@@ -4,12 +4,12 @@
 
 #include "device/vr/test/fake_vr_device.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/gfx/transform_util.h"
 
 namespace device {
 
-FakeVRDevice::FakeVRDevice(mojom::XRDeviceId id)
-    : VRDeviceBase(id), controller_binding_(this) {
+FakeVRDevice::FakeVRDevice(mojom::XRDeviceId id) : VRDeviceBase(id) {
   SetVRDisplayInfo(InitBasicDevice());
 }
 
@@ -57,12 +57,11 @@ void FakeVRDevice::RequestSession(
   OnStartPresenting();
   // The current tests never use the return values, so it's fine to return
   // invalid data here.
-  std::move(callback).Run(nullptr, nullptr);
+  std::move(callback).Run(nullptr, mojo::NullRemote());
 }
 
 void FakeVRDevice::OnPresentingControllerMojoConnectionError() {
   OnExitPresent();
-  controller_binding_.Close();
 }
 
 }  // namespace device

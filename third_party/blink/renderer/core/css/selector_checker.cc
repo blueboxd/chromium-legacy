@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
@@ -1109,6 +1110,10 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       if (!context.has_selection_pseudo)
         return false;
       return !element.GetDocument().GetPage()->GetFocusController().IsActive();
+    case CSSSelector::kPseudoState: {
+      return element.DidAttachInternals() &&
+             element.EnsureElementInternals().HasState(selector.Argument());
+    }
     case CSSSelector::kPseudoHorizontal:
     case CSSSelector::kPseudoVertical:
     case CSSSelector::kPseudoDecrement:

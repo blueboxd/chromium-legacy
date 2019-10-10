@@ -55,6 +55,20 @@ class BackForwardCacheMetrics
     kMaxValue = kNotCachedDueToExperimentCondition,
   };
 
+  // Please keep in sync with BackForwardCacheEvictedReason in
+  // tools/metrics/histograms/enums.xml. These values should not be renumbered.
+  enum class EvictedReason {
+    kTimeout = 0,
+    kCacheLimit = 1,
+    kJavaScriptExecution = 2,
+    kRendererProcessKilled = 3,
+    kRendererProcessCrashed = 4,
+    kDialog = 5,
+    kGrantedMediaStreamAccess = 6,
+    kSchedulerTrackedFeatureUsed = 7,
+    kMaxValue = kSchedulerTrackedFeatureUsed,
+  };
+
   // Please keep in sync with BackForwardCacheEvictedAfterDocumentRestoredReason
   // in tools/metrics/histograms/enums.xml. These values should not be
   // renumbered.
@@ -107,9 +121,10 @@ class BackForwardCacheMetrics
   // placed in the back-forward cache.
   void RecordFeatureUsage(RenderFrameHostImpl* main_frame);
 
-  // Marks when the page is evicted.
-  // TODO(hajimehoshi): Add the parameter representing the reason.
-  void MarkEvictedFromBackForwardCache();
+  // Marks when the page is evicted with the reason. This information is useful
+  // e.g., to know the major cause of eviction.
+  void MarkEvictedFromBackForwardCacheWithReason(
+      BackForwardCacheMetrics::EvictedReason reason);
 
   // Marks the frame disabled the back forward cache with the reason.
   void MarkDisableForRenderFrameHost(const base::StringPiece& reason);
@@ -155,8 +170,8 @@ class BackForwardCacheMetrics
   base::Optional<base::TimeTicks> started_navigation_timestamp_;
   base::Optional<base::TimeTicks> navigated_away_from_main_document_timestamp_;
 
-  bool evicted_ = false;
   std::vector<std::string> disallowed_reasons_;
+  base::Optional<EvictedReason> evicted_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(BackForwardCacheMetrics);
 };

@@ -225,7 +225,7 @@ void DialogClientView::OnThemeChanged() {
   // dialog style simply inherits the bubble's frame view color.
   const DialogDelegate* dialog = GetDialogDelegate();
 
-  if (dialog && !dialog->ShouldUseCustomFrame()) {
+  if (dialog && !dialog->use_custom_frame()) {
     SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_DialogBackground)));
   }

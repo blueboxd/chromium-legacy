@@ -66,6 +66,7 @@
         model.timelineModel().minimumRecordTime(),
         model.timelineModel().maximumRecordTime()));
 
+    //TODO(crbug.com/1004940): expected.txt file has 'aria-input-field-name' exceptions
     await AxeCoreTestRunner.runValidation(detailsTab.element);
   }
 

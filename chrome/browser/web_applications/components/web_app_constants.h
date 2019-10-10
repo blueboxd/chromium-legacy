@@ -19,21 +19,14 @@ enum Type {
   kSystem = kMinValue,
   kPolicy,
   kWebAppStore,
+  // We sync only regular user-installed apps from the open web. For
+  // user-installed apps without overlaps this is the only source that will be
+  // set.
   kSync,
   kDefault,
   kMaxValue
 };
 }  // namespace Source
-
-// How the app will be launched after installation.
-enum class LaunchContainer {
-  // When `kDefault` is used, the app will launch in a window if the site is
-  // "installable" (also referred to as Progressive Web App) and in a tab if
-  // the site is not "installable".
-  kDefault,
-  kTab,
-  kWindow,
-};
 
 // The result of an attempted web app installation, uninstallation or update.
 //

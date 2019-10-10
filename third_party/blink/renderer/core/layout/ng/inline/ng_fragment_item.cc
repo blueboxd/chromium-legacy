@@ -16,7 +16,8 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
       type_(kText),
       style_variant_(static_cast<unsigned>(text.StyleVariant())),
       is_flow_control_(text.IsFlowControl()),
-      is_hidden_for_paint_(false) {
+      is_hidden_for_paint_(false),
+      text_direction_(static_cast<unsigned>(text.ResolvedDirection())) {
   DCHECK_LE(text_.start_offset, text_.end_offset);
 #if DCHECK_IS_ON()
   if (text_.shape_result) {
@@ -34,7 +35,8 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
       rect_({PhysicalOffset(), line.Size()}),
       type_(kLine),
       style_variant_(static_cast<unsigned>(line.StyleVariant())),
-      is_hidden_for_paint_(false) {}
+      is_hidden_for_paint_(false),
+      text_direction_(static_cast<unsigned>(line.BaseDirection())) {}
 
 NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
                                wtf_size_t item_count)
@@ -43,7 +45,10 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
       rect_({PhysicalOffset(), box.Size()}),
       type_(kBox),
       style_variant_(static_cast<unsigned>(box.StyleVariant())),
-      is_hidden_for_paint_(false) {}
+      is_hidden_for_paint_(false),
+      // TODO(yosin): We should have |textDirection| parameter from
+      // |NGLineBoxFragmentBuilder::Child::BidiLevel()|
+      text_direction_(box.IsAtomicInline() && IsLtr(box.ResolvedDirection())) {}
 
 NGFragmentItem::~NGFragmentItem() {
   switch (Type()) {
@@ -60,6 +65,22 @@ NGFragmentItem::~NGFragmentItem() {
       box_.~BoxItem();
       break;
   }
+}
+
+bool NGFragmentItem::HasSameParent(const NGFragmentItem& other) const {
+  if (!GetLayoutObject())
+    return !other.GetLayoutObject();
+  if (!other.GetLayoutObject())
+    return false;
+  return GetLayoutObject()->Parent() == other.GetLayoutObject()->Parent();
+}
+
+bool NGFragmentItem::IsAtomicInline() const {
+  if (Type() != kBox)
+    return false;
+  if (const NGPhysicalBoxFragment* box = BoxFragment())
+    return box->IsAtomicInline();
+  return false;
 }
 
 PhysicalRect NGFragmentItem::SelfInkOverflow() const {
@@ -112,6 +133,16 @@ NGTextFragmentPaintInfo NGFragmentItem::TextPaintInfo(
   }
   NOTREACHED();
   return {};
+}
+
+TextDirection NGFragmentItem::BaseDirection() const {
+  DCHECK_EQ(Type(), kLine);
+  return static_cast<TextDirection>(text_direction_);
+}
+
+TextDirection NGFragmentItem::ResolvedDirection() const {
+  DCHECK(Type() == kText || Type() == kGeneratedText || IsAtomicInline());
+  return static_cast<TextDirection>(text_direction_);
 }
 
 String NGFragmentItem::DebugName() const {
@@ -178,6 +209,49 @@ NGFragmentItem::ItemsForLayoutObject::Iterator::operator++() {
   }
   current_ = nullptr;
   return *this;
+}
+
+std::ostream& operator<<(std::ostream& ostream, const NGFragmentItem& item) {
+  ostream << "{";
+  switch (item.Type()) {
+    case NGFragmentItem::kText:
+      ostream << "Text " << item.StartOffset() << "-" << item.EndOffset() << " "
+              << (IsLtr(item.ResolvedDirection()) ? "LTR" : "RTL");
+      break;
+    case NGFragmentItem::kGeneratedText:
+      ostream << "GeneratedText \"" << item.GeneratedText() << "\"";
+      break;
+    case NGFragmentItem::kLine:
+      ostream << "Line #descendants=" << item.DescendantsCount() << " "
+              << (IsLtr(item.BaseDirection()) ? "LTR" : "RTL");
+      break;
+    case NGFragmentItem::kBox:
+      ostream << "Box #descendants=" << item.DescendantsCount();
+      if (item.IsAtomicInline()) {
+        ostream << " AtomicInline"
+                << (IsLtr(item.ResolvedDirection()) ? "LTR" : "RTL");
+      }
+      break;
+  }
+  ostream << " ";
+  switch (item.StyleVariant()) {
+    case NGStyleVariant::kStandard:
+      ostream << "Standard";
+      break;
+    case NGStyleVariant::kFirstLine:
+      ostream << "FirstLine";
+      break;
+    case NGStyleVariant::kEllipsis:
+      ostream << "Ellipsis";
+      break;
+  }
+  return ostream << "}";
+}
+
+std::ostream& operator<<(std::ostream& ostream, const NGFragmentItem* item) {
+  if (!item)
+    return ostream << "<null>";
+  return ostream << *item;
 }
 
 }  // namespace blink

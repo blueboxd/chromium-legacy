@@ -270,6 +270,11 @@ bool HungRendererDialogView::IsFrameActive(WebContents* contents) {
 
 HungRendererDialogView::HungRendererDialogView()
     : info_label_(nullptr), hung_pages_table_(nullptr), initialized_(false) {
+#if defined(OS_WIN)
+  // Never use the custom frame when Aero Glass is disabled. See
+  // https://crbug.com/323278
+  DialogDelegate::set_use_custom_frame(ui::win::IsAeroGlassEnabled());
+#endif
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::CONTROL));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::HUNG_RENDERER);
@@ -408,16 +413,6 @@ bool HungRendererDialogView::Accept() {
 
 bool HungRendererDialogView::Close() {
   return Accept();
-}
-
-bool HungRendererDialogView::ShouldUseCustomFrame() const {
-#if defined(OS_WIN)
-  // Use the old dialog style without Aero glass, otherwise the dialog will be
-  // visually constrained to browser window bounds. See http://crbug.com/323278
-  return ui::win::IsAeroGlassEnabled();
-#else
-  return views::DialogDelegateView::ShouldUseCustomFrame();
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

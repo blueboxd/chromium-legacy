@@ -1982,11 +1982,31 @@ void CrostiniManager::OnAnsibleInDefaultContainerInstalled(bool success) {
   RemoveLinuxPackageOperationProgressObserver(
       AnsibleManagementService::GetForProfile(profile_));
 
+  if (!success) {
+    LOG(ERROR) << "Failed to install Ansible in default Crostini container";
+    // TODO(https://crbug.com/998124): Add a proper error.
+    InvokeAndErasePendingContainerCallbacks(
+        &start_container_callbacks_, kCrostiniDefaultVmName,
+        kCrostiniDefaultContainerName, CrostiniResult::UNKNOWN_ERROR);
+    return;
+  }
+
+  // TODO(https://crbug.com/998124): Propagate playbook to be applied.
+  AnsibleManagementService::GetForProfile(profile_)
+      ->ApplyAnsiblePlaybookToDefaultContainer(
+          /*playbook=*/"---",
+          base::BindOnce(
+              &CrostiniManager::OnAnsiblePlaybookToDefaultContainerApplied,
+              weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniManager::OnAnsiblePlaybookToDefaultContainerApplied(bool success) {
   CrostiniResult result = CrostiniResult::SUCCESS;
   if (!success) {
-    LOG(ERROR) << "Failed to install Ansible to default Crostini container";
-    // TODO(okalitova): Add proper bug.
-    result = CrostiniResult::CONTAINER_START_FAILED;
+    LOG(ERROR) << "Failed to apply Ansible playbook to default Crostini "
+               << "container";
+    // TODO(https://crbug.com/998124): Add a proper error.
+    result = CrostiniResult::UNKNOWN_ERROR;
   }
 
   InvokeAndErasePendingContainerCallbacks(

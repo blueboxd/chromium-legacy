@@ -44,8 +44,7 @@ XRCompositorCommon::XRCompositorCommon()
     : base::Thread("WindowsXRCompositor"),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       webxr_js_time_(kSlidingAverageSize),
-      webxr_gpu_time_(kSlidingAverageSize),
-      overlay_binding_(this) {
+      webxr_gpu_time_(kSlidingAverageSize) {
   DCHECK(main_thread_task_runner_);
 }
 
@@ -138,7 +137,7 @@ void XRCompositorCommon::CleanUp() {
   presentation_receiver_.reset();
   frame_data_receiver_.reset();
   gamepad_provider_receiver_.reset();
-  overlay_binding_.Close();
+  overlay_receiver_.reset();
   input_event_listener_ = nullptr;
   StopRuntime();
 }
@@ -150,9 +149,9 @@ void XRCompositorCommon::RequestGamepadProvider(
 }
 
 void XRCompositorCommon::RequestOverlay(
-    mojom::ImmersiveOverlayRequest request) {
-  overlay_binding_.Close();
-  overlay_binding_.Bind(std::move(request));
+    mojo::PendingReceiver<mojom::ImmersiveOverlay> receiver) {
+  overlay_receiver_.reset();
+  overlay_receiver_.Bind(std::move(receiver));
 
   // WebXR is visible and overlay hidden by default until the overlay overrides
   // this.
@@ -271,7 +270,7 @@ void XRCompositorCommon::ExitPresent() {
 
   // Kill outstanding overlays:
   overlay_visible_ = false;
-  overlay_binding_.Close();
+  overlay_receiver_.reset();
 
   texture_helper_.SetSourceAndOverlayVisible(false, false);
 

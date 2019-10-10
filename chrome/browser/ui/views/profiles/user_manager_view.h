@@ -48,7 +48,6 @@ class UserManagerProfileDialogDelegate
   bool CanResize() const override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;
-  bool ShouldUseCustomFrame() const override;
   ui::ModalType GetModalType() const override;
   void DeleteDelegate() override;
   base::string16 GetWindowTitle() const override;
@@ -128,7 +127,6 @@ class UserManagerView : public views::DialogDelegateView {
   base::string16 GetWindowTitle() const override;
   int GetDialogButtons() const override;
   void WindowClosing() override;
-  bool ShouldUseCustomFrame() const override;
 
   views::WebView* web_view_;
 

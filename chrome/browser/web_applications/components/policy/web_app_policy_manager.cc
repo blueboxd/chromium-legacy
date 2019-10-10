@@ -22,6 +22,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -41,18 +42,19 @@ ExternalInstallOptions ParseInstallOptionsFromPolicyEntry(
          default_launch_container->GetString() ==
              kDefaultLaunchContainerTabValue);
 
-  LaunchContainer launch_container;
+  blink::mojom::DisplayMode display_mode;
   if (!default_launch_container) {
-    launch_container = LaunchContainer::kTab;
+    display_mode = blink::mojom::DisplayMode::kBrowser;
   } else if (default_launch_container->GetString() ==
              kDefaultLaunchContainerTabValue) {
-    launch_container = LaunchContainer::kTab;
+    display_mode = blink::mojom::DisplayMode::kBrowser;
   } else {
-    launch_container = LaunchContainer::kWindow;
+    // TODO(crbug.com/1009909): Support Minimal UI.
+    display_mode = blink::mojom::DisplayMode::kStandalone;
   }
 
   ExternalInstallOptions install_options{
-      GURL(url.GetString()), launch_container,
+      GURL(url.GetString()), display_mode,
       ExternalInstallSource::kExternalPolicy};
 
   install_options.add_to_applications_menu = true;

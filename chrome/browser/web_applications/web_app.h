@@ -33,6 +33,9 @@ class WebApp {
   const GURL& scope() const { return scope_; }
   const base::Optional<SkColor>& theme_color() const { return theme_color_; }
   blink::mojom::DisplayMode display_mode() const { return display_mode_; }
+  // Locally installed apps have shortcuts installed on various UI surfaces.
+  // If app isn't locally installed, it is excluded from UIs and only listed as
+  // a part of user's app library.
   bool is_locally_installed() const { return is_locally_installed_; }
   // Sync-initiated installation produces a sync placeholder app awaiting for
   // full installation process. The sync placeholder app has only app_id,

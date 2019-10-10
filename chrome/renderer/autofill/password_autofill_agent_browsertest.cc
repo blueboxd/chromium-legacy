@@ -1729,17 +1729,24 @@ TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFillPassword) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFillShownOnlyOnce) {
+TEST_F(PasswordAutofillAgentTest, TouchToFillDismissed) {
   SimulateOnFillPasswordForm(fill_data_);
 
-  password_autofill_agent_->TryToShowTouchToFill(username_element_);
+  // Touch to fill will be shown multiple times until TouchToFillDismissed()
+  // gets called.
+  EXPECT_CALL(fake_driver_, ShowTouchToFill).Times(2);
+  EXPECT_TRUE(
+      password_autofill_agent_->TryToShowTouchToFill(username_element_));
+  EXPECT_TRUE(
+      password_autofill_agent_->TryToShowTouchToFill(password_element_));
   base::RunLoop().RunUntilIdle();
 
-  // Touch to fill is shown not more than one time per page load. Check that.
+  password_autofill_agent_->TouchToFillDismissed();
   EXPECT_FALSE(
       password_autofill_agent_->TryToShowTouchToFill(username_element_));
   EXPECT_FALSE(
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
+  base::RunLoop().RunUntilIdle();
 
   // Reload the page and simulate fill.
   LoadHTML(kFormHTML);

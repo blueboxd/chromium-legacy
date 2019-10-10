@@ -129,6 +129,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void FillIntoFocusedField(bool is_password,
                             const base::string16& credential) override;
   void SetLoggingState(bool active) override;
+  void TouchToFillDismissed() override;
 
   // FormTracker::Observer
   void OnProvisionallySaveForm(const blink::WebFormElement& form,
@@ -534,7 +535,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // Contains renderer id of the form of the last updated input element.
   uint32_t last_updated_form_renderer_id_ = FormData::kNotSetFormRendererId;
 
-  bool was_touch_to_fill_ui_shown_ = false;
+  // Flag that determines whether we instruct the browser to show the Touch To
+  // Fill sheet if applicable. This is set to false when TouchToFillDismissed()
+  // is invoked and gets reset during CleanupOnDocumentShutdown.
+  bool should_show_touch_to_fill_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };

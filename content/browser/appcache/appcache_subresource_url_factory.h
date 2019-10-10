@@ -8,7 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
@@ -47,7 +48,8 @@ class CONTENT_EXPORT AppCacheSubresourceURLFactory
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override;
 
   base::WeakPtr<AppCacheSubresourceURLFactory> GetWeakPtr();
 
@@ -59,9 +61,9 @@ class CONTENT_EXPORT AppCacheSubresourceURLFactory
   AppCacheSubresourceURLFactory(
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       base::WeakPtr<AppCacheHost> host);
-  void OnConnectionError();
+  void OnMojoDisconnect();
 
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
   base::WeakPtr<AppCacheHost> appcache_host_;
   base::WeakPtrFactory<AppCacheSubresourceURLFactory> weak_factory_{this};

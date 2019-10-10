@@ -6,7 +6,8 @@
 #define CONTENT_BROWSER_DATA_URL_LOADER_FACTORY_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
@@ -33,11 +34,12 @@ class DataURLLoaderFactory : public network::mojom::URLLoaderFactory {
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(network::mojom::URLLoaderFactoryRequest loader) override;
+  void Clone(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) override;
 
   GURL url_;
 
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(DataURLLoaderFactory);
 };

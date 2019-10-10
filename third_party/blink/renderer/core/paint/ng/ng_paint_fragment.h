@@ -130,12 +130,19 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   NGPaintFragment* NextSibling() const {
     return FirstAlive(next_sibling_.get());
   }
+  NGPaintFragment* NextForSameLayoutObject() const {
+    return next_for_same_layout_object_;
+  }
   ChildList Children() const { return ChildList(FirstChild()); }
+  bool IsEllipsis() const;
 
   // Note, as the name implies, |IsDescendantOfNotSelf| returns false for the
   // same object. This is different from |LayoutObject::IsDescendant| but is
   // same as |Node::IsDescendant|.
   bool IsDescendantOfNotSelf(const NGPaintFragment&) const;
+
+  // Returns the root box containing this.
+  const NGPaintFragment* Root() const;
 
   // Returns the first line box for a block-level container.
   NGPaintFragment* FirstLineBox() const;

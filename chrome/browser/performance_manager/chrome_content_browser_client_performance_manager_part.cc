@@ -31,11 +31,8 @@ void BindProcessNode(
       performance_manager::RenderProcessUserData::GetForRenderProcessHost(
           render_process_host);
 
-  performance_manager::PerformanceManagerImpl* performance_manager =
-      performance_manager::PerformanceManagerImpl::GetInstance();
-  DCHECK(performance_manager);
-
-  performance_manager->task_runner()->PostTask(
+  DCHECK(performance_manager::PerformanceManagerImpl::GetInstance());
+  performance_manager::PerformanceManagerImpl::GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&performance_manager::ProcessNodeImpl::Bind,
                                 base::Unretained(user_data->process_node()),
                                 std::move(receiver)));

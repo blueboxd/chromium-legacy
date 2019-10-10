@@ -25,15 +25,17 @@
       <cr-tooltip-icon
           id="policyIndicator"
           icon-class="cr20:domain"
-          tooltip-text="[[getTooltip_(app_)]]"
-          icon-aria-label="[[getTooltip_(app_)]]"
+          tooltip-text="$i18n{policyAppUninstallPolicy}"
+          icon-aria-label="$i18n{policyAppUninstallPolicy}"
           tooltip-position="bottom">
       </cr-tooltip-icon>
     </template>
-    <cr-button id="uninstallButton" on-click="onClick_"
-        disabled$="[[getDisableState_(app_)]]">
-      $i18n{uninstallApp}
-    </cr-button>
+    <template is="dom-if" if="[[showUninstallButton_(app_)]]">
+      <cr-button id="uninstallButton" on-click="onClick_"
+          disabled$="[[getDisableState_(app_)]]">
+        $i18n{uninstallApp}
+      </cr-button>
+    </template>
   </template>
   <script src="uninstall_button.js"></script>
 </dom-module>

@@ -12,6 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "device/vr/vr_device_base.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace device {
@@ -63,7 +64,8 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
 
   bool paused_ = true;
 
-  mojo::Binding<mojom::XRSessionController> exclusive_controller_binding_;
+  mojo::Receiver<mojom::XRSessionController> exclusive_controller_receiver_{
+      this};
 
   mojom::XRRuntime::RequestSessionCallback pending_request_session_callback_;
 

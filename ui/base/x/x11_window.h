@@ -27,6 +27,7 @@ class SkPath;
 
 namespace gfx {
 class ImageSkia;
+class Transform;
 }  // namespace gfx
 
 namespace ui {
@@ -49,6 +50,8 @@ class XScopedEventSelector;
 class COMPONENT_EXPORT(UI_BASE_X) XWindow {
  public:
   class Delegate;
+
+  using NativeShapeRects = std::vector<gfx::Rect>;
 
   enum class WindowType {
     kWindow,
@@ -121,10 +124,10 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
 
   void SetCursor(::Cursor cursor);
   bool SetTitle(base::string16 title);
-  void SetOpacity(float opacity);
-  void SetAspectRatio(const gfx::SizeF& aspect_ratio);
-  void SetWindowIcons(const gfx::ImageSkia& window_icon,
-                      const gfx::ImageSkia& app_icon);
+  void SetXWindowOpacity(float opacity);
+  void SetXWindowAspectRatio(const gfx::SizeF& aspect_ratio);
+  void SetXWindowIcons(const gfx::ImageSkia& window_icon,
+                       const gfx::ImageSkia& app_icon);
   void SetXWindowVisibleOnAllWorkspaces(bool visible);
   bool IsXWindowVisibleOnAllWorkspaces() const;
   void MoveCursorTo(const gfx::Point& location);
@@ -132,11 +135,17 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   void SetFlashFrameHint(bool flash_frame);
   void UpdateMinAndMaxSize();
   void SetUseNativeFrame(bool use_native_frame);
-  void SetShape(XRegion* xregion);
   void DispatchResize();
   void CancelResize();
   void NotifySwapAfterResize();
   void ConfineCursorTo(const gfx::Rect& bounds);
+
+  // Returns if the point is within XWindow shape. If shape is not set, always
+  // returns true.
+  bool ContainsPointInRegion(const gfx::Point& point) const;
+
+  void SetXWindowShape(std::unique_ptr<NativeShapeRects> native_shape,
+                       const gfx::Transform& transform);
 
   // Resets the window region for the current window bounds if necessary.
   void ResetWindowRegion();

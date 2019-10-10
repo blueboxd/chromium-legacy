@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
@@ -27,9 +28,13 @@ class AvatarToolbarButton : public ToolbarButton,
                             public BrowserListObserver,
                             public ProfileAttributesStorage::Observer,
                             public signin::IdentityManager::Observer,
-                            public ui::MaterialDesignControllerObserver {
+                            public ui::MaterialDesignControllerObserver,
+                            ToolbarIconContainerView::Observer {
  public:
+  // TODO(crbug.com/922525): Remove this constructor when this button always has
+  // ToolbarIconContainerView as a parent.
   explicit AvatarToolbarButton(Browser* browser);
+  AvatarToolbarButton(Browser* browser, ToolbarIconContainerView* parent);
   ~AvatarToolbarButton() override;
 
   void UpdateIcon();
@@ -55,8 +60,8 @@ class AvatarToolbarButton : public ToolbarButton,
   enum class IdentityAnimationState {
     kNotShowing,
     kWaitingForImage,
-    kShowing,
-    kShowingUntilNoLongerHoveredOrFocused
+    kShowingUntilTimeout,
+    kShowingUntilNoLongerInUse
   };
 
   // ToolbarButton:
@@ -97,9 +102,12 @@ class AvatarToolbarButton : public ToolbarButton,
   // ui::MaterialDesignControllerObserver:
   void OnTouchUiChanged() override;
 
+  // ToolbarIconContainerView::Observer:
+  void OnHighlightChanged() override;
+
   void ShowIdentityAnimation();
-  void HideIdentityAnimationWhenNotHoveredOrFocused();
-  void HideIdentityAnimation();
+  void OnIdentityAnimationTimeout();
+  void MaybeHideIdentityAnimation();
 
   base::string16 GetAvatarTooltipText() const;
   base::string16 GetProfileName() const;
@@ -126,6 +134,7 @@ class AvatarToolbarButton : public ToolbarButton,
 
   Browser* const browser_;
   Profile* const profile_;
+  ToolbarIconContainerView* const parent_;
 
   // Whether the avatar highlight animation is visible. If true, hide avatar
   // button sync paused/error state and update highlight color.

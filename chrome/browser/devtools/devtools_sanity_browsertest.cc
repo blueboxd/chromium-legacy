@@ -832,9 +832,16 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
 // Tests that scripts tab is populated with inspected scripts even if it
 // hadn't been shown by the moment inspected paged refreshed.
 // @see http://crbug.com/26312
-IN_PROC_BROWSER_TEST_F(
-    DevToolsSanityTest,
-    TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
+// This test is flaky on windows and linux asan. See https://crbug.com/1013003
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
+  DISABLED_TestScriptsTabIsPopulatedOnInspectedPageRefresh
+#else
+#define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
+  TestScriptsTabIsPopulatedOnInspectedPageRefresh
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
+                       MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
   RunTest("testScriptsTabIsPopulatedOnInspectedPageRefresh",
           kDebuggerTestPage);
 }

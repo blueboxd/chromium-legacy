@@ -90,7 +90,6 @@ CreateMutableProfileOAuthDelegate(
   return std::make_unique<MutableProfileOAuth2TokenServiceDelegate>(
       signin_client, account_tracker_service, network_connection_tracker,
       token_web_data, account_consistency, revoke_all_tokens_on_load,
-      true /* can_revoke_credentials */,
 #if defined(OS_WIN)
       reauth_callback
 #else

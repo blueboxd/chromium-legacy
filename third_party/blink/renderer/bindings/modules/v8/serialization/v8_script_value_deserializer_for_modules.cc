@@ -8,13 +8,13 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_crypto.h"
 #include "third_party/blink/public/platform/web_crypto_key_algorithm.h"
-#include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/renderer/bindings/modules/v8/serialization/web_crypto_sub_tags.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/crypto/crypto_key.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/imagecapture/point_2d.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_certificate_generator.h"
 #include "third_party/blink/renderer/modules/shapedetection/detected_barcode.h"
 #include "third_party/blink/renderer/modules/shapedetection/detected_face.h"
 #include "third_party/blink/renderer/modules/shapedetection/detected_text.h"
@@ -53,8 +53,8 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
       if (!ReadUTF8String(&pem_private_key) ||
           !ReadUTF8String(&pem_certificate))
         return nullptr;
-      std::unique_ptr<WebRTCCertificateGenerator> certificate_generator(
-          Platform::Current()->CreateRTCCertificateGenerator());
+      std::unique_ptr<RTCCertificateGenerator> certificate_generator =
+          std::make_unique<RTCCertificateGenerator>();
       if (!certificate_generator)
         return nullptr;
       rtc::scoped_refptr<rtc::RTCCertificate> certificate =

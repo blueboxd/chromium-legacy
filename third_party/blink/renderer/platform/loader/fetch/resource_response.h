@@ -379,6 +379,11 @@ class PLATFORM_EXPORT ResourceResponse final {
   uint16_t RemotePort() const { return remote_port_; }
   void SetRemotePort(uint16_t value) { remote_port_ = value; }
 
+  bool WasAlpnNegotiated() const { return was_alpn_negotiated_; }
+  void SetWasAlpnNegotiated(bool was_alpn_negotiated) {
+    was_alpn_negotiated_ = was_alpn_negotiated;
+  }
+
   const AtomicString& AlpnNegotiatedProtocol() const {
     return alpn_negotiated_protocol_;
   }
@@ -434,6 +439,14 @@ class PLATFORM_EXPORT ResourceResponse final {
   bool FromArchive() const { return from_archive_; }
 
   void SetFromArchive(bool from_archive) { from_archive_ = from_archive; }
+
+  bool WasAlternateProtocolAvailable() const {
+    return was_alternate_protocol_available_;
+  }
+
+  void SetWasAlternateProtocolAvailable(bool was_alternate_protocol_available) {
+    was_alternate_protocol_available_ = was_alternate_protocol_available;
+  }
 
   bool IsSignedExchangeInnerResponse() const {
     return is_signed_exchange_inner_response_;
@@ -522,6 +535,12 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // True if this resource was loaded from a MHTML archive.
   bool from_archive_ = false;
+
+  // True if response could use alternate protocol.
+  bool was_alternate_protocol_available_ = false;
+
+  // True if the response was delivered after ALPN is negotiated.
+  bool was_alpn_negotiated_ = false;
 
   // https://fetch.spec.whatwg.org/#concept-response-type
   network::mojom::FetchResponseType response_type_;

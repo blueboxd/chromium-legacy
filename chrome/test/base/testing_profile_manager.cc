@@ -121,7 +121,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   DCHECK(success);
   entry->SetAvatarIconIndex(avatar_id);
   entry->SetSupervisedUserId(supervised_user_id);
-  entry->SetName(user_name);
+  entry->SetLocalProfileName(user_name);
 
   testing_profiles_.insert(std::make_pair(profile_name, profile_ptr));
 

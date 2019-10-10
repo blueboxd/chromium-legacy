@@ -22,6 +22,7 @@
 #include "base/test/task_environment.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -123,7 +124,9 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
       on_create_loader_and_start_.Run();
   }
 
-  void Clone(mojom::URLLoaderFactoryRequest request) override { NOTREACHED(); }
+  void Clone(mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) override {
+    NOTREACHED();
+  }
 
   mojom::URLLoaderClientPtr client_ptr_;
 

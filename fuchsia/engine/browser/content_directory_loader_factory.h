@@ -13,7 +13,8 @@
 #include <vector>
 
 #include "fuchsia/engine/web_engine_export.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 // Creates a URLLoaderFactory which services requests for resources stored
@@ -38,7 +39,8 @@ class ContentDirectoryLoaderFactory : public network::mojom::URLLoaderFactory {
       const network::ResourceRequest& request,
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) final;
-  void Clone(network::mojom::URLLoaderFactoryRequest loader) final;
+  void Clone(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) final;
 
  private:
   net::Error OpenFileFromDirectory(
@@ -49,7 +51,7 @@ class ContentDirectoryLoaderFactory : public network::mojom::URLLoaderFactory {
   // Used for executing blocking URLLoader routines.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentDirectoryLoaderFactory);
 };

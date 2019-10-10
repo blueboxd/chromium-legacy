@@ -41,8 +41,8 @@ class CustomStatesTokenList : public DOMTokenList {
 
   void setValue(const AtomicString& new_value) override {
     DidUpdateAttributeValue(value(), new_value);
-    // TODO(crbug.com/1012098): Calls GetElement().PseudoStateChanged() for
-    // ':state()'
+    // Should we have invalidation set for each of state tokens?
+    GetElement().PseudoStateChanged(CSSSelector::kPseudoState);
   }
 };
 
@@ -233,6 +233,10 @@ DOMTokenList* ElementInternals::states() {
   if (!custom_states_)
     custom_states_ = MakeGarbageCollected<CustomStatesTokenList>(Target());
   return custom_states_;
+}
+
+bool ElementInternals::HasState(const AtomicString& state) const {
+  return custom_states_ && custom_states_->contains(state);
 }
 
 const AtomicString& ElementInternals::FastGetAttribute(

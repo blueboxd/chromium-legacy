@@ -73,7 +73,7 @@ interface XRRuntime {
   // the browser process.
   RequestSession(XRRuntimeSessionOptions options) => (
                      XRSession? session,
-                     XRSessionController? controller);
+                     pending_remote<XRSessionController>? controller);
 
   // The browser may register for changes to a device. Initial VRDisplayInfo
   // will immediately be returned to the listener to prevent races.
@@ -188,7 +188,7 @@ interface ImmersiveOverlay {
 // obtain an ImmersiveOverlay to show overlay UI.  The obtained overlay will
 // disconnect when presentation ends.
 interface XRCompositorHost {
-  CreateImmersiveOverlay(ImmersiveOverlay& overlay);
+  CreateImmersiveOverlay(pending_receiver<ImmersiveOverlay> overlay);
 };
 
 // Notify the browser process about a set of runtimes.  The browser process
@@ -198,7 +198,7 @@ interface IsolatedXRRuntimeProviderClient {
   // Called when runtimes are initially enumerated, or when devices are later
   // attached and become available.
   OnDeviceAdded(XRRuntime runtime,
-      IsolatedXRGamepadProviderFactory gamepad_factory,
+      pending_remote<IsolatedXRGamepadProviderFactory> gamepad_factory,
       XRCompositorHost compositor_host,
       device.mojom.XRDeviceId device_id);
 

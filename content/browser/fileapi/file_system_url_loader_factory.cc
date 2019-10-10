@@ -26,7 +26,9 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
 #include "net/base/completion_repeating_callback.h"
@@ -602,7 +604,7 @@ class FileSystemURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
   network::mojom::URLLoaderFactoryPtr CreateBinding() {
     network::mojom::URLLoaderFactoryPtr factory;
-    bindings_.AddBinding(this, mojo::MakeRequest(&factory));
+    receivers_.Add(this, mojo::MakeRequest(&factory));
     return factory;
   }
 
@@ -634,12 +636,13 @@ class FileSystemURLLoaderFactory : public network::mojom::URLLoaderFactory {
                                             io_task_runner_);
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest loader) override {
-    bindings_.AddBinding(this, std::move(loader));
+  void Clone(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) override {
+    receivers_.Add(this, std::move(loader));
   }
 
   const FactoryParams params_;
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemURLLoaderFactory);

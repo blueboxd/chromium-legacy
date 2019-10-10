@@ -113,12 +113,17 @@ const gfx::Image& GetAvatarImage(Profile* profile,
 }  // namespace
 
 AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
+    : AvatarToolbarButton(browser, nullptr) {}
+
+AvatarToolbarButton::AvatarToolbarButton(Browser* browser,
+                                         ToolbarIconContainerView* parent)
     : ToolbarButton(nullptr),
 #if !defined(OS_CHROMEOS)
       error_controller_(this, browser->profile()),
 #endif  // !defined(OS_CHROMEOS)
       browser_(browser),
-      profile_(browser_->profile()) {
+      profile_(browser_->profile()),
+      parent_(parent) {
   profile_observer_.Add(&GetProfileAttributesStorage());
 
   State state = GetState();
@@ -169,10 +174,19 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   UpdateText();
 
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
+
+  // TODO(crbug.com/922525): DCHECK(parent_) instead of the if, once we always
+  // have a parent.
+  if (parent_)
+    parent_->AddObserver(this);
 }
 
 AvatarToolbarButton::~AvatarToolbarButton() {
   BrowserList::RemoveObserver(this);
+
+  // TODO(crbug.com/922525): Remove the if, once we always have a parent.
+  if (parent_)
+    parent_->RemoveObserver(this);
 }
 
 void AvatarToolbarButton::UpdateIcon() {
@@ -272,10 +286,7 @@ void AvatarToolbarButton::ShowAvatarHighlightAnimation() {
 
 void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
   Button::NotifyClick(event);
-  if (identity_animation_state_ ==
-      IdentityAnimationState::kShowingUntilNoLongerHoveredOrFocused) {
-    HideIdentityAnimationWhenNotHoveredOrFocused();
-  }
+  MaybeHideIdentityAnimation();
   // TODO(bsep): Other toolbar buttons have ToolbarView as a listener and let it
   // call ExecuteCommandWithDisposition on their behalf. Unfortunately, it's not
   // possible to plumb IsKeyEvent through, so this has to be a special case.
@@ -286,18 +297,12 @@ void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
 }
 
 void AvatarToolbarButton::OnMouseExited(const ui::MouseEvent& event) {
-  if (identity_animation_state_ ==
-      IdentityAnimationState::kShowingUntilNoLongerHoveredOrFocused) {
-    HideIdentityAnimationWhenNotHoveredOrFocused();
-  }
+  MaybeHideIdentityAnimation();
   ToolbarButton::OnMouseExited(event);
 }
 
 void AvatarToolbarButton::OnBlur() {
-  if (identity_animation_state_ ==
-      IdentityAnimationState::kShowingUntilNoLongerHoveredOrFocused) {
-    HideIdentityAnimationWhenNotHoveredOrFocused();
-  }
+  MaybeHideIdentityAnimation();
   ToolbarButton::OnBlur();
 }
 
@@ -394,42 +399,51 @@ void AvatarToolbarButton::OnTouchUiChanged() {
   PreferredSizeChanged();
 }
 
+void AvatarToolbarButton::OnHighlightChanged() {
+  DCHECK(parent_);
+  MaybeHideIdentityAnimation();
+}
+
 void AvatarToolbarButton::ShowIdentityAnimation() {
   DCHECK_EQ(identity_animation_state_,
             IdentityAnimationState::kWaitingForImage);
-  identity_animation_state_ = IdentityAnimationState::kShowing;
+  identity_animation_state_ = IdentityAnimationState::kShowingUntilTimeout;
 
   UpdateText();
 
   // Hide the pill after a while.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(
-          &AvatarToolbarButton::HideIdentityAnimationWhenNotHoveredOrFocused,
-          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&AvatarToolbarButton::OnIdentityAnimationTimeout,
+                     weak_ptr_factory_.GetWeakPtr()),
       kIdentityAnimationDuration);
 }
 
-void AvatarToolbarButton::HideIdentityAnimationWhenNotHoveredOrFocused() {
-  // No-op if it has been reset already.
-  if (identity_animation_state_ == IdentityAnimationState::kNotShowing)
-    return;
-
-  // Keep email visible while hovering or being focused.
-  if (IsMouseHovered() || HasFocus()) {
-    // TODO(crbug.com/967317): Include also the case when some other button from
-    // the parent container is shown and hovered / focused.
-    identity_animation_state_ =
-        IdentityAnimationState::kShowingUntilNoLongerHoveredOrFocused;
-    return;
-  }
-  HideIdentityAnimation();
+void AvatarToolbarButton::OnIdentityAnimationTimeout() {
+  DCHECK_EQ(identity_animation_state_,
+            IdentityAnimationState::kShowingUntilTimeout);
+  identity_animation_state_ =
+      IdentityAnimationState::kShowingUntilNoLongerInUse;
+  MaybeHideIdentityAnimation();
 }
 
-void AvatarToolbarButton::HideIdentityAnimation() {
-  DCHECK_NE(identity_animation_state_, IdentityAnimationState::kNotShowing);
-  identity_animation_state_ = IdentityAnimationState::kNotShowing;
+void AvatarToolbarButton::MaybeHideIdentityAnimation() {
+  // No-op if not showing or if the timeout hasn't passed, yet.
+  if (identity_animation_state_ !=
+      IdentityAnimationState::kShowingUntilNoLongerInUse) {
+    return;
+  }
 
+  // Keep identity visible if this button is in use (hovered or has focus) or
+  // if |parent_| is in use (which makes it highlighted). We should not move
+  // things around when the user wants to click on |this| or another button in
+  // |parent_|.
+  if (this->IsMouseHovered() || this->HasFocus() ||
+      (parent_ && parent_->IsHighlighted())) {
+    return;
+  }
+
+  identity_animation_state_ = IdentityAnimationState::kNotShowing;
   // Update the text to the pre-shown state. This also makes sure that we now
   // reflect changes that happened while the identity pill was shown.
   UpdateText();
@@ -530,9 +544,10 @@ AvatarToolbarButton::State AvatarToolbarButton::GetState() const {
     return State::kGenericProfile;
   }
 
-  if (identity_animation_state_ == IdentityAnimationState::kShowing ||
+  if (identity_animation_state_ ==
+          IdentityAnimationState::kShowingUntilTimeout ||
       identity_animation_state_ ==
-          IdentityAnimationState::kShowingUntilNoLongerHoveredOrFocused) {
+          IdentityAnimationState::kShowingUntilNoLongerInUse) {
     return State::kAnimatedUserIdentity;
   }
 

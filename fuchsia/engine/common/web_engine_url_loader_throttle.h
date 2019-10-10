@@ -9,11 +9,13 @@
 
 #include "base/memory/ref_counted.h"
 #include "fuchsia/engine/url_request_rewrite.mojom.h"
+#include "fuchsia/engine/web_engine_export.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 // Implements a URLLoaderThrottle for the WebEngine. Applies network request
 // rewrites provided through the fuchsia.web.SetUrlRequestRewriteRules FIDL API.
-class WebEngineURLLoaderThrottle : public blink::URLLoaderThrottle {
+class WEB_ENGINE_EXPORT WebEngineURLLoaderThrottle
+    : public blink::URLLoaderThrottle {
  public:
   using UrlRequestRewriteRules =
       base::RefCountedData<std::vector<mojom::UrlRequestRewriteRulePtr>>;
@@ -33,13 +35,13 @@ class WebEngineURLLoaderThrottle : public blink::URLLoaderThrottle {
       CachedRulesProvider* cached_rules_provider);
   ~WebEngineURLLoaderThrottle() override;
 
- private:
   // blink::URLLoaderThrottle implementation.
   void DetachFromCurrentSequence() override;
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
   bool makes_unsafe_redirect() override;
 
+ private:
   CachedRulesProvider* const cached_rules_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(WebEngineURLLoaderThrottle);

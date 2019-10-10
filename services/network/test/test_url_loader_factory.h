@@ -11,7 +11,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -149,7 +150,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(mojom::URLLoaderFactoryRequest request) override;
+  void Clone(mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) override;
 
   // Returns a 'safe' ref-counted weak wrapper around this TestURLLoaderFactory
   // instance.
@@ -194,7 +195,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory> weak_wrapper_;
 
   Interceptor interceptor_;
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactory);
 };

@@ -122,16 +122,15 @@ void ArcAppTest::SetUp(Profile* profile) {
       arc::SetArcPlayStoreEnabledForProfile(profile_, true);
     if (!arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_))
       EXPECT_TRUE(arc_session_manager_->enable_requested());
-
-    app_instance_ = std::make_unique<arc::FakeAppInstance>(arc_app_list_pref_);
-    arc_service_manager_->arc_bridge_service()->app()->SetInstance(
-        app_instance_.get());
-
-    // TODO(khmel): Resolve this gracefully. Set of default app tests does not
-    // expect waiting in ArcAppTest setup.
-    if (wait_default_apps_)
-      WaitForInstanceReady(arc_service_manager_->arc_bridge_service()->app());
   }
+
+  app_instance_ = std::make_unique<arc::FakeAppInstance>(arc_app_list_pref_);
+  arc_service_manager_->arc_bridge_service()->app()->SetInstance(
+      app_instance_.get());
+  // TODO(khmel): Resolve this gracefully. Set of default app tests does not
+  // expect waiting in ArcAppTest setup.
+  if (wait_default_apps_)
+    WaitForInstanceReady(arc_service_manager_->arc_bridge_service()->app());
 
   // Ensure that the singleton apps::ArcApps is constructed.
   if (base::FeatureList::IsEnabled(features::kAppServiceAsh))

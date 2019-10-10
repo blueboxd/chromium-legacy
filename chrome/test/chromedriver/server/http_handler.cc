@@ -34,6 +34,7 @@
 #include "chrome/test/chromedriver/util.h"
 #include "chrome/test/chromedriver/version.h"
 #include "chrome/test/chromedriver/webauthn_commands.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -96,7 +97,8 @@ class WrapperURLLoaderFactory : public network::mojom::URLLoaderFactory {
                          traffic_annotation));
     }
   }
-  void Clone(network::mojom::URLLoaderFactoryRequest factory) override {
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory)
+      override {
     NOTIMPLEMENTED();
   }
 

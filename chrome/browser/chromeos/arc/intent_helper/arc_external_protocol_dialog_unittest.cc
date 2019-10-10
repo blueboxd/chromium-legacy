@@ -4,12 +4,21 @@
 
 #include "chrome/browser/chromeos/arc/intent_helper/arc_external_protocol_dialog.h"
 
-#include <memory>
-
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
+#include "chrome/browser/sharing/sharing_device_registration.h"
+#include "chrome/browser/sharing/sharing_fcm_handler.h"
+#include "chrome/browser/sharing/sharing_fcm_sender.h"
+#include "chrome/browser/sharing/sharing_service.h"
+#include "chrome/browser/sharing/sharing_service_factory.h"
+#include "chrome/browser/sharing/sharing_sync_preference.h"
+#include "chrome/browser/sharing/vapid_key_manager.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
 namespace arc {
@@ -36,6 +45,8 @@ class ArcExternalProtocolDialogTestUtils : public BrowserWithTestWindowTest {
     return GetAndResetSafeToRedirectToArcWithoutUserConfirmationFlagForTesting(
         web_contents_);
   }
+
+  content::WebContents* web_contents() { return web_contents_; }
 
  private:
   // Keep only one |WebContents| at a time.
@@ -69,6 +80,38 @@ mojom::IntentHandlerInfoPtr Create(const std::string& name,
     ptr->fallback_url = fallback_url.spec();
   return ptr;
 }
+
+// TODO(crbug.com/1011364): Extract this into a common mock file.
+class MockSharingService : public SharingService {
+ public:
+  explicit MockSharingService()
+      : SharingService(
+            /*sync_prefs=*/nullptr,
+            /*vapid_key_manager=*/nullptr,
+            std::make_unique<SharingDeviceRegistration>(
+                /*pref_service=*/nullptr,
+                /*sync_preference=*/nullptr,
+                /*instance_id_driver=*/nullptr,
+                /*vapid_key_manager=*/nullptr),
+            /*fcm_sender=*/nullptr,
+            std::make_unique<SharingFCMHandler>(
+                /*gcm_driver=*/nullptr,
+                /*sharing_fcm_sender=*/nullptr,
+                /*sync_preference=*/nullptr),
+            /*gcm_driver=*/nullptr,
+            /*device_info_tracker=*/nullptr,
+            /*local_device_info_provider=*/nullptr,
+            /*sync_service=*/nullptr,
+            /*notification_display_service=*/nullptr) {}
+
+  ~MockSharingService() override = default;
+
+  MOCK_METHOD4(SendMessageToDevice,
+               void(const std::string&,
+                    base::TimeDelta,
+                    chrome_browser_sharing::SharingMessage,
+                    SendMessageCallback));
+};
 
 }  // namespace
 
@@ -952,6 +995,41 @@ TEST(ArcExternalProtocolDialogTest,
       GetActionForTesting(GURL("intent:foo"), handlers, no_selection,
                           &url_and_activity_name, &in_out_safe_to_bypass_ui));
   EXPECT_TRUE(in_out_safe_to_bypass_ui);
+}
+
+// Tests that clicking on a device calls through to SharingService.
+TEST_F(ArcExternalProtocolDialogTestUtils, TestSelectDeviceForTelLink) {
+  std::string device_guid = "device_guid";
+
+  MockSharingService* sharing_service = static_cast<MockSharingService*>(
+      SharingServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile(), base::BindRepeating([](content::BrowserContext* context) {
+            return static_cast<std::unique_ptr<KeyedService>>(
+                std::make_unique<MockSharingService>());
+          })));
+
+  EXPECT_CALL(*sharing_service,
+              SendMessageToDevice(testing::Eq(device_guid), testing::_,
+                                  testing::_, testing::_));
+
+  CreateTab(/*started_from_arc=*/false);
+
+  content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
+  std::vector<mojom::IntentHandlerInfoPtr> handlers;
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
+
+  devices.emplace_back(std::make_unique<syncer::DeviceInfo>(
+      device_guid, "device_name", "chrome_version", "user_agent",
+      sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
+      /*last_updated_timestamp=*/base::Time::Now(),
+      /*send_tab_to_self_receiving_enabled=*/false,
+      /*sharing_info=*/base::nullopt));
+
+  OnIntentPickerClosedForTesting(
+      rvh->GetProcess()->GetID(), rvh->GetRoutingID(), GURL("tel:0123456789"),
+      /*safe_to_bypass_ui=*/true, std::move(handlers), std::move(devices),
+      /*selected_app_package=*/device_guid, apps::PickerEntryType::kDevice,
+      apps::IntentPickerCloseReason::OPEN_APP, /*should_persist=*/false);
 }
 
 }  // namespace arc

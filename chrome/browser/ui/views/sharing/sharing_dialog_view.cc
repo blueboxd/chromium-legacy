@@ -75,24 +75,34 @@ base::string16 GetLastUpdatedTimeInDays(base::Time last_updated_timestamp) {
       time_in_days);
 }
 
+std::unique_ptr<views::StyledLabel> CreateHelpText(
+    const SharingDialogData& data,
+    views::StyledLabelListener* listener) {
+  DCHECK_NE(0, data.help_text_id);
+  DCHECK_NE(0, data.help_link_text_id);
+  const base::string16 link = l10n_util::GetStringUTF16(data.help_link_text_id);
+  size_t offset;
+  const base::string16 text =
+      l10n_util::GetStringFUTF16(data.help_text_id, link, &offset);
+  auto label = std::make_unique<views::StyledLabel>(text, listener);
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink();
+  label->AddStyleRange(gfx::Range(offset, offset + link.length()), link_style);
+  return label;
+}
+
 }  // namespace
 
 SharingDialogView::SharingDialogView(views::View* anchor_view,
                                      content::WebContents* web_contents,
-                                     SharingUiController* controller)
+                                     SharingDialogData data)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
-      controller_(controller),
-      send_failed_(controller->HasSendFailed()) {}
+      data_(std::move(data)) {}
 
 SharingDialogView::~SharingDialogView() = default;
 
 void SharingDialogView::Hide() {
   CloseBubble();
-}
-
-std::unique_ptr<views::StyledLabel> SharingDialogView::CreateHelpText(
-    views::StyledLabelListener* listener) {
-  return controller_->GetHelpTextLabel(listener);
 }
 
 int SharingDialogView::GetDialogButtons() const {
@@ -103,27 +113,18 @@ std::unique_ptr<views::View> SharingDialogView::CreateFootnoteView() {
   if (GetDialogType() != SharingDialogType::kDialogWithoutDevicesWithApp)
     return nullptr;
 
-  return CreateHelpText(this);
+  return CreateHelpText(data_, this);
 }
 
 void SharingDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                const gfx::Range& range,
                                                int event_flags) {
-  controller_->OnHelpTextClicked(GetDialogType());
+  std::move(data_.help_callback).Run(GetDialogType());
+  CloseBubble();
 }
 
 SharingDialogType SharingDialogView::GetDialogType() const {
-  if (send_failed_)
-    return SharingDialogType::kErrorDialog;
-
-  bool has_devices = !controller_->devices().empty();
-  bool has_apps = !controller_->apps().empty();
-
-  if (has_devices)
-    return SharingDialogType::kDialogWithDevicesMaybeApps;
-
-  return has_apps ? SharingDialogType::kDialogWithoutDevicesWithApp
-                  : SharingDialogType::kEducationalDialog;
+  return data_.type;
 }
 
 void SharingDialogView::Init() {
@@ -136,7 +137,7 @@ void SharingDialogView::Init() {
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT);
 
   SharingDialogType type = GetDialogType();
-  LogSharingDialogShown(controller_->GetFeatureMetricsPrefix(), type);
+  LogSharingDialogShown(data_.prefix, type);
 
   switch (type) {
     case SharingDialogType::kErrorDialog:
@@ -166,28 +167,25 @@ void SharingDialogView::Init() {
 
 void SharingDialogView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
+  DCHECK(data_.device_callback);
+  DCHECK(data_.app_callback);
   if (!sender || sender->tag() < 0)
     return;
   size_t index = static_cast<size_t>(sender->tag());
-  const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
-      controller_->devices();
-  const std::vector<SharingApp>& apps = controller_->apps();
-  DCHECK(index < devices.size() + apps.size());
+  DCHECK(index < data_.devices.size() + data_.apps.size());
 
-  if (index < devices.size()) {
-    LogSharingSelectedDeviceIndex(controller_->GetFeatureMetricsPrefix(),
-                                  kSharingUiDialog, index);
-    controller_->OnDeviceChosen(*devices[index]);
+  if (index < data_.devices.size()) {
+    LogSharingSelectedDeviceIndex(data_.prefix, kSharingUiDialog, index);
+    std::move(data_.device_callback).Run(*data_.devices[index]);
     CloseBubble();
     return;
   }
 
-  index -= devices.size();
+  index -= data_.devices.size();
 
-  if (index < apps.size()) {
-    LogSharingSelectedAppIndex(controller_->GetFeatureMetricsPrefix(),
-                               kSharingUiDialog, index);
-    controller_->OnAppChosen(apps[index]);
+  if (index < data_.apps.size()) {
+    LogSharingSelectedAppIndex(data_.prefix, kSharingUiDialog, index);
+    std::move(data_.app_callback).Run(data_.apps[index]);
     CloseBubble();
   }
 }
@@ -197,7 +195,9 @@ void SharingDialogView::MaybeShowHeaderImage() {
   if (!frame_view)
     return;
 
-  int image_id = controller_->GetHeaderImageId();
+  int image_id = GetNativeTheme()->ShouldUseDarkColors()
+                     ? data_.header_image_dark
+                     : data_.header_image_light;
   if (!image_id) {
     // Clear any previously set header image.
     frame_view->SetHeaderView(nullptr);
@@ -229,33 +229,26 @@ void SharingDialogView::OnThemeChanged() {
   if (!button_icons_.size())
     return;
 
-  const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
-      controller_->devices();
-  const std::vector<SharingApp>& apps = controller_->apps();
-  DCHECK_EQ(devices.size() + apps.size(), button_icons_.size());
+  DCHECK_EQ(data_.devices.size() + data_.apps.size(), button_icons_.size());
 
   size_t button_index = 0;
-  for (const auto& device : devices) {
+  for (const auto& device : data_.devices) {
     button_icons_[button_index]->SetImage(
         CreateDeviceIcon(device->device_type()));
     button_index++;
   }
-  for (const auto& app : apps) {
+  for (const auto& app : data_.apps) {
     button_icons_[button_index]->SetImage(CreateAppIcon(app));
     button_index++;
   }
 }
 
 void SharingDialogView::InitListView() {
-  const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
-      controller_->devices();
-  const std::vector<SharingApp>& apps = controller_->apps();
   int tag = 0;
 
   // Devices:
-  LogSharingDevicesToShow(controller_->GetFeatureMetricsPrefix(),
-                          kSharingUiDialog, devices.size());
-  for (const auto& device : devices) {
+  LogSharingDevicesToShow(data_.prefix, kSharingUiDialog, data_.devices.size());
+  for (const auto& device : data_.devices) {
     auto icon = CreateIconView(CreateDeviceIcon(device->device_type()));
     button_icons_.push_back(icon.get());
     auto dialog_button = std::make_unique<HoverButton>(
@@ -267,9 +260,8 @@ void SharingDialogView::InitListView() {
   }
 
   // Apps:
-  LogSharingAppsToShow(controller_->GetFeatureMetricsPrefix(), kSharingUiDialog,
-                       apps.size());
-  for (const auto& app : apps) {
+  LogSharingAppsToShow(data_.prefix, kSharingUiDialog, data_.apps.size());
+  for (const auto& app : data_.apps) {
     auto icon = CreateIconView(CreateAppIcon(app));
     button_icons_.push_back(icon.get());
     auto dialog_button =
@@ -282,11 +274,11 @@ void SharingDialogView::InitListView() {
 }
 
 void SharingDialogView::InitEmptyView() {
-  AddChildView(CreateHelpText(this));
+  AddChildView(CreateHelpText(data_, this));
 }
 
 void SharingDialogView::InitErrorView() {
-  auto label = std::make_unique<views::Label>(controller_->GetErrorDialogText(),
+  auto label = std::make_unique<views::Label>(data_.error_text,
                                               views::style::CONTEXT_LABEL,
                                               views::style::STYLE_SECONDARY);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -305,20 +297,19 @@ bool SharingDialogView::ShouldShowCloseButton() const {
 }
 
 base::string16 SharingDialogView::GetWindowTitle() const {
-  switch (GetDialogType()) {
-    case SharingDialogType::kErrorDialog:
-      return controller_->GetErrorDialogTitle();
-    case SharingDialogType::kEducationalDialog:
-      return controller_->GetEducationWindowTitleText();
-    case SharingDialogType::kDialogWithoutDevicesWithApp:
-    case SharingDialogType::kDialogWithDevicesMaybeApps:
-      return controller_->GetTitle();
-  }
+  return data_.title;
+}
+
+void SharingDialogView::WebContentsDestroyed() {
+  LocationBarBubbleDelegateView::WebContentsDestroyed();
+  // Call the close callback here already so we can log metrics for closed
+  // dialogs before the controller is destroyed.
+  WindowClosing();
 }
 
 void SharingDialogView::WindowClosing() {
-  if (web_contents())
-    controller_->OnDialogClosed(this);
+  if (data_.close_callback)
+    std::move(data_.close_callback).Run(this);
 }
 
 // static

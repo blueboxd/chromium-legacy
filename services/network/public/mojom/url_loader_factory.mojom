@@ -44,5 +44,5 @@ interface URLLoaderFactory {
                        MutableNetworkTrafficAnnotationTag traffic_annotation);
 
   // Connects a new pipe to this instance of the URLLoaderFactory interface.
-  Clone(URLLoaderFactory& factory);
+  Clone(pending_receiver<URLLoaderFactory> factory);
 };

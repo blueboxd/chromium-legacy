@@ -116,9 +116,10 @@ void ApplicationBridge::SetContentNSViewCreateCallbacks(
   web_conents_create_callback_ = web_conents_create_callback;
 }
 
-void ApplicationBridge::CreateAlert(mojom::AlertBridgeRequest bridge_request) {
+void ApplicationBridge::CreateAlert(
+    mojo::PendingReceiver<mojom::AlertBridge> bridge_receiver) {
   // The resulting object manages its own lifetime.
-  ignore_result(new AlertBridge(std::move(bridge_request)));
+  ignore_result(new AlertBridge(std::move(bridge_receiver)));
 }
 
 void ApplicationBridge::ShowColorPanel(

@@ -45,7 +45,6 @@
 #include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_rtc_answer_options.h"
-#include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_key_params.h"
@@ -79,6 +78,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_event.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_answer_options.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_certificate_generator.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_configuration.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_data_channel.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_data_channel_event.h"
@@ -1670,8 +1670,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   }
   DCHECK(key_params.has_value());
 
-  std::unique_ptr<WebRTCCertificateGenerator> certificate_generator =
-      Platform::Current()->CreateRTCCertificateGenerator();
+  auto certificate_generator = std::make_unique<RTCCertificateGenerator>();
 
   // |keyParams| was successfully constructed, but does the certificate
   // generator support these parameters?

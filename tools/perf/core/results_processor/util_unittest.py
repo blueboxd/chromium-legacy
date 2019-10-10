@@ -13,3 +13,11 @@ class UtilTests(unittest.TestCase):
     fun = lambda x: x * x
     result = set(util.ApplyInParallel(fun, work_list))
     self.assertEqual(result, set([1, 4, 9]))
+
+  def testApplyInParallelExceptionRaised(self):
+    work_list = [1, 2, 3]
+    def fun(x):
+      if x == 3:
+        raise RuntimeError()
+    with self.assertRaises(RuntimeError):
+      list(util.ApplyInParallel(fun, work_list))

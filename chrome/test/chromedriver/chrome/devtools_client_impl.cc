@@ -79,8 +79,8 @@ DevToolsClientImpl::DevToolsClientImpl(const SyncWebSocketFactory& factory,
                                        const std::string& id)
     : socket_(factory.Run()),
       url_(url),
-      parent_(nullptr),
       owner_(nullptr),
+      parent_(nullptr),
       crashed_(false),
       detached_(false),
       id_(id),
@@ -99,8 +99,8 @@ DevToolsClientImpl::DevToolsClientImpl(
     const FrontendCloserFunc& frontend_closer_func)
     : socket_(factory.Run()),
       url_(url),
-      parent_(nullptr),
       owner_(nullptr),
+      parent_(nullptr),
       crashed_(false),
       detached_(false),
       id_(id),
@@ -114,9 +114,9 @@ DevToolsClientImpl::DevToolsClientImpl(
 
 DevToolsClientImpl::DevToolsClientImpl(DevToolsClientImpl* parent,
                                        const std::string& session_id)
-    : parent_(parent),
-      owner_(nullptr),
+    : owner_(nullptr),
       session_id_(session_id),
+      parent_(parent),
       crashed_(false),
       detached_(false),
       id_(session_id),
@@ -136,8 +136,8 @@ DevToolsClientImpl::DevToolsClientImpl(
     const ParserFunc& parser_func)
     : socket_(factory.Run()),
       url_(url),
-      parent_(nullptr),
       owner_(nullptr),
+      parent_(nullptr),
       crashed_(false),
       detached_(false),
       id_(id),
@@ -297,6 +297,10 @@ DevToolsClientImpl::ResponseInfo::ResponseInfo(const std::string& method)
 
 DevToolsClientImpl::ResponseInfo::~ResponseInfo() {}
 
+DevToolsClientImpl* DevToolsClientImpl::GetRootClient() {
+  return parent_ ? parent_ : this;
+}
+
 Status DevToolsClientImpl::SendCommandInternal(
     const std::string& method,
     const base::DictionaryValue& params,
@@ -324,8 +328,7 @@ Status DevToolsClientImpl::SendCommandInternal(
     VLOG(1) << "DevTools WebSocket Command: " << method << " (id=" << command_id
             << ") " << id_ << " " << FormatValueForDisplay(params);
   }
-  SyncWebSocket* socket =
-      (parent_ != nullptr) ? parent_->socket_.get() : socket_.get();
+  SyncWebSocket* socket = GetRootClient()->socket_.get();
   if (!socket->Send(message)) {
     return Status(kDisconnected, "unable to send message to renderer");
   }

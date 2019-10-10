@@ -24,11 +24,11 @@
 namespace shape_detection {
 
 namespace {
-void DetectCallback(base::Closure quit_closure,
+void DetectCallback(base::OnceClosure quit_closure,
                     uint32_t* num_faces,
                     std::vector<mojom::FaceDetectionResultPtr> results) {
   *num_faces = results.size();
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 }  // namespace
 

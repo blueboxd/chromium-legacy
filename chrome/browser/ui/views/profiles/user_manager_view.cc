@@ -68,6 +68,8 @@ UserManagerProfileDialogDelegate::UserManagerProfileDialogDelegate(
     const std::string& email_address,
     const GURL& url)
     : parent_(parent), web_view_(web_view), email_address_(email_address) {
+  DialogDelegate::set_use_custom_frame(false);
+
   AddChildView(web_view_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -97,10 +99,6 @@ bool UserManagerProfileDialogDelegate::CanMaximize() const {
 
 bool UserManagerProfileDialogDelegate::CanMinimize() const {
   return true;
-}
-
-bool UserManagerProfileDialogDelegate::ShouldUseCustomFrame() const {
-  return false;
 }
 
 ui::ModalType UserManagerProfileDialogDelegate::GetModalType() const {
@@ -300,6 +298,7 @@ UserManagerView::UserManagerView()
     : web_view_(nullptr),
       delegate_(nullptr),
       user_manager_started_showing_(base::Time()) {
+  DialogDelegate::set_use_custom_frame(false);
   keep_alive_ = std::make_unique<ScopedKeepAlive>(
       KeepAliveOrigin::USER_MANAGER_VIEW, KeepAliveRestartOption::DISABLED);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::USER_MANAGER);
@@ -471,10 +470,6 @@ void UserManagerView::WindowClosing() {
   // may have already opened a new instance).
   if (g_user_manager_view == this)
     g_user_manager_view = nullptr;
-}
-
-bool UserManagerView::ShouldUseCustomFrame() const {
-  return false;
 }
 
 void UserManagerView::DisplayErrorMessage() {

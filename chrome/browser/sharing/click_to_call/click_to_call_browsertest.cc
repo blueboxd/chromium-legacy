@@ -113,7 +113,9 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
         kClickToCallContextMenuForSelectedText},
        {});
   SetUpDevices(/*count=*/1);
-  GetSyncService(0)->GetUserSettings()->SetSyncRequested(false);
+  // Disable syncing preferences which is necessary for Sharing.
+  GetSyncService(0)->GetUserSettings()->SetSelectedTypes(false, {});
+  AwaitQuiescence();
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
       InitRightClickMenu(GURL(kTelUrl), base::ASCIIToUTF16("Google"),

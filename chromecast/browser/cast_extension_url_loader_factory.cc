@@ -15,6 +15,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace chromecast {
@@ -231,8 +232,8 @@ void CastExtensionURLLoaderFactory::CreateLoaderAndStart(
 }
 
 void CastExtensionURLLoaderFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest factory_request) {
-  bindings_.AddBinding(this, std::move(factory_request));
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver) {
+  receivers_.Add(this, std::move(factory_receiver));
 }
 
 }  // namespace shell

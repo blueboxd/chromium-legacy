@@ -97,7 +97,7 @@ class ArCoreDevice : public VRDeviceBase {
       mojom::XRRuntime::RequestSessionCallback deferred_callback,
       mojo::PendingRemote<mojom::XRFrameDataProvider> frame_data_provider,
       mojom::VRDisplayInfoPtr display_info,
-      mojom::XRSessionControllerPtrInfo session_controller_info,
+      mojo::PendingRemote<mojom::XRSessionController> session_controller,
       mojom::XRPresentationConnectionPtr presentation_connection);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

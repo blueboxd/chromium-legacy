@@ -9,6 +9,7 @@
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
+#include "content/renderer/worker/fetch_client_settings_object_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
@@ -55,20 +56,9 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
     mojo::ScopedMessagePipeHandle blob_url_token) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
 
-  // TODO(bashi): Create a helper function that converts
-  // WebFetchClientSettingsObject to mojom::FetchClientSettingsObject.
-  auto outside_fetch_client_settings_object =
-      blink::mojom::FetchClientSettingsObject::New();
-  outside_fetch_client_settings_object->referrer_policy =
-      fetch_client_settings_object.referrer_policy;
-  outside_fetch_client_settings_object->outgoing_referrer =
-      fetch_client_settings_object.outgoing_referrer;
-  outside_fetch_client_settings_object->insecure_requests_policy =
-      fetch_client_settings_object.insecure_requests_policy;
-
   factory_->CreateWorkerHostAndStartScriptLoad(
       script_url, script_origin, credentials_mode,
-      std::move(outside_fetch_client_settings_object),
+      FetchClientSettingsObjectFromWebToMojom(fetch_client_settings_object),
       mojo::PendingRemote<blink::mojom::BlobURLToken>(
           std::move(blob_url_token), blink::mojom::BlobURLToken::Version_),
       receiver_.BindNewPipeAndPassRemote(),

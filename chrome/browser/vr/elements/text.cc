@@ -24,6 +24,7 @@ namespace {
 constexpr float kCursorWidthRatio = 0.07f;
 constexpr int kTextPixelPerDmm = 1100;
 constexpr float kTextShadowScaleFactor = 1000.0f;
+constexpr char kDefaultFontFamily[] = "sans-serif";
 
 int DmmToPixel(float dmm) {
   return static_cast<int>(dmm * kTextPixelPerDmm);
@@ -388,9 +389,8 @@ gfx::Size TextTexture::LayOutText() {
     text_bounds.set_width(DmmToPixel(text_width_));
   }
 
-  gfx::FontList fonts;
-  if (fonts.GetFontSize() != pixel_font_height)
-    fonts = fonts.DeriveWithSizeDelta(pixel_font_height - fonts.GetFontSize());
+  gfx::FontList fonts =
+      gfx::FontList(gfx::Font(kDefaultFontFamily, pixel_font_height));
 
   TextRenderParameters parameters;
   parameters.color = color_;

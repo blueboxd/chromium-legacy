@@ -672,6 +672,15 @@ class BackgroundSyncManagerTest
     SetupBackgroundSyncManager();
   }
 
+  void SetKeepBrowserAwakeTillEventsCompleteAndRestartManager(
+      bool keep_browser_awake_till_events_complete) {
+    BackgroundSyncParameters* parameters =
+        GetController()->background_sync_parameters();
+    parameters->keep_browser_awake_till_events_complete =
+        keep_browser_awake_till_events_complete;
+    SetupBackgroundSyncManager();
+  }
+
   void FireReadyEvents() { test_background_sync_manager()->OnNetworkChanged(); }
 
   bool AreOptionConditionsMet() {
@@ -1382,6 +1391,33 @@ TEST_F(BackgroundSyncManagerTest, ReregisterMidSyncFirstAttemptFails) {
   ASSERT_TRUE(sync_fired_callback_);
   std::move(sync_fired_callback_).Run(blink::ServiceWorkerStatusCode::kOk);
   EXPECT_FALSE(GetRegistration(sync_options_1_));
+}
+
+TEST_F(BackgroundSyncManagerTest, RunCallbackAfterEventsComplete) {
+  SetKeepBrowserAwakeTillEventsCompleteAndRestartManager(
+      /* keep_browser_awake_till_events_complete= */ true);
+  InitDelayedSyncEventTest();
+
+  // This ensures other invocations of FireReadyEvents won't complete the
+  // registration.
+  test_background_sync_manager()->SuspendFiringEvents();
+
+  EXPECT_TRUE(Register(sync_options_1_));
+
+  bool callback_called = false;
+  test_background_sync_manager()->ResumeFiringEvents();
+  test_background_sync_manager()->FireReadyEvents(
+      blink::mojom::BackgroundSyncType::ONE_SHOT,
+      /* reschedule= */ false,
+      base::BindOnce([](bool* callback_called) { *callback_called = true; },
+                     &callback_called));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(callback_called);
+  std::move(sync_fired_callback_).Run(blink::ServiceWorkerStatusCode::kOk);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(callback_called);
 }
 
 TEST_F(BackgroundSyncManagerTest, ReregisterMidSyncFirstAttemptSucceeds) {

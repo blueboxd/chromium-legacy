@@ -941,6 +941,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)setDocumentURL:(const GURL&)newURL
                context:(web::NavigationContextImpl*)context {
+  GURL oldDocumentURL = _documentURL;
   if (newURL != _documentURL && newURL.is_valid()) {
     _documentURL = newURL;
     _userInteractionState.SetUserInteractionRegisteredSinceLastUrlChange(false);
@@ -949,6 +950,16 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       !context->IsLoadingHtmlString() && !context->IsLoadingErrorPage() &&
       !IsWKInternalUrl(newURL) && !newURL.SchemeIs(url::kAboutScheme) &&
       self.webView) {
+    // On iOS13, WebKit started changing the URL visible webView.URL when
+    // opening a new tab and then writing to it, e.g.
+    // window.open('javascript:document.write(1)').  This URL is never commited,
+    // so it should be OK to ignore this URL change.
+    if (base::ios::IsRunningOnIOS13OrLater() && oldDocumentURL.IsAboutBlank() &&
+        !self.webStateImpl->GetNavigationManager()->GetLastCommittedItem() &&
+        !self.webView.loading) {
+      return;
+    }
+
     GURL documentOrigin = newURL.GetOrigin();
     web::NavigationItem* committedItem =
         self.webStateImpl->GetNavigationManager()->GetLastCommittedItem();
@@ -1930,7 +1941,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (!IsRestoreSessionUrl(_documentURL) && !IsRestoreSessionUrl(newURL)) {
     bool ignore_host_change =
         // On iOS13 document.write() can change URL origin for about:blank page.
-        (_documentURL.IsAboutBlank() && base::ios::IsRunningOnIOS13OrLater());
+        (_documentURL.IsAboutBlank() && base::ios::IsRunningOnIOS13OrLater() &&
+         !self.webView.loading);
     if (!ignore_host_change) {
       DCHECK_EQ(_documentURL.host(), newURL.host());
     }

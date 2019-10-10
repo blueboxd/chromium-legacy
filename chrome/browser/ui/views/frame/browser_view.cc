@@ -1305,11 +1305,11 @@ BrowserView::ShowQRCodeGeneratorBubble(
 
 SharingDialog* BrowserView::ShowSharingDialog(
     content::WebContents* web_contents,
-    SharingUiController* controller) {
+    SharingDialogData data) {
   auto* dialog_view =
       new SharingDialogView(toolbar_button_provider()->GetAnchorView(
                                 PageActionIconType::kSharedClipboard),
-                            web_contents, controller);
+                            web_contents, std::move(data));
 
   views::BubbleDialogDelegateView::CreateBubble(dialog_view)->Show();
 

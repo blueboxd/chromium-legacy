@@ -92,10 +92,12 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
   // Creates a cross-thread copyable outside settings object for top-level
   // worker script fetch.
   std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
-  CreateFetchClientSettingsObjectData(const KURL& script_url,
-                                      const SecurityOrigin*,
-                                      const HttpsState&,
-                                      network::mojom::IPAddressSpace);
+  CreateFetchClientSettingsObjectData(
+      const KURL& script_url,
+      const SecurityOrigin*,
+      const HttpsState&,
+      network::mojom::IPAddressSpace,
+      const WebFetchClientSettingsObject& passed_settings_object);
 
   // Client must remain valid through the entire life time of the worker.
   WebServiceWorkerContextClient* const worker_context_client_;

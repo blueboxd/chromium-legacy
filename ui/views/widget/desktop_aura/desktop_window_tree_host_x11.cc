@@ -129,18 +129,6 @@ std::vector<aura::Window*> DesktopWindowTreeHostX11::GetAllOpenWindows() {
   return windows;
 }
 
-gfx::Rect DesktopWindowTreeHostX11::GetX11RootWindowBounds() const {
-  return GetBoundsInPixels();
-}
-
-gfx::Rect DesktopWindowTreeHostX11::GetX11RootWindowOuterBounds() const {
-  return GetXWindow()->GetOutterBounds();
-}
-
-::Region DesktopWindowTreeHostX11::GetWindowShape() const {
-  return GetXWindow()->shape();
-}
-
 void DesktopWindowTreeHostX11::AddObserver(
     DesktopWindowTreeHostObserverX11* observer) {
   observer_list_.AddObserver(observer);
@@ -206,30 +194,6 @@ DesktopWindowTreeHostX11::CreateDragDropClient(
   return base::WrapUnique(drag_drop_client_);
 }
 
-void DesktopWindowTreeHostX11::SetShape(
-    std::unique_ptr<Widget::ShapeRects> native_shape) {
-  XRegion* xregion = nullptr;
-  if (native_shape) {
-    SkRegion native_region;
-    for (const gfx::Rect& rect : *native_shape)
-      native_region.op(gfx::RectToSkIRect(rect), SkRegion::kUnion_Op);
-    gfx::Transform transform = GetRootTransform();
-    if (!transform.IsIdentity() && !native_region.isEmpty()) {
-      SkPath path_in_dip;
-      if (native_region.getBoundaryPath(&path_in_dip)) {
-        SkPath path_in_pixels;
-        path_in_dip.transform(transform.matrix(), &path_in_pixels);
-        xregion = gfx::CreateRegionFromSkPath(path_in_pixels);
-      } else {
-        xregion = XCreateRegion();
-      }
-    } else {
-      xregion = gfx::CreateRegionFromSkRegion(native_region);
-    }
-  }
-  GetXWindow()->SetShape(xregion);
-}
-
 Widget::MoveLoopResult DesktopWindowTreeHostX11::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
@@ -249,54 +213,6 @@ void DesktopWindowTreeHostX11::EndMoveLoop() {
   x11_window_move_client_->EndMoveLoop();
 }
 
-void DesktopWindowTreeHostX11::SetOpacity(float opacity) {
-  GetXWindow()->SetOpacity(opacity);
-}
-
-void DesktopWindowTreeHostX11::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
-  GetXWindow()->SetAspectRatio(aspect_ratio);
-}
-
-void DesktopWindowTreeHostX11::SetWindowIcons(const gfx::ImageSkia& window_icon,
-                                              const gfx::ImageSkia& app_icon) {
-  GetXWindow()->SetWindowIcons(window_icon, app_icon);
-}
-
-void DesktopWindowTreeHostX11::InitModalType(ui::ModalType modal_type) {
-  switch (modal_type) {
-    case ui::MODAL_TYPE_NONE:
-      break;
-    default:
-      // TODO(erg): Figure out under what situations |modal_type| isn't
-      // none. The comment in desktop_native_widget_aura.cc suggests that this
-      // is rare.
-      NOTIMPLEMENTED();
-  }
-}
-
-bool DesktopWindowTreeHostX11::IsAnimatingClosed() const {
-  return false;
-}
-
-bool DesktopWindowTreeHostX11::IsTranslucentWindowOpacitySupported() const {
-  // This function may be called before InitX11Window() (which
-  // initializes |visual_has_alpha_|), so we cannot simply return
-  // |visual_has_alpha_|.
-  return ui::XVisualManager::GetInstance()->ArgbVisualAvailable();
-}
-
-void DesktopWindowTreeHostX11::SizeConstraintsChanged() {
-  GetXWindow()->UpdateMinAndMaxSize();
-}
-
-bool DesktopWindowTreeHostX11::ShouldUseDesktopNativeCursorManager() const {
-  return true;
-}
-
-bool DesktopWindowTreeHostX11::ShouldCreateVisibilityController() const {
-  return true;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, private:
 
@@ -308,38 +224,6 @@ std::list<gfx::AcceleratedWidget>& DesktopWindowTreeHostX11::open_windows() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11 implementation:
-
-base::OnceClosure DesktopWindowTreeHostX11::DisableEventListening() {
-  // Allows to open multiple file-pickers. See https://crbug.com/678982
-  modal_dialog_counter_++;
-  if (modal_dialog_counter_ == 1) {
-    // ScopedWindowTargeter is used to temporarily replace the event-targeter
-    // with NullWindowEventTargeter to make |dialog| modal.
-    targeter_for_modal_ = std::make_unique<aura::ScopedWindowTargeter>(
-        window(), std::make_unique<aura::NullWindowTargeter>());
-  }
-
-  return base::BindOnce(&DesktopWindowTreeHostX11::EnableEventListening,
-                        weak_factory_.GetWeakPtr());
-}
-
-void DesktopWindowTreeHostX11::EnableEventListening() {
-  DCHECK_GT(modal_dialog_counter_, 0UL);
-  if (!--modal_dialog_counter_)
-    targeter_for_modal_.reset();
-}
-
-void DesktopWindowTreeHostX11::OnCompleteSwapWithNewSize(
-    const gfx::Size& size) {
-  GetXWindow()->NotifySwapAfterResize();
-}
-
-base::flat_map<std::string, std::string>
-DesktopWindowTreeHostX11::GetKeyboardLayoutMap() {
-  if (views::LinuxUI::instance())
-    return views::LinuxUI::instance()->GetKeyboardLayoutMap();
-  return {};
-}
 
 void DesktopWindowTreeHostX11::OnClosed() {
   open_windows().remove(GetAcceleratedWidget());
@@ -373,10 +257,6 @@ void DesktopWindowTreeHostX11::OnXWindowMapped() {
 void DesktopWindowTreeHostX11::OnXWindowUnmapped() {
   for (DesktopWindowTreeHostObserverX11& observer : observer_list_)
     observer.OnWindowUnmapped(GetXWindow()->window());
-}
-
-void DesktopWindowTreeHostX11::OnLostMouseGrab() {
-  dispatcher()->OnHostLostMouseGrab();
 }
 
 void DesktopWindowTreeHostX11::OnXWindowSelectionEvent(XEvent* xev) {
@@ -429,13 +309,6 @@ void DesktopWindowTreeHostX11::OnXWindowRawKeyEvent(XEvent* xev) {
       NOTREACHED() << xev->type;
       break;
   }
-}
-
-ui::XWindow* DesktopWindowTreeHostX11::GetXWindow() {
-  DCHECK(platform_window());
-  // ui::X11Window inherits both PlatformWindow and ui::XWindow.
-  return static_cast<ui::XWindow*>(
-      static_cast<ui::X11Window*>(platform_window()));
 }
 
 const ui::XWindow* DesktopWindowTreeHostX11::GetXWindow() const {

@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/components/web_app_tab_helper.h"
 #include "chrome/common/web_application_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -76,7 +77,8 @@ Browser* LaunchBrowserForWebAppInTab(Profile* profile, const AppId& app_id) {
 
 ExternalInstallOptions CreateInstallOptions(const GURL& url) {
   ExternalInstallOptions install_options(
-      url, LaunchContainer::kWindow, ExternalInstallSource::kInternalDefault);
+      url, blink::mojom::DisplayMode::kStandalone,
+      ExternalInstallSource::kInternalDefault);
   // Avoid creating real shortcuts in tests.
   install_options.add_to_applications_menu = false;
   install_options.add_to_desktop = false;

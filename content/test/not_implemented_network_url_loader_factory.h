@@ -5,7 +5,8 @@
 #ifndef CONTENT_TEST_NOT_IMPLEMENTED_NETWORK_URL_LOADER_FACTORY_H_
 #define CONTENT_TEST_NOT_IMPLEMENTED_NETWORK_URL_LOADER_FACTORY_H_
 
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
@@ -27,10 +28,11 @@ class NotImplementedNetworkURLLoaderFactory final
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
 
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override;
 
  private:
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(NotImplementedNetworkURLLoaderFactory);
 };

@@ -9,7 +9,8 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace network {
@@ -62,7 +63,8 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override;
 
   void Update(scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
 
@@ -99,7 +101,7 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
   scoped_refptr<network::SharedURLLoaderFactory>
       loader_factory_for_new_scripts_;
 
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
 
   // Used to copy script started at CopyScript().
   std::unique_ptr<ServiceWorkerCacheWriter> cache_writer_;

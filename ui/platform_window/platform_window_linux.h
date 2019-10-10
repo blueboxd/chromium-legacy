@@ -6,6 +6,7 @@
 #define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_LINUX_H_
 
 #include "base/optional.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window_base.h"
 
 namespace ui {
@@ -30,6 +31,18 @@ class PlatformWindowLinux : public PlatformWindowBase {
   // X11-specific.  Returns true if the PlatformWindow is visible on all
   // workspaces.
   virtual bool IsVisibleOnAllWorkspaces() const;
+
+  // X11-specific.  Returns the current bounds in terms of the X11 Root Window
+  // including the borders provided by the window manager (if any).
+  virtual gfx::Rect GetXRootWindowOuterBounds() const;
+
+  // X11-specific.  Says if the X11 Root Window contains the point within its
+  // set shape. If shape is not set, returns true.
+  virtual bool ContainsPointInXRegion(const gfx::Point& point) const;
+
+  // X11-specific.  Asks X11 to set transparency of the X11 Root Window. Not
+  // used for Wayland as it uses alpha channel to blend a window instead.
+  virtual void SetOpacityForXWindow(float opacity);
 };
 
 }  // namespace ui

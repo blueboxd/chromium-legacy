@@ -147,7 +147,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   // Scans the list of available events and fires those of type |sync_type| that
   // are ready to fire. For those that can't yet be fired, wakeup alarms are
   // set. Once all of this is done, invokes |callback|.
-  void FireReadyEvents(
+  virtual void FireReadyEvents(
       blink::mojom::BackgroundSyncType sync_type,
       bool reschedule,
       base::OnceClosure callback,
@@ -339,9 +339,18 @@ class CONTENT_EXPORT BackgroundSyncManager
   void ScheduleDelayedProcessingOfRegistrations(
       blink::mojom::BackgroundSyncType sync_type);
 
+  // Fires ready events for |sync_type|.
+  // |reschedule| is true when it's ok to schedule background processing from
+  // this method, false otherwise.
+  // |scheduler_id| is an id unique to the |op_scheduler_| task. It's passed to
+  // correctly mark this operation as finished with the |op_scheduler_| and run
+  // the next operation scheduled.
+  // |keepalive| is used to keep the browser alive until the first attempt to
+  // fire a sync event has been made.
   void FireReadyEventsImpl(
       blink::mojom::BackgroundSyncType sync_type,
       bool reschedule,
+      int scheduler_id,
       base::OnceClosure callback,
       std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive);
 
@@ -386,7 +395,8 @@ class CONTENT_EXPORT BackgroundSyncManager
       blink::mojom::BackgroundSyncType sync_type,
       const base::TimeTicks& start_time,
       bool from_wakeup_task,
-      int number_of_batched_sync_events);
+      int number_of_batched_sync_events,
+      base::OnceClosure callback);
 
   // OnRegistrationDeleted callbacks
   void OnRegistrationDeletedImpl(int64_t sw_registration_id,

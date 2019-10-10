@@ -770,9 +770,9 @@ bool PasswordAutofillAgent::TryToShowTouchToFill(
                                   &password_element, &password_info)) {
     return false;
   }
-  if (was_touch_to_fill_ui_shown_)
+
+  if (!should_show_touch_to_fill_)
     return false;
-  was_touch_to_fill_ui_shown_ = true;
 
   GetPasswordManagerDriver()->ShowTouchToFill();
   return true;
@@ -1266,6 +1266,10 @@ void PasswordAutofillAgent::SetLoggingState(bool active) {
   logging_state_active_ = active;
 }
 
+void PasswordAutofillAgent::TouchToFillDismissed() {
+  should_show_touch_to_fill_ = false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PasswordAutofillAgent, private:
 
@@ -1326,7 +1330,7 @@ void PasswordAutofillAgent::CleanupOnDocumentShutdown() {
   autofilled_elements_cache_.clear();
   last_updated_field_renderer_id_ = FormData::kNotSetFormRendererId;
   last_updated_form_renderer_id_ = FormData::kNotSetFormRendererId;
-  was_touch_to_fill_ui_shown_ = false;
+  should_show_touch_to_fill_ = true;
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   page_passwords_analyser_.Reset();
 #endif

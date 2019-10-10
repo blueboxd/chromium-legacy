@@ -8,6 +8,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace content {
@@ -33,7 +34,8 @@ class SingleRequestURLLoaderFactory : public network::SharedURLLoaderFactory {
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override;
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
 
  private:

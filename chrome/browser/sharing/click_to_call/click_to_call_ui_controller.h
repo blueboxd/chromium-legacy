@@ -39,7 +39,7 @@ class ClickToCallUiController
                         SharingClickToCallEntryPoint entry_point);
 
   // Overridden from SharingUiController:
-  base::string16 GetTitle() override;
+  base::string16 GetTitle(SharingDialogType dialog_type) override;
   PageActionIconType GetIconType() override;
   sync_pb::SharingSpecificFields::EnabledFeatures GetRequiredFeature() override;
   void OnDeviceChosen(const syncer::DeviceInfo& device) override;
@@ -49,11 +49,7 @@ class ClickToCallUiController
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
   SharingFeatureName GetFeatureMetricsPrefix() const override;
-  base::string16 GetEducationWindowTitleText() const override;
   void OnHelpTextClicked(SharingDialogType dialog_type) override;
-  int GetHeaderImageId() const override;
-  std::unique_ptr<views::StyledLabel> GetHelpTextLabel(
-      views::StyledLabelListener* listener) override;
   void OnDialogShown(bool has_devices, bool has_apps) override;
 
  protected:
@@ -61,6 +57,7 @@ class ClickToCallUiController
 
   // Overridden from SharingUiController:
   void DoUpdateApps(UpdateAppsCallback callback) override;
+  SharingDialogData CreateDialogData(SharingDialogType dialog_type) override;
 
  private:
   friend class content::WebContentsUserData<ClickToCallUiController>;

@@ -92,6 +92,8 @@ interface PasswordAutofillAgent {
   // logging the decisions made about saving the password.
   SetLoggingState(bool active);
 
+  // Informs the renderer that the Touch To Fill sheet has been dismissed.
+  TouchToFillDismissed();
 };
 
 // There is one instance of this interface per render frame in the render

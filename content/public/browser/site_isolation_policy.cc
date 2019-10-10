@@ -45,6 +45,8 @@ bool IsSiteIsolationDisabled() {
   }
 #endif
 
+  // Check with the embedder.  In particular, chrome/ uses this to disable site
+  // isolation when below a memory threshold.
   return GetContentClient() &&
          GetContentClient()->browser()->ShouldDisableSiteIsolation();
 }
@@ -90,6 +92,16 @@ bool SiteIsolationPolicy::AreIsolatedOriginsEnabled() {
 
 // static
 bool SiteIsolationPolicy::IsStrictOriginIsolationEnabled() {
+  // If the feature is explicitly enabled by the user (e.g., from
+  // chrome://flags), honor this regardless of checks to disable site isolation
+  // below.  This means this takes precedence over memory thresholds or
+  // switches to disable site isolation.
+  if (base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+          features::kStrictOriginIsolation.name,
+          base::FeatureList::OVERRIDE_ENABLE_FEATURE)) {
+    return true;
+  }
+
   // TODO(wjmaclean): Figure out what should happen when this feature is
   // combined with --isolate-origins.
   if (IsSiteIsolationDisabled())

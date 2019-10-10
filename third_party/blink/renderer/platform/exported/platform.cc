@@ -44,7 +44,6 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/platform/web_prerendering_support.h"
-#include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
@@ -350,11 +349,6 @@ std::unique_ptr<cricket::PortAllocator> Platform::CreateWebRtcPortAllocator(
 
 std::unique_ptr<webrtc::AsyncResolverFactory>
 Platform::CreateWebRtcAsyncResolverFactory() {
-  return nullptr;
-}
-
-std::unique_ptr<WebRTCCertificateGenerator>
-Platform::CreateRTCCertificateGenerator() {
   return nullptr;
 }
 

@@ -700,6 +700,10 @@ class CrostiniManager : public KeyedService,
   // CrostiniAnsibleManagementService::InstallAnsibleInDefaultContainer
   void OnAnsibleInDefaultContainerInstalled(bool success);
 
+  // Callback for
+  // CrostiniAnsibleManagementService::ApplyAnsiblePlaybookToDefaultContainer
+  void OnAnsiblePlaybookToDefaultContainerApplied(bool success);
+
   // Helper for CrostiniManager::MaybeUpgradeCrostini. Makes blocking calls to
   // check for file paths and registered components.
   static void CheckPathsAndComponents();

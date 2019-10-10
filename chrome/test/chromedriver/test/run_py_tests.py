@@ -78,6 +78,8 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testAlertOnNewWindow',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=1011225
+    'ChromeDriverTest.testActionsMultiTouchPoint',
 ]
 
 

@@ -135,8 +135,9 @@ void TestURLLoaderFactory::CreateLoaderAndStart(
   pending_requests_.push_back(std::move(pending_request));
 }
 
-void TestURLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void TestURLLoaderFactory::Clone(
+    mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>

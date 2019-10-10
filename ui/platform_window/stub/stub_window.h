@@ -53,6 +53,9 @@ class STUB_WINDOW_EXPORT StubWindow : public PlatformWindowBase {
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
   gfx::Rect GetRestoredBoundsInPixels() const override;
+  void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                      const gfx::ImageSkia& app_icon) override;
+  void SizeConstraintsChanged() override;
 
   PlatformWindowDelegate* delegate_;
   gfx::Rect bounds_;

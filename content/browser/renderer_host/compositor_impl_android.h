@@ -98,6 +98,7 @@ class CONTENT_EXPORT CompositorImpl
   void SetWindowBounds(const gfx::Size& size) override;
   void SetRequiresAlphaChannel(bool flag) override;
   void SetNeedsComposite() override;
+  void SetNeedsRedraw() override;
   ui::UIResourceProvider& GetUIResourceProvider() override;
   ui::ResourceManager& GetResourceManager() override;
   void CacheBackBufferForCurrentSurface() override;

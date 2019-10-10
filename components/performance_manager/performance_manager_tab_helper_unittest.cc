@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
+#include "build/build_config.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/graph_impl_operations.h"
 #include "components/performance_manager/graph/page_node_impl.h"
@@ -218,7 +219,13 @@ void ExpectPageIsAudible(bool is_audible) {
 
 }  // namespace
 
-TEST_F(PerformanceManagerTabHelperTest, PageIsAudible) {
+// This test is flaky on windows. See https://1012601
+#if defined(OS_WIN)
+#define MAYBE_PageIsAudible DISABLED_PageIsAudible
+#else
+#define MAYBE_PageIsAudible PageIsAudible
+#endif
+TEST_F(PerformanceManagerTabHelperTest, MAYBE_PageIsAudible) {
   SetContents(CreateTestWebContents());
 
   ExpectPageIsAudible(false);

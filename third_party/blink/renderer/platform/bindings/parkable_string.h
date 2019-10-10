@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/thread_annotations.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -105,12 +106,10 @@ class PLATFORM_EXPORT ParkableStringImpl final
     return compressed_->size();
   }
 
-  // A string can either be "young" or "old". It starts young, and transitions
-  // are:
-  // Young -> Old: By calling |MaybeAgeOrParkString()|.
-  // Old -> Young: When the string is accessed, either by |Lock()|-ing it or
-  //               calling |ToString()|.
-  bool is_young() const { return is_young_; }
+  bool is_young_for_testing() {
+    MutexLocker locker(mutex_);
+    return is_young_;
+  }
 
  private:
   enum class State : uint8_t;
@@ -128,12 +127,12 @@ class PLATFORM_EXPORT ParkableStringImpl final
   // May be called from any thread.
   void LockWithoutMakingYoung();
 #endif  // defined(ADDRESS_SANITIZER)
-  // May be called from any thread. Must acquire |mutex_| first.
-  void MakeYoung();
-  // Whether the string is referenced or locked. Must be called with |mutex_|
-  // held, and the return value is valid as long as |mutex_| is held.
-  Status CurrentStatus() const;
-  bool CanParkNow() const;
+  // May be called from any thread.
+  void MakeYoung() EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  // Whether the string is referenced or locked. The return value is valid as
+  // long as |mutex_| is held.
+  Status CurrentStatus() const EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  bool CanParkNow() const EXCLUSIVE_LOCKS_REQUIRED(mutex_);
   void ParkInternal(ParkingMode mode);
   void Unpark();
   String UnparkInternal() const;
@@ -151,14 +150,29 @@ class PLATFORM_EXPORT ParkableStringImpl final
   // Background thread.
   static void CompressInBackground(std::unique_ptr<CompressionTaskParams>);
 
-  Mutex mutex_;  // protects lock_depth_.
-  int lock_depth_;
+  int lock_depth_for_testing() {
+    MutexLocker locker_(mutex_);
+    return lock_depth_;
+  }
+
+  Mutex mutex_;
+  int lock_depth_ GUARDED_BY(mutex_);
 
   // Main thread only.
   State state_;
   String string_;
   std::unique_ptr<Vector<uint8_t>> compressed_;
-  bool is_young_ : 1;
+
+  // A string can either be "young" or "old". It starts young, and transitions
+  // are:
+  // Young -> Old: By calling |MaybeAgeOrParkString()|.
+  // Old -> Young: When the string is accessed, either by |Lock()|-ing it or
+  //               calling |ToString()|.
+  //
+  // Thread safety: it is typically not safe to guard only one part of a
+  // bitfield with a mutex, but this is correct here, as the other members are
+  // const (and never change).
+  bool is_young_ : 1 GUARDED_BY(mutex_);
 
   const bool may_be_parked_ : 1;
   const bool is_8bit_ : 1;

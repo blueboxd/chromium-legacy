@@ -153,6 +153,15 @@ gfx::Rect DrmWindowHost::GetRestoredBoundsInPixels() const {
   return gfx::Rect();
 }
 
+void DrmWindowHost::SetWindowIcons(const gfx::ImageSkia& window_icon,
+                                   const gfx::ImageSkia& app_icon) {
+  NOTREACHED();
+}
+
+void DrmWindowHost::SizeConstraintsChanged() {
+  NOTREACHED();
+}
+
 void DrmWindowHost::OnMouseEnter() {
   delegate_->OnMouseEnter();
 }

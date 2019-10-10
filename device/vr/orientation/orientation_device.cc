@@ -138,10 +138,10 @@ void VROrientationDevice::RequestSession(
   // available when RequestSession is called for non-immersive sessions.
 
   mojo::PendingRemote<mojom::XRFrameDataProvider> data_provider;
-  mojom::XRSessionControllerPtr controller;
+  mojo::PendingRemote<mojom::XRSessionController> controller;
   magic_window_sessions_.push_back(std::make_unique<VROrientationSession>(
       this, data_provider.InitWithNewPipeAndPassReceiver(),
-      mojo::MakeRequest(&controller)));
+      controller.InitWithNewPipeAndPassReceiver()));
 
   auto session = mojom::XRSession::New();
   session->data_provider = std::move(data_provider);

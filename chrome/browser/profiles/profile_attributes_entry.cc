@@ -45,6 +45,8 @@ int NextAvailableMetricsBucketIndex() {
 
 const base::Feature kPersistUPAInProfileInfoCache{
     "PersistUPAInProfileInfoCache", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kConcatenateGaiaAndProfileName{
+    "ConcatenateGaiaAndProfileName", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const char ProfileAttributesEntry::kAvatarIconKey[] = "avatar_icon";
 const char ProfileAttributesEntry::kBackgroundAppsKey[] = "background_apps";
@@ -108,7 +110,42 @@ void ProfileAttributesEntry::Initialize(ProfileInfoCache* cache,
   }
 }
 
+base::string16 ProfileAttributesEntry::GetLocalProfileName() const {
+  return GetString16(ProfileInfoCache::kNameKey);
+}
+
+base::string16 ProfileAttributesEntry::GetNameToDisplay() const {
+  DCHECK(base::FeatureList::IsEnabled(kConcatenateGaiaAndProfileName));
+  base::string16 name_to_display =
+      GetString16(ProfileInfoCache::kGAIAGivenNameKey);
+  if (name_to_display.empty())
+    name_to_display = GetString16(ProfileInfoCache::kGAIANameKey);
+
+  base::string16 local_profile_name = GetLocalProfileName();
+  if (name_to_display.empty())
+    return local_profile_name;
+
+  size_t number_of_profiles = profile_info_cache_->GetNumberOfProfiles();
+  if (number_of_profiles == 1)
+    return name_to_display;
+
+  auto it = std::search(name_to_display.begin(), name_to_display.end(),
+                        local_profile_name.begin(), local_profile_name.end(),
+                        base::CaseInsensitiveCompareASCII<char>());
+
+  if (it != name_to_display.end())
+    return name_to_display;
+
+  name_to_display.append(base::UTF8ToUTF16(" ("));
+  name_to_display.append(local_profile_name);
+  name_to_display.append(base::UTF8ToUTF16(")"));
+  return name_to_display;
+}
+
 base::string16 ProfileAttributesEntry::GetName() const {
+  if (base::FeatureList::IsEnabled(kConcatenateGaiaAndProfileName))
+    return GetNameToDisplay();
+
   return profile_info_cache_->GetNameOfProfileAtIndex(profile_index());
 }
 
@@ -267,8 +304,9 @@ size_t ProfileAttributesEntry::GetMetricsBucketIndex() {
   return bucket_index;
 }
 
-void ProfileAttributesEntry::SetName(const base::string16& name) {
-  profile_info_cache_->SetNameOfProfileAtIndex(profile_index(), name);
+void ProfileAttributesEntry::SetLocalProfileName(const base::string16& name) {
+  profile_info_cache_->SetLocalProfileNameOfProfileAtIndex(profile_index(),
+                                                           name);
 }
 
 void ProfileAttributesEntry::SetShortcutName(const base::string16& name) {

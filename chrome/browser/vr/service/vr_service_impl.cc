@@ -113,7 +113,7 @@ VRServiceImpl::VRServiceImpl(content::RenderFrameHost* render_frame_host)
   runtime_manager_ = XRRuntimeManager::GetOrCreateInstance();
   runtime_manager_->AddService(this);
 
-  magic_window_controllers_.set_connection_error_handler(base::BindRepeating(
+  magic_window_controllers_.set_disconnect_handler(base::BindRepeating(
       &VRServiceImpl::OnInlineSessionDisconnected,
       base::Unretained(this)));  // Unretained is OK since the collection is
                                  // owned by VRServiceImpl.
@@ -217,10 +217,8 @@ void VRServiceImpl::OnWebContentsFocusChanged(content::RenderWidgetHost* host,
       immersive_runtime->UpdateListeningForActivate(this);
   }
 
-  magic_window_controllers_.ForAllPtrs(
-      [focused](device::mojom::XRSessionController* controller) {
-        controller->SetFrameDataRestricted(!focused);
-      });
+  for (const auto& controller : magic_window_controllers_)
+    controller->SetFrameDataRestricted(!focused);
 }
 
 // static
@@ -236,7 +234,8 @@ void VRServiceImpl::OnInlineSessionCreated(
     device::mojom::VRService::RequestSessionCallback callback,
     const std::set<device::mojom::XRSessionFeature>& enabled_features,
     device::mojom::XRSessionPtr session,
-    device::mojom::XRSessionControllerPtr controller) {
+    mojo::PendingRemote<device::mojom::XRSessionController>
+        pending_controller) {
   if (!session) {
     std::move(callback).Run(
         device::mojom::RequestSessionResult::NewFailureReason(
@@ -244,22 +243,25 @@ void VRServiceImpl::OnInlineSessionCreated(
     return;
   }
 
+  mojo::Remote<device::mojom::XRSessionController> controller(
+      std::move(pending_controller));
   // Start giving out magic window data if we are focused.
   controller->SetFrameDataRestricted(!in_focused_frame_);
 
-  auto id = magic_window_controllers_.AddPtr(std::move(controller));
+  auto id = magic_window_controllers_.Add(std::move(controller));
 
   // Note: We might be recording an inline session that was created by WebVR.
-  GetSessionMetricsHelper()->RecordInlineSessionStart(id);
+  GetSessionMetricsHelper()->RecordInlineSessionStart(id.GetUnsafeValue());
 
   OnSessionCreated(session_runtime_id, std::move(callback), enabled_features,
                    std::move(session));
 }
 
-void VRServiceImpl::OnInlineSessionDisconnected(size_t session_id) {
+void VRServiceImpl::OnInlineSessionDisconnected(
+    mojo::RemoteSetElementId session_id) {
   // Notify metrics helper that inline session was stopped.
   auto* metrics_helper = GetSessionMetricsHelper();
-  metrics_helper->RecordInlineSessionStop(session_id);
+  metrics_helper->RecordInlineSessionStop(session_id.GetUnsafeValue());
 }
 
 SessionMetricsHelper* VRServiceImpl::GetSessionMetricsHelper() {
@@ -513,8 +515,9 @@ void VRServiceImpl::DoRequestSession(
     runtime->RequestSession(this, std::move(runtime_options),
                             std::move(immersive_callback));
   } else {
-    base::OnceCallback<void(device::mojom::XRSessionPtr,
-                            device::mojom::XRSessionControllerPtr)>
+    base::OnceCallback<void(
+        device::mojom::XRSessionPtr,
+        mojo::PendingRemote<device::mojom::XRSessionController>)>
         non_immersive_callback =
             base::BindOnce(&VRServiceImpl::OnInlineSessionCreated,
                            weak_ptr_factory_.GetWeakPtr(), session_runtime_id,

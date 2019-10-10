@@ -17,7 +17,7 @@
 #include "content/browser/loader/download_utils_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/storage_partition.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
@@ -446,7 +446,7 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
       const base::UnguessableToken& frame_token,
       int32_t process_id,
       bool is_download,
-      network::mojom::URLLoaderFactoryRequest loader_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
       mojo::PendingRemote<network::mojom::CookieManager> cookie_manager,
       base::WeakPtr<DevToolsURLLoaderInterceptor> interceptor);
@@ -462,7 +462,8 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override;
 
   void OnProxyBindingError();
   void OnTargetFactoryError();
@@ -474,7 +475,7 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
   network::mojom::URLLoaderFactoryPtr target_factory_;
   mojo::Remote<network::mojom::CookieManager> cookie_manager_;
   base::WeakPtr<DevToolsURLLoaderInterceptor> interceptor_;
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };
@@ -485,7 +486,7 @@ DevToolsURLLoaderFactoryProxy::DevToolsURLLoaderFactoryProxy(
     const base::UnguessableToken& frame_token,
     int32_t process_id,
     bool is_download,
-    network::mojom::URLLoaderFactoryRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
     mojo::PendingRemote<network::mojom::CookieManager> cookie_manager,
     base::WeakPtr<DevToolsURLLoaderInterceptor> interceptor)
@@ -498,8 +499,8 @@ DevToolsURLLoaderFactoryProxy::DevToolsURLLoaderFactoryProxy(
       base::BindOnce(&DevToolsURLLoaderFactoryProxy::OnTargetFactoryError,
                      base::Unretained(this)));
 
-  bindings_.AddBinding(this, std::move(loader_request));
-  bindings_.set_connection_error_handler(
+  receivers_.Add(this, std::move(loader_receiver));
+  receivers_.set_disconnect_handler(
       base::BindRepeating(&DevToolsURLLoaderFactoryProxy::OnProxyBindingError,
                           base::Unretained(this)));
 
@@ -542,9 +543,9 @@ void DevToolsURLLoaderFactoryProxy::CreateLoaderAndStart(
 }
 
 void DevToolsURLLoaderFactoryProxy::Clone(
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bindings_.AddBinding(this, std::move(request));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void DevToolsURLLoaderFactoryProxy::OnTargetFactoryError() {
@@ -552,7 +553,7 @@ void DevToolsURLLoaderFactoryProxy::OnTargetFactoryError() {
 }
 
 void DevToolsURLLoaderFactoryProxy::OnProxyBindingError() {
-  if (bindings_.empty())
+  if (receivers_.empty())
     delete this;
 }
 
@@ -1418,8 +1419,8 @@ void DevToolsURLLoaderFactoryAdapter::CreateLoaderAndStart(
 }
 
 void DevToolsURLLoaderFactoryAdapter::Clone(
-    network::mojom::URLLoaderFactoryRequest request) {
-  factory_->Clone(std::move(request));
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
+  factory_->Clone(std::move(receiver));
 }
 
 }  // namespace content

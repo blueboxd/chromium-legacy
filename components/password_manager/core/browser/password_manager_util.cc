@@ -60,6 +60,18 @@ bool IsBetterMatchUsingLastUsed(const PasswordForm* lhs,
          std::make_pair(!rhs->is_public_suffix_match, rhs->date_last_used);
 }
 
+// Returns a form with the given |username_value| from |credentials|, or nullptr
+// if none exists.
+const PasswordForm* FindByUsername(
+    const std::vector<const PasswordForm*>& credentials,
+    const base::string16& username_value) {
+  for (const auto* form : credentials) {
+    if (form->username_value == username_value)
+      return form;
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 // Update |credential| to reflect usage.
@@ -261,7 +273,7 @@ void FindBestMatches(
 
 const PasswordForm* GetMatchForUpdating(
     const PasswordForm& submitted_form,
-    const std::map<base::string16, const PasswordForm*>& credentials) {
+    const std::vector<const PasswordForm*>& credentials) {
   // This is the case for the credential management API. It should not depend on
   // form managers. Once that's the case, this should be turned into a DCHECK.
   // TODO(crbug/947030): turn it into a DCHECK.
@@ -269,10 +281,11 @@ const PasswordForm* GetMatchForUpdating(
     return nullptr;
 
   // Try to return form with matching |username_value|.
-  auto it = credentials.find(submitted_form.username_value);
-  if (it != credentials.end()) {
-    if (!it->second->is_public_suffix_match)
-      return it->second;
+  const PasswordForm* username_match =
+      FindByUsername(credentials, submitted_form.username_value);
+  if (username_match) {
+    if (!username_match->is_public_suffix_match)
+      return username_match;
 
     const auto& password_to_save = submitted_form.new_password_value.empty()
                                        ? submitted_form.password_value
@@ -286,24 +299,25 @@ const PasswordForm* GetMatchForUpdating(
     // that the autofilled credentials and |submitted_password_form|
     // actually correspond to two different accounts (see
     // http://crbug.com/385619).
-    return password_to_save == it->second->password_value ? it->second
-                                                          : nullptr;
+    return password_to_save == username_match->password_value ? username_match
+                                                              : nullptr;
   }
 
   // Next attempt is to find a match by password value. It should not be tried
   // when the username was actually detected.
   if (submitted_form.type == PasswordForm::Type::kApi ||
-      !submitted_form.username_value.empty())
+      !submitted_form.username_value.empty()) {
     return nullptr;
+  }
 
-  for (const auto& stored_match : credentials) {
-    if (stored_match.second->password_value == submitted_form.password_value)
-      return stored_match.second;
+  for (const PasswordForm* stored_match : credentials) {
+    if (stored_match->password_value == submitted_form.password_value)
+      return stored_match;
   }
 
   // Last try. The submitted form had no username but a password. Assume that
   // it's an existing credential.
-  return credentials.empty() ? nullptr : credentials.begin()->second;
+  return credentials.empty() ? nullptr : credentials.front();
 }
 
 autofill::PasswordForm MakeNormalizedBlacklistedForm(

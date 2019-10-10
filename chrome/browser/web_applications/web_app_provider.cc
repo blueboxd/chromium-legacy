@@ -21,6 +21,7 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registry_controller.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/external_web_app_manager.h"
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/pending_app_manager_impl.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -133,6 +135,11 @@ AppIconManager& WebAppProvider::icon_manager() {
   return *icon_manager_;
 }
 
+AppShortcutManager& WebAppProvider::shortcut_manager() {
+  CheckIsConnected();
+  return *shortcut_manager_;
+}
+
 SystemWebAppManager& WebAppProvider::system_web_app_manager() {
   CheckIsConnected();
   return *system_web_app_manager_;
@@ -170,7 +177,8 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
     auto mutable_registrar = std::make_unique<WebAppRegistrarMutable>(profile);
 
     sync_bridge = std::make_unique<WebAppSyncBridge>(
-        profile, database_factory_.get(), mutable_registrar.get());
+        profile, database_factory_.get(), mutable_registrar.get(),
+        install_manager_.get());
 
     // Upcast to read-only WebAppRegistrar.
     registrar = std::move(mutable_registrar);
@@ -181,6 +189,7 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
       sync_bridge.get(), icon_manager.get());
   file_handler_manager_ = std::make_unique<WebAppFileHandlerManager>(profile);
+  shortcut_manager_ = std::make_unique<WebAppShortcutManager>(profile);
 
   // Upcast to unified subsystem types:
   registrar_ = std::move(registrar);
@@ -197,6 +206,8 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
       std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile);
   file_handler_manager_ =
       std::make_unique<extensions::BookmarkAppFileHandlerManager>(profile);
+  shortcut_manager_ =
+      std::make_unique<extensions::BookmarkAppShortcutManager>(profile);
 }
 
 void WebAppProvider::ConnectSubsystems() {
@@ -213,6 +224,7 @@ void WebAppProvider::ConnectSubsystems() {
                                          registrar_.get(), ui_manager_.get());
   web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
   file_handler_manager_->SetSubsystems(registrar_.get());
+  shortcut_manager_->SetSubsystems(registrar_.get());
 
   connected_ = true;
 }

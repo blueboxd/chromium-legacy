@@ -303,6 +303,10 @@ void WebURLResponse::SetWasCached(bool value) {
   resource_response_->SetWasCached(value);
 }
 
+bool WebURLResponse::WasFetchedViaSPDY() const {
+  return resource_response_->WasFetchedViaSPDY();
+}
+
 void WebURLResponse::SetWasFetchedViaSPDY(bool value) {
   resource_response_->SetWasFetchedViaSPDY(value);
 }
@@ -405,6 +409,14 @@ void WebURLResponse::SetRecursivePrefetchToken(
   resource_response_->SetRecursivePrefetchToken(token);
 }
 
+bool WebURLResponse::WasAlpnNegotiated() const {
+  return resource_response_->WasAlpnNegotiated();
+}
+
+void WebURLResponse::SetWasAlpnNegotiated(bool was_alpn_negotiated) {
+  resource_response_->SetWasAlpnNegotiated(was_alpn_negotiated);
+}
+
 WebString WebURLResponse::AlpnNegotiatedProtocol() const {
   return resource_response_->AlpnNegotiatedProtocol();
 }
@@ -412,6 +424,16 @@ WebString WebURLResponse::AlpnNegotiatedProtocol() const {
 void WebURLResponse::SetAlpnNegotiatedProtocol(
     const WebString& alpn_negotiated_protocol) {
   resource_response_->SetAlpnNegotiatedProtocol(alpn_negotiated_protocol);
+}
+
+bool WebURLResponse::WasAlternateProtocolAvailable() const {
+  return resource_response_->WasAlternateProtocolAvailable();
+}
+
+void WebURLResponse::SetWasAlternateProtocolAvailable(
+    bool was_alternate_protocol_available) {
+  resource_response_->SetWasAlternateProtocolAvailable(
+      was_alternate_protocol_available);
 }
 
 net::HttpResponseInfo::ConnectionInfo WebURLResponse::ConnectionInfo() const {

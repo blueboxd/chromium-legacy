@@ -408,7 +408,8 @@ unsigned TextControlElement::IndexForPosition(HTMLElement* inner_editor,
         index += std::min(length, passed_position.OffsetInContainerNode());
       else
         index += length;
-    } else if (node->HasTagName(kBrTag)) {
+      // Disregard the last auto added placeholder BrTag.
+    } else if (node->HasTagName(kBrTag) && node != inner_editor->lastChild()) {
       ++index;
     }
   }

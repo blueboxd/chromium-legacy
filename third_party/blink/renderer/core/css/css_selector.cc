@@ -278,6 +278,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoHost:
     case kPseudoHostContext:
     case kPseudoPart:
+    case kPseudoState:
     case kPseudoShadow:
     case kPseudoFullScreen:
     case kPseudoFullScreenAncestor:
@@ -418,6 +419,7 @@ const static NameToPseudoStruct kPseudoTypeWithArgumentsMap[] = {
     {"nth-of-type", CSSSelector::kPseudoNthOfType},
     {"part", CSSSelector::kPseudoPart},
     {"slotted", CSSSelector::kPseudoSlotted},
+    {"state", CSSSelector::kPseudoState},
     {"where", CSSSelector::kPseudoWhere},
 };
 
@@ -458,6 +460,11 @@ static CSSSelector::PseudoType NameToPseudoType(const AtomicString& name,
   if (match->type == CSSSelector::kPseudoPictureInPicture &&
       !RuntimeEnabledFeatures::CSSPictureInPictureEnabled())
     return CSSSelector::kPseudoUnknown;
+
+  if (match->type == CSSSelector::kPseudoState &&
+      !RuntimeEnabledFeatures::CustomStatePseudoClassEnabled()) {
+    return CSSSelector::kPseudoUnknown;
+  }
 
   return static_cast<CSSSelector::PseudoType>(match->type);
 }
@@ -649,6 +656,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoScope:
     case kPseudoSingleButton:
     case kPseudoStart:
+    case kPseudoState:
     case kPseudoTarget:
     case kPseudoUnknown:
     case kPseudoValid:
@@ -768,6 +776,7 @@ const CSSSelector* CSSSelector::SerializeCompound(
           break;
         }
         case kPseudoLang:
+        case kPseudoState:
           builder.Append('(');
           builder.Append(simple_selector->Argument());
           builder.Append(')');

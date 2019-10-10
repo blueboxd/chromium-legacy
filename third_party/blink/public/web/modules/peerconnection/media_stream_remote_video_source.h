@@ -23,7 +23,7 @@ class TrackObserver;
 // source is a local source and a video track where the source is a remote video
 // track.
 //
-// TODO(crbug.com/704136): Move the classes below out of the Blink exposed
+// TODO(crbug.com/787254): Move the classes below out of the Blink exposed
 // API when all users of it have been Onion souped.
 class BLINK_MODULES_EXPORT MediaStreamRemoteVideoSource
     : public MediaStreamVideoSource {

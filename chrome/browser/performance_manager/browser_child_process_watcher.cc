@@ -95,10 +95,9 @@ void BrowserChildProcessWatcher::GPUProcessExited(int id, int exit_code) {
   // specifically on crash.
   if (base::Contains(gpu_process_nodes_, id)) {
     auto* process_node = gpu_process_nodes_[id].get();
-    PerformanceManagerImpl* performance_manager =
-        PerformanceManagerImpl::GetInstance();
 
-    performance_manager->task_runner()->PostTask(
+    DCHECK(PerformanceManagerImpl::GetInstance());
+    PerformanceManagerImpl::GetTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&ProcessNodeImpl::SetProcessExitStatus,
                                   base::Unretained(process_node), exit_code));
   }
@@ -118,9 +117,8 @@ void BrowserChildProcessWatcher::OnProcessLaunched(
       process.CreationTime();
 #endif
 
-  PerformanceManagerImpl* performance_manager =
-      PerformanceManagerImpl::GetInstance();
-  performance_manager->task_runner()->PostTask(
+  DCHECK(PerformanceManagerImpl::GetInstance());
+  PerformanceManagerImpl::GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&ProcessNodeImpl::SetProcess,
                                 base::Unretained(process_node),
                                 process.Duplicate(), launch_time));

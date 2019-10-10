@@ -63,8 +63,6 @@ class FakeNetwork {
 
   // User-defined URL => ResponseInfo map.
   base::flat_map<GURL, ResponseInfo> response_info_map_;
-
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
 };
 
 }  // namespace content

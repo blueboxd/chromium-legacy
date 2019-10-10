@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/search/instant_test_base.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -35,6 +37,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_switches.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -501,6 +504,322 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
     EXPECT_THAT(isolated_origins,
                 ::testing::Not(::testing::Contains(trial_origin)));
   }
+}
+
+// Helper class to run tests with password-triggered site isolation initialized
+// via a regular field trial and *not* via a command-line override.  It
+// creates a new field trial (with 100% probability of being in the group), and
+// initializes the test class's ScopedFeatureList using it.  Two derived
+// classes below control are used to initialize the feature to either enabled
+// or disabled state.
+class PasswordSiteIsolationFieldTrialTest
+    : public SitePerProcessMemoryThresholdBrowserTest {
+ public:
+  explicit PasswordSiteIsolationFieldTrialTest(bool should_enable)
+      : field_trial_list_(std::make_unique<base::MockEntropyProvider>()) {
+    const std::string kTrialName = "PasswordSiteIsolation";
+    const std::string kGroupName = "FooGroup";  // unused
+    scoped_refptr<base::FieldTrial> trial =
+        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->RegisterFieldTrialOverride(
+        features::kSiteIsolationForPasswordSites.name,
+        should_enable
+            ? base::FeatureList::OverrideState::OVERRIDE_ENABLE_FEATURE
+            : base::FeatureList::OverrideState::OVERRIDE_DISABLE_FEATURE,
+        trial.get());
+
+    feature_list_.InitWithFeatureList(std::move(feature_list));
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // This test creates and tests its own field trial group, so it needs to
+    // disable the field trial testing config, which might define an
+    // incompatible trial name/group.
+    command_line->AppendSwitch(
+        variations::switches::kDisableFieldTrialTestingConfig);
+    SitePerProcessMemoryThresholdBrowserTest::SetUpCommandLine(command_line);
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+  base::FieldTrialList field_trial_list_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PasswordSiteIsolationFieldTrialTest);
+};
+
+class EnabledPasswordSiteIsolationFieldTrialTest
+    : public PasswordSiteIsolationFieldTrialTest {
+ public:
+  EnabledPasswordSiteIsolationFieldTrialTest()
+      : PasswordSiteIsolationFieldTrialTest(true /* should_enable */) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EnabledPasswordSiteIsolationFieldTrialTest);
+};
+
+class DisabledPasswordSiteIsolationFieldTrialTest
+    : public PasswordSiteIsolationFieldTrialTest {
+ public:
+  DisabledPasswordSiteIsolationFieldTrialTest()
+      : PasswordSiteIsolationFieldTrialTest(false /* should_enable */) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DisabledPasswordSiteIsolationFieldTrialTest);
+};
+
+IN_PROC_BROWSER_TEST_F(EnabledPasswordSiteIsolationFieldTrialTest,
+                       BelowThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // If no memory threshold is defined, password site isolation should be
+  // enabled.
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+
+  // Define a memory threshold at 768MB.  Since this is above the 512MB of
+  // physical memory that this test simulates, password site isolation should
+  // now be disabled.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "768"}});
+
+  EXPECT_FALSE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+
+  // Simulate enabling password site isolation from command line.  (Note that
+  // InitAndEnableFeature uses ScopedFeatureList::InitFromCommandLine
+  // internally, and that triggering the feature via chrome://flags follows the
+  // same override path as well.)
+  base::test::ScopedFeatureList password_site_isolation_feature;
+  password_site_isolation_feature.InitAndEnableFeature(
+      features::kSiteIsolationForPasswordSites);
+
+  // This should override the memory threshold and enable password site
+  // isolation.
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(EnabledPasswordSiteIsolationFieldTrialTest,
+                       AboveThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // If no memory threshold is defined, password site isolation should be
+  // enabled.
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+
+  // Define a memory threshold at 128MB.  Since this is below the 512MB of
+  // physical memory that this test simulates, password site isolation should
+  // still be enabled.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "128"}});
+
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+
+  // Simulate disabling password site isolation from command line.  (Note that
+  // InitAndEnableFeature uses ScopedFeatureList::InitFromCommandLine
+  // internally, and that triggering the feature via chrome://flags follows the
+  // same override path as well.)  This should take precedence over the regular
+  // field trial behavior.
+  base::test::ScopedFeatureList password_site_isolation_feature;
+  password_site_isolation_feature.InitAndDisableFeature(
+      features::kSiteIsolationForPasswordSites);
+  EXPECT_FALSE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+}
+
+// This test verifies that when password-triggered site isolation is disabled
+// via field trials but force-enabled via command line, it takes effect even
+// when below the memory threshold.  See https://crbug.com/1009828.
+IN_PROC_BROWSER_TEST_F(DisabledPasswordSiteIsolationFieldTrialTest,
+                       CommandLineOverride_BelowThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // Password site isolation should be disabled at this point.
+  EXPECT_FALSE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+
+  // Simulate enabling password site isolation from command line.  (Note that
+  // InitAndEnableFeature uses ScopedFeatureList::InitFromCommandLine
+  // internally, and that triggering the feature via chrome://flags follows the
+  // same override path as well.)
+  base::test::ScopedFeatureList password_site_isolation_feature;
+  password_site_isolation_feature.InitAndEnableFeature(
+      features::kSiteIsolationForPasswordSites);
+
+  // If no memory threshold is defined, password site isolation should be
+  // enabled.
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+
+  // Define a memory threshold at 768MB.  This is above the 512MB of physical
+  // memory that this test simulates, but password site isolation should still
+  // be enabled, because the test has simulated the user manually overriding
+  // this feature via command line.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "768"}});
+
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+}
+
+// Similar to the test above, but with device memory being above memory
+// threshold.
+IN_PROC_BROWSER_TEST_F(DisabledPasswordSiteIsolationFieldTrialTest,
+                       CommandLineOverride_AboveThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  EXPECT_FALSE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+
+  base::test::ScopedFeatureList password_site_isolation_feature;
+  password_site_isolation_feature.InitAndEnableFeature(
+      features::kSiteIsolationForPasswordSites);
+
+  // If no memory threshold is defined, password site isolation should be
+  // enabled.
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "128"}});
+
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+}
+
+// Helper class to run tests with strict origin isolation initialized via
+// a regular field trial and *not* via a command-line override.  It creates a
+// new field trial (with 100% probability of being in the group), and
+// initializes the test class's ScopedFeatureList using it.  Two derived
+// classes below control are used to initialize the feature to either enabled
+// or disabled state.
+class StrictOriginIsolationFieldTrialTest
+    : public SitePerProcessMemoryThresholdBrowserTest {
+ public:
+  explicit StrictOriginIsolationFieldTrialTest(bool should_enable)
+      : field_trial_list_(std::make_unique<base::MockEntropyProvider>()) {
+    const std::string kTrialName = "StrictOriginIsolation";
+    const std::string kGroupName = "FooGroup";  // unused
+    scoped_refptr<base::FieldTrial> trial =
+        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->RegisterFieldTrialOverride(
+        features::kStrictOriginIsolation.name,
+        should_enable
+            ? base::FeatureList::OverrideState::OVERRIDE_ENABLE_FEATURE
+            : base::FeatureList::OverrideState::OVERRIDE_DISABLE_FEATURE,
+        trial.get());
+
+    feature_list_.InitWithFeatureList(std::move(feature_list));
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // This test creates and tests its own field trial group, so it needs to
+    // disable the field trial testing config, which might define an
+    // incompatible trial name/group.
+    command_line->AppendSwitch(
+        variations::switches::kDisableFieldTrialTestingConfig);
+    SitePerProcessMemoryThresholdBrowserTest::SetUpCommandLine(command_line);
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+  base::FieldTrialList field_trial_list_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StrictOriginIsolationFieldTrialTest);
+};
+
+class EnabledStrictOriginIsolationFieldTrialTest
+    : public StrictOriginIsolationFieldTrialTest {
+ public:
+  EnabledStrictOriginIsolationFieldTrialTest()
+      : StrictOriginIsolationFieldTrialTest(true /* should_enable */) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EnabledStrictOriginIsolationFieldTrialTest);
+};
+
+class DisabledStrictOriginIsolationFieldTrialTest
+    : public StrictOriginIsolationFieldTrialTest {
+ public:
+  DisabledStrictOriginIsolationFieldTrialTest()
+      : StrictOriginIsolationFieldTrialTest(false /* should_enable */) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DisabledStrictOriginIsolationFieldTrialTest);
+};
+
+// Check that when strict origin isolation is enabled via a field trial, and
+// the device is above the memory threshold, disabling it via the command line
+// takes precedence.
+IN_PROC_BROWSER_TEST_F(EnabledStrictOriginIsolationFieldTrialTest,
+                       DisabledViaCommandLineOverride) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // If no memory threshold is defined, strict origin isolation should be
+  // enabled.
+  EXPECT_TRUE(SiteIsolationPolicy::IsStrictOriginIsolationEnabled());
+
+  // Define a memory threshold at 128MB.  Since this is below the 512MB of
+  // physical memory that this test simulates, strict origin isolation should
+  // still be enabled.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "128"}});
+  EXPECT_TRUE(SiteIsolationPolicy::IsStrictOriginIsolationEnabled());
+
+  // Simulate disabling strict origin isolation from command line.  (Note that
+  // InitAndEnableFeature uses ScopedFeatureList::InitFromCommandLine
+  // internally, and that disabling the feature via chrome://flags follows the
+  // same override path as well.)
+  base::test::ScopedFeatureList strict_origin_isolation_feature;
+  strict_origin_isolation_feature.InitAndDisableFeature(
+      features::kStrictOriginIsolation);
+  EXPECT_FALSE(SiteIsolationPolicy::IsStrictOriginIsolationEnabled());
+}
+
+// This test verifies that when strict origin isolation is disabled
+// via field trials but force-enabled via command line, it takes effect even
+// when below the memory threshold.  See https://crbug.com/1009828.
+IN_PROC_BROWSER_TEST_F(DisabledStrictOriginIsolationFieldTrialTest,
+                       EnabledViaCommandLineOverride_BelowThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // Strict origin isolation should be disabled at this point.
+  EXPECT_FALSE(content::SiteIsolationPolicy::IsStrictOriginIsolationEnabled());
+
+  // Simulate enabling strict origin isolation from command line.  (Note that
+  // InitAndEnableFeature uses ScopedFeatureList::InitFromCommandLine
+  // internally, and that triggering the feature via chrome://flags follows the
+  // same override path as well.)
+  base::test::ScopedFeatureList strict_origin_isolation_feature;
+  strict_origin_isolation_feature.InitAndEnableFeature(
+      features::kStrictOriginIsolation);
+
+  // If no memory threshold is defined, strict origin isolation should be
+  // enabled.
+  EXPECT_TRUE(SiteIsolationPolicy::IsStrictOriginIsolationEnabled());
+
+  // Define a memory threshold at 768MB.  This is above the 512MB of physical
+  // memory that this test simulates, but strict origin isolation should still
+  // be enabled, because the test has simulated the user manually overriding
+  // this feature via command line.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "768"}});
+
+  EXPECT_TRUE(SiteIsolationPolicy::IsStrictOriginIsolationEnabled());
 }
 
 // Helper class to test window creation from NTP.

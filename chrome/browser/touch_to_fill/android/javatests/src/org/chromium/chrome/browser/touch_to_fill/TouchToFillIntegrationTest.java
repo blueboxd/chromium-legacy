@@ -24,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -73,6 +74,7 @@ public class TouchToFillIntegrationTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1012221")
     public void testClickingSuggestionsTriggersCallback() {
         runOnUiThreadBlocking(
                 () -> { mTouchToFill.showCredentials(EXAMPLE_URL, Arrays.asList(ANA, BOB)); });

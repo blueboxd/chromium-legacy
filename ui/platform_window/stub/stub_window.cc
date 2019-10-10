@@ -96,4 +96,9 @@ gfx::Rect StubWindow::GetRestoredBoundsInPixels() const {
   return gfx::Rect();
 }
 
+void StubWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
+                                const gfx::ImageSkia& app_icon) {}
+
+void StubWindow::SizeConstraintsChanged() {}
+
 }  // namespace ui

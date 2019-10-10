@@ -21,6 +21,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -28,6 +29,7 @@
 #include "components/autofill/core/browser/metrics/credit_card_form_event_logger.h"
 #include "components/autofill/core/browser/metrics/form_events.h"
 #include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
+#include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/payments/test_credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -43,6 +45,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/prefs/pref_service.h"
@@ -56,6 +59,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
+
+#if !defined(OS_IOS)
+#include "components/autofill/core/browser/payments/test_credit_card_fido_authenticator.h"
+#endif
 
 using base::ASCIIToUTF16;
 using base::Bucket;
@@ -268,6 +275,10 @@ class AutofillMetricsTest : public testing::Test {
                            bool include_masked_server_credit_card,
                            bool include_full_server_credit_card);
 
+  // If set to true, then user is capable of using FIDO authentication for card
+  // unmasking.
+  void SetFidoEligibility(bool is_verifiable);
+
   // Mocks a RPC response from payments.
   void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
                        const std::string& real_pan);
@@ -343,6 +354,13 @@ void AutofillMetricsTest::SetUp() {
       autofill_manager_.get(), autofill_driver_.get());
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
+#if !defined(OS_IOS)
+  autofill_manager_->credit_card_access_manager()
+      ->set_fido_authenticator_for_testing(
+          std::make_unique<TestCreditCardFIDOAuthenticator>(
+              autofill_driver_.get(), &autofill_client_));
+#endif
+
   // Initialize the TestPersonalDataManager with some default data.
   CreateTestAutofillProfiles();
 }
@@ -390,6 +408,19 @@ void AutofillMetricsTest::RecreateProfile(bool is_server) {
   }
 
   personal_data_->Refresh();
+}
+
+void AutofillMetricsTest::SetFidoEligibility(bool is_verifiable) {
+#if !defined(OS_IOS)
+  static_cast<TestCreditCardFIDOAuthenticator*>(
+      autofill_manager_->credit_card_access_manager()
+          ->GetOrCreateFIDOAuthenticator())
+      ->SetUserVerifiable(is_verifiable);
+#endif
+  autofill_manager_->credit_card_access_manager()
+      ->can_fetch_unmask_details_.Signal();
+  autofill_manager_->credit_card_access_manager()->is_user_verifiable_ =
+      base::nullopt;
 }
 
 void AutofillMetricsTest::OnDidGetRealPan(
@@ -4249,6 +4280,105 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardFilledFormEvents) {
         CreditCardFormEventLogger::
             FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE,
         1);
+  }
+}
+
+// Test that we log preflight calls for credit card unmasking.
+TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillCreditCardAuthentication);
+  std::string preflight_call_metric =
+      "Autofill.BetterAuth.CardUnmaskPreflightCalled";
+
+  // Set up our form data.
+  FormData form;
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("Credit card", "card", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NUMBER);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Create local cards and set user as eligible for FIDO authentication.
+    base::HistogramTester histogram_tester;
+    RecreateCreditCards(true /* include_local_credit_card */,
+                        false /* include_masked_server_credit_card */,
+                        false /* include_full_server_credit_card */);
+    SetFidoEligibility(true);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                          form.fields[0]);
+    // If no masked server cards are available, then no preflight call is made.
+    histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+  }
+
+  {
+    // Create masked server cards and set user as ineligible for FIDO
+    // authentication.
+    base::HistogramTester histogram_tester;
+    RecreateCreditCards(false /* include_local_credit_card */,
+                        true /* include_masked_server_credit_card */,
+                        false /* include_full_server_credit_card */);
+    SetFidoEligibility(false);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                          form.fields[0]);
+    // If user is not verifiable, then no preflight call is made.
+    histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+  }
+
+  {
+    // Create full server cards and set user as eligible for FIDO
+    // authentication.
+    base::HistogramTester histogram_tester;
+    RecreateCreditCards(false /* include_local_credit_card */,
+                        false /* include_masked_server_credit_card */,
+                        true /* include_full_server_credit_card */);
+    SetFidoEligibility(false);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                          form.fields[0]);
+    // If no masked server cards are available, then no preflight call is made.
+    histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+  }
+
+  {
+    // Create masked server cards and set user as eligible for FIDO
+    // authentication.
+    base::HistogramTester histogram_tester;
+    RecreateCreditCards(false /* include_local_credit_card */,
+                        true /* include_masked_server_credit_card */,
+                        false /* include_full_server_credit_card */);
+    SetFidoEligibility(true);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                          form.fields[0]);
+    // Preflight call is made only if a masked server card is available and the
+    // user is eligible for FIDO authentication (except iOS).
+#if defined(OS_IOS)
+    histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+#else
+    histogram_tester.ExpectTotalCount(preflight_call_metric, 1);
+#endif
+  }
+
+  {
+    // Create all types of cards and set user as eligible for FIDO
+    // authentication.
+    base::HistogramTester histogram_tester;
+    RecreateCreditCards(true /* include_local_credit_card */,
+                        true /* include_masked_server_credit_card */,
+                        true /* include_full_server_credit_card */);
+    SetFidoEligibility(true);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                          form.fields[0]);
+    // Preflight call is made only if a masked server card is available and the
+    // user is eligible for FIDO authentication (except iOS).
+#if defined(OS_IOS)
+    histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+#else
+    histogram_tester.ExpectTotalCount(preflight_call_metric, 1);
+#endif
   }
 }
 

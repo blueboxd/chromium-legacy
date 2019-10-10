@@ -28,8 +28,8 @@ void NotImplementedNetworkURLLoaderFactory::CreateLoaderAndStart(
 }
 
 void NotImplementedNetworkURLLoaderFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 }  // namespace content

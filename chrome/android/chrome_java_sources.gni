@@ -5,8 +5,6 @@
 chrome_java_sources = [
   "java/src/com/google/android/apps/chrome/appwidget/bookmarks/BookmarkThumbnailWidgetProvider.java",
   "java/src/org/chromium/chrome/browser/ActivityTabProvider.java",
-  "java/src/org/chromium/chrome/browser/ActivityTabTaskDescriptionHelper.java",
-  "java/src/org/chromium/chrome/browser/ActivityTaskDescriptionIconGenerator.java",
   "java/src/org/chromium/chrome/browser/AfterStartupTaskUtils.java",
   "java/src/org/chromium/chrome/browser/AppHooks.java",
   "java/src/org/chromium/chrome/browser/AppHooksModule.java",
@@ -393,6 +391,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabObserver.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabSessionHandler.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabTabPersistencePolicy.java",
+  "java/src/org/chromium/chrome/browser/customtabs/CustomTabTaskDescriptionHelper.java",
+  "java/src/org/chromium/chrome/browser/customtabs/CustomTabTaskDescriptionIconGenerator.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabTopBarDelegate.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabsClientFileProcessor.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabsConnection.java",

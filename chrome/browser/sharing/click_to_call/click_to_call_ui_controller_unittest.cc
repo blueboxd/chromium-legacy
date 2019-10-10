@@ -142,5 +142,5 @@ TEST_F(ClickToCallUiControllerTest, OnDeviceChosen) {
 TEST_F(ClickToCallUiControllerTest, GetSyncedDevices) {
   EXPECT_CALL(*service(), GetDeviceCandidates(testing::Eq(
                               sync_pb::SharingSpecificFields::CLICK_TO_CALL)));
-  controller_->UpdateAndShowDialog();
+  controller_->GetDevices();
 }

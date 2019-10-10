@@ -419,7 +419,6 @@ include_rules = [
   "+third_party/blink/public/platform/web_touch_event.h",
   "+third_party/blink/public/platform/web_security_style.h",
   "+third_party/blink/public/platform/web_sudden_termination_disabler_type.h",
-  "+third_party/blink/public/platform/modules/notifications/web_notification_constants.h",
   "+third_party/blink/public/public_buildflags.h",
   "+third_party/blink/public/web/web_context_menu_data.h",
   "+third_party/blink/public/web/web_fullscreen_options.h",

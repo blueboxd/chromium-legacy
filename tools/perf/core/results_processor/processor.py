@@ -155,9 +155,6 @@ def UploadArtifacts(intermediate_results, upload_bucket, results_label):
       remote_name = '/'.join([run_identifier, result['testPath'], name])
       work_list.append((artifact, remote_name))
 
-  if not work_list:
-    return
-
   def PoolUploader(work_item):
     artifact, remote_name = work_item
     artifact['remoteUrl'] = cloud_storage.Insert(

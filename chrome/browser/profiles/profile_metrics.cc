@@ -199,7 +199,7 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
       counts->unused++;
     } else {
       counts->active++;
-      if (!storage.IsDefaultProfileName(entry->GetName()))
+      if (!storage.IsDefaultProfileName(entry->GetLocalProfileName()))
         counts->named++;
       if (entry->IsSupervised())
         counts->supervised++;

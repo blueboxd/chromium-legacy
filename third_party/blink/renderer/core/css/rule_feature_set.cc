@@ -89,6 +89,7 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoNthLastChild:
     case CSSSelector::kPseudoNthLastOfType:
     case CSSSelector::kPseudoPart:
+    case CSSSelector::kPseudoState:
     case CSSSelector::kPseudoLink:
     case CSSSelector::kPseudoVisited:
     case CSSSelector::kPseudoAny:
@@ -534,6 +535,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoRequired:
       case CSSSelector::kPseudoReadOnly:
       case CSSSelector::kPseudoReadWrite:
+      case CSSSelector::kPseudoState:
       case CSSSelector::kPseudoValid:
       case CSSSelector::kPseudoInvalid:
       case CSSSelector::kPseudoIndeterminate:

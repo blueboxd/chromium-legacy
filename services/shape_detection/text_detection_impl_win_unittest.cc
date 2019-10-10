@@ -25,11 +25,11 @@ namespace shape_detection {
 
 namespace {
 
-void DetectTextCallback(base::Closure quit_closure,
+void DetectTextCallback(base::OnceClosure quit_closure,
                         std::vector<mojom::TextDetectionResultPtr>* results_out,
                         std::vector<mojom::TextDetectionResultPtr> results_in) {
   *results_out = std::move(results_in);
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 }  // namespace

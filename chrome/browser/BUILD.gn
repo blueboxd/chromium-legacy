@@ -3398,6 +3398,8 @@ jumbo_split_static_library("browser") {
       "sharing/sharing_app.cc",
       "sharing/sharing_app.h",
       "sharing/sharing_dialog.h",
+      "sharing/sharing_dialog_data.cc",
+      "sharing/sharing_dialog_data.h",
       "sharing/sharing_notification_handler.cc",
       "sharing/sharing_notification_handler.h",
       "sharing/sharing_ui_controller.cc",

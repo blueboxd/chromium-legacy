@@ -13,7 +13,8 @@
 #include "base/task/task_traits.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
@@ -47,7 +48,8 @@ class CONTENT_EXPORT FileURLLoaderFactory
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(network::mojom::URLLoaderFactoryRequest loader) override;
+  void Clone(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) override;
 
   void CreateLoaderAndStartInternal(const network::ResourceRequest request,
                                     network::mojom::URLLoaderRequest loader,
@@ -58,7 +60,7 @@ class CONTENT_EXPORT FileURLLoaderFactory
   const scoped_refptr<SharedCorsOriginAccessList>
       shared_cors_origin_access_list_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
 
   THREAD_CHECKER(thread_checker_);
 

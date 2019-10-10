@@ -13,6 +13,7 @@
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/metadata_batch.h"
+#include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
@@ -50,13 +51,17 @@ void WebAppDatabase::BeginTransaction() {
   write_batch_ = store_->CreateWriteBatch();
 }
 
-void WebAppDatabase::CommitTransaction(const RegistryUpdateData& update_data,
-                                       CompletionCallback callback) {
+void WebAppDatabase::CommitTransaction(
+    const RegistryUpdateData& update_data,
+    std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+    CompletionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(opened_);
 
   DCHECK(write_batch_);
   DCHECK(!update_data.IsEmpty());
+
+  write_batch_->TakeMetadataChangesFrom(std::move(metadata_change_list));
 
   for (const std::unique_ptr<WebApp>& web_app : update_data.apps_to_create) {
     auto proto = CreateWebAppProto(*web_app);

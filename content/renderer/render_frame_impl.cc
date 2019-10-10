@@ -903,7 +903,6 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
     mojom::FrameNavigationControl::CommitNavigationCallback commit_callback,
     mojom::NavigationClient::CommitNavigationCallback
         per_navigation_mojo_interface_commit_callback,
-    const network::mojom::URLResponseHead* head,
     std::unique_ptr<NavigationClient> navigation_client,
     int request_id,
     bool was_initiated_in_this_frame) {
@@ -914,37 +913,12 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
   DCHECK(!common_params.navigation_start.is_null());
   DCHECK(!common_params.url.SchemeIs(url::kJavaScriptScheme));
 
-  if (common_params.navigation_type == mojom::NavigationType::RESTORE) {
-    // We're doing a load of a page that was restored from the last session.
-    // By default this prefers the cache over loading
-    // (LOAD_SKIP_CACHE_VALIDATION) which can result in stale data for pages
-    // that are set to expire. We explicitly override that by setting the
-    // policy here so that as necessary we load from the network.
-    //
-    // TODO(davidben): Remove this in favor of passing a cache policy to the
-    // loadHistoryItem call in OnNavigate. That requires not overloading
-    // UseProtocolCachePolicy to mean both "normal load" and "determine cache
-    // policy based on load type, etc".
-    internal_data->set_cache_policy_override(
-        blink::mojom::FetchCacheMode::kDefault);
-  }
-
   internal_data->set_is_overriding_user_agent(
       commit_params.is_overriding_user_agent);
   internal_data->set_must_reset_scroll_and_scale_state(
       common_params.navigation_type ==
       mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL);
   internal_data->set_request_id(request_id);
-
-  if (head) {
-    document_state->set_was_fetched_via_spdy(head->was_fetched_via_spdy);
-    document_state->set_was_alpn_negotiated(head->was_alpn_negotiated);
-    document_state->set_alpn_negotiated_protocol(
-        head->alpn_negotiated_protocol);
-    document_state->set_was_alternate_protocol_available(
-        head->was_alternate_protocol_available);
-    document_state->set_connection_info(head->connection_info);
-  }
 
   bool load_data = !common_params.base_url_for_data_url.is_empty() &&
                    !common_params.history_url_for_data_url.is_empty() &&
@@ -1058,6 +1032,21 @@ void FillMiscNavigationParams(
   }
   navigation_params->appcache_host_id =
       commit_params.appcache_host_id.value_or(base::UnguessableToken());
+
+  if (common_params.navigation_type == mojom::NavigationType::RESTORE) {
+    // We're doing a load of a page that was restored from the last session.
+    // By default this prefers the cache over loading
+    // (LOAD_SKIP_CACHE_VALIDATION) which can result in stale data for pages
+    // that are set to expire. We explicitly override that by setting the
+    // policy here so that as necessary we load from the network.
+    //
+    // TODO(davidben): Remove this in favor of passing a cache policy to the
+    // loadHistoryItem call in OnNavigate. That requires not overloading
+    // UseProtocolCachePolicy to mean both "normal load" and "determine cache
+    // policy based on load type, etc".
+    navigation_params->force_fetch_cache_mode =
+        blink::mojom::FetchCacheMode::kDefault;
+  }
 }
 
 // Fills in the origin policy associated with this response, if any is present.
@@ -3428,20 +3417,12 @@ void RenderFrameImpl::CommitNavigationInternal(
   DCHECK(common_params->url.SchemeIs(url::kJavaScriptScheme) ||
          common_params->url.IsAboutSrcdoc() || subresource_loader_factories);
 
-  // We only save metrics of the main frame's main resource to the
-  // document state. In view source mode, we effectively let the user
-  // see the source of the server's error page instead of using custom
-  // one derived from the metrics saved to document state.
-  const network::mojom::URLResponseHead* document_state_response_head =
-      (!frame_->Parent() && !frame_->IsViewSourceModeEnabled())
-          ? response_head.get()
-          : nullptr;
   int request_id = ResourceDispatcher::MakeRequestID();
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
       *common_params, *commit_params, base::TimeTicks::Now(),
       std::move(callback), std::move(per_navigation_mojo_interface_callback),
-      document_state_response_head, std::move(navigation_client_impl_),
-      request_id, was_initiated_in_this_frame);
+      std::move(navigation_client_impl_), request_id,
+      was_initiated_in_this_frame);
 
   // Check if the navigation being committed originated as a client redirect.
   bool is_client_redirect =
@@ -3854,7 +3835,7 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   // |was_initiated_in_this_frame| is false.
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
       *common_params, *commit_params, base::TimeTicks(), std::move(callback),
-      std::move(per_navigation_mojo_interface_callback), nullptr,
+      std::move(per_navigation_mojo_interface_callback),
       std::move(navigation_client_impl_), ResourceDispatcher::MakeRequestID(),
       false /* was_initiated_in_this_frame */);
 
@@ -5308,9 +5289,6 @@ void RenderFrameImpl::WillSendRequestInternal(
       &attach_same_site_cookies);
   if (!new_url.is_empty())
     request.SetUrl(WebURL(new_url));
-
-  if (internal_data->is_cache_policy_override_set())
-    request.SetCacheMode(internal_data->cache_policy_override());
 
   // The request's extra data may indicate that we should set a custom user
   // agent. This needs to be done here, after WebKit is through with setting the

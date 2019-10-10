@@ -372,7 +372,7 @@ void BrowserXRRuntime::OnDisplayInfoChanged(
 
 void BrowserXRRuntime::StopImmersiveSession() {
   if (immersive_session_controller_) {
-    immersive_session_controller_ = nullptr;
+    immersive_session_controller_.reset();
     presenting_service_ = nullptr;
 
     for (BrowserXRRuntimeObserver& observer : observers_) {
@@ -471,12 +471,14 @@ void BrowserXRRuntime::OnRequestSessionResult(
     device::mojom::XRRuntimeSessionOptionsPtr options,
     RequestSessionCallback callback,
     device::mojom::XRSessionPtr session,
-    device::mojom::XRSessionControllerPtr immersive_session_controller) {
+    mojo::PendingRemote<device::mojom::XRSessionController>
+        immersive_session_controller) {
   if (session && service) {
     if (options->immersive) {
       presenting_service_ = service.get();
-      immersive_session_controller_ = std::move(immersive_session_controller);
-      immersive_session_controller_.set_connection_error_handler(base::BindOnce(
+      immersive_session_controller_.Bind(
+          std::move(immersive_session_controller));
+      immersive_session_controller_.set_disconnect_handler(base::BindOnce(
           &BrowserXRRuntime::OnImmersiveSessionError, base::Unretained(this)));
 
       // Notify observers that we have started presentation.
@@ -492,7 +494,8 @@ void BrowserXRRuntime::OnRequestSessionResult(
     if (session) {
       // The service has been removed, but we still got a session, so make
       // sure to clean up this weird state.
-      immersive_session_controller_ = std::move(immersive_session_controller);
+      immersive_session_controller_.Bind(
+          std::move(immersive_session_controller));
       StopImmersiveSession();
     }
   }

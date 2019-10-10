@@ -20,6 +20,7 @@
 #include "device/vr/android/gvr/gvr_device_provider.h"
 #include "device/vr/android/gvr/gvr_utils.h"
 #include "device/vr/jni_headers/NonPresentingGvrContext_jni.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -141,9 +142,7 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(gvr::GvrApi* gvr_api,
 
 }  // namespace
 
-GvrDevice::GvrDevice()
-    : VRDeviceBase(mojom::XRDeviceId::GVR_DEVICE_ID),
-      exclusive_controller_binding_(this) {
+GvrDevice::GvrDevice() : VRDeviceBase(mojom::XRDeviceId::GVR_DEVICE_ID) {
   GvrDelegateProviderFactory::SetDevice(this);
 }
 
@@ -156,7 +155,8 @@ GvrDevice::~GvrDevice() {
   }
 
   if (pending_request_session_callback_) {
-    std::move(pending_request_session_callback_).Run(nullptr, nullptr);
+    std::move(pending_request_session_callback_)
+        .Run(nullptr, mojo::NullRemote());
   }
 
   GvrDelegateProviderFactory::SetDevice(nullptr);
@@ -171,7 +171,7 @@ void GvrDevice::RequestSession(
     mojom::XRRuntime::RequestSessionCallback callback) {
   // We can only process one request at a time.
   if (pending_request_session_callback_) {
-    std::move(callback).Run(nullptr, nullptr);
+    std::move(callback).Run(nullptr, mojo::NullRemote());
     return;
   }
   pending_request_session_callback_ = std::move(callback);
@@ -189,25 +189,26 @@ void GvrDevice::OnStartPresentResult(
   DCHECK(pending_request_session_callback_);
 
   if (!session) {
-    std::move(pending_request_session_callback_).Run(nullptr, nullptr);
+    std::move(pending_request_session_callback_)
+        .Run(nullptr, mojo::NullRemote());
     return;
   }
 
   OnStartPresenting();
 
-  mojom::XRSessionControllerPtr session_controller;
   // Close the binding to ensure any previous sessions were closed.
   // TODO(billorr): Only do this in OnPresentingControllerMojoConnectionError.
-  exclusive_controller_binding_.Close();
-  exclusive_controller_binding_.Bind(mojo::MakeRequest(&session_controller));
+  exclusive_controller_receiver_.reset();
+
+  std::move(pending_request_session_callback_)
+      .Run(std::move(session),
+           exclusive_controller_receiver_.BindNewPipeAndPassRemote());
 
   // Unretained is safe because the error handler won't be called after the
   // binding has been destroyed.
-  exclusive_controller_binding_.set_connection_error_handler(
+  exclusive_controller_receiver_.set_disconnect_handler(
       base::BindOnce(&GvrDevice::OnPresentingControllerMojoConnectionError,
                      base::Unretained(this)));
-  std::move(pending_request_session_callback_)
-      .Run(std::move(session), std::move(session_controller));
 }
 
 // XRSessionController
@@ -225,7 +226,7 @@ void GvrDevice::StopPresenting() {
   if (delegate_provider)
     delegate_provider->ExitWebVRPresent();
   OnExitPresent();
-  exclusive_controller_binding_.Close();
+  exclusive_controller_receiver_.reset();
 }
 
 void GvrDevice::OnListeningForActivate(bool listening) {
@@ -312,13 +313,15 @@ void GvrDevice::OnInitRequestSessionFinished(
   DCHECK(pending_request_session_callback_);
 
   if (!success) {
-    std::move(pending_request_session_callback_).Run(nullptr, nullptr);
+    std::move(pending_request_session_callback_)
+        .Run(nullptr, mojo::NullRemote());
     return;
   }
 
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider) {
-    std::move(pending_request_session_callback_).Run(nullptr, nullptr);
+    std::move(pending_request_session_callback_)
+        .Run(nullptr, mojo::NullRemote());
     return;
   }
 

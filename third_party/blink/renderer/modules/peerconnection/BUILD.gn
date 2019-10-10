@@ -53,9 +53,12 @@ blink_modules_sources("peerconnection") {
     "call_setup_state_tracker.cc",
     "call_setup_state_tracker.h",
     "media_stream_remote_video_source.cc",
+    "media_stream_video_webrtc_sink.cc",
     "peer_connection_dependency_factory.cc",
     "rtc_certificate.cc",
     "rtc_certificate.h",
+    "rtc_certificate_generator.cc",
+    "rtc_certificate_generator.h",
     "rtc_data_channel.cc",
     "rtc_data_channel.h",
     "rtc_data_channel_event.cc",
@@ -123,6 +126,7 @@ blink_modules_sources("peerconnection") {
     "rtc_void_request_script_promise_resolver_impl.h",
     "web_rtc_stats_report_callback_resolver.cc",
     "web_rtc_stats_report_callback_resolver.h",
+    "webrtc_media_stream_track_adapter.cc",
   ]
 
   public_deps = [

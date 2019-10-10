@@ -35,7 +35,6 @@
 #include "third_party/blink/public/platform/web_connection_type.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_network_state_notifier.h"
-#include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -296,43 +295,6 @@ TestBlinkWebUnitTestSupport::GetURLLoaderMockFactory() {
 
 bool TestBlinkWebUnitTestSupport::IsThreadedAnimationEnabled() {
   return threaded_animation_;
-}
-
-namespace {
-
-class TestWebRTCCertificateGenerator
-    : public blink::WebRTCCertificateGenerator {
-  void GenerateCertificate(
-      const blink::WebRTCKeyParams& key_params,
-      blink::WebRTCCertificateCallback completion_callback,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
-    NOTIMPLEMENTED();
-  }
-  void GenerateCertificateWithExpiration(
-      const blink::WebRTCKeyParams& key_params,
-      uint64_t expires_ms,
-      blink::WebRTCCertificateCallback completion_callback,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
-    NOTIMPLEMENTED();
-  }
-  bool IsSupportedKeyParams(const blink::WebRTCKeyParams& key_params) override {
-    return false;
-  }
-  rtc::scoped_refptr<rtc::RTCCertificate> FromPEM(
-      blink::WebString pem_private_key,
-      blink::WebString pem_certificate) override {
-    rtc::scoped_refptr<rtc::RTCCertificate> certificate =
-        rtc::RTCCertificate::FromPEM(rtc::RTCCertificatePEM(
-            pem_private_key.Utf8(), pem_certificate.Utf8()));
-    return certificate;
-  }
-};
-
-}  // namespace
-
-std::unique_ptr<blink::WebRTCCertificateGenerator>
-TestBlinkWebUnitTestSupport::CreateRTCCertificateGenerator() {
-  return std::make_unique<TestWebRTCCertificateGenerator>();
 }
 
 void TestBlinkWebUnitTestSupport::BindClipboardHost(

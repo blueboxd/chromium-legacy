@@ -38,10 +38,10 @@ void WeakWrapperSharedURLLoaderFactory::CreateLoaderAndStart(
 }
 
 void WeakWrapperSharedURLLoaderFactory::Clone(
-    mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) {
   if (!factory())
     return;
-  factory()->Clone(std::move(request));
+  factory()->Clone(std::move(receiver));
 }
 
 std::unique_ptr<network::SharedURLLoaderFactoryInfo>

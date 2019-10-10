@@ -33,6 +33,7 @@ enum class SigninState {
 };
 
 extern const base::Feature kPersistUPAInProfileInfoCache;
+extern const base::Feature kConcatenateGaiaAndProfileName;
 
 class ProfileAttributesEntry {
  public:
@@ -41,8 +42,11 @@ class ProfileAttributesEntry {
   ProfileAttributesEntry();
   virtual ~ProfileAttributesEntry() {}
 
-  // Gets the name of the profile, which is the one displayed in the User Menu.
+  // Gets the name of the profile to be displayed in the User Menu. The name can
+  // be the GAIA name, local profile name or a combination of them.
   base::string16 GetName() const;
+  // Gets the local profile name.
+  base::string16 GetLocalProfileName() const;
 
   base::string16 GetShortcutName() const;
   // Gets the path to the profile. Should correspond to the path passed to
@@ -112,7 +116,7 @@ class ProfileAttributesEntry {
   // reserved for the guest profile.
   size_t GetMetricsBucketIndex();
 
-  void SetName(const base::string16& name);
+  void SetLocalProfileName(const base::string16& name);
   void SetShortcutName(const base::string16& name);
   void SetActiveTimeToNow();
   void SetIsOmitted(bool is_omitted);
@@ -155,6 +159,10 @@ class ProfileAttributesEntry {
   void Initialize(ProfileInfoCache* cache,
                   const base::FilePath& path,
                   PrefService* prefs);
+
+  // Gets the name of the profile as the concatenation of the Gaia name and the
+  // profile name, which is the one displayed in the User Menu.
+  base::string16 GetNameToDisplay() const;
 
   // Loads or uses an already loaded high resolution image of the generic
   // profile avatar.

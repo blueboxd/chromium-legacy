@@ -538,6 +538,10 @@ void CompositorImpl::SetNeedsComposite() {
   host_->SetNeedsAnimate();
 }
 
+void CompositorImpl::SetNeedsRedraw() {
+  host_->SetNeedsRedrawRect(host_->device_viewport_rect());
+}
+
 void CompositorImpl::DidUpdateLayers() {
   // Dump property trees and layers if run with:
   //   --vmodule=compositor_impl_android=3

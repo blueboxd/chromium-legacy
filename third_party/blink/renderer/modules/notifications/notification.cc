@@ -35,7 +35,7 @@
 
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
+#include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -469,7 +469,7 @@ ScriptPromise Notification::requestPermission(
 }
 
 uint32_t Notification::maxActions() {
-  return kWebNotificationMaxActions;
+  return kNotificationMaxActions;
 }
 
 DispatchEventResult Notification::DispatchEventInternal(Event& event) {

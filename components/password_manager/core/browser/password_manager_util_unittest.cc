@@ -67,16 +67,6 @@ autofill::PasswordForm GetTestProxyCredential() {
   return form;
 }
 
-std::map<base::string16, const autofill::PasswordForm*> MapFromCredentials(
-    const std::vector<const autofill::PasswordForm*>& forms) {
-  std::map<base::string16, const autofill::PasswordForm*> result;
-  for (const autofill::PasswordForm* form : forms) {
-    auto inserted = result.emplace(form->username_value, form);
-    EXPECT_TRUE(inserted.second);
-  }
-  return result;
-}
-
 }  // namespace
 
 using password_manager::UnorderedPasswordFormElementsAre;
@@ -390,8 +380,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_MatchUsername) {
   autofill::PasswordForm parsed = GetTestCredential();
   parsed.password_value = base::ASCIIToUTF16("new_password");
 
-  EXPECT_EQ(&stored,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(&stored, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_RejectUnknownUsername) {
@@ -399,8 +388,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_RejectUnknownUsername) {
   autofill::PasswordForm parsed = GetTestCredential();
   parsed.username_value = base::ASCIIToUTF16("other_username");
 
-  EXPECT_EQ(nullptr,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(nullptr, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_FederatedCredential) {
@@ -409,8 +397,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_FederatedCredential) {
   parsed.password_value.clear();
   parsed.federation_origin = url::Origin::Create(GURL(kTestFederationURL));
 
-  EXPECT_EQ(nullptr,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(nullptr, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_MatchUsernamePSL) {
@@ -418,8 +405,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_MatchUsernamePSL) {
   stored.is_public_suffix_match = true;
   autofill::PasswordForm parsed = GetTestCredential();
 
-  EXPECT_EQ(&stored,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(&stored, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_MatchUsernamePSLAnotherPassword) {
@@ -428,8 +414,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_MatchUsernamePSLAnotherPassword) {
   autofill::PasswordForm parsed = GetTestCredential();
   parsed.password_value = base::ASCIIToUTF16("new_password");
 
-  EXPECT_EQ(nullptr,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(nullptr, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil,
@@ -440,8 +425,7 @@ TEST(PasswordManagerUtil,
   parsed.new_password_value = parsed.password_value;
   parsed.password_value.clear();
 
-  EXPECT_EQ(&stored,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(&stored, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil,
@@ -452,8 +436,7 @@ TEST(PasswordManagerUtil,
   parsed.new_password_value = base::ASCIIToUTF16("new_password");
   parsed.password_value.clear();
 
-  EXPECT_EQ(nullptr,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(nullptr, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameFindByPassword) {
@@ -461,8 +444,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameFindByPassword) {
   autofill::PasswordForm parsed = GetTestCredential();
   parsed.username_value.clear();
 
-  EXPECT_EQ(&stored,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(&stored, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameFindByPasswordPSL) {
@@ -471,8 +453,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameFindByPasswordPSL) {
   autofill::PasswordForm parsed = GetTestCredential();
   parsed.username_value.clear();
 
-  EXPECT_EQ(&stored,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(&stored, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameCMAPI) {
@@ -483,8 +464,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameCMAPI) {
 
   // In case of the Credential Management API we know for sure that the site
   // meant empty username. Don't try any other heuristics.
-  EXPECT_EQ(nullptr,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(nullptr, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernamePickFirst) {
@@ -501,10 +481,9 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernamePickFirst) {
   autofill::PasswordForm parsed = GetTestCredential();
   parsed.username_value.clear();
 
-  // The credential with the first username is picked.
-  EXPECT_EQ(&stored1,
-            GetMatchForUpdating(
-                parsed, MapFromCredentials({&stored3, &stored2, &stored1})));
+  // The first credential is picked (arbitrarily).
+  EXPECT_EQ(&stored3,
+            GetMatchForUpdating(parsed, {&stored3, &stored2, &stored1}));
 }
 
 TEST(PasswordManagerUtil, MakeNormalizedBlacklistedForm_Android) {

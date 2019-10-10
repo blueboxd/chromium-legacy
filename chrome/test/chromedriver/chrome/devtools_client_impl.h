@@ -120,6 +120,7 @@ class DevToolsClientImpl : public DevToolsClient {
   Status HandleReceivedEvents() override;
   void SetDetached() override;
   void SetOwner(WebViewImpl* owner) override;
+  DevToolsClientImpl* GetRootClient();
 
  private:
   enum ResponseState {
@@ -164,10 +165,13 @@ class DevToolsClientImpl : public DevToolsClient {
 
   std::unique_ptr<SyncWebSocket> socket_;
   GURL url_;
-  DevToolsClientImpl* parent_;
   // WebViewImpl that owns this instance; nullptr for browser-wide DevTools.
   WebViewImpl* owner_;
   const std::string session_id_;
+  // parent_ / children_: it's a flat hierarchy - nesting is at most one level
+  // deep. children_ holds child sessions - identified by their session id -
+  // which send/receive messages via the socket_ of their parent.
+  DevToolsClientImpl* parent_;
   std::map<std::string, DevToolsClientImpl*> children_;
   bool crashed_;
   bool detached_;

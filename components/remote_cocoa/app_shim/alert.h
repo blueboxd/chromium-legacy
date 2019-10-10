@@ -10,7 +10,8 @@
 #include "base/mac/scoped_nsobject.h"
 #include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #include "components/remote_cocoa/common/alert.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/gfx/text_elider.h"
 
 @class AlertBridgeHelper;
@@ -24,7 +25,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT AlertBridge
  public:
   // Creates a new alert which controls its own lifetime. It will destroy itself
   // once its NSAlert goes away.
-  AlertBridge(mojom::AlertBridgeRequest bridge_request);
+  AlertBridge(mojo::PendingReceiver<mojom::AlertBridge> bridge_receiver);
 
   // Send the specified disposition via the Show callback, then destroy |this|.
   void SendResultAndDestroy(mojom::AlertDisposition disposition);
@@ -39,7 +40,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT AlertBridge
 
   // Handle being disconnected (e.g, because the alert was programmatically
   // dismissed).
-  void OnConnectionError();
+  void OnMojoDisconnect();
 
   // remote_cocoa::mojom::Alert:
   void Show(mojom::AlertBridgeInitParamsPtr params,
@@ -55,7 +56,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT AlertBridge
   // The callback to make when the dialog has finished running.
   ShowCallback callback_;
 
-  mojo::Binding<remote_cocoa::mojom::AlertBridge> mojo_binding_;
+  mojo::Receiver<remote_cocoa::mojom::AlertBridge> mojo_receiver_{this};
   base::WeakPtrFactory<AlertBridge> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AlertBridge);
 };

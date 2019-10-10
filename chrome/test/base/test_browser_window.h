@@ -127,7 +127,7 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsToolbarVisible() const override;
   bool IsToolbarShowing() const override;
   SharingDialog* ShowSharingDialog(content::WebContents* contents,
-                                   SharingUiController* controller) override;
+                                   SharingDialogData data) override;
   void ShowUpdateChromeDialog() override {}
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override {}
   qrcode_generator::QRCodeGeneratorBubbleView* ShowQRCodeGeneratorBubble(

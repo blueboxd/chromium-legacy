@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -109,7 +110,8 @@ class BLINK_COMMON_EXPORT URLLoaderFactoryBundle
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override;
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
   bool BypassRedirectChecks() const override;
 

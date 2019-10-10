@@ -25,6 +25,7 @@ jumbo_component("util") {
     "//base",
     "//skia",
     "//ui/display/types",
+    "//ui/gfx:color_space",
     "//ui/gfx/geometry",
   ]
 

@@ -62,9 +62,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
 
   bool IsThreadedAnimationEnabled() override;
 
-  std::unique_ptr<blink::WebRTCCertificateGenerator>
-  CreateRTCCertificateGenerator() override;
-
   // May be called when |this| is registered as the active blink Platform
   // implementation. Overrides the result of IsThreadedAnimationEnabled() to
   // the provided value, and returns the value it was set to before the call.

@@ -1526,7 +1526,7 @@ void ProfileImpl::UpdateNameInStorage() {
                        ->GetProfileAttributesStorage()
                        .GetProfileAttributesWithPath(GetPath(), &entry);
   if (has_entry) {
-    entry->SetName(
+    entry->SetLocalProfileName(
         base::UTF8ToUTF16(GetPrefs()->GetString(prefs::kProfileName)));
     entry->SetIsUsingDefaultName(
         GetPrefs()->GetBoolean(prefs::kProfileUsingDefaultName));

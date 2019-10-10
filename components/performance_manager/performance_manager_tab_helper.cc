@@ -232,7 +232,7 @@ void PerformanceManagerTabHelper::RenderFrameHostChanged(
     return;
 
   // Perform the swap in the graph.
-  performance_manager_->task_runner()->PostTask(
+  PerformanceManagerImpl::GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(
                      [](FrameNodeImpl* old_frame, FrameNodeImpl* new_frame) {
                        if (old_frame) {
@@ -393,7 +393,7 @@ void PerformanceManagerTabHelper::PostToGraph(const base::Location& from_here,
                                               Args&&... args) {
   static_assert(std::is_base_of<NodeBase, NodeType>::value,
                 "NodeType must be descended from NodeBase");
-  performance_manager_->task_runner()->PostTask(
+  PerformanceManagerImpl::GetTaskRunner()->PostTask(
       from_here, base::BindOnce(functor, base::Unretained(node),
                                 std::forward<Args>(args)...));
 }

@@ -18,20 +18,6 @@
 using password_manager::CredentialPair;
 using password_manager::PasswordManagerDriver;
 
-namespace {
-
-void OnCredentialSelected(base::WeakPtr<PasswordManagerDriver> driver,
-                          const CredentialPair& credential) {
-  if (!driver)
-    return;
-
-  password_manager::metrics_util::LogFilledCredentialIsFromAndroidApp(
-      password_manager::IsValidAndroidFacetURI(credential.origin_url.spec()));
-  driver->FillSuggestion(credential.username, credential.password);
-}
-
-}  // namespace
-
 TouchToFillController::TouchToFillController(content::WebContents* web_contents)
     : web_contents_(web_contents) {}
 
@@ -39,14 +25,34 @@ TouchToFillController::~TouchToFillController() = default;
 
 void TouchToFillController::Show(base::span<const CredentialPair> credentials,
                                  base::WeakPtr<PasswordManagerDriver> driver) {
+  DCHECK(!driver_ || driver_.get() == driver.get());
+  driver_ = std::move(driver);
+
   if (!view_)
     view_ = TouchToFillViewFactory::Create(this);
 
   view_->Show(url_formatter::FormatUrlForSecurityDisplay(
-                  driver->GetLastCommittedURL(),
+                  driver_->GetLastCommittedURL(),
                   url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),
-              credentials,
-              base::BindOnce(OnCredentialSelected, std::move(driver)));
+              credentials);
+}
+
+void TouchToFillController::OnCredentialSelected(
+    const CredentialPair& credential) {
+  if (!driver_)
+    return;
+
+  password_manager::metrics_util::LogFilledCredentialIsFromAndroidApp(
+      password_manager::IsValidAndroidFacetURI(credential.origin_url.spec()));
+  driver_->FillSuggestion(credential.username, credential.password);
+  std::exchange(driver_, nullptr)->TouchToFillDismissed();
+}
+
+void TouchToFillController::OnDismiss() {
+  if (!driver_)
+    return;
+
+  std::exchange(driver_, nullptr)->TouchToFillDismissed();
 }
 
 gfx::NativeView TouchToFillController::GetNativeView() {

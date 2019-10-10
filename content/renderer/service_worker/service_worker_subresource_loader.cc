@@ -21,7 +21,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/net_errors.h"
@@ -789,9 +788,9 @@ ServiceWorkerSubresourceLoaderFactory::ServiceWorkerSubresourceLoaderFactory(
       fallback_factory_(std::move(fallback_factory)),
       task_runner_(std::move(task_runner)) {
   DCHECK(fallback_factory_);
-  bindings_.AddBinding(this, std::move(request));
-  bindings_.set_connection_error_handler(base::BindRepeating(
-      &ServiceWorkerSubresourceLoaderFactory::OnConnectionError,
+  receivers_.Add(this, std::move(request));
+  receivers_.set_disconnect_handler(base::BindRepeating(
+      &ServiceWorkerSubresourceLoaderFactory::OnMojoDisconnect,
       base::Unretained(this)));
 }
 
@@ -817,12 +816,12 @@ void ServiceWorkerSubresourceLoaderFactory::CreateLoaderAndStart(
 }
 
 void ServiceWorkerSubresourceLoaderFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
-void ServiceWorkerSubresourceLoaderFactory::OnConnectionError() {
-  if (!bindings_.empty())
+void ServiceWorkerSubresourceLoaderFactory::OnMojoDisconnect() {
+  if (!receivers_.empty())
     return;
   delete this;
 }

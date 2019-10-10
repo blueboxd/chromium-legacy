@@ -147,7 +147,6 @@ class MutableProfileOAuth2TokenServiceDelegateTest
         client_.get(), &account_tracker_service_,
         network::TestNetworkConnectionTracker::GetInstance(), token_web_data_,
         account_consistency, revoke_all_tokens_on_load_,
-        true /* can_revoke_credantials */,
         MutableProfileOAuth2TokenServiceDelegate::FixRequestErrorCallback());
   }
 

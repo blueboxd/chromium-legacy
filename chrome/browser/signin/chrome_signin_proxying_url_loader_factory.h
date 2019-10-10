@@ -10,7 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 #include <memory>
@@ -38,7 +39,7 @@ class ProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   ProxyingURLLoaderFactory(
       std::unique_ptr<HeaderModificationDelegate> delegate,
       content::WebContents::Getter web_contents_getter,
-      network::mojom::URLLoaderFactoryRequest request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       network::mojom::URLLoaderFactoryPtrInfo target_factory,
       DisconnectCallback on_disconnect);
   ~ProxyingURLLoaderFactory() override;
@@ -63,7 +64,8 @@ class ProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(network::mojom::URLLoaderFactoryRequest loader_request) override;
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+                 loader_receiver) override;
 
  private:
   friend class base::DeleteHelper<ProxyingURLLoaderFactory>;
@@ -81,7 +83,7 @@ class ProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   std::unique_ptr<HeaderModificationDelegate> delegate_;
   content::WebContents::Getter web_contents_getter_;
 
-  mojo::BindingSet<network::mojom::URLLoaderFactory> proxy_bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> proxy_receivers_;
   std::set<std::unique_ptr<InProgressRequest>, base::UniquePtrComparator>
       requests_;
   network::mojom::URLLoaderFactoryPtr target_factory_;

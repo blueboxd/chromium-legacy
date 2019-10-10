@@ -304,8 +304,15 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
 
   CGFloat percent =
       [self searchFieldProgressForOffset:offset safeAreaInsets:safeAreaInsets];
+
   if (!IsSplitToolbarMode(self)) {
-    self.alpha = 1 - percent;
+    // When Voiceover is running, if the header's alpha is set to 0, voiceover
+    // can't scroll back to it, and it will never come back into view. To
+    // prevent that, set the alpha to non-zero when the header is fully
+    // offscreen. It will still not be seen, but it will be accessible to
+    // Voiceover.
+    self.alpha = std::max(1 - percent, 0.01);
+
     widthConstraint.constant = searchFieldNormalWidth;
     self.fakeLocationBarHeightConstraint.constant = ToolbarHeight();
     self.fakeLocationBar.layer.cornerRadius =

@@ -241,10 +241,6 @@ void TaskManagerView::WindowClosing() {
   table_model_->StoreColumnsSettings();
 }
 
-bool TaskManagerView::ShouldUseCustomFrame() const {
-  return false;
-}
-
 void TaskManagerView::GetGroupRange(int model_index, views::GroupRange* range) {
   table_model_->GetRowsGroupRange(model_index, &range->start, &range->length);
 }
@@ -301,6 +297,7 @@ TaskManagerView::TaskManagerView()
     : tab_table_(nullptr),
       tab_table_parent_(nullptr),
       is_always_on_top_(false) {
+  DialogDelegate::set_use_custom_frame(false);
   Init();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::TASK_MANAGER);
 }

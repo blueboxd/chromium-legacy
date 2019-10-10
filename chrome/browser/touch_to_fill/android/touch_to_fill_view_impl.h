@@ -19,9 +19,11 @@ class TouchToFillViewImpl : public TouchToFillView {
   ~TouchToFillViewImpl() override;
 
   // TouchToFillView:
-  void Show(base::StringPiece16 formatted_url,
-            base::span<const password_manager::CredentialPair> credentials,
-            ShowCallback callback) override;
+  void Show(
+      base::StringPiece16 formatted_url,
+      base::span<const password_manager::CredentialPair> credentials) override;
+  void OnCredentialSelected(
+      const password_manager::CredentialPair& credential) override;
   void OnDismiss() override;
 
   // Called from Java via JNI:
@@ -33,7 +35,6 @@ class TouchToFillViewImpl : public TouchToFillView {
  private:
   TouchToFillController* controller_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
-  ShowCallback callback_;
 };
 
 #endif  // CHROME_BROWSER_TOUCH_TO_FILL_ANDROID_TOUCH_TO_FILL_VIEW_IMPL_H_

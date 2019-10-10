@@ -29,6 +29,7 @@
 #include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 using sync_preferences::TestingPrefServiceSyncable;
@@ -50,7 +51,8 @@ base::Value GetWindowedItem() {
 }
 
 ExternalInstallOptions GetWindowedInstallOptions() {
-  ExternalInstallOptions options(kWindowedUrl, LaunchContainer::kWindow,
+  ExternalInstallOptions options(kWindowedUrl,
+                                 blink::mojom::DisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -70,7 +72,8 @@ base::Value GetTabbedItem() {
 }
 
 ExternalInstallOptions GetTabbedInstallOptions() {
-  ExternalInstallOptions options(kTabbedUrl, LaunchContainer::kTab,
+  ExternalInstallOptions options(kTabbedUrl,
+                                 blink::mojom::DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -88,7 +91,8 @@ base::Value GetNoContainerItem() {
 }
 
 ExternalInstallOptions GetNoContainerInstallOptions() {
-  ExternalInstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
+  ExternalInstallOptions options(kNoContainerUrl,
+                                 blink::mojom::DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -106,7 +110,8 @@ base::Value GetCreateDesktopShorcutDefaultItem() {
 }
 
 ExternalInstallOptions GetCreateDesktopShorcutDefaultInstallOptions() {
-  ExternalInstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
+  ExternalInstallOptions options(kNoContainerUrl,
+                                 blink::mojom::DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -125,7 +130,8 @@ base::Value GetCreateDesktopShorcutFalseItem() {
 }
 
 ExternalInstallOptions GetCreateDesktopShorcutFalseInstallOptions() {
-  ExternalInstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
+  ExternalInstallOptions options(kNoContainerUrl,
+                                 blink::mojom::DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -144,7 +150,8 @@ base::Value GetCreateDesktopShorcutTrueItem() {
 }
 
 ExternalInstallOptions GetCreateDesktopShorcutTrueInstallOptions() {
-  ExternalInstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
+  ExternalInstallOptions options(kNoContainerUrl,
+                                 blink::mojom::DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = true;

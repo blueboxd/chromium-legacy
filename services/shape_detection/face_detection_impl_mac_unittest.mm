@@ -52,7 +52,7 @@ std::unique_ptr<mojom::FaceDetection> CreateFaceDetectorImplMacVision(
 }
 
 using FaceDetectorFactory =
-    base::Callback<std::unique_ptr<mojom::FaceDetection>(
+    base::RepeatingCallback<std::unique_ptr<mojom::FaceDetection>(
         shape_detection::mojom::FaceDetectorOptionsPtr)>;
 
 struct TestParams {
@@ -70,32 +70,32 @@ std::vector<TestParams> GetTestParams() {
   if (@available(macOS 10.14, *)) {
     return {
         {false, 120, 120, "services/test/data/mona_lisa.jpg", 1, 3, 1,
-         base::Bind(&CreateFaceDetectorImplMac)},
+         base::BindRepeating(&CreateFaceDetectorImplMac)},
         {true, 120, 120, "services/test/data/mona_lisa.jpg", 1, 3, 1,
-         base::Bind(&CreateFaceDetectorImplMac)},
+         base::BindRepeating(&CreateFaceDetectorImplMac)},
         {false, 120, 120, "services/test/data/mona_lisa.jpg", 1, 4, 10,
-         base::Bind(&CreateFaceDetectorImplMacVision)},
+         base::BindRepeating(&CreateFaceDetectorImplMacVision)},
         {false, 240, 240, "services/test/data/the_beatles.jpg", 4, 3, 1,
-         base::Bind(&CreateFaceDetectorImplMac)},
+         base::BindRepeating(&CreateFaceDetectorImplMac)},
         {true, 240, 240, "services/test/data/the_beatles.jpg", 4, 3, 1,
-         base::Bind(&CreateFaceDetectorImplMac)},
+         base::BindRepeating(&CreateFaceDetectorImplMac)},
         {false, 240, 240, "services/test/data/the_beatles.jpg", 4, 4, 10,
-         base::Bind(&CreateFaceDetectorImplMacVision)},
+         base::BindRepeating(&CreateFaceDetectorImplMacVision)},
     };
   } else {
     return {
         {false, 120, 120, "services/test/data/mona_lisa.jpg", 1, 3, 1,
-         base::Bind(&CreateFaceDetectorImplMac)},
+         base::BindRepeating(&CreateFaceDetectorImplMac)},
         {true, 120, 120, "services/test/data/mona_lisa.jpg", 1, 3, 1,
-         base::Bind(&CreateFaceDetectorImplMac)},
+         base::BindRepeating(&CreateFaceDetectorImplMac)},
         {false, 120, 120, "services/test/data/mona_lisa.jpg", 1, 4, 10,
-         base::Bind(&CreateFaceDetectorImplMacVision)},
+         base::BindRepeating(&CreateFaceDetectorImplMacVision)},
         {false, 240, 240, "services/test/data/the_beatles.jpg", 3, 3, 1,
-         base::Bind(&CreateFaceDetectorImplMac)},
+         base::BindRepeating(&CreateFaceDetectorImplMac)},
         {true, 240, 240, "services/test/data/the_beatles.jpg", 3, 3, 1,
-         base::Bind(&CreateFaceDetectorImplMac)},
+         base::BindRepeating(&CreateFaceDetectorImplMac)},
         {false, 240, 240, "services/test/data/the_beatles.jpg", 4, 4, 10,
-         base::Bind(&CreateFaceDetectorImplMacVision)},
+         base::BindRepeating(&CreateFaceDetectorImplMacVision)},
     };
   }
 }
@@ -186,9 +186,8 @@ TEST_P(FaceDetectionImplMacTest, ScanOneFace) {
   ASSERT_EQ(num_bytes, image->computeByteSize());
 
   base::RunLoop run_loop;
-  base::Closure quit_closure = run_loop.QuitClosure();
   // Send the image to Detect() and expect the response in callback.
-  EXPECT_CALL(*this, Detection()).WillOnce(RunClosure(quit_closure));
+  EXPECT_CALL(*this, Detection()).WillOnce(RunClosure(run_loop.QuitClosure()));
   impl_->Detect(
       *image,
       base::BindOnce(&FaceDetectionImplMacTest::DetectCallback,

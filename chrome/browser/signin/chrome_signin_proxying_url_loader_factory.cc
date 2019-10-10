@@ -19,6 +19,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/net_errors.h"
 
 namespace signin {
@@ -36,7 +37,7 @@ class BrowserContextData : public base::SupportsUserData::Data {
   static void StartProxying(
       Profile* profile,
       content::WebContents::Getter web_contents_getter,
-      network::mojom::URLLoaderFactoryRequest request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       network::mojom::URLLoaderFactoryPtrInfo target_factory) {
     auto* self = static_cast<BrowserContextData*>(
         profile->GetUserData(kBrowserContextUserDataKey));
@@ -47,8 +48,8 @@ class BrowserContextData : public base::SupportsUserData::Data {
 
     auto delegate = std::make_unique<HeaderModificationDelegateImpl>(profile);
     auto proxy = std::make_unique<ProxyingURLLoaderFactory>(
-        std::move(delegate), std::move(web_contents_getter), std::move(request),
-        std::move(target_factory),
+        std::move(delegate), std::move(web_contents_getter),
+        std::move(receiver), std::move(target_factory),
         base::BindOnce(&BrowserContextData::RemoveProxy,
                        self->weak_factory_.GetWeakPtr()));
     self->proxies_.emplace(std::move(proxy));
@@ -395,10 +396,10 @@ void ProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
 ProxyingURLLoaderFactory::ProxyingURLLoaderFactory(
     std::unique_ptr<HeaderModificationDelegate> delegate,
     content::WebContents::Getter web_contents_getter,
-    network::mojom::URLLoaderFactoryRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
     network::mojom::URLLoaderFactoryPtrInfo target_factory,
     DisconnectCallback on_disconnect) {
-  DCHECK(proxy_bindings_.empty());
+  DCHECK(proxy_receivers_.empty());
   DCHECK(!target_factory_.is_bound());
   DCHECK(!delegate_);
   DCHECK(!web_contents_getter_);
@@ -412,8 +413,8 @@ ProxyingURLLoaderFactory::ProxyingURLLoaderFactory(
   target_factory_.set_connection_error_handler(base::BindOnce(
       &ProxyingURLLoaderFactory::OnTargetFactoryError, base::Unretained(this)));
 
-  proxy_bindings_.AddBinding(this, std::move(loader_request));
-  proxy_bindings_.set_connection_error_handler(base::BindRepeating(
+  proxy_receivers_.Add(this, std::move(loader_receiver));
+  proxy_receivers_.set_disconnect_handler(base::BindRepeating(
       &ProxyingURLLoaderFactory::OnProxyBindingError, base::Unretained(this)));
 }
 
@@ -486,20 +487,20 @@ void ProxyingURLLoaderFactory::CreateLoaderAndStart(
 }
 
 void ProxyingURLLoaderFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest loader_request) {
-  proxy_bindings_.AddBinding(this, std::move(loader_request));
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver) {
+  proxy_receivers_.Add(this, std::move(loader_receiver));
 }
 
 void ProxyingURLLoaderFactory::OnTargetFactoryError() {
   // Stop calls to CreateLoaderAndStart() when |target_factory_| is invalid.
   target_factory_.reset();
-  proxy_bindings_.CloseAllBindings();
+  proxy_receivers_.Clear();
 
   MaybeDestroySelf();
 }
 
 void ProxyingURLLoaderFactory::OnProxyBindingError() {
-  if (proxy_bindings_.empty())
+  if (proxy_receivers_.empty())
     target_factory_.reset();
 
   MaybeDestroySelf();

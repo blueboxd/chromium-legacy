@@ -79,7 +79,7 @@ ZeroStateFileProvider::~ZeroStateFileProvider() = default;
 void ZeroStateFileProvider::Start(const base::string16& query) {
   query_start_time_ = base::TimeTicks::Now();
   ClearResultsSilently();
-  if (!query.empty())
+  if (!files_ranker_ || !query.empty())
     return;
 
   base::PostTaskAndReplyWithResult(

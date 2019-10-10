@@ -26,8 +26,8 @@ class PerformanceManager {
   static bool IsAvailable();
 
   // Posts a callback that will run on the PM sequence, and be provided a
-  // pointer to the Graph. Valid to call from the main thread only, and only
-  // if "IsAvailable" returns true.
+  // pointer to the Graph. Valid to call from any sequence, but |graph_callback|
+  // won't run if "IsAvailable" returns false.
   using GraphCallback = base::OnceCallback<void(Graph*)>;
   static void CallOnGraph(const base::Location& from_here,
                           GraphCallback graph_callback);

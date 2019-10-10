@@ -209,6 +209,17 @@ class CrostiniManagerTest : public testing::Test {
     fake_cicerone_client_->InstallLinuxPackageProgress(signal);
   }
 
+  void SendSucceededApplySignal() {
+    vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal signal;
+    signal.set_owner_id(CryptohomeIdForProfile(profile()));
+    signal.set_vm_name(kCrostiniDefaultVmName);
+    signal.set_container_name(kCrostiniDefaultContainerName);
+    signal.set_status(
+        vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::SUCCEEDED);
+
+    fake_cicerone_client_->NotifyApplyAnsiblePlaybookProgress(signal);
+  }
+
   base::RunLoop* run_loop() { return run_loop_.get(); }
   Profile* profile() { return profile_.get(); }
   CrostiniManager* crostini_manager() { return crostini_manager_; }
@@ -1419,33 +1430,71 @@ TEST_F(CrostiniManagerTest, StartContainerSuccess) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfrastructureFailure) {
+TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfraInstallFailure) {
   scoped_feature_list_.Reset();
   scoped_feature_list_.InitAndEnableFeature(
       features::kCrostiniAnsibleInfrastructure);
 
   // Response for failed Ansible installation.
-  vm_tools::cicerone::InstallLinuxPackageResponse response;
-  response.set_status(vm_tools::cicerone::InstallLinuxPackageResponse::FAILED);
-  fake_cicerone_client_->set_install_linux_package_response(response);
+  vm_tools::cicerone::InstallLinuxPackageResponse install_response;
+  install_response.set_status(
+      vm_tools::cicerone::InstallLinuxPackageResponse::FAILED);
+  fake_cicerone_client_->set_install_linux_package_response(install_response);
 
   crostini_manager()->StartLxdContainer(
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
-                     CrostiniResult::CONTAINER_START_FAILED));
+                     CrostiniResult::UNKNOWN_ERROR));
 
   run_loop()->Run();
 }
 
-TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfrastructureSuccess) {
+TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfraApplicationFailure) {
   scoped_feature_list_.Reset();
   scoped_feature_list_.InitAndEnableFeature(
       features::kCrostiniAnsibleInfrastructure);
 
   // Response for successful Ansible installation.
-  vm_tools::cicerone::InstallLinuxPackageResponse response;
-  response.set_status(vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
-  fake_cicerone_client_->set_install_linux_package_response(response);
+  vm_tools::cicerone::InstallLinuxPackageResponse install_response;
+  install_response.set_status(
+      vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
+  fake_cicerone_client_->set_install_linux_package_response(install_response);
+
+  // Response for failed Ansible playbook application.
+  vm_tools::cicerone::ApplyAnsiblePlaybookResponse apply_response;
+  apply_response.set_status(
+      vm_tools::cicerone::ApplyAnsiblePlaybookResponse::FAILED);
+  fake_cicerone_client_->set_apply_ansible_playbook_response(apply_response);
+
+  crostini_manager()->StartLxdContainer(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
+                     CrostiniResult::UNKNOWN_ERROR));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Finish successful Ansible installation.
+  SendSucceededInstallSignal();
+
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfraSuccess) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kCrostiniAnsibleInfrastructure);
+
+  // Response for successful Ansible installation.
+  vm_tools::cicerone::InstallLinuxPackageResponse install_response;
+  install_response.set_status(
+      vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
+  fake_cicerone_client_->set_install_linux_package_response(install_response);
+
+  // Response for successful Ansible playbook application.
+  vm_tools::cicerone::ApplyAnsiblePlaybookResponse apply_response;
+  apply_response.set_status(
+      vm_tools::cicerone::ApplyAnsiblePlaybookResponse::STARTED);
+  fake_cicerone_client_->set_apply_ansible_playbook_response(apply_response);
 
   crostini_manager()->StartLxdContainer(
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
@@ -1456,6 +1505,9 @@ TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfrastructureSuccess) {
 
   // Finish successful Ansible installation.
   SendSucceededInstallSignal();
+
+  // Finish successful Ansible playbook application.
+  SendSucceededApplySignal();
 
   run_loop()->Run();
 }

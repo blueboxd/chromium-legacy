@@ -133,7 +133,12 @@ void UpdateProfileName(Profile* profile,
     return;
   }
 
-  if (new_profile_name == entry->GetName())
+  base::string16 current_profile_name =
+      base::FeatureList::IsEnabled(kConcatenateGaiaAndProfileName)
+          ? entry->GetLocalProfileName()
+          : entry->GetName();
+
+  if (new_profile_name == current_profile_name)
     return;
 
   // This is only called when updating the profile name through the UI,

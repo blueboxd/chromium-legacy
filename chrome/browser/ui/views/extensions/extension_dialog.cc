@@ -39,6 +39,8 @@ ExtensionDialog::ExtensionDialog(
     std::unique_ptr<extensions::ExtensionViewHost> host,
     ExtensionDialogObserver* observer)
     : host_(std::move(host)), observer_(observer) {
+  DialogDelegate::set_use_custom_frame(false);
+
   AddRef();  // Balanced in DeleteDelegate();
 
   registrar_.Add(this,
@@ -218,10 +220,6 @@ const views::Widget* ExtensionDialog::GetWidget() const {
 
 views::View* ExtensionDialog::GetContentsView() {
   return GetExtensionView();
-}
-
-bool ExtensionDialog::ShouldUseCustomFrame() const {
-  return false;
 }
 
 /////////////////////////////////////////////////////////////////////////////

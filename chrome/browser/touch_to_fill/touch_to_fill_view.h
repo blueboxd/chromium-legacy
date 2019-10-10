@@ -17,9 +17,6 @@ struct CredentialPair;
 // To Fill controller with the Android frontend.
 class TouchToFillView {
  public:
-  using ShowCallback =
-      base::OnceCallback<void(const password_manager::CredentialPair&)>;
-
   TouchToFillView() = default;
   TouchToFillView(const TouchToFillView&) = delete;
   TouchToFillView& operator=(const TouchToFillView&) = delete;
@@ -27,11 +24,16 @@ class TouchToFillView {
 
   // Instructs Touch To Fill to show the provided |credentials| to the user.
   // |formatted_url| contains a human friendly version of the current origin.
-  // Invokes |callback| once the user chose a credential.
+  // After user interaction either OnCredentialSelected() or OnDismiss() gets
+  // invoked.
   virtual void Show(
       base::StringPiece16 formatted_url,
-      base::span<const password_manager::CredentialPair> credentials,
-      ShowCallback callback) = 0;
+      base::span<const password_manager::CredentialPair> credentials) = 0;
+
+  // Invoked in case the user chooses an entry from the credential list
+  // presented to them.
+  virtual void OnCredentialSelected(
+      const password_manager::CredentialPair& credential) = 0;
 
   // Invoked if the user dismissed the Touch To Fill sheet without choosing a
   // credential.

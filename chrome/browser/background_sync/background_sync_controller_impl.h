@@ -42,6 +42,7 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
  public:
   static const char kFieldTrialName[];
   static const char kDisabledParameterName[];
+  static const char kKeepBrowserAwakeParameterName[];
   static const char kMaxAttemptsParameterName[];
   static const char kRelyOnAndroidNetworkDetection[];
   static const char kMaxAttemptsWithNotificationPermissionParameterName[];

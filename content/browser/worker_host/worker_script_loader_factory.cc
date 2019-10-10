@@ -68,7 +68,7 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
 }
 
 void WorkerScriptLoaderFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   // This method is required to support synchronous requests, which shared
   // worker script requests are not.
   NOTREACHED();

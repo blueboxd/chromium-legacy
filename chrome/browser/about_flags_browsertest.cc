@@ -239,7 +239,8 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_OriginFlagEnabled) {
             GetOriginListText(contents, kSwitchName));
 }
 
-IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, OriginFlagEnabled) {
+// Flaky. http://crbug.com/1010678
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_OriginFlagEnabled) {
 #if !defined(OS_CHROMEOS)
   // On non-ChromeOS, the command line is modified after restart.
   EXPECT_EQ(

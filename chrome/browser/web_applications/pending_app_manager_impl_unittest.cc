@@ -31,6 +31,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -50,7 +51,8 @@ const GURL kQuxLaunchUrl("https://qux.example/launch");
 ExternalInstallOptions GetFooInstallOptions(
     base::Optional<bool> override_previous_user_uninstall =
         base::Optional<bool>()) {
-  ExternalInstallOptions options(kFooWebAppUrl, LaunchContainer::kTab,
+  ExternalInstallOptions options(kFooWebAppUrl,
+                                 blink::mojom::DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
 
   if (override_previous_user_uninstall.has_value())
@@ -61,13 +63,15 @@ ExternalInstallOptions GetFooInstallOptions(
 }
 
 ExternalInstallOptions GetBarInstallOptions() {
-  ExternalInstallOptions options(kBarWebAppUrl, LaunchContainer::kWindow,
+  ExternalInstallOptions options(kBarWebAppUrl,
+                                 blink::mojom::DisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
   return options;
 }
 
 ExternalInstallOptions GetQuxInstallOptions() {
-  ExternalInstallOptions options(kQuxWebAppUrl, LaunchContainer::kWindow,
+  ExternalInstallOptions options(kQuxWebAppUrl,
+                                 blink::mojom::DisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
   return options;
 }
@@ -749,7 +753,8 @@ TEST_F(PendingAppManagerImplTest, Install_AlwaysUpdate) {
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
   auto get_force_reinstall_info = []() {
-    ExternalInstallOptions options(kFooWebAppUrl, LaunchContainer::kWindow,
+    ExternalInstallOptions options(kFooWebAppUrl,
+                                   blink::mojom::DisplayMode::kStandalone,
                                    ExternalInstallSource::kExternalPolicy);
     options.force_reinstall = true;
     return options;

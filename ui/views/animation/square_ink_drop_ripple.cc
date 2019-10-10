@@ -146,7 +146,7 @@ SquareInkDropRipple::SquareInkDropRipple(const gfx::Size& large_size,
                                          const gfx::Point& center_point,
                                          SkColor color,
                                          float visible_opacity)
-    : activated_shape_(ROUNDED_RECT),
+    : activated_shape_(ActivatedShape::kRoundedRect),
       visible_opacity_(visible_opacity),
       large_size_(large_size),
       large_corner_radius_(large_corner_radius),
@@ -542,10 +542,10 @@ void SquareInkDropRipple::GetCurrentTransforms(
 void SquareInkDropRipple::GetActivatedTargetTransforms(
     InkDropTransforms* transforms_out) const {
   switch (activated_shape_) {
-    case CIRCLE:
+    case ActivatedShape::kCircle:
       CalculateCircleTransforms(small_size_, transforms_out);
       break;
-    case ROUNDED_RECT:
+    case ActivatedShape::kRoundedRect:
       CalculateRectTransforms(small_size_, small_corner_radius_,
                               transforms_out);
       break;
@@ -555,10 +555,10 @@ void SquareInkDropRipple::GetActivatedTargetTransforms(
 void SquareInkDropRipple::GetDeactivatedTargetTransforms(
     InkDropTransforms* transforms_out) const {
   switch (activated_shape_) {
-    case CIRCLE:
+    case ActivatedShape::kCircle:
       CalculateCircleTransforms(large_size_, transforms_out);
       break;
-    case ROUNDED_RECT:
+    case ActivatedShape::kRoundedRect:
       CalculateRectTransforms(large_size_, small_corner_radius_,
                               transforms_out);
       break;

@@ -209,12 +209,14 @@ void CreditCardAccessManager::GetUnmaskDetailsIfUserIsVerifiable(
   // If user is verifiable, then make preflight call to payments to fetch unmask
   // details, otherwise the only option is to perform CVC Auth, which does not
   // require any. Do nothing if request is already in progress.
-  if (is_user_verifiable_ && !unmask_details_request_in_progress_) {
+  if (is_user_verifiable_.value_or(false) &&
+      !unmask_details_request_in_progress_) {
     unmask_details_request_in_progress_ = true;
     payments_client_->GetUnmaskDetails(
         base::BindOnce(&CreditCardAccessManager::OnDidGetUnmaskDetails,
                        weak_ptr_factory_.GetWeakPtr()),
         personal_data_manager_->app_locale());
+    AutofillMetrics::LogCardUnmaskPreflightCalled();
   }
 }
 

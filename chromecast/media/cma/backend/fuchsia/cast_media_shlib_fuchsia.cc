@@ -5,7 +5,6 @@
 #include "chromecast/public/cast_media_shlib.h"
 
 #include "chromecast/media/cma/backend/media_pipeline_backend_for_mixer.h"
-#include "chromecast/media/cma/backend/stream_mixer.h"
 #include "chromecast/public/graphics_types.h"
 #include "chromecast/public/video_plane.h"
 #include "media/base/media.h"
@@ -73,20 +72,6 @@ bool CastMediaShlib::SetMediaClockRate(double new_rate) {
 
 bool CastMediaShlib::SupportsMediaClockRateChange() {
   return false;
-}
-
-void CastMediaShlib::AddLoopbackAudioObserver(LoopbackAudioObserver* observer) {
-  StreamMixer::Get()->AddLoopbackAudioObserver(observer);
-}
-
-void CastMediaShlib::RemoveLoopbackAudioObserver(
-    LoopbackAudioObserver* observer) {
-  StreamMixer::Get()->RemoveLoopbackAudioObserver(observer);
-}
-
-void CastMediaShlib::SetPostProcessorConfig(const std::string& name,
-                                            const std::string& config) {
-  StreamMixer::Get()->SetPostProcessorConfig(name, config);
 }
 
 }  // namespace media

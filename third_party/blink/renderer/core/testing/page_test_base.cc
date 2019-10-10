@@ -13,11 +13,26 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 
 namespace blink {
+
+namespace {
+
+Element* GetOrCreateElement(ContainerNode* parent,
+                            const HTMLQualifiedName& tag_name) {
+  HTMLCollection* elements = parent->getElementsByTagNameNS(
+      tag_name.NamespaceURI(), tag_name.LocalName());
+  if (!elements->IsEmpty())
+    return elements->item(0);
+  return parent->ownerDocument()->CreateRawElement(
+      tag_name, CreateElementFlags::ByCreateElement());
+}
+
+}  // namespace
 
 PageTestBase::PageTestBase() = default;
 
@@ -138,6 +153,16 @@ void PageTestBase::SetHtmlInnerHTML(const std::string& html_content) {
   GetDocument().documentElement()->SetInnerHTMLFromString(
       String::FromUTF8(html_content));
   UpdateAllLifecyclePhasesForTest();
+}
+
+void PageTestBase::InsertStyleElement(const std::string& style_rules) {
+  Element* const head =
+      GetOrCreateElement(&GetDocument(), html_names::kHeadTag);
+  DCHECK_EQ(head, GetOrCreateElement(&GetDocument(), html_names::kHeadTag));
+  Element* const style = GetDocument().CreateRawElement(
+      html_names::kStyleTag, CreateElementFlags::ByCreateElement());
+  style->setTextContent(String(style_rules.data(), style_rules.size()));
+  head->appendChild(style);
 }
 
 void PageTestBase::NavigateTo(const KURL& url,

@@ -39,8 +39,6 @@ class DEVICE_VR_EXPORT FakeVRDevice : public VRDeviceBase,
 
   mojom::VRPosePtr pose_;
 
-  mojo::Binding<mojom::XRSessionController> controller_binding_;
-
   DISALLOW_COPY_AND_ASSIGN(FakeVRDevice);
 };
 

@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/lifetime/browser_close_manager.h"
+#include "chrome/browser/sharing/sharing_dialog_data.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
@@ -40,7 +41,6 @@ class ExtensionsContainer;
 class FindBar;
 class GURL;
 class LocationBar;
-class SharingUiController;
 class StatusBubble;
 class ToolbarActionsBar;
 
@@ -333,7 +333,7 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Shows the dialog for a sharing feature.
   virtual SharingDialog* ShowSharingDialog(content::WebContents* contents,
-                                           SharingUiController* controller) = 0;
+                                           SharingDialogData data) = 0;
 
   // Shows the Update Recommended dialog box.
   virtual void ShowUpdateChromeDialog() = 0;

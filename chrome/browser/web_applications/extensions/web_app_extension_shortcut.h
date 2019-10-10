@@ -54,11 +54,6 @@ bool ShouldCreateShortcutFor(ShortcutCreationReason reason,
                              Profile* profile,
                              const extensions::Extension* extension);
 
-// Gets the user data directory to use for |extension| located inside
-// |profile_path|.
-base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
-                                      const extensions::Extension& extension);
-
 // Creates shortcuts for an app. This loads the app's icon from disk, and calls
 // CreateShortcutsWithInfo(). If you already have a ShortcutInfo with the app's
 // icon loaded, you should use CreateShortcutsWithInfo() directly.

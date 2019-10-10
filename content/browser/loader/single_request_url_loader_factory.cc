@@ -93,7 +93,7 @@ void SingleRequestURLLoaderFactory::CreateLoaderAndStart(
 }
 
 void SingleRequestURLLoaderFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   NOTREACHED();
 }
 

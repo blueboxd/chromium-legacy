@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/sharing/sharing_dialog.h"
-#include "chrome/browser/sharing/sharing_ui_controller.h"
+#include "chrome/browser/sharing/sharing_dialog_data.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/styled_label_listener.h"
@@ -20,7 +20,6 @@ class StyledLabel;
 class View;
 }  // namespace views
 
-class Browser;
 class HoverButton;
 enum class SharingDialogType;
 
@@ -32,7 +31,7 @@ class SharingDialogView : public SharingDialog,
   // Bubble will be anchored to |anchor_view|.
   SharingDialogView(views::View* anchor_view,
                     content::WebContents* web_contents,
-                    SharingUiController* controller);
+                    SharingDialogData data);
 
   ~SharingDialogView() override;
 
@@ -43,6 +42,7 @@ class SharingDialogView : public SharingDialog,
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
+  void WebContentsDestroyed() override;
   int GetDialogButtons() const override;
   std::unique_ptr<views::View> CreateFootnoteView() override;
   gfx::Size CalculatePreferredSize() const override;
@@ -58,8 +58,6 @@ class SharingDialogView : public SharingDialog,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   static views::BubbleDialogDelegateView* GetAsBubble(SharingDialog* dialog);
-  std::unique_ptr<views::StyledLabel> CreateHelpText(
-      views::StyledLabelListener* listener);
 
  private:
   friend class SharingDialogViewTest;
@@ -83,13 +81,12 @@ class SharingDialogView : public SharingDialog,
   // Populates the dialog view containing error help text.
   void InitErrorView();
 
-  SharingUiController* controller_ = nullptr;
+  SharingDialogData data_;
+
   // References to device and app buttons views.
   std::vector<HoverButton*> dialog_buttons_;
   // References to device and app button icons.
   std::vector<views::ImageView*> button_icons_;
-  Browser* browser_ = nullptr;
-  bool send_failed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SharingDialogView);
 };

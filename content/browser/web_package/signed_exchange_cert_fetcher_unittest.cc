@@ -14,6 +14,7 @@
 #include "components/cbor/writer.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
 #include "net/cert/x509_util.h"
@@ -119,7 +120,8 @@ class URLLoaderFactoryForMockLoader final
     client_ptr_ = std::move(client);
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest factory) override {
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory)
+      override {
     NOTREACHED();
   }
 

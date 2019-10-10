@@ -34,6 +34,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/browser/can_commit_status.h"
+#include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/renderer_host/media/old_render_frame_audio_input_stream_factory.h"
 #include "content/browser/renderer_host/media/old_render_frame_audio_output_stream_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
@@ -153,7 +154,6 @@ class ResourceRequestBody;
 namespace content {
 class AppCacheNavigationHandle;
 class AuthenticatorImpl;
-class BackForwardCacheMetrics;
 class BundledExchangesHandle;
 class FrameTree;
 class FrameTreeNode;
@@ -317,7 +317,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void SendAccessibilityEventsToManager(
       const AXEventNotificationDetails& details);
-  void EvictFromBackForwardCache() override;
+
+  void EvictFromBackForwardCacheWithReason(
+      base::Optional<BackForwardCacheMetrics::EvictedReason> reason);
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -347,7 +349,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            const ChildProcessTerminationInfo& info) override;
 
   // SiteInstanceImpl::Observer
-  void RenderProcessGone(SiteInstanceImpl* site_instance) override;
+  void RenderProcessGone(SiteInstanceImpl* site_instance,
+                         const ChildProcessTerminationInfo& info) override;
 
   // CSPContext
   void ReportContentSecurityPolicyViolation(
@@ -946,6 +949,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // occurs immediately before a restored document is committed.
   void LeaveBackForwardCache();
 
+  // Take ownership over the DidCommitProvisionalLoad_Params that
+  // were last used to commit this navigation.
+  // This is used by the BackForwardCache to re-commit when navigating to a
+  // restored page.
+  std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+  TakeLastCommitParams();
+
   // Start a timer that will evict this RenderFrameHost from the
   // BackForwardCache after time to live.
   void StartBackForwardCacheEvictionTimer();
@@ -1154,13 +1164,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       NavigationRequest* committing_navigation_request,
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
           validated_params);
-
-  // Return true if the process this RenderFrameHost is using has crashed.
-  //
-  // This is not exactly the opposite of IsRenderFrameLive().
-  // IsRenderFrameLive() is false when the RenderProcess died, but it is also
-  // false when it hasn't been initialized.
-  bool render_process_has_died() const { return render_process_has_died_; }
 
   // Returns the network isolation key used for subresources from the currently
   // committed navigation. It is reset on each document commit.
@@ -1440,6 +1443,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
           validated_params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
       override;
+  void EvictFromBackForwardCache() override;
 
   // This function mimics DidCommitProvisionalLoad but is a direct mojo
   // callback from NavigationClient::CommitNavigation.
@@ -1796,7 +1800,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // state should be restored to its pre-commit value.
   bool DidCommitNavigationInternal(
       std::unique_ptr<NavigationRequest> navigation_request,
-      FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+          validated_params,
       bool is_same_document_navigation);
 
   // Called by the renderer process when it is done processing a same-document
@@ -1901,7 +1906,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Evicts the document from the BackForwardCache if it is in the cache,
   // and ineligible for caching.
-  void MaybeEvictFromBackForwardCache();
+  void MaybeEvictFromBackForwardCache(
+      BackForwardCacheMetrics::EvictedReason reason);
 
   // Helper for handling download-related IPCs.
   void DownloadUrl(
@@ -2189,7 +2195,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   PreviewsState last_navigation_previews_state_;
 
   bool has_committed_any_navigation_ = false;
-  bool render_process_has_died_ = false;
 
   mojo::AssociatedReceiver<mojom::FrameHost> frame_host_associated_receiver_{
       this};
@@ -2419,6 +2424,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool is_evicted_from_back_forward_cache_ = false;
   bool is_back_forward_cache_disallowed_ = false;
   base::OneShotTimer back_forward_cache_eviction_timer_;
+
+  // This used to re-commit when restoring from the BackForwardCache, with the
+  // same params as the original navigation.
+  // Note: If BackForwardCache is not enabled, this field is not set.
+  std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+      last_commit_params_;
 
   blink::mojom::FrameVisibility visibility_ =
       blink::mojom::FrameVisibility::kRenderedInViewport;

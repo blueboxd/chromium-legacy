@@ -4707,6 +4707,17 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="By JavaScript"/>
 </enum>
 
+<enum name="BackForwardCacheEvictedReason">
+  <int value="0" label="Timeout"/>
+  <int value="1" label="Cache limit"/>
+  <int value="2" label="JavaScript execution"/>
+  <int value="3" label="Renderer process killed"/>
+  <int value="4" label="Renderer process crashed"/>
+  <int value="5" label="Dialog"/>
+  <int value="6" label="Granted media stream access"/>
+  <int value="7" label="Scheduler tracked feature used"/>
+</enum>
+
 <enum name="BackForwardCacheHistoryNavigationOutcome">
   <int value="0" label="Restored"/>
   <int value="1" label="Not cached"/>

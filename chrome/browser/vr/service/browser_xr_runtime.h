@@ -15,6 +15,8 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 class WebContents;
@@ -111,13 +113,15 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
       device::mojom::XRRuntimeSessionOptionsPtr options,
       RequestSessionCallback callback,
       device::mojom::XRSessionPtr session,
-      device::mojom::XRSessionControllerPtr immersive_session_controller);
+      mojo::PendingRemote<device::mojom::XRSessionController>
+          immersive_session_controller);
   void OnImmersiveSessionError();
   void OnInitialized();
 
   device::mojom::XRDeviceId id_;
   device::mojom::XRRuntimePtr runtime_;
-  device::mojom::XRSessionControllerPtr immersive_session_controller_;
+  mojo::Remote<device::mojom::XRSessionController>
+      immersive_session_controller_;
 
   std::set<VRServiceImpl*> services_;
   device::mojom::VRDisplayInfoPtr display_info_;

@@ -81,9 +81,9 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
   DialogDelegate* dialog = delegate->AsDialogDelegate();
 
   if (dialog)
-    dialog->supports_custom_frame_ &= CanSupportCustomFrame(parent);
+    dialog->params_.custom_frame &= CanSupportCustomFrame(parent);
 
-  if (!dialog || dialog->ShouldUseCustomFrame()) {
+  if (!dialog || dialog->use_custom_frame()) {
     params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
     params.remove_standard_frame = true;
 #if !defined(OS_MACOSX)
@@ -211,7 +211,7 @@ ClientView* DialogDelegate::CreateClientView(Widget* widget) {
 }
 
 NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
-  if (ShouldUseCustomFrame())
+  if (use_custom_frame())
     return CreateDialogFrameView(widget);
   return WidgetDelegate::CreateNonClientFrameView(widget);
 }
@@ -239,10 +239,6 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
   }
   frame->SetBubbleBorder(std::move(border));
   return frame;
-}
-
-bool DialogDelegate::ShouldUseCustomFrame() const {
-  return supports_custom_frame_;
 }
 
 const DialogClientView* DialogDelegate::GetDialogClientView() const {

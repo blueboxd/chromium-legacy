@@ -130,6 +130,10 @@ void ContentPasswordManagerDriver::GeneratedPasswordAccepted(
       this, form_data, generation_element_id, password);
 }
 
+void ContentPasswordManagerDriver::TouchToFillDismissed() {
+  GetPasswordAutofillAgent()->TouchToFillDismissed();
+}
+
 void ContentPasswordManagerDriver::FillSuggestion(
     const base::string16& username,
     const base::string16& password) {

@@ -1153,6 +1153,11 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
     child->current_frame_host()->LeaveBackForwardCache();
 }
 
+std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+RenderFrameHostImpl::TakeLastCommitParams() {
+  return std::move(last_commit_params_);
+}
+
 void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
   DCHECK(is_in_back_forward_cache_);
   base::TimeDelta evict_after =
@@ -1165,19 +1170,21 @@ void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
 
   back_forward_cache_eviction_timer_.Start(
       FROM_HERE, evict_after,
-      base::BindOnce(&RenderFrameHostImpl::EvictFromBackForwardCache,
-                     weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&RenderFrameHostImpl::EvictFromBackForwardCacheWithReason,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     BackForwardCacheMetrics::EvictedReason::kTimeout));
 }
 
 void RenderFrameHostImpl::DisallowBackForwardCache() {
   is_back_forward_cache_disallowed_ = true;
   if (is_in_back_forward_cache())
-    EvictFromBackForwardCache();
+    EvictFromBackForwardCacheWithReason(base::nullopt);
 }
 
 void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {
   was_granted_media_access_ = true;
-  MaybeEvictFromBackForwardCache();
+  MaybeEvictFromBackForwardCache(
+      BackForwardCacheMetrics::EvictedReason::kGrantedMediaStreamAccess);
 }
 
 void RenderFrameHostImpl::OnPortalActivated(
@@ -1701,8 +1708,6 @@ bool RenderFrameHostImpl::AccessibilityIsMainFrame() const {
 void RenderFrameHostImpl::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {
-  render_process_has_died_ = true;
-
   if (base::FeatureList::IsEnabled(features::kCrashReporting))
     MaybeGenerateCrashReport(info.status, info.exit_code);
 
@@ -1770,11 +1775,16 @@ void RenderFrameHostImpl::RenderProcessExited(
   // the last block of code here.
 }
 
-void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
+void RenderFrameHostImpl::RenderProcessGone(
+    SiteInstanceImpl* site_instance,
+    const ChildProcessTerminationInfo& info) {
   DCHECK_EQ(site_instance_.get(), site_instance);
 
   if (is_in_back_forward_cache_) {
-    EvictFromBackForwardCache();
+    EvictFromBackForwardCacheWithReason(
+        info.status == base::TERMINATION_STATUS_PROCESS_CRASHED
+            ? BackForwardCacheMetrics::EvictedReason::kRendererProcessCrashed
+            : BackForwardCacheMetrics::EvictedReason::kRendererProcessKilled);
     return;
   }
 
@@ -2422,7 +2432,8 @@ void RenderFrameHostImpl::UpdateActiveSchedulerTrackedFeatures(
   TRACE_EVENT0("toplevel", "UpdateActiveSchedulerTrackedFeatures");
   renderer_reported_scheduler_tracked_features_ = features_mask;
 
-  MaybeEvictFromBackForwardCache();
+  MaybeEvictFromBackForwardCache(
+      BackForwardCacheMetrics::EvictedReason::kSchedulerTrackedFeatureUsed);
 }
 
 void RenderFrameHostImpl::OnSchedulerTrackedFeatureUsed(
@@ -2431,7 +2442,8 @@ void RenderFrameHostImpl::OnSchedulerTrackedFeatureUsed(
   browser_reported_scheduler_tracked_features_ |=
       1 << static_cast<uint64_t>(feature);
 
-  MaybeEvictFromBackForwardCache();
+  MaybeEvictFromBackForwardCache(
+      BackForwardCacheMetrics::EvictedReason::kSchedulerTrackedFeatureUsed);
 }
 
 bool RenderFrameHostImpl::IsFrozen() {
@@ -2508,7 +2520,8 @@ void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
   // been fired.
   is_loading_ = true;
 
-  DidCommitNavigationInternal(std::move(owned_request), validated_params.get(),
+  DidCommitNavigationInternal(std::move(owned_request),
+                              std::move(validated_params),
                               /*is_same_document_navigation=*/false);
 
   // Now that the restored frame has been committed, unfreeze it.
@@ -2577,7 +2590,7 @@ void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
   if (!DidCommitNavigationInternal(
           is_browser_initiated ? std::move(same_document_navigation_request_)
                                : nullptr,
-          validated_params.get(), true /* is_same_document_navigation*/)) {
+          std::move(validated_params), true /* is_same_document_navigation*/)) {
     return;
   }
 
@@ -2974,7 +2987,8 @@ void RenderFrameHostImpl::OnRunJavaScriptDialog(
     IPC::Message* reply_msg) {
   // If a dialog tries to show for a document in the BackForwardCache, evict it.
   if (is_in_back_forward_cache_) {
-    EvictFromBackForwardCache();
+    EvictFromBackForwardCacheWithReason(
+        BackForwardCacheMetrics::EvictedReason::kDialog);
     return;
   }
 
@@ -3546,6 +3560,15 @@ void RenderFrameHostImpl::SendAccessibilityEventsToManager(
 
 void RenderFrameHostImpl::EvictFromBackForwardCache() {
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::EvictFromBackForwardCache");
+
+  // TODO(hajimehoshi): This function should take the reason from the renderer
+  // side.
+  EvictFromBackForwardCacheWithReason(
+      BackForwardCacheMetrics::EvictedReason::kJavaScriptExecution);
+}
+
+void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
+    base::Optional<BackForwardCacheMetrics::EvictedReason> reason) {
   DCHECK(IsBackForwardCacheEnabled());
 
   if (is_evicted_from_back_forward_cache_)
@@ -3559,10 +3582,11 @@ void RenderFrameHostImpl::EvictFromBackForwardCache() {
     DCHECK_EQ(top_document->is_in_back_forward_cache(), in_back_forward_cache);
   }
 
-  if (BackForwardCacheMetrics* metrics =
-          top_document->GetBackForwardCacheMetrics()) {
-    metrics->MarkEvictedFromBackForwardCache();
-  }
+  // TODO(hajimehoshi): Record the 'race condition' by JavaScript execution when
+  // |is_in_back_forward_cache()| is false.
+  BackForwardCacheMetrics* metrics = top_document->GetBackForwardCacheMetrics();
+  if (is_in_back_forward_cache() && reason && metrics)
+    metrics->MarkEvictedFromBackForwardCacheWithReason(reason.value());
 
   if (!in_back_forward_cache) {
     BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(
@@ -6931,7 +6955,8 @@ void RenderFrameHostImpl::UpdateSiteURL(const GURL& url,
 
 bool RenderFrameHostImpl::DidCommitNavigationInternal(
     std::unique_ptr<NavigationRequest> navigation_request,
-    FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
+    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+        validated_params,
     bool is_same_document_navigation) {
   // Sanity-check the page transition for frame type.
   DCHECK_EQ(ui::PageTransitionIsMainFrame(validated_params->transition),
@@ -6985,7 +7010,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     }
   }
 
-  if (!ValidateDidCommitParams(navigation_request.get(), validated_params,
+  if (!ValidateDidCommitParams(navigation_request.get(), validated_params.get(),
                                is_same_document_navigation)) {
     return false;
   }
@@ -7048,6 +7073,12 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   frame_tree_node()->navigator()->DidNavigate(this, *validated_params,
                                               std::move(navigation_request),
                                               is_same_document_navigation);
+
+  if (IsBackForwardCacheEnabled()) {
+    // Store the Commit params so they can be reused if the page is ever
+    // restored from the BackForwardCache.
+    last_commit_params_ = std::move(validated_params);
+  }
 
   if (!is_same_document_navigation) {
     cookie_no_samesite_deprecation_url_hashes_.clear();
@@ -7356,7 +7387,7 @@ void RenderFrameHostImpl::DidCommitNavigation(
   }
 
   if (!DidCommitNavigationInternal(std::move(committing_navigation_request),
-                                   validated_params.get(),
+                                   std::move(validated_params),
                                    false /* is_same_document_navigation */)) {
     return;
   }
@@ -7701,7 +7732,8 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
   }
 }
 
-void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
+void RenderFrameHostImpl::MaybeEvictFromBackForwardCache(
+    BackForwardCacheMetrics::EvictedReason reason) {
   if (!is_in_back_forward_cache_)
     return;
 
@@ -7715,7 +7747,7 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
   if (can_store)
     return;
 
-  EvictFromBackForwardCache();
+  EvictFromBackForwardCacheWithReason(reason);
 }
 
 void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(

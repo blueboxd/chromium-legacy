@@ -30,7 +30,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/url_constants.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "ui/base/template_expressions.h"
 
@@ -233,9 +234,9 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
 
   ~WebUIURLLoaderFactory() override {}
 
-  void AddBinding(mojo::PendingReceiver<network::mojom::URLLoaderFactory>
-                      factory_receiver) {
-    loader_factory_bindings_.AddBinding(this, std::move(factory_receiver));
+  void AddReceiver(mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+                       factory_receiver) {
+    loader_factory_receivers_.Add(this, std::move(factory_receiver));
   }
 
   // network::mojom::URLLoaderFactory implementation:
@@ -300,8 +301,9 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
             GetStoragePartition()->browser_context()->GetResourceContext()));
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    loader_factory_bindings_.AddBinding(this, std::move(request));
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
+    loader_factory_receivers_.Add(this, std::move(receiver));
   }
 
   // WebContentsObserver implementation:
@@ -324,7 +326,7 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
   RenderFrameHost* render_frame_host_;
   std::string scheme_;
   const base::flat_set<std::string> allowed_hosts_;  // if empty all allowed.
-  mojo::BindingSet<network::mojom::URLLoaderFactory> loader_factory_bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> loader_factory_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIURLLoaderFactory);
 };
@@ -352,7 +354,7 @@ void CreateWebUIURLLoaderBinding(
         std::make_unique<WebUIURLLoaderFactory>(render_frame_host, scheme,
                                                 base::flat_set<std::string>());
   }
-  g_web_ui_url_loader_factories.Get()[routing_id]->AddBinding(
+  g_web_ui_url_loader_factories.Get()[routing_id]->AddReceiver(
       std::move(factory_receiver));
 }
 

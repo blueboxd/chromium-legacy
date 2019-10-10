@@ -26,7 +26,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/http/http_util.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "services/network/public/cpp/features.h"
@@ -253,14 +254,15 @@ class URLLoaderInterceptor::Interceptor
       : parent_(parent),
         process_id_getter_(process_id_getter),
         original_factory_getter_(original_factory_getter) {
-    bindings_.set_connection_error_handler(base::BindRepeating(
+    receivers_.set_disconnect_handler(base::BindRepeating(
         &Interceptor::OnConnectionError, base::Unretained(this)));
   }
 
   ~Interceptor() override {}
 
-  void BindRequest(network::mojom::URLLoaderFactoryRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void BindReceiver(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
   void SetConnectionErrorHandler(base::OnceClosure handler) {
@@ -296,19 +298,20 @@ class URLLoaderInterceptor::Interceptor
             parent_->GetCompletionStatusCallback()));
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    BindRequest(std::move(request));
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
+    BindReceiver(std::move(receiver));
   }
 
   void OnConnectionError() {
-    if (bindings_.empty() && error_handler_)
+    if (receivers_.empty() && error_handler_)
       std::move(error_handler_).Run();
   }
 
   URLLoaderInterceptor::IOState* parent_;
   ProcessIdGetter process_id_getter_;
   OriginalFactoryGetter original_factory_getter_;
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
   base::OnceClosure error_handler_;
   std::vector<std::unique_ptr<URLLoaderClientInterceptor>>
       url_loader_client_interceptors_;
@@ -358,7 +361,7 @@ class URLLoaderInterceptor::URLLoaderFactoryNavigationWrapper {
         base::BindLambdaForTesting([=]() -> network::mojom::URLLoaderFactory* {
           return this->target_factory_.get();
         }));
-    interceptor_->BindRequest(std::move(request));
+    interceptor_->BindReceiver(std::move(request));
   }
 
  private:
@@ -379,7 +382,7 @@ class URLLoaderInterceptor::BrowserProcessWrapper {
             base::BindRepeating(&BrowserProcessWrapper::GetOriginalFactory,
                                 base::Unretained(this))),
         original_factory_(std::move(original_factory)) {
-    interceptor_.BindRequest(std::move(factory_request));
+    interceptor_.BindReceiver(std::move(factory_request));
   }
 
   ~BrowserProcessWrapper() {}
@@ -410,7 +413,7 @@ class URLLoaderInterceptor::SubresourceWrapper {
             base::BindRepeating(&SubresourceWrapper::GetOriginalFactory,
                                 base::Unretained(this))),
         original_factory_(std::move(original_factory)) {
-    interceptor_.BindRequest(std::move(factory_request));
+    interceptor_.BindReceiver(std::move(factory_request));
     interceptor_.SetConnectionErrorHandler(base::BindOnce(
         &URLLoaderInterceptor::IOState::SubresourceWrapperBindingError,
         base::Unretained(parent), this));

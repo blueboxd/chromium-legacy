@@ -27,8 +27,9 @@ void CredentialCache::SaveCredentialsForOrigin(
   std::vector<CredentialPair> credentials;
   credentials.reserve(best_matches.size());
   for (const PasswordForm* form : best_matches) {
-    credentials.emplace_back(form->username_value, form->password_value,
-                             form->origin, form->is_public_suffix_match);
+    credentials.emplace_back(
+        form->username_value, form->password_value, form->origin,
+        CredentialPair::IsPublicSuffixMatch(form->is_public_suffix_match));
   }
   // Sort by origin, then username.
   std::sort(credentials.begin(), credentials.end(),

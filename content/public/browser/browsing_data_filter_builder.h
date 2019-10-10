@@ -82,7 +82,7 @@ class CONTENT_EXPORT BrowsingDataFilterBuilder {
 
   // A convenience method to produce an empty blacklist, a filter that matches
   // everything.
-  static base::Callback<bool(const GURL&)> BuildNoopFilter();
+  static base::RepeatingCallback<bool(const GURL&)> BuildNoopFilter();
 
   // The mode of the filter.
   virtual Mode GetMode() = 0;

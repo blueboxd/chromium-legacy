@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -58,7 +58,7 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   // target factory.
   AwProxyingURLLoaderFactory(
       int process_id,
-      network::mojom::URLLoaderFactoryRequest loader_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
       bool intercept_only);
 
@@ -79,14 +79,15 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
 
-  void Clone(network::mojom::URLLoaderFactoryRequest loader_request) override;
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+                 loader_receiver) override;
 
  private:
   void OnTargetFactoryError();
   void OnProxyBindingError();
 
   const int process_id_;
-  mojo::BindingSet<network::mojom::URLLoaderFactory> proxy_bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> proxy_receivers_;
   network::mojom::URLLoaderFactoryPtr target_factory_;
 
   // When true the loader resulting from this factory will only execute

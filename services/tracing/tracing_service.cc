@@ -189,7 +189,7 @@ void TracingService::OnStart() {
                           base::Unretained(tracing_coordinator_.get())));
 
   registry_.AddInterface(
-      base::BindRepeating(&ConsumerHost::BindConsumerRequest,
+      base::BindRepeating(&ConsumerHost::BindConsumerReceiver,
                           base::Unretained(PerfettoService::GetInstance())));
 
   service_listener_ = std::make_unique<ServiceListener>(

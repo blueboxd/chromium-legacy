@@ -23,6 +23,7 @@ BackgroundSyncParameters::BackgroundSyncParameters()
 #if defined(OS_ANDROID)
       rely_on_android_network_detection(false),
 #endif
+      keep_browser_awake_till_events_complete(false),
       max_sync_attempts(kMaxSyncAttempts),
       max_sync_attempts_with_notification_permission(kMaxSyncAttempts),
       initial_retry_delay(kInitialRetryDelay),
@@ -32,6 +33,9 @@ BackgroundSyncParameters::BackgroundSyncParameters()
       min_periodic_sync_events_interval(kMinPeriodicSyncEventsInterval) {
 }
 
+BackgroundSyncParameters::BackgroundSyncParameters(
+    const BackgroundSyncParameters& other) = default;
+
 bool BackgroundSyncParameters::operator==(
     const BackgroundSyncParameters& other) const {
   return disable == other.disable &&
@@ -39,6 +43,8 @@ bool BackgroundSyncParameters::operator==(
          rely_on_android_network_detection ==
              other.rely_on_android_network_detection &&
 #endif
+         keep_browser_awake_till_events_complete ==
+             other.keep_browser_awake_till_events_complete &&
          max_sync_attempts == other.max_sync_attempts &&
          max_sync_attempts_with_notification_permission ==
              other.max_sync_attempts_with_notification_permission &&

@@ -337,7 +337,8 @@ TEST_F(StorageMonitorLinuxTest, BasicAttachDetach) {
 }
 
 // Only removable devices are recognized.
-TEST_F(StorageMonitorLinuxTest, Removable) {
+// This test is flaky, see https://crbug.com/1012211
+TEST_F(StorageMonitorLinuxTest, DISABLED_Removable) {
   base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   ASSERT_FALSE(test_path_a.empty());
   MtabTestData test_data1[] = {

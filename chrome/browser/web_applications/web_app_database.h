@@ -21,6 +21,7 @@
 namespace syncer {
 class ModelError;
 class MetadataBatch;
+class MetadataChangeList;
 }  // namespace syncer
 
 namespace web_app {
@@ -49,8 +50,10 @@ class WebAppDatabase {
   using CompletionCallback = base::OnceCallback<void(bool success)>;
   // There can be only 1 transaction at a time.
   void BeginTransaction();
-  void CommitTransaction(const RegistryUpdateData& update_data,
-                         CompletionCallback callback);
+  void CommitTransaction(
+      const RegistryUpdateData& update_data,
+      std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+      CompletionCallback callback);
   void CancelTransaction();
 
   // Exposed for testing.

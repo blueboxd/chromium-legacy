@@ -91,22 +91,11 @@ void GPURenderBundleEncoder::setIndexBuffer(GPUBuffer* buffer,
                                                offset);
 }
 
-void GPURenderBundleEncoder::setVertexBuffers(
-    uint32_t startSlot,
-    const HeapVector<Member<GPUBuffer>>& buffers,
-    const Vector<uint64_t>& offsets,
-    ExceptionState& exception_state) {
-  if (buffers.size() != offsets.size()) {
-    exception_state.ThrowRangeError(
-        "buffers array and offsets array must be the same length");
-    return;
-  }
-
-  std::unique_ptr<DawnBuffer[]> dawn_buffers = AsDawnType(buffers);
-
-  GetProcs().renderBundleEncoderSetVertexBuffers(
-      GetHandle(), startSlot, buffers.size(), dawn_buffers.get(),
-      offsets.data());
+void GPURenderBundleEncoder::setVertexBuffer(uint32_t slot,
+                                             const GPUBuffer* buffer,
+                                             uint64_t offset) {
+  GetProcs().renderBundleEncoderSetVertexBuffer(GetHandle(), slot,
+                                                buffer->GetHandle(), offset);
 }
 
 void GPURenderBundleEncoder::draw(uint32_t vertexCount,

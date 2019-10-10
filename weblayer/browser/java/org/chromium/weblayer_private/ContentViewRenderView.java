@@ -12,6 +12,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.ValueCallback;
 import android.widget.FrameLayout;
 
@@ -35,19 +36,7 @@ import java.util.ArrayList;
  * the chromium compositor. Note it can be used to display only one WebContents.
  * This allows switching between SurfaceView and TextureView as the source of
  * the Surface used by chromium compositor, and attempts to make the switch
- * visually seamless. The rough steps for a switch are:
- * 1) Allocate new view, and insert it into view hierarchy below the existing
- *    view, so it is not yet showing.
- * 2) When Surface is allocated by new View, swap chromium compositor to the
- *    new Surface. Note at this point the existing view should is still visible.
- * 3) After chromium compositor swaps a frame in the new surface, detach the
- *    existing view.
- * Here are some more details.
- * * New view is added at index 0, ie below all other children.
- * * SurfaceView that uses SurfaceControl will need to retain the underlying
- *   EGLSurface to avoid desotrying the Surface.
- * * Use postOnAnimation to manipulate view tree as it is not safe to modify
- *   the view tree inside layout or draw.
+ * visually seamless.
  */
 @JNINamespace("weblayer")
 public class ContentViewRenderView extends FrameLayout {
@@ -62,7 +51,6 @@ public class ContentViewRenderView extends FrameLayout {
     // This is the mode that last supplied the Surface to the compositor.
     // This should generally be equal to |mRequested| except during transitions.
     private SurfaceData mCurrent;
-    private final ArrayList<SurfaceData> mMarkedForDestroySurfaces = new ArrayList<>();
 
     // The native side of this object.
     private long mNativeContentViewRenderView;
@@ -100,8 +88,8 @@ public class ContentViewRenderView extends FrameLayout {
                     || mSurfaceData == ContentViewRenderView.this.mCurrent;
             if (ContentViewRenderView.this.mCurrent != null
                     && ContentViewRenderView.this.mCurrent != mSurfaceData) {
-                ContentViewRenderView.this.mCurrent.markForDestroy(
-                        mMarkedForDestroySurfaces, true /* hasNextSurface */);
+                ContentViewRenderView.this.mCurrent.markForDestroy(true /* hasNextSurface */);
+                mSurfaceData.setSurfaceDataNeedsDestroy(ContentViewRenderView.this.mCurrent);
             }
             ContentViewRenderView.this.mCurrent = mSurfaceData;
             ContentViewRenderViewJni.get().surfaceCreated(mNativeContentViewRenderView);
@@ -132,18 +120,56 @@ public class ContentViewRenderView extends FrameLayout {
     // Abstract differences between SurfaceView and TextureView behind this class.
     // Also responsible for holding and calling callbacks.
     private static class SurfaceData implements SurfaceEventListener {
+        private class TextureViewWithInvalidate extends TextureView {
+            public TextureViewWithInvalidate(Context context) {
+                super(context);
+            }
+
+            @Override
+            public void invalidate() {
+                // TextureView is invalidated when it receives a new frame from its SurfaceTexture.
+                // This is a safe place to indicate that this TextureView now has content and is
+                // ready to be shown.
+                super.invalidate();
+                destroyPreviousData();
+            }
+        }
+
         @Mode
         private final int mMode;
         private final SurfaceEventListener mListener;
         private final FrameLayout mParent;
+        private final Runnable mEvict;
 
-        private boolean mCreated;
+        private boolean mRanCallbacks;
         private boolean mMarkedForDestroy;
+        private boolean mCachedSurfaceNeedsEviction;
 
         private boolean mNeedsOnSurfaceDestroyed;
 
+        // During transitioning between two SurfaceData, there is a complicated series of calls to
+        // avoid visual artifacts.
+        // 1) Allocate new SurfaceData, and insert it into view hierarchy below the existing
+        //    SurfaceData, so it is not yet showing.
+        // 2) When Surface is allocated by new View, swap chromium compositor to the
+        //    new Surface. |markForDestroy| is called on the previous SurfaceData, and the two
+        //    SurfaceDatas are linked through these two variables.
+        //    Note at this point the existing view is still visible.
+        // 3) Wait until new SurfaceData decides that it has content and is ready to be shown
+        //    * For TextureView, wait until TextureView.invalidate is called
+        //    * For SurfaceView, wait for two swaps from the chromium compositor
+        // 4) New SurfaceData calls |destroy| on previous SurfaceData.
+        //    * For TextureView, it is simply detached immediately from the view tree
+        //    * For SurfaceView, to avoid flicker, move it to the back first before and wait
+        //      two frames before detaching.
+        // 5) Previous SurfaceData runs callbacks on the new SurfaceData to signal the completion
+        //    of the transition.
+        private SurfaceData mPrevSurfaceDataNeedsDestroy;
+        private SurfaceData mNextSurfaceDataNeedsRunCallback;
+
         private final SurfaceHolderCallback mSurfaceCallback;
         private final SurfaceView mSurfaceView;
+        private int mNumSurfaceViewSwapsUntilVisible;
 
         private final TextureView mTextureView;
         private final TextureViewSurfaceTextureListener mSurfaceTextureListener;
@@ -151,10 +177,11 @@ public class ContentViewRenderView extends FrameLayout {
         private final ArrayList<ValueCallback<Boolean>> mModeCallbacks = new ArrayList<>();
 
         public SurfaceData(@Mode int mode, FrameLayout parent, SurfaceEventListener listener,
-                int backgroundColor) {
+                int backgroundColor, Runnable evict) {
             mMode = mode;
             mListener = listener;
             mParent = parent;
+            mEvict = evict;
             if (mode == MODE_SURFACE_VIEW) {
                 mSurfaceView = new SurfaceView(parent.getContext());
                 mSurfaceView.setZOrderMediaOverlay(true);
@@ -167,7 +194,7 @@ public class ContentViewRenderView extends FrameLayout {
                 mTextureView = null;
                 mSurfaceTextureListener = null;
             } else if (mode == MODE_TEXTURE_VIEW) {
-                mTextureView = new TextureView(parent.getContext());
+                mTextureView = new TextureViewWithInvalidate(parent.getContext());
                 mSurfaceTextureListener = new TextureViewSurfaceTextureListener(this);
                 mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
                 mTextureView.setVisibility(VISIBLE);
@@ -178,6 +205,7 @@ public class ContentViewRenderView extends FrameLayout {
                 throw new RuntimeException("Illegal mode: " + mode);
             }
 
+            // This postOnAnimation is to avoid manipulating the view tree inside layout or draw.
             parent.postOnAnimation(() -> {
                 if (mMarkedForDestroy) return;
                 View view = (mMode == MODE_SURFACE_VIEW) ? mSurfaceView : mTextureView;
@@ -191,6 +219,13 @@ public class ContentViewRenderView extends FrameLayout {
             });
         }
 
+        public void setSurfaceDataNeedsDestroy(SurfaceData surfaceData) {
+            assert !mMarkedForDestroy;
+            assert mPrevSurfaceDataNeedsDestroy == null;
+            mPrevSurfaceDataNeedsDestroy = surfaceData;
+            mPrevSurfaceDataNeedsDestroy.mNextSurfaceDataNeedsRunCallback = this;
+        }
+
         public @Mode int getMode() {
             return mMode;
         }
@@ -198,17 +233,21 @@ public class ContentViewRenderView extends FrameLayout {
         public void addCallback(ValueCallback<Boolean> callback) {
             assert !mMarkedForDestroy;
             mModeCallbacks.add(callback);
-            if (mCreated) runCallbacks();
+            if (mRanCallbacks) runCallbacks();
         }
 
         // Tearing down is separated into markForDestroy and destroy. After markForDestroy
         // this class will is guaranteed to not issue any calls to its SurfaceEventListener.
-        public void markForDestroy(ArrayList<SurfaceData> pendingDestroy, boolean hasNextSurface) {
+        public void markForDestroy(boolean hasNextSurface) {
             if (mMarkedForDestroy) return;
             mMarkedForDestroy = true;
 
             if (mNeedsOnSurfaceDestroyed) {
-                mListener.surfaceDestroyed(hasNextSurface && mMode == MODE_SURFACE_VIEW);
+                // SurfaceView being used with SurfaceControl need to cache the back buffer
+                // (EGLSurface). Otherwise the surface is destroyed immediate before the
+                // SurfaceView is detached.
+                mCachedSurfaceNeedsEviction = hasNextSurface && mMode == MODE_SURFACE_VIEW;
+                mListener.surfaceDestroyed(mCachedSurfaceNeedsEviction);
                 mNeedsOnSurfaceDestroyed = false;
             }
 
@@ -219,23 +258,52 @@ public class ContentViewRenderView extends FrameLayout {
             } else {
                 assert false;
             }
-
-            pendingDestroy.add(this);
         }
 
         // Remove view from parent hierarchy.
         public void destroy() {
             assert mMarkedForDestroy;
+            runCallbacks();
+            // This postOnAnimation is to avoid manipulating the view tree inside layout or draw.
             mParent.postOnAnimation(() -> {
                 if (mMode == MODE_SURFACE_VIEW) {
-                    mParent.removeView(mSurfaceView);
+                    // Detaching a SurfaceView causes a flicker because the SurfaceView tears down
+                    // the Surface in SurfaceFlinger before removing its hole in the view tree.
+                    // This is a complicated heuristics to avoid this. It first moves the
+                    // SurfaceView behind the new View. Then wait two frames before detaching
+                    // the SurfaceView. Waiting for a single frame still causes flickers on
+                    // high end devices like Pixel 3.
+                    moveChildToBackWithoutDetach(mParent, mSurfaceView);
+                    mParent.postOnAnimation(() -> mParent.postOnAnimation(() -> {
+                        mParent.removeView(mSurfaceView);
+                        mParent.invalidate();
+                        if (mCachedSurfaceNeedsEviction) {
+                            mEvict.run();
+                            mCachedSurfaceNeedsEviction = false;
+                        }
+                        runCallbackOnNextSurfaceData();
+                    }));
                 } else if (mMode == MODE_TEXTURE_VIEW) {
                     mParent.removeView(mTextureView);
+                    runCallbackOnNextSurfaceData();
                 } else {
                     assert false;
                 }
-                runCallbacks();
             });
+        }
+
+        private static void moveChildToBackWithoutDetach(ViewGroup parent, View child) {
+            final int numberOfChildren = parent.getChildCount();
+            final int childIndex = parent.indexOfChild(child);
+            if (childIndex <= 0) return;
+            for (int i = 0; i < childIndex; ++i) {
+                parent.bringChildToFront(parent.getChildAt(0));
+            }
+            assert parent.indexOfChild(child) == 0;
+            for (int i = 0; i < numberOfChildren - childIndex - 1; ++i) {
+                parent.bringChildToFront(parent.getChildAt(1));
+            }
+            parent.invalidate();
         }
 
         public void setBackgroundColor(int color) {
@@ -245,7 +313,8 @@ public class ContentViewRenderView extends FrameLayout {
             }
         }
 
-        public void didSwapFrame() {
+        /** @return true if should keep swapping frames */
+        public boolean didSwapFrame() {
             if (mSurfaceView != null && mSurfaceView.getBackground() != null) {
                 mSurfaceView.post(new Runnable() {
                     @Override
@@ -254,16 +323,31 @@ public class ContentViewRenderView extends FrameLayout {
                     }
                 });
             }
+            if (mMode == MODE_SURFACE_VIEW) {
+                // We have no reliable signal for when to show a SurfaceView. This is a heuristic
+                // (used by chrome as well) is to wait for 2 swaps from the chromium comopsitor
+                // as a signal that the SurfaceView has content and is ready to be displayed.
+                if (mNumSurfaceViewSwapsUntilVisible > 0) {
+                    mNumSurfaceViewSwapsUntilVisible--;
+                }
+                if (mNumSurfaceViewSwapsUntilVisible == 0) {
+                    destroyPreviousData();
+                }
+                return mNumSurfaceViewSwapsUntilVisible > 0;
+            }
+            return false;
+        }
+
+        private void destroyPreviousData() {
+            if (mPrevSurfaceDataNeedsDestroy != null) {
+                mPrevSurfaceDataNeedsDestroy.destroy();
+                mPrevSurfaceDataNeedsDestroy = null;
+            }
         }
 
         @Override
         public void surfaceCreated() {
             if (mMarkedForDestroy) return;
-
-            if (!mCreated) {
-                mCreated = true;
-                runCallbacks();
-            }
 
             // On pre-M Android, layers start in the hidden state until a relayout happens.
             // There is a bug that manifests itself when entering overlay mode on pre-M devices,
@@ -274,6 +358,11 @@ public class ContentViewRenderView extends FrameLayout {
                 mSurfaceView.setVisibility(mSurfaceView.getVisibility());
             }
             mListener.surfaceCreated();
+
+            if (!mRanCallbacks && mPrevSurfaceDataNeedsDestroy == null) {
+                runCallbacks();
+            }
+
             mNeedsOnSurfaceDestroyed = true;
         }
 
@@ -282,6 +371,7 @@ public class ContentViewRenderView extends FrameLayout {
                 Surface surface, boolean canBeUsedWithSurfaceControl, int width, int height) {
             if (mMarkedForDestroy) return;
             mListener.surfaceChanged(surface, canBeUsedWithSurfaceControl, width, height);
+            mNumSurfaceViewSwapsUntilVisible = 2;
         }
 
         @Override
@@ -293,7 +383,8 @@ public class ContentViewRenderView extends FrameLayout {
         }
 
         private void runCallbacks() {
-            assert mCreated || mMarkedForDestroy;
+            mRanCallbacks = true;
+            if (mModeCallbacks.isEmpty()) return;
             // PostTask to avoid possible reentrancy problems with embedder code.
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
                 ArrayList<ValueCallback<Boolean>> clone =
@@ -303,6 +394,13 @@ public class ContentViewRenderView extends FrameLayout {
                     run.onReceiveValue(!mMarkedForDestroy);
                 }
             });
+        }
+
+        private void runCallbackOnNextSurfaceData() {
+            if (mNextSurfaceDataNeedsRunCallback != null) {
+                mNextSurfaceDataNeedsRunCallback.runCallbacks();
+                mNextSurfaceDataNeedsRunCallback = null;
+            }
         }
     }
 
@@ -400,7 +498,7 @@ public class ContentViewRenderView extends FrameLayout {
         assert callback != null;
         if (mRequested != null && mRequested.getMode() != mode) {
             if (mRequested != mCurrent) {
-                mRequested.markForDestroy(mMarkedForDestroySurfaces, false /* hasNextSurface */);
+                mRequested.markForDestroy(false /* hasNextSurface */);
                 mRequested.destroy();
             }
             mRequested = null;
@@ -408,7 +506,8 @@ public class ContentViewRenderView extends FrameLayout {
 
         if (mRequested == null) {
             SurfaceEventListenerImpl listener = new SurfaceEventListenerImpl();
-            mRequested = new SurfaceData(mode, this, listener, mBackgroundColor);
+            mRequested = new SurfaceData(
+                    mode, this, listener, mBackgroundColor, this::evictCachedSurface);
             listener.setRequestData(mRequested);
         }
         assert mRequested.getMode() == mode;
@@ -462,14 +561,15 @@ public class ContentViewRenderView extends FrameLayout {
      */
     public void destroy() {
         if (mRequested != null) {
-            mRequested.markForDestroy(mMarkedForDestroySurfaces, false /* hasNextSurface */);
+            mRequested.markForDestroy(false /* hasNextSurface */);
+            mRequested.destroy();
             if (mCurrent != null && mCurrent != mRequested) {
-                mCurrent.markForDestroy(mMarkedForDestroySurfaces, false /* hasNextSurface */);
+                mCurrent.markForDestroy(false /* hasNextSurface */);
+                mCurrent.destroy();
             }
         }
         mRequested = null;
         mCurrent = null;
-        runPendingSurfaceDestroy();
 
         mWindowAndroid = null;
         ContentViewRenderViewJni.get().destroy(mNativeContentViewRenderView);
@@ -494,17 +594,14 @@ public class ContentViewRenderView extends FrameLayout {
     }
 
     @CalledByNative
-    private void didSwapFrame() {
+    private boolean didSwapFrame() {
         assert mCurrent != null;
-        mCurrent.didSwapFrame();
-        runPendingSurfaceDestroy();
+        return mCurrent.didSwapFrame();
     }
 
-    private void runPendingSurfaceDestroy() {
-        for (SurfaceData surface : mMarkedForDestroySurfaces) {
-            surface.destroy();
-        }
-        mMarkedForDestroySurfaces.clear();
+    private void evictCachedSurface() {
+        if (mNativeContentViewRenderView == 0) return;
+        ContentViewRenderViewJni.get().evictCachedSurface(mNativeContentViewRenderView);
     }
 
     public long getNativeHandle() {
@@ -522,6 +619,7 @@ public class ContentViewRenderView extends FrameLayout {
         void surfaceDestroyed(long nativeContentViewRenderView, boolean cacheBackBuffer);
         void surfaceChanged(long nativeContentViewRenderView, boolean canBeUsedWithSurfaceControl,
                 int width, int height, Surface surface);
+        void evictCachedSurface(long nativeContentViewRenderView);
         ResourceManager getResourceManager(long nativeContentViewRenderView);
     }
 }

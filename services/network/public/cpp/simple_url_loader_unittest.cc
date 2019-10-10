@@ -2020,10 +2020,11 @@ class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
     url_loader_queue_.push_back(url_loaders_.back().get());
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    mojo::BindingId id = binding_set_.AddBinding(this, std::move(request));
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
+    mojo::ReceiverId id = receiver_set_.Add(this, std::move(receiver));
     if (close_new_binding_on_clone_)
-      binding_set_.RemoveBinding(id);
+      receiver_set_.Remove(id);
   }
 
   // Makes clone fail close the newly created binding after bining the request,
@@ -2044,8 +2045,8 @@ class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
   // Runs all events for all created URLLoaders, in order.
   void RunTest(SimpleLoaderTestHelper* test_helper,
                bool wait_for_completion = true) {
-    network::mojom::URLLoaderFactoryPtr factory;
-    binding_set_.AddBinding(this, mojo::MakeRequest(&factory));
+    mojo::Remote<network::mojom::URLLoaderFactory> factory;
+    receiver_set_.Add(this, factory.BindNewPipeAndPassReceiver());
 
     test_helper->StartSimpleLoader(factory.get());
 
@@ -2080,7 +2081,7 @@ class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
   std::list<GURL> requested_urls_;
 
-  mojo::BindingSet<network::mojom::URLLoaderFactory> binding_set_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receiver_set_;
 
   DISALLOW_COPY_AND_ASSIGN(MockURLLoaderFactory);
 };

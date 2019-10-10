@@ -262,7 +262,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
   std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
       fetch_client_setting_object_data = CreateFetchClientSettingsObjectData(
           worker_start_data->script_url, starter_origin.get(),
-          starter_https_state, worker_start_data->address_space);
+          starter_https_state, worker_start_data->address_space,
+          worker_start_data->outside_fetch_client_settings_object);
 
   // > Switching on job's worker type, run these substeps with the following
   // > options:
@@ -302,24 +303,30 @@ WebEmbeddedWorkerImpl::CreateFetchClientSettingsObjectData(
     const KURL& script_url,
     const SecurityOrigin* security_origin,
     const HttpsState& https_state,
-    network::mojom::IPAddressSpace address_space) {
-  // TODO(crbug.com/967265): Currently we create an incomplete outside settings
-  // object from |worker_start_data| but we should create a proper outside
-  // settings objects depending on the situation. For new worker case, this
-  // should be the Document that called navigator.serviceWorker.register(). For
-  // ServiceWorkerRegistration#update() case, it should be the Document that
-  // called update(). For soft update case, it seems to be 'null' document.
-  //
-  // To get a correct settings, we need to make a way to pass the settings
-  // object over mojo IPCs.
+    network::mojom::IPAddressSpace address_space,
+    const WebFetchClientSettingsObject& passed_settings_object) {
+  // TODO(crbug.com/967265): Currently |passed_settings_object| doesn't contain
+  // enough parameters to create a complete outside settings object. Pass
+  // all necessary information from the parent execution context.
+  // For new worker case, the parent is the Document that called
+  // navigator.serviceWorker.register(). For ServiceWorkerRegistration#update()
+  // case, it should be the Document that called update(). For soft update case,
+  // it seems to be 'null' document.
+
+  WebInsecureRequestPolicy insecure_requests_policy =
+      passed_settings_object.insecure_requests_policy ==
+              mojom::InsecureRequestsPolicy::kUpgrade
+          ? kUpgradeInsecureRequests
+          : kBlockAllMixedContent;
 
   return std::make_unique<CrossThreadFetchClientSettingsObjectData>(
       script_url.Copy() /* global_object_url */,
       script_url.Copy() /* base_url */, security_origin->IsolatedCopy(),
-      network::mojom::ReferrerPolicy::kDefault,
-      script_url.GetString().IsolatedCopy() /* outgoing_referrer */,
+      passed_settings_object.referrer_policy,
+      KURL::CreateIsolated(
+          passed_settings_object.outgoing_referrer.GetString()),
       https_state, AllowedByNosniff::MimeTypeCheck::kLax, address_space,
-      kBlockAllMixedContent /* insecure_requests_policy */,
+      insecure_requests_policy,
       FetchClientSettingsObject::InsecureNavigationsSet(),
       false /* mixed_autoupgrade_opt_out */);
 }

@@ -362,15 +362,15 @@ TEST_F(ParkableStringTest, Unpark) {
 TEST_F(ParkableStringTest, LockUnlock) {
   ParkableString parkable(MakeLargeString().Impl());
   ParkableStringImpl* impl = parkable.Impl();
-  EXPECT_EQ(0, impl->lock_depth_);
+  EXPECT_EQ(0, impl->lock_depth_for_testing());
 
   parkable.Lock();
-  EXPECT_EQ(1, impl->lock_depth_);
+  EXPECT_EQ(1, impl->lock_depth_for_testing());
   parkable.Lock();
   parkable.Unlock();
-  EXPECT_EQ(1, impl->lock_depth_);
+  EXPECT_EQ(1, impl->lock_depth_for_testing());
   parkable.Unlock();
-  EXPECT_EQ(0, impl->lock_depth_);
+  EXPECT_EQ(0, impl->lock_depth_for_testing());
 
   parkable.Lock();
   EXPECT_FALSE(ParkAndWait(parkable));
@@ -393,12 +393,12 @@ TEST_F(ParkableStringTest, LockParkedString) {
   EXPECT_TRUE(impl->is_parked());
   parkable.ToString();
   EXPECT_FALSE(impl->is_parked());
-  EXPECT_EQ(1, impl->lock_depth_);
+  EXPECT_EQ(1, impl->lock_depth_for_testing());
 
   EXPECT_FALSE(ParkAndWait(parkable));
 
   parkable.Unlock();
-  EXPECT_EQ(0, impl->lock_depth_);
+  EXPECT_EQ(0, impl->lock_depth_for_testing());
   EXPECT_TRUE(ParkAndWait(parkable));
   EXPECT_TRUE(impl->is_parked());
 }
@@ -675,37 +675,37 @@ TEST_F(ParkableStringTest, ReportMemoryDump) {
 
 TEST_F(ParkableStringTest, Aging) {
   ParkableString parkable(MakeLargeString().ReleaseImpl());
-  EXPECT_TRUE(parkable.Impl()->is_young());
+  EXPECT_TRUE(parkable.Impl()->is_young_for_testing());
   WaitForAging();
-  EXPECT_FALSE(parkable.Impl()->is_young());
+  EXPECT_FALSE(parkable.Impl()->is_young_for_testing());
 
   parkable.Lock();
-  EXPECT_TRUE(parkable.Impl()->is_young());
+  EXPECT_TRUE(parkable.Impl()->is_young_for_testing());
   // Locked strings don't age.
   WaitForAging();
-  EXPECT_TRUE(parkable.Impl()->is_young());
+  EXPECT_TRUE(parkable.Impl()->is_young_for_testing());
   parkable.Unlock();
   WaitForAging();
-  EXPECT_FALSE(parkable.Impl()->is_young());
+  EXPECT_FALSE(parkable.Impl()->is_young_for_testing());
 
   parkable.ToString();
-  EXPECT_TRUE(parkable.Impl()->is_young());
+  EXPECT_TRUE(parkable.Impl()->is_young_for_testing());
   // No external reference, can age again.
   WaitForAging();
-  EXPECT_FALSE(parkable.Impl()->is_young());
+  EXPECT_FALSE(parkable.Impl()->is_young_for_testing());
 
   // External references prevent a string from aging.
   String retained = parkable.ToString();
-  EXPECT_TRUE(parkable.Impl()->is_young());
+  EXPECT_TRUE(parkable.Impl()->is_young_for_testing());
   WaitForAging();
-  EXPECT_TRUE(parkable.Impl()->is_young());
+  EXPECT_TRUE(parkable.Impl()->is_young_for_testing());
 }
 
 TEST_F(ParkableStringTest, OldStringsAreParked) {
   ParkableString parkable(MakeLargeString().ReleaseImpl());
-  EXPECT_TRUE(parkable.Impl()->is_young());
+  EXPECT_TRUE(parkable.Impl()->is_young_for_testing());
   WaitForAging();
-  EXPECT_FALSE(parkable.Impl()->is_young());
+  EXPECT_FALSE(parkable.Impl()->is_young_for_testing());
   WaitForAging();
   EXPECT_TRUE(parkable.Impl()->is_parked());
 

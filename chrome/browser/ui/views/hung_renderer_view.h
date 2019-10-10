@@ -171,7 +171,6 @@ class HungRendererDialogView : public views::DialogDelegateView,
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;
-  bool ShouldUseCustomFrame() const override;
 
   // HungPagesTableModel::Delegate overrides:
   void TabUpdated() override;

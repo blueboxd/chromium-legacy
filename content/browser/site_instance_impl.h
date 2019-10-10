@@ -32,7 +32,8 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
     virtual void ActiveFrameCountIsZero(SiteInstanceImpl* site_instance) {}
 
     // Called when the renderer process of this SiteInstance has exited.
-    virtual void RenderProcessGone(SiteInstanceImpl* site_instance) = 0;
+    virtual void RenderProcessGone(SiteInstanceImpl* site_instance,
+                                   const ChildProcessTerminationInfo& info) = 0;
   };
 
   static scoped_refptr<SiteInstanceImpl> Create(

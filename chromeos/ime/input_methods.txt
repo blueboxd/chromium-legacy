@@ -86,7 +86,7 @@ xkb:cz::cze           cz             cs        CZ login
 xkb:cz:qwerty:cze     cz(qwerty)     cs        CS login
 xkb:ee::est           ee             et        EE login
 xkb:es::spa           es             es        ES login
-xkb:es:cat:cat        es(cat)        ca        CAS login
+xkb:es:cat:cat        es(cat)        ca        CAT login
 xkb:dk::dan           dk             da        DK login
 xkb:fo::fao           fo             fo        FO
 xkb:gr::gre           gr             el        GR

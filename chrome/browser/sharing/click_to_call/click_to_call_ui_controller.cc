@@ -20,7 +20,6 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 
 using SharingMessage = chrome_browser_sharing::SharingMessage;
@@ -67,9 +66,19 @@ void ClickToCallUiController::OnDialogClosed(SharingDialog* dialog) {
   SharingUiController::OnDialogClosed(dialog);
 }
 
-base::string16 ClickToCallUiController::GetTitle() {
-  return l10n_util::GetStringUTF16(
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_LABEL);
+base::string16 ClickToCallUiController::GetTitle(
+    SharingDialogType dialog_type) {
+  switch (dialog_type) {
+    case SharingDialogType::kErrorDialog:
+      return SharingUiController::GetTitle(dialog_type);
+    case SharingDialogType::kEducationalDialog:
+      return l10n_util::GetStringUTF16(
+          IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_NO_DEVICES);
+    case SharingDialogType::kDialogWithoutDevicesWithApp:
+    case SharingDialogType::kDialogWithDevicesMaybeApps:
+      return l10n_util::GetStringUTF16(
+          IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_LABEL);
+  }
 }
 
 PageActionIconType ClickToCallUiController::GetIconType() {
@@ -151,42 +160,27 @@ SharingFeatureName ClickToCallUiController::GetFeatureMetricsPrefix() const {
   return SharingFeatureName::kClickToCall;
 }
 
-base::string16 ClickToCallUiController::GetEducationWindowTitleText() const {
-  return l10n_util::GetStringUTF16(
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_NO_DEVICES);
-}
-
 void ClickToCallUiController::OnHelpTextClicked(SharingDialogType dialog_type) {
   LogClickToCallHelpTextClicked(dialog_type);
   SharingUiController::OnHelpTextClicked(dialog_type);
 }
 
-int ClickToCallUiController::GetHeaderImageId() const {
+SharingDialogData ClickToCallUiController::CreateDialogData(
+    SharingDialogType dialog_type) {
+  SharingDialogData data = SharingUiController::CreateDialogData(dialog_type);
+
   // Do not add the header image for error dialogs.
-  if (HasSendFailed())
-    return 0;
+  if (dialog_type != SharingDialogType::kErrorDialog) {
+    data.header_image_light = IDR_CLICK_TO_CALL_ILLUSTRATION_LIGHT;
+    data.header_image_dark = IDR_CLICK_TO_CALL_ILLUSTRATION_DARK;
+  }
 
-  const ui::NativeTheme* native_theme =
-      ui::NativeTheme::GetInstanceForNativeUi();
-  bool is_dark = native_theme && native_theme->ShouldUseDarkColors();
+  data.help_text_id =
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES;
+  data.help_link_text_id =
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK;
 
-  return is_dark ? IDR_CLICK_TO_CALL_ILLUSTRATION_DARK
-                 : IDR_CLICK_TO_CALL_ILLUSTRATION_LIGHT;
-}
-
-std::unique_ptr<views::StyledLabel> ClickToCallUiController::GetHelpTextLabel(
-    views::StyledLabelListener* listener) {
-  const base::string16 link = l10n_util::GetStringUTF16(
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK);
-  size_t offset;
-  const base::string16 text = l10n_util::GetStringFUTF16(
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES, link,
-      &offset);
-  auto label = std::make_unique<views::StyledLabel>(text, listener);
-  views::StyledLabel::RangeStyleInfo link_style =
-      views::StyledLabel::RangeStyleInfo::CreateForLink();
-  label->AddStyleRange(gfx::Range(offset, offset + link.length()), link_style);
-  return label;
+  return data;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ClickToCallUiController)

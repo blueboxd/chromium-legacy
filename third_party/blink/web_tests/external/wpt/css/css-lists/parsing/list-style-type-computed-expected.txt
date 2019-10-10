@@ -14,8 +14,8 @@ PASS Property list-style-type value 'armenian' computes to 'armenian'
 PASS Property list-style-type value 'georgian' computes to 'georgian'
 PASS Property list-style-type value 'lower-alpha' computes to 'lower-alpha'
 PASS Property list-style-type value 'upper-alpha' computes to 'upper-alpha'
-FAIL Property list-style-type value '"marker string"' computes to '"marker string"' assert_equals: expected "\"marker string\"" but got "disc"
-FAIL Property list-style-type value '"Note: "' computes to '"Note: "' assert_equals: expected "\"Note: \"" but got "disc"
+PASS Property list-style-type value '"marker string"' computes to '"marker string"'
+PASS Property list-style-type value '"Note: "' computes to '"Note: "'
 FAIL Property list-style-type value 'counter-Style-Name' computes to 'counter-Style-Name' assert_equals: expected "counter-Style-Name" but got "disc"
 FAIL Property list-style-type value 'CounterStyleName' computes to 'CounterStyleName' assert_equals: expected "CounterStyleName" but got "disc"
 FAIL Property list-style-type value 'symbols(cyclic "string")' computes to 'symbols(cyclic "string")' assert_equals: expected "symbols(cyclic \"string\")" but got "disc"

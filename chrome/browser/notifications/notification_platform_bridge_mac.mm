@@ -41,7 +41,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
+#include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -252,7 +252,7 @@ void NotificationPlatformBridgeMac::Display(
   [builder setShowSettingsButton:(notification.should_show_settings_button())];
   std::vector<message_center::ButtonInfo> buttons = notification.buttons();
   if (!buttons.empty()) {
-    DCHECK_LE(buttons.size(), blink::kWebNotificationMaxActions);
+    DCHECK_LE(buttons.size(), blink::kNotificationMaxActions);
     NSString* buttonOne = base::SysUTF16ToNSString(buttons[0].title);
     NSString* buttonTwo = nullptr;
     if (buttons.size() > 1)
@@ -414,7 +414,7 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
   if (button_index.intValue <
           notification_constants::kNotificationInvalidButtonIndex ||
       button_index.intValue >=
-          static_cast<int>(blink::kWebNotificationMaxActions)) {
+          static_cast<int>(blink::kNotificationMaxActions)) {
     LOG(ERROR) << "Invalid number of buttons supplied "
                << button_index.intValue;
     return false;

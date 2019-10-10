@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
                        ShouldDecryptWithKeystoreNigori) {
   const std::vector<std::string>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
-  ASSERT_TRUE(keystore_keys.size() == 1);
+  ASSERT_EQ(keystore_keys.size(), size_t{1});
   const KeyParams kKeystoreKeyParams = KeystoreKeyParams(keystore_keys.back());
   SetNigoriInFakeServer(GetFakeServer(),
                         BuildKeystoreNigoriSpecifics(
@@ -165,6 +165,33 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
   passwords_helper::InjectEncryptedServerPassword(
       password_form, kKeystoreKeyParams.password,
       kKeystoreKeyParams.derivation_params, GetFakeServer());
+  ASSERT_TRUE(SetupSync());
+  EXPECT_TRUE(WaitForPasswordForms({password_form}));
+}
+
+// Tests that client can decrypt passwords, encrypted with default key, while
+// Nigori node is in backward-compatible keystore mode (i.e. default key isn't
+// a keystore key, but keystore decryptor token contains this key and encrypted
+// with a keystore key).
+IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
+                       ShouldDecryptWithBackwardCompatibleKeystoreNigori) {
+  const std::vector<std::string>& keystore_keys =
+      GetFakeServer()->GetKeystoreKeys();
+  ASSERT_EQ(keystore_keys.size(), size_t{1});
+  const KeyParams kKeystoreKeyParams = KeystoreKeyParams(keystore_keys.back());
+  const KeyParams kDefaultKeyParams = {
+      syncer::KeyDerivationParams::CreateForPbkdf2(), "password"};
+  SetNigoriInFakeServer(
+      GetFakeServer(),
+      BuildKeystoreNigoriSpecifics(
+          /*keybag_keys_params=*/{kDefaultKeyParams, kKeystoreKeyParams},
+          /*keystore_decryptor_params*/ {kDefaultKeyParams},
+          /*keystore_key_params=*/kKeystoreKeyParams));
+  const autofill::PasswordForm password_form =
+      passwords_helper::CreateTestPasswordForm(0);
+  passwords_helper::InjectEncryptedServerPassword(
+      password_form, kDefaultKeyParams.password,
+      kDefaultKeyParams.derivation_params, GetFakeServer());
   ASSERT_TRUE(SetupSync());
   EXPECT_TRUE(WaitForPasswordForms({password_form}));
 }

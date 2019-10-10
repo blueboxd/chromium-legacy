@@ -2007,7 +2007,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   EXPECT_TRUE(contents1->GetMainFrame()->IsRenderFrameLive());
   EXPECT_FALSE(contents2->GetMainFrame()->IsRenderFrameLive());
   EXPECT_EQ(contents1->GetSiteInstance(), contents2->GetSiteInstance());
-  EXPECT_TRUE(contents1->GetMainFrame()->GetView());
+  EXPECT_FALSE(contents1->GetMainFrame()->GetView());
   EXPECT_FALSE(contents2->GetMainFrame()->GetView());
 
   // |contents1| creates an out of process iframe.

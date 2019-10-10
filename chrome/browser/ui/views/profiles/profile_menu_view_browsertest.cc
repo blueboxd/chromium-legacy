@@ -928,11 +928,13 @@ class ProfileMenuClickTest_GuestProfile : public ProfileMenuClickTest {
  public:
   // List of actionable items in the correct order as they appear in the menu.
   // If a new button is added to the menu, it should also be added to this list.
-  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[2] =
-      {ProfileMenuView::ActionableItem::kOtherProfileButton,
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[4] =
+      {ProfileMenuView::ActionableItem::kManageProfilesButton,
+       ProfileMenuView::ActionableItem::kOtherProfileButton,
+       ProfileMenuView::ActionableItem::kAddNewProfileButton,
        // The first button is added again to finish the cycle and test that
        // there are no other buttons at the end.
-       ProfileMenuView::ActionableItem::kOtherProfileButton};
+       ProfileMenuView::ActionableItem::kManageProfilesButton};
 
   ProfileMenuClickTest_GuestProfile() = default;
 
@@ -948,9 +950,7 @@ class ProfileMenuClickTest_GuestProfile : public ProfileMenuClickTest {
 constexpr ProfileMenuView::ActionableItem
     ProfileMenuClickTest_GuestProfile::kOrderedActionableItems[];
 
-// TODO(crbug.com/1012167): Flaky.
-IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_GuestProfile,
-                       DISABLED_SetupAndRunTest) {
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_GuestProfile, SetupAndRunTest) {
   profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
   ui_test_utils::WaitForBrowserToOpen();
   Profile* guest = g_browser_process->profile_manager()->GetProfileByPath(

@@ -23,7 +23,7 @@ GURL GetAndroidOrOriginURL(const GURL& url) {
 CredentialPair::CredentialPair(base::string16 username,
                                base::string16 password,
                                const GURL& origin_url,
-                               bool is_public_suffix_match)
+                               IsPublicSuffixMatch is_public_suffix_match)
     : username(std::move(username)),
       password(std::move(password)),
       origin_url(GetAndroidOrOriginURL(origin_url)),
@@ -32,6 +32,7 @@ CredentialPair::CredentialPair(CredentialPair&&) = default;
 CredentialPair::CredentialPair(const CredentialPair&) = default;
 CredentialPair& CredentialPair::operator=(CredentialPair&&) = default;
 CredentialPair& CredentialPair::operator=(const CredentialPair&) = default;
+CredentialPair::~CredentialPair() = default;
 
 bool operator==(const CredentialPair& lhs, const CredentialPair& rhs) {
   return lhs.username == rhs.username && lhs.password == rhs.password &&

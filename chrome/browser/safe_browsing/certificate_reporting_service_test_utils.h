@@ -14,6 +14,7 @@
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -157,7 +158,8 @@ class CertificateReportingServiceTestHelper
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override;
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
 
   ReportSendingResult expected_report_result_;

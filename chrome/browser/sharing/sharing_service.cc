@@ -447,16 +447,12 @@ SharingSyncPreference* SharingService::GetSyncPreferences() const {
 }
 
 bool SharingService::IsSyncDisabled() const {
-  // TODO(alexchau): Better way to make
-  // ClickToCallBrowserTest.ContextMenu_DevicesAvailable_SyncTurnedOff pass
-  // without unnecessarily checking SyncService::GetDisableReasons.
   return sync_service_ && (sync_service_->GetTransportState() ==
                                syncer::SyncService::TransportState::DISABLED ||
                            (sync_service_->GetTransportState() ==
                                 syncer::SyncService::TransportState::ACTIVE &&
                             !sync_service_->GetActiveDataTypes().HasAll(
-                                GetRequiredSyncDataTypes())) ||
-                           sync_service_->GetDisableReasons());
+                                GetRequiredSyncDataTypes())));
 }
 
 syncer::ModelTypeSet SharingService::GetRequiredSyncDataTypes() const {

@@ -53,6 +53,7 @@ class ContentViewRenderView : public content::CompositorClient {
                       jint width,
                       jint height,
                       const base::android::JavaParamRef<jobject>& surface);
+  void EvictCachedSurface(JNIEnv* env);
   base::android::ScopedJavaLocalRef<jobject> GetResourceManager(JNIEnv* env);
 
   // CompositorClient implementation
@@ -73,8 +74,6 @@ class ContentViewRenderView : public content::CompositorClient {
   // Set as the root-layer of the compositor. Contains |web_contents_layer_|.
   scoped_refptr<cc::Layer> root_container_layer_;
   scoped_refptr<cc::Layer> web_contents_layer_;
-
-  bool evict_back_buffer_on_next_swap_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewRenderView);
 };

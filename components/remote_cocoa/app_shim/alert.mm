@@ -259,12 +259,13 @@ namespace remote_cocoa {
 ////////////////////////////////////////////////////////////////////////////////
 // AlertBridge:
 
-AlertBridge::AlertBridge(mojom::AlertBridgeRequest bridge_request)
-    : mojo_binding_(this), weak_factory_(this) {
-  mojo_binding_.Bind(std::move(bridge_request),
-                     ui::WindowResizeHelperMac::Get()->task_runner());
-  mojo_binding_.set_connection_error_handler(base::BindOnce(
-      &AlertBridge::OnConnectionError, weak_factory_.GetWeakPtr()));
+AlertBridge::AlertBridge(
+    mojo::PendingReceiver<mojom::AlertBridge> bridge_receiver)
+    : weak_factory_(this) {
+  mojo_receiver_.Bind(std::move(bridge_receiver),
+                      ui::WindowResizeHelperMac::Get()->task_runner());
+  mojo_receiver_.set_disconnect_handler(base::BindOnce(
+      &AlertBridge::OnMojoDisconnect, weak_factory_.GetWeakPtr()));
 }
 
 AlertBridge::~AlertBridge() {
@@ -272,7 +273,7 @@ AlertBridge::~AlertBridge() {
   [NSObject cancelPreviousPerformRequestsWithTarget:helper_.get()];
 }
 
-void AlertBridge::OnConnectionError() {
+void AlertBridge::OnMojoDisconnect() {
   // If the alert has been shown, then close the window, and |this| will delete
   // itself after the window is closed. Otherwise, just delete |this|
   // immediately.

@@ -27,6 +27,7 @@
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -171,12 +172,13 @@ std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
       continue;
     }
     std::string launch_container_str = value->GetString();
-    auto launch_container = LaunchContainer::kTab;
+    auto display_mode = blink::mojom::DisplayMode::kBrowser;
     if (launch_container_str == kLaunchContainerTab) {
-      launch_container = LaunchContainer::kTab;
+      display_mode = blink::mojom::DisplayMode::kBrowser;
     } else if (launch_container_str == kLaunchContainerWindow) {
-      launch_container = LaunchContainer::kWindow;
+      display_mode = blink::mojom::DisplayMode::kStandalone;
     } else {
+      // TODO(crbug.com/1009909): Support Minimal UI.
       LOG(ERROR) << file.value() << " had an invalid " << kLaunchContainer;
       continue;
     }
@@ -207,7 +209,7 @@ std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
     }
 
     ExternalInstallOptions install_options(
-        std::move(app_url), launch_container,
+        std::move(app_url), display_mode,
         ExternalInstallSource::kExternalDefault);
     install_options.add_to_applications_menu = create_shortcuts;
     install_options.add_to_desktop = create_shortcuts;

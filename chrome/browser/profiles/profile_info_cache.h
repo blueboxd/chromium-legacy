@@ -73,6 +73,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // directly referring to this implementation.
   size_t GetIndexOfProfileWithPath(
       const base::FilePath& profile_path) const override;
+  // Deprecated 10/2019, Do not use!
+  // Use GetNameToDisplayOfProfileAtIndex instead.
   base::string16 GetNameOfProfileAtIndex(size_t index) const override;
   // Will be removed SOON with ProfileInfoCache tests. Do not use!
   base::FilePath GetPathOfProfileAtIndex(size_t index) const override;
@@ -109,7 +111,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
   // Warning: This will re-sort profiles and thus may change indices!
-  void SetNameOfProfileAtIndex(size_t index, const base::string16& name);
+  void SetLocalProfileNameOfProfileAtIndex(size_t index,
+                                           const base::string16& name);
   void SetAuthInfoOfProfileAtIndex(size_t index,
                                    const std::string& gaia_id,
                                    const base::string16& user_name,
@@ -137,6 +140,9 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   const base::FilePath& GetUserDataDir() const;
 
+  // Gets the name of the profile, which is the one displayed in the User Menu.
+  base::string16 GetNameToDisplayOfProfileAtIndex(size_t index);
+
   // Register cache related preferences in Local State.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -154,6 +160,10 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   bool GetProfileAttributesWithPath(const base::FilePath& path,
                                     ProfileAttributesEntry** entry) override;
+
+  static const char kNameKey[];
+  static const char kGAIANameKey[];
+  static const char kGAIAGivenNameKey[];
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,

@@ -402,7 +402,7 @@ gfx::Rect DesktopWindowTreeHostPlatform::GetWorkAreaBoundsInScreen() const {
 
 void DesktopWindowTreeHostPlatform::SetShape(
     std::unique_ptr<Widget::ShapeRects> native_shape) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  platform_window()->SetShape(std::move(native_shape), GetRootTransform());
 }
 
 void DesktopWindowTreeHostPlatform::Activate() {
@@ -559,26 +559,21 @@ bool DesktopWindowTreeHostPlatform::IsFullscreen() const {
 }
 
 void DesktopWindowTreeHostPlatform::SetOpacity(float opacity) {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  GetContentWindow()->layer()->SetOpacity(opacity);
 }
 
 void DesktopWindowTreeHostPlatform::SetAspectRatio(
     const gfx::SizeF& aspect_ratio) {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  platform_window()->SetAspectRatio(aspect_ratio);
 }
 
 void DesktopWindowTreeHostPlatform::SetWindowIcons(
     const gfx::ImageSkia& window_icon,
     const gfx::ImageSkia& app_icon) {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  platform_window()->SetWindowIcons(window_icon, app_icon);
 }
 
 void DesktopWindowTreeHostPlatform::InitModalType(ui::ModalType modal_type) {
-  // TODO: needs PlatformWindow support (alternatively, remove as
-  // DesktopWindowTreeHostX11 doesn't support at all).
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
@@ -587,21 +582,16 @@ void DesktopWindowTreeHostPlatform::FlashFrame(bool flash_frame) {
 }
 
 bool DesktopWindowTreeHostPlatform::IsAnimatingClosed() const {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  return platform_window()->IsAnimatingClosed();
 }
 
 bool DesktopWindowTreeHostPlatform::IsTranslucentWindowOpacitySupported()
     const {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  return platform_window()->IsTranslucentWindowOpacitySupported();
 }
 
 void DesktopWindowTreeHostPlatform::SizeConstraintsChanged() {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  platform_window()->SizeConstraintsChanged();
 }
 
 bool DesktopWindowTreeHostPlatform::ShouldUpdateWindowTransparency() const {

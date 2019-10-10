@@ -109,8 +109,8 @@ a:focus {
   flex-direction: column;
 }
 
-/* A vertical splitter between the roots list and the file list. It is actually
-   a transparent area centered on the roots list right border.*/
+/* A vertical splitter between the directory tree and the file list. It is
+   actually a transparent area centered on the tree right border.*/
 div.splitter {
   cursor: col-resize;
   flex: none;
@@ -130,6 +130,10 @@ div.splitter {
   position: absolute;   /* TODO(adanilo): crbug.com/212268 still needed? */
   right: 0;
   top: 0;
+}
+
+html[class*='col-resize'] #directory-tree {
+  overflow-y: hidden;
 }
 
 #directory-tree .tree-row {

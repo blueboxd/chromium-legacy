@@ -350,8 +350,10 @@ void BackForwardCacheImpl::StoreEntry(
   for (auto& stored_entry : entries_) {
     if (stored_entry->render_frame_host->is_evicted_from_back_forward_cache())
       continue;
-    if (++available_count > size_limit)
-      stored_entry->render_frame_host->EvictFromBackForwardCache();
+    if (++available_count > size_limit) {
+      stored_entry->render_frame_host->EvictFromBackForwardCacheWithReason(
+          BackForwardCacheMetrics::EvictedReason::kCacheLimit);
+    }
   }
 }
 

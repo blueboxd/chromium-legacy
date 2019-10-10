@@ -88,9 +88,6 @@ RenderProcessUserData* RenderProcessUserData::GetOrCreateForRenderProcessHost(
 
 void RenderProcessUserData::RenderProcessReady(
     content::RenderProcessHost* host) {
-  PerformanceManagerImpl* performance_manager =
-      PerformanceManagerImpl::GetInstance();
-
   const base::Time launch_time =
 #if defined(OS_ANDROID)
       // Process::CreationTime() is not available on Android. Since this
@@ -101,7 +98,7 @@ void RenderProcessUserData::RenderProcessReady(
       host->GetProcess().CreationTime();
 #endif
 
-  performance_manager->task_runner()->PostTask(
+  PerformanceManagerImpl::GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&ProcessNodeImpl::SetProcess,
                                 base::Unretained(process_node_.get()),
                                 host->GetProcess().Duplicate(), launch_time));
@@ -110,10 +107,7 @@ void RenderProcessUserData::RenderProcessReady(
 void RenderProcessUserData::RenderProcessExited(
     content::RenderProcessHost* host,
     const content::ChildProcessTerminationInfo& info) {
-  PerformanceManagerImpl* performance_manager =
-      PerformanceManagerImpl::GetInstance();
-
-  performance_manager->task_runner()->PostTask(
+  PerformanceManagerImpl::GetTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProcessNodeImpl::SetProcessExitStatus,
                      base::Unretained(process_node_.get()), info.exit_code));

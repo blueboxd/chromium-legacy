@@ -38,7 +38,8 @@ CredentialPair ConvertJavaCredential(JNIEnv* env,
                                Java_Credential_getPassword(env, credential)),
       GURL(ConvertJavaStringToUTF8(
           env, Java_Credential_getOriginUrl(env, credential))),
-      Java_Credential_isPublicSuffixMatch(env, credential));
+      CredentialPair::IsPublicSuffixMatch(
+          Java_Credential_isPublicSuffixMatch(env, credential)));
 }
 
 }  // namespace
@@ -56,10 +57,7 @@ TouchToFillViewImpl::~TouchToFillViewImpl() {
 
 void TouchToFillViewImpl::Show(
     base::StringPiece16 formatted_url,
-    base::span<const password_manager::CredentialPair> credentials,
-    ShowCallback callback) {
-  callback_ = std::move(callback);
-
+    base::span<const password_manager::CredentialPair> credentials) {
   // Serialize the |credentials| span into a Java array and instruct the bridge
   // to show it together with |formatted_url| to the user.
   JNIEnv* env = AttachCurrentThread();
@@ -73,7 +71,7 @@ void TouchToFillViewImpl::Show(
         ConvertUTF16ToJavaString(env, credential.password),
         ConvertUTF16ToJavaString(env, GetDisplayUsername(credential)),
         ConvertUTF8ToJavaString(env, credential.origin_url.spec()),
-        credential.is_public_suffix_match);
+        credential.is_public_suffix_match.value());
   }
 
   Java_TouchToFillBridge_showCredentials(
@@ -81,14 +79,19 @@ void TouchToFillViewImpl::Show(
       credential_array);
 }
 
+void TouchToFillViewImpl::OnCredentialSelected(
+    const CredentialPair& credential) {
+  controller_->OnCredentialSelected(credential);
+}
+
 void TouchToFillViewImpl::OnDismiss() {
-  // TODO(crbug.com/957532): Implement.
+  controller_->OnDismiss();
 }
 
 void TouchToFillViewImpl::OnCredentialSelected(
     JNIEnv* env,
     const JavaParamRef<jobject>& credential) {
-  std::move(callback_).Run(ConvertJavaCredential(env, credential));
+  OnCredentialSelected(ConvertJavaCredential(env, credential));
 }
 
 void TouchToFillViewImpl::OnDismiss(JNIEnv* env) {

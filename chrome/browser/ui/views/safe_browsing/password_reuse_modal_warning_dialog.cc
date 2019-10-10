@@ -29,37 +29,38 @@ using views::BoxLayout;
 namespace {
 
 // Fixed height of the illustration shown on the top of the dialog.
-constexpr int kIllustrationHeight = 120;
+constexpr int kSafeBrowsingIllustrationHeight = 120;
 
 // Fixed background color of the illustration shown on the top of the dialog in
 // normal mode.
-constexpr SkColor kPictureBackgroundColor = SkColorSetARGB(0x0A, 0, 0, 0);
+constexpr SkColor kSafeBrowsingPictureBackgroundColor =
+    SkColorSetARGB(0x0A, 0, 0, 0);
 
 // Fixed background color of the illustration shown on the top of the dialog in
 // dark mode.
-constexpr SkColor kPictureBackgroundColorDarkMode =
+constexpr SkColor kSafeBrowsingPictureBackgroundColorDarkMode =
     SkColorSetARGB(0x1A, 0x00, 0x00, 0x00);
 
 // Updates the image displayed on the illustration based on the current theme.
-void UpdateImageView(NonAccessibleImageView* image_view,
-                     bool dark_mode_enabled) {
-  image_view->SetImage(
-      gfx::CreateVectorIcon(dark_mode_enabled ? kPasswordCheckWarningDarkIcon
-                                              : kPasswordCheckWarningIcon,
-                            dark_mode_enabled ? kPictureBackgroundColorDarkMode
-                                              : kPictureBackgroundColor));
+void SafeBrowsingUpdateImageView(NonAccessibleImageView* image_view,
+                                 bool dark_mode_enabled) {
+  image_view->SetImage(gfx::CreateVectorIcon(
+      dark_mode_enabled ? kPasswordCheckWarningDarkIcon
+                        : kPasswordCheckWarningIcon,
+      dark_mode_enabled ? kSafeBrowsingPictureBackgroundColorDarkMode
+                        : kSafeBrowsingPictureBackgroundColor));
 }
 
 // Creates the illustration which is rendered on top of the dialog.
-std::unique_ptr<NonAccessibleImageView> CreateIllustration(
+std::unique_ptr<NonAccessibleImageView> SafeBrowsingCreateIllustration(
     bool dark_mode_enabled) {
   const gfx::Size illustration_size(
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH),
-      kIllustrationHeight);
+      kSafeBrowsingIllustrationHeight);
   auto image_view = std::make_unique<NonAccessibleImageView>();
   image_view->SetPreferredSize(illustration_size);
-  UpdateImageView(image_view.get(), dark_mode_enabled);
+  SafeBrowsingUpdateImageView(image_view.get(), dark_mode_enabled);
   image_view->SetSize(illustration_size);
   image_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
   return image_view;
@@ -152,7 +153,7 @@ void PasswordReuseModalWarningDialog::
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       0 /* between_child_spacing */));
   std::unique_ptr<NonAccessibleImageView> illustration =
-      CreateIllustration(GetNativeTheme()->ShouldUseDarkColors());
+      SafeBrowsingCreateIllustration(GetNativeTheme()->ShouldUseDarkColors());
   std::unique_ptr<views::View> content = SetupContent(
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY));
   content->AddChildView(std::move(message_body_label));

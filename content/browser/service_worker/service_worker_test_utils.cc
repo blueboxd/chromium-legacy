@@ -27,6 +27,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
@@ -56,7 +57,8 @@ class MockSharedURLLoaderFactory final
     client->OnComplete(
         network::URLLoaderCompletionStatus(net::ERR_NOT_IMPLEMENTED));
   }
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
     NOTREACHED();
   }
 

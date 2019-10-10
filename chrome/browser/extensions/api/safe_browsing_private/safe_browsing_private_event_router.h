@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 
 namespace content {
 class BrowserContext;
@@ -142,6 +143,12 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   // with CBCM and the appropriate policies are enabled.
   void InitRealtimeReportingClient();
 
+  // Determines if the real-time reporting feature is enabled.
+  bool IsRealtimeReportingEnabled();
+
+  // Called whenever the real-time reporting policy changes.
+  void RealtimeReportingPrefChanged(const std::string& pref);
+
   // Report safe browsing event through real-time reporting channel, if enabled.
   void ReportRealtimeEvent(const char* name, base::Value event);
 
@@ -153,6 +160,7 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   signin::IdentityManager* identity_manager_ = nullptr;
   EventRouter* event_router_ = nullptr;
   std::unique_ptr<policy::CloudPolicyClient> client_;
+  PrefChangeRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPrivateEventRouter);
 };

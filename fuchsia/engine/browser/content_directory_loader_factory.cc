@@ -368,8 +368,8 @@ void ContentDirectoryLoaderFactory::CreateLoaderAndStart(
 }
 
 void ContentDirectoryLoaderFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest loader) {
-  bindings_.AddBinding(this, std::move(loader));
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) {
+  receivers_.Add(this, std::move(loader));
 }
 
 void ContentDirectoryLoaderFactory::SetContentDirectoriesForTest(

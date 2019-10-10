@@ -24,6 +24,7 @@
 #include "components/account_id/account_id.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -189,7 +190,8 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
   std::vector<ExternalInstallOptions> test_install_options_list;
   {
     ExternalInstallOptions install_options(
-        GURL("https://www.chromestatus.com/features"), LaunchContainer::kTab,
+        GURL("https://www.chromestatus.com/features"),
+        blink::mojom::DisplayMode::kBrowser,
         ExternalInstallSource::kExternalDefault);
     install_options.add_to_applications_menu = true;
     install_options.add_to_desktop = true;
@@ -200,7 +202,8 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
   {
     ExternalInstallOptions install_options(
         GURL("https://events.google.com/io2016/?utm_source=web_app_manifest"),
-        LaunchContainer::kWindow, ExternalInstallSource::kExternalDefault);
+        blink::mojom::DisplayMode::kStandalone,
+        ExternalInstallSource::kExternalDefault);
     install_options.add_to_applications_menu = false;
     install_options.add_to_desktop = false;
     install_options.add_to_quick_launch_bar = false;

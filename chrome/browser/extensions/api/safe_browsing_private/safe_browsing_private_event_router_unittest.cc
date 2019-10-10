@@ -14,6 +14,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/test_event_router.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -108,10 +109,14 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
                                           "PHISHING", -201);
   }
 
-  void SetUpRouters() {
-    event_router_ = extensions::CreateAndUseTestEventRouter(profile_);
-    SafeBrowsingPrivateEventRouterFactory::GetInstance()->SetTestingFactory(
-        profile_, base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
+  void SetReportingPolicy(bool enabled) {
+    TestingBrowserProcess::GetGlobal()->local_state()->SetBoolean(
+        prefs::kUnsafeEventsReportingEnabled, enabled);
+
+    // If we are not enabling reporting, or if the client has already been
+    // set for testing, just return.
+    if (!enabled || client_)
+      return;
 
     // Set a mock cloud policy client in the router.  The router will own the
     // client, but a pointer to the client is maintained in the test class to
@@ -122,12 +127,20 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
         ->SetCloudPolicyClientForTesting(std::move(client));
   }
 
+  void SetUpRouters(bool realtime_reporting_enable = true) {
+    event_router_ = extensions::CreateAndUseTestEventRouter(profile_);
+    SafeBrowsingPrivateEventRouterFactory::GetInstance()->SetTestingFactory(
+        profile_, base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
+
+    SetReportingPolicy(realtime_reporting_enable);
+  }
+
  protected:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
   extensions::TestEventRouter* event_router_ = nullptr;
-  policy::MockCloudPolicyClient* client_;
+  policy::MockCloudPolicyClient* client_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPrivateEventRouterTest);
@@ -323,4 +336,45 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSecurityInterstitialShown) {
   EXPECT_FALSE(
       *event->FindBoolKey(SafeBrowsingPrivateEventRouter::kKeyClickedThrough));
 }
+
+TEST_F(SafeBrowsingPrivateEventRouterTest, PolicyControlOnToOffIsDynamic) {
+  SetUpRouters();
+  SafeBrowsingEventObserver event_observer(
+      api::safe_browsing_private::OnSecurityInterstitialShown::kEventName);
+  event_router_->AddEventObserver(&event_observer);
+
+  EXPECT_CALL(*client_, UploadRealtimeReport(_, _)).Times(1);
+  TriggerOnSecurityInterstitialShownEvent();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, event_observer.PassEventArgs().GetList().size());
+  Mock::VerifyAndClearExpectations(client_);
+
+  // Now turn off policy.  This time no report should be generated.
+  SetReportingPolicy(false);
+  EXPECT_CALL(*client_, UploadRealtimeReport(_, _)).Times(0);
+  TriggerOnSecurityInterstitialShownEvent();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, event_observer.PassEventArgs().GetList().size());
+  Mock::VerifyAndClearExpectations(client_);
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest, PolicyControlOffToOnIsDynamic) {
+  SetUpRouters(/*realtime_reporting_enable=*/false);
+  SafeBrowsingEventObserver event_observer(
+      api::safe_browsing_private::OnSecurityInterstitialShown::kEventName);
+  event_router_->AddEventObserver(&event_observer);
+
+  TriggerOnSecurityInterstitialShownEvent();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, event_observer.PassEventArgs().GetList().size());
+
+  // Now turn on policy.
+  SetReportingPolicy(true);
+  EXPECT_CALL(*client_, UploadRealtimeReport(_, _)).Times(1);
+  TriggerOnSecurityInterstitialShownEvent();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, event_observer.PassEventArgs().GetList().size());
+  Mock::VerifyAndClearExpectations(client_);
+}
+
 }  // namespace extensions

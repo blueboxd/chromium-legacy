@@ -1070,8 +1070,11 @@ void WebURLLoaderImpl::PopulateURLResponse(
       head.did_service_worker_navigation_preload);
   response->SetEncodedDataLength(head.encoded_data_length);
   response->SetEncodedBodyLength(head.encoded_body_length);
+  response->SetWasAlpnNegotiated(head.was_alpn_negotiated);
   response->SetAlpnNegotiatedProtocol(
       WebString::FromUTF8(head.alpn_negotiated_protocol));
+  response->SetWasAlternateProtocolAvailable(
+      head.was_alternate_protocol_available);
   response->SetConnectionInfo(head.connection_info);
   response->SetAsyncRevalidationRequested(head.async_revalidation_requested);
   response->SetNetworkAccessed(head.network_accessed);

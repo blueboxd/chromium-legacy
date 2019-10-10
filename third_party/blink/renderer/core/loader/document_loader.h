@@ -149,6 +149,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   const AtomicString& HttpMethod() const;
   const Referrer& GetReferrer() const;
   const KURL& UnreachableURL() const;
+  const base::Optional<blink::mojom::FetchCacheMode>& ForceFetchCacheMode()
+      const;
 
   void DidChangePerformanceTiming();
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag);
@@ -412,6 +414,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   network::mojom::IPAddressSpace ip_address_space_ =
       network::mojom::IPAddressSpace::kUnknown;
   bool grant_load_local_resources_ = false;
+  base::Optional<blink::mojom::FetchCacheMode> force_fetch_cache_mode_;
 
   // Params are saved in constructor and are cleared after StartLoading().
   // TODO(dgozman): remove once StartLoading is merged with constructor.

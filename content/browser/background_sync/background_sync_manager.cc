@@ -1859,23 +1859,23 @@ void BackgroundSyncManager::FireReadyEvents(
   op_scheduler_.ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
-      base::BindOnce(
-          &BackgroundSyncManager::FireReadyEventsImpl,
-          weak_ptr_factory_.GetWeakPtr(), sync_type, reschedule,
-          op_scheduler_.WrapCallbackToRunNext(id, std::move(callback)),
-          std::move(keepalive)));
+      base::BindOnce(&BackgroundSyncManager::FireReadyEventsImpl,
+                     weak_ptr_factory_.GetWeakPtr(), sync_type, reschedule, id,
+                     std::move(callback), std::move(keepalive)));
 }
 
 void BackgroundSyncManager::FireReadyEventsImpl(
     blink::mojom::BackgroundSyncType sync_type,
     bool reschedule,
+    int scheduler_id,
     base::OnceClosure callback,
     std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (disabled_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(callback));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        op_scheduler_.WrapCallbackToRunNext(scheduler_id, std::move(callback)));
     return;
   }
 
@@ -1917,27 +1917,46 @@ void BackgroundSyncManager::FireReadyEventsImpl(
     // called from a wakeup task.
     if (reschedule)
       ScheduleOrCancelDelayedProcessing(sync_type);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(callback));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        op_scheduler_.WrapCallbackToRunNext(scheduler_id, std::move(callback)));
     return;
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
 
-  // Fire the sync event of the ready registrations and run |callback| once
-  // they're all done.
+  // If we've been called from a wake up task, potentially keep the browser
+  // awake till all events have completed. If not, we only do so until all
+  // events have been fired.
+  // To allow the |op_scheduler_| to process other tasks after sync events
+  // have been fired, mark this task complete after firing events.
+  base::OnceClosure events_fired_callback, events_completed_callback;
+  bool keep_browser_awake_till_events_complete =
+      !reschedule && parameters_->keep_browser_awake_till_events_complete;
+  if (keep_browser_awake_till_events_complete) {
+    events_fired_callback = MakeEmptyCompletion(scheduler_id);
+    events_completed_callback = std::move(callback);
+  } else {
+    events_fired_callback =
+        op_scheduler_.WrapCallbackToRunNext(scheduler_id, std::move(callback));
+    events_completed_callback = base::DoNothing::Once();
+  }
+
+  // Fire the sync event of the ready registrations and run
+  // |events_fired_closure| once they're all done.
   base::RepeatingClosure events_fired_barrier_closure = base::BarrierClosure(
       to_fire.size(),
       base::BindOnce(&BackgroundSyncManager::FireReadyEventsAllEventsFiring,
                      weak_ptr_factory_.GetWeakPtr(), sync_type, reschedule,
-                     std::move(callback)));
+                     std::move(events_fired_callback)));
 
   // Record the total time taken after all events have run to completion.
   base::RepeatingClosure events_completed_barrier_closure =
       base::BarrierClosure(
           to_fire.size(),
-          base::BindOnce(&OnAllSyncEventsCompleted, sync_type, start_time,
-                         !reschedule, to_fire.size()));
+          base::BindOnce(&BackgroundSyncManager::OnAllSyncEventsCompleted,
+                         sync_type, start_time, !reschedule, to_fire.size(),
+                         std::move(events_completed_callback)));
 
   for (auto& registration_info : to_fire) {
     const BackgroundSyncRegistration* registration =
@@ -2036,6 +2055,7 @@ void BackgroundSyncManager::FireReadyEventsAllEventsFiring(
 
   if (reschedule)
     ScheduleOrCancelDelayedProcessing(sync_type);
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
@@ -2277,11 +2297,13 @@ void BackgroundSyncManager::OnAllSyncEventsCompleted(
     BackgroundSyncType sync_type,
     const base::TimeTicks& start_time,
     bool from_wakeup_task,
-    int number_of_batched_sync_events) {
+    int number_of_batched_sync_events,
+    base::OnceClosure callback) {
   // Record the combined time taken by all sync events.
   BackgroundSyncMetrics::RecordBatchSyncEventComplete(
       sync_type, base::TimeTicks::Now() - start_time, from_wakeup_task,
       number_of_batched_sync_events);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 void BackgroundSyncManager::OnRegistrationDeletedImpl(

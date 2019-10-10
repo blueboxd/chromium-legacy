@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 30
+// Next MinVersion: 31
 
 module arc.mojom;
 
@@ -50,6 +50,12 @@ struct AuthorityEntry {
   int32 port;
 };
 
+struct UriComponents {
+  string scheme; // Scheme to create URI in ARC.
+  string authority; // Authority to create URI in ARC.
+  string path; // Path to create URI in ARC.
+};
+
 struct IntentInfo {
   string action;
   array<string>? categories;
@@ -62,6 +68,10 @@ struct IntentInfo {
   // intents to carry additional data. See:
   // https://developer.android.com/reference/android/content/Intent#putExtra(java.lang.String,%20java.lang.String)
   [MinVersion=22] map<string, string>? extras;
+
+  // Optional URI components to build data URI in ARC. If |IntentInfo.data| is
+  // set, this field will be ignored.
+  [MinVersion=30] UriComponents? uri_components;
 };
 
 struct IntentFilter {
@@ -174,7 +184,7 @@ interface CustomTabSession {
 
 // Handles intents from ARC in Chrome.
 // Deprecated method ID: 4
-// Next method ID: 13
+// Next method ID: 14
 interface IntentHelperHost {
   // Called when icons associated with the package are no longer up to date.
   [MinVersion=3] OnIconInvalidated@1(string package_name);

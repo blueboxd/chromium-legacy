@@ -250,6 +250,11 @@ crbug.com/953479 external/wpt/css/cssom-view/offsetTopLeft-leading-space-inline.
 ### external/wpt/css/filter-effects/
 crbug.com/591099 external/wpt/css/filter-effects/filtered-inline-applies-to-float.html [ Failure ]
 
+### external/wpt/css/css-lists/
+crbug.com/1012294 external/wpt/css/css-lists/list-style-type-string-003.html [ Pass ]
+crbug.com/1012289 external/wpt/css/css-lists/list-style-type-string-005a.html [ Failure ]
+crbug.com/1012289 external/wpt/css/css-lists/list-style-type-string-006.html [ Failure ]
+
 ### external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-horiz-002.xhtml [ Failure ]
 

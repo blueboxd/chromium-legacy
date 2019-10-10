@@ -1444,7 +1444,7 @@ TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesCustomName) {
   // We should display custom names for local profiles.
   const base::string16 custom_profile_name = ASCIIToUTF16("Batman");
   ProfileAttributesEntry* entry = storage.GetAllProfilesAttributes()[0];
-  entry->SetName(custom_profile_name);
+  entry->SetLocalProfileName(custom_profile_name);
   entry->SetIsUsingDefaultName(false);
   EXPECT_EQ(custom_profile_name, entry->GetName());
   EXPECT_EQ(custom_profile_name,
@@ -1501,13 +1501,17 @@ TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesSignedInName) {
   entry->SetGAIAGivenName(gaia_given_name);
   EXPECT_EQ(gaia_given_name, entry->GetName());
   EXPECT_EQ(gaia_given_name,
-      profiles::GetAvatarNameForProfile(profile1->GetPath()));
+            profiles::GetAvatarNameForProfile(profile1->GetPath()));
 
   // Multiple profiles means displaying the actual profile names.
   const base::string16 profile_name2 = storage.ChooseNameForNewProfile(1u);
   Profile* profile2 = AddProfileToStorage(profile_manager,
                                           "path_2", profile_name2);
-  EXPECT_EQ(gaia_given_name,
+  base::string16 expected_profile_name(gaia_given_name);
+  expected_profile_name.append(ASCIIToUTF16(" ("));
+  expected_profile_name.append(profile_name1);
+  expected_profile_name.append(ASCIIToUTF16(")"));
+  EXPECT_EQ(expected_profile_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
   EXPECT_EQ(profile_name2,
             profiles::GetAvatarNameForProfile(profile2->GetPath()));
@@ -1576,7 +1580,7 @@ TEST_F(ProfileManagerTest, ProfileDisplayNameIsEmailIfDefaultName) {
 
   // Adding a Gaia name to a profile that previously had a default name should
   // start displaying it.
-  const base::string16 gaia_given_name(ASCIIToUTF16("Robin"));
+  const base::string16 gaia_given_name(ASCIIToUTF16("Robin (Person 1)"));
   ASSERT_TRUE(storage.GetProfileAttributesWithPath(profile1->GetPath(),
                                                    &entry));
   entry->SetGAIAGivenName(gaia_given_name);

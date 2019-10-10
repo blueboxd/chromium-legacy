@@ -91,7 +91,7 @@ DelayedProcessingInfo& BackgroundSyncScheduler::GetDelayedProcessingInfo(
   if (sync_type == blink::mojom::BackgroundSyncType::ONE_SHOT)
     return delayed_processing_info_one_shot_;
   else
-    return delayed_processing_info_one_shot_;
+    return delayed_processing_info_periodic_;
 }
 
 }  // namespace content

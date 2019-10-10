@@ -41,6 +41,14 @@ void ToolbarIconContainerView::AddMainButton(views::Button* main_button) {
   AddChildView(main_button_);
 }
 
+void ToolbarIconContainerView::AddObserver(Observer* obs) {
+  observers_.AddObserver(obs);
+}
+
+void ToolbarIconContainerView::RemoveObserver(const Observer* obs) {
+  observers_.RemoveObserver(obs);
+}
+
 void ToolbarIconContainerView::OnHighlightChanged(
     views::Button* observed_button,
     bool highlighted) {
@@ -115,11 +123,22 @@ bool ToolbarIconContainerView::ShouldDisplayHighlight() {
 }
 
 void ToolbarIconContainerView::UpdateHighlight() {
+  bool showing_before = highlight_animation_.IsShowing();
+
   if (ShouldDisplayHighlight()) {
     highlight_animation_.Show();
   } else {
     highlight_animation_.Hide();
   }
+
+  if (showing_before == highlight_animation_.IsShowing())
+    return;
+  for (Observer& observer : observers_)
+    observer.OnHighlightChanged();
+}
+
+bool ToolbarIconContainerView::IsHighlighted() {
+  return ShouldDisplayHighlight();
 }
 
 void ToolbarIconContainerView::SetHighlightBorder() {

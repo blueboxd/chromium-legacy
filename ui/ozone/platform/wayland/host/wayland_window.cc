@@ -545,6 +545,19 @@ bool WaylandWindow::ShouldWindowContentsBeTransparent() const {
   return false;
 }
 
+void WaylandWindow::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WaylandWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
+                                   const gfx::ImageSkia& app_icon) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WaylandWindow::SizeConstraintsChanged() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 bool WaylandWindow::CanDispatchEvent(const PlatformEvent& event) {
   // This window is a nested popup window, all the events must be forwarded
   // to the main popup window.

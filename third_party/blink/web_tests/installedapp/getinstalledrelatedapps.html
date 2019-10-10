@@ -29,10 +29,10 @@ installedapp_test((t, mock) => {
       [{platform: 'play', url: null, id: 'com.test'},
        {platform: 'itunes', url: 'https://itunes.apple.com/', id: null}],
       [{platform: 'play', url: null, id: 'com.test'}]);
-  // TODO(mgiuca): The |url| field should be omitted from the result, not ''.
+
   return navigator.getInstalledRelatedApps().then(result => {
     assert_array_relatedapplication_equals(
-        result, [{platform: 'play', url: '', id: 'com.test'}]);
+        result, [{platform: 'play', id: 'com.test'}]);
   });
 }, 'getInstalledRelatedApps with related and installed apps (no url)');
 
@@ -46,12 +46,12 @@ installedapp_test((t, mock) => {
        {platform: 'itunes', url: 'https://itunes.apple.com/', id: null}],
       [{platform: 'play', url: null, id: 'com.test'},
        {platform: 'itunes', url: 'https://itunes.apple.com/', id: null}]);
-  // TODO(mgiuca): The null fields should be omitted from the result, not ''.
+
   return navigator.getInstalledRelatedApps().then(result => {
     assert_array_relatedapplication_equals(
         result,
-        [{platform: 'play', url: '', id: 'com.test'},
-         {platform: 'itunes', url: 'https://itunes.apple.com/', id: ''}]);
+        [{platform: 'play', id: 'com.test'},
+         {platform: 'itunes', url: 'https://itunes.apple.com/'}]);
   });
 }, 'getInstalledRelatedApps with multiple related and installed apps');
 

@@ -238,6 +238,8 @@ void SetFormFieldValueAction::OnGetPassword(int field_index,
 }
 
 void SetFormFieldValueAction::EndAction(const ClientStatus& status) {
+  // Clear immediately, to prevent sensitive information from staying in memory.
+  field_inputs_.clear();
   UpdateProcessedAction(status);
   std::move(process_action_callback_).Run(std::move(processed_action_proto_));
 }

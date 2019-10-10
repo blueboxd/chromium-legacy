@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
+#include "chrome/browser/web_applications/web_app_sync_install_delegate.h"
 
 class Profile;
 
@@ -29,7 +30,8 @@ enum class InstallResultCode;
 class WebAppDataRetriever;
 class WebAppInstallTask;
 
-class WebAppInstallManager final : public InstallManager {
+class WebAppInstallManager final : public InstallManager,
+                                   public SyncInstallDelegate {
  public:
   explicit WebAppInstallManager(Profile* profile);
   ~WebAppInstallManager() override;
@@ -63,6 +65,11 @@ class WebAppInstallManager final : public InstallManager {
                                 blink::Manifest manifest,
                                 OnceInstallCallback callback) override;
   void Shutdown() override;
+
+  // For the new USS-based system only. SyncInstallDelegate:
+  void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps) override;
+  void UninstallWebAppsAfterSync(
+      std::vector<std::unique_ptr<WebApp>> web_apps) override;
 
   using DataRetrieverFactory =
       base::RepeatingCallback<std::unique_ptr<WebAppDataRetriever>()>;

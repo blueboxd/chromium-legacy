@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ICON_CONTAINER_VIEW_H_
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/button_observer.h"
@@ -17,6 +18,11 @@ class ToolbarIconContainerView : public views::View,
                                  public views::ButtonObserver,
                                  public views::ViewObserver {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnHighlightChanged() = 0;
+  };
+
   explicit ToolbarIconContainerView(bool uses_highlight);
   ~ToolbarIconContainerView() override;
 
@@ -25,6 +31,11 @@ class ToolbarIconContainerView : public views::View,
 
   // Adds the RHS child as well as setting its margins.
   void AddMainButton(views::Button* main_button);
+
+  void AddObserver(Observer* obs);
+  void RemoveObserver(const Observer* obs);
+
+  bool IsHighlighted();
 
   // views::ButtonObserver:
   void OnHighlightChanged(views::Button* observed_button,
@@ -67,6 +78,8 @@ class ToolbarIconContainerView : public views::View,
 
   // Fade-in/out animation for the highlight border.
   gfx::SlideAnimation highlight_animation_{this};
+
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarIconContainerView);
 };

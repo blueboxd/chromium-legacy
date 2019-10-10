@@ -103,10 +103,6 @@ void MaybeReportDownloadDeepScanningVerdict(
   if (result != BinaryUploadService::Result::SUCCESS)
     return;
 
-  if (!g_browser_process->local_state()->GetBoolean(
-          prefs::kUnsafeEventsReportingEnabled))
-    return;
-
   if (response.malware_scan_verdict().verdict() ==
           MalwareDeepScanningVerdict::UWS ||
       response.malware_scan_verdict().verdict() ==

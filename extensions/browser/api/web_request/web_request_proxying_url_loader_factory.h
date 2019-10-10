@@ -18,8 +18,10 @@
 #include "content/public/browser/content_browser_client.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/completion_once_callback.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -188,7 +190,7 @@ class WebRequestProxyingURLLoaderFactory
       int render_process_id,
       scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
-      network::mojom::URLLoaderFactoryRequest loader_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
       mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
           header_client_receiver,
@@ -218,7 +220,8 @@ class WebRequestProxyingURLLoaderFactory
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(network::mojom::URLLoaderFactoryRequest loader_request) override;
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+                 loader_receiver) override;
 
   // network::mojom::TrustedURLLoaderHeaderClient:
   void OnLoaderCreated(
@@ -251,7 +254,7 @@ class WebRequestProxyingURLLoaderFactory
   const int render_process_id_;
   scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator_;
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data_;
-  mojo::BindingSet<network::mojom::URLLoaderFactory> proxy_bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> proxy_receivers_;
   network::mojom::URLLoaderFactoryPtr target_factory_;
   mojo::Receiver<network::mojom::TrustedURLLoaderHeaderClient>
       url_loader_header_client_receiver_{this};

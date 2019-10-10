@@ -11,6 +11,7 @@ import "services/network/public/mojom/url_loader_factory.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/devtools/devtools_agent.mojom";
 import "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom";
+import "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/renderer_preference_watcher.mojom";
 import "third_party/blink/public/mojom/renderer_preferences.mojom";
@@ -43,6 +44,10 @@ struct EmbeddedWorkerStartParams {
   // This service worker's script type:
   // https://w3c.github.io/ServiceWorker/#dfn-type
   ScriptType script_type;
+
+  // The outside fetch client settings object. This is used for top-level script
+  // fetch.
+  FetchClientSettingsObject outside_fetch_client_settings_object;
 
   // The string used for "user-agent" HTTP header.
   string user_agent;

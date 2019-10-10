@@ -24,6 +24,7 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -138,8 +139,9 @@ class FakeURLLoaderFactory final : public network::mojom::URLLoaderFactory {
   FakeURLLoaderFactory() = default;
   ~FakeURLLoaderFactory() override = default;
 
-  void AddBinding(network::mojom::URLLoaderFactoryRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void AddReceiver(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
   // network::mojom::URLLoaderFactory:
@@ -158,8 +160,9 @@ class FakeURLLoaderFactory final : public network::mojom::URLLoaderFactory {
     if (start_loader_callback_)
       std::move(start_loader_callback_).Run();
   }
-  void Clone(network::mojom::URLLoaderFactoryRequest factory) override {
-    bindings_.AddBinding(this, std::move(factory));
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory)
+      override {
+    receivers_.Add(this, std::move(factory));
   }
 
   void set_start_loader_callback(base::OnceClosure closure) {
@@ -170,7 +173,7 @@ class FakeURLLoaderFactory final : public network::mojom::URLLoaderFactory {
   GURL last_request_url() const { return last_url_; }
 
  private:
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
   std::vector<network::mojom::URLLoaderClientPtr> clients_;
   base::OnceClosure start_loader_callback_;
   GURL last_url_;
@@ -274,7 +277,7 @@ class ServiceWorkerProviderContextTest : public testing::Test {
 
   void EnableNetworkService() {
     network::mojom::URLLoaderFactoryPtr fake_loader_factory;
-    fake_loader_factory_.AddBinding(MakeRequest(&fake_loader_factory));
+    fake_loader_factory_.AddReceiver(MakeRequest(&fake_loader_factory));
     loader_factory_ =
         base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
             std::move(fake_loader_factory));

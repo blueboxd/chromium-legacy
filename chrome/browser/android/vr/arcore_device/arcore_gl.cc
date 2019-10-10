@@ -104,7 +104,6 @@ ArCoreGl::ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport)
     : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       ar_image_transport_(std::move(ar_image_transport)),
       webxr_(std::make_unique<vr::WebXrPresentationState>()),
-      session_controller_binding_(this),
       environment_binding_(this) {
   DVLOG(1) << __func__;
   webxr_transform_ = WebXRImageTransformMatrix();
@@ -176,11 +175,6 @@ void ArCoreGl::CreateSession(mojom::VRDisplayInfoPtr display_info,
 
   CloseBindingsIfOpen();
 
-  mojom::XRSessionControllerPtrInfo controller_info;
-  session_controller_binding_.Bind(mojo::MakeRequest(&controller_info));
-  session_controller_binding_.set_connection_error_handler(base::BindOnce(
-      &ArCoreGl::OnBindingDisconnect, weak_ptr_factory_.GetWeakPtr()));
-
   device::mojom::XRPresentationTransportOptionsPtr transport_options =
       device::mojom::XRPresentationTransportOptions::New();
   transport_options->wait_for_gpu_fence = true;
@@ -203,10 +197,13 @@ void ArCoreGl::CreateSession(mojom::VRDisplayInfoPtr display_info,
 
   std::move(create_callback)
       .Run(frame_data_receiver_.BindNewPipeAndPassRemote(),
-           display_info_->Clone(), std::move(controller_info),
+           display_info_->Clone(),
+           session_controller_receiver_.BindNewPipeAndPassRemote(),
            std::move(submit_frame_sink));
 
   frame_data_receiver_.set_disconnect_handler(base::BindOnce(
+      &ArCoreGl::OnBindingDisconnect, weak_ptr_factory_.GetWeakPtr()));
+  session_controller_receiver_.set_disconnect_handler(base::BindOnce(
       &ArCoreGl::OnBindingDisconnect, weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -805,7 +802,7 @@ void ArCoreGl::CloseBindingsIfOpen() {
 
   environment_binding_.Close();
   frame_data_receiver_.reset();
-  session_controller_binding_.Close();
+  session_controller_receiver_.reset();
   presentation_receiver_.reset();
 }
 

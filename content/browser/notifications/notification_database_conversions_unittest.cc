@@ -17,9 +17,9 @@
 #include "content/public/browser/notification_database_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom.h"
-#include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
@@ -89,7 +89,7 @@ TEST(NotificationDatabaseConversionsTest, SerializeAndDeserializeData) {
   notification_data.show_trigger_timestamp =
       base::Time::FromJsTime(kShowTriggerTimestamp);
   notification_data.data = developer_data;
-  for (size_t i = 0; i < blink::kWebNotificationMaxActions; i++) {
+  for (size_t i = 0; i < blink::kNotificationMaxActions; i++) {
     blink::PlatformNotificationAction notification_action;
     notification_action.type = kNotificationActionType;
     notification_action.action = base::NumberToString(i);
@@ -196,7 +196,7 @@ TEST(NotificationDatabaseConversionsTest, SerializeAndDeserializeData) {
 TEST(NotificationDatabaseConversionsTest, ActionDeserializationIsNotAdditive) {
   NotificationDatabaseData database_data;
 
-  for (size_t i = 0; i < blink::kWebNotificationMaxActions; ++i)
+  for (size_t i = 0; i < blink::kNotificationMaxActions; ++i)
     database_data.notification_data.actions.emplace_back();
 
   std::string serialized_data;
@@ -210,7 +210,7 @@ TEST(NotificationDatabaseConversionsTest, ActionDeserializationIsNotAdditive) {
                                                   &copied_database_data));
 
   EXPECT_EQ(copied_database_data.notification_data.actions.size(),
-            blink::kWebNotificationMaxActions);
+            blink::kNotificationMaxActions);
 
   // Deserialize it again in the same |copied_database_data|. The number of
   // actions in the structure should not be affected.
@@ -218,7 +218,7 @@ TEST(NotificationDatabaseConversionsTest, ActionDeserializationIsNotAdditive) {
                                                   &copied_database_data));
 
   EXPECT_EQ(copied_database_data.notification_data.actions.size(),
-            blink::kWebNotificationMaxActions);
+            blink::kNotificationMaxActions);
 }
 
 TEST(NotificationDatabaseConversionsTest, SerializeAndDeserializeActionTypes) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter.h"
+#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter.h"
 
 #include <memory>
 
@@ -79,13 +79,14 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
 
   void CreateRemoteTrackAdapter(
       webrtc::MediaStreamTrackInterface* webrtc_track) {
-    track_adapter_ = WebRtcMediaStreamTrackAdapter::CreateRemoteTrackAdapter(
-        dependency_factory_.get(), main_thread_, webrtc_track);
+    track_adapter_ =
+        blink::WebRtcMediaStreamTrackAdapter::CreateRemoteTrackAdapter(
+            dependency_factory_.get(), main_thread_, webrtc_track);
   }
 
   void HoldOntoAdapterReference(
       base::WaitableEvent* waitable_event,
-      scoped_refptr<WebRtcMediaStreamTrackAdapter> adapter) {
+      scoped_refptr<blink::WebRtcMediaStreamTrackAdapter> adapter) {
     waitable_event->Wait();
   }
 
@@ -120,12 +121,13 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
 
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  scoped_refptr<WebRtcMediaStreamTrackAdapter> track_adapter_;
+  scoped_refptr<blink::WebRtcMediaStreamTrackAdapter> track_adapter_;
 };
 
 TEST_F(WebRtcMediaStreamTrackAdapterTest, LocalAudioTrack) {
-  track_adapter_ = WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter(
-      dependency_factory_.get(), main_thread_, CreateLocalAudioTrack());
+  track_adapter_ =
+      blink::WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter(
+          dependency_factory_.get(), main_thread_, CreateLocalAudioTrack());
   EXPECT_TRUE(track_adapter_->is_initialized());
   EXPECT_TRUE(!track_adapter_->web_track().IsNull());
   EXPECT_EQ(track_adapter_->web_track().Source().GetType(),
@@ -143,8 +145,9 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, LocalAudioTrack) {
 
 // Flaky, see https://crbug.com/982200.
 TEST_F(WebRtcMediaStreamTrackAdapterTest, DISABLED_LocalVideoTrack) {
-  track_adapter_ = WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter(
-      dependency_factory_.get(), main_thread_, CreateLocalVideoTrack());
+  track_adapter_ =
+      blink::WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter(
+          dependency_factory_.get(), main_thread_, CreateLocalVideoTrack());
   EXPECT_TRUE(track_adapter_->is_initialized());
   EXPECT_TRUE(!track_adapter_->web_track().IsNull());
   EXPECT_EQ(track_adapter_->web_track().Source().GetType(),

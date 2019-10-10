@@ -141,16 +141,9 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
   }
 
   if (OriginalContextDocument() != context_document) {
-    if (GetScriptType() == mojom::ScriptType::kModule) {
-      // Do not execute module scripts if they are moved between documents.
-      Dispose();
-      return;
-    }
-
-    // TODO(hiroshige): Also do not execute classic scripts.
-    // https://crbug.com/721914
-    UseCounter::Count(context_document,
-                      WebFeature::kEvaluateScriptMovedBetweenDocuments);
+    // Do not execute scripts if they are moved between documents.
+    Dispose();
+    return;
   }
 
   if (OriginalContextDocument() == context_document &&
@@ -160,8 +153,6 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
     // such scripts. https://crbug.com/721914
     UseCounter::Count(context_document,
                       WebFeature::kEvaluateScriptMovedBetweenElementDocuments);
-    Dispose();
-    return;
   }
 
   Script* script = GetSource(document_url);

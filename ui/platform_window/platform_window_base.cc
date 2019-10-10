@@ -4,6 +4,8 @@
 
 #include "ui/platform_window/platform_window_base.h"
 
+#include "ui/gfx/geometry/rect.h"
+
 namespace ui {
 
 PlatformWindowBase::PlatformWindowBase() = default;
@@ -25,5 +27,21 @@ void PlatformWindowBase::StackAbove(gfx::AcceleratedWidget widget) {}
 void PlatformWindowBase::StackAtTop() {}
 
 void PlatformWindowBase::FlashFrame(bool flash_frame) {}
+
+void PlatformWindowBase::SetShape(std::unique_ptr<ShapeRects> native_shape,
+                                  const gfx::Transform& transform) {}
+
+void PlatformWindowBase::SetAspectRatio(const gfx::SizeF& aspect_ratio) {}
+
+void PlatformWindowBase::SetWindowIcons(const gfx::ImageSkia& window_icon,
+                                        const gfx::ImageSkia& app_icon) {}
+
+bool PlatformWindowBase::IsAnimatingClosed() const {
+  return false;
+}
+
+bool PlatformWindowBase::IsTranslucentWindowOpacitySupported() const {
+  return false;
+}
 
 }  // namespace ui

@@ -227,7 +227,7 @@ views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
   views::Widget* widget =
       views::DialogDelegate::CreateDialogWidget(dialog, nullptr, parent_view);
 
-  bool requires_positioning = dialog->ShouldUseCustomFrame();
+  bool requires_positioning = dialog->use_custom_frame();
 
 #if defined(OS_MACOSX)
   // On Mac, window modal dialogs are displayed as sheets, so their position is

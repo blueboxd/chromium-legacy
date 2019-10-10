@@ -24,7 +24,6 @@ const char kFakePassword[] = "example_password";
 }  // namespace
 
 namespace autofill_assistant {
-namespace {
 
 using ::base::test::RunOnceCallback;
 using ::testing::_;
@@ -222,5 +221,14 @@ TEST_F(SetFormFieldValueActionTest, Fallback) {
   action.ProcessAction(callback_.Get());
 }
 
-}  // namespace
+TEST_F(SetFormFieldValueActionTest, PasswordIsClearedFromMemory) {
+  auto* value = set_form_field_proto_->add_value();
+  value->set_use_password(true);
+  SetFormFieldValueAction action(&mock_action_delegate_, proto_);
+  ON_CALL(mock_action_delegate_, OnGetFieldValue(_, _))
+      .WillByDefault(RunOnceCallback<1>(true, kFakePassword));
+  action.ProcessAction(callback_.Get());
+  EXPECT_TRUE(action.field_inputs_.empty());
+}
+
 }  // namespace autofill_assistant

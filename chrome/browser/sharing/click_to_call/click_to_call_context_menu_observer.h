@@ -16,6 +16,10 @@
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "ui/base/models/simple_menu_model.h"
 
+namespace syncer {
+class DeviceInfo;
+}  // namespace syncer
+
 class RenderViewContextMenuProxy;
 
 class ClickToCallUiController;
@@ -62,6 +66,8 @@ class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
   RenderViewContextMenuProxy* proxy_ = nullptr;
 
   ClickToCallUiController* controller_ = nullptr;
+
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> devices_;
 
   SubMenuDelegate sub_menu_delegate_{this};
 

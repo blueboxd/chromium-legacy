@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
-#include "chrome/browser/chromeos/arc/arc_ui_availability_reporter.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_default_negotiator.h"
@@ -521,7 +520,6 @@ void ArcSessionManager::Shutdown() {
   }
   pai_starter_.reset();
   fast_app_reinstall_starter_.reset();
-  arc_ui_availability_reporter_.reset();
   profile_ = nullptr;
   state_ = State::NOT_INITIALIZED;
   if (scoped_opt_in_tracker_) {
@@ -681,9 +679,7 @@ bool ArcSessionManager::RequestEnableImpl() {
   // the initial request.
   // |prefs::kArcProvisioningInitiatedFromOobe| is reset when provisioning is
   // done or ARC is opted out.
-  const bool opt_in_start = IsArcOobeOptInActive();
-  const bool signed_in = prefs->GetBoolean(prefs::kArcSignedIn);
-  if (opt_in_start)
+  if (IsArcOobeOptInActive())
     prefs->SetBoolean(prefs::kArcProvisioningInitiatedFromOobe, true);
 
   // If it is marked that sign in has been successfully done or if Play Store is
@@ -693,9 +689,9 @@ bool ArcSessionManager::RequestEnableImpl() {
   // In Public Session mode ARC should be started silently without user
   // interaction. If opt-in verification is disabled, skip negotiation, too.
   // This is for testing purpose.
-  const bool start_arc_directly = signed_in || ShouldArcAlwaysStart() ||
-                                  IsRobotOrOfflineDemoAccountMode() ||
-                                  IsArcOptInVerificationDisabled();
+  const bool start_arc_directly =
+      prefs->GetBoolean(prefs::kArcSignedIn) || ShouldArcAlwaysStart() ||
+      IsRobotOrOfflineDemoAccountMode() || IsArcOptInVerificationDisabled();
 
   // When ARC is blocked because of filesystem compatibility, do not proceed
   // to starting ARC nor follow further state transitions.
@@ -705,18 +701,6 @@ bool ArcSessionManager::RequestEnableImpl() {
     if (!start_arc_directly && g_ui_enabled)
       arc::ShowArcMigrationGuideNotification(profile_);
     return false;
-  }
-
-  // ARC might be re-enabled and in this case |arc_ui_availability_reporter_| is
-  // already set.
-  if (!arc_ui_availability_reporter_) {
-    arc_ui_availability_reporter_ = std::make_unique<ArcUiAvailabilityReporter>(
-        profile_,
-        opt_in_start
-            ? ArcUiAvailabilityReporter::Mode::kOobeProvisioning
-            : signed_in
-                  ? ArcUiAvailabilityReporter::Mode::kAlreadyProvisioned
-                  : ArcUiAvailabilityReporter::Mode::kInSessionProvisioning);
   }
 
   if (!pai_starter_ && IsPlayStoreAvailable())
@@ -768,7 +752,6 @@ void ArcSessionManager::RequestDisable() {
   scoped_opt_in_tracker_.reset();
   pai_starter_.reset();
   fast_app_reinstall_starter_.reset();
-  arc_ui_availability_reporter_.reset();
 
   // Reset any pending request to re-enable ARC.
   reenable_arc_ = false;

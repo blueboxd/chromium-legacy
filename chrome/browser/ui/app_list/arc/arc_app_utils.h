@@ -40,7 +40,6 @@ extern const char kPlayStorePackage[];
 extern const char kPlayStoreActivity[];
 extern const char kSettingsAppId[];
 extern const char kInitialStartParam[];
-extern const char kRequestStartTimeParamTemplate[];
 extern const char kSettingsAppDomainUrlActivity[];
 
 // Represents unparsed intent.

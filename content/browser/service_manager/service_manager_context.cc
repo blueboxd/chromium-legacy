@@ -228,9 +228,10 @@ class DeviceServiceURLLoaderFactory : public network::SharedURLLoaderFactory {
   }
 
   // SharedURLLoaderFactory implementation:
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
     GetContentClient()->browser()->GetSystemSharedURLLoaderFactory()->Clone(
-        std::move(request));
+        std::move(receiver));
   }
 
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {

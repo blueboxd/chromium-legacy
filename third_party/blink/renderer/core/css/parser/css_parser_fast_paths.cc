@@ -1095,6 +1095,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
 bool CSSParserFastPaths::IsPartialKeywordPropertyID(CSSPropertyID property_id) {
   switch (property_id) {
     case CSSPropertyID::kDisplay:
+    case CSSPropertyID::kListStyleType:
       return true;
     default:
       return false;

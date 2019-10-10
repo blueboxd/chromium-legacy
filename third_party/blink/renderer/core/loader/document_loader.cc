@@ -172,6 +172,7 @@ DocumentLoader::DocumentLoader(
   }
   ip_address_space_ = params_->ip_address_space;
   grant_load_local_resources_ = params_->grant_load_local_resources;
+  force_fetch_cache_mode_ = params_->force_fetch_cache_mode;
 
   WebNavigationTimings& timings = params_->navigation_timings;
   if (!timings.input_start.is_null())
@@ -1102,6 +1103,11 @@ void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
 
 const KURL& DocumentLoader::UnreachableURL() const {
   return unreachable_url_;
+}
+
+const base::Optional<blink::mojom::FetchCacheMode>&
+DocumentLoader::ForceFetchCacheMode() const {
+  return force_fetch_cache_mode_;
 }
 
 bool DocumentLoader::WillLoadUrlAsEmpty(const KURL& url) {

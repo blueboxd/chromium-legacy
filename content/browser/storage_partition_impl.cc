@@ -69,8 +69,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
@@ -891,12 +889,13 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
                                traffic_annotation);
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
     if (!storage_partition_)
       return;
     storage_partition_
         ->GetURLLoaderFactoryForBrowserProcessInternal(corb_enabled_)
-        ->Clone(std::move(request));
+        ->Clone(std::move(receiver));
   }
 
   // SharedURLLoaderFactory implementation:

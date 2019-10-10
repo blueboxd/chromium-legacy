@@ -70,7 +70,7 @@ void SMILAnimationSandwich::UpdateTiming(SMILTime elapsed) {
   for (const auto& animation : sandwich_) {
     DCHECK(animation->HasValidTarget());
 
-    if (!animation->CurrentIntervalIsActive(elapsed))
+    if (!animation->NeedsIntervalUpdate(elapsed))
       continue;
     animation->UpdateInterval(elapsed);
   }

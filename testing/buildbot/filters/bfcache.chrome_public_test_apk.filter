@@ -31,4 +31,4 @@
 
 # Autofill / password manager.
 # https://crbug.com/1011799
--org.chromium.chrome.browser.password_manager.OnboardingDialogIntegrationTest.testOnboardingDismissedPressedBack
+-org.chromium.chrome.browser.password_manager.OnboardingDialogIntegrationTest.*

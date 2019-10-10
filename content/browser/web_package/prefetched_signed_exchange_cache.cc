@@ -18,8 +18,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_util.h"
@@ -330,14 +331,14 @@ class SubresourceSignedExchangeURLLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
   SubresourceSignedExchangeURLLoaderFactory(
-      network::mojom::URLLoaderFactoryRequest request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> entry,
       const url::Origin& request_initiator_site_lock)
       : entry_(std::move(entry)),
         request_initiator_site_lock_(request_initiator_site_lock) {
-    bindings_.AddBinding(this, std::move(request));
-    bindings_.set_connection_error_handler(base::BindRepeating(
-        &SubresourceSignedExchangeURLLoaderFactory::OnConnectionError,
+    receivers_.Add(this, std::move(receiver));
+    receivers_.set_disconnect_handler(base::BindRepeating(
+        &SubresourceSignedExchangeURLLoaderFactory::OnMojoDisconnect,
         base::Unretained(this)));
   }
   ~SubresourceSignedExchangeURLLoaderFactory() override {}
@@ -361,20 +362,21 @@ class SubresourceSignedExchangeURLLoaderFactory
             false /* is_navigation_request */),
         std::move(loader));
   }
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
+    receivers_.Add(this, std::move(receiver));
   }
 
  private:
-  void OnConnectionError() {
-    if (!bindings_.empty())
+  void OnMojoDisconnect() {
+    if (!receivers_.empty())
       return;
     delete this;
   }
 
   std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> entry_;
   const url::Origin request_initiator_site_lock_;
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceSignedExchangeURLLoaderFactory);
 };

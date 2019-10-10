@@ -94,7 +94,7 @@ def CompressUsingLZMA(build_dir, compressed_file, input_file, verbose):
 
 
 def CopyAllFilesToStagingDir(config, distribution, staging_dir, build_dir,
-                             enable_hidpi):
+                             enable_hidpi, include_snapshotblob):
   """Copies the files required for installer archive.
   Copies all common files required for various distributions of Chromium and
   also files for the specific Chromium build specified by distribution.
@@ -110,6 +110,9 @@ def CopyAllFilesToStagingDir(config, distribution, staging_dir, build_dir,
                                    staging_dir, build_dir)
   if enable_hidpi == '1':
     CopySectionFilesToStagingDir(config, 'HIDPI', staging_dir, build_dir)
+
+  if include_snapshotblob == '1':
+    CopySectionFilesToStagingDir(config, 'SNAPSHOTBLOB', staging_dir, build_dir)
 
 
 def CopySectionFilesToStagingDir(config, section, staging_dir, src_dir):
@@ -516,7 +519,8 @@ def main(options):
   # Copy the files from the build dir.
   CopyAllFilesToStagingDir(config, options.distribution,
                            staging_dir, options.build_dir,
-                           options.enable_hidpi)
+                           options.enable_hidpi,
+                           options.include_snapshotblob)
 
   if options.component_build == '1':
     DoComponentBuildTasks(staging_dir, options.build_dir,
@@ -577,6 +581,8 @@ def _ParseOptions():
       help='Name used to prefix names of generated archives.')
   parser.add_option('--enable_hidpi', default='0',
       help='Whether to include HiDPI resource files.')
+  parser.add_option('--include_snapshotblob', default='0',
+      help='Whether to include the V8 snapshot blob.')
   parser.add_option('--component_build', default='0',
       help='Whether this archive is packaging a component build.')
   parser.add_option('--skip_archive_compression',

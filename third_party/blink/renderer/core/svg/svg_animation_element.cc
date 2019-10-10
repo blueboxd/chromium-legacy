@@ -529,6 +529,8 @@ void SVGAnimationElement::CurrentValuesForValuesAnimation(
 }
 
 void SVGAnimationElement::StartedActiveInterval() {
+  SVGSMILElement::StartedActiveInterval();
+
   animation_valid_ = false;
 
   if (!IsValid() || !HasValidTarget())

@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/hit_test_x11.h"
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_util.h"
@@ -25,6 +26,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_path.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
@@ -377,7 +379,7 @@ void XWindow::Init(const Configuration& config) {
   ui::SetIntProperty(xwindow_, "_NET_WM_BYPASS_COMPOSITOR", "CARDINAL", 2);
 
   if (config.icon)
-    SetWindowIcons(gfx::ImageSkia(), *config.icon);
+    SetXWindowIcons(gfx::ImageSkia(), *config.icon);
 }
 
 void XWindow::Map(bool inactive) {
@@ -712,7 +714,7 @@ bool XWindow::SetTitle(base::string16 title) {
   return true;
 }
 
-void XWindow::SetOpacity(float opacity) {
+void XWindow::SetXWindowOpacity(float opacity) {
   // X server opacity is in terms of 32 bit unsigned int space, and counts from
   // the opposite direction.
   // XChangeProperty() expects "cardinality" to be long.
@@ -734,7 +736,7 @@ void XWindow::SetOpacity(float opacity) {
   }
 }
 
-void XWindow::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
+void XWindow::SetXWindowAspectRatio(const gfx::SizeF& aspect_ratio) {
   XSizeHints size_hints;
   size_hints.flags = 0;
   long supplied_return;
@@ -746,8 +748,8 @@ void XWindow::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
   XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
 }
 
-void XWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
-                             const gfx::ImageSkia& app_icon) {
+void XWindow::SetXWindowIcons(const gfx::ImageSkia& window_icon,
+                              const gfx::ImageSkia& app_icon) {
   // TODO(erg): The way we handle icons across different versions of chrome
   // could be substantially improved. The Windows version does its own thing
   // and only sometimes comes down this code path. The icon stuff in
@@ -921,12 +923,6 @@ void XWindow::AfterActivationStateChanged() {
 void XWindow::SetUseNativeFrame(bool use_native_frame) {
   use_native_frame_ = use_native_frame;
   ui::SetUseOSWindowFrame(xwindow_, use_native_frame);
-  ResetWindowRegion();
-}
-
-void XWindow::SetShape(XRegion* xregion) {
-  custom_window_shape_ = !!xregion;
-  window_shape_.reset(xregion);
   ResetWindowRegion();
 }
 
@@ -1559,6 +1555,39 @@ void XWindow::ConfineCursorTo(const gfx::Rect& bounds) {
       barrier.bottom(), BarrierNegativeX, 0, XIAllDevices);
 
   has_pointer_barriers_ = true;
+}
+
+bool XWindow::ContainsPointInRegion(const gfx::Point& point) const {
+  if (!shape())
+    return true;
+
+  return XPointInRegion(shape(), point.x(), point.y()) == x11::True;
+}
+
+void XWindow::SetXWindowShape(std::unique_ptr<NativeShapeRects> native_shape,
+                              const gfx::Transform& transform) {
+  XRegion* xregion = nullptr;
+  if (native_shape) {
+    SkRegion native_region;
+    for (const gfx::Rect& rect : *native_shape)
+      native_region.op(gfx::RectToSkIRect(rect), SkRegion::kUnion_Op);
+    if (!transform.IsIdentity() && !native_region.isEmpty()) {
+      SkPath path_in_dip;
+      if (native_region.getBoundaryPath(&path_in_dip)) {
+        SkPath path_in_pixels;
+        path_in_dip.transform(transform.matrix(), &path_in_pixels);
+        xregion = gfx::CreateRegionFromSkPath(path_in_pixels);
+      } else {
+        xregion = XCreateRegion();
+      }
+    } else {
+      xregion = gfx::CreateRegionFromSkRegion(native_region);
+    }
+  }
+
+  custom_window_shape_ = !!xregion;
+  window_shape_.reset(xregion);
+  ResetWindowRegion();
 }
 
 void XWindow::UnconfineCursor() {

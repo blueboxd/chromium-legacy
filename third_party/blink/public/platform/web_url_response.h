@@ -235,6 +235,7 @@ class WebURLResponse {
 
   // Flag whether this request was loaded via the SPDY protocol or not.
   // SPDY is an experimental web protocol, see http://dev.chromium.org/spdy
+  BLINK_PLATFORM_EXPORT bool WasFetchedViaSPDY() const;
   BLINK_PLATFORM_EXPORT void SetWasFetchedViaSPDY(bool);
 
   // Flag whether this request was loaded via a ServiceWorker. See
@@ -280,8 +281,14 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetRemotePort(uint16_t);
 
   // ALPN negotiated protocol of the socket which fetched this resource.
+  BLINK_PLATFORM_EXPORT bool WasAlpnNegotiated() const;
+  BLINK_PLATFORM_EXPORT void SetWasAlpnNegotiated(bool);
   BLINK_PLATFORM_EXPORT WebString AlpnNegotiatedProtocol() const;
   BLINK_PLATFORM_EXPORT void SetAlpnNegotiatedProtocol(const WebString&);
+
+  // Whether the response could use alternate protocol.
+  BLINK_PLATFORM_EXPORT bool WasAlternateProtocolAvailable() const;
+  BLINK_PLATFORM_EXPORT void SetWasAlternateProtocolAvailable(bool);
 
   // Information about the type of connection used to fetch this resource.
   BLINK_PLATFORM_EXPORT net::HttpResponseInfo::ConnectionInfo ConnectionInfo()

@@ -39,8 +39,8 @@ void AboutURLLoaderFactory::CreateLoaderAndStart(
 }
 
 void AboutURLLoaderFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest loader) {
-  bindings_.AddBinding(this, std::move(loader));
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) {
+  receivers_.Add(this, std::move(loader));
 }
 
 }  // namespace content

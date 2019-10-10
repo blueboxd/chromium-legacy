@@ -5,7 +5,8 @@
 #ifndef CONTENT_TEST_FAKE_NETWORK_URL_LOADER_FACTORY_H_
 #define CONTENT_TEST_FAKE_NETWORK_URL_LOADER_FACTORY_H_
 
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
@@ -50,7 +51,8 @@ class FakeNetworkURLLoaderFactory final
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
 
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override;
 
   // Sets the response for a specific url. CreateLoaderAndStart() uses this
   // response instead of the default.
@@ -92,7 +94,7 @@ class FakeNetworkURLLoaderFactory final
   // User-defined URL => ResponseInfo map.
   base::flat_map<GURL, ResponseInfo> response_info_map_;
 
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNetworkURLLoaderFactory);
 };

@@ -54,7 +54,7 @@ cast_source_set("libcast_media_1.0_avsync") {
   ]
 
   if (use_alsa) {
-    deps += [ "//chromecast/media/cma/backend/alsa:cma_backend_support" ]
+    deps += [ "//chromecast/media/cma/backend/alsa:volume_control" ]
     if (!is_cast_desktop_build) {
       libs = [ "videodecoderformixer" ]
     } else {

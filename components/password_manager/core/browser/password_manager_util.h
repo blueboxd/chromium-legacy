@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_
 
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -126,7 +125,7 @@ void FindBestMatches(
 // PSL and Android matches.
 const autofill::PasswordForm* GetMatchForUpdating(
     const autofill::PasswordForm& submitted_form,
-    const std::map<base::string16, const autofill::PasswordForm*>& credentials);
+    const std::vector<const autofill::PasswordForm*>& credentials);
 
 // This method creates a blacklisted form with |digests|'s scheme, signon_realm
 // and origin. This is done to avoid storing PII and to have a normalized unique

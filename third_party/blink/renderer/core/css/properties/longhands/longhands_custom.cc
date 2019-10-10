@@ -3778,12 +3778,51 @@ const CSSValue* ListStylePosition::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.ListStylePosition());
 }
 
+const CSSValue* ListStyleType::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  // NOTE: All the keyword values for the list-style-type property are handled
+  // by the CSSParserFastPaths.
+  return css_property_parser_helpers::ConsumeString(range);
+}
+
 const CSSValue* ListStyleType::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
+  if (style.ListStyleType() == EListStyleType::kString)
+    return MakeGarbageCollected<CSSStringValue>(style.ListStyleStringValue());
   return CSSIdentifierValue::Create(style.ListStyleType());
+}
+
+void ListStyleType::ApplyInitial(StyleResolverState& state) const {
+  state.Style()->SetListStyleType(
+      ComputedStyleInitialValues::InitialListStyleType());
+  state.Style()->SetListStyleStringValue(
+      ComputedStyleInitialValues::InitialListStyleStringValue());
+}
+
+void ListStyleType::ApplyInherit(StyleResolverState& state) const {
+  state.Style()->SetListStyleType(state.ParentStyle()->ListStyleType());
+  state.Style()->SetListStyleStringValue(
+      state.ParentStyle()->ListStyleStringValue());
+}
+
+void ListStyleType::ApplyValue(StyleResolverState& state,
+                               const CSSValue& value) const {
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    state.Style()->SetListStyleType(
+        identifier_value->ConvertTo<EListStyleType>());
+    state.Style()->SetListStyleStringValue(
+        ComputedStyleInitialValues::InitialListStyleStringValue());
+    return;
+  }
+
+  state.Style()->SetListStyleType(EListStyleType::kString);
+  state.Style()->SetListStyleStringValue(
+      AtomicString(To<CSSStringValue>(value).Value()));
 }
 
 bool MarginBlockEnd::IsLayoutDependent(const ComputedStyle* style,

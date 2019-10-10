@@ -810,13 +810,9 @@ IN_PROC_BROWSER_TEST_F(RestrictedFileSystemExtensionApiTest,
 //
 // DriveFileSystemExtensionApiTests.
 //
-#if defined(LEAK_SANITIZER)
-#define MAYBE_FileSystemOperations DISABLED_FileSystemOperations
-#else
-#define MAYBE_FileSystemOperations FileSystemOperations
-#endif
+// This test is flaky. See https://crbug.com/1008880.
 IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest,
-                       MAYBE_FileSystemOperations) {
+                       DISABLED_FileSystemOperations) {
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/filesystem_operations_test",
       FILE_PATH_LITERAL("manifest.json"),

@@ -179,6 +179,11 @@ enum NavigationDecision {
   PREVENT = 1;
 }
 
+message JavascriptChannelMessage {
+  string channel = 1;
+  string message = 2;
+}
+
 message WebviewRequest {
   // Unique identifier for the request. For requests that will have a response,
   // the response id will match the request id.
@@ -239,6 +244,9 @@ message WebviewResponse {
     GetTitleResponse get_title = 7;
     // Triggered by web navigation events inside the webview.
     NavigationRequestEvent navigation_event = 9;
+    // Events sents from JS inside of Webviews to the embedder who added JS
+    // channels via AddJavascriptChannelsRequest.
+    JavascriptChannelMessage javascript_channel_message = 10;
   }
 }
 

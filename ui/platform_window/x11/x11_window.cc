@@ -6,6 +6,7 @@
 
 #include "base/trace_event/trace_event.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_util_internal.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"
@@ -396,6 +397,43 @@ bool X11Window::IsVisibleOnAllWorkspaces() const {
 
 void X11Window::FlashFrame(bool flash_frame) {
   XWindow::SetFlashFrameHint(flash_frame);
+}
+
+gfx::Rect X11Window::GetXRootWindowOuterBounds() const {
+  return XWindow::GetOutterBounds();
+}
+
+bool X11Window::ContainsPointInXRegion(const gfx::Point& point) const {
+  return XWindow::ContainsPointInRegion(point);
+}
+
+void X11Window::SetShape(std::unique_ptr<ShapeRects> native_shape,
+                         const gfx::Transform& transform) {
+  return XWindow::SetXWindowShape(std::move(native_shape), transform);
+}
+
+void X11Window::SetOpacityForXWindow(float opacity) {
+  XWindow::SetXWindowOpacity(opacity);
+}
+
+void X11Window::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
+  XWindow::SetXWindowAspectRatio(aspect_ratio);
+}
+
+void X11Window::SetWindowIcons(const gfx::ImageSkia& window_icon,
+                               const gfx::ImageSkia& app_icon) {
+  XWindow::SetXWindowIcons(window_icon, app_icon);
+}
+
+void X11Window::SizeConstraintsChanged() {
+  XWindow::UpdateMinAndMaxSize();
+}
+
+bool X11Window::IsTranslucentWindowOpacitySupported() const {
+  // This function may be called before InitX11Window() (which
+  // initializes |visual_has_alpha_|), so we cannot simply return
+  // |visual_has_alpha_|.
+  return ui::XVisualManager::GetInstance()->ArgbVisualAvailable();
 }
 
 bool X11Window::CanDispatchEvent(const PlatformEvent& xev) {

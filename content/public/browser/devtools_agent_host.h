@@ -74,7 +74,7 @@ class CONTENT_EXPORT DevToolsAgentHost
       std::unique_ptr<DevToolsExternalAgentProxyDelegate> delegate);
 
   using CreateServerSocketCallback =
-      base::Callback<std::unique_ptr<net::ServerSocket>(std::string*)>;
+      base::RepeatingCallback<std::unique_ptr<net::ServerSocket>(std::string*)>;
 
   // Creates DevToolsAgentHost for the browser, which works with browser-wide
   // debugging protocol.

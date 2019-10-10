@@ -188,7 +188,7 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
       is_scheduled_(false),
       interval_{SMILTime::Unresolved(), SMILTime::Unresolved()},
       previous_interval_{SMILTime::Unresolved(), SMILTime::Unresolved()},
-      next_interval_time_(SMILTime::Unresolved()),
+      next_interval_time_(SMILTime::Earliest()),
       active_state_(kInactive),
       restart_(kRestartAlways),
       fill_(kFillRemove),
@@ -257,9 +257,8 @@ void SVGSMILElement::Reset() {
   is_waiting_for_first_interval_ = true;
   interval_ = {SMILTime::Unresolved(), SMILTime::Unresolved()};
   previous_interval_ = {SMILTime::Unresolved(), SMILTime::Unresolved()};
-  next_interval_time_ = SMILTime::Unresolved();
+  next_interval_time_ = SMILTime::Earliest();
   last_progress_ = {0.0f, 0};
-  ResolveFirstInterval(SMILTime());
 }
 
 Node::InsertionNotificationRequest SVGSMILElement::InsertedInto(
@@ -819,15 +818,6 @@ SMILInterval SVGSMILElement::ResolveInterval(SMILTime begin_after,
   return SMILInterval(SMILTime::Unresolved(), SMILTime::Unresolved());
 }
 
-bool SVGSMILElement::ResolveFirstInterval(SMILTime presentation_time) {
-  SMILInterval first_interval =
-      ResolveInterval(SMILTime::Earliest(), presentation_time);
-  if (!first_interval.IsResolved() || first_interval == interval_)
-    return false;
-  SetNewInterval(first_interval, presentation_time);
-  return true;
-}
-
 void SVGSMILElement::SetNewInterval(const SMILInterval& interval,
                                     SMILTime presentation_time) {
   interval_ = interval;
@@ -873,14 +863,8 @@ void SVGSMILElement::InstanceListChanged() {
   SMILTime current_presentation_time =
       time_container_ ? time_container_->CurrentDocumentTime() : SMILTime();
   DCHECK(!current_presentation_time.IsUnresolved());
-  if (is_waiting_for_first_interval_) {
-    instance_lists_have_changed_ = false;
-    ResolveFirstInterval(current_presentation_time);
-    return;
-  }
-  SMILInterval old_interval = interval_;
   UpdateInterval(current_presentation_time);
-  if (interval_ != old_interval) {
+  if (interval_has_changed_) {
     if (GetActiveState() == kActive &&
         interval_.BeginsAfter(current_presentation_time)) {
       active_state_ = DetermineActiveState(current_presentation_time);
@@ -914,7 +898,7 @@ void SVGSMILElement::DiscardOrRevalidateCurrentInterval(
 
 bool SVGSMILElement::HandleIntervalRestart(SMILTime presentation_time) {
   Restart restart = GetRestart();
-  if (restart == kRestartNever)
+  if (!is_waiting_for_first_interval_ && restart == kRestartNever)
     return false;
   if (!interval_.IsResolved() || interval_.EndsBefore(presentation_time))
     return true;
@@ -929,7 +913,6 @@ bool SVGSMILElement::HandleIntervalRestart(SMILTime presentation_time) {
 }
 
 void SVGSMILElement::UpdateInterval(SMILTime presentation_time) {
-  DCHECK(!is_waiting_for_first_interval_);
   if (instance_lists_have_changed_) {
     instance_lists_have_changed_ = false;
     DiscardOrRevalidateCurrentInterval(presentation_time);
@@ -937,7 +920,9 @@ void SVGSMILElement::UpdateInterval(SMILTime presentation_time) {
   if (!HandleIntervalRestart(presentation_time))
     return;
   SMILTime begin_after =
-      interval_.IsResolved() ? interval_.end : SMILTime::Earliest();
+      !is_waiting_for_first_interval_ && interval_.IsResolved()
+          ? interval_.end
+          : SMILTime::Earliest();
   SMILInterval next_interval = ResolveInterval(begin_after, presentation_time);
   if (!next_interval.IsResolved() || next_interval == interval_)
     return;
@@ -950,8 +935,7 @@ void SVGSMILElement::UpdateInterval(SMILTime presentation_time) {
 void SVGSMILElement::AddedToTimeContainer() {
   DCHECK(time_container_);
   SMILTime current_presentation_time = time_container_->CurrentDocumentTime();
-  if (is_waiting_for_first_interval_)
-    ResolveFirstInterval(current_presentation_time);
+  UpdateInterval(current_presentation_time);
 
   if (IntervalBegin() <= current_presentation_time ||
       NextProgressTime(current_presentation_time).IsFinite()) {
@@ -1069,36 +1053,12 @@ bool SVGSMILElement::IsContributing(SMILTime elapsed) const {
          GetActiveState() == kFrozen;
 }
 
-bool SVGSMILElement::CurrentIntervalIsActive(SMILTime elapsed) {
+bool SVGSMILElement::NeedsIntervalUpdate(SMILTime elapsed) const {
   // Check we're connected to something and that our conditions have been
   // "connected".
   DCHECK(time_container_);
   DCHECK(conditions_connected_);
-  // If |is_waiting_for_first_interval_| is true, |interval_| can either be the
-  // actual interval that has been resolved, or unresolved if there are no
-  // begin times yet.
-  DCHECK(is_waiting_for_first_interval_ || interval_.IsResolved());
-
-  // No interval has been resolved yet, we're waiting for an event of some
-  // sort.
-  if (!interval_.IsResolved()) {
-    DCHECK_EQ(GetActiveState(), kInactive);
-    return false;
-  }
-
-  // We have a current interval, but it has not started yet.
-  if (interval_.BeginsAfter(elapsed)) {
-    DCHECK_NE(GetActiveState(), kActive);
-    return false;
-  }
-
-  if (is_waiting_for_first_interval_) {
-    // The current internal must be the first, and has started, so clear the flag and (re)resolve.
-    is_waiting_for_first_interval_ = false;
-    if (ResolveFirstInterval(elapsed))
-      time_container_->MarkIntervalsDirty();
-  }
-  return true;
+  return elapsed >= next_interval_time_;
 }
 
 void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
@@ -1245,6 +1205,10 @@ void SVGSMILElement::RemoveSyncBaseDependent(SVGSMILElement& animation) {
 
 void SVGSMILElement::BeginByLinkActivation() {
   AddInstanceTimeAndUpdate(kBegin, Elapsed(), SMILTimeOrigin::kLinkActivation);
+}
+
+void SVGSMILElement::StartedActiveInterval() {
+  is_waiting_for_first_interval_ = false;
 }
 
 void SVGSMILElement::EndedActiveInterval() {

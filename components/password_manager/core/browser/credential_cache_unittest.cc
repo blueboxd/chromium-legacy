@@ -19,6 +19,8 @@ using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using url::Origin;
 
+using IsPublicSuffixMatch = CredentialPair::IsPublicSuffixMatch;
+
 constexpr char kExampleSiteAndroidApp[] = "android://3x4mpl3@com.example.app/";
 constexpr char kExampleSite[] = "https://example.com";
 constexpr char kExampleSite2[] = "https://example.two.com";
@@ -62,29 +64,32 @@ TEST_F(CredentialCacheTest, StoresCredentialsSortedByAplhabetAndOrigins) {
 
           // Alphabetical entries of the exactly matching https://example.com:
           CredentialPair(ASCIIToUTF16("Adam"), ASCIIToUTF16("Pas83B"),
-                         GURL(kExampleSite), /*is_psl_match*/ false),
+                         GURL(kExampleSite), IsPublicSuffixMatch(false)),
           CredentialPair(ASCIIToUTF16("Berta"), ASCIIToUTF16("30948"),
-                         GURL(kExampleSite), /*is_psl_match*/ false),
+                         GURL(kExampleSite), IsPublicSuffixMatch(false)),
           CredentialPair(ASCIIToUTF16("Carl"), ASCIIToUTF16("P1238C"),
-                         GURL(kExampleSite), /*is_psl_match*/ false),
+                         GURL(kExampleSite), IsPublicSuffixMatch(false)),
           CredentialPair(ASCIIToUTF16("Dora"), ASCIIToUTF16("PakudC"),
-                         GURL(kExampleSite), /*is_psl_match*/ false),
+                         GURL(kExampleSite), IsPublicSuffixMatch(false)),
 
           // Entry for PSL-match android://3x4mpl3@com.example.app:
           CredentialPair(ASCIIToUTF16("Cesar"), ASCIIToUTF16("V3V1V"),
-                         GURL(kExampleSiteAndroidApp), /*is_psl_match*/ false),
+                         GURL(kExampleSiteAndroidApp),
+                         IsPublicSuffixMatch(false)),
 
           // Alphabetical entries of PSL-match https://accounts.example.com:
           CredentialPair(ASCIIToUTF16("Elfi"), ASCIIToUTF16("a65ddm"),
-                         GURL(kExampleSiteSubdomain), /*is_psl_match*/ true),
+                         GURL(kExampleSiteSubdomain),
+                         IsPublicSuffixMatch(true)),
           CredentialPair(ASCIIToUTF16("Greg"), ASCIIToUTF16("5fnd1m"),
-                         GURL(kExampleSiteSubdomain), /*is_psl_match*/ true),
+                         GURL(kExampleSiteSubdomain),
+                         IsPublicSuffixMatch(true)),
 
           // Alphabetical entries of PSL-match https://m.example.com:
           CredentialPair(ASCIIToUTF16("Alf"), ASCIIToUTF16("R4nd50m"),
-                         GURL(kExampleSiteMobile), /*is_psl_match*/ true),
+                         GURL(kExampleSiteMobile), IsPublicSuffixMatch(true)),
           CredentialPair(ASCIIToUTF16("Rolf"), ASCIIToUTF16("A4nd0m"),
-                         GURL(kExampleSiteMobile), /*is_psl_match*/ true)));
+                         GURL(kExampleSiteMobile), IsPublicSuffixMatch(true))));
 }
 
 TEST_F(CredentialCacheTest, StoredCredentialsForIndependentOrigins) {
@@ -97,13 +102,13 @@ TEST_F(CredentialCacheTest, StoredCredentialsForIndependentOrigins) {
       {CreateEntry("Abe", "B4dPW", GURL(kExampleSite2), false).first}, origin2);
 
   EXPECT_THAT(cache()->GetCredentialStore(origin).GetCredentials(),
-              testing::ElementsAre(
-                  CredentialPair(ASCIIToUTF16("Ben"), ASCIIToUTF16("S3cur3"),
-                                 GURL(kExampleSite), /*is_psl_match*/ false)));
+              testing::ElementsAre(CredentialPair(
+                  ASCIIToUTF16("Ben"), ASCIIToUTF16("S3cur3"),
+                  GURL(kExampleSite), IsPublicSuffixMatch(false))));
   EXPECT_THAT(cache()->GetCredentialStore(origin2).GetCredentials(),
-              testing::ElementsAre(
-                  CredentialPair(ASCIIToUTF16("Abe"), ASCIIToUTF16("B4dPW"),
-                                 GURL(kExampleSite2), /*is_psl_match*/ false)));
+              testing::ElementsAre(CredentialPair(
+                  ASCIIToUTF16("Abe"), ASCIIToUTF16("B4dPW"),
+                  GURL(kExampleSite2), IsPublicSuffixMatch(false))));
 }
 
 TEST_F(CredentialCacheTest, ClearsCredentials) {
@@ -112,9 +117,9 @@ TEST_F(CredentialCacheTest, ClearsCredentials) {
       {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false).first},
       Origin::Create(GURL(kExampleSite)));
   ASSERT_THAT(cache()->GetCredentialStore(origin).GetCredentials(),
-              testing::ElementsAre(
-                  CredentialPair(ASCIIToUTF16("Ben"), ASCIIToUTF16("S3cur3"),
-                                 GURL(kExampleSite), /*is_psl_match*/ false)));
+              testing::ElementsAre(CredentialPair(
+                  ASCIIToUTF16("Ben"), ASCIIToUTF16("S3cur3"),
+                  GURL(kExampleSite), IsPublicSuffixMatch(false))));
 
   cache()->ClearCredentials();
   EXPECT_EQ(cache()->GetCredentialStore(origin).GetCredentials().size(), 0u);

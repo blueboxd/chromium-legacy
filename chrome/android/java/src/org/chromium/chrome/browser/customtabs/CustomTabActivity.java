@@ -33,7 +33,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ActivityTabTaskDescriptionHelper;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -98,7 +97,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Nullable
     private DynamicModuleCoordinator mDynamicModuleCoordinator;
 
-    private ActivityTabTaskDescriptionHelper mTaskDescriptionHelper;
+    private CustomTabTaskDescriptionHelper mTaskDescriptionHelper;
 
     private CustomTabNightModeStateController mNightModeStateController;
 
@@ -243,7 +242,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         mConnection.showSignInToastIfNecessary(mSession, getIntent());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && useSeparateTask()) {
-            mTaskDescriptionHelper = new ActivityTabTaskDescriptionHelper(this,
+            mTaskDescriptionHelper = new CustomTabTaskDescriptionHelper(this,
                     ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color));
         }
 

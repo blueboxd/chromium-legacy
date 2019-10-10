@@ -24,7 +24,7 @@ ToolbarAccountIconContainerView::ToolbarAccountIconContainerView(
     Browser* browser)
     : ToolbarIconContainerView(
           /*uses_highlight=*/!browser->profile()->IsIncognitoProfile()),
-      avatar_(new AvatarToolbarButton(browser)),
+      avatar_(new AvatarToolbarButton(browser, this)),
       browser_(browser) {
   PageActionIconContainerView::Params params;
   params.types_enabled = {

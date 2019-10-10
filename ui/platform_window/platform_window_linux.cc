@@ -26,4 +26,15 @@ bool PlatformWindowLinux::IsVisibleOnAllWorkspaces() const {
   return false;
 }
 
+gfx::Rect PlatformWindowLinux::GetXRootWindowOuterBounds() const {
+  return {};
+}
+
+bool PlatformWindowLinux::ContainsPointInXRegion(
+    const gfx::Point& point) const {
+  return false;
+}
+
+void PlatformWindowLinux::SetOpacityForXWindow(float opacity) {}
+
 }  // namespace ui

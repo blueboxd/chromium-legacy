@@ -84,11 +84,11 @@ class FileManagerDialogBase extends cr.ui.dialogs.BaseDialog {
    * @param {Function=} opt_onHide Called when the dialog is hidden.
    */
   hide(opt_onHide) {
+    FileManagerDialogBase.shown = false;
     super.hide(() => {
       if (opt_onHide) {
         opt_onHide();
       }
-      FileManagerDialogBase.shown = false;
     });
   }
 }

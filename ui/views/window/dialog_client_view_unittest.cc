@@ -39,6 +39,8 @@ class DialogClientViewTest : public test::WidgetTest,
   void SetUp() override {
     WidgetTest::SetUp();
 
+    DialogDelegate::set_use_custom_frame(false);
+
     // Note: not using DialogDelegate::CreateDialogWidget(..), since that can
     // alter the frame type according to the platform.
     widget_ = new views::Widget;
@@ -61,8 +63,6 @@ class DialogClientViewTest : public test::WidgetTest,
     client_view_ = new DialogClientView(widget, this);
     return client_view_;
   }
-
-  bool ShouldUseCustomFrame() const override { return false; }
 
   void DeleteDelegate() override {
     // DialogDelegateView would delete this, but |this| is owned by the test.

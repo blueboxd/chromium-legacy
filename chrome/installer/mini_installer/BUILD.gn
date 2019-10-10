@@ -226,6 +226,7 @@ template("generate_mini_installer") {
         deps += [ "//tools/v8_context_snapshot" ]
       } else {
         inputs += [ "$root_out_dir/snapshot_blob.bin" ]
+        args += [ "--include_snapshotblob=1" ]
       }
     }
 

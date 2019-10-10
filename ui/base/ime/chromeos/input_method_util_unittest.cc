@@ -157,8 +157,8 @@ TEST_F(InputMethodUtilTest, GetInputMethodShortNameTest) {
   }
   {
     InputMethodDescriptor desc =
-        GetDesc("xkb:es:cat:cat", "es(cat)", "ca", "CAS");
-    EXPECT_EQ(ASCIIToUTF16("CAS"), util_.GetInputMethodShortName(desc));
+        GetDesc("xkb:es:cat:cat", "es(cat)", "ca", "CAT");
+    EXPECT_EQ(ASCIIToUTF16("CAT"), util_.GetInputMethodShortName(desc));
   }
   {
     InputMethodDescriptor desc =

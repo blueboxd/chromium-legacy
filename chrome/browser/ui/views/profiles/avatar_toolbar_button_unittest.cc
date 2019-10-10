@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/widget/widget.h"
@@ -18,7 +19,8 @@ class AvatarToolbarButtonTest : public TestWithBrowserView {};
 #if !defined(OS_CHROMEOS)
 
 TEST_F(AvatarToolbarButtonTest, HighlightMeetsMinimumContrast) {
-  auto button = std::make_unique<AvatarToolbarButton>(browser());
+  auto parent = std::make_unique<ToolbarIconContainerView>(browser());
+  auto button = std::make_unique<AvatarToolbarButton>(browser(), parent.get());
   button->set_owned_by_client();
 
   browser_view()->GetWidget()->GetContentsView()->AddChildView(button.get());

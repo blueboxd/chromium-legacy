@@ -796,7 +796,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
 #define MAYBE_ApplyRemoteCreationWithValidGUID ApplyRemoteCreationWithValidGUID
 #endif
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
-                       ApplyRemoteCreationWithValidGUID) {
+                       MAYBE_ApplyRemoteCreationWithValidGUID) {
   // This test is only relevant for USS code path.
   if (!base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks))
     return;
@@ -865,8 +865,15 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
       GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid());
 }
 
+#if defined(THREAD_SANITIZER) || defined(ADDRESS_SANITIZER)
+#define MAYBE_ApplyRemoteCreationWithoutValidGUIDOrOCII \
+  DISABLED_ApplyRemoteCreationWithoutValidGUIDOrOCII
+#else
+#define MAYBE_ApplyRemoteCreationWithoutValidGUIDOrOCII \
+  ApplyRemoteCreationWithoutValidGUIDOrOCII
+#endif
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
-                       ApplyRemoteCreationWithoutValidGUIDOrOCII) {
+                       MAYBE_ApplyRemoteCreationWithoutValidGUIDOrOCII) {
   // This test is only relevant for USS code path.
   if (!base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks))
     return;

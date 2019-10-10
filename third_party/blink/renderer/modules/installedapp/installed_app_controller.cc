@@ -96,8 +96,10 @@ void InstalledAppController::OnFilterInstalledApps(
     Vector<mojom::blink::RelatedApplicationPtr> result) {
   HeapVector<Member<RelatedApplication>> applications;
   for (const auto& res : result) {
-    auto* app = MakeGarbageCollected<RelatedApplication>(res->platform,
-                                                         res->url, res->id);
+    auto* app = MakeGarbageCollected<RelatedApplication>();
+    app->setPlatform(res->platform);
+    app->setURL(res->url);
+    app->setId(res->id);
     applications.push_back(app);
   }
   callbacks->OnSuccess(applications);

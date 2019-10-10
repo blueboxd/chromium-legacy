@@ -14,6 +14,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_install_task.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/web_contents.h"
@@ -152,6 +153,18 @@ void WebAppInstallManager::Shutdown() {
     task_queue_.swap(empty);
   }
   web_contents_.reset();
+}
+
+void WebAppInstallManager::InstallWebAppsAfterSync(
+    std::vector<WebApp*> web_apps) {
+  // TODO(crbug.com/860583): Implement sync-initiated app installs.
+  NOTIMPLEMENTED();
+}
+
+void WebAppInstallManager::UninstallWebAppsAfterSync(
+    std::vector<std::unique_ptr<WebApp>> web_apps) {
+  // TODO(crbug.com/860583): Implement sync-initiated app uninstalls.
+  NOTIMPLEMENTED();
 }
 
 void WebAppInstallManager::SetUrlLoaderForTesting(

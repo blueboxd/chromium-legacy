@@ -252,8 +252,6 @@ const char kPlayStorePackage[] = "com.android.vending";
 const char kPlayStoreActivity[] = "com.android.vending.AssetBrowserActivity";
 const char kSettingsAppId[] = "mconboelelhjpkbdhhiijkgcimoangdj";
 const char kInitialStartParam[] = "S.org.chromium.arc.start_type=initialStart";
-const char kRequestStartTimeParamTemplate[] =
-    "S.org.chromium.arc.request.start=%ld";
 constexpr char kSettingsAppPackage[] = "com.android.settings";
 const char kSettingsAppDomainUrlActivity[] =
     "com.android.settings.Settings$ManageDomainUrlsActivity";
@@ -337,7 +335,6 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
 
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
-  base::Optional<std::string> launch_intent_to_send = std::move(launch_intent);
   if (app_info && !app_info->ready) {
     if (!IsArcPlayStoreEnabledForProfile(profile)) {
       if (prefs->IsDefault(app_id)) {
@@ -382,9 +379,8 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
     // chrome_controller may be null in tests.
     if (chrome_controller) {
       chrome_controller->GetShelfSpinnerController()->AddSpinnerToShelf(
-          app_id,
-          std::make_unique<ArcShelfSpinnerItemController>(
-              app_id, event_flags, user_action, GetValidDisplayId(display_id)));
+          app_id, std::make_unique<ArcShelfSpinnerItemController>(
+                      app_id, event_flags, GetValidDisplayId(display_id)));
 
       // On some boards, ARC is booted with a restricted set of resources by
       // default to avoid slowing down Chrome's user session restoration.
@@ -394,18 +390,10 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
     }
     prefs->SetLastLaunchTime(app_id);
     return true;
-  } else if (app_id == kPlayStoreAppId && !launch_intent_to_send) {
-    // Record launch request time in order to track Play Store default launch
-    // performance.
-    launch_intent_to_send = GetLaunchIntent(
-        kPlayStorePackage, kPlayStoreActivity,
-        {base::StringPrintf(
-            kRequestStartTimeParamTemplate,
-            (base::TimeTicks::Now() - base::TimeTicks()).InMilliseconds())});
   }
 
   arc::ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context);
-  return Launch(context, app_id, launch_intent_to_send, event_flags,
+  return Launch(context, app_id, launch_intent, event_flags,
                 GetValidDisplayId(display_id));
 }
 

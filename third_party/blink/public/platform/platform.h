@@ -125,7 +125,6 @@ class WebLocalFrame;
 class WebMediaCapabilitiesClient;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
-class WebRTCCertificateGenerator;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
@@ -574,11 +573,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual std::unique_ptr<WebRTCPeerConnectionHandler>
   CreateRTCPeerConnectionHandler(WebRTCPeerConnectionHandlerClient*,
                                  scoped_refptr<base::SingleThreadTaskRunner>);
-
-  // May return null if WebRTC functionality is not available or out of
-  // resources.
-  virtual std::unique_ptr<WebRTCCertificateGenerator>
-  CreateRTCCertificateGenerator();
 
   // Returns the SingleThreadTaskRunner suitable for running WebRTC networking.
   // An rtc::Thread will have already been created.

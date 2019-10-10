@@ -34,7 +34,12 @@ AccessibilityTest.define('WelcomeA11y', {
   name: 'WelcomeFlow',
 
   // Optional. Configuration for axe-core. Can be used to disable a test.
-  axeOptions: {},
+  axeOptions: {
+    'rules': {
+      // TODO(crbug.com/761461): enable after addressing flaky tests.
+      'color-contrast': {enabled: false},
+    }
+  },
 
   // Optional. Filter on failures. Use this for individual false positives.
   violationFilter: {},

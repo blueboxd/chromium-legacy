@@ -618,7 +618,8 @@ TEST_F(GCMDriverFunctionalTest, DISABLED_Register) {
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
 }
 
-TEST_F(GCMDriverFunctionalTest, RegisterError) {
+// This test is flaky, see https://crbug.com/1010462
+TEST_F(GCMDriverFunctionalTest, DISABLED_RegisterError) {
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender1@error");
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
@@ -627,7 +628,8 @@ TEST_F(GCMDriverFunctionalTest, RegisterError) {
   EXPECT_NE(GCMClient::SUCCESS, registration_result());
 }
 
-TEST_F(GCMDriverFunctionalTest, RegisterAgainWithSameSenderIDs) {
+// This test is flaky, see https://crbug.com/1010462
+TEST_F(GCMDriverFunctionalTest, DISABLED_RegisterAgainWithSameSenderIDs) {
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender1");
   sender_ids.push_back("sender2");
@@ -653,7 +655,8 @@ TEST_F(GCMDriverFunctionalTest, RegisterAgainWithSameSenderIDs) {
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
 }
 
-TEST_F(GCMDriverFunctionalTest, RegisterAgainWithDifferentSenderIDs) {
+// This test is flaky, see https://crbug.com/1010462
+TEST_F(GCMDriverFunctionalTest, DISABLED_RegisterAgainWithDifferentSenderIDs) {
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender1");
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
@@ -778,7 +781,8 @@ TEST_F(GCMDriverFunctionalTest, RegisterWhenAsyncOperationPending) {
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
 }
 
-TEST_F(GCMDriverFunctionalTest, RegisterAfterUnfinishedUnregister) {
+// This test is flaky, see https://crbug.com/1010462
+TEST_F(GCMDriverFunctionalTest, DISABLED_RegisterAfterUnfinishedUnregister) {
   // Register and wait for it to complete.
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender1");
@@ -845,7 +849,8 @@ TEST_F(GCMDriverFunctionalTest, SendError) {
             gcm_app_handler()->send_error_details().additional_data);
 }
 
-TEST_F(GCMDriverFunctionalTest, MessageReceived) {
+// This test is flaky, see https://crbug.com/1010462
+TEST_F(GCMDriverFunctionalTest, DISABLED_MessageReceived) {
   // GCM registration has to be performed otherwise GCM will not be started.
   Register(kTestAppID1, ToSenderList("sender"), GCMDriverTest::WAIT);
 
@@ -863,7 +868,8 @@ TEST_F(GCMDriverFunctionalTest, MessageReceived) {
   EXPECT_EQ(message.sender_id, gcm_app_handler()->message().sender_id);
 }
 
-TEST_F(GCMDriverFunctionalTest, MessageWithCollapseKeyReceived) {
+// This test is flaky, see https://crbug.com/1010462
+TEST_F(GCMDriverFunctionalTest, DISABLED_MessageWithCollapseKeyReceived) {
   // GCM registration has to be performed otherwise GCM will not be started.
   Register(kTestAppID1, ToSenderList("sender"), GCMDriverTest::WAIT);
 
@@ -1019,7 +1025,8 @@ TEST_F(GCMChannelStatusSyncerTest, DisableAndEnable) {
   EXPECT_TRUE(syncer()->gcm_enabled());
 }
 
-TEST_F(GCMChannelStatusSyncerTest, DisableRestartAndEnable) {
+// This test is flaky, see https://crbug.com/1010462
+TEST_F(GCMChannelStatusSyncerTest, DISABLED_DisableRestartAndEnable) {
   // Create GCMDriver first. By default, GCM is enabled.
   CreateDriver();
   EXPECT_TRUE(driver()->gcm_enabled());
@@ -1278,7 +1285,9 @@ TEST_F(GCMDriverInstanceIDTest, InstanceIDData) {
   EXPECT_TRUE(extra_data().empty());
 }
 
-TEST_F(GCMDriverInstanceIDTest, GCMClientNotReadyBeforeInstanceIDData) {
+// This test is flaky, see https://crbug.com/1010462
+TEST_F(GCMDriverInstanceIDTest,
+       DISABLED_GCMClientNotReadyBeforeInstanceIDData) {
   CreateDriver();
   PumpIOLoop();
   PumpUILoop();

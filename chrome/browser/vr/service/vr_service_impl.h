@@ -14,7 +14,6 @@
 #include "base/util/type_safety/pass_key.h"
 
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
-#include "chrome/browser/vr/service/interface_set.h"
 #include "chrome/browser/vr/service/xr_consent_prompt_level.h"
 #include "chrome/browser/vr/vr_export.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -76,7 +75,7 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
   // Called when inline session gets disconnected. |session_id| is the value
   // returned by |magic_window_controllers_| when adding session controller to
   // it.
-  void OnInlineSessionDisconnected(size_t session_id);
+  void OnInlineSessionDisconnected(mojo::RemoteSetElementId session_id);
 
   // Notifications/calls from BrowserXRRuntime:
   void OnExitPresent();
@@ -122,7 +121,7 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
       device::mojom::VRService::RequestSessionCallback callback,
       const std::set<device::mojom::XRSessionFeature>& enabled_features,
       device::mojom::XRSessionPtr session,
-      device::mojom::XRSessionControllerPtr controller);
+      mojo::PendingRemote<device::mojom::XRSessionController> controller);
 
   void OnSessionCreated(
       device::mojom::XRDeviceId session_runtime_id,
@@ -157,7 +156,7 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
   mojo::Remote<device::mojom::VRServiceClient> service_client_;
   content::RenderFrameHost* render_frame_host_;
   mojo::SelfOwnedReceiverRef<VRService> receiver_;
-  InterfaceSet<device::mojom::XRSessionControllerPtr> magic_window_controllers_;
+  mojo::RemoteSet<device::mojom::XRSessionController> magic_window_controllers_;
   device::mojom::XRVisibilityState visibility_state_ =
       device::mojom::XRVisibilityState::VISIBLE;
 

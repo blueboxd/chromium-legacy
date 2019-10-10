@@ -14,6 +14,7 @@
 #include "components/app_modal/native_app_modal_dialog.h"
 #include "components/remote_cocoa/app_shim/alert.h"
 #include "components/remote_cocoa/common/alert.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 class PopunderPreventer;
 
@@ -52,10 +53,10 @@ class JavaScriptAppModalDialogCocoa : public app_modal::NativeAppModalDialog {
 
   // Called if there is an error connecting to the alert process. Deletes
   // |this|.
-  void OnConnectionError();
+  void OnMojoDisconnect();
 
   // Mojo interface to the NSAlert.
-  remote_cocoa::mojom::AlertBridgePtr alert_bridge_;
+  mojo::Remote<remote_cocoa::mojom::AlertBridge> alert_bridge_;
 
   std::unique_ptr<app_modal::JavaScriptAppModalDialog> dialog_;
   std::unique_ptr<PopunderPreventer> popunder_preventer_;

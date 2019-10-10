@@ -139,6 +139,10 @@ class WaylandWindow : public PlatformWindowLinux,
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
   gfx::Rect GetRestoredBoundsInPixels() const override;
   bool ShouldWindowContentsBeTransparent() const override;
+  void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
+  void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                      const gfx::ImageSkia& app_icon) override;
+  void SizeConstraintsChanged() override;
 
   // PlatformEventDispatcher
   bool CanDispatchEvent(const PlatformEvent& event) override;

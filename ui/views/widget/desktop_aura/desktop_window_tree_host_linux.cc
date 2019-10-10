@@ -4,6 +4,8 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 
+#include "ui/aura/null_window_targeter.h"
+#include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/display/display.h"
@@ -67,6 +69,29 @@ void DesktopWindowTreeHostLinux::SetPendingXVisualId(int x_visual_id) {
   pending_x_visual_id_ = x_visual_id;
 }
 
+gfx::Rect DesktopWindowTreeHostLinux::GetXRootWindowOuterBounds() const {
+  return GetPlatformWindowLinux()->GetXRootWindowOuterBounds();
+}
+
+bool DesktopWindowTreeHostLinux::ContainsPointInXRegion(
+    const gfx::Point& point) const {
+  return GetPlatformWindowLinux()->ContainsPointInXRegion(point);
+}
+
+base::OnceClosure DesktopWindowTreeHostLinux::DisableEventListening() {
+  // Allows to open multiple file-pickers. See https://crbug.com/678982
+  modal_dialog_counter_++;
+  if (modal_dialog_counter_ == 1) {
+    // ScopedWindowTargeter is used to temporarily replace the event-targeter
+    // with NullWindowEventTargeter to make |dialog| modal.
+    targeter_for_modal_ = std::make_unique<aura::ScopedWindowTargeter>(
+        window(), std::make_unique<aura::NullWindowTargeter>());
+  }
+
+  return base::BindOnce(&DesktopWindowTreeHostLinux::EnableEventListening,
+                        weak_factory_.GetWeakPtr());
+}
+
 void DesktopWindowTreeHostLinux::Init(const Widget::InitParams& params) {
   DesktopWindowTreeHostPlatform::Init(params);
 
@@ -97,6 +122,31 @@ void DesktopWindowTreeHostLinux::SetVisibleOnAllWorkspaces(
 
 bool DesktopWindowTreeHostLinux::IsVisibleOnAllWorkspaces() const {
   return GetPlatformWindowLinux()->IsVisibleOnAllWorkspaces();
+}
+
+void DesktopWindowTreeHostLinux::SetOpacity(float opacity) {
+  DesktopWindowTreeHostPlatform::SetOpacity(opacity);
+  // Note that this is no-op for Wayland.
+  GetPlatformWindowLinux()->SetOpacityForXWindow(opacity);
+}
+
+base::flat_map<std::string, std::string>
+DesktopWindowTreeHostLinux::GetKeyboardLayoutMap() {
+  if (views::LinuxUI::instance())
+    return views::LinuxUI::instance()->GetKeyboardLayoutMap();
+  return {};
+}
+
+void DesktopWindowTreeHostLinux::InitModalType(ui::ModalType modal_type) {
+  switch (modal_type) {
+    case ui::MODAL_TYPE_NONE:
+      break;
+    default:
+      // TODO(erg): Figure out under what situations |modal_type| isn't
+      // none. The comment in desktop_native_widget_aura.cc suggests that this
+      // is rare.
+      NOTIMPLEMENTED();
+  }
 }
 
 void DesktopWindowTreeHostLinux::OnDisplayMetricsChanged(
@@ -247,6 +297,16 @@ void DesktopWindowTreeHostLinux::GetWindowMask(const gfx::Size& size,
     // so, use it to define the window shape. If not, fall through.
     widget->non_client_view()->GetWindowMask(size, window_mask);
   }
+}
+
+void DesktopWindowTreeHostLinux::OnLostMouseGrab() {
+  dispatcher()->OnHostLostMouseGrab();
+}
+
+void DesktopWindowTreeHostLinux::EnableEventListening() {
+  DCHECK_GT(modal_dialog_counter_, 0UL);
+  if (!--modal_dialog_counter_)
+    targeter_for_modal_.reset();
 }
 
 const ui::PlatformWindowLinux*

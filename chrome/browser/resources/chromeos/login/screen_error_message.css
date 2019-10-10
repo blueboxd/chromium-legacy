@@ -2,10 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#error-message {
-  width: 768px;
-}
-
 .show-with-ui-state-update,
 .show-with-ui-state-signin,
 .show-with-ui-state-supervised,

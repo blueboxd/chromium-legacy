@@ -9,6 +9,7 @@
 
 #include "base/containers/span.h"
 #include "base/strings/string16.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -16,19 +17,23 @@ namespace password_manager {
 
 // Encapsulates the data from the password manager backend as used by the UI.
 struct CredentialPair {
+  using IsPublicSuffixMatch =
+      util::StrongAlias<class IsPublicSuffixMatchTag, bool>;
+
   CredentialPair(base::string16 username,
                  base::string16 password,
                  const GURL& origin_url,
-                 bool is_public_suffix_match);
+                 IsPublicSuffixMatch is_public_suffix_match);
   CredentialPair(CredentialPair&&);
   CredentialPair(const CredentialPair&);
   CredentialPair& operator=(CredentialPair&&);
   CredentialPair& operator=(const CredentialPair&);
+  ~CredentialPair();
 
   base::string16 username;
   base::string16 password;
   GURL origin_url;  // Could be android:// which url::Origin doesn't support.
-  bool is_public_suffix_match = false;
+  IsPublicSuffixMatch is_public_suffix_match{false};
 };
 
 bool operator==(const CredentialPair& lhs, const CredentialPair& rhs);

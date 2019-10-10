@@ -33,6 +33,12 @@ public interface NavigationSheet {
          * Navigates to the page associated with the given index.
          */
         void navigateToIndex(int index);
+
+        /**
+         * Sets a runnable to execute when the associated Tab is closed.
+         * @param runnable Runnable to execute.
+         */
+        void setTabCloseRunnable(Runnable runnable);
     }
 
     /**

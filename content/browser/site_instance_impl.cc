@@ -986,7 +986,7 @@ void SiteInstanceImpl::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {
   for (auto& observer : observers_)
-    observer.RenderProcessGone(this);
+    observer.RenderProcessGone(this, info);
 }
 
 void SiteInstanceImpl::LockToOriginIfNeeded() {

@@ -53,6 +53,8 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
   LabelsNodeList* labels(ExceptionState& exception_state);
   DOMTokenList* states();
 
+  bool HasState(const AtomicString& state) const;
+
   // We need these functions because we are reflecting ARIA attributes.
   // See dom/aria_attributes.idl.
   const AtomicString& FastGetAttribute(const QualifiedName&) const;

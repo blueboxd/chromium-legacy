@@ -27,12 +27,10 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
-#include "chromecast/base/init_command_line_shlib.h"
 #include "chromecast/base/serializers.h"
 #include "chromecast/media/cma/backend/audio_buildflags.h"
 #include "chromecast/media/cma/backend/cast_audio_json.h"
-#include "chromecast/media/cma/backend/post_processing_pipeline_parser.h"
-#include "chromecast/media/cma/backend/stream_mixer.h"
+#include "chromecast/media/cma/backend/mixer/stream_mixer.h"
 #include "chromecast/media/cma/backend/system_volume_control.h"
 #include "chromecast/media/cma/backend/volume_map.h"
 
@@ -70,11 +68,6 @@ std::string ContentTypeToDbFSKey(AudioContentType type) {
   }
 }
 
-VolumeMap& GetVolumeMap() {
-  static base::NoDestructor<VolumeMap> volume_map;
-  return *volume_map;
-}
-
 class VolumeControlInternal : public SystemVolumeControl::Delegate {
  public:
   VolumeControlInternal()
@@ -83,7 +76,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
             base::WaitableEvent::ResetPolicy::MANUAL,
             base::WaitableEvent::InitialState::NOT_SIGNALED) {
     // Load volume map to check that the config file is correct.
-    GetVolumeMap();
+    VolumeControl::VolumeToDbFS(0.0f);
 
     stored_values_.SetDouble(kKeyMediaDbFS, kDefaultMediaDbFS);
     stored_values_.SetDouble(kKeyAlarmDbFS, kDefaultAlarmDbFS);
@@ -409,7 +402,6 @@ VolumeControlInternal& GetVolumeControl() {
 
 // static
 void VolumeControl::Initialize(const std::vector<std::string>& argv) {
-  chromecast::InitCommandLineShlib(argv);
   GetVolumeControl();
 }
 
@@ -461,16 +453,6 @@ void VolumeControl::SetMuted(VolumeChangeSource source,
 // static
 void VolumeControl::SetOutputLimit(AudioContentType type, float limit) {
   GetVolumeControl().SetOutputLimit(type, limit);
-}
-
-// static
-float VolumeControl::VolumeToDbFS(float volume) {
-  return GetVolumeMap().VolumeToDbFS(volume);
-}
-
-// static
-float VolumeControl::DbFSToVolume(float db) {
-  return GetVolumeMap().DbFSToVolume(db);
 }
 
 // static

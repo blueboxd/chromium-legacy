@@ -75,7 +75,7 @@ namespace content {
 //          &reader);         // Presumed passed to FILE thread for reading.
 //
 //      // Setup callback for writing.
-//      writer->RegisterCallback(base::Bind(&SpaceAvailable, this));
+//      writer->RegisterCallback(base::BindRepeating(&SpaceAvailable, this));
 //
 //      // Do initial round of writing.
 //      SpaceAvailable();
@@ -102,7 +102,7 @@ namespace content {
 //
 //    void ReceivingClass::Initialize() {
 //      // Initialization
-//      reader->RegisterCallback(base::Bind(&DataAvailable, obj));
+//      reader->RegisterCallback(base::BindRepeating(&DataAvailable, obj));
 //    }
 //
 //    // Called whenever there's something to read.

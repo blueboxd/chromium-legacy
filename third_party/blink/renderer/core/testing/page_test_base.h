@@ -41,6 +41,10 @@ class PageTestBase : public testing::Test {
   void SetBodyInnerHTML(const String&);
   void SetHtmlInnerHTML(const std::string&);
 
+  // Insert STYLE element with |style_rules|, no need to have "<style>", into
+  // HEAD.
+  void InsertStyleElement(const std::string& style_rules);
+
   // Navigate to |url| providing an empty response but
   // URL and security origin of the Document will be set to |url|.
   void NavigateTo(const KURL& url,

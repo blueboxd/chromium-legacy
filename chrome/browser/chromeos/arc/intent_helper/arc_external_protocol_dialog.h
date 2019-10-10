@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_ARC_EXTERNAL_PROTOCOL_DIALOG_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_ARC_EXTERNAL_PROTOCOL_DIALOG_H_
 
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -18,6 +20,10 @@ class GURL;
 namespace content {
 class WebContents;
 }  // namespace content
+
+namespace syncer {
+class DeviceInfo;
+}  // namespace syncer
 
 namespace arc {
 
@@ -152,6 +158,18 @@ ProtocolAction GetProtocolAction(Scheme scheme,
                                  apps::PickerEntryType entry_type,
                                  bool accepted,
                                  bool persisted);
+
+void OnIntentPickerClosedForTesting(
+    int render_process_host_id,
+    int routing_id,
+    const GURL& url,
+    bool safe_to_bypass_ui,
+    std::vector<mojom::IntentHandlerInfoPtr> handlers,
+    std::vector<std::unique_ptr<syncer::DeviceInfo>> devices,
+    const std::string& selected_app_package,
+    apps::PickerEntryType entry_type,
+    apps::IntentPickerCloseReason reason,
+    bool should_persist);
 
 }  // namespace arc
 

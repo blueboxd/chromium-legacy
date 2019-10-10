@@ -861,7 +861,7 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     int render_process_id,
     scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
-    network::mojom::URLLoaderFactoryRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
     mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
         header_client_receiver,
@@ -886,8 +886,8 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
   target_factory_.set_connection_error_handler(
       base::BindOnce(&WebRequestProxyingURLLoaderFactory::OnTargetFactoryError,
                      base::Unretained(this)));
-  proxy_bindings_.AddBinding(this, std::move(loader_request));
-  proxy_bindings_.set_connection_error_handler(base::BindRepeating(
+  proxy_receivers_.Add(this, std::move(loader_receiver));
+  proxy_receivers_.set_disconnect_handler(base::BindRepeating(
       &WebRequestProxyingURLLoaderFactory::OnProxyBindingError,
       base::Unretained(this)));
 
@@ -957,9 +957,9 @@ void WebRequestProxyingURLLoaderFactory::CreateLoaderAndStart(
 }
 
 void WebRequestProxyingURLLoaderFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest loader_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  proxy_bindings_.AddBinding(this, std::move(loader_request));
+  proxy_receivers_.Add(this, std::move(loader_receiver));
 }
 
 void WebRequestProxyingURLLoaderFactory::OnLoaderCreated(
@@ -999,14 +999,14 @@ WebRequestProxyingURLLoaderFactory::~WebRequestProxyingURLLoaderFactory() =
 void WebRequestProxyingURLLoaderFactory::OnTargetFactoryError() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   target_factory_.reset();
-  proxy_bindings_.CloseAllBindings();
+  proxy_receivers_.Clear();
 
   MaybeRemoveProxy();
 }
 
 void WebRequestProxyingURLLoaderFactory::OnProxyBindingError() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (proxy_bindings_.empty())
+  if (proxy_receivers_.empty())
     target_factory_.reset();
 
   MaybeRemoveProxy();

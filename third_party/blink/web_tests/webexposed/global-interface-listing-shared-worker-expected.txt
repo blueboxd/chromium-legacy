@@ -113,6 +113,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter reason
 [Worker]     getter wasClean
 [Worker]     method constructor
+[Worker] interface CompressionStream
+[Worker]     attribute @@toStringTag
+[Worker]     getter readable
+[Worker]     getter writable
+[Worker]     method constructor
 [Worker] interface ContentIndex
 [Worker]     attribute @@toStringTag
 [Worker]     method add

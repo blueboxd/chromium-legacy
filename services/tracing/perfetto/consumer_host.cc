@@ -21,6 +21,7 @@
 #include "base/trace_event/trace_log.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "services/tracing/perfetto/json_trace_exporter.h"
@@ -479,12 +480,12 @@ void ConsumerHost::TracingSession::Flush(
 }
 
 // static
-void ConsumerHost::BindConsumerRequest(
+void ConsumerHost::BindConsumerReceiver(
     PerfettoService* service,
-    mojom::ConsumerHostRequest request,
+    mojo::PendingReceiver<mojom::ConsumerHost> receiver,
     const service_manager::BindSourceInfo& source_info) {
-  mojo::MakeStrongBinding(std::make_unique<ConsumerHost>(service),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<ConsumerHost>(service),
+                              std::move(receiver));
 }
 
 ConsumerHost::ConsumerHost(PerfettoService* service) : service_(service) {

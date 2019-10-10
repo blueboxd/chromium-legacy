@@ -50,24 +50,6 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
     must_reset_scroll_and_scale_state_ = state;
   }
 
-  // Sets the cache policy. The cache policy is only used if explicitly set and
-  // by default is not set. You can mark a NavigationState as not having a cache
-  // state by way of clear_cache_policy_override.
-  void set_cache_policy_override(blink::mojom::FetchCacheMode cache_policy) {
-    cache_policy_override_ = cache_policy;
-    cache_policy_override_set_ = true;
-  }
-  blink::mojom::FetchCacheMode cache_policy_override() const {
-    return cache_policy_override_;
-  }
-  void clear_cache_policy_override() {
-    cache_policy_override_set_ = false;
-    cache_policy_override_ = blink::mojom::FetchCacheMode::kDefault;
-  }
-  bool is_cache_policy_override_set() const {
-    return cache_policy_override_set_;
-  }
-
   net::EffectiveConnectionType effective_connection_type() const {
     return effective_connection_type_;
   }
@@ -89,8 +71,6 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
  private:
   bool is_overriding_user_agent_;
   bool must_reset_scroll_and_scale_state_;
-  bool cache_policy_override_set_;
-  blink::mojom::FetchCacheMode cache_policy_override_;
   net::EffectiveConnectionType effective_connection_type_ =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   int request_id_ = -1;

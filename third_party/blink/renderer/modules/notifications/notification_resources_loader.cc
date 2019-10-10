@@ -8,9 +8,9 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -28,15 +28,14 @@ enum class NotificationIconType { kImage, kIcon, kBadge, kActionIcon };
 WebSize GetIconDimensions(NotificationIconType type) {
   switch (type) {
     case NotificationIconType::kImage:
-      return {kWebNotificationMaxImageWidthPx,
-              kWebNotificationMaxImageHeightPx};
+      return {kNotificationMaxImageWidthPx, kNotificationMaxImageHeightPx};
     case NotificationIconType::kIcon:
-      return {kWebNotificationMaxIconSizePx, kWebNotificationMaxIconSizePx};
+      return {kNotificationMaxIconSizePx, kNotificationMaxIconSizePx};
     case NotificationIconType::kBadge:
-      return {kWebNotificationMaxBadgeSizePx, kWebNotificationMaxBadgeSizePx};
+      return {kNotificationMaxBadgeSizePx, kNotificationMaxBadgeSizePx};
     case NotificationIconType::kActionIcon:
-      return {kWebNotificationMaxActionIconSizePx,
-              kWebNotificationMaxActionIconSizePx};
+      return {kNotificationMaxActionIconSizePx,
+              kNotificationMaxActionIconSizePx};
   }
 }
 

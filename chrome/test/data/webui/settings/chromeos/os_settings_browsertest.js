@@ -112,7 +112,8 @@ var OSSettingsPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsPageTest', 'AllJsTests', () => {
+// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
+TEST_F('OSSettingsPageTest', 'DISABLED_AllJsTests', () => {
   // Run all registered tests.
   mocha.run();
 });
@@ -188,7 +189,8 @@ var OSSettingsAppManagementDomSwitchTest =
   }
 };
 
-TEST_F('OSSettingsAppManagementDomSwitchTest', 'All', function() {
+// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
+TEST_F('OSSettingsAppManagementDomSwitchTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -209,7 +211,8 @@ var OSSettingsAppManagementPageTest =
   }
 };
 
-TEST_F('OSSettingsAppManagementPageTest', 'AllJsTests', () => {
+// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
+TEST_F('OSSettingsAppManagementPageTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
 
@@ -230,9 +233,12 @@ var OSSettingsAppManagementPwaPermissionViewTest =
   }
 };
 
-TEST_F('OSSettingsAppManagementPwaPermissionViewTest', 'AllJsTests', () => {
-  mocha.run();
-});
+// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
+TEST_F(
+    'OSSettingsAppManagementPwaPermissionViewTest', 'DISABLED_AllJsTests',
+    () => {
+      mocha.run();
+    });
 
 // Test fixture for the app management arc permission view element.
 // eslint-disable-next-line no-var
@@ -251,9 +257,12 @@ var OSSettingsAppManagementArcPermissionViewTest =
   }
 };
 
-TEST_F('OSSettingsAppManagementArcPermissionViewTest', 'AllJsTests', () => {
-  mocha.run();
-});
+// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
+TEST_F(
+    'OSSettingsAppManagementArcPermissionViewTest', 'DISABLED_AllJsTests',
+    () => {
+      mocha.run();
+    });
 
 // Test fixture for the app management managed app view.
 // eslint-disable-next-line no-var
@@ -272,7 +281,8 @@ var OSSettingsAppManagementManagedAppTest =
   }
 };
 
-TEST_F('OSSettingsAppManagementManagedAppTest', 'AllJsTests', () => {
+// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
+TEST_F('OSSettingsAppManagementManagedAppTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
 
@@ -289,7 +299,8 @@ var OSSettingsAppManagementReducersTest =
   }
 };
 
-TEST_F('OSSettingsAppManagementReducersTest', 'AllJsTests', () => {
+// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
+TEST_F('OSSettingsAppManagementReducersTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
 
@@ -563,7 +574,8 @@ var OSSettingsMainTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsMainTest', 'AllJsTests', () => {
+// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
+TEST_F('OSSettingsMainTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
 
@@ -579,7 +591,8 @@ var OSSettingsMenuTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsMenuTest', 'AllJsTests', () => {
+// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
+TEST_F('OSSettingsMenuTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
 
@@ -847,7 +860,8 @@ var OSSettingsPeoplePageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsPeoplePageTest', 'AllJsTests', () => {
+// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
+TEST_F('OSSettingsPeoplePageTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
 
@@ -865,7 +879,8 @@ var OSSettingsPersonalizationPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsPersonalizationPageTest', 'AllJsTests', () => {
+// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
+TEST_F('OSSettingsPersonalizationPageTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
 

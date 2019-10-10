@@ -149,8 +149,8 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
 }
 
 void ServiceWorkerScriptLoaderFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void ServiceWorkerScriptLoaderFactory::Update(

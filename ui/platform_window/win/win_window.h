@@ -59,6 +59,14 @@ class WIN_WINDOW_EXPORT WinWindow : public PlatformWindowWin,
   void StackAtTop() override;
   void FlashFrame(bool flash_frame) override;
   void SetVisibilityChangedAnimationsEnabled(bool enabled) override;
+  void SetShape(std::unique_ptr<ShapeRects> native_shape,
+                const gfx::Transform& transform) override;
+  void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
+  void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                      const gfx::ImageSkia& app_icon) override;
+  void SizeConstraintsChanged() override;
+  bool IsAnimatingClosed() const override;
+  bool IsTranslucentWindowOpacitySupported() const override;
 
   bool IsFullscreen() const;
 

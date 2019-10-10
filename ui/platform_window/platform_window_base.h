@@ -15,8 +15,11 @@
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace gfx {
+class ImageSkia;
 class Point;
 class Rect;
+class SizeF;
+class Transform;
 }  // namespace gfx
 
 namespace ui {
@@ -84,6 +87,16 @@ class PlatformWindowBase : public PropertyHandler {
   virtual void SetRestoredBoundsInPixels(const gfx::Rect& bounds) = 0;
   virtual gfx::Rect GetRestoredBoundsInPixels() const = 0;
 
+  // Sets the Window icons. |window_icon| is a 16x16 icon suitable for use in
+  // a title bar. |app_icon| is a larger size for use in the host environment
+  // app switching UI.
+  virtual void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                              const gfx::ImageSkia& app_icon) = 0;
+
+  // Notifies that size constraints of the host have been changed and the
+  // PlatformWindow must react on them accordingly.
+  virtual void SizeConstraintsChanged() = 0;
+
   // Tells if the content of the platform window should be transparent. By
   // default returns false.
   virtual bool ShouldWindowContentsBeTransparent() const;
@@ -102,6 +115,25 @@ class PlatformWindowBase : public PropertyHandler {
   // is set, the PlatformWindow must draw attention to it. If |flash_frame| is
   // not set, flashing must be stopped.
   virtual void FlashFrame(bool flash_frame);
+
+  using ShapeRects = std::vector<gfx::Rect>;
+  // Sets shape of the PlatformWindow. ShapeRects corresponds to the
+  // Widget::ShapeRects that is a vector of gfx::Rects that describe the shape.
+  virtual void SetShape(std::unique_ptr<ShapeRects> native_shape,
+                        const gfx::Transform& transform);
+
+  // Sets the aspect ratio of the Platform Window, which will be
+  // maintained during interactive resizing. This size disregards title bar and
+  // borders. Once set, some platforms ensure the content will only size to
+  // integer multiples of |aspect_ratio|.
+  virtual void SetAspectRatio(const gfx::SizeF& aspect_ratio);
+
+  // Returns true if the window was closed but is still showing because of
+  // animations.
+  virtual bool IsAnimatingClosed() const;
+
+  // Returns true if the window supports translucency.
+  virtual bool IsTranslucentWindowOpacitySupported() const;
 };
 
 }  // namespace ui

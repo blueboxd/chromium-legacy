@@ -20,14 +20,15 @@
         box-sizing: border-box;
         color: var(--google-grey-700);
         font-size: 13px;
-        height: 640px;
+        height: var(--multidevice-setup-height, 640px);
         line-height: 16px;
         margin: auto;
         padding: 60px 32px 32px 32px;
-        width: 768px;
+        width: var(--multidevice-setup-width, 768px);
       }
 
       iron-pages {
+        overflow: auto;
         padding: 0 32px;
       }
     </style>

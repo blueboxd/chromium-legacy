@@ -33,6 +33,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -4341,6 +4342,69 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
   EXPECT_TRUE(launcher_controller_->IsAppPinned(arc::kPlayStoreAppId));
   EXPECT_TRUE(launcher_controller_->GetShelfSpinnerController()->HasApp(
       arc::kPlayStoreAppId));
+}
+
+TEST_F(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreLaunchMetric) {
+  extension_service_->AddExtension(arc_support_host_.get());
+  arc_test_.SetUp(profile());
+  ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
+
+  InitLauncherController();
+  EnablePlayStore(true);
+
+  // Play Store available now as a default app but is not ready yet.
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      prefs->GetApp(arc::kPlayStoreAppId);
+  ASSERT_TRUE(app_info);
+  EXPECT_FALSE(app_info->ready);
+
+  constexpr char kHistogramName[] = "Arc.PlayStoreLaunch.TimeDelta";
+
+  // Launch Play Store in deferred mode.
+  arc::LaunchApp(profile(), arc::kPlayStoreAppId, ui::EF_LEFT_MOUSE_BUTTON,
+                 arc::UserInteractionType::NOT_USER_INITIATED);
+  // This is deferred launch, no actual intents are delivered to ARC.
+  EXPECT_EQ(0U, arc_test_.app_instance()->launch_intents().size());
+  arc::mojom::AppInfo app;
+  app.activity = arc::kPlayStoreActivity;
+  app.package_name = arc::kPlayStorePackage;
+  const base::TimeTicks app_ready_ticks = base::TimeTicks::Now();
+  arc_test_.app_instance()->SendRefreshAppList({app});
+  ASSERT_EQ(1U, arc_test_.app_instance()->launch_intents().size());
+  std::string play_store_window_id("org.chromium.arc.1");
+  views::Widget* play_store_window = CreateArcWindow(play_store_window_id);
+  arc_test_.app_instance()->SendTaskCreated(
+      1, app, arc_test_.app_instance()->launch_intents()[0]);
+  const base::TimeTicks app_launched_ticks = base::TimeTicks::Now();
+  EXPECT_TRUE(
+      launcher_controller_->GetItem(ash::ShelfID(arc::kPlayStoreAppId)));
+  // UMA is reported since app becomes ready.
+  base::HistogramBase* const histogram =
+      base::StatisticsRecorder::FindHistogram(kHistogramName);
+  ASSERT_TRUE(histogram);
+  // Recorded time should not be longer than
+  // app_launched_ticks - app_ready_ticks, the indication that app launch time
+  // was recorded since app became ready.
+  std::unique_ptr<base::HistogramSamples> samples = histogram->SnapshotDelta();
+  ASSERT_EQ(1, samples->TotalCount());
+  EXPECT_GE((app_launched_ticks - app_ready_ticks).InMilliseconds(),
+            samples->sum());
+  play_store_window->Close();
+
+  // Launch Play Store in app-ready mode.
+  arc::LaunchApp(profile(), arc::kPlayStoreAppId, ui::EF_LEFT_MOUSE_BUTTON,
+                 arc::UserInteractionType::NOT_USER_INITIATED);
+  ASSERT_EQ(2U, arc_test_.app_instance()->launch_intents().size());
+  play_store_window_id = "org.chromium.arc.2";
+  play_store_window = CreateArcWindow(play_store_window_id);
+  arc_test_.app_instance()->SendTaskCreated(
+      2, app, arc_test_.app_instance()->launch_intents()[1]);
+  EXPECT_TRUE(
+      launcher_controller_->GetItem(ash::ShelfID(arc::kPlayStoreAppId)));
+  // UMA is reported for app-ready launch. Note, previous call of SnapshotDelta
+  // resets samples, so we expect here only one recorded.
+  EXPECT_EQ(1, histogram->SnapshotDelta()->TotalCount());
+  play_store_window->Close();
 }
 
 // Tests that the Play Store is not visible in AOSP image and visible in default

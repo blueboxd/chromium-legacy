@@ -800,7 +800,6 @@ void TransportClientSocketPool::OnSSLConfigChanged(
 
 void TransportClientSocketPool::OnSSLConfigForServerChanged(
     const HostPortPair& server) {
-  bool refreshed_any = false;
   // Current time value. Retrieving it once at the function start rather than
   // inside the inner loop, since it shouldn't change by any meaningful amount.
   //
@@ -809,27 +808,19 @@ void TransportClientSocketPool::OnSSLConfigForServerChanged(
   // interfaces so the parameter is not necessary.
   base::TimeTicks now = base::TimeTicks::Now();
 
-  if (proxy_server_.is_http_like() && !proxy_server_.is_http() &&
-      proxy_server_.host_port_pair() == server) {
-    // If the proxy is |server| and uses SSL settings (HTTPS or QUIC), refresh
-    // every group.
-    refreshed_any = !group_map_.empty();
-    for (auto it = group_map_.begin(); it != group_map_.end();) {
-      auto to_refresh = it++;
+  // If the proxy is |server| and uses SSL settings (HTTPS or QUIC), refresh
+  // every group.
+  bool proxy_matches = proxy_server_.is_http_like() &&
+                       !proxy_server_.is_http() &&
+                       proxy_server_.host_port_pair() == server;
+  bool refreshed_any = false;
+  for (auto it = group_map_.begin(); it != group_map_.end();) {
+    auto to_refresh = it++;
+    if (proxy_matches || (to_refresh->first.socket_type() == SocketType::kSsl &&
+                          to_refresh->first.destination() == server)) {
+      refreshed_any = true;
       // Note this call may destroy the group and invalidate |to_refresh|.
       RefreshGroup(to_refresh, now);
-    }
-  } else {
-    // Refresh the credentialed and uncredentialed pools for |server|.
-    for (auto privacy_mode : {PrivacyMode::PRIVACY_MODE_DISABLED,
-                              PrivacyMode::PRIVACY_MODE_ENABLED}) {
-      auto it =
-          group_map_.find(GroupId(server, SocketType::kSsl, privacy_mode));
-      if (it != group_map_.end()) {
-        refreshed_any = true;
-        // Note this call may destroy the group and invalidate |it|.
-        RefreshGroup(it, now);
-      }
     }
   }
 

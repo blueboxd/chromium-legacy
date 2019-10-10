@@ -91,7 +91,6 @@ void It2MeHost::Connect(
     base::WeakPtr<It2MeHost::Observer> observer,
     std::unique_ptr<SignalStrategy> signal_strategy,
     const std::string& username,
-    const std::string& directory_bot_jid,
     const protocol::IceConfig& ice_config) {
   DCHECK(host_context->ui_task_runner()->BelongsToCurrentThread());
 
@@ -110,9 +109,9 @@ void It2MeHost::Connect(
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&It2MeHost::ConnectOnNetworkThread, this,
-                                username, directory_bot_jid, ice_config,
-                                std::move(register_request)));
+      FROM_HERE,
+      base::BindOnce(&It2MeHost::ConnectOnNetworkThread, this, username,
+                     ice_config, std::move(register_request)));
 }
 
 void It2MeHost::Disconnect() {
@@ -123,7 +122,6 @@ void It2MeHost::Disconnect() {
 
 void It2MeHost::ConnectOnNetworkThread(
     const std::string& username,
-    const std::string& directory_bot_jid,
     const protocol::IceConfig& ice_config,
     std::unique_ptr<RegisterSupportHostRequest> register_request) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());

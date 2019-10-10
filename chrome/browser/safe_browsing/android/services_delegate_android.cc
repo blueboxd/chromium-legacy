@@ -122,14 +122,6 @@ TelemetryService* ServicesDelegateAndroid::GetTelemetryService() const {
   return telemetry_service_.get();
 }
 
-void ServicesDelegateAndroid::CreateVerdictCacheManager(Profile* profile) {}
-void ServicesDelegateAndroid::RemoveVerdictCacheManager(Profile* profile) {}
-VerdictCacheManager* ServicesDelegateAndroid::GetVerdictCacheManager(
-    Profile* profile) const {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 void ServicesDelegateAndroid::CreateBinaryUploadService(Profile* profile) {}
 void ServicesDelegateAndroid::RemoveBinaryUploadService(Profile* profile) {}
 BinaryUploadService* ServicesDelegateAndroid::GetBinaryUploadService(

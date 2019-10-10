@@ -13,13 +13,16 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
 #include "chrome/browser/ui/views/hover_button.h"
+#include "chrome/browser/ui/views/hover_button_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
@@ -108,14 +111,29 @@ void ExtensionsMenuView::Repopulate() {
   AddChildView(std::move(scroll_view));
 
   AddChildView(std::make_unique<views::Separator>());
-  auto icon_view = CreateFixedSizeIconView();
-  icon_view->SetImage(
+
+  constexpr gfx::Insets kDefaultBorderInsets = gfx::Insets(12);
+  auto footer = std::make_unique<views::LabelButton>(
+      &button_listener_, l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSION),
+      views::style::CONTEXT_BUTTON);
+  footer->SetButtonController(std::make_unique<HoverButtonController>(
+      footer.get(), &button_listener_,
+      std::make_unique<views::Button::DefaultButtonControllerDelegate>(
+          footer.get())));
+  footer->SetImage(
+      views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(vector_icons::kSettingsIcon, 16,
                             GetNativeTheme()->GetSystemColor(
                                 ui::NativeTheme::kColorId_DefaultIconColor)));
-  auto footer = std::make_unique<HoverButton>(
-      &button_listener_, std::move(icon_view),
-      l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSION), base::string16());
+
+  // Items within a menu should not show focus rings.
+  footer->SetInstallFocusRingOnFocus(false);
+  footer->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  footer->SetBorder(views::CreateEmptyBorder(kDefaultBorderInsets));
+  footer->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+  footer->set_ink_drop_base_color(HoverButton::GetInkDropColor(footer.get()));
+  footer->SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_BUTTON_HORIZONTAL_PADDING));
   footer->SetID(EXTENSIONS_SETTINGS_ID);
   manage_extensions_button_for_testing_ = footer.get();
   AddChildView(std::move(footer));

@@ -138,7 +138,7 @@ Node* FlatTreeTraversal::V0ResolveDistributionStartingAt(
                            ? insertion_point.FirstDistributedNode()
                            : insertion_point.LastDistributedNode()))
       return found;
-    DCHECK(IsHTMLShadowElement(insertion_point) ||
+    DCHECK(IsA<HTMLShadowElement>(insertion_point) ||
            (IsA<HTMLContentElement>(insertion_point) &&
             !insertion_point.HasChildren()));
   }

@@ -90,9 +90,7 @@ void RecordError(cast_channel::ChannelError channel_error,
            cast_channel::ChallengeReplyError::CERT_PARSING_FAILED ||
        last_error.challenge_reply_error ==
            cast_channel::ChallengeReplyError::CANNOT_EXTRACT_PUBLIC_KEY) ||
-      (last_error.net_return_value <=
-           net::ERR_CERT_COMMON_NAME_INVALID &&  // CERT_XXX errors
-       last_error.net_return_value > net::ERR_CERT_END) ||
+      net::IsCertificateError(last_error.net_return_value) ||
       last_error.channel_event ==
           cast_channel::ChannelEvent::SSL_SOCKET_CONNECT_FAILED ||
       last_error.channel_event ==

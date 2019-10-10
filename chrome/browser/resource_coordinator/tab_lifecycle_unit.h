@@ -13,10 +13,10 @@
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 #include "chrome/browser/resource_coordinator/time.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_importance_signals.h"
-#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 class TabStripModel;
 
@@ -88,10 +88,11 @@ class TabLifecycleUnitSource::TabLifecycleUnit
 
   // Updates the tab's lifecycle state when changed outside the tab lifecycle
   // unit.
-  void UpdateLifecycleState(mojom::LifecycleState state);
+  void UpdateLifecycleState(performance_manager::mojom::LifecycleState state);
 
   // Updates the tab's origin trial freeze policy.
-  void UpdateOriginTrialFreezePolicy(mojom::InterventionPolicy policy);
+  void UpdateOriginTrialFreezePolicy(
+      performance_manager::mojom::InterventionPolicy policy);
 
   // Setters for the WebLock and IndexedDB lock usage properties.
   void SetIsHoldingWebLock(bool is_holding_weblock);
@@ -212,8 +213,8 @@ class TabLifecycleUnitSource::TabLifecycleUnit
 
   // The freeze policy set via origin trial. Initial value is kDefault to avoid
   // affecting CanFreeze() before the policy is set for the first time.
-  mojom::InterventionPolicy origin_trial_freeze_policy_ =
-      mojom::InterventionPolicy::kDefault;
+  performance_manager::mojom::InterventionPolicy origin_trial_freeze_policy_ =
+      performance_manager::mojom::InterventionPolicy::kDefault;
 
   // Maintains the most recent LifecycleUnitDiscardReason that was passed into
   // Discard().

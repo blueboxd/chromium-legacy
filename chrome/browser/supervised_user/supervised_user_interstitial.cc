@@ -54,6 +54,15 @@ namespace {
 // For use in histograms.
 enum Commands { PREVIEW, BACK, NTP, ACCESS_REQUEST, HISTOGRAM_BOUNDING_VALUE };
 
+// For use in histograms.The enum values should remain synchronized with the
+// enum ManagedUserURLRequestPermissionSource in
+// tools/metrics/histograms/enums.xml.
+enum class RequestPermissionSource {
+  MAIN_FRAME = 0,
+  SUB_FRAME,
+  HISTOGRAM_BOUNDING_VALUE
+};
+
 class TabCloser : public content::WebContentsUserData<TabCloser> {
  public:
   ~TabCloser() override {}
@@ -139,11 +148,15 @@ void CleanUpInfoBar(content::WebContents* web_contents) {
 std::unique_ptr<SupervisedUserInterstitial> SupervisedUserInterstitial::Create(
     WebContents* web_contents,
     const GURL& url,
-    supervised_user_error_page::FilteringBehaviorReason reason) {
-  std::unique_ptr<SupervisedUserInterstitial> interstitial = base::WrapUnique(
-      new SupervisedUserInterstitial(web_contents, url, reason));
+    supervised_user_error_page::FilteringBehaviorReason reason,
+    int frame_id,
+    int64_t interstitial_navigation_id) {
+  std::unique_ptr<SupervisedUserInterstitial> interstitial =
+      base::WrapUnique(new SupervisedUserInterstitial(
+          web_contents, url, reason, frame_id, interstitial_navigation_id));
 
-  CleanUpInfoBar(web_contents);
+  if (web_contents->GetMainFrame()->GetFrameTreeNodeId() == frame_id)
+    CleanUpInfoBar(web_contents);
 
   // Caller is responsible for deleting the interstitial.
   return interstitial;
@@ -152,11 +165,15 @@ std::unique_ptr<SupervisedUserInterstitial> SupervisedUserInterstitial::Create(
 SupervisedUserInterstitial::SupervisedUserInterstitial(
     WebContents* web_contents,
     const GURL& url,
-    supervised_user_error_page::FilteringBehaviorReason reason)
+    supervised_user_error_page::FilteringBehaviorReason reason,
+    int frame_id,
+    int64_t interstitial_navigation_id)
     : web_contents_(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       url_(url),
-      reason_(reason) {}
+      reason_(reason),
+      frame_id_(frame_id),
+      interstitial_navigation_id_(interstitial_navigation_id) {}
 
 SupervisedUserInterstitial::~SupervisedUserInterstitial() {}
 
@@ -193,9 +210,12 @@ std::string SupervisedUserInterstitial::GetHTMLContents(
 }
 
 void SupervisedUserInterstitial::GoBack() {
+  // GoBack only for main frame.
+  DCHECK_EQ(web_contents()->GetMainFrame()->GetFrameTreeNodeId(), frame_id());
+
   UMA_HISTOGRAM_ENUMERATION("ManagedMode.BlockingInterstitialCommand", BACK,
                             HISTOGRAM_BOUNDING_VALUE);
-  MoveAwayFromCurrentPage();
+  AttemptMoveAwayFromCurrentFrameURL();
   OnInterstitialDone();
 }
 
@@ -203,6 +223,16 @@ void SupervisedUserInterstitial::RequestPermission(
     base::OnceCallback<void(bool)> RequestCallback) {
   UMA_HISTOGRAM_ENUMERATION("ManagedMode.BlockingInterstitialCommand",
                             ACCESS_REQUEST, HISTOGRAM_BOUNDING_VALUE);
+
+  RequestPermissionSource source;
+  if (web_contents()->GetMainFrame()->GetFrameTreeNodeId() == frame_id())
+    source = RequestPermissionSource::MAIN_FRAME;
+  else
+    source = RequestPermissionSource::SUB_FRAME;
+
+  UMA_HISTOGRAM_ENUMERATION("ManagedUsers.RequestPermissionSource", source,
+                            RequestPermissionSource::HISTOGRAM_BOUNDING_VALUE);
+
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
   supervised_user_service->AddURLAccessRequest(url_,
@@ -237,7 +267,7 @@ void SupervisedUserInterstitial::ShowFeedback() {
   return;
 }
 
-void SupervisedUserInterstitial::MoveAwayFromCurrentPage() {
+void SupervisedUserInterstitial::AttemptMoveAwayFromCurrentFrameURL() {
   // No need to do anything if the WebContents is in the process of being
   // destroyed anyway.
   if (web_contents_->IsBeingDestroyed())
@@ -260,5 +290,5 @@ void SupervisedUserInterstitial::OnInterstitialDone() {
   // After this, the WebContents may be destroyed. Make sure we don't try to use
   // it again.
   web_contents_ = nullptr;
-  navigation_observer->OnInterstitialDone();
+  navigation_observer->OnInterstitialDone(frame_id_);
 }

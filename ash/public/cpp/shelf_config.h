@@ -58,7 +58,7 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // OverviewObserver:
   void OnOverviewModeStartingAnimationComplete(bool canceled) override;
-  void OnOverviewModeEnded() override;
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
   // Size of the shelf when visible (height when the shelf is horizontal and
   // width when the shelf is vertical).

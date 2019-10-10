@@ -565,6 +565,7 @@ void FakeFileSystemInstance::OpenUrlsWithPermission(
     mojom::OpenUrlsRequestPtr request,
     OpenUrlsWithPermissionCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  handled_url_requests_.emplace_back(std::move(request));
 }
 
 std::string FakeFileSystemInstance::FindChildDocumentId(

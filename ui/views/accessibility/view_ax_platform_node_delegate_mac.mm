@@ -27,12 +27,8 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegateMac::GetNSWindow() {
   if (!widget)
     return nil;
 
-  auto* top_level_widget = widget->GetTopLevelWidget();
-  if (!top_level_widget)
-    return nil;
-
   auto* window_host = NativeWidgetMacNSWindowHost::GetFromNativeWindow(
-      top_level_widget->GetNativeWindow());
+      widget->GetNativeWindow());
   if (!window_host)
     return nil;
 

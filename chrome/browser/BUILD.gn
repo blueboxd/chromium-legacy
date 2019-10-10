@@ -3910,6 +3910,7 @@ jumbo_split_static_library("browser") {
   if (is_desktop_linux) {
     # Desktop linux, doesn't count ChromeOS.
     sources += [
+      "download/download_status_updater_linux.cc",
       "first_run/upgrade_util_linux.cc",
       "first_run/upgrade_util_linux.h",
       "icon_loader_auralinux.cc",

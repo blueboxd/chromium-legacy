@@ -45,10 +45,7 @@ class StatusBubble;
 class ToolbarActionsBar;
 
 namespace autofill {
-class LocalCardMigrationBubbleController;
-class LocalCardMigrationBubble;
-class SaveCardBubbleController;
-class SaveCardBubbleView;
+class AutofillBubbleHandler;
 }  // namespace autofill
 
 namespace content {
@@ -253,8 +250,9 @@ class BrowserWindow : public ui::BaseWindow {
   // the window. Returns whether any change occurred.
   virtual bool UpdatePageActionIcon(PageActionIconType type) = 0;
 
-  // Executes highlight animation on toolbar's avatar.
-  virtual void ShowAvatarHighlightAnimation() = 0;
+  // Returns the AutofillBubbleHandler responsible for handling all
+  // Autofill-related bubbles.
+  virtual autofill::AutofillBubbleHandler* GetAutofillBubbleHandler() = 0;
 
   // Executes the action for the specified page action icon.
   virtual void ExecutePageActionIconForTesting(PageActionIconType type) = 0;
@@ -364,18 +362,6 @@ class BrowserWindow : public ui::BaseWindow {
       content::WebContents* contents,
       qrcode_generator::QRCodeGeneratorBubbleController* controller,
       const GURL& url) = 0;
-
-  // Shows the "Save credit card" bubble.
-  virtual autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
-      content::WebContents* contents,
-      autofill::SaveCardBubbleController* controller,
-      bool is_user_gesture) = 0;
-
-  // Shows the local card migration bubble.
-  virtual autofill::LocalCardMigrationBubble* ShowLocalCardMigrationBubble(
-      content::WebContents* contents,
-      autofill::LocalCardMigrationBubbleController* controller,
-      bool is_user_gesture) = 0;
 
   // Shows the "send tab to self" bubble.
   virtual send_tab_to_self::SendTabToSelfBubbleView* ShowSendTabToSelfBubble(

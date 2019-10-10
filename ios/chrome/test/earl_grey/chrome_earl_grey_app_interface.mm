@@ -25,6 +25,7 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/testing/nserror_util.h"
+#include "ios/testing/verify_custom_webkit.h"
 #import "ios/web/common/features.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -535,6 +536,10 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 
 + (BOOL)isCreditCardScannerEnabled {
   return base::FeatureList::IsEnabled(kCreditCardScanner);
+}
+
++ (BOOL)isCustomWebKitLoadedIfRequested {
+  return IsCustomWebKitLoadedIfRequested();
 }
 
 #pragma mark - ScopedBlockPopupsPref

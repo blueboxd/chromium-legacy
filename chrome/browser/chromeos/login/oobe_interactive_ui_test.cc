@@ -185,9 +185,7 @@ void HandleArcTermsOfServiceScreen(bool accept_terms) {
   test::OobeJS()
       .CreateEnabledWaiter(true, {"arc-tos-root", "arc-tos-next-button"})
       ->Wait();
-  test::OobeJS().Evaluate(
-      test::GetOobeElementPath({"arc-tos-root", "arc-tos-next-button"}) +
-      ".click()");
+  test::OobeJS().TapOnPath({"arc-tos-root", "arc-tos-next-button"});
   test::OobeJS()
       .CreateVisibilityWaiter(true, {"arc-tos-root", "arc-location-service"})
       ->Wait();
@@ -197,8 +195,7 @@ void HandleArcTermsOfServiceScreen(bool accept_terms) {
 
   const std::string button_to_click =
       accept_terms ? "arc-tos-accept-button" : "arc-tos-skip-button";
-  test::OobeJS().Evaluate(
-      test::GetOobeElementPath({"arc-tos-root", button_to_click}) + ".click()");
+  test::OobeJS().TapOnPath({"arc-tos-root", button_to_click});
 
   OobeScreenExitWaiter(ArcTermsOfServiceScreenView::kScreenId).Wait();
   LOG(INFO) << "OobeInteractiveUITest: 'arc-tos' screen done.";

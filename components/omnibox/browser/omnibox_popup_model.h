@@ -146,10 +146,6 @@ class OmniboxPopupModel {
   // tab switch button.
   bool SelectedLineHasTabMatch();
 
-  // Helper function to see if current selection has button and can accept
-  // the tab key.
-  bool SelectedLineHasButton();
-
   // Helper function to see if current selection is a tab switch suggestion
   // dedicated row.
   bool SelectedLineIsTabSwitchSuggestion();

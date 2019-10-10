@@ -8,7 +8,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/window.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/view.h"
 

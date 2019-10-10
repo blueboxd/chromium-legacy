@@ -721,10 +721,13 @@ void AppListFolderView::CalculateIdealBounds() {
   // Calculate bounds for page_switcher.
   gfx::Rect page_switcher_frame(rect);
   gfx::Size page_switcher_size = page_switcher_->GetPreferredSize();
-  page_switcher_size.set_height(GetAppListConfig().folder_header_height());
   page_switcher_frame.set_x(page_switcher_frame.right() -
                             page_switcher_size.width());
-  page_switcher_frame.set_y(header_frame.y());
+  // The page switcher has a different height than the folder header, but it
+  // still needs to be aligned with it.
+  page_switcher_frame.set_y(
+      header_frame.y() -
+      (page_switcher_size.height() - header_frame.height()) / 2);
   page_switcher_frame.set_size(page_switcher_size);
   view_model_->set_ideal_bounds(kIndexPageSwitcher, page_switcher_frame);
 }

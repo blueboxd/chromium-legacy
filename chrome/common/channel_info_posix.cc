@@ -4,6 +4,7 @@
 
 #include "chrome/common/channel_info.h"
 
+#include "base/environment.h"
 #include "base/strings/string_util.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -67,6 +68,30 @@ std::string GetChannelSuffixForDataDir() {
   return data_dir_suffix;
 }
 #endif  // defined(GOOGLE_CHROME_BUILD)
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+std::string GetDesktopName(base::Environment* env) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  version_info::Channel product_channel(GetChannel());
+  switch (product_channel) {
+    case version_info::Channel::DEV:
+      return "google-chrome-unstable.desktop";
+    case version_info::Channel::BETA:
+      return "google-chrome-beta.desktop";
+    default:
+      return "google-chrome.desktop";
+  }
+#else  // BUILDFLAG(CHROMIUM_BRANDING)
+  // Allow $CHROME_DESKTOP to override the built-in value, so that development
+  // versions can set themselves as the default without interfering with
+  // non-official, packaged versions using the built-in value.
+  std::string name;
+  if (env->GetVar("CHROME_DESKTOP", &name) && !name.empty())
+    return name;
+  return "chromium-browser.desktop";
+#endif
+}
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 version_info::Channel GetChannel() {
   return GetChannelImpl(nullptr, nullptr);

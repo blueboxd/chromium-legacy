@@ -112,7 +112,7 @@ class APP_LIST_MODEL_EXPORT AppListFolderItem
 
   std::map<ash::AppListConfigType, std::unique_ptr<FolderImage>> folder_images_;
 
-  ScopedObserver<AppListConfigProvider, AppListFolderItem>
+  ScopedObserver<AppListConfigProvider, AppListConfigProvider::Observer>
       config_provider_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppListFolderItem);

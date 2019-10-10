@@ -17,6 +17,7 @@ include_rules = [
   "+components/services/leveldb",
   "+components/services/quarantine/test_support.h",
   "+components/services/quarantine/quarantine.h",
+  "+components/services/storage",
   "+components/session_manager/core",
   "+components/leveldb_proto/public",
   "+components/link_header_util",

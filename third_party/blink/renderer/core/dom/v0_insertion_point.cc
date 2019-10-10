@@ -193,14 +193,14 @@ bool V0InsertionPoint::IsActive() const {
     return false;
   ShadowRoot* shadow_root = ContainingShadowRoot();
   DCHECK(shadow_root);
-  if (!IsHTMLShadowElement(*this) ||
+  if (!IsA<HTMLShadowElement>(*this) ||
       shadow_root->V0().DescendantShadowElementCount() <= 1)
     return true;
 
   // Slow path only when there are more than one shadow elements in a shadow
   // tree. That should be a rare case.
   for (const auto& point : shadow_root->V0().DescendantInsertionPoints()) {
-    if (IsHTMLShadowElement(*point))
+    if (IsA<HTMLShadowElement>(*point))
       return point == this;
   }
   return true;

@@ -21,7 +21,6 @@
 #include "components/arc/session/connection_holder.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
@@ -70,9 +69,7 @@ void ApkWebAppService::RegisterProfilePrefs(
 }
 
 ApkWebAppService::ApkWebAppService(Profile* profile)
-    : profile_(profile),
-      arc_app_list_prefs_(ArcAppListPrefs::Get(profile)),
-      observer_(this) {
+    : profile_(profile), arc_app_list_prefs_(ArcAppListPrefs::Get(profile)) {
   // Can be null in tests.
   if (arc_app_list_prefs_)
     arc_app_list_prefs_->AddObserver(this);

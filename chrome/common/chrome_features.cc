@@ -142,6 +142,16 @@ const base::Feature kThirdPartyModulesBlocking{
     "ThirdPartyModulesBlocking", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Enables the additional TLS 1.3 server-random-based downgrade protection
+// described in https://tools.ietf.org/html/rfc8446#section-4.1.3 for
+// connections which chain to a local trust anchor. The protection is
+// unconditionally enabled for known trust anchors.
+//
+// This is a MUST-level requirement of TLS 1.3, but may have compatibility
+// issues with some outdated buggy TLS-terminating proxies.
+const base::Feature kTLS13HardeningForLocalAnchors{
+    "TLS13HardeningForLocalAnchors", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
 // Enables the dual certificate verification trial feature.
 // https://crbug.com/649026
@@ -772,10 +782,6 @@ const base::Feature kAdaptiveScreenBrightnessLogging{
 const base::Feature kUserActivityEventLogging{"UserActivityEventLogging",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
-
-// Enables using the main HTTP cache for media files as well.
-const base::Feature kUseSameCacheForMedia{"UseSameCacheForMedia",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS)
 // Enables support of libcups APIs from ARC

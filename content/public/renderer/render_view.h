@@ -13,13 +13,10 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_sender.h"
-#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace blink {
-class WebElement;
 class WebView;
-struct WebRect;
 }  // namespace blink
 
 namespace content {
@@ -89,16 +86,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
 
   // Returns |renderer_preferences_.accept_languages| value.
   virtual const std::string& GetAcceptLanguages() = 0;
-
-  // Converts the |rect| from Viewport coordinates to Window coordinates.
-  // See blink::WebWidgetClient::convertViewportToWindow for more details.
-  virtual void ConvertViewportToWindowViaWidget(blink::WebRect* rect) = 0;
-
-  // Returns the bounds of |element| in Window coordinates. The bounds have been
-  // adjusted to include any transformations, including page scale.
-  // This function will update the layout if required.
-  virtual gfx::RectF ElementBoundsInWindow(const blink::WebElement& element)
-      = 0;
 
  protected:
   ~RenderView() override {}

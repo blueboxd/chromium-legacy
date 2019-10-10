@@ -11,14 +11,14 @@ namespace remoting {
 struct NotificationMessage;
 }  // namespace remoting
 
-using NotificationDialogCompletionBlock = void (^)(BOOL isDontShowAgainOn);
+using NotificationDialogCompletionBlock = void (^)(BOOL silenced);
 
 // This is the view controller for showing the notification dialog.
 @interface NotificationDialogViewController : UIViewController
 
 - (instancetype)initWithNotificationMessage:
                     (const remoting::NotificationMessage&)message
-              shouldShowDontShowAgainToggle:(BOOL)shouldShowDontShowAgainToggle;
+                               allowSilence:(BOOL)allowSilence;
 
 - (void)presentOnTopVCWithCompletion:
     (NotificationDialogCompletionBlock)completion;

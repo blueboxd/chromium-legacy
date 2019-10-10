@@ -72,7 +72,6 @@ public class ContextualSearchSelectionController {
     private boolean mWasTapGestureDetected;
     // Reflects whether the last tap was valid and whether we still have a tap-based selection.
     private ContextualSearchTapState mLastTapState;
-    private boolean mShouldHandleSelectionModification;
     // Whether the selection was automatically expanded due to an adjustment (e.g. Resolve).
     private boolean mDidExpandSelection;
 
@@ -100,9 +99,9 @@ public class ContextualSearchSelectionController {
     private boolean mClearingSelection;
 
     /**
-     * Whether the current selection has been adjusted or not.  If it has been adjusted we must
-     * request a resolve for this exact term rather than anything that overlaps as we get with
-     * normal expanding resolves.
+     * Whether the current selection has been adjusted or not.  If the user has adjusted the
+     * selection we must request a resolve for this exact term rather than anything that overlaps,
+     * and not expand the selection (since it was explicitly set by the user).
      */
     private boolean mIsAdjustedSelection;
 
@@ -173,14 +172,6 @@ public class ContextualSearchSelectionController {
      * @param reason The reason for ending the Contextual Search.
      */
     void onSearchEnded(@OverlayPanel.StateChangeReason int reason) {
-        // If the user explicitly closes the panel after establishing a selection with long press,
-        // it should not reappear until a new selection is made. This prevents the panel from
-        // reappearing when a long press selection is modified after the user has taken action to
-        // get rid of the panel. See crbug.com/489461.
-        if (shouldPreventHandlingCurrentSelectionModification(reason)) {
-            preventHandlingCurrentSelectionModification();
-        }
-
         // Long press selections should remain visible after ending a Contextual Search.
         if (mSelectionType == SelectionType.TAP) clearSelection();
     }
@@ -334,7 +325,7 @@ public class ContextualSearchSelectionController {
                 resetAllStates();
                 break;
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
-                shouldHandleSelection = mShouldHandleSelectionModification;
+                shouldHandleSelection = true;
                 mIsAdjustedSelection = true;
                 break;
             default:
@@ -356,7 +347,6 @@ public class ContextualSearchSelectionController {
      * @param type The type of selection made by the user.
      */
     private void handleSelection(String selection, @SelectionType int type) {
-        mShouldHandleSelectionModification = true;
         boolean isValidSelection = validateSelectionSuppression(selection);
         mHandler.handleSelection(selection, isValidSelection, type, mX, mY);
     }
@@ -517,37 +507,6 @@ public class ContextualSearchSelectionController {
             basePageWebContents.adjustSelectionByCharacterOffset(
                     selectionStartAdjust, selectionEndAdjust, /* show_selection_menu = */ false);
         }
-    }
-
-    // ============================================================================================
-    // Selection Modification
-    // ============================================================================================
-
-    /**
-     * This method checks whether the selection modification should be handled. This method
-     * is needed to allow modifying selections that are occluded by the Panel.
-     * See crbug.com/489461.
-     *
-     * @param reason The reason the panel is closing.
-     * @return Whether the selection modification should be handled.
-     */
-    private boolean shouldPreventHandlingCurrentSelectionModification(
-            @OverlayPanel.StateChangeReason int reason) {
-        return getSelectionType() == SelectionType.LONG_PRESS
-                && (reason == OverlayPanel.StateChangeReason.BACK_PRESS
-                || reason == OverlayPanel.StateChangeReason.BASE_PAGE_SCROLL
-                || reason == OverlayPanel.StateChangeReason.SWIPE
-                || reason == OverlayPanel.StateChangeReason.FLING
-                || reason == OverlayPanel.StateChangeReason.CLOSE_BUTTON);
-    }
-
-    /**
-     * Temporarily prevents the controller from handling selection modification events on the
-     * current selection. Handling will be re-enabled when a new selection is made through either a
-     * tap or long press.
-     */
-    private void preventHandlingCurrentSelectionModification() {
-        mShouldHandleSelectionModification = false;
     }
 
     // ============================================================================================

@@ -380,9 +380,9 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetRecentlyAudible(
 }
 
 void TabLifecycleUnitSource::TabLifecycleUnit::UpdateLifecycleState(
-    mojom::LifecycleState state) {
+    performance_manager::mojom::LifecycleState state) {
   switch (state) {
-    case mojom::LifecycleState::kFrozen: {
+    case performance_manager::mojom::LifecycleState::kFrozen: {
       switch (GetState()) {
         case LifecycleUnitState::PENDING_DISCARD: {
           freeze_timeout_timer_->Stop();
@@ -405,7 +405,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::UpdateLifecycleState(
       break;
     }
 
-    case mojom::LifecycleState::kRunning: {
+    case performance_manager::mojom::LifecycleState::kRunning: {
       SetState(LifecycleUnitState::ACTIVE,
                StateChangeReason::RENDERER_INITIATED);
       break;
@@ -419,7 +419,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::UpdateLifecycleState(
 }
 
 void TabLifecycleUnitSource::TabLifecycleUnit::UpdateOriginTrialFreezePolicy(
-    mojom::InterventionPolicy policy) {
+    performance_manager::mojom::InterventionPolicy policy) {
   origin_trial_freeze_policy_ = policy;
 }
 
@@ -1024,16 +1024,16 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CanFreezeHeuristicsChecks(
 
   // Apply origin trial opt-in/opt-out (policy is per page).
   switch (origin_trial_freeze_policy_) {
-    case mojom::InterventionPolicy::kUnknown:
+    case performance_manager::mojom::InterventionPolicy::kUnknown:
       decision_details->AddReason(DecisionFailureReason::ORIGIN_TRIAL_UNKNOWN);
       break;
-    case mojom::InterventionPolicy::kOptOut:
+    case performance_manager::mojom::InterventionPolicy::kOptOut:
       decision_details->AddReason(DecisionFailureReason::ORIGIN_TRIAL_OPT_OUT);
       break;
-    case mojom::InterventionPolicy::kOptIn:
+    case performance_manager::mojom::InterventionPolicy::kOptIn:
       decision_details->AddReason(DecisionSuccessReason::ORIGIN_TRIAL_OPT_IN);
       break;
-    case mojom::InterventionPolicy::kDefault:
+    case performance_manager::mojom::InterventionPolicy::kDefault:
       // Let other heuristics determine whether the tab can be frozen.
       break;
   }

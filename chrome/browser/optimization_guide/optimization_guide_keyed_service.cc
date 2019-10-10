@@ -11,6 +11,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
 #include "chrome/browser/optimization_guide/optimization_guide_top_host_provider.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
+#include "chrome/browser/optimization_guide/prediction/prediction_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/optimization_guide/command_line_top_host_provider.h"
@@ -143,6 +144,8 @@ void OptimizationGuideKeyedService::Initialize(
       database_provider, top_host_provider_.get(),
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess());
+  prediction_manager_ =
+      std::make_unique<optimization_guide::PredictionManager>();
 }
 
 void OptimizationGuideKeyedService::MaybeLoadHintForNavigation(
@@ -155,12 +158,15 @@ void OptimizationGuideKeyedService::MaybeLoadHintForNavigation(
   }
 }
 
-void OptimizationGuideKeyedService::RegisterOptimizationTypes(
-    std::vector<optimization_guide::proto::OptimizationType>
-        optimization_types) {
+void OptimizationGuideKeyedService::RegisterOptimizationTypesAndTargets(
+    const std::vector<optimization_guide::proto::OptimizationType>&
+        optimization_types,
+    const std::vector<optimization_guide::proto::OptimizationTarget>&
+        optimization_targets) {
   DCHECK(hints_manager_);
-
+  DCHECK(prediction_manager_);
   hints_manager_->RegisterOptimizationTypes(optimization_types);
+  prediction_manager_->RegisterOptimizationTargets(optimization_targets);
 }
 
 optimization_guide::OptimizationGuideDecision
@@ -198,10 +204,6 @@ void OptimizationGuideKeyedService::Shutdown() {
 }
 
 void OptimizationGuideKeyedService::UpdateSessionFCP(base::TimeDelta fcp) {
-  // TODO(crbug/1001194): This will be passed to the
-  // OptimizationGuidePredictionManager that will own the FCP session
-  // statistics.
-  if (!session_fcp_)
-    session_fcp_ = std::make_unique<OptimizationGuideSessionStatistic>();
-  session_fcp_->AddSample(static_cast<float>(fcp.InMilliseconds()));
+  if (prediction_manager_)
+    prediction_manager_->UpdateFCPSessionStatistics(fcp);
 }

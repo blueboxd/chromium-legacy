@@ -29,8 +29,7 @@ void ProcessNodeImpl::SetCPUUsage(double cpu_usage) {
 }
 
 void ProcessNodeImpl::Bind(
-    mojo::PendingReceiver<resource_coordinator::mojom::ProcessCoordinationUnit>
-        receiver) {
+    mojo::PendingReceiver<mojom::ProcessCoordinationUnit> receiver) {
   // A RenderProcessHost can be reused if the backing process suddenly dies, in
   // which case we will receive a new receiver from the newly spawned process.
   receiver_.reset();

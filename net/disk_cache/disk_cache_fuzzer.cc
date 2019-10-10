@@ -246,9 +246,10 @@ net::CacheType GetCacheTypeAndPrint(
       MAYBE_PRINT << "Cache type = APP_CACHE." << std::endl;
       return net::CacheType::APP_CACHE;
       break;
-    case disk_cache_fuzzer::FuzzCommands::MEDIA_CACHE:
-      MAYBE_PRINT << "Cache type = MEDIA_CACHE." << std::endl;
-      return net::CacheType::MEDIA_CACHE;
+    case disk_cache_fuzzer::FuzzCommands::REMOVED_MEDIA_CACHE:
+      // Media cache no longer in use; handle as HTTP_CACHE
+      MAYBE_PRINT << "Cache type = REMOVED_MEDIA_CACHE." << std::endl;
+      return net::CacheType::DISK_CACHE;
       break;
     case disk_cache_fuzzer::FuzzCommands::SHADER_CACHE:
       MAYBE_PRINT << "Cache type = SHADER_CACHE." << std::endl;

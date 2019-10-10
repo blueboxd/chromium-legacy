@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/span.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/presentation_feedback.h"
 
@@ -19,6 +18,10 @@ namespace gfx {
 class GpuFence;
 class Rect;
 class RectF;
+}
+
+namespace cc {
+struct ImageHeaderMetadata;
 }
 
 namespace gpu {
@@ -141,11 +144,12 @@ class ContextSupport {
   // Determines if hardware decode acceleration is supported for WebP images.
   virtual bool IsWebPDecodeAccelerationSupported() const = 0;
 
-  // Determines if an encoded image can be decoded using hardware decode
-  // acceleration. If this method returns true, then the client can be confident
-  // that a call to RasterInterface::ScheduleImageDecode() will succeed.
+  // Determines if |image_metadata| corresponds to an image that can be decoded
+  // using hardware decode acceleration. If this method returns true, then the
+  // client can be confident that a call to
+  // RasterInterface::ScheduleImageDecode() will succeed.
   virtual bool CanDecodeWithHardwareAcceleration(
-      base::span<const uint8_t> encoded_data) const = 0;
+      const cc::ImageHeaderMetadata* image_metadata) const = 0;
 
   // Returns true if the context provider automatically manages calls to
   // GrContext::resetContext under the hood to prevent GL state synchronization

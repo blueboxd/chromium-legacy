@@ -122,7 +122,6 @@ Window::~Window() {
 
   if (layer()->owner() == this)
     layer()->CompleteAllAnimations();
-  layer()->SuppressPaint();
 
   // Let the delegate know we're in the processing of destroying.
   if (delegate_)
@@ -743,10 +742,6 @@ std::unique_ptr<ScopedKeyboardHook> Window::CaptureSystemKeyEvents(
     return nullptr;
 
   return host->CaptureSystemKeyEvents(std::move(dom_codes));
-}
-
-void Window::SuppressPaint() {
-  layer()->SuppressPaint();
 }
 
 // {Set,Get,Clear}Property are implemented in class_property.h.

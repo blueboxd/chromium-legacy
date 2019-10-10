@@ -143,16 +143,19 @@ bool UnifiedHeapController::IsTracingDone() {
   return is_tracing_done_;
 }
 
-bool UnifiedHeapController::IsRootForNonTracingGCInternal(
-    const v8::TracedGlobal<v8::Value>& handle) {
+namespace {
+
+bool IsRootForNonTracingGCInternal(
+    const v8::TracedReference<v8::Value>& handle) {
   const uint16_t class_id = handle.WrapperClassId();
-  // Stand-alone TracedGlobal reference or kCustomWrappableId. Keep as root as
+  // Stand-alone reference or kCustomWrappableId. Keep as root as
   // we don't know better.
   if (class_id != WrapperTypeInfo::kNodeClassId &&
       class_id != WrapperTypeInfo::kObjectClassId)
     return true;
 
-  const v8::TracedGlobal<v8::Object>& traced = handle.As<v8::Object>();
+  const v8::TracedReference<v8::Object>& traced =
+      handle.template As<v8::Object>();
   if (ToWrapperTypeInfo(traced)->IsActiveScriptWrappable() &&
       ToScriptWrappable(traced)->HasPendingActivity()) {
     return true;
@@ -165,8 +168,10 @@ bool UnifiedHeapController::IsRootForNonTracingGCInternal(
   return false;
 }
 
+}  // namespace
+
 void UnifiedHeapController::ResetHandleInNonTracingGC(
-    const v8::TracedGlobal<v8::Value>& handle) {
+    const v8::TracedReference<v8::Value>& handle) {
   const uint16_t class_id = handle.WrapperClassId();
   // Only consider handles that have not been treated as roots, see
   // IsRootForNonTracingGCInternal.
@@ -174,13 +179,19 @@ void UnifiedHeapController::ResetHandleInNonTracingGC(
       class_id != WrapperTypeInfo::kObjectClassId)
     return;
 
-  const v8::TracedGlobal<v8::Object>& traced = handle.As<v8::Object>();
+  const v8::TracedReference<v8::Object>& traced = handle.As<v8::Object>();
   ToScriptWrappable(traced)->UnsetWrapperIfAny();
 }
 
 bool UnifiedHeapController::IsRootForNonTracingGC(
-    const v8::TracedGlobal<v8::Value>& handle) {
+    const v8::TracedReference<v8::Value>& handle) {
   return IsRootForNonTracingGCInternal(handle);
+}
+
+bool UnifiedHeapController::IsRootForNonTracingGC(
+    const v8::TracedGlobal<v8::Value>& handle) {
+  CHECK(false) << "Blink does not use v8::TracedGlobal.";
+  return false;
 }
 
 void UnifiedHeapController::ReportBufferedAllocatedSizeIfPossible() {

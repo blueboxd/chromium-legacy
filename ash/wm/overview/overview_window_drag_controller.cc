@@ -239,6 +239,7 @@ void OverviewWindowDragController::StartNormalDragMode(
         CanSnapInSplitview(item_->GetWindow()) ? IndicatorState::kDragArea
                                                : IndicatorState::kCannotSnap,
         gfx::ToRoundedPoint(location_in_screen));
+    item_->HideCannotSnapWarning();
 
     // Update the split view divider bar status if necessary. If splitview is
     // active when dragging the overview window, the split divider bar should be
@@ -329,6 +330,7 @@ void OverviewWindowDragController::ResetGesture() {
     if (should_allow_split_view_) {
       overview_session_->SetSplitViewDragIndicatorsIndicatorState(
           IndicatorState::kNone, gfx::Point());
+      item_->UpdateCannotSnapWarningVisibility();
     }
   }
   overview_session_->PositionWindows(/*animate=*/true);
@@ -514,6 +516,7 @@ OverviewWindowDragController::CompleteNormalDrag(
     UpdateDragIndicatorsAndOverviewGrid(location_in_screen);
     overview_session_->SetSplitViewDragIndicatorsIndicatorState(
         IndicatorState::kNone, rounded_screen_point);
+    item_->UpdateCannotSnapWarningVisibility();
   }
 
   // This function has multiple exit positions, at each we must update the desks

@@ -9,8 +9,7 @@
 #include "components/remote_cocoa/app_shim/color_panel_bridge.h"
 #include "components/remote_cocoa/browser/application_host.h"
 #include "components/remote_cocoa/browser/window.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "skia/ext/skia_utils_mac.h"
 
 namespace {
@@ -32,20 +31,20 @@ ColorChooserMac* ColorChooserMac::Open(content::WebContents* web_contents,
 
 ColorChooserMac::ColorChooserMac(content::WebContents* web_contents,
                                  SkColor initial_color)
-    : web_contents_(web_contents), mojo_host_binding_(this) {
-  remote_cocoa::mojom::ColorPanelHostPtr mojo_host_ptr;
-  mojo_host_binding_.Bind(mojo::MakeRequest(&mojo_host_ptr));
+    : web_contents_(web_contents) {
   auto* application_host = remote_cocoa::ApplicationHost::GetForNativeView(
       web_contents ? web_contents->GetNativeView() : gfx::NativeView());
   if (application_host) {
     application_host->GetApplication()->ShowColorPanel(
-        mojo::MakeRequest(&mojo_panel_ptr_), std::move(mojo_host_ptr));
+        mojo_panel_remote_.BindNewPipeAndPassReceiver(),
+        mojo_host_receiver_.BindNewPipeAndPassRemote());
   } else {
-    mojo::MakeStrongBinding(std::make_unique<remote_cocoa::ColorPanelBridge>(
-                                std::move(mojo_host_ptr)),
-                            mojo::MakeRequest(&mojo_panel_ptr_));
+    mojo::MakeSelfOwnedReceiver(
+        std::make_unique<remote_cocoa::ColorPanelBridge>(
+            mojo_host_receiver_.BindNewPipeAndPassRemote()),
+        mojo_panel_remote_.BindNewPipeAndPassReceiver());
   }
-  mojo_panel_ptr_->Show(initial_color);
+  mojo_panel_remote_->Show(initial_color);
 }
 
 ColorChooserMac::~ColorChooserMac() {
@@ -73,7 +72,7 @@ void ColorChooserMac::End() {
 }
 
 void ColorChooserMac::SetSelectedColor(SkColor color) {
-  mojo_panel_ptr_->SetSelectedColor(color);
+  mojo_panel_remote_->SetSelectedColor(color);
 }
 
 namespace chrome {

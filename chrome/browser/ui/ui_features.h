@@ -19,7 +19,7 @@ namespace features {
 
 extern const base::Feature kAnimatedAvatarButton;
 extern const base::Feature kAnimatedAvatarButtonOnSignIn;
-extern const base::Feature kAnimatedAvatarButtonOnOpeningProfile;
+extern const base::Feature kAnimatedAvatarButtonOnOpeningWindow;
 
 extern const base::Feature kEvDetailsInPageInfo;
 

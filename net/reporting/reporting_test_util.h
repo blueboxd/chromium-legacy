@@ -37,6 +37,7 @@ class Origin;
 
 namespace net {
 
+class NetworkIsolationKey;
 struct ReportingEndpoint;
 class ReportingGarbageCollector;
 
@@ -81,6 +82,7 @@ class TestReportingUploader : public ReportingUploader {
 
   void StartUpload(const url::Origin& report_origin,
                    const GURL& url,
+                   const NetworkIsolationKey& network_isolation_key,
                    const std::string& json,
                    int max_depth,
                    UploadCallback callback) override;

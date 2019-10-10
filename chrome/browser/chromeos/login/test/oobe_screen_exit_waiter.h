@@ -45,7 +45,7 @@ class OobeScreenExitWaiter : public OobeUI::Observer,
 
   State state_ = State::IDLE;
 
-  ScopedObserver<OobeUI, OobeScreenExitWaiter> oobe_ui_observer_{this};
+  ScopedObserver<OobeUI, OobeUI::Observer> oobe_ui_observer_{this};
 
   std::unique_ptr<base::RunLoop> run_loop_;
 

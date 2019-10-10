@@ -19,7 +19,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 namespace performance_manager {
 

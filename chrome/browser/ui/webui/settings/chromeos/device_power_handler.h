@@ -114,8 +114,8 @@ class PowerHandler : public ::settings::SettingsPageUIHandler,
   // Used to watch power management prefs for changes so the UI can be notified.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
-  ScopedObserver<PowerManagerClient, PowerHandler>
-      power_manager_client_observer_;
+  ScopedObserver<PowerManagerClient, PowerManagerClient::Observer>
+      power_manager_client_observer_{this};
 
   // Last lid state received from powerd.
   PowerManagerClient::LidState lid_state_ = PowerManagerClient::LidState::OPEN;

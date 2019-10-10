@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "components/performance_manager/public/frame_priority/frame_priority.h"
 #include "components/performance_manager/public/graph/node.h"
-#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
-#include "services/resource_coordinator/public/mojom/lifecycle.mojom.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
+#include "components/performance_manager/public/mojom/lifecycle.mojom.h"
 
 class GURL;
 
@@ -52,8 +52,8 @@ class WorkerNode;
 // it.
 class FrameNode : public Node {
  public:
-  using LifecycleState = resource_coordinator::mojom::LifecycleState;
-  using InterventionPolicy = resource_coordinator::mojom::InterventionPolicy;
+  using LifecycleState = mojom::LifecycleState;
+  using InterventionPolicy = mojom::InterventionPolicy;
   using Observer = FrameNodeObserver;
   using PriorityAndReason = frame_priority::PriorityAndReason;
 
@@ -156,7 +156,7 @@ class FrameNode : public Node {
 // implement the entire interface.
 class FrameNodeObserver {
  public:
-  using InterventionPolicy = resource_coordinator::mojom::InterventionPolicy;
+  using InterventionPolicy = mojom::InterventionPolicy;
 
   FrameNodeObserver();
   virtual ~FrameNodeObserver();

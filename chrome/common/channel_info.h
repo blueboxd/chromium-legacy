@@ -9,6 +9,10 @@
 
 #include "build/build_config.h"
 
+namespace base {
+class Environment;
+}
+
 namespace version_info {
 enum class Channel;
 }
@@ -49,6 +53,12 @@ version_info::Channel GetChannelByName(const std::string& channel);
 // default user data directory, allowing multiple channels to run side-by-side.
 // In the stable channel, this returns the empty string.
 std::string GetChannelSuffixForDataDir();
+#endif
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Returns the channel-specific filename of the desktop shortcut used to launch
+// the browser.
+std::string GetDesktopName(base::Environment* env);
 #endif
 
 }  // namespace chrome

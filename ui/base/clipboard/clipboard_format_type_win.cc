@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,7 +30,17 @@ ClipboardFormatType::ClipboardFormatType(UINT native_format,
                                          DWORD tymed)
     : data_{/* .cfFormat */ static_cast<CLIPFORMAT>(native_format),
             /* .ptd */ nullptr, /* .dwAspect */ DVASPECT_CONTENT,
-            /* .lindex */ index, /* .tymed*/ tymed} {}
+            /* .lindex */ index, /* .tymed*/ tymed} {
+  // Log the frequency of invalid formats being input into the constructor.
+  if (!native_format) {
+    static int error_count = 0;
+    ++error_count;
+    // TODO(https://crbug.com/1000919): Evaluate and remove UMA metrics after
+    // enough data is gathered.
+    base::UmaHistogramCounts100("Clipboard.RegisterClipboardFormatFailure",
+                                error_count);
+  }
+}
 
 ClipboardFormatType::~ClipboardFormatType() = default;
 

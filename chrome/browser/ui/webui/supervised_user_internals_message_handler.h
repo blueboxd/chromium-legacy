@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_error_page/supervised_user_error_page.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -17,8 +18,6 @@
 namespace base {
 class ListValue;
 }  // namespace base
-
-class SupervisedUserService;
 
 // The implementation for the chrome://supervised-user-internals page.
 class SupervisedUserInternalsMessageHandler
@@ -63,7 +62,7 @@ class SupervisedUserInternalsMessageHandler
       user_settings_subscription_;
 
   ScopedObserver<SupervisedUserURLFilter, SupervisedUserURLFilter::Observer>
-      scoped_observer_;
+      scoped_observer_{this};
 
   base::WeakPtrFactory<SupervisedUserInternalsMessageHandler> weak_factory_{
       this};

@@ -45,10 +45,6 @@ template("chrome_feature_module") {
       deps += _module_desc.java_deps
     }
 
-    if (defined(_module_desc.proguard_async) && _module_desc.proguard_async) {
-      enable_class_deps_output = "${_module_desc.name}_constant_pool_deps.txt"
-    }
-
     # Don't embed more translations than required (http://crbug.com/932017).
     aapt_locale_whitelist = locales
 

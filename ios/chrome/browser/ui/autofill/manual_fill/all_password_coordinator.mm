@@ -75,9 +75,8 @@
 }
 
 - (void)stop {
-  [self.passwordViewController.presentingViewController
-      dismissViewControllerAnimated:YES
-                         completion:nil];
+  [self.passwordViewController dismissViewControllerAnimated:YES
+                                                  completion:nil];
   self.passwordViewController = nil;
   self.passwordMediator = nil;
   [super stop];

@@ -186,7 +186,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   bool IsJpegDecodeAccelerationSupported() const override;
   bool IsWebPDecodeAccelerationSupported() const override;
   bool CanDecodeWithHardwareAcceleration(
-      base::span<const uint8_t> encoded_data) const override;
+      const cc::ImageHeaderMetadata* image_metadata) const override;
 
   // InterfaceBase implementation.
   void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;

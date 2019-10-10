@@ -2175,14 +2175,12 @@ void DiskCacheEntryTest::UpdateSparseEntry() {
 }
 
 TEST_F(DiskCacheEntryTest, UpdateSparseEntry) {
-  SetCacheType(net::MEDIA_CACHE);
   InitCache();
   UpdateSparseEntry();
 }
 
 TEST_F(DiskCacheEntryTest, MemoryOnlyUpdateSparseEntry) {
   SetMemoryOnlyMode();
-  SetCacheType(net::MEDIA_CACHE);
   InitCache();
   UpdateSparseEntry();
 }

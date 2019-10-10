@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 
 namespace {
@@ -270,7 +271,16 @@ XAtom X11AtomCache::GetAtom(const char* name) const {
   if (it != cached_atoms_.end())
     return it->second;
 
+  // XInternAtom returns None on failure. Source:
+  // https://www.x.org/releases/X11R7.5/doc/man/man3/XInternAtom.3.html
   XAtom atom = XInternAtom(xdisplay_, name, False);
+  if (atom == None) {
+    static int error_count = 0;
+    ++error_count;
+    // TODO(https://crbug.com/1000919): Evaluate and remove UMA metrics after
+    // enough data is gathered.
+    base::UmaHistogramCounts100("X11.XInternAtomFailure", error_count);
+  }
   cached_atoms_.emplace(name, atom);
   return atom;
 }

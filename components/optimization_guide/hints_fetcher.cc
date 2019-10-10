@@ -103,8 +103,11 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   if (url_loader_)
     return false;
 
-  hints_fetch_start_time_ = base::TimeTicks::Now();
+  std::vector<std::string> filtered_hosts = GetHostsDueForHintsRefresh(hosts);
+  if (filtered_hosts.empty())
+    return false;
 
+  hints_fetch_start_time_ = base::TimeTicks::Now();
   request_context_ = request_context;
 
   get_hints_request_ = std::make_unique<proto::GetHintsRequest>();
@@ -120,7 +123,7 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
 
   get_hints_request_->set_context(request_context_);
 
-  for (const auto& host : hosts) {
+  for (const auto& host : filtered_hosts) {
     proto::HostInfo* host_info = get_hints_request_->add_hosts();
     host_info->set_host(host);
   }
@@ -165,7 +168,8 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
                                      "application/x-protobuf");
 
   UMA_HISTOGRAM_COUNTS_100(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", hosts.size());
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount",
+      filtered_hosts.size());
 
   // |url_loader_| should not retry on 5xx errors since the server may already
   // be overloaded.  |url_loader_| should retry on network changes since the
@@ -179,7 +183,7 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
       base::BindOnce(&HintsFetcher::OnURLLoadComplete, base::Unretained(this)));
 
   hints_fetched_callback_ = std::move(hints_fetched_callback);
-  hosts_fetched_ = hosts;
+  hosts_fetched_ = filtered_hosts;
   return true;
 }
 
@@ -277,6 +281,34 @@ void HintsFetcher::OnURLLoadComplete(
   HandleResponse(response_body ? *response_body : "", url_loader_->NetError(),
                  response_code);
   url_loader_.reset();
+}
+
+std::vector<std::string> HintsFetcher::GetHostsDueForHintsRefresh(
+    const std::vector<std::string>& hosts) const {
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  DictionaryPrefUpdate hosts_fetched(
+      pref_service_, prefs::kHintsFetcherHostsSuccessfullyFetched);
+
+  std::vector<std::string> target_hosts;
+  target_hosts.reserve(hosts.size());
+
+  for (const auto& host : hosts) {
+    bool host_hints_due_for_refresh = true;
+
+    base::Optional<double> value =
+        hosts_fetched->FindDoubleKey(HashHostForDictionary(host));
+    if (value) {
+      base::Time host_valid_time = base::Time::FromDeltaSinceWindowsEpoch(
+          base::TimeDelta::FromSecondsD(*value));
+      host_hints_due_for_refresh =
+          (host_valid_time - features::GetHintsFetchRefreshDuration() <=
+           time_clock_->Now());
+    }
+    if (host_hints_due_for_refresh)
+      target_hosts.push_back(host);
+  }
+  return target_hosts;
 }
 
 }  // namespace optimization_guide

@@ -38,6 +38,8 @@ class BrowserXRRuntimeObserver : public base::CheckedObserver {
   // session. There can only be at most one active immersive session for the
   // XRRuntime. Set to null when there is no active immersive session.
   virtual void SetWebXRWebContents(content::WebContents* contents) = 0;
+
+  virtual void SetFramesThrottled(bool throttled) = 0;
 };
 
 // This class wraps a physical device's interfaces, and registers for events.
@@ -67,6 +69,7 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   void OnServiceAdded(VRServiceImpl* service);
   void OnServiceRemoved(VRServiceImpl* service);
   void ExitPresent(VRServiceImpl* service);
+  void SetFramesThrottled(const VRServiceImpl* service, bool throttled);
   void RequestSession(VRServiceImpl* service,
                       const device::mojom::XRRuntimeSessionOptionsPtr& options,
                       RequestSessionCallback callback);

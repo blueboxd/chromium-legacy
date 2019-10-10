@@ -1448,7 +1448,7 @@ function populateAutocompleteMatches(matches) {
 
       remove.appendChild(icon);
       matchEl.appendChild(remove);
-      matchEl.classList.add(CLASSES.REMOVABLE);
+      realboxMatchesEl.classList.add(CLASSES.REMOVABLE);
     }
 
     // TODO(crbug.com/1002689): set a more useful aria-label on |matchEl|, as

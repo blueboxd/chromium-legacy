@@ -26,6 +26,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kUserLevelMemoryPressureSignal;
 BLINK_COMMON_EXPORT extern const base::Feature kFreezePurgeMemoryAllPagesFrozen;
 BLINK_COMMON_EXPORT extern const base::Feature kFreezeUserAgent;
 BLINK_COMMON_EXPORT extern const base::Feature kImplicitRootScroller;
+BLINK_COMMON_EXPORT extern const base::Feature kCSSOMViewScrollCoordinates;
 BLINK_COMMON_EXPORT extern const base::Feature kCSSBackdropFilter;
 BLINK_COMMON_EXPORT extern const base::Feature kDisplayLocking;
 BLINK_COMMON_EXPORT extern const base::Feature kFastBorderRadius;
@@ -81,7 +82,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kWebFontsCacheAwareTimeoutAdaption;
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingFocusWithoutUserActivation;
-BLINK_COMMON_EXPORT extern const base::Feature kScrollbarInjectScrollGestures;
 
 BLINK_COMMON_EXPORT extern const base::Feature kAudioWorkletRealtimeThread;
 

@@ -586,6 +586,13 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
   cannot_snap_widget_->SetBoundsCenteredIn(bounds, /*animate=*/false);
 }
 
+void OverviewItem::HideCannotSnapWarning() {
+  if (!cannot_snap_widget_)
+    return;
+  DoSplitviewOpacityAnimation(cannot_snap_widget_->GetNativeWindow()->layer(),
+                              SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_OUT);
+}
+
 void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
   is_being_dragged_ = (item == this);
   caption_container_view_->SetHeaderVisibility(

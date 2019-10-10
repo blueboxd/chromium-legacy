@@ -1228,24 +1228,65 @@ bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(
 
 CanCommitStatus ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl(
     int child_id,
+    const IsolationContext& isolation_context,
     const url::Origin& origin,
     const GURL& url) {
-  // TODO(nasko): This check should be updated to apply to all URLs, not just
-  // standard ones.
-  if (url.IsStandard() && !CanAccessDataForOrigin(child_id, url))
+  const url::Origin url_origin = url::Origin::Resolve(url, origin);
+  if (!CanAccessDataForOrigin(child_id, url_origin)) {
+    // Allow opaque origins w/o precursors to commit.
+    // TODO(acolwell): Investigate all cases that trigger this path and fix
+    // them so we have precursor information. Remove this logic once that has
+    // been completed.
+    if (url_origin.opaque() &&
+        url_origin.GetTupleOrPrecursorTupleIfOpaque().IsInvalid()) {
+      return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
+    }
+
+    // Check for special cases, like blob:null/ and data: URLs, where the
+    // origin does not contain information to match against the process lock,
+    // but using the whole URL can result in a process lock match.
+    const GURL expected_origin_lock =
+        SiteInstanceImpl::DetermineProcessLockURL(isolation_context, url);
+    const GURL actual_origin_lock = GetOriginLock(child_id);
+    if (actual_origin_lock == expected_origin_lock)
+      return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
+
+    // Allow about: pages to commit in a process that does not match the opaque
+    // origin's precursor information.
+    // TODO(acolwell): Remove this once process selection for about: URLs has
+    // been fixed to always match the precursor info.
+    if (url_origin.opaque() && (url.IsAboutBlank() || url.IsAboutSrcdoc()) &&
+        !actual_origin_lock.is_empty()) {
+      return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
+    }
     return CanCommitStatus::CANNOT_COMMIT_URL;
+  }
 
-  // It is safe to commit into a opaque origin, regardless of the URL, as it is
-  // restricted from accessing other origins.
-  if (origin.opaque())
-    return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
-
-  // Standard URLs must match the reported origin.
-  if (url.IsStandard() && !origin.IsSameOriginWith(url::Origin::Create(url)))
+  if (!CanAccessDataForOrigin(child_id, origin)) {
+    // Allow opaque origins w/o precursors to commit.
+    // TODO(acolwell): Investigate all cases that trigger this path and fix
+    // them so we have precursor information. Remove this logic once that has
+    // been completed.
+    if (origin.opaque() &&
+        origin.GetTupleOrPrecursorTupleIfOpaque().IsInvalid()) {
+      return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
+    }
     return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
+  }
 
-  if (!CanAccessDataForOrigin(child_id, origin))
+  // Ensure that the origin derived from |url| is consistent with |origin|.
+  // Note: We can't use origin.IsSameOriginWith() here because opaque origins
+  // with precursors may have different nonce values.
+  const auto url_tuple_or_precursor_tuple =
+      url_origin.GetTupleOrPrecursorTupleIfOpaque();
+  const auto origin_tuple_or_precursor_tuple =
+      origin.GetTupleOrPrecursorTupleIfOpaque();
+
+  if (!url_tuple_or_precursor_tuple.IsInvalid() &&
+      !origin_tuple_or_precursor_tuple.IsInvalid() &&
+      origin_tuple_or_precursor_tuple != url_tuple_or_precursor_tuple) {
     return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
+  }
 
   return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
 }

@@ -21,9 +21,7 @@
 namespace chromeos {
 namespace settings {
 
-KerberosAccountsHandler::KerberosAccountsHandler()
-    : credentials_manager_observer_(this) {}
-
+KerberosAccountsHandler::KerberosAccountsHandler() = default;
 KerberosAccountsHandler::~KerberosAccountsHandler() = default;
 
 void KerberosAccountsHandler::RegisterMessages() {

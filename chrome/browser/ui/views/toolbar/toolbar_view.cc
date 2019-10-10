@@ -465,18 +465,6 @@ void ToolbarView::ShowBookmarkBubble(
                                  browser_->profile(), url, already_bookmarked);
 }
 
-AvatarToolbarButton* ToolbarView::GetAvatarToolbarButton() {
-  if (toolbar_account_icon_container_ &&
-      toolbar_account_icon_container_->avatar_button()) {
-    return toolbar_account_icon_container_->avatar_button();
-  }
-
-  if (avatar_)
-    return avatar_;
-
-  return nullptr;
-}
-
 ExtensionsToolbarButton* ToolbarView::GetExtensionsButton() const {
   return extensions_container_->extensions_button();
 }
@@ -861,6 +849,18 @@ views::View* ToolbarView::GetAnchorView(PageActionIconType type) {
 void ToolbarView::ZoomChangedForActiveTab(bool can_show_bubble) {
   location_bar_->page_action_icon_container()->ZoomChangedForActiveTab(
       can_show_bubble);
+}
+
+AvatarToolbarButton* ToolbarView::GetAvatarToolbarButton() {
+  if (toolbar_account_icon_container_ &&
+      toolbar_account_icon_container_->avatar_button()) {
+    return toolbar_account_icon_container_->avatar_button();
+  }
+
+  if (avatar_)
+    return avatar_;
+
+  return nullptr;
 }
 
 BrowserRootView::DropIndex ToolbarView::GetDropIndex(

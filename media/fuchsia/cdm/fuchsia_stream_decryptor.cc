@@ -92,14 +92,20 @@ FuchsiaStreamDecryptorBase::FuchsiaStreamDecryptorBase(
     fuchsia::media::StreamProcessorPtr processor)
     : processor_(std::move(processor), this) {}
 
-FuchsiaStreamDecryptorBase::~FuchsiaStreamDecryptorBase() = default;
+FuchsiaStreamDecryptorBase::~FuchsiaStreamDecryptorBase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void FuchsiaStreamDecryptorBase::DecryptInternal(
     scoped_refptr<DecoderBuffer> encrypted) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   input_writer_queue_.EnqueueBuffer(std::move(encrypted));
 }
 
 void FuchsiaStreamDecryptorBase::ResetStream() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Close current stream and drop all the cached decoder buffers.
   // Keep input and output buffers to avoid buffer re-allocation.
   processor_.Reset();
@@ -109,6 +115,8 @@ void FuchsiaStreamDecryptorBase::ResetStream() {
 // StreamProcessorHelper::Client implementation:
 void FuchsiaStreamDecryptorBase::AllocateInputBuffers(
     const fuchsia::media::StreamBufferConstraints& stream_constraints) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   base::Optional<fuchsia::sysmem::BufferCollectionConstraints>
       buffer_constraints =
           SysmemBufferWriter::GetRecommendedConstraints(stream_constraints);
@@ -128,10 +136,14 @@ void FuchsiaStreamDecryptorBase::AllocateInputBuffers(
 }
 
 void FuchsiaStreamDecryptorBase::OnOutputFormat(
-    fuchsia::media::StreamOutputFormat format) {}
+    fuchsia::media::StreamOutputFormat format) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void FuchsiaStreamDecryptorBase::OnInputBufferPoolCreated(
     std::unique_ptr<SysmemBufferPool> pool) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!pool) {
     DLOG(ERROR) << "Fail to allocate input buffer.";
     OnError();
@@ -150,6 +162,8 @@ void FuchsiaStreamDecryptorBase::OnInputBufferPoolCreated(
 
 void FuchsiaStreamDecryptorBase::OnWriterCreated(
     std::unique_ptr<SysmemBufferWriter> writer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!writer) {
     OnError();
     return;
@@ -166,6 +180,8 @@ void FuchsiaStreamDecryptorBase::OnWriterCreated(
 void FuchsiaStreamDecryptorBase::SendInputPacket(
     const DecoderBuffer* buffer,
     StreamProcessorHelper::IoPacket packet) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!packet.unit_end()) {
     // The encrypted data size is too big. Decryptor should consider
     // splitting the buffer and update the IV and subsample entries.
@@ -181,6 +197,8 @@ void FuchsiaStreamDecryptorBase::SendInputPacket(
 }
 
 void FuchsiaStreamDecryptorBase::ProcessEndOfStream() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   processor_.ProcessEos();
 }
 
@@ -208,13 +226,17 @@ FuchsiaClearStreamDecryptor::~FuchsiaClearStreamDecryptor() = default;
 void FuchsiaClearStreamDecryptor::Decrypt(
     scoped_refptr<DecoderBuffer> encrypted,
     Decryptor::DecryptCB decrypt_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!decrypt_cb_);
+
   decrypt_cb_ = std::move(decrypt_cb);
   current_status_ = Decryptor::kSuccess;
   DecryptInternal(std::move(encrypted));
 }
 
 void FuchsiaClearStreamDecryptor::CancelDecrypt() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   ResetStream();
 
   // Fire |decrypt_cb_| immediately as required by Decryptor::CancelDecrypt.
@@ -224,6 +246,8 @@ void FuchsiaClearStreamDecryptor::CancelDecrypt() {
 
 void FuchsiaClearStreamDecryptor::AllocateOutputBuffers(
     const fuchsia::media::StreamBufferConstraints& stream_constraints) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!stream_constraints.has_packet_count_for_client_max() ||
       !stream_constraints.has_packet_count_for_client_min()) {
     DLOG(ERROR) << "StreamBufferConstraints doesn't contain required fields.";
@@ -247,12 +271,15 @@ void FuchsiaClearStreamDecryptor::AllocateOutputBuffers(
 }
 
 void FuchsiaClearStreamDecryptor::OnProcessEos() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Decryptor never pushes EOS frame.
   NOTREACHED();
 }
 
 void FuchsiaClearStreamDecryptor::OnOutputPacket(
     StreamProcessorHelper::IoPacket packet) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(decrypt_cb_);
 
   DCHECK(output_reader_);
@@ -312,6 +339,8 @@ void FuchsiaClearStreamDecryptor::OnOutputPacket(
 }
 
 void FuchsiaClearStreamDecryptor::OnNoKey() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Reset the queue. The client is expected to call Decrypt() with the same
   // buffer again when it gets kNoKey.
   input_writer_queue_.ResetQueue();
@@ -321,6 +350,8 @@ void FuchsiaClearStreamDecryptor::OnNoKey() {
 }
 
 void FuchsiaClearStreamDecryptor::OnError() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   ResetStream();
   if (decrypt_cb_)
     std::move(decrypt_cb_).Run(Decryptor::kError, nullptr);
@@ -330,6 +361,8 @@ void FuchsiaClearStreamDecryptor::OnOutputBufferPoolCreated(
     size_t num_buffers_for_client,
     size_t num_buffers_for_server,
     std::unique_ptr<SysmemBufferPool> pool) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!pool) {
     LOG(ERROR) << "Fail to allocate output buffer.";
     OnError();
@@ -351,6 +384,8 @@ void FuchsiaClearStreamDecryptor::OnOutputBufferPoolCreated(
 
 void FuchsiaClearStreamDecryptor::OnOutputBufferPoolReaderCreated(
     std::unique_ptr<SysmemBufferReader> reader) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!reader) {
     LOG(ERROR) << "Fail to enable output buffer reader.";
     OnError();
@@ -372,6 +407,7 @@ void FuchsiaSecureStreamDecryptor::SetOutputBufferCollectionToken(
     fuchsia::sysmem::BufferCollectionTokenPtr token,
     size_t num_buffers_for_decryptor,
     size_t num_buffers_for_codec) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_buffer_allocation_callback_);
   complete_buffer_allocation_callback_ =
       base::BindOnce(&StreamProcessorHelper::CompleteOutputBuffersAllocation,
@@ -385,16 +421,22 @@ void FuchsiaSecureStreamDecryptor::SetOutputBufferCollectionToken(
 
 void FuchsiaSecureStreamDecryptor::Decrypt(
     scoped_refptr<DecoderBuffer> encrypted) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   DecryptInternal(std::move(encrypted));
 }
 
 void FuchsiaSecureStreamDecryptor::Reset() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   ResetStream();
   waiting_for_key_ = false;
 }
 
 void FuchsiaSecureStreamDecryptor::AllocateOutputBuffers(
     const fuchsia::media::StreamBufferConstraints& stream_constraints) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (complete_buffer_allocation_callback_) {
     std::move(complete_buffer_allocation_callback_).Run();
   } else {
@@ -403,20 +445,28 @@ void FuchsiaSecureStreamDecryptor::AllocateOutputBuffers(
 }
 
 void FuchsiaSecureStreamDecryptor::OnProcessEos() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   client_->OnDecryptorEndOfStreamPacket();
 }
 
 void FuchsiaSecureStreamDecryptor::OnOutputPacket(
     StreamProcessorHelper::IoPacket packet) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   client_->OnDecryptorOutputPacket(std::move(packet));
 }
 
 base::RepeatingClosure FuchsiaSecureStreamDecryptor::GetOnNewKeyClosure() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   return BindToCurrentLoop(base::BindRepeating(
       &FuchsiaSecureStreamDecryptor::OnNewKey, weak_factory_.GetWeakPtr()));
 }
 
 void FuchsiaSecureStreamDecryptor::OnError() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   ResetStream();
 
   // No need to reset other fields since OnError() is called for non-recoverable
@@ -426,6 +476,7 @@ void FuchsiaSecureStreamDecryptor::OnError() {
 }
 
 void FuchsiaSecureStreamDecryptor::OnNoKey() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!waiting_for_key_);
 
   // Reset stream position, but keep all pending buffers. They will be
@@ -443,6 +494,8 @@ void FuchsiaSecureStreamDecryptor::OnNoKey() {
 }
 
 void FuchsiaSecureStreamDecryptor::OnNewKey() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!waiting_for_key_) {
     retry_on_no_key_ = true;
     return;

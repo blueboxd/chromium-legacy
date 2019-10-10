@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -163,8 +162,6 @@ class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
   void SetUp() override {
     ScrollbarsTest::SetUp();
     WebView().Scheduler()->EnableVirtualTime();
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kScrollbarInjectScrollGestures);
   }
 
   void TearDown() override {
@@ -195,9 +192,6 @@ class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
         delay);
     test::EnterRunLoop();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(ScrollbarsTest, DocumentStyleRecalcPreservesScrollbars) {

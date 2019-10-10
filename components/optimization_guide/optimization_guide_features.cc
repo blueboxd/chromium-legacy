@@ -158,5 +158,9 @@ GetMaxEffectiveConnectionTypeForNavigationHintsFetch() {
   return net::GetEffectiveConnectionTypeForName(param_value);
 }
 
+base::TimeDelta GetHintsFetchRefreshDuration() {
+  return base::TimeDelta::FromHours(72);
+}
+
 }  // namespace features
 }  // namespace optimization_guide

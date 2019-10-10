@@ -29,7 +29,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
@@ -39,7 +38,6 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/events/devices/device_data_manager.h"
 #include "ui/wm/core/window_animations.h"
 
 using ash::mojom::CloseLockScreenNoteReason;
@@ -78,13 +76,7 @@ void StateController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(kDataCryptoKeyPref, "");
 }
 
-StateController::StateController()
-    : binding_(this),
-      note_window_observer_(this),
-      app_window_observer_(this),
-      session_observer_(this),
-      input_devices_observer_(this),
-      power_manager_client_observer_(this) {
+StateController::StateController() {
   DCHECK(!g_state_controller_instance);
 
   g_state_controller_instance = this;

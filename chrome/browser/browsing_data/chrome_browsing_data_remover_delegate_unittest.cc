@@ -2840,13 +2840,11 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
   auto* content_setting_registry =
       content_settings::ContentSettingsRegistry::GetInstance();
 
-#if !defined(OS_ANDROID)
   auto* history_service =
       HistoryServiceFactory::GetForProfileWithoutCreating(profile);
   // Create a safe_browsing::VerdictCacheManager that will handle deletion of
   // CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION entries.
   safe_browsing::VerdictCacheManager sb_cache_manager(history_service, map);
-#endif  // !defined(OS_ANDROID)
 
   GURL url("https://example.com");
 

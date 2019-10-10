@@ -49,8 +49,7 @@ class MEDIA_GPU_EXPORT D3D11PictureBuffer
   // |texture_wrapper| is responsible for controlling mailbox access to
   // the ID3D11Texture2D,
   // |level| is the picturebuffer index inside the Array-type ID3D11Texture2D.
-  D3D11PictureBuffer(GLenum target,
-                     std::unique_ptr<Texture2DWrapper> texture_wrapper,
+  D3D11PictureBuffer(std::unique_ptr<Texture2DWrapper> texture_wrapper,
                      gfx::Size size,
                      size_t level);
 
@@ -87,7 +86,6 @@ class MEDIA_GPU_EXPORT D3D11PictureBuffer
   ~D3D11PictureBuffer();
   friend class base::RefCountedThreadSafe<D3D11PictureBuffer>;
 
-  GLenum target_;
   std::unique_ptr<Texture2DWrapper> texture_wrapper_;
   gfx::Size size_;
   bool in_picture_use_ = false;

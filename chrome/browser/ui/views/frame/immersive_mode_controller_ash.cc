@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_context.h"

@@ -455,6 +455,10 @@ void WebAppFrameToolbarView::ZoomChangedForActiveTab(bool can_show_bubble) {
   page_action_icon_container_view_->ZoomChangedForActiveTab(can_show_bubble);
 }
 
+AvatarToolbarButton* WebAppFrameToolbarView::GetAvatarToolbarButton() {
+  return nullptr;
+}
+
 void WebAppFrameToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
                                                        bool visibility) {
   if (!visibility || !pending_widget_visibility_)

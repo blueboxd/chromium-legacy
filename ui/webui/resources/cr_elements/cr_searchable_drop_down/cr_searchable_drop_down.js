@@ -80,6 +80,17 @@ Polymer({
 
     /** @private {boolean} */
     dropdownRefitPending_: Boolean,
+
+    /**
+     * Whether the dropdown is currently open. Should only be used by CSS
+     * privately.
+     * @private {boolean}
+     */
+    opened_: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
   },
 
   listeners: {
@@ -112,6 +123,18 @@ Polymer({
     }
   },
 
+  /** @private */
+  openDropdown_: function() {
+    this.$$('iron-dropdown').open();
+    this.opened_ = true;
+  },
+
+  /** @private */
+  closeDropdown_: function() {
+    this.$$('iron-dropdown').close();
+    this.opened_ = false;
+  },
+
   /**
    * @param {!Array<string>} oldValue
    * @param {!Array<string>} newValue
@@ -129,7 +152,7 @@ Polymer({
     if (this.readonly) {
       return;
     }
-    this.$$('iron-dropdown').open();
+    this.openDropdown_();
   },
 
   /**
@@ -177,11 +200,11 @@ Polymer({
       event.preventDefault();
     } else if (paths.includes(searchInput)) {
       // A click on the search input should open the dropdown.
-      dropdown.open();
+      this.openDropdown_();
     } else {
       // A click outside either the search input or dropdown should close the
       // dropdown. Implicitly, the search input has lost focus at this point.
-      dropdown.close();
+      this.closeDropdown_();
     }
   },
 
@@ -202,7 +225,7 @@ Polymer({
       case 'Tab':
         // Pressing tab will cause the input field to lose focus. Since the
         // dropdown visibility is tied to focus, close the dropdown.
-        this.$$('iron-dropdown').close();
+        this.closeDropdown_();
         break;
       case 'ArrowUp':
       case 'ArrowDown': {
@@ -223,7 +246,7 @@ Polymer({
         this.value =
             dropdown.querySelector('dom-repeat').modelForElement(selected).item;
         this.searchTerm_ = '';
-        dropdown.close();
+        this.closeDropdown_();
         // Stop the default submit action.
         event.preventDefault();
         break;
@@ -290,7 +313,7 @@ Polymer({
     // closed when the user makes a selection using the mouse or keyboard.
     // However, focus remains on the input field. If the user makes a further
     // change, then the dropdown should be shown.
-    this.$$('iron-dropdown').open();
+    this.openDropdown_();
 
     // iron-dropdown sets its max-height when it is opened. If the current value
     // results in no filtered items in the drop down list, the iron-dropdown
@@ -307,7 +330,7 @@ Polymer({
    * @private
    */
   onSelect_: function(event) {
-    this.$$('iron-dropdown').close();
+    this.closeDropdown_();
 
     this.value = event.model.item;
     this.searchTerm_ = '';

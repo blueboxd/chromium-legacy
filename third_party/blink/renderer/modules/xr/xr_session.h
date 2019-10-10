@@ -341,6 +341,7 @@ class XRSession final
   bool resolving_frame_ = false;
   bool update_views_next_frame_ = false;
   bool views_dirty_ = true;
+  bool frames_throttled_ = false;
 
   // Indicates that we've already logged a metric, so don't need to log it
   // again.

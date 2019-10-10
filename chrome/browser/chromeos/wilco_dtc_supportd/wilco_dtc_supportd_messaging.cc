@@ -43,7 +43,7 @@ namespace chromeos {
 // Note: the list size must be kept in sync with
 // |kWilcoDtcSupportdHostOriginsSize|.
 const char* const kWilcoDtcSupportdHostOrigins[] = {
-    "chrome-extension://echlnkcmdobkdgcjgjbiceoceeoenjkj/"};
+    "chrome-extension://okdnlenpdegbpdgniggponebnbkbeeca/"};
 
 // Size of |kWilcoDtcSupportdHostOrigins| array.
 const size_t kWilcoDtcSupportdHostOriginsSize =

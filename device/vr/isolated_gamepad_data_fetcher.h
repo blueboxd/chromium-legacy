@@ -8,6 +8,8 @@
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/vr_device.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace device {
 
@@ -33,7 +35,7 @@ class IsolatedGamepadDataFetcher : public GamepadDataFetcher {
 
   IsolatedGamepadDataFetcher(
       device::mojom::XRDeviceId display_id,
-      device::mojom::IsolatedXRGamepadProviderPtr provider);
+      mojo::PendingRemote<device::mojom::IsolatedXRGamepadProvider> provider);
   ~IsolatedGamepadDataFetcher() override;
 
   GamepadSource source() override;
@@ -49,10 +51,10 @@ class IsolatedGamepadDataFetcher : public GamepadDataFetcher {
   bool have_outstanding_request_ = false;
   std::set<unsigned int> active_gamepads_;
   device::mojom::XRGamepadDataPtr data_;
-  device::mojom::IsolatedXRGamepadProviderPtr
+  mojo::Remote<device::mojom::IsolatedXRGamepadProvider>
       provider_;  // Bound on the polling thread.
-  device::mojom::IsolatedXRGamepadProviderPtrInfo
-      provider_info_;  // Received on the UI thread, bound when polled.
+  mojo::PendingRemote<device::mojom::IsolatedXRGamepadProvider>
+      pending_provider_;  // Received on the UI thread, bound when polled.
 
   DISALLOW_COPY_AND_ASSIGN(IsolatedGamepadDataFetcher);
 };

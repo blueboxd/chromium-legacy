@@ -459,9 +459,8 @@ class HintsFetcherDisabledBrowserTest
       return;
 
     base::flat_set<std::string> hosts_requested;
-    for (const auto& host : hints_request.hosts()) {
+    for (const auto& host : hints_request.hosts())
       hosts_requested.insert(host.host());
-    }
 
     EXPECT_EQ(expect_hints_request_for_hosts_.value().size(),
               hosts_requested.size());
@@ -1166,7 +1165,8 @@ IN_PROC_BROWSER_TEST_P(
           "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false,
           4);
     }
-    EXPECT_EQ(IsOptimizationGuideKeyedServiceEnabled() ? 4u : 1u,
+    // Hints should not be fetched for the same host again.
+    EXPECT_EQ(IsOptimizationGuideKeyedServiceEnabled() ? 3u : 1u,
               count_hints_requests_received());
     RetryForHistogramUntilCountReached(
         histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
@@ -1388,11 +1388,13 @@ IN_PROC_BROWSER_TEST_P(
     return;
 
   // Populate expected hosts with hosts contained in the html response of
-  // search_results_page_url().
+  // search_results_page_url(). example2.com is contained in the HTML
+  // response, but hints for example2.com must not be fetched since they
+  // were pushed via kFetchHintsOverride switch above.
   base::flat_set<std::string> expected_hosts;
   expected_hosts.insert(GURL("https://foo.com").host());
   expected_hosts.insert(GURL("https://example.com").host());
-  expected_hosts.insert(GURL("https://example2.com").host());
+  expected_hosts.insert(GURL("https://example3.com").host());
   SetExpectedHintsRequestForHosts(expected_hosts);
 
   histogram_tester->ExpectTotalCount(

@@ -70,11 +70,9 @@ class SingleScrollbarAnimationControllerThinningTest
     const int kTrackStart = 0;
     const int kTrackLength = 100;
     const bool kIsLeftSideVerticalScrollbar = false;
-    const bool kIsOverlayScrollbar = true;
 
     scrollbar_layer_ = AddLayer<SolidColorScrollbarLayerImpl>(
-        HORIZONTAL, kThumbThickness, kTrackStart, kIsLeftSideVerticalScrollbar,
-        kIsOverlayScrollbar);
+        HORIZONTAL, kThumbThickness, kTrackStart, kIsLeftSideVerticalScrollbar);
 
     scrollbar_layer_->SetBounds(gfx::Size(kThumbThickness, kTrackLength));
     scrollbar_layer_->SetScrollElementId(scroll_layer->element_id());

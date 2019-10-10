@@ -74,14 +74,6 @@ class AppBannerUiDelegateAndroid {
   // the installation UI should be dismissed.
   bool InstallApp(content::WebContents* web_contents);
 
-  // Called by the UI layer to indicate that a native app has begun
-  // installation.
-  void OnNativeAppInstallStarted(content::WebContents* web_contents);
-
-  // Called by the UI layer to indicate that a native app has finished
-  // installation.
-  void OnNativeAppInstallFinished(bool success);
-
   // Called through the JNI to indicate that the user has dismissed the
   // installation UI.
   void OnUiCancelled(JNIEnv* env,

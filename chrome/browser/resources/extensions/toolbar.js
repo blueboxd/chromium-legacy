@@ -76,6 +76,24 @@ cr.define('extensions', function() {
     },
 
     /**
+     * @return {string}
+     * @private
+     */
+    getTooltipText_: function() {
+      return this.i18n(
+          this.isSupervised ? 'controlledSettingChildRestriction' :
+                              'controlledSettingPolicy');
+    },
+
+    /**
+     * @return {string}
+     * @private
+     */
+    getIcon_: function() {
+      return this.isSupervised ? 'cr20:kite' : 'cr20:domain';
+    },
+
+    /**
      * @param {!CustomEvent<boolean>} e
      * @private
      */

@@ -96,11 +96,18 @@ void EnableSyncFromPromo(
 #endif
 
 // Returns whether Chrome should show the identity of the user (using a brief
-// animation) on opening a profile. IdentityManager's refresh tokens must be
+// animation) on opening a new window. IdentityManager's refresh tokens must be
 // loaded when this function gets called.
-bool ShouldShowIdentityOnOpeningProfile(
+bool ShouldShowAnimatedIdentityOnOpeningWindow(
     const ProfileAttributesStorage& profile_attributes_storage,
     Profile* profile);
+
+// Records that the animated identity was shown for the given profile. This is
+// used for metrics and to decide whether/when the animation can be shown again.
+void RecordAnimatedIdentityTriggered(Profile* profile);
+
+// Called when the ProfileMenuView is opened. Used for metrics.
+void RecordProfileMenuViewShown(Profile* profile);
 
 }  // namespace signin_ui_util
 

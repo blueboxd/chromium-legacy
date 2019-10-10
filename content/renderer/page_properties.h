@@ -8,11 +8,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/screen_info.h"
 
-namespace blink {
-struct WebFloatRect;
-struct WebRect;
-}  // namespace blink
-
 namespace content {
 
 class CompositorDependencies;
@@ -50,13 +45,6 @@ class CONTENT_EXPORT PageProperties {
   }
   void SetScreenMetricsEmulator(
       std::unique_ptr<RenderWidgetScreenMetricsEmulator> emulator);
-
-  void ConvertViewportToWindow(blink::WebRect* rect);
-  void ConvertViewportToWindow(blink::WebFloatRect* rect);
-  void ConvertWindowToViewport(blink::WebFloatRect* rect);
-
-  // When emulated, this returns the original (non-emulated) ScreenInfo.
-  const ScreenInfo& GetOriginalScreenInfo() const;
 
   CompositorDependencies* GetCompositorDependencies();
 

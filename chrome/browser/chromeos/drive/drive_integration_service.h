@@ -305,8 +305,9 @@ class DriveIntegrationService : public KeyedService,
 
   base::TimeTicks mount_start_;
 
-  ScopedObserver<chromeos::PowerManagerClient, DriveIntegrationService>
-      power_manager_observer_;
+  ScopedObserver<chromeos::PowerManagerClient,
+                 chromeos::PowerManagerClient::Observer>
+      power_manager_observer_{this};
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

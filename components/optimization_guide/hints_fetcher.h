@@ -95,6 +95,11 @@ class HintsFetcher {
   // in the pref.
   void UpdateHostsSuccessfullyFetched();
 
+  // Returns the subset of hosts from |hosts| for which the hints should be
+  // refreshed.
+  std::vector<std::string> GetHostsDueForHintsRefresh(
+      const std::vector<std::string>& hosts) const;
+
   // Used to hold the GetHintsRequest being constructed and sent as a remote
   // request.
   std::unique_ptr<proto::GetHintsRequest> get_hints_request_;

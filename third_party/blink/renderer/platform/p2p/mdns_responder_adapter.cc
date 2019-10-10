@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "jingle/glue/utils.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
@@ -39,27 +40,27 @@ void OnNameRemovedForAddress(
 }  // namespace
 
 MdnsResponderAdapter::MdnsResponderAdapter() {
-  network::mojom::blink::MdnsResponderPtr client;
-  auto request = mojo::MakeRequest(&client);
-  thread_safe_client_ =
-      network::mojom::blink::ThreadSafeMdnsResponderPtr::Create(
+  mojo::PendingRemote<network::mojom::blink::MdnsResponder> client;
+  auto receiver = client.InitWithNewPipeAndPassReceiver();
+  shared_remote_client_ =
+      mojo::SharedRemote<network::mojom::blink::MdnsResponder>(
           std::move(client));
   blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
-      std::move(request));
+      std::move(receiver));
 }
 
 MdnsResponderAdapter::~MdnsResponderAdapter() = default;
 
 void MdnsResponderAdapter::CreateNameForAddress(const rtc::IPAddress& addr,
                                                 NameCreatedCallback callback) {
-  thread_safe_client_->get()->CreateNameForAddress(
+  shared_remote_client_->CreateNameForAddress(
       jingle_glue::RtcIPAddressToNetIPAddress(addr),
       base::BindOnce(&OnNameCreatedForAddress, callback, addr));
 }
 
 void MdnsResponderAdapter::RemoveNameForAddress(const rtc::IPAddress& addr,
                                                 NameRemovedCallback callback) {
-  thread_safe_client_->get()->RemoveNameForAddress(
+  shared_remote_client_->RemoveNameForAddress(
       jingle_glue::RtcIPAddressToNetIPAddress(addr),
       base::BindOnce(&OnNameRemovedForAddress, callback));
 }

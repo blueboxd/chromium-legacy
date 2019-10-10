@@ -47,7 +47,8 @@ class ArcAppsPrivateAPI : public extensions::BrowserContextKeyedAPI,
 
   content::BrowserContext* const context_;
 
-  ScopedObserver<ArcAppListPrefs, ArcAppsPrivateAPI> scoped_prefs_observer_;
+  ScopedObserver<ArcAppListPrefs, ArcAppListPrefs::Observer>
+      scoped_prefs_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppsPrivateAPI);
 };

@@ -298,6 +298,8 @@ TEST_F(RenderWidgetUnittest, CursorChange) {
   widget()->DidChangeCursor(cursor_info);
   EXPECT_EQ(widget()->sink()->message_count(), 0U);
 
+  EXPECT_CALL(*widget()->mock_webwidget(), HandleInputEvent(_))
+      .WillOnce(::testing::Return(blink::WebInputEventResult::kNotHandled));
   widget()->SendInputEvent(SyntheticWebMouseEventBuilder::Build(
                                blink::WebInputEvent::Type::kMouseLeave),
                            HandledEventCallback());

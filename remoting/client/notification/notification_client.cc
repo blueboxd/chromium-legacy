@@ -304,8 +304,8 @@ base::Optional<NotificationMessage> NotificationClient::ParseAndMatchRule(
   auto message = base::make_optional<NotificationMessage>();
   message->message_id = message_id;
   message->link_url = link_url;
-  message->allow_dont_show_again = false;
-  FindKeyAndGet(rule, "allow_dont_show_again", &message->allow_dont_show_again);
+  message->allow_silence = false;
+  FindKeyAndGet(rule, "allow_silence", &message->allow_silence);
   *out_message_text_filename = message_text_filename;
   *out_link_text_filename = link_text_filename;
   return message;

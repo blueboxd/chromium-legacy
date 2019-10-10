@@ -4,8 +4,12 @@
 
 #import "ios/web/navigation/crw_wk_navigation_states.h"
 
+#include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
+#include "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_context_impl.h"
+#import "ios/web/public/web_client.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -145,6 +149,33 @@
   if (state == web::WKNavigationState::COMMITTED) {
     record.committed = YES;
   }
+
+  // Workaround for a WKWebView bug where WKNavigation's can leak, leaving a
+  // permanent pending URL, thus breaking the omnibox.  While it is possible
+  // for navigations to finish out-of-order, it's an edge case that should be
+  // handled gracefully, as last committed will appear in the omnibox instead
+  // of the pending URL.  See crbug.com/1010765 for details and a reproducible
+  // example.
+  if (state == web::WKNavigationState::FINISHED &&
+      web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      base::FeatureList::IsEnabled(
+          web::features::kClearOldNavigationRecordsWorkaround)) {
+    NSUInteger finishedIndex = record.index;
+    NSMutableSet* navigationsToRemove = [NSMutableSet set];
+    for (id navigation in _records) {
+      CRWWKNavigationsStateRecord* record = [_records objectForKey:navigation];
+      if (record.index < finishedIndex) {
+        [navigationsToRemove addObject:navigation];
+      }
+    }
+    for (id navigation in navigationsToRemove) {
+      [_records removeObjectForKey:navigation];
+    }
+
+    UMA_HISTOGRAM_BOOLEAN("IOS.CRWWKNavigationStatesRemoveOldPending",
+                          navigationsToRemove.count > 0);
+  }
+
   [_records setObject:record forKey:key];
 }
 

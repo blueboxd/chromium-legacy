@@ -15,7 +15,7 @@ namespace content {
 scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateFromDisk(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
-    leveldb::mojom::LevelDBDatabase* database) {
+    leveldb::LevelDBDatabaseImpl* database) {
   return base::WrapRefCounted(new SessionStorageDataMap(
       listener, std::move(map_data), database, false));
 }
@@ -24,7 +24,7 @@ scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateFromDisk(
 scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateEmpty(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
-    leveldb::mojom::LevelDBDatabase* database) {
+    leveldb::LevelDBDatabaseImpl* database) {
   return base::WrapRefCounted(
       new SessionStorageDataMap(listener, std::move(map_data), database, true));
 }
@@ -50,7 +50,7 @@ void SessionStorageDataMap::DidCommit(leveldb::mojom::DatabaseError error) {
 SessionStorageDataMap::SessionStorageDataMap(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
-    leveldb::mojom::LevelDBDatabase* database,
+    leveldb::LevelDBDatabaseImpl* database,
     bool is_empty)
     : listener_(listener),
       map_data_(std::move(map_data)),

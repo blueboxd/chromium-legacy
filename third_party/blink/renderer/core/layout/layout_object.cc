@@ -1414,6 +1414,13 @@ const LayoutBoxModelObject* LayoutObject::EnclosingCompositedContainer() const {
 bool LayoutObject::HasDistortingVisualEffects() const {
   // TODO(szager): Check occlusion information propagated from out-of-process
   // parent frame.
+
+  // TODO(szager): Remove CHECK's after diagnosing crash.
+  PaintLayer* enclosing_layer = EnclosingLayer();
+  CHECK(enclosing_layer);
+  CHECK(enclosing_layer->GetLayoutObject()
+            .FirstFragment()
+            .HasLocalBorderBoxProperties());
   PropertyTreeState paint_properties = EnclosingLayer()
                                            ->GetLayoutObject()
                                            .FirstFragment()
@@ -1430,12 +1437,15 @@ bool LayoutObject::HasDistortingVisualEffects() const {
     }
   }
 
-  PropertyTreeState root_properties = GetDocument()
-                                          .GetFrame()
-                                          ->LocalFrameRoot()
-                                          .ContentLayoutObject()
-                                          ->FirstFragment()
-                                          .LocalBorderBoxProperties();
+  // TODO(szager): Remove CHECK's after diagnosing crash.
+  CHECK(GetDocument().IsActive());
+  LocalFrame* frame = GetDocument().GetFrame();
+  CHECK(frame);
+  LayoutView* layout_view = frame->LocalFrameRoot().ContentLayoutObject();
+  CHECK(layout_view);
+  CHECK(layout_view->FirstFragment().HasLocalBorderBoxProperties());
+  PropertyTreeState root_properties =
+      layout_view->FirstFragment().LocalBorderBoxProperties();
 
   // The only allowed transforms are 2D translation and proportional up-scaling.
   const auto& translation_2d_or_matrix =

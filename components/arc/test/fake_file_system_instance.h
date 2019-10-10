@@ -217,6 +217,14 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   // |bytes| bytes.
   std::string GetFileContent(const std::string& url, size_t bytes);
 
+  // For clearing the list of handled requests
+  void clear_handled_requests() { handled_url_requests_.clear(); }
+
+  // For validating the url requests in testing.
+  const std::vector<mojom::OpenUrlsRequestPtr>& handledUrlRequests() const {
+    return handled_url_requests_;
+  }
+
   // mojom::FileSystemInstance:
   void AddWatcher(const std::string& authority,
                   const std::string& document_id,
@@ -325,6 +333,9 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
 
   // Mapping from a watcher ID to a document key.
   std::map<int64_t, DocumentKey> watcher_to_document_;
+
+  // List of all OpenUrlsRequests made to the fake_file_system_instance
+  std::vector<mojom::OpenUrlsRequestPtr> handled_url_requests_;
 
   // List of roots added by AddRoot().
   std::vector<Root> roots_;

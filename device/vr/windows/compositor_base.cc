@@ -45,7 +45,6 @@ XRCompositorCommon::XRCompositorCommon()
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       webxr_js_time_(kSlidingAverageSize),
       webxr_gpu_time_(kSlidingAverageSize),
-      gamepad_provider_(this),
       overlay_binding_(this) {
   DCHECK(main_thread_task_runner_);
 }
@@ -138,16 +137,16 @@ void XRCompositorCommon::CleanUp() {
   webxr_has_pose_ = false;
   presentation_receiver_.reset();
   frame_data_receiver_.reset();
-  gamepad_provider_.Close();
+  gamepad_provider_receiver_.reset();
   overlay_binding_.Close();
   input_event_listener_ = nullptr;
   StopRuntime();
 }
 
 void XRCompositorCommon::RequestGamepadProvider(
-    mojom::IsolatedXRGamepadProviderRequest request) {
-  gamepad_provider_.Close();
-  gamepad_provider_.Bind(std::move(request));
+    mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> receiver) {
+  gamepad_provider_receiver_.reset();
+  gamepad_provider_receiver_.Bind(std::move(receiver));
 }
 
 void XRCompositorCommon::RequestOverlay(

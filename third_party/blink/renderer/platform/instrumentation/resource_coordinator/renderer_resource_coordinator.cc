@@ -27,7 +27,7 @@ void RendererResourceCoordinator::MaybeInitialize() {
   DCHECK(platform);
 
   mojo::PendingRemote<
-      resource_coordinator::mojom::blink::ProcessCoordinationUnit>
+      performance_manager::mojom::blink::ProcessCoordinationUnit>
       remote;
   platform->GetBrowserInterfaceBrokerProxy()->GetInterface(
       remote.InitWithNewPipeAndPassReceiver());
@@ -49,7 +49,7 @@ RendererResourceCoordinator* RendererResourceCoordinator::Get() {
 
 RendererResourceCoordinator::RendererResourceCoordinator(
     mojo::PendingRemote<
-        resource_coordinator::mojom::blink::ProcessCoordinationUnit> remote) {
+        performance_manager::mojom::blink::ProcessCoordinationUnit> remote) {
   service_.Bind(std::move(remote));
 }
 

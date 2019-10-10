@@ -161,6 +161,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void SuspendVisibilityUpdate();
   void ResumeVisiblityUpdate();
 
+  // Called when ShelfItems are interacted with in the shelf.
+  void OnShelfItemSelected(ShelfAction action);
+
   // WmDefaultLayoutManager:
   void OnWindowResized() override;
   void SetChildBounds(aura::Window* child,

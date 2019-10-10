@@ -272,6 +272,7 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
   return !IsPrerenderTabEvictionExperimentalGroup() && self.preferenceEnabled &&
          !ios::device_util::IsSingleCoreDevice() &&
          ios::device_util::RamIsAtLeast512Mb() &&
+         !net::NetworkChangeNotifier::IsOffline() &&
          (!self.wifiOnly || !self.usingWWAN);
 }
 

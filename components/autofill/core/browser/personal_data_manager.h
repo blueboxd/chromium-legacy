@@ -323,16 +323,6 @@ class PersonalDataManager : public KeyedService,
 
   const std::string& app_locale() const { return app_locale_; }
 
-  // Merges |new_profile| into one of the |existing_profiles| if possible;
-  // otherwise appends |new_profile| to the end of that list. Fills
-  // |merged_profiles| with the result. Returns the |guid| of the new or updated
-  // profile.
-  static std::string MergeProfile(
-      const AutofillProfile& new_profile,
-      std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
-      const std::string& app_locale,
-      std::vector<AutofillProfile>* merged_profiles);
-
   // Returns our best guess for the country a user is likely to use when
   // inputting a new address. The value is calculated once and cached, so it
   // will only update when Chrome is restarted.

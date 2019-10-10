@@ -51,9 +51,7 @@
 
     // Verify that scrolling occured.
     standardDivFast.addEventListener("scroll", function() {
-      // TODO(arakeri): There's a ~25px difference between main thread and cc thumb drags
-      // due to crbug.com/1009892. This needs to be changed to 480 once the crbug is fixed.
-      if(standardDivFast.scrollTop >= 450 && standardDivFast.scrollTop <= 480)
+      if(standardDivFast.scrollTop == 480)
         scroll_threshold_crossed = true;
     });
 

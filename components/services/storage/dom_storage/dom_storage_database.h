@@ -146,6 +146,12 @@ class DomStorageDatabase : private base::trace_event::MemoryDumpProvider {
   // usable; in such cases, all future operations will return an IOError status.
   Status RewriteDB();
 
+  void SetDestructionCallbackForTesting(base::OnceClosure callback) {
+    destruction_callback_ = std::move(callback);
+  }
+
+  void MakeAllCommitsFailForTesting() { fail_commits_for_testing_ = true; }
+
  private:
   friend class base::SequenceBound<DomStorageDatabase>;
 
@@ -193,6 +199,13 @@ class DomStorageDatabase : private base::trace_event::MemoryDumpProvider {
   const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>
       memory_dump_id_;
   std::unique_ptr<leveldb::DB> db_;
+
+  // Causes all calls to |Commit()| to fail with an IOError for simulated
+  // disk failures in testing.
+  bool fail_commits_for_testing_ = false;
+
+  // Callback to run on destruction in tests.
+  base::OnceClosure destruction_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

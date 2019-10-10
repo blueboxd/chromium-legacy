@@ -23,7 +23,6 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/view.h"
-#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -155,10 +154,6 @@ class AutoclickScrollButton : public CustomShapeButton,
                         kScrollPadButtonHypotenuseDips / 2);
     }
     SetPreferredSize(size_);
-
-    auto path = std::make_unique<SkPath>(
-        CreateCustomShapePath(gfx::Rect(GetPreferredSize())));
-    SetProperty(views::kHighlightPathKey, path.release());
 
     set_clip_path(CreateCustomShapePath(gfx::Rect(GetPreferredSize())));
     SetEventTargeter(std::make_unique<views::ViewTargeter>(this));

@@ -118,7 +118,7 @@ bool SetDefaultWebClient(const std::string& protocol) {
     argv.push_back(kXdgSettingsDefaultSchemeHandler);
     argv.push_back(protocol);
   }
-  argv.push_back(GetDesktopName(env.get()));
+  argv.push_back(chrome::GetDesktopName(env.get()));
 
   int exit_code;
   bool ran_ok = LaunchXdgUtility(argv, &exit_code);
@@ -154,7 +154,7 @@ shell_integration::DefaultWebClientState GetIsDefaultWebClient(
     argv.push_back(kXdgSettingsDefaultSchemeHandler);
     argv.push_back(protocol);
   }
-  argv.push_back(GetDesktopName(env.get()));
+  argv.push_back(chrome::GetDesktopName(env.get()));
 
   std::string reply;
   int success_code;
@@ -407,35 +407,13 @@ std::string GetProgramClassClass(const base::CommandLine& command_line,
 std::string GetProgramClassName() {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   return internal::GetProgramClassName(*base::CommandLine::ForCurrentProcess(),
-                                       GetDesktopName(env.get()));
+                                       chrome::GetDesktopName(env.get()));
 }
 
 std::string GetProgramClassClass() {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   return internal::GetProgramClassClass(*base::CommandLine::ForCurrentProcess(),
-                                        GetDesktopName(env.get()));
-}
-
-std::string GetDesktopName(base::Environment* env) {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  version_info::Channel product_channel(chrome::GetChannel());
-  switch (product_channel) {
-    case version_info::Channel::DEV:
-      return "google-chrome-unstable.desktop";
-    case version_info::Channel::BETA:
-      return "google-chrome-beta.desktop";
-    default:
-      return "google-chrome.desktop";
-  }
-#else  // BUILDFLAG(CHROMIUM_BRANDING)
-  // Allow $CHROME_DESKTOP to override the built-in value, so that development
-  // versions can set themselves as the default without interfering with
-  // non-official, packaged versions using the built-in value.
-  std::string name;
-  if (env->GetVar("CHROME_DESKTOP", &name) && !name.empty())
-    return name;
-  return "chromium-browser.desktop";
-#endif
+                                        chrome::GetDesktopName(env.get()));
 }
 
 std::string GetIconName() {

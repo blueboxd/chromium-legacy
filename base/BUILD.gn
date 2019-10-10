@@ -2702,6 +2702,7 @@ test("base_unittests") {
     "task/common/operations_controller_unittest.cc",
     "task/common/task_annotator_unittest.cc",
     "task/lazy_task_runner_unittest.cc",
+    "task/post_job_unittest.cc",
     "task/post_task_unittest.cc",
     "task/promise/abstract_promise_unittest.cc",
     "task/promise/dependent_list_unittest.cc",

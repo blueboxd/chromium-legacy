@@ -34,31 +34,20 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(
       thumb_length_(scrollbar_->ThumbLength()),
       is_overlay_(scrollbar_->IsOverlay()),
       has_thumb_(scrollbar_->HasThumb()),
-      thumb_opacity_(scrollbar_->ThumbOpacity()) {
-  SetIsScrollbar(true);
-}
+      thumb_opacity_(scrollbar_->ThumbOpacity()) {}
 
 PaintedScrollbarLayer::~PaintedScrollbarLayer() = default;
-
-void PaintedScrollbarLayer::SetScrollElementId(ElementId element_id) {
-  if (element_id == scroll_element_id_)
-    return;
-
-  scroll_element_id_ = element_id;
-  SetNeedsCommit();
-}
 
 bool PaintedScrollbarLayer::OpacityCanAnimateOnImplThread() const {
   return scrollbar_->IsOverlay();
 }
 
 void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
-  Layer::PushPropertiesTo(layer);
+  ScrollbarLayerBase::PushPropertiesTo(layer);
 
   PaintedScrollbarLayerImpl* scrollbar_layer =
       static_cast<PaintedScrollbarLayerImpl*>(layer);
 
-  scrollbar_layer->SetScrollElementId(scroll_element_id_);
   scrollbar_layer->set_internal_contents_scale_and_bounds(
       internal_contents_scale_, internal_content_bounds_);
 
@@ -97,7 +86,7 @@ void PaintedScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
     thumb_resource_ = nullptr;
   }
 
-  Layer::SetLayerTreeHost(host);
+  ScrollbarLayerBase::SetLayerTreeHost(host);
 }
 
 gfx::Rect PaintedScrollbarLayer::ScrollbarLayerRectToContentRect(
@@ -165,7 +154,7 @@ void PaintedScrollbarLayer::UpdateInternalContentScale() {
 bool PaintedScrollbarLayer::Update() {
   {
     auto ignore_set_needs_commit = IgnoreSetNeedsCommit();
-    Layer::Update();
+    ScrollbarLayerBase::Update();
     UpdateInternalContentScale();
   }
 

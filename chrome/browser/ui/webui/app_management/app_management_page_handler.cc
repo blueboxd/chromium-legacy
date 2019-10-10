@@ -92,13 +92,7 @@ AppManagementPageHandler::AppManagementPageHandler(
     Profile* profile)
     : receiver_(this, std::move(receiver)),
       page_(std::move(page)),
-      profile_(profile)
-#if defined(OS_CHROMEOS)
-      ,
-      arc_app_list_prefs_observer_(this),
-      shelf_delegate_(this)
-#endif
-{
+      profile_(profile) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
 

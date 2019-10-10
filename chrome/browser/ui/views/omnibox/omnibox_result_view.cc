@@ -101,7 +101,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   keyword_view_->OnMatchUpdate(this, match_);
 
   // Set up possible button.
-  if (match.ShouldShowButton()) {
+  if (match.ShouldShowTabMatchButton()) {
     suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
         popup_contents_view_, this,
         l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),

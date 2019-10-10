@@ -49,7 +49,6 @@
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_element.h"
-#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_node.h"
@@ -61,6 +60,7 @@
 #include "ui/surface/transport_dib.h"
 
 namespace blink {
+class WebFrameWidget;
 class WebURLRequest;
 struct PluginAction;
 struct WebWindowFeatures;
@@ -303,8 +303,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   virtual void didScrollWithKeyboard(const blink::WebSize& delta);
 #endif
-  void ConvertViewportToWindowViaWidget(blink::WebRect* rect) override;
-  gfx::RectF ElementBoundsInWindow(const blink::WebElement& element) override;
 
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions
@@ -328,10 +326,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // be able to specify |initial_setting| where IPC handlers do not.
   void ApplyPageHidden(bool hidden, bool initial_setting);
 
-  // These functions take the main frame's RenderWidget and to make it
-  // inaccessible for out-of-process main frames and then brings it back
-  // if the main frame comes back into the current process.
-  void MakeMainFrameRenderWidgetUndead();
+  // Instead of creating a new RenderWidget, this revives the undead
+  // RenderWidget for use with a new local main frame.
   void ReviveUndeadMainFrameRenderWidget();
 
  private:
@@ -688,10 +684,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Helper objects ------------------------------------------------------------
 
   RenderFrameImpl* main_render_frame_ = nullptr;
-
-  // Note: RenderViewImpl is pulling double duty: it's the RenderWidget for the
-  // "view", but it's also the RenderWidget for the main frame.
-  blink::WebFrameWidget* frame_widget_ = nullptr;
 
 #if defined(OS_ANDROID)
   // Android Specific ----------------------------------------------------------

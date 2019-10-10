@@ -18,7 +18,6 @@
 #include "ui/base/page_transition_types.h"
 
 namespace content {
-struct Referrer;
 class RenderFrameHost;
 class RenderProcessHost;
 class ResourceContext;
@@ -77,12 +76,6 @@ class ChromeContentBrowserClientExtensionsPart
                                      const GURL& first_party_url,
                                      const GURL& script_url,
                                      content::BrowserContext* context);
-  static void OverrideNavigationParams(
-      content::SiteInstance* site_instance,
-      ui::PageTransition* transition,
-      bool* is_renderer_initiated,
-      content::Referrer* referrer,
-      base::Optional<url::Origin>* initiator_origin);
   static std::vector<url::Origin> GetOriginsRequiringDedicatedProcess();
 
   // Helper function to call InfoMap::SetSigninProcess().

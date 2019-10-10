@@ -22,6 +22,7 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "components/web_cache/public/mojom/web_cache.mojom.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_creation_observer.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "mojo/public/cpp/bindings/remote.h"

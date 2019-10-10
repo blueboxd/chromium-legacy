@@ -239,7 +239,8 @@ public class TileRenderer {
         if (tile.getSource() == TileSource.EXPLORE) {
             radius = mDesiredIconSize / 2;
         }
-        RoundedBitmapDrawable roundedIcon = ViewUtils.createRoundedBitmapDrawable(icon, radius);
+        RoundedBitmapDrawable roundedIcon =
+                ViewUtils.createRoundedBitmapDrawable(mResources, icon, radius);
         roundedIcon.setAntiAlias(true);
         roundedIcon.setFilterBitmap(true);
 

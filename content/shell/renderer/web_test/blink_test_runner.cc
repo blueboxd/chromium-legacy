@@ -327,10 +327,6 @@ void BlinkTestRunner::SetDeviceScaleFactor(float factor) {
   content::SetDeviceScaleFactor(render_view(), factor);
 }
 
-float BlinkTestRunner::GetWindowToViewportScale() {
-  return content::GetWindowToViewportScale(render_view());
-}
-
 std::unique_ptr<blink::WebInputEvent>
 BlinkTestRunner::TransformScreenToWidgetCoordinates(
     test_runner::WebWidgetTestProxy* web_widget_test_proxy,

@@ -52,6 +52,10 @@ class PredictionManager
   // Updates |session_fcp_| and |previous_fcp_| with |fcp|.
   void UpdateFCPSessionStatistics(base::TimeDelta fcp);
 
+  OptimizationGuideSessionStatistic* GetFCPSessionStatisticsForTesting() const {
+    return const_cast<OptimizationGuideSessionStatistic*>(&session_fcp_);
+  }
+
   // network::NetworkQualityTracker::EffectiveConnectionTypeObserver
   // implementation:
   void OnEffectiveConnectionTypeChanged(

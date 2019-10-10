@@ -38,7 +38,7 @@ action("bindings") {
 
   # TODO(yzshen): Eventually we would like to use Closure Compiler to minify the
   # bindings instead of simply concatenating the files.
-  script = "//v8/tools/concatenate-files.py"
+  script = "//mojo/public/tools/bindings/concatenate-files.py"
 
   sources = bindings_js_files
   outputs = [

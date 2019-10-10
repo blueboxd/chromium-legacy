@@ -151,14 +151,19 @@
               </span>
 </if>
 <if expr="chromeos">
-             <div id="endOfLifeMessageContainer" hidden="[[!hasEndOfLife_]]">
-               $i18n{endOfLifeMessage}
-               <a href="$i18n{endOfLifeLearnMoreURL}" target="_blank">
-                 $i18n{learnMore}
-               </a>
-             </div>
+              <div id="endOfLifeMessageContainer" hidden="[[!hasEndOfLife_]]">
+                $i18n{endOfLifeMessage}
+                <a href="$i18n{endOfLifeLearnMoreURL}" target="_blank">
+                  $i18n{learnMore}
+                </a>
+              </div>
 </if>
               <div class="secondary">$i18n{aboutBrowserVersion}</div>
+<if expr="chromeos">
+              <div class="secondary"
+                  inner-h-t-m-l="[[getUpdateOsSettingsLink_()]]">
+              </div>
+</if>
             </div>
             <div class="separator" hidden="[[!showButtonContainer_]]"></div>
             <span id="buttonContainer" hidden="[[!showButtonContainer_]]">

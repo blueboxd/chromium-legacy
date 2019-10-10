@@ -21,22 +21,3 @@ static_library("lib") {
     "//third_party/leveldatabase",
   ]
 }
-
-test("leveldb_service_unittests") {
-  sources = [
-    "leveldb_mojo_unittest.cc",
-  ]
-
-  deps = [
-    ":lib",
-    "//base",
-    "//base/test:test_support",
-    "//components/services/leveldb/public/cpp",
-    "//components/services/leveldb/public/mojom",
-    "//mojo/core/test:run_all_unittests",
-    "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/system",
-    "//testing/gtest",
-    "//third_party/leveldatabase",
-  ]
-}

@@ -475,23 +475,6 @@ android_library("chrome_java") {
     "//components/module_installer/android:module_interface_processor",
   ]
 
-  proguard_configs = []
-  if (async_ar) {
-    proguard_configs += [ "//chrome/android/features/ar/proguard_async.flags" ]
-  }
-  if (async_vr) {
-    proguard_configs += [
-      "//chrome/android/features/vr/proguard_async.flags",
-      "//chrome/android/features/vr/proguard_async_manual.flags",
-    ]
-  }
-  if (async_tab_ui) {
-    proguard_configs += [
-      "//chrome/android/features/tab_ui/proguard_async.flags",
-      "//chrome/android/features/tab_ui/proguard_async_manual.flags",
-    ]
-  }
-
   processor_args_javac = [ "dagger.fastInit=enabled" ]
 }
 

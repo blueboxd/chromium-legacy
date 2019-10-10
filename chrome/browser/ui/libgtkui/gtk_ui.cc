@@ -16,7 +16,6 @@
 #include "base/containers/flat_map.h"
 #include "base/debug/leak_annotations.h"
 #include "base/environment.h"
-#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/nix/mime_util_xdg.h"
 #include "base/nix/xdg_util.h"
@@ -33,8 +32,6 @@
 #include "chrome/browser/ui/libgtkui/printing_gtk_util.h"
 #include "chrome/browser/ui/libgtkui/select_file_dialog_impl.h"
 #include "chrome/browser/ui/libgtkui/settings_provider_gtk.h"
-#include "chrome/browser/ui/libgtkui/skia_utils_gtk.h"
-#include "chrome/browser/ui/libgtkui/unity_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "printing/buildflags/buildflags.h"
@@ -45,7 +42,6 @@
 #include "ui/base/ime/linux/fake_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_keyboard_layout_manager.h"
@@ -65,7 +61,6 @@
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/linux_ui/device_scale_factor_observer.h"
 #include "ui/views/linux_ui/window_button_order_observer.h"
-#include "ui/views/resources/grit/views_resources.h"
 
 #if defined(USE_GIO)
 #include "chrome/browser/ui/libgtkui/settings_provider_gsettings.h"
@@ -89,14 +84,6 @@
 #if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
 #include "chrome/browser/ui/views/nav_button_provider.h"
 #endif
-
-// A minimized port of GtkThemeService into something that can provide colors
-// and images for aura.
-//
-// TODO(erg): There's still a lot that needs ported or done for the first time:
-//
-// - Render and inject the omnibox background.
-// - Make sure to test with a light on dark theme, too.
 
 namespace libgtkui {
 
@@ -339,6 +326,61 @@ bool ShouldCreateGtkEventLoopX11() {
 }
 #endif  // defined(USE_GTK_EVENT_LOOP_X11)
 
+const SkBitmap GdkPixbufToSkBitmap(GdkPixbuf* pixbuf) {
+  // TODO(erg): What do we do in the case where the pixbuf fails these dchecks?
+  // I would prefer to use our gtk based canvas, but that would require
+  // recompiling half of our skia extensions with gtk support, which we can't
+  // do in this build.
+  DCHECK_EQ(GDK_COLORSPACE_RGB, gdk_pixbuf_get_colorspace(pixbuf));
+
+  int n_channels = gdk_pixbuf_get_n_channels(pixbuf);
+  int w = gdk_pixbuf_get_width(pixbuf);
+  int h = gdk_pixbuf_get_height(pixbuf);
+
+  SkBitmap ret;
+  ret.allocN32Pixels(w, h);
+  ret.eraseColor(0);
+
+  uint32_t* skia_data = static_cast<uint32_t*>(ret.getAddr(0, 0));
+
+  if (n_channels == 4) {
+    int total_length = w * h;
+    guchar* gdk_pixels = gdk_pixbuf_get_pixels(pixbuf);
+
+    // Now here's the trick: we need to convert the gdk data (which is RGBA and
+    // isn't premultiplied) to skia (which can be anything and premultiplied).
+    for (int i = 0; i < total_length; ++i, gdk_pixels += 4) {
+      const unsigned char& red = gdk_pixels[0];
+      const unsigned char& green = gdk_pixels[1];
+      const unsigned char& blue = gdk_pixels[2];
+      const unsigned char& alpha = gdk_pixels[3];
+
+      skia_data[i] = SkPreMultiplyARGB(alpha, red, green, blue);
+    }
+  } else if (n_channels == 3) {
+    // Because GDK makes rowstrides word aligned, we need to do something a bit
+    // more complex when a pixel isn't perfectly a word of memory.
+    int rowstride = gdk_pixbuf_get_rowstride(pixbuf);
+    guchar* gdk_pixels = gdk_pixbuf_get_pixels(pixbuf);
+    for (int y = 0; y < h; ++y) {
+      int row = y * rowstride;
+
+      for (int x = 0; x < w; ++x) {
+        guchar* pixel = gdk_pixels + row + (x * 3);
+        const unsigned char& red = pixel[0];
+        const unsigned char& green = pixel[1];
+        const unsigned char& blue = pixel[2];
+
+        skia_data[y * w + x] = SkPreMultiplyARGB(255, red, green, blue);
+      }
+    }
+  } else {
+    NOTREACHED();
+  }
+
+  return ret;
+}
+
 }  // namespace
 
 GtkUi::GtkUi() {
@@ -494,8 +536,7 @@ base::TimeDelta GtkUi::GetCursorBlinkInterval() const {
 
   // Dividing GTK's cursor blink cycle time (in milliseconds) by this value
   // yields an appropriate value for
-  // blink::mojom::RendererPreferences::caret_blink_interval.  This
-  // matches the logic in the WebKit GTK port.
+  // blink::mojom::RendererPreferences::caret_blink_interval.
   static const double kGtkCursorBlinkCycleFactor = 2000.0;
 
   gint cursor_blink_time = kGtkDefaultCursorBlinkTime;
@@ -543,16 +584,6 @@ bool GtkUi::GetDefaultUsesSystemTheme() const {
   return false;
 }
 
-void GtkUi::SetDownloadCount(int count) const {
-  if (unity::IsRunning())
-    unity::SetDownloadCount(count);
-}
-
-void GtkUi::SetProgressFraction(float percentage) const {
-  if (unity::IsRunning())
-    unity::SetProgressFraction(percentage);
-}
-
 gfx::Image GtkUi::GetIconForContentType(const std::string& content_type,
                                         int size) const {
   // This call doesn't take a reference.
@@ -571,7 +602,7 @@ gfx::Image GtkUi::GetIconForContentType(const std::string& content_type,
     if (!pixbuf)
       continue;
 
-    SkBitmap bitmap = GdkPixbufToImageSkia(pixbuf.get());
+    SkBitmap bitmap = GdkPixbufToSkBitmap(pixbuf.get());
     DCHECK_EQ(size, bitmap.width());
     DCHECK_EQ(size, bitmap.height());
     gfx::ImageSkia image_skia = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
@@ -848,7 +879,7 @@ void GtkUi::UpdateColors() {
   colors_[ThemeProperties::COLOR_NTP_LINK] = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
 
-  // Generate the colors that we pass to WebKit.
+  // Generate the colors that we pass to Blink.
   focus_ring_color_ = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_FocusedBorderColor);
 

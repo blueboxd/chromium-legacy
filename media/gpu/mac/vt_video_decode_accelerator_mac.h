@@ -243,26 +243,23 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   base::ScopedCFTypeRef<VTDecompressionSessionRef> session_;
   H264Parser parser_;
 
-  // Last SPS and PPS seen in the bitstream.
-  //
-  // TODO(sandersd): Keep a map from ID to last SPS/PPS, for streams that
-  // maintain multiple active configurations. (I've never seen such a stream.)
-  int last_sps_id_ = -1;
-  int last_pps_id_ = -1;
-  std::vector<uint8_t> last_sps_;
-  std::vector<uint8_t> last_spsext_;
-  std::vector<uint8_t> last_pps_;
+  // SPSs and PPSs seen in the bitstream.
+  std::map<int, std::vector<uint8_t>> seen_sps_;
+  std::map<int, std::vector<uint8_t>> seen_spsext_;
+  std::map<int, std::vector<uint8_t>> seen_pps_;
 
-  // Last SPS and PPS referenced by a slice. In practice these will be the same
-  // as the last seen values, unless the bitstream is malformatted.
+  // SPS and PPS most recently activated by an IDR.
+  // TODO(sandersd): Enable configuring with multiple PPSs.
   std::vector<uint8_t> active_sps_;
   std::vector<uint8_t> active_spsext_;
   std::vector<uint8_t> active_pps_;
 
-  // Last SPS and PPS the decoder was confgured with.
+  // SPS and PPS the decoder is currently confgured with.
   std::vector<uint8_t> configured_sps_;
   std::vector<uint8_t> configured_spsext_;
   std::vector<uint8_t> configured_pps_;
+
+  // Visible rect the decoder is configured to use.
   gfx::Size configured_size_;
 
   bool waiting_for_idr_ = true;

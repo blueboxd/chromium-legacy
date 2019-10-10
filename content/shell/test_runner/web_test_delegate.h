@@ -129,11 +129,6 @@ class WebTestDelegate {
   // Controls the device scale factor of the main WebView for hidpi tests.
   virtual void SetDeviceScaleFactor(float factor) = 0;
 
-  // When use-zoom-for-dsf mode is enabled, this returns the scale to
-  // convert from window coordinates to viewport coordinates. When
-  // use-zoom-for-dsf is disabled, this return always 1.0f.
-  virtual float GetWindowToViewportScale() = 0;
-
   // Converts |event| from screen coordinates used by test_runner::EventSender
   // into coordinates that are understood by the widget associated with
   // |web_widget_test_proxy|.  Returns nullptr if no transformation was

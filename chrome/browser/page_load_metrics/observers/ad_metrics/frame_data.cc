@@ -101,10 +101,6 @@ void FrameData::ProcessResourceLoadInFrame(
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource,
     int process_id,
     const page_load_metrics::ResourceTracker& resource_tracker) {
-  // TODO(968141): Update these metrics to include resources loaded by the
-  // memory cache.
-  if (resource->cache_type == page_load_metrics::mojom::CacheType::kMemory)
-    return;
   bool is_same_origin = origin_.IsSameOriginWith(resource->origin);
   bytes_ += resource->delta_bytes;
   network_bytes_ += resource->delta_bytes;
@@ -256,7 +252,7 @@ void FrameData::RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const {
   builder
       .SetLoading_NetworkBytes(
           ukm::GetExponentialBucketMinForBytes(network_bytes()))
-      .SetLoading_CacheBytes(
+      .SetLoading_CacheBytes2(
           ukm::GetExponentialBucketMinForBytes((bytes() - network_bytes())))
       .SetLoading_VideoBytes(ukm::GetExponentialBucketMinForBytes(
           GetAdNetworkBytesForMime(ResourceMimeType::kVideo)))

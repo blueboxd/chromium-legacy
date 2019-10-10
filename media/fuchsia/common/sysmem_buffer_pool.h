@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 
 namespace media {
 
@@ -50,6 +51,8 @@ class SysmemBufferPool {
     std::vector<fuchsia::sysmem::BufferCollectionTokenPtr> shared_tokens_;
     CreateCB create_cb_;
 
+    THREAD_CHECKER(thread_checker_);
+
     DISALLOW_COPY_AND_ASSIGN(Creator);
   };
 
@@ -83,6 +86,9 @@ class SysmemBufferPool {
   CreateReaderCB create_reader_cb_;
   CreateWriterCB create_writer_cb_;
 
+  // FIDL interfaces are thread-affine (see crbug.com/1012875).
+  THREAD_CHECKER(thread_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(SysmemBufferPool);
 };
 
@@ -101,6 +107,8 @@ class BufferAllocator {
 
  private:
   fuchsia::sysmem::AllocatorPtr allocator_;
+
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(BufferAllocator);
 };

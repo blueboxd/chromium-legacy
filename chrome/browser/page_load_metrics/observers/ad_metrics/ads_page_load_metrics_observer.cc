@@ -35,6 +35,7 @@
 #include "net/base/net_errors.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -63,6 +64,14 @@ content::RenderFrameHost* FindFrameMaybeUnsafe(
              ? handle->GetRenderFrameHost()
              : handle->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
                    handle->GetFrameTreeNodeId());
+}
+
+void RecordFeatureUsage(content::RenderFrameHost* rfh,
+                        blink::mojom::WebFeature web_feature) {
+  page_load_metrics::mojom::PageLoadFeatures page_load_features(
+      {web_feature}, {} /* css_properties */, {} /* animated_css_properties */);
+  page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
+      rfh, page_load_features);
 }
 
 using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
@@ -201,6 +210,9 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
   GetDelegate().GetWebContents()->GetController().LoadPostCommitErrorPage(
       render_frame_host, render_frame_host->GetLastCommittedURL(),
       heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
+
+  RecordFeatureUsage(render_frame_host,
+                     blink::mojom::WebFeature::kHeavyAdIntervention);
 
   ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
                 FrameData::FrameVisibility::kAnyVisibility,
@@ -837,20 +849,20 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForAdTagging(
                   std::min(ad_frame_data.frame_size().width(),
                            ad_frame_data.frame_size().height()));
 
-    ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Total", PAGE_BYTES_HISTOGRAM,
+    ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Total2", PAGE_BYTES_HISTOGRAM,
                   visibility, ad_frame_data.bytes());
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Network", PAGE_BYTES_HISTOGRAM,
                   visibility, ad_frame_data.network_bytes());
-    ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.SameOrigin", PAGE_BYTES_HISTOGRAM,
+    ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.SameOrigin2", PAGE_BYTES_HISTOGRAM,
                   visibility, ad_frame_data.same_origin_bytes());
     if (ad_frame_data.bytes() > 0) {
       ADS_HISTOGRAM(
-          "Bytes.AdFrames.PerFrame.PercentNetwork", UMA_HISTOGRAM_PERCENTAGE,
+          "Bytes.AdFrames.PerFrame.PercentNetwork2", UMA_HISTOGRAM_PERCENTAGE,
           visibility,
           ad_frame_data.network_bytes() * 100 / ad_frame_data.bytes());
       ADS_HISTOGRAM(
-          "Bytes.AdFrames.PerFrame.PercentSameOrigin", UMA_HISTOGRAM_PERCENTAGE,
-          visibility,
+          "Bytes.AdFrames.PerFrame.PercentSameOrigin2",
+          UMA_HISTOGRAM_PERCENTAGE, visibility,
           ad_frame_data.same_origin_bytes() * 100 / ad_frame_data.bytes());
     }
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.OriginStatus",
@@ -882,18 +894,19 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForAdTagging(
   if (aggregate_ad_info.num_frames == 0)
     return;
 
-  ADS_HISTOGRAM("Bytes.NonAdFrames.Aggregate.Total", PAGE_BYTES_HISTOGRAM,
+  ADS_HISTOGRAM("Bytes.NonAdFrames.Aggregate.Total2", PAGE_BYTES_HISTOGRAM,
                 visibility,
                 aggregate_frame_data_->bytes() - aggregate_ad_info.bytes);
 
-  ADS_HISTOGRAM("Bytes.FullPage.Total", PAGE_BYTES_HISTOGRAM, visibility,
+  ADS_HISTOGRAM("Bytes.FullPage.Total2", PAGE_BYTES_HISTOGRAM, visibility,
                 aggregate_frame_data_->bytes());
   ADS_HISTOGRAM("Bytes.FullPage.Network", PAGE_BYTES_HISTOGRAM, visibility,
                 aggregate_frame_data_->network_bytes());
 
   if (aggregate_frame_data_->bytes()) {
     ADS_HISTOGRAM(
-        "Bytes.FullPage.Total.PercentAds", UMA_HISTOGRAM_PERCENTAGE, visibility,
+        "Bytes.FullPage.Total.PercentAds2", UMA_HISTOGRAM_PERCENTAGE,
+        visibility,
         aggregate_ad_info.bytes * 100 / aggregate_frame_data_->bytes());
   }
   if (aggregate_frame_data_->network_bytes()) {
@@ -903,14 +916,14 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForAdTagging(
                       aggregate_frame_data_->network_bytes());
   }
 
-  ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.Total", PAGE_BYTES_HISTOGRAM,
+  ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.Total2", PAGE_BYTES_HISTOGRAM,
                 visibility, aggregate_ad_info.bytes);
   ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.Network", PAGE_BYTES_HISTOGRAM,
                 visibility, aggregate_ad_info.network_bytes);
 
   if (aggregate_ad_info.bytes) {
     ADS_HISTOGRAM(
-        "Bytes.AdFrames.Aggregate.PercentNetwork", UMA_HISTOGRAM_PERCENTAGE,
+        "Bytes.AdFrames.Aggregate.PercentNetwork2", UMA_HISTOGRAM_PERCENTAGE,
         visibility,
         aggregate_ad_info.network_bytes * 100 / aggregate_ad_info.bytes);
   }
@@ -919,21 +932,21 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForAdTagging(
   // as these numbers do not change for different visibility types.
   if (visibility != FrameData::FrameVisibility::kAnyVisibility)
     return;
-  ADS_HISTOGRAM("Bytes.FullPage.SameOrigin", PAGE_BYTES_HISTOGRAM, visibility,
+  ADS_HISTOGRAM("Bytes.FullPage.SameOrigin2", PAGE_BYTES_HISTOGRAM, visibility,
                 aggregate_frame_data_->same_origin_bytes());
   if (aggregate_frame_data_->bytes()) {
-    ADS_HISTOGRAM("Bytes.FullPage.PercentSameOrigin", UMA_HISTOGRAM_PERCENTAGE,
+    ADS_HISTOGRAM("Bytes.FullPage.PercentSameOrigin2", UMA_HISTOGRAM_PERCENTAGE,
                   visibility,
                   aggregate_frame_data_->same_origin_bytes() * 100 /
                       aggregate_frame_data_->bytes());
   }
   ADS_HISTOGRAM("Bytes.MainFrame.Network", PAGE_BYTES_HISTOGRAM, visibility,
                 main_frame_data_->network_bytes());
-  ADS_HISTOGRAM("Bytes.MainFrame.Total", PAGE_BYTES_HISTOGRAM, visibility,
+  ADS_HISTOGRAM("Bytes.MainFrame.Total2", PAGE_BYTES_HISTOGRAM, visibility,
                 main_frame_data_->bytes());
   ADS_HISTOGRAM("Bytes.MainFrame.Ads.Network", PAGE_BYTES_HISTOGRAM, visibility,
                 main_frame_data_->ad_network_bytes());
-  ADS_HISTOGRAM("Bytes.MainFrame.Ads.Total", PAGE_BYTES_HISTOGRAM, visibility,
+  ADS_HISTOGRAM("Bytes.MainFrame.Ads.Total2", PAGE_BYTES_HISTOGRAM, visibility,
                 main_frame_data_->ad_bytes());
 }
 

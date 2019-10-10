@@ -6,8 +6,6 @@
 
 #include "base/no_destructor.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
 
@@ -27,16 +25,6 @@ BulkPrintersCalculatorFactory::GetForAccountId(const AccountId& account_id) {
     return it->second->AsWeakPtr();
   printers_by_user_.emplace(account_id, BulkPrintersCalculator::Create());
   return printers_by_user_[account_id]->AsWeakPtr();
-}
-
-base::WeakPtr<BulkPrintersCalculator>
-BulkPrintersCalculatorFactory::GetForProfile(Profile* profile) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const user_manager::User* user =
-      ProfileHelper::Get()->GetUserByProfile(profile);
-  if (!user)
-    return nullptr;
-  return GetForAccountId(user->GetAccountId());
 }
 
 void BulkPrintersCalculatorFactory::RemoveForUserId(

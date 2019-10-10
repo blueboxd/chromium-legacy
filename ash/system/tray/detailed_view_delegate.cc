@@ -22,7 +22,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -77,10 +76,6 @@ class BackButton : public CustomShapeButton {
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_PREVIOUS_MENU));
     SetBorder(views::CreateEmptyBorder(
         gfx::Insets((kTrayItemSize - image.width()) / 2)));
-
-    auto path = std::make_unique<SkPath>(
-        CreateCustomShapePath(gfx::Rect(CalculatePreferredSize())));
-    SetProperty(views::kHighlightPathKey, path.release());
   }
 
   ~BackButton() override = default;

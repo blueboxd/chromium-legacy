@@ -124,6 +124,13 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
                         chrome_config_string, privacy_filtering_enabled);
   }
 
+  if (chrome_config.IsCategoryGroupEnabled(
+          TRACE_DISABLED_BY_DEFAULT("java_heap_profiler"))) {
+    AddDataSourceConfig(&perfetto_config,
+                        tracing::mojom::kJavaHeapProfilerSourceName,
+                        chrome_config_string, privacy_filtering_enabled);
+  }
+
   return perfetto_config;
 }
 

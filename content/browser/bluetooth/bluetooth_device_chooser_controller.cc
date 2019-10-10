@@ -235,10 +235,11 @@ BluetoothDeviceChooserController::BluetoothDeviceChooserController(
       discovery_session_timer_(
           FROM_HERE,
           base::TimeDelta::FromSeconds(scan_duration_),
-          base::Bind(&BluetoothDeviceChooserController::StopDeviceDiscovery,
-                     // base::Timer guarantees it won't call back after its
-                     // destructor starts.
-                     base::Unretained(this))) {
+          base::BindRepeating(
+              &BluetoothDeviceChooserController::StopDeviceDiscovery,
+              // base::Timer guarantees it won't call back after its
+              // destructor starts.
+              base::Unretained(this))) {
   CHECK(adapter_);
 }
 
@@ -313,9 +314,9 @@ void BluetoothDeviceChooserController::GetDevice(
     return;
   }
 
-  BluetoothChooser::EventHandler chooser_event_handler =
-      base::Bind(&BluetoothDeviceChooserController::OnBluetoothChooserEvent,
-                 base::Unretained(this));
+  BluetoothChooser::EventHandler chooser_event_handler = base::BindRepeating(
+      &BluetoothDeviceChooserController::OnBluetoothChooserEvent,
+      base::Unretained(this));
 
   if (WebContentsDelegate* delegate = web_contents_->GetDelegate()) {
     chooser_ = delegate->RunBluetoothChooser(render_frame_host_,

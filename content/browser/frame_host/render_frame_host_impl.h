@@ -300,8 +300,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const blink::WebMediaPlayerAction& action) override;
   bool CreateNetworkServiceDefaultFactory(
       network::mojom::URLLoaderFactoryRequest default_factory_request) override;
-  void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
-      base::flat_set<url::Origin> request_initiators,
+  void MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
+      base::flat_set<url::Origin> isolated_world_origins,
       bool push_to_renderer_now) override;
   bool IsSandboxed(blink::WebSandboxFlags flags) override;
   void FlushNetworkAndNavigationInterfacesForTesting() override;
@@ -313,6 +313,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
                                   bool animate) override;
+  void Reload() override;
 
   void SendAccessibilityEventsToManager(
       const AXEventNotificationDetails& details);
@@ -1178,6 +1179,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // NavigationEntry this RenderFrameHostImpl committed.
   BackForwardCacheMetrics* GetBackForwardCacheMetrics();
 
+  const std::string& GetEncoding() const { return canonical_encoding_; }
+
   base::WeakPtr<RenderFrameHostImpl> GetWeakPtr();
 
  protected:
@@ -1812,11 +1815,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<base::trace_event::TracedValue> CommitAsTracedValue(
       FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params) const;
 
-  // Creates initiator-specific URLLoaderFactory objects for
-  // |initiator_origins|.
+  // Creates URLLoaderFactory objects for |isolated_world_origins|.
   blink::URLLoaderFactoryBundleInfo::OriginMap
-  CreateInitiatorSpecificURLLoaderFactories(
-      const base::flat_set<url::Origin>& initiator_origins);
+  CreateURLLoaderFactoriesForIsolatedWorlds(
+      const base::flat_set<url::Origin>& isolated_world_origins);
 
   // Based on the termination |status| and |exit_code|, may generate a crash
   // report to be routed to the Reporting API.
@@ -2366,14 +2368,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Whether UpdateSubresourceLoaderFactories should recreate the default
   // URLLoaderFactory when handling a NetworkService crash.  In case the frame
-  // is covered by AppCache, only initiator-specific factories need to be
+  // is covered by AppCache, only isolated-world-specific factories need to be
   // refreshed, but the main, AppCache-specific factory shouldn't be refreshed.
   bool recreate_default_url_loader_factory_after_network_service_crash_ = false;
 
-  // Set of request-initiator-origins that require a separate URLLoaderFactory
+  // Set of isolated world origins that require a separate URLLoaderFactory
   // (e.g. for handling requests initiated by extension content scripts that
   // require relaxed CORS/CORB rules).
-  base::flat_set<url::Origin> initiators_requiring_separate_url_loader_factory_;
+  base::flat_set<url::Origin>
+      isolated_worlds_requiring_separate_url_loader_factory_;
 
   // Holds the renderer generated ID and global request ID for the main frame
   // request.
@@ -2425,6 +2428,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // in the navigation commit. Setting the value should be based only on
   // browser side state as this value is used in security checks.
   bool is_mhtml_document_ = false;
+
+  // The last reported character encoding, not canonicalized.
+  std::string last_reported_encoding_;
+
+  // The canonicalized character encoding.
+  std::string canonical_encoding_;
 
   // Used to intercept DidCommit* calls in tests.
   CommitCallbackInterceptor* commit_callback_interceptor_;

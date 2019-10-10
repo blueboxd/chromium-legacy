@@ -908,3 +908,54 @@ TEST_F(AvailabilityProberTest, Repeating) {
   EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
   EXPECT_FALSE(prober->is_active());
 }
+
+TEST_F(AvailabilityProberTest, ReportExternalFailure_WhileIdle) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<AvailabilityProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+  EXPECT_FALSE(prober->is_active());
+
+  prober->ReportExternalFailureAndRetry();
+  EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
+  EXPECT_TRUE(prober->is_active());
+
+  VerifyRequest();
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  histogram_tester.ExpectBucketCount("Availability.Prober.DidSucceed.Litepages",
+                                     true, 1);
+  histogram_tester.ExpectBucketCount("Availability.Prober.DidSucceed.Litepages",
+                                     false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.DidSucceed.AfterReportedFailure.Litepages", true, 1);
+}
+
+TEST_F(AvailabilityProberTest, ReportExternalFailure_WhileActive) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<AvailabilityProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+  EXPECT_FALSE(prober->is_active());
+
+  prober->SendNowIfInactive(false);
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+  EXPECT_TRUE(prober->is_active());
+  VerifyRequest();
+
+  prober->ReportExternalFailureAndRetry();
+  EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
+  EXPECT_TRUE(prober->is_active());
+  VerifyRequest();
+
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  histogram_tester.ExpectBucketCount("Availability.Prober.DidSucceed.Litepages",
+                                     true, 1);
+  histogram_tester.ExpectBucketCount("Availability.Prober.DidSucceed.Litepages",
+                                     false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.DidSucceed.AfterReportedFailure.Litepages", true, 1);
+}

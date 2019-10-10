@@ -126,7 +126,7 @@ void ShelfConfig::OnOverviewModeStartingAnimationComplete(bool canceled) {
   OnShelfConfigUpdated();
 }
 
-void ShelfConfig::OnOverviewModeEnded() {
+void ShelfConfig::OnOverviewModeEndingAnimationComplete(bool canceled) {
   OnShelfConfigUpdated();
 }
 
@@ -212,6 +212,7 @@ bool ShelfConfig::is_in_app() const {
   if (!overview || !session)
     return false;
   return !overview->InOverviewSession() &&
+         !overview->IsCompletingShutdownAnimations() &&
          session->GetSessionState() == session_manager::SessionState::ACTIVE &&
          !is_app_list_visible_;
 }

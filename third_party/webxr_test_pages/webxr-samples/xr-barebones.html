@@ -63,13 +63,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // button. If the supportsSession request is rejected, then
         // disable the button because it means that the desired session mode is
         // not supported.
-        navigator.xr.supportsSession('immersive-vr').then(() => {
+        navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
           // Updates the button to start an XR session when clicked.
-          xrButton.innerHTML = 'Enter XR';
-          xrButton.disabled = false;
-        }, () => {
-          xrButton.innerHTML = 'XR not found';
-          xrButton.disabled = true;
+
+          if (supported) {
+            xrButton.innerHTML = 'Enter XR';
+          } else {
+            xrButton.innerHTML = 'XR not found';
+          }
+
+          xrButton.disabled = supported;
         });
       }
 

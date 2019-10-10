@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/sequence_checker.h"
 #include "media/base/decryptor.h"
 #include "media/fuchsia/common/stream_processor_helper.h"
 #include "media/fuchsia/common/sysmem_buffer_pool.h"
@@ -38,6 +39,8 @@ class FuchsiaStreamDecryptorBase : public StreamProcessorHelper::Client {
   BufferAllocator allocator_;
 
   SysmemBufferWriterQueue input_writer_queue_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
  private:
   void OnInputBufferPoolCreated(std::unique_ptr<SysmemBufferPool> pool);

@@ -15,9 +15,6 @@ const base::Feature kCapRefererHeaderLength = {
 const base::FeatureParam<int> kMaxRefererHeaderLength = {
     &kCapRefererHeaderLength, "MaxRefererHeaderLength", 4096};
 
-const base::Feature kEnforceTLS13Downgrade{"EnforceTLS13Downgrade",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kEnableTLS13EarlyData{"EnableTLS13EarlyData",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 

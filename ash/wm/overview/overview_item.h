@@ -108,6 +108,10 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // window cannot be snapped.
   void UpdateCannotSnapWarningVisibility();
 
+  // Hides the cannot snap warning (if it was showing) until the next call to
+  // |UpdateCannotSnapWarningVisibility|.
+  void HideCannotSnapWarning();
+
   // Called when a OverviewItem on any grid is dragged. Hides the close button
   // when a drag is started, and reshows it when a drag is finished.
   // Additionally hides the title and window icon if |item| is this.

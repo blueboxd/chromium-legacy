@@ -27,7 +27,6 @@
 #include "base/time/time.h"
 #include "extensions/renderer/extension_throttle_entry.h"
 #include "extensions/renderer/extension_throttle_test_support.h"
-#include "net/base/load_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -405,7 +404,7 @@ class Requester : public DiscreteTimeSimulation::Actor {
 
     if (throttler_entry_->ImplGetTimeNow() - time_of_last_attempt_ >
         effective_delay) {
-      if (!throttler_entry_->ShouldRejectRequest(net::LOAD_NORMAL)) {
+      if (!throttler_entry_->ShouldRejectRequest()) {
         int status_code = server_->HandleRequest();
         throttler_entry_->UpdateWithResponse(status_code);
 

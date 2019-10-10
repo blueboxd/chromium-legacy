@@ -18,7 +18,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
 
 using content::BrowserThread;
@@ -42,7 +41,7 @@ bool IsWhiteListedVendorId(uint16_t vendor_id) {
 
 }  // namespace
 
-OobeDisplayChooser::OobeDisplayChooser() : scoped_observer_(this) {
+OobeDisplayChooser::OobeDisplayChooser() {
   // |connector| may be null in tests.
   auto* connector = content::GetSystemConnector();
   if (connector) {

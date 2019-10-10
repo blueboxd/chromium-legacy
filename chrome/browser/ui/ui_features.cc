@@ -15,10 +15,10 @@ const base::Feature kAnimatedAvatarButton{"AnimatedAvatarButton",
 // https://crbug.com/967317
 const base::Feature kAnimatedAvatarButtonOnSignIn{
     "AnimatedAvatarButtonOnSignIn", base::FEATURE_ENABLED_BY_DEFAULT};
-// Enables an animated avatar button on the open-profile/startup trigger. This
+// Enables an animated avatar button on the open-window/startup trigger. This
 // feature is guarded by kAnimatedAvatarButton and serves as a kill-switch. See
 // https://crbug.com/967317
-const base::Feature kAnimatedAvatarButtonOnOpeningProfile{
+const base::Feature kAnimatedAvatarButtonOnOpeningWindow{
     "AnimatedAvatarButtonOnOpeningProfile", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables showing the EV certificate details in the Page Info bubble.
@@ -77,7 +77,7 @@ const base::Feature kTabOutlinesInLowContrastThemes{
 // Enables a more prominent active tab title in dark mode to aid with
 // accessibility.
 const base::Feature kProminentDarkModeActiveTabTitle{
-    "ProminentDarkModeActiveTabTitle", base::FEATURE_ENABLED_BY_DEFAULT};
+    "ProminentDarkModeActiveTabTitle", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables a web-based separator that's only used for performance testing. See
 // https://crbug.com/993502.

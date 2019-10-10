@@ -32,8 +32,29 @@
 #include "third_party/blink/renderer/platform/image-decoders/webp/webp_image_decoder.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace blink {
+
+namespace {
+
+cc::ImageType FileExtensionToImageType(String image_extension) {
+  if (image_extension == "png")
+    return cc::ImageType::kPNG;
+  if (image_extension == "jpg")
+    return cc::ImageType::kJPEG;
+  if (image_extension == "webp")
+    return cc::ImageType::kWEBP;
+  if (image_extension == "gif")
+    return cc::ImageType::kGIF;
+  if (image_extension == "ico")
+    return cc::ImageType::kICO;
+  if (image_extension == "bmp")
+    return cc::ImageType::kBMP;
+  return cc::ImageType::kInvalid;
+}
+
+}  // namespace
 
 const size_t ImageDecoder::kNoDecodedImageByteLimit;
 
@@ -230,6 +251,17 @@ ImageDecoder::CompressionFormat ImageDecoder::GetCompressionFormat(
     return kLosslessFormat;
 
   return kUndefinedFormat;
+}
+
+cc::ImageHeaderMetadata ImageDecoder::MakeMetadataForDecodeAcceleration()
+    const {
+  DCHECK(IsDecodedSizeAvailable());
+  cc::ImageHeaderMetadata image_metadata{};
+  image_metadata.image_type = FileExtensionToImageType(FilenameExtension());
+  image_metadata.yuv_subsampling = GetYUVSubsampling();
+  image_metadata.image_size = static_cast<gfx::Size>(size_);
+  image_metadata.has_embedded_color_profile = HasEmbeddedColorProfile();
+  return image_metadata;
 }
 
 size_t ImageDecoder::FrameCount() {

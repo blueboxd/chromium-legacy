@@ -130,7 +130,7 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
                 icon = mIconGenerator.generateIconForUrl(url);
                 return new BitmapDrawable(getResources(), icon);
             } else {
-                return FaviconUtils.createRoundedBitmapDrawable(
+                return FaviconUtils.createRoundedBitmapDrawable(getResources(),
                         Bitmap.createScaledBitmap(icon, mFaviconSize, mFaviconSize, false));
             }
         }

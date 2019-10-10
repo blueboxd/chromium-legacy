@@ -74,12 +74,12 @@ class CC_EXPORT ImageDecodeCache {
   }
 
   static devtools_instrumentation::ScopedImageDecodeTask::ImageType
-  ToScopedImageType(PaintImage::ImageType image_type) {
+  ToScopedImageType(ImageType image_type) {
     using ScopedImageType =
         devtools_instrumentation::ScopedImageDecodeTask::ImageType;
-    if (image_type == PaintImage::ImageType::kWEBP)
+    if (image_type == ImageType::kWEBP)
       return ScopedImageType::kWebP;
-    if (image_type == PaintImage::ImageType::kJPEG)
+    if (image_type == ImageType::kJPEG)
       return ScopedImageType::kJpeg;
     return ScopedImageType::kOther;
   }

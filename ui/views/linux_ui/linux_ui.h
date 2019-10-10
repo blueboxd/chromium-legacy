@@ -119,11 +119,6 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // object by default.
   virtual bool GetDefaultUsesSystemTheme() const = 0;
 
-  // Sets visual properties in the desktop environment related to download
-  // progress, if available.
-  virtual void SetDownloadCount(int count) const = 0;
-  virtual void SetProgressFraction(float percentage) const = 0;
-
   // Returns the icon for a given content type from the icon theme.
   // TODO(davidben): Add an observer for the theme changing, so we can drop the
   // caches.

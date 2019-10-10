@@ -106,74 +106,13 @@ for a description of binary size tools.**
 
 ## Step 2: Analyze
 
-### Growth is from Translations
-
- * There is likely nothing that can be done. Translations are expensive.
- * Close as `Won't Fix`.
-
-### Growth is from Native Resources (pak files)
-
- * Ensure `compress="gzip"` or `compress="brotli"` is used for all
-   highly-compressible (e.g. text) resources.
-   * Brotli compresses more but is much slower to decompress. Use brotli only
-     when performance doesn't matter much (e.g. internals pages).
- * Look at the SuperSize reports from the trybot to look for unexpected
-   resources, or unreasonably large symbols.
-
-### Growth is from Images
-
- * Would [a VectorDrawable](https://codereview.chromium.org/2857893003/) be better?
-   * If so, try optimizing it with [avocado](https://bugs.chromium.org/p/chromium/issues/detail?id=982302).
- * Would **lossy** compression make sense (often true for large images)?
-   * Then [use lossy webp](https://codereview.chromium.org/2615243002/).
-   * And omit some densities (e.g. add only an xxhdpi version).
- * Would **near-lossless** compression make sense (try it and see)?
-   * [Use pngquant](https://pngquant.org) to reduce the color depth without a
-     perceptual difference (use one of the GUI tools to compare before/afters).
- * Are the **lossless** images fully optimized?
-   * Use [tools/resources/optimize-png-files.sh](https://cs.chromium.org/chromium/src/tools/resources/optimize-png-files.sh).
-   * There is some [Googler-specific guidance](https://goto.google.com/clank/engineering/best-practices/adding-image-assets) as well.
-
-#### What Build-Time Image Optimizations are There?
- * For non-ninepatch images, `drawable-xxxhdpi` are omitted (they are not
-   perceptibly different from xxhdpi in most cases).
- * For non-ninepatch images within res/ directories (not for .pak file images),
-   they are converted to webp.
-   * Use the `android-binary-size` trybot to see the size of the images as webp,
-     or just build `ChromePublic.apk` and use `unzip -l` to see the size of the
-     images within the built apk.
-
-### Growth is from Native Code
-
- * Look at the SuperSize reports from the trybot to look for unexpected symbols,
-   or unreasonably large symbols.
- * If the diff looks reasonable, close as `Won't Fix`.
- * Otherwise, try to refactor a bit (e.g.
- [move code out of templates](https://bugs.chromium.org/p/chromium/issues/detail?id=716393)).
-   * Use [//tools/binary_size/diagnose_bloat.py](https://chromium.googlesource.com/chromium/src/+/master/tools/binary_size/README.md)
-     or the android-binary-size trybot to spot-check your local changes.
- * If symbols are larger than expected, use the `Disassemble()` feature of
-   `supersize console` to see what is going on.
-
-### Growth is from Java Code
-
- * Look at the SuperSize reports from the trybot to look for unexpected methods.
- * Ensure any new Java deps are as specific as possible.
-
-### Growth is from "other lib size" or "Unknown files size"
-
- * File a bug under [Tools > BinarySize](https://bugs.chromium.org/p/chromium/issues/list?q=component%3ATools%3EBinarySize)
-   with a link to your commit.
-
-### You Would Like Assistance
-
- * Feel free to email [binary-size@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/binary-size).
+See [optimization advice](//docs/speed/binary_size/optimization_advice.md).
 
 ## Step 3: Give Up :/
 
 If you have spent O(days) trying to reduce the size overhead of your patch and
-are pretty sure that your implementation is efficient, then add a comment to the
-bug with the following:
+are pretty sure that your implementation is optimal(ish), then add a comment to
+the bug with the following:
 
 1) A description of where the size is coming from (show that you spent the time
    to understand why your code translated to a large binary size).

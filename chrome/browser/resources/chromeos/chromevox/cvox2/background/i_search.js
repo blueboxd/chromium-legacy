@@ -40,8 +40,11 @@ ISearchHandler.prototype = {
   /**
    * Called when search result node changes.
    * @param {!AutomationNode} node The new search result.
+   * @param {number} start The index into the name where the search match
+   *     starts.
+   * @param {number} end The index into the name where the search match ends.
    */
-  onSearchResultChanged: function(node) {}
+  onSearchResultChanged: function(node, start, end) {}
 };
 
 /**
@@ -60,6 +63,9 @@ ISearch = function(cursor) {
   /** @type {!cursors.Cursor} */
   this.cursor = cursors.Cursor.fromNode(leaf);
 
+  /** @private {number} */
+  this.callbackId_ = 0;
+
   // Global exports.
   /** Exported for this background script. */
   cvox.ChromeVox = chrome.extension.getBackgroundPage()['cvox']['ChromeVox'];
@@ -77,40 +83,41 @@ ISearch.prototype = {
    * Performs a search.
    * @param {string} searchStr
    * @param {Dir} dir
+   * @param {boolean=} opt_nextObject
    */
-  search: function(searchStr, dir) {
-    searchStr = searchStr.toLocaleLowerCase();
-    var node = this.cursor.node;
-    var result = node;
-    var prev = node;
-    do {
-      // Because Closure cannot infer much about prev.
-      if (!prev)
-        break;
+  search: function(searchStr, dir, opt_nextObject) {
+    clearTimeout(this.callbackId_);
+    var step = function() {
+      searchStr = searchStr.toLocaleLowerCase();
+      var node = this.cursor.node;
+      var result = node;
 
-      // We want to start/continue the search at the next object.
-      result =
-          AutomationUtil.findNextNode(prev, dir, AutomationPredicate.object);
-
-      if (!result)
-        break;
-
-      // Ask native to search the underlying data for a performance boost.
-      prev = result;
-      result = result.getNextTextMatch(searchStr, dir == Dir.BACKWARD);
-      prev = result || prev;
-
-      // Check to ensure we have an object-like node; otherwise, continue.
-      if (result && !AutomationPredicate.object(result))
-        continue;
-    } while (!result);
-
-    if (result) {
-      this.cursor = cursors.Cursor.fromNode(result);
-      this.handler_.onSearchResultChanged(result);
-    } else {
-      this.handler_.onSearchReachedBoundary(this.cursor.node);
+      if (opt_nextObject) {
+        // We want to start/continue the search at the next object.
+        result =
+            AutomationUtil.findNextNode(node, dir, AutomationPredicate.object);
       }
+
+      do {
+        // Ask native to search the underlying data for a performance boost.
+        result = result.getNextTextMatch(searchStr, dir == Dir.BACKWARD);
+      } while (result && !AutomationPredicate.object(result));
+
+      if (result) {
+        this.cursor = cursors.Cursor.fromNode(result);
+        var start = result.name.toLocaleLowerCase().indexOf(searchStr);
+        var end = start + searchStr.length;
+        this.handler_.onSearchResultChanged(result, start, end);
+      } else {
+        this.handler_.onSearchReachedBoundary(this.cursor.node);
+      }
+    };
+
+    this.callbackId_ = setTimeout(step.bind(this), 0);
+  },
+
+  clear: function() {
+    clearTimeout(this.callbackId_);
   }
 };
 
@@ -183,7 +190,7 @@ ISearchUI.prototype = {
       default:
         return false;
     }
-    this.iSearch_.search(this.input_.value, this.dir_);
+    this.iSearch_.search(this.input_.value, this.dir_, true);
     evt.preventDefault();
     evt.stopPropagation();
     return false;
@@ -196,6 +203,7 @@ ISearchUI.prototype = {
    */
   onTextInput: function(evt) {
     var searchStr = evt.target.value + evt.data;
+    this.iSearch_.clear();
     this.iSearch_.search(searchStr, this.dir_);
     return true;
   },
@@ -211,21 +219,31 @@ ISearchUI.prototype = {
   /**
    * @override
    */
-  onSearchResultChanged: function(node) {
-    this.output_(node);
+  onSearchResultChanged: function(node, start, end) {
+    this.output_(node, start, end);
   },
 
   /**
    * @param {!AutomationNode} node
+   * @param {number=} opt_start
+   * @param {number=} opt_end
    * @private
    */
-  output_: function(node) {
+  output_: function(node, opt_start, opt_end) {
     Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
-    var o =
-        new Output()
-            .withRichSpeechAndBraille(
-                cursors.Range.fromNode(node), null, Output.EventType.NAVIGATE)
-            .go();
+    var o = new Output();
+    if (opt_start && opt_end) {
+      o.withString([
+        node.name.substr(0, opt_start),
+        node.name.substr(opt_start, opt_end - opt_start),
+        node.name.substr(opt_end)
+      ].join(', '));
+      o.format('$role', node);
+    } else {
+      o.withRichSpeechAndBraille(
+          cursors.Range.fromNode(node), null, Output.EventType.NAVIGATE);
+    }
+    o.go();
 
     this.background_.setCurrentRange(cursors.Range.fromNode(node));
   },

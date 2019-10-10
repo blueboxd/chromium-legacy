@@ -781,12 +781,8 @@ void DesktopNativeWidgetAura::SetShape(
 }
 
 void DesktopNativeWidgetAura::Close() {
-  if (!content_window_)
-    return;
-
-  content_window_->SuppressPaint();
-
-  desktop_window_tree_host_->Close();
+  if (content_window_)
+    desktop_window_tree_host_->Close();
 }
 
 void DesktopNativeWidgetAura::CloseNow() {

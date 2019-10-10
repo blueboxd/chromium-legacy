@@ -17,16 +17,11 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_observer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 
 class Profile;
-
-namespace file_manager {
-namespace file_tasks {
-class FileTasksNotifier;
-}
-}  // namespace file_manager
 
 namespace app_list {
 namespace internal {
@@ -69,12 +64,12 @@ class ZeroStateFileProvider : public SearchProvider,
 
   ScopedObserver<file_manager::file_tasks::FileTasksNotifier,
                  file_manager::file_tasks::FileTasksObserver>
-      file_tasks_observer_;
+      file_tasks_observer_{this};
 
   SEQUENCE_CHECKER(sequence_checker_);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::WeakPtrFactory<ZeroStateFileProvider> weak_factory_;
+  base::WeakPtrFactory<ZeroStateFileProvider> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ZeroStateFileProvider);
 };

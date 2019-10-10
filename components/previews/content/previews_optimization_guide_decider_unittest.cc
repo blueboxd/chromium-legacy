@@ -29,12 +29,18 @@ class TestOptimizationGuideDecider
   TestOptimizationGuideDecider() = default;
   ~TestOptimizationGuideDecider() override = default;
 
-  void RegisterOptimizationTypes(
-      std::vector<optimization_guide::proto::OptimizationType>
-          optimization_types) override {
+  void RegisterOptimizationTypesAndTargets(
+      const std::vector<optimization_guide::proto::OptimizationType>&
+          optimization_types,
+      const std::vector<optimization_guide::proto::OptimizationTarget>&
+          optimization_targets) override {
     registered_optimization_types_ =
         base::flat_set<optimization_guide::proto::OptimizationType>(
             optimization_types.begin(), optimization_types.end());
+
+    registered_optimization_targets_ =
+        base::flat_set<optimization_guide::proto::OptimizationTarget>(
+            optimization_targets.begin(), optimization_targets.end());
   }
 
   // Returns the optimization types registered with the Optimization Guide
@@ -42,6 +48,13 @@ class TestOptimizationGuideDecider
   base::flat_set<optimization_guide::proto::OptimizationType>
   registered_optimization_types() {
     return registered_optimization_types_;
+  }
+
+  // Returns the optimization targets registered with the Optimization Guide
+  // Decider.
+  base::flat_set<optimization_guide::proto::OptimizationTarget>
+  registered_optimization_targets() {
+    return registered_optimization_targets_;
   }
 
   optimization_guide::OptimizationGuideDecision CanApplyOptimization(
@@ -80,6 +93,11 @@ class TestOptimizationGuideDecider
   // Decider.
   base::flat_set<optimization_guide::proto::OptimizationType>
       registered_optimization_types_;
+
+  // The optimization targets that were registered with the Optimization Guide
+  // Decider.
+  base::flat_set<optimization_guide::proto::OptimizationTarget>
+      registered_optimization_targets_;
 
   std::map<std::tuple<GURL, optimization_guide::proto::OptimizationType>,
            std::tuple<optimization_guide::OptimizationGuideDecision,
@@ -158,7 +176,7 @@ class PreviewsOptimizationGuideDeciderTest : public testing::Test {
 };
 
 TEST_F(PreviewsOptimizationGuideDeciderTest,
-       InitializationRegistersCorrectOptimizationTypes) {
+       InitializationRegistersCorrectOptimizationTypesAndTargets) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {previews::features::kLitePageServerPreviews,
@@ -187,6 +205,17 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
   EXPECT_TRUE(registered_optimization_types.find(
                   optimization_guide::proto::RESOURCE_LOADING) !=
               registered_optimization_types.end());
+
+  // We expect that the PAINFUL_PAGE_LOAD optimization target is always
+  // registered.
+  base::flat_set<optimization_guide::proto::OptimizationTarget>
+      registered_optimization_targets =
+          optimization_guide_decider()->registered_optimization_targets();
+  EXPECT_EQ(1u, registered_optimization_targets.size());
+  EXPECT_TRUE(
+      registered_optimization_targets.find(
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD) !=
+      registered_optimization_targets.end());
 }
 
 TEST_F(PreviewsOptimizationGuideDeciderTest,
@@ -218,6 +247,17 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
   EXPECT_EQ(registered_optimization_types.find(
                 optimization_guide::proto::RESOURCE_LOADING),
             registered_optimization_types.end());
+
+  // We expect that the PAINFUL_PAGE_LOAD optimization target is always
+  // registered.
+  base::flat_set<optimization_guide::proto::OptimizationTarget>
+      registered_optimization_targets =
+          optimization_guide_decider()->registered_optimization_targets();
+  EXPECT_EQ(1u, registered_optimization_targets.size());
+  EXPECT_TRUE(
+      registered_optimization_targets.find(
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD) !=
+      registered_optimization_targets.end());
 }
 
 TEST_F(PreviewsOptimizationGuideDeciderTest,

@@ -35,7 +35,7 @@ void OmniboxController::StartAutocomplete(
 
   if (client_->GetOmniboxControllerEmitter()) {
     client_->GetOmniboxControllerEmitter()->NotifyOmniboxQuery(
-        autocomplete_controller_.get(), input.text());
+        autocomplete_controller_.get(), input);
   }
 
   // We don't explicitly clear OmniboxPopupModel::manually_selected_match, as

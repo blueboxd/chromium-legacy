@@ -99,11 +99,10 @@ bool MimeHandlerViewContainerManager::CreateFrameContainer(
       // This should translate into a same document navigation.
       return true;
     }
-    // Make sure we're not eligible to self-delete.
-    DCHECK(!internal_id_.empty());
     // If there is already a MHVFC for this |plugin_element|, destroy it.
     RemoveFrameContainerForReason(old_frame_container,
-                                  UMAType::kRemoveFrameContainerUpdatePlugin);
+                                  UMAType::kRemoveFrameContainerUpdatePlugin,
+                                  true /* retain_manager */);
   }
   RecordInteraction(UMAType::kCreateFrameContainer);
   auto frame_container = std::make_unique<MimeHandlerViewFrameContainer>(
@@ -186,7 +185,7 @@ void MimeHandlerViewContainerManager::CreateBeforeUnloadControl(
 void MimeHandlerViewContainerManager::DestroyFrameContainer(
     int32_t element_instance_id) {
   if (auto* frame_container = GetFrameContainer(element_instance_id))
-    RemoveFrameContainer(frame_container);
+    RemoveFrameContainer(frame_container, false /* retain manager */);
 }
 
 void MimeHandlerViewContainerManager::DidLoad(int32_t element_instance_id,
@@ -255,14 +254,16 @@ MimeHandlerViewContainerManager::GetFrameContainer(
 
 void MimeHandlerViewContainerManager::RemoveFrameContainerForReason(
     MimeHandlerViewFrameContainer* frame_container,
-    MimeHandlerViewUMATypes::Type event) {
-  if (!RemoveFrameContainer(frame_container))
+    MimeHandlerViewUMATypes::Type event,
+    bool retain_manager) {
+  if (!RemoveFrameContainer(frame_container, retain_manager))
     return;
   RecordInteraction(event);
 }
 
 bool MimeHandlerViewContainerManager::RemoveFrameContainer(
-    MimeHandlerViewFrameContainer* frame_container) {
+    MimeHandlerViewFrameContainer* frame_container,
+    bool retain_manager) {
   auto it = std::find_if(frame_containers_.cbegin(), frame_containers_.cend(),
                          [&frame_container](const auto& iter) {
                            return iter.get() == frame_container;
@@ -271,7 +272,7 @@ bool MimeHandlerViewContainerManager::RemoveFrameContainer(
     return false;
   frame_containers_.erase(it);
 
-  if (!frame_containers_.size() && internal_id_.empty()) {
+  if (!frame_containers_.size() && internal_id_.empty() && !retain_manager) {
     // There are no frame containers left, and we're not serving a full-page
     // MimeHandlerView, so we remove ourselves from the map.
     auto& map = *GetRenderFrameMap();

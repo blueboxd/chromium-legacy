@@ -7,6 +7,8 @@
 
 #include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #include "components/remote_cocoa/common/color_panel.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace remote_cocoa {
 
@@ -15,7 +17,7 @@ namespace remote_cocoa {
 class REMOTE_COCOA_APP_SHIM_EXPORT ColorPanelBridge
     : public remote_cocoa::mojom::ColorPanel {
  public:
-  ColorPanelBridge(mojom::ColorPanelHostPtr host);
+  ColorPanelBridge(mojo::PendingRemote<mojom::ColorPanelHost> host);
   ~ColorPanelBridge() override;
   mojom::ColorPanelHost* host() { return host_.get(); }
 
@@ -24,7 +26,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ColorPanelBridge
   void SetSelectedColor(uint32_t color) override;
 
  private:
-  mojom::ColorPanelHostPtr host_;
+  mojo::Remote<mojom::ColorPanelHost> host_;
 };
 
 }  // namespace remote_cocoa

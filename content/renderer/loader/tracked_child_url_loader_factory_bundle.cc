@@ -20,7 +20,7 @@ TrackedChildURLLoaderFactoryBundleInfo::TrackedChildURLLoaderFactoryBundleInfo(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         pending_appcache_factory,
     SchemeMap pending_scheme_specific_factories,
-    OriginMap pending_initiator_specific_factories,
+    OriginMap pending_isolated_world_factories,
     network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         pending_prefetch_loader_factory,
@@ -30,7 +30,7 @@ TrackedChildURLLoaderFactoryBundleInfo::TrackedChildURLLoaderFactoryBundleInfo(
           std::move(pending_default_factory),
           std::move(pending_appcache_factory),
           std::move(pending_scheme_specific_factories),
-          std::move(pending_initiator_specific_factories),
+          std::move(pending_isolated_world_factories),
           std::move(direct_network_factory_info),
           std::move(pending_prefetch_loader_factory),
           bypass_redirect_checks),
@@ -46,8 +46,8 @@ TrackedChildURLLoaderFactoryBundleInfo::CreateFactory() {
   other->pending_appcache_factory_ = std::move(pending_appcache_factory_);
   other->pending_scheme_specific_factories_ =
       std::move(pending_scheme_specific_factories_);
-  other->pending_initiator_specific_factories_ =
-      std::move(pending_initiator_specific_factories_);
+  other->pending_isolated_world_factories_ =
+      std::move(pending_isolated_world_factories_);
   other->direct_network_factory_info_ = std::move(direct_network_factory_info_);
   other->pending_prefetch_loader_factory_ =
       std::move(pending_prefetch_loader_factory_);
@@ -88,7 +88,7 @@ TrackedChildURLLoaderFactoryBundle::Clone() {
       std::move(pending_factories->pending_default_factory()),
       std::move(pending_factories->pending_appcache_factory()),
       std::move(pending_factories->pending_scheme_specific_factories()),
-      std::move(pending_factories->pending_initiator_specific_factories()),
+      std::move(pending_factories->pending_isolated_world_factories()),
       std::move(pending_factories->direct_network_factory_info()),
       std::move(pending_factories->pending_prefetch_loader_factory()),
       std::move(main_thread_host_bundle_clone),
@@ -154,7 +154,7 @@ HostChildURLLoaderFactoryBundle::Clone() {
       std::move(pending_factories->pending_default_factory()),
       std::move(pending_factories->pending_appcache_factory()),
       std::move(pending_factories->pending_scheme_specific_factories()),
-      std::move(pending_factories->pending_initiator_specific_factories()),
+      std::move(pending_factories->pending_isolated_world_factories()),
       std::move(pending_factories->direct_network_factory_info()),
       std::move(pending_factories->pending_prefetch_loader_factory()),
       std::move(main_thread_host_bundle_clone),
@@ -177,7 +177,7 @@ HostChildURLLoaderFactoryBundle::CloneWithoutAppCacheFactory() {
       std::move(pending_factories->pending_default_factory()),
       std::move(pending_factories->pending_appcache_factory()),
       std::move(pending_factories->pending_scheme_specific_factories()),
-      std::move(pending_factories->pending_initiator_specific_factories()),
+      std::move(pending_factories->pending_isolated_world_factories()),
       std::move(pending_factories->direct_network_factory_info()),
       std::move(pending_factories->pending_prefetch_loader_factory()),
       std::move(main_thread_host_bundle_clone),

@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_store.h"
 
 namespace base {
@@ -149,6 +150,36 @@ class GetAllCookiesCallback : public CookieCallback {
 
  private:
   CookieList cookies_;
+};
+
+class GetAllCookiesWithAccessSemanticsCallback : public CookieCallback {
+ public:
+  GetAllCookiesWithAccessSemanticsCallback();
+  explicit GetAllCookiesWithAccessSemanticsCallback(
+      base::Thread* run_in_thread);
+
+  ~GetAllCookiesWithAccessSemanticsCallback();
+
+  void Run(const CookieList& cookies,
+           const std::vector<CookieAccessSemantics>& access_semantics_list);
+
+  // Makes a callback that will invoke Run. Assumes that |this| will be kept
+  // alive till the time the callback is used.
+  base::OnceCallback<void(const CookieList&,
+                          const std::vector<CookieAccessSemantics>&)>
+  MakeCallback() {
+    return base::BindOnce(&GetAllCookiesWithAccessSemanticsCallback::Run,
+                          base::Unretained(this));
+  }
+
+  const CookieList& cookies() { return cookies_; }
+  const std::vector<CookieAccessSemantics>& access_semantics_list() {
+    return access_semantics_list_;
+  }
+
+ private:
+  CookieList cookies_;
+  std::vector<CookieAccessSemantics> access_semantics_list_;
 };
 
 }  // namespace net

@@ -1556,8 +1556,10 @@ PasswordForm CreateSampleFormWithIndex(int index) {
     [[EarlGrey
         selectElementWithMatcher:grey_allOf(
                                      ButtonWithAccessibilityLabel(dismissLabel),
-                                     grey_interactable(), nullptr)]
-        performAction:grey_tap()];
+                                     grey_interactable(),
+                                     grey_not(grey_accessibilityTrait(
+                                         UIAccessibilityTraitNotEnabled)),
+                                     nullptr)] performAction:grey_tap()];
   }
 
   // Wait until the activity view is dismissed.

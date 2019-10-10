@@ -564,8 +564,6 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
   }
   ~VideoImageGenerator() override = default;
 
-  bool IsEligibleForAcceleratedDecoding() const override { return false; }
-
   sk_sp<SkData> GetEncodedData() const override { return nullptr; }
 
   bool GetPixels(const SkImageInfo& info,

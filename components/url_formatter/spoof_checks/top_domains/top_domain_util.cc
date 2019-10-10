@@ -17,6 +17,11 @@ const size_t kMinLengthForEditDistance = 5u;
 
 }  // namespace
 
+bool IsEditDistanceCandidate(const std::string& hostname) {
+  return !hostname.empty() &&
+         HostnameWithoutRegistry(hostname).size() >= kMinLengthForEditDistance;
+}
+
 std::string HostnameWithoutRegistry(const std::string& hostname) {
   DCHECK(!hostname.empty());
   const size_t registry_size =
@@ -25,11 +30,6 @@ std::string HostnameWithoutRegistry(const std::string& hostname) {
           net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
   return hostname.substr(0, hostname.size() - registry_size);
-}
-
-bool IsEditDistanceCandidate(const std::string& hostname) {
-  return !hostname.empty() &&
-         HostnameWithoutRegistry(hostname).size() >= kMinLengthForEditDistance;
 }
 
 }  // namespace top_domains

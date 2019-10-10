@@ -5,10 +5,6 @@ include_rules = [
   "+gin",
   "+net/base/backoff_entry.h",
 
-  # For net::LOAD_MAYBE_USER_GESTURE. Will be removed as
-  # per crbug.com/516495
-  "+net/base/load_flags.h",
-
   "+third_party/skia/include/core",
   "+third_party/cld_3",
 

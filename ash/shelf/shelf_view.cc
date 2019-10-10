@@ -26,6 +26,7 @@
 #include "ash/shelf/shelf_context_menu_model.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_focus_cycler.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_menu_model_adapter.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -396,10 +397,7 @@ gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
     return GetMirroredRect(overflow_button_->bounds());
 
   const gfx::Rect& ideal_bounds(view_model_->ideal_bounds(index));
-  views::View* view = view_model_->view_at(index);
-
-  CHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
-  ShelfAppButton* button = static_cast<ShelfAppButton*>(view);
+  ShelfAppButton* button = GetShelfAppButton(id);
   gfx::Rect icon_bounds = button->GetIconBounds();
   return gfx::Rect(GetMirroredXWithWidthInView(
                        ideal_bounds.x() + icon_bounds.x(), icon_bounds.width()),
@@ -447,6 +445,16 @@ bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
 
   return overflow_shelf() &&
          overflow_shelf()->ShouldShowTooltipForChildView(view);
+}
+
+ShelfAppButton* ShelfView::GetShelfAppButton(const ShelfID& id) {
+  const int index = model_->ItemIndexByID(id);
+  if (index < 0)
+    return nullptr;
+
+  views::View* const view = view_model_->view_at(index);
+  DCHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
+  return static_cast<ShelfAppButton*>(view);
 }
 
 bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
@@ -2284,10 +2292,7 @@ void ShelfView::ShelfItemStatusChanged(const ShelfID& id) {
     return;
 
   const ShelfItem item = model_->items()[index];
-  views::View* view = view_model_->view_at(index);
-  CHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
-  // TODO(manucornet): Add a helper to get the button.
-  ShelfAppButton* button = static_cast<ShelfAppButton*>(view);
+  ShelfAppButton* button = GetShelfAppButton(id);
   button->ReflectItemStatus(item);
   button->SchedulePaint();
 }
@@ -2343,6 +2348,7 @@ void ShelfView::AfterItemSelected(const ShelfItem& item,
       ink_drop->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
     }
   }
+  shelf_->shelf_layout_manager()->OnShelfItemSelected(action);
   scoped_root_window_for_new_windows_.reset();
 }
 

@@ -219,16 +219,6 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
   SendNavigateWithParams(&params, was_within_same_document);
 }
 
-void TestRenderFrameHost::SimulateNavigationStop() {
-  if (is_loading()) {
-    OnDidStopLoading();
-  } else {
-    // Even if the RenderFrameHost is not loading, there may still be an
-    // ongoing navigation in the FrameTreeNode. Cancel this one as well.
-    frame_tree_node()->ResetNavigationRequest(false, true);
-  }
-}
-
 void TestRenderFrameHost::SendBeforeUnloadACK(bool proceed) {
   base::TimeTicks now = base::TimeTicks::Now();
   OnBeforeUnloadACK(proceed, now, now);
@@ -241,12 +231,12 @@ void TestRenderFrameHost::SimulateSwapOutACK() {
 // TODO(loonybear): Add a test for non-bool type PolicyValue.
 void TestRenderFrameHost::SimulateFeaturePolicyHeader(
     blink::mojom::FeaturePolicyFeature feature,
-    const std::vector<url::Origin>& whitelist) {
+    const std::vector<url::Origin>& allowlist) {
   blink::ParsedFeaturePolicy header(1);
   header[0].feature = feature;
   header[0].fallback_value = blink::PolicyValue(false);
   header[0].opaque_value = blink::PolicyValue(false);
-  for (const auto& origin : whitelist) {
+  for (const auto& origin : allowlist) {
     header[0].values.insert(std::pair<url::Origin, blink::PolicyValue>(
         origin, blink::PolicyValue(true)));
   }
@@ -701,6 +691,10 @@ mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
 TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver() {
   return mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
       .InitWithNewPipeAndPassReceiver();
+}
+
+void TestRenderFrameHost::SimulateLoadingCompleted() {
+  OnDidStopLoading();
 }
 
 }  // namespace content

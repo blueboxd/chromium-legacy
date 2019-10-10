@@ -1083,6 +1083,12 @@ class SimulatorTestRunner(TestRunner):
     for test_arg in self.test_args:
       cmd.extend(['-c', test_arg])
 
+      # If --run-with-custom-webkit is passed as a test arg, set
+      # DYLD_FRAMEWORK_PATH to point to the embedded custom webkit frameworks.
+      if test_arg == '--run-with-custom-webkit':
+        cmd.extend(['-e', 'DYLD_FRAMEWORK_PATH=' +
+                    os.path.join(self.app_path, 'WebKitFrameworks')])
+
     if self.xctest_path:
       self.sharding_cmd = cmd[:]
       if test_filter:

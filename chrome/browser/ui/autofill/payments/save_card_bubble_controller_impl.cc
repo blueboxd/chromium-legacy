@@ -17,6 +17,7 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
 #include "chrome/browser/ui/autofill/payments/payments_ui_constants.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_view.h"
 #include "chrome/browser/ui/autofill/payments/save_card_ui.h"
@@ -761,8 +762,9 @@ void SaveCardBubbleControllerImpl::ShowBubble() {
   UpdateSaveCardIcon();
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  save_card_bubble_view_ = browser->window()->ShowSaveCreditCardBubble(
-      web_contents(), this, is_reshow_);
+  save_card_bubble_view_ =
+      browser->window()->GetAutofillBubbleHandler()->ShowSaveCreditCardBubble(
+          web_contents(), this, is_reshow_);
   DCHECK(save_card_bubble_view_);
 
   // Update icon after creating |save_card_bubble_view_| so that icon will show

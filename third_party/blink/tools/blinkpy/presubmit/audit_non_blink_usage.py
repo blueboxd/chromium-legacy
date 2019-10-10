@@ -256,7 +256,7 @@ _CONFIG = [
             'cc::LayerPositionConstraint',
             'cc::OverscrollBehavior',
             'cc::Scrollbar',
-            'cc::ScrollbarLayerInterface',
+            'cc::ScrollbarLayerBase',
             'cc::ScrollbarOrientation',
             'cc::ScrollbarPart',
             'cc::StickyPositionConstraint',

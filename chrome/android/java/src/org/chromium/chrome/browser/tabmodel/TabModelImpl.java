@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.ntp.RecentlyClosedBridge;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -461,8 +462,9 @@ public class TabModelImpl extends TabModelJniBridge {
         }
 
         if (!uponExit && canUndo && supportsPendingClosures()) {
-            for (TabModelObserver obs : mObservers)
+            for (TabModelObserver obs : mObservers) {
                 obs.multipleTabsPendingClosure(closedTabs, true);
+            }
         }
     }
 
@@ -624,7 +626,7 @@ public class TabModelImpl extends TabModelJniBridge {
         if (mTabContentManager != null) mTabContentManager.removeTabThumbnail(tab.getId());
         mTabSaver.removeTabFromQueues(tab);
 
-        if (!isIncognito()) tab.createHistoricalTab();
+        if (!isIncognito()) TabState.createHistoricalTab(tab);
 
         for (TabModelObserver obs : mObservers) obs.didCloseTab(tab.getId(), tab.isIncognito());
         if (notifyTabClosureCommitted) {

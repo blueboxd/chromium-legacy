@@ -72,11 +72,15 @@ class SoftwareImageDecodeTaskImpl : public TileTask {
     TRACE_EVENT2("cc", "SoftwareImageDecodeTaskImpl::RunOnWorkerThread", "mode",
                  "software", "source_prepare_tiles_id",
                  tracing_info_.prepare_tiles_id);
+
+    const auto* image_metadata = paint_image_.GetImageHeaderMetadata();
+    const ImageType image_type =
+        image_metadata ? image_metadata->image_type : ImageType::kInvalid;
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
         paint_image_.GetSkImage().get(),
         devtools_instrumentation::ScopedImageDecodeTask::kSoftware,
         ImageDecodeCache::ToScopedTaskType(tracing_info_.task_type),
-        ImageDecodeCache::ToScopedImageType(paint_image_.GetImageType()));
+        ImageDecodeCache::ToScopedImageType(image_type));
     SoftwareImageDecodeCache::TaskProcessingResult result =
         cache_->DecodeImageInTask(image_key_, paint_image_, task_type_);
 

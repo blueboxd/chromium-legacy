@@ -8,5 +8,4 @@ tab_ui_module_desc = {
   name = "tab_ui"
   java_deps = [ "//chrome/android/features/tab_ui:java" ]
   android_manifest = "//chrome/android/features/tab_ui/AndroidManifest.xml"
-  proguard_async = async_tab_ui
 }

@@ -34,7 +34,8 @@ class BroadcastChannelProvider::Connection
   const url::Origin& origin() const { return origin_; }
   const std::string& name() const { return name_; }
 
-  void set_connection_error_handler(const base::Closure& error_handler) {
+  void set_connection_error_handler(
+      const base::RepeatingClosure& error_handler) {
     receiver_.set_disconnect_handler(error_handler);
     client_.set_disconnect_handler(error_handler);
   }
@@ -98,8 +99,8 @@ void BroadcastChannelProvider::ConnectToChannel(
   std::unique_ptr<Connection> c(new Connection(origin, name, std::move(client),
                                                std::move(connection), this));
   c->set_connection_error_handler(
-      base::Bind(&BroadcastChannelProvider::UnregisterConnection,
-                 base::Unretained(this), c.get()));
+      base::BindRepeating(&BroadcastChannelProvider::UnregisterConnection,
+                          base::Unretained(this), c.get()));
   connections_[origin].insert(std::make_pair(name, std::move(c)));
 }
 

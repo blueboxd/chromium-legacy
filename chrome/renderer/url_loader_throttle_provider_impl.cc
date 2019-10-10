@@ -73,12 +73,6 @@ CreateExtensionThrottleManager() {
 
 void SetExtensionThrottleManagerTestPolicy(
     extensions::ExtensionThrottleManager* extension_throttle_manager) {
-  // Requests issued within within |kUserGestureWindowMs| of a user gesture
-  // are also considered as user gestures (see
-  // resource_dispatcher_host_impl.cc), so these tests need to bypass the
-  // checking of the net::LOAD_MAYBE_USER_GESTURE load flag in the manager
-  // in order to test the throttling logic.
-  extension_throttle_manager->SetIgnoreUserGestureLoadFlagForTests(true);
   std::unique_ptr<net::BackoffEntry::Policy> policy(
       new net::BackoffEntry::Policy{
           // Number of initial errors (in sequence) to ignore before

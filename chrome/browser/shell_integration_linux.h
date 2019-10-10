@@ -35,9 +35,6 @@ std::string GetProgramClassName();
 // Gets the name for use as the res_class of the window's WM_CLASS property.
 std::string GetProgramClassClass();
 
-// Returns filename of the desktop shortcut used to launch the browser.
-std::string GetDesktopName(base::Environment* env);
-
 // Returns name of the browser icon (without a path or file extension).
 std::string GetIconName();
 

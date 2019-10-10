@@ -31,11 +31,14 @@ SysmemBufferPool::Creator::Creator(
       });
 }
 
-SysmemBufferPool::Creator::~Creator() = default;
+SysmemBufferPool::Creator::~Creator() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+}
 
 void SysmemBufferPool::Creator::Create(
     fuchsia::sysmem::BufferCollectionConstraints constraints,
     CreateCB create_cb) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!create_cb_);
   create_cb_ = std::move(create_cb);
   // BufferCollection needs to be synchronized to ensure that all token
@@ -64,11 +67,13 @@ SysmemBufferPool::SysmemBufferPool(
 }
 
 SysmemBufferPool::~SysmemBufferPool() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (collection_)
     collection_->Close();
 }
 
 fuchsia::sysmem::BufferCollectionTokenPtr SysmemBufferPool::TakeToken() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!shared_tokens_.empty());
   auto token = std::move(shared_tokens_.back());
   shared_tokens_.pop_back();
@@ -76,6 +81,7 @@ fuchsia::sysmem::BufferCollectionTokenPtr SysmemBufferPool::TakeToken() {
 }
 
 void SysmemBufferPool::CreateReader(CreateReaderCB create_cb) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!create_reader_cb_);
   create_reader_cb_ = std::move(create_cb);
   collection_->WaitForBuffersAllocated(
@@ -83,6 +89,7 @@ void SysmemBufferPool::CreateReader(CreateReaderCB create_cb) {
 }
 
 void SysmemBufferPool::CreateWriter(CreateWriterCB create_cb) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!create_writer_cb_);
   create_writer_cb_ = std::move(create_cb);
   collection_->WaitForBuffersAllocated(
@@ -92,6 +99,8 @@ void SysmemBufferPool::CreateWriter(CreateWriterCB create_cb) {
 void SysmemBufferPool::OnBuffersAllocated(
     zx_status_t status,
     fuchsia::sysmem::BufferCollectionInfo_2 buffer_collection_info) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (status != ZX_OK) {
     ZX_LOG(ERROR, status) << "Fail to allocate sysmem buffers.";
     OnError();
@@ -108,6 +117,7 @@ void SysmemBufferPool::OnBuffersAllocated(
 }
 
 void SysmemBufferPool::OnError() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   collection_.Unbind();
   if (create_reader_cb_)
     std::move(create_reader_cb_).Run(nullptr);
@@ -132,6 +142,8 @@ BufferAllocator::~BufferAllocator() = default;
 
 std::unique_ptr<SysmemBufferPool::Creator>
 BufferAllocator::MakeBufferPoolCreator(size_t num_of_tokens) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   // Create a new sysmem buffer collection token for the allocated buffers.
   fuchsia::sysmem::BufferCollectionTokenPtr collection_token;
   allocator_->AllocateSharedCollection(collection_token.NewRequest());

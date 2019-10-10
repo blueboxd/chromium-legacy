@@ -269,6 +269,9 @@ class WebView {
   // mode (does not have <!doctype html>), the height will stretch to fill the
   // viewport. The returned size has the page zoom factor applied. The lifecycle
   // must be updated to at least layout before calling (see: |UpdateLifecycle|).
+  //
+  // This may only be called when there is a local main frame attached to this
+  // WebView.
   virtual WebSize ContentsPreferredMinimumSize() = 0;
 
   // Requests a page-scale animation based on the specified point/rect.

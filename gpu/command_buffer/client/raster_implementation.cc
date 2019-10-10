@@ -554,9 +554,9 @@ bool RasterImplementation::IsWebPDecodeAccelerationSupported() const {
 }
 
 bool RasterImplementation::CanDecodeWithHardwareAcceleration(
-    base::span<const uint8_t> encoded_data) const {
+    const cc::ImageHeaderMetadata* image_metadata) const {
   return image_decode_accelerator_ &&
-         image_decode_accelerator_->IsImageSupported(encoded_data);
+         image_decode_accelerator_->IsImageSupported(image_metadata);
 }
 
 const std::string& RasterImplementation::GetLogPrefix() const {

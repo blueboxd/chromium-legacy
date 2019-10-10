@@ -20,7 +20,6 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
 class NavigationController;
@@ -124,13 +123,6 @@ class ContentTranslateDriver : public TranslateDriver,
 
  private:
   void OnPageAway(int page_seq_no);
-
-  // Creates a URLLoaderFactory that may be used by the translate scripts that
-  // get injected into isolated worlds within the page to be translated.  Such
-  // scripts (or rather, their isolated worlds) are associated with a
-  // translate-specific origin like https://translate.googleapis.com and use
-  // this origin as |request_initiator| of http requests.
-  network::mojom::URLLoaderFactoryPtr CreateURLLoaderFactory();
 
   // The navigation controller of the tab we are associated with.
   content::NavigationController* navigation_controller_;

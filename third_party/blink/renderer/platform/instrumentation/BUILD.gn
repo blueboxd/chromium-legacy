@@ -35,6 +35,7 @@ blink_platform_sources("instrumentation") {
   ]
 
   deps = [
+    "//components/performance_manager/public/mojom:mojom_blink",
     "//services/service_manager/public/cpp",
   ]
 }

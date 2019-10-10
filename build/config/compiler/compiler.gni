@@ -222,15 +222,6 @@ if (symbol_level == -1) {
     # Reduce symbol level when it will cause invalid elf files to be created
     # (due to file size). https://crbug.com/648948.
     symbol_level = 1
-  } else if (is_win && use_goma && !is_clang) {
-    # goma doesn't support PDB files, so we disable symbols during goma
-    # compilation because otherwise the redundant debug information generated
-    # by visual studio (repeated in every .obj file) makes linker
-    # memory consumption and link times unsustainable (crbug.com/630074).
-    # Clang on windows does not have this issue.
-    # If you use is_win_fastlink = true or lld or clang then you can set
-    # symbol_level = 2 when using goma.
-    symbol_level = 1
   } else if (is_cros_chrome_sdk) {
     # Use lower symbol level in Simple Chrome build for faster link time.
     # For Simple Chrome, this should take precedence over is_official_build,

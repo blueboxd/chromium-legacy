@@ -40,12 +40,14 @@ bool CookieControlsIconView::Update() {
 }
 
 void CookieControlsIconView::OnStatusChanged(
-    CookieControlsController::Status status) {
+    CookieControlsController::Status status,
+    int blocked_cookies) {
   if (status_ != status) {
     status_ = status;
     SetVisible(ShouldBeVisible());
     UpdateIconImage();
   }
+  OnBlockedCookiesCountChanged(blocked_cookies);
 }
 
 void CookieControlsIconView::OnBlockedCookiesCountChanged(int blocked_cookies) {

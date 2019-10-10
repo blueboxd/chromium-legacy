@@ -16,7 +16,9 @@
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_observer.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -157,12 +159,12 @@ class ExtensionApps : public apps::mojom::Publisher,
   Profile* profile_;
 
   ScopedObserver<extensions::ExtensionPrefs, extensions::ExtensionPrefsObserver>
-      prefs_observer_;
+      prefs_observer_{this};
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      registry_observer_;
+      registry_observer_{this};
   ScopedObserver<HostContentSettingsMap, content_settings::Observer>
-      content_settings_observer_;
+      content_settings_observer_{this};
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
@@ -171,7 +173,7 @@ class ExtensionApps : public apps::mojom::Publisher,
   using EnableFlowPtr = std::unique_ptr<ExtensionAppsEnableFlow>;
   std::map<std::string, EnableFlowPtr> enable_flow_map_;
 
-  ArcAppListPrefs* arc_prefs_;
+  ArcAppListPrefs* arc_prefs_ = nullptr;
 
   base::WeakPtrFactory<ExtensionApps> weak_factory_{this};
 

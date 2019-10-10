@@ -8,6 +8,7 @@
 #include "base/containers/flat_map.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -18,10 +19,6 @@ class Profile;
 namespace base {
 class ListValue;
 }  // namespace base
-
-namespace session_manager {
-class SessionManager;
-}  // namespace session_manager
 
 namespace chromeos {
 namespace settings {
@@ -84,7 +81,7 @@ class FingerprintHandler : public ::settings::SettingsPageUIHandler,
   mojo::Receiver<device::mojom::FingerprintObserver> receiver_{this};
   ScopedObserver<session_manager::SessionManager,
                  session_manager::SessionManagerObserver>
-      session_observer_;
+      session_observer_{this};
 
   base::WeakPtrFactory<FingerprintHandler> weak_ptr_factory_{this};
 

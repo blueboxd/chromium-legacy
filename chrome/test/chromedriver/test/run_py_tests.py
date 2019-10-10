@@ -948,52 +948,55 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testActionsMultiTouchPoint(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript(
-        'document.body.innerHTML = "<div>old</div>";'
-        'var div = document.getElementsByTagName("div")[0];'
-        'window.events = [];'
-        'div.style["width"] = "100px";'
-        'div.style["height"] = "100px";'
-        'div.addEventListener("touchstart", function(e) {'
-        '  window.events.push('
-        '      {type: e.type,'
-        '       x: e.touches[e.touches.length - 1].clientX,'
-        '       y: e.touches[e.touches.length - 1].clientY});'
-        '});'
-        'div.addEventListener("touchend", function(e) {'
-        '  window.events.push('
-        '      {type: e.type});'
-        '});')
+        '''
+        document.body.innerHTML
+          = "<div id='div' autofocus style='width:200px; height:200px'>";
+        window.events = [];
+        const div = document.getElementById('div');
+        div.addEventListener('touchstart', event => {
+          window.events.push(
+              {type: event.type,
+               x: event.touches[event.touches.length - 1].clientX,
+               y: event.touches[event.touches.length - 1].clientY});
+        });
+        div.addEventListener('touchend', event => {
+          window.events.push(
+              {type: event.type});
+        });
+        ''')
+
     actions = ({"actions": [{
       "type":"pointer",
-      "actions":[{"type": "pointerMove", "x": 10, "y": 10},
+      "actions":[{"type": "pointerMove", "x": 50, "y": 50},
                  {"type": "pointerDown"},
                  {"type": "pointerUp"}],
       "parameters": {"pointerType": "touch"},
       "id": "pointer1"},
       {
       "type":"pointer",
-      "actions":[{"type": "pointerMove", "x": 15, "y": 15},
+      "actions":[{"type": "pointerMove", "x": 60, "y": 60},
                  {"type": "pointerDown"},
                  {"type": "pointerUp"}],
       "parameters": {"pointerType": "touch"},
       "id": "pointer2"}]})
     self._driver.PerformActions(actions)
+    time.sleep(1)
     for _ in range(5):
       events = self._driver.ExecuteScript('return window.events')
       if len(events) == 4:
         break
-      # Wait 10 ms for the event handler to be executed.
-      time.sleep(0.01)
+      # Wait 100 more ms for the event handler to be executed.
+      time.sleep(0.1)
 
     self.assertEquals(4, len(events))
     self.assertEquals("touchstart", events[0]['type'])
     self.assertEquals("touchstart", events[1]['type'])
     self.assertEquals("touchend", events[2]['type'])
     self.assertEquals("touchend", events[3]['type'])
-    self.assertEquals(10, events[0]['x'])
-    self.assertEquals(10, events[0]['y'])
-    self.assertEquals(15, events[1]['x'])
-    self.assertEquals(15, events[1]['y'])
+    self.assertEquals(50, events[0]['x'])
+    self.assertEquals(50, events[0]['y'])
+    self.assertEquals(60, events[1]['x'])
+    self.assertEquals(60, events[1]['y'])
 
   def testActionsMulti(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))

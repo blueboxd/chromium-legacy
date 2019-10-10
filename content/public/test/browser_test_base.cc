@@ -38,6 +38,7 @@
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/startup_data_impl.h"
 #include "content/browser/startup_helper.h"
+#include "content/browser/tracing/memory_instrumentation_util.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -424,6 +425,7 @@ void BrowserTestBase::SetUp() {
     StartBrowserThreadPool();
     BrowserTaskExecutor::PostFeatureListSetup();
     tracing::InitTracingPostThreadPoolStartAndFeatureList();
+    InitializeBrowserMemoryInstrumentationClient();
   }
 
   auto discardable_shared_memory_manager =

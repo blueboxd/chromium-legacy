@@ -27,12 +27,12 @@ namespace ash {
 namespace {
 
 constexpr gfx::Insets kHeaderViewInsets = gfx::Insets(0, 0, 15, 0);
-constexpr int kIconSize = 18;
+constexpr int kIconViewSize = 18;
+constexpr int kIconSize = 12;
 constexpr int kHeaderTextFontSize = 12;
 constexpr gfx::Insets kIconPadding = gfx::Insets(1, 1, 1, 1);
 constexpr gfx::Insets kAppNamePadding = gfx::Insets(0, 10, 0, 0);
 constexpr gfx::Size kAppNamePreferredSize = gfx::Size(200, 10);
-constexpr int kIconCornerRadius = 1;
 constexpr gfx::Size kCloseButtonSize = gfx::Size(20, 20);
 constexpr int kCloseButtonIconSize = 18;
 constexpr gfx::Size kSpacerPreferredSize = gfx::Size(5, 5);
@@ -58,12 +58,12 @@ MediaControlsHeaderView::MediaControlsHeaderView(
   layout->SetInteriorMargin(kHeaderViewInsets);
 
   auto app_icon_view = std::make_unique<views::ImageView>();
+  app_icon_view->SetPreferredSize(gfx::Size(kIconViewSize, kIconViewSize));
   app_icon_view->SetImageSize(gfx::Size(kIconSize, kIconSize));
-  app_icon_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
-  app_icon_view->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
   app_icon_view->SetBorder(views::CreateEmptyBorder(kIconPadding));
   app_icon_view->SetBackground(
-      views::CreateRoundedRectBackground(SK_ColorWHITE, kIconCornerRadius));
+      views::CreateRoundedRectBackground(SK_ColorWHITE, kIconViewSize / 2));
+
   app_icon_view_ = AddChildView(std::move(app_icon_view));
 
   // Font list for text views.

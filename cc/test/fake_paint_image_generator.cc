@@ -36,10 +36,6 @@ FakePaintImageGenerator::FakePaintImageGenerator(
 
 FakePaintImageGenerator::~FakePaintImageGenerator() = default;
 
-bool FakePaintImageGenerator::IsEligibleForAcceleratedDecoding() const {
-  return is_eligible_for_accelerated_decode_;
-}
-
 sk_sp<SkData> FakePaintImageGenerator::GetEncodedData() const {
   return SkData::MakeEmpty();
 }
@@ -113,8 +109,9 @@ SkISize FakePaintImageGenerator::GetSupportedDecodeSize(
   return PaintImageGenerator::GetSupportedDecodeSize(requested_size);
 }
 
-PaintImage::ImageType FakePaintImageGenerator::GetImageType() const {
-  return image_type_;
+const ImageHeaderMetadata*
+FakePaintImageGenerator::GetMetadataForDecodeAcceleration() const {
+  return &image_metadata_;
 }
 
 }  // namespace cc

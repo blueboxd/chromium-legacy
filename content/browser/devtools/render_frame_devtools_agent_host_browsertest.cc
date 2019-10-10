@@ -7,8 +7,10 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -167,6 +169,34 @@ IN_PROC_BROWSER_TEST_F(RenderFrameDevToolsAgentHostBrowserTest,
       &devtools_agent_host_client,
       R"({"id":1,"method": "Page.reload"})");
   reload_observer.Wait();
+  devtools_agent_host->DetachClient(&devtools_agent_host_client);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameDevToolsAgentHostBrowserTest,
+                       DevToolsDisableBackForwardCache) {
+  content::BackForwardCacheDisabledTester tester;
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a page.
+  const GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+  content::RenderFrameHost* main_frame =
+      shell()->web_contents()->GetMainFrame();
+  int process_id = main_frame->GetProcess()->GetID();
+  int frame_routing_id = main_frame->GetRoutingID();
+
+  // Open DevTools.
+  scoped_refptr<DevToolsAgentHost> devtools_agent_host =
+      DevToolsAgentHost::GetOrCreateFor(shell()->web_contents());
+  StubDevToolsAgentHostClient devtools_agent_host_client;
+  devtools_agent_host->AttachClient(&devtools_agent_host_client);
+
+  // Navigate away from the page. This should block bfcache.
+  const GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), b_url));
+  EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
+      process_id, frame_routing_id, "RenderFrameDevToolsAgentHost"));
+
   devtools_agent_host->DetachClient(&devtools_agent_host_client);
 }
 

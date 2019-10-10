@@ -2433,6 +2433,10 @@ enum WebFeature {
   kRenderSubtreeAttribute = 3049,
   kARIAAnnotationRoles = 3050,
   kIntersectionObserverV2 = 3051,
+  kHeavyAdIntervention = 3052,
+  kUserTimingL3 = 3053,
+  kGetGamepadsFromCrossOriginSubframe = 3054,
+  kGetGamepadsFromInsecureContext = 3055,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

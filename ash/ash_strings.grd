@@ -1291,6 +1291,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_ETHERNET_ADDRESS" desc="The label for the mac address of the ethernet device.">
         Ethernet: <ph name="ADDRESS">$1<ex>01:23:45:67:89:AB</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_CELLULAR_ADDRESS" desc="The label for the mac address of the cellular device.">
+        Cellular: <ph name="ADDRESS">$1<ex>01:23:45:67:89:AB</ex></ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR" desc="Message for the status area when initializing the cellular device.">
         Initializing...
       </message>

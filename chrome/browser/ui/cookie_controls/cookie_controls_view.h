@@ -11,7 +11,8 @@
 // Interface for the CookieControls UI.
 class CookieControlsView : public base::CheckedObserver {
  public:
-  virtual void OnStatusChanged(CookieControlsController::Status status) = 0;
+  virtual void OnStatusChanged(CookieControlsController::Status status,
+                               int blocked_cookies) = 0;
   virtual void OnBlockedCookiesCountChanged(int blocked_cookies) = 0;
 };
 

@@ -75,6 +75,10 @@ fast/harness/results.html [ WontFix ]
 [ Mac ] fast/forms/calendar-picker/month-open-picker-with-f4-key.html [ WontFix ]
 [ Mac ] fast/forms/calendar-picker/week-open-picker-with-f4-key.html [ WontFix ]
 
+# These tests are specific to Windows.
+crbug.com/1012590 [ Mac ] fast/overflow/rtl-scrollbar-drag-origin.html [ WontFix ]
+crbug.com/1012590 [ Linux ] fast/overflow/rtl-scrollbar-drag-origin.html [ WontFix ]
+
 # Mac does not have menu key.
 [ Mac ] editing/spelling/spelling-on-context-menu-key.html [ WontFix ]
 [ Mac ] fast/events/context-menu-key-shift-f10-modifiers.html [ WontFix ]
@@ -103,8 +107,6 @@ fast/harness/results.html [ WontFix ]
 [ Mac ]   virtual/scroll_customization/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
 [ Linux ] virtual/threaded/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
 [ Mac ]   virtual/threaded/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
-[ Linux ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
-[ Mac ]   virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
 
 
 # These tests are specific to Linux.

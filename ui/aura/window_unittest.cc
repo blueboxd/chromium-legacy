@@ -2910,9 +2910,9 @@ TEST_F(WindowTest, DelegateNotifiedAsBoundsChangeInHiddenLayer) {
 
   delegate.clear_bounds_changed();
 
-  // Suppress paint on the window since it is hidden (should reset the layer's
+  // Suppress paint on the layer since it is hidden (should reset the layer's
   // delegate to NULL)
-  window->SuppressPaint();
+  window->layer()->SuppressPaint();
   EXPECT_EQ(NULL, window->layer()->delegate());
 
   // Animate to a different position.

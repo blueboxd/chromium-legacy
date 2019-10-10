@@ -1044,22 +1044,7 @@ TEST_F(EventHandlerLatencyTest, NeedsUnbufferedInput) {
   ASSERT_FALSE(chrome_client_->ReceivedRequestForUnbufferedInput());
 }
 
-class EventHandlerScrollbarGestureInjectionTest : public SimTest {
- public:
-  EventHandlerScrollbarGestureInjectionTest() = default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kScrollbarInjectScrollGestures);
-    SimTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(EventHandlerScrollbarGestureInjectionTest,
-       MouseUpOffScrollbarGeneratesScrollEnd) {
+TEST_F(EventHandlerSimTest, MouseUpOffScrollbarGeneratesScrollEnd) {
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1133,7 +1118,7 @@ TEST_F(EventHandlerScrollbarGestureInjectionTest,
   }
 }
 
-TEST_F(EventHandlerScrollbarGestureInjectionTest, MouseUpOnlyOnScrollbar) {
+TEST_F(EventHandlerSimTest, MouseUpOnlyOnScrollbar) {
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1185,7 +1170,7 @@ TEST_F(EventHandlerScrollbarGestureInjectionTest, MouseUpOnlyOnScrollbar) {
   EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
 }
 
-TEST_F(EventHandlerScrollbarGestureInjectionTest, RightClickNoGestures) {
+TEST_F(EventHandlerSimTest, RightClickNoGestures) {
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1230,8 +1215,7 @@ TEST_F(EventHandlerScrollbarGestureInjectionTest, RightClickNoGestures) {
 #define MAYBE_GestureTapWithScrollSnaps GestureTapWithScrollSnaps
 #endif
 
-TEST_F(EventHandlerScrollbarGestureInjectionTest,
-       MAYBE_GestureTapWithScrollSnaps) {
+TEST_F(EventHandlerSimTest, MAYBE_GestureTapWithScrollSnaps) {
   // Create a page that has scroll snaps enabled for a scroller. Tap on the
   // scrollbar and verify that the SnapController does not immediately cancel
   // the resulting animation during the handling of GestureScrollEnd - this

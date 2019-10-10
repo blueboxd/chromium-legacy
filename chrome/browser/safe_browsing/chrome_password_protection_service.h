@@ -219,12 +219,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
   GetSyncAccountType() const override;
 
-// TODO(crbug.com/995926): Enable caching on Android
-// Note: Before enable verdict cache manager on Android,
-// add CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION to Android
-// Otherwise, it will fail on /components/ content_settings/core/browser/
-// content_settings_default_provider.cc/GetRuleIterator
-#if BUILDFLAG(FULL_SAFE_BROWSING)
   // Stores |verdict| in the cache based on its |trigger_type|, |url|,
   // reused |password_type|, |verdict| and |receive_time|.
   void CacheVerdict(const GURL& url,
@@ -244,7 +238,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       LoginReputationClientRequest::TriggerType trigger_type,
       ReusedPasswordAccountType password_type,
       LoginReputationClientResponse* out_response) override;
-#endif
 
   // Sanitize referrer chain by only keeping origin information of all URLs.
   void SanitizeReferrerChain(ReferrerChain* referrer_chain) override;

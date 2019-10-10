@@ -15,7 +15,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/automation_internal/automation_internal_api_delegate.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/event_router.h"

@@ -15,7 +15,6 @@
 #include "chromeos/tpm/install_attributes.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -94,9 +93,7 @@ void LoginScreenExtensionUiHandler::Shutdown() {
 
 LoginScreenExtensionUiHandler::LoginScreenExtensionUiHandler(
     std::unique_ptr<LoginScreenExtensionUiWindowFactory> window_factory)
-    : window_factory_(std::move(window_factory)),
-      session_manager_observer_(this),
-      extension_registry_observer_(this) {
+    : window_factory_(std::move(window_factory)) {
   UpdateSessionState();
   session_manager_observer_.Add(session_manager::SessionManager::Get());
   extension_registry_observer_.Add(

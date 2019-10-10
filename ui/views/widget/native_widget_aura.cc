@@ -536,7 +536,6 @@ void NativeWidgetAura::Close() {
   DCHECK(window_ ||
          ownership_ == Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
   if (window_) {
-    window_->SuppressPaint();
     Hide();
     window_->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_NONE);
   }

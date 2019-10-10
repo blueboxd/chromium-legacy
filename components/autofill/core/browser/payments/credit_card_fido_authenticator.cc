@@ -127,8 +127,10 @@ void CreditCardFIDOAuthenticator::IsUserVerifiable(
     base::OnceCallback<void(bool)> callback) {
   if (base::FeatureList::IsEnabled(
           features::kAutofillCreditCardAuthentication)) {
-    autofill_driver_->ConnectToAuthenticator(
-        authenticator_.BindNewPipeAndPassReceiver());
+    if (!authenticator_.is_bound()) {
+      autofill_driver_->ConnectToAuthenticator(
+          authenticator_.BindNewPipeAndPassReceiver());
+    }
     authenticator_->IsUserVerifyingPlatformAuthenticatorAvailable(
         std::move(callback));
   } else {

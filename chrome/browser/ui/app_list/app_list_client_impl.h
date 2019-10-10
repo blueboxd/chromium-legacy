@@ -178,7 +178,7 @@ class AppListClientImpl
   std::unique_ptr<app_list::SearchController> search_controller_;
   std::unique_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
 
-  ScopedObserver<TemplateURLService, AppListClientImpl>
+  ScopedObserver<TemplateURLService, TemplateURLServiceObserver>
       template_url_service_observer_{this};
 
   ash::AppListController* app_list_controller_ = nullptr;

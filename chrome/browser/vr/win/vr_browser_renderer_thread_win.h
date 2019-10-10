@@ -34,6 +34,7 @@ class VR_EXPORT VRBrowserRendererThreadWin {
   void SetVRDisplayInfo(device::mojom::VRDisplayInfoPtr display_info);
   void SetLocationInfo(GURL gurl);
   void SetWebXrPresenting(bool presenting);
+  void SetFramesThrottled(bool throttled);
 
   // The below function(s) affect(s) whether UI is drawn or not.
   void SetVisibleExternalPromptNotification(
@@ -80,6 +81,8 @@ class VR_EXPORT VRBrowserRendererThreadWin {
   void StopWebXrTimeout();
   int GetNextRequestId();
 
+  void UpdateOverlayState();
+
   // We need to do some initialization of GraphicsDelegateWin before
   // browser_renderer_, so we first store it in a unique_ptr, then transition
   // ownership to browser_renderer_.
@@ -102,7 +105,9 @@ class VR_EXPORT VRBrowserRendererThreadWin {
   DrawState draw_state_;
   bool started_ = false;
   bool webxr_presenting_ = false;
-  bool waiting_for_first_frame_ = true;
+  bool frame_timeout_running_ = true;
+  bool waiting_for_webxr_frame_ = false;
+  bool frames_throttled_ = false;
   int current_request_id_ = 0;
 
   device::mojom::ImmersiveOverlayPtr overlay_;

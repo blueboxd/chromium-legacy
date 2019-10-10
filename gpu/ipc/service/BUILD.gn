@@ -150,6 +150,7 @@ source_set("test_support") {
     "//testing/gtest:gtest",
   ]
   deps = [
+    "//base/test:test_support",
     "//gpu/ipc/common",
     "//ui/gl:test_support",
   ]

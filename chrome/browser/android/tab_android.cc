@@ -27,7 +27,6 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
@@ -40,8 +39,6 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/common/url_constants.h"
-#include "components/sessions/content/content_live_tab.h"
-#include "components/sessions/core/tab_restore_service.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -427,34 +424,6 @@ void TabAndroid::SetActiveNavigationEntryTitleForUrl(
       web_contents()->GetController().GetVisibleEntry();
   if (entry && url == entry->GetVirtualURL().spec())
     entry->SetTitle(title);
-}
-
-// static
-void TabAndroid::CreateHistoricalTabFromContents(WebContents* web_contents) {
-  DCHECK(web_contents);
-
-  sessions::TabRestoreService* service =
-      TabRestoreServiceFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  if (!service)
-    return;
-
-  // Exclude internal pages from being marked as recent when they are closed.
-  const GURL& tab_url = web_contents->GetURL();
-  if (tab_url.SchemeIs(content::kChromeUIScheme) ||
-      tab_url.SchemeIs(chrome::kChromeNativeScheme) ||
-      tab_url.SchemeIs(url::kAboutScheme)) {
-    return;
-  }
-
-  // TODO(jcivelli): is the index important?
-  service->CreateHistoricalTab(
-      sessions::ContentLiveTab::GetForWebContents(web_contents), -1);
-}
-
-void TabAndroid::CreateHistoricalTab(JNIEnv* env,
-                                     const JavaParamRef<jobject>& obj) {
-  TabAndroid::CreateHistoricalTabFromContents(web_contents());
 }
 
 void TabAndroid::LoadOriginalImage(JNIEnv* env,

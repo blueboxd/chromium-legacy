@@ -20,6 +20,7 @@
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 
@@ -35,7 +36,6 @@ class BrowserContext;
 
 namespace extensions {
 class Extension;
-class ExtensionRegistry;
 namespace api {
 namespace app_runtime {
 struct ActionData;
@@ -295,7 +295,7 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   // Tracks ExtensionRegistry observation for different profiles.
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   // The profile for which lock screen apps are enabled,
   Profile* profile_with_enabled_lock_screen_apps_ = nullptr;

@@ -8,6 +8,7 @@
 
 #include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_bubble.h"
 #include "chrome/browser/ui/autofill/payments/payments_ui_constants.h"
 #include "chrome/browser/ui/browser.h"
@@ -174,8 +175,9 @@ void LocalCardMigrationBubbleControllerImpl::ShowBubbleImplementation() {
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   local_card_migration_bubble_ =
-      browser->window()->ShowLocalCardMigrationBubble(web_contents(), this,
-                                                      is_reshow_);
+      browser->window()
+          ->GetAutofillBubbleHandler()
+          ->ShowLocalCardMigrationBubble(web_contents(), this, is_reshow_);
   DCHECK(local_card_migration_bubble_);
   UpdateLocalCardMigrationIcon();
   timer_ = std::make_unique<base::ElapsedTimer>();

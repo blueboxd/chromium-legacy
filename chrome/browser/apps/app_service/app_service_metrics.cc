@@ -148,4 +148,26 @@ void RecordAppLaunch(const std::string& app_id,
     RecordBuiltInAppLaunch(BuiltInAppName::kPluginVm, launch_source);
 }
 
+void RecordBuiltInAppSearchResult(const std::string& app_id) {
+  if (app_id == ash::kInternalAppIdKeyboardShortcutViewer) {
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
+                              BuiltInAppName::kKeyboardShortcutViewer);
+  } else if (app_id == ash::kReleaseNotesAppId) {
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
+                              BuiltInAppName::kReleaseNotes);
+  } else if (app_id == ash::kInternalAppIdCamera) {
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
+                              BuiltInAppName::kCamera);
+  } else if (app_id == ash::kInternalAppIdDiscover) {
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
+                              BuiltInAppName::kDiscover);
+  } else if (app_id == ash::kInternalAppIdSettings) {
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
+                              BuiltInAppName::kSettings);
+  } else if (app_id == plugin_vm::kPluginVmAppId) {
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
+                              BuiltInAppName::kPluginVm);
+  }
+}
+
 }  // namespace apps

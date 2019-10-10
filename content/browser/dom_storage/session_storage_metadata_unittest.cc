@@ -12,12 +12,14 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
+#include "components/services/leveldb/leveldb_database_impl.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/session_storage_database.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
-#include "content/test/fake_leveldb_database.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,20 +36,8 @@ using leveldb::StdStringToUint8Vector;
 using leveldb::Uint8VectorToStdString;
 using leveldb::mojom::DatabaseError;
 
-void GetCallback(std::vector<uint8_t>* value_out,
-                 DatabaseError error,
-                 const std::vector<uint8_t>& value) {
-  *value_out = value;
-}
-
 void ErrorCallback(DatabaseError* error_out, DatabaseError error) {
   *error_out = error;
-}
-
-void GetAllCallback(std::vector<leveldb::mojom::KeyValuePtr>* values_out,
-                    DatabaseError error,
-                    std::vector<leveldb::mojom::KeyValuePtr> values) {
-  *values_out = std::move(values);
 }
 
 class SessionStorageMetadataTest : public testing::Test {
@@ -57,8 +47,15 @@ class SessionStorageMetadataTest : public testing::Test {
         test_namespace2_id_(base::GenerateGUID()),
         test_namespace3_id_(base::GenerateGUID()),
         test_origin1_(url::Origin::Create(GURL("http://host1:1/"))),
-        test_origin2_(url::Origin::Create(GURL("http://host2:2/"))),
-        database_(&mock_data_) {
+        test_origin2_(url::Origin::Create(GURL("http://host2:2/"))) {
+    base::RunLoop loop;
+    database_ = leveldb::LevelDBDatabaseImpl::OpenInMemory(
+        base::nullopt, "SessionStorageMetadataTest",
+        base::CreateSequencedTaskRunner({base::MayBlock(), base::ThreadPool()}),
+        base::BindLambdaForTesting(
+            [&](leveldb::mojom::DatabaseError) { loop.Quit(); }));
+    loop.Run();
+
     next_map_id_key_ = std::vector<uint8_t>(
         std::begin(SessionStorageMetadata::kNextMapIdKeyBytes),
         std::end(SessionStorageMetadata::kNextMapIdKeyBytes));
@@ -72,18 +69,36 @@ class SessionStorageMetadataTest : public testing::Test {
   ~SessionStorageMetadataTest() override {}
 
   void ReadMetadataFromDatabase(SessionStorageMetadata* metadata) {
-    std::vector<uint8_t> value;
-    database_.Get(database_version_key_, base::BindOnce(&GetCallback, &value));
+    std::vector<uint8_t> version_value;
+    std::vector<uint8_t> next_map_id_value;
+    std::vector<storage::DomStorageDatabase::KeyValuePair> namespace_entries;
+
+    base::RunLoop loop;
+    database_->database().PostTaskWithThisObject(
+        FROM_HERE,
+        base::BindLambdaForTesting([&](const storage::DomStorageDatabase& db) {
+          EXPECT_TRUE(db.Get(database_version_key_, &version_value).ok());
+          EXPECT_TRUE(db.Get(next_map_id_key_, &next_map_id_value).ok());
+          EXPECT_TRUE(
+              db.GetPrefixed(namespaces_prefix_key_, &namespace_entries).ok());
+          loop.Quit();
+        }));
+    loop.Run();
+
     std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations;
-    EXPECT_TRUE(metadata->ParseDatabaseVersion(value, &migration_operations));
-    EXPECT_TRUE(migration_operations.empty());
-    database_.Get(next_map_id_key_, base::BindOnce(&GetCallback, &value));
-    metadata->ParseNextMapId(value);
-    std::vector<leveldb::mojom::KeyValuePtr> values;
-    database_.GetPrefixed(namespaces_prefix_key_,
-                          base::BindOnce(&GetAllCallback, &values));
     EXPECT_TRUE(
-        metadata->ParseNamespaces(std::move(values), &migration_operations));
+        metadata->ParseDatabaseVersion(version_value, &migration_operations));
+    EXPECT_TRUE(migration_operations.empty());
+
+    metadata->ParseNextMapId(next_map_id_value);
+
+    std::vector<leveldb::mojom::KeyValuePtr> namespace_values;
+    for (auto& entry : namespace_entries) {
+      namespace_values.push_back(
+          leveldb::mojom::KeyValue::New(entry.key, entry.value));
+    }
+    EXPECT_TRUE(metadata->ParseNamespaces(std::move(namespace_values),
+                                          &migration_operations));
     EXPECT_TRUE(migration_operations.empty());
   }
 
@@ -99,29 +114,71 @@ class SessionStorageMetadataTest : public testing::Test {
     // | namespace-<guid 2>-http://host2:2/     | 4                  |
     // | next-map-id                            | 5                  |
     // | version                                | 1                  |
-    mock_data_[StdStringToUint8Vector(
-        std::string("namespace-") + test_namespace1_id_ + "-" +
-        test_origin1_.GetURL().spec())] = StdStringToUint8Vector("1");
-    mock_data_[StdStringToUint8Vector(
-        std::string("namespace-") + test_namespace1_id_ + "-" +
-        test_origin2_.GetURL().spec())] = StdStringToUint8Vector("3");
-    mock_data_[StdStringToUint8Vector(
-        std::string("namespace-") + test_namespace2_id_ + "-" +
-        test_origin1_.GetURL().spec())] = StdStringToUint8Vector("1");
-    mock_data_[StdStringToUint8Vector(
-        std::string("namespace-") + test_namespace2_id_ + "-" +
-        test_origin2_.GetURL().spec())] = StdStringToUint8Vector("4");
+    base::RunLoop loop;
+    database_->database().PostTaskWithThisObject(
+        FROM_HERE,
+        base::BindLambdaForTesting([&](const storage::DomStorageDatabase& db) {
+          db.Put(StdStringToUint8Vector(std::string("namespace-") +
+                                        test_namespace1_id_ + "-" +
+                                        test_origin1_.GetURL().spec()),
+                 StdStringToUint8Vector("1"));
+          db.Put(StdStringToUint8Vector(std::string("namespace-") +
+                                        test_namespace1_id_ + "-" +
+                                        test_origin2_.GetURL().spec()),
+                 StdStringToUint8Vector("3"));
+          db.Put(StdStringToUint8Vector(std::string("namespace-") +
+                                        test_namespace2_id_ + "-" +
+                                        test_origin1_.GetURL().spec()),
+                 StdStringToUint8Vector("1"));
+          db.Put(StdStringToUint8Vector(std::string("namespace-") +
+                                        test_namespace2_id_ + "-" +
+                                        test_origin2_.GetURL().spec()),
+                 StdStringToUint8Vector("4"));
 
-    mock_data_[next_map_id_key_] = StdStringToUint8Vector("5");
+          db.Put(next_map_id_key_, StdStringToUint8Vector("5"));
 
-    mock_data_[StdStringToUint8Vector("map-1-key1")] =
-        StdStringToUint8Vector("data1");
-    mock_data_[StdStringToUint8Vector("map-3-key1")] =
-        StdStringToUint8Vector("data3");
-    mock_data_[StdStringToUint8Vector("map-4-key1")] =
-        StdStringToUint8Vector("data4");
+          db.Put(StdStringToUint8Vector("map-1-key1"),
+                 StdStringToUint8Vector("data1"));
+          db.Put(StdStringToUint8Vector("map-3-key1"),
+                 StdStringToUint8Vector("data3"));
+          db.Put(StdStringToUint8Vector("map-4-key1"),
+                 StdStringToUint8Vector("data4"));
 
-    mock_data_[database_version_key_] = StdStringToUint8Vector("1");
+          db.Put(database_version_key_, StdStringToUint8Vector("1"));
+          loop.Quit();
+        }));
+    loop.Run();
+  }
+
+  std::map<std::vector<uint8_t>, std::vector<uint8_t>> GetDatabaseContents() {
+    std::vector<storage::DomStorageDatabase::KeyValuePair> entries;
+    base::RunLoop loop;
+    database_->database().PostTaskWithThisObject(
+        FROM_HERE,
+        base::BindLambdaForTesting([&](const storage::DomStorageDatabase& db) {
+          leveldb::Status status = db.GetPrefixed({}, &entries);
+          ASSERT_TRUE(status.ok());
+          loop.Quit();
+        }));
+    loop.Run();
+
+    std::map<std::vector<uint8_t>, std::vector<uint8_t>> contents;
+    for (auto& entry : entries)
+      contents.emplace(entry.key, entry.value);
+    return contents;
+  }
+
+  void WriteBatch(
+      std::vector<leveldb::mojom::BatchedOperationPtr> operations,
+      base::OnceCallback<void(leveldb::mojom::DatabaseError)> callback) {
+    base::RunLoop loop;
+    database_->Write(
+        std::move(operations),
+        base::BindLambdaForTesting([&](leveldb::mojom::DatabaseError error) {
+          std::move(callback).Run(error);
+          loop.Quit();
+        }));
+    loop.Run();
   }
 
  protected:
@@ -131,8 +188,7 @@ class SessionStorageMetadataTest : public testing::Test {
   std::string test_namespace3_id_;
   url::Origin test_origin1_;
   url::Origin test_origin2_;
-  std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
-  FakeLevelDBDatabase database_;
+  std::unique_ptr<leveldb::LevelDBDatabaseImpl> database_;
 
   std::vector<uint8_t> database_version_key_;
   std::vector<uint8_t> next_map_id_key_;
@@ -145,12 +201,12 @@ TEST_F(SessionStorageMetadataTest, SaveNewMetadata) {
       metadata.SetupNewDatabase();
 
   DatabaseError error;
-  database_.Write(std::move(operations),
-                  base::BindOnce(&ErrorCallback, &error));
+  WriteBatch(std::move(operations), base::BindOnce(&ErrorCallback, &error));
   EXPECT_EQ(DatabaseError::OK, error);
 
-  EXPECT_EQ(StdStringToUint8Vector("1"), mock_data_[database_version_key_]);
-  EXPECT_EQ(StdStringToUint8Vector("0"), mock_data_[next_map_id_key_]);
+  auto contents = GetDatabaseContents();
+  EXPECT_EQ(StdStringToUint8Vector("1"), contents[database_version_key_]);
+  EXPECT_EQ(StdStringToUint8Vector("0"), contents[next_map_id_key_]);
 }
 
 TEST_F(SessionStorageMetadataTest, LoadingData) {
@@ -205,16 +261,16 @@ TEST_F(SessionStorageMetadataTest, SaveNewMap) {
                    ->ReferenceCount());
 
   DatabaseError error;
-  database_.Write(std::move(operations),
-                  base::BindOnce(&ErrorCallback, &error));
+  WriteBatch(std::move(operations), base::BindOnce(&ErrorCallback, &error));
   EXPECT_EQ(DatabaseError::OK, error);
 
   // Verify metadata was written to disk.
-  EXPECT_EQ(StdStringToUint8Vector("6"), mock_data_[next_map_id_key_]);
+  auto contents = GetDatabaseContents();
+  EXPECT_EQ(StdStringToUint8Vector("6"), contents[next_map_id_key_]);
   EXPECT_EQ(StdStringToUint8Vector("5"),
-            mock_data_[StdStringToUint8Vector(std::string("namespace-") +
-                                              test_namespace1_id_ + "-" +
-                                              test_origin1_.GetURL().spec())]);
+            contents[StdStringToUint8Vector(std::string("namespace-") +
+                                            test_namespace1_id_ + "-" +
+                                            test_origin1_.GetURL().spec())]);
 }
 
 TEST_F(SessionStorageMetadataTest, ShallowCopies) {
@@ -229,8 +285,7 @@ TEST_F(SessionStorageMetadataTest, ShallowCopies) {
   metadata.RegisterShallowClonedNamespace(ns1_entry, ns3_entry, &operations);
 
   DatabaseError error;
-  database_.Write(std::move(operations),
-                  base::BindOnce(&ErrorCallback, &error));
+  WriteBatch(std::move(operations), base::BindOnce(&ErrorCallback, &error));
   EXPECT_EQ(DatabaseError::OK, error);
 
   // Verify in-memory metadata is correct.
@@ -246,14 +301,15 @@ TEST_F(SessionStorageMetadataTest, ShallowCopies) {
   EXPECT_EQ(2, ns3_entry->second[test_origin2_]->ReferenceCount());
 
   // Verify metadata was written to disk.
+  auto contents = GetDatabaseContents();
   EXPECT_EQ(StdStringToUint8Vector("1"),
-            mock_data_[StdStringToUint8Vector(std::string("namespace-") +
-                                              test_namespace3_id_ + "-" +
-                                              test_origin1_.GetURL().spec())]);
+            contents[StdStringToUint8Vector(std::string("namespace-") +
+                                            test_namespace3_id_ + "-" +
+                                            test_origin1_.GetURL().spec())]);
   EXPECT_EQ(StdStringToUint8Vector("3"),
-            mock_data_[StdStringToUint8Vector(std::string("namespace-") +
-                                              test_namespace3_id_ + "-" +
-                                              test_origin2_.GetURL().spec())]);
+            contents[StdStringToUint8Vector(std::string("namespace-") +
+                                            test_namespace3_id_ + "-" +
+                                            test_origin2_.GetURL().spec())]);
 }
 
 TEST_F(SessionStorageMetadataTest, DeleteNamespace) {
@@ -264,8 +320,7 @@ TEST_F(SessionStorageMetadataTest, DeleteNamespace) {
   std::vector<leveldb::mojom::BatchedOperationPtr> operations;
   metadata.DeleteNamespace(test_namespace1_id_, &operations);
   DatabaseError error;
-  database_.Write(std::move(operations),
-                  base::BindOnce(&ErrorCallback, &error));
+  WriteBatch(std::move(operations), base::BindOnce(&ErrorCallback, &error));
   EXPECT_EQ(DatabaseError::OK, error);
 
   EXPECT_FALSE(
@@ -277,17 +332,17 @@ TEST_F(SessionStorageMetadataTest, DeleteNamespace) {
   EXPECT_EQ(1, ns2_entry->second[test_origin2_]->ReferenceCount());
 
   // Verify metadata and data was deleted from disk.
+  auto contents = GetDatabaseContents();
   EXPECT_FALSE(base::Contains(
-      mock_data_,
+      contents,
       StdStringToUint8Vector(std::string("namespace-") + test_namespace1_id_ +
                              "-" + test_origin1_.GetURL().spec())));
   EXPECT_FALSE(base::Contains(
-      mock_data_,
+      contents,
       StdStringToUint8Vector(std::string("namespace-") + test_namespace1_id_ +
                              "-" + test_origin2_.GetURL().spec())));
-  EXPECT_FALSE(
-      base::Contains(mock_data_, StdStringToUint8Vector("map-3-key1")));
-  EXPECT_TRUE(base::Contains(mock_data_, StdStringToUint8Vector("map-1-key1")));
+  EXPECT_FALSE(base::Contains(contents, StdStringToUint8Vector("map-3-key1")));
+  EXPECT_TRUE(base::Contains(contents, StdStringToUint8Vector("map-1-key1")));
 }
 
 TEST_F(SessionStorageMetadataTest, DeleteArea) {
@@ -299,8 +354,7 @@ TEST_F(SessionStorageMetadataTest, DeleteArea) {
   std::vector<leveldb::mojom::BatchedOperationPtr> operations;
   metadata.DeleteArea(test_namespace1_id_, test_origin1_, &operations);
   DatabaseError error;
-  database_.Write(std::move(operations),
-                  base::BindOnce(&ErrorCallback, &error));
+  WriteBatch(std::move(operations), base::BindOnce(&ErrorCallback, &error));
   EXPECT_EQ(DatabaseError::OK, error);
 
   // Verify in-memory metadata is correct.
@@ -312,22 +366,22 @@ TEST_F(SessionStorageMetadataTest, DeleteArea) {
   EXPECT_EQ(1, ns2_entry->second[test_origin2_]->ReferenceCount());
 
   // Verify only the applicable data was deleted.
+  auto contents = GetDatabaseContents();
   EXPECT_FALSE(base::Contains(
-      mock_data_,
+      contents,
       StdStringToUint8Vector(std::string("namespace-") + test_namespace1_id_ +
                              "-" + test_origin1_.GetURL().spec())));
   EXPECT_TRUE(base::Contains(
-      mock_data_,
+      contents,
       StdStringToUint8Vector(std::string("namespace-") + test_namespace1_id_ +
                              "-" + test_origin2_.GetURL().spec())));
-  EXPECT_TRUE(base::Contains(mock_data_, StdStringToUint8Vector("map-1-key1")));
-  EXPECT_TRUE(base::Contains(mock_data_, StdStringToUint8Vector("map-4-key1")));
+  EXPECT_TRUE(base::Contains(contents, StdStringToUint8Vector("map-1-key1")));
+  EXPECT_TRUE(base::Contains(contents, StdStringToUint8Vector("map-4-key1")));
 
   // Now delete an area with a unique map.
   operations.clear();
   metadata.DeleteArea(test_namespace2_id_, test_origin2_, &operations);
-  database_.Write(std::move(operations),
-                  base::BindOnce(&ErrorCallback, &error));
+  WriteBatch(std::move(operations), base::BindOnce(&ErrorCallback, &error));
   EXPECT_EQ(DatabaseError::OK, error);
 
   // Verify in-memory metadata is correct.
@@ -337,18 +391,18 @@ TEST_F(SessionStorageMetadataTest, DeleteArea) {
   EXPECT_FALSE(base::Contains(ns2_entry->second, test_origin2_));
 
   // Verify only the applicable data was deleted.
+  contents = GetDatabaseContents();
   EXPECT_TRUE(base::Contains(
-      mock_data_,
+      contents,
       StdStringToUint8Vector(std::string("namespace-") + test_namespace2_id_ +
                              "-" + test_origin1_.GetURL().spec())));
   EXPECT_FALSE(base::Contains(
-      mock_data_,
+      contents,
       StdStringToUint8Vector(std::string("namespace-") + test_namespace2_id_ +
                              "-" + test_origin2_.GetURL().spec())));
-  EXPECT_TRUE(base::Contains(mock_data_, StdStringToUint8Vector("map-1-key1")));
-  EXPECT_TRUE(base::Contains(mock_data_, StdStringToUint8Vector("map-3-key1")));
-  EXPECT_FALSE(
-      base::Contains(mock_data_, StdStringToUint8Vector("map-4-key1")));
+  EXPECT_TRUE(base::Contains(contents, StdStringToUint8Vector("map-1-key1")));
+  EXPECT_TRUE(base::Contains(contents, StdStringToUint8Vector("map-3-key1")));
+  EXPECT_FALSE(base::Contains(contents, StdStringToUint8Vector("map-4-key1")));
 }
 
 class SessionStorageMetadataMigrationTest : public testing::Test {

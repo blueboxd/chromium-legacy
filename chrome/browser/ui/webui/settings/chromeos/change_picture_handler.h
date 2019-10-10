@@ -139,9 +139,10 @@ class ChangePictureHandler : public ::settings::SettingsPageUIHandler,
   // Data for |user_photo_|.
   scoped_refptr<base::RefCountedBytes> user_photo_data_;
 
-  ScopedObserver<user_manager::UserManager, ChangePictureHandler>
-      user_manager_observer_;
-  ScopedObserver<CameraPresenceNotifier, ChangePictureHandler> camera_observer_;
+  ScopedObserver<user_manager::UserManager, user_manager::UserManager::Observer>
+      user_manager_observer_{this};
+  ScopedObserver<CameraPresenceNotifier, CameraPresenceNotifier::Observer>
+      camera_observer_{this};
 
   base::WeakPtrFactory<ChangePictureHandler> weak_ptr_factory_{this};
 

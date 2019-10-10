@@ -67,8 +67,7 @@ void PortalPostMessageHelper::CreateAndDispatchMessageEvent(
     scoped_refptr<const SecurityOrigin> source_origin,
     scoped_refptr<const SecurityOrigin> target_origin) {
   DCHECK(event_target->ToPortalHost() ||
-         (event_target->ToNode() &&
-          ToHTMLPortalElementOrNull(event_target->ToNode())));
+         IsA<HTMLPortalElement>(event_target->ToNode()));
 
   if (target_origin &&
       !target_origin->IsSameSchemeHostPort(

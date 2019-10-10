@@ -210,9 +210,6 @@
           '--enable-features=BackForwardCache',
           '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.android_browsertests.filter'
         ],
-        'swarming': {
-          'shards': 10,
-        },
         'test': 'android_browsertests',
       },
       'bf_cache_content_shell_test_apk': {
@@ -221,7 +218,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_shell_test_apk.filter'
         ],
         'swarming': {
-          'shards': 10,
+          'shards': 5,
         },
         'test': 'content_shell_test_apk',
       },
@@ -231,7 +228,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.chrome_public_test_apk.filter'
         ],
         'swarming': {
-          'shards': 10,
+          'shards': 20,
         },
         'test': 'chrome_public_test_apk',
       },
@@ -243,6 +240,9 @@
           '--enable-features=BackForwardCache',
           '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_unittests.filter'
         ],
+        'swarming': {
+          'shards': 10,
+        },
         'test': 'content_unittests',
       },
       'bf_cache_unit_tests': {
@@ -250,6 +250,9 @@
           '--enable-features=BackForwardCache',
           '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.unit_tests.filter'
         ],
+        'swarming': {
+          'shards': 10,
+        },
         'test': 'unit_tests',
       },
       'bf_cache_content_browsertests': {
@@ -258,7 +261,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_browsertests.filter'
         ],
         'swarming': {
-          'shards': 10,
+          'shards': 20,
         },
         'test': 'content_browsertests',
       },
@@ -4483,7 +4486,6 @@
           'shards': 3,
         },
       },
-      'leveldb_service_unittests': {},  # https://crbug.com/862709
       'message_center_unittests': {},
       'nacl_loader_unittests': {},
       'native_theme_unittests': {},

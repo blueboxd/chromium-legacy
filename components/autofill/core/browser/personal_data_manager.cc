@@ -1430,70 +1430,6 @@ const ProfileValidityMap& PersonalDataManager::GetProfileValidityByGUID(
   return empty_validity_map;
 }
 
-// static
-std::string PersonalDataManager::MergeProfile(
-    const AutofillProfile& new_profile,
-    std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
-    const std::string& app_locale,
-    std::vector<AutofillProfile>* merged_profiles) {
-  merged_profiles->clear();
-
-  // Sort the existing profiles in decreasing order of frecency, so the "best"
-  // profiles are checked first. Put the verified profiles last so the non
-  // verified profiles get deduped among themselves before reaching the verified
-  // profiles.
-  // TODO(crbug.com/620521): Remove the check for verified from the sort.
-  base::Time comparison_time = AutofillClock::Now();
-  std::sort(existing_profiles->begin(), existing_profiles->end(),
-            [comparison_time](const std::unique_ptr<AutofillProfile>& a,
-                              const std::unique_ptr<AutofillProfile>& b) {
-              if (a->IsVerified() != b->IsVerified())
-                return !a->IsVerified();
-              return a->HasGreaterFrecencyThan(b.get(), comparison_time);
-            });
-
-  // Set to true if |existing_profiles| already contains an equivalent profile.
-  bool matching_profile_found = false;
-  std::string guid = new_profile.guid();
-
-  // If we have already saved this address, merge in any missing values.
-  // Only merge with the first match. Merging the new profile into the existing
-  // one preserves the validity of credit card's billing address reference.
-  AutofillProfileComparator comparator(app_locale);
-  for (const auto& existing_profile : *existing_profiles) {
-    if (!matching_profile_found &&
-        comparator.AreMergeable(new_profile, *existing_profile) &&
-        existing_profile->SaveAdditionalInfo(new_profile, app_locale)) {
-      // Unverified profiles should always be updated with the newer data,
-      // whereas verified profiles should only ever be overwritten by verified
-      // data.  If an automatically aggregated profile would overwrite a
-      // verified profile, just drop it.
-      matching_profile_found = true;
-      guid = existing_profile->guid();
-
-      // We set the modification date so that immediate requests for profiles
-      // will properly reflect the fact that this profile has been modified
-      // recently. After writing to the database and refreshing the local copies
-      // the profile will have a very slightly newer time reflecting what's
-      // actually stored in the database.
-      existing_profile->set_modification_date(AutofillClock::Now());
-    }
-    merged_profiles->push_back(*existing_profile);
-  }
-
-  // If the new profile was not merged with an existing one, add it to the list.
-  if (!matching_profile_found) {
-    merged_profiles->push_back(new_profile);
-    // Similar to updating merged profiles above, set the modification date on
-    // new profiles.
-    merged_profiles->back().set_modification_date(AutofillClock::Now());
-    AutofillMetrics::LogProfileActionOnFormSubmitted(
-        AutofillMetrics::NEW_PROFILE_CREATED);
-  }
-
-  return guid;
-}
-
 const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
     const {
   if (default_country_code_.empty())
@@ -1716,8 +1652,8 @@ std::string PersonalDataManager::SaveImportedProfile(
     return std::string();
 
   std::vector<AutofillProfile> profiles;
-  std::string guid =
-      MergeProfile(imported_profile, &web_profiles_, app_locale_, &profiles);
+  std::string guid = AutofillProfileComparator::MergeProfile(
+      imported_profile, &web_profiles_, app_locale_, &profiles);
   SetProfiles(&profiles);
   return guid;
 }

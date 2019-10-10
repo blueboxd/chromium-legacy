@@ -122,7 +122,7 @@ struct WrapperTypeInfo {
     wrapper->SetWrapperClassId(wrapper_class_id);
   }
 
-  void ConfigureWrapper(v8::TracedGlobal<v8::Object>* wrapper) const {
+  void ConfigureWrapper(v8::TracedReference<v8::Object>* wrapper) const {
     wrapper->SetWrapperClassId(wrapper_class_id);
   }
 
@@ -177,7 +177,7 @@ inline T* GetInternalField(const v8::PersistentBase<v8::Object>& persistent) {
 }
 
 template <typename T, int offset>
-inline T* GetInternalField(const v8::TracedGlobal<v8::Object>& global) {
+inline T* GetInternalField(const v8::TracedReference<v8::Object>& global) {
   DCHECK_LT(offset, v8::Object::InternalFieldCount(global));
   return reinterpret_cast<T*>(
       v8::Object::GetAlignedPointerFromInternalField(global, offset));
@@ -198,7 +198,7 @@ inline ScriptWrappable* ToScriptWrappable(
 }
 
 inline ScriptWrappable* ToScriptWrappable(
-    const v8::TracedGlobal<v8::Object>& wrapper) {
+    const v8::TracedReference<v8::Object>& wrapper) {
   return GetInternalField<ScriptWrappable, kV8DOMWrapperObjectIndex>(wrapper);
 }
 
@@ -219,7 +219,8 @@ inline void* ToUntypedWrappable(const v8::PersistentBase<v8::Object>& wrapper) {
   return GetInternalField<void, kV8DOMWrapperObjectIndex>(wrapper);
 }
 
-inline void* ToUntypedWrappable(const v8::TracedGlobal<v8::Object>& wrapper) {
+inline void* ToUntypedWrappable(
+    const v8::TracedReference<v8::Object>& wrapper) {
   return GetInternalField<void, kV8DOMWrapperObjectIndex>(wrapper);
 }
 
@@ -233,7 +234,7 @@ inline const WrapperTypeInfo* ToWrapperTypeInfo(
 }
 
 inline const WrapperTypeInfo* ToWrapperTypeInfo(
-    const v8::TracedGlobal<v8::Object>& wrapper) {
+    const v8::TracedReference<v8::Object>& wrapper) {
   return GetInternalField<WrapperTypeInfo, kV8DOMWrapperTypeIndex>(wrapper);
 }
 

@@ -66,7 +66,7 @@ void LabelButton::SetImage(ButtonState for_state, const gfx::ImageSkia& image) {
   UpdateImage();
 }
 
-base::string16 LabelButton::GetText() const {
+const base::string16& LabelButton::GetText() const {
   return label_->GetText();
 }
 

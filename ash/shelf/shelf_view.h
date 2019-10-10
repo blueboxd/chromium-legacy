@@ -291,6 +291,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Different from ShouldShowTooltipForView, |view| here must be a child view.
   bool ShouldShowTooltipForChildView(const views::View* child_view) const;
 
+  // Returns the ShelfAppButton associated with |id|.
+  ShelfAppButton* GetShelfAppButton(const ShelfID& id);
+
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
     return view_model_.get();

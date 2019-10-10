@@ -25,7 +25,7 @@ message FuzzCommands {
 
   enum CacheType {
     APP_CACHE = 1;
-    MEDIA_CACHE = 2;
+    REMOVED_MEDIA_CACHE = 2;
     SHADER_CACHE = 3;
     PNACL_CACHE = 4;
     GENERATED_BYTE_CODE_CACHE = 5;

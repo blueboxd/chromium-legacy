@@ -776,11 +776,6 @@ void ClipboardX11::WriteBitmap(const SkBitmap& bitmap) {
 void ClipboardX11::WriteData(const ClipboardFormatType& format,
                              const char* data_data,
                              size_t data_len) {
-  // We assume that certain mapping types are only written by trusted code.
-  // Therefore we must upkeep their integrity.
-  if (format.Equals(ClipboardFormatType::GetBitmapType()))
-    return;
-
   std::vector<unsigned char> bytes(data_data, data_data + data_len);
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedBytes::TakeVector(&bytes));

@@ -63,14 +63,12 @@ class PLATFORM_EXPORT DecodingImageGenerator final
       WebVector<FrameMetadata>,
       PaintImage::ContentId,
       bool all_data_received,
-      bool is_eligible_for_accelerated_decoding,
       bool can_yuv_decode,
-      String image_type);
+      const cc::ImageHeaderMetadata& image_metadata);
 
   ~DecodingImageGenerator() override;
 
   // PaintImageGenerator implementation.
-  bool IsEligibleForAcceleratedDecoding() const override;
   sk_sp<SkData> GetEncodedData() const override;
   bool GetPixels(const SkImageInfo&,
                  void* pixels,
@@ -88,7 +86,8 @@ class PLATFORM_EXPORT DecodingImageGenerator final
                       uint32_t lazy_pixel_ref) override;
   SkISize GetSupportedDecodeSize(const SkISize& requested_size) const override;
   PaintImage::ContentId GetContentIdForFrame(size_t frame_index) const override;
-  PaintImage::ImageType GetImageType() const override { return image_type_; }
+  const cc::ImageHeaderMetadata* GetMetadataForDecodeAcceleration()
+      const override;
 
  private:
   DecodingImageGenerator(scoped_refptr<ImageFrameGenerator>,
@@ -97,19 +96,20 @@ class PLATFORM_EXPORT DecodingImageGenerator final
                          WebVector<FrameMetadata>,
                          PaintImage::ContentId,
                          bool all_data_received,
-                         bool is_eligible_for_accelerated_decoding,
                          bool can_yuv_decode,
-                         PaintImage::ImageType image_type);
+                         const cc::ImageHeaderMetadata& image_metadata);
 
   scoped_refptr<ImageFrameGenerator> frame_generator_;
   const scoped_refptr<SegmentReader> data_;  // Data source.
   const bool all_data_received_;
-  const bool is_eligible_for_accelerated_decoding_;
   const bool can_yuv_decode_;
   const PaintImage::ContentId complete_frame_content_id_;
-  // The image file kind as returned by the underlying decoder and
-  // translated into PaintImage::ImageType.
-  const PaintImage::ImageType image_type_;
+
+  // Image metadata, such as format (e.g. Jpeg or WebP), YUV subsampling factor
+  // (e.g. 444, 422, 420, etc.), size, and format-specific information that is
+  // useful for deciding which kind of decoding can be used (i.e. hardware
+  // acceleration or normal).
+  const cc::ImageHeaderMetadata image_metadata_;
 
   DISALLOW_COPY_AND_ASSIGN(DecodingImageGenerator);
 };

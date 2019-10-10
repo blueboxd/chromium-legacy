@@ -199,47 +199,50 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), bitmap_.getColor(0, 0));
 }
 
-TEST_F(DeferredImageDecoderTest, isEligibleForHardwareDecodingNonIncremental) {
-  // The image is received completely. This is okay for hardware decoding since
-  // it's assumed that the software decoder hasn't done any work.
+TEST_F(DeferredImageDecoderTest, allDataReceivedPriorToDecodeNonIncrementally) {
+  // The image is received completely at once.
   lazy_decoder_->SetData(data_, true /* all_data_received */);
   PaintImage image = CreatePaintImage();
   ASSERT_TRUE(image);
-  EXPECT_TRUE(image.IsEligibleForAcceleratedDecoding());
+  ASSERT_TRUE(image.GetImageHeaderMetadata());
+  EXPECT_TRUE(
+      image.GetImageHeaderMetadata()->all_data_received_prior_to_decode);
 }
 
-TEST_F(DeferredImageDecoderTest, isEligibleForHardwareDecodingIncremental) {
+TEST_F(DeferredImageDecoderTest, allDataReceivedPriorToDecodeIncrementally) {
   // The image is received in two parts, but a PaintImageGenerator is created
-  // only after all the data is received. This is okay for hardware decoding
-  // since it's assumed that the software decoder hasn't done any work before
-  // the PaintImageGenerator is created.
+  // only after all the data is received.
   scoped_refptr<SharedBuffer> partial_data =
       SharedBuffer::Create(data_->Data(), data_->size() - 10);
   lazy_decoder_->SetData(partial_data, false /* all_data_received */);
   lazy_decoder_->SetData(data_, true /* all_data_received */);
   PaintImage image = CreatePaintImage();
   ASSERT_TRUE(image);
-  EXPECT_TRUE(image.IsEligibleForAcceleratedDecoding());
+  ASSERT_TRUE(image.GetImageHeaderMetadata());
+  EXPECT_TRUE(
+      image.GetImageHeaderMetadata()->all_data_received_prior_to_decode);
 }
 
-TEST_F(DeferredImageDecoderTest, isNotEligibleForHardwareDecoding) {
+TEST_F(DeferredImageDecoderTest, notAllDataReceivedPriorToDecode) {
   // The image is received in two parts, and a PaintImageGenerator is created
   // for each one. In real usage, it's likely that the software image decoder
-  // will start working with partial data, so there's no point in using the
-  // hardware accelerator (because if we did, we'd be doing double work: in
-  // software and in hardware).
+  // will start working with partial data.
   scoped_refptr<SharedBuffer> partial_data =
       SharedBuffer::Create(data_->Data(), data_->size() - 10);
   lazy_decoder_->SetData(partial_data, false /* all_data_received */);
   PaintImage image =
       CreatePaintImage(PaintImage::CompletionState::PARTIALLY_DONE);
   ASSERT_TRUE(image);
-  EXPECT_FALSE(image.IsEligibleForAcceleratedDecoding());
+  ASSERT_TRUE(image.GetImageHeaderMetadata());
+  EXPECT_FALSE(
+      image.GetImageHeaderMetadata()->all_data_received_prior_to_decode);
 
   lazy_decoder_->SetData(data_, true /* all_data_received */);
   image = CreatePaintImage();
   ASSERT_TRUE(image);
-  EXPECT_FALSE(image.IsEligibleForAcceleratedDecoding());
+  ASSERT_TRUE(image.GetImageHeaderMetadata());
+  EXPECT_FALSE(
+      image.GetImageHeaderMetadata()->all_data_received_prior_to_decode);
 }
 
 static void RasterizeMain(cc::PaintCanvas* canvas, sk_sp<PaintRecord> record) {

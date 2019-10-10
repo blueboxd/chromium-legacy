@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
 namespace ui {
@@ -44,7 +45,7 @@ class OobeDisplayChooser : public ui::InputDeviceEventObserver {
   void OnDeviceListsComplete() override;
 
   ScopedObserver<ui::DeviceDataManager, ui::InputDeviceEventObserver>
-      scoped_observer_;
+      scoped_observer_{this};
   ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_ptr_;
 
   base::WeakPtrFactory<OobeDisplayChooser> weak_ptr_factory_{this};

@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "components/variations/variations_associated_data.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_decode.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -270,6 +271,7 @@ void UkmRecorderImpl::SetIsWebstoreExtensionCallback(
   is_webstore_extension_callback_ = callback;
 }
 
+// TODO(rkaplow): This should be refactored.
 void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -392,6 +394,24 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   UMA_HISTOGRAM_COUNTS_1000(
       "UKM.Sources.SerializedCount2.App",
       serialized_source_type_counts[ukm::SourceIdType::APP_ID]);
+
+  // We record a UMA metric specifically for the number of serialized events
+  // with the FCP metric. This is for data quality verification.
+  const uint64_t pageload_hash =
+      base::HashMetricName(ukm::builders::PageLoad::kEntryName);
+  const uint64_t fcp_hash = base::HashMetricName(
+      ukm::builders::PageLoad::
+          kPaintTiming_NavigationToFirstContentfulPaintName);
+  int num_recorded_fcp = 0;
+  for (const auto& entry : recordings_.entries) {
+    if (entry->event_hash == pageload_hash) {
+      if (entry->metrics.find(fcp_hash) != entry->metrics.end()) {
+        num_recorded_fcp++;
+      }
+    }
+  }
+  UMA_HISTOGRAM_COUNTS_100000("UKM.Entries.SerializedCountFCP",
+                              num_recorded_fcp);
 
   // For each matching id in obsolete_source_ids, remove the Source from
   // recordings_.sources. The remaining sources form the deferred sources for

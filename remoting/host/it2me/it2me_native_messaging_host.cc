@@ -27,7 +27,6 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/name_value_map.h"
 #include "remoting/base/passthrough_oauth_token_getter.h"
-#include "remoting/base/service_urls.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
@@ -74,6 +73,7 @@ const base::FilePath::CharType kElevatedHostBinaryName[] =
 #endif  // defined(OS_WIN)
 
 constexpr char kAnonymousUserName[] = "anonymous_user";
+const char kRemotingBotJid[] = "remoting@bot.talk.google.com";
 
 // Helper functions to run |callback| asynchronously on the correct thread
 // using |task_runner|.
@@ -248,9 +248,6 @@ void It2MeNativeMessagingHost::ProcessConnect(
   bool terminate_upon_input = false;
   message->GetBoolean("terminateUponInput", &terminate_upon_input);
 
-  std::string directory_bot_jid =
-      ServiceUrls::GetInstance()->directory_bot_jid();
-
   std::unique_ptr<SignalStrategy> signal_strategy;
   std::unique_ptr<RegisterSupportHostRequest> register_host_request;
   std::unique_ptr<LogToServer> log_to_server;
@@ -261,9 +258,9 @@ void It2MeNativeMessagingHost::ProcessConnect(
     }
     signal_strategy = CreateDelegatedSignalStrategy(message.get());
     register_host_request =
-        std::make_unique<XmppRegisterSupportHostRequest>(directory_bot_jid);
+        std::make_unique<XmppRegisterSupportHostRequest>(kRemotingBotJid);
     log_to_server = std::make_unique<XmppLogToServer>(
-        ServerLogEntry::IT2ME, signal_strategy.get(), directory_bot_jid,
+        ServerLogEntry::IT2ME, signal_strategy.get(), kRemotingBotJid,
         host_context_->network_task_runner());
   } else {
     std::string access_token = ExtractAccessToken(message.get());
@@ -280,14 +277,6 @@ void It2MeNativeMessagingHost::ProcessConnect(
     SendErrorAndExit(std::move(response), ErrorCode::INCOMPATIBLE_PROTOCOL);
     return;
   }
-
-#if !defined(NDEBUG)
-  if (!message->GetString("directoryBotJid", &directory_bot_jid)) {
-    LOG(ERROR) << "'directoryBotJid' not found in request.";
-    SendErrorAndExit(std::move(response), ErrorCode::INCOMPATIBLE_PROTOCOL);
-    return;
-  }
-#endif  // !defined(NDEBUG)
 
   base::DictionaryValue* ice_config_dict;
   protocol::IceConfig ice_config;
@@ -313,11 +302,11 @@ void It2MeNativeMessagingHost::ProcessConnect(
   it2me_host_->set_enable_dialogs(!no_dialogs);
   it2me_host_->set_terminate_upon_input(terminate_upon_input);
 #endif
-  it2me_host_->Connect(
-      host_context_->Copy(), std::move(policies),
-      std::make_unique<It2MeConfirmationDialogFactory>(),
-      std::move(register_host_request), std::move(log_to_server), weak_ptr_,
-      std::move(signal_strategy), username, directory_bot_jid, ice_config);
+  it2me_host_->Connect(host_context_->Copy(), std::move(policies),
+                       std::make_unique<It2MeConfirmationDialogFactory>(),
+                       std::move(register_host_request),
+                       std::move(log_to_server), weak_ptr_,
+                       std::move(signal_strategy), username, ice_config);
 
   SendMessageToClient(std::move(response));
 }

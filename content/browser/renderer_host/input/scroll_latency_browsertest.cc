@@ -274,12 +274,9 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ScrollLatencyBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(::switches::kDisableSmoothScrolling);
-    // Enable |kScrollbarInjectScrollGestures|, as these tests depend on it
-    // being on. Disable kOverlayScrollbar since overlay scrollbars are not
+    // Disable kOverlayScrollbar since overlay scrollbars are not
     // hit-testable (thus input is not routed to scrollbars).
-    scoped_feature_list_.InitWithFeatures(
-        {blink::features::kScrollbarInjectScrollGestures},
-        {features::kOverlayScrollbar});
+    scoped_feature_list_.InitAndDisableFeature({features::kOverlayScrollbar});
   }
 
   ~ScrollLatencyScrollbarBrowserTest() override {}

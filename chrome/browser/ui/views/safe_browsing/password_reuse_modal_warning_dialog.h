@@ -9,6 +9,7 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace content {
@@ -32,6 +33,11 @@ class PasswordReuseModalWarningDialog
 
   ~PasswordReuseModalWarningDialog() override;
 
+  void CreateSavedPasswordReuseModalWarningDialog(
+      views::Label* message_body_label);
+  void CreateGaiaPasswordReuseModalWarningDialog(
+      views::Label* message_body_label);
+
   // views::DialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
@@ -39,6 +45,7 @@ class PasswordReuseModalWarningDialog
   bool ShouldShowCloseButton() const override;
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
+  int GetDialogButtons() const override;
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;

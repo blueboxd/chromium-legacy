@@ -3172,26 +3172,4 @@ public class ContextualSearchManagerTest {
         Assert.assertEquals("States", getSelectedText());
         waitForPanelToPeek();
     }
-
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @CommandLineFlags.Add({"enable-features=ContextualSearchLongpressResolve<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/FakeGroup",
-            "force-fieldtrial-params=FakeStudyName.FakeGroup:longpress_resolve_variation/"
-                    + ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PRIVACY_AGGRESSIVE})
-    public void
-    testLongpressResolvesWithLongpressResolveEnabledAndVariationPrivacyAggressive()
-            throws TimeoutException {
-        mPolicy.overrideDecidedStateForTesting(false);
-        mFakeServer.setShouldUseHttps(true);
-        longPressNode("states");
-        assertLoadedNoUrl();
-        assertSearchTermRequested();
-
-        fakeResponse(false, 200, "states", "United States Intelligence", "alternate-term", false);
-        waitForPanelToPeek();
-        assertLoadedLowPriorityUrl();
-        assertContainsParameters("states", "alternate-term");
-    }
 }

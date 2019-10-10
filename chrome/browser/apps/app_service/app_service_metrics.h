@@ -15,6 +15,8 @@ namespace apps {
 void RecordAppLaunch(const std::string& app_id,
                      apps::mojom::LaunchSource launch_source);
 
+void RecordBuiltInAppSearchResult(const std::string& app_id);
+
 }  // namespace apps
 
 #endif  // CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_METRICS_H_

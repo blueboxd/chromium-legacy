@@ -1727,19 +1727,6 @@ public class Tab {
     }
 
     /**
-     * Restores a tab either frozen or from state.
-     * TODO(aurimas): investigate reducing the visibility of this method after TabModel refactoring.
-     */
-    public void createHistoricalTab() {
-        if (!isFrozen()) {
-            assert mNativeTabAndroid != 0;
-            TabJni.get().createHistoricalTab(mNativeTabAndroid, Tab.this);
-        } else if (mFrozenContentsState != null) {
-            mFrozenContentsState.createHistoricalTab();
-        }
-    }
-
-    /**
      * Delete navigation entries from frozen state matching the predicate.
      * @param predicate Handle for a deletion predicate interpreted by native code.
      *                  Only valid during this call frame.
@@ -1897,7 +1884,6 @@ public class Tab {
                 long intentReceivedTimestamp);
         void setActiveNavigationEntryTitleForUrl(
                 long nativeTabAndroid, Tab caller, String url, String title);
-        void createHistoricalTab(long nativeTabAndroid, Tab caller);
         void loadOriginalImage(long nativeTabAndroid, Tab caller);
         void attachDetachedTab(long nativeTabAndroid, Tab caller);
     }

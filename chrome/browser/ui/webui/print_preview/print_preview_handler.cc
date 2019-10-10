@@ -1138,6 +1138,10 @@ void PrintPreviewHandler::OnPrintPreviewReady(int preview_uid, int request_id) {
 }
 
 void PrintPreviewHandler::OnPrintPreviewFailed(int request_id) {
+  WebContents* initiator = GetInitiator();
+  if (!initiator || initiator->IsBeingDestroyed())
+    return;  // Drop notification if fired during destruction sequence.
+
   std::string callback_id = GetCallbackId(request_id);
   if (callback_id.empty())
     return;

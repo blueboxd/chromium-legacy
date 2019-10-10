@@ -92,11 +92,14 @@
 }
 
 - (UIWindow*)window {
-  return self.sceneState.window;
+  return [_mainController window];
 }
 
 - (void)setWindow:(UIWindow*)newWindow {
-  NOTREACHED() << "Should not be called, use [SceneState window] instead";
+  DCHECK(newWindow);
+  [_mainController setWindow:newWindow];
+  // self.window has been set by this time. _appState window can now be set.
+  [_appState setWindow:newWindow];
 }
 
 #pragma mark - UIApplicationDelegate methods -
@@ -110,10 +113,9 @@
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
   startup_loggers::RegisterAppDidFinishLaunchingTime();
-
-  _mainController.window = self.window;
-  // self.window has been set by this time. _appState window can now be set.
-  _appState.window = self.window;
+  // Main window must be ChromeOverlayWindow or a subclass of it.
+  self.window = [[ChromeOverlayWindow alloc]
+      initWithFrame:[[UIScreen mainScreen] bounds]];
 
   BOOL inBackground =
       [application applicationState] == UIApplicationStateBackground;

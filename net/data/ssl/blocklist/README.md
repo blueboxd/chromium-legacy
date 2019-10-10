@@ -285,7 +285,7 @@ For details, see <https://security.googleblog.com/2019/08/protecting-chrome-user
 
 ### revoked.badssl.com
 
-  * [2e0f66a9f9e764c33008482058fe0d92fc0ec0b122fbe994ed7bf6463668cdd4.pem](2e0f66a9f9e764c33008482058fe0d92fc0ec0b122fbe994ed7bf6463668cdd4.pem)
+  * [c6910d0ba9eddf593334149fedfe87385f37b625354bb4395c0ae2c8df48e17c.pem](c6910d0ba9eddf593334149fedfe87385f37b625354bb4395c0ae2c8df48e17c.pem)
 
 ### revoked.grc.com
 
@@ -302,7 +302,7 @@ robustness at their request.
 
 ### Symantec
 
-For details, see <https://bugzilla.mozilla.org/show_bug.cgi?id=966060> 
+For details, see <https://bugzilla.mozilla.org/show_bug.cgi?id=966060>
 
 These three intermediate certificates were retired by Symantec, and
 blocked for robustness at their request.

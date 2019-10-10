@@ -10,6 +10,7 @@ enum ActionType {
   VIEW,           // Can handle only one URL.
   SEND,           // Can handle only one URL.
   SEND_MULTIPLE,  // Can handle multiple URLs.
+  CREATE_NOTE,    // Can handle only one URL.
 };
 
 // Describes an activity.

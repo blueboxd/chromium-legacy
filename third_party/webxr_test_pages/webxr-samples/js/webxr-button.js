@@ -520,9 +520,12 @@ class EnterXRButton {
 
     if (attempt < this.options.supportedSessionTypes.length) {
       let sessionMode = this.options.supportedSessionTypes[attempt];
-      navigator.xr.supportsSession(sessionMode).then(() => {
-        this.enabled = true;
-      }, (err) => {
+      navigator.xr.isSessionSupported(sessionMode).then((supported) => {
+        if (supported) {
+          this.enabled = true;
+          return;
+        }
+
         attempt++;
         if (attempt < this.options.supportedSessionTypes.length) {
           this.__onDeviceChange(attempt);

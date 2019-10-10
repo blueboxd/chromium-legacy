@@ -16,12 +16,31 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/highlight_path_generator.h"
+
+namespace {
+class CustomShapeButtonHighlightPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  CustomShapeButtonHighlightPathGenerator() = default;
+
+  SkPath GetHighlightPath(const views::View* view) override {
+    return static_cast<const ash::CustomShapeButton*>(view)
+        ->CreateCustomShapePath(view->GetLocalBounds());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CustomShapeButtonHighlightPathGenerator);
+};
+}  // namespace
 
 namespace ash {
 
 CustomShapeButton::CustomShapeButton(views::ButtonListener* listener)
     : ImageButton(listener) {
   TrayPopupUtils::ConfigureTrayPopupButton(this);
+  views::HighlightPathGenerator::Install(
+      this, std::make_unique<CustomShapeButtonHighlightPathGenerator>());
 }
 
 CustomShapeButton::~CustomShapeButton() = default;

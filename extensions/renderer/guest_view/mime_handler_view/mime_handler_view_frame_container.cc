@@ -59,7 +59,8 @@ blink::WebFrame* MimeHandlerViewFrameContainer::GetContentFrame() const {
 bool MimeHandlerViewFrameContainer::AreFramesAlive() {
   if (!GetContentFrame() || !GetContentFrame()->FirstChild()) {
     container_manager_->RemoveFrameContainerForReason(
-        this, UMATypes::kRemoveFrameContainerUnexpectedFrames);
+        this, UMATypes::kRemoveFrameContainerUnexpectedFrames,
+        false /* retain_manager */);
     return false;
   }
   return true;
@@ -85,7 +86,8 @@ bool MimeHandlerViewFrameContainer::AreFramesValid() {
     }
   }
   container_manager_->RemoveFrameContainerForReason(
-      this, UMATypes::kRemoveFrameContainerUnexpectedFrames);
+      this, UMATypes::kRemoveFrameContainerUnexpectedFrames,
+      false /* retain_manager */);
   return false;
 }
 

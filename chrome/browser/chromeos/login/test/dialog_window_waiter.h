@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/env_observer.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 
 namespace chromeos {
@@ -50,7 +51,7 @@ class DialogWindowWaiter : public aura::EnvObserver,
   base::RunLoop run_loop_;
 
   std::set<aura::Window*> dialog_windows_;
-  ScopedObserver<aura::Window, DialogWindowWaiter> window_observer_{this};
+  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DialogWindowWaiter);
 };

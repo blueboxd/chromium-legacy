@@ -6788,7 +6788,7 @@ bool GLES2Implementation::IsWebPDecodeAccelerationSupported() const {
 }
 
 bool GLES2Implementation::CanDecodeWithHardwareAcceleration(
-    base::span<const uint8_t> encoded_data) const {
+    const cc::ImageHeaderMetadata* image_metadata) const {
   NOTREACHED();
   return false;
 }

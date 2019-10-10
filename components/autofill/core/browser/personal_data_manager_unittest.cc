@@ -4467,7 +4467,7 @@ TEST_F(PersonalDataManagerTest, MergeProfile_Frecency) {
 
   // Merge the imported profile into the existing profiles.
   std::vector<AutofillProfile> profiles;
-  std::string guid = personal_data_->MergeProfile(
+  std::string guid = AutofillProfileComparator::MergeProfile(
       imported_profile, &existing_profiles, "US-EN", &profiles);
 
   // The new profile should be merged into the "fox" profile.
@@ -4516,7 +4516,7 @@ TEST_F(PersonalDataManagerTest, MAYBE_MergeProfile_UsageStats) {
 
   // Merge the imported profile into the existing profiles.
   std::vector<AutofillProfile> profiles;
-  std::string guid = personal_data_->MergeProfile(
+  std::string guid = AutofillProfileComparator::MergeProfile(
       imported_profile, &existing_profiles, "US-EN", &profiles);
 
   // The new profile should be merged into the existing profile.

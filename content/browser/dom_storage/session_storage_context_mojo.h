@@ -18,8 +18,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/threading/sequence_bound.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "components/services/leveldb/leveldb_database_impl.h"
+#include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
@@ -132,20 +135,23 @@ class CONTENT_EXPORT SessionStorageContextMojo
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  using DatabaseFactory = base::RepeatingCallback<
-      std::unique_ptr<leveldb::mojom::LevelDBDatabase>()>;
-  void SetDatabaseFactoryForTesting(DatabaseFactory factory) {
-    database_factory_for_testing_ = std::move(factory);
-  }
-
   void PretendToConnectForTesting();
 
-  leveldb::mojom::LevelDBDatabase* DatabaseForTesting() {
-    return database_.get();
-  }
+  leveldb::LevelDBDatabaseImpl* DatabaseForTesting() { return database_.get(); }
 
   void FlushAreaForTesting(const std::string& namespace_id,
                            const url::Origin& origin);
+
+  // Access the underlying DomStorageDatabase. May be null if the database is
+  // not yet open.
+  const base::SequenceBound<storage::DomStorageDatabase>&
+  GetDatabaseForTesting() const {
+    return database_->database();
+  }
+
+  // Wait for the database to be opened, or for opening to fail. If the database
+  // is already opened, |callback| is invoked immediately.
+  void SetDatabaseOpenCallbackForTesting(base::OnceClosure callback);
 
  private:
   friend class DOMStorageBrowserTest;
@@ -250,7 +256,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;
 
-  std::unique_ptr<leveldb::mojom::LevelDBDatabase> database_;
+  std::unique_ptr<leveldb::LevelDBDatabaseImpl> database_;
   bool in_memory_ = false;
   bool tried_to_recreate_during_open_ = false;
 
@@ -280,8 +286,6 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   // Name of an extra histogram to log open results to, if not null.
   const char* open_result_histogram_ = nullptr;
-
-  DatabaseFactory database_factory_for_testing_;
 
   base::WeakPtrFactory<SessionStorageContextMojo> weak_ptr_factory_{this};
 };

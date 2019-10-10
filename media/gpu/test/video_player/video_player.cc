@@ -54,6 +54,9 @@ bool VideoPlayer::CreateDecoderClient(
   CHECK(frame_renderer);
   DVLOGF(4);
 
+  // base::Unretained is safe here as we will never receive callbacks after
+  // destroying the video player, since the video decoder client will be
+  // destroyed first.
   EventCallback event_cb =
       base::BindRepeating(&VideoPlayer::NotifyEvent, base::Unretained(this));
 

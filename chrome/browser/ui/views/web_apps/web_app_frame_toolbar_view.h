@@ -25,6 +25,7 @@
 #include "ui/views/widget/widget_observer.h"
 
 class AppMenuButton;
+class AvatarToolbarButton;
 class BrowserView;
 class ExtensionsToolbarContainer;
 class PageActionIconContainerView;
@@ -118,6 +119,7 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   views::AccessiblePaneView* GetAsAccessiblePaneView() override;
   views::View* GetAnchorView(PageActionIconType type) override;
   void ZoomChangedForActiveTab(bool can_show_bubble) override;
+  AvatarToolbarButton* GetAvatarToolbarButton() override;
 
   // views::WidgetObserver:
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;

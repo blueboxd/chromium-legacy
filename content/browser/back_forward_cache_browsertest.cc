@@ -2731,4 +2731,26 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebUSB) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Encoding) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/back_forward_cache/charset_windows-1250.html"));
+  const GURL url_b(embedded_test_server()->GetURL(
+      "b.com", "/back_forward_cache/charset_utf-8.html"));
+  const url::Origin origin_a = url::Origin::Create(url_a);
+  const url::Origin origin_b = url::Origin::Create(url_b);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  EXPECT_EQ(web_contents()->GetEncoding(), "windows-1250");
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_EQ(web_contents()->GetEncoding(), "UTF-8");
+
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(web_contents()->GetEncoding(), "windows-1250");
+}
+
 }  // namespace content

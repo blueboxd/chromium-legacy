@@ -341,12 +341,12 @@ network::mojom::URLLoaderFactoryPtrInfo CreateURLLoaderFactory(
   return factory_info;
 }
 
-void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+void MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
     content::RenderFrameHost* frame,
     std::vector<url::Origin> request_initiators,
     bool push_to_renderer_now) {
   DCHECK(!request_initiators.empty());
-  frame->MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+  frame->MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
       std::move(request_initiators), push_to_renderer_now);
 }
 
@@ -480,7 +480,7 @@ void URLLoaderFactoryManager::ReadyToCommitNavigation(
     // factories are pushed slightly later - during the commit.
     constexpr bool kPushToRendererNow = false;
 
-    MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+    MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
         frame, std::move(initiators_requiring_separate_factory),
         kPushToRendererNow);
   }
@@ -511,7 +511,7 @@ void URLLoaderFactoryManager::WillExecuteCode(content::RenderFrameHost* frame,
   // legacy IPC pipe (raciness will be introduced if that ever changes).
   constexpr bool kPushToRendererNow = true;
 
-  MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+  MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
       frame, {url::Origin::Create(extension->url())}, kPushToRendererNow);
 }
 
@@ -542,7 +542,7 @@ network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
       registry->enabled_extensions().GetByID(precursor_origin.host());
   if (!extension) {
     // This may happen if an extension gets disabled between the time
-    // RenderFrameHost::MarkInitiatorAsRequiringSeparateURLLoaderFactory is
+    // RenderFrameHost::MarkIsolatedWorldAsRequiringSeparateURLLoaderFactory is
     // called and the time
     // ContentBrowserClient::CreateURLLoaderFactory is called.
     return network::mojom::URLLoaderFactoryPtrInfo();

@@ -259,12 +259,12 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
 
   void SimulateFreezeCompletion(content::WebContents* content) {
     GetTabLifecycleUnit(content)->UpdateLifecycleState(
-        mojom::LifecycleState::kFrozen);
+        performance_manager::mojom::LifecycleState::kFrozen);
   }
 
   void SimulateUnfreezeCompletion(content::WebContents* content) {
     GetTabLifecycleUnit(content)->UpdateLifecycleState(
-        mojom::LifecycleState::kRunning);
+        performance_manager::mojom::LifecycleState::kRunning);
   }
 
   virtual void CheckThrottleResults(

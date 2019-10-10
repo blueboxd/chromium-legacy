@@ -117,7 +117,7 @@ void NotifyAndroidAppListRefreshed(
 
 }  // namespace
 
-DeviceActions::DeviceActions() : scoped_prefs_observer_(this) {}
+DeviceActions::DeviceActions() = default;
 
 DeviceActions::~DeviceActions() {
   receivers_.Clear();

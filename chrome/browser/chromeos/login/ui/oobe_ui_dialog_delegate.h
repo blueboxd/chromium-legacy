@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/public/cpp/login_types.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -18,18 +19,11 @@
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/screen.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
-
-namespace ash {
-class TabletMode;
-}
 
 namespace content {
 class WebContents;
-}
-
-namespace display {
-class Screen;
 }
 
 namespace ui {
@@ -43,10 +37,9 @@ class Widget;
 
 namespace chromeos {
 
+class CaptivePortalDialogDelegate;
 class LoginDisplayHostMojo;
 class OobeUI;
-
-class CaptivePortalDialogDelegate;
 
 // This class manages the behavior of the Oobe UI dialog.
 // And its lifecycle is managed by the widget created in Show().
@@ -145,7 +138,7 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   ScopedObserver<ChromeKeyboardControllerClient,
                  ChromeKeyboardControllerClient::Observer>
       keyboard_observer_{this};
-  ScopedObserver<CaptivePortalWindowProxy, OobeUIDialogDelegate>
+  ScopedObserver<CaptivePortalWindowProxy, CaptivePortalWindowProxy::Observer>
       captive_portal_observer_{this};
 
   std::map<ui::Accelerator, std::string> accel_map_;

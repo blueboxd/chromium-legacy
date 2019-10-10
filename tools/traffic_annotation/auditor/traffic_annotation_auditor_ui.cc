@@ -19,7 +19,7 @@ namespace {
 
 const char* HELP_TEXT = R"(
 Traffic Annotation Auditor
-Extracts network traffic annotaions from the repository, audits them for errors
+Extracts network traffic annotations from the repository, audits them for errors
 and coverage, produces reports, and updates related files.
 
 Usage: traffic_annotation_auditor [OPTION]... [path_filters]
@@ -67,7 +67,7 @@ Options:
   --extractor-backend=[clang_tool,python_script]
                       Optional flag specifying which backend to use for
                       extracting annotation definitions from source code (Clang
-                      Tool or extractor.py). Defaults to "clang_tool".
+                      Tool or extractor.py). Defaults to "python_script".
   path_filters        Optional paths to filter which files the tool is run on.
                       It can also include deleted files names when auditor is
                       run on a partial repository.

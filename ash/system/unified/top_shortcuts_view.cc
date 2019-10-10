@@ -23,6 +23,7 @@
 #include "ash/system/unified/user_chooser_view.h"
 #include "base/numerics/ranges.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view_class_properties.h"
@@ -50,12 +51,7 @@ UserAvatarButton::UserAvatarButton(views::ButtonListener* listener)
   SetInstallFocusRingOnFocus(true);
   SetFocusForPlatform();
 
-  int focus_ring_radius =
-      kTrayItemSize + kUnifiedCircularButtonFocusPadding.width();
-  auto path = std::make_unique<SkPath>();
-  path->addOval(gfx::RectToSkRect(
-      gfx::Rect(gfx::Size(focus_ring_radius, focus_ring_radius))));
-  SetProperty(views::kHighlightPathKey, path.release());
+  views::InstallCircleHighlightPathGenerator(this);
 }
 
 }  // namespace

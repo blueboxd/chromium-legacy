@@ -12,6 +12,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/libovr/src/Include/OVR_CAPI.h"
 
 namespace device {
@@ -52,7 +53,8 @@ class DEVICE_VR_EXPORT OculusDevice
 
   // mojom::IsolatedXRGamepadProviderFactory
   void GetIsolatedXRGamepadProvider(
-      mojom::IsolatedXRGamepadProviderRequest provider_request) override;
+      mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> provider_receiver)
+      override;
 
   // XRCompositorHost
   void CreateImmersiveOverlay(
@@ -72,7 +74,7 @@ class DEVICE_VR_EXPORT OculusDevice
   mojo::Binding<mojom::XRSessionController> exclusive_controller_binding_;
   mojo::Binding<mojom::IsolatedXRGamepadProviderFactory>
       gamepad_provider_factory_binding_;
-  mojom::IsolatedXRGamepadProviderRequest provider_request_;
+  mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> provider_receiver_;
 
   mojo::Binding<mojom::XRCompositorHost> compositor_host_binding_;
   mojom::ImmersiveOverlayRequest overlay_request_;

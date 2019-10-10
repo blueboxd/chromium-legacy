@@ -22,9 +22,9 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/view_class_properties.h"
 
 using chromeos::CrasAudioHandler;
 
@@ -88,10 +88,7 @@ class MoreButton : public views::Button {
     SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO));
     TrayPopupUtils::ConfigureTrayPopupButton(this);
 
-    auto path = std::make_unique<SkPath>();
-    path->addRoundRect(gfx::RectToSkRect(gfx::Rect(CalculatePreferredSize())),
-                       kTrayItemSize / 2, kTrayItemSize / 2);
-    SetProperty(views::kHighlightPathKey, path.release());
+    views::InstallPillHighlightPathGenerator(this);
   }
 
   ~MoreButton() override = default;
@@ -124,11 +121,6 @@ class MoreButton : public views::Button {
     return TrayPopupUtils::CreateInkDropHighlight(
         TrayPopupInkDropStyle::FILL_BOUNDS, this,
         UnifiedSystemTrayView::GetBackgroundColor());
-  }
-
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
-                                                         kTrayItemSize / 2);
   }
 
   const char* GetClassName() const override { return "MoreButton"; }

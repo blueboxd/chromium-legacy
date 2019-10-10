@@ -111,6 +111,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableFormControlsRefresh(bool);
   BLINK_PLATFORM_EXPORT static void EnableGenericSensorExtraClasses(bool);
   BLINK_PLATFORM_EXPORT static void EnableImplicitRootScroller(bool);
+  BLINK_PLATFORM_EXPORT static void EnableCSSOMViewScrollCoordinates(bool);
   BLINK_PLATFORM_EXPORT static void EnableInputMultipleFieldsUI(bool);
   BLINK_PLATFORM_EXPORT static void EnableBuiltInModuleAll(bool);
   BLINK_PLATFORM_EXPORT static void EnableBuiltInModuleInfra(bool);

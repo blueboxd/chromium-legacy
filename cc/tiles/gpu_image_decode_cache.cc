@@ -30,6 +30,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
@@ -557,12 +558,15 @@ class GpuImageDecodeTaskImpl : public TileTask {
     TRACE_EVENT2("cc", "GpuImageDecodeTaskImpl::RunOnWorkerThread", "mode",
                  "gpu", "source_prepare_tiles_id",
                  tracing_info_.prepare_tiles_id);
+
+    const auto* image_metadata = image_.paint_image().GetImageHeaderMetadata();
+    const ImageType image_type =
+        image_metadata ? image_metadata->image_type : ImageType::kInvalid;
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
         &image_.paint_image(),
         devtools_instrumentation::ScopedImageDecodeTask::kGpu,
         ImageDecodeCache::ToScopedTaskType(tracing_info_.task_type),
-        ImageDecodeCache::ToScopedImageType(
-            image_.paint_image().GetImageType()));
+        ImageDecodeCache::ToScopedImageType(image_type));
     cache_->DecodeImageInTask(image_, tracing_info_.task_type);
   }
 
@@ -589,12 +593,10 @@ class ImageUploadTaskImpl : public TileTask {
   ImageUploadTaskImpl(GpuImageDecodeCache* cache,
                       const DrawImage& draw_image,
                       scoped_refptr<TileTask> decode_dependency,
-                      sk_sp<SkData> encoded_data,
                       const ImageDecodeCache::TracingInfo& tracing_info)
       : TileTask(false),
         cache_(cache),
         image_(draw_image),
-        encoded_data_(std::move(encoded_data)),
         tracing_info_(tracing_info) {
     DCHECK(!SkipImage(draw_image));
     // If an image is already decoded and locked, we will not generate a
@@ -610,7 +612,7 @@ class ImageUploadTaskImpl : public TileTask {
   void RunOnWorkerThread() override {
     TRACE_EVENT2("cc", "ImageUploadTaskImpl::RunOnWorkerThread", "mode", "gpu",
                  "source_prepare_tiles_id", tracing_info_.prepare_tiles_id);
-    cache_->UploadImageInTask(image_, std::move(encoded_data_));
+    cache_->UploadImageInTask(image_);
   }
 
   // Overridden from TileTask:
@@ -624,7 +626,6 @@ class ImageUploadTaskImpl : public TileTask {
  private:
   GpuImageDecodeCache* cache_;
   DrawImage image_;
-  sk_sp<SkData> encoded_data_;
   const ImageDecodeCache::TracingInfo tracing_info_;
 };
 
@@ -1029,7 +1030,6 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
   const InUseCacheKey cache_key = InUseCacheKey::FromDrawImage(draw_image);
   ImageData* image_data = GetImageDataForDrawImage(draw_image, cache_key);
   scoped_refptr<ImageData> new_data;
-  sk_sp<SkData> encoded_data;
   if (!image_data) {
     // We need an ImageData, create one now. Note that hardware decode
     // acceleration is allowed only in the DecodeTaskType::kPartOfUploadTask
@@ -1038,8 +1038,7 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
     new_data = CreateImageData(
         draw_image,
         task_type ==
-            DecodeTaskType::kPartOfUploadTask /* allow_hardware_decode */,
-        &encoded_data);
+            DecodeTaskType::kPartOfUploadTask /* allow_hardware_decode */);
     image_data = new_data.get();
   } else if (image_data->decode.decode_failure) {
     // We have already tried and failed to decode this image, so just return.
@@ -1090,7 +1089,7 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
     task = base::MakeRefCounted<ImageUploadTaskImpl>(
         this, draw_image,
         GetImageDecodeTaskAndRef(draw_image, tracing_info, task_type),
-        std::move(encoded_data), tracing_info);
+        tracing_info);
     image_data->upload.task = task;
   } else {
     task = GetImageDecodeTaskAndRef(draw_image, tracing_info, task_type);
@@ -1129,11 +1128,9 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
   base::AutoLock lock(lock_);
   const InUseCacheKey cache_key = InUseCacheKey::FromDrawImage(draw_image);
   ImageData* image_data = GetImageDataForDrawImage(draw_image, cache_key);
-  sk_sp<SkData> encoded_data;
   if (!image_data) {
     // We didn't find the image, create a new entry.
-    auto data = CreateImageData(draw_image, true /* allow_hardware_decode */,
-                                &encoded_data);
+    auto data = CreateImageData(draw_image, true /* allow_hardware_decode */);
     image_data = data.get();
     AddToPersistentCache(draw_image, std::move(data));
   }
@@ -1148,7 +1145,7 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
   // We may or may not need to decode and upload the image we've found, the
   // following functions early-out to if we already decoded.
   DecodeImageIfNecessary(draw_image, image_data, TaskType::kInRaster);
-  UploadImageIfNecessary(draw_image, image_data, std::move(encoded_data));
+  UploadImageIfNecessary(draw_image, image_data);
   // Unref the image decode, but not the image. The image ref will be released
   // in DrawWithImageFinished.
   UnrefImageDecode(draw_image, cache_key);
@@ -1472,8 +1469,7 @@ void GpuImageDecodeCache::DecodeImageInTask(const DrawImage& draw_image,
   DecodeImageIfNecessary(draw_image, image_data, task_type);
 }
 
-void GpuImageDecodeCache::UploadImageInTask(const DrawImage& draw_image,
-                                            sk_sp<SkData> encoded_data) {
+void GpuImageDecodeCache::UploadImageInTask(const DrawImage& draw_image) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::UploadImage");
   base::Optional<viz::RasterContextProvider::ScopedRasterContextLock>
@@ -1493,7 +1489,7 @@ void GpuImageDecodeCache::UploadImageInTask(const DrawImage& draw_image,
 
   if (image_data->is_bitmap_backed)
     DecodeImageIfNecessary(draw_image, image_data, TaskType::kInRaster);
-  UploadImageIfNecessary(draw_image, image_data, std::move(encoded_data));
+  UploadImageIfNecessary(draw_image, image_data);
 }
 
 void GpuImageDecodeCache::OnImageDecodeTaskCompleted(
@@ -1949,8 +1945,7 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
 }
 
 void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
-                                                 ImageData* image_data,
-                                                 sk_sp<SkData> encoded_data) {
+                                                 ImageData* image_data) {
   CheckContextLockAcquiredIfNecessary();
   lock_.AssertAcquired();
 
@@ -2012,14 +2007,11 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
       DCHECK_EQ(0, image_data->upload_scale_mip_level);
       const gfx::Size output_size(draw_image.paint_image().width(),
                                   draw_image.paint_image().height());
-      // Try to get the encoded data if we don't have it already: this can
-      // happen, e.g., if we create an upload task using a pre-existing
-      // ImageData. In that case, we previously decided to do hardware decode
-      // acceleration but we didn't cache the encoded data.
-      if (!encoded_data) {
-        encoded_data = draw_image.paint_image().GetSkImage()->refEncodedData();
-        DCHECK(encoded_data);
-      }
+
+      // Get the encoded data in a contiguous form.
+      sk_sp<SkData> encoded_data =
+          draw_image.paint_image().GetSkImage()->refEncodedData();
+      DCHECK(encoded_data);
       const uint32_t transfer_cache_id =
           ClientImageTransferCacheEntry::GetNextId();
       const gpu::SyncToken decode_sync_token =
@@ -2216,8 +2208,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
 
 scoped_refptr<GpuImageDecodeCache::ImageData>
 GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
-                                     bool allow_hardware_decode,
-                                     sk_sp<SkData>* encoded_data) {
+                                     bool allow_hardware_decode) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::CreateImageData");
   lock_.AssertAcquired();
@@ -2263,21 +2254,12 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
   // Figure out if we will do hardware accelerated decoding. The criteria is as
   // follows:
   //
-  // - Either the kVaapiJpegImageDecodeAcceleration or
-  //   kVaapiWebPImageDecodeAcceleration features are enabled.
   // - The caller allows hardware decodes.
   // - We are using the transfer cache (OOP-R).
   // - The image does not require downscaling for uploading (see TODO below).
-  // - All the encoded data was received prior to any decoding work. Otherwise,
-  //   it means that the software decoder has already started decoding the
-  //   image, so we just let it finish.
-  // - The image's color space is sRGB. This is because we don't currently
-  //   support detecting embedded color profiles.
+  // - The image does not require subsetting.
   // - The image is supported according to the profiles advertised by the GPU
-  //   service. Checking this involves obtaining the contiguous encoded data
-  //   which may require a copy if the data is not already contiguous. Because
-  //   of this, we return a pointer to the contiguous data (as |encoded_data|)
-  //   so that we can re-use it later (when requesting the image decode).
+  //   service.
   //
   // TODO(crbug.com/953367): currently, we don't support scaling with hardware
   // decode acceleration. Note that it's still okay for the image to be
@@ -2286,41 +2268,28 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
   // TODO(crbug.com/981208): |data_size| needs to be set to the size of the
   // decoded data, but for accelerated decodes we won't know until the driver
   // gives us the result in the GPU process. Figure out what to do.
+  const ImageHeaderMetadata* image_metadata =
+      draw_image.paint_image().GetImageHeaderMetadata();
   bool do_hardware_accelerated_decode = false;
-  if ((allow_accelerated_jpeg_decodes_ || allow_accelerated_webp_decodes_) &&
-      allow_hardware_decode && upload_scale_mip_level == 0 &&
-      draw_image.paint_image().IsEligibleForAcceleratedDecoding() &&
-      draw_image.paint_image().color_space() &&
-      draw_image.paint_image().color_space()->isSRGB()) {
-    DCHECK_EQ(mode, DecodedDataMode::kTransferCache);
-    // TODO(crbug.com/995149): we should not require the encoded data to figure
-    // out if the hardware decoder supports the image. Instead, we should pass
-    // only the necessary attributes to CanDecodeWithHardwareAcceleration().
-    // This is important because extracting the encoded data may require a copy
-    // if the data is not contiguous.
-    sk_sp<SkData> tmp_encoded_data =
-        draw_image.paint_image().GetSkImage()
-            ? draw_image.paint_image().GetSkImage()->refEncodedData()
-            : nullptr;
-    if (tmp_encoded_data &&
-        context_->ContextSupport()->CanDecodeWithHardwareAcceleration(
-            base::make_span<const uint8_t>(tmp_encoded_data->bytes(),
-                                           tmp_encoded_data->size()))) {
-      const bool is_jpeg = (draw_image.paint_image().GetImageType() ==
-                            PaintImage::ImageType::kJPEG);
-      const bool is_webp = (draw_image.paint_image().GetImageType() ==
-                            PaintImage::ImageType::kWEBP);
-      do_hardware_accelerated_decode =
-          (is_jpeg && allow_accelerated_jpeg_decodes_) ||
-          (is_webp && allow_accelerated_webp_decodes_);
-      DCHECK(encoded_data);
-      *encoded_data = std::move(tmp_encoded_data);
-    }
+  if (allow_hardware_decode && mode == DecodedDataMode::kTransferCache &&
+      upload_scale_mip_level == 0 &&
+      draw_image.paint_image().subset_rect().IsEmpty() &&
+      context_->ContextSupport()->CanDecodeWithHardwareAcceleration(
+          image_metadata)) {
+    DCHECK(image_metadata);
+    DCHECK_EQ(image_metadata->image_size.width(),
+              draw_image.paint_image().width());
+    DCHECK_EQ(image_metadata->image_size.height(),
+              draw_image.paint_image().height());
+
+    const bool is_jpeg = (image_metadata->image_type == ImageType::kJPEG);
+    const bool is_webp = (image_metadata->image_type == ImageType::kWEBP);
+    do_hardware_accelerated_decode =
+        (is_jpeg && allow_accelerated_jpeg_decodes_) ||
+        (is_webp && allow_accelerated_webp_decodes_);
+    DCHECK(!do_hardware_accelerated_decode || !is_bitmap_backed);
   }
 
-  // If draw_image.paint_image().IsEligibleForAcceleratedDecoding() returns
-  // true, the image should not be backed by a bitmap.
-  DCHECK(!do_hardware_accelerated_decode || !is_bitmap_backed);
   SkYUVASizeInfo target_yuva_size_info;
   // We fill out a default value for |yuv_color_space| but only fill out the
   // base::Optional member in ImageData if it is YUV.
@@ -2678,8 +2647,8 @@ bool GpuImageDecodeCache::IsCompatible(const ImageData* image_data,
 
 size_t GpuImageDecodeCache::GetDrawImageSizeForTesting(const DrawImage& image) {
   base::AutoLock lock(lock_);
-  scoped_refptr<ImageData> data = CreateImageData(
-      image, false /* allow_hardware_decode */, nullptr /* encoded_data */);
+  scoped_refptr<ImageData> data =
+      CreateImageData(image, false /* allow_hardware_decode */);
   return data->size;
 }
 

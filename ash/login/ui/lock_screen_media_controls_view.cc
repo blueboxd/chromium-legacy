@@ -530,10 +530,8 @@ void LockScreenMediaControlsView::MediaSessionChanged(
   }
 
   // If |media_session_id_| resumed while waiting, don't hide the controls.
-  if (hide_controls_timer_->IsRunning() && request_id == media_session_id_) {
+  if (hide_controls_timer_->IsRunning() && request_id == media_session_id_)
     hide_controls_timer_->Stop();
-    enabled_actions_.clear();
-  }
 
   // If this session is different than the previous one, wait to see if the
   // previous one resumes before hiding the controls.

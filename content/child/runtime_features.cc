@@ -337,6 +337,10 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   WebRuntimeFeatures::EnableImplicitRootScroller(
       base::FeatureList::IsEnabled(blink::features::kImplicitRootScroller));
 
+  if (base::FeatureList::IsEnabled(
+          blink::features::kCSSOMViewScrollCoordinates))
+    WebRuntimeFeatures::EnableCSSOMViewScrollCoordinates(true);
+
   WebRuntimeFeatures::EnableTextFragmentAnchor(
       base::FeatureList::IsEnabled(blink::features::kTextFragmentAnchor));
 

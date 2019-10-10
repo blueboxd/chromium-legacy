@@ -1485,10 +1485,6 @@
     "label": "//third_party/leveldatabase:leveldb_put_get_delete_fuzzer",
     "type": "fuzzer",
   },
-  "leveldb_service_unittests": {
-    "label": "//components/services/leveldb:leveldb_service_unittests",
-    "type": "console_test_launcher",
-  },
   "libANGLE": {
     "label": "//third_party/angle:libANGLE",
     "type": "additional_compile_target",

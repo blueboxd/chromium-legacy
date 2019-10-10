@@ -617,8 +617,8 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
     auto tex_wrapper = texture_selector_->CreateTextureWrapper(
         device_, video_device_, device_context_, in_texture, size);
 
-    picture_buffers_.push_back(new D3D11PictureBuffer(
-        GL_TEXTURE_EXTERNAL_OES, std::move(tex_wrapper), size, i));
+    picture_buffers_.push_back(
+        new D3D11PictureBuffer(std::move(tex_wrapper), size, i));
     if (!picture_buffers_[i]->Init(get_helper_cb_, video_device_,
                                    texture_selector_->DecoderGuid(),
                                    textures_per_picture, media_log_->Clone())) {

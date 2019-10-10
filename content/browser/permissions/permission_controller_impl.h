@@ -57,15 +57,15 @@ class CONTENT_EXPORT PermissionControllerImpl : public PermissionController {
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       bool user_gesture,
-      const base::Callback<void(blink::mojom::PermissionStatus)>& callback);
+      base::OnceCallback<void(blink::mojom::PermissionStatus)> callback);
 
   int RequestPermissions(
       const std::vector<PermissionType>& permission,
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       bool user_gesture,
-      const base::Callback<
-          void(const std::vector<blink::mojom::PermissionStatus>&)>& callback);
+      base::OnceCallback<
+          void(const std::vector<blink::mojom::PermissionStatus>&)> callback);
 
   void ResetPermission(PermissionType permission,
                        const GURL& requesting_origin,
@@ -75,7 +75,8 @@ class CONTENT_EXPORT PermissionControllerImpl : public PermissionController {
       PermissionType permission,
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
-      const base::Callback<void(blink::mojom::PermissionStatus)>& callback);
+      const base::RepeatingCallback<void(blink::mojom::PermissionStatus)>&
+          callback);
 
   void UnsubscribePermissionStatusChange(int subscription_id);
 

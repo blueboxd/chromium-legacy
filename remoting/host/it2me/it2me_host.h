@@ -94,7 +94,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
       base::WeakPtr<It2MeHost::Observer> observer,
       std::unique_ptr<SignalStrategy> signal_strategy,
       const std::string& username,
-      const std::string& directory_bot_jid,
       const protocol::IceConfig& ice_config);
 
   // Disconnects and shuts down the host.
@@ -144,7 +143,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // Task posted to the network thread from Connect().
   void ConnectOnNetworkThread(
       const std::string& username,
-      const std::string& directory_bot_jid,
       const protocol::IceConfig& ice_config,
       std::unique_ptr<RegisterSupportHostRequest> register_request);
 

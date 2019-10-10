@@ -560,6 +560,62 @@ class MenuControllerTest : public ViewsTestBase,
     EXPECT_TRUE(options.monitor_bounds.Contains(final_bounds));
   }
 
+  void TestMenuFitsOnSmallScreen(MenuAnchorPosition menu_anchor_position,
+                                 const gfx::Rect& monitor_bounds) {
+    SCOPED_TRACE(base::StringPrintf(
+        "MenuAnchorPosition: %d, monitor_bounds: @%s\n", menu_anchor_position,
+        monitor_bounds.ToString().c_str()));
+    MenuBoundsOptions options;
+    options.menu_anchor = menu_anchor_position;
+    options.monitor_bounds = monitor_bounds;
+    options.menu_size = monitor_bounds.size();
+    options.menu_size.Enlarge(100, 100);
+    const gfx::Size anchor_size(0, 0);
+
+    // Adjust the final bounds to not include the shadow and border.
+    const gfx::Insets border_and_shadow_insets =
+        BubbleBorder::GetBorderAndShadowInsets(
+            MenuConfig::instance().touchable_menu_shadow_elevation);
+
+    options.anchor_bounds = gfx::Rect(monitor_bounds.origin(), anchor_size);
+    gfx::Rect final_bounds = CalculateBubbleMenuBounds(options);
+    final_bounds.Inset(border_and_shadow_insets);
+    EXPECT_TRUE(options.monitor_bounds.Contains(final_bounds))
+        << options.monitor_bounds.ToString() << " does not contain "
+        << final_bounds.ToString();
+
+    options.anchor_bounds =
+        gfx::Rect(monitor_bounds.bottom_left(), anchor_size);
+    final_bounds = CalculateBubbleMenuBounds(options);
+    final_bounds.Inset(border_and_shadow_insets);
+    EXPECT_TRUE(options.monitor_bounds.Contains(final_bounds))
+        << options.monitor_bounds.ToString() << " does not contain "
+        << final_bounds.ToString();
+
+    options.anchor_bounds =
+        gfx::Rect(monitor_bounds.bottom_right(), anchor_size);
+    final_bounds = CalculateBubbleMenuBounds(options);
+    final_bounds.Inset(border_and_shadow_insets);
+    EXPECT_TRUE(options.monitor_bounds.Contains(final_bounds))
+        << options.monitor_bounds.ToString() << " does not contain "
+        << final_bounds.ToString();
+
+    options.anchor_bounds = gfx::Rect(monitor_bounds.top_right(), anchor_size);
+    final_bounds = CalculateBubbleMenuBounds(options);
+    final_bounds.Inset(border_and_shadow_insets);
+    EXPECT_TRUE(options.monitor_bounds.Contains(final_bounds))
+        << options.monitor_bounds.ToString() << " does not contain "
+        << final_bounds.ToString();
+
+    options.anchor_bounds =
+        gfx::Rect(monitor_bounds.CenterPoint(), anchor_size);
+    final_bounds = CalculateBubbleMenuBounds(options);
+    final_bounds.Inset(border_and_shadow_insets);
+    EXPECT_TRUE(options.monitor_bounds.Contains(final_bounds))
+        << options.monitor_bounds.ToString() << " does not contain "
+        << final_bounds.ToString();
+  }
+
   void TestSubmenuFitsOnScreen(MenuItemView* item,
                                const gfx::Rect& monitor_bounds,
                                const gfx::Rect& parent_bounds) {
@@ -1852,6 +1908,24 @@ TEST_P(MenuControllerTest, TestMenuFitsOnScreenSmallAnchor) {
                                       monitor_bounds);
       TestMenuFitsOnScreenSmallAnchor(MenuAnchorPosition::kBubbleRight,
                                       monitor_bounds);
+    }
+}
+
+// Test that menus fit a small screen.
+TEST_P(MenuControllerTest, TestMenuFitsOnSmallScreen) {
+  const int display_size = 500;
+
+  // Simulate multiple display layouts.
+  for (int x = -1; x <= 1; x++)
+    for (int y = -1; y <= 1; y++) {
+      const gfx::Rect monitor_bounds(x * display_size, y * display_size,
+                                     display_size, display_size);
+      TestMenuFitsOnSmallScreen(MenuAnchorPosition::kBubbleAbove,
+                                monitor_bounds);
+      TestMenuFitsOnSmallScreen(MenuAnchorPosition::kBubbleLeft,
+                                monitor_bounds);
+      TestMenuFitsOnSmallScreen(MenuAnchorPosition::kBubbleRight,
+                                monitor_bounds);
     }
 }
 

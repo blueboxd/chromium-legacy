@@ -109,8 +109,7 @@ void PowerHandler::TestAPI::SetLidClosedBehavior(
   handler_->HandleSetLidClosedBehavior(&args);
 }
 
-PowerHandler::PowerHandler(PrefService* prefs)
-    : prefs_(prefs), power_manager_client_observer_(this) {}
+PowerHandler::PowerHandler(PrefService* prefs) : prefs_(prefs) {}
 
 PowerHandler::~PowerHandler() {}
 

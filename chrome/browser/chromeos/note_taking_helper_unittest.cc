@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_bridge.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/note_taking_controller_client.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -33,9 +34,11 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/mojom/file_system.mojom.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
+#include "components/arc/test/fake_file_system_instance.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/crx_file/id_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -80,21 +83,6 @@ std::string GetAppString(const std::string& id,
 std::string GetAppString(const NoteTakingAppInfo& info) {
   return GetAppString(info.app_id, info.name, info.preferred,
                       info.lock_screen_support);
-}
-
-// Helper functions returning strings that can be used to compare launched
-// intents.
-std::string GetIntentString(const std::string& package,
-                            const std::string& clip_data_uri) {
-  return base::StringPrintf(
-      "%s %s", package.c_str(),
-      clip_data_uri.empty() ? "[unset]" : clip_data_uri.c_str());
-}
-std::string GetIntentString(const HandledIntent& intent) {
-  EXPECT_EQ(NoteTakingHelper::kIntentAction, intent.intent->action);
-  return GetIntentString(
-      intent.activity->package_name,
-      (intent.intent->clip_data_uri ? *intent.intent->clip_data_uri : ""));
 }
 
 // Creates an ARC IntentHandlerInfo object.
@@ -165,8 +153,13 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
           ->arc_bridge_service()
           ->intent_helper()
           ->CloseInstance(&intent_helper_);
+      arc::ArcServiceManager::Get()
+          ->arc_bridge_service()
+          ->file_system()
+          ->CloseInstance(file_system_.get());
       NoteTakingHelper::Shutdown();
       intent_helper_bridge_.reset();
+      file_system_bridge_.reset();
       arc_test_.TearDown();
     }
     extensions::ExtensionSystem::Get(profile())->Shutdown();
@@ -217,6 +210,18 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
         ->SetInstance(&intent_helper_);
     WaitForInstanceReady(
         arc::ArcServiceManager::Get()->arc_bridge_service()->intent_helper());
+
+    file_system_bridge_ = std::make_unique<arc::ArcFileSystemBridge>(
+        profile(), arc::ArcServiceManager::Get()->arc_bridge_service());
+    file_system_ = std::make_unique<arc::FakeFileSystemInstance>();
+
+    arc::ArcServiceManager::Get()
+        ->arc_bridge_service()
+        ->file_system()
+        ->SetInstance(file_system_.get());
+    WaitForInstanceReady(
+        arc::ArcServiceManager::Get()->arc_bridge_service()->file_system());
+    ASSERT_TRUE(file_system_->InitCalled());
 
     if (flags & ENABLE_PALETTE) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -404,6 +409,10 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
   std::vector<ChromeAppLaunchInfo> launched_chrome_apps_;
 
   arc::FakeIntentHelperInstance intent_helper_;
+
+  std::unique_ptr<arc::ArcFileSystemBridge> file_system_bridge_;
+
+  std::unique_ptr<arc::FakeFileSystemInstance> file_system_;
 
   // Pointer to the primary profile (returned by |profile()|) prefs - owned by
   // the profile.
@@ -903,9 +912,16 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidApp) {
   // The installed app should be launched.
   std::unique_ptr<HistogramTester> histogram_tester(new HistogramTester());
   helper()->LaunchAppForNewNote(profile(), base::FilePath());
-  ASSERT_EQ(1u, intent_helper_.handled_intents().size());
-  EXPECT_EQ(GetIntentString(kPackage1, ""),
-            GetIntentString(intent_helper_.handled_intents()[0]));
+  ASSERT_EQ(1u, file_system_->handledUrlRequests().size());
+  EXPECT_EQ(arc::mojom::ActionType::CREATE_NOTE,
+            file_system_->handledUrlRequests().at(0)->action_type);
+  EXPECT_EQ(
+      kPackage1,
+      file_system_->handledUrlRequests().at(0)->activity_name->package_name);
+  EXPECT_EQ(
+      std::string(),
+      file_system_->handledUrlRequests().at(0)->activity_name->activity_name);
+  ASSERT_EQ(0u, file_system_->handledUrlRequests().at(0)->urls.size());
 
   histogram_tester->ExpectUniqueSample(
       NoteTakingHelper::kPreferredLaunchResultHistogramName,
@@ -926,11 +942,19 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidApp) {
 
   // The second app should be launched now.
   intent_helper_.clear_handled_intents();
+  file_system_->clear_handled_requests();
   histogram_tester.reset(new HistogramTester());
   helper()->LaunchAppForNewNote(profile(), base::FilePath());
-  ASSERT_EQ(1u, intent_helper_.handled_intents().size());
-  EXPECT_EQ(GetIntentString(kPackage2, ""),
-            GetIntentString(intent_helper_.handled_intents()[0]));
+  ASSERT_EQ(1u, file_system_->handledUrlRequests().size());
+  EXPECT_EQ(arc::mojom::ActionType::CREATE_NOTE,
+            file_system_->handledUrlRequests().at(0)->action_type);
+  EXPECT_EQ(
+      kPackage2,
+      file_system_->handledUrlRequests().at(0)->activity_name->package_name);
+  EXPECT_EQ(
+      std::string(),
+      file_system_->handledUrlRequests().at(0)->activity_name->activity_name);
+  ASSERT_EQ(0u, file_system_->handledUrlRequests().at(0)->urls.size());
 
   histogram_tester->ExpectUniqueSample(
       NoteTakingHelper::kPreferredLaunchResultHistogramName,
@@ -954,25 +978,45 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidAppWithPath) {
       file_manager::util::GetDownloadsFolderForProfile(profile()).Append(
           "image.jpg"));
   helper()->LaunchAppForNewNote(profile(), kDownloadedPath);
-  ASSERT_EQ(1u, intent_helper_.handled_intents().size());
-  EXPECT_EQ(GetIntentString(kPackage, GetArcUrl(kDownloadedPath)),
-            GetIntentString(intent_helper_.handled_intents()[0]));
+  ASSERT_EQ(1u, file_system_->handledUrlRequests().size());
+  EXPECT_EQ(arc::mojom::ActionType::CREATE_NOTE,
+            file_system_->handledUrlRequests().at(0)->action_type);
+  EXPECT_EQ(
+      kPackage,
+      file_system_->handledUrlRequests().at(0)->activity_name->package_name);
+  EXPECT_EQ(
+      std::string(),
+      file_system_->handledUrlRequests().at(0)->activity_name->activity_name);
+  ASSERT_EQ(1u, file_system_->handledUrlRequests().at(0)->urls.size());
+  ASSERT_EQ(GetArcUrl(kDownloadedPath),
+            file_system_->handledUrlRequests().at(0)->urls.at(0)->content_url);
 
   const base::FilePath kRemovablePath =
       base::FilePath(file_manager::util::kRemovableMediaPath)
           .Append("image.jpg");
   intent_helper_.clear_handled_intents();
+  file_system_->clear_handled_requests();
   helper()->LaunchAppForNewNote(profile(), kRemovablePath);
-  ASSERT_EQ(1u, intent_helper_.handled_intents().size());
-  EXPECT_EQ(GetIntentString(kPackage, GetArcUrl(kRemovablePath)),
-            GetIntentString(intent_helper_.handled_intents()[0]));
+  ASSERT_EQ(1u, file_system_->handledUrlRequests().size());
+  EXPECT_EQ(arc::mojom::ActionType::CREATE_NOTE,
+            file_system_->handledUrlRequests().at(0)->action_type);
+  EXPECT_EQ(
+      kPackage,
+      file_system_->handledUrlRequests().at(0)->activity_name->package_name);
+  EXPECT_EQ(
+      std::string(),
+      file_system_->handledUrlRequests().at(0)->activity_name->activity_name);
+  ASSERT_EQ(1u, file_system_->handledUrlRequests().at(0)->urls.size());
+  ASSERT_EQ(GetArcUrl(kRemovablePath),
+            file_system_->handledUrlRequests().at(0)->urls.at(0)->content_url);
 
   // When a path that isn't accessible to ARC is passed, the request should be
   // dropped.
   HistogramTester histogram_tester;
   intent_helper_.clear_handled_intents();
+  file_system_->clear_handled_requests();
   helper()->LaunchAppForNewNote(profile(), base::FilePath("/bad/path.jpg"));
-  EXPECT_TRUE(intent_helper_.handled_intents().empty());
+  EXPECT_TRUE(file_system_->handledUrlRequests().empty());
 
   histogram_tester.ExpectUniqueSample(
       NoteTakingHelper::kPreferredLaunchResultHistogramName,

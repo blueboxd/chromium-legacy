@@ -22,12 +22,10 @@
 namespace media {
 
 D3D11PictureBuffer::D3D11PictureBuffer(
-    GLenum target,
     std::unique_ptr<Texture2DWrapper> texture_wrapper,
     gfx::Size size,
     size_t level)
-    : target_(target),
-      texture_wrapper_(std::move(texture_wrapper)),
+    : texture_wrapper_(std::move(texture_wrapper)),
       size_(size),
       level_(level) {}
 
@@ -45,7 +43,7 @@ bool D3D11PictureBuffer::Init(GetCommandBufferHelperCB get_helper_cb,
   view_desc.ViewDimension = D3D11_VDOV_DIMENSION_TEXTURE2D;
   view_desc.Texture2D.ArraySlice = (UINT)level_;
 
-  if (!texture_wrapper_->Init(std::move(get_helper_cb), level_, target_, size_,
+  if (!texture_wrapper_->Init(std::move(get_helper_cb), level_, size_,
                               textures_per_picture)) {
     media_log->AddEvent(
         media_log->CreateStringEvent(MediaLogEvent::MEDIA_ERROR_LOG_ENTRY,

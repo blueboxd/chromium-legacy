@@ -8,11 +8,11 @@
 
 #include "components/performance_manager/graph/node_attached_data_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
-#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 
 namespace performance_manager {
 
-using resource_coordinator::mojom::InterventionPolicy;
+using performance_manager::mojom::InterventionPolicy;
 
 // Provides PageAggregator machinery access to some internals
 // of a PageNodeImpl.

@@ -512,19 +512,8 @@ void ArcAppWindowLauncherController::RegisterApp(
   app_window->SetController(controller);
   app_window->set_shelf_id(shelf_id);
 
-  if (!opt_in_management_check_start_time_.is_null() &&
-      app_window_info->app_shelf_id().app_id() == arc::kPlayStoreAppId) {
-    arc::Intent intent;
-    if (arc::ParseIntent(app_window_info->launch_intent(), &intent) &&
-        intent.HasExtraParam(arc::kInitialStartParam)) {
-      DCHECK(!arc::IsRobotOrOfflineDemoAccountMode());
-      arc::UpdatePlayStoreShowTime(
-          base::Time::Now() - opt_in_management_check_start_time_,
-          owner()->profile());
-      VLOG(1) << "Play Store is initially shown.";
-    }
-    opt_in_management_check_start_time_ = base::Time();
-  }
+  if (app_window_info->app_shelf_id().app_id() == arc::kPlayStoreAppId)
+    HandlePlayStoreLaunch(app_window_info);
 }
 
 void ArcAppWindowLauncherController::UnregisterApp(
@@ -538,4 +527,35 @@ void ArcAppWindowLauncherController::UnregisterApp(
     controller->RemoveWindow(app_window);
   app_window->SetController(nullptr);
   app_window_info->set_app_window(nullptr);
+}
+
+void ArcAppWindowLauncherController::HandlePlayStoreLaunch(
+    AppWindowInfo* app_window_info) {
+  arc::Intent intent;
+  if (!arc::ParseIntent(app_window_info->launch_intent(), &intent))
+    return;
+
+  if (!opt_in_management_check_start_time_.is_null()) {
+    if (intent.HasExtraParam(arc::kInitialStartParam)) {
+      DCHECK(!arc::IsRobotOrOfflineDemoAccountMode());
+      arc::UpdatePlayStoreShownTimeDeprecated(
+          base::Time::Now() - opt_in_management_check_start_time_,
+          owner()->profile());
+      VLOG(1) << "Play Store is initially shown.";
+    }
+    opt_in_management_check_start_time_ = base::Time();
+    return;
+  }
+
+  for (const auto& param : intent.extra_params()) {
+    int64_t start_request_ms;
+    if (sscanf(param.c_str(), arc::kRequestStartTimeParamTemplate,
+               &start_request_ms) != 1)
+      continue;
+    const base::TimeDelta launch_time =
+        base::TimeTicks::Now() - base::TimeTicks() -
+        base::TimeDelta::FromMilliseconds(start_request_ms);
+    DCHECK_GE(launch_time, base::TimeDelta());
+    arc::UpdatePlayStoreLaunchTime(launch_time);
+  }
 }

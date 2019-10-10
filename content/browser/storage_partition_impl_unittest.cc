@@ -17,8 +17,10 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/services/leveldb/public/cpp/util.h"
+#include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
+#include "content/browser/dom_storage/local_storage_context_mojo.h"
 #include "content/browser/dom_storage/local_storage_database.pb.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/storage_partition_impl.h"
@@ -31,7 +33,6 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
-#include "content/test/fake_leveldb_database.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
@@ -191,11 +192,21 @@ class RemoveCookieTester {
 
 class RemoveLocalStorageTester {
  public:
-  explicit RemoveLocalStorageTester(TestBrowserContext* profile)
-      : dom_storage_context_(nullptr) {
+  RemoveLocalStorageTester(content::BrowserTaskEnvironment* task_environment,
+                           TestBrowserContext* profile)
+      : task_environment_(task_environment), dom_storage_context_(nullptr) {
     dom_storage_context_ =
-        content::BrowserContext::GetDefaultStoragePartition(profile)->
-            GetDOMStorageContext();
+        content::BrowserContext::GetDefaultStoragePartition(profile)
+            ->GetDOMStorageContext();
+  }
+
+  ~RemoveLocalStorageTester() {
+    // Tests which bring up a real Local Storage context need to shut it down
+    // and wait for the database to be closed before terminating; otherwise the
+    // TestBrowserContext may fail to delete its temp dir, and it will not be
+    // happy about that.
+    static_cast<DOMStorageContextWrapper*>(dom_storage_context_)->Shutdown();
+    task_environment_->RunUntilIdle();
   }
 
   // Returns true, if the given origin URL exists.
@@ -214,35 +225,45 @@ class RemoveLocalStorageTester {
     // stores data in the database.
 
     static_cast<DOMStorageContextWrapper*>(dom_storage_context_)
-        ->SetLocalStorageDatabaseFactoryForTesting(base::BindLambdaForTesting(
-            [&]() -> std::unique_ptr<leveldb::mojom::LevelDBDatabase> {
-              return std::make_unique<FakeLevelDBDatabase>(&mock_data_);
+        ->SetLocalStorageDatabaseOpenCallbackForTesting(
+            base::BindLambdaForTesting([&](LocalStorageContextMojo* context) {
+              context->GetDatabaseForTesting().PostTaskWithThisObject(
+                  FROM_HERE, base::BindOnce(&PopulateDatabase));
             }));
+  }
 
+  static void PopulateDatabase(const storage::DomStorageDatabase& db) {
     LocalStorageOriginMetaData data;
+    std::map<std::vector<uint8_t>, std::vector<uint8_t>> entries;
 
     base::Time now = base::Time::Now();
     data.set_last_modified(now.ToInternalValue());
     data.set_size_bytes(16);
-    mock_data_[CreateMetaDataKey(kOrigin1)] =
-        leveldb::StdStringToUint8Vector(data.SerializeAsString());
-    mock_data_[CreateDataKey(kOrigin1)] = {};
+    ASSERT_TRUE(
+        db.Put(CreateMetaDataKey(kOrigin1),
+               leveldb::StdStringToUint8Vector(data.SerializeAsString()))
+            .ok());
+    ASSERT_TRUE(db.Put(CreateDataKey(kOrigin1), {}).ok());
 
     base::Time one_day_ago = now - base::TimeDelta::FromDays(1);
     data.set_last_modified(one_day_ago.ToInternalValue());
-    mock_data_[CreateMetaDataKey(kOrigin2)] =
-        leveldb::StdStringToUint8Vector(data.SerializeAsString());
-    mock_data_[CreateDataKey(kOrigin2)] = {};
+    ASSERT_TRUE(
+        db.Put(CreateMetaDataKey(kOrigin2),
+               leveldb::StdStringToUint8Vector(data.SerializeAsString()))
+            .ok());
+    ASSERT_TRUE(db.Put(CreateDataKey(kOrigin2), {}).ok());
 
     base::Time sixty_days_ago = now - base::TimeDelta::FromDays(60);
     data.set_last_modified(sixty_days_ago.ToInternalValue());
-    mock_data_[CreateMetaDataKey(kOrigin3)] =
-        leveldb::StdStringToUint8Vector(data.SerializeAsString());
-    mock_data_[CreateDataKey(kOrigin3)] = {};
+    ASSERT_TRUE(
+        db.Put(CreateMetaDataKey(kOrigin3),
+               leveldb::StdStringToUint8Vector(data.SerializeAsString()))
+            .ok());
+    ASSERT_TRUE(db.Put(CreateDataKey(kOrigin3), {}).ok());
   }
 
  private:
-  std::vector<uint8_t> CreateDataKey(const url::Origin& origin) {
+  static std::vector<uint8_t> CreateDataKey(const url::Origin& origin) {
     auto serialized_origin =
         leveldb::StdStringToUint8Vector(origin.Serialize());
     std::vector<uint8_t> key = {'_'};
@@ -252,7 +273,7 @@ class RemoveLocalStorageTester {
     return key;
   }
 
-  std::vector<uint8_t> CreateMetaDataKey(const url::Origin& origin) {
+  static std::vector<uint8_t> CreateMetaDataKey(const url::Origin& origin) {
     const uint8_t kMetaPrefix[] = {'M', 'E', 'T', 'A', ':'};
     auto serialized_origin =
         leveldb::StdStringToUint8Vector(origin.Serialize());
@@ -276,9 +297,8 @@ class RemoveLocalStorageTester {
   }
 
   // We don't own these pointers.
+  content::BrowserTaskEnvironment* const task_environment_;
   content::DOMStorageContext* dom_storage_context_;
-
-  std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
 
   std::vector<content::StorageUsageInfo> infos_;
 
@@ -586,21 +606,19 @@ void ClearQuotaDataWithOriginMatcher(
                        base::Time::Max(), loop_to_quit->QuitClosure());
 }
 
-void ClearQuotaDataForOrigin(
-    content::StoragePartition* partition,
-    const GURL& remove_origin,
-    const base::Time delete_begin,
-    base::RunLoop* loop_to_quit) {
+void ClearQuotaDataForOrigin(content::StoragePartition* partition,
+                             const GURL& remove_origin,
+                             const base::Time delete_begin,
+                             base::RunLoop* loop_to_quit) {
   partition->ClearData(kAllQuotaRemoveMask,
                        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
                        remove_origin, delete_begin, base::Time::Max(),
                        loop_to_quit->QuitClosure());
 }
 
-void ClearQuotaDataForNonPersistent(
-    content::StoragePartition* partition,
-    const base::Time delete_begin,
-    base::RunLoop* loop_to_quit) {
+void ClearQuotaDataForNonPersistent(content::StoragePartition* partition,
+                                    const base::Time delete_begin,
+                                    base::RunLoop* loop_to_quit) {
   partition->ClearData(kAllQuotaRemoveMask,
                        ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT,
                        GURL(), delete_begin, base::Time::Max(),
@@ -644,8 +662,7 @@ void ClearStuff(uint32_t remove_mask,
                        run_loop->QuitClosure());
 }
 
-void ClearData(content::StoragePartition* partition,
-               base::RunLoop* run_loop) {
+void ClearData(content::StoragePartition* partition, base::RunLoop* run_loop) {
   base::Time time;
   partition->ClearData(StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE,
                        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
@@ -703,8 +720,10 @@ class StoragePartitionImplTest : public testing::Test {
     return quota_manager_.get();
   }
 
-  TestBrowserContext* browser_context() {
-    return browser_context_.get();
+  TestBrowserContext* browser_context() { return browser_context_.get(); }
+
+  content::BrowserTaskEnvironment* task_environment() {
+    return &task_environment_;
   }
 
  private:
@@ -749,9 +768,7 @@ class StoragePartitionShaderClearTest : public testing::Test {
 
   size_t Size() { return cache_->Size(); }
 
-  TestBrowserContext* browser_context() {
-    return browser_context_.get();
-  }
+  TestBrowserContext* browser_context() { return browser_context_.get(); }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
@@ -835,8 +852,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverBoth) {
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
-  partition->OverrideQuotaManagerForTesting(
-      GetMockManager());
+  partition->OverrideQuotaManagerForTesting(GetMockManager());
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -862,8 +878,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
-  partition->OverrideQuotaManagerForTesting(
-      GetMockManager());
+  partition->OverrideQuotaManagerForTesting(GetMockManager());
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -889,8 +904,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
-  partition->OverrideQuotaManagerForTesting(
-      GetMockManager());
+  partition->OverrideQuotaManagerForTesting(GetMockManager());
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -914,8 +928,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverNeither) {
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
-  partition->OverrideQuotaManagerForTesting(
-      GetMockManager());
+  partition->OverrideQuotaManagerForTesting(GetMockManager());
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -941,8 +954,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverSpecificOrigin) {
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
-  partition->OverrideQuotaManagerForTesting(
-      GetMockManager());
+  partition->OverrideQuotaManagerForTesting(GetMockManager());
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -969,8 +981,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForLastHour) {
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
-  partition->OverrideQuotaManagerForTesting(
-      GetMockManager());
+  partition->OverrideQuotaManagerForTesting(GetMockManager());
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1000,8 +1011,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForLastWeek) {
   base::RunLoop run_loop;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
-  partition->OverrideQuotaManagerForTesting(
-      GetMockManager());
+  partition->OverrideQuotaManagerForTesting(GetMockManager());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&ClearQuotaDataForNonPersistent, partition,
@@ -1033,8 +1043,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedUnprotectedOrigins) {
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
-  partition->OverrideQuotaManagerForTesting(
-      GetMockManager());
+  partition->OverrideQuotaManagerForTesting(GetMockManager());
   partition->OverrideSpecialStoragePolicyForTesting(mock_policy.get());
 
   base::RunLoop run_loop;
@@ -1071,8 +1080,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedProtectedOrigins) {
   base::RunLoop run_loop;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
-  partition->OverrideQuotaManagerForTesting(
-      GetMockManager());
+  partition->OverrideQuotaManagerForTesting(GetMockManager());
   partition->OverrideSpecialStoragePolicyForTesting(mock_policy.get());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -1102,8 +1110,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedIgnoreDevTools) {
   base::RunLoop run_loop;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
-  partition->OverrideQuotaManagerForTesting(
-      GetMockManager());
+  partition->OverrideQuotaManagerForTesting(GetMockManager());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&ClearQuotaDataWithOriginMatcher, partition,
@@ -1176,7 +1183,7 @@ TEST_F(StoragePartitionImplTest, RemoveUnprotectedLocalStorageForever) {
       new MockSpecialStoragePolicy;
   mock_policy->AddProtected(kOrigin1.GetURL());
 
-  RemoveLocalStorageTester tester(browser_context());
+  RemoveLocalStorageTester tester(task_environment(), browser_context());
 
   tester.AddDOMStorageTestData();
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin1));
@@ -1211,7 +1218,7 @@ TEST_F(StoragePartitionImplTest, RemoveProtectedLocalStorageForever) {
       new MockSpecialStoragePolicy;
   mock_policy->AddProtected(kOrigin1.GetURL());
 
-  RemoveLocalStorageTester tester(browser_context());
+  RemoveLocalStorageTester tester(task_environment(), browser_context());
 
   tester.AddDOMStorageTestData();
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin1));
@@ -1245,7 +1252,7 @@ TEST_F(StoragePartitionImplTest, RemoveProtectedLocalStorageForever) {
 }
 
 TEST_F(StoragePartitionImplTest, RemoveLocalStorageForLastWeek) {
-  RemoveLocalStorageTester tester(browser_context());
+  RemoveLocalStorageTester tester(task_environment(), browser_context());
 
   tester.AddDOMStorageTestData();
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin1));

@@ -70,7 +70,7 @@ TEST(SerializeRequestJSON, Serialize) {
       R"("version":"2.0"}],"arch":"\w+","dedup":"cr","dlpref":"cacheable",)"
       R"("extra":"params","hw":{"physmemory":\d+},"lang":"lang",)"
       R"("nacl_arch":"[-\w]+","os":{"arch":"[_,-.\w]+","platform":"OS",)"
-      R"(("sp":"[\s\w]+",)?"version":"[-.\w]+"},"prodchannel":"channel",)"
+      R"(("sp":"[\s\w]+",)?"version":"[+-.\w]+"},"prodchannel":"channel",)"
       R"("prodversion":"1.0","protocol":"3.1","requestid":"{[-\w]{36}}",)"
       R"("sessionid":"{[-\w]{36}}","updaterchannel":"channel",)"
       R"("updaterversion":"1.0"(,"wow64":true)?}})";
@@ -114,7 +114,7 @@ TEST(SerializeRequestJSON, UpdaterStateAttributes) {
       R"("dlpref":"cacheable","domainjoined":true,"extra":"params",)"
       R"("hw":{"physmemory":\d+},"lang":"lang","nacl_arch":"[-\w]+",)"
       R"("os":{"arch":"[,-.\w]+","platform":"OS",("sp":"[\s\w]+",)?)"
-      R"("version":"[-.\w]+"},"prodchannel":"channel","prodversion":"1.0",)"
+      R"("version":"[+-.\w]+"},"prodchannel":"channel","prodversion":"1.0",)"
       R"("protocol":"3.1","requestid":"{[-\w]{36}}","sessionid":"{[-\w]{36}}",)"
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       R"("updater":{"autoupdatecheckenabled":false,"ismachine":true,)"

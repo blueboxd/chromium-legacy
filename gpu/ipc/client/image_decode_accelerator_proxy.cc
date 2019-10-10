@@ -4,23 +4,18 @@
 
 #include "gpu/ipc/client/image_decode_accelerator_proxy.h"
 
-#include <string.h>
-
 #include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/numerics/safe_conversions.h"
+#include "cc/paint/paint_image.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
-#include "media/parsers/jpeg_parser.h"
-#include "media/parsers/vp8_parser.h"
-#include "media/parsers/webp_parser.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -28,126 +23,67 @@ namespace gpu {
 
 namespace {
 
-bool IsJpegImage(base::span<const uint8_t> encoded_data) {
-  if (encoded_data.size() < 3u)
-    return false;
-  return memcmp("\xFF\xD8\xFF", encoded_data.data(), 3u) == 0;
-}
+// TODO(crbug.com/984971): for WebPs we may need to compute the coded size
+// instead and check that against the supported dimensions.
+bool IsSupportedImageSize(
+    const cc::ImageHeaderMetadata* image_data,
+    const ImageDecodeAcceleratorSupportedProfile& supported_profile) {
+  DCHECK(image_data);
 
-ImageDecodeAcceleratorType GetImageType(
-    base::span<const uint8_t> encoded_data) {
-  static_assert(static_cast<int>(ImageDecodeAcceleratorType::kMaxValue) == 2,
-                "GetImageType() must be adapted to support all image types in "
-                "ImageDecodeAcceleratorType");
+  gfx::Size image_size;
+  if (image_data->coded_size.has_value())
+    image_size = image_data->coded_size.value();
+  else
+    image_size = image_data->image_size;
 
-  if (IsJpegImage(encoded_data))
-    return ImageDecodeAcceleratorType::kJpeg;
-
-  if (media::IsLossyWebPImage(encoded_data))
-    return ImageDecodeAcceleratorType::kWebP;
-
-  return ImageDecodeAcceleratorType::kUnknown;
-}
-
-bool GetJpegSubsampling(const media::JpegParseResult& parse_result,
-                        ImageDecodeAcceleratorSubsampling* subsampling) {
-  static_assert(
-      static_cast<int>(ImageDecodeAcceleratorSubsampling::kMaxValue) == 2,
-      "GetJpegSubsampling() must be adapted to support all "
-      "subsampling factors in ImageDecodeAcceleratorSubsampling");
-
-  // Currently, only 3 components are supported (this excludes, for example,
-  // grayscale and CMYK JPEGs).
-  if (parse_result.frame_header.num_components != 3u)
-    return false;
-
-  const uint8_t comp0_h =
-      parse_result.frame_header.components[0].horizontal_sampling_factor;
-  const uint8_t comp0_v =
-      parse_result.frame_header.components[0].vertical_sampling_factor;
-  const uint8_t comp1_h =
-      parse_result.frame_header.components[1].horizontal_sampling_factor;
-  const uint8_t comp1_v =
-      parse_result.frame_header.components[1].vertical_sampling_factor;
-  const uint8_t comp2_h =
-      parse_result.frame_header.components[2].horizontal_sampling_factor;
-  const uint8_t comp2_v =
-      parse_result.frame_header.components[2].vertical_sampling_factor;
-
-  if (comp1_h != 1u || comp1_v != 1u || comp2_h != 1u || comp2_v != 1u)
-    return false;
-
-  if (comp0_h == 2u && comp0_v == 2u) {
-    *subsampling = ImageDecodeAcceleratorSubsampling::k420;
-    return true;
-  } else if (comp0_h == 2u && comp0_v == 1u) {
-    *subsampling = ImageDecodeAcceleratorSubsampling::k422;
-    return true;
-  } else if (comp0_h == 1u && comp0_v == 1u) {
-    *subsampling = ImageDecodeAcceleratorSubsampling::k444;
-    return true;
-  }
-  return false;
+  return image_size.width() >=
+             supported_profile.min_encoded_dimensions.width() &&
+         image_size.height() >=
+             supported_profile.min_encoded_dimensions.height() &&
+         image_size.width() <=
+             supported_profile.max_encoded_dimensions.width() &&
+         image_size.height() <=
+             supported_profile.max_encoded_dimensions.height();
 }
 
 bool IsSupportedJpegImage(
-    base::span<const uint8_t> encoded_data,
+    const cc::ImageHeaderMetadata* image_data,
     const ImageDecodeAcceleratorSupportedProfile& supported_profile) {
-  DCHECK(IsJpegImage(encoded_data));
+  DCHECK(image_data);
+  DCHECK_EQ(cc::ImageType::kJPEG, image_data->image_type);
   DCHECK_EQ(ImageDecodeAcceleratorType::kJpeg, supported_profile.image_type);
 
-  // First, parse the JPEG file. This fails for progressive JPEGs (which we
-  // don't support anyway).
-  media::JpegParseResult parse_result;
-  if (!media::ParseJpegPicture(encoded_data.data(), encoded_data.size(),
-                               &parse_result)) {
+  DCHECK(image_data->jpeg_is_progressive.has_value());
+  if (image_data->jpeg_is_progressive.value())
     return false;
-  }
 
-  // Now, check the chroma subsampling format.
+  // Check the chroma subsampling format.
+  static_assert(
+      // TODO(andrescj): refactor to instead have a static_assert at the
+      // declaration site of ImageDecodeAcceleratorSubsampling to make sure it
+      // has the same number of entries as cc::YUVSubsampling.
+      static_cast<int>(ImageDecodeAcceleratorSubsampling::kMaxValue) == 2,
+      "IsSupportedJpegImage() must be adapted to support all subsampling "
+      "factors in ImageDecodeAcceleratorSubsampling");
   ImageDecodeAcceleratorSubsampling subsampling;
-  if (!GetJpegSubsampling(parse_result, &subsampling))
-    return false;
-  if (std::find(supported_profile.subsamplings.cbegin(),
-                supported_profile.subsamplings.cend(),
-                subsampling) == supported_profile.subsamplings.cend()) {
-    return false;
+  switch (image_data->yuv_subsampling) {
+    case cc::YUVSubsampling::k420:
+      subsampling = ImageDecodeAcceleratorSubsampling::k420;
+      break;
+    case cc::YUVSubsampling::k422:
+      subsampling = ImageDecodeAcceleratorSubsampling::k422;
+      break;
+    case cc::YUVSubsampling::k444:
+      subsampling = ImageDecodeAcceleratorSubsampling::k444;
+      break;
+    default:
+      // Currently not supporting any other subsampling format.
+      return false;
   }
 
-  // Now, check the dimensions.
-  const int encoded_width =
-      base::strict_cast<int>(parse_result.frame_header.coded_width);
-  const int encoded_height =
-      base::strict_cast<int>(parse_result.frame_header.coded_height);
-  if (encoded_width < supported_profile.min_encoded_dimensions.width() ||
-      encoded_height < supported_profile.min_encoded_dimensions.height() ||
-      encoded_width > supported_profile.max_encoded_dimensions.width() ||
-      encoded_height > supported_profile.max_encoded_dimensions.height()) {
-    return false;
-  }
-
-  return true;
-}
-
-bool IsSupportedWebPImage(
-    base::span<const uint8_t> encoded_data,
-    const ImageDecodeAcceleratorSupportedProfile& supported_profile) {
-  DCHECK(media::IsLossyWebPImage(encoded_data));
-  DCHECK_EQ(ImageDecodeAcceleratorType::kWebP, supported_profile.image_type);
-
-  const std::unique_ptr<media::Vp8FrameHeader> parse_result =
-      media::ParseWebPImage(encoded_data);
-  if (!parse_result)
-    return false;
-
-  // TODO(crbug.com/984971): we may need to compute the coded size instead and
-  // check that against the supported dimensions.
-  const int width = base::strict_cast<int>(parse_result->width);
-  const int height = base::strict_cast<int>(parse_result->height);
-  return width >= supported_profile.min_encoded_dimensions.width() &&
-         height >= supported_profile.min_encoded_dimensions.height() &&
-         width <= supported_profile.max_encoded_dimensions.width() &&
-         height <= supported_profile.max_encoded_dimensions.height();
+  return std::find(supported_profile.subsamplings.cbegin(),
+                   supported_profile.subsamplings.cend(),
+                   subsampling) != supported_profile.subsamplings.cend();
 }
 
 }  // namespace
@@ -159,12 +95,38 @@ ImageDecodeAcceleratorProxy::ImageDecodeAcceleratorProxy(GpuChannelHost* host,
 ImageDecodeAcceleratorProxy::~ImageDecodeAcceleratorProxy() {}
 
 bool ImageDecodeAcceleratorProxy::IsImageSupported(
-    base::span<const uint8_t> encoded_data) const {
+    const cc::ImageHeaderMetadata* image_metadata) const {
   DCHECK(host_);
 
-  const ImageDecodeAcceleratorType image_type = GetImageType(encoded_data);
-  if (image_type == ImageDecodeAcceleratorType::kUnknown)
+  if (!image_metadata)
     return false;
+
+  // Image is supported only if all the encoded data was received prior to any
+  // decoding work. Otherwise, it means that the software decoder has already
+  // started decoding the image, so we just let it finish.
+  if (!image_metadata->all_data_received_prior_to_decode)
+    return false;
+
+  // Image is supported only if the image doesn't have an embedded color space.
+  // This is because we don't currently send the embedded color profile with the
+  // decode request.
+  if (image_metadata->has_embedded_color_profile)
+    return false;
+
+  static_assert(static_cast<int>(ImageDecodeAcceleratorType::kMaxValue) == 2,
+                "IsImageSupported() must be adapted to support all image types "
+                "in ImageDecodeAcceleratorType");
+  ImageDecodeAcceleratorType image_type = ImageDecodeAcceleratorType::kUnknown;
+  switch (image_metadata->image_type) {
+    case cc::ImageType::kJPEG:
+      image_type = ImageDecodeAcceleratorType::kJpeg;
+      break;
+    case cc::ImageType::kWEBP:
+      image_type = ImageDecodeAcceleratorType::kWebP;
+      break;
+    default:
+      return false;
+  }
 
   // Find the image decode accelerator supported profile according to the type
   // of the image.
@@ -178,14 +140,20 @@ bool ImageDecodeAcceleratorProxy::IsImageSupported(
   if (profile_it == profiles.cend())
     return false;
 
+  // Verify that the image size is supported.
+  if (!IsSupportedImageSize(image_metadata, *profile_it))
+    return false;
+
   // Validate the image according to that profile.
   switch (image_type) {
     case ImageDecodeAcceleratorType::kJpeg:
-      return IsSupportedJpegImage(encoded_data, *profile_it);
+      return IsSupportedJpegImage(image_metadata, *profile_it);
     case ImageDecodeAcceleratorType::kWebP:
-      return IsSupportedWebPImage(encoded_data, *profile_it);
+      DCHECK(image_metadata->webp_is_non_extended_lossy.has_value());
+      return image_metadata->webp_is_non_extended_lossy.value();
     case ImageDecodeAcceleratorType::kUnknown:
-      // No Op. Should not reach due to a check above.
+      // Should not reach due to a check above.
+      NOTREACHED();
       break;
   }
   return false;
@@ -224,7 +192,6 @@ SyncToken ImageDecodeAcceleratorProxy::ScheduleImageDecode(
   DCHECK(host_);
   DCHECK_EQ(host_->channel_id(),
             ChannelIdFromCommandBufferId(raster_decoder_command_buffer_id));
-  DCHECK(IsImageSupported(encoded_data));
 
   GpuChannelMsg_ScheduleImageDecode_Params params;
   params.encoded_data =

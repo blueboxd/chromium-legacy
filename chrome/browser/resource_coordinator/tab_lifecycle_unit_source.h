@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
-#include "services/resource_coordinator/public/mojom/lifecycle.mojom.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
+#include "components/performance_manager/public/mojom/lifecycle.mojom.h"
 
 class PrefChangeRegistrar;
 class PrefService;
@@ -149,11 +149,12 @@ class TabLifecycleUnitSource : public BrowserListObserver,
 
   // This is called indirectly from the corresponding event on a PageNode in the
   // performance_manager Graph.
-  static void OnLifecycleStateChanged(content::WebContents* web_contents,
-                                      mojom::LifecycleState state);
+  static void OnLifecycleStateChanged(
+      content::WebContents* web_contents,
+      performance_manager::mojom::LifecycleState state);
   static void OnOriginTrialFreezePolicyChanged(
       content::WebContents* web_contents,
-      mojom::InterventionPolicy policy);
+      performance_manager::mojom::InterventionPolicy policy);
   static void OnIsHoldingWebLockChanged(content::WebContents* web_contents,
                                         bool is_holding_weblock);
   static void OnIsHoldingIndexedDBLockChanged(

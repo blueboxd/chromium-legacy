@@ -4,25 +4,18 @@
 
 #import "ios/chrome/browser/autofill/automation/automation_action.h"
 
-#import <EarlGrey/EarlGrey.h>
-
-#include "base/guid.h"
 #include "base/mac/foundation_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/ios/browser/autofill_driver_ios.h"
+#include "base/values.h"
 #import "ios/chrome/browser/autofill/form_suggestion_constants.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
-#import "ios/chrome/test/app/tab_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/web/public/js_messaging/web_frames_manager.h"
-#import "ios/web/public/test/earl_grey/web_view_actions.h"
-#import "ios/web/public/test/earl_grey/web_view_matchers.h"
-#include "ios/web/public/test/element_selector.h"
+#import "ios/chrome/test/earl_grey/chrome_matchers.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
+#import "ios/web/public/test/element_selector.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -198,27 +191,26 @@
 // A shared flow across many actions, this waits for the target element to be
 // visible, scrolls it into view, then taps on it.
 - (void)tapOnTarget:(ElementSelector*)selector {
-  web::WebState* web_state = chrome_test_util::GetCurrentWebState();
 
   // Wait for the element to be visible on the page.
   [ChromeEarlGrey waitForWebStateContainingElement:selector];
 
   // Potentially scroll into view if below the fold.
-  [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(web_state)]
-      performAction:WebViewScrollElementToVisible(web_state, selector)];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::ScrollElementToVisible(selector)];
 
   // Calling WebViewTapElement right after WebViewScrollElement caused flaky
   // issues with the wrong location being provided for the tap target,
   // seemingly caused by the screen not redrawing in-between these two actions.
-  // We force a brief wait here to avoid this issue.
-  [[GREYCondition conditionWithName:@"forced wait to allow for redraw"
-                              block:^BOOL {
-                                return false;
-                              }] waitWithTimeout:0.1];
-
+  // We force a brief wait here to avoid this issue. |waitWithTimeout| requires
+  // its result to be used. Void the result as it's always false.
+  (void)[[GREYCondition conditionWithName:@"forced wait to allow for redraw"
+                                    block:^BOOL {
+                                      return false;
+                                    }] waitWithTimeout:0.1];
   // Tap on the element.
-  [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(web_state)]
-      performAction:web::WebViewTapElement(web_state, selector)];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(selector)];
 }
 
 // Creates a selector targeting the element specified in the action.

@@ -80,6 +80,12 @@ int MaxServerBloomFilterByteSize();
 base::Optional<net::EffectiveConnectionType>
 GetMaxEffectiveConnectionTypeForNavigationHintsFetch();
 
+// Returns the duration of the time window before hints expiration during which
+// the hosts should be refreshed. Example: If the hints for a host expire at
+// time T, then they are eligible for refresh at T -
+// GetHintsFetchRefreshDuration().
+base::TimeDelta GetHintsFetchRefreshDuration();
+
 }  // namespace features
 }  // namespace optimization_guide
 

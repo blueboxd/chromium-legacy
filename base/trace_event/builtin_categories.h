@@ -178,6 +178,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("gpu.device"))                             \
   X(TRACE_DISABLED_BY_DEFAULT("gpu.service"))                            \
   X(TRACE_DISABLED_BY_DEFAULT("ipc.flow"))                               \
+  X(TRACE_DISABLED_BY_DEFAULT("java-heap-profiler"))                     \
   X(TRACE_DISABLED_BY_DEFAULT("layer-element"))                          \
   X(TRACE_DISABLED_BY_DEFAULT("lifecycles"))                             \
   X(TRACE_DISABLED_BY_DEFAULT("loading"))                                \

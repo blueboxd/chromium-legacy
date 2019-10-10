@@ -48,7 +48,6 @@ const char kTestAccessCode[] = "888888";
 constexpr base::TimeDelta kTestAccessCodeLifetime =
     base::TimeDelta::FromSeconds(666);
 const char kTestClientUsername[] = "some_user@gmail.com";
-const char kTestBotJid[] = "remoting@bot.talk.google.com";
 const char kTestStunServer[] = "test_relay_server.com";
 
 void VerifyId(std::unique_ptr<base::DictionaryValue> response,
@@ -91,7 +90,6 @@ base::DictionaryValue CreateConnectMessage(int id) {
   connect_message.SetString("type", "connect");
   connect_message.SetString("xmppServerAddress", "talk.google.com:5222");
   connect_message.SetBoolean("xmppServerUseTls", true);
-  connect_message.SetString("directoryBotJid", kTestBotJid);
   connect_message.SetString("userName", kTestClientUsername);
   connect_message.SetString("authServiceWithToken", "oauth2:sometoken");
   connect_message.Set("iceConfig",
@@ -124,7 +122,6 @@ class MockIt2MeHost : public It2MeHost {
                base::WeakPtr<It2MeHost::Observer> observer,
                std::unique_ptr<SignalStrategy> signal_strategy,
                const std::string& username,
-               const std::string& directory_bot_jid,
                const protocol::IceConfig& ice_config) override;
   void Disconnect() override;
 
@@ -145,13 +142,11 @@ void MockIt2MeHost::Connect(
     base::WeakPtr<It2MeHost::Observer> observer,
     std::unique_ptr<SignalStrategy> signal_strategy,
     const std::string& username,
-    const std::string& directory_bot_jid,
     const protocol::IceConfig& ice_config) {
   DCHECK(context->ui_task_runner()->BelongsToCurrentThread());
 
   // Verify that parameters are passed correctly.
   EXPECT_EQ(username, kTestClientUsername);
-  EXPECT_EQ(directory_bot_jid, kTestBotJid);
   EXPECT_EQ(ice_config.stun_servers[0].hostname(), kTestStunServer);
 
   host_context_ = std::move(context);

@@ -23,7 +23,7 @@ class OmniboxControllerEmitter : public KeyedService {
     // Invoked when new autocomplete queries are made from the omnibox
     // controller or when those queries' results change.
     virtual void OnOmniboxQuery(AutocompleteController* controller,
-                                const base::string16& input_text) = 0;
+                                const AutocompleteInput& input) = 0;
     virtual void OnOmniboxResultChanged(bool default_match_changed,
                                         AutocompleteController* controller) = 0;
   };
@@ -43,7 +43,7 @@ class OmniboxControllerEmitter : public KeyedService {
   // Notifies registered observers when new autocomplete queries are made from
   // the omnibox controller or when those queries' results change.
   void NotifyOmniboxQuery(AutocompleteController* controller,
-                          const base::string16& input_text);
+                          const AutocompleteInput& input);
   void NotifyOmniboxResultChanged(bool default_match_changed,
                                   AutocompleteController* controller);
 

@@ -48,12 +48,10 @@ class FakePageImpl : public translate::mojom::Page {
   mojo::PendingRemote<translate::mojom::Page> BindToNewPageRemote();
 
   // translate::mojom::Page implementation.
-  void Translate(
-      const std::string& translate_script,
-      network::mojom::URLLoaderFactoryPtr loader_factory_for_translate_script,
-      const std::string& source_lang,
-      const std::string& target_lang,
-      TranslateCallback callback) override;
+  void Translate(const std::string& translate_script,
+                 const std::string& source_lang,
+                 const std::string& target_lang,
+                 TranslateCallback callback) override;
 
   void RevertTranslation() override;
 

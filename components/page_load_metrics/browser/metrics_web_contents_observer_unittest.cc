@@ -326,10 +326,7 @@ TEST_F(MetricsWebContentsObserverTest, SubFrame) {
       base::TimeDelta::FromMilliseconds(40);
   subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL(kDefaultTestUrl2), subframe);
-  content::RenderFrameHostTester* subframe_tester =
-      content::RenderFrameHostTester::For(subframe);
   SimulateTimingUpdate(subframe_timing, subframe);
-  subframe_tester->SimulateNavigationStop();
 
   ASSERT_EQ(1, CountUpdatedSubFrameTimingReported());
   EXPECT_TRUE(subframe_timing.Equals(*updated_subframe_timings().back()));
@@ -821,10 +818,7 @@ TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming2) {
   content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
   subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL(kDefaultTestUrl2), subframe);
-  content::RenderFrameHostTester* subframe_tester =
-      content::RenderFrameHostTester::For(subframe);
   SimulateTimingUpdateWithoutFiringDispatchTimer(subframe_timing, subframe);
-  subframe_tester->SimulateNavigationStop();
 
   histogram_tester_.ExpectTotalCount(
       page_load_metrics::internal::kHistogramOutOfOrderTiming, 1);
@@ -869,10 +863,7 @@ TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming2) {
   content::RenderFrameHost* subframe2 = rfh_tester->AppendChild("subframe");
   subframe2 = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL(kDefaultTestUrl2), subframe2);
-  content::RenderFrameHostTester* subframe2_tester =
-      content::RenderFrameHostTester::For(subframe2);
   SimulateTimingUpdateWithoutFiringDispatchTimer(subframe_timing, subframe2);
-  subframe2_tester->SimulateNavigationStop();
 
   base::TimeDelta updated_first_paint =
       updated_timings().back()->paint_timing->first_paint.value();

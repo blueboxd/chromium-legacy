@@ -55,7 +55,7 @@ class SheetEditor():
       silent_change_columns: list of str
           List of the columns whose changes are not reported in the stats.
       last_update_column_name: str
-          Header of the colunm that keeps the latest update date.
+          Header of the column that keeps the latest update date.
       credentials_file_path: str
           Absolute path to read/save user credentials.
       client_secret_file_path: str
@@ -378,7 +378,7 @@ def PrintConfigHelp():
         "silent_change_columns:\n"
         "  List of the columns whose changes are not reported in the stats.\n"
         "last_update_column_name:\n"
-        "  Header of the colunm that keeps the latest update date.\n"
+        "  Header of the column that keeps the latest update date.\n"
         "credentials_file_path:\n"
         "  Absolute path of the file that keeps user credentials.\n"
         "client_secret_file_path:\n"
@@ -389,7 +389,7 @@ def PrintConfigHelp():
 
 def main():
   parser = argparse.ArgumentParser(
-      description="Network Traffic Annotations Sheet Updator")
+      description="Network Traffic Annotations Sheet Updater")
   parser.add_argument(
       "--config-file",
       help="Configurations file.")

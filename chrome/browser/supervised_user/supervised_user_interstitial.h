@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_INTERSTITIAL_H_
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_INTERSTITIAL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -14,7 +15,7 @@
 
 namespace content {
 class WebContents;
-}
+}  // namespace content
 
 class Profile;
 
@@ -30,7 +31,9 @@ class SupervisedUserInterstitial {
   static std::unique_ptr<SupervisedUserInterstitial> Create(
       content::WebContents* web_contents,
       const GURL& url,
-      supervised_user_error_page::FilteringBehaviorReason reason);
+      supervised_user_error_page::FilteringBehaviorReason reason,
+      int frame_id,
+      int64_t interstitial_navigation_id);
 
   static std::string GetHTMLContents(
       Profile* profile,
@@ -40,25 +43,41 @@ class SupervisedUserInterstitial {
   void RequestPermission(base::OnceCallback<void(bool)> callback);
   void ShowFeedback();
 
+  // Getter methods.
+  content::WebContents* web_contents() { return web_contents_; }
+  int frame_id() const { return frame_id_; }
+  int64_t interstitial_navigation_id() const {
+    return interstitial_navigation_id_;
+  }
+  const GURL& url() const { return url_; }
+
  private:
   SupervisedUserInterstitial(
       content::WebContents* web_contents,
       const GURL& url,
-      supervised_user_error_page::FilteringBehaviorReason reason);
+      supervised_user_error_page::FilteringBehaviorReason reason,
+      int frame_id,
+      int64_t interstitial_navigation_id);
 
-  // Moves away from the page behind the interstitial when not proceeding with
-  // the request.
-  void MoveAwayFromCurrentPage();
+  // Tries to go back.
+  void AttemptMoveAwayFromCurrentFrameURL();
 
   void OnInterstitialDone();
 
-  // Owns the interstitial, which owns us.
+  // Owns SupervisedUserNavigationObserver which owns us.
   content::WebContents* web_contents_;
 
   Profile* profile_;
 
+  // The last committed url for this frame.
   GURL url_;
   supervised_user_error_page::FilteringBehaviorReason reason_;
+
+  // The uniquely identifying global id for the frame.
+  int frame_id_;
+
+  // The Navigation ID of the navigation that last triggered the interstitial.
+  int64_t interstitial_navigation_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserInterstitial);
 };

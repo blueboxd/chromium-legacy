@@ -45,6 +45,7 @@ jumbo_split_static_library("ui") {
     "app_list/app_list_util.h",
 
     # All other browser/ui/app_list files go under enable_app_list below.
+    "autofill/autofill_bubble_handler.h",
     "autofill/autofill_popup_controller.h",
     "autofill/autofill_popup_controller_impl.cc",
     "autofill/autofill_popup_controller_impl.h",
@@ -70,6 +71,8 @@ jumbo_split_static_library("ui") {
     "autofill/popup_controller_common.h",
     "autofill/popup_view_common.cc",
     "autofill/popup_view_common.h",
+    "autofill/test/test_autofill_bubble_handler.cc",
+    "autofill/test/test_autofill_bubble_handler.h",
     "blocked_content/blocked_window_params.cc",
     "blocked_content/blocked_window_params.h",
     "blocked_content/list_item_position.cc",
@@ -2603,6 +2606,8 @@ jumbo_split_static_library("ui") {
       "views/apps/app_info_dialog/app_info_summary_panel.h",
       "views/apps/chrome_native_app_window_views.cc",
       "views/apps/chrome_native_app_window_views.h",
+      "views/autofill/autofill_bubble_handler_impl.cc",
+      "views/autofill/autofill_bubble_handler_impl.h",
       "views/autofill/autofill_popup_base_view.cc",
       "views/autofill/autofill_popup_base_view.h",
       "views/autofill/autofill_popup_view_native_views.cc",

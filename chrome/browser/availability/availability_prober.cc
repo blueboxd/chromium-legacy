@@ -43,6 +43,8 @@ namespace {
 const char kCachePrefKeyPrefix[] = "Availability.Prober.cache";
 
 const char kSuccessHistogram[] = "Availability.Prober.DidSucceed";
+const char kSuccessAfterReportedFailure[] =
+    "Availability.Prober.DidSucceed.AfterReportedFailure";
 const char kFinalResultHistogram[] = "Availability.Prober.FinalState";
 const char kTimeUntilSuccess[] = "Availability.Prober.TimeUntilSuccess";
 const char kTimeUntilFailure[] = "Availability.Prober.TimeUntilFailure";
@@ -279,6 +281,7 @@ AvailabilityProber::AvailabilityProber(
       network_connection_tracker_(nullptr),
       pref_service_(pref_service),
       url_loader_factory_(url_loader_factory),
+      reported_external_failure_(false),
       weak_factory_(this) {
   DCHECK(delegate_);
 
@@ -356,6 +359,7 @@ void AvailabilityProber::ResetState() {
   retry_timer_.reset();
   timeout_timer_.reset();
   url_loader_.reset();
+  reported_external_failure_ = false;
 #if defined(OS_ANDROID)
   application_status_listener_.reset();
 #endif
@@ -615,6 +619,13 @@ base::Optional<bool> AvailabilityProber::LastProbeWasSuccessful() {
   return entry.value().is_success();
 }
 
+void AvailabilityProber::ReportExternalFailureAndRetry() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  RecordProbeResult(false);
+  reported_external_failure_ = true;
+  SendNowIfInactive(false);
+}
+
 void AvailabilityProber::SetOnCompleteCallback(
     AvailabilityProberOnCompleteCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -653,6 +664,13 @@ void AvailabilityProber::RecordProbeResult(bool success) {
       AppendNameToHistogram(kSuccessHistogram),
       base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(success);
+
+  if (reported_external_failure_) {
+    base::BooleanHistogram::FactoryGet(
+        AppendNameToHistogram(kSuccessAfterReportedFailure),
+        base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->Add(success);
+  }
 
   // The callback may delete |this| so run it in a post task.
   if (on_complete_callback_) {

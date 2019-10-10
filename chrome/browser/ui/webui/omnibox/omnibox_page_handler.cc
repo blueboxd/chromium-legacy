@@ -235,22 +235,25 @@ void OmniboxPageHandler::OnResultChanged(bool default_match_changed) {
 }
 
 void OmniboxPageHandler::OnOmniboxQuery(AutocompleteController* controller,
-                                        const base::string16& input_text) {
+                                        const AutocompleteInput& input) {
+  time_omnibox_started_ = base::Time::Now();
+  input_ = input;
   page_->HandleNewAutocompleteQuery(controller == controller_.get(),
-                                    base::UTF16ToUTF8(input_text));
+                                    base::UTF16ToUTF8(input.text()));
 }
 
 void OmniboxPageHandler::OnOmniboxResultChanged(
     bool default_match_changed,
     AutocompleteController* controller) {
   mojom::OmniboxResponsePtr response(mojom::OmniboxResponse::New());
-  response->done = controller->done();
+  response->cursor_position = input_.cursor_position();
   response->time_since_omnibox_started_ms =
       (base::Time::Now() - time_omnibox_started_).InMilliseconds();
+  response->done = controller->done();
+  response->type = AutocompleteInput::TypeToString(input_.type());
   const base::string16 host =
       input_.text().substr(input_.parts().host.begin, input_.parts().host.len);
   response->host = base::UTF16ToUTF8(host);
-  response->type = AutocompleteInput::TypeToString(input_.type());
   bool is_typed_host;
   if (!LookupIsTypedHost(host, &is_typed_host))
     is_typed_host = false;
@@ -392,30 +395,22 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
   // actual results to not depend on the state of the previous request.
   if (reset_autocomplete_controller)
     ResetController();
-  // TODO (manukh): OmniboxPageHandler::StartOmniboxQuery is invoked only for
-  // queries from the debug page and not for queries from the browser omnibox.
-  // time_omnibox_started_ and input_ are therefore not set for browser omnibox
-  // queries, resulting in inaccurate time_since_omnibox_started_ms, host, type,
-  // and is_typed_host values in the result object being sent to the debug page.
-  // For the user, this means the 'details' section is mostly inaccurate for
-  // browser omnibox queries.
-  time_omnibox_started_ = base::Time::Now();
-  input_ = AutocompleteInput(
+  AutocompleteInput input(
       base::UTF8ToUTF16(input_string), cursor_position,
       static_cast<metrics::OmniboxEventProto::PageClassification>(
           page_classification),
       ChromeAutocompleteSchemeClassifier(profile_));
   GURL current_url_gurl{current_url};
   if (current_url_gurl.is_valid())
-    input_.set_current_url(current_url_gurl);
-  input_.set_current_title(base::UTF8ToUTF16(current_url));
-  input_.set_prevent_inline_autocomplete(prevent_inline_autocomplete);
-  input_.set_prefer_keyword(prefer_keyword);
+    input.set_current_url(current_url_gurl);
+  input.set_current_title(base::UTF8ToUTF16(current_url));
+  input.set_prevent_inline_autocomplete(prevent_inline_autocomplete);
+  input.set_prefer_keyword(prefer_keyword);
   if (prefer_keyword)
-    input_.set_keyword_mode_entry_method(metrics::OmniboxEventProto::TAB);
-  input_.set_from_omnibox_focus(zero_suggest);
+    input.set_keyword_mode_entry_method(metrics::OmniboxEventProto::TAB);
+  input.set_from_omnibox_focus(zero_suggest);
 
-  OnOmniboxQuery(controller_.get(), input_.text());
+  OnOmniboxQuery(controller_.get(), input);
   controller_->Start(input_);
 }
 

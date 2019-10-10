@@ -58,7 +58,7 @@ bool SessionStorageNamespaceImplMojo::HasAreaForOrigin(
 }
 
 void SessionStorageNamespaceImplMojo::PopulateFromMetadata(
-    leveldb::mojom::LevelDBDatabase* database,
+    leveldb::LevelDBDatabaseImpl* database,
     SessionStorageMetadata::NamespaceEntry namespace_metadata) {
   DCHECK(!IsPopulated());
   database_ = database;
@@ -85,7 +85,7 @@ void SessionStorageNamespaceImplMojo::PopulateFromMetadata(
 }
 
 void SessionStorageNamespaceImplMojo::PopulateAsClone(
-    leveldb::mojom::LevelDBDatabase* database,
+    leveldb::LevelDBDatabaseImpl* database,
     SessionStorageMetadata::NamespaceEntry namespace_metadata,
     const OriginAreas& areas_to_clone) {
   DCHECK(!IsPopulated());
@@ -227,7 +227,7 @@ void SessionStorageNamespaceImplMojo::Clone(
 }
 
 void SessionStorageNamespaceImplMojo::CloneAllNamespacesWaitingForClone(
-    leveldb::mojom::LevelDBDatabase* database,
+    leveldb::LevelDBDatabaseImpl* database,
     SessionStorageMetadata* metadata,
     const std::map<std::string,
                    std::unique_ptr<SessionStorageNamespaceImplMojo>>&

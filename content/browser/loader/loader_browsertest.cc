@@ -295,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest_Cancelled) {
   if (IsInProcessNetworkService())
     return;
 
-  embedded_test_server()->RegisterRequestHandler(base::Bind(
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &CancelOnRequest, "/hung",
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
       base::BindRepeating(&BrowserTestBase::SimulateNetworkServiceCrash,
@@ -376,7 +376,7 @@ std::unique_ptr<net::test_server::HttpResponse> NoContentResponseHandler(
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CrossSiteNoUnloadOn204) {
   const char kNoContentPath[] = "/nocontent";
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&NoContentResponseHandler, kNoContentPath));
+      base::BindRepeating(&NoContentResponseHandler, kNoContentPath));
 
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -566,7 +566,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
 // navigations.
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CookiePolicy) {
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleRedirectRequest, "/redirect?"));
+      base::BindRepeating(&HandleRedirectRequest, "/redirect?"));
   ASSERT_TRUE(embedded_test_server()->Start());
 
   std::string set_cookie_url(base::StringPrintf(

@@ -37,9 +37,9 @@ class BLINK_COMMON_EXPORT URLLoaderFactoryBundleInfo
       std::map<std::string,
                mojo::PendingRemote<network::mojom::URLLoaderFactory>>;
 
-  // Map from origin of request initiator to PendingRemote<URLLoaderFactory> for
-  // handling this initiator's requests (e.g., for relaxing CORB for requests
-  // initiated from content scripts).
+  // Map from origin of isolated world to PendingRemote<URLLoaderFactory> for
+  // handling this isolated world's requests (e.g., for relaxing CORB for
+  // requests initiated from content scripts).
   using OriginMap =
       std::map<url::Origin,
                mojo::PendingRemote<network::mojom::URLLoaderFactory>>;
@@ -49,7 +49,7 @@ class BLINK_COMMON_EXPORT URLLoaderFactoryBundleInfo
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_default_factory,
       SchemeMap scheme_specific_factory_infos,
-      OriginMap initiator_specific_factory_infos,
+      OriginMap isolated_world_factory_infos,
       bool bypass_redirect_checks);
   ~URLLoaderFactoryBundleInfo() override;
 
@@ -66,8 +66,8 @@ class BLINK_COMMON_EXPORT URLLoaderFactoryBundleInfo
   SchemeMap& pending_scheme_specific_factories() {
     return pending_scheme_specific_factories_;
   }
-  OriginMap& pending_initiator_specific_factories() {
-    return pending_initiator_specific_factories_;
+  OriginMap& pending_isolated_world_factories() {
+    return pending_isolated_world_factories_;
   }
 
   bool bypass_redirect_checks() const { return bypass_redirect_checks_; }
@@ -84,7 +84,7 @@ class BLINK_COMMON_EXPORT URLLoaderFactoryBundleInfo
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
       pending_appcache_factory_;
   SchemeMap pending_scheme_specific_factories_;
-  OriginMap pending_initiator_specific_factories_;
+  OriginMap pending_isolated_world_factories_;
   bool bypass_redirect_checks_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryBundleInfo);
@@ -160,12 +160,12 @@ class BLINK_COMMON_EXPORT URLLoaderFactoryBundle
       std::map<std::string, mojo::Remote<network::mojom::URLLoaderFactory>>;
   SchemeMap scheme_specific_factories_;
 
-  // Map from origin of request initiator to Remote<URLLoaderFactory> for
-  // handling this initiator's requests. See also
+  // Map from origin of isolated world to Remote<URLLoaderFactory> for handling
+  // this isolated world's requests. See also
   // URLLoaderFactoryBundleInfo::OriginMap.
   using OriginMap =
       std::map<url::Origin, mojo::Remote<network::mojom::URLLoaderFactory>>;
-  OriginMap initiator_specific_factories_;
+  OriginMap isolated_world_factories_;
 
   bool bypass_redirect_checks_ = false;
 };

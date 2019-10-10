@@ -1529,10 +1529,8 @@ if (enable_java_templates) {
     _desugar = defined(invoker.supports_android) && invoker.supports_android
     _jacoco_instrument = invoker.jacoco_instrument
 
-    _enable_class_deps_output = defined(invoker.enable_class_deps_output)
     _enable_bytecode_rewriter =
-        _enable_assert || _enable_custom_resources ||
-        _enable_thread_annotations || _enable_class_deps_output
+        _enable_assert || _enable_custom_resources || _enable_thread_annotations
     _is_prebuilt = defined(invoker.is_prebuilt) && invoker.is_prebuilt
     _enable_bytecode_checks = !defined(invoker.enable_bytecode_checks) ||
                               invoker.enable_bytecode_checks
@@ -1548,7 +1546,6 @@ if (enable_java_templates) {
     if (defined(invoker.enable_bytecode_rewriter)) {
       not_needed([
                    "_enable_assert",
-                   "_enable_class_deps_output",
                    "_enable_custom_resources",
                    "_enable_thread_annotations",
                  ])
@@ -1615,10 +1612,6 @@ if (enable_java_templates) {
         }
         if (_enable_bytecode_checks) {
           args += [ "--enable-check-class-path" ]
-        }
-        if (_enable_class_deps_output) {
-          args += [ "--enable-class-deps-output" ] +
-                  [ invoker.enable_class_deps_output ]
         }
         args += [
           "--direct-classpath-jars",
@@ -3628,7 +3621,6 @@ if (enable_java_templates) {
                                  [
                                    "enable_bytecode_checks",
                                    "enable_bytecode_rewriter",
-                                   "enable_class_deps_output",
                                    "jar_excluded_patterns",
                                    "jar_included_patterns",
                                  ])

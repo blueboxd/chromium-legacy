@@ -34,6 +34,8 @@ cast_source_set("net") {
     "//chromecast/public",
     "//components/proxy_config",
     "//net",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
   ]
 
   if (is_fuchsia) {

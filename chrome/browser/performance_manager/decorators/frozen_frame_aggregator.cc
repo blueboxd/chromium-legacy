@@ -12,7 +12,7 @@
 
 namespace performance_manager {
 
-using LifecycleState = resource_coordinator::mojom::LifecycleState;
+using LifecycleState = performance_manager::mojom::LifecycleState;
 
 // Provides FrozenFrameAggregator machinery access to some internals of a
 // PageNodeImpl and ProcessNodeImpl.

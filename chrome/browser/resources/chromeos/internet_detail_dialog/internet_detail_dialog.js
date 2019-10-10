@@ -94,10 +94,10 @@ Polymer({
 
     // Set default managedProperties_ until they are loaded.
     this.propertiesReceived_ = false;
+    this.deviceState_ = null;
     this.managedProperties_ = OncMojo.getDefaultManagedProperties(
         OncMojo.getNetworkTypeFromString(type), this.guid, name);
     this.getNetworkDetails_();
-    this.getDeviceState_();
   },
 
   /** @override */
@@ -182,10 +182,11 @@ Polymer({
 
   /** CrosNetworkConfigObserver impl */
   onDeviceStateListChanged: function() {
-    this.getDeviceState_();
-    if (this.guid) {
-      this.getNetworkDetails_();
+    if (!this.guid || !this.managedProperties_) {
+      return;
     }
+    this.getDeviceState_();
+    this.getNetworkDetails_();
   },
 
   /** @private */
@@ -199,16 +200,21 @@ Polymer({
       }
       this.managedProperties_ = response.result;
       this.propertiesReceived_ = true;
+      if (!this.deviceState_) {
+        this.getDeviceState_();
+      }
     });
   },
 
   /** @private */
   getDeviceState_: function() {
+    if (!this.managedProperties_) {
+      return;
+    }
+    const type = this.managedProperties_.type;
     this.networkConfig_.getDeviceStateList().then(response => {
       const devices = response.result;
-      this.deviceState_ =
-          devices.find(device => device.type == this.managedProperties_.type) ||
-          null;
+      this.deviceState_ = devices.find(device => device.type == type) || null;
     });
   },
 

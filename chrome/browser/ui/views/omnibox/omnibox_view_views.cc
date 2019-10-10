@@ -665,7 +665,7 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
   // If we shift-tabbed (and actually moved) to a suggestion with a tab
   // switch button, select it.
   if (event.IsShiftDown() &&
-      model()->popup_model()->SelectedLineHasButton()) {
+      model()->popup_model()->SelectedLineHasTabMatch()) {
     model()->popup_model()->SetSelectedLineState(
         OmniboxPopupModel::BUTTON_FOCUSED);
     popup_view_->ProvideButtonFocusHint(
@@ -697,7 +697,7 @@ bool OmniboxViewViews::TextAndUIDirectionMatch() const {
 
 bool OmniboxViewViews::SelectedSuggestionHasTabMatch() const {
   return model()->popup_model() &&  // Can be null in tests.
-         model()->popup_model()->SelectedLineHasButton();
+         model()->popup_model()->SelectedLineHasTabMatch();
 }
 
 bool OmniboxViewViews::DirectionAwareSelectionAtEnd() const {

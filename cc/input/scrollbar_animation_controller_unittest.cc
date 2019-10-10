@@ -76,15 +76,12 @@ class ScrollbarAnimationControllerAuraOverlayTest
     const int kTrackStart = 0;
     const int kTrackLength = 100;
     const bool kIsLeftSideVerticalScrollbar = false;
-    const bool kIsOverlayScrollbar = true;
 
     scroll_layer_ = AddLayer<LayerImpl>();
     h_scrollbar_layer_ = AddLayer<SolidColorScrollbarLayerImpl>(
-        HORIZONTAL, kThumbThickness, kTrackStart, kIsLeftSideVerticalScrollbar,
-        kIsOverlayScrollbar);
+        HORIZONTAL, kThumbThickness, kTrackStart, kIsLeftSideVerticalScrollbar);
     v_scrollbar_layer_ = AddLayer<SolidColorScrollbarLayerImpl>(
-        VERTICAL, kThumbThickness, kTrackStart, kIsLeftSideVerticalScrollbar,
-        kIsOverlayScrollbar);
+        VERTICAL, kThumbThickness, kTrackStart, kIsLeftSideVerticalScrollbar);
     SetElementIdsForTesting();
 
     clip_layer_ = root_layer();
@@ -1380,13 +1377,12 @@ class ScrollbarAnimationControllerAndroidTest
   void SetUp() override {
     const int kTrackStart = 0;
     const bool kIsLeftSideVerticalScrollbar = false;
-    const bool kIsOverlayScrollbar = true;  // Allow opacity animations.
 
     LayerImpl* root = root_layer();
     scroll_layer_ = AddLayer<LayerImpl>();
     scrollbar_layer_ = AddLayer<SolidColorScrollbarLayerImpl>(
         orientation(), kThumbThickness, kTrackStart,
-        kIsLeftSideVerticalScrollbar, kIsOverlayScrollbar);
+        kIsLeftSideVerticalScrollbar);
     SetElementIdsForTesting();
 
     scroll_layer_->SetBounds(gfx::Size(200, 200));

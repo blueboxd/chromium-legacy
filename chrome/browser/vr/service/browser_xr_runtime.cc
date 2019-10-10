@@ -444,6 +444,15 @@ void BrowserXRRuntime::ExitPresent(VRServiceImpl* service) {
   }
 }
 
+void BrowserXRRuntime::SetFramesThrottled(const VRServiceImpl* service,
+                                          bool throttled) {
+  if (service == presenting_service_) {
+    for (BrowserXRRuntimeObserver& observer : observers_) {
+      observer.SetFramesThrottled(throttled);
+    }
+  }
+}
+
 void BrowserXRRuntime::RequestSession(
     VRServiceImpl* service,
     const device::mojom::XRRuntimeSessionOptionsPtr& options,

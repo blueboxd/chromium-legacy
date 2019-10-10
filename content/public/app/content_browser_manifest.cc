@@ -92,7 +92,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "network.mojom.P2PSocketManager",
                   "network.mojom.MdnsResponder",
                   "network.mojom.URLLoaderFactory",
-                  "resource_coordinator.mojom.ProcessCoordinationUnit",
+                  "performance_manager.mojom.ProcessCoordinationUnit",
                   "viz.mojom.CompositingModeReporter",
                   "viz.mojom.Gpu",
               })
@@ -222,7 +222,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "mojom.ProcessInternalsHandler",
                   "network.mojom.RestrictedCookieManager",
                   "blink.mojom.WebSocketConnector",
-                  "resource_coordinator.mojom.DocumentCoordinationUnit",
+                  "performance_manager.mojom.DocumentCoordinationUnit",
                   "viz.mojom.Gpu"})
           .RequireInterfaceFilterCapability_Deprecated(
               mojom::kRendererServiceName, "navigation:frame", "browser")

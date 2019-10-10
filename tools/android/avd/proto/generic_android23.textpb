@@ -19,7 +19,7 @@ system_image_name: "system-images;android-23;google_apis;x86"
 
 avd_package {
   package_name: "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86"
-  version: "6s0XsB3oZnvVldbnVr6tprNLoox0q5qrY3IMfiwE4qoC"
+  version: "E4QZINcjPpJ-j6SUPCJKGwVBD_jQY--F4sGiIWUPkeoC"
   dest_path: ".android"
 }
 avd_name: "android_23_google_apis_x86"

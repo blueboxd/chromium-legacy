@@ -5566,6 +5566,16 @@ class ClientSocketPoolBaseRefreshTest
     return TestGroupId("a", 443, ClientSocketPool::SocketType::kSsl);
   }
 
+  static ClientSocketPool::GroupId GetGroupIdInPartition() {
+    // Note this GroupId will match GetGroupId() unless
+    // kPartitionConnectionsByNetworkIsolationKey is enabled.
+    const auto kOrigin = url::Origin::Create(GURL("https://b/"));
+    const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+    return TestGroupId("a", 443, ClientSocketPool::SocketType::kSsl,
+                       PrivacyMode::PRIVACY_MODE_DISABLED,
+                       kNetworkIsolationKey);
+  }
+
   void OnSSLConfigForServerChanged() {
     switch (GetParam()) {
       case RefreshType::kServer:
@@ -5614,18 +5624,28 @@ TEST_P(ClientSocketPoolBaseRefreshTest, RefreshGroupCreatesNewConnectJobs) {
 }
 
 TEST_P(ClientSocketPoolBaseRefreshTest, RefreshGroupClosesIdleConnectJobs) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionConnectionsByNetworkIsolationKey);
+
   CreatePoolForRefresh(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
   const ClientSocketPool::GroupId kGroupId = GetGroupId();
+  const ClientSocketPool::GroupId kGroupIdInPartition = GetGroupIdInPartition();
 
   pool_->RequestSockets(kGroupId, params_, base::nullopt, 2,
                         NetLogWithSource());
+  pool_->RequestSockets(kGroupIdInPartition, params_, base::nullopt, 2,
+                        NetLogWithSource());
   ASSERT_TRUE(pool_->HasGroupForTesting(kGroupId));
-  EXPECT_EQ(2, pool_->IdleSocketCount());
+  ASSERT_TRUE(pool_->HasGroupForTesting(kGroupIdInPartition));
+  EXPECT_EQ(4, pool_->IdleSocketCount());
   EXPECT_EQ(2u, pool_->IdleSocketCountInGroup(kGroupId));
+  EXPECT_EQ(2u, pool_->IdleSocketCountInGroup(kGroupIdInPartition));
 
   OnSSLConfigForServerChanged();
   EXPECT_EQ(0, pool_->IdleSocketCount());
   EXPECT_FALSE(pool_->HasGroupForTesting(kGroupId));
+  EXPECT_FALSE(pool_->HasGroupForTesting(kGroupIdInPartition));
 }
 
 TEST_F(ClientSocketPoolBaseTest,

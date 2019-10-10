@@ -6,6 +6,7 @@ include_rules = [
     "+third_party/blink/renderer/platform/image-decoders",
 
     # Dependencies.
+    "+base/bits.h",
     "+cc/paint/image_animation_count.h",
     "+third_party/blink/renderer/platform/geometry",
     "+third_party/blink/renderer/platform/graphics",

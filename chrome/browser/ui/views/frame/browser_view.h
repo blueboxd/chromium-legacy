@@ -332,7 +332,7 @@ class BrowserView : public BrowserWindow,
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
   bool UpdatePageActionIcon(PageActionIconType type) override;
-  void ShowAvatarHighlightAnimation() override;
+  autofill::AutofillBubbleHandler* GetAutofillBubbleHandler() override;
   void ExecutePageActionIconForTesting(PageActionIconType type) override;
   LocationBar* GetLocationBar() const override;
   void SetFocusToLocationBar(bool select_all) override;
@@ -369,17 +369,9 @@ class BrowserView : public BrowserWindow,
       content::WebContents* contents,
       qrcode_generator::QRCodeGeneratorBubbleController* controller,
       const GURL& url) override;
-  autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
-      content::WebContents* contents,
-      autofill::SaveCardBubbleController* controller,
-      bool is_user_gesture) override;
   send_tab_to_self::SendTabToSelfBubbleView* ShowSendTabToSelfBubble(
       content::WebContents* contents,
       send_tab_to_self::SendTabToSelfBubbleController* controller,
-      bool is_user_gesture) override;
-  autofill::LocalCardMigrationBubble* ShowLocalCardMigrationBubble(
-      content::WebContents* contents,
-      autofill::LocalCardMigrationBubbleController* controller,
       bool is_user_gesture) override;
   ShowTranslateBubbleResult ShowTranslateBubble(
       content::WebContents* contents,
@@ -771,6 +763,9 @@ class BrowserView : public BrowserWindow,
   // Provides access to the toolbar buttons this browser view uses. Buttons may
   // appear in a hosted app frame or in a tabbed UI toolbar.
   ToolbarButtonProvider* toolbar_button_provider_ = nullptr;
+
+  // The handler responsible for showing autofill bubbles.
+  std::unique_ptr<autofill::AutofillBubbleHandler> autofill_bubble_handler_;
 
   // Tracks and stores the last focused view which is not the
   // devtools_web_view_ or any of its children. Used to restore focus once

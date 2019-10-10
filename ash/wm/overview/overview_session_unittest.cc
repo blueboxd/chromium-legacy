@@ -78,6 +78,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/transform.h"
@@ -4084,6 +4085,108 @@ TEST_P(SplitViewOverviewSessionTest, OverviewUnsnappableIndicatorVisibility) {
 
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(0.f, unsnappable_layer->opacity());
+}
+
+// Verify that during "normal" dragging from overview (not drag-to-close), the
+// dragged item's unsnappable indicator is temporarily suppressed.
+TEST_P(SplitViewOverviewSessionTest,
+       OverviewUnsnappableIndicatorVisibilityWhileDragging) {
+  ui::GestureConfiguration* gesture_config =
+      ui::GestureConfiguration::GetInstance();
+  gesture_config->set_long_press_time_in_ms(1);
+  gesture_config->set_show_press_delay_in_ms(1);
+
+  std::unique_ptr<aura::Window> snapped_window = CreateTestWindow();
+  std::unique_ptr<aura::Window> unsnappable_window = CreateUnsnappableWindow();
+  ToggleOverview();
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+  split_view_controller()->SnapWindow(snapped_window.get(),
+                                      SplitViewController::LEFT);
+  ASSERT_TRUE(split_view_controller()->InSplitViewMode());
+  OverviewItem* unsnappable_overview_item =
+      GetOverviewItemForWindow(unsnappable_window.get());
+  ASSERT_TRUE(unsnappable_overview_item->cannot_snap_widget_for_testing());
+  ui::Layer* unsnappable_layer =
+      unsnappable_overview_item->cannot_snap_widget_for_testing()
+          ->GetNativeWindow()
+          ->layer();
+  ASSERT_EQ(1.f, unsnappable_layer->opacity());
+
+  // Test that the unsnappable label is temporarily suppressed during mouse
+  // dragging.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  const gfx::Point drag_starting_point = gfx::ToRoundedPoint(
+      unsnappable_overview_item->target_bounds().CenterPoint());
+  generator->set_current_screen_location(drag_starting_point);
+  generator->PressLeftButton();
+  using DragBehavior = OverviewWindowDragController::DragBehavior;
+  EXPECT_EQ(
+      DragBehavior::kUndefined,
+      overview_session()->window_drag_controller()->current_drag_behavior());
+  EXPECT_EQ(1.f, unsnappable_layer->opacity());
+  generator->MoveMouseBy(0, 20);
+  EXPECT_EQ(
+      DragBehavior::kNormalDrag,
+      overview_session()->window_drag_controller()->current_drag_behavior());
+  EXPECT_EQ(0.f, unsnappable_layer->opacity());
+  generator->ReleaseLeftButton();
+  EXPECT_EQ(1.f, unsnappable_layer->opacity());
+
+  // Test that the unsnappable label is temporarily suppressed during "normal"
+  // touch dragging (not drag-to-close).
+  generator->set_current_screen_location(drag_starting_point);
+  generator->PressTouch();
+  {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(2));
+    run_loop.Run();
+  }
+  EXPECT_EQ(
+      DragBehavior::kNormalDrag,
+      overview_session()->window_drag_controller()->current_drag_behavior());
+  EXPECT_EQ(0.f, unsnappable_layer->opacity());
+  generator->MoveTouchBy(20, 0);
+  generator->ReleaseTouch();
+  EXPECT_EQ(1.f, unsnappable_layer->opacity());
+
+  // Test that the unsnappable label reappears if "normal" touch dragging (not
+  // drag-to-close) ends when the item has not been actually dragged anywhere.
+  // This case improves test coverage because it is handled in
+  // |OverviewWindowDragController::ResetGesture| instead of
+  // |OverviewWindowDragController::CompleteNormalDrag|.
+  generator->set_current_screen_location(drag_starting_point);
+  generator->PressTouch();
+  {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(2));
+    run_loop.Run();
+  }
+  EXPECT_EQ(
+      DragBehavior::kNormalDrag,
+      overview_session()->window_drag_controller()->current_drag_behavior());
+  EXPECT_EQ(0.f, unsnappable_layer->opacity());
+  generator->ReleaseTouch();
+  EXPECT_EQ(1.f, unsnappable_layer->opacity());
+
+  // Test that the unsnappable label persists in drag-to-close mode.
+  generator->set_current_screen_location(drag_starting_point);
+  generator->PressTouch();
+  // Use small increments otherwise a fling event will be fired.
+  for (int j = 0; j < 20; ++j)
+    generator->MoveTouchBy(0, 1);
+  EXPECT_EQ(
+      DragBehavior::kDragToClose,
+      overview_session()->window_drag_controller()->current_drag_behavior());
+  // Drag-to-close mode affects the opacity of the whole overview item,
+  // including the unsnappable label.
+  EXPECT_EQ(unsnappable_overview_item->GetWindow()->layer()->opacity(),
+            unsnappable_layer->opacity());
+  generator->ReleaseTouch();
+  EXPECT_EQ(1.f, unsnappable_layer->opacity());
 }
 
 // Test that when splitview mode and overview mode are both active at the same

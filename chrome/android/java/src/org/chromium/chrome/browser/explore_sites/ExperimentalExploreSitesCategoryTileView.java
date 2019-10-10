@@ -71,7 +71,7 @@ public class ExperimentalExploreSitesCategoryTileView extends LinearLayout {
             drawable = new BitmapDrawable(mResources,
                     mIconGenerator.generateIconForText(mCategoryData.getCategoryName()));
         } else {
-            drawable = ViewUtils.createRoundedBitmapDrawable(
+            drawable = ViewUtils.createRoundedBitmapDrawable(mResources,
                     Bitmap.createScaledBitmap(bitmap, mIconWidthPx, mIconHeightPx, false),
                     mResources.getDimensionPixelSize(R.dimen.experimental_explore_sites_radius));
         }

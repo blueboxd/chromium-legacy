@@ -11,6 +11,7 @@
 
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -18,6 +19,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user.h"
 
 namespace chromeos {
 
@@ -69,9 +71,15 @@ class CalculatorsPoliciesBinderImpl : public CalculatorsPoliciesBinder {
       BindSettings(kDeviceNativePrintersWhitelist,
                    &CalculatorsPoliciesBinderImpl::UpdateDeviceWhitelist);
     }
+    // Calculate account_id_.
+    const user_manager::User* user =
+        ProfileHelper::Get()->GetUserByProfile(profile);
+    if (user) {
+      account_id_ = user->GetAccountId();
+      user_printers_ =
+          BulkPrintersCalculatorFactory::Get()->GetForAccountId(account_id_);
+    }
     // Bind user policies to corresponding instance of BulkPrintersCalculator.
-    user_printers_ =
-        BulkPrintersCalculatorFactory::Get()->GetForProfile(profile);
     if (user_printers_ && ++(BindingsCount()[user_printers_.get()]) == 1) {
       BindPref(prefs::kRecommendedNativePrintersAccessMode,
                &CalculatorsPoliciesBinderImpl::UpdateUserAccessMode);
@@ -89,6 +97,7 @@ class CalculatorsPoliciesBinderImpl : public CalculatorsPoliciesBinder {
     }
     if (user_printers_ && --(BindingsCount()[user_printers_.get()]) == 0) {
       BindingsCount().erase(user_printers_.get());
+      BulkPrintersCalculatorFactory::Get()->RemoveForUserId(account_id_);
     }
   }
 
@@ -99,33 +108,45 @@ class CalculatorsPoliciesBinderImpl : public CalculatorsPoliciesBinder {
     if (!settings_->GetInteger(kDeviceNativePrintersAccessMode, &mode_val)) {
       mode_val = BulkPrintersCalculator::AccessMode::UNSET;
     }
-    device_printers_->SetAccessMode(ConvertToAccessMode(mode_val));
+    if (device_printers_) {
+      device_printers_->SetAccessMode(ConvertToAccessMode(mode_val));
+    }
   }
 
   void UpdateDeviceBlacklist() {
-    device_printers_->SetBlacklist(
-        FromSettings(kDeviceNativePrintersBlacklist));
+    if (device_printers_) {
+      device_printers_->SetBlacklist(
+          FromSettings(kDeviceNativePrintersBlacklist));
+    }
   }
 
   void UpdateDeviceWhitelist() {
-    device_printers_->SetWhitelist(
-        FromSettings(kDeviceNativePrintersWhitelist));
+    if (device_printers_) {
+      device_printers_->SetWhitelist(
+          FromSettings(kDeviceNativePrintersWhitelist));
+    }
   }
 
   void UpdateUserAccessMode() {
-    user_printers_->SetAccessMode(
-        ConvertToAccessMode(profile_->GetPrefs()->GetInteger(
-            prefs::kRecommendedNativePrintersAccessMode)));
+    if (user_printers_) {
+      user_printers_->SetAccessMode(
+          ConvertToAccessMode(profile_->GetPrefs()->GetInteger(
+              prefs::kRecommendedNativePrintersAccessMode)));
+    }
   }
 
   void UpdateUserBlacklist() {
-    user_printers_->SetBlacklist(
-        FromPrefs(prefs::kRecommendedNativePrintersBlacklist));
+    if (user_printers_) {
+      user_printers_->SetBlacklist(
+          FromPrefs(prefs::kRecommendedNativePrintersBlacklist));
+    }
   }
 
   void UpdateUserWhitelist() {
-    user_printers_->SetWhitelist(
-        FromPrefs(prefs::kRecommendedNativePrintersWhitelist));
+    if (user_printers_) {
+      user_printers_->SetWhitelist(
+          FromPrefs(prefs::kRecommendedNativePrintersWhitelist));
+    }
   }
 
   typedef void (CalculatorsPoliciesBinderImpl::*SimpleMethod)();
@@ -160,7 +181,9 @@ class CalculatorsPoliciesBinderImpl : public CalculatorsPoliciesBinder {
     return ConvertToVector(profile_->GetPrefs()->GetList(policy_name));
   }
 
-  // Device and user bulk printers. Unowned.
+  // Device and user bulk printers calculator. Unowned. They both may be set to
+  // nullptr during system shutdown. The user bulk printers calculator is also
+  // set to nullptr when corresponding profile is being destroyed.
   base::WeakPtr<BulkPrintersCalculator> device_printers_;
   base::WeakPtr<BulkPrintersCalculator> user_printers_;
 
@@ -168,6 +191,7 @@ class CalculatorsPoliciesBinderImpl : public CalculatorsPoliciesBinder {
   CrosSettings* settings_;
   std::list<std::unique_ptr<CrosSettings::ObserverSubscription>> subscriptions_;
   Profile* profile_;
+  AccountId account_id_;
   PrefChangeRegistrar pref_change_registrar_;
 
   SEQUENCE_CHECKER(sequence_checker_);

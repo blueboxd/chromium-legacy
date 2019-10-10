@@ -78,6 +78,8 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   // ImageDecoder:
   void DecodeSize() override { Decode(true); }
   void Decode(size_t) override { Decode(false); }
+  cc::YUVSubsampling GetYUVSubsampling() const override;
+  cc::ImageHeaderMetadata MakeMetadataForDecodeAcceleration() const override;
 
   // Decodes the image.  If |only_size| is true, stops decoding after
   // calculating the image size.  If decoding fails but there is no more

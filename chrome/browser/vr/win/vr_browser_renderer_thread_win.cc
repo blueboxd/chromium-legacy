@@ -95,12 +95,15 @@ void VRBrowserRendererThreadWin::SetWebXrPresenting(bool presenting) {
 }
 
 void VRBrowserRendererThreadWin::StartWebXrTimeout() {
-  waiting_for_first_frame_ = true;
+  frame_timeout_running_ = true;
   overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
                                          draw_state_.ShouldDrawWebXR());
 
-  overlay_->RequestNotificationOnWebXrSubmitted(base::BindOnce(
-      &VRBrowserRendererThreadWin::OnWebXRSubmitted, base::Unretained(this)));
+  if (!waiting_for_webxr_frame_) {
+    waiting_for_webxr_frame_ = true;
+    overlay_->RequestNotificationOnWebXrSubmitted(base::BindOnce(
+        &VRBrowserRendererThreadWin::OnWebXRSubmitted, base::Unretained(this)));
+  }
 
   webxr_spinner_timeout_closure_.Reset(base::BindOnce(
       &VRBrowserRendererThreadWin::OnWebXrTimeoutImminent,
@@ -124,7 +127,7 @@ void VRBrowserRendererThreadWin::StopWebXrTimeout() {
   if (!webxr_frame_timeout_closure_.IsCancelled())
     webxr_frame_timeout_closure_.Cancel();
   OnSpinnerVisibilityChanged(false);
-  waiting_for_first_frame_ = false;
+  frame_timeout_running_ = false;
 }
 
 int VRBrowserRendererThreadWin::GetNextRequestId() {
@@ -144,15 +147,9 @@ void VRBrowserRendererThreadWin::OnWebXrTimedOut() {
   scheduler_ui_->OnWebXrTimedOut();
 }
 
-void VRBrowserRendererThreadWin::SetVisibleExternalPromptNotification(
-    ExternalPromptNotificationType prompt) {
-  if (!draw_state_.SetPrompt(prompt))
-    return;
-
+void VRBrowserRendererThreadWin::UpdateOverlayState() {
   if (draw_state_.ShouldDrawUI())
     StartOverlay();
-
-  ui_->SetVisibleExternalPromptNotification(prompt);
 
   if (overlay_)
     overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
@@ -167,24 +164,53 @@ void VRBrowserRendererThreadWin::SetVisibleExternalPromptNotification(
   }
 }
 
-void VRBrowserRendererThreadWin::SetIndicatorsVisible(bool visible) {
-  if (!draw_state_.SetIndicatorsVisible(visible))
+void VRBrowserRendererThreadWin::SetFramesThrottled(bool throttled) {
+  if (frames_throttled_ == throttled)
     return;
 
-  if (draw_state_.ShouldDrawUI())
-    StartOverlay();
+  frames_throttled_ = throttled;
 
-  if (overlay_)
-    overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
-                                           draw_state_.ShouldDrawWebXR());
-  if (draw_state_.ShouldDrawUI()) {
-    if (overlay_)  // False only while testing
-      overlay_->RequestNextOverlayPose(
-          base::BindOnce(&VRBrowserRendererThreadWin::OnPose,
-                         base::Unretained(this), GetNextRequestId()));
+  if (g_frame_timeout_ui_disabled_for_testing_)
+    return;
+
+  if (frames_throttled_) {
+    StopWebXrTimeout();
+
+    // TODO(alcooper): This is not necessarily the best thing to show, but it's
+    // the best that we have right now.  It ensures that we submit *something*
+    // rather than letting the default system "Stalled" UI take over, without
+    // showing a message that the page is behaving badly.
+    OnWebXrTimeoutImminent();
   } else {
-    StopOverlay();
+    StartWebXrTimeout();
   }
+}
+
+void VRBrowserRendererThreadWin::SetVisibleExternalPromptNotification(
+    ExternalPromptNotificationType prompt) {
+  if (!draw_state_.SetPrompt(prompt))
+    return;
+
+  UpdateOverlayState();
+
+  if (!ui_) {
+    // If the ui is dismissed, make sure that we don't *actually* have a prompt
+    // state that we needed to set.
+    DCHECK(prompt == ExternalPromptNotificationType::kPromptNone);
+    return;
+  }
+
+  ui_->SetVisibleExternalPromptNotification(prompt);
+}
+
+void VRBrowserRendererThreadWin::SetIndicatorsVisible(bool visible) {
+  if (draw_state_.SetIndicatorsVisible(visible))
+    UpdateOverlayState();
+}
+
+void VRBrowserRendererThreadWin::OnSpinnerVisibilityChanged(bool visible) {
+  if (draw_state_.SetSpinnerVisible(visible))
+    UpdateOverlayState();
 }
 
 void VRBrowserRendererThreadWin::SetCapturingState(
@@ -313,31 +339,11 @@ void VRBrowserRendererThreadWin::StartOverlay() {
   started_ = true;
 }
 
-void VRBrowserRendererThreadWin::OnSpinnerVisibilityChanged(bool visible) {
-  if (!draw_state_.SetSpinnerVisible(visible))
-    return;
-  if (draw_state_.ShouldDrawUI()) {
-    StartOverlay();
-  }
-
-  if (overlay_) {
-    overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
-                                           draw_state_.ShouldDrawWebXR());
-  }
-
-  if (draw_state_.ShouldDrawUI()) {
-    if (overlay_)  // False only while testing.
-      overlay_->RequestNextOverlayPose(
-          base::BindOnce(&VRBrowserRendererThreadWin::OnPose,
-                         base::Unretained(this), GetNextRequestId()));
-  } else {
-    StopOverlay();
-  }
-}
-
 void VRBrowserRendererThreadWin::OnWebXRSubmitted() {
+  waiting_for_webxr_frame_ = false;
   if (scheduler_ui_)
     scheduler_ui_->OnWebXrFrameAvailable();
+
   StopWebXrTimeout();
 }
 
@@ -448,8 +454,12 @@ void VRBrowserRendererThreadWin::SubmitResult(bool success) {
   if (!success && graphics_) {
     graphics_->ResetMemoryBuffer();
   }
-  if (scheduler_ui_ && success && !waiting_for_first_frame_)
+
+  // Make sure that we only notify that a WebXr frame is now
+  if (scheduler_ui_ && success && !frame_timeout_running_) {
     scheduler_ui_->OnWebXrFrameAvailable();
+  }
+
   if (draw_state_.ShouldDrawUI() && started_) {
     overlay_->RequestNextOverlayPose(
         base::BindOnce(&VRBrowserRendererThreadWin::OnPose,

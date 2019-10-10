@@ -207,14 +207,6 @@ android_library("ar_java") {
   ]
 
   java_files = [ "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCoreShimImpl.java" ]
-
-  # TODO(crbug.com/938909): chromium_code.flags is not used as a proguard
-  # config when proguarding asynchronously. This results in AR crashing
-  # chrome when AR is an async DFM. Should implement a more scalable
-  # solution to including chromium_code.flags with all async DFMs.
-  if (async_ar) {
-    proguard_configs = [ "//base/android/proguard/chromium_code.flags" ]
-  }
 }
 
 if (enable_arcore) {

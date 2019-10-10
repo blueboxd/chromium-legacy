@@ -28,9 +28,10 @@ BluetoothDeviceScanningPromptController::
 }
 
 void BluetoothDeviceScanningPromptController::ShowPermissionPrompt() {
-  BluetoothScanningPrompt::EventHandler prompt_event_handler = base::Bind(
-      &BluetoothDeviceScanningPromptController::OnBluetoothScanningPromptEvent,
-      base::Unretained(this));
+  BluetoothScanningPrompt::EventHandler prompt_event_handler =
+      base::BindRepeating(&BluetoothDeviceScanningPromptController::
+                              OnBluetoothScanningPromptEvent,
+                          base::Unretained(this));
   WebContentsDelegate* delegate =
       WebContents::FromRenderFrameHost(render_frame_host_)->GetDelegate();
   if (delegate) {

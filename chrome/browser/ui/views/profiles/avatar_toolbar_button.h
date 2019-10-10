@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_TOOLBAR_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_TOOLBAR_BUTTON_H_
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
@@ -14,8 +15,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
@@ -28,15 +27,13 @@ class AvatarToolbarButton : public ToolbarButton,
                             public BrowserListObserver,
                             public ProfileAttributesStorage::Observer,
                             public signin::IdentityManager::Observer,
-                            public ui::MaterialDesignControllerObserver,
-                            public autofill::PersonalDataManagerObserver {
+                            public ui::MaterialDesignControllerObserver {
  public:
   explicit AvatarToolbarButton(Browser* browser);
   ~AvatarToolbarButton() override;
 
   void UpdateIcon();
   void UpdateText();
-  void SetAutofillIconVisible(bool autofill_icon_visible);
   void ShowAvatarHighlightAnimation();
 
  private:
@@ -100,9 +97,6 @@ class AvatarToolbarButton : public ToolbarButton,
   // ui::MaterialDesignControllerObserver:
   void OnTouchUiChanged() override;
 
-  // autofill::PersonalDataManagerObserver:
-  void OnCreditCardSaved() override;
-
   void ShowIdentityAnimation();
   void HideIdentityAnimationWhenNotHoveredOrFocused();
   void HideIdentityAnimation();
@@ -120,7 +114,8 @@ class AvatarToolbarButton : public ToolbarButton,
   void SetInsets();
 
   // Initiates showing the identity |user_identity| (if non-empty).
-  void OnUserIdentityChanged(const CoreAccountInfo& user_identity);
+  void OnUserIdentityChanged(const CoreAccountInfo& user_identity,
+                             const base::Feature& triggering_feature);
 
   void ShowHighlightAnimation();
   void HideHighlightAnimation();
@@ -136,11 +131,6 @@ class AvatarToolbarButton : public ToolbarButton,
   // button sync paused/error state and update highlight color.
   bool highlight_animation_visible_ = false;
 
-  // Whether any autofill icon is visible in |this|'s parent container. Set by
-  // |ToolbarPageActionIconContainerView|. If true, hide avatar button sync
-  // paused/error state.
-  bool autofill_icon_visible_ = false;
-
   IdentityAnimationState identity_animation_state_ =
       IdentityAnimationState::kNotShowing;
 
@@ -151,9 +141,6 @@ class AvatarToolbarButton : public ToolbarButton,
   ScopedObserver<ui::MaterialDesignController,
                  ui::MaterialDesignControllerObserver>
       md_observer_{this};
-  ScopedObserver<autofill::PersonalDataManager,
-                 autofill::PersonalDataManagerObserver>
-      personal_data_manager_observer_{this};
 
   base::WeakPtrFactory<AvatarToolbarButton> weak_ptr_factory_{this};
 

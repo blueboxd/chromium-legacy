@@ -50,10 +50,6 @@ class ServicesDelegateAndroid : public ServicesDelegate {
   void RemoveTelemetryService() override;
   TelemetryService* GetTelemetryService() const override;
 
-  void CreateVerdictCacheManager(Profile* profile) override;
-  void RemoveVerdictCacheManager(Profile* profile) override;
-  VerdictCacheManager* GetVerdictCacheManager(Profile* profile) const override;
-
   void CreateBinaryUploadService(Profile* profile) override;
   void RemoveBinaryUploadService(Profile* profile) override;
   BinaryUploadService* GetBinaryUploadService(Profile* profile) const override;

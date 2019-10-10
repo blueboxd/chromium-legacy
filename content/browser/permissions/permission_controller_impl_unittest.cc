@@ -23,8 +23,8 @@ namespace content {
 namespace {
 using ::testing::Unused;
 using OverrideStatus = PermissionControllerImpl::OverrideStatus;
-using RequestsCallback =
-    base::Callback<void(const std::vector<blink::mojom::PermissionStatus>&)>;
+using RequestsCallback = base::OnceCallback<void(
+    const std::vector<blink::mojom::PermissionStatus>&)>;
 
 constexpr char kTestUrl[] = "https://google.com";
 

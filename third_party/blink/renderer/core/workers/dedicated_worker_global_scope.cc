@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/core/messaging/post_message_options.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_thread.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -209,8 +208,6 @@ void DedicatedWorkerGlobalScope::FetchAndRunModuleScript(
   // "worker" otherwise."
   mojom::RequestContextType destination = mojom::RequestContextType::WORKER;
 
-  Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
-
   // Step 13: "... Fetch a module worker script graph given url, outside
   // settings, destination, the value of the credentials member of options, and
   // inside settings."
@@ -218,7 +215,8 @@ void DedicatedWorkerGlobalScope::FetchAndRunModuleScript(
                     outside_resource_timing_notifier, destination,
                     credentials_mode,
                     ModuleScriptCustomFetchType::kWorkerConstructor,
-                    MakeGarbageCollected<WorkerModuleTreeClient>(modulator));
+                    MakeGarbageCollected<WorkerModuleTreeClient>(
+                        ScriptController()->GetScriptState()));
 }
 
 const String DedicatedWorkerGlobalScope::name() const {

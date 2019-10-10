@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_image.h"
@@ -19,9 +20,7 @@ class ThumbnailTracker::ContentsData : public content::WebContentsObserver,
                                        public ThumbnailImage::Observer {
  public:
   ContentsData(ThumbnailTracker* parent, content::WebContents* contents)
-      : content::WebContentsObserver(contents),
-        parent_(parent),
-        observer_(this) {
+      : content::WebContentsObserver(contents), parent_(parent) {
     thumbnail_ = parent_->thumbnail_getter_.Run(contents);
     if (thumbnail_)
       observer_.Add(thumbnail_.get());
@@ -53,7 +52,9 @@ class ThumbnailTracker::ContentsData : public content::WebContentsObserver,
  private:
   ThumbnailTracker* parent_;
   scoped_refptr<ThumbnailImage> thumbnail_;
-  ScopedObserver<ThumbnailImage, ContentsData> observer_;
+  ScopedObserver<ThumbnailImage, ThumbnailImage::Observer> observer_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(ContentsData);
 };
 
 ThumbnailTracker::ThumbnailTracker(ThumbnailUpdatedCallback callback)

@@ -84,9 +84,12 @@ StreamProcessorHelper::StreamProcessorHelper(
   processor_->EnableOnStreamFailed();
 }
 
-StreamProcessorHelper::~StreamProcessorHelper() = default;
+StreamProcessorHelper::~StreamProcessorHelper() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+}
 
 void StreamProcessorHelper::Process(IoPacket input) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(processor_);
 
   fuchsia::media::Packet packet;
@@ -113,6 +116,7 @@ void StreamProcessorHelper::Process(IoPacket input) {
 }
 
 void StreamProcessorHelper::ProcessEos() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(processor_);
 
   active_stream_ = true;
@@ -121,6 +125,8 @@ void StreamProcessorHelper::ProcessEos() {
 }
 
 void StreamProcessorHelper::Reset() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (!active_stream_) {
     // Nothing to do if we don't have an active stream.
     return;
@@ -138,6 +144,8 @@ void StreamProcessorHelper::Reset() {
 
 void StreamProcessorHelper::OnStreamFailed(uint64_t stream_lifetime_ordinal,
                                            fuchsia::media::StreamError error) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (stream_lifetime_ordinal_ != stream_lifetime_ordinal) {
     return;
   }
@@ -155,6 +163,8 @@ void StreamProcessorHelper::OnStreamFailed(uint64_t stream_lifetime_ordinal,
 
 void StreamProcessorHelper::OnInputConstraints(
     fuchsia::media::StreamBufferConstraints constraints) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   // Buffer lifetime ordinal is an odd number incremented by 2 for each buffer
   // generation as required by StreamProcessor.
   input_buffer_lifetime_ordinal_ += 2;
@@ -178,6 +188,8 @@ void StreamProcessorHelper::OnInputConstraints(
 
 void StreamProcessorHelper::OnFreeInputPacket(
     fuchsia::media::PacketHeader free_input_packet) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (!free_input_packet.has_buffer_lifetime_ordinal() ||
       !free_input_packet.has_packet_index()) {
     DLOG(ERROR) << "Received OnFreeInputPacket() with missing required fields.";
@@ -206,6 +218,8 @@ void StreamProcessorHelper::OnFreeInputPacket(
 
 void StreamProcessorHelper::OnOutputConstraints(
     fuchsia::media::StreamOutputConstraints output_constraints) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (!output_constraints.has_stream_lifetime_ordinal()) {
     DLOG(ERROR)
         << "Received OnOutputConstraints() with missing required fields.";
@@ -242,6 +256,8 @@ void StreamProcessorHelper::OnOutputConstraints(
 
 void StreamProcessorHelper::OnOutputFormat(
     fuchsia::media::StreamOutputFormat output_format) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (!output_format.has_stream_lifetime_ordinal() ||
       !output_format.has_format_details()) {
     DLOG(ERROR) << "Received OnOutputFormat() with missing required fields.";
@@ -259,6 +275,8 @@ void StreamProcessorHelper::OnOutputFormat(
 void StreamProcessorHelper::OnOutputPacket(fuchsia::media::Packet output_packet,
                                            bool error_detected_before,
                                            bool error_detected_during) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (!output_packet.has_header() ||
       !output_packet.header().has_buffer_lifetime_ordinal() ||
       !output_packet.header().has_packet_index() ||
@@ -299,6 +317,8 @@ void StreamProcessorHelper::OnOutputPacket(fuchsia::media::Packet output_packet,
 void StreamProcessorHelper::OnOutputEndOfStream(
     uint64_t stream_lifetime_ordinal,
     bool error_detected_before) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (stream_lifetime_ordinal != stream_lifetime_ordinal_) {
     return;
   }
@@ -316,6 +336,7 @@ void StreamProcessorHelper::OnError() {
 
 void StreamProcessorHelper::CompleteInputBuffersAllocation(
     fuchsia::sysmem::BufferCollectionTokenPtr sysmem_token) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!input_buffer_constraints_.IsEmpty());
   fuchsia::media::StreamBufferPartialSettings settings;
   settings.set_buffer_lifetime_ordinal(input_buffer_lifetime_ordinal_);
@@ -334,6 +355,7 @@ void StreamProcessorHelper::CompleteOutputBuffersAllocation(
     size_t num_buffers_for_client,
     size_t num_buffers_for_server,
     fuchsia::sysmem::BufferCollectionTokenPtr collection_token) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!output_buffer_constraints_.IsEmpty());
   DCHECK_LE(num_buffers_for_client,
             output_buffer_constraints_.packet_count_for_client_max());
@@ -354,6 +376,8 @@ void StreamProcessorHelper::CompleteOutputBuffersAllocation(
 void StreamProcessorHelper::OnRecycleOutputBuffer(
     uint64_t buffer_lifetime_ordinal,
     uint32_t packet_index) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (!processor_)
     return;
 

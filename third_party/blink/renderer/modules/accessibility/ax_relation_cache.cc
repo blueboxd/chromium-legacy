@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_relation_cache.h"
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/html/forms/html_label_element.h"
 
 namespace blink {
@@ -15,6 +16,24 @@ AXRelationCache::AXRelationCache(AXObjectCacheImpl* object_cache)
     : object_cache_(object_cache) {}
 
 AXRelationCache::~AXRelationCache() = default;
+
+void AXRelationCache::Init() {
+  // Init the relation cache with elements already in the document.
+  Document& document = object_cache_->GetDocument();
+  for (Element& element :
+       ElementTraversal::DescendantsOf(*document.documentElement())) {
+    const auto& id = element.FastGetAttribute(kForAttr);
+    if (!id.IsEmpty())
+      all_previously_seen_label_target_ids_.insert(id);
+
+    if (element.FastHasAttribute(kAriaOwnsAttr)) {
+      if (AXObject* obj = object_cache_->GetOrCreate(&element)) {
+        obj->ClearChildren();
+        obj->AddChildren();
+      }
+    }
+  }
+}
 
 bool AXRelationCache::IsAriaOwned(const AXObject* child) const {
   return aria_owned_child_to_owner_mapping_.Contains(child->AXObjectID());
@@ -271,6 +290,7 @@ void AXRelationCache::TextChanged(AXObject* object) {
 
 void AXRelationCache::LabelChanged(Node* node) {
   const auto& id = To<HTMLElement>(node)->FastGetAttribute(kForAttr);
+  LOG(ERROR) << "LabelChanged " << id;
   if (!id.IsEmpty()) {
     all_previously_seen_label_target_ids_.insert(id);
     if (auto* control = To<HTMLLabelElement>(node)->control())

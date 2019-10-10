@@ -10,17 +10,14 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 namespace extensions {
 class Extension;
-class ExtensionRegistry;
 }  // namespace extensions
-
-namespace session_manager {
-class SessionManager;
-}
 
 namespace chromeos {
 
@@ -95,10 +92,10 @@ class LoginScreenExtensionUiHandler
 
   ScopedObserver<session_manager::SessionManager,
                  session_manager::SessionManagerObserver>
-      session_manager_observer_;
+      session_manager_observer_{this};
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   base::WeakPtrFactory<LoginScreenExtensionUiHandler> weak_ptr_factory_{this};
 

@@ -111,8 +111,7 @@ def _ParseOptions():
   parser.add_argument(
       '--verbose', '-v', action='store_true', help='Print all ProGuard output')
   parser.add_argument(
-      '--repackage-classes',
-      help='Unique package name given to an asynchronously proguarded module')
+      '--repackage-classes', help='Package all optimized classes are put in.')
   parser.add_argument(
       '--disable-outlining',
       action='store_true',

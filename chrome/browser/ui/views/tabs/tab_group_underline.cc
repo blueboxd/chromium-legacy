@@ -34,12 +34,6 @@ void TabGroupUnderline::OnPaint(gfx::Canvas* canvas) {
   flags.setColor(GetColor());
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawPath(path, flags);
-
-  // Ensure the active tab border stroke is repainted.
-  const int active_index = tab_strip_->controller()->GetActiveIndex();
-  if (active_index != ui::ListSelectionModel::kUnselectedIndex &&
-      tab_strip_->tab_at(active_index)->group() == group_)
-    tab_strip_->tab_at(active_index)->SchedulePaint();
 }
 
 void TabGroupUnderline::UpdateBounds() {

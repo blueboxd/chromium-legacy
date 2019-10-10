@@ -39,10 +39,12 @@ struct OptimizationMetadata {
 
 class OptimizationGuideDecider {
  public:
-  // Registers the optimization types that intend to be queried during the
-  // session.
-  virtual void RegisterOptimizationTypes(
-      std::vector<proto::OptimizationType> optimization_types) = 0;
+  // Registers the optimization types and targets that intend to be queried
+  // during the session. It is expected for this to be called after the browser
+  // has been initialized.
+  virtual void RegisterOptimizationTypesAndTargets(
+      const std::vector<proto::OptimizationType>& optimization_types,
+      const std::vector<proto::OptimizationTarget>& optimization_targets) = 0;
 
   // Returns whether the current conditions match |optimization_target| and
   // |optimization_type| can be applied for the URL associated with

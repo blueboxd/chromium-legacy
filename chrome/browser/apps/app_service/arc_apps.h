@@ -18,6 +18,7 @@
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -25,10 +26,6 @@
 #include "mojo/public/cpp/bindings/remote_set.h"
 
 class Profile;
-
-namespace arc {
-class ArcIntentHelperBridge;
-}
 
 namespace apps {
 

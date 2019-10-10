@@ -129,6 +129,10 @@ const base::Feature kImplicitRootScroller {
 #endif
 };
 
+// Enable CSSOM View Scroll Coordinates. https://crbug.com/721759.
+const base::Feature kCSSOMViewScrollCoordinates{
+    "CSSOMViewScrollCoordinates", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables usage of getDisplayMedia() that allows capture of web content, see
 // https://crbug.com/865060.
 const base::Feature kRTCGetDisplayMedia{"RTCGetDisplayMedia",
@@ -293,10 +297,6 @@ const base::Feature kLightweightNoStatePrefetch{
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
-
-// Use scroll gestures for scrollbar scrolls (see https://crbug.com/954007).
-const base::Feature kScrollbarInjectScrollGestures{
-    "ScrollbarInjectScrollGestures", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Automatically convert light-themed pages to use a Blink-generated dark theme
 const base::Feature kForceWebContentsDarkMode{

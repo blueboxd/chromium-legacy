@@ -45,8 +45,7 @@ FrameNodeImpl::~FrameNodeImpl() {
 }
 
 void FrameNodeImpl::Bind(
-    mojo::PendingReceiver<resource_coordinator::mojom::DocumentCoordinationUnit>
-        receiver) {
+    mojo::PendingReceiver<mojom::DocumentCoordinationUnit> receiver) {
   // It is possible to receive a mojo::PendingReceiver<DocumentCoordinationUnit>
   // when |receiver_| is already bound in these cases:
   // - Navigation from the initial empty document to the first real document.
@@ -61,8 +60,7 @@ void FrameNodeImpl::SetNetworkAlmostIdle() {
   document_.network_almost_idle.SetAndMaybeNotify(this, true);
 }
 
-void FrameNodeImpl::SetLifecycleState(
-    resource_coordinator::mojom::LifecycleState state) {
+void FrameNodeImpl::SetLifecycleState(mojom::LifecycleState state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   lifecycle_state_.SetAndMaybeNotify(this, state);
 }
@@ -73,7 +71,7 @@ void FrameNodeImpl::SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) {
 }
 
 void FrameNodeImpl::SetOriginTrialFreezePolicy(
-    resource_coordinator::mojom::InterventionPolicy policy) {
+    mojom::InterventionPolicy policy) {
   document_.origin_trial_freeze_policy.SetAndMaybeNotify(this, policy);
 }
 
@@ -130,14 +128,12 @@ const base::flat_set<FrameNodeImpl*>& FrameNodeImpl::child_frame_nodes() const {
   return child_frame_nodes_;
 }
 
-resource_coordinator::mojom::LifecycleState FrameNodeImpl::lifecycle_state()
-    const {
+mojom::LifecycleState FrameNodeImpl::lifecycle_state() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return lifecycle_state_.value();
 }
 
-resource_coordinator::mojom::InterventionPolicy
-FrameNodeImpl::origin_trial_freeze_policy() const {
+mojom::InterventionPolicy FrameNodeImpl::origin_trial_freeze_policy() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return document_.origin_trial_freeze_policy.value();
 }
@@ -481,7 +477,7 @@ void FrameNodeImpl::DocumentProperties::Reset(FrameNodeImpl* frame_node,
   // Network is busy on navigation.
   network_almost_idle.SetAndMaybeNotify(frame_node, false);
   origin_trial_freeze_policy.SetAndMaybeNotify(
-      frame_node, resource_coordinator::mojom::InterventionPolicy::kUnknown);
+      frame_node, mojom::InterventionPolicy::kUnknown);
 }
 
 }  // namespace performance_manager

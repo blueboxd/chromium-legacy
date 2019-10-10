@@ -3723,8 +3723,8 @@ TEST_F(DiskCacheTest, MultipleInstances) {
       nullptr, &cache[0], cb.callback());
   ASSERT_THAT(cb.GetResult(rv), IsOk());
   rv = disk_cache::CreateCacheBackend(
-      net::MEDIA_CACHE, net::CACHE_BACKEND_DEFAULT, store2.GetPath(), 0, false,
-      nullptr, &cache[1], cb.callback());
+      net::GENERATED_BYTE_CODE_CACHE, net::CACHE_BACKEND_DEFAULT,
+      store2.GetPath(), 0, false, nullptr, &cache[1], cb.callback());
   ASSERT_THAT(cb.GetResult(rv), IsOk());
 
   ASSERT_TRUE(cache[0].get() != nullptr && cache[1].get() != nullptr);

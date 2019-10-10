@@ -5356,273 +5356,55 @@ TEST_F(SSLClientSocketTest, Tag) {
 #endif  // OS_ANDROID
 }
 
-// Test downgrade enforcement works for the 1.3 to 1.2 downgrade.
-TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedAtTLS12) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kEnforceTLS13Downgrade, {{"known_roots_only", "false"}});
+// Test downgrade enforcement behaves as expected.
+TEST_F(SSLClientSocketTest, TLS13DowngradeEnforced) {
+  for (auto tls_max_version :
+       {SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_0,
+        SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_1,
+        SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2}) {
+    for (bool downgrade : {false, true}) {
+      SCOPED_TRACE(downgrade);
+      SCOPED_TRACE(tls_max_version);
+      SpawnedTestServer::SSLOptions ssl_options;
+      ssl_options.simulate_tls13_downgrade = downgrade;
+      ssl_options.tls_max_version = tls_max_version;
+      ASSERT_TRUE(StartTestServer(ssl_options));
+      scoped_refptr<X509Certificate> server_cert =
+          spawned_test_server()->GetCertificate();
 
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.simulate_tls13_downgrade = true;
-  ssl_options.tls_max_version =
-      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2;
-  ASSERT_TRUE(StartTestServer(ssl_options));
+      for (bool enable_for_local_anchors : {false, true}) {
+        SCOPED_TRACE(enable_for_local_anchors);
+        SSLContextConfig config;
+        config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+        config.tls13_hardening_for_local_anchors_enabled =
+            enable_for_local_anchors;
+        ssl_config_service_->UpdateSSLConfigAndNotify(config);
 
-  SSLContextConfig config;
-  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  ssl_config_service_->UpdateSSLConfigAndNotify(config);
+        for (bool known_root : {false, true}) {
+          SCOPED_TRACE(known_root);
+          CertVerifyResult verify_result;
+          verify_result.is_issued_by_known_root = known_root;
+          verify_result.verified_cert = server_cert;
+          cert_verifier_->ClearRules();
+          cert_verifier_->AddResultForCert(server_cert.get(), verify_result,
+                                           OK);
 
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  EXPECT_THAT(rv, IsError(ERR_TLS13_DOWNGRADE_DETECTED));
-  EXPECT_FALSE(sock_->IsConnected());
-}
+          bool should_enforce = known_root || enable_for_local_anchors;
 
-// Test downgrade enforcement works for the 1.3 to 1.1 downgrade.
-TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedAtTLS11) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kEnforceTLS13Downgrade, {{"known_roots_only", "false"}});
-
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.simulate_tls12_downgrade = true;
-  ssl_options.tls_max_version =
-      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_1;
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  SSLContextConfig config;
-  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  ssl_config_service_->UpdateSSLConfigAndNotify(config);
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  EXPECT_THAT(rv, IsError(ERR_TLS13_DOWNGRADE_DETECTED));
-  EXPECT_FALSE(sock_->IsConnected());
-}
-
-// Test downgrade enforcement works for the 1.3 to 1.0 downgrade.
-TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedAtTLS10) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kEnforceTLS13Downgrade, {{"known_roots_only", "false"}});
-
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.simulate_tls12_downgrade = true;
-  ssl_options.tls_max_version =
-      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_0;
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  SSLContextConfig config;
-  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  ssl_config_service_->UpdateSSLConfigAndNotify(config);
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  EXPECT_THAT(rv, IsError(ERR_TLS13_DOWNGRADE_DETECTED));
-  EXPECT_FALSE(sock_->IsConnected());
-}
-
-// Test downgrade enforcement lets valid connections through.
-TEST_F(SSLClientSocketTest, TLS13DowngradeValid) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kEnforceTLS13Downgrade);
-
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.tls_max_version =
-      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2;
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  SSLContextConfig config;
-  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  ssl_config_service_->UpdateSSLConfigAndNotify(config);
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(sock_->IsConnected());
-
-  SSLInfo info;
-  EXPECT_TRUE(sock_->GetSSLInfo(&info));
-  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1_2,
-            SSLConnectionStatusToVersion(info.connection_status));
-}
-
-// Test the downgrade is not enforced for the TLS 1.3 to TLS 1.2 downgrade if
-// disabled.
-TEST_F(SSLClientSocketTest, TLS13DowngradeIgnoredAtTLS12) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kEnforceTLS13Downgrade);
-
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.tls_max_version =
-      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2;
-  ssl_options.simulate_tls13_downgrade = true;
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  SSLContextConfig config;
-  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  ssl_config_service_->UpdateSSLConfigAndNotify(config);
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(sock_->IsConnected());
-
-  SSLInfo info;
-  EXPECT_TRUE(sock_->GetSSLInfo(&info));
-  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1_2,
-            SSLConnectionStatusToVersion(info.connection_status));
-}
-
-// Test the downgrade is not enforced for the TLS 1.3 to TLS 1.1 downgrade if
-// disabled.
-TEST_F(SSLClientSocketTest, TLS13DowngradeIgnoredAtTLS11) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kEnforceTLS13Downgrade);
-
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.simulate_tls12_downgrade = true;
-  ssl_options.tls_max_version =
-      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_1;
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  SSLContextConfig config;
-  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  ssl_config_service_->UpdateSSLConfigAndNotify(config);
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(sock_->IsConnected());
-
-  SSLInfo info;
-  EXPECT_TRUE(sock_->GetSSLInfo(&info));
-  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1_1,
-            SSLConnectionStatusToVersion(info.connection_status));
-}
-
-// Test the downgrade is not enforced for the TLS 1.3 to TLS 1.0 downgrade if
-// disabled.
-TEST_F(SSLClientSocketTest, TLS13DowngradeIgnoredAtTLS10) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kEnforceTLS13Downgrade);
-
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.simulate_tls13_downgrade = true;
-  ssl_options.tls_max_version =
-      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_0;
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  SSLContextConfig config;
-  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  ssl_config_service_->UpdateSSLConfigAndNotify(config);
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(sock_->IsConnected());
-
-  SSLInfo info;
-  EXPECT_TRUE(sock_->GetSSLInfo(&info));
-  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1,
-            SSLConnectionStatusToVersion(info.connection_status));
-}
-
-// Failed on Android builder. See https://crbug.com/999647
-#if defined(OS_ANDROID)
-#define MAYBE_TLS13DowngradeEnforcedKnownKnown \
-  DISABLED_TLS13DowngradeEnforcedKnownKnown
-#else
-#define MAYBE_TLS13DowngradeEnforcedKnownKnown TLS13DowngradeEnforcedKnownKnown
-#endif
-// Test downgrade enforcement enforces known roots when configured to.
-TEST_F(SSLClientSocketTest, MAYBE_TLS13DowngradeEnforcedKnownKnown) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kEnforceTLS13Downgrade, {{"known_roots_only", "true"}});
-
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.simulate_tls13_downgrade = true;
-  ssl_options.tls_max_version =
-      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2;
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  scoped_refptr<X509Certificate> server_cert =
-      spawned_test_server()->GetCertificate();
-
-  // Certificate is trusted and chains to a public root.
-  CertVerifyResult verify_result;
-  verify_result.is_issued_by_known_root = true;
-  verify_result.verified_cert = server_cert;
-  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
-
-  SSLContextConfig config;
-  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  ssl_config_service_->UpdateSSLConfigAndNotify(config);
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  EXPECT_THAT(rv, IsError(ERR_TLS13_DOWNGRADE_DETECTED));
-  EXPECT_FALSE(sock_->IsConnected());
-}
-
-// Test downgrade enforcement allows valid connections with known roots when
-// configured to.
-TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedKnownValid) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kEnforceTLS13Downgrade, {{"known_roots_only", "true"}});
-
-  ASSERT_TRUE(StartTestServer(SpawnedTestServer::SSLOptions()));
-
-  scoped_refptr<X509Certificate> server_cert =
-      spawned_test_server()->GetCertificate();
-
-  // Certificate is trusted and chains to a public root.
-  CertVerifyResult verify_result;
-  verify_result.is_issued_by_known_root = true;
-  verify_result.verified_cert = server_cert;
-  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
-
-  SSLContextConfig config;
-  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  ssl_config_service_->UpdateSSLConfigAndNotify(config);
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(sock_->IsConnected());
-}
-
-// Test downgrade enforcement ignores unknown roots when configured to.
-TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedKnownUnknown) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kEnforceTLS13Downgrade, {{"known_roots_only", "true"}});
-
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.simulate_tls13_downgrade = true;
-  ssl_options.tls_max_version =
-      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2;
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  scoped_refptr<X509Certificate> server_cert =
-      spawned_test_server()->GetCertificate();
-
-  // Certificate is trusted and chains to a public root.
-  CertVerifyResult verify_result;
-  verify_result.is_issued_by_known_root = false;
-  verify_result.verified_cert = server_cert;
-  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
-
-  SSLContextConfig config;
-  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  ssl_config_service_->UpdateSSLConfigAndNotify(config);
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(sock_->IsConnected());
+          ssl_client_session_cache_->Flush();
+          int rv;
+          ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+          if (should_enforce && downgrade) {
+            EXPECT_THAT(rv, IsError(ERR_TLS13_DOWNGRADE_DETECTED));
+            EXPECT_FALSE(sock_->IsConnected());
+          } else {
+            EXPECT_THAT(rv, IsOk());
+            EXPECT_TRUE(sock_->IsConnected());
+          }
+        }
+      }
+    }
+  }
 }
 
 struct TLS13DowngradeMetricsParams {
@@ -5691,10 +5473,6 @@ TEST_P(TLS13DowngradeMetricsTest, Metrics) {
   const TLS13DowngradeMetricsParams& params = GetParam();
   base::HistogramTester histograms;
 
-  // Metrics are only gathered when enforcement is disabled.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kEnforceTLS13Downgrade);
-
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.simulate_tls13_downgrade = params.downgrade;
   ssl_options.key_exchanges = params.key_exchanges;
@@ -5729,7 +5507,7 @@ TEST_P(TLS13DowngradeMetricsTest, Metrics) {
   std::unique_ptr<SSLClientSocket> ssl_socket =
       CreateSSLClientSocket(std::move(transport), host_port_pair, SSLConfig());
   rv = callback.GetResult(ssl_socket->Connect(callback.callback()));
-  EXPECT_THAT(rv, IsOk());
+  EXPECT_THAT(rv, AnyOf(IsOk(), IsError(ERR_TLS13_DOWNGRADE_DETECTED)));
 
   histograms.ExpectUniqueSample("Net.SSLTLS13Downgrade", params.downgrade, 1);
   if (params.tls13_experiment_host) {

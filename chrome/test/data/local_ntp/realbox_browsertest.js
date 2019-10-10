@@ -19,6 +19,7 @@ test.realbox.IDS = {
  * @const
  */
 test.realbox.CLASSES = {
+  REMOVABLE: 'removable',
   REMOVE_ICON: 'remove-icon',
   SELECTED: 'selected',
   SHOW_MATCHES: 'show-matches',
@@ -513,6 +514,9 @@ test.realbox.testUnsupportedDeletion = function() {
   test.realbox.realboxEl.dispatchEvent(keyEvent);
   assertFalse(keyEvent.defaultPrevented);
 
+  const matchesEl = $(test.realbox.IDS.REALBOX_MATCHES);
+  assertFalse(matchesEl.classList.contains(test.realbox.CLASSES.REMOVABLE));
+
   // The below 2 statements shouldn't really happen in updated code but isn't
   // terrible idea to keep testing for now. This is because SupportsDeletion()
   // is now propagated to the client, so we shouldn't allow users (via the UI)
@@ -533,6 +537,9 @@ test.realbox.testSupportedDeletion = function() {
   chrome.embeddedSearch.searchBox.onqueryautocompletedone(
       {input: test.realbox.realboxEl.value, matches});
 
+  const matchesEl = $(test.realbox.IDS.REALBOX_MATCHES);
+  assertTrue(matchesEl.classList.contains(test.realbox.CLASSES.REMOVABLE));
+
   const downArrow = new KeyboardEvent('keydown', {
     bubbles: true,
     cancelable: true,
@@ -541,9 +548,9 @@ test.realbox.testSupportedDeletion = function() {
   test.realbox.realboxEl.dispatchEvent(downArrow);
   assertTrue(downArrow.defaultPrevented);
 
-  const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
-  assertEquals(2, matchEls.length);
-  assertTrue(matchEls[1].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertEquals(2, matchesEl.children.length);
+  assertTrue(
+      matchesEl.children[1].classList.contains(test.realbox.CLASSES.SELECTED));
 
   const shiftDelete = new KeyboardEvent('keydown', {
     bubbles: true,
@@ -571,9 +578,10 @@ test.realbox.testRemoveIcon = function() {
   chrome.embeddedSearch.searchBox.onqueryautocompletedone(
       {input: test.realbox.realboxEl.value, matches});
 
-  const sel = `#${test.realbox.IDS.REALBOX_MATCHES}
-               .${test.realbox.CLASSES.REMOVE_ICON}`;
-  document.querySelector(sel).click();
+  const matchesEl = $(test.realbox.IDS.REALBOX_MATCHES);
+  assertTrue(matchesEl.classList.contains(test.realbox.CLASSES.REMOVABLE));
+
+  matchesEl.querySelector(`.${test.realbox.CLASSES.REMOVE_ICON}`).click();
 
   assertEquals(1, test.realbox.deletedLines.length);
   assertEquals(0, test.realbox.deletedLines[0]);

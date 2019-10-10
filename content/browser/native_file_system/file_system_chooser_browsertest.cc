@@ -15,6 +15,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -397,6 +398,28 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
             dialog_params.file_types->extension_description_overrides[0]);
   EXPECT_EQ(base::ASCIIToUTF16(""),
             dialog_params.file_types->extension_description_overrides[1]);
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
+                       NativeFileSystemUsageDisablesBackForwardCache) {
+  BackForwardCacheDisabledTester tester;
+
+  const base::FilePath test_file = CreateTestFile("file contents");
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_file}, &dialog_params));
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
+            EvalJs(shell(),
+                   "(async () => {"
+                   "  let e = await self.chooseFileSystemEntries();"
+                   "  self.selected_entry = e;"
+                   "  return e.name; })()"));
+  EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      shell()->web_contents()->GetMainFrame()->GetRoutingID(),
+      "NativeFileSystem"));
 }
 
 }  // namespace content

@@ -1893,7 +1893,9 @@ Unknown properties are collapsed to zero. -->
   <int value="43" label="User clicked on the banner"/>
   <int value="44" label="(Obsolete) User swiped the banner away"/>
   <int value="45" label="User hit the X button"/>
-  <int value="46" label="User began app install, but it didn't finish in time"/>
+  <int value="46"
+      label="User began app install, but it didn't finish in time
+             (deprecated)"/>
   <int value="47" label="Banner was dismissed for any reason"/>
   <int value="48" label="Ambient badge infobar was dismissed"/>
 </enum>
@@ -1956,9 +1958,11 @@ Unknown properties are collapsed to zero. -->
 
 <enum name="AppBannersInstallEvent">
   <int value="21" label="(Native app) User triggered the app install dialog"/>
-  <int value="22" label="(Native app) User began installing the app"/>
+  <int value="22"
+      label="(Native app) User began installing the app (deprecated)"/>
   <int value="23"
-      label="(Native app) User waited for the app to finish installing"/>
+      label="(Native app) User waited for the app to finish installing
+             (deprecated)"/>
   <int value="24" label="(Web app) User installed a web app"/>
 </enum>
 
@@ -18224,6 +18228,7 @@ Called by update_net_error_codes.py.-->
   <int value="623" label="LegacySameSiteCookieBehaviorEnabled"/>
   <int value="624" label="LegacySameSiteCookieBehaviorEnabledForDomainList"/>
   <int value="625" label="PrintJobHistoryExpirationPeriod"/>
+  <int value="626" label="TLS13HardeningForLocalAnchorsEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -24881,6 +24886,10 @@ Called by update_net_error_codes.py.-->
   <int value="3049" label="RenderSubtreeAttribute"/>
   <int value="3050" label="ARIAAnnotationRoles"/>
   <int value="3051" label="IntersectionObserverV2"/>
+  <int value="3052" label="HeavyAdIntervention"/>
+  <int value="3053" label="UserTimingL3"/>
+  <int value="3054" label="GetGamepadsFromCrossOriginSubframe"/>
+  <int value="3055" label="GetGamepadsFromInsecureContext"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -24892,7 +24901,6 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="Origins"/>
   <int value="6" label="KeywordsOnly"/>
   <int value="7" label="Mixed"/>
-  &gt;&gt;&gt;&gt;&gt;&gt;&gt; 9f172e486e8ccfee1dc0a15b090845abc21e8c26
 </enum>
 
 <enum name="FeaturePolicyFeature">
@@ -35116,6 +35124,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1894699049" label="AudioFocusEnforcement:disabled"/>
   <int value="-1893668420"
       label="AutofillSaveCreditCardUsesStrikeSystem:enabled"/>
+  <int value="-1893019071" label="CSSOMViewScrollCoordinates:disabled"/>
   <int value="-1892555086" label="disable-compositor-animation-timelines"/>
   <int value="-1892000374" label="SeccompSandboxAndroid:enabled"/>
   <int value="-1890374564" label="OobeRecommendAppsScreen:disabled"/>
@@ -35866,6 +35875,7 @@ from previous Chrome versions.
   <int value="-966290456" label="WebAuthenticationCtap2:enabled"/>
   <int value="-965842218" label="MultiDeviceApi:disabled"/>
   <int value="-964676765" label="enable-accelerated-mjpeg-decode"/>
+  <int value="-964620377" label="CSSOMViewScrollCoordinates:enabled"/>
   <int value="-962030536" label="ChromeDuetLabeled:enabled"/>
   <int value="-960077963" label="EnableAuraTooltipsOnWindows:enabled"/>
   <int value="-958950214" label="AllowDisableMouseAcceleration:disabled"/>
@@ -36483,6 +36493,7 @@ from previous Chrome versions.
   <int value="-120521482" label="DirectManipulationStylus:enabled"/>
   <int value="-120091289" label="CrostiniAppSearch:enabled"/>
   <int value="-119055644" label="GenericSensor:enabled"/>
+  <int value="-118993417" label="TLS13HardeningForLocalAnchors:disabled"/>
   <int value="-116692797" label="HTTPAuthCommittedInterstitials:enabled"/>
   <int value="-115834377" label="EnableUnifiedMultiDeviceSetup:disabled"/>
   <int value="-114807608" label="TerminalSystemApp:disabled"/>
@@ -37082,6 +37093,7 @@ from previous Chrome versions.
       label="enable-fullscreen-handwriting-virtual-keyboard:disabled"/>
   <int value="681622885" label="FullscreenExitUI:enabled"/>
   <int value="682549212" label="ash-enable-cursor-motion-blur"/>
+  <int value="683013217" label="AllowPopupsDuringPageUnload:disabled"/>
   <int value="684806628" label="TranslateLanguageByULP:disabled"/>
   <int value="685916283" label="enable-zip-archiver-on-file-manager"/>
   <int value="687838135" label="ThirdPartyDoodles:disabled"/>
@@ -37316,6 +37328,7 @@ from previous Chrome versions.
   <int value="1022424308" label="SignedExchangeSubresourcePrefetch:enabled"/>
   <int value="1022992701" label="enable-origin-chip-always"/>
   <int value="1024560563" label="EnableFuzzyAppSearch:enabled"/>
+  <int value="1026981579" label="TLS13HardeningForLocalAnchors:enabled"/>
   <int value="1027252926" label="SyncSupportSecondaryAccount:enabled"/>
   <int value="1033148287" label="NTPShortcuts:disabled"/>
   <int value="1033412163" label="OmniboxDisplayTitleForCurrentUrl:enabled"/>
@@ -38104,6 +38117,7 @@ from previous Chrome versions.
   <int value="2047695652" label="DelegateOverscrollSwipes:enabled"/>
   <int value="2047981703" label="IntentPicker:enabled"/>
   <int value="2049432745" label="VaapiWebPImageDecodeAcceleration:enabled"/>
+  <int value="2050985807" label="AllowPopupsDuringPageUnload:enabled"/>
   <int value="2051403297" label="ShowBluetoothDeviceBattery:disabled"/>
   <int value="2053273256" label="BundledHTTPExchanges:disabled"/>
   <int value="2056572020" label="EnableUsernameCorrection:disabled"/>
@@ -38878,6 +38892,11 @@ from previous Chrome versions.
   <int value="9" label="FAILED_STORE_DATA">
     Could not store new password data for supervised user.
   </int>
+</enum>
+
+<enum name="ManagedUserURLRequestPermissionSource">
+  <int value="0" label="MAIN_FRAME">Request was made from main frame</int>
+  <int value="1" label="SUB_FRAME">Request was made from subframe</int>
 </enum>
 
 <enum name="ManagePasswordsReferrer">

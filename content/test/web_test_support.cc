@@ -114,12 +114,6 @@ RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
   return render_frame_proxy;
 }
 
-float GetWindowToViewportScale(RenderWidget* render_widget) {
-  blink::WebFloatRect rect(0, 0, 1.0f, 0.0);
-  render_widget->ConvertWindowToViewport(&rect);
-  return rect.width;
-}
-
 #if defined(OS_WIN)
 // DirectWrite only has access to %WINDIR%\Fonts by default. For developer
 // side-loading, support kRegisterFontFiles to allow access to additional fonts.
@@ -223,13 +217,6 @@ void SetDeviceScaleFactor(RenderView* render_view, float factor) {
   render_view_impl->GetWidget()->SetDeviceScaleFactorForTesting(factor);
 }
 
-float GetWindowToViewportScale(RenderView* render_view) {
-  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  blink::WebFloatRect rect(0, 0, 1.0f, 0.0);
-  render_view_impl->page_properties()->ConvertWindowToViewport(&rect);
-  return rect.width;
-}
-
 std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
     test_runner::WebWidgetTestProxy* web_widget_test_proxy,
     const blink::WebInputEvent& event) {
@@ -238,8 +225,13 @@ std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
   RenderWidget* render_widget =
       static_cast<RenderWidget*>(web_widget_test_proxy);
 
+  // Compute the scale from window (dsf-independent) to blink (dsf-dependent
+  // under UseZoomForDSF).
+  blink::WebFloatRect rect(0, 0, 1.0f, 0.0);
+  render_widget->ConvertWindowToViewport(&rect);
+  float scale = rect.width;
+
   blink::WebRect view_rect = render_widget->ViewRect();
-  float scale = GetWindowToViewportScale(render_widget);
   gfx::Vector2d delta(-view_rect.x, -view_rect.y);
   return ui::TranslateAndScaleWebInputEvent(event, delta, scale);
 }

@@ -37,8 +37,10 @@ class KioskAppMenuController
  private:
   void LaunchApp(const ash::KioskAppMenuEntry& app);
 
-  ScopedObserver<KioskAppManager, KioskAppMenuController> kiosk_observer_{this};
-  ScopedObserver<ArcKioskAppManager, KioskAppMenuController>
+  ScopedObserver<KioskAppManager, KioskAppManagerObserver> kiosk_observer_{
+      this};
+  ScopedObserver<ArcKioskAppManager,
+                 ArcKioskAppManager::ArcKioskAppManagerObserver>
       arc_kiosk_observer_{this};
 
   base::WeakPtrFactory<KioskAppMenuController> weak_factory_{this};

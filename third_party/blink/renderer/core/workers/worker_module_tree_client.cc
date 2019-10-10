@@ -12,17 +12,16 @@
 
 namespace blink {
 
-WorkerModuleTreeClient::WorkerModuleTreeClient(Modulator* modulator)
-    : modulator_(modulator) {}
+WorkerModuleTreeClient::WorkerModuleTreeClient(ScriptState* script_state)
+    : script_state_(script_state) {}
 
 // A partial implementation of the "Processing model" algorithm in the HTML
 // WebWorker spec:
 // https://html.spec.whatwg.org/C/#worker-processing-model
 void WorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
     ModuleScript* module_script) {
-  auto* execution_context =
-      ExecutionContext::From(modulator_->GetScriptState());
-  auto* worker_global_scope = To<WorkerGlobalScope>(execution_context);
+  auto* worker_global_scope =
+      To<WorkerGlobalScope>(ExecutionContext::From(script_state_));
   blink::WorkerReportingProxy& worker_reporting_proxy =
       worker_global_scope->ReportingProxy();
 
@@ -52,7 +51,7 @@ void WorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
 }
 
 void WorkerModuleTreeClient::Trace(blink::Visitor* visitor) {
-  visitor->Trace(modulator_);
+  visitor->Trace(script_state_);
   ModuleTreeClient::Trace(visitor);
 }
 

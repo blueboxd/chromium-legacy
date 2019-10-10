@@ -478,8 +478,8 @@ class ExtractHistogramsTest(unittest.TestCase):
     self.assertFalse(have_errors)
     self.assertIn('Test.Histogram', hists)
     self.assertIn('summary', hists['Test.Histogram'])
-    self.assertEquals('This is a summary with & and " and \'',
-                      hists['Test.Histogram']['summary'])
+    self.assertEqual('This is a summary with & and " and \'',
+                     hists['Test.Histogram']['summary'])
 
   def testNewSuffixWithoutLabel(self):
     suffix_without_label = xml.dom.minidom.parseString("""

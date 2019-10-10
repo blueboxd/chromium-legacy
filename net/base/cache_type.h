@@ -8,10 +8,12 @@
 namespace net {
 
 // The types of caches that can be created.
+// Note: enum values used in some metrics, so add new values at end only,
+// and don't renumber old ones.
 enum CacheType {
   DISK_CACHE,                 // Disk is used as the backing storage.
   MEMORY_CACHE,               // Data is stored only in memory.
-  MEDIA_CACHE,                // Optimized to handle media files.
+  REMOVED_MEDIA_CACHE,        // No longer in use.
   APP_CACHE,                  // Backing store for an AppCache.
   SHADER_CACHE,               // Backing store for the GL shader cache.
   PNACL_CACHE,                // Backing store the PNaCl translation cache

@@ -185,6 +185,8 @@ DomStorageDatabase::DomStorageDatabase(
 DomStorageDatabase::~DomStorageDatabase() {
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
+  if (destruction_callback_)
+    std::move(destruction_callback_).Run();
 }
 
 // static
@@ -337,6 +339,8 @@ DomStorageDatabase::Status DomStorageDatabase::Commit(
     leveldb::WriteBatch* batch) const {
   if (!db_)
     return Status::IOError(kInvalidDatabaseMessage);
+  if (fail_commits_for_testing_)
+    return Status::IOError("Simulated I/O Error");
   return db_->Write(leveldb::WriteOptions(), batch);
 }
 

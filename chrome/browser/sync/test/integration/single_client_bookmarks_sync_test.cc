@@ -787,6 +787,14 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                                          /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
+// TODO(crbug.com/1012222): re-enable this test on all builders once flakiness
+// is addressed.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_ApplyRemoteCreationWithValidGUID \
+  DISABLED_ApplyRemoteCreationWithValidGUID
+#else
+#define MAYBE_ApplyRemoteCreationWithValidGUID ApplyRemoteCreationWithValidGUID
+#endif
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                        ApplyRemoteCreationWithValidGUID) {
   // This test is only relevant for USS code path.
@@ -991,8 +999,16 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                                             originator_client_item_id));
 }
 
+// TODO(crbug.com/1012223): re-enable this test on all builders once flakiness
+// is addressed.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_ApplyRemoteUpdateWithValidGUID \
+  DISABLED_ApplyRemoteUpdateWithValidGUID
+#else
+#define MAYBE_ApplyRemoteUpdateWithValidGUID ApplyRemoteUpdateWithValidGUID
+#endif
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
-                       ApplyRemoteUpdateWithValidGUID) {
+                       MAYBE_ApplyRemoteUpdateWithValidGUID) {
   // This test is only relevant for USS code path and when BookmarkNode GUID
   // replacement is enabled.
   if (!base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks))

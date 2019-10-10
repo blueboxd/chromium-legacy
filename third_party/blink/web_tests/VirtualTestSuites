@@ -546,11 +546,6 @@
              "--enable-prefer-compositing-to-lcd-text"]
   },
   {
-    "prefix": "main_thread_scrollbar_gestures",
-    "base": "fast/scrolling/scrollbars",
-    "args": ["--enable-features=ScrollbarInjectScrollGestures"]
-  },
-  {
     "prefix": "speech-with-unified-autoplay",
     "base": "external/wpt/speech-api",
     "args": ["--autoplay-policy=document-user-activation-required"]

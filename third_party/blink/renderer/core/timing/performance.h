@@ -188,10 +188,6 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   PerformanceMark* mark(ScriptState*,
                         const AtomicString& mark_name,
-                        ExceptionState&);
-
-  PerformanceMark* mark(ScriptState*,
-                        const AtomicString& mark_name,
                         PerformanceMarkOptions* mark_options,
                         ExceptionState&);
 

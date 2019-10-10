@@ -34,7 +34,7 @@
 #include "cc/layers/painted_overlay_scrollbar_layer.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/picture_layer.h"
-#include "cc/layers/scrollbar_layer_interface.h"
+#include "cc/layers/scrollbar_layer_base.h"
 #include "cc/layers/solid_color_scrollbar_layer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -238,50 +238,42 @@ static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
 
 void ScrollingCoordinator::WillDestroyScrollableArea(
     ScrollableArea* scrollable_area) {
-  RemoveScrollbarLayerGroup(scrollable_area, kHorizontalScrollbar);
-  RemoveScrollbarLayerGroup(scrollable_area, kVerticalScrollbar);
+  RemoveScrollbarLayer(scrollable_area, kHorizontalScrollbar);
+  RemoveScrollbarLayer(scrollable_area, kVerticalScrollbar);
 }
 
-void ScrollingCoordinator::RemoveScrollbarLayerGroup(
+void ScrollingCoordinator::RemoveScrollbarLayer(
     ScrollableArea* scrollable_area,
     ScrollbarOrientation orientation) {
   ScrollbarMap& scrollbars = orientation == kHorizontalScrollbar
                                  ? horizontal_scrollbars_
                                  : vertical_scrollbars_;
-  if (std::unique_ptr<ScrollbarLayerGroup> scrollbar_layer_group =
+  if (scoped_refptr<cc::ScrollbarLayerBase> scrollbar_layer =
           scrollbars.Take(scrollable_area)) {
-    GraphicsLayer::UnregisterContentsLayer(scrollbar_layer_group->layer.get());
+    GraphicsLayer::UnregisterContentsLayer(scrollbar_layer.get());
   }
 }
 
-static std::unique_ptr<ScrollingCoordinator::ScrollbarLayerGroup>
-CreateScrollbarLayer(Scrollbar& scrollbar, float device_scale_factor) {
+static scoped_refptr<cc::ScrollbarLayerBase> CreateScrollbarLayer(
+    Scrollbar& scrollbar,
+    float device_scale_factor) {
   ScrollbarTheme& theme = scrollbar.GetTheme();
   auto scrollbar_delegate =
       std::make_unique<ScrollbarLayerDelegate>(scrollbar, device_scale_factor);
-
-  auto layer_group =
-      std::make_unique<ScrollingCoordinator::ScrollbarLayerGroup>();
+  scoped_refptr<cc::ScrollbarLayerBase> scrollbar_layer;
   if (theme.UsesOverlayScrollbars() && theme.UsesNinePatchThumbResource()) {
-    auto scrollbar_layer =
+    scrollbar_layer =
         cc::PaintedOverlayScrollbarLayer::Create(std::move(scrollbar_delegate));
-    scrollbar_layer->SetElementId(scrollbar.GetElementId());
-    layer_group->scrollbar_layer = scrollbar_layer.get();
-    layer_group->layer = std::move(scrollbar_layer);
   } else {
-    auto scrollbar_layer =
+    scrollbar_layer =
         cc::PaintedScrollbarLayer::Create(std::move(scrollbar_delegate));
-    scrollbar_layer->SetElementId(scrollbar.GetElementId());
-    layer_group->scrollbar_layer = scrollbar_layer.get();
-    layer_group->layer = std::move(scrollbar_layer);
   }
-
-  GraphicsLayer::RegisterContentsLayer(layer_group->layer.get());
-
-  return layer_group;
+  scrollbar_layer->SetElementId(scrollbar.GetElementId());
+  GraphicsLayer::RegisterContentsLayer(scrollbar_layer.get());
+  return scrollbar_layer;
 }
 
-std::unique_ptr<ScrollingCoordinator::ScrollbarLayerGroup>
+scoped_refptr<cc::ScrollbarLayerBase>
 ScrollingCoordinator::CreateSolidColorScrollbarLayer(
     ScrollbarOrientation orientation,
     int thumb_thickness,
@@ -294,13 +286,8 @@ ScrollingCoordinator::CreateSolidColorScrollbarLayer(
       cc_orientation, thumb_thickness, track_start,
       is_left_side_vertical_scrollbar);
   scrollbar_layer->SetElementId(element_id);
-
-  auto layer_group = std::make_unique<ScrollbarLayerGroup>();
-  layer_group->scrollbar_layer = scrollbar_layer.get();
-  layer_group->layer = std::move(scrollbar_layer);
-  GraphicsLayer::RegisterContentsLayer(layer_group->layer.get());
-
-  return layer_group;
+  GraphicsLayer::RegisterContentsLayer(scrollbar_layer.get());
+  return scrollbar_layer;
 }
 
 static void DetachScrollbarLayer(GraphicsLayer* scrollbar_graphics_layer) {
@@ -311,10 +298,9 @@ static void DetachScrollbarLayer(GraphicsLayer* scrollbar_graphics_layer) {
   scrollbar_graphics_layer->SetHitTestable(true);
 }
 
-static void SetupScrollbarLayer(
-    GraphicsLayer* scrollbar_graphics_layer,
-    const ScrollingCoordinator::ScrollbarLayerGroup* scrollbar_layer_group,
-    cc::Layer* scrolling_layer) {
+static void SetupScrollbarLayer(GraphicsLayer* scrollbar_graphics_layer,
+                                cc::ScrollbarLayerBase* scrollbar_layer,
+                                cc::Layer* scrolling_layer) {
   DCHECK(scrollbar_graphics_layer);
 
   if (!scrolling_layer) {
@@ -322,28 +308,27 @@ static void SetupScrollbarLayer(
     return;
   }
 
-  scrollbar_layer_group->scrollbar_layer->SetScrollElementId(
-      scrolling_layer->element_id());
+  scrollbar_layer->SetScrollElementId(scrolling_layer->element_id());
   scrollbar_graphics_layer->SetContentsToCcLayer(
-      scrollbar_layer_group->layer.get(),
+      scrollbar_layer,
       /*prevent_contents_opaque_changes=*/false);
   scrollbar_graphics_layer->SetDrawsContent(false);
   scrollbar_graphics_layer->SetHitTestable(false);
 }
 
-void ScrollingCoordinator::AddScrollbarLayerGroup(
+void ScrollingCoordinator::AddScrollbarLayer(
     ScrollableArea* scrollable_area,
     ScrollbarOrientation orientation,
-    std::unique_ptr<ScrollbarLayerGroup> scrollbar_layer_group) {
+    scoped_refptr<cc::ScrollbarLayerBase> scrollbar_layer_group) {
   ScrollbarMap& scrollbars = orientation == kHorizontalScrollbar
                                  ? horizontal_scrollbars_
                                  : vertical_scrollbars_;
   scrollbars.insert(scrollable_area, std::move(scrollbar_layer_group));
 }
 
-ScrollingCoordinator::ScrollbarLayerGroup*
-ScrollingCoordinator::GetScrollbarLayerGroup(ScrollableArea* scrollable_area,
-                                             ScrollbarOrientation orientation) {
+cc::ScrollbarLayerBase* ScrollingCoordinator::GetScrollbarLayer(
+    ScrollableArea* scrollable_area,
+    ScrollbarOrientation orientation) {
   ScrollbarMap& scrollbars = orientation == kHorizontalScrollbar
                                  ? horizontal_scrollbars_
                                  : vertical_scrollbars_;
@@ -371,31 +356,32 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
       return;
     }
 
-    ScrollbarLayerGroup* scrollbar_layer_group =
-        GetScrollbarLayerGroup(scrollable_area, orientation);
-    if (!scrollbar_layer_group) {
+    cc::ScrollbarLayerBase* scrollbar_layer =
+        GetScrollbarLayer(scrollable_area, orientation);
+    if (!scrollbar_layer) {
       Settings* settings = page_->MainFrame()->GetSettings();
 
-      std::unique_ptr<ScrollbarLayerGroup> group;
+      scoped_refptr<cc::ScrollbarLayerBase> new_scrollbar_layer;
       if (settings->GetUseSolidColorScrollbars()) {
         DCHECK(RuntimeEnabledFeatures::OverlayScrollbarsEnabled());
-        group = CreateSolidColorScrollbarLayer(
+        new_scrollbar_layer = CreateSolidColorScrollbarLayer(
             orientation, scrollbar.GetTheme().ThumbThickness(scrollbar),
             scrollbar.GetTheme().TrackPosition(scrollbar),
             scrollable_area->ShouldPlaceVerticalScrollbarOnLeft(),
             scrollable_area->GetScrollbarElementId(orientation));
       } else {
-        group = CreateScrollbarLayer(scrollbar,
-                                     page_->DeviceScaleFactorDeprecated());
+        new_scrollbar_layer = CreateScrollbarLayer(
+            scrollbar, page_->DeviceScaleFactorDeprecated());
       }
 
-      scrollbar_layer_group = group.get();
-      AddScrollbarLayerGroup(scrollable_area, orientation, std::move(group));
+      scrollbar_layer = new_scrollbar_layer.get();
+      AddScrollbarLayer(scrollable_area, orientation,
+                        std::move(new_scrollbar_layer));
     }
 
     cc::Layer* scroll_layer =
         GraphicsLayerToCcLayer(scrollable_area->LayerForScrolling());
-    SetupScrollbarLayer(scrollbar_graphics_layer, scrollbar_layer_group,
+    SetupScrollbarLayer(scrollbar_graphics_layer, scrollbar_layer,
                         scroll_layer);
 
     // Root layer non-overlay scrollbars should be marked opaque to disable
@@ -404,7 +390,7 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
     scrollbar_graphics_layer->SetContentsOpaque(
         IsForMainFrame(scrollable_area) && is_opaque_scrollbar);
   } else {
-    RemoveScrollbarLayerGroup(scrollable_area, orientation);
+    RemoveScrollbarLayer(scrollable_area, orientation);
   }
 }
 
@@ -469,23 +455,19 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     scrollable_area->LayerForScrolling()->SetSize(
         static_cast<gfx::Size>(scroll_contents_size));
   }
-  if (ScrollbarLayerGroup* scrollbar_layer_group =
-          GetScrollbarLayerGroup(scrollable_area, kHorizontalScrollbar)) {
-    GraphicsLayer* horizontal_scrollbar_layer =
-        scrollable_area->LayerForHorizontalScrollbar();
-    if (horizontal_scrollbar_layer) {
-      SetupScrollbarLayer(horizontal_scrollbar_layer, scrollbar_layer_group,
+  if (cc::ScrollbarLayerBase* scrollbar_layer =
+          GetScrollbarLayer(scrollable_area, kHorizontalScrollbar)) {
+    if (GraphicsLayer* horizontal_scrollbar_layer =
+            scrollable_area->LayerForHorizontalScrollbar()) {
+      SetupScrollbarLayer(horizontal_scrollbar_layer, scrollbar_layer,
                           cc_layer);
     }
   }
-  if (ScrollbarLayerGroup* scrollbar_layer_group =
-          GetScrollbarLayerGroup(scrollable_area, kVerticalScrollbar)) {
-    GraphicsLayer* vertical_scrollbar_layer =
-        scrollable_area->LayerForVerticalScrollbar();
-
-    if (vertical_scrollbar_layer) {
-      SetupScrollbarLayer(vertical_scrollbar_layer, scrollbar_layer_group,
-                          cc_layer);
+  if (cc::ScrollbarLayerBase* scrollbar_layer =
+          GetScrollbarLayer(scrollable_area, kVerticalScrollbar)) {
+    if (GraphicsLayer* vertical_scrollbar_layer =
+            scrollable_area->LayerForVerticalScrollbar()) {
+      SetupScrollbarLayer(vertical_scrollbar_layer, scrollbar_layer, cc_layer);
     }
   }
 
@@ -518,9 +500,9 @@ void ScrollingCoordinator::UpdateTouchEventTargetRectsIfNeeded(
 
 void ScrollingCoordinator::Reset(LocalFrame* frame) {
   for (const auto& scrollbar : horizontal_scrollbars_)
-    GraphicsLayer::UnregisterContentsLayer(scrollbar.value->layer.get());
+    GraphicsLayer::UnregisterContentsLayer(scrollbar.value.get());
   for (const auto& scrollbar : vertical_scrollbars_)
-    GraphicsLayer::UnregisterContentsLayer(scrollbar.value->layer.get());
+    GraphicsLayer::UnregisterContentsLayer(scrollbar.value.get());
 
   horizontal_scrollbars_.clear();
   vertical_scrollbars_.clear();
@@ -597,9 +579,9 @@ void ScrollingCoordinator::WillBeDestroyed() {
 
   page_ = nullptr;
   for (const auto& scrollbar : horizontal_scrollbars_)
-    GraphicsLayer::UnregisterContentsLayer(scrollbar.value->layer.get());
+    GraphicsLayer::UnregisterContentsLayer(scrollbar.value.get());
   for (const auto& scrollbar : vertical_scrollbars_)
-    GraphicsLayer::UnregisterContentsLayer(scrollbar.value->layer.get());
+    GraphicsLayer::UnregisterContentsLayer(scrollbar.value.get());
 }
 
 bool ScrollingCoordinator::CoordinatesScrollingForFrameView(

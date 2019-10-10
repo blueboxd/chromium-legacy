@@ -28,6 +28,8 @@
 
 #include "third_party/blink/renderer/platform/image-decoders/webp/webp_image_decoder.h"
 
+#include <string.h>
+
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
@@ -120,6 +122,20 @@ enum WebPFileFormat {
   kUnknownFileFormat = 5,
   kCountWebPFileFormats
 };
+
+// Validates that |blob| is a simple lossy WebP image. Note that this explicitly
+// checks "WEBPVP8 " to exclude extended lossy WebPs that don't actually use any
+// extended features.
+//
+// TODO(crbug.com/1009237): consider combining this with the logic to detect
+// WebPs that can be decoded to YUV.
+bool IsSimpleLossyWebPImage(const sk_sp<SkData>& blob) {
+  if (blob->size() < 20UL)
+    return false;
+  DCHECK(blob->bytes());
+  return !memcmp(blob->bytes(), "RIFF", 4) &&
+         !memcmp(blob->bytes() + 8UL, "WEBPVP8 ", 8);
+}
 
 // This method parses |blob|'s header and emits a UMA with the file format, as
 // defined by WebP, see WebPFileFormat.
@@ -439,6 +455,17 @@ size_t WEBPImageDecoder::DecodedYUVWidthBytes(int component) const {
 
 SkYUVColorSpace WEBPImageDecoder::GetYUVColorSpace() const {
   return SkYUVColorSpace::kRec601_SkYUVColorSpace;
+}
+
+cc::YUVSubsampling WEBPImageDecoder::GetYUVSubsampling() const {
+  DCHECK(consolidated_data_);
+  if (IsSimpleLossyWebPImage(consolidated_data_))
+    return cc::YUVSubsampling::k420;
+  // It is possible for a non-simple lossy WebP to also be YUV 4:2:0. However,
+  // we're being conservative here because this is currently only used for
+  // hardware decode acceleration, and WebPs other than simple lossy are not
+  // supported in that path anyway.
+  return cc::YUVSubsampling::kUnknown;
 }
 
 bool WEBPImageDecoder::CanReusePreviousFrameBuffer(size_t frame_index) const {
@@ -765,6 +792,17 @@ bool WEBPImageDecoder::DecodeSingleFrame(const uint8_t* data_bytes,
       Clear();
       return SetFailed();
   }
+}
+
+cc::ImageHeaderMetadata WEBPImageDecoder::MakeMetadataForDecodeAcceleration()
+    const {
+  cc::ImageHeaderMetadata image_metadata =
+      ImageDecoder::MakeMetadataForDecodeAcceleration();
+
+  DCHECK(consolidated_data_);
+  image_metadata.webp_is_non_extended_lossy =
+      IsSimpleLossyWebPImage(consolidated_data_);
+  return image_metadata;
 }
 
 }  // namespace blink

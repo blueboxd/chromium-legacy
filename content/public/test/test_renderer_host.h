@@ -91,9 +91,6 @@ class RenderFrameHostTester {
   // Gives tests access to RenderFrameHostImpl::OnDetach. Destroys |this|.
   virtual void Detach() = 0;
 
-  // Simulates a navigation stopping in the RenderFrameHost.
-  virtual void SimulateNavigationStop() = 0;
-
   // Calls OnBeforeUnloadACK on this RenderFrameHost with the given parameter.
   virtual void SendBeforeUnloadACK(bool proceed) = 0;
 
@@ -102,12 +99,12 @@ class RenderFrameHostTester {
   virtual void SimulateSwapOutACK() = 0;
 
   // Set the feature policy header for the RenderFrameHost for test. Currently
-  // this is limited to setting a whitelist for a single feature. This function
+  // this is limited to setting an allowlist for a single feature. This function
   // can be generalized as needed. Setting a header policy should only be done
   // once per navigation of the RFH.
   virtual void SimulateFeaturePolicyHeader(
       blink::mojom::FeaturePolicyFeature feature,
-      const std::vector<url::Origin>& whitelist) = 0;
+      const std::vector<url::Origin>& allowlist) = 0;
 
   // Gets all the console messages requested via
   // RenderFrameHost::AddMessageToConsole in this frame.

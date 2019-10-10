@@ -11,7 +11,6 @@ vr_module_desc = {
   name = "vr"
   java_deps = [ "//chrome/android/features/vr:java" ]
   android_manifest = "//chrome/android/features/vr/java/AndroidManifest.xml"
-  proguard_async = async_vr
   if (use_native_partitions) {
     native_deps = [ "//chrome/browser/vr:vr_ui" ]
     native_entrypoints = "//chrome/browser/vr/module_exports.lst"

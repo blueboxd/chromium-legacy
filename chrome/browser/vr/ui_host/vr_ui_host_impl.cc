@@ -228,6 +228,7 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
     StartUiRendering();
     InitCapturingStates();
     ui_rendering_thread_->SetWebXrPresenting(true);
+    ui_rendering_thread_->SetFramesThrottled(frames_throttled_);
 
     PollCapturingState();
 
@@ -255,6 +256,17 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
       ui_rendering_thread_->SetWebXrPresenting(false);
     StopUiRendering();
   }
+}
+
+void VRUiHostImpl::SetFramesThrottled(bool throttled) {
+  frames_throttled_ = throttled;
+
+  if (!ui_rendering_thread_) {
+    DVLOG(1) << __func__ << ": no ui_rendering_thread_";
+    return;
+  }
+
+  ui_rendering_thread_->SetFramesThrottled(frames_throttled_);
 }
 
 void VRUiHostImpl::SetVRDisplayInfo(

@@ -123,7 +123,8 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   // up to a specific timeout.
   base::OneShotTimer external_binary_timer_;
 
-  ScopedObserver<chromeos::MediaAnalyticsClient, ViewsScreenLocker>
+  ScopedObserver<chromeos::MediaAnalyticsClient,
+                 chromeos::MediaAnalyticsClient::Observer>
       scoped_observer_{this};
 
   base::WeakPtrFactory<ViewsScreenLocker> weak_factory_{this};

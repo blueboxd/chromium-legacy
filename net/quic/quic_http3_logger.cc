@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -64,6 +65,24 @@ void QuicHttp3Logger::OnPeerQpackDecoderStreamCreated(
 
 void QuicHttp3Logger::OnSettingsFrameReceived(
     const quic::SettingsFrame& frame) {
+  // Increment value by one because empty SETTINGS frames are allowed,
+  // but histograms do not support the value zero.
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ReceivedSettings.CountPlusOne",
+                              frame.values.size() + 1, /* min = */ 1,
+                              /* max = */ 10, /* buckets = */ 10);
+  for (const auto& value : frame.values) {
+    if (value.first == quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY) {
+      UMA_HISTOGRAM_COUNTS_10000(
+          "Net.QuicSession.ReceivedSettings.MaxTableCapacity", value.second);
+    } else if (value.first == quic::SETTINGS_MAX_HEADER_LIST_SIZE) {
+      UMA_HISTOGRAM_COUNTS_10000(
+          "Net.QuicSession.ReceivedSettings.MaxHeaderListSize", value.second);
+    } else if (value.first == quic::SETTINGS_QPACK_BLOCKED_STREAMS) {
+      UMA_HISTOGRAM_COUNTS_1000(
+          "Net.QuicSession.ReceivedSettings.BlockedStreams", value.second);
+    }
+  }
+
   if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(NetLogEventType::HTTP3_SETTINGS_RECEIVED,

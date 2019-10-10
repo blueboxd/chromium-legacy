@@ -278,10 +278,8 @@ source_set("app_internal") {
     "MediaPlayer.framework",
   ]
 
-  allow_circular_includes_from = [
-    "//ios/chrome/app/application_delegate:application_delegate_internal",
-    "//ios/chrome/browser/ui/main:scene",
-  ]
+  allow_circular_includes_from =
+      [ "//ios/chrome/app/application_delegate:application_delegate_internal" ]
 }
 
 source_set("mode") {

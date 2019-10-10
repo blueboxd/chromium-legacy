@@ -55,13 +55,14 @@ _INCLUDE_RE = lazy_re.compile(
 _SRC_RE = lazy_re.compile(
     r'<(?!script)(?:[^>]+?\s)src="(?!\[\[|{{)(?P<filename>[^"\']*)"',
     re.MULTILINE)
-# This re matches '<img srcset="..."'
+# This re matches '<img srcset="..."' or '<source srcset="..."'
 _SRCSET_RE = lazy_re.compile(
-    r'<img\b(?:[^>]*?\s)srcset="(?!\[\[|{{|\$i18n{)(?P<srcset>[^"\']*)"',
+    r'<(img|source)\b(?:[^>]*?\s)srcset="(?!\[\[|{{|\$i18n{)'
+    r'(?P<srcset>[^"\']*)"',
     re.MULTILINE)
 # This re is for splitting srcset value string into "image candidate strings".
 # Notes:
-# - HTML 5.2 states that URL cannot start with comma.
+# - HTML 5.2 states that URL cannot start or end with comma.
 # - the "descriptor" is either "width descriptor" or "pixel density descriptor".
 #   The first one consists of "valid non-negative integer + letter 'x'",
 #   the second one is formed of "positive valid floating-point number +
@@ -69,7 +70,9 @@ _SRCSET_RE = lazy_re.compile(
 #   that form both of them.
 # Matches for example "img2.png 2x" or "img9.png 11E-2w".
 _SRCSET_ENTRY_RE = lazy_re.compile(
-    r'\s*(?P<url>[^,]\S+)\s+(?P<descriptor>[\deE.-]+[wx])\s*',
+    r'\s*(?P<url>[^,\s]\S+[^,\s])'
+    r'(?:\s+(?P<descriptor>[\deE.-]+[wx]))?\s*'
+    r'(?P<separator>,|$)',
     re.MULTILINE)
 _ICON_RE = lazy_re.compile(
     r'<link rel="icon"\s(?:[^>]+?\s)?'
@@ -194,6 +197,7 @@ def SrcsetInlineAsDataURL(
   # Each of them consists of URL and descriptor.
   # _SRCSET_ENTRY_RE splits srcset into a list of URLs, descriptors and
   # commas.
+  # The descriptor part will be None if that optional regex didn't match
   parts = _SRCSET_ENTRY_RE.split(srcset)
 
   if not parts:
@@ -206,37 +210,35 @@ def SrcsetInlineAsDataURL(
   # candidate string: [url, descriptor]
   candidate = [];
 
-  for part in parts:
-    if not part:
-      continue
+  # Each entry should consist of some text before the entry, the url,
+  # the descriptor or None if the entry has no descriptor, a comma separator or
+  # the end of the line, and finally some text after the entry (which is the
+  # same as the text before the next entry).
+  for i in range(0, len(parts) - 1, 4):
+    before, url, descriptor, separator, after = parts[i:i+5]
 
-    if part == ',':
-      # There must be no URL without a descriptor.
-      assert not candidate, "Bad srcset format in '%s'" % srcset_match.group(0)
-      continue
-
-    if candidate:
-      # descriptor found
-      if candidate[0]:
-        # This is not "names_only" mode.
-        candidate.append(part)
-        new_candidates.append(" ".join(candidate))
-
-      candidate = []
-      continue
+    # There must be a comma-separated next entry or this must be the last entry.
+    assert separator == "," or (separator == "" and i == len(parts) - 5), (
+           "Bad srcset format in {}".format(srcset_match.group(0)))
+    # Both before and after the entry must be empty
+    assert before == after == "", (
+           "Bad srcset format in {}".format(srcset_match.group(0)))
 
     if filename_expansion_function:
-      filename = filename_expansion_function(part)
+      filename = filename_expansion_function(url)
     else:
-      filename = part
+      filename = url
 
     data_url = ConvertFileToDataURL(filename, base_path, distribution,
                                     inlined_files, names_only)
 
-    candidate.append(data_url)
+    # This is not "names_only" mode
+    if data_url:
+      candidate = [data_url]
+      if descriptor:
+        candidate.append(descriptor)
 
-  # There must be no URL without a descriptor
-  assert not candidate, "Bad srcset ending in '%s' " % srcset_match.group(0)
+      new_candidates.append(" ".join(candidate))
 
   prefix = srcset_match.string[srcset_match.start():
       srcset_match.start('srcset')]

@@ -219,7 +219,7 @@ class AutocompleteChangeObserver : public OmniboxControllerEmitter::Observer {
 
   // OmniboxControllerEmitter::Observer:
   void OnOmniboxQuery(AutocompleteController* controller,
-                      const base::string16& input_text) override {}
+                      const AutocompleteInput& input) override {}
   void OnOmniboxResultChanged(bool default_match_changed,
                               AutocompleteController* controller) override {
     if (run_loop_.running())

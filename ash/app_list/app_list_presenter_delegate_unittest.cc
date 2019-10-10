@@ -2074,20 +2074,20 @@ TEST_P(AppListPresenterDelegateScalableAppListTest,
       gfx::Point(peeking_top.x(), (peeking_top.y() + fullscreen_y) / 2));
   GetAppListTestHelper()->WaitUntilIdle();
 
-  EXPECT_LE(std::abs(GetAppListView()->GetAppListTransitionProgress(
-                         AppListView::kProgressFlagNone) -
-                     1.5f),
-            0.01f);
-
   gfx::Rect search_box_bounds =
       GetAppListView()->search_box_view()->GetBoundsInScreen();
   search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
 
+  float progress = GetAppListView()->GetAppListTransitionProgress(
+      AppListView::kProgressFlagNone);
+  EXPECT_LE(std::abs(progress - 1.5f), 0.01f);
+
   EXPECT_EQ((peeking_top.y() + fullscreen_y) / 2 +
-                (config.search_box_peeking_top_padding() +
-                 fullscreen_search_box_padding) /
-                    2,
+                gfx::Tween::IntValueBetween(
+                    progress - 1, config.search_box_peeking_top_padding(),
+                    fullscreen_search_box_padding),
             search_box_bounds.y());
+
   EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
   EXPECT_TRUE(apps_grid_view()->GetVisible());
@@ -2118,18 +2118,17 @@ TEST_P(AppListPresenterDelegateScalableAppListTest,
       gfx::Point(peeking_top.x(), (peeking_top.y() + closed_y) / 2));
   GetAppListTestHelper()->WaitUntilIdle();
 
-  EXPECT_LE(std::abs(GetAppListView()->GetAppListTransitionProgress(
-                         AppListView::kProgressFlagNone) -
-                     0.5f),
-            0.01f);
-
   search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
   search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
 
+  progress = GetAppListView()->GetAppListTransitionProgress(
+      AppListView::kProgressFlagNone);
+  EXPECT_LE(std::abs(progress - 0.5f), 0.01f);
+
   EXPECT_EQ((peeking_top.y() + closed_y) / 2 +
-                (config.search_box_peeking_top_padding() +
-                 config.search_box_closed_top_padding()) /
-                    2,
+                gfx::Tween::IntValueBetween(
+                    progress, config.search_box_peeking_top_padding(),
+                    config.search_box_closed_top_padding()),
             search_box_bounds.y());
   EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
@@ -2186,19 +2185,18 @@ TEST_P(AppListPresenterDelegateScalableAppListTest,
       gfx::Point(half_top.x(), (half_top.y() + fullscreen_y) / 2));
   GetAppListTestHelper()->WaitUntilIdle();
 
-  EXPECT_LE(std::abs(GetAppListView()->GetAppListTransitionProgress(
-                         AppListView::kProgressFlagSearchResults) -
-                     1.5f),
-            0.01f);
-
   gfx::Rect search_box_bounds =
       GetAppListView()->search_box_view()->GetBoundsInScreen();
   search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
 
+  float progress = GetAppListView()->GetAppListTransitionProgress(
+      AppListView::kProgressFlagSearchResults);
+  EXPECT_LE(std::abs(progress - 1.5f), 0.01f);
+
   EXPECT_EQ((half_top.y() + fullscreen_y) / 2 +
-                (config.search_box_fullscreen_top_padding() +
-                 fullscreen_search_box_padding) /
-                    2,
+                gfx::Tween::IntValueBetween(
+                    progress - 1, config.search_box_fullscreen_top_padding(),
+                    fullscreen_search_box_padding),
             search_box_bounds.y());
   EXPECT_EQ(search_box_bounds.y(),
             search_result_page()->GetBoundsInScreen().y());
@@ -2243,18 +2241,18 @@ TEST_P(AppListPresenterDelegateScalableAppListTest,
   // should be half distance between closed and peeking padding.
   generator->MoveTouch(gfx::Point(half_top.x(), (half_top.y() + closed_y) / 2));
   GetAppListTestHelper()->WaitUntilIdle();
-  EXPECT_LE(std::abs(GetAppListView()->GetAppListTransitionProgress(
-                         AppListView::kProgressFlagSearchResults) -
-                     0.5f),
-            0.01f);
+
+  progress = GetAppListView()->GetAppListTransitionProgress(
+      AppListView::kProgressFlagSearchResults);
+  EXPECT_LE(std::abs(progress - 0.5f), 0.01f);
 
   search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
   search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
 
   EXPECT_EQ((half_top.y() + closed_y) / 2 +
-                (config.search_box_fullscreen_top_padding() +
-                 config.search_box_closed_top_padding()) /
-                    2,
+                gfx::Tween::IntValueBetween(
+                    progress, config.search_box_fullscreen_top_padding(),
+                    config.search_box_closed_top_padding()),
             search_box_bounds.y());
   EXPECT_EQ(search_box_bounds.y(),
             search_result_page()->GetBoundsInScreen().y());
@@ -2332,10 +2330,13 @@ TEST_P(AppListPresenterDelegateScalableAppListTest, SwitchPageDuringDrag) {
       GetAppListView()->search_box_view()->GetBoundsInScreen();
   search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
 
+  float progress = GetAppListView()->GetAppListTransitionProgress(
+      AppListView::kProgressFlagSearchResults);
+  EXPECT_LE(std::abs(progress - 1.5f), 0.01f);
   EXPECT_EQ((half_top.y() + fullscreen_y) / 2 +
-                (config.search_box_fullscreen_top_padding() +
-                 fullscreen_search_box_padding) /
-                    2,
+                gfx::Tween::IntValueBetween(
+                    progress - 1, config.search_box_fullscreen_top_padding(),
+                    fullscreen_search_box_padding),
             search_box_bounds.y());
   EXPECT_EQ(search_box_bounds.y(),
             search_result_page()->GetBoundsInScreen().y());
@@ -2392,10 +2393,13 @@ TEST_P(AppListPresenterDelegateScalableAppListTest, SwitchPageDuringDrag) {
   search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
   search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
 
+  progress = GetAppListView()->GetAppListTransitionProgress(
+      AppListView::kProgressFlagSearchResults);
+  EXPECT_LE(std::abs(progress - 1.5f), 0.01f);
   EXPECT_EQ((half_top.y() + fullscreen_y) / 2 +
-                (config.search_box_fullscreen_top_padding() +
-                 fullscreen_search_box_padding) /
-                    2,
+                gfx::Tween::IntValueBetween(
+                    progress - 1, config.search_box_fullscreen_top_padding(),
+                    fullscreen_search_box_padding),
             search_box_bounds.y());
   EXPECT_EQ(search_box_bounds.y(),
             search_result_page()->GetBoundsInScreen().y());

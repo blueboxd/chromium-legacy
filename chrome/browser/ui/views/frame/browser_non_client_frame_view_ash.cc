@@ -51,7 +51,6 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
-#include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
 #include "ui/events/gestures/gesture_recognizer.h"

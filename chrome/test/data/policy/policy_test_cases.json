@@ -5274,5 +5274,13 @@
         "local_state":  true
       }
     ]
+  },
+
+  "TLS13HardeningForLocalAnchorsEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "TLS13HardeningForLocalAnchorsEnabled": true },
+    "pref_mappings": [
+      { "pref": "ssl.tls13_hardening_for_local_anchors", "local_state": true }
+    ]
   }
 }

@@ -128,9 +128,6 @@ class ToolbarView : public views::AccessiblePaneView,
                           bool already_bookmarked,
                           bookmarks::BookmarkBubbleObserver* observer);
 
-  // Access to the avatar button.
-  AvatarToolbarButton* GetAvatarToolbarButton();
-
   // Accessors.
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
@@ -237,6 +234,7 @@ class ToolbarView : public views::AccessiblePaneView,
   views::AccessiblePaneView* GetAsAccessiblePaneView() override;
   views::View* GetAnchorView(PageActionIconType type) override;
   void ZoomChangedForActiveTab(bool can_show_bubble) override;
+  AvatarToolbarButton* GetAvatarToolbarButton() override;
 
   // BrowserRootView::DropTarget
   BrowserRootView::DropIndex GetDropIndex(

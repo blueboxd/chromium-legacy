@@ -9,6 +9,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
+#include "chrome/browser/optimization_guide/prediction/prediction_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -50,7 +51,9 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
 
   void RegisterWithKeyedService() {
     OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
-        ->RegisterOptimizationTypes({optimization_guide::proto::NOSCRIPT});
+        ->RegisterOptimizationTypesAndTargets(
+            {optimization_guide::proto::NOSCRIPT},
+            {optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
   }
 
   std::unique_ptr<page_load_metrics::PageLoadMetricsTestWaiter>
@@ -84,8 +87,9 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserTest,
   ui_test_utils::NavigateToURL(browser(), https_url_with_content());
   waiter->Wait();
 
-  OptimizationGuideSessionStatistic* session_fcp =
-      keyed_service->GetSessionFCPForTesting();
+  const OptimizationGuideSessionStatistic* session_fcp =
+      keyed_service->GetPredictionManager()
+          ->GetFCPSessionStatisticsForTesting();
   EXPECT_TRUE(session_fcp);
   EXPECT_EQ(1u, session_fcp->GetNumberOfSamples());
 }
@@ -102,8 +106,9 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserTest,
   ui_test_utils::NavigateToURL(browser(), https_url_with_content());
   waiter->Wait();
 
-  OptimizationGuideSessionStatistic* session_fcp =
-      keyed_service->GetSessionFCPForTesting();
+  const OptimizationGuideSessionStatistic* session_fcp =
+      keyed_service->GetPredictionManager()
+          ->GetFCPSessionStatisticsForTesting();
   float current_mean = session_fcp->GetMean();
 
   waiter = CreatePageLoadMetricsTestWaiter();

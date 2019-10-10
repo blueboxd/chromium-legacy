@@ -164,8 +164,8 @@ class SupervisedUserURLFilter {
   // present, and resets the default behavior to "allow".
   void Clear();
 
-  void AddObserver(Observer* observer) const;
-  void RemoveObserver(Observer* observer) const;
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Sets a different task runner for testing.
   void SetBlockingTaskRunnerForTesting(
@@ -187,8 +187,7 @@ class SupervisedUserURLFilter {
                      safe_search_api::Classification classification,
                      bool uncertain) const;
 
-  // This is mutable to allow notification in const member functions.
-  mutable base::ObserverList<Observer>::Unchecked observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   FilteringBehavior default_behavior_;
   std::unique_ptr<Contents> contents_;

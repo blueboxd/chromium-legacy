@@ -92,6 +92,8 @@ class XR final : public EventTargetWithInlineData,
 
   void ExitPresent();
 
+  void SetFramesThrottled(const XRSession* session, bool throttled);
+
   base::TimeTicks NavigationStart() const { return navigation_start_; }
 
  private:

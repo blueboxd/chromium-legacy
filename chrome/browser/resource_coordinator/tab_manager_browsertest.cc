@@ -300,7 +300,8 @@ class TabManagerTest : public InProcessBrowserTest {
   void SimulateFreezeSignal(content::WebContents* contents) {
     GetTabLifecycleUnitSource()
         ->GetTabLifecycleUnit(contents)
-        ->UpdateLifecycleState(mojom::LifecycleState::kFrozen);
+        ->UpdateLifecycleState(
+            performance_manager::mojom::LifecycleState::kFrozen);
   }
 
   TabManager* tab_manager() { return g_browser_process->GetTabManager(); }
@@ -1270,7 +1271,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTestWithTwoTabs,
   // Pretend that the background tab reported its origin trial freeze policy, to
   // prevent CanFreeze() from returning false.
   TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
-      GetWebContentsAt(1), mojom::InterventionPolicy::kDefault);
+      GetWebContentsAt(1),
+      performance_manager::mojom::InterventionPolicy::kDefault);
 
   // Proactively discard the background tab.
   EXPECT_EQ(LifecycleUnitState::ACTIVE, GetLifecycleUnitAt(1)->GetState());

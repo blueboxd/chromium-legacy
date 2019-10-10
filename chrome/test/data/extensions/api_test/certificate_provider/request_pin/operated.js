@@ -5,8 +5,9 @@
 // The script runs commands against the PIN API that it receives from the C++
 // side.
 
-const SIGN_REQUEST_ID = 123;
+const INITIAL_SIGN_REQUEST_ID = 123;
 
+let signRequestId = INITIAL_SIGN_REQUEST_ID;
 let pinRequestCount = 0;
 let pinRequestStopCount = 0;
 
@@ -59,20 +60,23 @@ function reportStopPinRequestEnded(pinRequestStopId) {
 function processTestCommand(command) {
   switch (command) {
     case 'Request':
-      requestPin({signRequestId: SIGN_REQUEST_ID});
+      requestPin({signRequestId: signRequestId});
       break;
     case 'RequestWithZeroAttempts':
-      requestPin({signRequestId: SIGN_REQUEST_ID, attemptsLeft: 0});
+      requestPin({signRequestId: signRequestId, attemptsLeft: 0});
       break;
     case 'RequestWithNegativeAttempts':
-      requestPin({signRequestId: SIGN_REQUEST_ID, attemptsLeft: -1});
+      requestPin({signRequestId: signRequestId, attemptsLeft: -1});
       break;
     case 'Stop':
-      stopPinRequest({signRequestId: SIGN_REQUEST_ID});
+      stopPinRequest({signRequestId: signRequestId});
       break;
     case 'StopWithUnknownError':
       stopPinRequest(
-          {signRequestId: SIGN_REQUEST_ID, errorType: 'UNKNOWN_ERROR'});
+          {signRequestId: signRequestId, errorType: 'UNKNOWN_ERROR'});
+      break;
+    case 'IncrementRequestId':
+      ++signRequestId;
       break;
     default:
       chrome.test.fail();

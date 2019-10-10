@@ -447,6 +447,8 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_ABOUT_PAGE_RELAUNCH_AND_POWERWASH},
     {"aboutRollbackInProgress", IDS_SETTINGS_UPGRADE_ROLLBACK_IN_PROGRESS},
     {"aboutRollbackSuccess", IDS_SETTINGS_UPGRADE_ROLLBACK_SUCCESS},
+    {"aboutUpdateOsSettingsLink",
+     IDS_SETTINGS_ABOUT_SEE_OS_SETTINGS_FOR_UPDATE_MESSAGE},
     {"aboutUpgradeUpdatingChannelSwitch",
      IDS_SETTINGS_UPGRADE_UPDATING_CHANNEL_SWITCH},
     {"aboutUpgradeSuccessChannelSwitch",

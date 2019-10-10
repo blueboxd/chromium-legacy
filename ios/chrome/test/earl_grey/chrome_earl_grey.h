@@ -384,6 +384,11 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Returns YES if CreditCardScanner feature is enabled.
 - (BOOL)isCreditCardScannerEnabled WARN_UNUSED_RESULT;
 
+// Returns YES if custom WebKit frameworks were properly loaded, rather than
+// system frameworks. Always returns YES if the app was not requested to run
+// with custom WebKit frameworks.
+- (BOOL)isCustomWebKitLoadedIfRequested WARN_UNUSED_RESULT;
+
 #pragma mark - Popup Blocking
 
 // Gets the current value of the popup content setting preference for the

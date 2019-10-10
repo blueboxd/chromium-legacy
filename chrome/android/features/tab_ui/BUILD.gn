@@ -175,8 +175,4 @@ android_library("java") {
     "//third_party/android_deps:com_android_support_support_v13_java",
     "//ui/android:ui_java",
   ]
-
-  if (async_tab_ui) {
-    proguard_configs = [ "//base/android/proguard/chromium_code.flags" ]
-  }
 }

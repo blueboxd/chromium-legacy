@@ -38,8 +38,7 @@
 
 namespace cc {
 class AnimationHost;
-class Layer;
-class ScrollbarLayerInterface;
+class ScrollbarLayerBase;
 }  // namespace cc
 
 namespace blink {
@@ -64,15 +63,6 @@ using ScrollbarId = uint64_t;
 class CORE_EXPORT ScrollingCoordinator final
     : public GarbageCollected<ScrollingCoordinator> {
  public:
-  struct ScrollbarLayerGroup {
-    // The compositor layer for the scrollbar. It can be one of a few
-    // concrete types, so we store the base type.
-    scoped_refptr<cc::Layer> layer;
-    // An interface shared by all scrollbar layer types since we don't know
-    // the concrete |layer| type.
-    cc::ScrollbarLayerInterface* scrollbar_layer = nullptr;
-  };
-
   explicit ScrollingCoordinator(Page*);
   ~ScrollingCoordinator();
   void Trace(blink::Visitor*);
@@ -109,7 +99,7 @@ class CORE_EXPORT ScrollingCoordinator final
   // Should be called whenever the root layer for the given frame view changes.
   void FrameViewRootLayerDidChange(LocalFrameView*);
 
-  std::unique_ptr<ScrollbarLayerGroup> CreateSolidColorScrollbarLayer(
+  scoped_refptr<cc::ScrollbarLayerBase> CreateSolidColorScrollbarLayer(
       ScrollbarOrientation,
       int thumb_thickness,
       int track_start,
@@ -184,12 +174,12 @@ class CORE_EXPORT ScrollingCoordinator final
   bool should_scroll_on_main_thread_dirty_;
 
  private:
-  void AddScrollbarLayerGroup(ScrollableArea*,
-                              ScrollbarOrientation,
-                              std::unique_ptr<ScrollbarLayerGroup>);
-  ScrollbarLayerGroup* GetScrollbarLayerGroup(ScrollableArea*,
-                                              ScrollbarOrientation);
-  void RemoveScrollbarLayerGroup(ScrollableArea*, ScrollbarOrientation);
+  void AddScrollbarLayer(ScrollableArea*,
+                         ScrollbarOrientation,
+                         scoped_refptr<cc::ScrollbarLayerBase>);
+  cc::ScrollbarLayerBase* GetScrollbarLayer(ScrollableArea*,
+                                            ScrollbarOrientation);
+  void RemoveScrollbarLayer(ScrollableArea*, ScrollbarOrientation);
 
   bool FrameScrollerIsDirty(LocalFrameView*) const;
 
@@ -197,8 +187,8 @@ class CORE_EXPORT ScrollingCoordinator final
   std::unique_ptr<CompositorAnimationTimeline>
       programmatic_scroll_animator_timeline_;
 
-  using ScrollbarMap =
-      HeapHashMap<Member<ScrollableArea>, std::unique_ptr<ScrollbarLayerGroup>>;
+  using ScrollbarMap = HeapHashMap<Member<ScrollableArea>,
+                                   scoped_refptr<cc::ScrollbarLayerBase>>;
   ScrollbarMap horizontal_scrollbars_;
   ScrollbarMap vertical_scrollbars_;
 

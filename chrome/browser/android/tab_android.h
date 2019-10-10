@@ -161,12 +161,6 @@ class TabAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  void CreateHistoricalTab(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj);
-
-  static void CreateHistoricalTabFromContents(
-      content::WebContents* web_contents);
-
   void LoadOriginalImage(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
 

@@ -174,7 +174,23 @@ TEST_F(P2PQuicStreamTest, StreamClosedAfterReceivingReset) {
 
   quic::QuicRstStreamFrame rst_frame(quic::kInvalidControlFrameId, kStreamId,
                                      quic::QUIC_STREAM_CANCELLED, 0);
+  if (!VersionHasIetfQuicFrames(connection_->version().transport_version)) {
+    // Google RST_STREAM closes the stream in both directions. A RST_STREAM
+    // is then sent to the peer to communicate the final byte offset.
+    EXPECT_CALL(session_,
+                SendRstStream(kStreamId, quic::QUIC_RST_ACKNOWLEDGEMENT, 0));
+  }
   stream_->OnStreamReset(rst_frame);
+  if (VersionHasIetfQuicFrames(connection_->version().transport_version)) {
+    // In IETF QUIC, the RST_STREAM only closes the stream in one direction.
+    // A STOP_SENDING frame in require to induce the a RST_STREAM being
+    // send to close the other direction.
+    EXPECT_CALL(*connection_, SendControlFrame(_));
+    EXPECT_CALL(*connection_, OnStreamReset(kStreamId, testing::_));
+    quic::QuicStopSendingFrame stop_sending_frame(quic::kInvalidControlFrameId,
+                                                  kStreamId, 0);
+    session_.OnStopSendingFrame(stop_sending_frame);
+  }
 
   EXPECT_TRUE(stream_->IsClosedForTesting());
 }

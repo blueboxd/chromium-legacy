@@ -13,6 +13,7 @@
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_view.h"

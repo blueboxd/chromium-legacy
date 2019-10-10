@@ -29,7 +29,8 @@ interface Application {
   CreateAlert(AlertBridge& alert_bridge_request);
 
   // Show the NSColorPanel in this application.
-  ShowColorPanel(ColorPanel& request, ColorPanelHost host);
+  ShowColorPanel(pending_receiver<ColorPanel> receiver,
+                 pending_remote<ColorPanelHost> host);
 
   // Create a window for a native widget. The resulting object will be owned by
   // the connection for |host|. Closing that connection will result in deleting

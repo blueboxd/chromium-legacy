@@ -380,25 +380,37 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
     }
   }, this));
 
-  // Add all open tabs to the Tabs menu.
-  bkgnd.chrome.windows.getLastFocused(function(lastFocusedWindow) {
-    bkgnd.chrome.windows.getAll({'populate': true}, function(windows) {
-      for (var i = 0; i < windows.length; i++) {
-        var tabs = windows[i].tabs;
-        for (var j = 0; j < tabs.length; j++) {
-          var title = tabs[j].title;
-          if (tabs[j].active && windows[i].id == lastFocusedWindow.id)
-            title += ' ' + Msgs.getMsg('active_tab');
-          tabsMenu.addMenuItem(
-              title, '', '', '', (function(win, tab) {
-                                   bkgnd.chrome.windows.update(
-                                       win.id, {focused: true}, function() {
-                                         bkgnd.chrome.tabs.update(
-                                             tab.id, {active: true});
-                                       });
-                                 }).bind(this, windows[i], tabs[j]));
+  // Only add all open tabs to the Tabs menu if we are logged in.
+  chrome.loginState.getSessionState(function(
+      /** @type {string} */ sessionState) {
+    if (sessionState === 'IN_OOBE_SCREEN' ||
+        sessionState === 'IN_LOGIN_SCREEN' ||
+        sessionState === 'IN_LOCK_SCREEN') {
+      tabsMenu.addMenuItem(
+          Msgs.getMsg('panel_menu_item_none'), '', '', '', function() {});
+      return;
+    }
+
+    // Add all open tabs to the Tabs menu.
+    bkgnd.chrome.windows.getLastFocused(function(lastFocusedWindow) {
+      bkgnd.chrome.windows.getAll({'populate': true}, function(windows) {
+        for (var i = 0; i < windows.length; i++) {
+          var tabs = windows[i].tabs;
+          for (var j = 0; j < tabs.length; j++) {
+            var title = tabs[j].title;
+            if (tabs[j].active && windows[i].id == lastFocusedWindow.id)
+              title += ' ' + Msgs.getMsg('active_tab');
+            tabsMenu.addMenuItem(
+                title, '', '', '', (function(win, tab) {
+                                     bkgnd.chrome.windows.update(
+                                         win.id, {focused: true}, function() {
+                                           bkgnd.chrome.tabs.update(
+                                               tab.id, {active: true});
+                                         });
+                                   }).bind(this, windows[i], tabs[j]));
+          }
         }
-      }
+      });
     });
   });
 

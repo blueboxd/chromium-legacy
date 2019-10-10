@@ -238,7 +238,7 @@ public class EphemeralTabCoordinator {
                         Bitmap.createScaledBitmap(image, mFaviconSize, mFaviconSize, true));
             }
 
-            return FaviconUtils.createRoundedBitmapDrawable(
+            return FaviconUtils.createRoundedBitmapDrawable(mContext.getResources(),
                     Bitmap.createScaledBitmap(image, mFaviconSize, mFaviconSize, true));
         }
     }

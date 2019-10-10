@@ -39,13 +39,13 @@ URLLoaderFactoryBundleInfo::URLLoaderFactoryBundleInfo(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         pending_default_factory,
     SchemeMap pending_scheme_specific_factories,
-    OriginMap pending_initiator_specific_factories,
+    OriginMap pending_isolated_world_factories,
     bool bypass_redirect_checks)
     : pending_default_factory_(std::move(pending_default_factory)),
       pending_scheme_specific_factories_(
           std::move(pending_scheme_specific_factories)),
-      pending_initiator_specific_factories_(
-          std::move(pending_initiator_specific_factories)),
+      pending_isolated_world_factories_(
+          std::move(pending_isolated_world_factories)),
       bypass_redirect_checks_(bypass_redirect_checks) {}
 
 URLLoaderFactoryBundleInfo::~URLLoaderFactoryBundleInfo() = default;
@@ -57,8 +57,8 @@ URLLoaderFactoryBundleInfo::CreateFactory() {
   other->pending_appcache_factory_ = std::move(pending_appcache_factory_);
   other->pending_scheme_specific_factories_ =
       std::move(pending_scheme_specific_factories_);
-  other->pending_initiator_specific_factories_ =
-      std::move(pending_initiator_specific_factories_);
+  other->pending_isolated_world_factories_ =
+      std::move(pending_isolated_world_factories_);
   other->bypass_redirect_checks_ = bypass_redirect_checks_;
 
   return base::MakeRefCounted<URLLoaderFactoryBundle>(std::move(other));
@@ -82,9 +82,9 @@ network::mojom::URLLoaderFactory* URLLoaderFactoryBundle::GetFactory(
     return it->second.get();
 
   if (request.isolated_world_origin.has_value()) {
-    auto it2 = initiator_specific_factories_.find(
-        request.isolated_world_origin.value());
-    if (it2 != initiator_specific_factories_.end())
+    auto it2 =
+        isolated_world_factories_.find(request.isolated_world_origin.value());
+    if (it2 != isolated_world_factories_.end())
       return it2->second.get();
   }
 
@@ -125,7 +125,7 @@ URLLoaderFactoryBundle::Clone() {
   auto pending_factories = std::make_unique<blink::URLLoaderFactoryBundleInfo>(
       std::move(pending_default_factory),
       CloneRemoteMapToPendingRemoteMap(scheme_specific_factories_),
-      CloneRemoteMapToPendingRemoteMap(initiator_specific_factories_),
+      CloneRemoteMapToPendingRemoteMap(isolated_world_factories_),
       bypass_redirect_checks_);
 
   if (appcache_factory_) {
@@ -154,8 +154,8 @@ void URLLoaderFactoryBundle::Update(
       &scheme_specific_factories_,
       std::move(pending_factories->pending_scheme_specific_factories()));
   BindPendingRemoteMapToRemoteMap(
-      &initiator_specific_factories_,
-      std::move(pending_factories->pending_initiator_specific_factories()));
+      &isolated_world_factories_,
+      std::move(pending_factories->pending_isolated_world_factories()));
   bypass_redirect_checks_ = pending_factories->bypass_redirect_checks();
 }
 

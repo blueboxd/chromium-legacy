@@ -29,14 +29,6 @@ class CC_PAINT_EXPORT PaintImageGenerator : public SkRefCnt {
 
   PaintImageGenerator& operator=(const PaintImageGenerator&) = delete;
 
-  // Returns true if we can guarantee that the software decoder hasn't done work
-  // on the image, so it's appropriate to send the encoded image to a hardware
-  // accelerator. False if we can't guarantee this or if not applicable. For
-  // example, if the encoded data comes incrementally, and the software decoder
-  // starts working with partial data, the image shouldn't later be sent to a
-  // hardware decoder.
-  virtual bool IsEligibleForAcceleratedDecoding() const = 0;
-
   // Returns a reference to the encoded content of this image.
   virtual sk_sp<SkData> GetEncodedData() const = 0;
 
@@ -88,7 +80,9 @@ class CC_PAINT_EXPORT PaintImageGenerator : public SkRefCnt {
   const SkImageInfo& GetSkImageInfo() const { return info_; }
   const std::vector<FrameMetadata>& GetFrameMetadata() const { return frames_; }
 
-  virtual PaintImage::ImageType GetImageType() const;
+  // Returns the information required to decide whether or not hardware
+  // acceleration can be used to decode this image.
+  virtual const ImageHeaderMetadata* GetMetadataForDecodeAcceleration() const;
 
  protected:
   // |info| is the info for this paint image generator.

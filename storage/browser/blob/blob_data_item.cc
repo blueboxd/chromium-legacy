@@ -78,12 +78,12 @@ scoped_refptr<BlobDataItem> BlobDataItem::CreateFile(
     uint64_t offset,
     uint64_t length,
     base::Time expected_modification_time,
-    scoped_refptr<DataHandle> data_handle) {
+    scoped_refptr<ShareableFileReference> file_ref) {
   auto item =
       base::WrapRefCounted(new BlobDataItem(Type::kFile, offset, length));
   item->path_ = std::move(path);
   item->expected_modification_time_ = std::move(expected_modification_time);
-  item->data_handle_ = std::move(data_handle);
+  item->file_ref_ = std::move(file_ref);
   // TODO(mek): DCHECK(!item->IsFutureFileItem()) when BlobDataBuilder has some
   // other way of slicing a future file.
   return item;
@@ -171,14 +171,15 @@ void BlobDataItem::ShrinkBytes(size_t new_length) {
   bytes_.resize(length_);
 }
 
-void BlobDataItem::PopulateFile(base::FilePath path,
-                                base::Time expected_modification_time,
-                                scoped_refptr<DataHandle> data_handle) {
+void BlobDataItem::PopulateFile(
+    base::FilePath path,
+    base::Time expected_modification_time,
+    scoped_refptr<ShareableFileReference> file_ref) {
   DCHECK_EQ(type_, Type::kFile);
   DCHECK(IsFutureFileItem());
   path_ = std::move(path);
   expected_modification_time_ = std::move(expected_modification_time);
-  data_handle_ = std::move(data_handle);
+  file_ref_ = std::move(file_ref);
 }
 
 void BlobDataItem::ShrinkFile(uint64_t new_length) {

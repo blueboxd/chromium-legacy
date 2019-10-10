@@ -73,6 +73,7 @@ class VRUiHostImpl : public VRUiHost,
   // BrowserXRRuntimeObserver implementation.
   void SetWebXRWebContents(content::WebContents* contents) override;
   void SetVRDisplayInfo(device::mojom::VRDisplayInfoPtr display_info) override;
+  void SetFramesThrottled(bool throttled) override;
 
   // Internal methods used to start/stop the UI rendering thread that is used
   // for drawing browser UI (such as permission prompts) for display in VR.
@@ -120,6 +121,7 @@ class VRUiHostImpl : public VRUiHost,
   base::Time indicators_shown_start_time_;
   bool indicators_visible_ = false;
   bool indicators_showing_first_time_ = true;
+  bool frames_throttled_ = false;
 
   mojo::Remote<device::mojom::GeolocationConfig> geolocation_config_;
   base::CancelableClosure poll_capturing_state_task_;

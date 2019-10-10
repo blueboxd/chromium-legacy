@@ -671,53 +671,6 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, Notifications) {
   }
 }
 
-class ProfileWithoutMediaCacheBrowserTest : public ProfileBrowserTest {
- public:
-  ProfileWithoutMediaCacheBrowserTest() {
-    feature_list_.InitAndEnableFeature(features::kUseSameCacheForMedia);
-  }
-
-  ~ProfileWithoutMediaCacheBrowserTest() override {}
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Verifies that when kUseSameCacheForMedia is enabled, the media
-// URLRequestContext uses the same disk cache as the main one.
-IN_PROC_BROWSER_TEST_F(ProfileWithoutMediaCacheBrowserTest,
-                       NoSeparateMediaCache) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Do a normal load using the media URLRequestContext, populating the cache.
-  SimpleURLLoaderHelper simple_loader_helper(
-      // TODO(svillar): this should be media request
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
-          ->GetURLLoaderFactoryForBrowserProcess()
-          .get(),
-      embedded_test_server()->GetURL("/cachetime"), net::OK);
-  simple_loader_helper.WaitForCompletion();
-
-  // Cache-only load from the main request context should succeed, since the
-  // media request context uses the same cache.
-  SimpleURLLoaderHelper simple_loader_helper2(
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
-          ->GetURLLoaderFactoryForBrowserProcess()
-          .get(),
-      embedded_test_server()->GetURL("/cachetime"), net::OK,
-      net::LOAD_ONLY_FROM_CACHE);
-  simple_loader_helper2.WaitForCompletion();
-
-  // Cache-only load from the media request context should also succeed.
-  SimpleURLLoaderHelper simple_loader_helper3(
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
-          ->GetURLLoaderFactoryForBrowserProcess()
-          .get(),
-      embedded_test_server()->GetURL("/cachetime"), net::OK,
-      net::LOAD_ONLY_FROM_CACHE);
-  simple_loader_helper3.WaitForCompletion();
-}
-
 namespace {
 
 // Watches for the destruction of the specified path (Which, in the tests that

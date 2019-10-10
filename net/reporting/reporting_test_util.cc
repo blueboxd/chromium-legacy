@@ -16,6 +16,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
+#include "net/base/network_isolation_key.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
@@ -36,11 +37,13 @@ class PendingUploadImpl : public TestReportingUploader::PendingUpload {
  public:
   PendingUploadImpl(const url::Origin& report_origin,
                     const GURL& url,
+                    const NetworkIsolationKey& network_isolation_key,
                     const std::string& json,
                     ReportingUploader::UploadCallback callback,
                     base::OnceCallback<void(PendingUpload*)> complete_callback)
       : report_origin_(report_origin),
         url_(url),
+        network_isolation_key_(network_isolation_key),
         json_(json),
         callback_(std::move(callback)),
         complete_callback_(std::move(complete_callback)) {}
@@ -64,6 +67,7 @@ class PendingUploadImpl : public TestReportingUploader::PendingUpload {
  private:
   url::Origin report_origin_;
   GURL url_;
+  NetworkIsolationKey network_isolation_key_;
   std::string json_;
   ReportingUploader::UploadCallback callback_;
   base::OnceCallback<void(PendingUpload*)> complete_callback_;
@@ -98,13 +102,15 @@ TestReportingUploader::PendingUpload::PendingUpload() = default;
 TestReportingUploader::TestReportingUploader() = default;
 TestReportingUploader::~TestReportingUploader() = default;
 
-void TestReportingUploader::StartUpload(const url::Origin& report_origin,
-                                        const GURL& url,
-                                        const std::string& json,
-                                        int max_depth,
-                                        UploadCallback callback) {
+void TestReportingUploader::StartUpload(
+    const url::Origin& report_origin,
+    const GURL& url,
+    const NetworkIsolationKey& network_isolation_key,
+    const std::string& json,
+    int max_depth,
+    UploadCallback callback) {
   pending_uploads_.push_back(std::make_unique<PendingUploadImpl>(
-      report_origin, url, json, std::move(callback),
+      report_origin, url, network_isolation_key, json, std::move(callback),
       base::BindOnce(&ErasePendingUpload, &pending_uploads_)));
 }
 

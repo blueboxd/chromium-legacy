@@ -309,7 +309,7 @@ void PasswordGenerationAgent::UserTriggeredGeneratePassword(
     LogMessage(Logger::STRING_GENERATION_RENDERER_SHOW_MANUAL_GENERATION_POPUP);
     autofill::password_generation::PasswordGenerationUIData
         password_generation_ui_data(
-            render_frame()->GetRenderView()->ElementBoundsInWindow(
+            render_frame()->ElementBoundsInWindow(
                 current_generation_item_->generation_element_),
             current_generation_item_->generation_element_.MaxLength(),
             current_generation_item_->generation_element_.NameForAutofill()
@@ -513,7 +513,7 @@ void PasswordGenerationAgent::AutomaticGenerationAvailable() {
   LogMessage(Logger::STRING_GENERATION_RENDERER_AUTOMATIC_GENERATION_AVAILABLE);
   autofill::password_generation::PasswordGenerationUIData
       password_generation_ui_data(
-          render_frame()->GetRenderView()->ElementBoundsInWindow(
+          render_frame()->ElementBoundsInWindow(
               current_generation_item_->generation_element_),
           current_generation_item_->generation_element_.MaxLength(),
           current_generation_item_->generation_element_.NameForAutofill()
@@ -532,9 +532,8 @@ void PasswordGenerationAgent::ShowEditingPopup() {
   if (!render_frame())
     return;
 
-  gfx::RectF bounding_box =
-      render_frame()->GetRenderView()->ElementBoundsInWindow(
-          current_generation_item_->generation_element_);
+  gfx::RectF bounding_box = render_frame()->ElementBoundsInWindow(
+      current_generation_item_->generation_element_);
 
   std::unique_ptr<PasswordForm> password_form = CreatePasswordFormToPresave();
   DCHECK(password_form);

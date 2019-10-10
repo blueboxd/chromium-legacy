@@ -49,6 +49,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -429,6 +430,13 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
   }
   for (auto* target : protocol::TargetHandler::ForAgentHost(this))
     target->DidFinishNavigation();
+
+  // RenderFrameDevToolsAgentHost is associated with frame_tree_node, while
+  // documents in the back-forward cache share a node, therefore we can't cache
+  // them. TODO(1001087): add support long-term.
+  content::BackForwardCache::DisableForRenderFrameHost(
+      navigation_handle->GetPreviousRenderFrameHostId(),
+      "RenderFrameDevToolsAgentHost");
 }
 
 void RenderFrameDevToolsAgentHost::UpdateFrameHost(

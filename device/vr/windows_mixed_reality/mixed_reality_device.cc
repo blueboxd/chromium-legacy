@@ -108,11 +108,11 @@ void MixedRealityDevice::RequestSession(
       return;
     }
 
-    if (provider_request_) {
+    if (provider_receiver_) {
       render_loop_->task_runner()->PostTask(
           FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
                                     base::Unretained(render_loop_.get()),
-                                    std::move(provider_request_)));
+                                    std::move(provider_receiver_)));
     }
 
     if (overlay_request_) {
@@ -184,16 +184,16 @@ void MixedRealityDevice::OnRequestSessionResult(
 }
 
 void MixedRealityDevice::GetIsolatedXRGamepadProvider(
-    mojom::IsolatedXRGamepadProviderRequest provider_request) {
+    mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> provider_receiver) {
   if (!render_loop_)
     CreateRenderLoop();
   if (render_loop_->IsRunning()) {
     render_loop_->task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
                                   base::Unretained(render_loop_.get()),
-                                  std::move(provider_request)));
+                                  std::move(provider_receiver)));
   } else {
-    provider_request_ = std::move(provider_request);
+    provider_receiver_ = std::move(provider_receiver);
   }
 }
 

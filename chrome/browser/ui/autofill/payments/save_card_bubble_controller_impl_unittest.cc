@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_view.h"
 #include "chrome/browser/ui/autofill/payments/save_card_ui.h"
+#include "chrome/browser/ui/autofill/test/test_autofill_bubble_handler.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -93,10 +94,6 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
             prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE);
   }
 
-  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
-    return std::make_unique<SaveCardBubbleTestBrowserWindow>();
-  }
-
   void SetLegalMessage(
       const std::string& message_json,
       AutofillClient::SaveCreditCardOptions options =
@@ -157,25 +154,6 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
-  class TestSaveCardBubbleView final : public SaveCardBubbleView {
-    void Hide() override {}
-  };
-
-  class SaveCardBubbleTestBrowserWindow : public TestBrowserWindow {
-   public:
-    SaveCardBubbleView* ShowSaveCreditCardBubble(
-        content::WebContents* contents,
-        SaveCardBubbleController* controller,
-        bool user_gesture) override {
-      if (!save_card_bubble_view_)
-        save_card_bubble_view_ = std::make_unique<TestSaveCardBubbleView>();
-      return save_card_bubble_view_.get();
-    }
-
-   private:
-    std::unique_ptr<TestSaveCardBubbleView> save_card_bubble_view_;
-  };
-
   static void UploadSaveCardCallback(
       AutofillClient::SaveCardOfferUserDecision user_decision,
       const AutofillClient::UserProvidedCardDetails&

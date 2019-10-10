@@ -516,10 +516,7 @@ void RenderViewImpl::Initialize(
         page_properties(), params->visual_properties.display_mode,
         /*is_undead=*/true, params->never_visible);
     undead_render_widget_->set_delegate(this);
-    // We intentionally pass in a null webwidget since it shouldn't be needed
-    // for remote frames.
-    undead_render_widget_->InitForMainFrame(std::move(show_callback),
-                                            /*web_frame_widget=*/nullptr);
+    undead_render_widget_->InitForMainFrame(std::move(show_callback));
 
     RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id, GetRoutingID(),
                                        opener_frame, MSG_ROUTING_NONE,
@@ -556,7 +553,6 @@ void RenderViewImpl::Initialize(
 
 RenderViewImpl::~RenderViewImpl() {
   DCHECK(destroying_);  // Always deleted through Destroy().
-  DCHECK(!frame_widget_);
 
   g_routing_id_view_map.Get().erase(routing_id_);
   RenderThread::Get()->RemoveRoute(routing_id_);
@@ -1073,13 +1069,8 @@ void RenderViewImpl::Destroy() {
   // a main frame. So it should not be able to see this happening when there is
   // no local main frame.
   if (close_render_widget_here) {
-    if (undead_render_widget_) {
-      RenderWidget* closing_widget = undead_render_widget_.get();
-      closing_widget->CloseForFrame(std::move(undead_render_widget_));
-    } else {
-      RenderWidget* closing_widget = render_widget_.get();
-      closing_widget->CloseForFrame(std::move(render_widget_));
-    }
+    RenderWidget* closing_widget = undead_render_widget_.get();
+    closing_widget->CloseForFrame(std::move(undead_render_widget_));
   }
 
   delete this;
@@ -1150,7 +1141,8 @@ void RenderViewImpl::DisableAutoResizeForWidget() {
 
 void RenderViewImpl::ScrollFocusedNodeIntoViewForWidget() {
   if (WebLocalFrame* focused_frame = GetWebView()->FocusedFrame()) {
-    auto* frame_widget = focused_frame->LocalRoot()->FrameWidget();
+    blink::WebFrameWidget* frame_widget =
+        focused_frame->LocalRoot()->FrameWidget();
     frame_widget->ScrollFocusedEditableElementIntoView();
   }
 }
@@ -1548,9 +1540,10 @@ void RenderViewImpl::PrintPage(WebLocalFrame* frame) {
 }
 
 void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
-  // The previous WebFrameWidget must already be detached by CloseForFrame().
-  DCHECK(!frame_widget_);
-  frame_widget_ = frame_widget;
+  // The previous WebFrameWidget must already be detached by
+  // DetachWebFrameWidget().
+  DCHECK(!render_widget_->GetWebWidget());
+
   render_widget_->SetWebWidgetInternal(frame_widget);
 
   // Initialization for the WebFrameWidget that should only occur for the main
@@ -1563,39 +1556,32 @@ void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
 }
 
 void RenderViewImpl::DetachWebFrameWidget() {
-  DCHECK(frame_widget_);
+  // There is a WebFrameWidget previously attached by AttachWebFrameWidget().
+  DCHECK(render_widget_->GetWebWidget());
 
   if (destroying_) {
     // We are inside RenderViewImpl::Destroy() and the main frame is being
     // detached as part of shutdown. So we can destroy the RenderWidget.
 
-    // The RenderWidget will be closed, and it will close the WebWidget stored
-    // in |frame_widget_|. We just want to drop raw pointer here.
-    frame_widget_ = nullptr;
-    if (undead_render_widget_) {
-      RenderWidget* closing_widget = undead_render_widget_.get();
-      closing_widget->CloseForFrame(std::move(undead_render_widget_));
-    } else {
-      RenderWidget* closing_widget = render_widget_.get();
-      closing_widget->CloseForFrame(std::move(render_widget_));
-    }
+    // We pass ownership of |render_widget_| to itself. Grab a raw pointer to
+    // call the Close() method on so we don't have to be a C++ expert to know
+    // whether we will end up with a nullptr where we didn't intend due to order
+    // of execution.
+    RenderWidget* closing_widget = render_widget_.get();
+    closing_widget->CloseForFrame(std::move(render_widget_));
   } else {
     // We are not inside RenderViewImpl::Destroy(), the main frame is being
     // detached and replaced with a remote frame proxy. We can't close the
     // RenderWidget, and it is marked undead instead, but we do need to close
     // the WebFrameWidget and remove it from the RenderWidget.
-
-    RenderWidget* render_widget = render_widget_.get();
-    if (!render_widget)
-      render_widget = undead_render_widget_.get();
-
-    DCHECK(render_widget->IsUndeadOrProvisional());
+    render_widget_->SetIsUndead(true);
     // The WebWidget needs to be closed even though the RenderWidget won't be
-    // here (since it is marked undead instead).
-    frame_widget_->Close();
-    frame_widget_ = nullptr;
+    // closed here (since it is marked undead instead).
+    render_widget_->GetWebWidget()->Close();
     // This just clears the webwidget_internal_ member from RenderWidget.
-    render_widget->SetWebWidgetInternal(nullptr);
+    render_widget_->SetWebWidgetInternal(nullptr);
+
+    undead_render_widget_ = std::move(render_widget_);
   }
 }
 
@@ -1812,16 +1798,14 @@ bool RenderViewImpl::CanHandleGestureEvent() {
   return true;
 }
 
-// TODO(https://crbug.com/1010509): Re-enable this in Chrome 80.
 // TODO(https://crbug.com/937569): Remove this in Chrome 82.
 bool RenderViewImpl::AllowPopupsDuringPageUnload() {
-  return true;
-#if 0
+  // The switch version is for enabling via enterprise policy. The feature
+  // version is for enabling via about:flags and Finch policy.
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   return command_line.HasSwitch(switches::kAllowPopupsDuringPageUnload) ||
          base::FeatureList::IsEnabled(features::kAllowPopupsDuringPageUnload);
-#endif
 }
 
 bool RenderViewImpl::CanUpdateLayout() {
@@ -1862,38 +1846,26 @@ void RenderViewImpl::didScrollWithKeyboard(const blink::WebSize& delta) {
 
 #endif
 
-void RenderViewImpl::ConvertViewportToWindowViaWidget(blink::WebRect* rect) {
-  page_properties_.ConvertViewportToWindow(rect);
-}
-
-gfx::RectF RenderViewImpl::ElementBoundsInWindow(
-    const blink::WebElement& element) {
-  blink::WebRect bounding_box_in_window = element.BoundsInViewport();
-  page_properties_.ConvertViewportToWindow(&bounding_box_in_window);
-  return gfx::RectF(bounding_box_in_window);
-}
-
 void RenderViewImpl::UpdatePreferredSize() {
   // We don't always want to send the change messages over IPC, only if we've
   // been put in that mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
   // message.
-  if (!send_preferred_size_changes_ || !webview())
+  if (!send_preferred_size_changes_ || !webview() || !main_render_frame_)
     return;
 
   if (!needs_preferred_size_update_)
     return;
   needs_preferred_size_update_ = false;
 
-  blink::WebSize tmp_size = webview()->ContentsPreferredMinimumSize();
-  blink::WebRect tmp_rect(0, 0, tmp_size.width, tmp_size.height);
-  page_properties_.ConvertViewportToWindow(&tmp_rect);
-  gfx::Size size(tmp_rect.width, tmp_rect.height);
-  if (size == preferred_size_)
-    return;
+  blink::WebSize web_size = webview()->ContentsPreferredMinimumSize();
+  blink::WebRect web_rect(0, 0, web_size.width, web_size.height);
+  render_widget_->ConvertViewportToWindow(&web_rect);
+  gfx::Size size(web_rect.width, web_rect.height);
 
-  preferred_size_ = size;
-  Send(new ViewHostMsg_DidContentsPreferredSizeChange(GetRoutingID(),
-                                                      preferred_size_));
+  if (size != preferred_size_) {
+    preferred_size_ = size;
+    Send(new ViewHostMsg_DidContentsPreferredSizeChange(GetRoutingID(), size));
+  }
 }
 
 blink::WebString RenderViewImpl::AcceptLanguages() {
@@ -1955,11 +1927,6 @@ void RenderViewImpl::ApplyPageHidden(bool hidden, bool initial_setting) {
   webview()->SetIsHidden(hidden, initial_setting);
   // Note: RenderWidget visibility is separately set from the IPC handlers, and
   // does not change when tests override the visibility of the Page.
-}
-
-void RenderViewImpl::MakeMainFrameRenderWidgetUndead() {
-  render_widget_->SetIsUndead(true);
-  undead_render_widget_ = std::move(render_widget_);
 }
 
 void RenderViewImpl::ReviveUndeadMainFrameRenderWidget() {

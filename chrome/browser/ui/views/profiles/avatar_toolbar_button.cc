@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
@@ -170,9 +169,6 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   UpdateText();
 
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
-  personal_data_manager_observer_.Add(
-      autofill::PersonalDataManagerFactory::GetForProfile(
-          profile_->GetOriginalProfile()));
 }
 
 AvatarToolbarButton::~AvatarToolbarButton() {
@@ -259,12 +255,6 @@ void AvatarToolbarButton::UpdateText() {
   SetInsets();
   SetTooltipText(GetAvatarTooltipText());
   SetHighlight(text, color);
-}
-
-void AvatarToolbarButton::SetAutofillIconVisible(bool autofill_icon_visible) {
-  DCHECK_NE(GetState(), State::kIncognitoProfile);
-  autofill_icon_visible_ = autofill_icon_visible;
-  UpdateText();
 }
 
 void AvatarToolbarButton::ShowAvatarHighlightAnimation() {
@@ -368,18 +358,19 @@ void AvatarToolbarButton::OnProfileNameChanged(
 
 void AvatarToolbarButton::OnUnconsentedPrimaryAccountChanged(
     const CoreAccountInfo& unconsented_primary_account_info) {
-  if (!base::FeatureList::IsEnabled(features::kAnimatedAvatarButtonOnSignIn))
-    return;
-  OnUserIdentityChanged(unconsented_primary_account_info);
+  OnUserIdentityChanged(unconsented_primary_account_info,
+                        features::kAnimatedAvatarButtonOnSignIn);
 }
 
 void AvatarToolbarButton::OnRefreshTokensLoaded() {
-  if (!signin_ui_util::ShouldShowIdentityOnOpeningProfile(
+  if (!signin_ui_util::ShouldShowAnimatedIdentityOnOpeningWindow(
           GetProfileAttributesStorage(), profile_)) {
     return;
   }
+
   OnUserIdentityChanged(IdentityManagerFactory::GetForProfile(profile_)
-                            ->GetUnconsentedPrimaryAccountInfo());
+                            ->GetUnconsentedPrimaryAccountInfo(),
+                        features::kAnimatedAvatarButtonOnOpeningWindow);
 }
 
 void AvatarToolbarButton::OnAccountsInCookieUpdated(
@@ -401,10 +392,6 @@ void AvatarToolbarButton::OnExtendedAccountInfoRemoved(
 void AvatarToolbarButton::OnTouchUiChanged() {
   SetInsets();
   PreferredSizeChanged();
-}
-
-void AvatarToolbarButton::OnCreditCardSaved() {
-  ShowAvatarHighlightAnimation();
 }
 
 void AvatarToolbarButton::ShowIdentityAnimation() {
@@ -554,7 +541,7 @@ AvatarToolbarButton::State AvatarToolbarButton::GetState() const {
 
 #if !defined(OS_CHROMEOS)
   if (identity_manager->HasPrimaryAccount() && profile_->IsSyncAllowed() &&
-      error_controller_.HasAvatarError() && !autofill_icon_visible_) {
+      error_controller_.HasAvatarError()) {
     // When DICE is enabled and the error is an auth error, the sync-paused
     // icon is shown.
     int unused;
@@ -580,9 +567,18 @@ void AvatarToolbarButton::SetInsets() {
 }
 
 void AvatarToolbarButton::OnUserIdentityChanged(
-    const CoreAccountInfo& user_identity) {
+    const CoreAccountInfo& user_identity,
+    const base::Feature& triggering_feature) {
+  if (user_identity.IsEmpty())
+    return;
+
+  // Record the last time the animated identity was set. This is done even if
+  // the feature is disabled, to allow comparing metrics between experimental
+  // groups.
+  signin_ui_util::RecordAnimatedIdentityTriggered(profile_);
+
   if (!base::FeatureList::IsEnabled(features::kAnimatedAvatarButton) ||
-      user_identity.IsEmpty()) {
+      !base::FeatureList::IsEnabled(triggering_feature)) {
     return;
   }
 

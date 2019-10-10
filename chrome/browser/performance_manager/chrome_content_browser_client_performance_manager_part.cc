@@ -11,16 +11,16 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "components/performance_manager/render_process_user_data.h"
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 namespace {
 
 void BindProcessNode(
     int render_process_host_id,
-    mojo::PendingReceiver<resource_coordinator::mojom::ProcessCoordinationUnit>
+    mojo::PendingReceiver<performance_manager::mojom::ProcessCoordinationUnit>
         receiver) {
   content::RenderProcessHost* render_process_host =
       content::RenderProcessHost::FromID(render_process_host_id);

@@ -162,11 +162,9 @@ void InlineLoginHandler::HandleCompleteLoginMessage(
       content::BrowserContext::GetStoragePartitionForSite(
           contents->GetBrowserContext(), signin::GetSigninPartitionURL());
 
-  net::CookieOptions cookie_options;
-  cookie_options.set_include_httponly();
-
   partition->GetCookieManagerForBrowserProcess()->GetCookieList(
-      GaiaUrls::GetInstance()->gaia_url(), cookie_options,
+      GaiaUrls::GetInstance()->gaia_url(),
+      net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&InlineLoginHandler::HandleCompleteLoginMessageWithCookies,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::ListValue(args->GetList())));

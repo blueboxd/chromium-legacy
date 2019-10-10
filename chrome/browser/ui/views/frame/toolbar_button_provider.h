@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 
 class AppMenuButton;
+class AvatarToolbarButton;
 class BrowserActionsContainer;
 class PageActionIconView;
 class ToolbarActionView;
@@ -60,6 +61,9 @@ class ToolbarButtonProvider {
 
   // See comment in browser_window.h for more info.
   virtual void ZoomChangedForActiveTab(bool can_show_bubble) = 0;
+
+  // Returns the avatar button.
+  virtual AvatarToolbarButton* GetAvatarToolbarButton() = 0;
 
   // TODO(calamity): Move other buttons and button actions into here.
  protected:

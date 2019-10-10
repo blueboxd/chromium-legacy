@@ -11,15 +11,19 @@
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/root_window_controller.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -54,6 +58,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_app_window_icon_observer.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
@@ -62,6 +67,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -78,6 +84,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/base_window.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -138,6 +145,35 @@ int64_t GetDisplayIdForBrowserWindow(BrowserWindow* window) {
   return display::Screen::GetScreen()
       ->GetDisplayNearestWindow(window->GetNativeWindow())
       .id();
+}
+
+void ExtendHotseat(Browser* browser) {
+  ash::RootWindowController* const controller =
+      ash::Shell::GetRootWindowControllerWithDisplayId(
+          display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  EXPECT_EQ(ash::HotseatState::kHidden,
+            controller->shelf()->shelf_layout_manager()->hotseat_state());
+
+  BrowserView* const browser_view =
+      BrowserView::GetBrowserViewForBrowser(browser);
+  aura::Window* const browser_window =
+      browser_view->GetWidget()->GetNativeWindow();
+
+  const gfx::Rect display_bounds = display::Screen::GetScreen()
+                                       ->GetDisplayNearestWindow(browser_window)
+                                       .bounds();
+  const gfx::Point start_point = gfx::Point(
+      display_bounds.width() / 4,
+      display_bounds.bottom() - ash::ShelfConfig::Get()->shelf_size() / 2);
+  gfx::Point end_point(start_point);
+  end_point.set_y(10);
+
+  ui::test::EventGenerator event_generator(controller->GetRootWindow());
+  event_generator.GestureScrollSequence(
+      start_point, end_point, base::TimeDelta::FromMilliseconds(500), 4);
+
+  EXPECT_EQ(ash::HotseatState::kExtended,
+            controller->shelf()->shelf_layout_manager()->hotseat_state());
 }
 
 }  // namespace
@@ -252,36 +288,6 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
   // Get the index of an item which has the given type.
   int GetIndexOfShelfItemType(ash::ShelfItemType type) {
     return shelf_model()->GetItemIndexForType(type);
-  }
-
-  // Try to rip off |item_index|.
-  void RipOffItemIndex(int index,
-                       ui::test::EventGenerator* generator,
-                       ash::ShelfViewTestAPI* test,
-                       RipOffCommand command) {
-    ash::ShelfAppButton* button = test->GetButton(index);
-    gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
-    gfx::Point rip_off_point(start_point.x(), 0);
-    generator->MoveMouseTo(start_point.x(), start_point.y());
-    base::RunLoop().RunUntilIdle();
-    generator->PressLeftButton();
-    base::RunLoop().RunUntilIdle();
-    generator->MoveMouseTo(rip_off_point.x(), rip_off_point.y());
-    base::RunLoop().RunUntilIdle();
-    test->RunMessageLoopUntilAnimationsDone();
-    if (command == RIP_OFF_ITEM_AND_RETURN) {
-      generator->MoveMouseTo(start_point.x(), start_point.y());
-      base::RunLoop().RunUntilIdle();
-      test->RunMessageLoopUntilAnimationsDone();
-    } else if (command == RIP_OFF_ITEM_AND_CANCEL) {
-      // This triggers an internal cancel. Using VKEY_ESCAPE was too unreliable.
-      button->OnMouseCaptureLost();
-    }
-    if (command != RIP_OFF_ITEM_AND_DONT_RELEASE_MOUSE) {
-      generator->ReleaseLeftButton();
-      base::RunLoop().RunUntilIdle();
-      test->RunMessageLoopUntilAnimationsDone();
-    }
   }
 
   // Creates a context menu for the existing browser shortcut item.
@@ -1996,4 +2002,59 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ShelfModelInitialization) {
   EXPECT_EQ(extension_misc::kChromeAppId, shelf_model()->items()[0].id.app_id);
   EXPECT_TRUE(
       shelf_model()->GetShelfItemDelegate(shelf_model()->items()[0].id));
+}
+
+class HotseatShelfAppBrowserTest : public ShelfAppBrowserTest {
+ public:
+  HotseatShelfAppBrowserTest() = default;
+  ~HotseatShelfAppBrowserTest() override = default;
+
+  // ShelfAppBrowserTest:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kShelfHotseat);
+    ShelfAppBrowserTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HotseatShelfAppBrowserTest);
+};
+
+// Tests that launching and switching apps by tapping shelf buttons hides the
+// hotseat.
+IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest,
+                       TappingAppIconsHidesHotseat) {
+  ash::Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  // Create two apps, then extend the hotseat.
+  ash::ShelfID shortcut_id_1 = CreateShortcut("app1");
+  ash::ShelfID shortcut_id_2 = CreateShortcut("app2");
+  ExtendHotseat(browser());
+
+  // Launch app1, the hotseat should hide.
+  ash::RootWindowController* controller =
+      ash::Shell::GetRootWindowControllerWithDisplayId(
+          display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  ash::ShelfView* shelf_view = controller->shelf()->GetShelfViewForTesting();
+  views::View* button_1 = shelf_view->GetShelfAppButton(shortcut_id_1);
+  ui::test::EventGenerator event_generator(controller->GetRootWindow());
+  event_generator.GestureTapAt(button_1->GetBoundsInScreen().CenterPoint());
+
+  EXPECT_EQ(ash::HotseatState::kHidden,
+            controller->shelf()->shelf_layout_manager()->hotseat_state());
+
+  // Show the hotseat again, and launch app2. The hotseat should hide again.
+  ExtendHotseat(browser());
+  views::View* button_2 = shelf_view->GetShelfAppButton(shortcut_id_2);
+  event_generator.GestureTapAt(button_2->GetBoundsInScreen().CenterPoint());
+
+  EXPECT_EQ(ash::HotseatState::kHidden,
+            controller->shelf()->shelf_layout_manager()->hotseat_state());
+
+  // Extend the hotseat and test that switching back to app1 results in a hidden
+  // hotseat.
+  ExtendHotseat(browser());
+  event_generator.GestureTapAt(button_1->GetBoundsInScreen().CenterPoint());
+  EXPECT_EQ(ash::HotseatState::kHidden,
+            controller->shelf()->shelf_layout_manager()->hotseat_state());
 }

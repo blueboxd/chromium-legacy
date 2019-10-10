@@ -623,13 +623,6 @@ const FeatureEntry::Choice kSiteIsolationOptOutChoices[] = {
      switches::kDisableSiteIsolation, ""},
 };
 
-const FeatureEntry::FeatureParam kEnforceTLS13DowngradeKnownOnly[] = {
-    {"known_roots_only", "true"}};
-
-const FeatureEntry::FeatureVariation kEnforceTLS13DowngradeFeatureVariations[] =
-    {{"(Known Root Only)", kEnforceTLS13DowngradeKnownOnly,
-      base::size(kEnforceTLS13DowngradeKnownOnly), nullptr}};
-
 const FeatureEntry::Choice kForceColorProfileChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kForceColorProfileSRGB,
@@ -1130,19 +1123,10 @@ const FeatureEntry::FeatureParam kSimplifiedServerAllCocaCards = {
 const FeatureEntry::FeatureVariation kSimplifiedServerVariations[] = {
     {"and allow all CoCa cards", &kSimplifiedServerAllCocaCards, 1, nullptr}};
 
-const FeatureEntry::FeatureParam kLongpressResolveHideOnScroll = {
-    contextual_search::kLongpressResolveParamName,
-    contextual_search::kLongpressResolveHideOnScroll};
-const FeatureEntry::FeatureParam kLongpressResolvePrivacyAggressive = {
-    contextual_search::kLongpressResolveParamName,
-    contextual_search::kLongpressResolvePrivacyAggressive};
 const FeatureEntry::FeatureParam kLongpressResolvePreserveTap = {
     contextual_search::kLongpressResolveParamName,
     contextual_search::kLongpressResolvePreserveTap};
 const FeatureEntry::FeatureVariation kLongpressResolveVariations[] = {
-    {"and hide on scroll", &kLongpressResolveHideOnScroll, 1, nullptr},
-    {"and allow privacy-aggressive behavior",
-     &kLongpressResolvePrivacyAggressive, 1, nullptr},
     {"and preserve Tap behavior", &kLongpressResolvePreserveTap, 1, nullptr},
 };
 
@@ -2396,11 +2380,10 @@ const FeatureEntry kFeatureEntries[] = {
                                  "https://play.google.com/store/apps/"
                                  "details?id=com.android.chrome")},
 #endif  // OS_ANDROID
-    {"enforce-tls13-downgrade", flag_descriptions::kEnforceTLS13DowngradeName,
-     flag_descriptions::kEnforceTLS13DowngradeDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(net::features::kEnforceTLS13Downgrade,
-                                    kEnforceTLS13DowngradeFeatureVariations,
-                                    "EnforceTLS13Downgrade")},
+    {"tls13-hardening-for-local-anchors",
+     flag_descriptions::kTLS13HardeningForLocalAnchorsName,
+     flag_descriptions::kTLS13HardeningForLocalAnchorsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kTLS13HardeningForLocalAnchors)},
     {"enable-tls13-early-data", flag_descriptions::kEnableTLS13EarlyDataName,
      flag_descriptions::kEnableTLS13EarlyDataDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kEnableTLS13EarlyData)},
@@ -3860,6 +3843,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableImplicitRootScrollerDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kImplicitRootScroller)},
 
+    {"enable-cssom-view-scroll-coordinates",
+     flag_descriptions::kEnableCSSOMViewScrollCoordinatesName,
+     flag_descriptions::kEnableCSSOMViewScrollCoordinatesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kCSSOMViewScrollCoordinates)},
+
     {"enable-text-fragment-anchor",
      flag_descriptions::kEnableTextFragmentAnchorName,
      flag_descriptions::kEnableTextFragmentAnchorDescription, kOsAll,
@@ -4230,14 +4218,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillPruneSuggestionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillPruneSuggestions)},
 
-// TODO(https://crbug.com/1010509): Re-enable this in Chrome 80.
-#if 0
     {"allow-popups-during-page-unload",
      flag_descriptions::kAllowPopupsDuringPageUnloadName,
      flag_descriptions::kAllowPopupsDuringPageUnloadDescription,
      kOsAll | kDeprecated,
-     SINGLE_VALUE_TYPE(switches::kAllowPopupsDuringPageUnload)},
-#endif
+     FEATURE_VALUE_TYPE(features::kAllowPopupsDuringPageUnload)},
+
 #if defined(OS_CHROMEOS)
     {"enable-advanced-ppd-attributes",
      flag_descriptions::kEnableAdvancedPpdAttributesName,

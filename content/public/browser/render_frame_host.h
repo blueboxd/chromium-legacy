@@ -357,12 +357,12 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
       network::mojom::URLLoaderFactoryRequest default_factory_request) = 0;
 
   // Requests that future URLLoaderFactoryBundle(s) sent to the renderer should
-  // use a separate URLLoaderFactory for requests initiated by any of the
-  // origins listed in |request_initiators|.  The URLLoaderFactory(s) for each
+  // use a separate URLLoaderFactory for requests initiated by isolated worlds
+  // listed in |isolated_world_origins|.  The URLLoaderFactory(s) for each
   // origin will be created via
   // ContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests method.
-  virtual void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
-      base::flat_set<url::Origin> request_initiators,
+  virtual void MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
+      base::flat_set<url::Origin> isolated_world_origins,
       bool push_to_renderer_now) = 0;
 
   // Returns true if the given sandbox flag |flags| is in effect on this frame.
@@ -424,6 +424,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void UpdateBrowserControlsState(BrowserControlsState constraints,
                                           BrowserControlsState current,
                                           bool animate) = 0;
+
+  // Reloads the frame if it is live. It initiates a reload but doesn't wait for
+  // it to finish.
+  virtual void Reload() = 0;
 
  private:
   // This interface should only be implemented inside content.

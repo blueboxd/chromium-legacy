@@ -134,9 +134,6 @@ android_library("java") {
     "//ui/android:ui_utils_java",
   ]
 
-  if (async_vr) {
-    proguard_configs = [ "//base/android/proguard/chromium_code.flags" ]
-  }
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 

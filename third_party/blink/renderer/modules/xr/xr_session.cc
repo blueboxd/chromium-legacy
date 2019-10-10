@@ -909,13 +909,39 @@ void XRSession::MaybeRequestFrame() {
     }
   }
 
-  // We can request a frame if we're not hidden, we don't already have a pending
-  // frame, we have pending callbacks, and we will have a base layer when it
-  // resolves.
-  bool can_request_frame =
-      visibility_state_ != XRVisibilityState::HIDDEN && !pending_frame_ &&
-      !callback_collection_->IsEmpty() && will_have_base_layer;
-  if (can_request_frame) {
+  // A page will not be allowed to get frames if its visibility state is hidden.
+  bool page_allowed_frames = visibility_state_ != XRVisibilityState::HIDDEN;
+
+  // A page is configured properly if it will have a base layer when the frame
+  // callback gets resolved.
+  bool page_configured_properly = will_have_base_layer;
+
+  // If we have an outstanding callback registered, then we know that the page
+  // actually wants frames.
+  bool page_wants_frame = !callback_collection_->IsEmpty();
+
+  // A page can process frames if it has its appropriate base layer set and has
+  // indicated that it actually wants frames.
+  bool page_can_process_frames = page_configured_properly && page_wants_frame;
+
+  // We consider frames to be throttled if the page is not allowed frames, but
+  // otherwise would be able to receive them. Therefore, if the page isn't in a
+  // state to process frames, it doesn't matter if we are throttling it, any
+  // "stalls" should be attributed to the page being poorly behaved.
+  bool frames_throttled = page_can_process_frames && !page_allowed_frames;
+
+  // If our throttled state has changed, notify anyone who may care
+  if (frames_throttled_ != frames_throttled) {
+    frames_throttled_ = frames_throttled;
+    xr_->SetFramesThrottled(this, frames_throttled_);
+  }
+
+  // We can request a frame if we don't have one already pending, the page is
+  // allowed to request frames, and the page is set up to properly handle frames
+  // and wants one.
+  bool request_frame =
+      !pending_frame_ && page_allowed_frames && page_can_process_frames;
+  if (request_frame) {
     xr_->frameProvider()->RequestFrame(this);
     pending_frame_ = true;
   }

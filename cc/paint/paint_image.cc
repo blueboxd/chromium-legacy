@@ -28,6 +28,13 @@ const PaintImage::Id PaintImage::kInvalidId = -2;
 const PaintImage::ContentId PaintImage::kInvalidContentId = -1;
 const PaintImage::GeneratorClientId PaintImage::kDefaultGeneratorClientId = 0;
 
+ImageHeaderMetadata::ImageHeaderMetadata() = default;
+ImageHeaderMetadata::ImageHeaderMetadata(const ImageHeaderMetadata& other) =
+    default;
+ImageHeaderMetadata& ImageHeaderMetadata::operator=(
+    const ImageHeaderMetadata& other) = default;
+ImageHeaderMetadata::ImageHeaderMetadata::~ImageHeaderMetadata() = default;
+
 PaintImage::PaintImage() = default;
 PaintImage::PaintImage(const PaintImage& other) = default;
 PaintImage::PaintImage(PaintImage&& other) = default;
@@ -151,13 +158,6 @@ void PaintImage::CreateSkImage() {
     cached_sk_image_ =
         cached_sk_image_->makeSubset(gfx::RectToSkIRect(subset_rect_));
   }
-}
-
-bool PaintImage::IsEligibleForAcceleratedDecoding() const {
-  if (!CanDecodeFromGenerator())
-    return false;
-  DCHECK(paint_image_generator_);
-  return paint_image_generator_->IsEligibleForAcceleratedDecoding();
 }
 
 SkISize PaintImage::GetSupportedDecodeSize(
@@ -292,10 +292,10 @@ int PaintImage::height() const {
              : GetSkImage()->height();
 }
 
-PaintImage::ImageType PaintImage::GetImageType() const {
+const ImageHeaderMetadata* PaintImage::GetImageHeaderMetadata() const {
   if (paint_image_generator_)
-    return paint_image_generator_->GetImageType();
-  return PaintImage::ImageType::kInvalid;
+    return paint_image_generator_->GetMetadataForDecodeAcceleration();
+  return nullptr;
 }
 
 bool PaintImage::IsYuv(SkYUVASizeInfo* yuva_size_info,

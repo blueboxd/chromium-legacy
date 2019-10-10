@@ -18,7 +18,7 @@
 namespace net {
 
 // This class is a debug visitor of a quic::QuicSpdySession which logs events
-// to |net_log|.
+// to |net_log| and records histograms.
 class NET_EXPORT_PRIVATE QuicHttp3Logger : public quic::Http3DebugVisitor {
  public:
   explicit QuicHttp3Logger(const NetLogWithSource& net_log);

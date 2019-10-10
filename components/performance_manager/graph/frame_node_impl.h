@@ -48,7 +48,7 @@ class WorkerNodeImpl;
 class FrameNodeImpl
     : public PublicNodeImpl<FrameNodeImpl, FrameNode>,
       public TypedNodeBase<FrameNodeImpl, FrameNode, FrameNodeObserver>,
-      public resource_coordinator::mojom::DocumentCoordinationUnit {
+      public mojom::DocumentCoordinationUnit {
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kFrame; }
 
@@ -67,15 +67,13 @@ class FrameNodeImpl
                 int32_t site_instance_id);
   ~FrameNodeImpl() override;
 
-  void Bind(mojo::PendingReceiver<
-            resource_coordinator::mojom::DocumentCoordinationUnit> receiver);
+  void Bind(mojo::PendingReceiver<mojom::DocumentCoordinationUnit> receiver);
 
-  // resource_coordinator::mojom::DocumentCoordinationUnit implementation.
+  // mojom::DocumentCoordinationUnit implementation.
   void SetNetworkAlmostIdle() override;
   void SetLifecycleState(LifecycleState state) override;
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) override;
-  void SetOriginTrialFreezePolicy(
-      resource_coordinator::mojom::InterventionPolicy policy) override;
+  void SetOriginTrialFreezePolicy(mojom::InterventionPolicy policy) override;
   void SetIsAdFrame() override;
   void OnNonPersistentNotificationCreated() override;
 
@@ -170,10 +168,9 @@ class FrameNodeImpl
 
     // Opt-in or opt-out of freezing via origin trial.
     ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
-        resource_coordinator::mojom::InterventionPolicy,
+        mojom::InterventionPolicy,
         &FrameNodeObserver::OnOriginTrialFreezePolicyChanged>
-        origin_trial_freeze_policy{
-            resource_coordinator::mojom::InterventionPolicy::kUnknown};
+        origin_trial_freeze_policy{mojom::InterventionPolicy::kUnknown};
   };
 
   // Invoked by subframes on joining/leaving the graph.
@@ -186,8 +183,7 @@ class FrameNodeImpl
   bool HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const;
   bool HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const;
 
-  mojo::Receiver<resource_coordinator::mojom::DocumentCoordinationUnit>
-      receiver_{this};
+  mojo::Receiver<mojom::DocumentCoordinationUnit> receiver_{this};
 
   FrameNodeImpl* const parent_frame_node_;
   PageNodeImpl* const page_node_;

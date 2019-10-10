@@ -151,7 +151,7 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
 }  // namespace
 
 TEST_F(GeolocationServiceTest, PermissionGrantedPolicyViolation) {
-  // The embedded frame is not whitelisted.
+  // The embedded frame is not allowed.
   CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/false);
 
   permission_manager()->SetRequestCallback(
@@ -175,7 +175,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedPolicyViolation) {
 }
 
 TEST_F(GeolocationServiceTest, PermissionGrantedNoPolicyViolation) {
-  // Whitelist the embedded frame.
+  // Allow the embedded frame.
   CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/true);
 
   permission_manager()->SetRequestCallback(

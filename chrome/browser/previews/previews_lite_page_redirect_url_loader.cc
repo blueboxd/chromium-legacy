@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/previews/previews_lite_page_redirect_url_loader_interceptor.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/browser/browser_context.h"
@@ -130,6 +131,9 @@ void PreviewsLitePageRedirectURLLoader::StartRedirectToPreview(
         network_loader_factory,
     int frame_tree_node_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(data_reduction_proxy::DataReductionProxyRequestOptions::
+             GetSessionKeyFromRequestHeaders(chrome_proxy_headers)
+                 .has_value());
 
   GURL original_url = modified_resource_request_.url;
   GURL lite_page_url =

@@ -89,10 +89,11 @@ PreviewsOptimizationGuideDecider::PreviewsOptimizationGuideDecider(
       registered_optimization_types_(GetOptimizationTypesToRegister()) {
   DCHECK(optimization_guide_decider_);
 
-  optimization_guide_decider_->RegisterOptimizationTypes(
+  optimization_guide_decider_->RegisterOptimizationTypesAndTargets(
       std::vector<optimization_guide::proto::OptimizationType>(
           registered_optimization_types_.begin(),
-          registered_optimization_types_.end()));
+          registered_optimization_types_.end()),
+      {optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 }
 
 PreviewsOptimizationGuideDecider::~PreviewsOptimizationGuideDecider() = default;

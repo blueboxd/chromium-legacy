@@ -14,7 +14,7 @@ namespace blink {
 
 namespace {
 
-using resource_coordinator::mojom::InterventionPolicy;
+using performance_manager::mojom::InterventionPolicy;
 
 }  // namespace
 
@@ -41,7 +41,7 @@ void DocumentResourceCoordinator::SetNetworkAlmostIdle() {
 }
 
 void DocumentResourceCoordinator::SetLifecycleState(
-    resource_coordinator::mojom::LifecycleState state) {
+    performance_manager::mojom::LifecycleState state) {
   service_->SetLifecycleState(state);
 }
 

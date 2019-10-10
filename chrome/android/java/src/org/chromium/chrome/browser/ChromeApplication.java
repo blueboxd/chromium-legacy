@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
@@ -13,7 +12,6 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildConfig;
@@ -25,7 +23,6 @@ import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.MainDex;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.memory.MemoryPressureMonitor;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 import org.chromium.base.task.AsyncTask;
@@ -42,7 +39,6 @@ import org.chromium.chrome.browser.dependency_injection.ChromeAppComponent;
 import org.chromium.chrome.browser.dependency_injection.ChromeAppModule;
 import org.chromium.chrome.browser.dependency_injection.DaggerChromeAppComponent;
 import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
-import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -200,18 +196,6 @@ public class ChromeApplication extends Application {
         // to the API in the future.
         return (level >= TRIM_MEMORY_RUNNING_LOW && level < TRIM_MEMORY_UI_HIDDEN)
                 || level >= TRIM_MEMORY_MODERATE;
-    }
-
-    /**
-     * Shows an error dialog following a startup error, and then exits the application.
-     * @param e The exception reported by Chrome initialization.
-     */
-    public static void reportStartupErrorAndExit(final ProcessInitException e) {
-        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
-        if (ApplicationStatus.getStateForActivity(activity) == ActivityState.DESTROYED) {
-            return;
-        }
-        InvalidStartupDialog.show(activity, e.getErrorCode());
     }
 
     @Override

@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -50,13 +49,14 @@ public class FaviconUtils {
     /**
      * Creates a {@link RoundedBitmapDrawable} using the provided {@link Bitmap} and a default
      * favicon corner radius.
+     * @param resources The {@link Resources}.
      * @param icon The {@link Bitmap} to round.
      * @return A {@link RoundedBitmapDrawable} for the provided {@link Bitmap}.
      */
-    public static RoundedBitmapDrawable createRoundedBitmapDrawable(Bitmap icon) {
-        Resources resources = ContextUtils.getApplicationContext().getResources();
-        return ViewUtils.createRoundedBitmapDrawable(
-                icon, resources.getDimensionPixelSize(R.dimen.default_favicon_corner_radius));
+    public static RoundedBitmapDrawable createRoundedBitmapDrawable(
+            Resources resources, Bitmap icon) {
+        return ViewUtils.createRoundedBitmapDrawable(resources, icon,
+                resources.getDimensionPixelSize(R.dimen.default_favicon_corner_radius));
     }
 
     private static int getIconColor(Resources resources) {

@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "build/buildflag.h"
-#include "chrome/browser/ui/libgtkui/libgtkui_export.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -81,8 +81,6 @@ class GtkUi : public views::LinuxUI {
   ui::NativeTheme* GetNativeTheme(aura::Window* window) const override;
   void SetNativeThemeOverride(NativeThemeGetter callback) override;
   bool GetDefaultUsesSystemTheme() const override;
-  void SetDownloadCount(int count) const override;
-  void SetProgressFraction(float percentage) const override;
   gfx::Image GetIconForContentType(const std::string& content_type,
                                    int size) const override;
   std::unique_ptr<views::Border> CreateNativeBorder(
@@ -126,7 +124,7 @@ class GtkUi : public views::LinuxUI {
   void LoadGtkValues();
 
   // Extracts colors and tints from the GTK theme, both for the
-  // ThemeService interface and the colors we send to webkit.
+  // ThemeService interface and the colors we send to Blink.
   void UpdateColors();
 
   // Sets the Xcursor theme and size with the GTK theme and size.
@@ -154,7 +152,7 @@ class GtkUi : public views::LinuxUI {
   // system-rendered borders and titlebar.
   ColorMap native_frame_colors_;
 
-  // Colors that we pass to WebKit. These are generated each time the theme
+  // Colors that we pass to Blink. These are generated each time the theme
   // changes.
   SkColor focus_ring_color_;
   SkColor active_selection_bg_color_;
@@ -205,6 +203,6 @@ class GtkUi : public views::LinuxUI {
 }  // namespace libgtkui
 
 // Access point to the GTK desktop system.
-LIBGTKUI_EXPORT views::LinuxUI* BuildGtkUi();
+COMPONENT_EXPORT(LIBGTKUI) views::LinuxUI* BuildGtkUi();
 
 #endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK_UI_H_

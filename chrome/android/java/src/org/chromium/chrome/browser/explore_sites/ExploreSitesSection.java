@@ -175,7 +175,7 @@ public class ExploreSitesSection {
                         mProfile, category.getId(), iconSizePx, (Bitmap image) -> {
                             if (image != null) {
                                 category.setDrawable(ViewUtils.createRoundedBitmapDrawable(
-                                        image, iconSizePx / 2));
+                                        v.getContext().getResources(), image, iconSizePx / 2));
                                 v.renderIcon(category);
                             }
                         });

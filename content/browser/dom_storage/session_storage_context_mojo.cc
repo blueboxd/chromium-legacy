@@ -535,6 +535,11 @@ void SessionStorageContextMojo::FlushAreaForTesting(
   it->second->FlushOriginForTesting(origin);
 }
 
+void SessionStorageContextMojo::SetDatabaseOpenCallbackForTesting(
+    base::OnceClosure callback) {
+  RunWhenConnected(std::move(callback));
+}
+
 scoped_refptr<SessionStorageMetadata::MapData>
 SessionStorageContextMojo::RegisterNewAreaMap(
     SessionStorageMetadata::NamespaceEntry namespace_entry,
@@ -697,13 +702,6 @@ void SessionStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
 
 void SessionStorageContextMojo::InitiateConnection(bool in_memory_only) {
   DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
-
-  if (database_factory_for_testing_) {
-    database_ = database_factory_for_testing_.Run();
-    in_memory_ = true;
-    OnDatabaseOpened(leveldb::mojom::DatabaseError::OK);
-    return;
-  }
 
   if (backing_mode_ != BackingMode::kNoDisk && !in_memory_only &&
       !partition_directory_.empty()) {

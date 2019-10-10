@@ -331,8 +331,7 @@ void PerformanceManagerTabHelper::OnInterfaceRequestFromFrame(
     content::RenderFrameHost* render_frame_host,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe) {
-  if (interface_name !=
-      resource_coordinator::mojom::DocumentCoordinationUnit::Name_)
+  if (interface_name != mojom::DocumentCoordinationUnit::Name_)
     return;
 
   // TODO(https://crbug.com/987445): Why else than due to speculative render
@@ -355,8 +354,7 @@ void PerformanceManagerTabHelper::OnInterfaceRequestFromFrame(
   }
 
   PostToGraph(FROM_HERE, &FrameNodeImpl::Bind, it->second.get(),
-              mojo::PendingReceiver<
-                  resource_coordinator::mojom::DocumentCoordinationUnit>(
+              mojo::PendingReceiver<mojom::DocumentCoordinationUnit>(
                   std::move(*interface_pipe)));
 }
 

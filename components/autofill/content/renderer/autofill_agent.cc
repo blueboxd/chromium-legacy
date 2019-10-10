@@ -219,8 +219,7 @@ void AutofillAgent::DidChangeScrollOffsetImpl(
   if (form_util::FindFormAndFieldForFormControlElement(element_, &form,
                                                        &field)) {
     GetAutofillDriver()->TextFieldDidScroll(
-        form, field,
-        render_frame()->GetRenderView()->ElementBoundsInWindow(element_));
+        form, field, render_frame()->ElementBoundsInWindow(element_));
   }
 
   // Ignore subsequent scroll offset changes.
@@ -269,8 +268,7 @@ void AutofillAgent::FocusedElementChanged(const WebElement& element) {
   if (form_util::FindFormAndFieldForFormControlElement(element_, &form,
                                                        &field)) {
     GetAutofillDriver()->FocusOnFormField(
-        form, field,
-        render_frame()->GetRenderView()->ElementBoundsInWindow(element_));
+        form, field, render_frame()->ElementBoundsInWindow(element_));
   }
 }
 
@@ -351,8 +349,7 @@ void AutofillAgent::OnTextFieldDidChange(const WebInputElement& element) {
   if (form_util::FindFormAndFieldForFormControlElement(element, &form,
                                                        &field)) {
     GetAutofillDriver()->TextFieldDidChange(
-        form, field,
-        render_frame()->GetRenderView()->ElementBoundsInWindow(element),
+        form, field, render_frame()->ElementBoundsInWindow(element),
         base::TimeTicks::Now());
   }
 }
@@ -772,7 +769,7 @@ void AutofillAgent::QueryAutofillSuggestions(
   GetAutofillDriver()->SetDataList(data_list_values, data_list_labels);
   GetAutofillDriver()->QueryFormFieldAutofill(
       autofill_query_id_, form, field,
-      render_frame()->GetRenderView()->ElementBoundsInWindow(element_),
+      render_frame()->ElementBoundsInWindow(element_),
       autoselect_first_suggestion);
 }
 
@@ -993,8 +990,7 @@ void AutofillAgent::OnProvisionallySaveForm(
       if (form_util::FindFormAndFieldForFormControlElement(element, &form,
                                                            &field)) {
         GetAutofillDriver()->SelectControlDidChange(
-            form, field,
-            render_frame()->GetRenderView()->ElementBoundsInWindow(element));
+            form, field, render_frame()->ElementBoundsInWindow(element));
       }
     }
   }

@@ -41,7 +41,6 @@ DemoPreferencesScreen::DemoPreferencesScreen(
     DemoPreferencesScreenView* view,
     const ScreenExitCallback& exit_callback)
     : BaseScreen(DemoPreferencesScreenView::kScreenId),
-      input_manager_observer_(this),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

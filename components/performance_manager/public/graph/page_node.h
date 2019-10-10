@@ -10,10 +10,10 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "components/performance_manager/public/graph/node.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
+#include "components/performance_manager/public/mojom/lifecycle.mojom.h"
 #include "components/performance_manager/public/web_contents_proxy.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
-#include "services/resource_coordinator/public/mojom/lifecycle.mojom.h"
 
 class GURL;
 
@@ -27,8 +27,8 @@ class PageNodeObserver;
 // Extensions.
 class PageNode : public Node {
  public:
-  using InterventionPolicy = resource_coordinator::mojom::InterventionPolicy;
-  using LifecycleState = resource_coordinator::mojom::LifecycleState;
+  using InterventionPolicy = mojom::InterventionPolicy;
+  using LifecycleState = mojom::LifecycleState;
   using Observer = PageNodeObserver;
   class ObserverDefaultImpl;
 

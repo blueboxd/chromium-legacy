@@ -122,6 +122,11 @@ TEST(SSLConfigServiceTest, ConfigUpdatesNotifyObservers) {
   EXPECT_CALL(observer, OnSSLContextConfigChanged()).Times(1);
   mock_service.SetSSLContextConfig(initial_config);
 
+  // Ensure that toggling TLS 1.3 hardening triggers an update.
+  initial_config.tls13_hardening_for_local_anchors_enabled = true;
+  EXPECT_CALL(observer, OnSSLContextConfigChanged()).Times(1);
+  mock_service.SetSSLContextConfig(initial_config);
+
   mock_service.RemoveObserver(&observer);
 }
 

@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -33,7 +34,7 @@ WebFakeThreadScheduler::CompositorTaskRunner() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 WebFakeThreadScheduler::InputTaskRunner() {
-  return nullptr;
+  return base::ThreadTaskRunnerHandle::Get();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

@@ -175,6 +175,9 @@ ScreenCaptureNotificationUIViews::~ScreenCaptureNotificationUIViews() {
 gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
     base::OnceClosure stop_callback,
     content::MediaStreamUI::SourceCallback source_callback) {
+  if (GetWidget())
+    return 0;
+
   stop_callback_ = std::move(stop_callback);
   source_callback_ = std::move(source_callback);
 
@@ -225,11 +228,7 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
   widget->SetOpacity(kWindowAlphaValue);
   widget->SetVisibleOnAllWorkspaces(true);
 
-#if defined(OS_WIN)
-  return gfx::NativeViewId(views::HWNDForWidget(widget));
-#else
   return 0;
-#endif
 }
 
 void ScreenCaptureNotificationUIViews::DeleteDelegate() {

@@ -19,7 +19,7 @@
 #include "services/viz/public/cpp/compositing/shared_quad_state_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/surface_id_mojom_traits.h"
 #include "services/viz/public/mojom/compositing/compositor_frame.mojom.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/mojom/selection_bound_mojom_traits.h"
 #include "ui/latency/mojom/latency_info_mojom_traits.h"
@@ -33,10 +33,37 @@ static const int kTimeCheckInterval = 10;
 
 enum class UseSingleSharedQuadState { YES, NO };
 
+constexpr char kMetricPrefixVizSerialization[] = "VizSerialization.";
+constexpr char kMetricStructDeserializationTimeUs[] =
+    "StructTraits_min_frame_deserialization_time";
+constexpr char kMetricStructDeserializationThroughputRunsPerS[] =
+    "StructTraits_deserialization_throughput";
+constexpr char kMetricStructSerializationTimeUs[] =
+    "StructTraits_min_frame_serialization_time";
+constexpr char kMetricStructSerializationThroughputRunsPerS[] =
+    "StructTraits_serialization_throughput";
+
+perf_test::PerfResultReporter SetUpReporter(
+    const std::string& story,
+    UseSingleSharedQuadState single_sqs) {
+  std::string story_suffix = single_sqs == UseSingleSharedQuadState::YES
+                                 ? "_per_render_pass_shared_quad_state"
+                                 : "_per_quad_shared_quad_state";
+  perf_test::PerfResultReporter reporter(kMetricPrefixVizSerialization,
+                                         story + story_suffix);
+  reporter.RegisterImportantMetric(kMetricStructDeserializationTimeUs, "us");
+  reporter.RegisterImportantMetric(
+      kMetricStructDeserializationThroughputRunsPerS, "runs/s");
+  reporter.RegisterImportantMetric(kMetricStructSerializationTimeUs, "us");
+  reporter.RegisterImportantMetric(kMetricStructSerializationThroughputRunsPerS,
+                                   "runs/s");
+  return reporter;
+}
+
 class VizSerializationPerfTest : public testing::Test {
  protected:
   static void RunDeserializationTestStructTraits(
-      const std::string& test_name,
+      const std::string& story,
       const CompositorFrame& frame,
       UseSingleSharedQuadState single_sqs) {
     mojo::Message message = mojom::CompositorFrame::SerializeAsMessage(&frame);
@@ -68,23 +95,15 @@ class VizSerializationPerfTest : public testing::Test {
       start = now;
     }
 
-    perf_test::PrintResult(
-        "StructTraits deserialization min_frame_deserialization_time",
-        single_sqs == UseSingleSharedQuadState::YES
-            ? "_per_render_pass_shared_quad_state"
-            : "_per_quad_shared_quad_state",
-        test_name, min_time.InMillisecondsF() / kTimeCheckInterval * 1000, "us",
-        true);
-    perf_test::PrintResult(
-        "StructTraits deserialization: num runs in 2 seconds",
-        single_sqs == UseSingleSharedQuadState::YES
-            ? "_per_render_pass_shared_quad_state"
-            : "_per_quad_shared_quad_state",
-        test_name, count, "runs/s", true);
+    auto reporter = SetUpReporter(story, single_sqs);
+    reporter.AddResult(kMetricStructDeserializationTimeUs,
+                       min_time.InMicrosecondsF() / kTimeCheckInterval);
+    reporter.AddResult(kMetricStructDeserializationThroughputRunsPerS,
+                       count * 1000 / kTimeLimitMillis);
   }
 
   static void RunSerializationTestStructTraits(
-      const std::string& test_name,
+      const std::string& story,
       const CompositorFrame& frame,
       UseSingleSharedQuadState single_sqs) {
     for (int i = 0; i < kNumWarmupRuns; ++i) {
@@ -113,21 +132,14 @@ class VizSerializationPerfTest : public testing::Test {
       start = now;
     }
 
-    perf_test::PrintResult(
-        "StructTraits serialization min_frame_serialization_time",
-        single_sqs == UseSingleSharedQuadState::YES
-            ? "_per_render_pass_shared_quad_state"
-            : "_per_quad_shared_quad_state",
-        test_name, min_time.InMillisecondsF() / kTimeCheckInterval * 1000, "us",
-        true);
-    perf_test::PrintResult("StructTraits serialization: num runs in 2 seconds",
-                           single_sqs == UseSingleSharedQuadState::YES
-                               ? "_per_render_pass_shared_quad_state"
-                               : "_per_quad_shared_quad_state",
-                           test_name, count, "runs/s", true);
+    auto reporter = SetUpReporter(story, single_sqs);
+    reporter.AddResult(kMetricStructSerializationTimeUs,
+                       min_time.InMicrosecondsF() / kTimeCheckInterval);
+    reporter.AddResult(kMetricStructSerializationThroughputRunsPerS,
+                       count * 1000 / kTimeLimitMillis);
   }
 
-  static void RunComplexCompositorFrameTest(const std::string& test_name) {
+  static void RunComplexCompositorFrameTest(const std::string& story) {
     CompositorFrame frame;
     frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, true);
 
@@ -283,10 +295,10 @@ class VizSerializationPerfTest : public testing::Test {
     }
 
     render_pass_list.push_back(std::move(pass_in));
-    RunTest(test_name, std::move(frame), UseSingleSharedQuadState::NO);
+    RunTest(story, std::move(frame), UseSingleSharedQuadState::NO);
   }
 
-  static void RunCompositorFrameTest(const std::string& test_name,
+  static void RunCompositorFrameTest(const std::string& story,
                                      uint32_t num_quads,
                                      uint32_t num_passes,
                                      UseSingleSharedQuadState single_sqs) {
@@ -306,14 +318,14 @@ class VizSerializationPerfTest : public testing::Test {
       }
       frame.render_pass_list.push_back(std::move(render_pass));
     }
-    RunTest(test_name, std::move(frame), single_sqs);
+    RunTest(story, std::move(frame), single_sqs);
   }
 
-  static void RunTest(const std::string& test_name,
+  static void RunTest(const std::string& story,
                       CompositorFrame frame,
                       UseSingleSharedQuadState single_sqs) {
-    RunSerializationTestStructTraits(test_name, frame, single_sqs);
-    RunDeserializationTestStructTraits(test_name, frame, single_sqs);
+    RunSerializationTestStructTraits(story, frame, single_sqs);
+    RunDeserializationTestStructTraits(story, frame, single_sqs);
   }
 };
 

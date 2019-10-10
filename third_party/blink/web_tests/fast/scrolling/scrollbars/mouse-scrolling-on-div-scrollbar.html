@@ -214,6 +214,64 @@ window.onload = () => {
 
   promise_test (async () => {
     await waitForCompositorCommit();
+    resetScrollOffset(standardDivFast);
+
+    // Testing the vertical scrollbar thumb.
+    let x = standardRectFast.right - TRACK_WIDTH / 2;
+    let y = standardRectFast.top + BUTTON_WIDTH + 5;
+    let asc_increments = [15, 10, 7, 6, 2];
+    let asc_offsets = [343, 571, 732, 869, 915];
+    let desc_increments = [3, 2, 5, 9, 21];
+    let desc_offsets = [846, 800, 686, 480, 0];
+
+    await mouseMoveTo(x, y);
+    await mouseDownAt(x, y);
+
+    // Scroll down
+    for (var i = 0; i < 5; i++){
+      y += asc_increments[i];
+      await mouseMoveTo(x, y);
+      assert_equals(standardDivFast.scrollTop, asc_offsets[i], "Vertical thumb drag downwards did not scroll as expected at "+asc_increments[i]+" - ");
+    };
+
+    // Scroll up
+    for (var i = 0; i < 5; i++){
+      y -= desc_increments[i];
+      await mouseMoveTo(x, y);
+      assert_equals(standardDivFast.scrollTop, desc_offsets[i], "Vertical thumb drag upwards did not scroll as expected at "+desc_increments[i]+" - ");
+    };
+
+    await mouseUpAt(x, y);
+    assert_equals(standardDivFast.scrollTop, 0, "Mouseup on vertical scrollbar thumb is not expected to scroll.");
+
+    // Testing the horizontal scrollbar thumb.
+    resetScrollOffset(standardDivFast);
+    x = standardRectFast.left + BUTTON_WIDTH + 5;
+    y = standardRectFast.bottom - TRACK_WIDTH / 2;
+    await mouseMoveTo(x, y);
+    await mouseDownAt(x, y);
+
+    // Scroll right
+    for (var i = 0; i < 5; i++){
+      x += asc_increments[i];
+      await mouseMoveTo(x, y);
+      assert_equals(standardDivFast.scrollLeft, asc_offsets[i], "Horizontal thumb drag to the right did not scroll as expected at "+asc_increments[i]+" - ");
+    };
+
+    // Scroll left
+    for (var i = 0; i < 5; i++){
+      x -= desc_increments[i];
+      await mouseMoveTo(x, y);
+      assert_equals(standardDivFast.scrollLeft, desc_offsets[i], "Horizontal thumb drag to the left did not scroll as expected at "+desc_increments[i]+" - ");
+    };
+
+    await mouseUpAt(x, y);
+    assert_equals(standardDivFast.scrollLeft, 0,  "Mouseup on horizontal scrollbar thumb is not expected to scroll.");
+
+  }, "Test mouse drags in intervals on non-custom composited div scrollbar thumb.");
+
+  promise_test (async () => {
+    await waitForCompositorCommit();
     const customDivFast = document.getElementById("custom");
     const customRectFast = customDivFast.getBoundingClientRect();
 

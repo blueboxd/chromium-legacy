@@ -46,17 +46,23 @@ function FakeISearchHandler(testObj) {
 FakeISearchHandler.prototype = {
   /** @override */
   onSearchReachedBoundary: function(boundaryNode) {
-    this.expect_.shift()(boundaryNode, true);
+    this.expect_.shift()({node: boundaryNode, isBoundary: true});
   },
 
-  onSearchResultChanged: function(node) {
-    this.expect_.shift()(node);
+  /** @override */
+  onSearchResultChanged: function(node, start, end) {
+    this.expect_.shift()({node: node,
+                          start: start,
+                          end: end});
   },
 
   expect: function(str, opt_callback) {
-    this.expect_.push(this.test.newCallback(function(node, isBound) {
+    this.expect_.push(this.test.newCallback(function(args) {
+      var node = args.node;
       var actual = node.name || node.role;
-      if (isBound)
+      if (args.start && args.end)
+        actual = 'start=' + args.start + ' end=' + args.end + ' text=' + actual;
+      if (args.isBoundary)
         actual = 'boundary=' + actual;
       assertEquals(str, actual);
       opt_callback && opt_callback();
@@ -64,15 +70,15 @@ FakeISearchHandler.prototype = {
   }
 };
 
-TEST_F('ChromeVoxISearchTest', 'DISABLED_Simple', function() {
+TEST_F('ChromeVoxISearchTest', 'Simple', function() {
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function(rootNode) {
     var handler = new FakeISearchHandler(this);
-    var search = new ISearch(rootNode);
+    var search = new ISearch(new cursors.Cursor(rootNode, 0));
     search.handler = handler;
 
     // Simple forward search.
     search.search('US', 'forward');
-    handler.expect('About US',
+    handler.expect('start=6 end=8 text=About US',
                    search.search.bind(search, 'start', 'backward'));
 
     handler.expect('start',
@@ -88,9 +94,14 @@ TEST_F('ChromeVoxISearchTest', 'DISABLED_Simple', function() {
                    // Mixed case substring.
                    search.search.bind(search, 'bReak', 'forward'));
 
-    handler.expect('Latest Breaking News',
-                   search.search.bind(search, 'bReak', 'forward'));
+    handler.expect('start=7 end=12 text=Latest Breaking News',
+                   search.search.bind(search, 'bReaki', 'forward'));
 
+    // Incremental search stays on the current node.
+    handler.expect('start=7 end=13 text=Latest Breaking News',
+                                     search.search.bind(search, 'bReakio', 'forward'));
+
+    // No results for the search.
     handler.expect('boundary=Latest Breaking News');
   });
 });

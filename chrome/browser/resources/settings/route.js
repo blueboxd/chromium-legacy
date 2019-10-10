@@ -753,9 +753,12 @@ cr.define('settings', function() {
       this.initializeRouteFromUrlCalled_ = true;
 
       const route = this.getRouteForPath(window.location.pathname);
-      if (route) {
-        this.recordMetrics(window.location.pathname);
-      }
+
+      // Record all correct paths entered on the settings page, and
+      // as all incorrect paths are routed to the main settings page,
+      // record all incorrect paths as hitting the main settings page.
+      this.recordMetrics(route ? route.path : this.routes_.BASIC.path);
+
       // Never allow direct navigation to ADVANCED.
       if (route && route != this.routes_.ADVANCED) {
         this.currentRoute = route;

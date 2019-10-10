@@ -58,6 +58,7 @@ source_set("test_support") {
     ":test_constants",
     "//base",
     "//base/test:test_support",
+    "//ios/testing:verify_custom_webkit",
     "//ios/web",
     "//ios/web/common:web_view_creation_util",
     "//ios/web/navigation:core",

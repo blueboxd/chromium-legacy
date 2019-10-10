@@ -34,7 +34,6 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/env.h"
-#include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
 namespace power {
@@ -112,8 +111,6 @@ AdaptiveScreenBrightnessManager::AdaptiveScreenBrightnessManager(
     std::unique_ptr<base::RepeatingTimer> periodic_timer)
     : periodic_timer_(std::move(periodic_timer)),
       ukm_logger_(std::move(ukm_logger)),
-      user_activity_observer_(this),
-      power_manager_client_observer_(this),
       accessibility_manager_(accessibility_manager),
       magnification_manager_(magnification_manager),
       binding_(this, std::move(request)),

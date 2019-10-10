@@ -13,7 +13,6 @@
 #include "base/sequence_checker.h"
 
 class AccountId;
-class Profile;
 
 namespace chromeos {
 
@@ -32,21 +31,14 @@ class BulkPrintersCalculatorFactory {
   // |account_id|.
   // If requested BulkPrintersCalculator does not exist, the object is
   // created and registered. The returned object remains valid until
-  // RemoveForUserId or Shutdown is called.
+  // RemoveForUserId or Shutdown is called. It never returns nullptr.
   base::WeakPtr<BulkPrintersCalculator> GetForAccountId(
       const AccountId& account_id);
-
-  // Returns a WeakPtr to the BulkPrintersCalculator registered for |profile|
-  // which could be nullptr if |profile| does not map to a valid AccountId.
-  // If requested BulkPrintersCalculator does not exist, the object is
-  // created and registered. The returned object remains valid until
-  // RemoveForUserId or Shutdown is called.
-  base::WeakPtr<BulkPrintersCalculator> GetForProfile(Profile* profile);
 
   // Returns a WeakPtr to the BulkPrintersCalculator registered for the device.
   // If requested BulkPrintersCalculator does not exist, the object is
   // created and registered. The returned object remains valid until Shutdown is
-  // called.
+  // called. It never returns nullptr.
   base::WeakPtr<BulkPrintersCalculator> GetForDevice();
 
   // Deletes the BulkPrintersCalculator registered for |account_id|.

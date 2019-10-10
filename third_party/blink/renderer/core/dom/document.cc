@@ -38,6 +38,7 @@
 #include "base/time/time.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom-blink.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
@@ -45,7 +46,6 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom-blink.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
-#include "services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
@@ -6565,7 +6565,7 @@ LocalDOMWindow* Document::defaultView() const {
 
 namespace {
 
-using resource_coordinator::mojom::InterventionPolicy;
+using performance_manager::mojom::InterventionPolicy;
 
 // A helper function to set the origin trial freeze policy of a document.
 void SetOriginTrialFreezePolicy(

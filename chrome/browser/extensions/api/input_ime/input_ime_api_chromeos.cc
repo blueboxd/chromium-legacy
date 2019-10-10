@@ -354,6 +354,8 @@ class ImeObserverChromeOS : public ui::ImeObserver {
       return input_method_private::AUTO_CAPITALIZE_TYPE_CHARACTERS;
     if (flags & ui::TEXT_INPUT_FLAG_AUTOCAPITALIZE_WORDS)
       return input_method_private::AUTO_CAPITALIZE_TYPE_WORDS;
+    if (flags & ui::TEXT_INPUT_FLAG_AUTOCAPITALIZE_SENTENCES)
+      return input_method_private::AUTO_CAPITALIZE_TYPE_SENTENCES;
 
     // Autocapitalize flag may be missing for native text fields.
     // See https://crbug.com/1002713.

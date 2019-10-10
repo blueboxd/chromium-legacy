@@ -114,6 +114,17 @@ GamepadList* NavigatorGamepad::Gamepads() {
   }
   is_gamepads_exposed_ = true;
 
+  ExecutionContext* context =
+      DomWindow() ? DomWindow()->GetExecutionContext() : nullptr;
+
+  if (GetFrame() && GetFrame()->IsCrossOriginSubframe()) {
+    UseCounter::Count(context, WebFeature::kGetGamepadsFromCrossOriginSubframe);
+  }
+
+  if (context && !context->IsSecureContext()) {
+    UseCounter::Count(context, WebFeature::kGetGamepadsFromInsecureContext);
+  }
+
   return gamepads_.Get();
 }
 

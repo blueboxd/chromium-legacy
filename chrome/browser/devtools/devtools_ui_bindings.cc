@@ -200,9 +200,17 @@ InfoBarService* DefaultBindingsDelegate::GetInfoBarService() {
 }
 
 std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(
-    const net::HttpResponseHeaders* rh) {
+    const net::HttpResponseHeaders* rh,
+    bool success) {
   auto response = std::make_unique<base::DictionaryValue>();
-  response->SetInteger("statusCode", rh ? rh->response_code() : 200);
+  int responseCode = 200;
+  if (rh) {
+    responseCode = rh->response_code();
+  } else if (!success) {
+    // In case of no headers, assume file:// URL and failed to load
+    responseCode = 404;
+  }
+  response->SetInteger("statusCode", responseCode);
 
   auto headers = std::make_unique<base::DictionaryValue>();
   size_t iterator = 0;
@@ -419,7 +427,7 @@ class DevToolsUIBindings::NetworkResourceLoader
   }
 
   void OnComplete(bool success) override {
-    auto response = BuildObjectForResponse(response_headers_.get());
+    auto response = BuildObjectForResponse(response_headers_.get(), success);
     callback_.Run(response.get());
 
     bindings_->loaders_.erase(bindings_->loaders_.find(this));

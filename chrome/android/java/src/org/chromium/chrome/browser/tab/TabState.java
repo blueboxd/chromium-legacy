@@ -131,14 +131,6 @@ public class TabState {
             newState.setVersion(TabState.CONTENTS_STATE_CURRENT_VERSION);
             return newState;
         }
-
-        /**
-         * Creates a WebContents for the ContentsState and adds it as an historical tab, then
-         * deletes the WebContents.
-         */
-        public void createHistoricalTab() {
-            TabStateJni.get().createHistoricalTab(mBuffer, mVersion);
-        }
     }
 
     /** Navigation history of the WebContents. */
@@ -605,6 +597,20 @@ public class TabState {
         sChannelNameOverrideForTest = name;
     }
 
+    /**
+     * Creates a historical tab from a tab being closed.
+     */
+    public static void createHistoricalTab(Tab tab) {
+        if (!tab.isFrozen()) {
+            TabStateJni.get().createHistoricalTabFromContents(tab.getWebContents());
+        } else {
+            WebContentsState state = tab.getFrozenContentsState();
+            if (state != null) {
+                TabStateJni.get().createHistoricalTab(state.buffer(), state.version());
+            }
+        }
+    }
+
     @NativeMethods
     interface Natives {
         WebContents restoreContentsFromByteBuffer(
@@ -616,5 +622,6 @@ public class TabState {
         String getDisplayTitleFromByteBuffer(ByteBuffer state, int savedStateVersion);
         String getVirtualUrlFromByteBuffer(ByteBuffer state, int savedStateVersion);
         void createHistoricalTab(ByteBuffer state, int savedStateVersion);
+        void createHistoricalTabFromContents(WebContents webContents);
     }
 }

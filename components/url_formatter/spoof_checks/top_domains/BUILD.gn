@@ -69,9 +69,9 @@ compiled_action("generate_top_domains_test_trie") {
          rebase_path(outputs, root_build_dir) + [ "--for_testing" ]
 }
 
-executable("make_top_domain_list_for_edit_distance") {
+executable("make_top_domain_list_variables") {
   sources = [
-    "make_top_domain_list_for_edit_distance.cc",
+    "make_top_domain_list_variables.cc",
   ]
   deps = [
     ":common",
@@ -108,8 +108,8 @@ source_set("unit_tests") {
 
 # TODO(crbug/915921): Combine this and the previous one into a
 # compiled_action_foreach target.
-compiled_action("generate_top_domains_for_edit_distance") {
-  tool = ":make_top_domain_list_for_edit_distance"
+compiled_action("generate_top_domain_list_variables_file") {
+  tool = ":make_top_domain_list_variables"
 
   # Inputs in order expected by the command line of the tool.
   inputs = [
@@ -124,7 +124,7 @@ compiled_action("generate_top_domains_for_edit_distance") {
 
 # top500_domains and top500_domains_header are intentionally separated to remove
 # serialized build dependency from some targets to
-# generate_top_domains_for_edit_distance action target.
+# generate_top_domain_list_variables action target.
 source_set("top500_domains") {
   # This empty public is intentional to remove unnecessary build dependency.
   public = []
@@ -134,7 +134,7 @@ source_set("top500_domains") {
   ]
 
   deps = [
-    ":generate_top_domains_for_edit_distance",
+    ":generate_top_domain_list_variables_file",
     ":top500_domains_header",
   ]
 }

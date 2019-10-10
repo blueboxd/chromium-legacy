@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/chromeos/printing/calculators_policies_binder.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/common/pref_names.h"
@@ -21,6 +22,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user.h"
 
 namespace chromeos {
 
@@ -54,10 +56,14 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
       device_printers_->AddObserver(this);
       RecalculateCompleteFlagForDevicePrinters();
     }
-    // Get instance of BulkPrintersCalculator for user policies.
-    user_printers_ =
-        BulkPrintersCalculatorFactory::Get()->GetForProfile(profile);
-    if (user_printers_) {
+    // Calculate account_id_ and get instance of BulkPrintersCalculator for user
+    // policies.
+    const user_manager::User* user =
+        ProfileHelper::Get()->GetUserByProfile(profile);
+    if (user) {
+      account_id_ = user->GetAccountId();
+      user_printers_ =
+          BulkPrintersCalculatorFactory::Get()->GetForAccountId(account_id_);
       user_printers_->AddObserver(this);
       RecalculateCompleteFlagForUserPrinters();
     }
@@ -71,8 +77,10 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
   ~EnterprisePrintersProviderImpl() override {
     if (device_printers_)
       device_printers_->RemoveObserver(this);
-    if (user_printers_)
+    if (user_printers_) {
       user_printers_->RemoveObserver(this);
+      BulkPrintersCalculatorFactory::Get()->RemoveForUserId(account_id_);
+    }
   }
 
   void AddObserver(EnterprisePrintersProvider::Observer* observer) override {
@@ -221,6 +229,7 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
 
   // Profile (user) settings.
   Profile* profile_;
+  AccountId account_id_;
   PrefChangeRegistrar pref_change_registrar_;
 
   base::ObserverList<EnterprisePrintersProvider::Observer>::Unchecked

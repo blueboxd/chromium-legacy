@@ -229,6 +229,11 @@ class DOMDataStore {
     DOMWorldWrapperReference(v8::Isolate* isolate, v8::Local<v8::Object> handle)
         : TraceWrapperV8Reference(isolate, handle) {}
 
+    ~DOMWorldWrapperReference() {
+      // Destruction of a reference should clear it immediately.
+      Clear();
+    }
+
     // Move support without write barrier.
     DOMWorldWrapperReference(DOMWorldWrapperReference&& other)
         : TraceWrapperV8Reference() {

@@ -38,9 +38,9 @@ Per-Milestone Binary Size Breakdowns:
  * Shows you only the binary size metrics your patchset affects.
  * Links to SuperSize html and text output for more details on which symbols
    were changed.
- * For tips on reducing binary size, see [Debugging Apk Size Increase][debugging-apk-size-increase].
+ * For tips on reducing binary size, see [Optimization Advice][optimization_advice].
 
-[debugging-apk-size-increase]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/speed/apk_size_regressions.md#debugging-apk-size-increase
+[optimization_advice]: //docs/speed/binary_size/optimization_advice.md
 
 ## resource_sizes.py
 
@@ -50,7 +50,7 @@ Per-Milestone Binary Size Breakdowns:
    [chromeperf](https://chromeperf.appspot.com/report) under
    `Test suite="resource_sizes ($APK)"`.
  * Metrics reported by this tool are described in
-   [//docs/speed/binary_size/metrics.md](../../docs/speed/binary_size/metrics.md).
+   [//docs/speed/binary_size/metrics.md](//docs/speed/binary_size/metrics.md).
 
 ## SuperSize
 

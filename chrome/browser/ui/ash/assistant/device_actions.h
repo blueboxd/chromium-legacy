@@ -49,7 +49,8 @@ class DeviceActions : public ash::AndroidIntentHelper,
                        const ArcAppListPrefs::AppInfo& app_info) override;
   void OnAppRemoved(const std::string& id) override;
 
-  ScopedObserver<ArcAppListPrefs, DeviceActions> scoped_prefs_observer_;
+  ScopedObserver<ArcAppListPrefs, ArcAppListPrefs::Observer>
+      scoped_prefs_observer_{this};
   mojo::ReceiverSet<chromeos::assistant::mojom::DeviceActions> receivers_;
   mojo::InterfacePtrSet<chromeos::assistant::mojom::AppListEventSubscriber>
       app_list_subscribers_;

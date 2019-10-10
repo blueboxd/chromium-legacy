@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 
 namespace base {
@@ -17,8 +18,6 @@ class RunLoop;
 }
 
 namespace chromeos {
-
-class OobeUI;
 
 // A waiter that blocks until the target oobe screen is reached.
 class OobeScreenWaiter : public OobeUI::Observer,
@@ -76,9 +75,10 @@ class OobeScreenWaiter : public OobeUI::Observer,
   // visible. True by default.
   bool check_native_window_visible_ = true;
 
-  ScopedObserver<OobeUI, OobeScreenWaiter> oobe_ui_observer_{this};
+  ScopedObserver<OobeUI, OobeUI::Observer> oobe_ui_observer_{this};
 
-  ScopedObserver<aura::Window, OobeScreenWaiter> native_window_observer_{this};
+  ScopedObserver<aura::Window, aura::WindowObserver> native_window_observer_{
+      this};
 
   std::unique_ptr<base::RunLoop> run_loop_;
 

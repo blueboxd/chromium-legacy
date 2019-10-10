@@ -10,7 +10,9 @@
   <module name="SuppressionFilter">
     <property name="file" value="tools/android/checkstyle/suppressions.xml"/>
   </module>
+  <module name="SuppressWarningsFilter"/>
   <module name="TreeWalker">
+    <module name="SuppressWarningsHolder"/>
     <module name="AvoidStarImport">
       <property name="severity" value="error"/>
     </module>
@@ -141,6 +143,13 @@
       <property name="format" value="try .*StrictModeContext (?!ignored).*="/>
       <property name="ignoreComments" value="true"/>
       <property name="message" value="Please name the StrictModeContext variable &quot;ignored&quot; (crbug.com/767058#c4)."/>
+    </module>
+    <module name="RegexpSinglelineJava">
+      <property name="id" value="SystemExitCheck"/>
+      <property name="severity" value="error"/>
+      <property name="format" value="System\.exit\([^0]"/>
+      <property name="ignoreComments" value="true"/>
+      <property name="message" value="Throw an exception instead of calling System#exit with a non-zero exit status (crbug.com/1000651)."/>
     </module>
   </module>
 </module>

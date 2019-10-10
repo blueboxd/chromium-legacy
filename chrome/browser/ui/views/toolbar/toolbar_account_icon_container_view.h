@@ -32,7 +32,6 @@ class ToolbarAccountIconContainerView : public ToolbarIconContainerView,
 
   // views::View:
   void OnThemeChanged() override;
-  void ChildVisibilityChanged(View* child) override;
 
   PageActionIconContainerView* page_action_icon_container() {
     return page_action_icon_container_view_;

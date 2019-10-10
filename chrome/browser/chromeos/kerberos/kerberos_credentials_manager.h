@@ -88,7 +88,7 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   void AddObserver(Observer* observer);
 
   // Stop observing this object. |observer| is not owned.
-  void RemoveObserver(const Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Adds an account for the given |principal_name| (user@example.com). If
   // |is_managed| is true, the account is assumed to be managed by an admin and

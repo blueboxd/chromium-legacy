@@ -23,7 +23,6 @@
 #include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/test/fake_leveldb_database.h"
 #include "content/test/gmock_util.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -96,7 +95,7 @@ class SessionStorageAreaImplTest : public testing::Test {
   const std::string test_namespace_id2_;
   const url::Origin test_origin1_;
   const url::Origin test_origin2_;
-  std::unique_ptr<leveldb::mojom::LevelDBDatabase> leveldb_database_;
+  std::unique_ptr<leveldb::LevelDBDatabaseImpl> leveldb_database_;
   SessionStorageMetadata metadata_;
 
   testing::StrictMock<MockListener> listener_;

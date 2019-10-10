@@ -11,6 +11,10 @@
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
+namespace cc {
+struct ImageHeaderMetadata;
+}
+
 namespace gfx {
 class ColorSpace;
 class Size;
@@ -25,7 +29,7 @@ class ImageDecodeAcceleratorInterface {
   virtual ~ImageDecodeAcceleratorInterface() {}
 
   virtual bool IsImageSupported(
-      base::span<const uint8_t> encoded_data) const = 0;
+      const cc::ImageHeaderMetadata* image_metadata) const = 0;
 
   virtual bool IsJpegDecodeAccelerationSupported() const = 0;
 

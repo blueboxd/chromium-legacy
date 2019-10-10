@@ -632,6 +632,20 @@ Polymer({
         this.i18nAdvanced('aboutProductOsLicense');
   },
 
+  // <if expr="chromeos">
+  /**
+   * @return {string}
+   * @private
+   */
+  getUpdateOsSettingsLink_: function() {
+    // Note: This string contains raw HTML and thus requires i18nAdvanced().
+    // Since the i18n template syntax (e.g., $i18n{}) does not include an
+    // "advanced" version, it's not possible to inline this link directly in the
+    // HTML.
+    return this.i18nAdvanced('aboutUpdateOsSettingsLink');
+  },
+  // </if>
+
   /**
    * @param {boolean} enabled True if Crostini is enabled.
    * @private

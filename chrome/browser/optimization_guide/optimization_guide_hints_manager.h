@@ -89,7 +89,7 @@ class OptimizationGuideHintsManager
   // Registers the optimization types that have the potential for hints to be
   // called by consumers of the Optimization Guide.
   void RegisterOptimizationTypes(
-      std::vector<optimization_guide::proto::OptimizationType>
+      const std::vector<optimization_guide::proto::OptimizationType>&
           optimization_types);
 
   // Returns whether there have been any optimization types registered.

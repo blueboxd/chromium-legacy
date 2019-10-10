@@ -577,7 +577,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, UseCredentialsSendCookies) {
   std::unique_ptr<net::EmbeddedTestServer> custom_embedded_test_server(
       new net::EmbeddedTestServer());
   custom_embedded_test_server->RegisterRequestHandler(
-      base::Bind(&CustomHandleRequestForCookies));
+      base::BindRepeating(&CustomHandleRequestForCookies));
 
   ASSERT_TRUE(custom_embedded_test_server->Start());
 
@@ -637,7 +637,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, NoUseCredentialsNoCookies) {
   std::unique_ptr<net::EmbeddedTestServer> custom_embedded_test_server(
       new net::EmbeddedTestServer());
   custom_embedded_test_server->RegisterRequestHandler(
-      base::Bind(&CustomHandleRequestForNoCookies));
+      base::BindRepeating(&CustomHandleRequestForNoCookies));
 
   ASSERT_TRUE(custom_embedded_test_server->Start());
 

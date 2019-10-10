@@ -455,6 +455,15 @@ interface VRService {
   GetImmersiveVRDisplayInfo() => (VRDisplayInfo? info);
 
   ExitPresent();
+
+  // Used for the renderer process to indicate that it is throttling frame
+  // requests from the page, and thus it (not the page) is responsible for any
+  // drop in frame rate or delay in posting frames. This is mainly meant to be
+  // informational for the browser process, so that it can decide if or what UI
+  // to show if it seems like the frame rate is too low or has stalled. The
+  // renderer can (and may) still decide to submit frames and that should not be
+  // treated as illegal or clear the throttled state.
+  SetFramesThrottled(bool throttled);
 };
 
 // The interface for the renderer to listen to top level XR events, events that

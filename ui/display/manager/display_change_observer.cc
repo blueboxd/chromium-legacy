@@ -45,7 +45,7 @@ struct DeviceScaleFactorDPIThreshold {
 // Update the list of zoom levels whenever a new device scale factor is added
 // here. See zoom level list in /ui/display/manager/display_util.cc
 const DeviceScaleFactorDPIThreshold kThresholdTableForInternal[] = {
-    {320.f, 2.66666f}, {270.0f, 2.25f}, {230.0f, 2.0f}, {220.0f, 1.77777f},
+    {300.f, 2.66666f}, {270.0f, 2.25f}, {230.0f, 2.0f}, {220.0f, 1.77777f},
     {180.0f, 1.6f},    {150.0f, 1.25f}, {0.0f, 1.0f},
 };
 
@@ -306,16 +306,9 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
                         ? 0
                         : kInchInMm * mode_info->size().width() /
                               snapshot->physical_size().width();
-  constexpr gfx::Size k225DisplaySizeHack(3000, 2000);
-
   if (snapshot->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
     new_info.set_native(true);
-    // TODO(oshima): This is a stopgap hack to deal with b/74845106.
-    // Remove this hack when it's resolved.
-    if (mode_info->size() == k225DisplaySizeHack)
-      device_scale_factor = 2.25f;
-    else if (dpi)
-      device_scale_factor = FindDeviceScaleFactor(dpi);
+    device_scale_factor = FindDeviceScaleFactor(dpi);
   } else {
     ManagedDisplayMode mode;
     if (display_manager_->GetSelectedModeForDisplayId(snapshot->display_id(),

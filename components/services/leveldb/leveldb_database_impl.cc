@@ -30,7 +30,7 @@ std::unique_ptr<LevelDBDatabaseImpl> LevelDBDatabaseImpl::OpenDirectory(
     const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
         memory_dump_id,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-    OpenCallback callback) {
+    StatusCallback callback) {
   std::unique_ptr<LevelDBDatabaseImpl> db(new LevelDBDatabaseImpl);
   storage::DomStorageDatabase::OpenDirectory(
       directory, dbname, options, memory_dump_id,
@@ -46,7 +46,7 @@ std::unique_ptr<LevelDBDatabaseImpl> LevelDBDatabaseImpl::OpenInMemory(
         memory_dump_id,
     const std::string& tracking_name,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-    OpenCallback callback) {
+    StatusCallback callback) {
   std::unique_ptr<LevelDBDatabaseImpl> db(new LevelDBDatabaseImpl);
   storage::DomStorageDatabase::OpenInMemory(
       tracking_name, memory_dump_id, std::move(blocking_task_runner),
@@ -61,7 +61,7 @@ LevelDBDatabaseImpl::~LevelDBDatabaseImpl() = default;
 
 void LevelDBDatabaseImpl::Put(const std::vector<uint8_t>& key,
                               const std::vector<uint8_t>& value,
-                              PutCallback callback) {
+                              StatusCallback callback) {
   RunDatabaseTask(
       base::BindOnce(
           [](const std::vector<uint8_t>& key, const std::vector<uint8_t>& value,
@@ -73,7 +73,7 @@ void LevelDBDatabaseImpl::Put(const std::vector<uint8_t>& key,
 }
 
 void LevelDBDatabaseImpl::Delete(const std::vector<uint8_t>& key,
-                                 DeleteCallback callback) {
+                                 StatusCallback callback) {
   RunDatabaseTask(base::BindOnce(
                       [](const std::vector<uint8_t>& key,
                          const storage::DomStorageDatabase& db) {
@@ -84,7 +84,7 @@ void LevelDBDatabaseImpl::Delete(const std::vector<uint8_t>& key,
 }
 
 void LevelDBDatabaseImpl::DeletePrefixed(const std::vector<uint8_t>& key_prefix,
-                                         DeletePrefixedCallback callback) {
+                                         StatusCallback callback) {
   RunDatabaseTask(base::BindOnce(
                       [](const std::vector<uint8_t>& prefix,
                          const storage::DomStorageDatabase& db) {
@@ -98,12 +98,12 @@ void LevelDBDatabaseImpl::DeletePrefixed(const std::vector<uint8_t>& key_prefix,
                   std::move(callback));
 }
 
-void LevelDBDatabaseImpl::RewriteDB(RewriteDBCallback callback) {
+void LevelDBDatabaseImpl::RewriteDB(StatusCallback callback) {
   DCHECK(database_);
   database_.PostTaskWithThisObject(
       FROM_HERE,
       base::BindOnce(
-          [](RewriteDBCallback callback,
+          [](StatusCallback callback,
              scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
              storage::DomStorageDatabase* db) {
             callback_task_runner->PostTask(
@@ -116,7 +116,7 @@ void LevelDBDatabaseImpl::RewriteDB(RewriteDBCallback callback) {
 
 void LevelDBDatabaseImpl::Write(
     std::vector<mojom::BatchedOperationPtr> operations,
-    WriteCallback callback) {
+    StatusCallback callback) {
   RunDatabaseTask(
       base::BindOnce(
           [](std::vector<mojom::BatchedOperationPtr> operations,
@@ -251,7 +251,7 @@ void LevelDBDatabaseImpl::GetPrefixed(const std::vector<uint8_t>& key_prefix,
 void LevelDBDatabaseImpl::CopyPrefixed(
     const std::vector<uint8_t>& source_key_prefix,
     const std::vector<uint8_t>& destination_key_prefix,
-    CopyPrefixedCallback callback) {
+    StatusCallback callback) {
   RunDatabaseTask(base::BindOnce(
                       [](const std::vector<uint8_t>& prefix,
                          const std::vector<uint8_t>& new_prefix,
@@ -268,7 +268,7 @@ void LevelDBDatabaseImpl::CopyPrefixed(
 }
 
 void LevelDBDatabaseImpl::OnDatabaseOpened(
-    OpenCallback callback,
+    StatusCallback callback,
     base::SequenceBound<storage::DomStorageDatabase> database,
     leveldb::Status status) {
   database_ = std::move(database);

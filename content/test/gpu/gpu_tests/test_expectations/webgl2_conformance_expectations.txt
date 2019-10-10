@@ -157,10 +157,6 @@ crbug.com/angleproject/3033 [ win no-passthrough ] conformance2/textures/misc/ge
 crbug.com/angleproject/1465 [ win ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
 crbug.com/951628 [ win no-passthrough ] conformance/rendering/blending.html [ Failure ]
 
-# Win / D3D11 backend
-# This test seems to flakily pass sometimes (at least on AMD and Intel).
-crbug.com/angleproject/3388 [ win d3d11 ] conformance2/uniforms/large-uniform-buffers.html [ Failure ]
-
 # Win / NVidia
 crbug.com/631317 [ d3d11 win nvidia ] deqp/functional/gles3/fbomultisample* [ RetryOnFailure ]
 crbug.com/679639 [ d3d11 win nvidia ] conformance2/rendering/draw-with-integer-texture-base-level.html [ Failure ]

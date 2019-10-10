@@ -168,7 +168,7 @@ void ShadowRootV0::Distribute() {
   for (const auto& point : DescendantInsertionPoints()) {
     if (!point->IsActive())
       continue;
-    if (auto* shadow = ToHTMLShadowElementOrNull(*point)) {
+    if (auto* shadow = DynamicTo<HTMLShadowElement>(*point)) {
       DCHECK(!shadow_insertion_point);
       shadow_insertion_point = shadow;
     } else {

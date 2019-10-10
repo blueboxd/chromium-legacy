@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "ui/events/devices/device_data_manager.h"
 
 namespace chromeos {
 namespace settings {
@@ -29,8 +28,7 @@ constexpr char kAppLockScreenSupportKey[] = "lockScreenSupport";
 
 }  // namespace
 
-StylusHandler::StylusHandler() : note_observer_(this), input_observer_(this) {}
-
+StylusHandler::StylusHandler() = default;
 StylusHandler::~StylusHandler() = default;
 
 void StylusHandler::RegisterMessages() {

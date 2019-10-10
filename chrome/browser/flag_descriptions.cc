@@ -660,14 +660,6 @@ const char kEnableSystemWebAppsDescription[] =
     "Experimental system for using the Desktop PWA framework for running System"
     "Apps (e.g Settings, Discover).";
 
-const char kEnforceTLS13DowngradeName[] = "TLS 1.3 downgrade hardening";
-const char kEnforceTLS13DowngradeDescription[] =
-    "This option enables the TLS 1.3 downgrade hardening mechanism. This "
-    "hardens TLS 1.3 connections while remaining compatible with TLS 1.0 "
-    "through 1.2 connections. Firewalls and proxies that do not function when "
-    "this is enabled do not implement TLS 1.0 through 1.2 correctly or "
-    "securely. They must be fixed by vendors.";
-
 const char kEnableTLS13EarlyDataName[] = "TLS 1.3 Early Data";
 const char kEnableTLS13EarlyDataDescription[] =
     "This option enables TLS 1.3 Early Data, allowing GET requests to be sent "
@@ -707,6 +699,16 @@ const char kEnableImplicitRootScrollerDescription[] =
     "Enables implicitly choosing which scroller on a page is the 'root "
     "scroller'. i.e. The one that gets special features like URL bar movement, "
     "overscroll glow, rotation anchoring, etc.";
+
+const char kEnableCSSOMViewScrollCoordinatesName[] =
+    "CSSOM View Scroll Coordinates";
+const char kEnableCSSOMViewScrollCoordinatesDescription[] =
+    "Enables CSSOM View Scroll Coordinates, this affects to box scroll "
+    "coordinates in scrollTop / scrollLeft / scrollTo' when ScrollOrigin isn't "
+    "at the left top corner. i.e. For leftwards overflow direction box "
+    "the X coordinate will start from 0 to negative value. For upwards box the "
+    "Y coordinate will start from 0 to negative value. And for other directions"
+    "(rightwards and downwards) the value will start from 0 to positive";
 
 const char kEnableLitePageServerPreviewsName[] = "Lite Page Server Previews";
 const char kEnableLitePageServerPreviewsDescription[] =
@@ -2044,6 +2046,16 @@ const char kTintGlCompositedContentName[] = "Tint GL-composited content";
 const char kTintGlCompositedContentDescription[] =
     "Tint contents composited using GL with a shade of red to help debug and "
     "study overlay support.";
+
+const char kTLS13HardeningForLocalAnchorsName[] =
+    "TLS 1.3 hardening for local anchors";
+const char kTLS13HardeningForLocalAnchorsDescription[] =
+    "This option enables the TLS 1.3 downgrade hardening mechanism for "
+    "connections authenticated by local trust anchors. This improves security "
+    "for connections to TLS-1.3-capable servers while remaining compatible "
+    "with older servers. Firewalls and proxies that do not function when this "
+    "is enabled do not implement TLS 1.2 correctly or securely and must be "
+    "updated.";
 
 const char kTopChromeTouchUiName[] = "Touch UI Layout";
 const char kTopChromeTouchUiDescription[] =

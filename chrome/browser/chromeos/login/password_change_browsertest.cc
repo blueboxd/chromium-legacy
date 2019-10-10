@@ -66,7 +66,8 @@ class SessionStartWaiter : public session_manager::SessionManagerObserver {
 
  private:
   base::OnceClosure session_active_callback_;
-  ScopedObserver<session_manager::SessionManager, SessionStartWaiter>
+  ScopedObserver<session_manager::SessionManager,
+                 session_manager::SessionManagerObserver>
       session_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SessionStartWaiter);

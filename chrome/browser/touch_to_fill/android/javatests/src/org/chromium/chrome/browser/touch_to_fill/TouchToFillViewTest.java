@@ -18,6 +18,7 @@ import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollU
 
 import android.support.test.filters.MediumTest;
 import android.text.method.PasswordTransformationMethod;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -111,19 +112,30 @@ public class TouchToFillViewTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTouchToFillView.setVisible(true);
             mModel.get(CREDENTIAL_LIST)
-                    .addAll(Arrays.asList(new Credential("Ana", "S3cr3t", "Ana", null, false),
-                            new Credential("", "***", "No Username", "m.example.xyz", true)));
+                    .addAll(Arrays.asList(new Credential("Ana", "S3cr3t", "Ana", "", false),
+                            new Credential("", "***", "No Username", "http://m.example.xyz/", true),
+                            new Credential(
+                                    "Bob", "***", "Bob", "http://mobile.example.xyz", true)));
         });
 
         pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
-        assertThat(getCredentials().getChildCount(), is(2));
+        assertThat(getCredentials().getChildCount(), is(3));
+        assertThat(getCredentialOriginAt(0).getVisibility(), is(View.GONE));
         assertThat(getCredentialNameAt(0).getText(), is("Ana"));
         assertThat(getCredentialPasswordAt(0).getText(), is("S3cr3t"));
         assertThat(getCredentialPasswordAt(0).getTransformationMethod(),
                 instanceOf(PasswordTransformationMethod.class));
+        assertThat(getCredentialOriginAt(1).getVisibility(), is(View.VISIBLE));
+        assertThat(getCredentialOriginAt(1).getText(), is("m.example.xyz"));
         assertThat(getCredentialNameAt(1).getText(), is("No Username"));
         assertThat(getCredentialPasswordAt(1).getText(), is("***"));
         assertThat(getCredentialPasswordAt(1).getTransformationMethod(),
+                instanceOf(PasswordTransformationMethod.class));
+        assertThat(getCredentialOriginAt(2).getVisibility(), is(View.VISIBLE));
+        assertThat(getCredentialOriginAt(2).getText(), is("mobile.example.xyz"));
+        assertThat(getCredentialNameAt(2).getText(), is("Bob"));
+        assertThat(getCredentialPasswordAt(2).getText(), is("***"));
+        assertThat(getCredentialPasswordAt(2).getTransformationMethod(),
                 instanceOf(PasswordTransformationMethod.class));
     }
 
@@ -178,6 +190,10 @@ public class TouchToFillViewTest {
 
     private TextView getCredentialPasswordAt(int index) {
         return getCredentials().getChildAt(index).findViewById(R.id.password);
+    }
+
+    private TextView getCredentialOriginAt(int index) {
+        return getCredentials().getChildAt(index).findViewById(R.id.credential_origin);
     }
 
     TouchToFillProperties.ViewEventListener waitForEvent() {

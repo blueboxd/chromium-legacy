@@ -1879,7 +1879,6 @@ crbug.com/982194 virtual/layout_ng_experimental/printing/list-item-with-empty-fi
 crbug.com/982194 virtual/layout_ng_experimental/printing/page-count-layout-overflow.html [ Failure ]
 crbug.com/982194 virtual/layout_ng_experimental/printing/return-from-printing-mode.html [ Failure ]
 crbug.com/982194 virtual/layout_ng_experimental/printing/css2.1/page-break-inside-000.html [ Failure ]
-crbug.com/982194 virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Crash ]
 crbug.com/982194 virtual/mouseevent_fractional/fast/events/anchor-image-scrolled-x-y.html [ Timeout ]
 crbug.com/982194 virtual/mouseevent_fractional/fast/events/attribute-listener-deletion-crash.html [ Crash ]
 crbug.com/982194 virtual/mouseevent_fractional/fast/events/autoscroll-disabled-in-fix.html [ Crash ]

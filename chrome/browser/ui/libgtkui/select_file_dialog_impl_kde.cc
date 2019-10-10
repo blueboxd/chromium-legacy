@@ -31,7 +31,6 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/strings/grit/ui_strings.h"
 
-
 using content::BrowserThread;
 
 namespace {

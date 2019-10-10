@@ -9,6 +9,8 @@
 
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace device {
 class OculusDevice;
@@ -25,7 +27,8 @@ class IsolatedXRRuntimeProvider
   ~IsolatedXRRuntimeProvider() final;
 
   void RequestDevices(
-      device::mojom::IsolatedXRRuntimeProviderClientPtr client) override;
+      mojo::PendingRemote<device::mojom::IsolatedXRRuntimeProviderClient>
+          client) override;
 
   enum class RuntimeStatus;
 
@@ -62,7 +65,7 @@ class IsolatedXRRuntimeProvider
   std::unique_ptr<device::OpenXrDevice> openxr_device_;
 #endif
 
-  device::mojom::IsolatedXRRuntimeProviderClientPtr client_;
+  mojo::Remote<device::mojom::IsolatedXRRuntimeProviderClient> client_;
   base::WeakPtrFactory<IsolatedXRRuntimeProvider> weak_ptr_factory_{this};
 };
 

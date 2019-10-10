@@ -90,6 +90,11 @@ class PreloadControllerTest : public PlatformTest {
         net::NetworkChangeNotifier::CONNECTION_WIFI);
   }
 
+  void SimulateOffline() {
+    network_change_notifier_->SimulateNetworkConnectionChange(
+        net::NetworkChangeNotifier::CONNECTION_NONE);
+  }
+
   void SimulateCellularConnection() {
     network_change_notifier_->SimulateNetworkConnectionChange(
         net::NetworkChangeNotifier::CONNECTION_3G);
@@ -133,12 +138,15 @@ TEST_F(PreloadControllerTest, DontPreloadNonWebURLs) {
 
 TEST_F(PreloadControllerTest, TestIsPrerenderingEnabled_preloadAlways) {
   // With the "Preload Webpages" setting set to "Always", prerendering is
-  // enabled regardless of network type.
+  // enabled regardless of network type, unless offline.
   PreloadWebpagesAlways();
 
   SimulateWiFiConnection();
   EXPECT_TRUE(controller_.enabled || ios::device_util::IsSingleCoreDevice() ||
               !ios::device_util::RamIsAtLeast512Mb());
+
+  SimulateOffline();
+  EXPECT_FALSE(controller_.enabled);
 
   SimulateCellularConnection();
   EXPECT_TRUE(controller_.enabled || ios::device_util::IsSingleCoreDevice() ||
@@ -154,6 +162,9 @@ TEST_F(PreloadControllerTest, TestIsPrerenderingEnabled_preloadWiFiOnly) {
   EXPECT_TRUE(controller_.enabled || ios::device_util::IsSingleCoreDevice() ||
               !ios::device_util::RamIsAtLeast512Mb());
 
+  SimulateOffline();
+  EXPECT_FALSE(controller_.enabled);
+
   SimulateCellularConnection();
   EXPECT_FALSE(controller_.enabled);
 }
@@ -164,6 +175,9 @@ TEST_F(PreloadControllerTest, TestIsPrerenderingEnabled_preloadNever) {
   PreloadWebpagesNever();
 
   SimulateWiFiConnection();
+  EXPECT_FALSE(controller_.enabled);
+
+  SimulateOffline();
   EXPECT_FALSE(controller_.enabled);
 
   SimulateCellularConnection();

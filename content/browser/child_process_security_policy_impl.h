@@ -123,9 +123,11 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // |url| combination to the process associated with |child_id|.
   // Returns CANNOT_COMMIT_URL if |url| is not safe to commit.
   // Returns CANNOT_COMMIT_ORIGIN if |origin| is not safe to commit.
-  CanCommitStatus CanCommitOriginAndUrl(int child_id,
-                                        const url::Origin& origin,
-                                        const GURL& url);
+  CanCommitStatus CanCommitOriginAndUrl(
+      int child_id,
+      const IsolationContext& isolation_context,
+      const url::Origin& origin,
+      const GURL& url);
 
   // This function will check whether |origin| requires process isolation
   // within |isolation_context|, and if so, it will return true and put the

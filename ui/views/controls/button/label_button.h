@@ -45,7 +45,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   void SetImage(ButtonState for_state, const gfx::ImageSkia& image);
 
   // Gets or sets the text shown on the button.
-  base::string16 GetText() const;
+  const base::string16& GetText() const;
   virtual void SetText(const base::string16& text);
 
   // Makes the button report its preferred size without the label. This lets

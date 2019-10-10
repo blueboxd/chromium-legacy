@@ -382,11 +382,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   std::unique_ptr<ScopedKeyboardHook> CaptureSystemKeyEvents(
       base::Optional<base::flat_set<ui::DomCode>> codes);
 
-  // Suppresses painting window content by disgarding damaged rect and ignoring
-  // new paint requests. This is a one way operation and there is no way to
-  // reenable painting.
-  void SuppressPaint();
-
   // NativeWidget::[GS]etNativeWindowProperty use strings as keys, and this is
   // difficult to change while retaining compatibility with other platforms.
   // TODO(benrg): Find a better solution.

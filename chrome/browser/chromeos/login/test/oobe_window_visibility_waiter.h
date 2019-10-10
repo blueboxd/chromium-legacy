@@ -8,11 +8,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-
-namespace aura {
-class Window;
-}
 
 namespace chromeos {
 
@@ -36,8 +33,7 @@ class OobeWindowVisibilityWaiter : public aura::WindowObserver {
 
   const bool target_visibility_;
   base::OnceClosure wait_stop_closure_;
-  ScopedObserver<aura::Window, OobeWindowVisibilityWaiter> window_observer_{
-      this};
+  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OobeWindowVisibilityWaiter);
 };

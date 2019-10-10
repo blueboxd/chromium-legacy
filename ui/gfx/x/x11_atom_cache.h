@@ -5,9 +5,9 @@
 #ifndef UI_GFX_X_X11_ATOM_CACHE_H_
 #define UI_GFX_X_X11_ATOM_CACHE_H_
 
+#include <map>
 #include <string>
 
-#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/x/x11_types.h"
@@ -38,11 +38,13 @@ class GFX_EXPORT X11AtomCache {
   ~X11AtomCache();
 
   // Returns the pre-interned Atom without having to go to the x server.
+  // On failure, x11::None is returned.
   XAtom GetAtom(const char*) const;
 
   XDisplay* xdisplay_;
 
-  mutable base::flat_map<std::string, XAtom> cached_atoms_;
+  // Using std::map, as it is possible for thousands of atoms to be registered.
+  mutable std::map<std::string, XAtom> cached_atoms_;
 
   DISALLOW_COPY_AND_ASSIGN(X11AtomCache);
 };

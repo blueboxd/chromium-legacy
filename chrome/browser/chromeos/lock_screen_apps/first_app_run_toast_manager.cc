@@ -19,7 +19,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/widget/widget.h"
 
 namespace lock_screen_apps {
 
@@ -63,9 +62,7 @@ class FirstAppRunToastManager::AppWidgetObserver
 };
 
 FirstAppRunToastManager::FirstAppRunToastManager(Profile* profile)
-    : profile_(profile),
-      toast_widget_observer_(this),
-      app_window_observer_(this) {}
+    : profile_(profile) {}
 
 FirstAppRunToastManager::~FirstAppRunToastManager() {
   Reset();

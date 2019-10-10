@@ -47,11 +47,6 @@ class CookieControlsController {
   // blocking.
   void OnCookieBlockingEnabledForSite(bool block_third_party_cookies);
 
-  // Returns the number of registrable domains with blocked cookies.
-  int GetBlockedDomainCount();
-
-  // Returns the number of blocked cookies.
-  int GetBlockedCookieCount();
 
   void AddObserver(CookieControlsView* obs);
   void RemoveObserver(CookieControlsView* obs);
@@ -81,6 +76,9 @@ class CookieControlsController {
 
   // Updates the blocked cookie count of |icon_|.
   void PresentBlockedCookieCounter();
+
+  // Returns the number of blocked cookies.
+  int GetBlockedCookieCount();
 
   // Callback for when the cookie controls or third-party cookie blocking
   // preference changes.

@@ -38,10 +38,19 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
   static CookieControlsBubbleView* GetCookieBubble();
 
   // CookieControlsView:
-  void OnStatusChanged(CookieControlsController::Status status) override;
+  void OnStatusChanged(CookieControlsController::Status status,
+                       int blocked_cookies) override;
   void OnBlockedCookiesCountChanged(int blocked_cookies) override;
 
  private:
+  enum class IntermediateStep {
+    kNone,
+    // Show a button to disable cookie blocking on the current site.
+    kTurnOffButton,
+    // Show a confirmation that cookie blocking was turned on.
+    kBlockingIsOn,
+  };
+
   CookieControlsBubbleView(views::View* anchor_view,
                            content::WebContents* web_contents,
                            CookieControlsController* cookie_contols);
@@ -72,9 +81,7 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
   CookieControlsController::Status status_ =
       CookieControlsController::Status::kUninitialized;
 
-  // If true, display an intermediate step with a button to disable cookie
-  // blocking on the current site.
-  bool show_disable_cookie_blocking_ui_ = false;
+  IntermediateStep intermediate_step_ = IntermediateStep::kNone;
 
   base::Optional<int> blocked_cookies_;
 

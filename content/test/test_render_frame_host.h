@@ -82,7 +82,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void InitializeRenderFrameIfNeeded() override;
   TestRenderFrameHost* AppendChild(const std::string& frame_name) override;
   void Detach() override;
-  void SimulateNavigationStop() override;
   void SendNavigateWithTransition(int nav_entry_id,
                                   bool did_create_new_entry,
                                   const GURL& url,
@@ -91,7 +90,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SimulateSwapOutACK() override;
   void SimulateFeaturePolicyHeader(
       blink::mojom::FeaturePolicyFeature feature,
-      const std::vector<url::Origin>& whitelist) override;
+      const std::vector<url::Origin>& allowlist) override;
   const std::vector<std::string>& GetConsoleMessages() override;
 
   void SendNavigate(int nav_entry_id,
@@ -207,6 +206,10 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   navigation_requests() {
     return navigation_requests_;
   }
+
+  // Simulates RenderFrameHost finishing loading and dispatching all relevant
+  // callbacks.
+  void SimulateLoadingCompleted();
 
  protected:
   void SendCommitNavigation(

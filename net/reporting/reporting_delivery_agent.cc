@@ -229,8 +229,9 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
       }
 
       // TODO: Calculate actual max depth.
+      // TODO(mmenke): Populate NetworkIsolationKey.
       uploader()->StartUpload(
-          report_origin, endpoint, json, max_depth,
+          report_origin, endpoint, NetworkIsolationKey(), json, max_depth,
           base::BindOnce(&ReportingDeliveryAgentImpl::OnUploadComplete,
                          weak_factory_.GetWeakPtr(), std::move(delivery)));
     }

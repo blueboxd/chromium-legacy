@@ -311,7 +311,7 @@ void TrafficAnnotationAuditor::WriteClangToolOptions(
     FILE* options_file,
     bool use_compile_commands) {
   // As the checked out clang tool may be in a directory different from the
-  // default one (third_party/llvm-buid/Release+Asserts/bin), its path and
+  // default one (third_party/llvm-build/Release+Asserts/bin), its path and
   // clang's library folder should be passed to the run_tool.py script.
   fprintf(
       options_file,
@@ -643,7 +643,7 @@ bool TrafficAnnotationAuditor::CheckIfCallCanBeUnannotated(
   // Unittests should be all annotated. Although this can be detected using gn,
   // doing that would be very slow. The alternative solution would be to bypass
   // every file including test or unittest, but in this case there might be some
-  // ambiguety in what should be annotated and what not.
+  // ambiguity in what should be annotated and what not.
   if (call.file_path.find("unittest") != std::string::npos)
     return false;
 

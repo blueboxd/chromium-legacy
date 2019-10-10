@@ -35,6 +35,7 @@
 #include "net/base/filename_util.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
+#include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/platform/web_pointer_properties.h"
@@ -2009,12 +2010,19 @@ void EventSender::BeginDragWithItems(
 
   const WebPoint& last_pos =
       current_pointer_state_[kRawMousePointerId].last_pos_;
-  float scale = delegate()->GetWindowToViewportScale();
-  WebFloatPoint scaled_last_pos(last_pos.x * scale, last_pos.y * scale);
+
+  // Compute the scale from window (dsf-independent) to blink (dsf-dependent
+  // under UseZoomForDSF).
+  blink::WebFloatRect rect(0, 0, 1.0f, 0.0);
+  web_widget_test_proxy_->ConvertWindowToViewport(&rect);
+  float scale_to_blink_coords = rect.width;
+
+  WebFloatPoint last_pos_for_blink(last_pos.x * scale_to_blink_coords,
+                                   last_pos.y * scale_to_blink_coords);
 
   // Provide a drag source.
-  mainFrameWidget()->DragTargetDragEnter(current_drag_data_, scaled_last_pos,
-                                         scaled_last_pos,
+  mainFrameWidget()->DragTargetDragEnter(current_drag_data_, last_pos_for_blink,
+                                         last_pos_for_blink,
                                          current_drag_effects_allowed_, 0);
   // |is_drag_mode_| saves events and then replays them later. We don't
   // need/want that.
@@ -2765,10 +2773,16 @@ WebInputEventResult EventSender::HandleInputEventOnViewOrPopup(
 
   WebPagePopup* popup = view()->GetPagePopup();
   if (popup && !WebInputEvent::IsKeyboardEventType(raw_event.GetType())) {
+    // Compute the scale from window (dsf-independent) to blink (dsf-dependent
+    // under UseZoomForDSF).
+    blink::WebFloatRect rect(0, 0, 1.0f, 0.0);
+    web_widget_test_proxy_->ConvertWindowToViewport(&rect);
+    float scale_to_blink_coords = rect.width;
+
     // ui::ScaleWebInputEvent returns nullptr when the scale is 1.0f as the
     // event does not have to be converted.
-    std::unique_ptr<WebInputEvent> scaled_event = ui::ScaleWebInputEvent(
-        raw_event, delegate()->GetWindowToViewportScale());
+    std::unique_ptr<WebInputEvent> scaled_event =
+        ui::ScaleWebInputEvent(raw_event, scale_to_blink_coords);
     const WebInputEvent* popup_friendly_event =
         scaled_event.get() ? scaled_event.get() : &raw_event;
     return popup->HandleInputEvent(

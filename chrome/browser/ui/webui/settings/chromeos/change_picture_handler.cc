@@ -85,9 +85,7 @@ const char kProfileDownloadReason[] = "Preferences";
 }  // namespace
 
 ChangePictureHandler::ChangePictureHandler()
-    : previous_image_index_(user_manager::User::USER_IMAGE_INVALID),
-      user_manager_observer_(this),
-      camera_observer_(this) {
+    : previous_image_index_(user_manager::User::USER_IMAGE_INVALID) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   audio::SoundsManager* manager = audio::SoundsManager::Get();
   manager->Initialize(SOUND_OBJECT_DELETE,

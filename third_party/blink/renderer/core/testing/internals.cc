@@ -1798,9 +1798,9 @@ static void AccumulateTouchActionRectList(
   const cc::TouchActionRegion& touch_action_region =
       graphics_layer->CcLayer()->touch_action_region();
   if (!touch_action_region.GetAllRegions().IsEmpty()) {
-    const auto& layer_position = graphics_layer->CcLayer()->position();
+    const auto& layer_position = graphics_layer->GetOffsetFromTransformNode();
     const auto& layer_bounds = graphics_layer->CcLayer()->bounds();
-    IntRect layer_rect(layer_position.x(), layer_position.y(),
+    IntRect layer_rect(layer_position.X(), layer_position.Y(),
                        layer_bounds.width(), layer_bounds.height());
 
     Vector<IntRect> layer_hit_test_rects;

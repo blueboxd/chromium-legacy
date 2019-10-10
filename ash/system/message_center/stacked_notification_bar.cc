@@ -186,13 +186,6 @@ void StackedNotificationBar::SetAnimationState(
 void StackedNotificationBar::AddNotificationIcon(
     message_center::Notification* notification,
     bool at_front) {
-  SkColor accent_color = notification->accent_color() == SK_ColorTRANSPARENT
-                             ? message_center::kNotificationDefaultAccentColor
-                             : notification->accent_color();
-
-  gfx::Image masked_small_icon =
-      notification->GenerateMaskedSmallIcon(15, accent_color);
-
   views::ImageView* icon_view_ = new views::ImageView();
 
   if (at_front)
@@ -200,10 +193,14 @@ void StackedNotificationBar::AddNotificationIcon(
   else
     notification_icons_container_->AddChildView(icon_view_);
 
+  gfx::Image masked_small_icon = notification->GenerateMaskedSmallIcon(
+      kStackedNotificationIconSize,
+      message_center::kNotificationDefaultAccentColor);
+
   if (masked_small_icon.IsEmpty()) {
-    icon_view_->SetImage(gfx::CreateVectorIcon(message_center::kProductIcon,
-                                               kStackedNotificationIconSize,
-                                               accent_color));
+    icon_view_->SetImage(gfx::CreateVectorIcon(
+        message_center::kProductIcon, kStackedNotificationIconSize,
+        message_center::kNotificationDefaultAccentColor));
   } else {
     icon_view_->SetImage(masked_small_icon.AsImageSkia());
   }

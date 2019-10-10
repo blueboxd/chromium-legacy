@@ -61,6 +61,8 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
   void Decode(size_t) override;
   void DecodeToYUV() override;
   SkYUVColorSpace GetYUVColorSpace() const override;
+  cc::YUVSubsampling GetYUVSubsampling() const override;
+  cc::ImageHeaderMetadata MakeMetadataForDecodeAcceleration() const override;
 
   WEBP_CSP_MODE RGBOutputMode();
   // Returns true if the image data received so far (as stored in

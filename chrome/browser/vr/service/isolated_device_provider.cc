@@ -77,7 +77,7 @@ void IsolatedVRDeviceProvider::OnServerError() {
     OnDevicesEnumerated();
   } else {
     device_provider_.reset();
-    binding_.Close();
+    receiver_.reset();
     retry_count_++;
     SetupDeviceProvider();
   }
@@ -98,16 +98,14 @@ void IsolatedVRDeviceProvider::OnDevicesEnumerated() {
 
 void IsolatedVRDeviceProvider::SetupDeviceProvider() {
   GetXRDeviceService()->BindRuntimeProvider(
-      mojo::MakeRequest(&device_provider_));
-  device_provider_.set_connection_error_handler(base::BindOnce(
+      device_provider_.BindNewPipeAndPassReceiver());
+  device_provider_.set_disconnect_handler(base::BindOnce(
       &IsolatedVRDeviceProvider::OnServerError, base::Unretained(this)));
 
-  device::mojom::IsolatedXRRuntimeProviderClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
-  device_provider_->RequestDevices(std::move(client));
+  device_provider_->RequestDevices(receiver_.BindNewPipeAndPassRemote());
 }
 
-IsolatedVRDeviceProvider::IsolatedVRDeviceProvider() : binding_(this) {}
+IsolatedVRDeviceProvider::IsolatedVRDeviceProvider() = default;
 
 IsolatedVRDeviceProvider::~IsolatedVRDeviceProvider() {
   for (auto& entry : ui_host_map_) {

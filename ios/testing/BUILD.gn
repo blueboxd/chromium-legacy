@@ -12,6 +12,18 @@ group("all_tests") {
   ]
 }
 
+source_set("verify_custom_webkit") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "verify_custom_webkit.h",
+    "verify_custom_webkit.mm",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
 source_set("nserror_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true

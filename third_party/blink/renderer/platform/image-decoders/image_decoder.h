@@ -33,6 +33,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_animation.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_frame.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
@@ -242,6 +243,12 @@ class PLATFORM_EXPORT ImageDecoder {
     NOTREACHED();
     return SkYUVColorSpace::kIdentity_SkYUVColorSpace;
   }
+
+  // Returns the information required to decide whether or not hardware
+  // acceleration can be used to decode this image. Callers of this function
+  // must ensure the header was successfully parsed prior to calling this
+  // method, i.e., IsDecodedSizeAvailable() must return true.
+  virtual cc::ImageHeaderMetadata MakeMetadataForDecodeAcceleration() const;
 
   // This will only differ from size() for ICO (where each frame is a
   // different icon) or other formats where different frames are different
@@ -499,6 +506,11 @@ class PLATFORM_EXPORT ImageDecoder {
   std::unique_ptr<ImagePlanes> image_planes_;
 
  private:
+  // The YUV subsampling of the image.
+  virtual cc::YUVSubsampling GetYUVSubsampling() const {
+    return cc::YUVSubsampling::kUnknown;
+  }
+
   // Some code paths compute the size of the image as "width * height * 4 or 8"
   // and return it as a (signed) int.  Avoid overflow.
   inline bool SizeCalculationMayOverflow(unsigned width,

@@ -33,9 +33,9 @@ blink::URLLoaderFactoryBundleInfo::SchemeMap Traits::scheme_specific_factories(
 }
 
 // static
-blink::URLLoaderFactoryBundleInfo::OriginMap
-Traits::initiator_specific_factories(BundleInfoType& bundle) {
-  return std::move(bundle->pending_initiator_specific_factories());
+blink::URLLoaderFactoryBundleInfo::OriginMap Traits::isolated_world_factories(
+    BundleInfoType& bundle) {
+  return std::move(bundle->pending_isolated_world_factories());
 }
 
 // static
@@ -56,8 +56,8 @@ bool Traits::Read(blink::mojom::URLLoaderFactoryBundleDataView data,
           &(*out_bundle)->pending_scheme_specific_factories())) {
     return false;
   }
-  if (!data.ReadInitiatorSpecificFactories(
-          &(*out_bundle)->pending_initiator_specific_factories())) {
+  if (!data.ReadIsolatedWorldFactories(
+          &(*out_bundle)->pending_isolated_world_factories())) {
     return false;
   }
 

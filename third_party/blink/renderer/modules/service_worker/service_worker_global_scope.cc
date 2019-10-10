@@ -300,7 +300,7 @@ void ServiceWorkerGlobalScope::FetchAndRunModuleScript(
                     mojom::RequestContextType::SERVICE_WORKER, credentials_mode,
                     ModuleScriptCustomFetchType::kWorkerConstructor,
                     MakeGarbageCollected<ServiceWorkerModuleTreeClient>(
-                        Modulator::From(ScriptController()->GetScriptState())));
+                        ScriptController()->GetScriptState()));
 }
 
 void ServiceWorkerGlobalScope::Dispose() {

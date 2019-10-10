@@ -5,7 +5,4 @@
 declare_args() {
   # Controls the feature being a DFM or not.
   disable_tab_ui_dfm = true
-
-  # Whether to create tab_ui module as an asynchronous DFM.
-  async_tab_ui = false
 }

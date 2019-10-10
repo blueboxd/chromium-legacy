@@ -644,14 +644,12 @@ UserTiming& Performance::GetUserTiming() {
 
 PerformanceMark* Performance::mark(ScriptState* script_state,
                                    const AtomicString& mark_name,
-                                   ExceptionState& exception_state) {
-  return mark(script_state, mark_name, nullptr, exception_state);
-}
-
-PerformanceMark* Performance::mark(ScriptState* script_state,
-                                   const AtomicString& mark_name,
                                    PerformanceMarkOptions* mark_options,
                                    ExceptionState& exception_state) {
+  if (mark_options &&
+      (mark_options->hasStartTime() || mark_options->hasDetail())) {
+    UseCounter::Count(GetExecutionContext(), WebFeature::kUserTimingL3);
+  }
   PerformanceMark* performance_mark = GetUserTiming().CreatePerformanceMark(
       script_state, mark_name, mark_options, exception_state);
   if (performance_mark) {
@@ -723,6 +721,7 @@ PerformanceMeasure* Performance::MeasureInternal(
   if (start_or_options.IsPerformanceMeasureOptions() &&
       !IsMeasureOptionsEmpty(
           *start_or_options.GetAsPerformanceMeasureOptions())) {
+    UseCounter::Count(GetExecutionContext(), WebFeature::kUserTimingL3);
     // measure("name", { start, end }, *)
     if (end_mark) {
       exception_state.ThrowTypeError(

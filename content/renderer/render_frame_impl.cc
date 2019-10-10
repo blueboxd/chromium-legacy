@@ -1485,7 +1485,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   auto* web_frame_widget =
       blink::WebFrameWidget::CreateForMainFrame(render_widget, web_frame);
 
-  render_widget->InitForMainFrame(std::move(show_callback), web_frame_widget);
+  render_widget->InitForMainFrame(std::move(show_callback));
   render_view->AttachWebFrameWidget(web_frame_widget);
 
   render_widget->SynchronizeVisualPropertiesFromRenderView(
@@ -3992,18 +3992,6 @@ void RenderFrameImpl::UpdateSubresourceLoaderFactories(
   }
 }
 
-void RenderFrameImpl::MarkInitiatorAsRequiringSeparateURLLoaderFactory(
-    const url::Origin& initiator_origin,
-    network::mojom::URLLoaderFactoryPtr url_loader_factory) {
-  // Set up |loader_factories_| to be updated by the
-  // UpdateSubresourceLoaderFactories() below.
-  GetLoaderFactoryBundle();
-  auto factory_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
-  factory_bundle->pending_initiator_specific_factories()[initiator_origin] =
-      url_loader_factory.PassInterface();
-  UpdateSubresourceLoaderFactories(std::move(factory_bundle));
-}
-
 void RenderFrameImpl::BindDevToolsAgent(
     mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
     mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver) {
@@ -4468,7 +4456,6 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
     // this "swap out", the pointer is moved off to the side until it is
     // swapped back in. The renderer is then told that the WebFrameWidget is
     // dropped which should remove all reference to this object.
-    render_view_->MakeMainFrameRenderWidgetUndead();
     render_view_->DetachWebFrameWidget();
   } else if (render_widget_) {
     DCHECK(owned_render_widget_);
@@ -5229,8 +5216,7 @@ void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
     // include the device scale factor, but not emulation scale. Here we convert
     // them to DIP coordiates relative to the WindowScreenRect.
     blink::WebRect position_in_window(params.x, params.y, 0, 0);
-    render_view_->page_properties()->ConvertViewportToWindow(
-        &position_in_window);
+    GetLocalRootRenderWidget()->ConvertViewportToWindow(&position_in_window);
     if (render_view_->page_properties()->ScreenMetricsEmulator()) {
       const float scale =
           render_view_->page_properties()->ScreenMetricsEmulator()->scale();
@@ -7630,6 +7616,17 @@ void RenderFrameImpl::AddMessageToConsoleImpl(
 void RenderFrameImpl::SetWebURLLoaderFactoryOverrideForTest(
     std::unique_ptr<blink::WebURLLoaderFactoryForTest> factory) {
   web_url_loader_factory_override_for_test_ = std::move(factory);
+}
+
+gfx::RectF RenderFrameImpl::ElementBoundsInWindow(
+    const blink::WebElement& element) {
+  blink::WebRect bounding_box_in_window = element.BoundsInViewport();
+  GetLocalRootRenderWidget()->ConvertViewportToWindow(&bounding_box_in_window);
+  return gfx::RectF(bounding_box_in_window);
+}
+
+void RenderFrameImpl::ConvertViewportToWindow(blink::WebRect* rect) {
+  GetLocalRootRenderWidget()->ConvertViewportToWindow(rect);
 }
 
 }  // namespace content

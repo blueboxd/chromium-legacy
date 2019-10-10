@@ -599,11 +599,11 @@ void SupervisedUserURLFilter::Clear() {
   async_url_checker_.reset();
 }
 
-void SupervisedUserURLFilter::AddObserver(Observer* observer) const {
+void SupervisedUserURLFilter::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void SupervisedUserURLFilter::RemoveObserver(Observer* observer) const {
+void SupervisedUserURLFilter::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 

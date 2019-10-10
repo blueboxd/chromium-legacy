@@ -143,7 +143,9 @@ bool TestBrowserWindow::UpdatePageActionIcon(PageActionIconType type) {
   return false;
 }
 
-void TestBrowserWindow::ShowAvatarHighlightAnimation() {}
+autofill::AutofillBubbleHandler* TestBrowserWindow::GetAutofillBubbleHandler() {
+  return &autofill_bubble_handler_;
+}
 
 ToolbarActionsBar* TestBrowserWindow::GetToolbarActionsBar() {
   return nullptr;
@@ -202,24 +204,9 @@ TestBrowserWindow::ShowQRCodeGeneratorBubble(
   return nullptr;
 }
 
-autofill::SaveCardBubbleView* TestBrowserWindow::ShowSaveCreditCardBubble(
-    content::WebContents* contents,
-    autofill::SaveCardBubbleController* controller,
-    bool user_gesture) {
-  return nullptr;
-}
-
 SharingDialog* TestBrowserWindow::ShowSharingDialog(
     content::WebContents* web_contents,
     SharingUiController* controller) {
-  return nullptr;
-}
-
-autofill::LocalCardMigrationBubble*
-TestBrowserWindow::ShowLocalCardMigrationBubble(
-    content::WebContents* contents,
-    autofill::LocalCardMigrationBubbleController* controller,
-    bool user_gesture) {
   return nullptr;
 }
 

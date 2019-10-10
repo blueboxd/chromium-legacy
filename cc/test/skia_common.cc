@@ -148,7 +148,6 @@ PaintImage CreateDiscardablePaintImage(const gfx::Size& size,
         info, std::vector<FrameMetadata>{FrameMetadata()},
         allocate_encoded_data);
   }
-  generator->SetEligibleForAcceleratedDecoding();
   auto paint_image =
       PaintImageBuilder::WithDefault()
           .set_id(id)

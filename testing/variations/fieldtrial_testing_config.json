@@ -1394,10 +1394,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Capacity_512kb_Chunk_64kb",
+                    "name": "Enabled_2MB_v1",
                     "params": {
-                        "capacity_bytes": "524288",
-                        "chunk_bytes": "65536"
+                        "capacity_bytes": "2097152"
                     },
                     "enable_features": [
                         "BlobDataPipeTuning"
@@ -3763,6 +3762,26 @@
                     },
                     "enable_features": [
                         "IPH_NewTab"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OffMainThreadServiceWorkerStartup": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OffMainThreadServiceWorkerStartup"
                     ]
                 }
             ]

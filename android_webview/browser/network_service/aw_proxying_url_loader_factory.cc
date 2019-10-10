@@ -669,16 +669,16 @@ void InterceptedRequest::CallOnComplete(
     target_client_->OnComplete(status);
 
   if (proxied_loader_binding_ && wait_for_loader_error) {
+    // Since the original client is gone no need to continue loading the
+    // request.
+    proxied_client_binding_.Close();
+    target_loader_.reset();
+
     // Don't delete |this| yet, in case the |proxied_loader_binding_|'s
     // error_handler is called with a reason to indicate an error which we want
     // to send to the client bridge. Also reset |target_client_| so we don't
     // get its error_handler called and then delete |this|.
     target_client_.reset();
-
-    // Since the original client is gone no need to continue loading the
-    // request.
-    proxied_client_binding_.Close();
-    target_loader_.reset();
 
     // In case there are pending checks as to whether this request should be
     // intercepted, we don't want that causing |target_client_| to be used

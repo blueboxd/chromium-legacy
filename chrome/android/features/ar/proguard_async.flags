@@ -1,7 +1,0 @@
-# Explicitly keep the ArCoreShim interface. Because ArCoreShim
-# is in base, and its implementing class ArCoreShimImpl is in AR,
-# asynchronous proguarding of AR will cause ArCoreShim to be removed
-# during synchronous proguarding, which causes AR on Chrome to crash.
--keep interface org.chromium.chrome.browser.vr.ArCoreShim {
-  *;
-}

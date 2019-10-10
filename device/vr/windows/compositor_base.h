@@ -14,6 +14,7 @@
 #include "device/vr/util/sliding_average.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -76,7 +77,8 @@ class XRCompositorCommon : public base::Thread,
       device::mojom::XREnvironmentIntegrationProviderAssociatedRequest
           environment_provider) final;
 
-  void RequestGamepadProvider(mojom::IsolatedXRGamepadProviderRequest request);
+  void RequestGamepadProvider(
+      mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> receiver);
   void RequestOverlay(mojom::ImmersiveOverlayRequest request);
 
  protected:
@@ -181,7 +183,8 @@ class XRCompositorCommon : public base::Thread,
   mojom::IsolatedXRGamepadProvider::RequestUpdateCallback gamepad_callback_;
   mojo::Receiver<mojom::XRPresentationProvider> presentation_receiver_{this};
   mojo::Receiver<mojom::XRFrameDataProvider> frame_data_receiver_{this};
-  mojo::Binding<mojom::IsolatedXRGamepadProvider> gamepad_provider_;
+  mojo::Receiver<mojom::IsolatedXRGamepadProvider> gamepad_provider_receiver_{
+      this};
   mojo::Binding<mojom::ImmersiveOverlay> overlay_binding_;
   mojom::XRVisibilityState visibility_state_ =
       mojom::XRVisibilityState::VISIBLE;

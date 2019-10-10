@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "components/services/leveldb/leveldb_database_impl.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -58,7 +59,7 @@ base::TimeDelta StorageAreaImpl::RateLimiter::ComputeDelayNeeded(
 StorageAreaImpl::CommitBatch::CommitBatch() : clear_all_first(false) {}
 StorageAreaImpl::CommitBatch::~CommitBatch() {}
 
-StorageAreaImpl::StorageAreaImpl(leveldb::mojom::LevelDBDatabase* database,
+StorageAreaImpl::StorageAreaImpl(leveldb::LevelDBDatabaseImpl* database,
                                  const std::string& prefix,
                                  Delegate* delegate,
                                  const Options& options)
@@ -67,7 +68,7 @@ StorageAreaImpl::StorageAreaImpl(leveldb::mojom::LevelDBDatabase* database,
                       delegate,
                       options) {}
 
-StorageAreaImpl::StorageAreaImpl(leveldb::mojom::LevelDBDatabase* database,
+StorageAreaImpl::StorageAreaImpl(leveldb::LevelDBDatabaseImpl* database,
                                  std::vector<uint8_t> prefix,
                                  Delegate* delegate,
                                  const Options& options)

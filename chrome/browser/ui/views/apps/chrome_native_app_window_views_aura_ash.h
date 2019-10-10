@@ -9,12 +9,14 @@
 #include <vector>
 
 #include "ash/public/cpp/tablet_mode_observer.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/views/context_menu_controller.h"

@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/io_buffer.h"
+#include "storage/browser/blob/shareable_file_reference.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -102,7 +103,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
       uint64_t offset,
       uint64_t length,
       base::Time expected_modification_time = base::Time(),
-      scoped_refptr<DataHandle> data_handle = nullptr);
+      scoped_refptr<ShareableFileReference> file_ref = nullptr);
   static scoped_refptr<BlobDataItem> CreateFutureFile(uint64_t offset,
                                                       uint64_t length,
                                                       uint64_t file_id);
@@ -148,8 +149,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
   }
 
   DataHandle* data_handle() const {
-    DCHECK(type_ == Type::kFile || type_ == Type::kReadableDataHandle)
-        << static_cast<int>(type_);
+    DCHECK_EQ(type_, Type::kReadableDataHandle) << static_cast<int>(type_);
     return data_handle_.get();
   }
 
@@ -180,7 +180,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
 
   void PopulateFile(base::FilePath path,
                     base::Time expected_modification_time,
-                    scoped_refptr<DataHandle> data_handle);
+                    scoped_refptr<ShareableFileReference> file_ref);
   void ShrinkFile(uint64_t new_length);
   void GrowFile(uint64_t new_length);
   void SetFileModificationTime(base::Time time) {
@@ -198,8 +198,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
   base::Time
       expected_modification_time_;  // For Type::kFile and kFileFilesystem.
 
-  scoped_refptr<DataHandle>
-      data_handle_;  // For Type::kFile and kReadableDataHandle.
+  scoped_refptr<DataHandle> data_handle_;           // For kReadableDataHandle.
+  scoped_refptr<ShareableFileReference> file_ref_;  // For Type::kFile
 
   scoped_refptr<FileSystemContext>
       file_system_context_;  // For Type::kFileFilesystem.

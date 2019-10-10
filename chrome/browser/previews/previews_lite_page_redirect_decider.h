@@ -124,6 +124,10 @@ class PreviewsLitePageRedirectDecider
 
   bool has_drp_headers() const { return drp_headers_valid_; }
 
+  AvailabilityProber* litepages_service_prober() {
+    return litepages_service_prober_.get();
+  }
+
  private:
   // AvailabilityProber::Delegate:
   bool ShouldSendNextProbe() override;

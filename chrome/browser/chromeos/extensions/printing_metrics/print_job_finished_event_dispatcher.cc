@@ -26,9 +26,14 @@ PrintJobFinishedEventDispatcher::PrintJobFinishedEventDispatcher(
     : browser_context_(browser_context),
       event_router_(EventRouter::Get(browser_context)),
       print_job_history_service_observer_(this) {
-  print_job_history_service_observer_.Add(
+  auto* history_service =
       chromeos::PrintJobHistoryServiceFactory::GetForBrowserContext(
-          browser_context));
+          browser_context);
+
+  // The print job history service is not available on the lock screen.
+  if (history_service) {
+    print_job_history_service_observer_.Add(history_service);
+  }
 }
 
 PrintJobFinishedEventDispatcher::~PrintJobFinishedEventDispatcher() {}

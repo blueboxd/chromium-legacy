@@ -30,7 +30,6 @@ class MEDIA_GPU_EXPORT CopyingTexture2DWrapper : public Texture2DWrapper {
 
   bool Init(GetCommandBufferHelperCB get_helper_cb,
             size_t array_slice,
-            GLenum target,
             gfx::Size size,
             int textures_per_picture) override;
 

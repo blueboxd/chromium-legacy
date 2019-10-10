@@ -446,9 +446,6 @@ struct AutocompleteMatch {
   // is taking precedence.
   bool ShouldShowTabMatchButton() const;
 
-  // Returns true if the suggestion should show a tab match button or pedal.
-  bool ShouldShowButton() const;
-
   // Returns whether the suggestion is by itself a tab switch suggestion.
   bool IsTabSwitchSuggestion() const;
 

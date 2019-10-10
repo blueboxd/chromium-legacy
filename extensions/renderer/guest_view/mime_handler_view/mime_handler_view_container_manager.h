@@ -81,10 +81,11 @@ class MimeHandlerViewContainerManager
   // Removes the |frame_container| from |frame_containers_| and destroys it. The
   // |reason| is emitted for UMA.
   // Note: Calling this function may delete |this| if we are removing the last
-  // frame container.
+  // frame container, unless |retain_manager| is set to true.
   void RemoveFrameContainerForReason(
       MimeHandlerViewFrameContainer* frame_container,
-      MimeHandlerViewUMATypes::Type reason);
+      MimeHandlerViewUMATypes::Type reason,
+      bool retain_manager);
   MimeHandlerViewFrameContainer* GetFrameContainer(
       const blink::WebElement& plugin_element);
   MimeHandlerViewFrameContainer* GetFrameContainer(int32_t element_instance_id);
@@ -117,8 +118,9 @@ class MimeHandlerViewContainerManager
   bool IsResourceAccessibleBySource() const override;
 
   // Note: Calling this function may delete |this| if we are removing the last
-  // frame container.
-  bool RemoveFrameContainer(MimeHandlerViewFrameContainer* frame_container);
+  // frame container, unless |retain_manager| is set to true.
+  bool RemoveFrameContainer(MimeHandlerViewFrameContainer* frame_container,
+                            bool retain_manager);
   // mime_handler::BeforeUnloadControl implementation.
   void SetShowBeforeUnloadDialog(
       bool show_dialog,

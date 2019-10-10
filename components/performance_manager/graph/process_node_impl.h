@@ -15,6 +15,7 @@
 #include "components/performance_manager/graph/node_base.h"
 #include "components/performance_manager/graph/properties.h"
 #include "components/performance_manager/public/graph/process_node.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "components/performance_manager/public/render_process_host_proxy.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -38,7 +39,7 @@ class WorkerNodeImpl;
 class ProcessNodeImpl
     : public PublicNodeImpl<ProcessNodeImpl, ProcessNode>,
       public TypedNodeBase<ProcessNodeImpl, ProcessNode, ProcessNodeObserver>,
-      public resource_coordinator::mojom::ProcessCoordinationUnit {
+      public mojom::ProcessCoordinationUnit {
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kProcess; }
 
@@ -46,10 +47,9 @@ class ProcessNodeImpl
 
   ~ProcessNodeImpl() override;
 
-  void Bind(mojo::PendingReceiver<
-            resource_coordinator::mojom::ProcessCoordinationUnit> receiver);
+  void Bind(mojo::PendingReceiver<mojom::ProcessCoordinationUnit> receiver);
 
-  // resource_coordinator::mojom::ProcessCoordinationUnit implementation:
+  // mojom::ProcessCoordinationUnit implementation:
   void SetExpectedTaskQueueingDuration(base::TimeDelta duration) override;
   void SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low) override;
 
@@ -149,8 +149,7 @@ class ProcessNodeImpl
 
   void LeaveGraph() override;
 
-  mojo::Receiver<resource_coordinator::mojom::ProcessCoordinationUnit>
-      receiver_{this};
+  mojo::Receiver<mojom::ProcessCoordinationUnit> receiver_{this};
 
   base::TimeDelta cumulative_cpu_usage_;
   uint64_t private_footprint_kb_ = 0u;

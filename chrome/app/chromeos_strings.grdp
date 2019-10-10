@@ -1610,9 +1610,6 @@
   <message name="IDS_CONTROLLED_SETTING_PARENT" desc="Text displayed in the controlled settings bubble when a setting's value is controlled by user's parent.">
     This setting is managed by a parent.
   </message>
-  <message name="IDS_CONTROLLED_SETTING_CHILD_RESTRICTION" desc="Text displayed in the controlled settings bubble when a setting's value is pre-set because the user is a child.">
-    This setting can't be changed by a child user.
-  </message>
   <message name="IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK" desc="The menu option to disable spoken feedback accessibility feature.">
     Disable ChromeVox (spoken feedback)
   </message>

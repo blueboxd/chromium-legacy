@@ -802,6 +802,33 @@ TEST_F(TemplateURLTest, ReplaceCurrentPageUrl) {
   }
 }
 
+// Tests appending attribution parameter to queries originating from Play API
+// search engine.
+TEST_F(TemplateURLTest, PlayAPIAttribution) {
+  const struct TestData {
+    const char* url;
+    base::string16 terms;
+    bool created_from_play_api;
+    const char* output;
+  } test_data[] = {{"http://foo/?q={searchTerms}", ASCIIToUTF16("bar"), false,
+                    "http://foo/?q=bar"},
+                   {"http://foo/?q={searchTerms}", ASCIIToUTF16("bar"), true,
+                    "http://foo/?q=bar&chrome_dse_attribution=1"}};
+  TemplateURLData data;
+  for (size_t i = 0; i < base::size(test_data); ++i) {
+    data.SetURL(test_data[i].url);
+    data.created_from_play_api = test_data[i].created_from_play_api;
+    TemplateURL url(data);
+    EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
+    ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
+    GURL result(url.url_ref().ReplaceSearchTerms(
+        TemplateURLRef::SearchTermsArgs(test_data[i].terms),
+        search_terms_data_));
+    ASSERT_TRUE(result.is_valid());
+    EXPECT_EQ(test_data[i].output, result.spec());
+  }
+}
+
 TEST_F(TemplateURLTest, Suggestions) {
   struct TestData {
     const int accepted_suggestion;

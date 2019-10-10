@@ -39,6 +39,8 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/network_change_notifier.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/tracing/public/cpp/perfetto/java_heap_profiler/java_heap_profiler.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
 #include "services/tracing/public/cpp/traced_process_impl.h"
 #include "services/tracing/public/cpp/tracing_features.h"
@@ -210,6 +212,8 @@ void TracingControllerImpl::AddAgents() {
         base::BindRepeating(&TracingDelegate::GenerateMetadataDict,
                             base::Unretained(delegate_.get())));
   }
+  tracing::PerfettoTracedProcess::Get()->AddDataSource(
+      tracing::JavaHeapProfiler::GetInstance());
 }
 
 void TracingControllerImpl::ConnectToServiceIfNeeded() {

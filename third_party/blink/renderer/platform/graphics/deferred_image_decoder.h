@@ -120,6 +120,10 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   const PaintImage::ContentId complete_frame_content_id_;
   base::Optional<bool> incremental_decode_needed_;
 
+  // Caches an image's metadata so it can outlive |metadata_decoder_| after all
+  // data is received in cases where multiple generators are created.
+  base::Optional<cc::ImageHeaderMetadata> image_metadata_;
+
   // Caches frame state information.
   Vector<DeferredFrameData> frame_data_;
   scoped_refptr<ImageFrameGenerator> frame_generator_;

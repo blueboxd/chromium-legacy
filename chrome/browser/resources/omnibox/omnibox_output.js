@@ -8,6 +8,7 @@ cr.define('omnibox_output', function() {
    *   cursorPosition: number,
    *   time: number,
    *   done: boolean,
+   *   type: string,
    *   host: string,
    *   isTypedHost: boolean,
    * }}
@@ -31,17 +32,10 @@ cr.define('omnibox_output', function() {
       this.responsesHistory = [];
       /** @private {!Array<!OutputResultsGroup>} */
       this.resultsGroups_ = [];
-      /** @private {!QueryInputs} */
-      this.queryInputs_ = /** @type {!QueryInputs} */ ({});
       /** @private {!DisplayInputs} */
       this.displayInputs_ = OmniboxInput.defaultDisplayInputs;
       /** @private {string} */
       this.filterText_ = '';
-    }
-
-    /** @param {!QueryInputs} queryInputs */
-    updateQueryInputs(queryInputs) {
-      this.queryInputs_ = queryInputs;
     }
 
     /** @param {!DisplayInputs} displayInputs */
@@ -103,8 +97,7 @@ cr.define('omnibox_output', function() {
      * @private @param {!mojom.OmniboxResponse} response
      */
     createResultsGroup_(response) {
-      const resultsGroup =
-          OutputResultsGroup.create(response, this.queryInputs_.cursorPosition);
+      const resultsGroup = OutputResultsGroup.create(response);
       this.resultsGroups_.push(resultsGroup);
       this.$$('#contents').appendChild(resultsGroup);
 
@@ -190,12 +183,11 @@ cr.define('omnibox_output', function() {
   class OutputResultsGroup extends OmniboxElement {
     /**
      * @param {!mojom.OmniboxResponse} resultsGroup
-     * @param {number} cursorPosition
      * @return {!OutputResultsGroup}
      */
-    static create(resultsGroup, cursorPosition) {
+    static create(resultsGroup) {
       const outputResultsGroup = new OutputResultsGroup();
-      outputResultsGroup.setResultsGroup(resultsGroup, cursorPosition);
+      outputResultsGroup.setResultsGroup(resultsGroup);
       return outputResultsGroup;
     }
 
@@ -203,18 +195,16 @@ cr.define('omnibox_output', function() {
       super('output-results-group-template');
     }
 
-    /**
-     *  @param {!mojom.OmniboxResponse} resultsGroup
-     *  @param {number} cursorPosition
-     */
-    setResultsGroup(resultsGroup, cursorPosition) {
+    /** @param {!mojom.OmniboxResponse} resultsGroup */
+    setResultsGroup(resultsGroup) {
       /** @private {ResultsDetails} */
       this.details_ = {
-        cursorPosition: cursorPosition,
+        cursorPosition: resultsGroup.cursorPosition,
         time: resultsGroup.timeSinceOmniboxStartedMs,
         done: resultsGroup.done,
+        type: resultsGroup.type,
         host: resultsGroup.host,
-        isTypedHost: resultsGroup.isTypedHost
+        isTypedHost: resultsGroup.isTypedHost,
       };
       /** @type {!Array<!OutputHeader>} */
       this.headers = COLUMNS.map(OutputHeader.create);
@@ -353,6 +343,7 @@ cr.define('omnibox_output', function() {
       this.$$('#cursor-position').textContent = details.cursorPosition;
       this.$$('#time').textContent = details.time;
       this.$$('#done').textContent = details.done;
+      this.$$('#type').textContent = details.type;
       this.$$('#host').textContent = details.host;
       this.$$('#is-typed-host').textContent = details.isTypedHost;
     }

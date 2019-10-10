@@ -13,7 +13,6 @@
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
@@ -49,7 +48,7 @@ internal::ValidAndInvalidResults ValidateFiles(
 }  // namespace
 
 ZeroStateFileProvider::ZeroStateFileProvider(Profile* profile)
-    : profile_(profile), file_tasks_observer_(this), weak_factory_(this) {
+    : profile_(profile) {
   DCHECK(profile_);
   task_runner_ = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),

@@ -33,7 +33,6 @@ import com.google.android.libraries.feed.api.host.stream.TooltipApi;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.feed.tooltip.BasicTooltipApi;
@@ -49,6 +48,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.ui.widget.displaystyle.ViewResizer;
 import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.chrome.feed.R;
 import org.chromium.ui.UiUtils;
 
 import java.util.Arrays;

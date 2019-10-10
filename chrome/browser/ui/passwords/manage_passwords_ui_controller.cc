@@ -16,6 +16,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
+#include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -520,7 +521,7 @@ void ManagePasswordsUIController::SavePasswordInternal() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser)
     return;
-  browser->window()->ShowAvatarHighlightAnimation();
+  browser->window()->GetAutofillBubbleHandler()->OnPasswordSaved();
 }
 
 void ManagePasswordsUIController::NeverSavePasswordInternal() {

@@ -51,7 +51,6 @@ class MEDIA_GPU_EXPORT Texture2DWrapper {
   // Texture2D. It is 1 otherwise.
   virtual bool Init(GetCommandBufferHelperCB get_helper_cb,
                     size_t array_slice,
-                    GLenum target,
                     gfx::Size size,
                     int textures_per_picture) = 0;
 
@@ -68,7 +67,6 @@ class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
 
   bool Init(GetCommandBufferHelperCB get_helper_cb,
             size_t array_slice,
-            GLenum target,
             gfx::Size size,
             int textures_per_picture) override;
 

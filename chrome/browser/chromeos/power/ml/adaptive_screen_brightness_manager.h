@@ -18,15 +18,12 @@
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
 namespace base {
 class RepeatingTimer;
 }  // namespace base
-
-namespace ui {
-class UserActivityDetector;
-}  // namespace ui
 
 namespace chromeos {
 
@@ -112,10 +109,10 @@ class AdaptiveScreenBrightnessManager
   const std::unique_ptr<AdaptiveScreenBrightnessUkmLogger> ukm_logger_;
 
   ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver>
-      user_activity_observer_;
+      user_activity_observer_{this};
   ScopedObserver<chromeos::PowerManagerClient,
                  chromeos::PowerManagerClient::Observer>
-      power_manager_client_observer_;
+      power_manager_client_observer_{this};
 
   AccessibilityManager* const accessibility_manager_;
   MagnificationManager* const magnification_manager_;

@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "cc/paint/frame_metadata.h"
 #include "cc/paint/image_animation_count.h"
 #include "cc/paint/paint_export.h"
@@ -17,6 +18,7 @@
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "third_party/skia/include/core/SkYUVASizeInfo.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 
@@ -24,6 +26,46 @@ class PaintImageGenerator;
 class PaintOpBuffer;
 class PaintWorkletInput;
 using PaintRecord = PaintOpBuffer;
+
+enum class ImageType { kPNG, kJPEG, kWEBP, kGIF, kICO, kBMP, kInvalid };
+
+enum class YUVSubsampling { k410, k411, k420, k422, k440, k444, kUnknown };
+
+struct CC_PAINT_EXPORT ImageHeaderMetadata {
+ public:
+  ImageHeaderMetadata();
+  ImageHeaderMetadata(const ImageHeaderMetadata& other);
+  ImageHeaderMetadata& operator=(const ImageHeaderMetadata& other);
+  ~ImageHeaderMetadata();
+
+  // The image type, e.g., JPEG or WebP.
+  ImageType image_type = ImageType::kInvalid;
+
+  // The subsampling format used for the chroma planes, e.g., YUV 4:2:0.
+  YUVSubsampling yuv_subsampling = YUVSubsampling::kUnknown;
+
+  // The visible size of the image (i.e., the area that contains meaningful
+  // pixels).
+  gfx::Size image_size;
+
+  // The size of the area containing coded data, if known. For example, if the
+  // |image_size| for a 4:2:0 JPEG is 12x31, its coded size should be 16x32
+  // because the size of a minimum-coded unit for 4:2:0 is 16x16.
+  base::Optional<gfx::Size> coded_size;
+
+  // Whether the image embeds an ICC color profile.
+  bool has_embedded_color_profile = false;
+
+  // Whether all the data was received prior to starting decoding work.
+  bool all_data_received_prior_to_decode = false;
+
+  // For JPEGs only: whether the image is progressive (as opposed to baseline).
+  base::Optional<bool> jpeg_is_progressive;
+
+  // For WebPs only: whether this is a simple-format lossy image. See
+  // https://developers.google.com/speed/webp/docs/riff_container#simple_file_format_lossy.
+  base::Optional<bool> webp_is_non_extended_lossy;
+};
 
 // A representation of an image for the compositor.  This is the most abstract
 // form of images, and represents what is known at paint time.  Note that aside
@@ -117,7 +159,6 @@ class CC_PAINT_EXPORT PaintImage {
     // CheckerImageTracker for all heuristics used.
     kAsync
   };
-  enum class ImageType { kPNG, kJPEG, kWEBP, kGIF, kICO, kBMP, kInvalid };
 
   // Returns the more conservative mode out of the two given ones.
   static DecodingMode GetConservative(DecodingMode one, DecodingMode two);
@@ -140,18 +181,6 @@ class CC_PAINT_EXPORT PaintImage {
 
   bool operator==(const PaintImage& other) const;
   bool operator!=(const PaintImage& other) const { return !(*this == other); }
-
-  // Returns true if the image is eligible for decoding using a hardware
-  // accelerator (which would require at least that all the encoded data has
-  // been received). Returns false otherwise or if the image cannot be decoded
-  // from a PaintImageGenerator. Notice that a return value of true does not
-  // guarantee that the hardware accelerator supports the image. It only
-  // indicates that the software decoder hasn't done any work with the image, so
-  // sending it to a hardware decoder is appropriate.
-  //
-  // TODO(andrescj): consider supporting the non-PaintImageGenerator path which
-  // is expected to be rare.
-  bool IsEligibleForAcceleratedDecoding() const;
 
   // Returns the smallest size that is at least as big as the requested_size
   // such that we can decode to exactly that scale. If the requested size is
@@ -227,6 +256,7 @@ class CC_PAINT_EXPORT PaintImage {
   SkColorSpace* color_space() const {
     return paint_worklet_input_ ? nullptr : GetSkImage()->colorSpace();
   }
+  const gfx::Rect subset_rect() const { return subset_rect_; }
 
   // Returns whether this image will be decoded and rendered from YUV data
   // and fills out plane size info, plane index info, and the matrix for
@@ -239,8 +269,9 @@ class CC_PAINT_EXPORT PaintImage {
   // Returns the color type of this image.
   SkColorType GetColorType() const;
 
-  // Returns the image type (e.g. PNG, WEBP) of this image.
-  ImageType GetImageType() const;
+  // Returns general information about the underlying image. Returns nullptr if
+  // there is no available |paint_image_generator_|.
+  const ImageHeaderMetadata* GetImageHeaderMetadata() const;
 
   // Returns a unique id for the pixel data for the frame at |frame_index|.
   FrameKey GetKeyForFrame(size_t frame_index) const;

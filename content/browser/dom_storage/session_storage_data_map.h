@@ -16,6 +16,10 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
+namespace leveldb {
+class LevelDBDatabaseImpl;
+}
+
 namespace content {
 
 // Holds the StorageArea for a session storage data map. Every
@@ -44,12 +48,12 @@ class CONTENT_EXPORT SessionStorageDataMap final
   static scoped_refptr<SessionStorageDataMap> CreateFromDisk(
       Listener* listener,
       scoped_refptr<SessionStorageMetadata::MapData> map_data,
-      leveldb::mojom::LevelDBDatabase* database);
+      leveldb::LevelDBDatabaseImpl* database);
 
   static scoped_refptr<SessionStorageDataMap> CreateEmpty(
       Listener* listener,
       scoped_refptr<SessionStorageMetadata::MapData> map_data,
-      leveldb::mojom::LevelDBDatabase* database);
+      leveldb::LevelDBDatabaseImpl* database);
 
   static scoped_refptr<SessionStorageDataMap> CreateClone(
       Listener* listener,
@@ -83,7 +87,7 @@ class CONTENT_EXPORT SessionStorageDataMap final
   SessionStorageDataMap(
       Listener* listener,
       scoped_refptr<SessionStorageMetadata::MapData> map_entry,
-      leveldb::mojom::LevelDBDatabase* database,
+      leveldb::LevelDBDatabaseImpl* database,
       bool is_empty);
   SessionStorageDataMap(
       Listener* listener,

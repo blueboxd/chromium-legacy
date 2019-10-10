@@ -229,7 +229,7 @@ class ContextSupportStub : public ContextSupport {
   bool IsJpegDecodeAccelerationSupported() const override { return false; }
   bool IsWebPDecodeAccelerationSupported() const override { return false; }
   bool CanDecodeWithHardwareAcceleration(
-      base::span<const uint8_t> encoded_data) const override {
+      const cc::ImageHeaderMetadata* image_metadata) const override {
     return false;
   }
   bool HasGrContextSupport() const override { return false; }

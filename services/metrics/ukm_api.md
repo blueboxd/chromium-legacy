@@ -254,7 +254,7 @@ If the event name in the XML contains a period (`.`), it is replaced with an und
 
 ### Local Testing
 
-Build Chromium and run it with '--force-enable-metrics-reporting'. Trigger your event locally and check chrome://ukm to make sure the data was recorded correctly.
+Build Chromium and run it with '--force-enable-metrics-reporting --metrics-upload-interval=N'. You may want some small N if you are interested in seeing behavior when UKM reports are emitted. Trigger your event locally and check chrome://ukm to make sure the data was recorded correctly.
 
 ## Unit Testing
 

@@ -1680,12 +1680,6 @@ void ChromeContentBrowserClient::OverrideNavigationParams(
     *referrer = content::Referrer();
     *initiator_origin = base::nullopt;
   }
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  ChromeContentBrowserClientExtensionsPart::OverrideNavigationParams(
-      site_instance, transition, is_renderer_initiated, referrer,
-      initiator_origin);
-#endif
 }
 
 bool ChromeContentBrowserClient::ShouldStayInParentProcessForNTP(

@@ -640,7 +640,6 @@ crbug.com/980804 fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html
 crbug.com/980804 virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
 crbug.com/980804 virtual/scroll_customization/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
 crbug.com/980804 virtual/threaded/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
-crbug.com/980804 virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
 
 crbug.com/983642 virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Slow ]
 crbug.com/983642 [ Mac Debug ] fast/canvas/canvas-composite-alpha.html [ Slow ]

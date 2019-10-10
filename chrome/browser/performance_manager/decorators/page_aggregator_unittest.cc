@@ -8,13 +8,13 @@
 #include "components/performance_manager/graph/graph_impl_operations.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/public/graph/page_node.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
-#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
 
-using resource_coordinator::mojom::InterventionPolicy;
+using performance_manager::mojom::InterventionPolicy;
 
 namespace {
 

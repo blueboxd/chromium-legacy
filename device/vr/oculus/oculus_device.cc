@@ -154,13 +154,13 @@ void OculusDevice::RequestSession(
       return;
     }
 
-    // If we have a pending gamepad provider request when starting the render
-    // loop, post the request over to the render loop to be bound.
-    if (provider_request_) {
+    // If we have a pending gamepad provider receiver when starting the render
+    // loop, post the receiver over to the render loop to be bound.
+    if (provider_receiver_) {
       render_loop_->task_runner()->PostTask(
           FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
                                     base::Unretained(render_loop_.get()),
-                                    std::move(provider_request_)));
+                                    std::move(provider_receiver_)));
     }
 
     if (overlay_request_) {
@@ -290,18 +290,18 @@ void OculusDevice::StopOvrSession() {
 }
 
 void OculusDevice::GetIsolatedXRGamepadProvider(
-    mojom::IsolatedXRGamepadProviderRequest provider_request) {
-  // We bind the provider_request on the render loop thread, so gamepad data is
+    mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> provider_receiver) {
+  // We bind the provider_receiver on the render loop thread, so gamepad data is
   // updated at the rendering rate.
-  // If we haven't started the render loop yet, postpone binding the request
+  // If we haven't started the render loop yet, postpone binding the receiver
   // until we do.
   if (render_loop_->IsRunning()) {
     render_loop_->task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
                                   base::Unretained(render_loop_.get()),
-                                  std::move(provider_request)));
+                                  std::move(provider_receiver)));
   } else {
-    provider_request_ = std::move(provider_request);
+    provider_receiver_ = std::move(provider_receiver);
   }
 }
 

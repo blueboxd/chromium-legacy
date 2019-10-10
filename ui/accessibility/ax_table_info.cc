@@ -53,7 +53,7 @@ void FindRowsAndThenCells(AXNode* node,
         child->data().role == ax::mojom::Role::kGroup) {
       FindRowsAndThenCells(child, row_nodes, cell_nodes_per_row,
                            caption_node_id);
-    } else if (child->data().role == ax::mojom::Role::kRow) {
+    } else if (IsTableRow(child->data().role)) {
       row_nodes->push_back(child);
       cell_nodes_per_row->push_back(std::vector<AXNode*>());
       FindCellsInRow(child, &cell_nodes_per_row->back());

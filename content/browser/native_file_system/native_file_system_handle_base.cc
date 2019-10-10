@@ -7,6 +7,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/native_file_system/native_file_system_error.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -24,6 +25,10 @@ class NativeFileSystemHandleBase::UsageIndicatorTracker
         is_directory_(is_directory),
         directory_path_(directory_path) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    // Disable back-forward cache as native file system's usage of
+    // RenderFrameHost::IsCurrent at the moment is not compatible with bfcache.
+    BackForwardCache::DisableForRenderFrameHost(
+        GlobalFrameRoutingId(process_id, frame_id), "NativeFileSystem");
     if (web_contents()) {
       web_contents()->IncrementNativeFileSystemHandleCount();
       if (is_directory_)

@@ -34,10 +34,8 @@ namespace libgtkui {
 // class derived from GtkTextView is used, which overrides all signals related
 // to key bindings, to make sure GtkTextView won't receive them.
 //
-// See third_party/WebKit/Source/WebCore/editing/EditorCommand.cpp for detailed
-// definition of webkit edit commands.
-// See webkit/glue/editor_client_impl.cc for key bindings predefined in our
-// webkit glue.
+// See third_party/blink/renderer/core/editing/commands/editor_command.cc for
+// detailed definition of Blink edit commands.
 class GtkKeyBindingsHandler {
  public:
   GtkKeyBindingsHandler();

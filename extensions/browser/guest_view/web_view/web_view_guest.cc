@@ -838,10 +838,10 @@ void WebViewGuest::ReadyToCommitNavigation(
   // factories are pushed slightly later - during the commit.
   constexpr bool kPushToRendererNow = false;
 
-  // |request_initiator| in fetches initiated by content scripts should use the
-  // origin of the <webview> embedder.
+  // Content scripts run in an isolated world associated with the origin of the
+  // <webview> embedder.
   navigation_handle->GetRenderFrameHost()
-      ->MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+      ->MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
           {owner_web_contents()->GetMainFrame()->GetLastCommittedOrigin()},
           kPushToRendererNow);
 }

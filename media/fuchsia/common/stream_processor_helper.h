@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 
 namespace media {
@@ -168,6 +169,9 @@ class StreamProcessorHelper {
 
   fuchsia::media::StreamProcessorPtr processor_;
   Client* const client_;
+
+  // FIDL interfaces are thread-affine (see crbug.com/1012875).
+  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtr<StreamProcessorHelper> weak_this_;
   base::WeakPtrFactory<StreamProcessorHelper> weak_factory_;

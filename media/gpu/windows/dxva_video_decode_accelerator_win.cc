@@ -354,6 +354,8 @@ bool H264ConfigChangeDetector::DetectConfig(const uint8_t* stream,
     }
   }
 
+  // TODO(sandersd): Update to match logic in VTVDA that tracks activated rather
+  // than most recent SPS and PPS.
   if (!sps.empty() && sps != last_sps_) {
     if (!last_sps_.empty()) {
       // Flag configuration changes after we see an IDR slice.

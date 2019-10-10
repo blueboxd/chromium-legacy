@@ -1,5 +1,5 @@
 # This is a comma separated file, specifying the safe list for network traffic
-# anntotation auditor. Please refer to README.md for more details.
+# annotation auditor. Please refer to README.md for more details.
 all,tools/*,*test*,*fuzzer*,*mock*,*fake*
 missing,remoting/host/token_validator_factory_impl.cc
 missing,components/cronet/cronet_url_request.cc

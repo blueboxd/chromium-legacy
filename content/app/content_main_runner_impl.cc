@@ -52,10 +52,10 @@
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/startup_data_impl.h"
 #include "content/browser/startup_helper.h"
+#include "content/browser/tracing/memory_instrumentation_util.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/url_schemes.h"
 #include "content/public/app/content_main_delegate.h"
-#include "content/public/browser/resource_coordinator_service.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_descriptor_keys.h"
@@ -70,8 +70,6 @@
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
-#include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
-#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -416,23 +414,6 @@ void PreSandboxInit() {
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
 #endif  // OS_LINUX
-
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
-void InitializeBrowserClientProcessImpl() {
-  // Registers the browser process as a memory-instrumentation client, so
-  // that data for the browser process will be available in memory dumps.
-  mojo::PendingRemote<memory_instrumentation::mojom::Coordinator> coordinator;
-  mojo::PendingRemote<memory_instrumentation::mojom::ClientProcess> process;
-  auto process_receiver = process.InitWithNewPipeAndPassReceiver();
-  GetMemoryInstrumentationCoordinatorController()->RegisterClientProcess(
-      coordinator.InitWithNewPipeAndPassReceiver(), std::move(process),
-      memory_instrumentation::mojom::ProcessType::BROWSER,
-      base::GetCurrentProcId(), /*service_name=*/base::nullopt);
-  memory_instrumentation::ClientProcessImpl::CreateInstance(
-      std::move(process_receiver), std::move(coordinator),
-      /*is_browser_process=*/true);
-}
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 }  // namespace
 
@@ -975,7 +956,7 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     download::SetIOTaskRunner(
         service_manager_environment_->ipc_thread()->task_runner());
 
-    InitializeBrowserClientProcessImpl();
+    InitializeBrowserMemoryInstrumentationClient();
 
 #if defined(OS_ANDROID)
     if (start_service_manager_only) {

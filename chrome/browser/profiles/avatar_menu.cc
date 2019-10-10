@@ -42,9 +42,6 @@ AvatarMenu::AvatarMenu(ProfileAttributesStorage* profile_storage,
                        Browser* browser)
     : profile_list_(ProfileList::Create(profile_storage)),
       menu_actions_(AvatarMenuActions::Create()),
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-      supervised_user_observer_(this),
-#endif
       profile_storage_(profile_storage),
       observer_(observer),
       browser_(browser) {

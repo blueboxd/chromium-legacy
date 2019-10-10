@@ -239,9 +239,10 @@ class CONTENT_EXPORT RenderWidget
                                blink::WebWidget* web_widget);
 
   // Initialize a new RenderWidget that will be attached to a RenderFrame (via
-  // the WebFrameWidget), for a frame that is a main frame.
-  void InitForMainFrame(ShowCallback show_callback,
-                        blink::WebFrameWidget* web_frame_widget);
+  // the WebFrameWidget), for a frame that is a main frame. At the time of
+  // initialization, the WebWidget is not always available, and it will be set
+  // once the main frame is attached.
+  void InitForMainFrame(ShowCallback show_callback);
 
   // Initialize a new RenderWidget that will be attached to a RenderFrame (via
   // the WebFrameWidget), for a frame that is a local root, but not the main

@@ -509,8 +509,7 @@ void ExtensionFrameHelper::DraggableRegionsChanged() {
       render_frame()->GetWebFrame()->GetDocument().DraggableRegions();
   std::vector<DraggableRegion> regions;
   for (blink::WebDraggableRegion& webregion : webregions) {
-    render_frame()->GetRenderView()->ConvertViewportToWindowViaWidget(
-        &webregion.bounds);
+    render_frame()->ConvertViewportToWindow(&webregion.bounds);
 
     regions.push_back(DraggableRegion());
     DraggableRegion& region = regions.back();

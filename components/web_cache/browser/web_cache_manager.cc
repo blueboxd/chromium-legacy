@@ -18,7 +18,6 @@
 #include "base/time/time.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/render_process_host.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 using base::Time;

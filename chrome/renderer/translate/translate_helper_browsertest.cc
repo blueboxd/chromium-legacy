@@ -92,8 +92,7 @@ class TestTranslateHelper : public translate::TranslateHelper {
     trans_result_error_type_ = translate::TranslateErrors::NONE;
 
     // Will get new result values via OnPageTranslated.
-    Translate(translate_script, network::mojom::URLLoaderFactoryPtr(),
-              source_lang, target_lang,
+    Translate(translate_script, source_lang, target_lang,
               base::Bind(&TestTranslateHelper::OnPageTranslated,
                          base::Unretained(this)));
   }

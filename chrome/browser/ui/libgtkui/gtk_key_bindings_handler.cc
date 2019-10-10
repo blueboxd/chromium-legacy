@@ -355,7 +355,7 @@ void GtkKeyBindingsHandler::MoveCursor(GtkTextView* text_view,
 void GtkKeyBindingsHandler::MoveViewport(GtkTextView* text_view,
                                          GtkScrollStep step,
                                          gint count) {
-  // Not supported by webkit.
+  // Not supported by Blink.
 }
 
 void GtkKeyBindingsHandler::PasteClipboard(GtkTextView* text_view) {
@@ -375,11 +375,11 @@ void GtkKeyBindingsHandler::SetAnchor(GtkTextView* text_view) {
 }
 
 void GtkKeyBindingsHandler::ToggleCursorVisible(GtkTextView* text_view) {
-  // Not supported by webkit.
+  // Not supported by Blink.
 }
 
 void GtkKeyBindingsHandler::ToggleOverwrite(GtkTextView* text_view) {
-  // Not supported by webkit.
+  // Not supported by Blink.
 }
 
 #if !GTK_CHECK_VERSION(3, 90, 0)

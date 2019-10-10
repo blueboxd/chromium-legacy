@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/test/dialog_window_waiter.h"
 
 #include "ui/aura/env.h"
-#include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {

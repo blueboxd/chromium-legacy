@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/task_environment.h"
 #include "build/buildflag.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -89,7 +90,9 @@ class SigninUiUtilTestBrowserWindow : public TestBrowserWindow {
 
 class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
  public:
-  DiceSigninUiUtilTest() = default;
+  DiceSigninUiUtilTest()
+      : BrowserWithTestWindowTest(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~DiceSigninUiUtilTest() override = default;
 
   struct CreateDiceTurnSyncOnHelperParams {
@@ -508,7 +511,7 @@ TEST_F(DiceSigninUiUtilTest, MergeDiceSigninTab) {
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 TEST_F(DiceSigninUiUtilTest,
-       ShouldShowIdentityOnOpeningProfile_ReturnsTrueForMultiProfiles) {
+       ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsTrueForMultiProfiles) {
   const char kSecondProfile[] = "SecondProfile";
   const base::FilePath profile_path =
       profile_manager()->profiles_dir().AppendASCII(kSecondProfile);
@@ -516,12 +519,12 @@ TEST_F(DiceSigninUiUtilTest,
       profile_path, base::ASCIIToUTF16(kSecondProfile), std::string(),
       base::string16(), false, 0, std::string(), EmptyAccountId());
 
-  EXPECT_TRUE(ShouldShowIdentityOnOpeningProfile(
+  EXPECT_TRUE(ShouldShowAnimatedIdentityOnOpeningWindow(
       *profile_manager()->profile_attributes_storage(), profile()));
 }
 
 TEST_F(DiceSigninUiUtilTest,
-       ShouldShowIdentityOnOpeningProfile_ReturnsTrueForMultiSignin) {
+       ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsTrueForMultiSignin) {
   GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
       kMainGaiaID, kMainEmail, "refresh_token", false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
@@ -529,36 +532,46 @@ TEST_F(DiceSigninUiUtilTest,
       kSecondaryEmail, kSecondaryGaiaID, "refresh_token", false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
 
-  EXPECT_TRUE(ShouldShowIdentityOnOpeningProfile(
+  EXPECT_TRUE(ShouldShowAnimatedIdentityOnOpeningWindow(
+      *profile_manager()->profile_attributes_storage(), profile()));
+
+  // The identity can be shown again immediately (which is what happens if there
+  // is multiple windows at startup).
+  RecordAnimatedIdentityTriggered(profile());
+  EXPECT_TRUE(ShouldShowAnimatedIdentityOnOpeningWindow(
       *profile_manager()->profile_attributes_storage(), profile()));
 }
 
 TEST_F(
     DiceSigninUiUtilTest,
-    ShouldShowIdentityOnOpeningProfile_ReturnsFalseForSingleProfileSingleSignin) {
+    ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsFalseForSingleProfileSingleSignin) {
   GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
       kMainGaiaID, kMainEmail, "refresh_token", false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
 
-  EXPECT_FALSE(ShouldShowIdentityOnOpeningProfile(
+  EXPECT_FALSE(ShouldShowAnimatedIdentityOnOpeningWindow(
       *profile_manager()->profile_attributes_storage(), profile()));
 }
 
 TEST_F(DiceSigninUiUtilTest,
-       ShouldShowIdentityOnOpeningProfile_ReturnsFalseForFeatureDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kAnimatedAvatarButtonOnOpeningProfile);
-
-  // Do the same setup that makes the previous test return true.
+       ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsFalseForNewWindow) {
   GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
       kMainGaiaID, kMainEmail, "refresh_token", false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
       kSecondaryEmail, kSecondaryGaiaID, "refresh_token", false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  EXPECT_TRUE(ShouldShowAnimatedIdentityOnOpeningWindow(
+      *profile_manager()->profile_attributes_storage(), profile()));
 
-  EXPECT_FALSE(ShouldShowIdentityOnOpeningProfile(
+  // Animation is shown once.
+  RecordAnimatedIdentityTriggered(profile());
+
+  // Wait a few seconds.
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(6));
+
+  // Animation is not shown again in a new window.
+  EXPECT_FALSE(ShouldShowAnimatedIdentityOnOpeningWindow(
       *profile_manager()->profile_attributes_storage(), profile()));
 }
 

@@ -102,7 +102,8 @@ void DatabaseErrorResponse(base::OnceClosure callback,
 void MigrateStorageHelper(
     base::FilePath db_path,
     const scoped_refptr<base::SingleThreadTaskRunner> reply_task_runner,
-    base::Callback<void(std::unique_ptr<StorageAreaImpl::ValueMap>)> callback) {
+    base::OnceCallback<void(std::unique_ptr<StorageAreaImpl::ValueMap>)>
+        callback) {
   DOMStorageDatabase db(db_path);
   DOMStorageValuesMap map;
   db.ReadAllValues(&map);
@@ -282,7 +283,7 @@ class LocalStorageContextMojo::StorageAreaHolder final
           base::BindOnce(
               &MigrateStorageHelper, sql_db_path(),
               base::ThreadTaskRunnerHandle::Get(),
-              base::Bind(&CallMigrationCalback, base::Passed(&callback))));
+              base::BindOnce(&CallMigrationCalback, base::Passed(&callback))));
       return;
     }
     std::move(callback).Run(nullptr);
@@ -674,6 +675,11 @@ std::vector<uint8_t> LocalStorageContextMojo::MigrateString(
   return result;
 }
 
+void LocalStorageContextMojo::SetDatabaseOpenCallbackForTesting(
+    base::OnceClosure callback) {
+  RunWhenConnected(std::move(callback));
+}
+
 LocalStorageContextMojo::~LocalStorageContextMojo() {
   DCHECK_EQ(connection_state_, CONNECTION_SHUTDOWN);
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
@@ -700,13 +706,6 @@ void LocalStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
 
 void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
   DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
-
-  if (database_factory_for_testing_) {
-    in_memory_ = true;
-    database_ = database_factory_for_testing_.Run();
-    OnDatabaseOpened(leveldb::mojom::DatabaseError::OK);
-    return;
-  }
 
   if (!directory_.empty() && directory_.IsAbsolute() && !in_memory_only) {
     // We were given a subdirectory to write to, so use a disk-backed database.

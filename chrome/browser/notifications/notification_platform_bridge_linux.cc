@@ -31,7 +31,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/shell_integration_linux.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -691,8 +691,7 @@ class NotificationPlatformBridgeLinuxImpl
     }
 
     std::unique_ptr<base::Environment> env = base::Environment::Create();
-    base::FilePath desktop_file(
-        shell_integration_linux::GetDesktopName(env.get()));
+    base::FilePath desktop_file(chrome::GetDesktopName(env.get()));
     const char kDesktopFileSuffix[] = ".desktop";
     DCHECK(base::EndsWith(desktop_file.value(), kDesktopFileSuffix,
                           base::CompareCase::SENSITIVE));

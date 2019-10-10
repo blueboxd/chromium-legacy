@@ -506,6 +506,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const RenderFrameMediaPlaybackOptions& opts) override;
   void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
   void SetAllowsCrossBrowsingInstanceFrameLookup() override;
+  gfx::RectF ElementBoundsInWindow(const blink::WebElement& element) override;
+  void ConvertViewportToWindow(blink::WebRect* rect) override;
 
   // blink::mojom::AutoplayConfigurationClient implementation:
   void AddAutoplayFlags(const url::Origin& origin,
@@ -618,9 +620,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void UpdateSubresourceLoaderFactories(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories) override;
-  void MarkInitiatorAsRequiringSeparateURLLoaderFactory(
-      const url::Origin& initiator_origin,
-      network::mojom::URLLoaderFactoryPtr url_loader_factory) override;
   void BindDevToolsAgent(
       mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
       mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver)

@@ -16,8 +16,6 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.ContextUtils;
-
 /**
  * View-related utility methods.
  */
@@ -158,12 +156,13 @@ public class ViewUtils {
 
     /**
      * Creates a {@link RoundedBitmapDrawable} using the provided {@link Bitmap} and cornerRadius.
+     * @param resources The {@link Resources}.
      * @param icon The {@link Bitmap} to round.
      * @param cornerRadius The corner radius.
      * @return A {@link RoundedBitmapDrawable} for the provided {@link Bitmap}.
      */
-    public static RoundedBitmapDrawable createRoundedBitmapDrawable(Bitmap icon, int cornerRadius) {
-        Resources resources = ContextUtils.getApplicationContext().getResources();
+    public static RoundedBitmapDrawable createRoundedBitmapDrawable(
+            Resources resources, Bitmap icon, int cornerRadius) {
         RoundedBitmapDrawable roundedIcon = RoundedBitmapDrawableFactory.create(resources, icon);
         roundedIcon.setCornerRadius(cornerRadius);
         return roundedIcon;

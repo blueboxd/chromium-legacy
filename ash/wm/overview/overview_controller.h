@@ -60,7 +60,7 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
 
   // Returns true if overview has been shutdown, but is still animating to the
   // end state ui.
-  bool IsCompletingShutdownAnimations();
+  bool IsCompletingShutdownAnimations() const;
 
   // Pause or unpause the occlusion tracker. Resets the unpause delay if we were
   // already in the process of unpausing.

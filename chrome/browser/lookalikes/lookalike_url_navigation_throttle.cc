@@ -83,10 +83,14 @@ std::string GetMatchingSiteEngagementDomain(
 }
 
 // Returns the first matching top domain with an edit distance of at most one
-// to |domain_and_registry|.
+// to |domain_and_registry|. This search is done in lexicographic order on the
+// top 500 suitable domains, instead of in order by popularity. This means that
+// the resulting "similar" domain may not be the most popular domain that
+// matches.
 std::string GetSimilarDomainFromTop500(const DomainInfo& navigated_domain) {
   for (const std::string& navigated_skeleton : navigated_domain.skeletons) {
-    for (const char* const top_domain_skeleton : top500_domains::kTop500) {
+    for (const char* const top_domain_skeleton :
+         top500_domains::kTop500EditDistanceSkeletons) {
       if (lookalikes::IsEditDistanceAtMostOne(
               base::UTF8ToUTF16(navigated_skeleton),
               base::UTF8ToUTF16(top_domain_skeleton))) {

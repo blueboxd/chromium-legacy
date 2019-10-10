@@ -715,7 +715,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         // TODO(injae): Move shared code between Bookmarks/History/Downloads/here to ViewUtils.java.
         // Also applies to RoundedIconGenerator. crbug.com/829550
         return FaviconUtils.createRoundedBitmapDrawable(
-                Bitmap.createScaledBitmap(image, size, size, true));
+                mActivity.getResources(), Bitmap.createScaledBitmap(image, size, size, true));
     }
 
     private void loadForeignFavicon(final ViewHolder viewHolder, final String url) {

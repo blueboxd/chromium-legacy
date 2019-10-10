@@ -13,6 +13,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_bubble.h"
+#include "chrome/browser/ui/autofill/test/test_autofill_bubble_handler.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -59,26 +60,6 @@ class TestLocalCardMigrationBubbleControllerImpl
   base::TimeDelta elapsed_;
 };
 
-class TestLocalCardMigrationBubble final : public LocalCardMigrationBubble {
-  void Hide() override {}
-};
-
-class LocalCardMigrationBubbleTestBrowserWindow : public TestBrowserWindow {
- public:
-  LocalCardMigrationBubble* ShowLocalCardMigrationBubble(
-      content::WebContents* contents,
-      LocalCardMigrationBubbleController* controller,
-      bool user_gesture) override {
-    test_local_card_migration_bubble_ =
-        std::make_unique<TestLocalCardMigrationBubble>();
-    return test_local_card_migration_bubble_.get();
-  }
-
- private:
-  std::unique_ptr<TestLocalCardMigrationBubble>
-      test_local_card_migration_bubble_;
-};
-
 }  // namespace
 
 class LocalCardMigrationBubbleControllerImplTest
@@ -92,10 +73,6 @@ class LocalCardMigrationBubbleControllerImplTest
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     TestLocalCardMigrationBubbleControllerImpl::CreateForTesting(web_contents);
-  }
-
-  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
-    return std::make_unique<LocalCardMigrationBubbleTestBrowserWindow>();
   }
 
  protected:

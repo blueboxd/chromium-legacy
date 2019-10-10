@@ -34,6 +34,8 @@ const char kGSuiteSyncPasswordEntryRequestOutcomeHistogram[] =
     "PasswordProtection.RequestOutcome.GSuiteSyncPasswordEntry";
 const char kGSuiteNonSyncPasswordEntryRequestOutcomeHistogram[] =
     "PasswordProtection.RequestOutcome.GSuiteNonSyncPasswordEntry";
+const char kSavedPasswordEntryRequestOutcomeHistogram[] =
+    "PasswordProtection.RequestOutcome.SavedPasswordEntry";
 const char kGSuiteSyncPasswordEntryVerdictHistogram[] =
     "PasswordProtection.Verdict.GSuiteSyncPasswordEntry";
 const char kGSuiteNonSyncPasswordEntryVerdictHistogram[] =
@@ -42,12 +44,16 @@ const char kGmailSyncPasswordEntryVerdictHistogram[] =
     "PasswordProtection.Verdict.GmailSyncPasswordEntry";
 const char kGmailNonSyncPasswordEntryVerdictHistogram[] =
     "PasswordProtection.Verdict.GmailNonSyncPasswordEntry";
+const char kSavedPasswordEntryVerdictHistogram[] =
+    "PasswordProtection.Verdict.SavedPasswordEntry";
 const char kGmailNonSyncPasswordInterstitialHistogram[] =
     "PasswordProtection.InterstitialAction.GmailNonSyncPasswordEntry";
 const char kGmailSyncPasswordPageInfoHistogram[] =
     "PasswordProtection.PageInfoAction.GmailSyncPasswordEntry";
 const char kGmailNonSyncPasswordPageInfoHistogram[] =
     "PasswordProtection.PageInfoAction.GmailNonSyncPasswordEntry";
+const char kSavedPasswordPageInfoHistogram[] =
+    "PasswordProtection.PageInfoAction.SavedPasswordEntry";
 const char kGmailSyncPasswordWarningDialogHistogram[] =
     "PasswordProtection.ModalWarningDialogAction.GmailSyncPasswordEntry";
 const char kGmailNonSyncPasswordWarningDialogHistogram[] =
@@ -69,6 +75,8 @@ const char kGSuiteSyncPasswordWarningDialogHistogram[] =
     "PasswordProtection.ModalWarningDialogAction.GSuiteSyncPasswordEntry";
 const char kGSuiteNonSyncPasswordWarningDialogHistogram[] =
     "PasswordProtection.ModalWarningDialogAction.GSuiteNonSyncPasswordEntry";
+const char kSavedPasswordWarningDialogHistogram[] =
+    "PasswordProtection.ModalWarningDialogAction.SavedPasswordEntry";
 const char kNonSyncPasswordWarningDialogHistogram[] =
     "PasswordProtection.ModalWarningDialogAction.NonSyncPasswordEntry";
 const char kPasswordOnFocusRequestOutcomeHistogram[] =
@@ -120,6 +128,10 @@ void LogPasswordEntryRequestOutcome(
   } else if (password_account_type.account_type() ==
              ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
     UMA_HISTOGRAM_ENUMERATION(kEnterprisePasswordEntryRequestOutcomeHistogram,
+                              outcome);
+  } else if (password_account_type.account_type() ==
+             ReusedPasswordAccountType::SAVED_PASSWORD) {
+    UMA_HISTOGRAM_ENUMERATION(kSavedPasswordEntryRequestOutcomeHistogram,
                               outcome);
   } else {
     if (is_gsuite_user) {
@@ -222,6 +234,11 @@ void LogPasswordProtectionVerdict(
         UMA_HISTOGRAM_ENUMERATION(
             kEnterprisePasswordEntryVerdictHistogram, verdict_type,
             (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
+      } else if (password_account_type.account_type() ==
+                 ReusedPasswordAccountType::SAVED_PASSWORD) {
+        UMA_HISTOGRAM_ENUMERATION(
+            kSavedPasswordEntryVerdictHistogram, verdict_type,
+            (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
       }
       break;
     default:
@@ -276,6 +293,9 @@ void LogWarningAction(WarningUIType ui_type,
       } else if (password_account_type.account_type() ==
                  ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
         UMA_HISTOGRAM_ENUMERATION(kEnterprisePasswordPageInfoHistogram, action);
+      } else if (password_account_type.account_type() ==
+                 ReusedPasswordAccountType::SAVED_PASSWORD) {
+        UMA_HISTOGRAM_ENUMERATION(kSavedPasswordPageInfoHistogram, action);
       } else {
         UMA_HISTOGRAM_ENUMERATION(kNonSyncPasswordPageInfoHistogram, action);
         if (is_gsuite_user) {
@@ -301,6 +321,9 @@ void LogWarningAction(WarningUIType ui_type,
                  ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
         UMA_HISTOGRAM_ENUMERATION(kEnterprisePasswordWarningDialogHistogram,
                                   action);
+      } else if (password_account_type.account_type() ==
+                 ReusedPasswordAccountType::SAVED_PASSWORD) {
+        UMA_HISTOGRAM_ENUMERATION(kSavedPasswordWarningDialogHistogram, action);
       } else {
         UMA_HISTOGRAM_ENUMERATION(kNonSyncPasswordWarningDialogHistogram,
                                   action);

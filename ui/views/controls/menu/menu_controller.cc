@@ -2407,44 +2407,61 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
         y = anchor_bounds.bottom() - border_and_shadow_insets.top() +
             menu_config.touchable_anchor_offset;
       }
-    } else if (state_.anchor == MenuAnchorPosition::kBubbleLeft) {
-      // Align the right of the menu with the left of the anchor, and the top of
-      // the menu with the top of the anchor.
-      x = anchor_bounds.x() - menu_size.width() +
-          border_and_shadow_insets.right() -
-          menu_config.touchable_anchor_offset;
-      y = anchor_bounds.y() - border_and_shadow_insets.top();
-      // Align the left of the menu with the right of the anchor.
-      if (x < monitor_bounds.x()) {
-        x = anchor_bounds.right() - border_and_shadow_insets.left() +
-            menu_config.touchable_anchor_offset;
-      }
-      // Prefer aligning the bottom of the menu to the bottom of the anchor.
-      if (y + menu_size.height() > monitor_bounds.bottom()) {
-        y = anchor_bounds.bottom() - menu_size.height() +
-            border_and_shadow_insets.bottom();
-        // For some very tall menus, this may still be off screen.
-        if (y < monitor_bounds.y())
-          y = monitor_bounds.y();
-      }
-    } else if (state_.anchor == MenuAnchorPosition::kBubbleRight) {
-      // Align the left of the menu with the right of the anchor, and the top of
-      // the menu with the top of the anchor.
-      x = anchor_bounds.right() - border_and_shadow_insets.left() +
-          menu_config.touchable_anchor_offset;
-      y = anchor_bounds.y() - border_and_shadow_insets.top();
-      if (x + menu_size.width() > monitor_bounds.right()) {
-        // Align the right of the menu with the left of the anchor.
+    } else if (state_.anchor == MenuAnchorPosition::kBubbleLeft ||
+               state_.anchor == MenuAnchorPosition::kBubbleRight) {
+      if (state_.anchor == MenuAnchorPosition::kBubbleLeft) {
+        // Align the right of the menu with the left of the anchor, and the top
+        // of the menu with the top of the anchor.
         x = anchor_bounds.x() - menu_size.width() +
             border_and_shadow_insets.right() -
             menu_config.touchable_anchor_offset;
+        // Align the left of the menu with the right of the anchor.
+        if (x < monitor_bounds.x()) {
+          x = anchor_bounds.right() - border_and_shadow_insets.left() +
+              menu_config.touchable_anchor_offset;
+        }
+      } else {
+        // Align the left of the menu with the right of the anchor, and the top
+        // of the menu with the top of the anchor.
+        x = anchor_bounds.right() - border_and_shadow_insets.left() +
+            menu_config.touchable_anchor_offset;
+        if (x + menu_size.width() > monitor_bounds.right()) {
+          // Align the right of the menu with the left of the anchor.
+          x = anchor_bounds.x() - menu_size.width() +
+              border_and_shadow_insets.right() -
+              menu_config.touchable_anchor_offset;
+        }
       }
-      if (y + menu_size.height() > monitor_bounds.bottom()) {
-        // Align the bottom of the menu with the bottom of the anchor.
-        y = anchor_bounds.bottom() - menu_size.height() +
-            border_and_shadow_insets.bottom();
+
+      const int y_below = anchor_bounds.y() - border_and_shadow_insets.top();
+      const int y_above = anchor_bounds.bottom() - menu_size.height() +
+                          border_and_shadow_insets.bottom();
+      if (y_below + menu_size.height() <= monitor_bounds.bottom()) {
+        // Show below the anchor. Align the top of the menu with the top of the
+        // anchor.
+        y = y_below;
+      } else if (y_above >= monitor_bounds.y()) {
+        // No room below, but there is room above. Show above the anchor. Align
+        // the bottom of the menu with the bottom of the anchor.
+        y = y_above;
+      } else {
+        // No room above or below. Show as low as possible. Align the bottom of
+        // the menu with the bottom of the screen.
+        y = monitor_bounds.bottom() - menu_size.height();
       }
     }
+    // The above adjustments may have shifted a large menu off the screen.
+    // Clamp the menu origin to the valid range.
+    const int x_min = monitor_bounds.x() - border_and_shadow_insets.left();
+    const int x_max = monitor_bounds.right() - menu_size.width() +
+                      border_and_shadow_insets.right();
+    const int y_min = monitor_bounds.y() - border_and_shadow_insets.top();
+    const int y_max = monitor_bounds.bottom() - menu_size.height() +
+                      border_and_shadow_insets.bottom();
+    DCHECK_LE(x_min, x_max);
+    DCHECK_LE(y_min, y_max);
+    x = base::ClampToRange(x, x_min, x_max);
+    y = base::ClampToRange(y, y_min, y_max);
   } else {
     if (!use_touchable_layout_) {
       NOTIMPLEMENTED()

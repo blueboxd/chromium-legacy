@@ -73,18 +73,6 @@ void ToolbarAccountIconContainerView::OnThemeChanged() {
   UpdateAllIcons();
 }
 
-void ToolbarAccountIconContainerView::ChildVisibilityChanged(View* child) {
-  // The avatar should not show UI for paused state or error state when any icon
-  // in the toolbar page action icon container view is visible.
-  // If it is in Incognito window, the avatar button shows a text "Incognito"
-  // which should not be updated in any case.
-  if (browser_->profile()->IsIncognitoProfile())
-    return;
-
-  avatar_->SetAutofillIconVisible(
-      page_action_icon_container_view_->IsAnyIconVisible());
-}
-
 SkColor ToolbarAccountIconContainerView::GetIconColor() const {
   return GetThemeProvider()->GetColor(
       ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);

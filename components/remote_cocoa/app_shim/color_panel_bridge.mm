@@ -116,7 +116,8 @@ remote_cocoa::ColorPanelBridge* g_current_panel_bridge = nullptr;
 
 namespace remote_cocoa {
 
-ColorPanelBridge::ColorPanelBridge(mojom::ColorPanelHostPtr host)
+ColorPanelBridge::ColorPanelBridge(
+    mojo::PendingRemote<mojom::ColorPanelHost> host)
     : host_(std::move(host)) {
   g_current_panel_bridge = this;
 }

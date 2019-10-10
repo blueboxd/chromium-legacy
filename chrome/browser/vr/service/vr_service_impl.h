@@ -65,6 +65,7 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
       device::mojom::XRSessionOptionsPtr options,
       device::mojom::VRService::SupportsSessionCallback callback) override;
   void ExitPresent() override;
+  void SetFramesThrottled(bool throttled) override;
   // device::mojom::VRService WebVR compatibility functions
   void GetImmersiveVRDisplayInfo(
       device::mojom::VRService::GetImmersiveVRDisplayInfoCallback callback)
@@ -168,6 +169,7 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
 
   bool initialization_complete_ = false;
   bool in_focused_frame_ = false;
+  bool frames_throttled_ = false;
 
   std::map<device::mojom::XRDeviceId, XrConsentPromptLevel>
       consent_granted_devices_;

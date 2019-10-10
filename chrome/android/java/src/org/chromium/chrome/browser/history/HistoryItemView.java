@@ -169,8 +169,9 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
             icon = mIconGenerator.generateIconForUrl(getItem().getUrl());
             setIconDrawable(new BitmapDrawable(getResources(), icon));
         } else {
-            setIconDrawable(FaviconUtils.createRoundedBitmapDrawable(Bitmap.createScaledBitmap(
-                    icon, mDisplayedIconSize, mDisplayedIconSize, false)));
+            setIconDrawable(FaviconUtils.createRoundedBitmapDrawable(getResources(),
+                    Bitmap.createScaledBitmap(
+                            icon, mDisplayedIconSize, mDisplayedIconSize, false)));
         }
     }
 

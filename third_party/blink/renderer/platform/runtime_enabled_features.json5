@@ -450,6 +450,10 @@
       status: "experimental",
     },
     {
+      name: "CSSOMViewScrollCoordinates",
+      status: "experimental",
+    },
+    {
       name: "CSSPaintAPIArguments",
       status: "experimental",
       depends_on: ["CSSVariables2"],

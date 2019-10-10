@@ -255,9 +255,15 @@ gfx::ScrollOffset ScrollbarController::GetScrollOffsetForDragPosition(
   float scaled_scroller_to_scrollbar_ratio = GetScrollerToScrollbarRatio();
   float current_scroll_position = currently_captured_scrollbar_->current_pos();
 
-  // Thumb position needs to be floored to match main thread per pixel behavior
-  float thumb_position = floorf(std::max(0.0f, current_scroll_position) /
-                                scaled_scroller_to_scrollbar_ratio);
+  // Thumb position needs to be floored and Values between 0 and 1 are rounded
+  // to one to match main thread per pixel behavior. Corresponding main thread
+  // code in ScrollbarTheme::ThumbPosition
+  float thumb_position = std::max(0.0f, current_scroll_position) /
+                         scaled_scroller_to_scrollbar_ratio;
+  thumb_position = (thumb_position < 1.0 && thumb_position > 0.0)
+                       ? 1.0
+                       : floorf(thumb_position);
+
   float delta_in_orientation = orientation == ScrollbarOrientation::VERTICAL
                                    ? pointer_delta.y()
                                    : pointer_delta.x();

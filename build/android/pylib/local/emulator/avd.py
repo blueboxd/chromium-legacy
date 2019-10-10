@@ -231,6 +231,9 @@ class AvdConfig(object):
         config_ini_file.write(
             textwrap.dedent("""\
                 disk.dataPartition.size=4G
+                hw.lcd.density=160
+                hw.lcd.height=960
+                hw.lcd.width=480
                 """))
 
       # Start & stop the AVD.

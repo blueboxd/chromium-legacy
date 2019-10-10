@@ -832,6 +832,33 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, DISABLED_SpokenFeedbackInOobe) {
                                  "Combo box * of *"));
 }
 
+IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, ChromeVoxPanelTabsMenuEmpty) {
+  // The ChromeVox panel should not populate the tabs menu if we are in the
+  // OOBE.
+  ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  AccessibilityManager::Get()->EnableSpokenFeedback(true);
+  // Included to reduce flakiness.
+  while (speech_monitor_.GetNextUtterance() !=
+         "Press Search plus Space to activate.") {
+  }
+  // Press [search + .] to open ChromeVox Panel
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      nullptr, ui::VKEY_OEM_PERIOD, false, false, false, true));
+  while (speech_monitor_.GetNextUtterance() != "ChromeVox Panel") {
+  }
+  // Go to tabs menu and verify that it has no items.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      nullptr, ui::VKEY_RIGHT, false, false, false, false));
+  while (speech_monitor_.GetNextUtterance() != "Speech") {
+  }
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      nullptr, ui::VKEY_RIGHT, false, false, false, false));
+  while (speech_monitor_.GetNextUtterance() != "Tabs") {
+  }
+  EXPECT_EQ("Menu", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("No items.", speech_monitor_.GetNextUtterance());
+}
+
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
                        MoveByCharacterPhoneticSpeechAndHints) {
   EnableChromeVox();

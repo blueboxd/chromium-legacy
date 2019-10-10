@@ -183,7 +183,7 @@ class FakeGPUImageDecodeTestGLES2Interface : public viz::TestGLES2Interface,
   }
 
   bool CanDecodeWithHardwareAcceleration(
-      base::span<const uint8_t> encoded_data) const override {
+      const ImageHeaderMetadata* image_metadata) const override {
     return advertise_accelerated_decoding_;
   }
 
@@ -2950,23 +2950,27 @@ class GpuImageDecodeCacheWithAcceleratedDecodesTest
     : public GpuImageDecodeCacheTest {
  public:
   PaintImage CreatePaintImageForDecodeAcceleration(
-      const gfx::Size& size,
-      sk_sp<SkColorSpace> color_space = nullptr,
-      bool is_eligible_for_accelerated_decoding = true,
-      PaintImage::ImageType image_type = PaintImage::ImageType::kJPEG) {
-    SkImageInfo info =
-        SkImageInfo::Make(size.width(), size.height(), color_type_,
-                          kPremul_SkAlphaType, color_space);
+      ImageType image_type = ImageType::kJPEG) {
+    // Create a valid image metadata for hardware acceleration.
+    ImageHeaderMetadata image_data{};
+    image_data.image_size = GetNormalImageSize();
+    image_data.image_type = image_type;
+    image_data.all_data_received_prior_to_decode = true;
+    image_data.has_embedded_color_profile = false;
+    image_data.jpeg_is_progressive = false;
+    image_data.webp_is_non_extended_lossy = true;
+
+    SkImageInfo info = SkImageInfo::Make(
+        image_data.image_size.width(), image_data.image_size.height(),
+        color_type_, kPremul_SkAlphaType, SkColorSpace::MakeSRGB());
     sk_sp<FakePaintImageGenerator> generator;
     if (do_yuv_decode_) {
-      generator =
-          sk_make_sp<FakePaintImageGenerator>(info, GetYUV420SizeInfo(size));
+      generator = sk_make_sp<FakePaintImageGenerator>(
+          info, GetYUV420SizeInfo(image_data.image_size));
     } else {
       generator = sk_make_sp<FakePaintImageGenerator>(info);
     }
-    if (is_eligible_for_accelerated_decoding)
-      generator->SetEligibleForAcceleratedDecoding();
-    generator->SetImageType(image_type);
+    generator->SetImageHeaderMetadata(image_data);
     PaintImage image = PaintImageBuilder::WithDefault()
                            .set_id(PaintImage::GetNextId())
                            .set_paint_image_generator(generator)
@@ -2983,12 +2987,9 @@ class GpuImageDecodeCacheWithAcceleratedDecodesTest
 TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
        RequestAcceleratedDecodeSuccessfully) {
   auto cache = CreateCache();
-  const gfx::Size image_size = GetNormalImageSize();
-  const sk_sp<SkColorSpace> image_color_space = SkColorSpace::MakeSRGB();
-  const gfx::ColorSpace target_color_space(*image_color_space);
+  const gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
   ASSERT_TRUE(target_color_space.IsValid());
-  const PaintImage image =
-      CreatePaintImageForDecodeAcceleration(image_size, image_color_space);
+  const PaintImage image = CreatePaintImageForDecodeAcceleration();
   const SkFilterQuality quality = kHigh_SkFilterQuality;
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality, CreateMatrix(SkSize::Make(0.75f, 0.75f)),
@@ -3000,8 +3001,10 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
 
   // Accelerated decodes should not produce decode tasks.
   ASSERT_TRUE(result.task->dependencies().empty());
+  ASSERT_TRUE(image.GetImageHeaderMetadata());
   EXPECT_CALL(*raster_implementation(),
-              DoScheduleImageDecode(image_size, _, gfx::ColorSpace(), _))
+              DoScheduleImageDecode(image.GetImageHeaderMetadata()->image_size,
+                                    _, gfx::ColorSpace(), _))
       .Times(1);
   TestTileTaskRunner::ProcessTask(result.task.get());
 
@@ -3018,12 +3021,9 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
 TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
        RequestAcceleratedDecodeSuccessfullyWithColorSpaceConversion) {
   auto cache = CreateCache();
-  const gfx::Size image_size = GetNormalImageSize();
-  const sk_sp<SkColorSpace> image_color_space = SkColorSpace::MakeSRGB();
   const gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateXYZD50();
   ASSERT_TRUE(target_color_space.IsValid());
-  const PaintImage image =
-      CreatePaintImageForDecodeAcceleration(image_size, image_color_space);
+  const PaintImage image = CreatePaintImageForDecodeAcceleration();
   const SkFilterQuality quality = kHigh_SkFilterQuality;
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality, CreateMatrix(SkSize::Make(0.75f, 0.75f)),
@@ -3035,12 +3035,13 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
 
   // Accelerated decodes should not produce decode tasks.
   ASSERT_TRUE(result.task->dependencies().empty());
+  ASSERT_TRUE(image.GetImageHeaderMetadata());
   EXPECT_CALL(*raster_implementation(),
-              DoScheduleImageDecode(image_size, _,
-                                    cache->SupportsColorSpaceConversion()
-                                        ? target_color_space
-                                        : gfx::ColorSpace(),
-                                    _))
+              DoScheduleImageDecode(
+                  image.GetImageHeaderMetadata()->image_size, _,
+                  cache->SupportsColorSpaceConversion() ? target_color_space
+                                                        : gfx::ColorSpace(),
+                  _))
       .Times(1);
   TestTileTaskRunner::ProcessTask(result.task.get());
 
@@ -3057,12 +3058,9 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
 TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
        AcceleratedDecodeRequestFails) {
   auto cache = CreateCache();
-  const gfx::Size image_size = GetNormalImageSize();
-  const sk_sp<SkColorSpace> image_color_space = SkColorSpace::MakeSRGB();
   const gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateXYZD50();
   ASSERT_TRUE(target_color_space.IsValid());
-  const PaintImage image =
-      CreatePaintImageForDecodeAcceleration(image_size, image_color_space);
+  const PaintImage image = CreatePaintImageForDecodeAcceleration();
   const SkFilterQuality quality = kHigh_SkFilterQuality;
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality, CreateMatrix(SkSize::Make(0.75f, 0.75f)),
@@ -3075,12 +3073,13 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
   // Accelerated decodes should not produce decode tasks.
   ASSERT_TRUE(result.task->dependencies().empty());
   raster_implementation()->SetAcceleratedDecodingFailed();
+  ASSERT_TRUE(image.GetImageHeaderMetadata());
   EXPECT_CALL(*raster_implementation(),
-              DoScheduleImageDecode(image_size, _,
-                                    cache->SupportsColorSpaceConversion()
-                                        ? target_color_space
-                                        : gfx::ColorSpace(),
-                                    _))
+              DoScheduleImageDecode(
+                  image.GetImageHeaderMetadata()->image_size, _,
+                  cache->SupportsColorSpaceConversion() ? target_color_space
+                                                        : gfx::ColorSpace(),
+                  _))
       .Times(1);
   TestTileTaskRunner::ProcessTask(result.task.get());
 
@@ -3097,12 +3096,9 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
 TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
        CannotRequestAcceleratedDecodeBecauseOfStandAloneDecode) {
   auto cache = CreateCache();
-  const gfx::Size image_size = GetNormalImageSize();
-  const sk_sp<SkColorSpace> image_color_space = SkColorSpace::MakeSRGB();
-  const gfx::ColorSpace target_color_space(*image_color_space);
+  const gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
   ASSERT_TRUE(target_color_space.IsValid());
-  const PaintImage image =
-      CreatePaintImageForDecodeAcceleration(image_size, image_color_space);
+  const PaintImage image = CreatePaintImageForDecodeAcceleration();
   const SkFilterQuality quality = kHigh_SkFilterQuality;
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality, CreateMatrix(SkSize::Make(1.0f, 1.0f)),
@@ -3121,12 +3117,9 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
 TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
        CannotRequestAcceleratedDecodeBecauseOfNonZeroUploadMipLevel) {
   auto cache = CreateCache();
-  const gfx::Size image_size = GetNormalImageSize();
-  const sk_sp<SkColorSpace> image_color_space = SkColorSpace::MakeSRGB();
-  const gfx::ColorSpace target_color_space(*image_color_space);
+  const gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
   ASSERT_TRUE(target_color_space.IsValid());
-  const PaintImage image =
-      CreatePaintImageForDecodeAcceleration(image_size, image_color_space);
+  const PaintImage image = CreatePaintImageForDecodeAcceleration();
   const SkFilterQuality quality = kHigh_SkFilterQuality;
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality, CreateMatrix(SkSize::Make(0.5f, 0.5f)),
@@ -3145,68 +3138,11 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
 }
 
 TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
-       CannotRequestAcceleratedDecodeBecauseOfIneligiblePaintImage) {
-  auto cache = CreateCache();
-  const gfx::Size image_size = GetNormalImageSize();
-  const sk_sp<SkColorSpace> image_color_space = SkColorSpace::MakeSRGB();
-  const gfx::ColorSpace target_color_space(*image_color_space);
-  ASSERT_TRUE(target_color_space.IsValid());
-  const PaintImage image = CreatePaintImageForDecodeAcceleration(
-      image_size, image_color_space,
-      false /* is_eligible_for_accelerated_decoding */);
-  const SkFilterQuality quality = kHigh_SkFilterQuality;
-  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
-                       quality, CreateMatrix(SkSize::Make(1.0f, 1.0f)),
-                       PaintImage::kDefaultFrameIndex, target_color_space);
-  ImageDecodeCache::TaskResult result =
-      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result.need_unref);
-  ASSERT_TRUE(result.task);
-
-  // A non-accelerated normal decode should produce a decode dependency.
-  ASSERT_EQ(result.task->dependencies().size(), 1u);
-  ASSERT_TRUE(result.task->dependencies()[0]);
-  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
-  TestTileTaskRunner::ProcessTask(result.task.get());
-  cache->UnrefImage(draw_image);
-}
-
-TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
-       CannotRequestAcceleratedDecodeBecauseOfNonSRGBColorSpace) {
-  auto cache = CreateCache();
-  const gfx::Size image_size = GetNormalImageSize();
-  const sk_sp<SkColorSpace> image_color_space =
-      SkColorSpace::MakeRGB(SkNamedTransferFn::k2Dot2, SkNamedGamut::kAdobeRGB);
-  const gfx::ColorSpace target_color_space(*image_color_space);
-  ASSERT_TRUE(target_color_space.IsValid());
-  const PaintImage image =
-      CreatePaintImageForDecodeAcceleration(image_size, image_color_space);
-  const SkFilterQuality quality = kHigh_SkFilterQuality;
-  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
-                       quality, CreateMatrix(SkSize::Make(1.0f, 1.0f)),
-                       PaintImage::kDefaultFrameIndex, target_color_space);
-  ImageDecodeCache::TaskResult result =
-      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result.need_unref);
-  ASSERT_TRUE(result.task);
-
-  // A non-accelerated normal decode should produce a decode dependency.
-  ASSERT_EQ(result.task->dependencies().size(), 1u);
-  ASSERT_TRUE(result.task->dependencies()[0]);
-  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
-  TestTileTaskRunner::ProcessTask(result.task.get());
-  cache->UnrefImage(draw_image);
-}
-
-TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
        RequestAcceleratedDecodeSuccessfullyAfterCancellation) {
   auto cache = CreateCache();
-  const gfx::Size image_size = GetNormalImageSize();
-  const sk_sp<SkColorSpace> image_color_space = SkColorSpace::MakeSRGB();
-  const gfx::ColorSpace target_color_space(*image_color_space);
+  const gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
   ASSERT_TRUE(target_color_space.IsValid());
-  const PaintImage image =
-      CreatePaintImageForDecodeAcceleration(image_size, image_color_space);
+  const PaintImage image = CreatePaintImageForDecodeAcceleration();
   const SkFilterQuality quality = kHigh_SkFilterQuality;
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality, CreateMatrix(SkSize::Make(0.75f, 0.75f)),
@@ -3229,8 +3165,10 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
   EXPECT_TRUE(another_result.need_unref);
   ASSERT_TRUE(another_result.task);
   EXPECT_EQ(another_result.task->dependencies().size(), 0u);
+  ASSERT_TRUE(image.GetImageHeaderMetadata());
   EXPECT_CALL(*raster_implementation(),
-              DoScheduleImageDecode(image_size, _, gfx::ColorSpace(), _))
+              DoScheduleImageDecode(image.GetImageHeaderMetadata()->image_size,
+                                    _, gfx::ColorSpace(), _))
       .Times(1);
   TestTileTaskRunner::ProcessTask(another_result.task.get());
 
@@ -3262,16 +3200,13 @@ class GpuImageDecodeCacheWithAcceleratedDecodesFlagsTest
 TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesFlagsTest,
        RequestAcceleratedDecodeSuccessfully) {
   auto cache = CreateCache();
-  const gfx::Size image_size = GetNormalImageSize();
   const SkFilterQuality quality = kHigh_SkFilterQuality;
   const gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
   ASSERT_TRUE(target_color_space.IsValid());
 
   // Try a JPEG image.
-  const PaintImage jpeg_image = CreatePaintImageForDecodeAcceleration(
-      image_size, SkColorSpace::MakeSRGB(),
-      true /* is_eligible_for_accelerated_decoding */,
-      PaintImage::ImageType::kJPEG);
+  const PaintImage jpeg_image =
+      CreatePaintImageForDecodeAcceleration(ImageType::kJPEG);
   DrawImage jpeg_draw_image(
       jpeg_image, SkIRect::MakeWH(jpeg_image.width(), jpeg_image.height()),
       quality, CreateMatrix(SkSize::Make(0.75f, 0.75f)),
@@ -3289,8 +3224,11 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesFlagsTest,
   // depends on a decode task that runs in the renderer.
   if (advertise_accelerated_decoding_ && allow_accelerated_jpeg_decoding_) {
     ASSERT_TRUE(jpeg_task.task->dependencies().empty());
-    EXPECT_CALL(*raster_implementation(),
-                DoScheduleImageDecode(image_size, _, gfx::ColorSpace(), _))
+    ASSERT_TRUE(jpeg_image.GetImageHeaderMetadata());
+    EXPECT_CALL(
+        *raster_implementation(),
+        DoScheduleImageDecode(jpeg_image.GetImageHeaderMetadata()->image_size,
+                              _, gfx::ColorSpace(), _))
         .Times(1);
   } else {
     ASSERT_EQ(jpeg_task.task->dependencies().size(), 1u);
@@ -3302,10 +3240,8 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesFlagsTest,
   cache->UnrefImage(jpeg_draw_image);
 
   // Try a WebP image.
-  const PaintImage webp_image = CreatePaintImageForDecodeAcceleration(
-      image_size, SkColorSpace::MakeSRGB(),
-      true /* is_eligible_for_accelerated_decoding */,
-      PaintImage::ImageType::kWEBP);
+  const PaintImage webp_image =
+      CreatePaintImageForDecodeAcceleration(ImageType::kWEBP);
   DrawImage webp_draw_image(
       webp_image, SkIRect::MakeWH(webp_image.width(), webp_image.height()),
       quality, CreateMatrix(SkSize::Make(0.75f, 0.75f)),
@@ -3316,8 +3252,11 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesFlagsTest,
   ASSERT_TRUE(webp_task.task);
   if (advertise_accelerated_decoding_ && allow_accelerated_webp_decoding_) {
     ASSERT_TRUE(webp_task.task->dependencies().empty());
-    EXPECT_CALL(*raster_implementation(),
-                DoScheduleImageDecode(image_size, _, gfx::ColorSpace(), _))
+    ASSERT_TRUE(webp_image.GetImageHeaderMetadata());
+    EXPECT_CALL(
+        *raster_implementation(),
+        DoScheduleImageDecode(webp_image.GetImageHeaderMetadata()->image_size,
+                              _, gfx::ColorSpace(), _))
         .Times(1);
   } else {
     ASSERT_EQ(webp_task.task->dependencies().size(), 1u);
@@ -3329,10 +3268,8 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesFlagsTest,
   cache->UnrefImage(webp_draw_image);
 
   // Try a PNG image (which should not be hardware accelerated).
-  const PaintImage png_image = CreatePaintImageForDecodeAcceleration(
-      image_size, SkColorSpace::MakeSRGB(),
-      true /* is_eligible_for_accelerated_decoding */,
-      PaintImage::ImageType::kPNG);
+  const PaintImage png_image =
+      CreatePaintImageForDecodeAcceleration(ImageType::kPNG);
   DrawImage png_draw_image(
       png_image, SkIRect::MakeWH(jpeg_image.width(), jpeg_image.height()),
       quality, CreateMatrix(SkSize::Make(0.75f, 0.75f)),

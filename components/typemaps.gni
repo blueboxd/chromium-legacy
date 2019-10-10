@@ -10,7 +10,6 @@ typemaps = [
   "//components/content_settings/core/common/content_settings.typemap",
   "//components/nacl/common/nacl.typemap",
   "//components/password_manager/content/common/credential_manager.typemap",
-  "//components/services/leveldb/leveldb.typemap",
   "//components/spellcheck/common/spellcheck.typemap",
   "//components/translate/content/common/translate.typemap",
 ]

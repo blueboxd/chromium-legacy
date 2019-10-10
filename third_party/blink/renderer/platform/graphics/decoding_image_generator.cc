@@ -25,8 +25,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/decoding_image_generator.h"
 
-#include <utility>
 #include <memory>
+#include <utility>
 
 #include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
@@ -38,27 +38,6 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace blink {
-
-namespace {
-
-// These filename extension strings come from ImageDecoder::FilenameExtension.
-PaintImage::ImageType FileExtensionToImageType(String image_extension) {
-  if (image_extension == "png")
-    return PaintImage::ImageType::kPNG;
-  if (image_extension == "jpg")
-    return PaintImage::ImageType::kJPEG;
-  if (image_extension == "webp")
-    return PaintImage::ImageType::kWEBP;
-  if (image_extension == "gif")
-    return PaintImage::ImageType::kGIF;
-  if (image_extension == "ico")
-    return PaintImage::ImageType::kICO;
-  if (image_extension == "bmp")
-    return PaintImage::ImageType::kBMP;
-  return PaintImage::ImageType::kInvalid;
-}
-
-}  // namespace
 
 // static
 std::unique_ptr<SkImageGenerator>
@@ -88,11 +67,13 @@ DecodingImageGenerator::CreateAsSkImageGenerator(sk_sp<SkData> data) {
 
   WebVector<FrameMetadata> frames;
   frames.emplace_back(FrameMetadata());
+  cc::ImageHeaderMetadata image_metadata =
+      decoder->MakeMetadataForDecodeAcceleration();
+  image_metadata.all_data_received_prior_to_decode = true;
   sk_sp<DecodingImageGenerator> generator = DecodingImageGenerator::Create(
       std::move(frame), info, std::move(segment_reader), std::move(frames),
       PaintImage::GetNextContentId(), true /* all_data_received */,
-      true /* is_eligible_for_accelerated_decoding */,
-      false /* can_yuv_decode */, decoder->FilenameExtension());
+      false /* can_yuv_decode */, image_metadata);
   return std::make_unique<SkiaPaintImageGenerator>(
       std::move(generator), PaintImage::kDefaultFrameIndex,
       PaintImage::kDefaultGeneratorClientId);
@@ -106,14 +87,11 @@ sk_sp<DecodingImageGenerator> DecodingImageGenerator::Create(
     WebVector<FrameMetadata> frames,
     PaintImage::ContentId content_id,
     bool all_data_received,
-    bool is_eligible_for_accelerated_decoding,
     bool can_yuv_decode,
-    String image_type) {
-  PaintImage::ImageType paint_image_type = FileExtensionToImageType(image_type);
+    const cc::ImageHeaderMetadata& image_metadata) {
   return sk_sp<DecodingImageGenerator>(new DecodingImageGenerator(
       std::move(frame_generator), info, std::move(data), std::move(frames),
-      content_id, all_data_received, is_eligible_for_accelerated_decoding,
-      can_yuv_decode, paint_image_type));
+      content_id, all_data_received, can_yuv_decode, image_metadata));
 }
 
 DecodingImageGenerator::DecodingImageGenerator(
@@ -123,24 +101,17 @@ DecodingImageGenerator::DecodingImageGenerator(
     WebVector<FrameMetadata> frames,
     PaintImage::ContentId complete_frame_content_id,
     bool all_data_received,
-    bool is_eligible_for_accelerated_decoding,
     bool can_yuv_decode,
-    PaintImage::ImageType image_type)
+    const cc::ImageHeaderMetadata& image_metadata)
     : PaintImageGenerator(info, frames.ReleaseVector()),
       frame_generator_(std::move(frame_generator)),
       data_(std::move(data)),
       all_data_received_(all_data_received),
-      is_eligible_for_accelerated_decoding_(
-          is_eligible_for_accelerated_decoding),
       can_yuv_decode_(can_yuv_decode),
       complete_frame_content_id_(complete_frame_content_id),
-      image_type_(image_type) {}
+      image_metadata_(image_metadata) {}
 
 DecodingImageGenerator::~DecodingImageGenerator() = default;
-
-bool DecodingImageGenerator::IsEligibleForAcceleratedDecoding() const {
-  return is_eligible_for_accelerated_decoding_;
-}
 
 sk_sp<SkData> DecodingImageGenerator::GetEncodedData() const {
   TRACE_EVENT0("blink", "DecodingImageGenerator::refEncodedData");
@@ -315,6 +286,11 @@ PaintImage::ContentId DecodingImageGenerator::GetContentIdForFrame(
     return complete_frame_content_id_;
 
   return PaintImageGenerator::GetContentIdForFrame(frame_index);
+}
+
+const cc::ImageHeaderMetadata*
+DecodingImageGenerator::GetMetadataForDecodeAcceleration() const {
+  return &image_metadata_;
 }
 
 }  // namespace blink

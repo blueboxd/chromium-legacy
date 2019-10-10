@@ -12,6 +12,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
@@ -19,6 +21,7 @@
 #include "chrome/common/extensions/api/certificate_provider.h"
 #include "chrome/common/extensions/api/certificate_provider_internal.h"
 #include "chromeos/constants/security_token_pin_types.h"
+#include "extensions/browser/quota_service.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_private_key.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -74,6 +77,51 @@ const char kCertificateProviderOtherFlowInProgress[] = "Other flow in progress";
 const char kCertificateProviderPreviousDialogActive[] =
     "Previous request not finished";
 const char kCertificateProviderNoUserInput[] = "No user input received";
+
+// The BucketMapper implementation for the requestPin API that avoids using the
+// quota when the current request uses the requestId that is strictly greater
+// than all previous ones.
+class RequestPinExceptFirstQuotaBucketMapper final
+    : public QuotaLimitHeuristic::BucketMapper {
+ public:
+  RequestPinExceptFirstQuotaBucketMapper() = default;
+  ~RequestPinExceptFirstQuotaBucketMapper() override = default;
+
+  void GetBucketsForArgs(const base::ListValue* args,
+                         QuotaLimitHeuristic::BucketList* buckets) override {
+    if (args->GetList().empty())
+      return;
+    const base::Value& details = args->GetList()[0];
+    if (!details.is_dict())
+      return;
+    const base::Value* sign_request_id =
+        details.FindKeyOfType("signRequestId", base::Value::Type::INTEGER);
+    if (!sign_request_id)
+      return;
+    if (sign_request_id->GetInt() > biggest_request_id_) {
+      // Either it's the first request with the newly issued requestId, or it's
+      // an invalid requestId (bigger than the real one). Return a new bucket in
+      // order to apply no quota for the former case; for the latter case the
+      // quota doesn't matter much, except that we're maybe making it stricter
+      // for future requests (which is bearable).
+      biggest_request_id_ = sign_request_id->GetInt();
+      new_request_bucket_ = std::make_unique<QuotaLimitHeuristic::Bucket>();
+      buckets->push_back(new_request_bucket_.get());
+      return;
+    }
+    // Either it's a repeatitive request for the given requestId, or the
+    // extension reordered the requests. Fall back to the default bucket (shared
+    // between all requests) in that case.
+    buckets->push_back(&default_bucket_);
+  }
+
+ private:
+  int biggest_request_id_ = -1;
+  QuotaLimitHeuristic::Bucket default_bucket_;
+  std::unique_ptr<QuotaLimitHeuristic::Bucket> new_request_bucket_;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestPinExceptFirstQuotaBucketMapper);
+};
 
 }  // namespace
 
@@ -257,19 +305,25 @@ bool CertificateProviderRequestPinFunction::ShouldSkipQuotaLimiting() const {
 }
 
 void CertificateProviderRequestPinFunction::GetQuotaLimitHeuristics(
-    extensions::QuotaLimitHeuristics* heuristics) const {
+    QuotaLimitHeuristics* heuristics) const {
+  // Apply a 1-minute and a 10-minute quotas. A special bucket mapper is used in
+  // order to, approximately, skip applying quotas to the first request for each
+  // requestId (such logic cannot be done in ShouldSkipQuotaLimiting(), since
+  // it's not called with the request's parameters). The limitation constants
+  // are decremented below to account the first request.
+
   QuotaLimitHeuristic::Config short_limit_config = {
-      api::certificate_provider::kMaxClosedDialogsPerMinute,
+      api::certificate_provider::kMaxClosedDialogsPerMinute - 1,
       base::TimeDelta::FromMinutes(1)};
   heuristics->push_back(std::make_unique<QuotaService::TimedLimit>(
-      short_limit_config, new QuotaLimitHeuristic::SingletonBucketMapper(),
+      short_limit_config, new RequestPinExceptFirstQuotaBucketMapper,
       "MAX_PIN_DIALOGS_CLOSED_PER_MINUTE"));
 
   QuotaLimitHeuristic::Config long_limit_config = {
-      api::certificate_provider::kMaxClosedDialogsPer10Minutes,
+      api::certificate_provider::kMaxClosedDialogsPer10Minutes - 1,
       base::TimeDelta::FromMinutes(10)};
   heuristics->push_back(std::make_unique<QuotaService::TimedLimit>(
-      long_limit_config, new QuotaLimitHeuristic::SingletonBucketMapper(),
+      long_limit_config, new RequestPinExceptFirstQuotaBucketMapper,
       "MAX_PIN_DIALOGS_CLOSED_PER_10_MINUTES"));
 }
 

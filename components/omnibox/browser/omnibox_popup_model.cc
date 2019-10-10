@@ -334,11 +334,6 @@ bool OmniboxPopupModel::SelectedLineHasTabMatch() {
          result().match_at(selected_line_).ShouldShowTabMatchButton();
 }
 
-bool OmniboxPopupModel::SelectedLineHasButton() {
-  return selected_line_ != kNoMatch &&
-         result().match_at(selected_line_).ShouldShowButton();
-}
-
 bool OmniboxPopupModel::SelectedLineIsTabSwitchSuggestion() {
   return selected_line_ != kNoMatch &&
          result().match_at(selected_line_).IsTabSwitchSuggestion();

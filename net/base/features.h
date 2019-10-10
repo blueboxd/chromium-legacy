@@ -22,13 +22,6 @@ NET_EXPORT extern const base::Feature kAcceptLanguageHeader;
 NET_EXPORT extern const base::Feature kCapRefererHeaderLength;
 NET_EXPORT extern const base::FeatureParam<int> kMaxRefererHeaderLength;
 
-// Enables the additional TLS 1.3 server-random-based downgrade protection
-// described in https://tools.ietf.org/html/rfc8446#section-4.1.3
-//
-// This is a MUST-level requirement of TLS 1.3, but has compatibility issues
-// with some buggy non-compliant TLS-terminating proxies.
-NET_EXPORT extern const base::Feature kEnforceTLS13Downgrade;
-
 // Enables TLS 1.3 early data.
 NET_EXPORT extern const base::Feature kEnableTLS13EarlyData;
 

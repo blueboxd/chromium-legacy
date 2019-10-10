@@ -1305,7 +1305,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
 
   GetPasswordManagerDriver()->ShowPasswordSuggestions(
       field.text_direction, username_string, options,
-      render_frame()->GetRenderView()->ElementBoundsInWindow(user_input));
+      render_frame()->ElementBoundsInWindow(user_input));
   username_query_prefix_ = username_string;
   return CanShowSuggestion(password_info.fill_data, username_string, show_all);
 }

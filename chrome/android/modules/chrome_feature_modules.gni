@@ -28,7 +28,6 @@ if (enable_arcore) {
 #   native_deps: (Optional) Native code going into module.
 #   native_entrypoints: (Optional) File with list of exposed symbols from native
 #     feature module library.
-#   proguard_async: (Optional) Whether to proguard the module asynchronously.
 #   loadable_modules_32_bit: (Optional) List of additional 32-bit shared
 #     library files going into module if the module is executed in 32 bit.
 #   loadable_modules_64_bit: (Optional) List of additional 64-bit shared

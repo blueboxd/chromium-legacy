@@ -13,10 +13,9 @@ namespace cc {
 
 std::unique_ptr<LayerImpl> SolidColorScrollbarLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  const bool kIsOverlayScrollbar = true;
-  return SolidColorScrollbarLayerImpl::Create(
-      tree_impl, id(), orientation_, thumb_thickness_, track_start_,
-      is_left_side_vertical_scrollbar_, kIsOverlayScrollbar);
+  return SolidColorScrollbarLayerImpl::Create(tree_impl, id(), orientation_,
+                                              thumb_thickness_, track_start_,
+                                              is_left_side_vertical_scrollbar_);
 }
 
 scoped_refptr<SolidColorScrollbarLayer> SolidColorScrollbarLayer::Create(
@@ -39,7 +38,6 @@ SolidColorScrollbarLayer::SolidColorScrollbarLayer(
       track_start_(track_start),
       is_left_side_vertical_scrollbar_(is_left_side_vertical_scrollbar) {
   Layer::SetOpacity(0.f);
-  SetIsScrollbar(true);
 }
 
 SolidColorScrollbarLayer::~SolidColorScrollbarLayer() = default;
@@ -50,30 +48,12 @@ void SolidColorScrollbarLayer::SetOpacity(float opacity) {
   Layer::SetOpacity(opacity);
 }
 
-void SolidColorScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
-  Layer::PushPropertiesTo(layer);
-  SolidColorScrollbarLayerImpl* scrollbar_layer =
-      static_cast<SolidColorScrollbarLayerImpl*>(layer);
-
-  DCHECK(!scrollbar_layer->HitTestable());
-
-  scrollbar_layer->SetScrollElementId(scroll_element_id_);
-}
-
 void SolidColorScrollbarLayer::SetNeedsDisplayRect(const gfx::Rect& rect) {
   // Never needs repaint.
 }
 
 bool SolidColorScrollbarLayer::OpacityCanAnimateOnImplThread() const {
   return true;
-}
-
-void SolidColorScrollbarLayer::SetScrollElementId(ElementId element_id) {
-  if (element_id == scroll_element_id_)
-    return;
-
-  scroll_element_id_ = element_id;
-  SetNeedsCommit();
 }
 
 bool SolidColorScrollbarLayer::HitTestable() const {

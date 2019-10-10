@@ -65,7 +65,6 @@ class MockTexture2DWrapper : public Texture2DWrapper {
 
   bool Init(GetCommandBufferHelperCB get_helper_cb,
             size_t array_slice,
-            GLenum target,
             gfx::Size size,
             int textures_per_picture) override {
     return MockInit();
@@ -153,10 +152,10 @@ TEST_P(D3D11CopyingTexture2DWrapperTest,
        CopyingTextureWrapperProcessesCorrectly) {
   auto wrapper = std::make_unique<CopyingTexture2DWrapper>(
       ExpectTextureWrapper(), ExpectProcessorProxy(), nullptr);
-  auto picture_buffer = base::MakeRefCounted<D3D11PictureBuffer>(
-      GL_TEXTURE_EXTERNAL_OES, nullptr, gfx::Size(0, 0), 0);
+  auto picture_buffer =
+      base::MakeRefCounted<D3D11PictureBuffer>(nullptr, gfx::Size(0, 0), 0);
 
-  EXPECT_EQ(wrapper->Init(CreateMockHelperCB(), 0, {}, {}, 0), InitSucceeds());
+  EXPECT_EQ(wrapper->Init(CreateMockHelperCB(), 0, {}, 0), InitSucceeds());
   EXPECT_EQ(wrapper->ProcessTexture(picture_buffer.get(), nullptr),
             ProcessTextureSucceeds());
 }

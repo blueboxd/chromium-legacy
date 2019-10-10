@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Wed, 25 Sep 2019 14:58:51 -0700
-Subject: [PATCH 6/6] Avoid dangling schema pointer
+Subject: [PATCH 6/8] Avoid dangling schema pointer
 
 Backports https://www.sqlite.org/src/info/069c2f4c61f06211
 
@@ -107,5 +107,5 @@ index 3cfd2fa2f0ab..489a51e2e5a0 100644
 +
  finish_test
 -- 
-2.23.0.351.gc4317032e6-goog
+2.20.1 (Apple Git-117)
 

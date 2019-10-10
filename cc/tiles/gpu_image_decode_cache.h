@@ -19,7 +19,6 @@
 #include "cc/cc_export.h"
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/tiles/image_decode_cache.h"
-#include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -177,7 +176,7 @@ class CC_EXPORT GpuImageDecodeCache
 
   // Called by Decode / Upload tasks.
   void DecodeImageInTask(const DrawImage& image, TaskType task_type);
-  void UploadImageInTask(const DrawImage& image, sk_sp<SkData> encoded_data);
+  void UploadImageInTask(const DrawImage& image);
 
   // Called by Decode / Upload tasks when tasks are finished.
   void OnImageDecodeTaskCompleted(const DrawImage& image,
@@ -611,8 +610,7 @@ class CC_EXPORT GpuImageDecodeCache
 
   scoped_refptr<GpuImageDecodeCache::ImageData> CreateImageData(
       const DrawImage& image,
-      bool allow_hardware_decode,
-      sk_sp<SkData>* encoded_data);
+      bool allow_hardware_decode);
   void WillAddCacheEntry(const DrawImage& draw_image);
   SkImageInfo CreateImageInfoForDrawImage(const DrawImage& draw_image,
                                           int upload_scale_mip_level) const;
@@ -646,8 +644,7 @@ class CC_EXPORT GpuImageDecodeCache
 
   // Requires that the |context_| lock be held when calling.
   void UploadImageIfNecessary(const DrawImage& draw_image,
-                              ImageData* image_data,
-                              sk_sp<SkData> encoded_data);
+                              ImageData* image_data);
 
   // Flush pending operations on context_->GrContext() for each element of
   // |yuv_images| and then clear the vector.

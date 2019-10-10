@@ -11,7 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "remoting/base/name_value_map.h"
 #include "remoting/base/remoting_bot.h"
-#include "remoting/base/service_urls.h"
 #include "remoting/signaling/jid_util.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
@@ -84,7 +83,7 @@ SignalingAddress::SignalingAddress(const std::string& address) {
       break;
     case SignalingAddress::Channel::LCS:
       endpoint_id_ = NormalizeJid(address);
-      jid_ = remoting::ServiceUrls::GetInstance()->directory_bot_jid();
+      jid_ = kRemotingBotJid;
       break;
     case SignalingAddress::Channel::FTL:
       jid_ = NormalizeJid(address);

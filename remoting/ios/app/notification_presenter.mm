@@ -36,8 +36,8 @@ constexpr base::TimeDelta kFetchNotificationDelay =
 
 enum NotificationUiState : unsigned int {
   NOT_SHOWN = 0,
-  SHOWN_AT_LEAST_ONCE = 1,
-  USER_CHOSE_DONT_SHOW_AGAIN = 2,
+  SHOWN = 1,
+  SILENCED = 2,
 };
 
 NotificationUiState NSNumberToUiState(NSNumber* number) {
@@ -124,8 +124,7 @@ void NotificationPresenter::OnNotificationFetched(
           objectForFlag:RemotingFlagLastSeenNotificationMessageId]);
   NotificationUiState ui_state = NSNumberToUiState([RemotingPreferences.instance
       objectForFlag:RemotingFlagNotificationUiState]);
-  if (notification->allow_dont_show_again &&
-      ui_state == USER_CHOSE_DONT_SHOW_AGAIN &&
+  if (notification->allow_silence && ui_state == SILENCED &&
       last_seen_message_id == notification->message_id) {
     return;
   }
@@ -140,15 +139,13 @@ void NotificationPresenter::OnNotificationFetched(
     [RemotingPreferences.instance synchronizeFlags];
   }
 
-  BOOL shouldShowDontShowAgain =
-      notification->allow_dont_show_again && ui_state == SHOWN_AT_LEAST_ONCE;
+  BOOL allowSilence = notification->allow_silence && ui_state == SHOWN;
   NotificationDialogViewController* dialogVc =
       [[NotificationDialogViewController alloc]
-            initWithNotificationMessage:*notification
-          shouldShowDontShowAgainToggle:shouldShowDontShowAgain];
-  [dialogVc presentOnTopVCWithCompletion:^(BOOL isDontShowAgainOn) {
-    NotificationUiState new_ui_state =
-        isDontShowAgainOn ? USER_CHOSE_DONT_SHOW_AGAIN : SHOWN_AT_LEAST_ONCE;
+          initWithNotificationMessage:*notification
+                         allowSilence:allowSilence];
+  [dialogVc presentOnTopVCWithCompletion:^(BOOL isSilenced) {
+    NotificationUiState new_ui_state = isSilenced ? SILENCED : SHOWN;
     [RemotingPreferences.instance setObject:UiStateToNSNumber(new_ui_state)
                                     forFlag:RemotingFlagNotificationUiState];
     [RemotingPreferences.instance synchronizeFlags];

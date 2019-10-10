@@ -183,7 +183,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, FailedProvisionalLoad) {
   std::unique_ptr<content::NavigationSimulator> navigation =
       content::NavigationSimulator::CreateRendererInitiated(url, main_rfh());
   navigation->Fail(net::ERR_TIMED_OUT);
-  content::RenderFrameHostTester::For(main_rfh())->SimulateNavigationStop();
+  navigation->AbortCommit();
 
   // Simulate closing the tab.
   DeleteContents();

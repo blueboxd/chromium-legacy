@@ -2695,9 +2695,9 @@ IntSize WebViewImpl::ContentsSize() const {
 }
 
 WebSize WebViewImpl::ContentsPreferredMinimumSize() {
+  DCHECK(AsView().page->MainFrame()->IsLocalFrame());
+
   auto* main_local_frame = DynamicTo<LocalFrame>(AsView().page->MainFrame());
-  if (!main_local_frame)
-    return WebSize();
   Document* document = main_local_frame->GetDocument();
   if (!document || !document->GetLayoutView() || !document->documentElement() ||
       !document->documentElement()->GetLayoutBox())

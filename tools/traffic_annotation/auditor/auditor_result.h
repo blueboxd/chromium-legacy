@@ -12,7 +12,7 @@ class AuditorResult {
  public:
   enum class Type {
     RESULT_OK,               // No error
-    RESULT_IGNORE,           // The item does not require furthure processing.
+    RESULT_IGNORE,           // The item does not require further processing.
     ERROR_FATAL,             // A fatal error that should stop process.
     ERROR_MISSING_TAG_USED,  // A function is called with
                              // MISSING_TRAFFIC_ANNOTATION tag.
@@ -43,7 +43,7 @@ class AuditorResult {
                                    // annotation is not paired with any other
                                    // annotation to be completed.
     ERROR_DIRECT_ASSIGNMENT,       // A value is directly assigned to a mutable
-                                   // annotation or annotation instialized with
+                                   // annotation or annotation initialized with
                                    // list expresssion.
     ERROR_ANNOTATIONS_XML_UPDATE,  // Annotations XML requires update.
     ERROR_TEST_ANNOTATION,         // Annotation for tests is used.

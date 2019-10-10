@@ -91,7 +91,6 @@ class BlinkTestRunner : public RenderViewObserver,
   void SimulateWebContentIndexDelete(const std::string& id) override;
   void SetDeviceScaleFactor(float factor) override;
   void SetDeviceColorSpace(const std::string& name) override;
-  float GetWindowToViewportScale() override;
   std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
       test_runner::WebWidgetTestProxy* web_widget_test_proxy,
       const blink::WebInputEvent& event) override;

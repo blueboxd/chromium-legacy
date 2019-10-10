@@ -158,7 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
   exportDelegate = new ExportDelegate(omniboxOutput, omniboxInput);
 
   omniboxInput.addEventListener('query-inputs-changed', e => {
-    omniboxOutput.updateQueryInputs(e.detail);
     browserProxy.makeRequest(
         e.detail.inputText, e.detail.resetAutocompleteController,
         e.detail.cursorPosition, e.detail.zeroSuggest,
@@ -211,7 +210,6 @@ class ExportDelegate {
     }
     this.omniboxInput_.queryInputs = importData.queryInputs;
     this.omniboxInput_.displayInputs = importData.displayInputs;
-    this.omniboxOutput_.updateQueryInputs(importData.queryInputs);
     this.omniboxOutput_.updateDisplayInputs(importData.displayInputs);
     this.omniboxOutput_.setResponsesHistory(importData.responsesHistory);
     return true;

@@ -15,7 +15,6 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/i18n/character_encoding.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -1448,7 +1447,7 @@ uint64_t WebContentsImpl::GetUploadPosition() {
 }
 
 const std::string& WebContentsImpl::GetEncoding() {
-  return canonical_encoding_;
+  return GetMainFrame()->GetEncoding();
 }
 
 bool WebContentsImpl::WasDiscarded() {
@@ -3675,10 +3674,7 @@ void WebContentsImpl::ReloadFocusedFrame() {
   if (!focused_frame)
     return;
 
-  // TODO(https://crbug.com/995428). This function is deprecated. Navigations
-  // are handled from the browser process. There is no need to send an IPC to
-  // the renderer process for this.
-  focused_frame->Send(new FrameMsg_Reload(focused_frame->GetRoutingID()));
+  focused_frame->Reload();
 }
 
 std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
@@ -6184,11 +6180,6 @@ void WebContentsImpl::UpdateTitle(RenderFrameHost* render_frame_host,
   UpdateTitleForEntry(entry, title);
 }
 
-void WebContentsImpl::UpdateEncoding(RenderFrameHost* render_frame_host,
-                                     const std::string& encoding) {
-  SetEncoding(encoding);
-}
-
 void WebContentsImpl::DocumentAvailableInMainFrame(
     RenderViewHost* render_view_host) {
   for (auto& observer : observers_)
@@ -6770,14 +6761,6 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
 
   is_showing_javascript_dialog_ = false;
   is_showing_before_unload_dialog_ = false;
-}
-
-void WebContentsImpl::SetEncoding(const std::string& encoding) {
-  if (encoding == last_reported_encoding_)
-    return;
-  last_reported_encoding_ = encoding;
-
-  canonical_encoding_ = base::GetCanonicalEncodingNameByAliasName(encoding);
 }
 
 bool WebContentsImpl::IsHidden() {

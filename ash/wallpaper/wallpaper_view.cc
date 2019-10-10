@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "cc/paint/render_surface_filters.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -133,8 +134,14 @@ void WallpaperView::DrawWallpaper(const gfx::ImageSkia& wallpaper,
   // Create the blur and brightness filter to apply to the downsampled image.
   cc::PaintFlags filter_flags;
   cc::FilterOperations operations;
-  operations.Append(
-      cc::FilterOperation::CreateBrightnessFilter(repaint_opacity_));
+  // In tablet mode, the wallpaper already has a color filter applied in
+  // |OnPaint| so we don't need to darken here.
+  // TODO(crbug.com/944152): Merge this with the color filter in
+  // WallpaperBaseView.
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+    operations.Append(
+        cc::FilterOperation::CreateBrightnessFilter(repaint_opacity_));
+  }
   operations.Append(cc::FilterOperation::CreateBlurFilter(
       blur, SkBlurImageFilter::kClamp_TileMode));
   sk_sp<cc::PaintFilter> filter = cc::RenderSurfaceFilters::BuildImageFilter(

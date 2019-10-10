@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-#import <XCTest/XCTest.h>
-
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -24,53 +22,36 @@ namespace {
 // Returns matcher that looks for text in UILabel, UITextView, and UITextField
 // objects, checking if their displayed strings contain the provided |text|.
 id<GREYMatcher> ContainsText(NSString* text) {
-  MatchesBlock matches = ^BOOL(id element) {
+  GREYMatchesBlock matches = ^BOOL(id element) {
     return [[element text] containsString:text];
   };
-  DescribeToBlock describe = ^void(id<GREYDescription> description) {
+  GREYDescribeToBlock describe = ^void(id<GREYDescription> description) {
     [description appendText:[NSString stringWithFormat:@"hasText('%@')", text]];
   };
   id<GREYMatcher> matcher =
       [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
                                            descriptionBlock:describe];
-  return grey_allOf(grey_anyOf(grey_kindOfClass([UILabel class]),
-                               grey_kindOfClass([UITextField class]),
-                               grey_kindOfClass([UITextView class]), nil),
+  return grey_allOf(grey_anyOf(grey_kindOfClassName(@"UILabel"),
+                               grey_kindOfClassName(@"UITextField"),
+                               grey_kindOfClassName(@"UITextView"), nil),
                     matcher, nil);
 }
 
 // A matcher for the main title of the Sad Tab in 'reload' mode.
 id<GREYMatcher> reloadSadTabTitleText() {
-  static id matcher = nil;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    matcher = [GREYMatchers
-        matcherForText:l10n_util::GetNSString(IDS_SAD_TAB_MESSAGE)];
-  });
-  return matcher;
+  return ContainsText(l10n_util::GetNSString(IDS_SAD_TAB_MESSAGE));
 }
 
 // A matcher for the main title of the Sad Tab in 'feedback' mode.
 id<GREYMatcher> feedbackSadTabTitleContainsText() {
-  static id matcher = nil;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    matcher = ContainsText(l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_TRY));
-  });
-  return matcher;
+  return ContainsText(l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_TRY));
 }
 
 // A matcher for a help string suggesting the user use Incognito Mode.
 id<GREYMatcher> incognitoHelpContainsText() {
-  static id matcher = nil;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    matcher =
-        ContainsText(l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_INCOGNITO));
-  });
-  return matcher;
+  return ContainsText(l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_INCOGNITO));
 }
-}
+}  // namespace
 
 // Sad Tab View integration tests for Chrome.
 @interface SadTabViewTestCase : ChromeTestCase

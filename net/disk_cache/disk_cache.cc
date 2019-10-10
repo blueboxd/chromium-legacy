@@ -243,7 +243,7 @@ net::Error CreateCacheBackendImpl(
       std::move(app_status_listener),
 #endif
       net_log, backend, std::move(post_cleanup_callback), std::move(callback));
-  if (type == net::DISK_CACHE || type == net::MEDIA_CACHE) {
+  if (type == net::DISK_CACHE) {
     DCHECK(!had_post_cleanup_callback);
     return creator->Run();
   }

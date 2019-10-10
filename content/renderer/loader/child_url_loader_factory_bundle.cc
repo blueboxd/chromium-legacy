@@ -120,7 +120,7 @@ ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
     : URLLoaderFactoryBundleInfo(
           std::move(base_factories->pending_default_factory()),
           std::move(base_factories->pending_scheme_specific_factories()),
-          std::move(base_factories->pending_initiator_specific_factories()),
+          std::move(base_factories->pending_isolated_world_factories()),
           base_factories->bypass_redirect_checks()) {
   pending_appcache_factory_ =
       std::move(base_factories->pending_appcache_factory());
@@ -132,16 +132,15 @@ ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         pending_appcache_factory,
     SchemeMap pending_scheme_specific_factories,
-    OriginMap pending_initiator_specific_factories,
+    OriginMap pending_isolated_world_factories,
     network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         pending_prefetch_loader_factory,
     bool bypass_redirect_checks)
-    : URLLoaderFactoryBundleInfo(
-          std::move(pending_default_factory),
-          std::move(pending_scheme_specific_factories),
-          std::move(pending_initiator_specific_factories),
-          bypass_redirect_checks),
+    : URLLoaderFactoryBundleInfo(std::move(pending_default_factory),
+                                 std::move(pending_scheme_specific_factories),
+                                 std::move(pending_isolated_world_factories),
+                                 bypass_redirect_checks),
       direct_network_factory_info_(std::move(direct_network_factory_info)),
       pending_prefetch_loader_factory_(
           std::move(pending_prefetch_loader_factory)) {
@@ -157,8 +156,8 @@ ChildURLLoaderFactoryBundleInfo::CreateFactory() {
   other->pending_appcache_factory_ = std::move(pending_appcache_factory_);
   other->pending_scheme_specific_factories_ =
       std::move(pending_scheme_specific_factories_);
-  other->pending_initiator_specific_factories_ =
-      std::move(pending_initiator_specific_factories_);
+  other->pending_isolated_world_factories_ =
+      std::move(pending_isolated_world_factories_);
   other->direct_network_factory_info_ = std::move(direct_network_factory_info_);
   other->pending_prefetch_loader_factory_ =
       std::move(pending_prefetch_loader_factory_);
@@ -327,7 +326,7 @@ ChildURLLoaderFactoryBundle::CloneInternal(bool include_appcache) {
       std::move(default_factory_pending_remote),
       std::move(appcache_factory_pending_remote),
       CloneRemoteMapToPendingRemoteMap(scheme_specific_factories_),
-      CloneRemoteMapToPendingRemoteMap(initiator_specific_factories_),
+      CloneRemoteMapToPendingRemoteMap(isolated_world_factories_),
       std::move(direct_network_factory_info),
       std::move(pending_prefetch_loader_factory), bypass_redirect_checks_);
 }
@@ -359,8 +358,7 @@ ChildURLLoaderFactoryBundle::PassInterface() {
   return std::make_unique<ChildURLLoaderFactoryBundleInfo>(
       std::move(pending_default_factory), std::move(pending_appcache_factory),
       BoundRemoteMapToPendingRemoteMap(std::move(scheme_specific_factories_)),
-      BoundRemoteMapToPendingRemoteMap(
-          std::move(initiator_specific_factories_)),
+      BoundRemoteMapToPendingRemoteMap(std::move(isolated_world_factories_)),
       std::move(direct_network_factory_info),
       std::move(pending_prefetch_loader_factory), bypass_redirect_checks_);
 }

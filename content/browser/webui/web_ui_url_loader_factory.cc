@@ -81,17 +81,26 @@ void ReadData(scoped_refptr<network::ResourceResponse> headers,
 
   uint32_t output_size = bytes->size();
 
-  mojo::DataPipe data_pipe(output_size);
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = output_size;
+  mojo::ScopedDataPipeProducerHandle pipe_producer_handle;
+  mojo::ScopedDataPipeConsumerHandle pipe_consumer_handle;
+  MojoResult create_result = mojo::CreateDataPipe(
+      &options, &pipe_producer_handle, &pipe_consumer_handle);
+  CHECK_EQ(create_result, MOJO_RESULT_OK);
 
   void* buffer = nullptr;
   uint32_t num_bytes = output_size;
-  MojoResult result = data_pipe.producer_handle->BeginWriteData(
+  MojoResult result = pipe_producer_handle->BeginWriteData(
       &buffer, &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
   CHECK_EQ(result, MOJO_RESULT_OK);
   CHECK_GE(num_bytes, output_size);
 
   memcpy(buffer, bytes->front(), output_size);
-  result = data_pipe.producer_handle->EndWriteData(output_size);
+  result = pipe_producer_handle->EndWriteData(output_size);
   CHECK_EQ(result, MOJO_RESULT_OK);
 
   // For media content, |content_length| must be known upfront for data that is
@@ -104,7 +113,7 @@ void ReadData(scoped_refptr<network::ResourceResponse> headers,
   client.Bind(std::move(client_info));
   client->OnReceiveResponse(headers->head);
 
-  client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
+  client->OnStartLoadingResponseBody(std::move(pipe_consumer_handle));
   network::URLLoaderCompletionStatus status(net::OK);
   status.encoded_data_length = output_size;
   status.encoded_body_length = output_size;

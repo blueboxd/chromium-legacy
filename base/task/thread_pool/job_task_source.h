@@ -38,8 +38,9 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
                 RepeatingCallback<size_t()> max_concurrency_callback,
                 PooledTaskRunnerDelegate* delegate);
 
-  experimental::JobHandle GetHandleForTesting() {
-    return experimental::JobHandle(this);
+  static experimental::JobHandle CreateJobHandle(
+      scoped_refptr<internal::JobTaskSource> task_source) {
+    return experimental::JobHandle(std::move(task_source));
   }
 
   // Notifies this task source that max concurrency was increased, and the

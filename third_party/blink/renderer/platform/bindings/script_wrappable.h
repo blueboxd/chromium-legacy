@@ -161,6 +161,11 @@ class PLATFORM_EXPORT ScriptWrappable
     return main_world_wrapper_.NewLocal(isolate);
   }
 
+  static_assert(
+      std::is_trivially_destructible<
+          TraceWrapperV8Reference<v8::Object>>::value,
+      "TraceWrapperV8Reference<v8::Object> should be trivially destructible.");
+
   TraceWrapperV8Reference<v8::Object> main_world_wrapper_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptWrappable);

@@ -2577,17 +2577,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         YY
       </message>
 
-      <!-- Startup errors -->
-      <message name="IDS_OS_VERSION_MISSING_FEATURES" desc="Error message shown when Chrome fails to run due to an incomplete version of Android.">
-        Critical functionality required to run Chrome is missing; either your Chrome installation is incomplete, or not compatible with this version of Android.
-      </message>
-      <message name="IDS_INCOMPATIBLE_LIBRARIES" desc="Error message shown when Chrome fails to start due to having the wrong version of the native library">
-        Chrome’s components are incompatible with one another. Chrome may be upgrading, please try again in a few minutes. If the problem continues, try uninstalling and re-installing Chrome.
-      </message>
-      <message name="IDS_NATIVE_STARTUP_FAILED" desc="Error message shown when Chrome fails to start for other (unknown) reasons">
-        Chrome failed during startup with an unexpected error.
-      </message>
-
       <!-- First Run strings -->
       <message name="IDS_FRE_ACTIVITY_LABEL" desc="Label for first run dialog in Android Recents.">
         Chrome First Run Experience

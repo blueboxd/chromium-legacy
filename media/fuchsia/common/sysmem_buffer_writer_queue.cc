@@ -47,6 +47,7 @@ SysmemBufferWriterQueue::~SysmemBufferWriterQueue() = default;
 
 void SysmemBufferWriterQueue::EnqueueBuffer(
     scoped_refptr<DecoderBuffer> buffer) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   pending_buffers_.push_back(PendingBuffer(buffer));
   PumpPackets();
 }
@@ -54,6 +55,7 @@ void SysmemBufferWriterQueue::EnqueueBuffer(
 void SysmemBufferWriterQueue::Start(std::unique_ptr<SysmemBufferWriter> writer,
                                     SendPacketCB send_packet_cb,
                                     EndOfStreamCB end_of_stream_cb) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!writer_);
 
   writer_ = std::move(writer);
@@ -64,6 +66,7 @@ void SysmemBufferWriterQueue::Start(std::unique_ptr<SysmemBufferWriter> writer,
 }
 
 void SysmemBufferWriterQueue::PumpPackets() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto weak_this = weak_factory_.GetWeakPtr();
 
   while (writer_ && !is_paused_ &&
@@ -112,18 +115,21 @@ void SysmemBufferWriterQueue::PumpPackets() {
 }
 
 void SysmemBufferWriterQueue::ResetQueue() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   pending_buffers_.clear();
   input_queue_position_ = 0;
   is_paused_ = false;
 }
 
 void SysmemBufferWriterQueue::ResetBuffers() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   writer_.reset();
   send_packet_cb_ = SendPacketCB();
   end_of_stream_cb_ = EndOfStreamCB();
 }
 
 void SysmemBufferWriterQueue::ResetPositionAndPause() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto& buffer : pending_buffers_) {
     buffer.buffer_pos = 0;
     buffer.is_complete = false;
@@ -133,12 +139,14 @@ void SysmemBufferWriterQueue::ResetPositionAndPause() {
 }
 
 void SysmemBufferWriterQueue::Unpause() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(is_paused_);
   is_paused_ = false;
   PumpPackets();
 }
 
 void SysmemBufferWriterQueue::ReleaseBuffer(size_t buffer_index) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(writer_);
 
   // Mark the input buffer as complete.
@@ -164,6 +172,7 @@ void SysmemBufferWriterQueue::ReleaseBuffer(size_t buffer_index) {
 }
 
 size_t SysmemBufferWriterQueue::num_buffers() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return writer_ ? writer_->num_buffers() : 0;
 }
 

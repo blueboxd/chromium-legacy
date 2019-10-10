@@ -58,7 +58,7 @@ public class TabListFaviconProvider {
         }
         if (sRoundedChromeDrawable == null) {
             Bitmap chromeBitmap =
-                    BitmapFactory.decodeResource(context.getResources(), R.drawable.chromelogo16);
+                    BitmapFactory.decodeResource(mContext.getResources(), R.drawable.chromelogo16);
             sRoundedChromeDrawable = processBitmap(chromeBitmap);
         }
         mDefaultIconColor = mContext.getResources().getColor(R.color.default_icon_color);
@@ -66,7 +66,7 @@ public class TabListFaviconProvider {
     }
 
     private Drawable processBitmap(Bitmap bitmap) {
-        return FaviconUtils.createRoundedBitmapDrawable(
+        return FaviconUtils.createRoundedBitmapDrawable(mContext.getResources(),
                 Bitmap.createScaledBitmap(bitmap, mFaviconSize, mFaviconSize, true));
     }
 

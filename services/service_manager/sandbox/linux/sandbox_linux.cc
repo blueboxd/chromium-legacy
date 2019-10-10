@@ -293,12 +293,18 @@ bool SandboxLinux::StartSeccompBPF(SandboxType sandbox_type,
   if (hook)
     CHECK(std::move(hook).Run(options));
 
+  // If we allow threads *and* have multiple threads, try to use TSYNC.
+  sandbox::SandboxBPF::SeccompLevel seccomp_level =
+      options.allow_threads_during_sandbox_init && !IsSingleThreaded()
+          ? sandbox::SandboxBPF::SeccompLevel::MULTI_THREADED
+          : sandbox::SandboxBPF::SeccompLevel::SINGLE_THREADED;
+
   // If the kernel supports the sandbox, and if the command line says we
   // should enable it, enable it or die.
   std::unique_ptr<BPFBasePolicy> policy =
       SandboxSeccompBPF::PolicyForSandboxType(sandbox_type, options);
-  SandboxSeccompBPF::StartSandboxWithExternalPolicy(std::move(policy),
-                                                    OpenProc(proc_fd_));
+  SandboxSeccompBPF::StartSandboxWithExternalPolicy(
+      std::move(policy), OpenProc(proc_fd_), seccomp_level);
   SandboxSeccompBPF::RunSandboxSanityChecks(sandbox_type, options);
   seccomp_bpf_started_ = true;
   LogSandboxStarted("seccomp-bpf");
@@ -329,9 +335,13 @@ bool SandboxLinux::InitializeSandbox(SandboxType sandbox_type,
       base::BindOnce(&SandboxLinux::CheckForBrokenPromises,
                      base::Unretained(this), sandbox_type));
 
-  // No matter what, it's always an error to call InitializeSandbox() after
-  // threads have been created.
-  if (!IsSingleThreaded()) {
+  const bool has_threads = !IsSingleThreaded();
+
+  // For now, restrict the |options.allow_threads_during_sandbox_init| option to
+  // the GPU process
+  DCHECK(process_type == switches::kGpuProcess ||
+         !options.allow_threads_during_sandbox_init);
+  if (has_threads && !options.allow_threads_during_sandbox_init) {
     std::string error_message =
         "InitializeSandbox() called with multiple threads in process " +
         process_type + ".";
@@ -339,13 +349,6 @@ bool SandboxLinux::InitializeSandbox(SandboxType sandbox_type,
     // even report an error about it.
     if (IsRunningTSAN())
       return false;
-
-#if defined(OS_CHROMEOS)
-    if (base::SysInfo::IsRunningOnChromeOS() &&
-        process_type == switches::kGpuProcess) {
-      error_message += " This error can be safely ignored in VMTests.";
-    }
-#endif
 
     // The GPU process is allowed to call InitializeSandbox() with threads.
     bool sandbox_failure_fatal = process_type != switches::kGpuProcess;
@@ -371,21 +374,31 @@ bool SandboxLinux::InitializeSandbox(SandboxType sandbox_type,
     }
   }
 
-  // Only one thread is running, pre-initialize if not already done.
+  // At this point we are either single threaded, or we won't be engaging the
+  // semantic layer of the sandbox and we won't care if there are file
+  // descriptors left open.
+
+  // Pre-initialize if not already done.
   if (!pre_initialized_)
     PreinitializeSandbox();
 
-  // Turn on the namespace sandbox if the zygote hasn't done so already.
+  // Turn on the namespace sandbox if our caller wants it (and the zygote hasn't
+  // done so already).
   if (options.engage_namespace_sandbox)
     EngageNamespaceSandbox(false /* from_zygote */);
 
-  CHECK(!HasOpenDirectories())
+  // Check for open directories, which can break the semantic sandbox layer. In
+  // some cases the caller doesn't want to enable the semantic sandbox layer,
+  // and this CHECK should be skipped. In this case, the caller should unset
+  // |options.check_for_open_directories|.
+  CHECK(!options.check_for_open_directories || !HasOpenDirectories())
       << "InitializeSandbox() called after unexpected directories have been "
       << "opened. This breaks the security of the setuid sandbox.";
 
   sandbox::InitLibcLocaltimeFunctions();
 
   // Attempt to limit the future size of the address space of the process.
+  // Fine to call with multiple threads as we don't use RLIMIT_STACK.
   int error = 0;
   const bool limited_as = LimitAddressSpace(&error);
   if (error) {
@@ -448,6 +461,7 @@ bool SandboxLinux::LimitAddressSpace(int* error) {
   // other memory-hungry attack modes.
 
   rlim_t process_data_size_limit = GetProcessDataSizeLimit(sandbox_type);
+  // Fine to call with multiple threads as we don't use RLIMIT_STACK.
   *error = sandbox::ResourceLimits::Lower(RLIMIT_DATA, process_data_size_limit);
 
   // Cache the resource limit before turning on the sandbox.
@@ -510,6 +524,11 @@ void SandboxLinux::StopThreadAndEnsureNotCounted(base::Thread* thread) const {
 
 bool SandboxLinux::EngageNamespaceSandboxInternal(bool from_zygote) {
   CHECK(pre_initialized_);
+  CHECK(IsSingleThreaded())
+      << "The process cannot have multiple threads when engaging the namespace "
+         "sandbox, because the thread engaging the sandbox cannot ensure that "
+         "other threads close all their open directories.";
+
   if (from_zygote) {
     // Check being in a new PID namespace created by the namespace sandbox and
     // being the init process.

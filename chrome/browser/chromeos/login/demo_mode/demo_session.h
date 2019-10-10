@@ -15,19 +15,17 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_extensions_external_loader.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class PrefRegistrySimple;
 
 namespace base {
 class OneShotTimer;
-}
-
-namespace session_manager {
-class SessionManager;
 }
 
 namespace chromeos {

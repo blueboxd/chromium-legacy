@@ -21,7 +21,6 @@
 #include "components/translate/content/browser/content_record_page_language.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
-#include "components/translate/core/common/translate_util.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
@@ -30,14 +29,12 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/web_preferences.h"
 #include "net/http/http_status_code.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 
 namespace translate {
@@ -125,29 +122,6 @@ void ContentTranslateDriver::OnIsPageTranslatedChanged() {
     observer.OnIsPageTranslatedChanged(web_contents);
 }
 
-network::mojom::URLLoaderFactoryPtr
-ContentTranslateDriver::CreateURLLoaderFactory() {
-  // Find the renderer process that will need to use the URLLoaderFactory.
-  // Currently translate requests are only sent to the main frame process.
-  content::RenderProcessHost* process =
-      web_contents()->GetMainFrame()->GetProcess();
-
-  // Create a new URLLoaderFactory, locking the initiator origin to the one
-  // returned by GetTranslateSecurityOrigin.
-  network::mojom::URLLoaderFactoryPtr factory;
-  url::Origin origin = url::Origin::Create(GetTranslateSecurityOrigin());
-
-  // TODO(crbug.com/940068): Since this factory will be removed, sending an
-  // empty network isolation key for now.
-  content::WebPreferences preferences =
-      web_contents()->GetRenderViewHost()->GetWebkitPreferences();
-  process->CreateURLLoaderFactory(
-      origin, network::mojom::CrossOriginEmbedderPolicy::kNone, &preferences,
-      net::NetworkIsolationKey(), mojo::NullRemote(),
-      mojo::MakeRequest(&factory));
-  return factory;
-}
-
 void ContentTranslateDriver::TranslatePage(int page_seq_no,
                                            const std::string& translate_script,
                                            const std::string& source_lang,
@@ -157,7 +131,7 @@ void ContentTranslateDriver::TranslatePage(int page_seq_no,
     return;  // This page has navigated away.
 
   it->second->Translate(
-      translate_script, CreateURLLoaderFactory(), source_lang, target_lang,
+      translate_script, source_lang, target_lang,
       base::BindOnce(&ContentTranslateDriver::OnPageTranslated,
                      base::Unretained(this)));
 }

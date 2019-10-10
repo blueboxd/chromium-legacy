@@ -70,14 +70,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/accessibility/invert_bubble_view.h"
-#include "chrome/browser/ui/views/autofill/payments/local_card_migration_bubble_views.h"
-#include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
-#include "chrome/browser/ui/views/autofill/payments/save_card_bubble_views.h"
-#include "chrome/browser/ui/views/autofill/payments/save_card_failure_bubble_views.h"
-#include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
-#include "chrome/browser/ui/views/autofill/payments/save_card_manage_cards_bubble_views.h"
-#include "chrome/browser/ui/views/autofill/payments/save_card_offer_bubble_views.h"
-#include "chrome/browser/ui/views/autofill/payments/save_card_sign_in_promo_bubble_views.h"
+#include "chrome/browser/ui/views/autofill/autofill_bubble_handler_impl.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
@@ -1026,6 +1019,10 @@ void BrowserView::FullscreenStateChanged() {
 
 void BrowserView::SetToolbarButtonProvider(ToolbarButtonProvider* provider) {
   toolbar_button_provider_ = provider;
+  // Recreate the autofill bubble handler when toolbar button provider changes.
+  autofill_bubble_handler_ =
+      std::make_unique<autofill::AutofillBubbleHandlerImpl>(
+          toolbar_button_provider_, browser_->profile());
 }
 
 bool BrowserView::UpdatePageActionIcon(PageActionIconType type) {
@@ -1034,11 +1031,8 @@ bool BrowserView::UpdatePageActionIcon(PageActionIconType type) {
   return icon ? icon->Update() : false;
 }
 
-void BrowserView::ShowAvatarHighlightAnimation() {
-  AvatarToolbarButton* avatar_button = toolbar_->GetAvatarToolbarButton();
-  if (!avatar_button)
-    return;
-  avatar_button->ShowAvatarHighlightAnimation();
+autofill::AutofillBubbleHandler* BrowserView::GetAutofillBubbleHandler() {
+  return autofill_bubble_handler_.get();
 }
 
 void BrowserView::ExecutePageActionIconForTesting(PageActionIconType type) {
@@ -1309,56 +1303,6 @@ BrowserView::ShowQRCodeGeneratorBubble(
   return bubble;
 }
 
-// TODO(crbug.com/932818): Clean up this two functions and add helper for shared
-// code.
-// TODO(crbug.com/932818): Whether this function returns an owned pointer or not
-// is unclear. Sort that out, and make it return unique_ptr or not as
-// appropriate.
-autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
-    content::WebContents* web_contents,
-    autofill::SaveCardBubbleController* controller,
-    bool user_gesture) {
-  autofill::BubbleType bubble_type = controller->GetBubbleType();
-  PageActionIconView* icon_view =
-      toolbar_button_provider_->GetPageActionIconView(
-          PageActionIconType::kSaveCard);
-  views::View* anchor_view =
-      toolbar_button_provider_->GetAnchorView(PageActionIconType::kSaveCard);
-
-  autofill::SaveCardBubbleViews* bubble = nullptr;
-  switch (bubble_type) {
-    case autofill::BubbleType::LOCAL_SAVE:
-    case autofill::BubbleType::UPLOAD_SAVE:
-      bubble = new autofill::SaveCardOfferBubbleViews(anchor_view, web_contents,
-                                                      controller);
-      break;
-    case autofill::BubbleType::SIGN_IN_PROMO:
-      bubble = new autofill::SaveCardSignInPromoBubbleViews(
-          anchor_view, web_contents, controller);
-      break;
-    case autofill::BubbleType::MANAGE_CARDS:
-      bubble = new autofill::SaveCardManageCardsBubbleViews(
-          anchor_view, web_contents, controller);
-      break;
-    case autofill::BubbleType::FAILURE:
-      bubble = new autofill::SaveCardFailureBubbleViews(
-          anchor_view, web_contents, controller);
-      break;
-    case autofill::BubbleType::UPLOAD_IN_PROGRESS:
-    case autofill::BubbleType::INACTIVE:
-      break;
-  }
-  DCHECK(bubble);
-
-  if (icon_view)
-    bubble->SetHighlightedButton(icon_view);
-
-  views::BubbleDialogDelegateView::CreateBubble(bubble);
-  bubble->Show(user_gesture ? autofill::SaveCardBubbleViews::USER_GESTURE
-                            : autofill::SaveCardBubbleViews::AUTOMATIC);
-  return bubble;
-}
-
 SharingDialog* BrowserView::ShowSharingDialog(
     content::WebContents* web_contents,
     SharingUiController* controller) {
@@ -1393,29 +1337,6 @@ send_tab_to_self::SendTabToSelfBubbleView* BrowserView::ShowSendTabToSelfBubble(
 
   views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->Show(send_tab_to_self::SendTabToSelfBubbleViewImpl::USER_GESTURE);
-  return bubble;
-}
-
-autofill::LocalCardMigrationBubble* BrowserView::ShowLocalCardMigrationBubble(
-    content::WebContents* web_contents,
-    autofill::LocalCardMigrationBubbleController* controller,
-    bool user_gesture) {
-  autofill::LocalCardMigrationBubbleViews* bubble =
-      new autofill::LocalCardMigrationBubbleViews(
-          toolbar_button_provider_->GetAnchorView(
-              PageActionIconType::kLocalCardMigration),
-          web_contents, controller);
-
-  PageActionIconView* icon_view =
-      toolbar_button_provider_->GetPageActionIconView(
-          PageActionIconType::kLocalCardMigration);
-  if (icon_view)
-    bubble->SetHighlightedButton(icon_view);
-
-  views::BubbleDialogDelegateView::CreateBubble(bubble);
-  bubble->Show(user_gesture
-                   ? autofill::LocalCardMigrationBubbleViews::USER_GESTURE
-                   : autofill::LocalCardMigrationBubbleViews::AUTOMATIC);
   return bubble;
 }
 
@@ -2969,7 +2890,8 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
     signin_metrics::AccessPoint access_point,
     bool focus_first_profile_button) {
   // Do not show avatar bubble if there is no avatar menu button.
-  views::Button* avatar_button = toolbar_->GetAvatarToolbarButton();
+  views::Button* avatar_button =
+      toolbar_button_provider_->GetAvatarToolbarButton();
   if (!avatar_button)
     return;
 

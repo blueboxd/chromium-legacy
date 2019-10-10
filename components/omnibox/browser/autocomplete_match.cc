@@ -1118,12 +1118,11 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
 }
 
 bool AutocompleteMatch::ShouldShowTabMatchButton() const {
+  // TODO(pkasting): This kind of presentational logic does not belong on
+  // AutocompleteMatch and should be e.g. a static method in
+  // OmniboxMatchCellView that takes an AutocompleteMatch.
   return has_tab_match && !associated_keyword &&
          !OmniboxFieldTrial::IsTabSwitchSuggestionsDedicatedRowEnabled();
-}
-
-bool AutocompleteMatch::ShouldShowButton() const {
-  return ShouldShowTabMatchButton();
 }
 
 bool AutocompleteMatch::IsTabSwitchSuggestion() const {

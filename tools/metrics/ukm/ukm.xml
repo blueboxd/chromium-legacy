@@ -115,10 +115,21 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Loading.CacheBytes">
+    <obsolete>
+      Deprecated 09/2019. Replaced with Loading.CacheBytes2.
+    </obsolete>
     <summary>
       Bytes loaded from the cache for all resources loaded within the frame.
       This is rounded down to the nearest exponential bucket (with a bucket
       ratio of 1.3).
+    </summary>
+  </metric>
+  <metric name="Loading.CacheBytes2">
+    <summary>
+      Bytes loaded from the cache for all resources loaded within the frame.
+      This includes bytes loaded from both the HTTP cache and memory cache. This
+      is rounded down to the nearest exponential bucket (with a bucket ratio of
+      1.3).
     </summary>
   </metric>
   <metric name="Loading.ImageBytes">

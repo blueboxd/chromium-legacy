@@ -29,11 +29,15 @@ class ProcessMemoryDump;
 }
 }  // namespace base
 
+namespace leveldb {
+class LevelDBDatabaseImpl;
+}
+
 namespace content {
 
-// This is a wrapper around a leveldb::mojom::LevelDBDatabase. Multiple
-// interface pointers can be bound to the same object. The wrapper adds a couple
-// of features not found directly in leveldb.
+// This is a wrapper around a leveldb::LevelDBDatabaseImpl. Multiple interface
+// endpoints can be bound to the same object. The wrapper adds a couple of
+// features not found directly in leveldb:
 // 1) Adds the given prefix, if any, to all keys. This allows the sharing of one
 //    database across many, possibly untrusted, consumers and ensuring that they
 //    can't access each other's values.
@@ -91,11 +95,11 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
 
   // |Delegate::OnNoBindings| will be called when this object has no more
   // bindings and all pending modifications have been processed.
-  StorageAreaImpl(leveldb::mojom::LevelDBDatabase* database,
+  StorageAreaImpl(leveldb::LevelDBDatabaseImpl* database,
                   const std::string& prefix,
                   Delegate* delegate,
                   const Options& options);
-  StorageAreaImpl(leveldb::mojom::LevelDBDatabase* database,
+  StorageAreaImpl(leveldb::LevelDBDatabaseImpl* database,
                   std::vector<uint8_t> prefix,
                   Delegate* delegate,
                   const Options& options);
@@ -152,7 +156,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
 
   const std::vector<uint8_t>& prefix() { return prefix_; }
 
-  leveldb::mojom::LevelDBDatabase* database() { return database_; }
+  leveldb::LevelDBDatabaseImpl* database() { return database_; }
 
   // Commence aggressive flushing. This should be called early during startup,
   // before any localStorage writing. Currently scheduled writes will not be
@@ -322,7 +326,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
   mojo::ReceiverSet<blink::mojom::StorageArea> receivers_;
   mojo::AssociatedRemoteSet<blink::mojom::StorageAreaObserver> observers_;
   Delegate* delegate_;
-  leveldb::mojom::LevelDBDatabase* database_;
+  leveldb::LevelDBDatabaseImpl* database_;
 
   // For commits to work correctly the map loaded state (keys vs keys & values)
   // must stay consistent for a given commit batch.

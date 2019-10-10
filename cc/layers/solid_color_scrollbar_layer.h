@@ -7,12 +7,11 @@
 
 #include "cc/cc_export.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/scrollbar_layer_interface.h"
+#include "cc/layers/scrollbar_layer_base.h"
 
 namespace cc {
 
-class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
-                                           public Layer {
+class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerBase {
  public:
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
@@ -27,16 +26,9 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
 
   // Layer overrides.
   bool OpacityCanAnimateOnImplThread() const override;
-
   void SetOpacity(float opacity) override;
-  void PushPropertiesTo(LayerImpl* layer) override;
-
   void SetNeedsDisplayRect(const gfx::Rect& rect) override;
-
   bool HitTestable() const override;
-
-  // ScrollbarLayerInterface
-  void SetScrollElementId(ElementId element_id) override;
 
  protected:
   SolidColorScrollbarLayer(ScrollbarOrientation orientation,
@@ -45,7 +37,6 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
                            bool is_left_side_vertical_scrollbar);
   ~SolidColorScrollbarLayer() override;
 
-  ElementId scroll_element_id_;
   ScrollbarOrientation orientation_;
   int thumb_thickness_;
   int track_start_;

@@ -340,9 +340,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // - The default factory to be used by a frame.  In this case
   //   |request_initiator| is the origin being committed in the frame (or the
   //   last origin committed in the frame).
-  // - The initiator-specific factory to be used by a frame.  This happens for
-  //   origins covered via
-  //   RenderFrameHost::MarkInitiatorAsRequiringSeparateURLLoaderFactory.
+  // - An isolated-world-specific factory to be used by a frame.  This happens
+  //   for origins covered via
+  //   RenderFrameHost::MarkIsolatedWorldAsRequiringSeparateURLLoaderFactory.
+  //   In this case |request_initiator| is the origin of the isolated world.
   //
   // This method allows the //content embedder to provide a URLLoaderFactory
   // with |request_initiator|-specific properties (e.g. with relaxed

@@ -31,10 +31,10 @@ class ProtoDatabaseProvider;
 namespace optimization_guide {
 class OptimizationGuideService;
 class TopHostProvider;
+class PredictionManager;
 }  // namespace optimization_guide
 
 class OptimizationGuideHintsManager;
-class OptimizationGuideSessionStatistic;
 
 class OptimizationGuideKeyedService
     : public KeyedService,
@@ -60,6 +60,10 @@ class OptimizationGuideKeyedService
     return top_host_provider_.get();
   }
 
+  optimization_guide::PredictionManager* GetPredictionManager() {
+    return prediction_manager_.get();
+  }
+
   // Prompts the load of the hint for the navigation, if there is at least one
   // optimization type registered and there is a hint available.
   void MaybeLoadHintForNavigation(content::NavigationHandle* navigation_handle);
@@ -68,9 +72,11 @@ class OptimizationGuideKeyedService
   void ClearData();
 
   // optimization_guide::OptimizationGuideDecider implementation:
-  void RegisterOptimizationTypes(
-      std::vector<optimization_guide::proto::OptimizationType>
-          optimization_types) override;
+  void RegisterOptimizationTypesAndTargets(
+      const std::vector<optimization_guide::proto::OptimizationType>&
+          optimization_types,
+      const std::vector<optimization_guide::proto::OptimizationTarget>&
+          optimization_targets) override;
   optimization_guide::OptimizationGuideDecision CanApplyOptimization(
       content::NavigationHandle* navigation_handle,
       optimization_guide::proto::OptimizationTarget optimization_target,
@@ -80,12 +86,8 @@ class OptimizationGuideKeyedService
   // KeyedService implementation:
   void Shutdown() override;
 
-  // Update |session_fcp_| with the provided fcp value.
+  // Updates |prediction_manager_| with the provided fcp value.
   void UpdateSessionFCP(base::TimeDelta fcp);
-
-  OptimizationGuideSessionStatistic* GetSessionFCPForTesting() const {
-    return session_fcp_.get();
-  }
 
  private:
   content::BrowserContext* browser_context_;
@@ -93,8 +95,9 @@ class OptimizationGuideKeyedService
   // Manages the storing, loading, and fetching of hints.
   std::unique_ptr<OptimizationGuideHintsManager> hints_manager_;
 
-  // The current session's FCP statistics for HTTP/HTTPS navigations.
-  std::unique_ptr<OptimizationGuideSessionStatistic> session_fcp_;
+  // Manages the storing, loading, and evaluating of optimization target
+  // prediction models.
+  std::unique_ptr<optimization_guide::PredictionManager> prediction_manager_;
 
   // The top host provider to use for fetching information for the user's top
   // hosts. Will be null if the user has not consented to this type of browser

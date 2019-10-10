@@ -231,7 +231,7 @@ bool OverviewController::IsInStartAnimation() {
   return !start_animations_.empty();
 }
 
-bool OverviewController::IsCompletingShutdownAnimations() {
+bool OverviewController::IsCompletingShutdownAnimations() const {
   return !delayed_animations_.empty();
 }
 

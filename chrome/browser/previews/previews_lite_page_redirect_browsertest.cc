@@ -1640,6 +1640,27 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerTimeoutBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageRedirectServerTimeoutBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(
+        LitePagePreviewsOriginProbe_ExternalFailureReported)) {
+  set_origin_probe_success(true);
+
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(browser(),
+                               HttpsLitePageURL(kSuccess, nullptr, -1));
+  VerifyPreviewNotLoaded();
+  ClearDeciderState();
+  histogram_tester.ExpectBucketCount(
+      "Previews.ServerLitePage.ServerResponse",
+      previews::LitePageRedirectServerResponse::kTimeout, 1);
+
+  WaitForServerProbe();
+
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.DidSucceed.AfterReportedFailure.Litepages", true, 1);
+}
+
 class PreviewsLitePageRedirectServerBadServerBrowserTest
     : public PreviewsLitePageRedirectServerBrowserTest {
  public:

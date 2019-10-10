@@ -74,6 +74,9 @@ class PreviewsLitePageRedirectURLLoaderInterceptorTest : public testing::Test {
   void TearDown() override {}
 
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        "add-chrome-proxy-header-for-lpr-tests");
+
     interceptor_ =
         std::make_unique<PreviewsLitePageRedirectURLLoaderInterceptor>(
             shared_factory_, 1, 2);

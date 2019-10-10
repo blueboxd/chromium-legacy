@@ -471,6 +471,9 @@
         <message name="IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON" desc="In Title Case: The string used in the page info ignore password warning button.">
           Ignore
         </message>
+        <message name="IDS_PAGE_INFO_DISMISS_PASSWORD_WARNING_BUTTON" desc="In Title Case: The string used in the page info dismiss password warning button.">
+          Dismiss
+        </message>
       </if>
       <if expr="not use_titlecase">
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON" desc="The string used in the page info change password button.">
@@ -482,7 +485,10 @@
         <message name="IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON" desc="The string used in the page info ignore password warning button.">
           Ignore
         </message>
-      </if>
+        <message name="IDS_PAGE_INFO_DISMISS_PASSWORD_WARNING_BUTTON" desc="The string used in the page info dismiss password warning button.">
+          Dismiss
+        </message>
+       </if>
       <message name="IDS_PAGE_INFO_WHITELIST_PASSWORD_REUSE_BUTTON" desc="The string used in the page info whitelist password reuse button.">
         Site is legitimate
       </message>

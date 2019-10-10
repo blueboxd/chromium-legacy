@@ -1341,8 +1341,7 @@ void NavigationSimulatorImpl::SetKeepLoading(bool keep_loading) {
 
 void NavigationSimulatorImpl::StopLoading() {
   CHECK(render_frame_host_);
-  render_frame_host_->OnMessageReceived(
-      FrameHostMsg_DidStopLoading(render_frame_host_->GetRoutingID()));
+  render_frame_host_->SimulateLoadingCompleted();
 }
 
 void NavigationSimulatorImpl::FailLoading(

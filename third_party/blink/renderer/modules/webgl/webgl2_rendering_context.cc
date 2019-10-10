@@ -146,7 +146,7 @@ void WebGL2RenderingContext::RegisterContextExtensions() {
   RegisterExtension<WebGLMultiDrawInstanced>(webgl_multi_draw_instanced_,
                                              kDraftExtension);
   RegisterExtension<WebGLVideoTexture>(webgl_video_texture_, kDraftExtension);
-  RegisterExtension<OVRMultiview2>(ovr_multiview2_, kDraftExtension);
+  RegisterExtension<OVRMultiview2>(ovr_multiview2_);
 }
 
 void WebGL2RenderingContext::Trace(blink::Visitor* visitor) {

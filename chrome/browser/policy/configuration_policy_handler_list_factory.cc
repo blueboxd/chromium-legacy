@@ -1183,7 +1183,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kTotalMemoryLimitMb,
     prefs::kTotalMemoryLimitMb,
-    base::Value::Type::INTEGER }
+    base::Value::Type::INTEGER },
+  { key::kTLS13HardeningForLocalAnchorsEnabled,
+    prefs::kTLS13HardeningForLocalAnchorsEnabled,
+    base::Value::Type::BOOLEAN },
 };
 // clang-format on
 

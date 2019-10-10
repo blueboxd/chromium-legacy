@@ -211,13 +211,13 @@ void PermissionServiceImpl::RequestPermissions(
       std::make_unique<PendingRequest>(types, std::move(callback));
 
   int pending_request_id = pending_requests_.Add(std::move(pending_request));
-  int id =
-      PermissionControllerImpl::FromBrowserContext(browser_context)
-          ->RequestPermissions(
-              types, context_->render_frame_host(), origin_.GetURL(),
-              user_gesture,
-              base::Bind(&PermissionServiceImpl::OnRequestPermissionsResponse,
-                         weak_factory_.GetWeakPtr(), pending_request_id));
+  int id = PermissionControllerImpl::FromBrowserContext(browser_context)
+               ->RequestPermissions(
+                   types, context_->render_frame_host(), origin_.GetURL(),
+                   user_gesture,
+                   base::BindOnce(
+                       &PermissionServiceImpl::OnRequestPermissionsResponse,
+                       weak_factory_.GetWeakPtr(), pending_request_id));
 
   // Check if the request still exists. It may have been removed by the
   // the response callback.

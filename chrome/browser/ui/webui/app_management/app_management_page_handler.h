@@ -22,12 +22,10 @@
 class Profile;
 
 class AppManagementPageHandler : public app_management::mojom::PageHandler,
-                                 public apps::AppRegistryCache::Observer
 #if defined(OS_CHROMEOS)
-    ,
-                                 public ArcAppListPrefs::Observer
+                                 public ArcAppListPrefs::Observer,
 #endif  // OS_CHROMEOS
-{
+                                 public apps::AppRegistryCache::Observer {
  public:
   AppManagementPageHandler(
       mojo::PendingReceiver<app_management::mojom::PageHandler> receiver,
@@ -79,9 +77,9 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
   Profile* profile_;
 
 #if defined(OS_CHROMEOS)
-  ScopedObserver<ArcAppListPrefs, AppManagementPageHandler>
-      arc_app_list_prefs_observer_;
-  AppManagementShelfDelegate shelf_delegate_;
+  ScopedObserver<ArcAppListPrefs, ArcAppListPrefs::Observer>
+      arc_app_list_prefs_observer_{this};
+  AppManagementShelfDelegate shelf_delegate_{this};
 #endif  // OS_CHROMEOS
 
   DISALLOW_COPY_AND_ASSIGN(AppManagementPageHandler);

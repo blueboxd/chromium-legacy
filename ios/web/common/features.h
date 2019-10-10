@@ -31,6 +31,11 @@ extern const base::Feature kBlockUniversalLinksInOffTheRecordMode;
 // Used to ensure that the render is not suspended.
 extern const base::Feature kKeepsRenderProcessAlive;
 
+// Used to enable the workaround for a WKWebView WKNavigation leak.
+// (crbug.com/1010765).  Clear older pending navigation records when a
+// navigation finishes.
+extern const base::Feature kClearOldNavigationRecordsWorkaround;
+
 // Used to enable committed interstitials for SSL errors.
 extern const base::Feature kSSLCommittedInterstitials;
 

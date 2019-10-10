@@ -47,10 +47,4 @@ declare_args() {
   # TODO(crbug.com/843374): AR should not depend on |enable_vr|.
   enable_arcore = enable_vr && is_android && !is_chromecast &&
                   (current_cpu == "arm" || current_cpu == "arm64")
-
-  # Whether to create AR module as an asynchronous DFM.
-  async_ar = false
-
-  # Whether to create VR module as an asynchronous DFM.
-  async_vr = false
 }

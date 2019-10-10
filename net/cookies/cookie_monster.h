@@ -165,6 +165,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                      const CookieOptions& options,
                                      GetCookieListCallback callback) override;
   void GetAllCookiesAsync(GetAllCookiesCallback callback) override;
+  void GetAllCookiesWithAccessSemanticsAsync(
+      GetAllCookiesWithAccessSemanticsCallback callback) override;
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
   void DeleteAllCreatedInTimeRangeAsync(
@@ -191,10 +193,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // The default list of schemes the cookie monster can handle.
   static const char* const kDefaultCookieableSchemes[];
   static const int kDefaultCookieableSchemesCount;
-
-  // Take ownership of a CookieAccessDelegate.
-  void SetCookieAccessDelegate(
-      std::unique_ptr<CookieAccessDelegate> delegate) override;
 
   void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                        const std::string& parent_absolute_name) const override;
@@ -357,6 +355,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
                           SetCookiesCallback callback);
 
   void GetAllCookies(GetAllCookiesCallback callback);
+
+  void AttachAccessSemanticsListForCookieList(
+      GetAllCookiesWithAccessSemanticsCallback callback,
+      const CookieList& cookie_list);
 
   void GetCookieListWithOptions(const GURL& url,
                                 const CookieOptions& options,
@@ -627,10 +629,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::Time last_statistic_record_time_;
 
   bool persist_session_cookies_;
-
-  // Used to determine whether a particular cookie should be subject to legacy
-  // or non-legacy access semantics.
-  std::unique_ptr<CookieAccessDelegate> cookie_access_delegate_;
 
   base::ThreadChecker thread_checker_;
 

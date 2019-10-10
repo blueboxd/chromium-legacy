@@ -96,6 +96,10 @@ class HintsFetcherTest : public testing::Test {
     return task_environment_.GetMockClock();
   }
 
+  void SetTimeClockForTesting(base::Clock* clock) {
+    hints_fetcher_->SetTimeClockForTesting(clock);
+  }
+
  protected:
   bool FetchHints(const std::vector<std::string>& hosts) {
     bool status = hints_fetcher_->FetchOptimizationGuideServiceHints(
@@ -153,7 +157,7 @@ TEST_F(HintsFetcherTest, FetchOptimizationGuideServiceHints) {
   base::HistogramTester histogram_tester;
 
   std::string response_content;
-  EXPECT_TRUE(FetchHints(std::vector<std::string>()));
+  EXPECT_TRUE(FetchHints(std::vector<std::string>{"foo.com"}));
   VerifyHasPendingFetchRequests();
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
   EXPECT_TRUE(hints_fetched());
@@ -164,16 +168,73 @@ TEST_F(HintsFetcherTest, FetchOptimizationGuideServiceHints) {
 
 // Tests to ensure that multiple hint fetches by the same object cannot be in
 // progress simultaneously.
-TEST_F(HintsFetcherTest, FetchInProcess) {
+TEST_F(HintsFetcherTest, FetchInProgress) {
+  base::SimpleTestClock test_clock;
+  SetTimeClockForTesting(&test_clock);
+
   std::string response_content;
   // Fetch back to back without waiting for Fetch to complete,
   // |fetch_in_progress_| should cause early exit.
-  EXPECT_TRUE(FetchHints(std::vector<std::string>()));
-  EXPECT_FALSE(FetchHints(std::vector<std::string>()));
+  EXPECT_TRUE(FetchHints(std::vector<std::string>{"foo.com"}));
+  EXPECT_FALSE(FetchHints(std::vector<std::string>{"bar.com"}));
 
   // Once response arrives, check to make sure a new fetch can start.
   SimulateResponse(response_content, net::HTTP_OK);
-  EXPECT_TRUE(FetchHints(std::vector<std::string>()));
+  EXPECT_TRUE(FetchHints(std::vector<std::string>{"bar.com"}));
+}
+
+// Tests that the hints are refreshed again for hosts for whom hints were
+// fetched recently.
+TEST_F(HintsFetcherTest, FetchInProgress_HostsHintsRefreshed) {
+  base::SimpleTestClock test_clock;
+  SetTimeClockForTesting(&test_clock);
+
+  std::string response_content;
+  // Fetch back to back without waiting for Fetch to complete,
+  // |fetch_in_progress_| should cause early exit.
+  EXPECT_TRUE(FetchHints(std::vector<std::string>{"foo.com"}));
+  EXPECT_FALSE(FetchHints(std::vector<std::string>{"foo.com"}));
+
+  // Once response arrives, check to make sure that the fetch for the same host
+  // is not started again.
+  SimulateResponse(response_content, net::HTTP_OK);
+  EXPECT_FALSE(FetchHints(std::vector<std::string>{"foo.com"}));
+  // Ensure a new fetch for a different host can start.
+  EXPECT_TRUE(FetchHints(std::vector<std::string>{"bar.com"}));
+  SimulateResponse(response_content, net::HTTP_OK);
+
+  EXPECT_FALSE(FetchHints(std::vector<std::string>{"foo.com"}));
+  EXPECT_FALSE(FetchHints(std::vector<std::string>{"bar.com"}));
+
+  std::vector<std::string> hosts{"foo.com", "bar.com"};
+  // Advancing the clock so that it's still one hour before the hints need to be
+  // refreshed.
+  test_clock.Advance(features::StoredFetchedHintsFreshnessDuration() -
+                     features::GetHintsFetchRefreshDuration() -
+                     base::TimeDelta().FromHours(1));
+
+  EXPECT_FALSE(FetchHints(std::vector<std::string>{"foo.com"}));
+  EXPECT_FALSE(FetchHints(std::vector<std::string>{"bar.com"}));
+
+  // Advancing the clock by a little bit more than 1 hour so that the hints are
+  // now due for refresh.
+  test_clock.Advance(base::TimeDelta::FromMinutes(61));
+
+  EXPECT_TRUE(FetchHints(std::vector<std::string>{"foo.com"}));
+  EXPECT_FALSE(FetchHints(std::vector<std::string>{"bar.com"}));
+  SimulateResponse(response_content, net::HTTP_OK);
+
+  // Hints should not be fetched again for foo.com since they were fetched
+  // recently. Hints should still be fetched for bar.com.
+  EXPECT_FALSE(FetchHints(std::vector<std::string>{"foo.com"}));
+  EXPECT_TRUE(FetchHints(std::vector<std::string>{"bar.com"}));
+  SimulateResponse(response_content, net::HTTP_OK);
+
+  // Hints should not be fetched again for foo.com and bar.com since they were
+  // fetched recently. For baz.com, hints should be fetched again.
+  EXPECT_FALSE(FetchHints(std::vector<std::string>{"foo.com"}));
+  EXPECT_FALSE(FetchHints(std::vector<std::string>{"bar.com"}));
+  EXPECT_TRUE(FetchHints(std::vector<std::string>{"baz.com"}));
 }
 
 // Tests 404 response from request.
@@ -182,7 +243,7 @@ TEST_F(HintsFetcherTest, FetchReturned404) {
 
   std::string response_content;
 
-  EXPECT_TRUE(FetchHints(std::vector<std::string>()));
+  EXPECT_TRUE(FetchHints(std::vector<std::string>{"foo.com"}));
 
   // Send a 404 to HintsFetcher.
   SimulateResponse(response_content, net::HTTP_NOT_FOUND);
@@ -197,7 +258,7 @@ TEST_F(HintsFetcherTest, FetchReturnBadResponse) {
   base::HistogramTester histogram_tester;
 
   std::string response_content = "not proto";
-  EXPECT_TRUE(FetchHints(std::vector<std::string>()));
+  EXPECT_TRUE(FetchHints(std::vector<std::string>{"foo.com"}));
   VerifyHasPendingFetchRequests();
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
   EXPECT_FALSE(hints_fetched());
@@ -212,7 +273,7 @@ TEST_F(HintsFetcherTest, FetchAttemptWhenNetworkOffline) {
 
   SetConnectionOffline();
   std::string response_content;
-  EXPECT_FALSE(FetchHints(std::vector<std::string>()));
+  EXPECT_FALSE(FetchHints(std::vector<std::string>{"foo.com"}));
   EXPECT_FALSE(hints_fetched());
 
   // Make sure histogram not recorded on bad response.
@@ -220,7 +281,7 @@ TEST_F(HintsFetcherTest, FetchAttemptWhenNetworkOffline) {
       "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency", 0);
 
   SetConnectionOnline();
-  EXPECT_TRUE(FetchHints(std::vector<std::string>()));
+  EXPECT_TRUE(FetchHints(std::vector<std::string>{"foo.com"}));
   VerifyHasPendingFetchRequests();
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
   EXPECT_TRUE(hints_fetched());

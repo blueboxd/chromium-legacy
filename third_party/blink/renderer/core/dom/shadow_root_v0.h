@@ -103,7 +103,7 @@ class CORE_EXPORT ShadowRootV0 final : public GarbageCollected<ShadowRootV0> {
 
 inline void ShadowRootV0::DidAddInsertionPoint(V0InsertionPoint* point) {
   DCHECK(point);
-  if (IsHTMLShadowElement(*point))
+  if (IsA<HTMLShadowElement>(*point))
     ++descendant_shadow_element_count_;
   else if (IsA<HTMLContentElement>(*point))
     ++descendant_content_element_count_;
@@ -114,7 +114,7 @@ inline void ShadowRootV0::DidAddInsertionPoint(V0InsertionPoint* point) {
 
 inline void ShadowRootV0::DidRemoveInsertionPoint(V0InsertionPoint* point) {
   DCHECK(point);
-  if (IsHTMLShadowElement(*point)) {
+  if (IsA<HTMLShadowElement>(*point)) {
     DCHECK_GT(descendant_shadow_element_count_, 0u);
     --descendant_shadow_element_count_;
   } else if (IsA<HTMLContentElement>(*point)) {

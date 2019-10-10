@@ -12,6 +12,7 @@
 #include "base/memory/singleton.h"
 #include "base/scoped_observer.h"
 #include "content/public/browser/ax_event_notification_details.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "extensions/browser/api/automation_internal/automation_event_router_interface.h"
 #include "extensions/common/api/automation_internal.h"

@@ -128,8 +128,7 @@ class LenientMockObserver : public FrameNodeImpl::Observer {
   MOCK_METHOD1(OnNetworkAlmostIdleChanged, void(const FrameNode*));
   MOCK_METHOD1(OnFrameLifecycleStateChanged, void(const FrameNode*));
   MOCK_METHOD2(OnOriginTrialFreezePolicyChanged,
-               void(const FrameNode*,
-                    const resource_coordinator::mojom::InterventionPolicy&));
+               void(const FrameNode*, const mojom::InterventionPolicy&));
   MOCK_METHOD2(OnURLChanged, void(const FrameNode*, const GURL&));
   MOCK_METHOD1(OnIsAdFrameChanged, void(const FrameNode*));
   MOCK_METHOD1(OnFrameIsHoldingWebLockChanged, void(const FrameNode*));
@@ -184,8 +183,7 @@ TEST_F(FrameNodeImplTest, ObserverWorks) {
   // Invoke "SetLifecycleState" and expect an "OnFrameLifecycleStateChanged"
   // callback.
   EXPECT_CALL(obs, OnFrameLifecycleStateChanged(raw_frame_node));
-  frame_node->SetLifecycleState(
-      resource_coordinator::mojom::LifecycleState::kFrozen);
+  frame_node->SetLifecycleState(mojom::LifecycleState::kFrozen);
   testing::Mock::VerifyAndClear(&obs);
 
   // Invoke "OnNonPersistentNotificationCreated" and expect an

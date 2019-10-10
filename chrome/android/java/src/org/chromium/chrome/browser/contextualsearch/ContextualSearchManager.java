@@ -23,7 +23,6 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
@@ -1351,12 +1350,7 @@ public class ContextualSearchManager
     public void handleScrollStart() {
         if (mIsAccessibilityModeEnabled) return;
 
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE)
-                || mSelectionController.getSelectionType() == SelectionType.TAP) {
-            hideContextualSearch(StateChangeReason.BASE_PAGE_SCROLL);
-        } else if (mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS) {
-            mSearchPanel.makePanelNotVisible(StateChangeReason.BASE_PAGE_SCROLL);
-        }
+        hideContextualSearch(StateChangeReason.BASE_PAGE_SCROLL);
     }
 
     @Override
@@ -1681,11 +1675,8 @@ public class ContextualSearchManager
 
                 String selection = mSelectionController.getSelectedText();
                 assert !TextUtils.isEmpty(selection);
-                boolean isRestrictedResolve =
-                        mPolicy.isPrivacyAggressiveResolveEnabled() && mPolicy.isPromoAvailable()
-                        || mSelectionController.isAdjustedSelection();
                 mNetworkCommunicator.startSearchTermResolutionRequest(
-                        selection, isRestrictedResolve);
+                        selection, mSelectionController.isAdjustedSelection());
                 // If the we were unable to start the resolve, we've hidden the UI and set the
                 // context to null.
                 if (mContext == null || mSearchPanel == null) return;

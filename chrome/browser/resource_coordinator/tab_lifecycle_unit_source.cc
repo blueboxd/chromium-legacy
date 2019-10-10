@@ -77,7 +77,7 @@ class TabLifecycleStateObserver
  private:
   static void OnLifecycleStateChangedImpl(
       const WebContentsProxy& contents_proxy,
-      mojom::LifecycleState state) {
+      performance_manager::mojom::LifecycleState state) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // If the web contents is still alive then dispatch to the actual
     // implementation in TabLifecycleUnitSource.
@@ -87,7 +87,7 @@ class TabLifecycleStateObserver
 
   static void OnOriginTrialFreezePolicyChangedImpl(
       const WebContentsProxy& contents_proxy,
-      mojom::InterventionPolicy policy) {
+      performance_manager::mojom::InterventionPolicy policy) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // If the web contents is still alive then dispatch to the actual
     // implementation in TabLifecycleUnitSource.
@@ -404,7 +404,7 @@ void TabLifecycleUnitSource::OnBrowserNoLongerActive(Browser* browser) {
 // static
 void TabLifecycleUnitSource::OnLifecycleStateChanged(
     content::WebContents* web_contents,
-    mojom::LifecycleState state) {
+    performance_manager::mojom::LifecycleState state) {
   TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(web_contents);
 
   // Some WebContents aren't attached to a tab, so there is no corresponding
@@ -417,7 +417,7 @@ void TabLifecycleUnitSource::OnLifecycleStateChanged(
 // static
 void TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
     content::WebContents* web_contents,
-    mojom::InterventionPolicy policy) {
+    performance_manager::mojom::InterventionPolicy policy) {
   TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(web_contents);
 
   // Some WebContents aren't attached to a tab, so there is no corresponding

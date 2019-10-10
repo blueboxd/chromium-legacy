@@ -54,8 +54,7 @@ void CookieControlsController::Update(content::WebContents* web_contents) {
         this, TabSpecificContentSettings::FromWebContents(web_contents));
   }
   for (auto& observer : observers_)
-    observer.OnStatusChanged(GetStatus(web_contents));
-  PresentBlockedCookieCounter();
+    observer.OnStatusChanged(GetStatus(web_contents), GetBlockedCookieCount());
 }
 
 CookieControlsController::Status CookieControlsController::GetStatus(
@@ -87,13 +86,6 @@ void CookieControlsController::OnCookieBlockingEnabledForSite(
   Update(GetWebContents());
 }
 
-int CookieControlsController::GetBlockedDomainCount() {
-  const LocalSharedObjectsContainer& blocked_objects =
-      tab_observer_->tab_specific_content_settings()
-          ->blocked_local_shared_objects();
-  return blocked_objects.GetDomainCount();
-}
-
 int CookieControlsController::GetBlockedCookieCount() {
   const LocalSharedObjectsContainer& blocked_objects =
       tab_observer_->tab_specific_content_settings()
@@ -102,11 +94,9 @@ int CookieControlsController::GetBlockedCookieCount() {
 }
 
 void CookieControlsController::PresentBlockedCookieCounter() {
-  const LocalSharedObjectsContainer& blocked_objects =
-      tab_observer_->tab_specific_content_settings()
-          ->blocked_local_shared_objects();
+  int blocked_cookies = GetBlockedCookieCount();
   for (auto& observer : observers_)
-    observer.OnBlockedCookiesCountChanged(blocked_objects.GetObjectCount());
+    observer.OnBlockedCookiesCountChanged(blocked_cookies);
 }
 
 void CookieControlsController::OnPrefChanged() {

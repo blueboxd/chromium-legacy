@@ -14,12 +14,9 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_observer.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
-
-namespace aura {
-class Window;
-}
 
 class ImmersiveModeControllerAsh
     : public ImmersiveModeController,

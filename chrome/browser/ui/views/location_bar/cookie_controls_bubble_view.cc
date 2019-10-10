@@ -55,19 +55,22 @@ CookieControlsBubbleView* CookieControlsBubbleView::GetCookieBubble() {
 }
 
 void CookieControlsBubbleView::OnStatusChanged(
-    CookieControlsController::Status new_status) {
-  if (status_ == new_status)
+    CookieControlsController::Status new_status,
+    int blocked_cookies) {
+  if (status_ == new_status) {
+    OnBlockedCookiesCountChanged(blocked_cookies);
     return;
-
-  show_disable_cookie_blocking_ui_ = false;
+  }
+  intermediate_step_ = IntermediateStep::kNone;
   status_ = new_status;
+  blocked_cookies_ = blocked_cookies;
   UpdateUi();
 }
 
 void CookieControlsBubbleView::OnBlockedCookiesCountChanged(
     int blocked_cookies) {
   // The blocked cookie count changes quite frequently, so avoid unnecessary
-  // UI updates and unnecessarily calling GetBlockedDomainCount() if possible.
+  // UI updates if possible.
   if (blocked_cookies_ == blocked_cookies)
     return;
 
@@ -109,10 +112,18 @@ void CookieControlsBubbleView::UpdateUi() {
   text_->SetVisible(false);
   header_view_->SetVisible(false);
 
-  if (show_disable_cookie_blocking_ui_) {
+  if (intermediate_step_ == IntermediateStep::kTurnOffButton) {
     text_->SetVisible(true);
     text_->SetText(
         l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_DESCRIPTION));
+  } else if (intermediate_step_ == IntermediateStep::kBlockingIsOn) {
+    header_view_->SetVisible(true);
+    header_view_->SetImage(
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_COOKIE_BLOCKING_ON_HEADER));
+    text_->SetVisible(true);
+    text_->SetText(
+        l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_BLOCKED_MESSAGE));
   } else if (status_ == CookieControlsController::Status::kEnabled) {
     header_view_->SetVisible(true);
     header_view_->SetImage(
@@ -137,7 +148,7 @@ void CookieControlsBubbleView::UpdateUi() {
   // The show_disable_cookie_blocking_ui_ state has a different title
   // configuration. To avoid jumping UI, don't resize the bubble. This should be
   // safe as the bubble in this state has less content than in Enabled state.
-  if (!show_disable_cookie_blocking_ui_)
+  if (intermediate_step_ != IntermediateStep::kTurnOffButton)
     SizeToContents();
 }
 
@@ -149,7 +160,7 @@ void CookieControlsBubbleView::CloseBubble() {
 }
 
 int CookieControlsBubbleView::GetDialogButtons() const {
-  if (show_disable_cookie_blocking_ui_ ||
+  if (intermediate_step_ == IntermediateStep::kTurnOffButton ||
       status_ == CookieControlsController::Status::kDisabledForSite) {
     return ui::DIALOG_BUTTON_OK;
   }
@@ -158,9 +169,10 @@ int CookieControlsBubbleView::GetDialogButtons() const {
 
 base::string16 CookieControlsBubbleView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  if (show_disable_cookie_blocking_ui_)
+  if (intermediate_step_ == IntermediateStep::kTurnOffButton)
     return l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_TURN_OFF_BUTTON);
   DCHECK_EQ(status_, CookieControlsController::Status::kDisabledForSite);
+  DCHECK_EQ(intermediate_step_, IntermediateStep::kNone);
   return l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_TURN_ON_BUTTON);
 }
 
@@ -201,13 +213,19 @@ gfx::Size CookieControlsBubbleView::CalculatePreferredSize() const {
 }
 
 base::string16 CookieControlsBubbleView::GetWindowTitle() const {
-  if (show_disable_cookie_blocking_ui_)
-    return l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_TITLE);
+  switch (intermediate_step_) {
+    case IntermediateStep::kTurnOffButton:
+      return l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_TITLE);
+    case IntermediateStep::kBlockingIsOn:
+      return l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_TURNED_ON_TITLE);
+    case IntermediateStep::kNone: {
+      // Determine title based on status_ instead.
+    }
+  }
   switch (status_) {
     case CookieControlsController::Status::kEnabled:
-      return l10n_util::GetPluralStringFUTF16(
-          IDS_COOKIE_CONTROLS_DIALOG_TITLE,
-          controller_->GetBlockedCookieCount());
+      return l10n_util::GetPluralStringFUTF16(IDS_COOKIE_CONTROLS_DIALOG_TITLE,
+                                              blocked_cookies_.value_or(0));
     case CookieControlsController::Status::kDisabledForSite:
       return l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_DIALOG_TITLE_OFF);
     case CookieControlsController::Status::kUninitialized:
@@ -237,11 +255,14 @@ void CookieControlsBubbleView::WindowClosing() {
 }
 
 bool CookieControlsBubbleView::Accept() {
-  if (show_disable_cookie_blocking_ui_) {
+  if (intermediate_step_ == IntermediateStep::kTurnOffButton) {
     controller_->OnCookieBlockingEnabledForSite(false);
   } else {
     DCHECK_EQ(status_, CookieControlsController::Status::kDisabledForSite);
+    DCHECK_EQ(intermediate_step_, IntermediateStep::kNone);
     controller_->OnCookieBlockingEnabledForSite(true);
+    intermediate_step_ = IntermediateStep::kBlockingIsOn;
+    UpdateUi();
   }
   return false;
 }
@@ -256,6 +277,6 @@ void CookieControlsBubbleView::LinkClicked(views::Link* source,
   DCHECK_EQ(status_, CookieControlsController::Status::kEnabled);
   // Don't go through the controller as this is an intermediary state that
   // is only relevant for the bubble UI.
-  show_disable_cookie_blocking_ui_ = true;
+  intermediate_step_ = IntermediateStep::kTurnOffButton;
   UpdateUi();
 }

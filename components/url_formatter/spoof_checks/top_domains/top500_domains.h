@@ -6,7 +6,9 @@
 
 namespace top500_domains {
 
-extern const char* const kTop500[500];
+extern const char* const kTop500EditDistanceSkeletons[500];
+
+extern const char* const kTop500Keywords[500];
 
 }  // namespace top500_domains
 

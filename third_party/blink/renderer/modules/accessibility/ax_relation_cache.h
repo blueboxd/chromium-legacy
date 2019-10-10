@@ -22,6 +22,9 @@ class AXRelationCache {
   explicit AXRelationCache(AXObjectCacheImpl*);
   virtual ~AXRelationCache();
 
+  // Scan the initial document.
+  void Init();
+
   // Returns true if the given object's position in the tree was due to
   // aria-owns.
   bool IsAriaOwned(const AXObject*) const;

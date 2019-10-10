@@ -354,7 +354,7 @@ class ExistingUserController::PolicyStoreLoadWaiter
 
  private:
   base::OnceClosure callback_;
-  ScopedObserver<policy::CloudPolicyStore, PolicyStoreLoadWaiter>
+  ScopedObserver<policy::CloudPolicyStore, policy::CloudPolicyStore::Observer>
       scoped_observer_{this};
 };
 

@@ -236,7 +236,7 @@ body.hide-fakebox #fakebox {
   background-position-x: calc(100% - 16px);
 }
 
-#realbox-matches a.removable {
+#realbox-matches.removable a {
   padding-inline-end: 48px;
 }
 
@@ -304,15 +304,16 @@ html[dir=rtl] #realbox-matches .clock-icon {
 }
 
 #realbox-matches .remove-icon {
-  -webkit-appearance: none;
+  height: 100%;
+  width: 100%;
+}
+
+#realbox-matches a:-webkit-any(:hover, :focus-within) .remove-icon {
   -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_clear.svg);
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 16px;
   background-color: rgb(var(--GG900-rgb));
-  border: none;
-  height: 100%;
-  width: 100%;
 }
 
 #fakebox > input {
@@ -837,13 +838,11 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 }
 
 #promo > div .dismiss-icon {
-  -webkit-appearance: none;
   -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_clear.svg);
   -webkit-mask-position: center center;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 16px;
   background-color: rgb(var(--dismiss-background-rgb));
-  border: none;
   display: block;
   height: 100%;
   outline: none;

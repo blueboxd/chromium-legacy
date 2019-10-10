@@ -44,9 +44,7 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 @property(nonatomic, assign) SceneActivationLevel activationLevel;
 
 // Window for the associated scene, if any.
-@property(nonatomic, strong) UIWindow* window;
-
-@property(nonatomic, strong) UIWindowScene* scene API_AVAILABLE(ios(13));
+@property(nonatomic, weak) UIWindow* window;
 
 // Adds an observer to this scene state. The observers will be notified about
 // scene state changes per SceneStateObserver protocol.

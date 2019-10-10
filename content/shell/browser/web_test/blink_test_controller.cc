@@ -448,18 +448,18 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
     // Shell::SizeTo is not implemented on all platforms.
     main_window_->SizeTo(initial_size_);
 #endif
-    main_window_->web_contents()
-        ->GetRenderViewHost()
-        ->GetWidget()
-        ->GetView()
-        ->SetSize(initial_size_);
-    // Try to reset the window size. This can fail, see crbug.com/772811
-    main_window_->web_contents()
-        ->GetRenderViewHost()
-        ->GetWidget()
-        ->SynchronizeVisualProperties();
     RenderViewHost* render_view_host =
         main_window_->web_contents()->GetRenderViewHost();
+    RenderWidgetHost* render_widget_host = render_view_host->GetWidget();
+    // Set a different size first to reset the possibly inconsistent state
+    // caused by the previous test using unfortunate synchronous resize mode.
+    // This forces SetSize() not to early return which would otherwise happen
+    // when we set the size to initial_size_ which is the same as its current
+    // size. See http://crbug.com/1011191 for more details.
+    render_widget_host->GetView()->SetSize(
+        gfx::Size(initial_size_.width() / 2, initial_size_.height()));
+    render_widget_host->GetView()->SetSize(initial_size_);
+    render_widget_host->SynchronizeVisualProperties();
 
     if (is_devtools_protocol_test) {
       devtools_protocol_test_bindings_.reset(
@@ -476,13 +476,10 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
 
     // Focus the RenderWidgetHost. This will send an IPC message to the
     // renderer to propagate the state change.
-    main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
+    render_widget_host->Focus();
 
     // Flush various interfaces to ensure a test run begins from a known state.
-    main_window_->web_contents()
-        ->GetRenderViewHost()
-        ->GetWidget()
-        ->FlushForTesting();
+    render_widget_host->FlushForTesting();
     GetWebTestControlRemote(render_view_host->GetMainFrame()).FlushForTesting();
 
     if (is_devtools_js_test) {

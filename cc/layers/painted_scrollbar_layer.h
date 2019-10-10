@@ -8,13 +8,12 @@
 #include "cc/cc_export.h"
 #include "cc/input/scrollbar.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/scrollbar_layer_interface.h"
+#include "cc/layers/scrollbar_layer_base.h"
 #include "cc/resources/scoped_ui_resource.h"
 
 namespace cc {
 
-class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
-                                        public Layer {
+class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerBase {
  public:
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
@@ -25,11 +24,6 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   PaintedScrollbarLayer& operator=(const PaintedScrollbarLayer&) = delete;
 
   bool OpacityCanAnimateOnImplThread() const override;
-
-  // ScrollbarLayerInterface
-  void SetScrollElementId(ElementId element_id) override;
-
-  // Layer interface
   bool Update() override;
   void SetLayerTreeHost(LayerTreeHost* host) override;
   void PushPropertiesTo(LayerImpl* layer) override;

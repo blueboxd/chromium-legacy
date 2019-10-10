@@ -13,6 +13,7 @@
 #include "base/containers/span.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/threading/thread_checker.h"
 #include "media/fuchsia/common/stream_processor_helper.h"
 #include "media/fuchsia/common/sysmem_buffer_writer.h"
 
@@ -93,6 +94,9 @@ class SysmemBufferWriterQueue {
 
   SendPacketCB send_packet_cb_;
   EndOfStreamCB end_of_stream_cb_;
+
+  // FIDL interfaces are thread-affine (see crbug.com/1012875).
+  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<SysmemBufferWriterQueue> weak_factory_{this};
 

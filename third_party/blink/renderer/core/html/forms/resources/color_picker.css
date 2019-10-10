@@ -197,7 +197,13 @@ submission-button:hover {
     forced-color-adjust: none;
     border-color: WindowText;
   }
+  color-well {
+    border-bottom: 1px solid WindowText;
+  }
   color-selection-ring {
     forced-color-adjust: none;
+  }
+  format-toggler {
+    border: 1px solid WindowText;
   }
 }

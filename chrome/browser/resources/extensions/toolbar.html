@@ -97,10 +97,11 @@
         narrow-threshold="1000">
       <div class="more-actions">
         <span id="devModeLabel">$i18n{toolbarDevMode}</span>
-        <cr-tooltip-icon hidden$="[[!devModeControlledByPolicy]]"
-            tooltip-text="$i18n{controlledSettingPolicy}"
-            icon-class="cr20:domain"
-            icon-aria-label="$i18n{controlledSettingPolicy}">
+        <cr-tooltip-icon hidden="[[!shouldDisableDevMode_(
+            devModeControlledByPolicy, isSupervised)]]"
+            tooltip-text="[[getTooltipText_(isSupervised)]]"
+            icon-class="[[getIcon_(isSupervised)]]"
+            icon-aria-label="[[getTooltipText_(isSupervised)]]">
         </cr-tooltip-icon>
         <cr-toggle id="devMode" on-change="onDevModeToggleChange_"
             disabled="[[shouldDisableDevMode_(

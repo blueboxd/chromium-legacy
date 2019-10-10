@@ -125,7 +125,7 @@ struct PermissionControllerImpl::Subscription {
   GURL embedding_origin;
   int render_frame_id = -1;
   int render_process_id = -1;
-  base::Callback<void(blink::mojom::PermissionStatus)> callback;
+  base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback;
   int delegate_subscription_id;
 };
 
@@ -166,7 +166,7 @@ PermissionControllerImpl::GetSubscriptionsStatuses(
 
 void PermissionControllerImpl::NotifyChangedSubscriptions(
     const SubscriptionsStatusMap& old_statuses) {
-  std::vector<base::Closure> callbacks;
+  std::vector<base::OnceClosure> callbacks;
   for (const auto& it : old_statuses) {
     auto key = it.first;
     Subscription* subscription = subscriptions_.Lookup(key);
@@ -176,10 +176,10 @@ void PermissionControllerImpl::NotifyChangedSubscriptions(
     blink::mojom::PermissionStatus new_status =
         GetSubscriptionCurrentValue(*subscription);
     if (new_status != old_status)
-      callbacks.push_back(base::Bind(subscription->callback, new_status));
+      callbacks.push_back(base::BindOnce(subscription->callback, new_status));
   }
-  for (const auto& callback : callbacks)
-    callback.Run();
+  for (auto& callback : callbacks)
+    std::move(callback).Run();
 }
 
 PermissionControllerImpl::OverrideStatus
@@ -256,25 +256,26 @@ int PermissionControllerImpl::RequestPermission(
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
-    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
+    base::OnceCallback<void(blink::mojom::PermissionStatus)> callback) {
   NotifySchedulerAboutPermissionRequest(render_frame_host, permission);
 
   base::Optional<blink::mojom::PermissionStatus> status_override =
       devtools_permission_overrides_.Get(url::Origin::Create(requesting_origin),
                                          permission);
   if (status_override.has_value()) {
-    callback.Run(*status_override);
+    std::move(callback).Run(*status_override);
     return kNoPendingOperation;
   }
 
   PermissionControllerDelegate* delegate =
       browser_context_->GetPermissionControllerDelegate();
   if (!delegate) {
-    callback.Run(blink::mojom::PermissionStatus::DENIED);
+    std::move(callback).Run(blink::mojom::PermissionStatus::DENIED);
     return kNoPendingOperation;
   }
   return delegate->RequestPermission(permission, render_frame_host,
-                                     requesting_origin, user_gesture, callback);
+                                     requesting_origin, user_gesture,
+                                     std::move(callback));
 }
 
 int PermissionControllerImpl::RequestPermissions(
@@ -282,8 +283,8 @@ int PermissionControllerImpl::RequestPermissions(
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
-    const base::Callback<
-        void(const std::vector<blink::mojom::PermissionStatus>&)>& callback) {
+    base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)>
+        callback) {
   for (PermissionType permission : permissions)
     NotifySchedulerAboutPermissionRequest(render_frame_host, permission);
 
@@ -382,7 +383,8 @@ int PermissionControllerImpl::SubscribePermissionStatusChange(
     PermissionType permission,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
+    const base::RepeatingCallback<void(blink::mojom::PermissionStatus)>&
+        callback) {
   auto subscription = std::make_unique<Subscription>();
   subscription->permission = permission;
   subscription->callback = callback;
@@ -408,7 +410,7 @@ int PermissionControllerImpl::SubscribePermissionStatusChange(
     subscription->delegate_subscription_id =
         delegate->SubscribePermissionStatusChange(
             permission, render_frame_host, requesting_origin,
-            base::Bind(
+            base::BindRepeating(
                 &PermissionControllerImpl::OnDelegatePermissionStatusChange,
                 base::Unretained(this), subscription.get()));
   } else {

@@ -13,7 +13,7 @@
 #include "base/power_monitor/power_observer.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/audio_focus_request.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -64,13 +64,13 @@ class AudioFocusManager::SourceObserverHolder {
       : identity_(source_id), observer_(std::move(observer)) {
     // Set a connection error handler so that we will remove observers that have
     // had an error / been closed.
-    observer_.set_connection_error_handler(base::BindOnce(
+    observer_.set_disconnect_handler(base::BindOnce(
         &AudioFocusManager::CleanupSourceObservers, base::Unretained(owner)));
   }
 
   ~SourceObserverHolder() = default;
 
-  bool is_valid() const { return !observer_.encountered_error(); }
+  bool is_valid() const { return observer_.is_connected(); }
 
   const base::UnguessableToken& identity() const { return identity_; }
 
@@ -84,7 +84,7 @@ class AudioFocusManager::SourceObserverHolder {
 
  private:
   const base::UnguessableToken identity_;
-  mojom::AudioFocusObserverPtr observer_;
+  mojo::Remote<mojom::AudioFocusObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SourceObserverHolder);
 };

@@ -32,29 +32,29 @@ static const CGFloat kDontShowAgainViewHeightAdjustment = 10.f;
   NSString* _messageText;
   NSString* _linkText;
   NSURL* _linkUrl;
-  BOOL _shouldShowDontShowAgainToggle;
+  BOOL _allowSilence;
   NotificationDialogCompletionBlock _completion;
   MDCDialogTransitionController* _transitionController;
   UILabel* _messageLabel;
   MDCButton* _linkButton;
   MDCButton* _dismissButton;
 
-  // These will be nil if |_shouldShowDontShowAgainToggle| is NO.
+  // These will be nil if |_allowSilence| is NO.
   UISwitch* _dontShowAgainSwitch;
   UILabel* _dontShowAgainLabel;
 }
 
 #pragma mark - UIViewController
 
-- (instancetype)
-      initWithNotificationMessage:(const remoting::NotificationMessage&)message
-    shouldShowDontShowAgainToggle:(BOOL)shouldShowDontShowAgainToggle {
+- (instancetype)initWithNotificationMessage:
+                    (const remoting::NotificationMessage&)message
+                               allowSilence:(BOOL)allowSilence {
   self = [super init];
   if (self) {
     _messageText = base::SysUTF8ToNSString(message.message_text);
     _linkText = base::SysUTF8ToNSString(message.link_text);
     _linkUrl = [NSURL URLWithString:base::SysUTF8ToNSString(message.link_url)];
-    _shouldShowDontShowAgainToggle = shouldShowDontShowAgainToggle;
+    _allowSilence = allowSilence;
 
     _transitionController = [MDCDialogTransitionController new];
     self.modalPresentationStyle = UIModalPresentationCustom;
@@ -130,7 +130,7 @@ static const CGFloat kDontShowAgainViewHeightAdjustment = 10.f;
     [_linkButton.heightAnchor constraintEqualToConstant:kButtonHeight],
   ]];
 
-  if (_shouldShowDontShowAgainToggle) {
+  if (_allowSilence) {
     // This is to allow user to toggle switch by tapping the label. Tap events
     // won't be bubbled down to the switch.
     UITapGestureRecognizer* dontShowAgainTapGestureRecognizer =
@@ -187,7 +187,7 @@ static const CGFloat kDontShowAgainViewHeightAdjustment = 10.f;
               _linkButton.intrinsicContentSize.width);
   CGFloat contentHeight = _messageLabel.intrinsicContentSize.height +
                           2 * kLabelInset + kButtonHeight;
-  if (_shouldShowDontShowAgainToggle) {
+  if (_allowSilence) {
     contentWidth =
         MAX(contentWidth,
             kSwitchInset + _dontShowAgainSwitch.intrinsicContentSize.width +

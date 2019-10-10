@@ -41,11 +41,7 @@ constexpr char kCRDDebugLog[] = "_debug_log";
 // Connect message parameters:
 constexpr char kCRDConnectUserName[] = "userName";
 constexpr char kCRDConnectAuth[] = "authServiceWithToken";
-constexpr char kCRDConnectDirectoryBot[] = "directoryBotJid";
 constexpr char kCRDConnectNoDialogs[] = "noDialogs";
-
-// Connect message parameter values:
-constexpr char kCRDConnectDirectoryBotValue[] = "remoting@bot.talk.google.com";
 
 // CRD host states we care about:
 constexpr char kCRDStateKey[] = "state";
@@ -216,8 +212,6 @@ void It2MeCliHost::StartCRDHostAndGetCode(OAuthTokenGetter::Status status,
 
   connect_params.SetKey(kCRDConnectUserName, base::Value(user_email));
   connect_params.SetKey(kCRDConnectAuth, base::Value("oauth2:" + access_token));
-  connect_params.SetKey(kCRDConnectDirectoryBot,
-                        base::Value(kCRDConnectDirectoryBotValue));
   connect_params.SetKey(kCRDConnectNoDialogs, base::Value(true));
   connect_params_ = std::move(connect_params);
 

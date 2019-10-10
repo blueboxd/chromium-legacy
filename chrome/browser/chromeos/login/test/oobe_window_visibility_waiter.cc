@@ -7,7 +7,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/aura/window.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace chromeos {

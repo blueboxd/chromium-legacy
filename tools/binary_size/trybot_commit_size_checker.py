@@ -34,7 +34,7 @@ be mitigated.
 
 There is guidance at:
 
-https://chromium.googlesource.com/chromium/src/+/master/docs/speed/apk_size_regressions.md#Debugging-Apk-Size-Increase
+https://chromium.googlesource.com/chromium/src/+/master/docs/speed/apk_size_regressions.md
 
 If the growth is expected / justified, then you can bypass this bot failure by
 adding "Binary-Size: $JUSTIFICATION" footer to your commit message (must go at

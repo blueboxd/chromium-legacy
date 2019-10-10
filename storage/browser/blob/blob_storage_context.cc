@@ -520,7 +520,7 @@ void BlobStorageContext::FinishBuilding(BlobEntry* entry) {
               source_item->path(),
               source_item->offset() + copy.source_item_offset, dest_size,
               source_item->expected_modification_time(),
-              source_item->data_handle_);
+              source_item->file_ref_);
           copy.dest_item->set_item(std::move(new_item));
           break;
         }

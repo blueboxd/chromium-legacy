@@ -630,7 +630,8 @@ TEST_F(TabLifecycleUnitSourceTest, CannotFreezeOriginTrialOptOut) {
 
   // Tab cannot be frozen if it opted-out via origin trial.
   TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
-      background_contents, mojom::InterventionPolicy::kOptOut);
+      background_contents,
+      performance_manager::mojom::InterventionPolicy::kOptOut);
   EXPECT_FALSE(background_lifecycle_unit->CanFreeze(&decision_details));
   EXPECT_FALSE(decision_details.IsPositive());
   EXPECT_EQ(DecisionFailureReason::ORIGIN_TRIAL_OPT_OUT,
@@ -656,7 +657,8 @@ TEST_F(TabLifecycleUnitSourceTest, CannotFreezeOriginTrialUnknown) {
 
   // Tab cannot be frozen if its origin trial policy is still unknown.
   TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
-      background_contents, mojom::InterventionPolicy::kUnknown);
+      background_contents,
+      performance_manager::mojom::InterventionPolicy::kUnknown);
   EXPECT_FALSE(background_lifecycle_unit->CanFreeze(&decision_details));
   EXPECT_FALSE(decision_details.IsPositive());
   EXPECT_EQ(DecisionFailureReason::ORIGIN_TRIAL_UNKNOWN,
@@ -700,7 +702,8 @@ TEST_F(TabLifecycleUnitSourceTest, CanFreezeOriginTrialOptIn) {
   // The background tab can be frozen if it opted-in via origin trial, even if
   // it uses notifications in background.
   TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
-      background_contents, mojom::InterventionPolicy::kOptIn);
+      background_contents,
+      performance_manager::mojom::InterventionPolicy::kOptIn);
   EXPECT_TRUE(background_lifecycle_unit->CanFreeze(&decision_details));
   EXPECT_TRUE(decision_details.IsPositive());
   EXPECT_EQ(DecisionSuccessReason::ORIGIN_TRIAL_OPT_IN,
@@ -709,7 +712,8 @@ TEST_F(TabLifecycleUnitSourceTest, CanFreezeOriginTrialOptIn) {
 
   // The foreground tab cannot be frozen, even if it opted-in via origin trial.
   TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
-      foreground_contents, mojom::InterventionPolicy::kOptIn);
+      foreground_contents,
+      performance_manager::mojom::InterventionPolicy::kOptIn);
   EXPECT_FALSE(foreground_lifecycle_unit->CanFreeze(&decision_details));
   EXPECT_FALSE(decision_details.IsPositive());
   EXPECT_EQ(DecisionFailureReason::LIVE_STATE_VISIBLE,
@@ -781,7 +785,8 @@ TEST_F(TabLifecycleUnitSourceTest, TabProactiveDiscardedByFrozenCallback) {
 
   reinterpret_cast<TabLifecycleUnitSource::TabLifecycleUnit*>(
       background_lifecycle_unit)
-      ->UpdateLifecycleState(mojom::LifecycleState::kFrozen);
+      ->UpdateLifecycleState(
+          performance_manager::mojom::LifecycleState::kFrozen);
   EXPECT_EQ(LifecycleUnitState::DISCARDED,
             background_lifecycle_unit->GetState());
   EXPECT_CALL(tab_observer_,

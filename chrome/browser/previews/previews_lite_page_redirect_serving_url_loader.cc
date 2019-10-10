@@ -147,6 +147,26 @@ void InvalidateDRPConfig(int frame_tree_node_id) {
       base::BindOnce(&InvalidateDRPConfigOnUIThread, frame_tree_node_id));
 }
 
+void ReportConnectionFailureOnUIThread(int frame_tree_node_id) {
+  auto* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  // If the WebContents has been closed this may be null.
+  if (!web_contents)
+    return;
+
+  PreviewsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()))
+      ->previews_lite_page_redirect_decider()
+      ->litepages_service_prober()
+      ->ReportExternalFailureAndRetry();
+}
+
+void ReportConnectionFailure(int frame_tree_node_id) {
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&ReportConnectionFailureOnUIThread, frame_tree_node_id));
+}
+
 const base::TimeDelta kBlacklistDuration = base::TimeDelta::FromDays(30);
 
 const net::NetworkTrafficAnnotationTag kPreviewsTrafficAnnotation =
@@ -225,6 +245,7 @@ void PreviewsLitePageRedirectServingURLLoader::Timeout() {
   if (result_callback_.is_null())
     return;
 
+  ReportConnectionFailure(frame_tree_node_id_);
   UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                             previews::LitePageRedirectServerResponse::kTimeout);
 
@@ -426,6 +447,9 @@ void PreviewsLitePageRedirectServingURLLoader::OnComplete(
     forwarding_client_->OnComplete(status);
     return;
   }
+
+  if (status.error_code != net::OK)
+    ReportConnectionFailure(frame_tree_node_id_);
 
   base::UmaHistogramSparse(
       "Previews.ServerLitePage.ServerNetError.BeforeCommit",

@@ -74,6 +74,12 @@ symbol_level = 1
 is_component_build = true
 ```
 
+On Windows, for `clang_base_path` use something like this instead:
+
+```
+clang_base_path = "c:/src/llvm-build"
+```
+
 You can then run `head out/gn/toolchain.ninja` and check that the first to
 lines set `cc` and `cxx` to your clang binary. If things look good, run `ninja
 -C out/gn` to build.

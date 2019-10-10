@@ -33,8 +33,8 @@ struct BLINK_COMMON_EXPORT
   static blink::URLLoaderFactoryBundleInfo::SchemeMap scheme_specific_factories(
       BundleInfoType& bundle);
 
-  static blink::URLLoaderFactoryBundleInfo::OriginMap
-  initiator_specific_factories(BundleInfoType& bundle);
+  static blink::URLLoaderFactoryBundleInfo::OriginMap isolated_world_factories(
+      BundleInfoType& bundle);
 
   static bool bypass_redirect_checks(BundleInfoType& bundle);
 

@@ -147,11 +147,6 @@ class ContextualSearchPolicy {
             return false;
         }
 
-        if (isPrivacyAggressiveResolveEnabled()
-                && mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS) {
-            return true;
-        }
-
         return isPromoAvailable() ? isBasePageHTTP(mNetworkCommunicator.getBasePageUrl()) : true;
     }
 
@@ -255,29 +250,10 @@ class ContextualSearchPolicy {
      *         is no existing request.
      */
     boolean shouldCreateVerbatimRequest() {
-        if (isPrivacyAggressiveResolveEnabled()) return false;
-
         @SelectionType
         int selectionType = mSelectionController.getSelectionType();
         return (mSelectionController.getSelectedText() != null
-                && (selectionType == SelectionType.LONG_PRESS
-                        || (selectionType == SelectionType.TAP
-                                && !shouldPreviousGestureResolve())));
-    }
-
-    /**
-     * Returns whether doing a privacy aggressive resolve is enabled (as opposed to privacy
-     * conservative).  When this is enabled, the selection is sent to the server immediately instead
-     * of waiting for the panel to be opened.  This allows the server to resolve the selection which
-     * will recognize entities, etc. and display those attributes in the Bar.
-     * @return Whether the privacy-aggressive behavior of immediately sending the selection to the
-     *         server is enabled.
-     */
-    boolean isPrivacyAggressiveResolveEnabled() {
-        return ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PRIVACY_AGGRESSIVE.equals(
-                ChromeFeatureList.getFieldTrialParamByFeature(
-                        ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE,
-                        ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PARAM_NAME));
+                && (selectionType == SelectionType.LONG_PRESS || !shouldPreviousGestureResolve()));
     }
 
     /** @return whether Tap is disabled due to the longpress experiment. */

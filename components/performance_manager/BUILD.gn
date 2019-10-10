@@ -74,9 +74,9 @@ static_library("performance_manager") {
   public_deps = [
     "//base",
     "//base/allocator:buildflags",
+    "//components/performance_manager/public/mojom",
     "//content/public/browser",
     "//services/metrics/public/cpp:metrics_cpp",
-    "//services/resource_coordinator/public/mojom",
     "//url",
   ]
 }

@@ -40,12 +40,9 @@
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/switches.h"
@@ -153,12 +150,7 @@ ExtensionApps::ExtensionApps(
     const mojo::Remote<apps::mojom::AppService>& app_service,
     Profile* profile,
     apps::mojom::AppType app_type)
-    : profile_(profile),
-      prefs_observer_(this),
-      registry_observer_(this),
-      content_settings_observer_(this),
-      app_type_(app_type),
-      arc_prefs_(nullptr) {
+    : profile_(profile), app_type_(app_type) {
   Initialize(app_service);
 }
 

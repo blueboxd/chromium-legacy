@@ -644,7 +644,7 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   nalu_data_sizes.reserve(3);
   nalu_data_ptrs.push_back(&active_sps_.front());
   nalu_data_sizes.push_back(active_sps_.size());
-  if (!last_spsext_.empty()) {
+  if (!active_spsext_.empty()) {
     nalu_data_ptrs.push_back(&active_spsext_.front());
     nalu_data_sizes.push_back(active_spsext_.size());
   }
@@ -761,8 +761,9 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
       return;
     }
     switch (nalu.nal_unit_type) {
-      case H264NALU::kSPS:
-        result = parser_.ParseSPS(&last_sps_id_);
+      case H264NALU::kSPS: {
+        int sps_id = -1;
+        result = parser_.ParseSPS(&sps_id);
         if (result == H264Parser::kUnsupportedStream) {
           WriteToMediaLog(MediaLog::MEDIALOG_ERROR, "Unsupported SPS");
           NotifyError(PLATFORM_FAILURE, SFT_UNSUPPORTED_STREAM);
@@ -773,16 +774,27 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
           NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
           return;
         }
-        last_sps_.assign(nalu.data, nalu.data + nalu.size);
-        last_spsext_.clear();
+        seen_sps_[sps_id].assign(nalu.data, nalu.data + nalu.size);
+        seen_spsext_.erase(sps_id);
         break;
+      }
 
-      case H264NALU::kSPSExt:
-        last_spsext_.assign(nalu.data, nalu.data + nalu.size);
+      case H264NALU::kSPSExt: {
+        int sps_id = -1;
+        result = parser_.ParseSPSExt(&sps_id);
+        if (result != H264Parser::kOk) {
+          WriteToMediaLog(MediaLog::MEDIALOG_ERROR,
+                          "Could not parse SPS extension");
+          NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
+          return;
+        }
+        seen_spsext_[sps_id].assign(nalu.data, nalu.data + nalu.size);
         break;
+      }
 
-      case H264NALU::kPPS:
-        result = parser_.ParsePPS(&last_pps_id_);
+      case H264NALU::kPPS: {
+        int pps_id = -1;
+        result = parser_.ParsePPS(&pps_id);
         if (result == H264Parser::kUnsupportedStream) {
           WriteToMediaLog(MediaLog::MEDIALOG_ERROR, "Unsupported PPS");
           NotifyError(PLATFORM_FAILURE, SFT_UNSUPPORTED_STREAM);
@@ -793,8 +805,9 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
           NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
           return;
         }
-        last_pps_.assign(nalu.data, nalu.data + nalu.size);
+        seen_pps_[pps_id].assign(nalu.data, nalu.data + nalu.size);
         break;
+      }
 
       case H264NALU::kSliceDataA:
       case H264NALU::kSliceDataB:
@@ -821,7 +834,6 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
           }
 
           // Lookup SPS and PPS.
-          DCHECK_EQ(slice_hdr.pic_parameter_set_id, last_pps_id_);
           const H264PPS* pps = parser_.GetPPS(slice_hdr.pic_parameter_set_id);
           if (!pps) {
             WriteToMediaLog(MediaLog::MEDIALOG_ERROR,
@@ -830,7 +842,6 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
             return;
           }
 
-          DCHECK_EQ(pps->seq_parameter_set_id, last_sps_id_);
           const H264SPS* sps = parser_.GetSPS(pps->seq_parameter_set_id);
           if (!sps) {
             WriteToMediaLog(MediaLog::MEDIALOG_ERROR,
@@ -840,11 +851,12 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
           }
 
           // Record the configuration.
-          // TODO(sandersd): Ideally this would be skipped if we know there
-          // have not been any parameter sets since the last frame.
-          active_sps_ = last_sps_;
-          active_spsext_ = last_spsext_;
-          active_pps_ = last_pps_;
+          DCHECK(seen_pps_.count(slice_hdr.pic_parameter_set_id));
+          DCHECK(seen_sps_.count(pps->seq_parameter_set_id));
+          active_sps_ = seen_sps_[slice_hdr.pic_parameter_set_id];
+          // Note: SPS extension lookup may create an empty entry.
+          active_spsext_ = seen_spsext_[slice_hdr.pic_parameter_set_id];
+          active_pps_ = seen_pps_[pps->seq_parameter_set_id];
 
           // Compute and store frame properties. |image_size| gets filled in
           // later, since it comes from the decoder configuration.

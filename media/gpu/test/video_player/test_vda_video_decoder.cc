@@ -12,7 +12,6 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/waiting.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
@@ -47,11 +46,13 @@ TestVDAVideoDecoder::TestVDAVideoDecoder(
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
       decode_start_timestamps_(kTimestampCacheSize) {
-  DETACH_FROM_SEQUENCE(vda_wrapper_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
 
   // TODO(crbug.com/933632) Remove support for allocate mode, and always use
   // import mode. Support for allocate mode is temporary maintained for older
   // platforms that don't support import mode.
+
+  vda_wrapper_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
@@ -268,6 +269,8 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
 }
 
 void TestVDAVideoDecoder::DismissPictureBuffer(int32_t picture_buffer_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
+
   // Drop reference to the video frame associated with the picture buffer, so
   // the video frame and related texture are automatically destroyed once the
   // renderer and video frame processors are done using them.
@@ -321,11 +324,22 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
   // |video_frames_| to map between picture buffers and frames, but that
   // reference will be released when the decoder calls DismissPictureBuffer()
   // (e.g. on a resolution change).
-  base::OnceClosure reuse_cb = BindToCurrentLoop(
-      base::BindOnce(&TestVDAVideoDecoder::ReusePictureBufferTask, weak_this_,
-                     picture.picture_buffer_id()));
+  base::OnceClosure reuse_cb =
+      base::BindOnce(&TestVDAVideoDecoder::ReusePictureBufferThunk, weak_this_,
+                     vda_wrapper_task_runner_, picture.picture_buffer_id());
   wrapped_video_frame->AddDestructionObserver(std::move(reuse_cb));
   output_cb_.Run(std::move(wrapped_video_frame));
+}
+
+// static
+void TestVDAVideoDecoder::ReusePictureBufferThunk(
+    base::Optional<base::WeakPtr<TestVDAVideoDecoder>> vda_video_decoder,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    int32_t picture_buffer_id) {
+  DCHECK(vda_video_decoder);
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&TestVDAVideoDecoder::ReusePictureBufferTask,
+                                *vda_video_decoder, picture_buffer_id));
 }
 
 // Called when a picture buffer is ready to be re-used.

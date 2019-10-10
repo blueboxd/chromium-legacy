@@ -181,7 +181,8 @@ class OptimizationGuideKeyedServiceBrowserTest
 
   void RegisterWithKeyedService() {
     OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
-        ->RegisterOptimizationTypes({optimization_guide::proto::NOSCRIPT});
+        ->RegisterOptimizationTypesAndTargets(
+            {optimization_guide::proto::NOSCRIPT}, /*optimization_targets=*/{});
   }
 
   void PushHintsComponentAndWaitForCompletion() {

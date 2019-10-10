@@ -11,13 +11,13 @@
 #include "ash/public/cpp/frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/shelf_test_api.h"
+#include "ash/public/cpp/split_view_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/mojom/constants.mojom.h"
 #include "ash/shell.h"                                  // mash-ok
 #include "ash/wm/overview/overview_controller.h"        // mash-ok
-#include "ash/wm/splitview/split_view_controller.h"     // mash-ok
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"  // mash-ok
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
@@ -1280,8 +1280,8 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
   EndOverview();
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
-  ash::Shell::Get()->split_view_controller()->SnapWindow(
-      widget->GetNativeWindow(), ash::SplitViewController::LEFT);
+  ash::SplitViewTestApi().SnapWindow(widget->GetNativeWindow(),
+                                     ash::SplitViewTestApi::SnapPosition::LEFT);
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
 }
 
@@ -1316,8 +1316,8 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   EndOverview();
   EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
 
-  ash::Shell::Get()->split_view_controller()->SnapWindow(
-      widget2->GetNativeWindow(), ash::SplitViewController::RIGHT);
+  ash::SplitViewTestApi().SnapWindow(
+      widget2->GetNativeWindow(), ash::SplitViewTestApi::SnapPosition::RIGHT);
   EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
 }
 

@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -20,8 +21,81 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+
+using views::BoxLayout;
+
+namespace {
+
+// Fixed height of the illustration shown on the top of the dialog.
+constexpr int kIllustrationHeight = 120;
+
+// Fixed background color of the illustration shown on the top of the dialog in
+// normal mode.
+constexpr SkColor kPictureBackgroundColor = SkColorSetARGB(0x0A, 0, 0, 0);
+
+// Fixed background color of the illustration shown on the top of the dialog in
+// dark mode.
+constexpr SkColor kPictureBackgroundColorDarkMode =
+    SkColorSetARGB(0x1A, 0x00, 0x00, 0x00);
+
+// Updates the image displayed on the illustration based on the current theme.
+void UpdateImageView(NonAccessibleImageView* image_view,
+                     bool dark_mode_enabled) {
+  image_view->SetImage(
+      gfx::CreateVectorIcon(dark_mode_enabled ? kPasswordCheckWarningDarkIcon
+                                              : kPasswordCheckWarningIcon,
+                            dark_mode_enabled ? kPictureBackgroundColorDarkMode
+                                              : kPictureBackgroundColor));
+}
+
+// Creates the illustration which is rendered on top of the dialog.
+std::unique_ptr<NonAccessibleImageView> CreateIllustration(
+    bool dark_mode_enabled) {
+  const gfx::Size illustration_size(
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH),
+      kIllustrationHeight);
+  auto image_view = std::make_unique<NonAccessibleImageView>();
+  image_view->SetPreferredSize(illustration_size);
+  UpdateImageView(image_view.get(), dark_mode_enabled);
+  image_view->SetSize(illustration_size);
+  image_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
+  return image_view;
+}
+
+// Sets up the content containing the title and description for the dialog
+// rendered below the illustration.
+std::unique_ptr<views::View> SetupContent(const base::string16& title) {
+  auto content = std::make_unique<views::View>();
+  content->SetLayoutManager(std::make_unique<BoxLayout>(
+      BoxLayout::Orientation::kVertical, gfx::Insets(),
+      views::LayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
+  content->SetBorder(views::CreateEmptyBorder(
+      views::LayoutProvider::Get()->GetDialogInsetsForContentType(
+          views::CONTROL, views::CONTROL)));
+
+  auto title_label = std::make_unique<views::Label>(
+      title, views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY);
+  title_label->SetMultiLine(true);
+  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  content->AddChildView(std::move(title_label));
+
+  return content;
+}
+
+// Creates the description on the modal warning dialog.
+views::Label* CreateMessageBodyLabel(base::string16 text) {
+  views::Label* message_body_label = new views::Label(text);
+  message_body_label->SetMultiLine(true);
+  message_body_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  message_body_label->SetHandlesTooltips(false);
+  return message_body_label;
+}
+
+}  // namespace
 
 namespace safe_browsing {
 
@@ -52,18 +126,46 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
   // |service| maybe NULL in tests.
   if (service_)
     service_->AddObserver(this);
+
+  views::Label* message_body_label = CreateMessageBodyLabel(
+      service_
+          ? service_->GetWarningDetailText(password_type)
+          : l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS));
+
+  if (password_type.account_type() ==
+      ReusedPasswordAccountType::SAVED_PASSWORD) {
+    CreateSavedPasswordReuseModalWarningDialog(message_body_label);
+  } else {
+    CreateGaiaPasswordReuseModalWarningDialog(message_body_label);
+  }
+}
+
+PasswordReuseModalWarningDialog::~PasswordReuseModalWarningDialog() {
+  if (service_)
+    service_->RemoveObserver(this);
+}
+
+void PasswordReuseModalWarningDialog::
+    CreateSavedPasswordReuseModalWarningDialog(
+        views::Label* message_body_label) {
+  SetLayoutManager(std::make_unique<BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      0 /* between_child_spacing */));
+  std::unique_ptr<NonAccessibleImageView> illustration =
+      CreateIllustration(GetNativeTheme()->ShouldUseDarkColors());
+  std::unique_ptr<views::View> content = SetupContent(
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY));
+  content->AddChildView(std::move(message_body_label));
+  AddChildView(std::move(illustration));
+  AddChildView(std::move(content));
+}
+
+void PasswordReuseModalWarningDialog::CreateGaiaPasswordReuseModalWarningDialog(
+    views::Label* message_body_label) {
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   set_margins(
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
   SetLayoutManager(std::make_unique<views::FillLayout>());
-
-  views::Label* message_body_label = new views::Label(
-      service_
-          ? service_->GetWarningDetailText(password_type)
-          : l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS));
-  message_body_label->SetMultiLine(true);
-  message_body_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  message_body_label->SetHandlesTooltips(false);
   // Makes message label align with title label.
   int horizontal_adjustment =
       kIconSize +
@@ -78,11 +180,6 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
   AddChildView(message_body_label);
 }
 
-PasswordReuseModalWarningDialog::~PasswordReuseModalWarningDialog() {
-  if (service_)
-    service_->RemoveObserver(this);
-}
-
 gfx::Size PasswordReuseModalWarningDialog::CalculatePreferredSize() const {
   constexpr int kDialogWidth = 400;
   return gfx::Size(kDialogWidth, GetHeightForWidth(kDialogWidth));
@@ -93,7 +190,12 @@ ui::ModalType PasswordReuseModalWarningDialog::GetModalType() const {
 }
 
 base::string16 PasswordReuseModalWarningDialog::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
+  // It's ok to return an empty string for the title as this method
+  // is from views::DialogDelegateView class.
+  return password_type_.account_type() ==
+                 ReusedPasswordAccountType::SAVED_PASSWORD
+             ? base::string16()
+             : l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
 }
 
 bool PasswordReuseModalWarningDialog::ShouldShowCloseButton() const {
@@ -101,11 +203,22 @@ bool PasswordReuseModalWarningDialog::ShouldShowCloseButton() const {
 }
 
 gfx::ImageSkia PasswordReuseModalWarningDialog::GetWindowIcon() {
-  return gfx::CreateVectorIcon(kSecurityIcon, kIconSize, gfx::kChromeIconGrey);
+  return password_type_.account_type() ==
+                 ReusedPasswordAccountType::SAVED_PASSWORD
+             ? gfx::ImageSkia()
+             : gfx::CreateVectorIcon(kSecurityIcon, kIconSize,
+                                     gfx::kChromeIconGrey);
 }
 
 bool PasswordReuseModalWarningDialog::ShouldShowWindowIcon() const {
   return true;
+}
+
+int PasswordReuseModalWarningDialog::GetDialogButtons() const {
+  return password_type_.account_type() ==
+                 ReusedPasswordAccountType::SAVED_PASSWORD
+             ? ui::DIALOG_BUTTON_OK
+             : ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
 bool PasswordReuseModalWarningDialog::Cancel() {
@@ -114,7 +227,10 @@ bool PasswordReuseModalWarningDialog::Cancel() {
 }
 
 bool PasswordReuseModalWarningDialog::Accept() {
-  std::move(done_callback_).Run(WarningAction::CHANGE_PASSWORD);
+  if (password_type_.account_type() !=
+      ReusedPasswordAccountType::SAVED_PASSWORD)
+    std::move(done_callback_).Run(WarningAction::CHANGE_PASSWORD);
+
   return true;
 }
 
@@ -128,11 +244,17 @@ base::string16 PasswordReuseModalWarningDialog::GetDialogButtonLabel(
     ui::DialogButton button) const {
   switch (button) {
     case ui::DIALOG_BUTTON_OK:
-      return l10n_util::GetStringUTF16(
-          password_type_.account_type() ==
-                  ReusedPasswordAccountType::NON_GAIA_ENTERPRISE
-              ? IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON
-              : IDS_PAGE_INFO_PROTECT_ACCOUNT_BUTTON);
+      switch (password_type_.account_type()) {
+        case ReusedPasswordAccountType::NON_GAIA_ENTERPRISE:
+          return l10n_util::GetStringUTF16(
+              IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON);
+        case ReusedPasswordAccountType::SAVED_PASSWORD:
+          return l10n_util::GetStringUTF16(
+              IDS_PAGE_INFO_DISMISS_PASSWORD_WARNING_BUTTON);
+        default:
+          return l10n_util::GetStringUTF16(
+              IDS_PAGE_INFO_PROTECT_ACCOUNT_BUTTON);
+      }
     case ui::DIALOG_BUTTON_CANCEL:
       return l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON);

@@ -706,7 +706,6 @@ group("gn_all") {
       "//components/metrics:serialization",
       "//components/rappor:unit_tests",
       "//components/services/filesystem:filesystem_service_unittests",
-      "//components/services/leveldb:leveldb_service_unittests",
       "//components/sessions:unit_tests",
       "//media/blink:media_blink_unittests",
       "//media/cast:udp_proxy",

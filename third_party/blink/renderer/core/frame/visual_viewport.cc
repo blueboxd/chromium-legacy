@@ -34,7 +34,7 @@
 
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/picture_layer.h"
-#include "cc/layers/scrollbar_layer_interface.h"
+#include "cc/layers/scrollbar_layer_base.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -293,7 +293,7 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
         IntPoint());
   }
 
-  if (overlay_scrollbar_horizontal_) {
+  if (scrollbar_graphics_layer_horizontal_) {
     EffectPaintPropertyNode::State state;
     state.local_transform_space = transform_parent;
     state.direct_compositing_reasons =
@@ -310,13 +310,13 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
                                     *effect_parent, std::move(state)));
     }
 
-    overlay_scrollbar_horizontal_->SetLayerState(
+    scrollbar_graphics_layer_horizontal_->SetLayerState(
         PropertyTreeState(*transform_parent, *context.current.clip,
                           *horizontal_scrollbar_effect_node_),
         ScrollbarOffset(ScrollbarOrientation::kHorizontalScrollbar));
   }
 
-  if (overlay_scrollbar_vertical_) {
+  if (scrollbar_graphics_layer_vertical_) {
     EffectPaintPropertyNode::State state;
     state.local_transform_space = transform_parent;
     state.direct_compositing_reasons =
@@ -333,7 +333,7 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
                                     *effect_parent, std::move(state)));
     }
 
-    overlay_scrollbar_vertical_->SetLayerState(
+    scrollbar_graphics_layer_vertical_->SetLayerState(
         PropertyTreeState(*transform_parent, *context.current.clip,
                           *vertical_scrollbar_effect_node_),
         ScrollbarOffset(ScrollbarOrientation::kVerticalScrollbar));
@@ -382,8 +382,8 @@ void VisualViewport::SetSize(const IntSize& size) {
                        ViewportToTracedValue());
 
   // Need to re-compute sizes for the overlay scrollbars.
-  if (overlay_scrollbar_horizontal_) {
-    DCHECK(overlay_scrollbar_vertical_);
+  if (scrollbar_graphics_layer_horizontal_) {
+    DCHECK(scrollbar_graphics_layer_vertical_);
     SetupScrollbar(kHorizontalScrollbar);
     SetupScrollbar(kVerticalScrollbar);
   }
@@ -582,7 +582,8 @@ void VisualViewport::CreateLayerTree() {
   if (scroll_layer_)
     return;
 
-  DCHECK(!overlay_scrollbar_horizontal_ && !overlay_scrollbar_vertical_);
+  DCHECK(!scrollbar_graphics_layer_horizontal_ &&
+         !scrollbar_graphics_layer_vertical_);
 
   needs_paint_property_update_ = true;
 
@@ -632,15 +633,16 @@ void VisualViewport::InitializeScrollbars() {
 
   if (VisualViewportSuppliesScrollbars() &&
       !GetPage().GetSettings().GetHideScrollbars()) {
-    DCHECK(!overlay_scrollbar_horizontal_);
-    DCHECK(!overlay_scrollbar_vertical_);
-    overlay_scrollbar_horizontal_ = std::make_unique<GraphicsLayer>(*this);
-    overlay_scrollbar_vertical_ = std::make_unique<GraphicsLayer>(*this);
+    DCHECK(!scrollbar_graphics_layer_horizontal_);
+    DCHECK(!scrollbar_graphics_layer_vertical_);
+    scrollbar_graphics_layer_horizontal_ =
+        std::make_unique<GraphicsLayer>(*this);
+    scrollbar_graphics_layer_vertical_ = std::make_unique<GraphicsLayer>(*this);
     SetupScrollbar(kHorizontalScrollbar);
     SetupScrollbar(kVerticalScrollbar);
   } else {
-    overlay_scrollbar_horizontal_ = nullptr;
-    overlay_scrollbar_vertical_ = nullptr;
+    scrollbar_graphics_layer_horizontal_ = nullptr;
+    scrollbar_graphics_layer_vertical_ = nullptr;
   }
 
   // Ensure existing LocalFrameView scrollbars are removed if the visual
@@ -674,15 +676,14 @@ IntPoint VisualViewport::ScrollbarOffset(
 void VisualViewport::SetupScrollbar(ScrollbarOrientation orientation) {
   bool is_horizontal = orientation == kHorizontalScrollbar;
   GraphicsLayer* scrollbar_graphics_layer =
-      is_horizontal ? overlay_scrollbar_horizontal_.get()
-                    : overlay_scrollbar_vertical_.get();
-  std::unique_ptr<ScrollingCoordinator::ScrollbarLayerGroup>&
-      scrollbar_layer_group = is_horizontal ? scrollbar_layer_group_horizontal_
-                                            : scrollbar_layer_group_vertical_;
+      is_horizontal ? scrollbar_graphics_layer_horizontal_.get()
+                    : scrollbar_graphics_layer_vertical_.get();
+  scoped_refptr<cc::ScrollbarLayerBase>& scrollbar_layer =
+      is_horizontal ? scrollbar_layer_horizontal_ : scrollbar_layer_vertical_;
   if (!scrollbar_graphics_layer->Parent())
     root_transform_layer_->AddChild(scrollbar_graphics_layer);
 
-  if (!scrollbar_layer_group) {
+  if (!scrollbar_layer) {
     ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
     DCHECK(coordinator);
 
@@ -693,20 +694,16 @@ void VisualViewport::SetupScrollbar(ScrollbarOrientation orientation) {
     int scrollbar_margin = clampTo<int>(
         std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
             theme.ScrollbarMargin())));
-    scrollbar_layer_group = coordinator->CreateSolidColorScrollbarLayer(
+    scrollbar_layer = coordinator->CreateSolidColorScrollbarLayer(
         orientation, thumb_thickness, scrollbar_margin, false,
         GetScrollbarElementId(orientation));
 
-    // The compositor will control the scrollbar's visibility. Set to invisible
-    // by default so scrollbars don't show up in web tests.
-    scrollbar_layer_group->layer->SetOpacity(0.f);
     scrollbar_graphics_layer->SetContentsToCcLayer(
-        scrollbar_layer_group->layer.get(),
+        scrollbar_layer.get(),
         /*prevent_contents_opaque_changes=*/false);
     scrollbar_graphics_layer->SetDrawsContent(false);
     scrollbar_graphics_layer->SetHitTestable(false);
-    scrollbar_layer_group->scrollbar_layer->SetScrollElementId(
-        scroll_layer_->CcLayer()->element_id());
+    scrollbar_layer->SetScrollElementId(scroll_layer_->CcLayer()->element_id());
   }
 
   // Use the GraphicsLayer to position the scrollbars.
@@ -927,11 +924,11 @@ GraphicsLayer* VisualViewport::LayerForScrolling() const {
 }
 
 GraphicsLayer* VisualViewport::LayerForHorizontalScrollbar() const {
-  return overlay_scrollbar_horizontal_.get();
+  return scrollbar_graphics_layer_horizontal_.get();
 }
 
 GraphicsLayer* VisualViewport::LayerForVerticalScrollbar() const {
-  return overlay_scrollbar_vertical_.get();
+  return scrollbar_graphics_layer_vertical_.get();
 }
 
 IntRect VisualViewport::ComputeInterestRect(const GraphicsLayer*,
@@ -1141,9 +1138,9 @@ String VisualViewport::DebugName(const GraphicsLayer* graphics_layer) const {
   String name;
   if (graphics_layer == scroll_layer_.get()) {
     name = "Inner Viewport Scroll Layer";
-  } else if (graphics_layer == overlay_scrollbar_horizontal_.get()) {
+  } else if (graphics_layer == scrollbar_graphics_layer_horizontal_.get()) {
     name = "Overlay Scrollbar Horizontal Layer";
-  } else if (graphics_layer == overlay_scrollbar_vertical_.get()) {
+  } else if (graphics_layer == scrollbar_graphics_layer_vertical_.get()) {
     name = "Overlay Scrollbar Vertical Layer";
   } else if (graphics_layer == root_transform_layer_.get()) {
     name = "Root Transform Layer";
@@ -1176,12 +1173,12 @@ std::unique_ptr<TracedValue> VisualViewport::ViewportToTracedValue() const {
 void VisualViewport::DisposeImpl() {
   root_transform_layer_.reset();
   scroll_layer_.reset();
-  // scrollbar_layer_group_* are referenced from overlay_scrollbar_*, thus
-  // overlay_scrollbar_* must be destroyed before scrollbar_layer_group_*.
-  overlay_scrollbar_horizontal_.reset();
-  overlay_scrollbar_vertical_.reset();
-  scrollbar_layer_group_horizontal_.reset();
-  scrollbar_layer_group_vertical_.reset();
+  // scrollbar_layer_* are referenced from scrollbar_graphics_layer_*, thus
+  // scrollbar_graphics_layer_* must be destroyed before scrollbar_layer_*.
+  scrollbar_graphics_layer_horizontal_.reset();
+  scrollbar_graphics_layer_vertical_.reset();
+  scrollbar_layer_horizontal_.reset();
+  scrollbar_layer_vertical_.reset();
   device_emulation_transform_node_.reset();
   overscroll_elasticity_transform_node_.reset();
   page_scale_node_.reset();

@@ -13,13 +13,12 @@
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window.h"
 #include "ui/base/base_window.h"
 #include "ui/wm/core/window_util.h"
 
 AppWindowLauncherItemController::AppWindowLauncherItemController(
     const ash::ShelfID& shelf_id)
-    : ash::ShelfItemDelegate(shelf_id), observed_windows_(this) {}
+    : ash::ShelfItemDelegate(shelf_id) {}
 
 AppWindowLauncherItemController::~AppWindowLauncherItemController() {}
 

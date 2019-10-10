@@ -138,7 +138,7 @@ bool TestContextSupport::IsWebPDecodeAccelerationSupported() const {
   return false;
 }
 bool TestContextSupport::CanDecodeWithHardwareAcceleration(
-    base::span<const uint8_t> encoded_data) const {
+    const cc::ImageHeaderMetadata* image_metadata) const {
   return false;
 }
 

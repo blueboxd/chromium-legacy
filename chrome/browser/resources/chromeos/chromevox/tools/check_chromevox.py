@@ -58,6 +58,10 @@ _AUTOMATION_EXTERNS = (
 _METRICS_PRIVATE_EXTERNS = (
     ChromeRootPath('third_party/closure_compiler/externs/metrics_private.js'))
 
+# LoginState externs file.
+_LOGIN_STATE_EXTERNS = (
+    ChromeRootPath('third_party/closure_compiler/externs/login_state.js'))
+
 # Settings private API externs file.
 _SETTINGS_PRIVATE_EXTERNS = (
     ChromeRootPath('third_party/closure_compiler/externs/settings_private.js'))
@@ -89,6 +93,7 @@ _COMMON_EXTERNS = [
     _CHROME_EXTENSIONS_EXTERNS,
     _COMMANDLINE_PRIVATE_EXTERNS,
     _METRICS_PRIVATE_EXTERNS,
+    _LOGIN_STATE_EXTERNS,
     _SETTINGS_PRIVATE_EXTERNS,]
 
 # List of top-level scripts and externs that we can check.

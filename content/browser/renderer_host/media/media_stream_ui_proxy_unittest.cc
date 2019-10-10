@@ -374,9 +374,9 @@ class MediaStreamUIProxyFeaturePolicyTest
   void RefreshPageAndSetHeaderPolicy(
       blink::mojom::FeaturePolicyFeature feature) {
     NavigateAndCommit(main_rfh()->GetLastCommittedURL());
-    std::vector<url::Origin> empty_whitelist;
+    std::vector<url::Origin> empty_allowlist;
     RenderFrameHostTester::For(main_rfh())
-        ->SimulateFeaturePolicyHeader(feature, empty_whitelist);
+        ->SimulateFeaturePolicyHeader(feature, empty_allowlist);
   }
 
   void GetResultForRequest(std::unique_ptr<MediaStreamRequest> request,

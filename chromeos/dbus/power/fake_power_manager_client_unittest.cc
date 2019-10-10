@@ -134,4 +134,13 @@ TEST(FakePowerManagerClientTest, NotifyObserversTest) {
   EXPECT_FALSE(client.HasObserver(&test_observer));
 }
 
+TEST(FakePowerManagerClientTest, AmbientColorSupport) {
+  FakePowerManagerClient client;
+  EXPECT_FALSE(client.SupportsAmbientColor());
+  client.set_supports_ambient_color(true);
+  EXPECT_TRUE(client.SupportsAmbientColor());
+  client.set_supports_ambient_color(false);
+  EXPECT_FALSE(client.SupportsAmbientColor());
+}
+
 }  // namespace chromeos

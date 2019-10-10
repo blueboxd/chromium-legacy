@@ -419,7 +419,7 @@ void KerberosCredentialsManager::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void KerberosCredentialsManager::RemoveObserver(const Observer* observer) {
+void KerberosCredentialsManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 

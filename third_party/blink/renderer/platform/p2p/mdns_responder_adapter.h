@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_MDNS_RESPONDER_ADAPTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_MDNS_RESPONDER_ADAPTER_H_
 
+#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/network/public/mojom/mdns_responder.mojom-blink.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/rtc_base/mdns_responder_interface.h"
@@ -34,8 +35,8 @@ class PLATFORM_EXPORT MdnsResponderAdapter
                             NameRemovedCallback callback) override;
 
  private:
-  scoped_refptr<network::mojom::blink::ThreadSafeMdnsResponderPtr>
-      thread_safe_client_;
+  mojo::SharedRemote<network::mojom::blink::MdnsResponder>
+      shared_remote_client_;
 
   DISALLOW_COPY_AND_ASSIGN(MdnsResponderAdapter);
 };

@@ -52,7 +52,6 @@
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -324,8 +323,7 @@
       initWithBaseViewController:self.viewController];
   self.passwordBreachCoordinator.dispatcher = self.dispatcher;
 
-  self.printController = [[PrintController alloc]
-      initWithContextGetter:self.browserState->GetRequestContext()];
+  self.printController = [[PrintController alloc] init];
 
   self.qrScannerCoordinator = [[QRScannerLegacyCoordinator alloc]
       initWithBaseViewController:self.viewController];

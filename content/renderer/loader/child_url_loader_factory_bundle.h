@@ -41,7 +41,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_default_network_factory,
       SchemeMap pending_scheme_specific_factories,
-      OriginMap pending_initiator_specific_factories,
+      OriginMap pending_isolated_world_factories,
       network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_prefetch_loader_factory,

@@ -10,6 +10,7 @@
 #include "apps/launcher.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -29,6 +30,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/arc/mojom/file_system.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -361,7 +363,6 @@ void NoteTakingHelper::SetProfileWithEnabledLockScreenApps(Profile* profile) {
 NoteTakingHelper::NoteTakingHelper()
     : launch_chrome_app_callback_(
           base::Bind(&apps::LaunchPlatformAppWithAction)),
-      extension_registry_observer_(this),
       note_taking_controller_client_(
           std::make_unique<NoteTakingControllerClient>(this)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -478,6 +479,20 @@ void NoteTakingHelper::UpdateAndroidApps() {
                                            weak_ptr_factory_.GetWeakPtr()));
 }
 
+arc::mojom::ActivityNamePtr AppIdToActivityName(const std::string& id) {
+  auto name = arc::mojom::ActivityName::New();
+
+  const size_t separator = id.find('/');
+  if (separator == std::string::npos) {
+    name->package_name = id;
+    name->activity_name = std::string();
+  } else {
+    name->package_name = id.substr(0, separator);
+    name->activity_name = id.substr(separator + 1);
+  }
+  return name;
+}
+
 void NoteTakingHelper::OnGotAndroidApps(
     std::vector<arc::mojom::IntentHandlerInfoPtr> handlers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -495,6 +510,21 @@ void NoteTakingHelper::OnGotAndroidApps(
 
   for (Observer& observer : observers_)
     observer.OnAvailableNoteTakingAppsUpdated();
+}
+
+arc::mojom::OpenUrlsRequestPtr CreateArcNoteRequest(const std::string& app_id,
+                                                    const GURL& clip_data_uri) {
+  auto request = arc::mojom::OpenUrlsRequest::New();
+  request->action_type = arc::mojom::ActionType::CREATE_NOTE;
+  request->activity_name = AppIdToActivityName(app_id);
+  if (!clip_data_uri.is_empty()) {
+    auto url_with_type = arc::mojom::ContentUrlWithMimeType::New();
+    url_with_type->content_url = clip_data_uri;
+    url_with_type->mime_type = "image/png";
+    request->urls.push_back(std::move(url_with_type));
+  }
+
+  return request;
 }
 
 NoteTakingHelper::LaunchResult NoteTakingHelper::LaunchAppInternal(
@@ -531,7 +561,15 @@ NoteTakingHelper::LaunchResult NoteTakingHelper::LaunchAppInternal(
 
     // TODO(derat): Is there some way to detect whether this fails due to the
     // package no longer being available?
-    helper->HandleIntent(CreateIntentInfo(clip_data_uri), std::move(activity));
+    auto request = CreateArcNoteRequest(app_id, clip_data_uri);
+    arc::mojom::FileSystemInstance* arc_file_system =
+        ARC_GET_INSTANCE_FOR_METHOD(
+            arc::ArcServiceManager::Get()->arc_bridge_service()->file_system(),
+            OpenUrlsWithPermission);
+    if (!arc_file_system)
+      return LaunchResult::ANDROID_NOT_RUNNING;
+    arc_file_system->OpenUrlsWithPermission(std::move(request),
+                                            base::DoNothing());
 
     UMA_HISTOGRAM_ENUMERATION(
         "Arc.UserInteraction",

@@ -552,8 +552,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void UpdateTitle(RenderFrameHost* render_frame_host,
                    const base::string16& title,
                    base::i18n::TextDirection title_direction) override;
-  void UpdateEncoding(RenderFrameHost* render_frame_host,
-                      const std::string& encoding) override;
   WebContents* GetAsWebContents() override;
   bool IsNeverVisible() override;
   ui::AXMode GetAccessibilityMode() override;
@@ -1466,8 +1464,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                           bool is_main_frame);
   void NotifyDisconnected();
 
-  void SetEncoding(const std::string& encoding);
-
   // TODO(creis): This should take in a FrameTreeNode to know which node's
   // render manager to return.  For now, we just return the root's.
   RenderFrameHostManager* GetRenderManager() const;
@@ -1636,12 +1632,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // When a navigation occurs, we record its contents MIME type. It can be
   // used to check whether we can do something for some special contents.
   std::string contents_mime_type_;
-
-  // The last reported character encoding, not canonicalized.
-  std::string last_reported_encoding_;
-
-  // The canonicalized character encoding.
-  std::string canonical_encoding_;
 
   // Whether the initial empty page has been accessed by another page, making it
   // unsafe to show the pending URL. Usually false unless another window tries

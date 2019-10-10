@@ -504,6 +504,12 @@ void DocumentLoader::FillNavigationParamsForErrorPage(
   params->previews_state = previews_state_;
   params->requestor_origin = requestor_origin_;
   params->origin_policy = origin_policy_;
+  // Force the commit origin for the error page to be opaque and
+  // contain precursor information from the document's origin.
+  // This is only used for renderer-side enforcement of CSP and the
+  // document origin used here is the origin of the document that was blocked.
+  params->origin_to_commit =
+      frame_->GetDocument()->GetSecurityOrigin()->DeriveNewOpaqueOrigin();
 }
 
 void DocumentLoader::SetHistoryItemStateForCommit(

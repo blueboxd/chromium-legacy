@@ -41,7 +41,7 @@ namespace blink {
 static inline bool IsValidSource(EventTarget* source) {
   return !source || source->ToLocalDOMWindow() || source->ToMessagePort() ||
          source->ToServiceWorker() || source->ToPortalHost() ||
-         ToHTMLPortalElementOrNull(source->ToNode());
+         IsA<HTMLPortalElement>(source->ToNode());
 }
 
 MessageEvent::V8GCAwareString::V8GCAwareString(const String& value)

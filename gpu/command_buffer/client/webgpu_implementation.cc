@@ -173,7 +173,7 @@ bool WebGPUImplementation::IsWebPDecodeAccelerationSupported() const {
   return false;
 }
 bool WebGPUImplementation::CanDecodeWithHardwareAcceleration(
-    base::span<const uint8_t> encoded_data) const {
+    const cc::ImageHeaderMetadata* image_metadata) const {
   NOTREACHED();
   return false;
 }

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/test_download_shelf.h"
+#include "chrome/browser/ui/autofill/test/test_autofill_bubble_handler.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -99,7 +100,7 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsFullscreenBubbleVisible() const override;
   LocationBar* GetLocationBar() const override;
   bool UpdatePageActionIcon(PageActionIconType type) override;
-  void ShowAvatarHighlightAnimation() override;
+  autofill::AutofillBubbleHandler* GetAutofillBubbleHandler() override;
   void ExecutePageActionIconForTesting(PageActionIconType type) override {}
   void SetFocusToLocationBar(bool select_all) override {}
   void UpdateReloadStopState(bool is_loading, bool force) override {}
@@ -140,14 +141,6 @@ class TestBrowserWindow : public BrowserWindow {
                               PageActionIconType icon_type,
                               IntentPickerResponse callback) override {}
 #endif  //  !define(OS_ANDROID)
-  autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
-      content::WebContents* contents,
-      autofill::SaveCardBubbleController* controller,
-      bool user_gesture) override;
-  autofill::LocalCardMigrationBubble* ShowLocalCardMigrationBubble(
-      content::WebContents* contents,
-      autofill::LocalCardMigrationBubbleController* controller,
-      bool user_gesture) override;
   send_tab_to_self::SendTabToSelfBubbleView* ShowSendTabToSelfBubble(
       content::WebContents* contents,
       send_tab_to_self::SendTabToSelfBubbleController* controller,
@@ -228,6 +221,7 @@ class TestBrowserWindow : public BrowserWindow {
     DISALLOW_COPY_AND_ASSIGN(TestLocationBar);
   };
 
+  autofill::TestAutofillBubbleHandler autofill_bubble_handler_;
   TestDownloadShelf download_shelf_;
   TestLocationBar location_bar_;
 

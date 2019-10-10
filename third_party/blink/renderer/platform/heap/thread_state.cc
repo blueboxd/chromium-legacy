@@ -1288,11 +1288,15 @@ class ClearReferencesInDeadObjectsVisitor final
       value->Reset();
   }
 
-  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>& value) final {
+  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>&) final {
+    CHECK(false) << "Blink does not use v8::TracedGlobal.";
+  }
+
+  void VisitTracedReference(const v8::TracedReference<v8::Value>& value) final {
     // TODO(mlippautz): Avoid const_cast after changing the API to allow
-    // modificaton of the TracedGlobal handle.
-    if (InDeadObject(&const_cast<v8::TracedGlobal<v8::Value>&>(value)))
-      const_cast<v8::TracedGlobal<v8::Value>&>(value).Reset();
+    // modificaton of the handle.
+    if (InDeadObject(&const_cast<v8::TracedReference<v8::Value>&>(value)))
+      const_cast<v8::TracedReference<v8::Value>&>(value).Reset();
   }
 
  private:
@@ -1404,11 +1408,15 @@ class UnpoisonHandlesVisitor final
     VisitSlot(value, sizeof(v8::Persistent<v8::Value>));
   }
 
-  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>& value) final {
+  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>&) final {
+    CHECK(false) << "Blink does not use v8::TracedGlobal.";
+  }
+
+  void VisitTracedReference(const v8::TracedReference<v8::Value>& value) final {
     // TODO(mlippautz): Avoid const_cast after changing the API to allow
-    // modificaton of the TracedGlobal handle.
-    VisitSlot(&const_cast<v8::TracedGlobal<v8::Value>&>(value),
-              sizeof(v8::TracedGlobal<v8::Value>));
+    // modificaton of the handle.
+    VisitSlot(&const_cast<v8::TracedReference<v8::Value>&>(value),
+              sizeof(v8::TracedReference<v8::Value>));
   }
 
  private:

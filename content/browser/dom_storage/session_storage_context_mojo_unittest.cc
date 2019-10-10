@@ -23,7 +23,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/session_storage_database.h"
-#include "content/browser/dom_storage/test/fake_leveldb_database_error_on_write.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/test/browser_task_environment.h"
@@ -66,7 +65,7 @@ class SessionStorageContextMojoTest : public testing::Test {
 
     // There may be pending tasks to clean up files in the temp dir. Make sure
     // they run so temp dir deletion can succeed.
-    task_environment_.RunUntilIdle();
+    RunUntilIdle();
 
     EXPECT_TRUE(temp_dir_.Delete());
   }
@@ -113,7 +112,7 @@ class SessionStorageContextMojoTest : public testing::Test {
   void ShutdownContext() {
     context_->ShutdownAndDelete();
     context_ = nullptr;
-    base::RunLoop().RunUntilIdle();
+    RunUntilIdle();
   }
 
   std::vector<SessionStorageUsageInfo> GetStorageUsageSync() {
@@ -658,22 +657,14 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   url::Origin origin2 = url::Origin::Create(GURL("http://asf.com"));
   url::Origin origin3 = url::Origin::Create(GURL("http://example.com"));
 
-  // Ensure that the first opened database always fails to write data.
-  std::map<std::vector<uint8_t>, std::vector<uint8_t>> test_data;
   base::Optional<base::RunLoop> open_loop;
   size_t num_database_open_requests = 0;
   size_t num_databases_destroyed = 0;
-  context()->SetDatabaseFactoryForTesting(base::BindLambdaForTesting(
-      [&]() -> std::unique_ptr<leveldb::mojom::LevelDBDatabase> {
-        ++num_database_open_requests;
-        auto db =
-            std::make_unique<test::FakeLevelDBDatabaseErrorOnWrite>(&test_data);
-        db->SetDestructionCallback(
-            base::BindLambdaForTesting([&] { ++num_databases_destroyed; }));
-        if (open_loop)
-          open_loop->Quit();
-        return db;
-      }));
+  context()->SetDatabaseOpenCallbackForTesting(base::BindLambdaForTesting([&] {
+    ++num_database_open_requests;
+    open_loop->Quit();
+  }));
+
   open_loop.emplace();
 
   // Open three connections to the database.
@@ -691,6 +682,15 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   ss_namespace->OpenArea(origin3, area_o3.BindNewEndpointAndPassReceiver());
   open_loop->Run();
 
+  // Ensure that the first opened database always fails to write data.
+  context()->GetDatabaseForTesting().PostTaskWithThisObject(
+      FROM_HERE,
+      base::BindLambdaForTesting([&](storage::DomStorageDatabase* db) {
+        db->MakeAllCommitsFailForTesting();
+        db->SetDestructionCallbackForTesting(
+            base::BindLambdaForTesting([&] { ++num_databases_destroyed; }));
+      }));
+
   // Verify one attempt was made to open the database.
   ASSERT_EQ(1u, num_database_open_requests);
 
@@ -702,14 +702,10 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   // Also prepare for another database connection, next time providing a
   // functioning database.
   open_loop.emplace();
-  context()->SetDatabaseFactoryForTesting(base::BindLambdaForTesting(
-      [&]() -> std::unique_ptr<leveldb::mojom::LevelDBDatabase> {
-        ++num_database_open_requests;
-        auto db = std::make_unique<FakeLevelDBDatabase>(&test_data);
-        if (open_loop)
-          open_loop->Quit();
-        return db;
-      }));
+  context()->SetDatabaseOpenCallbackForTesting(base::BindLambdaForTesting([&] {
+    ++num_database_open_requests;
+    open_loop->Quit();
+  }));
 
   // Start a put operation on the third connection before starting to commit
   // a lot of data on the first origin. This put operation should result in a
@@ -724,19 +720,16 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   int i = 0;
   while (area_o1.is_connected()) {
     ++i;
-    base::RunLoop put_loop;
     // Every write needs to be different to make sure there actually is a
     // change to commit.
     std::vector<uint8_t> old_value = value;
     value[0]++;
-    area_o1.set_disconnect_handler(put_loop.QuitClosure());
-
     area_o1->Put(leveldb::StringPieceToUint8Vector("key"), value, base::nullopt,
                  "source", base::BindLambdaForTesting([&](bool success) {
                    EXPECT_TRUE(success);
                  }));
     area_o1.FlushForTesting();
-    put_loop.RunUntilIdle();
+    RunUntilIdle();
     // And we need to flush after every change. Otherwise changes get batched up
     // and only one commit is done some time later.
     context()->FlushAreaForTesting(namespace_id, origin1);
@@ -793,22 +786,13 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   std::string namespace_id = base::GenerateGUID();
   url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
 
-  // Ensure that any opened database always fails to write data.
-  std::map<std::vector<uint8_t>, std::vector<uint8_t>> test_data;
   base::Optional<base::RunLoop> open_loop;
   size_t num_database_open_requests = 0;
   size_t num_databases_destroyed = 0;
-  context()->SetDatabaseFactoryForTesting(base::BindLambdaForTesting(
-      [&]() -> std::unique_ptr<leveldb::mojom::LevelDBDatabase> {
-        ++num_database_open_requests;
-        auto db =
-            std::make_unique<test::FakeLevelDBDatabaseErrorOnWrite>(&test_data);
-        db->SetDestructionCallback(
-            base::BindLambdaForTesting([&] { ++num_databases_destroyed; }));
-        if (open_loop)
-          open_loop->Quit();
-        return db;
-      }));
+  context()->SetDatabaseOpenCallbackForTesting(base::BindLambdaForTesting([&] {
+    ++num_database_open_requests;
+    open_loop->Quit();
+  }));
   open_loop.emplace();
 
   // Open three connections to the database.
@@ -822,6 +806,15 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   ss_namespace->OpenArea(origin1, area.BindNewEndpointAndPassReceiver());
   open_loop->Run();
 
+  // Ensure that this database always fails to write data.
+  context()->GetDatabaseForTesting().PostTaskWithThisObject(
+      FROM_HERE,
+      base::BindLambdaForTesting([&](storage::DomStorageDatabase* db) {
+        db->MakeAllCommitsFailForTesting();
+        db->SetDestructionCallbackForTesting(
+            base::BindLambdaForTesting([&] { ++num_databases_destroyed; }));
+      }));
+
   // Verify one attempt was made to open the database.
   EXPECT_EQ(1u, num_database_open_requests);
 
@@ -829,22 +822,27 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   // reconnect to the database, which should happen after several commit
   // errors.
   open_loop.emplace();
+  context()->SetDatabaseOpenCallbackForTesting(base::BindLambdaForTesting([&] {
+    ++num_database_open_requests;
+    open_loop->Quit();
+
+    // Ensure that this database also always fails to write data.
+    context()->GetDatabaseForTesting().Post(
+        FROM_HERE, &storage::DomStorageDatabase::MakeAllCommitsFailForTesting);
+  }));
 
   // Repeatedly write data to the database, to trigger enough commit errors.
   auto value = leveldb::StringPieceToUint8Vector("avalue");
   base::Optional<std::vector<uint8_t>> old_value = base::nullopt;
   while (area.is_connected()) {
-    base::RunLoop put_loop;
     // Every write needs to be different to make sure there actually is a
     // change to commit.
-    area.set_disconnect_handler(put_loop.QuitClosure());
     area->Put(leveldb::StringPieceToUint8Vector("key"), value, old_value,
               "source", base::BindLambdaForTesting([&](bool success) {
                 EXPECT_TRUE(success);
-                put_loop.Quit();
               }));
     area.FlushForTesting();
-    put_loop.RunUntilIdle();
+    RunUntilIdle();
     // And we need to flush after every change. Otherwise changes get batched up
     // and only one commit is done some time later.
     context()->FlushAreaForTesting(namespace_id, origin1);
@@ -862,8 +860,6 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   EXPECT_EQ(2u, num_database_open_requests);
   EXPECT_EQ(1u, num_databases_destroyed);
 
-  context()->SetDatabaseFactoryForTesting(base::NullCallback());
-
   // Reconnect a area to the database, and repeatedly write data to it again.
   // This time all should just keep getting written, and commit errors are
   // getting ignored.
@@ -875,17 +871,14 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
 
   old_value = base::nullopt;
   for (int i = 0; i < 64; ++i) {
-    base::RunLoop put_loop;
     // Every write needs to be different to make sure there actually is a
     // change to commit.
-    area.set_disconnect_handler(put_loop.QuitClosure());
     area->Put(leveldb::StringPieceToUint8Vector("key"), value, old_value,
               "source", base::BindLambdaForTesting([&](bool success) {
                 EXPECT_TRUE(success);
-                put_loop.Quit();
               }));
     area.FlushForTesting();
-    put_loop.RunUntilIdle();
+    RunUntilIdle();
     // And we need to flush after every change. Otherwise changes get batched up
     // and only one commit is done some time later.
     context()->FlushAreaForTesting(namespace_id, origin1);
@@ -895,7 +888,7 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   }
 
   // Should still be connected after all that.
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
   EXPECT_TRUE(area.is_connected());
 
   context()->DeleteSessionNamespace(namespace_id, false);
@@ -1018,7 +1011,7 @@ TEST_F(SessionStorageContextMojoTest, PurgeInactiveWrappers) {
     ss_namespace1->OpenArea(url::Origin::Create(GURL(base::StringPrintf(
                                 "http://example.com:%d", i))),
                             area.BindNewEndpointAndPassReceiver());
-    base::RunLoop().RunUntilIdle();
+    RunUntilIdle();
     ss_namespace1.reset();
     area.reset();
   }
@@ -1235,7 +1228,7 @@ TEST_F(SessionStorageContextMojoTest, PurgeMemoryDoesNotCrashOrHang) {
   area_n2.reset();
   ss_namespace2.reset();
 
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   // Verify this doesn't crash or hang.
   context()->PurgeMemory();

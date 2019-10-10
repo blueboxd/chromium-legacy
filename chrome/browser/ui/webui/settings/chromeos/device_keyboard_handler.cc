@@ -16,7 +16,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
-#include "ui/events/devices/device_data_manager.h"
 
 namespace {
 
@@ -59,8 +58,7 @@ void KeyboardHandler::TestAPI::Initialize() {
   handler_->HandleInitialize(&args);
 }
 
-KeyboardHandler::KeyboardHandler() : observer_(this) {}
-
+KeyboardHandler::KeyboardHandler() = default;
 KeyboardHandler::~KeyboardHandler() = default;
 
 void KeyboardHandler::RegisterMessages() {

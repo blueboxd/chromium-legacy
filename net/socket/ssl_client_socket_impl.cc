@@ -745,12 +745,6 @@ void SSLClientSocketImpl::OnWriteReady() {
   RetryAllOperations();
 }
 
-static bool EnforceTLS13DowngradeForKnownRootsOnly() {
-  return base::FeatureList::IsEnabled(features::kEnforceTLS13Downgrade) &&
-         base::GetFieldTrialParamByFeatureAsBool(
-             features::kEnforceTLS13Downgrade, "known_roots_only", true);
-}
-
 int SSLClientSocketImpl::Init() {
   DCHECK(!ssl_);
 
@@ -814,8 +808,7 @@ int SSLClientSocketImpl::Init() {
 
   SSL_set_early_data_enabled(ssl_.get(), ssl_config_.early_data_enabled);
 
-  if (!base::FeatureList::IsEnabled(features::kEnforceTLS13Downgrade) ||
-      EnforceTLS13DowngradeForKnownRootsOnly()) {
+  if (!context_->config().tls13_hardening_for_local_anchors_enabled) {
     SSL_set_ignore_tls13_downgrade(ssl_.get(), 1);
   }
 
@@ -1010,8 +1003,7 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
     }
   }
 
-  if (!base::FeatureList::IsEnabled(features::kEnforceTLS13Downgrade) ||
-      EnforceTLS13DowngradeForKnownRootsOnly()) {
+  if (!context_->config().tls13_hardening_for_local_anchors_enabled) {
     // Record metrics on the TLS 1.3 anti-downgrade mechanism. This is only
     // recorded when enforcement is disabled. (When enforcement is enabled,
     // the connection will fail with ERR_TLS13_DOWNGRADE_DETECTED.) See
@@ -1061,8 +1053,7 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
                                   type);
       }
 
-      if (EnforceTLS13DowngradeForKnownRootsOnly() &&
-          server_cert_verify_result_.is_issued_by_known_root) {
+      if (server_cert_verify_result_.is_issued_by_known_root) {
         // Exit DoHandshakeLoop and return the result to the caller to
         // Connect.
         DCHECK_EQ(STATE_NONE, next_handshake_state_);

@@ -44,30 +44,19 @@ PaintedOverlayScrollbarLayer::PaintedOverlayScrollbarLayer(
   DCHECK(scrollbar_->HasThumb());
   DCHECK(scrollbar_->IsOverlay());
   DCHECK(scrollbar_->UsesNinePatchThumbResource());
-  SetIsScrollbar(true);
 }
 
 PaintedOverlayScrollbarLayer::~PaintedOverlayScrollbarLayer() = default;
-
-void PaintedOverlayScrollbarLayer::SetScrollElementId(ElementId element_id) {
-  if (element_id == scroll_element_id_)
-    return;
-
-  scroll_element_id_ = element_id;
-  SetNeedsCommit();
-}
 
 bool PaintedOverlayScrollbarLayer::OpacityCanAnimateOnImplThread() const {
   return scrollbar_->IsOverlay();
 }
 
 void PaintedOverlayScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
-  Layer::PushPropertiesTo(layer);
+  ScrollbarLayerBase::PushPropertiesTo(layer);
 
   PaintedOverlayScrollbarLayerImpl* scrollbar_layer =
       static_cast<PaintedOverlayScrollbarLayerImpl*>(layer);
-
-  scrollbar_layer->SetScrollElementId(scroll_element_id_);
 
   scrollbar_layer->SetThumbThickness(thumb_thickness_);
   scrollbar_layer->SetThumbLength(thumb_length_);
@@ -105,7 +94,7 @@ void PaintedOverlayScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
     track_resource_.reset();
   }
 
-  Layer::SetLayerTreeHost(host);
+  ScrollbarLayerBase::SetLayerTreeHost(host);
 }
 
 gfx::Rect PaintedOverlayScrollbarLayer::OriginThumbRectForPainting() const {

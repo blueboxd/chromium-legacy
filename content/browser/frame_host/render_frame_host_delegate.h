@@ -210,11 +210,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                            const base::string16& title,
                            base::i18n::TextDirection title_direction) {}
 
-  // The page's encoding was changed and should be updated. Only called for the
-  // top-level frame.
-  virtual void UpdateEncoding(RenderFrameHost* render_frame_host,
-                              const std::string& encoding) {}
-
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns NULL.
   virtual WebContents* GetAsWebContents();

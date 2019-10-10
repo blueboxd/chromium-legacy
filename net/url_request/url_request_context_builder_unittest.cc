@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/host_resolver.h"
@@ -196,7 +197,8 @@ TEST_F(URLRequestContextBuilderTest, ShutDownNELAndReportingWithPendingUpload) {
   // Queue a pending upload.
   GURL url("https://www.foo.test");
   context->reporting_service()->GetContextForTesting()->uploader()->StartUpload(
-      url::Origin::Create(url), url, "report body", 0, base::DoNothing());
+      url::Origin::Create(url), url, NetworkIsolationKey(), "report body", 0,
+      base::DoNothing());
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1, context->reporting_service()
                    ->GetContextForTesting()

@@ -286,7 +286,7 @@ TEST_F(TrafficAnnotationAuditorTest, IsSafeListed) {
                              AuditorException::ExceptionType::TEST_ANNOTATION));
 }
 
-// Tests if annotation instances are corrrectly deserialized.
+// Tests if annotation instances are correctly deserialized.
 TEST_F(TrafficAnnotationAuditorTest, AnnotationDeserialization) {
   struct AnnotationSample {
     std::string file_name;
@@ -340,7 +340,7 @@ TEST_F(TrafficAnnotationAuditorTest, AnnotationDeserialization) {
   }
 }
 
-// Tests if call instances are corrrectly deserialized.
+// Tests if call instances are correctly deserialized.
 TEST_F(TrafficAnnotationAuditorTest, CallDeserialization) {
   struct CallSample {
     std::string file_name;
@@ -369,7 +369,7 @@ TEST_F(TrafficAnnotationAuditorTest, CallDeserialization) {
   }
 }
 
-// Tests if call instances are corrrectly deserialized.
+// Tests if call instances are correctly deserialized.
 TEST_F(TrafficAnnotationAuditorTest, AssignmentDeserialization) {
   struct Assignmentample {
     std::string file_name;

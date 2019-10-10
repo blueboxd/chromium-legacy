@@ -11,16 +11,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
 CollapseButton::CollapseButton(views::ButtonListener* listener)
     : CustomShapeButton(listener) {
   OnEnabledChanged();
-  auto path = std::make_unique<SkPath>(
-      CreateCustomShapePath(gfx::Rect(CalculatePreferredSize())));
-  SetProperty(views::kHighlightPathKey, path.release());
 }
 
 CollapseButton::~CollapseButton() = default;

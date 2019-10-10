@@ -23,7 +23,6 @@
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/arc/app_permissions/arc_app_permissions_bridge.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/mojom/app_permissions.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/system_connector.h"

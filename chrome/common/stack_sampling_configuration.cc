@@ -15,6 +15,10 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
 
+#if defined(OS_WIN)
+#include "base/win/static_constants.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #endif
@@ -188,6 +192,13 @@ StackSamplingConfiguration::GenerateConfiguration() {
 
   if (!IsProfilerSupported())
     return PROFILE_DISABLED;
+
+#if defined(OS_WIN)
+  // Do not start the profiler when Application Verifier is in use; running them
+  // simultaneously can cause crashes and has no known use case.
+  if (GetModuleHandleA(base::win::kApplicationVerifierDllName))
+    return PROFILE_DISABLED;
+#endif
 
   switch (chrome::GetChannel()) {
     // Enable the profiler unconditionally for development/waterfall builds.

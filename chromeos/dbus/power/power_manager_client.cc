@@ -211,6 +211,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     RegisterSuspendDelays();
     RequestStatusUpdate();
+    CheckAmbientColorSupport();
   }
 
   // PowerManagerClient overrides:
@@ -481,6 +482,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
     MaybeReportSuspendReadiness();
   }
 
+  bool SupportsAmbientColor() override {
+    return device_supports_ambient_color_;
+  }
+
   void CreateArcTimers(
       const std::string& tag,
       std::vector<std::pair<clockid_t, base::ScopedFD>> arc_timer_requests,
@@ -745,6 +750,31 @@ class PowerManagerClientImpl : public PowerManagerClient {
       return;
     }
     std::move(callback).Run(state);
+  }
+
+  void CheckAmbientColorSupport() {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kHasAmbientColorDeviceMethod);
+    power_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&PowerManagerClientImpl::OnHasAmbientColorDevice,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void OnHasAmbientColorDevice(dbus::Response* response) {
+    if (!response) {
+      device_supports_ambient_color_ = false;
+      return;
+    }
+    dbus::MessageReader reader(response);
+    bool is_supported = false;
+    if (!reader.PopBool(&is_supported)) {
+      POWER_LOG(ERROR) << "Error reading response from powerd: "
+                       << response->ToString();
+      device_supports_ambient_color_ = false;
+      return;
+    }
+    device_supports_ambient_color_ = is_supported;
   }
 
   void OnGetSwitchStates(DBusMethodCallback<SwitchStates> callback,
@@ -1161,6 +1191,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   // Last state passed to SetIsProjecting().
   bool last_is_projecting_ = false;
+
+  // Whether the device supports ambient color. This value is checked when the
+  // DBUS service starts and is cached.
+  bool device_supports_ambient_color_ = false;
 
   // The last proto received from D-Bus; initially empty.
   base::Optional<power_manager::PowerSupplyProperties> proto_;

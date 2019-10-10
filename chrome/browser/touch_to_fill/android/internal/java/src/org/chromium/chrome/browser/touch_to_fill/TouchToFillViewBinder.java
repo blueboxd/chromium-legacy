@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CR
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VIEW_EVENT_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
+import static org.chromium.chrome.browser.util.UrlUtilities.stripScheme;
 
 import android.text.method.PasswordTransformationMethod;
 import android.view.LayoutInflater;
@@ -41,6 +42,12 @@ class TouchToFillViewBinder {
      * @param credential The {@link Credential} whose data needs to be displayed.
      */
     static void bindCredentialView(View view, Credential credential) {
+        TextView pslOriginText = view.findViewById(R.id.credential_origin);
+        String formattedOrigin = stripScheme(credential.getOriginUrl());
+        formattedOrigin = formattedOrigin.replaceFirst("/$", ""); // Strip possibly trailing slash.
+        pslOriginText.setText(formattedOrigin);
+        pslOriginText.setVisibility(credential.isPublicSuffixMatch() ? View.VISIBLE : View.GONE);
+
         TextView usernameText = view.findViewById(R.id.username);
         usernameText.setText(credential.getFormattedUsername());
 

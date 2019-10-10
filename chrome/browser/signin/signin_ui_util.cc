@@ -8,10 +8,14 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/supports_user_data.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -42,8 +46,64 @@
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #endif
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 namespace {
+
+// Key for storing animated identity per-profile data.
+const char kAnimatedIdentityKeyName[] = "animated_identity_user_data";
+
+constexpr base::TimeDelta kDelayForCrossWindowAnimationReplay =
+    base::TimeDelta::FromSeconds(5);
+
+// UserData attached to the user profile, keeping track of the last time the
+// animation was shown to the user.
+class AnimatedIdentityUserData : public base::SupportsUserData::Data {
+ public:
+  ~AnimatedIdentityUserData() override = default;
+
+  // Returns the  last time the animation was shown. Returns the null time if it
+  // was never shown.
+  static base::TimeTicks GetLastShown(Profile* profile) {
+    DCHECK(profile);
+    AnimatedIdentityUserData* data = GetForProfile(profile);
+    if (!data)
+      return base::TimeTicks();
+
+    DCHECK(!data->last_shown_.is_null());
+    return data->last_shown_;
+  }
+
+  // Sets the animation time.
+  static void SetLastShown(Profile* profile, base::TimeTicks time) {
+    DCHECK(!time.is_null());
+    GetOrCreateForProfile(profile)->last_shown_ = time;
+  }
+
+ private:
+  // Returns nullptr if there is no AnimatedIdentityUserData attached to the
+  // profile.
+  static AnimatedIdentityUserData* GetForProfile(Profile* profile) {
+    return static_cast<AnimatedIdentityUserData*>(
+        profile->GetUserData(kAnimatedIdentityKeyName));
+  }
+
+  // Never returns nullptr.
+  static AnimatedIdentityUserData* GetOrCreateForProfile(Profile* profile) {
+    DCHECK(profile);
+    AnimatedIdentityUserData* existing_data = GetForProfile(profile);
+    if (existing_data)
+      return existing_data;
+
+    auto new_data = std::make_unique<AnimatedIdentityUserData>();
+    auto* new_data_ptr = new_data.get();
+    profile->SetUserData(kAnimatedIdentityKeyName, std::move(new_data));
+    return new_data_ptr;
+  }
+
+  // Last time the animation was shown.
+  base::TimeTicks last_shown_;
+};
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void CreateDiceTurnSyncOnHelper(
     Profile* profile,
     Browser* browser,
@@ -58,8 +118,9 @@ void CreateDiceTurnSyncOnHelper(
                            signin_promo_action, signin_reason, account_id,
                            signin_aborted_mode);
 }
-}  // namespace
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+}  // namespace
 
 namespace signin_ui_util {
 
@@ -270,20 +331,22 @@ std::string GetAllowedDomain(std::string signin_pattern) {
   return domain;
 }
 
-bool ShouldShowIdentityOnOpeningProfile(
+bool ShouldShowAnimatedIdentityOnOpeningWindow(
     const ProfileAttributesStorage& profile_attributes_storage,
     Profile* profile) {
   DCHECK(profile);
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   DCHECK(identity_manager->AreRefreshTokensLoaded());
-  // Wait with the potential positive response until refresh tokens are loaded
-  // so that we never show it twice on startup.
-  // TODO(crbug.com/1009441): Make it only appear once per profile
-  // instantiation (currently it appears for every new window which have their
-  // own instance of AvatarToolbarButton).
-  if (!base::FeatureList::IsEnabled(
-          features::kAnimatedAvatarButtonOnOpeningProfile)) {
+
+  base::TimeTicks animation_last_shown =
+      AnimatedIdentityUserData::GetLastShown(profile);
+  // When a new window is created, only show the animation if it was never shown
+  // for this profile, or if it was shown in another window in the last few
+  // seconds (because the user may have missed it).
+  if (!animation_last_shown.is_null() &&
+      base::TimeTicks::Now() - animation_last_shown >
+          kDelayForCrossWindowAnimationReplay) {
     return false;
   }
 
@@ -294,6 +357,22 @@ bool ShouldShowIdentityOnOpeningProfile(
 
   // Show the user identity for users with multiple signed-in accounts.
   return identity_manager->GetAccountsWithRefreshTokens().size() > 1;
+}
+
+void RecordAnimatedIdentityTriggered(Profile* profile) {
+  AnimatedIdentityUserData::SetLastShown(profile, base::TimeTicks::Now());
+}
+
+void RecordProfileMenuViewShown(Profile* profile) {
+  base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened"));
+
+  base::TimeTicks animation_last_shown =
+      AnimatedIdentityUserData::GetLastShown(profile);
+  if (animation_last_shown.is_null())
+    return;
+
+  base::UmaHistogramLongTimes("Profile.Menu.OpenedAfterAvatarAnimation",
+                              base::TimeTicks::Now() - animation_last_shown);
 }
 
 }  // namespace signin_ui_util

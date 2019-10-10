@@ -1278,8 +1278,16 @@ double Element::scrollLeft() {
               kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
     }
 
-    return AdjustForAbsoluteZoom::AdjustScroll(
-        scrollable_area->ScrollPosition().X(), *GetLayoutBox());
+    // In order to keep the behavior of element scroll consistent with document
+    // scroll, and consistent with the behavior of other vendors, the scrollLeft
+    // of a box is changed to the offset from |ScrollOrigin()|.
+    if (RuntimeEnabledFeatures::CSSOMViewScrollCoordinatesEnabled()) {
+      return AdjustForAbsoluteZoom::AdjustScroll(
+          scrollable_area->GetScrollOffset().Width(), *GetLayoutBox());
+    } else {
+      return AdjustForAbsoluteZoom::AdjustScroll(
+          scrollable_area->ScrollPosition().X(), *GetLayoutBox());
+    }
   }
 
   return 0;
@@ -1307,8 +1315,16 @@ double Element::scrollTop() {
               kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
     }
 
-    return AdjustForAbsoluteZoom::AdjustScroll(
-        scrollable_area->ScrollPosition().Y(), *GetLayoutBox());
+    // In order to keep the behavior of element scroll consistent with document
+    // scroll, and consistent with the behavior of other vendors, the scrollTop
+    // of a box is changed to the offset from |ScrollOrigin()|.
+    if (RuntimeEnabledFeatures::CSSOMViewScrollCoordinatesEnabled()) {
+      return AdjustForAbsoluteZoom::AdjustScroll(
+          scrollable_area->GetScrollOffset().Height(), *GetLayoutBox());
+    } else {
+      return AdjustForAbsoluteZoom::AdjustScroll(
+          scrollable_area->ScrollPosition().Y(), *GetLayoutBox());
+    }
   }
 
   return 0;
@@ -1345,20 +1361,38 @@ void Element::setScrollLeft(double new_left) {
       }
     }
 
-    FloatPoint end_point(new_left * box->Style()->EffectiveZoom(),
-                         scrollable_area->ScrollPosition().Y());
-    std::unique_ptr<cc::SnapSelectionStrategy> strategy =
-        cc::SnapSelectionStrategy::CreateForEndPosition(
-            gfx::ScrollOffset(end_point), true, false);
-    end_point = GetDocument()
-                    .GetSnapCoordinator()
-                    .GetSnapPosition(*box, *strategy)
-                    .value_or(end_point);
+    if (RuntimeEnabledFeatures::CSSOMViewScrollCoordinatesEnabled()) {
+      ScrollOffset end_offset(new_left * box->Style()->EffectiveZoom(),
+                              scrollable_area->GetScrollOffset().Height());
+      std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+          cc::SnapSelectionStrategy::CreateForEndPosition(
+              gfx::ScrollOffset(
+                  scrollable_area->ScrollOffsetToPosition(end_offset)),
+              true, false);
+      base::Optional<FloatPoint> snap_point =
+          GetDocument().GetSnapCoordinator().GetSnapPosition(*box, *strategy);
+      if (snap_point.has_value()) {
+        end_offset =
+            scrollable_area->ScrollPositionToOffset(snap_point.value());
+      }
+      scrollable_area->SetScrollOffset(end_offset, kProgrammaticScroll,
+                                       kScrollBehaviorAuto);
+    } else {
+      FloatPoint end_point(new_left * box->Style()->EffectiveZoom(),
+                           scrollable_area->ScrollPosition().Y());
+      std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+          cc::SnapSelectionStrategy::CreateForEndPosition(
+              gfx::ScrollOffset(end_point), true, false);
+      end_point = GetDocument()
+                      .GetSnapCoordinator()
+                      .GetSnapPosition(*box, *strategy)
+                      .value_or(end_point);
 
-    FloatPoint new_position(end_point.X(),
-                            scrollable_area->ScrollPosition().Y());
-    scrollable_area->ScrollToAbsolutePosition(new_position,
-                                              kScrollBehaviorAuto);
+      FloatPoint new_position(end_point.X(),
+                              scrollable_area->ScrollPosition().Y());
+      scrollable_area->ScrollToAbsolutePosition(new_position,
+                                                kScrollBehaviorAuto);
+    }
   }
 }
 
@@ -1393,19 +1427,38 @@ void Element::setScrollTop(double new_top) {
       }
     }
 
-    FloatPoint end_point(scrollable_area->ScrollPosition().X(),
-                         new_top * box->Style()->EffectiveZoom());
-    std::unique_ptr<cc::SnapSelectionStrategy> strategy =
-        cc::SnapSelectionStrategy::CreateForEndPosition(
-            gfx::ScrollOffset(end_point), false, true);
-    end_point = GetDocument()
-                    .GetSnapCoordinator()
-                    .GetSnapPosition(*box, *strategy)
-                    .value_or(end_point);
-    FloatPoint new_position(scrollable_area->ScrollPosition().X(),
-                            end_point.Y());
-    scrollable_area->ScrollToAbsolutePosition(new_position,
-                                              kScrollBehaviorAuto);
+    if (RuntimeEnabledFeatures::CSSOMViewScrollCoordinatesEnabled()) {
+      ScrollOffset end_offset(scrollable_area->GetScrollOffset().Width(),
+                              new_top * box->Style()->EffectiveZoom());
+      std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+          cc::SnapSelectionStrategy::CreateForEndPosition(
+              gfx::ScrollOffset(
+                  scrollable_area->ScrollOffsetToPosition(end_offset)),
+              false, true);
+      base::Optional<FloatPoint> snap_point =
+          GetDocument().GetSnapCoordinator().GetSnapPosition(*box, *strategy);
+      if (snap_point.has_value()) {
+        end_offset =
+            scrollable_area->ScrollPositionToOffset(snap_point.value());
+      }
+
+      scrollable_area->SetScrollOffset(end_offset, kProgrammaticScroll,
+                                       kScrollBehaviorAuto);
+    } else {
+      FloatPoint end_point(scrollable_area->ScrollPosition().X(),
+                           new_top * box->Style()->EffectiveZoom());
+      std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+          cc::SnapSelectionStrategy::CreateForEndPosition(
+              gfx::ScrollOffset(end_point), false, true);
+      end_point = GetDocument()
+                      .GetSnapCoordinator()
+                      .GetSnapPosition(*box, *strategy)
+                      .value_or(end_point);
+      FloatPoint new_position(scrollable_area->ScrollPosition().X(),
+                              end_point.Y());
+      scrollable_area->ScrollToAbsolutePosition(new_position,
+                                                kScrollBehaviorAuto);
+    }
   }
 }
 
@@ -1539,54 +1592,86 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
   if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
     LayoutBox* box = GetLayoutBox();
     DCHECK(box);
-    FloatPoint new_position(scrollable_area->ScrollPosition().X(),
-                            scrollable_area->ScrollPosition().Y());
-    if (scroll_to_options->hasLeft()) {
-      if (HasLeftwardDirection(*this)) {
+    if (scroll_to_options->hasLeft() && HasLeftwardDirection(*this)) {
+      UseCounter::Count(
+          GetDocument(),
+          WebFeature::
+              kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
+      if (scroll_to_options->left() > 0) {
         UseCounter::Count(
             GetDocument(),
             WebFeature::
-                kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
-        if (scroll_to_options->left() > 0) {
-          UseCounter::Count(
-              GetDocument(),
-              WebFeature::
-                  kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive);
-        }
+                kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive);
       }
-
-      new_position.SetX(
-          ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left()) *
-          box->Style()->EffectiveZoom());
     }
-    if (scroll_to_options->hasTop()) {
-      if (HasUpwardDirection(*this)) {
+    if (scroll_to_options->hasTop() && HasUpwardDirection(*this)) {
+      UseCounter::Count(
+          GetDocument(),
+          WebFeature::
+              kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
+      if (scroll_to_options->top() > 0) {
         UseCounter::Count(
             GetDocument(),
             WebFeature::
-                kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
-        if (scroll_to_options->top() > 0) {
-          UseCounter::Count(
-              GetDocument(),
-              WebFeature::
-                  kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive);
-        }
+                kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive);
       }
-
-      new_position.SetY(
-          ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()) *
-          box->Style()->EffectiveZoom());
     }
 
-    std::unique_ptr<cc::SnapSelectionStrategy> strategy =
-        cc::SnapSelectionStrategy::CreateForEndPosition(
-            gfx::ScrollOffset(new_position), scroll_to_options->hasLeft(),
-            scroll_to_options->hasTop());
-    new_position = GetDocument()
-                       .GetSnapCoordinator()
-                       .GetSnapPosition(*box, *strategy)
-                       .value_or(new_position);
-    scrollable_area->ScrollToAbsolutePosition(new_position, scroll_behavior);
+    // In order to keep the behavior of element scroll consistent with document
+    // scroll, and consistent with the behavior of other vendors, the
+    // offsets in |scroll_to_options| are treated as the offset from
+    // |ScrollOrigin()|.
+    if (RuntimeEnabledFeatures::CSSOMViewScrollCoordinatesEnabled()) {
+      ScrollOffset new_offset = scrollable_area->GetScrollOffset();
+      if (scroll_to_options->hasLeft()) {
+        new_offset.SetWidth(ScrollableArea::NormalizeNonFiniteScroll(
+                                scroll_to_options->left()) *
+                            box->Style()->EffectiveZoom());
+      }
+      if (scroll_to_options->hasTop()) {
+        new_offset.SetHeight(
+            ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()) *
+            box->Style()->EffectiveZoom());
+      }
+
+      std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+          cc::SnapSelectionStrategy::CreateForEndPosition(
+              gfx::ScrollOffset(
+                  scrollable_area->ScrollOffsetToPosition(new_offset)),
+              scroll_to_options->hasLeft(), scroll_to_options->hasTop());
+      base::Optional<FloatPoint> snap_point =
+          GetDocument().GetSnapCoordinator().GetSnapPosition(*box, *strategy);
+      if (snap_point.has_value()) {
+        new_offset =
+            scrollable_area->ScrollPositionToOffset(snap_point.value());
+      }
+
+      scrollable_area->SetScrollOffset(new_offset, kProgrammaticScroll,
+                                       scroll_behavior);
+    } else {
+      FloatPoint new_position(scrollable_area->ScrollPosition().X(),
+                              scrollable_area->ScrollPosition().Y());
+      if (scroll_to_options->hasLeft()) {
+        new_position.SetX(ScrollableArea::NormalizeNonFiniteScroll(
+                              scroll_to_options->left()) *
+                          box->Style()->EffectiveZoom());
+      }
+      if (scroll_to_options->hasTop()) {
+        new_position.SetY(
+            ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()) *
+            box->Style()->EffectiveZoom());
+      }
+
+      std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+          cc::SnapSelectionStrategy::CreateForEndPosition(
+              gfx::ScrollOffset(new_position), scroll_to_options->hasLeft(),
+              scroll_to_options->hasTop());
+      new_position = GetDocument()
+                         .GetSnapCoordinator()
+                         .GetSnapPosition(*box, *strategy)
+                         .value_or(new_position);
+      scrollable_area->ScrollToAbsolutePosition(new_position, scroll_behavior);
+    }
   }
 }
 

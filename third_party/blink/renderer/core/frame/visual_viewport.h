@@ -79,8 +79,8 @@ struct PaintPropertyTreeBuilderFragmentContext;
 //  root_transform_layer_
 //  +- scroll_layer_ (transform: scroll_translation_node_)
 //  |  +- LayoutView CompositedLayerMapping layers
-//  +- overlay_scrollbar_horizontal_ (optional, transform: DET_or_parent)
-//  +- overlay_scrollbar_vertical_ (optional, transform: DET_or_parent)
+//  +- scrollbar_graphics_layer_horizontal_ (optional, transform: DET_or_parent)
+//  +- scrollbar_graphics_layer_vertical_ (optional, transform: DET_or_parent)
 //  (DET_or_parent: device_emulation_transform_node_ if exists,
 //   or the parent transform state)
 //
@@ -338,12 +338,10 @@ class CORE_EXPORT VisualViewport final
   // The layers of the ScrollbarLayerGroups are referenced from the
   // GraphicsLayers, so the GraphicsLayers must be destructed first (declared
   // after).
-  std::unique_ptr<ScrollingCoordinator::ScrollbarLayerGroup>
-      scrollbar_layer_group_horizontal_;
-  std::unique_ptr<ScrollingCoordinator::ScrollbarLayerGroup>
-      scrollbar_layer_group_vertical_;
-  std::unique_ptr<GraphicsLayer> overlay_scrollbar_horizontal_;
-  std::unique_ptr<GraphicsLayer> overlay_scrollbar_vertical_;
+  scoped_refptr<cc::ScrollbarLayerBase> scrollbar_layer_horizontal_;
+  scoped_refptr<cc::ScrollbarLayerBase> scrollbar_layer_vertical_;
+  std::unique_ptr<GraphicsLayer> scrollbar_graphics_layer_horizontal_;
+  std::unique_ptr<GraphicsLayer> scrollbar_graphics_layer_vertical_;
 
   scoped_refptr<TransformPaintPropertyNode> device_emulation_transform_node_;
   scoped_refptr<TransformPaintPropertyNode>

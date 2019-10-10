@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher_update_checker.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -55,9 +54,7 @@ StartupAppLauncher::StartupAppLauncher(Profile* profile,
     : profile_(profile),
       app_id_(app_id),
       diagnostic_mode_(diagnostic_mode),
-      delegate_(delegate),
-      kiosk_app_manager_observer_(this),
-      install_observer_(this) {
+      delegate_(delegate) {
   DCHECK(profile_);
   DCHECK(crx_file::id_util::IdIsValid(app_id_));
   kiosk_app_manager_observer_.Add(KioskAppManager::Get());

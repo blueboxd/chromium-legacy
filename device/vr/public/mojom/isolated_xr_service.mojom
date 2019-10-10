@@ -153,7 +153,8 @@ interface IsolatedXRGamepadProviderFactory {
   // Get the IsolatedXRGamepadProvider for a specific XR runtime API (Oculus, or
   // OpenVR, which are currently the only two that are hosted outside of the
   // browser process).
-  GetIsolatedXRGamepadProvider(IsolatedXRGamepadProvider& provider);
+  GetIsolatedXRGamepadProvider(
+      pending_receiver<IsolatedXRGamepadProvider> provider);
 };
 
 // Represents an overlay that the browser may show on top of or instead of WebXR
@@ -219,7 +220,7 @@ interface IsolatedXRRuntimeProvider {
   // Register a client, and triggers OnDeviceAdded for all available runtimes,
   // followed by OnDevicesEnumerated.
   // Should only be called once.
-  RequestDevices(IsolatedXRRuntimeProviderClient client);
+  RequestDevices(pending_remote<IsolatedXRRuntimeProviderClient> client);
 };
 
 // The main interface for the XR Device Service.

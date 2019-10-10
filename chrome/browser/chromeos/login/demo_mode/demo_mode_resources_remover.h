@@ -16,6 +16,7 @@
 #include "base/scoped_observer.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
 class PrefRegistrySimple;
@@ -29,7 +30,6 @@ class TimeTicks;
 
 namespace ui {
 class Event;
-class UserActivityDetector;
 }  // namespace ui
 
 namespace chromeos {
@@ -189,10 +189,10 @@ class DemoModeResourcesRemover
   base::Optional<base::TimeTicks> usage_start_;
   base::Optional<base::TimeTicks> usage_end_;
 
-  ScopedObserver<CryptohomeClient, DemoModeResourcesRemover>
-      cryptohome_observer_;
-  ScopedObserver<ui::UserActivityDetector, DemoModeResourcesRemover>
-      user_activity_observer_;
+  ScopedObserver<CryptohomeClient, CryptohomeClient::Observer>
+      cryptohome_observer_{this};
+  ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver>
+      user_activity_observer_{this};
 
   base::WeakPtrFactory<DemoModeResourcesRemover> weak_ptr_factory_{this};
 

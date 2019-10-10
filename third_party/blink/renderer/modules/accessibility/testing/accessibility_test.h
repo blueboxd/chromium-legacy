@@ -44,12 +44,13 @@ class AccessibilityTest : public RenderingTest {
 
   std::string PrintAXTree() const;
 
+ protected:
+  std::unique_ptr<AXContext> ax_context_;
+
  private:
   std::ostringstream& PrintAXTreeHelper(std::ostringstream&,
                                         const AXObject* root,
                                         size_t level) const;
-
-  std::unique_ptr<AXContext> ax_context_;
 };
 
 }  // namespace test

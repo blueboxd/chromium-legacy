@@ -704,6 +704,21 @@ void ShelfLayoutManager::ResumeVisiblityUpdate() {
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }
 
+void ShelfLayoutManager::OnShelfItemSelected(ShelfAction action) {
+  switch (action) {
+    case SHELF_ACTION_NONE:
+    case SHELF_ACTION_APP_LIST_SHOWN:
+    case SHELF_ACTION_APP_LIST_DISMISSED:
+    case SHELF_ACTION_WINDOW_MINIMIZED:
+      break;
+    case SHELF_ACTION_NEW_WINDOW_CREATED:
+    case SHELF_ACTION_WINDOW_ACTIVATED: {
+      base::AutoReset<bool> reset(&should_hide_hotseat_, true);
+      UpdateVisibilityState();
+    } break;
+  }
+}
+
 void ShelfLayoutManager::OnWindowResized() {
   LayoutShelf();
 }
@@ -1042,7 +1057,8 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
             return HotseatState::kShown;
           }
           if (visibility_state == SHELF_AUTO_HIDE) {
-            if (auto_hide_state == SHELF_AUTO_HIDE_HIDDEN)
+            if (auto_hide_state == SHELF_AUTO_HIDE_HIDDEN ||
+                should_hide_hotseat_)
               return HotseatState::kHidden;
             return HotseatState::kExtended;
           }

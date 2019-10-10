@@ -18,8 +18,6 @@
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -131,26 +129,6 @@ bool AppBannerUiDelegateAndroid::InstallApp(
   }
   SendBannerAccepted();
   return should_close_banner;
-}
-
-void AppBannerUiDelegateAndroid::OnNativeAppInstallStarted(
-    content::WebContents* web_contents) {
-  AppBannerSettingsHelper::RecordBannerEvent(
-      web_contents, web_contents->GetVisibleURL(), package_name_,
-      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
-      AppBannerManager::GetCurrentTime());
-
-  TrackInstallEvent(INSTALL_EVENT_NATIVE_APP_INSTALL_STARTED);
-  rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
-                                          "AppBanner.NativeApp.Installed",
-                                          web_contents->GetURL());
-}
-
-void AppBannerUiDelegateAndroid::OnNativeAppInstallFinished(bool success) {
-  if (success)
-    TrackInstallEvent(INSTALL_EVENT_NATIVE_APP_INSTALL_COMPLETED);
-  else
-    TrackDismissEvent(DISMISS_EVENT_INSTALL_TIMEOUT);
 }
 
 void AppBannerUiDelegateAndroid::OnUiCancelled(

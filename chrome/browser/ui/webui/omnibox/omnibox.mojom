@@ -52,9 +52,10 @@ struct AutocompleteResultsForProvider {
 };
 
 struct OmniboxResponse {
-  bool done;
+  int32 cursor_position;
   // Time delta since the request was started, in milliseconds.
   int32 time_since_omnibox_started_ms;
+  bool done;
   // The inferred metrics::OmniboxInputType of the request represented as a
   // string.
   string type;

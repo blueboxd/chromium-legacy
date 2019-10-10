@@ -542,6 +542,17 @@ void VRServiceImpl::ExitPresent() {
     immersive_runtime->ExitPresent(this);
 }
 
+void VRServiceImpl::SetFramesThrottled(bool throttled) {
+  if (throttled != frames_throttled_) {
+    frames_throttled_ = throttled;
+    BrowserXRRuntime* immersive_runtime =
+        runtime_manager_->GetImmersiveRuntime();
+    if (immersive_runtime) {
+      immersive_runtime->SetFramesThrottled(this, frames_throttled_);
+    }
+  }
+}
+
 void VRServiceImpl::SetListeningForActivate(
     mojo::PendingRemote<device::mojom::VRDisplayClient> display_client) {
   // TODO(crbug.com/999745): Remove the check if the condition to check if

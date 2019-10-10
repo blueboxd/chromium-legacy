@@ -24,6 +24,7 @@ public class Credential {
      */
     public Credential(String username, String password, String formattedUsername, String originUrl,
             boolean isPublicSuffixMatch) {
+        assert originUrl != null : "Credential origin is null! Pass an empty one instead.";
         mUsername = username;
         mPassword = password;
         mFormattedUsername = formattedUsername;

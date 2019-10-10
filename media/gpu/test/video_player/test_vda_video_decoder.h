@@ -80,6 +80,12 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   void NotifyResetDone() override;
   void NotifyError(VideoDecodeAccelerator::Error error) override;
 
+  // Helper thunk to avoid dereferencing WeakPtrs on the wrong thread.
+  static void ReusePictureBufferThunk(
+      base::Optional<base::WeakPtr<TestVDAVideoDecoder>> decoder_client,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      int32_t picture_buffer_id);
+
   // Get the next bitstream buffer id to be used.
   int32_t GetNextBitstreamBufferId();
   // Get the next picture buffer id to be used.
@@ -117,6 +123,8 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   int32_t next_picture_buffer_id_ = 0;
 
   std::unique_ptr<VideoDecodeAccelerator> decoder_;
+
+  scoped_refptr<base::SequencedTaskRunner> vda_wrapper_task_runner_;
 
   SEQUENCE_CHECKER(vda_wrapper_sequence_checker_);
 

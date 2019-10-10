@@ -119,8 +119,24 @@ void UpdatePlayAutoInstallRequestTime(const base::TimeDelta& elapsed_time,
       base::TimeDelta::FromMinutes(10), 50);
 }
 
-void UpdatePlayStoreShowTime(const base::TimeDelta& elapsed_time,
-                             const Profile* profile) {
+void UpdateArcUiAvailableTime(const base::TimeDelta& elapsed_time,
+                              const std::string& mode,
+                              const Profile* profile) {
+  base::UmaHistogramCustomTimes(
+      GetHistogramNameByUserType("Arc.UiAvailable." + mode + ".TimeDelta",
+                                 profile),
+      elapsed_time, base::TimeDelta::FromSeconds(1),
+      base::TimeDelta::FromMinutes(5), 50);
+}
+
+void UpdatePlayStoreLaunchTime(const base::TimeDelta& elapsed_time) {
+  base::UmaHistogramCustomTimes("Arc.PlayStoreLaunch.TimeDelta", elapsed_time,
+                                base::TimeDelta::FromMilliseconds(10),
+                                base::TimeDelta::FromSeconds(20), 50);
+}
+
+void UpdatePlayStoreShownTimeDeprecated(const base::TimeDelta& elapsed_time,
+                                        const Profile* profile) {
   base::UmaHistogramCustomTimes(
       GetHistogramNameByUserType("Arc.PlayStoreShown.TimeDelta", profile),
       elapsed_time, base::TimeDelta::FromSeconds(1),

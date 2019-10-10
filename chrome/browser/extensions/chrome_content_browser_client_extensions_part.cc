@@ -595,29 +595,6 @@ bool ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnUI(
 }
 
 // static
-void ChromeContentBrowserClientExtensionsPart::OverrideNavigationParams(
-    content::SiteInstance* site_instance,
-    ui::PageTransition* transition,
-    bool* is_renderer_initiated,
-    content::Referrer* referrer,
-    base::Optional<url::Origin>* initiator_origin) {
-  const Extension* extension =
-      ExtensionRegistry::Get(site_instance->GetBrowserContext())
-          ->enabled_extensions()
-          .GetExtensionOrAppByURL(site_instance->GetSiteURL());
-  if (!extension)
-    return;
-
-  // Hide the |referrer| for extension pages. We don't want sites to see a
-  // referrer of chrome-extension://<...>.
-  //
-  // OTOH, don't change |initiator_origin| - SameSite-cookies and Sec-Fetch-Site
-  // should still see the request as cross-site.
-  if (extension->is_extension())
-    *referrer = content::Referrer();
-}
-
-// static
 std::vector<url::Origin> ChromeContentBrowserClientExtensionsPart::
     GetOriginsRequiringDedicatedProcess() {
   std::vector<url::Origin> list;

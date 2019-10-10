@@ -70,13 +70,10 @@ enum class CookieSameSiteString {
   kMaxValue = kExtended
 };
 
-// What rules to apply when determining when whether access to a particular
-// cookie is allowed.
-// TODO(crbug.com/978172): Machinery to read the content setting and set the
-// appropriate CookieAccessSemantics on the cookie (will be added as a new
-// metadata field of CanonicalCookie).
+// What rules to apply when determining whether access to a particular cookie is
+// allowed.
 enum class CookieAccessSemantics {
-  // Has not been checked yet.
+  // Has not been checked yet or there is no way to check.
   UNKNOWN = -1,
   // Has been checked and the cookie should *not* be subject to legacy access
   // rules.

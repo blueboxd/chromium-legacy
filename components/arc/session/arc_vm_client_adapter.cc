@@ -25,6 +25,8 @@
 namespace arc {
 namespace {
 
+constexpr const char kArcVmServerProxyJobName[] = "arcvm_2dserver_2dproxy";
+
 chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
 }
@@ -88,6 +90,12 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   void UpgradeArc(const UpgradeArcContainerRequest& request,
                   chromeos::VoidDBusMethodCallback callback) override {
+    VLOG(1) << "Starting arcvm-server-proxy";
+    chromeos::UpstartClient::Get()->StartJob(
+        kArcVmServerProxyJobName, /*environment=*/{},
+        base::BindOnce(&ArcVmClientAdapter::OnArcVmServerProxyJobStarted,
+                       weak_factory_.GetWeakPtr()));
+
     VLOG(1) << "Starting ARCVM";
     std::vector<std::string> env{
         {"USER_ID_HASH=" + user_id_hash_},
@@ -129,7 +137,15 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
  private:
   void OnArcInstanceStopped() {
-    VLOG(1) << "arcvm stopped.";
+    VLOG(1) << "ARCVM stopped. Stopping arcvm-server-proxy";
+
+    // TODO(yusukes): Consider removing this stop call once b/142140355 is
+    // implemented.
+    chromeos::UpstartClient::Get()->StopJob(
+        kArcVmServerProxyJobName, /*environment=*/{},
+        base::BindOnce(&ArcVmClientAdapter::OnArcVmServerProxyJobStopped,
+                       weak_factory_.GetWeakPtr()));
+
     for (auto& observer : observer_list_)
       observer.ArcInstanceStopped();
   }
@@ -138,6 +154,14 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   void OnArcVmJobStopped(bool result) {
     if (!result)
       LOG(ERROR) << "Failed to stop arcvm.";
+  }
+
+  void OnArcVmServerProxyJobStarted(bool result) {
+    VLOG(1) << "OnArcVmServerProxyJobStarted result=" << result;
+  }
+
+  void OnArcVmServerProxyJobStopped(bool result) {
+    VLOG(1) << "OnArcVmServerProxyJobStopped result=" << result;
   }
 
   // A hash of the primary profile user ID.

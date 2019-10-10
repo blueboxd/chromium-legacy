@@ -282,6 +282,7 @@ public abstract class ContextualSearchContext {
      * Specifies that this resolve must return a non-expanding result.
      */
     void setRestrictedResolve() {
+        // TODO(donnd): Improve by sending full context plus a boolean.
         mSurroundingText = mInitialSelectedWord;
         mSelectionStartOffset = 0;
         mSelectionEndOffset = mSurroundingText.length();

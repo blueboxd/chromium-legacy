@@ -205,12 +205,12 @@ TEST_F(WindowPerformanceTest, EnsureEntryListOrder) {
   DummyExceptionStateForTesting exception_state;
   test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
   for (int i = 0; i < 8; i++) {
-    performance_->mark(scope.GetScriptState(), AtomicString::Number(i),
+    performance_->mark(scope.GetScriptState(), AtomicString::Number(i), nullptr,
                        exception_state);
   }
   test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
   for (int i = 8; i < 17; i++) {
-    performance_->mark(scope.GetScriptState(), AtomicString::Number(i),
+    performance_->mark(scope.GetScriptState(), AtomicString::Number(i), nullptr,
                        exception_state);
   }
   PerformanceEntryVector entries = performance_->getEntries();

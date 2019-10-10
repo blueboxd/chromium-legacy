@@ -40,14 +40,14 @@ void FakeUpstartClient::StartJob(const std::string& job,
                                  const std::vector<std::string>& upstart_env,
                                  VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
+      FROM_HERE, base::BindOnce(std::move(callback), start_job_result_));
 }
 
 void FakeUpstartClient::StopJob(const std::string& job,
                                 const std::vector<std::string>& upstart_env,
                                 VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
+      FROM_HERE, base::BindOnce(std::move(callback), stop_job_result_));
 }
 
 void FakeUpstartClient::StartAuthPolicyService() {

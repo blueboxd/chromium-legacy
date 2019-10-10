@@ -91,6 +91,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
 
   void RegisterApp(AppWindowInfo* app_window_info);
   void UnregisterApp(AppWindowInfo* app_window_info);
+  void HandlePlayStoreLaunch(AppWindowInfo* app_window_info);
 
   AppWindowInfo* GetAppWindowInfoForTask(int task_id);
   ArcAppWindow* GetAppWindowForTask(int task_id);

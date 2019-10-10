@@ -22,3 +22,9 @@ python_library("sizes_py") {
     "//third_party/catapult/tracing:convert_chart_json",
   ]
 }
+
+group("caspian") {
+  deps = [
+    "//tools/binary_size/libsupersize/caspian:cli($host_toolchain)",
+  ]
+}

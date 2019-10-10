@@ -182,6 +182,11 @@ class AvailabilityProber
   // it was successful. It is safe to delete |this| during the callback.
   void SetOnCompleteCallback(AvailabilityProberOnCompleteCallback callback);
 
+  // Called when some other network request to the same endpoint has failed and
+  // the probe should be reattempted. Also records this event as a probe
+  // failure.
+  void ReportExternalFailureAndRetry();
+
  protected:
   // Exposes |tick_clock| and |clock| for testing.
   AvailabilityProber(
@@ -314,6 +319,11 @@ class AvailabilityProber
   // An optional callback to notify of a completed probe. This callback passes a
   // bool to indicate success of the completed probe.
   AvailabilityProberOnCompleteCallback on_complete_callback_;
+
+  // This is set after a call to |ReportExternalFailureAndRetry| and cleared
+  // when the next probe completes. This state is kept for histogram recording
+  // of success after a reported failure.
+  bool reported_external_failure_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

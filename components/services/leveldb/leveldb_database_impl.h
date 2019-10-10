@@ -21,17 +21,15 @@
 namespace leveldb {
 
 // A temporary wrapper around the Storage Service's DomStorageDatabase class,
-// implemented behind the mojom interface facade consumed by
-// LocalStorageContextMojo, SessionStorageContextMojo, and related classes. Note
-// that this is never used through an actual message pipe, but always via direct
-// method calls.
+// consumed by LocalStorageContextMojo, SessionStorageContextMojo, and related
+// classes.
 //
 // TODO(https://crbug.com/1000959): Delete this class.
-class LevelDBDatabaseImpl : public mojom::LevelDBDatabase {
+class LevelDBDatabaseImpl {
  public:
-  using OpenCallback = base::OnceCallback<void(mojom::DatabaseError)>;
+  using StatusCallback = base::OnceCallback<void(mojom::DatabaseError)>;
 
-  ~LevelDBDatabaseImpl() override;
+  ~LevelDBDatabaseImpl();
 
   static std::unique_ptr<LevelDBDatabaseImpl> OpenDirectory(
       const leveldb_env::Options& options,
@@ -40,14 +38,14 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase {
       const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
           memory_dump_id,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-      OpenCallback callback);
+      StatusCallback callback);
 
   static std::unique_ptr<LevelDBDatabaseImpl> OpenInMemory(
       const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
           memory_dump_id,
       const std::string& tracking_name,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-      OpenCallback callback);
+      StatusCallback callback);
 
   base::SequenceBound<storage::DomStorageDatabase>& database() {
     return database_;
@@ -59,29 +57,43 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase {
   // Overridden from LevelDBDatabase:
   void Put(const std::vector<uint8_t>& key,
            const std::vector<uint8_t>& value,
-           PutCallback callback) override;
-  void Delete(const std::vector<uint8_t>& key,
-              DeleteCallback callback) override;
+           StatusCallback callback);
+
+  void Delete(const std::vector<uint8_t>& key, StatusCallback callback);
+
   void DeletePrefixed(const std::vector<uint8_t>& key_prefix,
-                      DeletePrefixedCallback callback) override;
-  void RewriteDB(RewriteDBCallback callback) override;
+                      StatusCallback callback);
+
+  void RewriteDB(StatusCallback callback);
+
   void Write(std::vector<mojom::BatchedOperationPtr> operations,
-             WriteCallback callback) override;
-  void Get(const std::vector<uint8_t>& key, GetCallback callback) override;
+             StatusCallback callback);
+
+  using GetCallback = base::OnceCallback<void(mojom::DatabaseError status,
+                                              const std::vector<uint8_t>&)>;
+  void Get(const std::vector<uint8_t>& key, GetCallback callback);
+
+  using GetPrefixedCallback =
+      base::OnceCallback<void(mojom::DatabaseError status,
+                              std::vector<mojom::KeyValuePtr>)>;
   void GetPrefixed(const std::vector<uint8_t>& key_prefix,
-                   GetPrefixedCallback callback) override;
+                   GetPrefixedCallback callback);
+
+  using GetManyCallback =
+      base::OnceCallback<void(std::vector<mojom::GetManyResultPtr>)>;
   void GetMany(std::vector<mojom::GetManyRequestPtr> keys_or_prefixes,
-               GetManyCallback callback) override;
+               GetManyCallback callback);
+
   void CopyPrefixed(const std::vector<uint8_t>& source_key_prefix,
                     const std::vector<uint8_t>& destination_key_prefix,
-                    CopyPrefixedCallback callback) override;
+                    StatusCallback callback);
 
  private:
   using StatusAndKeyValues =
       std::tuple<Status, std::vector<mojom::KeyValuePtr>>;
 
   void OnDatabaseOpened(
-      OpenCallback callback,
+      StatusCallback callback,
       base::SequenceBound<storage::DomStorageDatabase> database,
       leveldb::Status status);
 

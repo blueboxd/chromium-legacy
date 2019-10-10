@@ -495,8 +495,7 @@ void BlobBuilderFromStream::AllocateMoreFileSpace(
       items_.back()->item()->length() < kMaxFileSize) {
     auto item = items_.back()->item();
     uint64_t old_file_size = item->length();
-    scoped_refptr<ShareableFileReference> file_reference =
-        static_cast<ShareableFileReference*>(item->data_handle());
+    scoped_refptr<ShareableFileReference> file_reference = item->file_ref_;
     DCHECK(file_reference);
     auto file_size_delta = std::min(kMaxFileSize - old_file_size, length_hint);
     context_->mutable_memory_controller()->GrowFileAllocation(
@@ -618,7 +617,7 @@ void BlobBuilderFromStream::DidWriteToExtendedFile(
   DCHECK(!items_.empty());
   auto item = items_.back()->item();
   DCHECK_EQ(item->type(), BlobDataItem::Type::kFile);
-  DCHECK_EQ(item->data_handle(), file_reference.get());
+  DCHECK_EQ(item->file_ref_, file_reference.get());
 
   item->SetFileModificationTime(modification_time);
   current_total_size_ += bytes_written;

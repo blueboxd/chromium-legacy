@@ -63,8 +63,9 @@ class DemoPreferencesScreen
   // restored if user presses back button.
   std::string initial_input_method_;
 
-  ScopedObserver<input_method::InputMethodManager, DemoPreferencesScreen>
-      input_manager_observer_;
+  ScopedObserver<input_method::InputMethodManager,
+                 input_method::InputMethodManager::Observer>
+      input_manager_observer_{this};
 
   DemoPreferencesScreenView* view_;
   ScreenExitCallback exit_callback_;

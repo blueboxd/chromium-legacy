@@ -512,6 +512,8 @@ Status ExecuteWindowCommand(const WindowCommand& command,
     return nav_status;
   if (status.code() == kUnexpectedAlertOpen)
     return Status(kOk);
+  if (status.code() == kUnexpectedAlertOpen_Keep)
+    return Status(kUnexpectedAlertOpen);
   return status;
 }
 
@@ -1773,7 +1775,14 @@ Status ExecuteScreenshot(Session* session,
   std::string screenshot;
   status = web_view->CaptureScreenshot(&screenshot, base::DictionaryValue());
   if (status.IsError()) {
-    LOG(WARNING) << "screenshot failed, retrying";
+    if (status.code() == kUnexpectedAlertOpen) {
+      LOG(WARNING) << status.message() << ", cancelling screenshot";
+      // we can't take screenshot in this state
+      // but we must return kUnexpectedAlertOpen_Keep instead
+      // see https://crbug.com/chromedriver/2117
+      return Status(kUnexpectedAlertOpen_Keep);
+    }
+    LOG(WARNING) << "screenshot failed, retrying " << status.message();
     status = web_view->CaptureScreenshot(&screenshot, base::DictionaryValue());
   }
   if (status.IsError())

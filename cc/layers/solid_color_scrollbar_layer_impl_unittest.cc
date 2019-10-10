@@ -22,12 +22,11 @@ TEST(SolidColorScrollbarLayerImplTest, Occlusion) {
   int thumb_thickness = layer_size.width();
   int track_start = 0;
   bool is_left_side_vertical_scrollbar = false;
-  bool is_overlay = false;
 
   SolidColorScrollbarLayerImpl* scrollbar_layer_impl =
       impl.AddLayer<SolidColorScrollbarLayerImpl>(
           orientation, thumb_thickness, track_start,
-          is_left_side_vertical_scrollbar, is_overlay);
+          is_left_side_vertical_scrollbar);
   scrollbar_layer_impl->SetBounds(layer_size);
   scrollbar_layer_impl->SetDrawsContent(true);
   scrollbar_layer_impl->SetCurrentPos(25.f);

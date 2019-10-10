@@ -252,7 +252,11 @@ class DOMWrapperForwardingVisitor final
     VisitHandle(value, class_id);
   }
 
-  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>& value) final {
+  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>&) final {
+    CHECK(false) << "Blink does not use v8::TracedGlobal.";
+  }
+
+  void VisitTracedReference(const v8::TracedReference<v8::Value>& value) final {
     VisitHandle(&value, value.WrapperClassId());
   }
 

@@ -450,6 +450,9 @@ extern const base::Feature kThirdPartyModulesBlocking;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kTLS13HardeningForLocalAnchors;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kTreatUnsafeDownloadsAsActive;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const char kTreatUnsafeDownloadsAsActiveParamName[];
@@ -486,9 +489,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUserActivityEventLogging;
 
 #endif
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kUseSameCacheForMedia;
 
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kArcCupsApi;

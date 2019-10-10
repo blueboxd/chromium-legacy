@@ -1249,6 +1249,8 @@ void TabDragController::Attach(TabDragContext* attached_context,
   attached_context_tabs_closed_tracker_ =
       std::make_unique<DraggedTabsClosedTracker>(
           attached_context_->GetTabStripModel(), this);
+  if (attach_index_ != -1)
+    UpdateGroupForDraggedTabs();
 }
 
 void TabDragController::Detach(ReleaseCapture release_capture) {
@@ -2138,7 +2140,7 @@ base::Optional<TabGroupId> TabDragController::GetTabGroupForTargetIndex(
   // ungrouped.
 
   const Tab* left_most_selected_tab =
-      source_context_->GetTabAt(selected.front());
+      attached_context_->GetTabAt(selected.front());
 
   const int buffer = left_most_selected_tab->width() / 4;
 
@@ -2152,7 +2154,7 @@ base::Optional<TabGroupId> TabDragController::GetTabGroupForTargetIndex(
   // tab or there is a group header to the immediate left.
   int left_edge =
       attached_model->ContainsIndex(left_tab_index)
-          ? source_context_->GetTabAt(left_tab_index)->bounds().right() -
+          ? attached_context_->GetTabAt(left_tab_index)->bounds().right() -
                 tab_left_inset
           : tab_left_inset;
 

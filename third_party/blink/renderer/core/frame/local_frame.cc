@@ -1641,7 +1641,7 @@ void LocalFrame::DidFreeze() {
   if (auto* document_resource_coordinator =
           GetDocument()->GetResourceCoordinator()) {
     document_resource_coordinator->SetLifecycleState(
-        resource_coordinator::mojom::LifecycleState::kFrozen);
+        performance_manager::mojom::LifecycleState::kFrozen);
   }
 }
 
@@ -1658,7 +1658,7 @@ void LocalFrame::DidResume() {
   if (auto* document_resource_coordinator =
           GetDocument()->GetResourceCoordinator()) {
     document_resource_coordinator->SetLifecycleState(
-        resource_coordinator::mojom::LifecycleState::kRunning);
+        performance_manager::mojom::LifecycleState::kRunning);
   }
 }
 

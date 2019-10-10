@@ -693,7 +693,7 @@ void OptimizationGuideHintsManager::OnHintLoaded(
 }
 
 void OptimizationGuideHintsManager::RegisterOptimizationTypes(
-    std::vector<optimization_guide::proto::OptimizationType>
+    const std::vector<optimization_guide::proto::OptimizationType>&
         optimization_types) {
   bool should_load_new_optimization_filter = false;
   for (const auto optimization_type : optimization_types) {

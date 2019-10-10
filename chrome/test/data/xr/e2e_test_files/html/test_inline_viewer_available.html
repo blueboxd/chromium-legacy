@@ -30,8 +30,9 @@ identity reference space
       // TODO (crbug.com/934912): Consider improving flow once methods are
       // updated.
       let step = "supportsInline";
-      navigator.xr.supportsSession('inline')
-      .then(()=> {
+      navigator.xr.isSessionSupported('inline')
+      .then((supported)=> {
+        assert_true(supported);
         step = "requestSession";
         return navigator.xr.requestSession('inline');
       })

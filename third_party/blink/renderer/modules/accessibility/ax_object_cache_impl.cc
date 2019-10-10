@@ -121,6 +121,7 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
     AddPermissionStatusListener();
   documents_.insert(&document);
   document.View()->RegisterForLifecycleNotifications(this);
+  relation_cache_->Init();
 }
 
 AXObjectCacheImpl::~AXObjectCacheImpl() {

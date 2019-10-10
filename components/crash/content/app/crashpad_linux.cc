@@ -23,17 +23,38 @@
 
 namespace crash_reporter {
 
+namespace {
+
+// TODO(jperaza): This is the first chance handler type used by Breakpad and v8.
+// The Crashpad FirstChanceHandler type explicitly declares the third parameter
+// to be a ucontext_t* instead of a void*. Using a reinterpret cast to convert
+// one function type to another causes calling the handler to fail with SIGILL
+// when CFI is enabled. Use a helper with Crashpad's FirstChanceHandler type
+// to delegate to the real first chance handler instead of re-interpreting the
+// handler itself. This can be removed if the two function types converge.
+bool (*g_first_chance_handler)(int, siginfo_t*, void*);
+
+bool FirstChanceHandlerHelper(int signo,
+                              siginfo_t* siginfo,
+                              ucontext_t* context) {
+  return g_first_chance_handler(signo, siginfo, context);
+}
+
+}  // namespace
+
+void SetFirstChanceExceptionHandler(bool (*handler)(int, siginfo_t*, void*)) {
+  DCHECK(!g_first_chance_handler);
+  g_first_chance_handler = handler;
+  crashpad::CrashpadClient::SetFirstChanceExceptionHandler(
+      FirstChanceHandlerHelper);
+}
+
 // TODO(jperaza): Remove kEnableCrashpad and IsCrashpadEnabled() when Crashpad
 // is fully enabled on Linux.
 const char kEnableCrashpad[] = "enable-crashpad";
 
 bool IsCrashpadEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableCrashpad);
-}
-
-void SetFirstChanceExceptionHandler(bool (*handler)(int, siginfo_t*, void*)) {
-  crashpad::CrashpadClient::SetFirstChanceExceptionHandler(
-      reinterpret_cast<crashpad::CrashpadClient::FirstChanceHandler>(handler));
 }
 
 bool GetHandlerSocket(int* fd, pid_t* pid) {

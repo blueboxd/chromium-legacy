@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_driven_test.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/geo/country_names.h"
@@ -139,8 +140,8 @@ void PersonalDataManagerMock::Reset() {
 std::string PersonalDataManagerMock::SaveImportedProfile(
     const AutofillProfile& profile) {
   std::vector<AutofillProfile> profiles;
-  std::string merged_guid =
-      MergeProfile(profile, &profiles_, "en-US", &profiles);
+  std::string merged_guid = AutofillProfileComparator::MergeProfile(
+      profile, &profiles_, "en-US", &profiles);
   if (merged_guid == profile.guid())
     profiles_.push_back(std::make_unique<AutofillProfile>(profile));
   return merged_guid;

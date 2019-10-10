@@ -11,7 +11,8 @@
 #include "components/remote_cocoa/common/color_panel.mojom.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 class ColorChooserMac : public content::ColorChooser,
                         public remote_cocoa::mojom::ColorPanelHost {
@@ -40,8 +41,8 @@ class ColorChooserMac : public content::ColorChooser,
   // outlive this class.
   content::WebContents* web_contents_;
 
-  remote_cocoa::mojom::ColorPanelPtr mojo_panel_ptr_;
-  mojo::Binding<remote_cocoa::mojom::ColorPanelHost> mojo_host_binding_;
+  mojo::Remote<remote_cocoa::mojom::ColorPanel> mojo_panel_remote_;
+  mojo::Receiver<remote_cocoa::mojom::ColorPanelHost> mojo_host_receiver_{this};
   DISALLOW_COPY_AND_ASSIGN(ColorChooserMac);
 };
 

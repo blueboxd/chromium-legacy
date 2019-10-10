@@ -156,15 +156,14 @@ std::string GetContentForURL(const std::string& url) {
 }
 
 void RunOriginTrialTestOnPMSequence(
-    const resource_coordinator::mojom::InterventionPolicy expected_policy) {
+    const mojom::InterventionPolicy expected_policy) {
   auto* perf_manager = PerformanceManagerImpl::GetInstance();
   ASSERT_TRUE(perf_manager);
   base::RunLoop run_loop;
   perf_manager->CallOnGraphImpl(
       FROM_HERE, base::BindOnce(
                      [](base::OnceClosure quit_closure,
-                        const resource_coordinator::mojom::InterventionPolicy
-                            expected_policy,
+                        const mojom::InterventionPolicy expected_policy,
                         performance_manager::GraphImpl* graph) {
                        auto page_nodes = graph->GetAllPageNodeImpls();
                        EXPECT_EQ(1U, page_nodes.size());
@@ -225,8 +224,7 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest, PageFreezeOriginTrialOptIn) {
                      {kOriginTrialTestHostname,
                       kOriginTrialFreezePolicyTestPath, kOriginTrialOptInPage},
                      "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptIn);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptIn);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest, PageFreezeOriginTrialOptOut) {
@@ -235,8 +233,7 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest, PageFreezeOriginTrialOptOut) {
                      {kOriginTrialTestHostname,
                       kOriginTrialFreezePolicyTestPath, kOriginTrialOptOutPage},
                      "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptOut);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest, PageFreezeOriginTrialDefault) {
@@ -245,8 +242,7 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest, PageFreezeOriginTrialDefault) {
                                         kOriginTrialFreezePolicyTestPath,
                                         kOriginTrialDefaultPage},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kDefault);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kDefault);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
@@ -255,8 +251,7 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialOptInOptOut},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptOut);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
@@ -265,8 +260,7 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialOptOutOptIn},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptOut);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
@@ -275,8 +269,7 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialDefaultOptIn},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptIn);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptIn);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
@@ -285,8 +278,7 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialDefaultOptOut},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptOut);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
@@ -295,8 +287,7 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialOptInOptIn},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptIn);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptIn);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
@@ -305,8 +296,7 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialOptOutOptOut},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptOut);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
@@ -315,8 +305,7 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialDefaultDefault},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kDefault);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kDefault);
 }
 
 // TODO(sebmarchand): Add more tests, e.g. a test where the main frame and a

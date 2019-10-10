@@ -530,6 +530,15 @@ void XR::ExitPresent() {
   }
 }
 
+void XR::SetFramesThrottled(const XRSession* session, bool throttled) {
+  // The service only cares if the immersive session is throttling frames.
+  if (session->immersive()) {
+    // If we have an immersive session, we should have a service.
+    DCHECK(service_);
+    service_->SetFramesThrottled(throttled);
+  }
+}
+
 ScriptPromise XR::supportsSession(ScriptState* script_state,
                                   const String& mode,
                                   ExceptionState& exception_state) {

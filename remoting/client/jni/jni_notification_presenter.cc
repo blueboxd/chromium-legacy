@@ -57,12 +57,15 @@ void JniNotificationPresenter::OnNotificationFetched(
     Java_NotificationPresenter_onNoNotification(env, java_presenter);
     return;
   }
+  auto j_message_id = ConvertUTF8ToJavaString(env, notification->message_id);
   auto j_message_text =
       ConvertUTF8ToJavaString(env, notification->message_text);
   auto j_link_text = ConvertUTF8ToJavaString(env, notification->link_text);
   auto j_link_url = ConvertUTF8ToJavaString(env, notification->link_url);
+  auto j_allow_silence = notification->allow_silence;
   Java_NotificationPresenter_onNotificationFetched(
-      env, java_presenter, j_message_text, j_link_text, j_link_url);
+      env, java_presenter, j_message_id, j_message_text, j_link_text,
+      j_link_url, j_allow_silence);
 }
 
 static jlong JNI_NotificationPresenter_Init(

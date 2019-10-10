@@ -44,6 +44,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -295,7 +296,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "PageLoad.Clients.Ads.FrameCounts.AdFrames.Total", 1, 1);
   histogram_tester.ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total", 0 /* < 1 KB */, 1);
+      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total2", 0 /* < 1 KB */,
+      1);
   auto entries =
       ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
   EXPECT_EQ(1u, entries.size());
@@ -370,11 +372,11 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   waiter->Wait();
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectTotalCount(
-      "PageLoad.Clients.Ads.Visible.Bytes.AdFrames.PerFrame.Total", 1);
+      "PageLoad.Clients.Ads.Visible.Bytes.AdFrames.PerFrame.Total2", 1);
   histogram_tester.ExpectTotalCount(
-      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Total", 1);
+      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Total2", 1);
   histogram_tester.ExpectTotalCount(
-      "PageLoad.Clients.Ads.NonVisible.Bytes.AdFrames.PerFrame.Total", 0);
+      "PageLoad.Clients.Ads.NonVisible.Bytes.AdFrames.PerFrame.Total2", 0);
   auto entries =
       ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
   EXPECT_EQ(1u, entries.size());
@@ -396,11 +398,11 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   // Navigate away to force the histogram recording.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectTotalCount(
-      "PageLoad.Clients.Ads.NonVisible.Bytes.AdFrames.PerFrame.Total", 1);
+      "PageLoad.Clients.Ads.NonVisible.Bytes.AdFrames.PerFrame.Total2", 1);
   histogram_tester.ExpectTotalCount(
-      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Total", 1);
+      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Total2", 1);
   histogram_tester.ExpectTotalCount(
-      "PageLoad.Clients.Ads.Visible.Bytes.AdFrames.PerFrame.Total", 0);
+      "PageLoad.Clients.Ads.Visible.Bytes.AdFrames.PerFrame.Total2", 0);
   auto entries =
       ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
   EXPECT_EQ(1u, entries.size());
@@ -533,17 +535,18 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 
   // Verify that iframe e is only same origin.
   histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.PercentSameOrigin", 100, 1);
+      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.PercentSameOrigin2", 100,
+      1);
 
   // Verify that iframe b counts subframes as cross origin and a nested same
   // origin subframe as same origin.
   histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.PercentSameOrigin", 50, 1);
+      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.PercentSameOrigin2", 50, 1);
 
   // Verify that all iframe are treated as cross-origin to the page. Only 1/8 of
   // resources are on origin a.com.
   histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Bytes.FullPage.PercentSameOrigin", 12.5, 1);
+      "PageLoad.Clients.Ads.Bytes.FullPage.PercentSameOrigin2", 12.5, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
@@ -806,12 +809,12 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Resources.Bytes.Ads2", 4, 1);
   histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Bytes.MainFrame.Ads.Total", 1, 1);
+      "PageLoad.Clients.Ads.Bytes.MainFrame.Ads.Total2", 1, 1);
 
   // The main frame should have 2 KB of resources, 1KB from the main resource
   // and one from the ad script in the main frame.
   histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Bytes.MainFrame.Total", 2, 1);
+      "PageLoad.Clients.Ads.Bytes.MainFrame.Total2", 2, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
@@ -858,11 +861,11 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Network", 2, 1);
   histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total", 2, 1);
+      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total2", 2, 1);
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Network", 2, 1);
   histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Total", 2, 1);
+      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Total2", 2, 1);
   auto entries =
       ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
   EXPECT_EQ(1u, entries.size());
@@ -870,7 +873,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       entries.front(), ukm::builders::AdFrameLoad::kLoading_NetworkBytesName,
       ukm::GetExponentialBucketMinForBytes(2048));
   ukm_recorder.ExpectEntryMetric(
-      entries.front(), ukm::builders::AdFrameLoad::kLoading_CacheBytesName, 0);
+      entries.front(), ukm::builders::AdFrameLoad::kLoading_CacheBytes2Name, 0);
 }
 
 // Verifies that the frame is navigated to the intervention page when a
@@ -907,6 +910,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 
   histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
                                       FrameData::HeavyAdStatus::kNetwork, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kHeavyAdIntervention, 1);
 }
 
 // Check that when the heavy ad feature is disabled we don't navigate
@@ -938,6 +944,10 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   // load is not synchronous. Instead check that we didn't log intervention UMA
   // that is always recorded when the intervention occurs.
   histogram_tester.ExpectTotalCount(kHeavyAdInterventionTypeHistogramId, 0);
+
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kHeavyAdIntervention, 0);
 }
 
 // Check that we don't activate a HeavyAdIntervention field trial if we don't
@@ -1283,7 +1293,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
   EXPECT_EQ(0u, entries.size());
   histogram_tester.ExpectTotalCount(
-      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total", 0);
+      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total2", 0);
   histogram_tester.ExpectTotalCount(
       "PageLoad.Clients.Ads.FrameCounts.AdFrames.Total", 0);
 }

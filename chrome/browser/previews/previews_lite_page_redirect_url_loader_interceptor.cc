@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
@@ -71,8 +72,14 @@ net::HttpRequestHeaders GetChromeProxyHeaders(
     uint64_t page_id) {
   net::HttpRequestHeaders headers;
   // Return empty headers for unittests.
-  if (!browser_context)
+  if (!browser_context) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            "add-chrome-proxy-header-for-lpr-tests")) {
+      headers.SetHeader(data_reduction_proxy::chrome_proxy_header(),
+                        "s=secret");
+    }
     return headers;
+  }
 
   auto* settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(

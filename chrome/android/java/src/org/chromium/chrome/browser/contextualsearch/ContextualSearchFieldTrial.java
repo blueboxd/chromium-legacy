@@ -26,8 +26,6 @@ public class ContextualSearchFieldTrial {
     // Public settings synchronized with src/components/contextual_search/core/browser/public.cc
     //==========================================================================================
     public static final String LONGPRESS_RESOLVE_PARAM_NAME = "longpress_resolve_variation";
-    public static final String LONGPRESS_RESOLVE_HIDE_ON_SCROLL = "1";
-    public static final String LONGPRESS_RESOLVE_PRIVACY_AGGRESSIVE = "2";
     public static final String LONGPRESS_RESOLVE_PRESERVE_TAP = "3";
 
     //==========================================================================================

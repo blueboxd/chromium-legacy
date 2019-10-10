@@ -5087,6 +5087,7 @@ test("net_unittests") {
     "base/lookup_string_in_fixed_set_unittest.cc",
     "base/mime_sniffer_unittest.cc",
     "base/mime_util_unittest.cc",
+    "base/net_errors_unittest.cc",
     "base/net_string_util_unittest.cc",
     "base/network_activity_monitor_unittest.cc",
     "base/network_change_notifier_unittest.cc",

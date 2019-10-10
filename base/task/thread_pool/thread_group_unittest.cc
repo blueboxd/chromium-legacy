@@ -681,8 +681,9 @@ TEST_P(ThreadGroupTest, CancelJobTaskSource) {
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
       FROM_HERE, {ThreadPool()}, &mock_pooled_task_runner_delegate_);
 
-  experimental::JobHandle job_handle = task_source->GetHandleForTesting();
   mock_pooled_task_runner_delegate_.EnqueueJobTaskSource(task_source);
+  experimental::JobHandle job_handle =
+      internal::JobTaskSource::CreateJobHandle(task_source);
 
   // Wait for at least 1 task to start running.
   {
@@ -796,8 +797,9 @@ TEST_P(ThreadGroupTest, JoinJobTaskSource) {
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
       FROM_HERE, {ThreadPool()}, &mock_pooled_task_runner_delegate_);
 
-  experimental::JobHandle job_handle = task_source->GetHandleForTesting();
   mock_pooled_task_runner_delegate_.EnqueueJobTaskSource(task_source);
+  experimental::JobHandle job_handle =
+      internal::JobTaskSource::CreateJobHandle(task_source);
   job_handle.Join();
   // All worker tasks should complete before Join() returns.
   EXPECT_EQ(0U, job_task->GetMaxConcurrency());

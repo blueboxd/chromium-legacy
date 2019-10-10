@@ -190,7 +190,8 @@ class ProfileMenuViewExtensionsTest
 
   void OpenProfileMenuViews(Browser* browser) {
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-    views::View* button = browser_view->toolbar()->GetAvatarToolbarButton();
+    views::View* button =
+        browser_view->toolbar_button_provider()->GetAvatarToolbarButton();
     DCHECK(button);
 
     ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
@@ -661,7 +662,7 @@ class ProfileMenuClickTest : public SyncTest,
 
     // Click the avatar button to open the menu.
     views::View* avatar_button =
-        browser_view->toolbar()->GetAvatarToolbarButton();
+        browser_view->toolbar_button_provider()->GetAvatarToolbarButton();
     ASSERT_TRUE(avatar_button);
     Click(avatar_button);
 

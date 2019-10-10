@@ -281,8 +281,7 @@ void BlobDataBuilder::SliceBlob(const BlobEntry* source,
       case BlobDataItem::Type::kFile: {
         data_item = BlobDataItem::CreateFile(
             source_item->path(), source_item->offset() + item_offset, read_size,
-            source_item->expected_modification_time(),
-            source_item->data_handle_);
+            source_item->expected_modification_time(), source_item->file_ref_);
 
         if (source_item->IsFutureFileItem()) {
           // The source file isn't a real file yet (path is fake), so store the

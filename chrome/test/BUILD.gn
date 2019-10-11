@@ -1365,7 +1365,6 @@ if (!is_android) {
       "origin_policy/origin_policy_browsertest.cc",
       "ppapi/ppapi_browsertest.cc",
       "ppapi/ppapi_filechooser_browsertest.cc",
-      "trustedtypes/trusted_types_browsertest.cc",
       "v8/wasm_trap_handler_browsertest.cc",
     ]
 
@@ -3825,6 +3824,7 @@ test("unit_tests") {
       "../browser/ui/chrome_bubble_manager_unittest.cc",
       "../browser/ui/content_settings/content_setting_bubble_model_unittest.cc",
       "../browser/ui/content_settings/content_setting_image_model_unittest.cc",
+      "../browser/ui/content_settings/content_setting_media_image_model_unittest.mm",
       "../browser/ui/cookie_controls/cookie_controls_controller_unittest.cc",
       "../browser/ui/exclusive_access/fullscreen_controller_state_unittest.cc",
       "../browser/ui/extensions/extension_action_view_controller_unittest.cc",
@@ -3887,6 +3887,7 @@ test("unit_tests") {
       "../browser/ui/webui/settings/people_handler_unittest.cc",
       "../browser/ui/webui/settings/profile_info_handler_unittest.cc",
       "../browser/ui/webui/settings/reset_settings_handler_unittest.cc",
+      "../browser/ui/webui/settings/settings_cookies_view_handler_unittest.cc",
       "../browser/ui/webui/settings/settings_manage_profile_handler_unittest.cc",
       "../browser/ui/webui/settings/site_settings_handler_unittest.cc",
       "../browser/ui/webui/settings_utils_unittest.cc",

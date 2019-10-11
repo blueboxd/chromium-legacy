@@ -32,12 +32,12 @@ namespace safe_browsing {
 class AdRedirectTriggerBrowserTest : public InProcessBrowserTest,
                                      public UrlListManager::Observer {
  public:
-  AdRedirectTriggerBrowserTest() = default;
+  AdRedirectTriggerBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(kAdRedirectTriggerFeature);
+  }
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
-    scoped_feature_list_.InitAndEnableFeature(kAdRedirectTriggerFeature);
-
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
     current_browser_ = InProcessBrowserTest::browser();

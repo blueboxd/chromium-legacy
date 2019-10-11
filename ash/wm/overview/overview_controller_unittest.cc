@@ -8,16 +8,19 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/overview/overview_wallpaper_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
@@ -160,6 +163,9 @@ TEST_F(OverviewControllerTest,
 }
 
 TEST_F(OverviewControllerTest, AnimationCallbacks) {
+  if (base::FeatureList::IsEnabled(features::kOverviewCrossFadeWallpaperBlur))
+    return;
+
   ui::ScopedAnimationDurationScaleMode non_zero(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   TestOverviewObserver observer(/*should_monitor_animation_state = */ true);
@@ -229,6 +235,87 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
   // Activating window while entering animation should cancel the overview.
   wm::ActivateWindow(window1.get());
   EXPECT_FALSE(shell->overview_controller()->InOverviewSession());
+  EXPECT_EQ(TestOverviewObserver::CANCELED,
+            observer.starting_animation_state());
+  // Blur animation never started.
+  EXPECT_FALSE(overview_controller->HasBlurForTest());
+  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
+}
+
+TEST_F(OverviewControllerTest, AnimationCallbacksForCrossFadeWallpaper) {
+  if (!base::FeatureList::IsEnabled(features::kOverviewCrossFadeWallpaperBlur))
+    return;
+
+  ui::ScopedAnimationDurationScaleMode non_zero(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  TestOverviewObserver observer(/*should_monitor_animation_state = */ true);
+  // Enter without windows.
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_EQ(TestOverviewObserver::COMPLETED,
+            observer.starting_animation_state());
+  EXPECT_TRUE(overview_controller->HasBlurForTest());
+  EXPECT_TRUE(overview_controller->HasBlurAnimationForTest());
+  overview_controller->overview_wallpaper_controller()
+      ->StopBlurAnimationsForTesting();
+
+  // Exiting overview has no animations.
+  overview_controller->EndOverview();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
+  EXPECT_FALSE(overview_controller->HasBlurForTest());
+  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
+
+  observer.WaitForEndingAnimationComplete();
+  EXPECT_EQ(TestOverviewObserver::COMPLETED, observer.ending_animation_state());
+  EXPECT_FALSE(overview_controller->HasBlurForTest());
+  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
+
+  gfx::Rect bounds(0, 0, 100, 100);
+  std::unique_ptr<aura::Window> window1(
+      CreateTestWindowInShellWithBounds(bounds));
+  std::unique_ptr<aura::Window> window2(
+      CreateTestWindowInShellWithBounds(bounds));
+
+  observer.Reset();
+  ASSERT_EQ(TestOverviewObserver::UNKNOWN, observer.starting_animation_state());
+  ASSERT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
+
+  // Enter with windows.
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.starting_animation_state());
+  EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
+  EXPECT_FALSE(overview_controller->HasBlurForTest());
+  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
+
+  // Exit with windows before starting animation ends.
+  overview_controller->EndOverview();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_EQ(TestOverviewObserver::CANCELED,
+            observer.starting_animation_state());
+  EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
+  // Blur animation never started.
+  EXPECT_FALSE(overview_controller->HasBlurForTest());
+  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
+
+  observer.Reset();
+
+  // Enter again before exit animation ends.
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.starting_animation_state());
+  EXPECT_EQ(TestOverviewObserver::CANCELED, observer.ending_animation_state());
+  // Blur animation will start when animation is completed.
+  EXPECT_FALSE(overview_controller->HasBlurForTest());
+  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
+
+  observer.Reset();
+
+  // Activating window while entering animation should cancel the overview.
+  wm::ActivateWindow(window1.get());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_EQ(TestOverviewObserver::CANCELED,
             observer.starting_animation_state());
   // Blur animation never started.

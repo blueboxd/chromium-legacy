@@ -95,6 +95,10 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
 
   OverviewSession* overview_session() { return overview_session_.get(); }
 
+  OverviewWallpaperController* overview_wallpaper_controller() {
+    return overview_wallpaper_controller_.get();
+  }
+
   void set_occlusion_pause_duration_for_end_for_test(base::TimeDelta duration) {
     occlusion_pause_duration_for_end_ = duration;
   }

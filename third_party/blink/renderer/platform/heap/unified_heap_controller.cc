@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 
+#include "base/macros.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
@@ -143,9 +145,7 @@ bool UnifiedHeapController::IsTracingDone() {
   return is_tracing_done_;
 }
 
-namespace {
-
-bool IsRootForNonTracingGCInternal(
+bool UnifiedHeapController::IsRootForNonTracingGC(
     const v8::TracedReference<v8::Value>& handle) {
   const uint16_t class_id = handle.WrapperClassId();
   // Stand-alone reference or kCustomWrappableId. Keep as root as
@@ -168,8 +168,6 @@ bool IsRootForNonTracingGCInternal(
   return false;
 }
 
-}  // namespace
-
 void UnifiedHeapController::ResetHandleInNonTracingGC(
     const v8::TracedReference<v8::Value>& handle) {
   const uint16_t class_id = handle.WrapperClassId();
@@ -180,12 +178,11 @@ void UnifiedHeapController::ResetHandleInNonTracingGC(
     return;
 
   const v8::TracedReference<v8::Object>& traced = handle.As<v8::Object>();
-  ToScriptWrappable(traced)->UnsetWrapperIfAny();
-}
-
-bool UnifiedHeapController::IsRootForNonTracingGC(
-    const v8::TracedReference<v8::Value>& handle) {
-  return IsRootForNonTracingGCInternal(handle);
+  bool success = DOMWrapperWorld::UnsetSpecificWrapperIfSet(
+      ToScriptWrappable(traced), traced);
+  // Since V8 found a handle, Blink needs to find it as well when trying to
+  // remove it.
+  CHECK(success);
 }
 
 bool UnifiedHeapController::IsRootForNonTracingGC(

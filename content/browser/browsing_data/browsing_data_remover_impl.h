@@ -73,8 +73,8 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   void RemoveObserver(Observer* observer) override;
 
   void SetWouldCompleteCallbackForTesting(
-      const base::Callback<void(const base::Closure& continue_to_completion)>&
-          callback) override;
+      const base::RepeatingCallback<
+          void(base::OnceClosure continue_to_completion)>& callback) override;
 
   const base::Time& GetLastUsedBeginTime() override;
   const base::Time& GetLastUsedEndTime() override;
@@ -212,7 +212,7 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   // If non-null, the |would_complete_callback_| is called each time an instance
   // is about to complete a browsing data removal process, and has the ability
   // to artificially delay completion. Used for testing.
-  base::Callback<void(const base::Closure& continue_to_completion)>
+  base::RepeatingCallback<void(base::OnceClosure continue_to_completion)>
       would_complete_callback_;
 
   // Records which tasks of a deletion are currently active.

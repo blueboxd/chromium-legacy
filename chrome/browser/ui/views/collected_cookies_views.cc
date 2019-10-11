@@ -284,11 +284,6 @@ int CollectedCookiesViews::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
 }
 
-base::string16 CollectedCookiesViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(IDS_DONE);
-}
-
 bool CollectedCookiesViews::Accept() {
   // If the user closes our parent tab while we're still open, this method will
   // (eventually) be called in response to a WebContentsDestroyed() call from
@@ -386,6 +381,9 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
     : web_contents_(web_contents) {
   constrained_window::ShowWebModalDialogViews(this, web_contents);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::COLLECTED_COOKIES);
+
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   l10n_util::GetStringUTF16(IDS_DONE));
 }
 
 void CollectedCookiesViews::Init() {

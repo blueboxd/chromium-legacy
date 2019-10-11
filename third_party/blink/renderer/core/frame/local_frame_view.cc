@@ -4302,8 +4302,8 @@ void LocalFrameView::ApplyTransformForTopFrameSpace(
 }
 
 LayoutUnit LocalFrameView::CaretWidth() const {
-  return LayoutUnit(
-      std::max<float>(1.0, GetChromeClient()->WindowToViewportScalar(1)));
+  return LayoutUnit(std::max<float>(
+      1.0f, GetChromeClient()->WindowToViewportScalar(&GetFrame(), 1.0f)));
 }
 
 LocalFrameUkmAggregator& LocalFrameView::EnsureUkmAggregator() {

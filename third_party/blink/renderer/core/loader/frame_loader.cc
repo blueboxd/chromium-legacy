@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/ignore_opens_during_unload_count_incrementer.h"
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
+#include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/navigation_initiator_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
@@ -976,7 +977,6 @@ bool FrameLoader::WillStartNavigation(const WebNavigationInfo& info,
   progress_tracker_->ProgressStarted();
   client_navigation_ = std::make_unique<ClientNavigationState>();
   client_navigation_->url = info.url_request.Url();
-  client_navigation_->http_method = info.url_request.HttpMethod();
   client_navigation_->is_history_navigation_in_new_frame =
       is_history_navigation_in_new_frame;
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
@@ -1481,9 +1481,10 @@ void FrameLoader::CancelClientNavigation() {
   if (!client_navigation_)
     return;
   ResourceError error = ResourceError::CancelledError(client_navigation_->url);
-  AtomicString http_method = client_navigation_->http_method;
   ClearClientNavigation();
-  Client()->DispatchDidFailProvisionalLoad(error, http_method);
+  if (WebPluginContainerImpl* plugin = frame_->GetWebPluginContainer())
+    plugin->DidFailLoading(error);
+  Client()->AbortClientNavigation();
 }
 
 void FrameLoader::DispatchDocumentElementAvailable() {

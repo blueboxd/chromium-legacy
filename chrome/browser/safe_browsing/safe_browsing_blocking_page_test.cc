@@ -1856,17 +1856,34 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   EXPECT_FALSE(IsShowingInterstitial(contents));
 }
 
+INSTANTIATE_TEST_SUITE_P(
+    SafeBrowsingBlockingPageBrowserTestWithThreatTypeAndIsolationSetting,
+    SafeBrowsingBlockingPageBrowserTest,
+    testing::Combine(
+        testing::Values(SB_THREAT_TYPE_URL_MALWARE,  // Threat types
+                        SB_THREAT_TYPE_URL_PHISHING,
+                        SB_THREAT_TYPE_URL_UNWANTED),
+        testing::Bool()));  // If isolate all sites for testing.
+
+class SafeBrowsingBlockingPageBrowserTestWithCommittedSBInterstitials
+    : public SafeBrowsingBlockingPageBrowserTest {
+ public:
+  SafeBrowsingBlockingPageBrowserTestWithCommittedSBInterstitials() {
+    feature_list_.InitAndEnableFeature(kCommittedSBInterstitials);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // TODO(crbug.com/916683): Once interstitial bindings are hooked with committed
 // interstitials, all other tests should run with committed interstitials
 // enabled. At that point this test will become redundant and should be removed.
 // Test that an main frame interstitial is displayed with committed
 // interstitials enabled.
-IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
-                       CommittedInterstitialShows) {
-  base::test::ScopedFeatureList feature_list;
-  std::vector<base::Feature> enable;
-  enable.push_back(kCommittedSBInterstitials);
-  feature_list.InitWithFeatures(enable, std::vector<base::Feature>());
+IN_PROC_BROWSER_TEST_P(
+    SafeBrowsingBlockingPageBrowserTestWithCommittedSBInterstitials,
+    CommittedInterstitialShows) {
   SetupWarningAndNavigate(browser());
   EXPECT_TRUE(IsShowingInterstitial(
       browser()->tab_strip_model()->GetActiveWebContents()));
@@ -1874,7 +1891,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
 
 INSTANTIATE_TEST_SUITE_P(
     SafeBrowsingBlockingPageBrowserTestWithThreatTypeAndIsolationSetting,
-    SafeBrowsingBlockingPageBrowserTest,
+    SafeBrowsingBlockingPageBrowserTestWithCommittedSBInterstitials,
     testing::Combine(
         testing::Values(SB_THREAT_TYPE_URL_MALWARE,  // Threat types
                         SB_THREAT_TYPE_URL_PHISHING,

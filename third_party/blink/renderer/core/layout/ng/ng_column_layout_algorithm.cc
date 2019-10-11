@@ -629,6 +629,7 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
   // First split into content runs at explicit (forced) breaks.
   ContentRuns content_runs;
   scoped_refptr<const NGBlockBreakToken> break_token = child_break_token;
+  LayoutUnit tallest_unbreakable_block_size;
   do {
     NGBlockLayoutAlgorithm balancing_algorithm(
         {Node(), fragment_geometry, space, break_token.get()});
@@ -638,6 +639,9 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
     LayoutUnit column_block_size = CalculateColumnContentBlockSize(
         fragment, IsHorizontalWritingMode(space.GetWritingMode()));
     content_runs.emplace_back(column_block_size);
+
+    tallest_unbreakable_block_size = std::max(
+        tallest_unbreakable_block_size, result->TallestUnbreakableBlockSize());
 
     // Stop when we reach a spanner. That's where this row of columns will end.
     if (result->ColumnSpanner())
@@ -665,7 +669,9 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
   // lay out into columns to figure out if they are tall enough or not (and
   // stretch and retry if not). Also honor {,min-,max-}{height,width} properties
   // before returning.
-  LayoutUnit block_size = content_runs.TallestColumnBlockSize();
+  LayoutUnit block_size = std::max(content_runs.TallestColumnBlockSize(),
+                                   tallest_unbreakable_block_size);
+
   return ConstrainColumnBlockSize(block_size);
 }
 

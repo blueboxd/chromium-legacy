@@ -43,11 +43,12 @@ interface TrialComparisonCertVerifierReportClient {
 
 // Parameters for initializing the cert verification trial.
 // |initial_allowed| is the initial setting for whether the trial is allowed.
-// |config_client_request| is the Mojo pipe over which trial configuration
+// |config_client_receiver| is the Mojo pipe over which trial configuration
 // updates are received.
 // |report_client| is the Mojo pipe used to send trial reports.
 struct TrialComparisonCertVerifierParams {
   bool initial_allowed = false;
-  TrialComparisonCertVerifierConfigClient&? config_client_request;
-  TrialComparisonCertVerifierReportClient? report_client;
+  pending_receiver<TrialComparisonCertVerifierConfigClient>?
+      config_client_receiver;
+  pending_remote<TrialComparisonCertVerifierReportClient>? report_client;
 };

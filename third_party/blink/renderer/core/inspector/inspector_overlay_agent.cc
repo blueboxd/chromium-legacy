@@ -830,7 +830,8 @@ float InspectorOverlayAgent::WindowToViewportScale() const {
   LocalFrame* frame = GetFrame();
   if (!frame)
     return 1.0f;
-  return frame->GetPage()->GetChromeClient().WindowToViewportScalar(1.0f);
+  return frame->GetPage()->GetChromeClient().WindowToViewportScalar(frame,
+                                                                    1.0f);
 }
 
 void InspectorOverlayAgent::EnsureOverlayPageCreated() {

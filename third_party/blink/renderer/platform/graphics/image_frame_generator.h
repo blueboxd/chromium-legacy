@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_FRAME_GENERATOR_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -150,13 +151,11 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   const bool is_multi_frame_;
   const Vector<SkISize> supported_sizes_;
 
-  // Prevents concurrent access to all variables below.
   mutable Mutex generator_mutex_;
-
-  bool decode_failed_ = false;
-  bool yuv_decoding_failed_ = false;
-  size_t frame_count_ = 0u;
-  Vector<bool> has_alpha_;
+  bool decode_failed_ GUARDED_BY(generator_mutex_) = false;
+  bool yuv_decoding_failed_ GUARDED_BY(generator_mutex_) = false;
+  size_t frame_count_ GUARDED_BY(generator_mutex_) = 0u;
+  Vector<bool> has_alpha_ GUARDED_BY(generator_mutex_);
 
   struct ClientMutex {
     int ref_count = 0;
@@ -170,7 +169,7 @@ class PLATFORM_EXPORT ImageFrameGenerator final
           std::unique_ptr<ClientMutex>,
           WTF::IntHash<cc::PaintImage::GeneratorClientId>,
           WTF::UnsignedWithZeroKeyHashTraits<cc::PaintImage::GeneratorClientId>>
-      mutex_map_;
+      mutex_map_ GUARDED_BY(generator_mutex_);
 
   std::unique_ptr<ImageDecoderFactory> image_decoder_factory_;
 
@@ -179,4 +178,4 @@ class PLATFORM_EXPORT ImageFrameGenerator final
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_FRAME_GENERATOR_H_

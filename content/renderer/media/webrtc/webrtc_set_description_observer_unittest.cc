@@ -297,7 +297,7 @@ class WebRtcSetDescriptionObserverHandlerTest
     auto sender = transceiver->sender();
     auto receiver = transceiver->receiver();
     EXPECT_EQ(1u, observer_->states().transceiver_states.size());
-    const RtpTransceiverState& transceiver_state =
+    const blink::RtpTransceiverState& transceiver_state =
         observer_->states().transceiver_states[0];
     // Inspect transceiver states.
     EXPECT_TRUE(transceiver_state.is_initialized());
@@ -312,14 +312,15 @@ class WebRtcSetDescriptionObserverHandlerTest
                                       transceiver->fired_direction()));
     // Inspect sender states.
     EXPECT_TRUE(transceiver_state.sender_state());
-    const RtpSenderState& sender_state = *transceiver_state.sender_state();
+    const blink::RtpSenderState& sender_state =
+        *transceiver_state.sender_state();
     EXPECT_TRUE(sender_state.is_initialized());
     EXPECT_EQ(sender.get(), sender_state.webrtc_sender());
     EXPECT_EQ(sender->track(), sender_state.track_ref()->webrtc_track());
     EXPECT_EQ(sender->stream_ids(), sender_state.stream_ids());
     // Inspect receiver states.
     EXPECT_TRUE(transceiver_state.receiver_state());
-    const RtpReceiverState& receiver_state =
+    const blink::RtpReceiverState& receiver_state =
         *transceiver_state.receiver_state();
     EXPECT_TRUE(receiver_state.is_initialized());
     EXPECT_EQ(receiver.get(), receiver_state.webrtc_receiver());
@@ -349,11 +350,11 @@ class WebRtcSetDescriptionObserverHandlerTest
 
     auto receiver = receivers_[0];
     EXPECT_EQ(1u, observer_->states().transceiver_states.size());
-    const RtpTransceiverState& transceiver_state =
+    const blink::RtpTransceiverState& transceiver_state =
         observer_->states().transceiver_states[0];
     EXPECT_FALSE(transceiver_state.sender_state());
     EXPECT_TRUE(transceiver_state.receiver_state());
-    const RtpReceiverState& receiver_state =
+    const blink::RtpReceiverState& receiver_state =
         *transceiver_state.receiver_state();
     EXPECT_TRUE(receiver_state.is_initialized());
     EXPECT_EQ(receiver.get(), receiver_state.webrtc_receiver());

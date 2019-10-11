@@ -446,6 +446,43 @@ TEST_F(VideoDecodeStatsDBImplTest, FillBufferInMixedIncrements) {
                        std::round(GetMaxFramesPerBuffer() * kEfficientRateC)));
 }
 
+// Overfilling an empty buffer triggers the codepath to compute weighted dropped
+// and power efficient ratios under a circumstance where the existing counts are
+// all zero. This test ensures that we don't do any dividing by zero with that
+// empty data.
+TEST_F(VideoDecodeStatsDBImplTest, OverfillEmptyBuffer) {
+  InitializeDB();
+
+  // Setup DB entry that overflows the buffer max (by 1) with 10% of frames
+  // dropped and 50% of frames power efficient.
+  const int kNumFramesOverfill = GetMaxFramesPerBuffer() + 1;
+  DecodeStatsEntry entryA(kNumFramesOverfill,
+                          std::round(0.1 * kNumFramesOverfill),
+                          std::round(0.5 * kNumFramesOverfill));
+
+  // Append entry to completely fill the buffer and verify read.
+  AppendStats(kStatsKeyVp9, entryA);
+  // Read-back stats should have same ratios, but scaled such that
+  // frames_decoded = GetMaxFramesPerBuffer().
+  DecodeStatsEntry readBackEntryA(GetMaxFramesPerBuffer(),
+                                  std::round(0.1 * GetMaxFramesPerBuffer()),
+                                  std::round(0.5 * GetMaxFramesPerBuffer()));
+  VerifyReadStats(kStatsKeyVp9, readBackEntryA);
+
+  // Append another entry that again overfills with different dropped and power
+  // efficient ratios. Verify that read-back only reflects latest entry.
+  DecodeStatsEntry entryB(kNumFramesOverfill,
+                          std::round(0.2 * kNumFramesOverfill),
+                          std::round(0.6 * kNumFramesOverfill));
+  AppendStats(kStatsKeyVp9, entryB);
+  // Read-back stats should have same ratios, but scaled such that
+  // frames_decoded = GetMaxFramesPerBuffer().
+  DecodeStatsEntry readBackEntryB(GetMaxFramesPerBuffer(),
+                                  std::round(0.2 * GetMaxFramesPerBuffer()),
+                                  std::round(0.6 * GetMaxFramesPerBuffer()));
+  VerifyReadStats(kStatsKeyVp9, readBackEntryB);
+}
+
 TEST_F(VideoDecodeStatsDBImplTest, NoWriteDateReadAndExpire) {
   InitializeDB();
 

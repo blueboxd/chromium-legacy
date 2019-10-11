@@ -76,11 +76,13 @@ bool TrialComparisonCertVerifierController::MaybeAllowedForProfile(
 }
 
 void TrialComparisonCertVerifierController::AddClient(
-    network::mojom::TrialComparisonCertVerifierConfigClientPtr config_client,
-    network::mojom::TrialComparisonCertVerifierReportClientRequest
-        report_client_request) {
-  binding_set_.AddBinding(this, std::move(report_client_request));
-  config_client_set_.AddPtr(std::move(config_client));
+    mojo::PendingRemote<network::mojom::TrialComparisonCertVerifierConfigClient>
+        config_client,
+    mojo::PendingReceiver<
+        network::mojom::TrialComparisonCertVerifierReportClient>
+        report_client_receiver) {
+  receiver_set_.Add(this, std::move(report_client_receiver));
+  config_client_set_.Add(std::move(config_client));
 }
 
 bool TrialComparisonCertVerifierController::IsAllowed() const {
@@ -138,9 +140,6 @@ void TrialComparisonCertVerifierController::SetFakeOfficialBuildForTesting(
 
 void TrialComparisonCertVerifierController::RefreshState() {
   const bool is_allowed = IsAllowed();
-  config_client_set_.ForAllPtrs(
-      [is_allowed](
-          network::mojom::TrialComparisonCertVerifierConfigClient* client) {
-        client->OnTrialConfigUpdated(is_allowed);
-      });
+  for (auto& client : config_client_set_)
+    client->OnTrialConfigUpdated(is_allowed);
 }

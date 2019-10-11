@@ -9,14 +9,14 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/util/type_safety/pass_key.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 namespace web_app {
 
 class WebApp;
-class WebAppRegistrarMutable;
+class WebAppRegistrar;
 class WebAppSyncBridge;
 
 // A raw registry update data.
@@ -24,14 +24,11 @@ struct RegistryUpdateData {
   RegistryUpdateData();
   ~RegistryUpdateData();
 
-  using AppsToCreate = std::vector<std::unique_ptr<WebApp>>;
-  AppsToCreate apps_to_create;
+  using Apps = std::vector<std::unique_ptr<WebApp>>;
+  Apps apps_to_create;
+  Apps apps_to_update;
 
-  using AppsToDelete = std::vector<AppId>;
-  AppsToDelete apps_to_delete;
-
-  using AppsToUpdate = base::flat_set<const WebApp*>;
-  AppsToUpdate apps_to_update;
+  std::vector<AppId> apps_to_delete;
 
   bool IsEmpty() const;
 
@@ -43,7 +40,8 @@ struct RegistryUpdateData {
 // WebAppRegistryUpdate is a part of WebAppSyncBridge class.
 class WebAppRegistryUpdate {
  public:
-  explicit WebAppRegistryUpdate(WebAppRegistrarMutable* mutable_registrar);
+  WebAppRegistryUpdate(const WebAppRegistrar* registrar,
+                       util::PassKey<WebAppSyncBridge>);
   ~WebAppRegistryUpdate();
 
   // Register a new app.
@@ -58,7 +56,7 @@ class WebAppRegistryUpdate {
 
  private:
   std::unique_ptr<RegistryUpdateData> update_data_;
-  WebAppRegistrarMutable* const mutable_registrar_;
+  const WebAppRegistrar* const registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppRegistryUpdate);
 };

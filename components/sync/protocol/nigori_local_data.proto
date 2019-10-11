@@ -86,6 +86,10 @@ message NigoriModel {
   // browser startup. Due to backward compatibility requirements keys are
   // always Base64 encoded.
   repeated string keystore_key = 10;
+
+  // Encryptor keystore decryptor token. Used for decryption of keystore Nigori
+  // in case keystore keys arrived after NigoriSpecifics.
+  optional EncryptedData pending_keystore_decryptor_token = 11;
 }
 
 // Sync proto to store Nigori data in storage. Proto should be encrypted with

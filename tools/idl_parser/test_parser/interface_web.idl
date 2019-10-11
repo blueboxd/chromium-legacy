@@ -436,8 +436,7 @@ interface MyIfacePromise {
  *      PrimitiveType(long long)
  *      ExtAttributes()
  *        ExtAttribute(EnforceRange)
- *  Iterable()
- *    ASYNC: True
+ *  AsyncIterable()
  *    Type()
  *      PrimitiveType(double)
  *    Type()

@@ -88,6 +88,10 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
     return web_contents()->GetFrameTree()->root()->render_manager();
   }
 
+  std::string DepictFrameTree(FrameTreeNode* node) {
+    return visualizer_.DepictFrameTree(node);
+  }
+
   void ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome outcome,
                      base::Location location) {
     base::HistogramBase::Sample sample = base::HistogramBase::Sample(outcome);
@@ -168,6 +172,7 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
 
   base::test::ScopedFeatureList feature_list_;
 
+  FrameTreeVisualizer visualizer_;
   base::HistogramTester histogram_tester_;
   std::vector<base::Bucket> expected_outcomes_;
   std::vector<base::Bucket> expected_disabled_reasons_;
@@ -932,6 +937,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_EQ(2u, render_frame_host_manager()->GetProxyCount());
   RenderFrameHostImpl* rfh_a = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  std::string frame_tree_a = DepictFrameTree(rfh_a->frame_tree_node());
 
   // 2. Navigate from a cacheable page to an uncacheable page (A->B).
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
@@ -958,6 +964,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   delete_observer_rfh_b.WaitUntilDeleted();
   EXPECT_EQ(2u, render_frame_host_manager()->GetProxyCount());
 
+  // Page A should still have the correct frame tree.
+  EXPECT_EQ(frame_tree_a,
+            DepictFrameTree(current_frame_host()->frame_tree_node()));
+
   // 4. Navigate from a cacheable page to a cacheable page (A->C).
   EXPECT_TRUE(NavigateToURL(shell(), url_c));
   EXPECT_EQ(3u, render_frame_host_manager()->GetProxyCount());
@@ -976,6 +986,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(2u, render_frame_host_manager()->GetProxyCount());
+
+  // Page A should still have the correct frame tree.
+  EXPECT_EQ(frame_tree_a,
+            DepictFrameTree(current_frame_host()->frame_tree_node()));
 
   // Page C should be in the cache.
   EXPECT_FALSE(delete_observer_rfh_c.deleted());

@@ -19,16 +19,7 @@
         android:id="@+id/download_toolbar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/toolbar_height_no_shadow"
-        style="@style/ModernToolbar">
-
-        <TextView
-            android:id="@+id/title_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/TextAppearance.BlackHeadline"
-            android:text="@string/menu_downloads"/>
-
-    </org.chromium.chrome.browser.download.home.toolbar.DownloadHomeToolbar>
+        style="@style/ModernToolbar"/>
 
     <org.chromium.chrome.browser.ui.widget.FadingShadowView
         android:id="@+id/shadow"

@@ -222,11 +222,24 @@ class CONTENT_EXPORT FrameTree {
   scoped_refptr<RenderViewHostImpl> GetRenderViewHost(
       SiteInstance* site_instance);
 
-  // The FrameTree maintains a list of existing RenderViewHostImpl so that
-  // FrameTree::CreateRenderViewHost() can return them directly instead of
-  // creating a new one. Calling this function removes it from the list when the
-  // |render_view_host| is deleted.
-  void RenderViewHostDeleted(RenderViewHost* render_view_host);
+  // Registers a RenderViewHost so that it can be reused by other frames
+  // belonging to the same SiteInstance.
+  //
+  // This method does not take ownership of|rvh|.
+  //
+  // NOTE: This method CHECK fails if a RenderViewHost is already registered for
+  // |rvh|'s SiteInstance.
+  //
+  // ALSO NOTE: After calling RegisterRenderViewHost, UnregisterRenderViewHost
+  // *must* be called for |rvh| when it is destroyed or put into the
+  // BackForwardCache, to prevent FrameTree::CreateRenderViewHost from trying to
+  // reuse it.
+  void RegisterRenderViewHost(RenderViewHostImpl* rvh);
+
+  // Unregisters the RenderViewHostImpl that's available for reuse for a
+  // particular SiteInstance. NOTE: This method CHECK fails if it is called for
+  // a |render_view_host| that is not currently set for reuse.
+  void UnregisterRenderViewHost(RenderViewHostImpl* render_view_host);
 
   // This is called when the frame is about to be removed and started to run
   // unload handlers.

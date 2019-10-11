@@ -19,7 +19,9 @@
 #include "chrome/chrome_cleaner/engines/target/libraries.h"
 #include "chrome/chrome_cleaner/ipc/mojo_sandbox_hooks.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
+#include "chrome/chrome_cleaner/mojom/engine_sandbox.mojom.h"
 #include "chrome/chrome_cleaner/os/early_exit.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace chrome_cleaner {
 
@@ -31,7 +33,8 @@ class EngineMojoSandboxTargetHooks : public MojoSandboxTargetHooks {
                                MojoTaskRunner* mojo_task_runner);
   ~EngineMojoSandboxTargetHooks() override;
 
-  void BindEngineCommandsRequest(mojom::EngineCommandsRequest request);
+  void BindEngineCommandsReceiver(
+      mojo::PendingReceiver<mojom::EngineCommands> receiver);
 
   // SandboxTargetHooks
 
@@ -66,22 +69,23 @@ EngineMojoSandboxTargetHooks::~EngineMojoSandboxTargetHooks() {
 ResultCode EngineMojoSandboxTargetHooks::TargetDroppedPrivileges(
     const base::CommandLine& command_line) {
   // Connect to the Mojo message pipe from the parent process.
-  mojom::EngineCommandsRequest request(ExtractSandboxMessagePipe(command_line));
+  mojo::PendingReceiver<mojom::EngineCommands> receiver(
+      ExtractSandboxMessagePipe(command_line));
 
   // This loop will run forever. Once the communication channel with the broker
   // process is broken, mojo error handler will abort this process.
   base::RunLoop run_loop;
   mojo_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&EngineMojoSandboxTargetHooks::BindEngineCommandsRequest,
-                     base::Unretained(this), base::Passed(&request)));
+      base::BindOnce(&EngineMojoSandboxTargetHooks::BindEngineCommandsReceiver,
+                     base::Unretained(this), base::Passed(&receiver)));
 
   run_loop.Run();
   return RESULT_CODE_SUCCESS;
 }
 
-void EngineMojoSandboxTargetHooks::BindEngineCommandsRequest(
-    mojom::EngineCommandsRequest request) {
+void EngineMojoSandboxTargetHooks::BindEngineCommandsReceiver(
+    mojo::PendingReceiver<mojom::EngineCommands> receiver) {
   // If the connection dies, the parent process has terminated unexpectedly.
   // Exit immediately. The child process should be killed automatically if the
   // parent dies, so this is just a fallback. The exit code is arbitrary since
@@ -89,7 +93,7 @@ void EngineMojoSandboxTargetHooks::BindEngineCommandsRequest(
   auto error_handler = base::BindOnce(&EarlyExit, 1);
 
   engine_commands_impl_ = std::make_unique<EngineCommandsImpl>(
-      std::move(engine_delegate_), std::move(request), mojo_task_runner_,
+      std::move(engine_delegate_), std::move(receiver), mojo_task_runner_,
       std::move(error_handler));
 }
 

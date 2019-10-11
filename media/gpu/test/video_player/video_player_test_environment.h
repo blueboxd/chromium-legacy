@@ -48,8 +48,8 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
       const base::FilePath& video_metadata_path,
       bool enable_validator,
       bool use_vd,
-      const FrameOutputConfig& frame_output_config = FrameOutputConfig(),
-      const base::FilePath& output_folder = base::FilePath());
+      const base::FilePath& output_folder = base::FilePath(),
+      const FrameOutputConfig& frame_output_config = FrameOutputConfig());
   ~VideoPlayerTestEnvironment() override;
 
   // Set up video test environment, called once for entire test run.
@@ -84,8 +84,8 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
   VideoPlayerTestEnvironment(std::unique_ptr<media::test::Video> video,
                              bool enable_validator,
                              bool use_vd,
-                             const FrameOutputConfig& frame_output_config,
-                             const base::FilePath& output_folder);
+                             const base::FilePath& output_folder,
+                             const FrameOutputConfig& frame_output_config);
 
   const std::unique_ptr<media::test::Video> video_;
   const bool enable_validator_;

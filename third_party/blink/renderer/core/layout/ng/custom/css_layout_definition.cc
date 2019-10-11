@@ -236,6 +236,7 @@ CSSLayoutDefinition::Instance* CSSLayoutDefinition::CreateInstance() {
 
 void CSSLayoutDefinition::Instance::Trace(blink::Visitor* visitor) {
   visitor->Trace(definition_);
+  visitor->Trace(instance_);
 }
 
 void CSSLayoutDefinition::Trace(Visitor* visitor) {

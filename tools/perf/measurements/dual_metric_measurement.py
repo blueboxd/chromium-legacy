@@ -7,12 +7,10 @@ from telemetry.web_perf import timeline_based_measurement
 
 
 class DualMetricMeasurement(story_test.StoryTest):
-  """Test class for a benchmark that aggregates all metrics.
+  """Test class supporting both ad hoc measurements and trace based metrics.
 
-    Assumes both javascript as well as tracing metrics might be defined.
-
-    All pages associated with this measurement must implement
-    GetJavascriptMetricValues().
+    Currently only works with PressStory pages, which implement
+    GetMeasurements().
   """
   def __init__(self, tbm_options):
     super(DualMetricMeasurement, self).__init__()
@@ -43,8 +41,8 @@ class DualMetricMeasurement(story_test.StoryTest):
       for histogram in results.current_page.GetJavascriptMetricHistograms():
         results.AddHistogram(histogram)
     else:
-      for value in results.current_page.GetJavascriptMetricValues():
-        results.AddValue(value)
+      for value in results.current_page.GetMeasurements():
+        results.AddMeasurement(**value)
       # This call is necessary to convert the current ScalarValues to
       # histograms before more histograms are added.  If we don't,
       # when histograms get added by TBM2 page_test_results will see those and

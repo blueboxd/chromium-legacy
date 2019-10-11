@@ -46,6 +46,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/features.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_util.h"
@@ -502,8 +503,10 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 #if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
   if (!in_memory && !network_context_params->use_builtin_cert_verifier &&
       TrialComparisonCertVerifierController::MaybeAllowedForProfile(profile_)) {
-    network::mojom::TrialComparisonCertVerifierConfigClientPtr config_client;
-    auto config_client_request = mojo::MakeRequest(&config_client);
+    mojo::PendingRemote<network::mojom::TrialComparisonCertVerifierConfigClient>
+        config_client;
+    auto config_client_receiver =
+        config_client.InitWithNewPipeAndPassReceiver();
 
     network_context_params->trial_comparison_cert_verifier_params =
         network::mojom::TrialComparisonCertVerifierParams::New();
@@ -514,14 +517,13 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     }
     trial_comparison_cert_verifier_controller_->AddClient(
         std::move(config_client),
-        mojo::MakeRequest(
-            &network_context_params->trial_comparison_cert_verifier_params
-                 ->report_client));
+        network_context_params->trial_comparison_cert_verifier_params
+            ->report_client.InitWithNewPipeAndPassReceiver());
     network_context_params->trial_comparison_cert_verifier_params
         ->initial_allowed =
         trial_comparison_cert_verifier_controller_->IsAllowed();
     network_context_params->trial_comparison_cert_verifier_params
-        ->config_client_request = std::move(config_client_request);
+        ->config_client_receiver = std::move(config_client_receiver);
   }
 #endif
 

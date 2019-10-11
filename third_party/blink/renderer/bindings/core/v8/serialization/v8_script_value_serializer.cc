@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/v8_script_value_serializer.h"
 
 #include "base/auto_reset.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
@@ -28,6 +29,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_transform_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix_read_only.h"
 #include "third_party/blink/renderer/core/geometry/dom_point.h"
@@ -42,6 +44,7 @@
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_base.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
@@ -258,11 +261,20 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
       return false;
     }
 
+    auto* execution_context = ExecutionContext::From(script_state_.Get());
     // If this ImageBitmap was transferred, it can be serialized by index.
     size_t index = kNotFound;
     if (transferables_)
       index = transferables_->image_bitmaps.Find(image_bitmap);
     if (index != kNotFound) {
+      if (image_bitmap->OriginClean()) {
+        execution_context->CountUse(
+            mojom::WebFeature::kOriginCleanImageBitmapTransfer);
+      } else {
+        execution_context->CountUse(
+            mojom::WebFeature::kNonOriginCleanImageBitmapTransfer);
+      }
+
       DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
       WriteTag(kImageBitmapTransferTag);
       WriteUint32(static_cast<uint32_t>(index));
@@ -270,6 +282,13 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
 
     // Otherwise, it must be fully serialized.
+    if (image_bitmap->OriginClean()) {
+      execution_context->CountUse(
+          mojom::WebFeature::kOriginCleanImageBitmapSerialization);
+    } else {
+      execution_context->CountUse(
+          mojom::WebFeature::kNonOriginCleanImageBitmapSerialization);
+    }
     WriteTag(kImageBitmapTag);
     SerializedColorParams color_params(image_bitmap->GetCanvasColorParams());
     WriteUint32Enum(ImageSerializationTag::kCanvasColorSpaceTag);
@@ -735,7 +754,7 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetWasmModuleTransferId(
       // around. Most likely, we'll have one module. The vector approach is
       // simple and should perform sufficiently well under these expectations.
       serialized_script_value_->WasmModules().push_back(
-          module->GetTransferrableModule());
+          module->GetCompiledModule());
       uint32_t size =
           static_cast<uint32_t>(serialized_script_value_->WasmModules().size());
       DCHECK_GE(size, 1u);

@@ -1856,7 +1856,7 @@ class DirectoryTree extends cr.ui.Tree {
 
     let addAt = 0;
     while (addAt < parentItem.items.length &&
-           parentItem.items[addAt].entry.name < newDirectory.name) {
+           util.compareName(parentItem.items[addAt].entry, newDirectory) < 0) {
       addAt++;
     }
 

@@ -1542,6 +1542,8 @@ void Animation::cancel() {
     if (pending()) {
       // TODO(crbug.com/916117): Rejecting the ready promise should be performed
       // inside reset pending tasks once aligned with the spec.
+      // TODO(crbug.com/1013351): Add test for rejection and reset of cancel
+      // promise. Requires further cleanup of PlayStateUpdateScope.
       if (ready_promise_)
         RejectAndResetPromiseMaybeAsync(ready_promise_.Get());
     }
@@ -1692,8 +1694,6 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
       animation_->ResetPendingTasks();
       animation_->ResolvePromiseMaybeAsync(animation_->ready_promise_.Get());
     } else if (new_play_state == kPending) {
-      DCHECK_NE(animation_->ready_promise_->GetState(),
-                AnimationPromise::kPending);
       animation_->ready_promise_->Reset();
     }
   }

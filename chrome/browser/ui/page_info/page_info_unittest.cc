@@ -399,14 +399,6 @@ TEST_F(PageInfoTest, OnPermissionsChanged) {
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
 }
 
-TEST_F(PageInfoTest, OnSiteDataAccessed) {
-  EXPECT_CALL(*mock_ui(), SetPermissionInfoStub());
-  EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
-  EXPECT_CALL(*mock_ui(), SetCookieInfo(_)).Times(2);
-
-  page_info()->OnSiteDataAccessed();
-}
-
 TEST_F(PageInfoTest, OnChosenObjectDeleted) {
   // Connect the UsbChooserContext with FakeUsbDeviceManager.
   device::FakeUsbDeviceManager usb_device_manager;

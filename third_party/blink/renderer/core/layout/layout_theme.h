@@ -48,8 +48,8 @@ class FontDescription;
 class HTMLInputElement;
 class LengthSize;
 class Locale;
+class LocalFrame;
 class Node;
-class ChromeClient;
 class ThemePainter;
 
 class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
@@ -213,8 +213,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual int PopupInternalPaddingStart(const ComputedStyle&) const {
     return 0;
   }
-  virtual int PopupInternalPaddingEnd(const ChromeClient*,
-                                      const ComputedStyle&) const {
+  virtual int PopupInternalPaddingEnd(LocalFrame*, const ComputedStyle&) const {
     return 0;
   }
   virtual int PopupInternalPaddingTop(const ComputedStyle&) const { return 0; }

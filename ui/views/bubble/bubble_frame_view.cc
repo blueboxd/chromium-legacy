@@ -679,9 +679,10 @@ int BubbleFrameView::GetFrameWidthForClientWidth(int client_width) const {
   const int frame_width = std::max(title_bar_width, client_area_width);
   DialogDelegate* dialog_delegate =
       GetWidget()->widget_delegate()->AsDialogDelegate();
-  return dialog_delegate && dialog_delegate->ShouldSnapFrameWidth()
-             ? LayoutProvider::Get()->GetSnappedDialogWidth(frame_width)
-             : frame_width;
+  bool snapping = dialog_delegate &&
+                  dialog_delegate->GetDialogButtons() != ui::DIALOG_BUTTON_NONE;
+  return snapping ? LayoutProvider::Get()->GetSnappedDialogWidth(frame_width)
+                  : frame_width;
 }
 
 gfx::Size BubbleFrameView::GetFrameSizeForClientSize(

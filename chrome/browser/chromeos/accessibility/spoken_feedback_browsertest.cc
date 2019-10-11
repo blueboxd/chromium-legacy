@@ -832,7 +832,9 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, DISABLED_SpokenFeedbackInOobe) {
                                  "Combo box * of *"));
 }
 
-IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, ChromeVoxPanelTabsMenuEmpty) {
+// This test is flaky (https://crbug.com/1013551).
+IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest,
+                       DISABLED_ChromeVoxPanelTabsMenuEmpty) {
   // The ChromeVox panel should not populate the tabs menu if we are in the
   // OOBE.
   ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());

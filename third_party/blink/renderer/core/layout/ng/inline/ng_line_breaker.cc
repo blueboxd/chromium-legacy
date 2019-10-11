@@ -186,12 +186,14 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
   break_iterator_.SetBreakSpace(BreakSpaceType::kBeforeSpaceRun);
 
   if (break_token) {
-    current_style_ = break_token->Style();
     item_index_ = break_token->ItemIndex();
     offset_ = break_token->TextOffset();
     break_iterator_.SetStartOffset(offset_);
     is_after_forced_break_ = break_token->IsForcedBreak();
     items_data_.AssertOffset(item_index_, offset_);
+    // TODO(crbug.com/1013040): |break_token->Style()| should not be nullptr.
+    if (const ComputedStyle* line_initial_style = break_token->Style())
+      SetCurrentStyle(*line_initial_style);
   }
 }
 
@@ -287,11 +289,13 @@ void NGLineBreaker::PrepareNextLine(NGLineInfo* line_info) {
     line_info->SetTextIndent(MinimumValueForLength(length, maximum_value));
   }
 
-  // Set the initial style of this line from the break token. Example:
+  // Set the initial style of this line from the line style, if the style from
+  // the end of previous line is not available. Example:
   //   <p>...<span>....</span></p>
   // When the line wraps in <span>, the 2nd line needs to start with the style
   // of the <span>.
-  SetCurrentStyle(current_style_ ? *current_style_ : line_info->LineStyle());
+  if (!current_style_)
+    SetCurrentStyle(line_info->LineStyle());
   ComputeBaseDirection();
   line_info->SetBaseDirection(base_direction_);
 
@@ -1826,6 +1830,23 @@ const ComputedStyle& NGLineBreaker::ComputeCurrentStyle(
 }
 
 void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
+  if (&style == current_style_.get()) {
+#if DCHECK_IS_ON()
+    // Check that cache fields are already setup correctly.
+    DCHECK_EQ(auto_wrap_, style.AutoWrap());
+    if (auto_wrap_) {
+      DCHECK_EQ(enable_soft_hyphen_, style.GetHyphens() != Hyphens::kNone);
+      DCHECK_EQ(break_iterator_.Locale(), style.LocaleForLineBreakIterator());
+    }
+    ShapeResultSpacing<String> spacing(spacing_.Text());
+    spacing.SetSpacing(style.GetFontDescription());
+    DCHECK_EQ(spacing.LetterSpacing(), spacing_.LetterSpacing());
+    DCHECK_EQ(spacing.WordSpacing(), spacing_.WordSpacing());
+#endif
+    return;
+  }
+  current_style_ = &style;
+
   auto_wrap_ = style.AutoWrap();
 
   if (auto_wrap_) {
@@ -1861,17 +1882,10 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
 
     if (style.WhiteSpace() == EWhiteSpace::kBreakSpaces)
       break_iterator_.SetBreakSpace(BreakSpaceType::kAfterEverySpace);
+
+    break_iterator_.SetLocale(style.LocaleForLineBreakIterator());
   }
 
-  // The above calls are cheap & necessary. But the following are expensive
-  // and do not need to be reset every time if the style doesn't change,
-  // so avoid them if possible.
-  if (&style == current_style_.get())
-    return;
-
-  current_style_ = &style;
-  if (auto_wrap_)
-    break_iterator_.SetLocale(style.LocaleForLineBreakIterator());
   spacing_.SetSpacing(style.GetFontDescription());
 }
 
@@ -1898,7 +1912,9 @@ void NGLineBreaker::MoveToNextOf(const NGInlineItemResult& item_result) {
 
 scoped_refptr<NGInlineBreakToken> NGLineBreaker::CreateBreakToken(
     const NGLineInfo& line_info) const {
+  DCHECK(current_style_);
   const Vector<NGInlineItem>& items = Items();
+  DCHECK_LE(item_index_, items.size());
   if (item_index_ >= items.size())
     return NGInlineBreakToken::Create(node_);
   return NGInlineBreakToken::Create(

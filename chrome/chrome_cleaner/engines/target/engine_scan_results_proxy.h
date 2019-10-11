@@ -9,6 +9,8 @@
 #include "base/single_thread_task_runner.h"
 #include "chrome/chrome_cleaner/mojom/engine_sandbox.mojom.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 namespace chrome_cleaner {
 
@@ -17,14 +19,14 @@ class EngineScanResultsProxy
     : public base::RefCountedThreadSafe<EngineScanResultsProxy> {
  public:
   EngineScanResultsProxy(
-      mojom::EngineScanResultsAssociatedPtr scan_results_ptr,
+      mojo::PendingAssociatedRemote<mojom::EngineScanResults> scan_results,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
     return task_runner_;
   }
 
-  void UnbindScanResultsPtr();
+  void UnbindScanResults();
 
   // Notifies the broker process that UwS was found. Will be called on an
   // arbitrary thread from the sandboxed engine.
@@ -47,7 +49,7 @@ class EngineScanResultsProxy
   void OnDone(uint32_t result);
 
   // An EngineScanResults that will send the results over the Mojo connection.
-  mojom::EngineScanResultsAssociatedPtr scan_results_ptr_;
+  mojo::AssociatedRemote<mojom::EngineScanResults> scan_results_;
 
   // A task runner for the IPC thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

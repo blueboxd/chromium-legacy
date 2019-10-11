@@ -472,7 +472,7 @@ int main(int argc, char** argv) {
   media::test::VideoPlayerTestEnvironment* test_environment =
       media::test::VideoPlayerTestEnvironment::Create(
           video_path, video_metadata_path, enable_validator, use_vd,
-          frame_output_config, base::FilePath(output_folder));
+          base::FilePath(output_folder), frame_output_config);
   if (!test_environment)
     return EXIT_FAILURE;
 

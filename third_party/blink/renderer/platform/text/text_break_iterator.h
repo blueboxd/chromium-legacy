@@ -216,6 +216,7 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
     ReleaseIterator();
   }
 
+  const AtomicString& Locale() const { return locale_; }
   void SetLocale(const AtomicString& locale) {
     if (locale == locale_)
       return;

@@ -27,6 +27,7 @@
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/common/safe_browsing/download_type_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
+#include "components/policy/core/browser/url_util.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -34,6 +35,7 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
+#include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 
@@ -359,14 +361,9 @@ bool CheckClientDownloadRequest::ShouldUploadForDlpScan() {
 
   const base::ListValue* domains = g_browser_process->local_state()->GetList(
       prefs::kDomainsToCheckComplianceOfDownloadedContent);
-  bool host_in_list =
-      std::any_of(domains->GetList().begin(), domains->GetList().end(),
-                  [this](const base::Value& domain) {
-                    return domain.is_string() &&
-                           domain.GetString() == item_->GetURL().host();
-                  });
-
-  return host_in_list;
+  url_matcher::URLMatcher matcher;
+  policy::url_util::AddAllowFilters(&matcher, domains);
+  return !matcher.MatchURL(item_->GetURL()).empty();
 }
 
 bool CheckClientDownloadRequest::ShouldUploadForMalwareScan(

@@ -68,7 +68,7 @@ class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
     void ReportException(ExceptionState*);
 
     Member<CSSLayoutDefinition> definition_;
-    ScopedPersistent<v8::Value> instance_;
+    TraceWrapperV8Reference<v8::Value> instance_;
   };
 
   // Creates an instance of the web developer defined class. May return a

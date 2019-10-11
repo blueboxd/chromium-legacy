@@ -567,6 +567,33 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kKeystoreKeyParams));
 }
 
+// This test emulates late arrival of keystore keys, so neither
+// |keystore_decryptor_token| or |encryption_keybag| could be decrypted at the
+// moment NigoriSpecifics arrived. They should be decrypted right after
+// keystore keys arrival.
+TEST_F(NigoriSyncBridgeImplTest, ShouldDecryptPendingKeysInKeystoreMode) {
+  const std::string kRawKeystoreKey = "raw_keystore_key";
+  const KeyParams kKeystoreKeyParams = KeystoreKeyParams(kRawKeystoreKey);
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() = BuildKeystoreNigoriSpecifics(
+      /*keybag_keys_params=*/{kKeystoreKeyParams},
+      /*keystore_decryptor_params=*/kKeystoreKeyParams,
+      /*keystore_key_params=*/kKeystoreKeyParams);
+
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(
+                               NotNull(), /*has_pending_keys=*/true));
+  EXPECT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+  const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
+  EXPECT_FALSE(cryptographer.CanEncrypt());
+
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(
+                               NotNull(), /*has_pending_keys=*/false));
+  EXPECT_TRUE(bridge()->SetKeystoreKeys({kRawKeystoreKey}));
+  EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams));
+  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kKeystoreKeyParams));
+}
+
 // Tests that we can perform initial sync with custom passphrase Nigori.
 // We should notify observers about encryption state changes and cryptographer
 // shouldn't be ready (by having pending keys) until user provides the

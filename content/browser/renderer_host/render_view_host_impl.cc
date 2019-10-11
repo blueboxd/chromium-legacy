@@ -224,10 +224,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       is_swapped_out_(swapped_out),
       routing_id_(routing_id),
       main_frame_routing_id_(main_frame_routing_id),
-      is_waiting_for_close_ack_(false),
-      sudden_termination_allowed_(false),
-      updating_web_preferences_(false),
-      has_notified_about_creation_(false),
       visual_properties_manager_(this) {
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
@@ -287,8 +283,12 @@ RenderViewHostImpl::~RenderViewHostImpl() {
 
   // This can be called inside the FrameTree destructor. When the delegate is
   // the InterstialPageImpl, the |frame_tree| is set to null before deleting it.
-  if (FrameTree* frame_tree = GetDelegate()->GetFrameTree())
-    frame_tree->RenderViewHostDeleted(this);
+  if (FrameTree* frame_tree = GetDelegate()->GetFrameTree()) {
+    // If |this| is in the BackForwardCache, then it was already removed from
+    // the FrameTree at the time it entered the BackForwardCache.
+    if (!is_in_back_forward_cache_)
+      frame_tree->UnregisterRenderViewHost(this);
+  }
 }
 
 RenderViewHostDelegate* RenderViewHostImpl::GetDelegate() {
@@ -403,6 +403,20 @@ bool RenderViewHostImpl::CreateRenderView(
 void RenderViewHostImpl::SetMainFrameRoutingId(int routing_id) {
   main_frame_routing_id_ = routing_id;
   GetWidget()->UpdatePriority();
+}
+
+void RenderViewHostImpl::EnterBackForwardCache() {
+  FrameTree* frame_tree = GetDelegate()->GetFrameTree();
+  frame_tree->UnregisterRenderViewHost(this);
+  is_in_back_forward_cache_ = true;
+}
+
+void RenderViewHostImpl::LeaveBackForwardCache() {
+  FrameTree* frame_tree = GetDelegate()->GetFrameTree();
+  // At this point, the frames |this| RenderViewHostImpl belongs to are
+  // guaranteed to be committed, so it should be reused going forward.
+  frame_tree->RegisterRenderViewHost(this);
+  is_in_back_forward_cache_ = false;
 }
 
 bool RenderViewHostImpl::IsRenderViewLive() {

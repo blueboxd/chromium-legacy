@@ -240,3 +240,13 @@ fuzzer_test("midi_message_queue_fuzzer") {
     ":midi",
   ]
 }
+
+fuzzer_test("usb_midi_descriptor_parser_fuzzer") {
+  sources = [ "usb_midi_descriptor_parser_fuzzer.cc" ] + usb_midi_sources
+  seed_corpus = "fuzz/usb_midi_descriptor_corpus"
+  deps = [
+    ":midi",
+    ":mojo",
+    "//base",
+  ]
+}

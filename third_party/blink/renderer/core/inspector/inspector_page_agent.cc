@@ -1181,7 +1181,8 @@ Response InspectorPageAgent::getLayoutMetrics(
   // page_zoom_factor is CSS to DIP (device independent pixels).
   float page_zoom_factor =
       page_zoom /
-      main_frame->GetPage()->GetChromeClient().WindowToViewportScalar(1);
+      main_frame->GetPage()->GetChromeClient().WindowToViewportScalar(
+          main_frame, 1);
   FloatRect visible_rect = visual_viewport.VisibleRect();
   float scale = visual_viewport.Scale();
 

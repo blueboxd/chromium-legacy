@@ -81,10 +81,10 @@ class MultipleProfileDeletionObserver
     ProfileManager* profile_manager = g_browser_process->profile_manager();
     profile_manager->GetProfileAttributesStorage().AddObserver(this);
 
-    base::Callback<void(const base::Closure&)> would_complete_callback =
-        base::Bind(&MultipleProfileDeletionObserver::
-                       OnBrowsingDataRemoverWouldComplete,
-                   base::Unretained(this));
+    base::RepeatingCallback<void(base::OnceClosure)> would_complete_callback =
+        base::BindRepeating(&MultipleProfileDeletionObserver::
+                                OnBrowsingDataRemoverWouldComplete,
+                            base::Unretained(this));
     for (Profile* profile : profile_manager->GetLoadedProfiles()) {
       content::BrowserContext::GetBrowsingDataRemover(profile)
           ->SetWouldCompleteCallbackForTesting(would_complete_callback);
@@ -110,8 +110,8 @@ class MultipleProfileDeletionObserver
 
   // TODO(https://crbug.com/704601): remove this code when bug is fixed.
   void OnBrowsingDataRemoverWouldComplete(
-      const base::Closure& continue_to_completion) {
-    continue_to_completion.Run();
+      base::OnceClosure continue_to_completion) {
+    std::move(continue_to_completion).Run();
     profiles_data_removed_count_++;
     MaybeQuit();
   }

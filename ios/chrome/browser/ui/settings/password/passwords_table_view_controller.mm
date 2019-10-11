@@ -32,6 +32,7 @@
 #import "ios/chrome/browser/passwords/save_passwords_consumer.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
@@ -155,6 +156,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 @interface PasswordsTableViewController () <
     BooleanObserver,
+    ChromeIdentityServiceObserver,
     PasswordDetailsTableViewControllerDelegate,
     PasswordExporterDelegate,
     PasswordExportActivityViewControllerDelegate,
@@ -192,6 +194,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   password_manager::DuplicatesMap blacklistedPasswordDuplicates_;
   // The current Chrome browser state.
   ios::ChromeBrowserState* browserState_;
+  // Authentication Service Observer.
+  std::unique_ptr<ChromeIdentityServiceObserverBridge> identityServiceObserver_;
   // Object storing the time of the previous successful re-authentication.
   // This is meant to be used by the |ReauthenticationModule| for keeping
   // re-authentications valid for a certain time interval within the scope
@@ -260,6 +264,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
                      prefName:password_manager::prefs::
                                   kPasswordLeakDetectionEnabled];
       [passwordLeakCheckEnabled_ setObserver:self];
+      identityServiceObserver_.reset(
+          new ChromeIdentityServiceObserverBridge(self));
     }
     [self getLoginsFromPasswordStore];
     [self updateUIForEditState];
@@ -369,6 +375,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     if (base::FeatureList::IsEnabled(
             password_manager::features::kLeakDetection)) {
       leakCheckItem_ = [self leakCheckItem];
+      [self updateDetailTextLeakCheckItem];
       [model addItem:leakCheckItem_
           toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
     }
@@ -532,6 +539,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     if ([self.tableViewModel
             hasItemForItemType:ItemTypePasswordLeakCheckSwitch
              sectionIdentifier:SectionIdentifierSavePasswordsSwitch]) {
+      [self updateDetailTextLeakCheckItem];
       [self reconfigureCellsForItems:@[ leakCheckItem_ ]];
     }
   } else {
@@ -555,6 +563,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
   // Update the item.
   leakCheckItem_.on = [passwordLeakCheckEnabled_ value];
+  [self updateDetailTextLeakCheckItem];
+  [self reconfigureCellsForItems:@[ leakCheckItem_ ]];
 }
 
 #pragma mark - SavePasswordsConsumerDelegate
@@ -1258,6 +1268,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(browserState_);
   [leakCheckItem_ setEnabled:enabled && authService->IsAuthenticated()];
+  [self updateDetailTextLeakCheckItem];
   [self reconfigureCellsForItems:@[ leakCheckItem_ ]];
 }
 
@@ -1273,6 +1284,29 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   }
 }
 
+// Updates the detail text of the leak check item based on the state.
+- (void)updateDetailTextLeakCheckItem {
+  if (!leakCheckItem_) {
+    return;
+  }
+  if (self.editing) {
+    // When editing keep the current detail text.
+    return;
+  }
+  if (leakCheckItem_.enabled) {
+    leakCheckItem_.detailText =
+        l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SIGNED_IN_DESC);
+    return;
+  }
+  if (leakCheckItem_.on) {
+    leakCheckItem_.detailText =
+        l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SIGNED_OUT_ENABLED_DESC);
+    return;
+  }
+  leakCheckItem_.detailText =
+      l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SIGNED_OUT_DISABLED_DESC);
+}
+
 #pragma mark - Testing
 
 - (void)setReauthenticationModuleForExporter:
@@ -1284,6 +1318,16 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 - (PasswordExporter*)getPasswordExporter {
   return _passwordExporter;
+}
+
+#pragma mark - ChromeIdentityServiceObserver
+
+- (void)identityListChanged {
+  [self reloadData];
+}
+
+- (void)chromeIdentityServiceWillBeDestroyed {
+  identityServiceObserver_.reset();
 }
 
 @end

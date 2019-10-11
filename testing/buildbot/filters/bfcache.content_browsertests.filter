@@ -80,10 +80,6 @@
 # https://crbug.com/1004786
 -SitePerProcessBrowserTest.TestChildProcessImportance
 
-# In debug mode. The FrameHostInterceptor fails, because it doesn't take into
-# account pages in the BackForwardCache.
--SecurityExploitBrowserTest.InvalidBeginNavigationInitiator
-
 # NOTREACHED() is hit in RenderFrameHostManager::GetFrameHostForNavigation,
 # because, "A frame that's pending deletion should never be navigated.".
 -NavigationControllerBrowserTest.PageStateWithIframeAfterForwardInCompetingFrames
@@ -113,3 +109,7 @@
 -RenderViewHostTest.IsFocusedElementEditable
 -TouchInputBrowserTest.*
 -TouchpadPinchBrowserTest.*
+
+# Started failing around when https://crrev.com/c/1819251 was submitted.
+# https://crbug.com/1013550
+-SessionHistoryTest.GoBackToCrossSitePostWithRedirect

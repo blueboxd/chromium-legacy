@@ -40,7 +40,6 @@ v8::Local<v8::Object> ScriptWrappable::AssociateWithWrapper(
 
 void ScriptWrappable::Trace(Visitor* visitor) {
   visitor->Trace(main_world_wrapper_);
-  DOMWrapperWorld::Trace(this, visitor);
 }
 
 const char* ScriptWrappable::NameInHeapSnapshot() const {

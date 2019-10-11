@@ -35,6 +35,12 @@ public final class NdefMessageValidator {
     private static boolean isValid(NdefRecord record) {
         if (record == null) return false;
         if (record.recordType.equals(NdefMessageUtils.RECORD_TYPE_EMPTY)) return true;
-        return record.data != null && record.mediaType != null && !record.mediaType.isEmpty();
+        if (record.data == null) return false;
+        if ((record.recordType.equals(NdefMessageUtils.RECORD_TYPE_JSON)
+                    || record.recordType.equals(NdefMessageUtils.RECORD_TYPE_OPAQUE))
+                && (record.mediaType == null || record.mediaType.isEmpty())) {
+            return false;
+        }
+        return true;
     }
 }

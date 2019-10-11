@@ -94,7 +94,7 @@ void MediaInternalsAudioFocusHelper::SetEnabled(bool enabled) {
 
   if (!enabled) {
     audio_focus_.reset();
-    audio_focus_debug_ptr_.reset();
+    audio_focus_debug_.reset();
     receiver_.reset();
   }
 }
@@ -119,10 +119,10 @@ bool MediaInternalsAudioFocusHelper::EnsureServiceConnection() {
   }
 
   // Connect to the media session service debug interface.
-  if (!audio_focus_debug_ptr_.is_bound()) {
-    connector->BindInterface(media_session::mojom::kServiceName,
-                             mojo::MakeRequest(&audio_focus_debug_ptr_));
-    audio_focus_debug_ptr_.set_connection_error_handler(
+  if (!audio_focus_debug_.is_bound()) {
+    connector->Connect(media_session::mojom::kServiceName,
+                       audio_focus_debug_.BindNewPipeAndPassReceiver());
+    audio_focus_debug_.set_disconnect_handler(
         base::BindRepeating(&MediaInternalsAudioFocusHelper::OnDebugMojoError,
                             base::Unretained(this)));
   }
@@ -144,7 +144,7 @@ void MediaInternalsAudioFocusHelper::OnMojoError() {
 }
 
 void MediaInternalsAudioFocusHelper::OnDebugMojoError() {
-  audio_focus_debug_ptr_.reset();
+  audio_focus_debug_.reset();
 }
 
 void MediaInternalsAudioFocusHelper::DidGetAudioFocusRequestList(
@@ -171,7 +171,7 @@ void MediaInternalsAudioFocusHelper::DidGetAudioFocusRequestList(
 
     request_state_.emplace(id_string, session.Clone());
 
-    audio_focus_debug_ptr_->GetDebugInfoForRequest(
+    audio_focus_debug_->GetDebugInfoForRequest(
         session->request_id.value(),
         base::BindOnce(
             &MediaInternalsAudioFocusHelper::DidGetAudioFocusDebugInfo,

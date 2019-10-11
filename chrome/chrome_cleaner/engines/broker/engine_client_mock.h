@@ -21,13 +21,14 @@ class MockEngineClient : public EngineClient {
   // cleanup code for tests.
   MockEngineClient();
 
-  // To test |PostBindEngineCommandsPtr|, mock the method
-  // |MockedPostBindEngineCommandsPtr|. This is needed because |pipe| is
+  // To test |PostBindEngineCommandsRemote|, mock the method
+  // |MockedPostBindEngineCommandsRemote|. This is needed because |pipe| is
   // move-only and gmock generates a call to the copy constructor.
-  void PostBindEngineCommandsPtr(mojo::ScopedMessagePipeHandle pipe) override {
-    MockedPostBindEngineCommandsPtr(&pipe);
+  void PostBindEngineCommandsRemote(
+      mojo::ScopedMessagePipeHandle pipe) override {
+    MockedPostBindEngineCommandsRemote(&pipe);
   }
-  MOCK_METHOD1(MockedPostBindEngineCommandsPtr,
+  MOCK_METHOD1(MockedPostBindEngineCommandsRemote,
                void(mojo::ScopedMessagePipeHandle* pipe));
 
   MOCK_CONST_METHOD0(GetEnabledUwS, std::vector<UwSId>());

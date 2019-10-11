@@ -861,8 +861,8 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
   base::RunLoop loop;
   auto* remover = BrowserContext::GetBrowsingDataRemover(browser_context());
   remover->SetWouldCompleteCallbackForTesting(
-      base::BindLambdaForTesting([&](const base::RepeatingClosure& callback) {
-        callback.Run();
+      base::BindLambdaForTesting([&](base::OnceClosure callback) {
+        std::move(callback).Run();
         loop.Quit();
       }));
 

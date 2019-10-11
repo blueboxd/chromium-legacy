@@ -153,7 +153,8 @@ float DevToolsHost::zoomFactor() {
   // use-zoom-for-dsf mode.
   const ChromeClient* client =
       frontend_frame_->View()->GetChromeClient();
-  float window_to_viewport_ratio = client->WindowToViewportScalar(1.0f);
+  float window_to_viewport_ratio =
+      client->WindowToViewportScalar(frontend_frame_, 1.0f);
   return zoom_factor / window_to_viewport_ratio;
 }
 

@@ -50,6 +50,10 @@ ChromeCleanerRebootDialog::ChromeCleanerRebootDialog(
   DCHECK(dialog_controller_);
 
   DialogDelegate::set_draggable(true);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(
+          IDS_CHROME_CLEANUP_REBOOT_PROMPT_RESTART_BUTTON_LABEL));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
@@ -92,18 +96,6 @@ views::View* ChromeCleanerRebootDialog::GetInitiallyFocusedView() {
 }
 
 // DialogDelegate overrides.
-
-base::string16 ChromeCleanerRebootDialog::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  DCHECK(button == ui::DIALOG_BUTTON_OK || button == ui::DIALOG_BUTTON_CANCEL);
-  DCHECK(dialog_controller_);
-
-  return button == ui::DIALOG_BUTTON_OK
-             ? l10n_util::GetStringUTF16(
-                   IDS_CHROME_CLEANUP_REBOOT_PROMPT_RESTART_BUTTON_LABEL)
-             : DialogDelegate::GetDialogButtonLabel(button);
-}
-
 bool ChromeCleanerRebootDialog::Accept() {
   HandleDialogInteraction(DialogInteractionResult::kAccept);
   return true;

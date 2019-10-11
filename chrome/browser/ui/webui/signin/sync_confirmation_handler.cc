@@ -211,6 +211,8 @@ void SyncConfirmationHandler::CloseModalSigninWindow(
 
 void SyncConfirmationHandler::HandleInitializedWithSize(
     const base::ListValue* args) {
+  AllowJavascript();
+
   if (!browser_)
     return;
 
@@ -237,5 +239,5 @@ void SyncConfirmationHandler::HandleInitializedWithSize(
   // TODO(anthonyvd): Figure out why this is needed on Mac and not other
   // platforms and if there's a way to start unfocused while avoiding this
   // workaround.
-  web_ui()->CallJavascriptFunctionUnsafe("sync.confirmation.clearFocus");
+  FireWebUIListener("clear-focus");
 }

@@ -13,6 +13,12 @@
 
 namespace content {
 
+bool IsInBackForwardCache(RenderFrameHost* render_frame_host) {
+  RenderFrameHostImpl* rfhi =
+      static_cast<RenderFrameHostImpl*>(render_frame_host);
+  return rfhi->is_in_back_forward_cache();
+}
+
 class BackForwardCacheDisabledTester::Impl
     : public BackForwardCacheTestDelegate {
  public:

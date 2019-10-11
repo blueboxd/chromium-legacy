@@ -109,8 +109,12 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   void ExecuteEncode(VASurfaceID va_surface_id);
 
   // Callback that returns a no longer used VASurfaceID to
-  // available_va_surface_ids_ for reuse.
+  // |available_va_surface_ids_| for reuse.
   void RecycleVASurfaceID(VASurfaceID va_surface_id);
+
+  // Callback that returns a no longer used VASurfaceID to
+  // |available_vpp_va_surface_ids_| for reuse.
+  void RecycleVPPVASurfaceID(VASurfaceID va_surface_id);
 
   // Returns a bitstream buffer to the client if both a previously executed job
   // awaits to be completed and we have bitstream buffers available to download
@@ -163,6 +167,9 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // and two otherwise.
   size_t va_surfaces_per_video_frame_;
 
+  // The number of frames that needs to be held on encoding.
+  size_t num_frames_in_flight_;
+
   // All of the members below must be accessed on the encoder_thread_,
   // while it is running.
 
@@ -172,8 +179,10 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // Encoder instance managing video codec state and preparing encode jobs.
   std::unique_ptr<AcceleratedVideoEncoder> encoder_;
 
-  // VA surfaces available for reuse.
+  // VA surfaces available for encoding.
   std::vector<VASurfaceID> available_va_surface_ids_;
+  // VA surfaces available for scaling.
+  std::vector<VASurfaceID> available_vpp_va_surface_ids_;
 
   // VASurfaceIDs internal format.
   static constexpr unsigned int kVaSurfaceFormat = VA_RT_FORMAT_YUV420;
@@ -183,6 +192,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
 
   // Callback via which finished VA surfaces are returned to us.
   base::RepeatingCallback<void(VASurfaceID)> va_surface_release_cb_;
+  base::RepeatingCallback<void(VASurfaceID)> vpp_va_surface_release_cb_;
 
   // Queue of input frames to be encoded.
   base::queue<std::unique_ptr<InputFrameRef>> input_queue_;

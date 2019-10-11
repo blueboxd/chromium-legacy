@@ -43,10 +43,11 @@
 #endif
 
 using content::BrowserThread;
-using net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES;
 using net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
+using net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES;
 using net::registry_controlled_domains::GetCanonicalHostRegistryLength;
-using policy::URLBlacklist;
+using policy::url_util::CreateConditionSet;
+using policy::url_util::FilterToComponents;
 using url_matcher::URLMatcher;
 using url_matcher::URLMatcherConditionSet;
 
@@ -148,17 +149,15 @@ URLMatcherConditionSet::ID FilterBuilder::AddPattern(
   std::string path;
   std::string query;
   bool match_subdomains = true;
-  if (!URLBlacklist::FilterToComponents(pattern, &scheme, &host,
-                                        &match_subdomains, &port, &path,
-                                        &query)) {
+  if (!FilterToComponents(pattern, &scheme, &host, &match_subdomains, &port,
+                          &path, &query)) {
     LOG(ERROR) << "Invalid pattern " << pattern;
     return -1;
   }
 
   scoped_refptr<URLMatcherConditionSet> condition_set =
-      URLBlacklist::CreateConditionSet(
-          &contents_->url_matcher, ++matcher_id_,
-          scheme, host, match_subdomains, port, path, query, true);
+      CreateConditionSet(&contents_->url_matcher, ++matcher_id_, scheme, host,
+                         match_subdomains, port, path, query, true);
   all_conditions_.push_back(std::move(condition_set));
   return matcher_id_;
 }

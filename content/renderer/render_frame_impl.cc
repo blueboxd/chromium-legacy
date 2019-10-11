@@ -2978,21 +2978,6 @@ bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,
   return success;
 }
 
-void RenderFrameImpl::DidFailProvisionalLoad(const WebURLError& error,
-                                             const WebString& http_method) {
-  DCHECK_EQ(net::ERR_ABORTED, error.reason());
-  TRACE_EVENT1("navigation,benchmark,rail",
-               "RenderFrameImpl::didFailProvisionalLoad", "id", routing_id_);
-  // Note: It is important this notification occur before DidStopLoading so the
-  //       SSL manager can react to the provisional load failure before being
-  //       notified the load stopped.
-  //
-  NotifyObserversOfFailedProvisionalLoad();
-
-  // Notify the browser that we failed a provisional load with an error.
-  SendFailedProvisionalLoad(http_method.Ascii(), error, frame_);
-}
-
 void RenderFrameImpl::NotifyObserversOfFailedProvisionalLoad() {
   for (auto& observer : observers_)
     observer.DidFailProvisionalLoad();
@@ -5102,6 +5087,7 @@ void RenderFrameImpl::AbortClientNavigation() {
   browser_side_navigation_pending_ = false;
   sync_navigation_callback_.Cancel();
   mhtml_body_loader_client_.reset();
+  NotifyObserversOfFailedProvisionalLoad();
   if (!IsPerNavigationMojoInterfaceEnabled()) {
     Send(new FrameHostMsg_AbortNavigation(routing_id_));
   } else {

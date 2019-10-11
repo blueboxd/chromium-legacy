@@ -67,15 +67,21 @@ class PLATFORM_EXPORT PushPullFIFO {
   size_t Pull(AudioBus* output_bus, size_t frames_requested);
 
   size_t length() const { return fifo_length_; }
-  unsigned NumberOfChannels() const { return fifo_bus_->NumberOfChannels(); }
+  unsigned NumberOfChannels() const {
+    lock_.AssertAcquired();
+    return fifo_bus_->NumberOfChannels();
+  }
 
   // TODO(hongchan): For single thread unit test only. Consider refactoring.
-  AudioBus* GetFIFOBusForTest() const { return fifo_bus_.get(); }
+  AudioBus* GetFIFOBusForTest() {
+    MutexLocker locker(lock_);
+    return fifo_bus_.get();
+  }
 
   // For single thread unit test only. Get the current configuration that
   // consists of FIFO length, number of channels, read/write index position and
   // under/overflow count.
-  const PushPullFIFOStateForTest GetStateForTest() const;
+  const PushPullFIFOStateForTest GetStateForTest();
 
  private:
   // The size of the FIFO.
@@ -86,13 +92,12 @@ class PLATFORM_EXPORT PushPullFIFO {
   unsigned overflow_count_ = 0;
   unsigned underflow_count_ = 0;
 
-  // This lock protects variables below.
   Mutex lock_;
   // The number of frames in the FIFO actually available for pulling.
-  size_t frames_available_ = 0;
-  size_t index_read_ = 0;
-  size_t index_write_ = 0;
-  scoped_refptr<AudioBus> fifo_bus_;
+  size_t frames_available_ GUARDED_BY(lock_) = 0;
+  size_t index_read_ GUARDED_BY(lock_) = 0;
+  size_t index_write_ GUARDED_BY(lock_) = 0;
+  scoped_refptr<AudioBus> fifo_bus_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(PushPullFIFO);
 };

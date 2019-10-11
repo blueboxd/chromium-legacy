@@ -309,7 +309,7 @@ float ImageDocument::Scale() const {
   // We want to pretend the viewport is larger when the user has zoomed the
   // page in (but not when the zoom is coming from device scale).
   const float viewport_zoom =
-      view->GetChromeClient()->WindowToViewportScalar(1.f);
+      view->GetChromeClient()->WindowToViewportScalar(GetFrame(), 1.f);
   float width_scale = view->Width() / (viewport_zoom * image_size.Width());
   float height_scale = view->Height() / (viewport_zoom * image_size.Height());
 
@@ -352,7 +352,8 @@ void ImageDocument::ImageClicked(int x, int y) {
 
     double scale = Scale();
     double device_scale_factor =
-        GetFrame()->View()->GetChromeClient()->WindowToViewportScalar(1.f);
+        GetFrame()->View()->GetChromeClient()->WindowToViewportScalar(
+            GetFrame(), 1.f);
 
     float scroll_x = (image_x * device_scale_factor) / scale -
                      static_cast<float>(GetFrame()->View()->Width()) / 2;

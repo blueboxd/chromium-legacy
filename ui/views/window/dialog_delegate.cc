@@ -121,6 +121,9 @@ int DialogDelegate::GetDefaultDialogButton() const {
 
 base::string16 DialogDelegate::GetDialogButtonLabel(
     ui::DialogButton button) const {
+  if (!GetParams().button_labels[button].empty())
+    return GetParams().button_labels[button];
+
   if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_APP_OK);
   if (button == ui::DIALOG_BUTTON_CANCEL) {
@@ -174,10 +177,6 @@ void DialogDelegate::UpdateButton(LabelButton* button, ui::DialogButton type) {
     is_default = false;
   }
   button->SetIsDefault(is_default);
-}
-
-bool DialogDelegate::ShouldSnapFrameWidth() const {
-  return GetDialogButtons() != ui::DIALOG_BUTTON_NONE;
 }
 
 View* DialogDelegate::GetInitiallyFocusedView() {

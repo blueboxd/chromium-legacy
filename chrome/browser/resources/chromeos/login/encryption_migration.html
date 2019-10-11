@@ -31,7 +31,8 @@
         <template is="dom-if" if="[[isEnoughBattery]]">
           <div slot="footer" class="layout vertical center">
             <img srcset="images/security_update_1x.png 1x,
-                         images/security_update_2x.png 2x">
+                         images/security_update_2x.png 2x"
+                 class="oobe-illustration">
           </div>
         </template>
         <template is="dom-if" if="[[!isEnoughBattery]]">

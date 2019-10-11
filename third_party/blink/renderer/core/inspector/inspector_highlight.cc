@@ -448,8 +448,10 @@ InspectorHighlight::InspectorHighlight(
       scale_(1.f) {
   DCHECK(!DisplayLockUtilities::NearestLockedExclusiveAncestor(*node));
   LocalFrameView* frame_view = node->GetDocument().View();
-  if (frame_view)
-    scale_ = 1.f / frame_view->GetChromeClient()->WindowToViewportScalar(1.f);
+  if (frame_view) {
+    scale_ = 1.f / frame_view->GetChromeClient()->WindowToViewportScalar(
+                       &frame_view->GetFrame(), 1.f);
+  }
   AppendPathsForShapeOutside(node, highlight_config);
   AppendNodeHighlight(node, highlight_config);
   auto* text_node = DynamicTo<Text>(node);

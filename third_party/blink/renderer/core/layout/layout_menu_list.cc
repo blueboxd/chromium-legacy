@@ -138,9 +138,8 @@ void LayoutMenuList::AdjustInnerStyle(ComputedStyle& inner_style) const {
 
   Length padding_start = Length::Fixed(
       LayoutTheme::GetTheme().PopupInternalPaddingStart(StyleRef()));
-  Length padding_end =
-      Length::Fixed(LayoutTheme::GetTheme().PopupInternalPaddingEnd(
-          GetFrameView()->GetChromeClient(), StyleRef()));
+  Length padding_end = Length::Fixed(
+      LayoutTheme::GetTheme().PopupInternalPaddingEnd(GetFrame(), StyleRef()));
   inner_style.SetPaddingLeft(StyleRef().Direction() == TextDirection::kLtr
                                  ? padding_start
                                  : padding_end);

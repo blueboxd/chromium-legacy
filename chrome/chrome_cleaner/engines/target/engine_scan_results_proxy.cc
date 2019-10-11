@@ -13,13 +13,14 @@
 namespace chrome_cleaner {
 
 EngineScanResultsProxy::EngineScanResultsProxy(
-    mojom::EngineScanResultsAssociatedPtr scan_results_ptr,
+    mojo::PendingAssociatedRemote<mojom::EngineScanResults> scan_results,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : scan_results_ptr_(std::move(scan_results_ptr)),
-      task_runner_(task_runner) {}
+    : task_runner_(task_runner) {
+  scan_results_.Bind(std::move(scan_results));
+}
 
-void EngineScanResultsProxy::UnbindScanResultsPtr() {
-  scan_results_ptr_.reset();
+void EngineScanResultsProxy::UnbindScanResults() {
+  scan_results_.reset();
 }
 
 void EngineScanResultsProxy::FoundUwS(UwSId pup_id, const PUPData::PUP& pup) {
@@ -35,22 +36,22 @@ void EngineScanResultsProxy::ScanDone(uint32_t result) {
 
 EngineScanResultsProxy::~EngineScanResultsProxy() = default;
 
-// Invokes scan_results_ptr_->FoundUwS from the IPC thread.
+// Invokes scan_results_->FoundUwS from the IPC thread.
 void EngineScanResultsProxy::OnFoundUwS(UwSId pup_id, const PUPData::PUP& pup) {
-  if (!scan_results_ptr_.is_bound()) {
+  if (!scan_results_.is_bound()) {
     LOG(ERROR) << "Found UwS reported after the engine was shut down";
     return;
   }
-  scan_results_ptr_->FoundUwS(pup_id, pup);
+  scan_results_->FoundUwS(pup_id, pup);
 }
 
-// Invokes scan_results_ptr_->Done from the IPC thread.
+// Invokes scan_results_->Done from the IPC thread.
 void EngineScanResultsProxy::OnDone(uint32_t result) {
-  if (!scan_results_ptr_.is_bound()) {
+  if (!scan_results_.is_bound()) {
     LOG(ERROR) << "Scan result reported after the engine was shut down";
     return;
   }
-  scan_results_ptr_->Done(result);
+  scan_results_->Done(result);
 }
 
 }  // namespace chrome_cleaner

@@ -132,6 +132,7 @@ void CookiesViewHandler::OnJavascriptAllowed() {
 
 void CookiesViewHandler::OnJavascriptDisallowed() {
   callback_weak_ptr_factory_.InvalidateWeakPtrs();
+  request_.Clear();
 }
 
 void CookiesViewHandler::RegisterMessages() {
@@ -231,14 +232,13 @@ void CookiesViewHandler::TreeModelBeginBatch(CookiesTreeModel* model) {
 void CookiesViewHandler::TreeModelEndBatch(CookiesTreeModel* model) {
   DCHECK(batch_update_);
   batch_update_ = false;
-  if (IsJavascriptAllowed()) {
-    if (request_.should_send_list) {
-      SendLocalDataList(model->GetRoot());
-    } else if (!request_.callback_id_.empty()) {
-      ResolveJavascriptCallback(base::Value(request_.callback_id_),
-                                (base::Value()));
-      request_.Clear();
-    }
+
+  if (request_.should_send_list) {
+    SendLocalDataList(model->GetRoot());
+  } else if (!request_.callback_id_.empty()) {
+    ResolveJavascriptCallback(base::Value(request_.callback_id_),
+                              (base::Value()));
+    request_.Clear();
   }
 }
 
@@ -255,14 +255,18 @@ void CookiesViewHandler::RecreateCookiesTreeModel() {
   filter_.clear();
   sorted_sites_.clear();
   EnsureCookiesTreeModelCreated();
+
+  CHECK(!request_.callback_id_.empty());
+  ResolveJavascriptCallback(base::Value(request_.callback_id_),
+                            (base::Value()));
+  request_.Clear();
 }
 
 void CookiesViewHandler::HandleGetCookieDetails(const base::ListValue* args) {
   CHECK(request_.callback_id_.empty());
-  CHECK_EQ(2U, args->GetSize());
-  CHECK(args->GetString(0, &request_.callback_id_));
-  std::string site;
-  CHECK(args->GetString(1, &site));
+  CHECK_EQ(2U, args->GetList().size());
+  request_.callback_id_ = args->GetList()[0].GetString();
+  std::string site = args->GetList()[1].GetString();
 
   AllowJavascript();
   const CookieTreeNode* node = model_util_->GetTreeNodeFromTitle(
@@ -279,11 +283,10 @@ void CookiesViewHandler::HandleGetCookieDetails(const base::ListValue* args) {
 
 void CookiesViewHandler::HandleGetNumCookiesString(
     const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
   std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
-  int num_cookies;
-  CHECK(args->GetInteger(1, &num_cookies));
+  callback_id = args->GetList()[0].GetString();
+  int num_cookies = args->GetList()[1].GetInt();
 
   AllowJavascript();
   const base::string16 string =
@@ -296,10 +299,9 @@ void CookiesViewHandler::HandleGetNumCookiesString(
 
 void CookiesViewHandler::HandleGetDisplayList(const base::ListValue* args) {
   CHECK(request_.callback_id_.empty());
-  CHECK_EQ(2U, args->GetSize());
-  CHECK(args->GetString(0, &request_.callback_id_));
-  base::string16 filter;
-  CHECK(args->GetString(1, &filter));
+  CHECK_EQ(2U, args->GetList().size());
+  request_.callback_id_ = args->GetList()[0].GetString();
+  base::string16 filter = base::UTF8ToUTF16(args->GetList()[1].GetString());
 
   AllowJavascript();
   request_.should_send_list = true;
@@ -315,8 +317,8 @@ void CookiesViewHandler::HandleGetDisplayList(const base::ListValue* args) {
 
 void CookiesViewHandler::HandleReloadCookies(const base::ListValue* args) {
   CHECK(request_.callback_id_.empty());
-  CHECK_EQ(1U, args->GetSize());
-  CHECK(args->GetString(0, &request_.callback_id_));
+  CHECK_EQ(1U, args->GetList().size());
+  request_.callback_id_ = args->GetList()[0].GetString();
 
   AllowJavascript();
   RecreateCookiesTreeModel();
@@ -324,8 +326,8 @@ void CookiesViewHandler::HandleReloadCookies(const base::ListValue* args) {
 
 void CookiesViewHandler::HandleRemoveAll(const base::ListValue* args) {
   CHECK(request_.callback_id_.empty());
-  CHECK_EQ(1U, args->GetSize());
-  CHECK(args->GetString(0, &request_.callback_id_));
+  CHECK_EQ(1U, args->GetList().size());
+  request_.callback_id_ = args->GetList()[0].GetString();
 
   AllowJavascript();
   cookies_tree_model_->DeleteAllStoredObjects();
@@ -333,8 +335,7 @@ void CookiesViewHandler::HandleRemoveAll(const base::ListValue* args) {
 }
 
 void CookiesViewHandler::HandleRemove(const base::ListValue* args) {
-  std::string node_path;
-  CHECK(args->GetString(0, &node_path));
+  std::string node_path = args->GetList()[0].GetString();
 
   AllowJavascript();
   const CookieTreeNode* node = model_util_->GetTreeNodeFromPath(
@@ -347,8 +348,8 @@ void CookiesViewHandler::HandleRemove(const base::ListValue* args) {
 
 void CookiesViewHandler::HandleRemoveThirdParty(const base::ListValue* args) {
   CHECK(request_.callback_id_.empty());
-  CHECK_EQ(1U, args->GetSize());
-  CHECK(args->GetString(0, &request_.callback_id_));
+  CHECK_EQ(1U, args->GetList().size());
+  request_.callback_id_ = args->GetList()[0].GetString();
 
   AllowJavascript();
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -360,7 +361,7 @@ void CookiesViewHandler::HandleRemoveThirdParty(const base::ListValue* args) {
 }
 
 void CookiesViewHandler::HandleRemoveShownItems(const base::ListValue* args) {
-  CHECK_EQ(0U, args->GetSize());
+  CHECK_EQ(0U, args->GetList().size());
 
   AllowJavascript();
   CookieTreeNode* parent = cookies_tree_model_->GetRoot();
@@ -369,10 +370,9 @@ void CookiesViewHandler::HandleRemoveShownItems(const base::ListValue* args) {
 }
 
 void CookiesViewHandler::HandleRemoveItem(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   CHECK(request_.callback_id_.empty());
-  base::string16 site;
-  CHECK(args->GetString(0, &site));
+  base::string16 site = base::UTF8ToUTF16(args->GetList()[0].GetString());
 
   AllowJavascript();
   CookieTreeNode* parent = cookies_tree_model_->GetRoot();

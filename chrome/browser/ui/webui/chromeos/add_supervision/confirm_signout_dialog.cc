@@ -29,6 +29,14 @@ const int kDialogBodyTextWidth = 250;
 }  // namespace
 
 ConfirmSignoutDialog::ConfirmSignoutDialog() {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(
+          IDS_ADD_SUPERVISION_EXIT_DIALOG_SIGNOUT_BUTTON_LABEL));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(
+          IDS_ADD_SUPERVISION_EXIT_DIALOG_CANCEL_BUTTON_LABEL));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
@@ -64,16 +72,6 @@ bool ConfirmSignoutDialog::Accept() {
 int ConfirmSignoutDialog::GetDialogButtons() const {
   return ui::DialogButton::DIALOG_BUTTON_OK |
          ui::DialogButton::DIALOG_BUTTON_CANCEL;
-}
-
-base::string16 ConfirmSignoutDialog::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DialogButton::DIALOG_BUTTON_OK) {
-    return l10n_util::GetStringUTF16(
-        IDS_ADD_SUPERVISION_EXIT_DIALOG_SIGNOUT_BUTTON_LABEL);
-  }
-  return l10n_util::GetStringUTF16(
-      IDS_ADD_SUPERVISION_EXIT_DIALOG_CANCEL_BUTTON_LABEL);
 }
 
 // static

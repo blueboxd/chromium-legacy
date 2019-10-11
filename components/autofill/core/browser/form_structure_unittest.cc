@@ -7123,4 +7123,19 @@ TEST_F(FormStructureTest, OneFieldPasswordFormShouldNotBeUpload) {
   EXPECT_FALSE(FormStructure(form).ShouldBeUploaded());
 }
 
+// Checks that CreateForPasswordManagerUpload builds FormStructure
+// which is encodable (i.e. ready for uploading).
+TEST_F(FormStructureTest, CreateForPasswordManagerUpload) {
+  std::unique_ptr<FormStructure> form =
+      FormStructure::CreateForPasswordManagerUpload(
+          1234 /* form_signature */, {1, 10, 100} /* field_signatures */);
+  AutofillUploadContents upload;
+  EXPECT_EQ(1234u, form->form_signature());
+  ASSERT_EQ(3u, form->field_count());
+  ASSERT_EQ(100u, form->field(2)->GetFieldSignature());
+  EXPECT_TRUE(form->EncodeUploadRequest(
+      {} /* available_field_types */, false /* form_was_autofilled */,
+      "" /*login_form_signature*/, true /*observed_submission*/, &upload));
+}
+
 }  // namespace autofill

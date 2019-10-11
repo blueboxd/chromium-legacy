@@ -103,7 +103,8 @@ uint64_t GetDisallowedFeatures() {
       ToFeatureBit(WebSchedulerTrackedFeature::kWebVR) |
       ToFeatureBit(WebSchedulerTrackedFeature::kWebXR) |
       ToFeatureBit(WebSchedulerTrackedFeature::kSharedWorker) |
-      ToFeatureBit(WebSchedulerTrackedFeature::kWebXR);
+      ToFeatureBit(WebSchedulerTrackedFeature::kWebXR) |
+      ToFeatureBit(WebSchedulerTrackedFeature::kWebLocks);
 
   uint64_t result = kAlwaysDisallowedFeatures;
 
@@ -147,10 +148,13 @@ BackForwardCacheTestDelegate* g_bfcache_disabled_test_observer = nullptr;
 
 }  // namespace
 
-BackForwardCacheImpl::Entry::Entry(std::unique_ptr<RenderFrameHostImpl> rfh,
-                                   RenderFrameProxyHostMap proxies)
-    : render_frame_host(std::move(rfh)), proxy_hosts(std::move(proxies)) {}
-
+BackForwardCacheImpl::Entry::Entry(
+    std::unique_ptr<RenderFrameHostImpl> rfh,
+    RenderFrameProxyHostMap proxies,
+    std::set<RenderViewHostImpl*> render_view_hosts)
+    : render_frame_host(std::move(rfh)),
+      proxy_hosts(std::move(proxies)),
+      render_view_hosts(std::move(render_view_hosts)) {}
 BackForwardCacheImpl::Entry::~Entry() {}
 
 std::string BackForwardCacheImpl::CanStoreDocumentResult::ToString() {

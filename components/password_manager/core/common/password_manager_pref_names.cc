@@ -38,6 +38,9 @@ const char kWasSignInPasswordPromoClicked[] =
 const char kNumberSignInPasswordPromoShown[] =
     "profile.number_sign_in_password_promo_shown";
 
+const char kSignInPasswordPromoRevive[] =
+    "profile.sign_in_password_promo_revive";
+
 const char kSyncPasswordHash[] = "profile.sync_password_hash";
 
 const char kSyncPasswordLengthAndHashSalt[] =

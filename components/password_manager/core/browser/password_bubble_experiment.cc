@@ -28,6 +28,9 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterIntegerPref(
       password_manager::prefs::kNumberSignInPasswordPromoShown, 0);
+
+  registry->RegisterBooleanPref(
+      password_manager::prefs::kSignInPasswordPromoRevive, false);
 }
 
 int GetSmartBubbleDismissalThreshold() {
@@ -68,6 +71,13 @@ bool ShouldShowChromeSignInPasswordPromo(
           syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) ||
       sync_service->GetUserSettings()->IsFirstSetupComplete()) {
     return false;
+  }
+  if (!prefs->GetBoolean(password_manager::prefs::kSignInPasswordPromoRevive)) {
+    // Reset the counters so that the promo is shown again.
+    prefs->SetBoolean(password_manager::prefs::kSignInPasswordPromoRevive,
+                      true);
+    prefs->ClearPref(password_manager::prefs::kWasSignInPasswordPromoClicked);
+    prefs->ClearPref(password_manager::prefs::kNumberSignInPasswordPromoShown);
   }
   // Don't show the promo more than 3 times.
   constexpr int kThreshold = 3;

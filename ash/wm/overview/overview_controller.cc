@@ -328,7 +328,7 @@ bool OverviewController::HasBlurForTest() const {
 }
 
 bool OverviewController::HasBlurAnimationForTest() const {
-  return overview_wallpaper_controller_->has_blur_animation();
+  return overview_wallpaper_controller_->HasBlurAnimationForTesting();
 }
 
 std::vector<aura::Window*>

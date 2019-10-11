@@ -159,8 +159,6 @@ bool PrintSettingsFromJobSettings(const base::Value& job_settings,
   base::Optional<int> color = job_settings.FindIntKey(kSettingColor);
   base::Optional<int> duplex_mode = job_settings.FindIntKey(kSettingDuplexMode);
   base::Optional<bool> landscape = job_settings.FindBoolKey(kSettingLandscape);
-  const std::string* device_name =
-      job_settings.FindStringKey(kSettingDeviceName);
   base::Optional<int> scale_factor =
       job_settings.FindIntKey(kSettingScaleFactor);
   base::Optional<bool> rasterize_pdf =
@@ -169,7 +167,7 @@ bool PrintSettingsFromJobSettings(const base::Value& job_settings,
       job_settings.FindIntKey(kSettingPagesPerSheet);
 
   if (!collate.has_value() || !copies.has_value() || !color.has_value() ||
-      !duplex_mode.has_value() || !landscape.has_value() || !device_name ||
+      !duplex_mode.has_value() || !landscape.has_value() ||
       !scale_factor.has_value() || !rasterize_pdf.has_value() ||
       !pages_per_sheet.has_value()) {
     return false;
@@ -188,7 +186,8 @@ bool PrintSettingsFromJobSettings(const base::Value& job_settings,
   settings->set_collate(collate.value());
   settings->set_copies(copies.value());
   settings->SetOrientation(landscape.value());
-  settings->set_device_name(base::UTF8ToUTF16(*device_name));
+  settings->set_device_name(
+      base::UTF8ToUTF16(*job_settings.FindStringKey(kSettingDeviceName)));
   settings->set_duplex_mode(static_cast<DuplexMode>(duplex_mode.value()));
   settings->set_color(static_cast<ColorModel>(color.value()));
   settings->set_scale_factor(static_cast<double>(scale_factor.value()) / 100.0);

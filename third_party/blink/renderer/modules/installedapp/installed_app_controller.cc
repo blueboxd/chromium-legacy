@@ -100,6 +100,7 @@ void InstalledAppController::OnFilterInstalledApps(
     app->setPlatform(res->platform);
     app->setURL(res->url);
     app->setId(res->id);
+    app->setVersion(res->version);
     applications.push_back(app);
   }
   callbacks->OnSuccess(applications);

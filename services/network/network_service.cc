@@ -396,9 +396,10 @@ void NetworkService::CreateNetLogEntriesForActiveObjects(
   return net::CreateNetLogEntriesForActiveObjects(contexts, observer);
 }
 
-void NetworkService::SetClient(mojom::NetworkServiceClientPtr client,
-                               mojom::NetworkServiceParamsPtr params) {
-  client_ = std::move(client);
+void NetworkService::SetClient(
+    mojo::PendingRemote<mojom::NetworkServiceClient> client,
+    mojom::NetworkServiceParamsPtr params) {
+  client_.Bind(std::move(client));
   Initialize(std::move(params));
 }
 

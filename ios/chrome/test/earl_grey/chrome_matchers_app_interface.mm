@@ -224,8 +224,9 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 }
 
 + (id<GREYMatcher>)closeButton {
-  return
-      [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:(IDS_CLOSE)];
+  return grey_allOf(
+      [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:(IDS_CLOSE)],
+      grey_not(grey_accessibilityTrait(UIAccessibilityTraitNotEnabled)), nil);
 }
 
 + (id<GREYMatcher>)forwardButton {

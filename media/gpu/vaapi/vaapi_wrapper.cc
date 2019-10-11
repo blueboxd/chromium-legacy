@@ -2114,6 +2114,9 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
     case SurfaceUsageHint::kVideoEncoder:
       attribute.value.value.i = VA_SURFACE_ATTRIB_USAGE_HINT_ENCODER;
       break;
+    case SurfaceUsageHint::kVideoProcessWrite:
+      attribute.value.value.i = VA_SURFACE_ATTRIB_USAGE_HINT_VPP_WRITE;
+      break;
     case SurfaceUsageHint::kGeneric:
       attribute.value.value.i = VA_SURFACE_ATTRIB_USAGE_HINT_GENERIC;
       break;

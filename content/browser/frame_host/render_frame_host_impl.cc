@@ -6272,6 +6272,7 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(ui::AXTreeData* dst) {
 
 void RenderFrameHostImpl::CreateWebBluetoothService(
     mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver) {
+  BackForwardCache::DisableForRenderFrameHost(this, "WebBluetooth");
   // RFHI owns |web_bluetooth_services_| and |web_bluetooth_service| owns the
   // |receiver_| which may run the error handler. |receiver_| can't run the
   // error handler after it's destroyed so it can't run after the RFHI is

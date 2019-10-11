@@ -148,7 +148,7 @@ class CORE_EXPORT ScriptPromiseResolver
   const Member<ScriptState> script_state_;
   TaskHandle deferred_resolve_task_;
   Resolver resolver_;
-  ScopedPersistent<v8::Value> value_;
+  TraceWrapperV8Reference<v8::Value> value_;
 
   // To support keepAliveWhilePending(), this object needs to keep itself
   // alive while in that state.

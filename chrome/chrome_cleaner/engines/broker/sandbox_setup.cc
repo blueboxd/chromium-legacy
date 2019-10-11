@@ -52,10 +52,10 @@ ResultCode SpawnWithoutSandboxForTesting(
   // leaks deliberately since this is only for testing and it needs to outlive
   // the EngineClient object.
   //
-  // When using a sandbox the ptr is bound to the broker end of a pipe in
-  // EngineClient::PostBindEngineCommandsPtr and the impl is bound to the
-  // target end in EngineMojoSandboxTargetHooks::BindEngineCommandsRequest.
-  // This binds the ptr directly to the impl. There's no need for an error
+  // When using a sandbox, the remote is bound to the broker end of a pipe in
+  // EngineClient::PostBindEngineCommandsRemote and the impl is bound to the
+  // target end in EngineMojoSandboxTargetHooks::BindEngineCommandsReceiver.
+  // This binds the remote directly to the impl. There's no need for an error
   // handling callback because there's no pipe that can have errors.
   mojo_task_runner->PostTask(
       FROM_HERE,
@@ -63,10 +63,10 @@ ResultCode SpawnWithoutSandboxForTesting(
           [](scoped_refptr<EngineClient> engine_client,
              scoped_refptr<EngineDelegate> engine_delegate,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-            new EngineCommandsImpl(
-                engine_delegate,
-                mojo::MakeRequest(engine_client->engine_commands_ptr()),
-                task_runner, base::DoNothing::Repeatedly());
+            new EngineCommandsImpl(engine_delegate,
+                                   engine_client->engine_commands_remote()
+                                       ->BindNewPipeAndPassReceiver(),
+                                   task_runner, base::DoNothing::Repeatedly());
           },
           engine_client, CreateEngineDelegate(engine_name), mojo_task_runner));
 
@@ -97,7 +97,7 @@ ResultCode EngineSandboxSetupHooks::UpdateSandboxPolicy(
   mojo::ScopedMessagePipeHandle mojo_pipe =
       SetupSandboxMessagePipe(policy, command_line);
 
-  engine_client_->PostBindEngineCommandsPtr(std::move(mojo_pipe));
+  engine_client_->PostBindEngineCommandsRemote(std::move(mojo_pipe));
 
   // Propagate engine selection switches to the sandbox target.
   command_line->AppendSwitchNative(

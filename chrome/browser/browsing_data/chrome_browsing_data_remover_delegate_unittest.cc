@@ -204,12 +204,12 @@ class TestWebappRegistry : public WebappRegistry {
   TestWebappRegistry() : WebappRegistry() { }
 
   void UnregisterWebappsForUrls(
-      const base::Callback<bool(const GURL&)>& url_filter) override {
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter) override {
     // Mocks out a JNI call.
   }
 
   void ClearWebappHistoryForUrls(
-      const base::Callback<bool(const GURL&)>& url_filter) override {
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter) override {
     // Mocks out a JNI call.
   }
 };
@@ -530,7 +530,7 @@ class ClearDomainReliabilityTester {
     return last_clear_mode_;
   }
 
-  const base::Callback<bool(const GURL&)>& last_filter() const {
+  const base::RepeatingCallback<bool(const GURL&)>& last_filter() const {
     return last_filter_;
   }
 
@@ -710,18 +710,19 @@ class FlashContentSettingsChangeWaiter : public content_settings::Observer {
 // filters, but its constructor currently only takes a single URL and constructs
 // its own url filter. If an url filter was directly passed to
 // BrowsingDataRemover (what should eventually be the case), we can use the same
-// instance in the test as well, and thus simply test base::Callback::Equals()
-// in this matcher.
+// instance in the test as well, and thus simply test
+// base::RepeatingCallback::Equals() in this matcher.
 class ProbablySameFilterMatcher
-    : public MatcherInterface<const base::Callback<bool(const GURL&)>&> {
+    : public MatcherInterface<
+          const base::RepeatingCallback<bool(const GURL&)>&> {
  public:
   explicit ProbablySameFilterMatcher(
-      const base::Callback<bool(const GURL&)>& filter)
-      : to_match_(filter) {
-  }
+      const base::RepeatingCallback<bool(const GURL&)>& filter)
+      : to_match_(filter) {}
 
-  virtual bool MatchAndExplain(const base::Callback<bool(const GURL&)>& filter,
-                               MatchResultListener* listener) const {
+  virtual bool MatchAndExplain(
+      const base::RepeatingCallback<bool(const GURL&)>& filter,
+      MatchResultListener* listener) const {
     if (filter.is_null() && to_match_.is_null())
       return true;
     if (filter.is_null() != to_match_.is_null())
@@ -748,17 +749,17 @@ class ProbablySameFilterMatcher
   }
 
  private:
-  const base::Callback<bool(const GURL&)>& to_match_;
+  const base::RepeatingCallback<bool(const GURL&)>& to_match_;
 };
 
-inline Matcher<const base::Callback<bool(const GURL&)>&> ProbablySameFilter(
-    const base::Callback<bool(const GURL&)>& filter) {
+inline Matcher<const base::RepeatingCallback<bool(const GURL&)>&>
+ProbablySameFilter(const base::RepeatingCallback<bool(const GURL&)>& filter) {
   return MakeMatcher(new ProbablySameFilterMatcher(filter));
 }
 
 bool ProbablySameFilters(
-    const base::Callback<bool(const GURL&)>& filter1,
-    const base::Callback<bool(const GURL&)>& filter2) {
+    const base::RepeatingCallback<bool(const GURL&)>& filter1,
+    const base::RepeatingCallback<bool(const GURL&)>& filter2) {
   return ProbablySameFilter(filter1).MatchAndExplain(filter2, nullptr);
 }
 
@@ -1899,7 +1900,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveDownloads) {
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePasswordStatistics) {
   RemovePasswordsTester tester(GetProfile());
-  base::Callback<bool(const GURL&)> empty_filter;
+  base::RepeatingCallback<bool(const GURL&)> empty_filter;
 
   EXPECT_CALL(*tester.store(), RemoveStatisticsByOriginAndTimeImpl(
                                    ProbablySameFilter(empty_filter),
@@ -1918,7 +1919,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   std::unique_ptr<BrowsingDataFilterBuilder> builder(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
   builder->AddRegisterableDomain(kTestRegisterableDomain1);
-  base::Callback<bool(const GURL&)> filter = builder->BuildGeneralFilter();
+  base::RepeatingCallback<bool(const GURL&)> filter =
+      builder->BuildGeneralFilter();
 
   EXPECT_CALL(*tester.store(),
               RemoveStatisticsByOriginAndTimeImpl(
@@ -1930,7 +1932,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePasswordsByTimeOnly) {
   RemovePasswordsTester tester(GetProfile());
-  base::Callback<bool(const GURL&)> filter =
+  base::RepeatingCallback<bool(const GURL&)> filter =
       BrowsingDataFilterBuilder::BuildNoopFilter();
 
   EXPECT_CALL(*tester.store(),
@@ -1948,7 +1950,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   std::unique_ptr<BrowsingDataFilterBuilder> builder(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
   builder->AddRegisterableDomain(kTestRegisterableDomain1);
-  base::Callback<bool(const GURL&)> filter = builder->BuildGeneralFilter();
+  base::RepeatingCallback<bool(const GURL&)> filter =
+      builder->BuildGeneralFilter();
 
   EXPECT_CALL(*tester.store(),
               RemoveLoginsByURLAndTimeImpl(ProbablySameFilter(filter), _, _))
@@ -1961,7 +1964,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, DisableAutoSignIn) {
   RemovePasswordsTester tester(GetProfile());
-  base::Callback<bool(const GURL&)> empty_filter =
+  base::RepeatingCallback<bool(const GURL&)> empty_filter =
       BrowsingDataFilterBuilder::BuildNoopFilter();
 
   EXPECT_CALL(
@@ -1977,7 +1980,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, DisableAutoSignIn) {
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        DisableAutoSignInAfterRemovingPasswords) {
   RemovePasswordsTester tester(GetProfile());
-  base::Callback<bool(const GURL&)> empty_filter =
+  base::RepeatingCallback<bool(const GURL&)> empty_filter =
       BrowsingDataFilterBuilder::BuildNoopFilter();
 
   EXPECT_CALL(*tester.store(), RemoveLoginsByURLAndTimeImpl(_, _, _))

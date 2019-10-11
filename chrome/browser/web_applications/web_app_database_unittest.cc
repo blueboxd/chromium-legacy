@@ -87,7 +87,7 @@ class WebAppDatabaseTest : public WebAppTest {
     WebApp::SyncData sync_data;
     sync_data.name = "Sync" + name;
     sync_data.theme_color = synced_theme_color;
-    app->SetSyncData(sync_data);
+    app->SetSyncData(std::move(sync_data));
 
     return app;
   }
@@ -185,8 +185,8 @@ TEST_F(WebAppDatabaseTest, WriteAndDeleteAppsWithCallbacks) {
   const int num_apps = 10;
   const std::string base_url = "https://example.com/path";
 
-  RegistryUpdateData::AppsToCreate apps_to_create;
-  RegistryUpdateData::AppsToDelete apps_to_delete;
+  RegistryUpdateData::Apps apps_to_create;
+  std::vector<AppId> apps_to_delete;
   Registry expected_registry;
 
   for (int i = 0; i < num_apps; ++i) {

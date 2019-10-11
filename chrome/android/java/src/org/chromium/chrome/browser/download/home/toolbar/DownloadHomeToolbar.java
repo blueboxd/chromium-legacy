@@ -22,7 +22,6 @@ import java.util.List;
  */
 public class DownloadHomeToolbar extends SelectableListToolbar<ListItem> {
     private UiConfig mUiConfig;
-    private View mTitleBar;
 
     public DownloadHomeToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -32,7 +31,6 @@ public class DownloadHomeToolbar extends SelectableListToolbar<ListItem> {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mTitleBar = findViewById(R.id.title_bar);
         post(() -> {
             mUiConfig = new UiConfig(this);
             configureWideDisplayStyle(mUiConfig);
@@ -59,7 +57,6 @@ public class DownloadHomeToolbar extends SelectableListToolbar<ListItem> {
         boolean wasSelectionEnabled = mIsSelectionEnabled;
         super.onSelectionStateChange(selectedItems);
 
-        mTitleBar.setVisibility((mIsSelectionEnabled || isSearching()) ? GONE : VISIBLE);
         if (mIsSelectionEnabled) {
             int numSelected = mSelectionDelegate.getSelectedItems().size();
 
@@ -81,17 +78,5 @@ public class DownloadHomeToolbar extends SelectableListToolbar<ListItem> {
                 RecordUserAction.record("Android.DownloadManager.SelectionEstablished");
             }
         }
-    }
-
-    @Override
-    public void showSearchView() {
-        super.showSearchView();
-        mTitleBar.setVisibility(GONE);
-    }
-
-    @Override
-    public void hideSearchView() {
-        super.hideSearchView();
-        mTitleBar.setVisibility(VISIBLE);
     }
 }

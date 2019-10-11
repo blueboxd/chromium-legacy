@@ -629,4 +629,47 @@ TEST_F(WebAppRegistrarTest, ScopedRegistryUpdate) {
   EXPECT_TRUE(ids.empty());
 }
 
+TEST_F(WebAppRegistrarTest, CopyOnWrite) {
+  controller().Init();
+
+  const GURL launch_url("https://example.com");
+  const AppId app_id = GenerateAppIdFromURL(launch_url);
+  const WebApp* app = nullptr;
+  {
+    auto new_app = CreateWebApp(launch_url.spec());
+    app = new_app.get();
+    RegisterApp(std::move(new_app));
+  }
+
+  {
+    std::unique_ptr<WebAppRegistryUpdate> update = sync_bridge().BeginUpdate();
+
+    WebApp* app_copy = update->UpdateApp(app_id);
+    EXPECT_TRUE(app_copy);
+    EXPECT_NE(app_copy, app);
+
+    app_copy->SetName("New Name");
+    EXPECT_EQ(app_copy->name(), "New Name");
+    EXPECT_EQ(app->name(), "Name");
+
+    app_copy->AddSource(Source::kPolicy);
+    app_copy->RemoveSource(Source::kSync);
+
+    EXPECT_FALSE(app_copy->IsSynced());
+    EXPECT_TRUE(app_copy->HasAnySources());
+
+    EXPECT_TRUE(app->IsSynced());
+    EXPECT_TRUE(app->HasAnySources());
+
+    SyncBridgeCommitUpdate(std::move(update));
+  }
+
+  // Pointer value stays the same.
+  EXPECT_EQ(app, registrar().GetAppById(app_id));
+
+  EXPECT_EQ(app->name(), "New Name");
+  EXPECT_FALSE(app->IsSynced());
+  EXPECT_TRUE(app->HasAnySources());
+}
+
 }  // namespace web_app

@@ -616,15 +616,22 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  // If there is selected text, show copy and cut.
+  // If the text is not empty and there is selected text, show copy and cut.
   if ([self textInRange:self.selectedTextRange].length > 0 &&
       (action == @selector(cut:) || action == @selector(copy:))) {
     return YES;
   }
 
-  // If there is no selected text, show select and selectAll.
-  if ([self textInRange:self.selectedTextRange].length == 0 &&
-      (action == @selector(select:) || action == @selector(selectAll:))) {
+  // If the text is not empty and there is no selected text, show select
+  if (self.text.length > 0 &&
+      [self textInRange:self.selectedTextRange].length == 0 &&
+      action == @selector(select:)) {
+    return YES;
+  }
+
+  // If selected text is les than the text length, show selectAll.
+  if ([self textInRange:self.selectedTextRange].length != self.text.length &&
+      action == @selector(selectAll:)) {
     return YES;
   }
 

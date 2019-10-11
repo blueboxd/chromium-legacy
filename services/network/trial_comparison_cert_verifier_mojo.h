@@ -11,7 +11,10 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cert/cert_verifier.h"
 #include "services/network/public/mojom/trial_comparison_cert_verifier.mojom.h"
 
@@ -32,16 +35,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TrialComparisonCertVerifierMojo
       public mojom::TrialComparisonCertVerifierConfigClient {
  public:
   // |initial_allowed| is the initial setting for whether the trial is allowed.
-  // |config_client_request| is the Mojo pipe over which trial configuration
+  // |config_client_receiver| is the Mojo pipe over which trial configuration
   // updates are received.
   // |report_client| is the Mojo pipe used to send trial reports.
   // |primary_verify_proc| and |trial_verify_proc| are the CertVerifyProc
   // implementations to compare.
   TrialComparisonCertVerifierMojo(
       bool initial_allowed,
-      mojom::TrialComparisonCertVerifierConfigClientRequest
-          config_client_request,
-      mojom::TrialComparisonCertVerifierReportClientPtrInfo report_client,
+      mojo::PendingReceiver<mojom::TrialComparisonCertVerifierConfigClient>
+          config_client_receiver,
+      mojo::PendingRemote<mojom::TrialComparisonCertVerifierReportClient>
+          report_client,
       scoped_refptr<net::CertVerifyProc> primary_verify_proc,
       scoped_refptr<net::CertVerifyProc> trial_verify_proc);
   ~TrialComparisonCertVerifierMojo() override;
@@ -71,9 +75,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TrialComparisonCertVerifierMojo
       const net::CertVerifyResult& primary_result,
       const net::CertVerifyResult& trial_result);
 
-  mojo::Binding<mojom::TrialComparisonCertVerifierConfigClient> binding_;
+  mojo::Receiver<mojom::TrialComparisonCertVerifierConfigClient> receiver_;
 
-  mojom::TrialComparisonCertVerifierReportClientPtr report_client_;
+  mojo::Remote<mojom::TrialComparisonCertVerifierReportClient> report_client_;
 
   std::unique_ptr<net::TrialComparisonCertVerifier>
       trial_comparison_cert_verifier_;

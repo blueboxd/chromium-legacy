@@ -42,6 +42,7 @@ source_set("common") {
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/strings",
     "//components/chrome_cleaner/public/constants:constants",
+    "//mojo/public/cpp/bindings",
     "//sandbox/win:sandbox",
   ]
 
@@ -110,9 +111,11 @@ source_set("test_support") {
     "//chrome/chrome_cleaner/engines/common",
     "//chrome/chrome_cleaner/engines/common:resources_header",
     "//chrome/chrome_cleaner/ipc:ipc_test_util",
+    "//chrome/chrome_cleaner/mojom:engine_sandbox_interface",
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
+    "//mojo/public/cpp/bindings",
   ]
 }
 

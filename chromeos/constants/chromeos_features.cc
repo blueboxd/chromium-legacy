@@ -147,6 +147,11 @@ const base::Feature kImeInputLogicFst{"ImeInputLogicFst",
 const base::Feature kImeInputLogicFstNonEnglish{
     "ImeInputLogicFstNonEnglish", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable or disable Unified Input Logic for Mozc decoder in the IME extension
+// on Chrome OS.
+const base::Feature kImeInputLogicMozc{"ImeInputLogicMozc",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable or disable IME service decoder engine and 'ime' sandbox on Chrome OS.
 const base::Feature kImeDecoderWithSandbox{"ImeDecoderWithSandbox",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

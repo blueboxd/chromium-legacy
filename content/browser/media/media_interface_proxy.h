@@ -44,7 +44,7 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // called, which could destroy |this|.
   MediaInterfaceProxy(RenderFrameHost* render_frame_host,
                       media::mojom::InterfaceFactoryRequest request,
-                      const base::Closure& error_handler);
+                      base::OnceClosure error_handler);
   ~MediaInterfaceProxy() final;
 
   // media::mojom::InterfaceFactory implementation.

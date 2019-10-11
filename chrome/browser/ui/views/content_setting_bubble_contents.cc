@@ -403,6 +403,17 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       content_setting_bubble_model_(std::move(content_setting_bubble_model)) {
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::CONTENT_SETTING_CONTENTS);
+
+  // Although other code in this class treats content_setting_bubble_model_ as
+  // though it's optional, in fact it can only become null if
+  // WebContentsDestroyed() is called, which can't happen until the constructor
+  // has run - so it is never null here.
+  DCHECK(content_setting_bubble_model_);
+  const base::string16& done_text =
+      content_setting_bubble_model_->bubble_content().done_button_text;
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      done_text.empty() ? l10n_util::GetStringUTF16(IDS_DONE) : done_text);
 }
 
 ContentSettingBubbleContents::~ContentSettingBubbleContents() {
@@ -625,16 +636,6 @@ bool ContentSettingBubbleContents::Close() {
 
 int ContentSettingBubbleContents::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
-}
-
-base::string16 ContentSettingBubbleContents::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (!content_setting_bubble_model_)
-    return base::string16();
-
-  const base::string16& done_text =
-      content_setting_bubble_model_->bubble_content().done_button_text;
-  return done_text.empty() ? l10n_util::GetStringUTF16(IDS_DONE) : done_text;
 }
 
 void ContentSettingBubbleContents::StyleLearnMoreButton() {

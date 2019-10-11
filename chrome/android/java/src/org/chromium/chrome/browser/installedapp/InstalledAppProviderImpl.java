@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.installedapp;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
@@ -160,9 +161,26 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
             }
         }
 
+        for (RelatedApplication installedApp : installedApps) {
+            setVersionInfo(installedApp);
+        }
+
         RelatedApplication[] installedAppsArray = new RelatedApplication[installedApps.size()];
         installedApps.toArray(installedAppsArray);
         return Pair.create(installedAppsArray, delayMillis);
+    }
+
+    /**
+     * Sets the version information, if available, to |installedApp|.
+     * @param installedApp
+     */
+    private void setVersionInfo(RelatedApplication installedApp) {
+        assert installedApp.id != null;
+        try {
+            PackageInfo info = mContext.getPackageManager().getPackageInfo(installedApp.id, 0);
+            installedApp.version = info.versionName;
+        } catch (NameNotFoundException e) {
+        }
     }
 
     /**

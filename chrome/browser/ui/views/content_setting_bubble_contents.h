@@ -71,7 +71,6 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   bool Accept() override;
   bool Close() override;
   int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void OnThemeChanged() override;
 
  private:

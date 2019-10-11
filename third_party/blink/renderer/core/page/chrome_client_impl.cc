@@ -474,22 +474,28 @@ IntRect ChromeClientImpl::ViewportToScreen(
 
 float ChromeClientImpl::WindowToViewportScalar(const float scalar_value) const {
   // TODO(darin): Change callers to pass a LocalFrame.
-  return WindowToViewportScalar(web_view_->MainFrameImpl()
-                                    ? web_view_->MainFrameImpl()->GetFrame()
-                                    : nullptr,
+  if (!web_view_->MainFrameImpl())
+    return scalar_value;
+  return WindowToViewportScalar(web_view_->MainFrameImpl()->GetFrame(),
                                 scalar_value);
 }
 
 float ChromeClientImpl::WindowToViewportScalar(LocalFrame* frame,
                                                const float scalar_value) const {
-  // Note, FrameWidgetImpl() can be null during Scrollbar() construction.
-  WebLocalFrameImpl* local_frame = WebLocalFrameImpl::FromFrame(frame);
-  if (!local_frame || !local_frame->FrameWidgetImpl())
+
+  // TODO(darin): Clean up callers to not pass null. E.g., VisualViewport::
+  // ScrollbarThickness() is one such caller. See https://pastebin.com/axgctw0N
+  // for a sample call stack.
+  if (!frame) {
+    DLOG(WARNING) << "LocalFrame is null!";
     return scalar_value;
+  }
 
   WebFloatRect viewport_rect(0, 0, scalar_value, 0);
-  local_frame->FrameWidgetImpl()->Client()->ConvertWindowToViewport(
-      &viewport_rect);
+  WebLocalFrameImpl::FromFrame(frame)
+      ->LocalRootFrameWidget()
+      ->Client()
+      ->ConvertWindowToViewport(&viewport_rect);
   return viewport_rect.width;
 }
 

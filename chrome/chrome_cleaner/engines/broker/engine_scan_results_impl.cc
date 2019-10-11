@@ -10,15 +10,15 @@ namespace chrome_cleaner {
 
 EngineScanResultsImpl::EngineScanResultsImpl(
     InterfaceMetadataObserver* metadata_observer)
-    : binding_(this), metadata_observer_(metadata_observer) {}
+    : metadata_observer_(metadata_observer) {}
 
 EngineScanResultsImpl::~EngineScanResultsImpl() = default;
 
 void EngineScanResultsImpl::BindToCallbacks(
-    mojom::EngineScanResultsAssociatedPtrInfo* ptr_info,
+    mojo::PendingAssociatedRemote<mojom::EngineScanResults>* scan_results,
     FoundUwSCallback found_uws_callback,
     DoneCallback done_callback) {
-  binding_.Bind(mojo::MakeRequest(ptr_info));
+  receiver_.Bind(scan_results->InitWithNewEndpointAndPassReceiver());
   // There's no need to call set_connection_error_handler on this since it's an
   // associated interface. Any errors will be handled on the main EngineCommands
   // interface.

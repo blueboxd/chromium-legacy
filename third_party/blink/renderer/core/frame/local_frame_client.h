@@ -147,9 +147,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DispatchDidCommitLoad(HistoryItem*,
                                      WebHistoryCommitType,
                                      GlobalObjectReusePolicy) = 0;
-  virtual void DispatchDidFailProvisionalLoad(
-      const ResourceError&,
-      const AtomicString& http_method) = 0;
   virtual void DispatchDidFailLoad(const ResourceError&,
                                    WebHistoryCommitType) = 0;
   virtual void DispatchDidFinishDocumentLoad() = 0;

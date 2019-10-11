@@ -636,6 +636,8 @@ ClearContentSettingsExceptForNavigationRelatedSettings() {
     status.second.allowed = false;
   }
   microphone_camera_state_ = MICROPHONE_CAMERA_NOT_ACCESSED;
+  camera_was_just_granted_on_site_level_ = false;
+  mic_was_just_granted_on_site_level_ = false;
   load_plugins_link_enabled_ = true;
   content_settings::UpdateLocationBarUiForWebContents(web_contents());
 }
@@ -697,6 +699,17 @@ void TabSpecificContentSettings::OnContentSettingChanged(
     ContentSetting setting = map_->GetContentSetting(
         media_origin, media_origin, content_type, std::string());
     ContentSettingsStatus& status = content_settings_status_[content_type];
+
+    if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
+        setting == CONTENT_SETTING_ALLOW) {
+      mic_was_just_granted_on_site_level_ = true;
+    }
+
+    if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA &&
+        setting == CONTENT_SETTING_ALLOW) {
+      camera_was_just_granted_on_site_level_ = true;
+    }
+
     status.allowed = setting == CONTENT_SETTING_ALLOW;
     status.blocked = setting == CONTENT_SETTING_BLOCK;
   }

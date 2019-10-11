@@ -419,8 +419,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void SetFindEndstateFocusAndSelection();
 
   void DidFailLoad(const ResourceError&, WebHistoryCommitType);
-  void DidFailProvisionalLoad(const ResourceError&,
-                              const AtomicString& http_method);
   void DidFinish();
 
   void SetClient(WebLocalFrameClient* client) { client_ = client; }

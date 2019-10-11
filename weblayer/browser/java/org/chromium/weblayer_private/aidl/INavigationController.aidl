@@ -20,4 +20,8 @@ interface INavigationController {
   int getNavigationListCurrentIndex() = 6;
 
   String getNavigationEntryDisplayUri(in int index) = 7;
+
+  boolean canGoBack() = 8;
+
+  boolean canGoForward() = 9;
 }

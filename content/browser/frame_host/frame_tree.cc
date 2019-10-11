@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/unguessable_token.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -380,7 +381,7 @@ scoped_refptr<RenderViewHostImpl> FrameTree::CreateRenderViewHost(
       static_cast<RenderViewHostImpl*>(RenderViewHostFactory::Create(
           site_instance, render_view_delegate_, render_widget_delegate_,
           routing_id, main_frame_routing_id, widget_routing_id, swapped_out));
-  render_view_host_map_[site_instance->GetId()] = rvh;
+  RegisterRenderViewHost(rvh);
   return base::WrapRefCounted(rvh);
 }
 
@@ -393,7 +394,13 @@ scoped_refptr<RenderViewHostImpl> FrameTree::GetRenderViewHost(
   return base::WrapRefCounted(it->second);
 }
 
-void FrameTree::RenderViewHostDeleted(RenderViewHost* rvh) {
+void FrameTree::RegisterRenderViewHost(RenderViewHostImpl* rvh) {
+  CHECK(
+      !base::Contains(render_view_host_map_, rvh->GetSiteInstance()->GetId()));
+  render_view_host_map_[rvh->GetSiteInstance()->GetId()] = rvh;
+}
+
+void FrameTree::UnregisterRenderViewHost(RenderViewHostImpl* rvh) {
   auto it = render_view_host_map_.find(rvh->GetSiteInstance()->GetId());
   CHECK(it != render_view_host_map_.end());
   CHECK_EQ(it->second, rvh);

@@ -10,5 +10,7 @@ blink_modules_sources("compression") {
     "deflate_transformer.h",
     "inflate_transformer.cc",
     "inflate_transformer.h",
+    "zlib_partition_alloc.cc",
+    "zlib_partition_alloc.h",
   ]
 }

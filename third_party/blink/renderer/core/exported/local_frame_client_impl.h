@@ -109,8 +109,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DispatchDidCommitLoad(HistoryItem*,
                              WebHistoryCommitType,
                              GlobalObjectReusePolicy) override;
-  void DispatchDidFailProvisionalLoad(const ResourceError&,
-                                      const AtomicString& http_method) override;
   void DispatchDidFailLoad(const ResourceError&, WebHistoryCommitType) override;
   void DispatchDidFinishDocumentLoad() override;
   void DispatchDidFinishLoad() override;

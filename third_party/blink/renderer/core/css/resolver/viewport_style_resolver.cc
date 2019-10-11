@@ -320,7 +320,7 @@ Length ViewportStyleResolver::ViewportLengthValue(CSSPropertyID id) {
   if (result.IsFixed() && document_->GetPage()) {
     float scaled_value =
         document_->GetPage()->GetChromeClient().WindowToViewportScalar(
-            result.GetFloatValue());
+            document_->GetFrame(), result.GetFloatValue());
     result = Length::Fixed(scaled_value);
   }
   return result;

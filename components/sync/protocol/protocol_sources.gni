@@ -36,6 +36,8 @@ sync_protocol_bases = [
   "mountain_share_specifics",
   "nigori_local_data",
   "nigori_specifics",
+  "os_preference_specifics",
+  "os_priority_preference_specifics",
   "password_specifics",
   "persisted_entity_data",
   "preference_specifics",

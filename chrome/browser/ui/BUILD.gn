@@ -2298,6 +2298,8 @@ jumbo_split_static_library("ui") {
       "cocoa/touchbar/web_textfield_touch_bar_controller.mm",
       "cocoa/window_size_autosaver.h",
       "cocoa/window_size_autosaver.mm",
+      "content_settings/media_authorization_wrapper_test.h",
+      "content_settings/media_authorization_wrapper_test.mm",
       "views/apps/chrome_app_window_client_views_mac.mm",
       "views/certificate_viewer_mac_views.mm",
       "views/dropdown_bar_host_mac.mm",

@@ -93,8 +93,9 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   void BindToInterface(
       mojo::PendingReceiver<mojom::AudioFocusManager> receiver);
 
-  // Bind to a mojom::AudioFocusManagerDebugRequest.
-  void BindToDebugInterface(mojom::AudioFocusManagerDebugRequest request);
+  // Bind to a receiver of mojom::AudioFocusManagerDebug.
+  void BindToDebugInterface(
+      mojo::PendingReceiver<mojom::AudioFocusManagerDebug> receiver);
 
   // Bind to a mojom::MediaControllerManagerRequest.
   void BindToControllerManagerInterface(
@@ -162,8 +163,8 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   mojo::ReceiverSet<mojom::AudioFocusManager, std::unique_ptr<ReceiverContext>>
       receivers_;
 
-  // Holds mojo bindings for the Audio Focus Manager Debug API.
-  mojo::BindingSet<mojom::AudioFocusManagerDebug> debug_bindings_;
+  // Holds mojo receivers for the Audio Focus Manager Debug API.
+  mojo::ReceiverSet<mojom::AudioFocusManagerDebug> debug_receivers_;
 
   // Holds mojo bindings for the Media Controller Manager API.
   mojo::BindingSet<mojom::MediaControllerManager> controller_bindings_;

@@ -231,7 +231,8 @@ void InternalPopupMenu::WriteDocument(SharedBuffer* data) {
       owner_element.VisibleBoundsInVisualViewport(),
       owner_element.GetDocument().View());
 
-  float scale_factor = chrome_client_->WindowToViewportScalar(1.f);
+  float scale_factor = chrome_client_->WindowToViewportScalar(
+      owner_element.GetDocument().GetFrame(), 1.f);
   PagePopupClient::AddString(
       "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
   data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());

@@ -204,8 +204,10 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnorePopupOverlayElement(
   int center_x = window->innerWidth() / 2;
   int center_y = window->innerHeight() / 2;
   if (Page* page = element.GetDocument().GetPage()) {
-    center_x = page->GetChromeClient().WindowToViewportScalar(center_x);
-    center_y = page->GetChromeClient().WindowToViewportScalar(center_y);
+    center_x = page->GetChromeClient().WindowToViewportScalar(
+        window->GetFrame(), center_x);
+    center_y = page->GetChromeClient().WindowToViewportScalar(
+        window->GetFrame(), center_y);
   }
   LayoutPoint center_point(center_x, center_y);
   if (!box->FrameRect().Contains(center_point))

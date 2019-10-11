@@ -310,6 +310,7 @@ IntRect PaintLayerScrollableArea::PaintLayerScrollableArea::CornerRect(
             .GetPage()
             ->GetChromeClient()
             .WindowToViewportScalar(
+                GetLayoutBox()->GetFrame(),
                 GetPageScrollbarTheme().ScrollbarThickness());
     vertical_thickness = horizontal_thickness;
   } else if (VerticalScrollbar() && !HorizontalScrollbar()) {
@@ -1377,7 +1378,7 @@ int PaintLayerScrollableArea::HypotheticalScrollbarThickness(
       ->GetDocument()
       .GetPage()
       ->GetChromeClient()
-      .WindowToViewportScalar(thickness);
+      .WindowToViewportScalar(GetLayoutBox()->GetFrame(), thickness);
 }
 
 bool PaintLayerScrollableArea::NeedsScrollbarReconstruction() const {
@@ -2326,8 +2327,9 @@ bool PaintLayerScrollableArea::VisualViewportSuppliesScrollbars() const {
 }
 
 bool PaintLayerScrollableArea::ScheduleAnimation() {
-  if (ChromeClient* client = GetChromeClient()) {
-    client->ScheduleAnimation(GetLayoutBox()->GetFrame()->View());
+  if (ChromeClient* client =
+          GetLayoutBox()->GetFrameView()->GetChromeClient()) {
+    client->ScheduleAnimation(GetLayoutBox()->GetFrameView());
     return true;
   }
   return false;

@@ -306,6 +306,26 @@ TEST_F(NGLineBreakerTest, WrapLastWord) {
   EXPECT_EQ("AAA BB CC", ToString(lines[1], node));
 }
 
+TEST_F(NGLineBreakerTest, WrapLetterSpacing) {
+  NGInlineNode node = CreateInlineNode(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #container {
+      font: 10px/1 Times;
+      letter-spacing: 10px;
+      width: 0px;
+    }
+    </style>
+    <div id=container>Star Wars</div>
+  )HTML");
+
+  Vector<NGInlineItemResults> lines;
+  lines = BreakLines(node, LayoutUnit(100));
+  EXPECT_EQ(2u, lines.size());
+  EXPECT_EQ("Star", ToString(lines[0], node));
+  EXPECT_EQ("Wars", ToString(lines[1], node));
+}
+
 TEST_F(NGLineBreakerTest, BoundaryInWord) {
   LoadAhem();
   NGInlineNode node = CreateInlineNode(R"HTML(

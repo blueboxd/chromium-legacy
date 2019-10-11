@@ -189,7 +189,10 @@ void MediaStreamSource::Trace(blink::Visitor* visitor) {
 }
 
 void MediaStreamSource::Dispose() {
-  audio_consumers_.clear();
+  {
+    MutexLocker locker(audio_consumers_lock_);
+    audio_consumers_.clear();
+  }
   platform_source_.reset();
   constraints_.Reset();
 }

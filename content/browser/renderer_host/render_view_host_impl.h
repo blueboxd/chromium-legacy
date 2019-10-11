@@ -207,6 +207,15 @@ class CONTENT_EXPORT RenderViewHostImpl
   // view is not considered active.
   void SetMainFrameRoutingId(int routing_id);
 
+  // Called when the RenderFrameHostImpls/RenderFrameProxyHosts that own this
+  // RenderViewHost enter the BackForwardCache.
+  void EnterBackForwardCache();
+
+  // Called when the RenderFrameHostImpls/RenderFrameProxyHosts that own this
+  // RenderViewHost leave the BackForwardCache. This occurs immediately before a
+  // restored document is committed.
+  void LeaveBackForwardCache();
+
   // Called during frame eviction to return all SurfaceIds in the frame tree.
   // Marks all views in the frame tree as evicted.
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();
@@ -329,10 +338,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Set to true when waiting for a ViewHostMsg_ClosePageACK.
   // TODO(creis): Move to RenderFrameHost and RenderWidgetHost.
   // See http://crbug.com/418265.
-  bool is_waiting_for_close_ack_;
+  bool is_waiting_for_close_ack_ = false;
 
   // True if the render view can be shut down suddenly.
-  bool sudden_termination_allowed_;
+  bool sudden_termination_allowed_ = false;
 
   // This is updated every time UpdateWebkitPreferences is called. That method
   // is in turn called when any of the settings change that the WebPreferences
@@ -348,14 +357,17 @@ class CONTENT_EXPORT RenderViewHostImpl
   // This monitors input changes so they can be reflected to the interaction MQ.
   std::unique_ptr<InputDeviceChangeObserver> input_device_change_observer_;
 
-  bool updating_web_preferences_;
+  bool updating_web_preferences_ = false;
 
   // This tracks whether this RenderViewHost has notified observers about its
   // creation with RenderViewCreated.  RenderViewHosts may transition from
   // active (with a RenderFrameHost for the main frame) to inactive state and
   // then back to active, and for the latter transition, this avoids firing
   // duplicate RenderViewCreated events.
-  bool has_notified_about_creation_;
+  bool has_notified_about_creation_ = false;
+
+  // BackForwardCache:
+  bool is_in_back_forward_cache_ = false;
 
   // Used to send Page and Widget visual properties to Renderers.
   VisualPropertiesManager visual_properties_manager_;

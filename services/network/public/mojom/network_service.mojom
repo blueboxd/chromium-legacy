@@ -168,7 +168,8 @@ interface NetworkService {
   // Sets client used by all |NetworkContext|s creating by |NetworkService|.
   // Pending requests may hang if the |client| pipe is closed before they
   // complete.
-  SetClient(NetworkServiceClient client, NetworkServiceParams params);
+  SetClient(pending_remote<NetworkServiceClient> client,
+            NetworkServiceParams params);
 
   // Reinitializes the Network Service's logging with the given settings. This
   // is needed on Chrome OS, which switches to a log file in the user's home

@@ -8,8 +8,6 @@
 #include "content/common/media/peer_connection_tracker.mojom.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/public/test/mock_render_thread.h"
-#include "content/renderer/media/webrtc/fake_rtc_rtp_transceiver.h"
-#include "content/renderer/media/webrtc/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -21,7 +19,9 @@
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
+#include "third_party/blink/public/web/modules/peerconnection/fake_rtc_rtp_transceiver_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_web_rtc_peer_connection_handler_client.h"
 
 using ::testing::_;
 
@@ -91,29 +91,29 @@ class MockPeerConnectionTrackerHost : public mojom::PeerConnectionTrackerHost {
 std::unique_ptr<blink::WebRTCRtpTransceiver> CreateDefaultTransceiver(
     blink::WebRTCRtpTransceiverImplementationType implementation_type) {
   std::unique_ptr<blink::WebRTCRtpTransceiver> transceiver;
-  FakeRTCRtpSender sender(
+  blink::FakeRTCRtpSenderImpl sender(
       "senderTrackId", {"senderStreamId"},
       blink::scheduler::GetSingleThreadTaskRunnerForTesting());
-  FakeRTCRtpReceiver receiver(
+  blink::FakeRTCRtpReceiverImpl receiver(
       "receiverTrackId", {"receiverStreamId"},
       blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   if (implementation_type ==
       blink::WebRTCRtpTransceiverImplementationType::kFullTransceiver) {
-    transceiver = std::make_unique<FakeRTCRtpTransceiver>(
+    transceiver = std::make_unique<blink::FakeRTCRtpTransceiverImpl>(
         base::nullopt, std::move(sender), std::move(receiver),
         false /* stopped */,
         webrtc::RtpTransceiverDirection::kSendOnly /* direction */,
         base::nullopt /* current_direction */);
   } else if (implementation_type ==
              blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly) {
-    transceiver = std::make_unique<RTCRtpSenderOnlyTransceiver>(
-        std::make_unique<FakeRTCRtpSender>(sender));
+    transceiver = std::make_unique<blink::RTCRtpSenderOnlyTransceiver>(
+        std::make_unique<blink::FakeRTCRtpSenderImpl>(sender));
   } else {
     DCHECK_EQ(
         implementation_type,
         blink::WebRTCRtpTransceiverImplementationType::kPlanBReceiverOnly);
-    transceiver = std::make_unique<RTCRtpReceiverOnlyTransceiver>(
-        std::make_unique<FakeRTCRtpReceiver>(receiver));
+    transceiver = std::make_unique<blink::RTCRtpReceiverOnlyTransceiver>(
+        std::make_unique<blink::FakeRTCRtpReceiverImpl>(receiver));
   }
   return transceiver;
 }
@@ -132,7 +132,7 @@ class MockPeerConnectionHandler : public RTCPeerConnectionHandler {
 
  private:
   blink::MockPeerConnectionDependencyFactory dependency_factory_;
-  MockWebRTCPeerConnectionHandlerClient client_;
+  blink::MockWebRTCPeerConnectionHandlerClient client_;
 };
 
 class PeerConnectionTrackerTest : public ::testing::Test {
@@ -194,11 +194,12 @@ TEST_F(PeerConnectionTrackerTest, OnSuspend) {
 TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesPresent) {
   CreateTrackerWithMocks();
   CreateAndRegisterPeerConnectionHandler();
-  FakeRTCRtpTransceiver transceiver(
+  blink::FakeRTCRtpTransceiverImpl transceiver(
       "midValue",
-      FakeRTCRtpSender("senderTrackId", {"streamIdA", "streamIdB"},
-                       blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
-      FakeRTCRtpReceiver(
+      blink::FakeRTCRtpSenderImpl(
+          "senderTrackId", {"streamIdA", "streamIdB"},
+          blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
+      blink::FakeRTCRtpReceiverImpl(
           "receiverTrackId", {"streamIdC"},
           blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
       true /* stopped */,
@@ -235,11 +236,12 @@ TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesPresent) {
 TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesNull) {
   CreateTrackerWithMocks();
   CreateAndRegisterPeerConnectionHandler();
-  FakeRTCRtpTransceiver transceiver(
+  blink::FakeRTCRtpTransceiverImpl transceiver(
       base::nullopt,
-      FakeRTCRtpSender(base::nullopt, {},
-                       blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
-      FakeRTCRtpReceiver(
+      blink::FakeRTCRtpSenderImpl(
+          base::nullopt, {},
+          blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
+      blink::FakeRTCRtpReceiverImpl(
           "receiverTrackId", {},
           blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
       false /* stopped */,

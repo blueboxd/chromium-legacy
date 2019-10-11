@@ -18166,7 +18166,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'example_value': ['my-awesome-domain.com', 'my-auxiliary-domain.com'],
+      'example_value': ['my-awesome-domain.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com', 'file://*', 'custom_scheme:*', '*'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -18174,11 +18174,13 @@
       'id': 590,
       'supported_on': ['chrome.*:78-'],
       'future': True,
-      'caption': '''List of domains for which downloaded content needs to be checked for sensitive data protection rule violations''',
+      'caption': '''URL patterns to check downloaded content against sensitive data protection rules''',
       'tags': [],
-      'desc': '''List of domains for which downloaded content needs to be checked for sensitive data protection rule violations before being saved on local storage.  This policy is used only if <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> is set to enabled.
+      'desc': '''List of url patterns for which downloaded content needs to be checked for sensitive data protection rule violations before being saved on local storage.  This policy is used only if <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> is set to enabled.
 
-      If this policy is not set or set to an empty list of domains, no downloaded content is checked for sensitive data protection rule violations.
+      If this policy is not set or set to an empty list of url patterns, no downloaded content is checked for sensitive data protection rule violations.
+
+      The URL patterns have the same format as the 'URLBlacklist' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
       '''
     },
     {
@@ -18189,7 +18191,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'example_value': ['my-awesome-domain.com', 'my-auxiliary-domain.com'],
+      'example_value': ['my-awesome-domain.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com', 'file://*', 'custom_scheme:*', '*'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -18197,11 +18199,13 @@
       'id': 591,
       'supported_on': ['chrome.*:78-'],
       'future': True,
-      'caption': '''List of domains for which uploaded content need not be checked for sensitive data protection rule violations''',
+      'caption': '''URL patterns to not check uploaded content against sensitive data protection rules''',
       'tags': [],
-      'desc': '''List of domains for which uploaded files, data pasted from the clipboard, or data dragged and dropped does not need to be checked for sensitive data protection rule violations.  This policy is used only if <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> is set to enabled.
+      'desc': '''List of url patterns for which uploaded files, data pasted from the clipboard, or data dragged and dropped does not need to be checked for sensitive data protection rule violations.  This policy is used only if <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> is set to enabled.
 
-      If this policy is not set or set to an empty list of domains, all content is checked for sensitive data protection rule violations.
+      If this policy is not set or set to an empty list of url patterns, all content is checked for sensitive data protection rule violations.
+
+      The URL patterns have the same format as the 'URLBlacklist' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
       '''
     },
     {
@@ -18231,7 +18235,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'example_value': ['my-awesome-domain.com', 'my-auxiliary-domain.com'],
+      'example_value': ['my-awesome-domain.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com', 'file://*', 'custom_scheme:*', '*'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -18239,11 +18243,13 @@
       'id': 600,
       'supported_on': ['chrome.*:78-'],
       'future': True,
-      'caption': '''List of domains for which uploaded content needs to be checked for malware''',
+      'caption': '''URL patterns to check uploaded content for malware''',
       'tags': [],
-      'desc': '''List of domains for which uploaded content needs to be checked for malware.  This policy is used only if <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME">SendFilesForMalwareCheck</ph> is set to a value allowing or enforcing malware checks for uploads.
+      'desc': '''List of url patterns for which uploaded content needs to be checked for malware.  This policy is used only if <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME">SendFilesForMalwareCheck</ph> is set to a value allowing or enforcing malware checks for uploads.
 
-      If this policy is not set or set to an empty list of domains, no uploaded content is checked for malware.
+      If this policy is not set or set to an empty list of url patterns, no uploaded content is checked for malware.
+
+      The URL patterns have the same format as the 'URLBlacklist' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
       '''
     },
     {

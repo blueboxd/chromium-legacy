@@ -437,11 +437,4 @@ TEST_F(DialogTest, UnfocusableInitialFocus) {
   dialog_widget->CloseNow();
 }
 
-TEST_F(DialogTest, DontSnapWithoutButtons) {
-  TestDialog dialog;
-  EXPECT_TRUE(dialog.ShouldSnapFrameWidth());
-  dialog.set_dialog_buttons(ui::DIALOG_BUTTON_NONE);
-  EXPECT_FALSE(dialog.ShouldSnapFrameWidth());
-}
-
 }  // namespace views

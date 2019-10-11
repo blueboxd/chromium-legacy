@@ -40,6 +40,12 @@ class NavigationControllerImpl : public NavigationController,
   void GoForward(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
     GoForward();
   }
+  bool CanGoBack(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
+    return CanGoBack();
+  }
+  bool CanGoForward(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
+    return CanGoForward();
+  }
   void Reload(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
     Reload();
   }
@@ -68,6 +74,8 @@ class NavigationControllerImpl : public NavigationController,
   void Navigate(const GURL& url) override;
   void GoBack() override;
   void GoForward() override;
+  bool CanGoBack() override;
+  bool CanGoForward() override;
   void Reload() override;
   void Stop() override;
   int GetNavigationListSize() override;

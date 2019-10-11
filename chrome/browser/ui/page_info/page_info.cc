@@ -327,9 +327,7 @@ PageInfo::PageInfo(
     const GURL& url,
     security_state::SecurityLevel security_level,
     const security_state::VisibleSecurityState& visible_security_state)
-    : TabSpecificContentSettings::SiteDataObserver(
-          tab_specific_content_settings),
-      content::WebContentsObserver(web_contents),
+    : content::WebContentsObserver(web_contents),
       ui_(ui),
       show_info_bar_(false),
       site_url_(url),
@@ -341,6 +339,7 @@ PageInfo::PageInfo(
       content_settings_(HostContentSettingsMapFactory::GetForProfile(profile)),
       chrome_ssl_host_state_delegate_(
           ChromeSSLHostStateDelegateFactory::GetForProfile(profile)),
+      tab_specific_content_settings_(tab_specific_content_settings),
       did_revoke_user_ssl_decisions_(false),
       profile_(profile),
       security_level_(security_state::NONE),
@@ -471,7 +470,7 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
 
 void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
                                        ContentSetting setting) {
-  tab_specific_content_settings()->ContentSettingChangedViaPageInfo(type);
+  tab_specific_content_settings_->ContentSettingChangedViaPageInfo(type);
 
   // Count how often a permission for a specific content type is changed using
   // the Page Info UI.
@@ -546,10 +545,6 @@ void PageInfo::OnSiteChosenObjectDeleted(const ChooserUIInfo& ui_info,
 
   // Refresh the UI to reflect the changed settings.
   PresentSitePermissions();
-}
-
-void PageInfo::OnSiteDataAccessed() {
-  PresentSiteData();
 }
 
 void PageInfo::OnUIClosing(bool* reload_prompt) {
@@ -945,7 +940,7 @@ void PageInfo::PresentSitePermissions() {
     }
 
     if (ShouldShowPermission(permission_info, site_url_, content_settings_,
-                             web_contents(), tab_specific_content_settings())) {
+                             web_contents(), tab_specific_content_settings_)) {
       permission_info_list.push_back(permission_info);
     }
   }
@@ -968,9 +963,9 @@ void PageInfo::PresentSitePermissions() {
 void PageInfo::PresentSiteData() {
   CookieInfoList cookie_info_list;
   const LocalSharedObjectsContainer& allowed_objects =
-      tab_specific_content_settings()->allowed_local_shared_objects();
+      tab_specific_content_settings_->allowed_local_shared_objects();
   const LocalSharedObjectsContainer& blocked_objects =
-      tab_specific_content_settings()->blocked_local_shared_objects();
+      tab_specific_content_settings_->blocked_local_shared_objects();
 
   // Add first party cookie and site data counts.
   PageInfoUI::CookieInfo cookie_info;

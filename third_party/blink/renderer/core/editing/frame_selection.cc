@@ -1246,8 +1246,8 @@ void FrameSelection::ClearDocumentCachedRange() {
 }
 
 LayoutSelectionStatus FrameSelection::ComputeLayoutSelectionStatus(
-    const NGPaintFragment& text_fragment) const {
-  return layout_selection_->ComputeSelectionStatus(text_fragment);
+    const NGInlineCursor& cursor) const {
+  return layout_selection_->ComputeSelectionStatus(cursor);
 }
 
 bool FrameSelection::IsDirectional() const {

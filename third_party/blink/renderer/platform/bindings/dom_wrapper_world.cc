@@ -73,7 +73,8 @@ DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
                                  int32_t world_id)
     : world_type_(world_type),
       world_id_(world_id),
-      dom_data_store_(std::make_unique<DOMDataStore>(isolate, IsMainWorld())) {
+      dom_data_store_(
+          MakeGarbageCollected<DOMDataStore>(isolate, IsMainWorld())) {
   switch (world_type_) {
     case WorldType::kMain:
       // The main world is managed separately from worldMap(). See worldMap().
@@ -109,16 +110,6 @@ void DOMWrapperWorld::AllWorldsInCurrentThread(
     worlds.push_back(world);
 }
 
-void DOMWrapperWorld::Trace(const ScriptWrappable* script_wrappable,
-                            Visitor* visitor) {
-  // Marking for worlds other than the main world.
-  for (DOMWrapperWorld* world : GetWorldMap().Values()) {
-    DOMDataStore& data_store = world->DomDataStore();
-    if (data_store.ContainsWrapper(script_wrappable))
-      data_store.Trace(script_wrappable, visitor);
-  }
-}
-
 DOMWrapperWorld::~DOMWrapperWorld() {
   DCHECK(!IsMainWorld());
   if (IsMainThread())
@@ -131,7 +122,8 @@ DOMWrapperWorld::~DOMWrapperWorld() {
 }
 
 void DOMWrapperWorld::Dispose() {
-  dom_data_store_.reset();
+  dom_data_store_->Dispose();
+  dom_data_store_.Clear();
   DCHECK(GetWorldMap().Contains(world_id_));
   GetWorldMap().erase(world_id_);
 }
@@ -238,17 +230,6 @@ int DOMWrapperWorld::GenerateWorldIdForType(WorldType world_type) {
   return kInvalidWorldId;
 }
 
-void DOMWrapperWorld::DissociateDOMWindowWrappersInAllWorlds(
-    ScriptWrappable* script_wrappable) {
-  DCHECK(script_wrappable);
-  DCHECK(IsMainThread());
-
-  script_wrappable->UnsetWrapperIfAny();
-
-  for (auto*& world : GetWorldMap().Values())
-    world->DomDataStore().UnsetWrapperIfAny(script_wrappable);
-}
-
 bool DOMWrapperWorld::HasWrapperInAnyWorldInMainThread(
     ScriptWrappable* script_wrappable) {
   DCHECK(IsMainThread());
@@ -258,6 +239,18 @@ bool DOMWrapperWorld::HasWrapperInAnyWorldInMainThread(
   for (const auto& world : worlds) {
     DOMDataStore& dom_data_store = world->DomDataStore();
     if (dom_data_store.ContainsWrapper(script_wrappable))
+      return true;
+  }
+  return false;
+}
+
+// static
+bool DOMWrapperWorld::UnsetNonMainWorldWrapperIfSet(
+    ScriptWrappable* object,
+    const v8::TracedReference<v8::Object>& handle) {
+  for (DOMWrapperWorld* world : GetWorldMap().Values()) {
+    DOMDataStore& data_store = world->DomDataStore();
+    if (data_store.UnsetSpecificWrapperIfSet(object, handle))
       return true;
   }
   return false;

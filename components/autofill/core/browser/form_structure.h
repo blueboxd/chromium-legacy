@@ -109,6 +109,13 @@ class FormStructure {
   // Returns whether sending autofill field metadata to the server is enabled.
   static bool IsAutofillFieldMetadataEnabled();
 
+  // Creates FormStructure that has bare minimum information for uploading
+  // votes, namely form and field signatures. Warning: do not use for Autofill
+  // code, since it is likely missing some fields.
+  static std::unique_ptr<FormStructure> CreateForPasswordManagerUpload(
+      FormSignature form_signature,
+      const std::vector<FieldSignature>& field_signatures);
+
   // Return the form signature as string.
   std::string FormSignatureAsStr() const;
 
@@ -408,6 +415,9 @@ class FormStructure {
     size_t current_section_ptr = 0;
   };
 
+  FormStructure(FormSignature form_signature,
+                const std::vector<FieldSignature>& field_signatures);
+
   // A function to fine tune the credit cards related predictions. For example:
   // lone credit card fields in an otherwise non-credit-card related form is
   // unlikely to be correct, the function will override that prediction.
@@ -520,7 +530,8 @@ class FormStructure {
 
   // The type of the event that was taken as an indication that the form has
   // been successfully submitted.
-  mojom::SubmissionIndicatorEvent submission_event_;
+  mojom::SubmissionIndicatorEvent submission_event_ =
+      mojom::SubmissionIndicatorEvent::NONE;
 
   // The source URL.
   GURL source_url_;
@@ -532,50 +543,50 @@ class FormStructure {
   url::Origin main_frame_origin_;
 
   // The number of fields able to be auto-filled.
-  size_t autofill_count_;
+  size_t autofill_count_ = 0;
 
   // A vector of all the input fields in the form.
   std::vector<std::unique_ptr<AutofillField>> fields_;
 
   // The number of fields that are part of the form signature and that are
   // included in queries to the Autofill server.
-  size_t active_field_count_;
+  size_t active_field_count_ = 0;
 
   // Whether the server expects us to always upload, never upload, or default
   // to the stored upload rates.
-  UploadRequired upload_required_;
+  UploadRequired upload_required_ = USE_UPLOAD_RATES;
 
   // Whether the form includes any field types explicitly specified by the site
   // author, via the |autocompletetype| attribute.
-  bool has_author_specified_types_;
+  bool has_author_specified_types_ = false;
 
   // Whether the form includes any sections explicitly specified by the site
   // author, via the autocomplete attribute.
-  bool has_author_specified_sections_;
+  bool has_author_specified_sections_ = false;
 
   // Whether the form includes a field that explicitly sets it autocomplete
   // type to "upi-vpa".
-  bool has_author_specified_upi_vpa_hint_;
+  bool has_author_specified_upi_vpa_hint_ = false;
 
   // Whether the form was parsed for autocomplete attribute, thus assigning
   // the real values of |has_author_specified_types_| and
   // |has_author_specified_sections_|.
-  bool was_parsed_for_autocomplete_attributes_;
+  bool was_parsed_for_autocomplete_attributes_ = false;
 
   // True if the form contains at least one password field.
-  bool has_password_field_;
+  bool has_password_field_ = false;
 
   // True if the form is a <form>.
-  bool is_form_tag_;
+  bool is_form_tag_ = true;
 
   // True if the form is made of unowned fields (i.e., not within a <form> tag)
   // in what appears to be a checkout flow. This attribute is only calculated
   // and used if features::kAutofillRestrictUnownedFieldsToFormlessCheckout is
   // enabled, to prevent heuristics from running on formless non-checkout.
-  bool is_formless_checkout_;
+  bool is_formless_checkout_ = false;
 
   // True if all form fields are password fields.
-  bool all_fields_are_passwords_;
+  bool all_fields_are_passwords_ = false;
 
   // The unique signature for this form, composed of the target url domain,
   // the form name, and the form field names in a 64-bit hash.
@@ -589,7 +600,7 @@ class FormStructure {
 
   // True iff the form is a password form and the user has seen the password
   // value before accepting the prompt to save. Used for crowdsourcing.
-  bool passwords_were_revealed_;
+  bool passwords_were_revealed_ = false;
 
   // The vote about password attributes (e.g. whether the password has a numeric
   // character).
@@ -599,7 +610,7 @@ class FormStructure {
   // field contains nosified information about a special symbol in a
   // user-created password stored as ASCII code. The default value of 0
   // indicates that no symbol was set.
-  int password_symbol_vote_;
+  int password_symbol_vote_ = 0;
 
   // Noisified password length for crowdsourcing. If |password_attributes_vote_|
   // has no value, |password_length_vote_| should be ignored.
@@ -608,7 +619,7 @@ class FormStructure {
   // Used to record whether developer has used autocomplete markup or
   // UPI-VPA hints, This is a bitmask of DeveloperEngagementMetric and set in
   // DetermineHeuristicTypes().
-  int developer_engagement_metrics_;
+  int developer_engagement_metrics_ = 0;
 
   mojom::SubmissionSource submission_source_ = mojom::SubmissionSource::NONE;
 
@@ -628,7 +639,6 @@ class FormStructure {
 };
 
 LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form);
-
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_STRUCTURE_H_

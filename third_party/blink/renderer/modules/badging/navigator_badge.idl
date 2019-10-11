@@ -4,6 +4,7 @@
 
 // https://wicg.github.io/badging/
 [
+    SecureContext,
     RuntimeEnabled=Badging,
     ImplementedAs=NavigatorBadge
 ] partial interface Navigator {

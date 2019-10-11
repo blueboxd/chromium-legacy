@@ -34,7 +34,8 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
         is_after_expansion_(false) {}
 
   const TextContainerType& Text() const { return text_; }
-  float LetterSpacing() const { return letter_spacing_; }
+  float LetterSpacing() const { return has_spacing_ ? letter_spacing_ : .0f; }
+  float WordSpacing() const { return has_spacing_ ? word_spacing_ : .0f; }
   bool HasSpacing() const { return has_spacing_; }
   bool HasExpansion() const { return expansion_opportunity_count_; }
 

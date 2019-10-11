@@ -38,10 +38,12 @@ class NGTextPainterCursor {
 
   const NGPaintFragment& PaintFragment() const { return paint_fragment_; }
   const NGPhysicalTextFragment* CurrentItem() const { return &text_fragment_; }
+  const NGPaintFragment& RootPaintFragment() const;
 
  private:
   const NGPaintFragment& paint_fragment_;
   const NGPhysicalTextFragment& text_fragment_;
+  mutable const NGPaintFragment* root_paint_fragment_ = nullptr;
 };
 
 // Text fragment painter for LayoutNG. Operates on NGPhysicalTextFragments and

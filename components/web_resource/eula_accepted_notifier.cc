@@ -33,8 +33,8 @@ bool EulaAcceptedNotifier::IsEulaAccepted() {
   if (registrar_.IsEmpty()) {
     registrar_.Init(local_state_);
     registrar_.Add(prefs::kEulaAccepted,
-                   base::Bind(&EulaAcceptedNotifier::OnPrefChanged,
-                              base::Unretained(this)));
+                   base::BindRepeating(&EulaAcceptedNotifier::OnPrefChanged,
+                                       base::Unretained(this)));
   }
   return false;
 }

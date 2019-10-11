@@ -23,6 +23,8 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/dns_config.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/log/net_log.h"
@@ -114,7 +116,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       net::NetLog::ThreadSafeObserver* observer);
 
   // mojom::NetworkService implementation:
-  void SetClient(mojom::NetworkServiceClientPtr client,
+  void SetClient(mojo::PendingRemote<mojom::NetworkServiceClient> client,
                  mojom::NetworkServiceParamsPtr params) override;
 #if defined(OS_CHROMEOS)
   void ReinitializeLogging(mojom::LoggingSettingsPtr settings) override;
@@ -190,7 +192,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   bool quic_disabled() const { return quic_disabled_; }
   bool HasRawHeadersAccess(uint32_t process_id, const GURL& resource_url) const;
 
-  mojom::NetworkServiceClient* client() { return client_.get(); }
+  mojom::NetworkServiceClient* client() {
+    return client_.is_bound() ? client_.get() : nullptr;
+  }
   net::NetworkQualityEstimator* network_quality_estimator() {
     return network_quality_estimator_manager_->GetNetworkQualityEstimator();
   }
@@ -258,7 +262,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
   net::TraceNetLogObserver trace_net_log_observer_;
 
-  mojom::NetworkServiceClientPtr client_;
+  mojo::Remote<mojom::NetworkServiceClient> client_;
 
   KeepaliveStatisticsRecorder keepalive_statistics_recorder_;
 

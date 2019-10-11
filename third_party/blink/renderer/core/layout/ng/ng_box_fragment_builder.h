@@ -124,10 +124,40 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // used by the column balancer to stretch columns.
   void PropagateSpaceShortage(LayoutUnit space_shortage) {
     DCHECK_GT(space_shortage, LayoutUnit());
+
+    // Space shortage should only be reported when we already have a tentative
+    // fragmentainer block-size. It's meaningless to talk about space shortage
+    // in the initial column balancing pass, because then we have no
+    // fragmentainer block-size at all, so who's to tell what's too short or
+    // not?
+    DCHECK(!IsInitialColumnBalancingPass());
+
     if (minimal_space_shortage_ > space_shortage)
       minimal_space_shortage_ = space_shortage;
   }
   LayoutUnit MinimalSpaceShortage() const { return minimal_space_shortage_; }
+
+  void PropagateTallestUnbreakableBlockSize(LayoutUnit unbreakable_block_size) {
+    // We should only calculate the block-size of the tallest piece of
+    // unbreakable content during the initial column balancing pass, when we
+    // haven't set a tentative fragmentainer block-size yet.
+    DCHECK(IsInitialColumnBalancingPass());
+
+    tallest_unbreakable_block_size_ =
+        std::max(tallest_unbreakable_block_size_, unbreakable_block_size);
+  }
+
+  void SetIsInitialColumnBalancingPass() {
+    // Note that we have no dedicated flag for being in the initial column
+    // balancing pass here. We'll just bump tallest_unbreakable_block_size_ to
+    // 0, so that NGLayoutResult knows that we need to store unbreakable
+    // block-size.
+    DCHECK_EQ(tallest_unbreakable_block_size_, LayoutUnit::Min());
+    tallest_unbreakable_block_size_ = LayoutUnit();
+  }
+  bool IsInitialColumnBalancingPass() const {
+    return tallest_unbreakable_block_size_ >= LayoutUnit();
+  }
 
   void SetInitialBreakBefore(EBreakBetween break_before) {
     initial_break_before_ = break_before;
@@ -280,6 +310,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   LayoutUnit consumed_block_size_;
 
   LayoutUnit minimal_space_shortage_ = LayoutUnit::Max();
+  LayoutUnit tallest_unbreakable_block_size_ = LayoutUnit::Min();
 
   // The break-before value on the initial child we cannot honor. There's no
   // valid class A break point before a first child, only *between* siblings.

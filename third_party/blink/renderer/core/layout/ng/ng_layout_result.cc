@@ -48,8 +48,20 @@ NGLayoutResult::NGLayoutResult(
   bitfields_.subtree_modified_margin_strut =
       builder->subtree_modified_margin_strut_;
   intrinsic_block_size_ = builder->intrinsic_block_size_;
-  if (builder->minimal_space_shortage_ != LayoutUnit::Max())
+  if (builder->minimal_space_shortage_ != LayoutUnit::Max()) {
+#if DCHECK_IS_ON()
+    DCHECK(!HasRareData() || !rare_data_->has_tallest_unbreakable_block_size);
+#endif
     EnsureRareData()->minimal_space_shortage = builder->minimal_space_shortage_;
+  }
+  if (builder->tallest_unbreakable_block_size_ >= LayoutUnit()) {
+    auto* rare_data = EnsureRareData();
+    rare_data->tallest_unbreakable_block_size =
+        builder->tallest_unbreakable_block_size_;
+#if DCHECK_IS_ON()
+    rare_data->has_tallest_unbreakable_block_size = true;
+#endif
+  }
   if (builder->custom_layout_data_) {
     EnsureRareData()->custom_layout_data =
         std::move(builder->custom_layout_data_);

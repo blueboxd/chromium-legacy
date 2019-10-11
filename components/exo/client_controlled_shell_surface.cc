@@ -626,7 +626,8 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
 }
 
 void ClientControlledShellSurface::ChangeZoomLevel(ZoomChange change) {
-  // TODO(walczakm): Send wayland event.
+  if (change_zoom_level_callback_)
+    change_zoom_level_callback_.Run(change);
 }
 
 void ClientControlledShellSurface::OnDragStarted(int component) {

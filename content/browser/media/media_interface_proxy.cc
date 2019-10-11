@@ -118,14 +118,14 @@ class SeatbeltExtensionTokenProviderImpl
 MediaInterfaceProxy::MediaInterfaceProxy(
     RenderFrameHost* render_frame_host,
     media::mojom::InterfaceFactoryRequest request,
-    const base::Closure& error_handler)
+    base::OnceClosure error_handler)
     : render_frame_host_(render_frame_host),
       binding_(this, std::move(request)) {
   DVLOG(1) << __func__;
   DCHECK(render_frame_host_);
   DCHECK(!error_handler.is_null());
 
-  binding_.set_connection_error_handler(error_handler);
+  binding_.set_connection_error_handler(std::move(error_handler));
 
   // |interface_factory_ptr_| and |cdm_factory_map_| will be lazily
   // connected in GetMediaInterfaceFactory() and GetCdmFactory().

@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="22">
+  <interface name="zcr_remote_shell_v1" version="23">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -237,7 +237,7 @@
 
   </interface>
 
-  <interface name="zcr_remote_surface_v1" version="20">
+  <interface name="zcr_remote_surface_v1" version="23">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -1016,6 +1016,23 @@
 	description of set_ime_blocked for detail.
       </description>
     </request>
+
+    <!-- Version 23 additions -->
+    <enum name="zoom_change">
+      <description summary="zoom level change">
+	Zoom level change.
+      </description>
+      <entry name="in" value="0" summary="zoom in"/>
+      <entry name="out" value="1" summary="zoom out"/>
+      <entry name="reset" value="2" summary="reset zoom level"/>
+    </enum>
+
+    <event name="change_zoom_level" since="23">
+      <description summary="change zoom level">
+	Request application zoom level change.
+      </description>
+      <arg name="change" type="int" summary="zoom_change"/>
+    </event>
   </interface>
 
   <interface name="zcr_notification_surface_v1" version="16">

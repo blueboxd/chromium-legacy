@@ -1272,10 +1272,10 @@ void ContentSettingMediaStreamBubbleModel::
       base::UserMetricsAction("Media.ShowSystemMediaPermissionBubble"));
   int title_id = 0;
   if (MicrophoneAccessed() && CameraAccessed() &&
-      system_media_permissions::CheckSystemVideoCapturePermission() ==
-          system_media_permissions::SystemPermission::kDenied &&
-      system_media_permissions::CheckSystemAudioCapturePermission() ==
-          system_media_permissions::SystemPermission::kDenied) {
+      (system_media_permissions::CheckSystemVideoCapturePermission() ==
+           system_media_permissions::SystemPermission::kDenied ||
+       system_media_permissions::CheckSystemAudioCapturePermission() ==
+           system_media_permissions::SystemPermission::kDenied)) {
     title_id = IDS_CAMERA_MIC_TURNED_OFF_IN_MACOS;
     AddListItem(ContentSettingBubbleModel::ListItem(
         &vector_icons::kVideocamIcon, l10n_util::GetStringUTF16(IDS_CAMERA),
@@ -1314,6 +1314,8 @@ bool ContentSettingMediaStreamBubbleModel::ShouldShowSystemMediaPermissions() {
            (system_media_permissions::CheckSystemAudioCapturePermission() ==
                 system_media_permissions::SystemPermission::kDenied &&
             MicrophoneAccessed() && !MicrophoneBlocked())) &&
+          !(CameraAccessed() && CameraBlocked()) &&
+          !(MicrophoneAccessed() && MicrophoneBlocked()) &&
           base::FeatureList::IsEnabled(
               ::features::kMacSystemMediaPermissionsInfoUi));
 #else

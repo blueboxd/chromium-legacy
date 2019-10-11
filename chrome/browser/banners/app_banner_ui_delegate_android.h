@@ -140,7 +140,6 @@ class AppBannerUiDelegateAndroid {
 
   AppType type_;
   WebappInstallSource install_source_;
-  bool has_user_interaction_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerUiDelegateAndroid);
 };

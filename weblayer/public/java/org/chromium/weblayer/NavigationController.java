@@ -61,6 +61,22 @@ public final class NavigationController {
         }
     }
 
+    public boolean canGoBack() {
+        try {
+            return mNavigationController.canGoBack();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    public boolean canGoForward() {
+        try {
+            return mNavigationController.canGoForward();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     public void reload() {
         try {
             mNavigationController.reload();

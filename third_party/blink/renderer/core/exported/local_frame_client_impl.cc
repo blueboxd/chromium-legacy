@@ -469,12 +469,6 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
   CoreInitializer::GetInstance().DidCommitLoad(*web_frame_->GetFrame());
 }
 
-void LocalFrameClientImpl::DispatchDidFailProvisionalLoad(
-    const ResourceError& error,
-    const AtomicString& http_method) {
-  web_frame_->DidFailProvisionalLoad(error, http_method);
-}
-
 void LocalFrameClientImpl::DispatchDidFailLoad(
     const ResourceError& error,
     WebHistoryCommitType commit_type) {

@@ -82,6 +82,14 @@ void NavigationControllerImpl::GoForward() {
   browser_controller_->web_contents()->GetController().GoForward();
 }
 
+bool NavigationControllerImpl::CanGoBack() {
+  return browser_controller_->web_contents()->GetController().CanGoBack();
+}
+
+bool NavigationControllerImpl::CanGoForward() {
+  return browser_controller_->web_contents()->GetController().CanGoForward();
+}
+
 void NavigationControllerImpl::Reload() {
   browser_controller_->web_contents()->GetController().Reload(
       content::ReloadType::NORMAL, false);

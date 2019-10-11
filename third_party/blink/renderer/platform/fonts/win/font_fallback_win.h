@@ -35,7 +35,7 @@
 #include <unicode/uscript.h>
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom-blink.h"
+#include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
 #include "third_party/blink/renderer/platform/platform_export.h"

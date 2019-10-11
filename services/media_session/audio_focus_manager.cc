@@ -295,9 +295,9 @@ void AudioFocusManager::BindToInterface(
 }
 
 void AudioFocusManager::BindToDebugInterface(
-    mojom::AudioFocusManagerDebugRequest request) {
+    mojo::PendingReceiver<mojom::AudioFocusManagerDebug> receiver) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  debug_bindings_.AddBinding(this, std::move(request));
+  debug_receivers_.Add(this, std::move(receiver));
 }
 
 void AudioFocusManager::BindToControllerManagerInterface(

@@ -28,8 +28,10 @@
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_theme_font_provider.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -348,12 +350,12 @@ int LayoutThemeDefault::PopupInternalPaddingStart(
 }
 
 int LayoutThemeDefault::PopupInternalPaddingEnd(
-    const ChromeClient* client,
+    LocalFrame* frame,
     const ComputedStyle& style) const {
   if (!style.HasEffectiveAppearance())
     return 0;
   return 1 * style.EffectiveZoom() +
-         ClampedMenuListArrowPaddingSize(client, style);
+         ClampedMenuListArrowPaddingSize(frame, style);
 }
 
 int LayoutThemeDefault::PopupInternalPaddingTop(
@@ -375,15 +377,15 @@ int LayoutThemeDefault::MenuListArrowWidthInDIP() const {
 }
 
 float LayoutThemeDefault::ClampedMenuListArrowPaddingSize(
-    const ChromeClient* client,
+    LocalFrame* frame,
     const ComputedStyle& style) const {
   if (cached_menu_list_arrow_padding_size_ > 0 &&
       style.EffectiveZoom() == cached_menu_list_arrow_zoom_level_)
     return cached_menu_list_arrow_padding_size_;
   cached_menu_list_arrow_zoom_level_ = style.EffectiveZoom();
   int original_size = MenuListArrowWidthInDIP();
-  int scaled_size =
-      client ? client->WindowToViewportScalar(original_size) : original_size;
+  int scaled_size = frame->GetPage()->GetChromeClient().WindowToViewportScalar(
+      frame, original_size);
   // The result should not be samller than the scrollbar thickness in order to
   // secure space for scrollbar in popup.
   float device_scale = 1.0f * scaled_size / original_size;

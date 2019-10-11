@@ -26,6 +26,10 @@ class NavigationController {
 
   virtual void GoForward() = 0;
 
+  virtual bool CanGoBack() = 0;
+
+  virtual bool CanGoForward() = 0;
+
   virtual void Reload() = 0;
 
   virtual void Stop() = 0;

@@ -25,9 +25,10 @@ enum WindowShowState {
 
 // Dialog button identifiers used to specify which buttons to show the user.
 enum DialogButton {
-  DIALOG_BUTTON_NONE   = 0,
-  DIALOG_BUTTON_OK     = 1,
+  DIALOG_BUTTON_NONE = 0,
+  DIALOG_BUTTON_OK = 1,
   DIALOG_BUTTON_CANCEL = 2,
+  DIALOG_BUTTON_LAST = DIALOG_BUTTON_CANCEL,
 };
 
 // Specifies the type of modality applied to a window. Different modal

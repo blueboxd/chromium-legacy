@@ -12331,10 +12331,6 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
       TestWebFrameClient::DidStopLoading();
     }
 
-    void DidFailProvisionalLoad(const WebURLError&, const WebString&) override {
-      EXPECT_TRUE(false) << "The load should not have failed.";
-    }
-
     void DidFinishDocumentLoad() override {
       // TODO(dcheng): Investigate not calling this as well during frame detach.
       did_call_did_finish_document_load_ = true;

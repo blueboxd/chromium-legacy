@@ -43,6 +43,7 @@ cr.define('sync.confirmation', function() {
   }
 
   function initialize() {
+    cr.addWebUIListener('clear-focus', clearFocus);
     document.addEventListener('keydown', onKeyDown);
     $('confirmButton').addEventListener('click', onConfirm);
     $('undoButton').addEventListener('click', onUndo);
@@ -67,11 +68,7 @@ cr.define('sync.confirmation', function() {
     }
   }
 
-  // TODO(tangltom): clearFocus is called directly by the C++ handler.
-  // C++ handlers should not be calling JS functions by name anymore. They
-  // should be firing events with FireWebuiListener and have the page itself
-  // decide whether to listen or not listen to the event.
-  return {clearFocus: clearFocus, initialize: initialize};
+  return {initialize: initialize};
 });
 
 document.addEventListener('DOMContentLoaded', sync.confirmation.initialize);

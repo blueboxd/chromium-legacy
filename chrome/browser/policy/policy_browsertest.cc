@@ -4831,7 +4831,11 @@ class NetworkTimePolicyTest : public PolicyTest {
   DISALLOW_COPY_AND_ASSIGN(NetworkTimePolicyTest);
 };
 
-IN_PROC_BROWSER_TEST_F(NetworkTimePolicyTest, NetworkTimeQueriesDisabled) {
+// TODO(https://crbug.com/1012853): This test is using ScopedFeatureList
+// incorrectly, and fixing it causes conflicts with PolicyTest's use of the
+// deprecated variations API.
+IN_PROC_BROWSER_TEST_F(NetworkTimePolicyTest,
+                       DISABLED_NetworkTimeQueriesDisabled) {
   // Set a policy to disable network time queries.
   PolicyMap policies;
   policies.Set(key::kBrowserNetworkTimeQueriesEnabled, POLICY_LEVEL_MANDATORY,
@@ -5713,13 +5717,21 @@ IN_PROC_BROWSER_TEST_F(SignedExchangePolicyTest, SignedExchangeEnabled) {
   ASSERT_TRUE(HadSignedExchangeInAcceptHeader(url));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, CheckURLsInRealTime) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {safe_browsing::kRealTimeUrlLookupEnabled,
-       safe_browsing::kRealTimeUrlLookupFetchAllowlist},
-      {});
+class PolicyTestWithRealTimeUrlLookupFetchAllowList : public PolicyTest {
+ public:
+  PolicyTestWithRealTimeUrlLookupFetchAllowList() {
+    feature_list_.InitWithFeatures(
+        {safe_browsing::kRealTimeUrlLookupEnabled,
+         safe_browsing::kRealTimeUrlLookupFetchAllowlist},
+        {});
+  }
 
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PolicyTestWithRealTimeUrlLookupFetchAllowList,
+                       CheckURLsInRealTime) {
   EXPECT_FALSE(safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
       browser()->profile()));
 

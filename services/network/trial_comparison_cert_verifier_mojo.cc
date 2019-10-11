@@ -21,11 +21,13 @@ namespace network {
 
 TrialComparisonCertVerifierMojo::TrialComparisonCertVerifierMojo(
     bool initial_allowed,
-    mojom::TrialComparisonCertVerifierConfigClientRequest config_client_request,
-    mojom::TrialComparisonCertVerifierReportClientPtrInfo report_client,
+    mojo::PendingReceiver<mojom::TrialComparisonCertVerifierConfigClient>
+        config_client_receiver,
+    mojo::PendingRemote<mojom::TrialComparisonCertVerifierReportClient>
+        report_client,
     scoped_refptr<net::CertVerifyProc> primary_verify_proc,
     scoped_refptr<net::CertVerifyProc> trial_verify_proc)
-    : binding_(this, std::move(config_client_request)),
+    : receiver_(this, std::move(config_client_receiver)),
       report_client_(std::move(report_client)) {
   trial_comparison_cert_verifier_ =
       std::make_unique<net::TrialComparisonCertVerifier>(

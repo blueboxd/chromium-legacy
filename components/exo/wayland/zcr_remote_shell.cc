@@ -689,6 +689,13 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
         weak_ptr_factory_.GetWeakPtr(), base::Unretained(resource));
   }
 
+  ClientControlledShellSurface::ChangeZoomLevelCallback
+  CreateChangeZoomLevelCallback(wl_resource* resource) {
+    return base::BindRepeating(
+        &WaylandRemoteShell::HandleRemoteSurfaceChangeZoomLevelCallback,
+        weak_ptr_factory_.GetWeakPtr(), base::Unretained(resource));
+  }
+
   ClientControlledShellSurface::StateChangedCallback CreateStateChangedCallback(
       wl_resource* resource) {
     return base::BindRepeating(
@@ -1019,6 +1026,23 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
     wl_client_flush(wl_resource_get_client(resource));
   }
 
+  void HandleRemoteSurfaceChangeZoomLevelCallback(wl_resource* resource,
+                                                  ZoomChange change) {
+    int32_t value = 0;
+    switch (change) {
+      case ZoomChange::IN:
+        value = ZCR_REMOTE_SURFACE_V1_ZOOM_CHANGE_IN;
+        break;
+      case ZoomChange::OUT:
+        value = ZCR_REMOTE_SURFACE_V1_ZOOM_CHANGE_OUT;
+        break;
+      case ZoomChange::RESET:
+        value = ZCR_REMOTE_SURFACE_V1_ZOOM_CHANGE_RESET;
+        break;
+    }
+    zcr_remote_surface_v1_send_change_zoom_level(resource, value);
+  }
+
   void HandleRemoteSurfaceGeometryChangedCallback(wl_resource* resource,
                                                   const gfx::Rect& geometry) {
     LOG_IF(ERROR, pending_bounds_changes_.count(resource) > 0)
@@ -1138,6 +1162,10 @@ void remote_shell_get_remote_surface(wl_client* client,
   shell_surface->set_drag_finished_callback(
       base::BindRepeating(&HandleRemoteSurfaceDragFinishedCallback,
                           base::Unretained(remote_surface_resource)));
+
+  DCHECK(wl_resource_get_version(remote_surface_resource) >= 23);
+  shell_surface->set_change_zoom_level_callback(
+      shell->CreateChangeZoomLevelCallback(remote_surface_resource));
 
   SetImplementation(remote_surface_resource, &remote_surface_implementation,
                     std::move(shell_surface));

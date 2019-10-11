@@ -134,7 +134,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
   WebApp::SyncData sync_data;
   sync_data.name = base::UTF16ToUTF8(web_app_info.title);
   sync_data.theme_color = web_app_info.theme_color;
-  web_app->SetSyncData(sync_data);
+  web_app->SetSyncData(std::move(sync_data));
 
   icon_manager_->WriteData(
       std::move(app_id), std::make_unique<WebApplicationInfo>(web_app_info),

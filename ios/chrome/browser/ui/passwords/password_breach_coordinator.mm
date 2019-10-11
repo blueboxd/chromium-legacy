@@ -63,6 +63,10 @@
 - (void)showPasswordBreachForLeakType:(CredentialLeakType)leakType
                                   URL:(const GURL&)URL {
   self.viewController = [[PasswordBreachViewController alloc] init];
+  self.viewController.modalPresentationStyle = UIModalPresentationFormSheet;
+  if (@available(iOS 13, *)) {
+    self.viewController.modalInPresentation = YES;
+  }
   id<ApplicationCommands> dispatcher =
       static_cast<id<ApplicationCommands>>(self.dispatcher);
   self.mediator =

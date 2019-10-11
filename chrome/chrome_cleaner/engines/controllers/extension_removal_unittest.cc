@@ -73,7 +73,7 @@ class ExtensionTestSandboxHooks : public MojoSandboxSetupHooks {
     mojo::ScopedMessagePipeHandle pipe_handle =
         SetupSandboxMessagePipe(policy, command_line);
 
-    engine_client_->PostBindEngineCommandsPtr(std::move(pipe_handle));
+    engine_client_->PostBindEngineCommandsRemote(std::move(pipe_handle));
 
     return RESULT_CODE_SUCCESS;
   }

@@ -52,12 +52,14 @@ interface EngineCommands {
   // and |results| is not used. Otherwise a success result code is returned and
   // any further errors will be reported by calling Done on the |results|
   // interface.
-  StartScan(array<uint32> enabled_uws,
-            array<TraceLocation> enabled_trace_locations,
-            bool include_details,
-            associated EngineFileRequests file_requests,
-            associated EngineRequests sandboxed_engine_requests,
-            associated EngineScanResults results) => (uint32 result_code);
+  StartScan(
+    array<uint32> enabled_uws,
+    array<TraceLocation> enabled_trace_locations,
+    bool include_details,
+    associated EngineFileRequests file_requests,
+    associated EngineRequests sandboxed_engine_requests,
+    pending_associated_remote<EngineScanResults> results) =>
+      (uint32 result_code);
 
   // Starts cleaning up the user's system. |enabled_uws| contains a list of UwS
   // IDs to cleanup.
@@ -66,12 +68,13 @@ interface EngineCommands {
   // and |results| is not used. Otherwise a success result code is returned and
   // any further errors will be reported by calling Done on the |results|
   // interface.
-  StartCleanup(array<uint32> enabled_uws,
-               associated EngineFileRequests file_requests,
-               associated EngineRequests sandboxed_engine_requests,
-               associated CleanerEngineRequests
-                 sandboxed_cleaner_engine_requests,
-               associated EngineCleanupResults results) => (uint32 result_code);
+  StartCleanup(
+    array<uint32> enabled_uws,
+    associated EngineFileRequests file_requests,
+    associated EngineRequests sandboxed_engine_requests,
+    associated CleanerEngineRequests sandboxed_cleaner_engine_requests,
+    pending_associated_remote<EngineCleanupResults> results) =>
+      (uint32 result_code);
 
   // Runs the engine's finalization routine.
   Finalize() => (uint32 result_code);

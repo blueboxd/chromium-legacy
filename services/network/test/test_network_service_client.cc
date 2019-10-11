@@ -12,11 +12,11 @@
 
 namespace network {
 
-TestNetworkServiceClient::TestNetworkServiceClient() : binding_(nullptr) {}
+TestNetworkServiceClient::TestNetworkServiceClient() : receiver_(nullptr) {}
 
 TestNetworkServiceClient::TestNetworkServiceClient(
-    mojom::NetworkServiceClientRequest request)
-    : binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<mojom::NetworkServiceClient> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 TestNetworkServiceClient::~TestNetworkServiceClient() {}
 

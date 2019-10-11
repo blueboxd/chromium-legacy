@@ -212,15 +212,12 @@ bool ParseSettings(const base::Value& settings,
                    std::string* out_capabilities,
                    gfx::Size* out_page_size,
                    base::Value* out_ticket) {
-  const std::string* destination_id_opt =
-      settings.FindStringKey(kSettingDeviceName);
   const std::string* ticket_opt = settings.FindStringKey(kSettingTicket);
   const std::string* capabilities_opt =
       settings.FindStringKey(kSettingCapabilities);
   out_page_size->SetSize(settings.FindIntKey(kSettingPageWidth).value_or(0),
                          settings.FindIntKey(kSettingPageHeight).value_or(0));
-  if (!destination_id_opt || !ticket_opt || !capabilities_opt ||
-      out_page_size->IsEmpty()) {
+  if (!ticket_opt || !capabilities_opt || out_page_size->IsEmpty()) {
     NOTREACHED();
     return false;
   }
@@ -229,7 +226,7 @@ bool ParseSettings(const base::Value& settings,
   if (!ticket_value)
     return false;
 
-  *out_destination_id = *destination_id_opt;
+  *out_destination_id = *settings.FindStringKey(kSettingDeviceName);
   *out_capabilities = *capabilities_opt;
   *out_ticket = std::move(*ticket_value);
   return true;

@@ -1554,7 +1554,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
                   params_->trial_comparison_cert_verifier_params
                       ->initial_allowed,
                   std::move(params_->trial_comparison_cert_verifier_params
-                                ->config_client_request),
+                                ->config_client_receiver),
                   std::move(params_->trial_comparison_cert_verifier_params
                                 ->report_client),
                   net::CertVerifyProc::CreateSystemVerifyProc(

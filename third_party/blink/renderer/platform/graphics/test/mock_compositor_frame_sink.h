@@ -14,7 +14,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink-forward.h"
 
 namespace blink {
 

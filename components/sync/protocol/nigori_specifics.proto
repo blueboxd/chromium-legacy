@@ -192,4 +192,7 @@ message NigoriSpecifics {
 
   // Boolean corresponding to whether Web Apps data should be encrypted.
   optional bool encrypt_web_apps = 48;
+
+  // Boolean corresponding to whether OS preferences should be encrypted.
+  optional bool encrypt_os_preferences = 49;
 }

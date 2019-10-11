@@ -189,10 +189,14 @@ void NGBoxFragmentBuilder::PropagateBreak(
     const auto* token = child_layout_result.PhysicalFragment().BreakToken();
     did_break_ = token && !token->IsFinished();
   }
-  if (child_layout_result.HasForcedBreak())
+  if (child_layout_result.HasForcedBreak()) {
     SetHasForcedBreak();
-  else
+  } else if (IsInitialColumnBalancingPass()) {
+    PropagateTallestUnbreakableBlockSize(
+        child_layout_result.TallestUnbreakableBlockSize());
+  } else {
     PropagateSpaceShortage(child_layout_result.MinimalSpaceShortage());
+  }
 }
 
 scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(

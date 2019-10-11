@@ -507,6 +507,10 @@ gfx::NativeViewAccessible RenderWidgetHostViewMac::GetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewMac::Focus() {
+  // Ignore redundant calls, as they can cause unending loops of focus-setting.
+  // https://crbug.com/998123
+  if (is_first_responder_)
+    return;
   ns_view_->MakeFirstResponder();
 }
 

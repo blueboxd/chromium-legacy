@@ -584,10 +584,11 @@ class SimpleURLLoaderTestBase {
         network_context_.BindNewPipeAndPassReceiver(),
         std::move(context_params));
 
-    network::mojom::NetworkServiceClientPtr network_service_client_ptr;
+    mojo::PendingRemote<network::mojom::NetworkServiceClient>
+        network_service_client_remote;
     network_service_client_ = std::make_unique<TestNetworkServiceClient>(
-        mojo::MakeRequest(&network_service_client_ptr));
-    network_service_ptr->SetClient(std::move(network_service_client_ptr),
+        network_service_client_remote.InitWithNewPipeAndPassReceiver());
+    network_service_ptr->SetClient(std::move(network_service_client_remote),
                                    network::mojom::NetworkServiceParams::New());
 
     mojo::PendingRemote<network::mojom::NetworkContextClient>

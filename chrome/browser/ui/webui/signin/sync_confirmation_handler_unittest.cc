@@ -225,8 +225,9 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
   handler()->HandleInitializedWithSize(&args);
 
   ExpectAccountImageChanged(*web_ui()->call_data()[0]);
-  EXPECT_EQ("sync.confirmation.clearFocus",
+  EXPECT_EQ("cr.webUIListenerCallback",
             web_ui()->call_data()[1]->function_name());
+  EXPECT_EQ("clear-focus", web_ui()->call_data()[1]->arg1()->GetString());
 }
 
 TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
@@ -236,8 +237,9 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
 
   EXPECT_EQ(2U, web_ui()->call_data().size());
   ExpectAccountImageChanged(*web_ui()->call_data()[0]);
-  EXPECT_EQ("sync.confirmation.clearFocus",
+  EXPECT_EQ("cr.webUIListenerCallback",
             web_ui()->call_data()[1]->function_name());
+  EXPECT_EQ("clear-focus", web_ui()->call_data()[1]->arg1()->GetString());
 
   identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
       account_info_.account_id, account_info_.email, account_info_.gaia, "",

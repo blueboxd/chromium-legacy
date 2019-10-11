@@ -534,7 +534,6 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
   net::EmbeddedTestServer https_server_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(SecurityStateTabHelperTest);
 };
 
@@ -578,7 +577,6 @@ class DidChangeVisibleSecurityStateTest
   net::EmbeddedTestServer https_server_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(DidChangeVisibleSecurityStateTest);
 };
 
@@ -741,8 +739,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SHA1CertificateWarning) {
 class SecurityStateTabHelperTestWithAutoupgradesDisabled
     : public SecurityStateTabHelperTest {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SecurityStateTabHelperTest::SetUpCommandLine(command_line);
+  SecurityStateTabHelperTestWithAutoupgradesDisabled() {
     feature_list.InitAndDisableFeature(
         blink::features::kMixedContentAutoupgrade);
   }
@@ -1341,17 +1338,25 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
                           true /* use_secure_inner_origin */);
 }
 
+class SecurityStateTabHelperTestWithFormsDangerous
+    : public SecurityStateTabHelperTest {
+ public:
+  SecurityStateTabHelperTestWithFormsDangerous() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        security_state::features::kMarkHttpAsFeature,
+        {{security_state::features::kMarkHttpAsFeatureParameterName,
+          security_state::features::
+              kMarkHttpAsParameterWarningAndDangerousOnFormEdits}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests that the security level of a HTTP page is not downgraded when a form
 // field is modified by JavaScript.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithFormsDangerous,
                        SecurityLevelNotDowngradedAfterScriptModification) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      security_state::features::kMarkHttpAsFeature,
-      {{security_state::features::kMarkHttpAsFeatureParameterName,
-        security_state::features::
-            kMarkHttpAsParameterWarningAndDangerousOnFormEdits}});
-
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -1382,15 +1387,23 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   ASSERT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 }
 
+class SecurityStateTabHelperTestWithHttpWarningsDisabled
+    : public SecurityStateTabHelperTest {
+ public:
+  SecurityStateTabHelperTestWithHttpWarningsDisabled() {
+    feature_list_.InitAndDisableFeature(
+        security_state::features::kMarkHttpAsFeature);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests that the security level of a HTTP page is downgraded from
 // WARNING to DANGEROUS after editing a form field in the relevant
 // configurations.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithHttpWarningsDisabled,
                        SecurityLevelDowngradedAfterFileSelection) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      security_state::features::kMarkHttpAsFeature);
-
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -1648,16 +1661,24 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(observer.latest_explanations().summary.empty());
 }
 
+class SecurityStateTabHelperTestWithHttpDangerous
+    : public SecurityStateTabHelperTest {
+ public:
+  SecurityStateTabHelperTestWithHttpDangerous() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        security_state::features::kMarkHttpAsFeature,
+        {{security_state::features::kMarkHttpAsFeatureParameterName,
+          security_state::features::kMarkHttpAsParameterDangerous}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests that the security level of a HTTP page is downgraded to DANGEROUS when
 // MarkHttpAsDangerous is enabled.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
-                       SecurityLevelDangerousWhenMarkHttpAsDangerous) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      security_state::features::kMarkHttpAsFeature,
-      {{security_state::features::kMarkHttpAsFeatureParameterName,
-        security_state::features::kMarkHttpAsParameterDangerous}});
-
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithHttpDangerous,
+                       SecurityLevelDangerous) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
@@ -1871,14 +1892,23 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_NE(std::string::npos, explanation.recommendations[1].find("GCM"));
 }
 
+class BrowserTestNonsecureURLRequestWithLegacyTLSWarnings
+    : public BrowserTestNonsecureURLRequest {
+ public:
+  BrowserTestNonsecureURLRequestWithLegacyTLSWarnings() {
+    feature_list_.InitAndEnableFeature(
+        security_state::features::kLegacyTLSWarnings);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests that a connection with legacy TLS version (TLS 1.0/1.1) is not
 // downgraded to SecurityLevel WARNING if no config proto is set (i.e., so we
 // don't accidentally show the warning on control sites, see crbug.com/1011089).
-IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest, LegacyTLSNoProto) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      security_state::features::kLegacyTLSWarnings);
-
+IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequestWithLegacyTLSWarnings,
+                       LegacyTLSNoProto) {
   auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
   auto* helper = SecurityStateTabHelper::FromWebContents(tab);
 
@@ -1893,12 +1923,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest, LegacyTLSNoProto) {
 
 // Tests that a connection with legacy TLS versions (TLS 1.0/1.1) gets
 // downgraded to SecurityLevel WARNING and |connection_used_legacy_tls| is set.
-IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
+IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequestWithLegacyTLSWarnings,
                        LegacyTLSDowngradesSecurityLevel) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      security_state::features::kLegacyTLSWarnings);
-
   // Set an empty config (otherwise all sites are treated as control).
   auto config =
       std::make_unique<chrome_browser_ssl::LegacyTLSExperimentConfig>();
@@ -1918,12 +1944,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
 
 // Tests that a site in the set of control sites does not get downgraded to
 // SecurityLevel::WARNING even if it was loaded over TLS 1.0/1.1.
-IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
+IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequestWithLegacyTLSWarnings,
                        LegacyTLSControlSiteNotDowngraded) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      security_state::features::kLegacyTLSWarnings);
-
   // Set up new experiment config proto.
   auto config =
       std::make_unique<chrome_browser_ssl::LegacyTLSExperimentConfig>();
@@ -1950,12 +1972,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
 
 // Tests that the SSLVersionMin policy can disable the Legacy TLS security
 // warning.
-IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
+IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequestWithLegacyTLSWarnings,
                        LegacyTLSPolicyDisabledWarning) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      security_state::features::kLegacyTLSWarnings);
-
   // Set up the local state prefs::kSSLVersionMin to "tls1.0".
   std::string original_pref =
       g_browser_process->local_state()->GetString(prefs::kSSLVersionMin);
@@ -1979,12 +1997,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
 
 // Tests that a page has consistent security state despite the config proto
 // getting loaded during the page visit lifetime (see crbug.com/1011089).
-IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
+IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequestWithLegacyTLSWarnings,
                        LegacyTLSDelayedConfigLoad) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      security_state::features::kLegacyTLSWarnings);
-
   // Navigate to an affected page before the config proto has been set.
   auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
   auto* helper = SecurityStateTabHelper::FromWebContents(web_contents);
@@ -2042,8 +2056,10 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest, HttpErrorPage) {
   EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
 
+// TODO(https://crbug.com/1012507): Fix and re-enable this test. Modifying
+// FeatureList mid-browsertest is unsafe.
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
-                       MarkHttpAsWarningAndDangerousOnFormEdits) {
+                       DISABLED_MarkHttpAsWarningAndDangerousOnFormEdits) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       security_state::features::kMarkHttpAsFeature,
@@ -2107,15 +2123,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 }
 
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithFormsDangerous,
                        MarkHttpAsWarningAndDangerousOnFileInputEdits) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      security_state::features::kMarkHttpAsFeature,
-      {{security_state::features::kMarkHttpAsFeatureParameterName,
-        security_state::features::
-            kMarkHttpAsParameterWarningAndDangerousOnFormEdits}});
-
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   SecurityStateTabHelper* helper =
@@ -2150,14 +2159,23 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
 }
 
+class SecurityStateTabHelperTestWithAutoupgradesAndHttpWarningsDisabled
+    : public SecurityStateTabHelperTestWithAutoupgradesDisabled {
+ public:
+  SecurityStateTabHelperTestWithAutoupgradesAndHttpWarningsDisabled() {
+    feature_list_.InitAndDisableFeature(
+        security_state::features::kMarkHttpAsFeature);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests that the histogram for security level is recorded correctly for HTTP
 // pages.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithAutoupgradesDisabled,
-                       HTTPSecurityLevelHistogram) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      security_state::features::kMarkHttpAsFeature);
-
+IN_PROC_BROWSER_TEST_F(
+    SecurityStateTabHelperTestWithAutoupgradesAndHttpWarningsDisabled,
+    HTTPSecurityLevelHistogram) {
   const char kHistogramName[] = "Security.SecurityLevel.NoncryptographicScheme";
 
   {

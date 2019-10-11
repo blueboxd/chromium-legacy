@@ -85,69 +85,6 @@ class URLBlacklistManagerTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 };
 
-// Parameters for the FilterToComponents test.
-struct FilterTestParams {
- public:
-  FilterTestParams(const std::string& filter,
-                   const std::string& scheme,
-                   const std::string& host,
-                   bool match_subdomains,
-                   uint16_t port,
-                   const std::string& path)
-      : filter_(filter),
-        scheme_(scheme),
-        host_(host),
-        match_subdomains_(match_subdomains),
-        port_(port),
-        path_(path) {}
-
-  FilterTestParams(const FilterTestParams& params)
-      : filter_(params.filter_), scheme_(params.scheme_), host_(params.host_),
-        match_subdomains_(params.match_subdomains_), port_(params.port_),
-        path_(params.path_) {}
-
-  const FilterTestParams& operator=(const FilterTestParams& params) {
-    filter_ = params.filter_;
-    scheme_ = params.scheme_;
-    host_ = params.host_;
-    match_subdomains_ = params.match_subdomains_;
-    port_ = params.port_;
-    path_ = params.path_;
-    return *this;
-  }
-
-  const std::string& filter() const { return filter_; }
-  const std::string& scheme() const { return scheme_; }
-  const std::string& host() const { return host_; }
-  bool match_subdomains() const { return match_subdomains_; }
-  uint16_t port() const { return port_; }
-  const std::string& path() const { return path_; }
-
- private:
-  std::string filter_;
-  std::string scheme_;
-  std::string host_;
-  bool match_subdomains_;
-  uint16_t port_;
-  std::string path_;
-};
-
-// Make Valgrind happy. Without this function, a generic one will print the
-// raw bytes in FilterTestParams, which due to some likely padding will access
-// uninitialized memory.
-void PrintTo(const FilterTestParams& params, std::ostream* os) {
-  *os << params.filter();
-}
-
-class URLBlacklistFilterToComponentsTest
-    : public testing::TestWithParam<FilterTestParams> {
- public:
-  URLBlacklistFilterToComponentsTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(URLBlacklistFilterToComponentsTest);
-};
-
 }  // namespace
 
 // Returns whether |url| matches the |pattern|.
@@ -180,28 +117,6 @@ policy::URLBlacklist::URLBlacklistState GetMatch(const std::string& pattern,
   }
 
   return blacklist.GetURLBlacklistState(GURL(url));
-}
-
-TEST_P(URLBlacklistFilterToComponentsTest, FilterToComponents) {
-  std::string scheme;
-  std::string host;
-  bool match_subdomains = true;
-  uint16_t port = 42;
-  std::string path;
-  std::string query;
-
-  URLBlacklist::FilterToComponents(GetParam().filter(),
-                                   &scheme,
-                                   &host,
-                                   &match_subdomains,
-                                   &port,
-                                   &path,
-                                   &query);
-  EXPECT_EQ(GetParam().scheme(), scheme);
-  EXPECT_EQ(GetParam().host(), host);
-  EXPECT_EQ(GetParam().match_subdomains(), match_subdomains);
-  EXPECT_EQ(GetParam().port(), port);
-  EXPECT_EQ(GetParam().path(), path);
 }
 
 TEST_F(URLBlacklistManagerTest, LoadBlacklistOnCreate) {
@@ -237,89 +152,6 @@ TEST_F(URLBlacklistManagerTest, SingleUpdateForTwoPrefChanges) {
 
   EXPECT_EQ(1, blacklist_manager_->update_called());
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    URLBlacklistFilterToComponentsTestInstance,
-    URLBlacklistFilterToComponentsTest,
-    testing::Values(
-        FilterTestParams("google.com",
-                         std::string(),
-                         ".google.com",
-                         true,
-                         0u,
-                         std::string()),
-        FilterTestParams(".google.com",
-                         std::string(),
-                         "google.com",
-                         false,
-                         0u,
-                         std::string()),
-        FilterTestParams("http://google.com",
-                         "http",
-                         ".google.com",
-                         true,
-                         0u,
-                         std::string()),
-        FilterTestParams("google.com/",
-                         std::string(),
-                         ".google.com",
-                         true,
-                         0u,
-                         "/"),
-        FilterTestParams("http://google.com:8080/whatever",
-                         "http",
-                         ".google.com",
-                         true,
-                         8080u,
-                         "/whatever"),
-        FilterTestParams("http://user:pass@google.com:8080/whatever",
-                         "http",
-                         ".google.com",
-                         true,
-                         8080u,
-                         "/whatever"),
-        FilterTestParams("123.123.123.123",
-                         std::string(),
-                         "123.123.123.123",
-                         false,
-                         0u,
-                         std::string()),
-        FilterTestParams("https://123.123.123.123",
-                         "https",
-                         "123.123.123.123",
-                         false,
-                         0u,
-                         std::string()),
-        FilterTestParams("123.123.123.123/",
-                         std::string(),
-                         "123.123.123.123",
-                         false,
-                         0u,
-                         "/"),
-        FilterTestParams("http://123.123.123.123:123/whatever",
-                         "http",
-                         "123.123.123.123",
-                         false,
-                         123u,
-                         "/whatever"),
-        FilterTestParams("*",
-                         std::string(),
-                         std::string(),
-                         true,
-                         0u,
-                         std::string()),
-        FilterTestParams("ftp://*",
-                         "ftp",
-                         std::string(),
-                         true,
-                         0u,
-                         std::string()),
-        FilterTestParams("http://*/whatever",
-                         "http",
-                         std::string(),
-                         true,
-                         0u,
-                         "/whatever")));
 
 TEST_F(URLBlacklistManagerTest, Filtering) {
   URLBlacklist blacklist;

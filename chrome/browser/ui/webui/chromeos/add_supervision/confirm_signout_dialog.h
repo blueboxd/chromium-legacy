@@ -29,7 +29,6 @@ class ConfirmSignoutDialog : public views::DialogDelegateView {
   // views::DialogDelegate:
   bool Accept() override;
   int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   static void Show();
   static bool IsShowing();

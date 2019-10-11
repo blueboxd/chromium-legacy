@@ -43,6 +43,7 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kRequestedVideoCapturePermission:
     case Feature::kRequestedSensorsPermission:
     case Feature::kRequestedBackgroundWorkPermission:
+    case Feature::kWebLocks:
       return true;
   }
 }

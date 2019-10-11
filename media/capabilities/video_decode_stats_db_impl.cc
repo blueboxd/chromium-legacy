@@ -261,6 +261,10 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
     new_entry_efficient_ratio =
         static_cast<double>(new_entry.frames_power_efficient) /
         new_entry.frames_decoded;
+  } else {
+    // Callers shouldn't ask DB to save empty records. See
+    // VideoDecodeStatsRecorder.
+    NOTREACHED() << __func__ << " saving empty stats record";
   }
 
   if (old_frames_decoded + new_entry.frames_decoded > kMaxFramesPerBuffer) {
@@ -271,10 +275,14 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
         static_cast<double>(new_entry.frames_decoded) / kMaxFramesPerBuffer,
         1.0);
 
-    double old_dropped_ratio =
-        static_cast<double>(old_frames_dropped) / old_frames_decoded;
-    double old_efficient_ratio =
-        static_cast<double>(old_frames_power_efficient) / old_frames_decoded;
+    double old_dropped_ratio = 0;
+    double old_efficient_ratio = 0;
+    if (old_frames_decoded) {
+      old_dropped_ratio =
+          static_cast<double>(old_frames_dropped) / old_frames_decoded;
+      old_efficient_ratio =
+          static_cast<double>(old_frames_power_efficient) / old_frames_decoded;
+    }
 
     double agg_dropped_ratio = fill_ratio * new_entry_dropped_ratio +
                                (1 - fill_ratio) * old_dropped_ratio;
@@ -336,6 +344,14 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
 
   // Update the time stamp for the current write.
   stats_proto->set_last_write_date(wall_clock_->Now().ToJsTime());
+
+  // Make sure we never write bogus stats into the DB! While its possible the DB
+  // may experience some corruption (disk), we should have detected that above
+  // and discarded any bad data prior to this upcoming save.
+  // TODO(chcunningham): Make this a DCHECK before we cut M79 for stable. Its
+  // not a show stopper to have corrupt DB, so CHECK is too aggressive. We just
+  // want pre-stable channel users to verify we've eliminated any bugs.
+  CHECK(AreStatsUsable(stats_proto.get()));
 
   // Push the update to the DB.
   using DBType = leveldb_proto::ProtoDatabase<DecodeStatsProto>;

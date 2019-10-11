@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -24,6 +23,14 @@ class WebApp {
  public:
   explicit WebApp(const AppId& app_id);
   ~WebApp();
+
+  // Copyable and move-assignable to support Copy-on-Write with Commit.
+  WebApp(const WebApp& web_app);
+  WebApp& operator=(WebApp&& web_app);
+
+  // Explicitly disallow other copy ctors and assign operators.
+  WebApp(WebApp&&) = delete;
+  WebApp& operator=(const WebApp&) = delete;
 
   const AppId& app_id() const { return app_id_; }
 
@@ -58,6 +65,10 @@ class WebApp {
   struct SyncData {
     SyncData();
     ~SyncData();
+    // Copyable and move-assignable to support Copy-on-Write with Commit.
+    SyncData(const SyncData& sync_data);
+    SyncData& operator=(SyncData&& sync_data);
+
     std::string name;
     base::Optional<SkColor> theme_color;
   };
@@ -81,14 +92,14 @@ class WebApp {
   void SetIsSyncPlaceholder(bool is_sync_placeholder);
   void SetIcons(Icons icons);
 
-  void SetSyncData(const SyncData& sync_data);
+  void SetSyncData(SyncData sync_data);
 
  private:
   friend class WebAppDatabase;
   friend bool operator==(const WebApp&, const WebApp&);
   friend std::ostream& operator<<(std::ostream&, const WebApp&);
 
-  const AppId app_id_;
+  AppId app_id_;
 
   // This set always contains at least one source.
   using Sources = std::bitset<Source::kMaxValue>;
@@ -107,8 +118,6 @@ class WebApp {
   Icons icons_;
 
   SyncData sync_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebApp);
 };
 
 // For logging and debug purposes.

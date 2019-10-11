@@ -2437,6 +2437,10 @@ enum WebFeature {
   kUserTimingL3 = 3053,
   kGetGamepadsFromCrossOriginSubframe = 3054,
   kGetGamepadsFromInsecureContext = 3055,
+  kOriginCleanImageBitmapSerialization = 3056,
+  kNonOriginCleanImageBitmapSerialization = 3057,
+  kOriginCleanImageBitmapTransfer = 3058,
+  kNonOriginCleanImageBitmapTransfer = 3059,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -430,15 +430,14 @@ void TabletModeController::SetEnabledForTest(bool enabled) {
 }
 
 void TabletModeController::OnShellInitialized() {
-  switch (GetUiMode()) {
+  forced_ui_mode_ = GetUiMode();
+  switch (forced_ui_mode_) {
     case UiMode::kTabletMode:
-      tablet_mode_behavior_ = kLockInCurrentMode;
-      AttemptEnterTabletMode();
-      break;
     case UiMode::kClamshell:
       tablet_mode_behavior_ = kLockInCurrentMode;
-      AttemptLeaveTabletMode();
+      UpdateUiTabletState();
       break;
+
     case UiMode::kNone:
       break;
   }
@@ -448,16 +447,10 @@ void TabletModeController::OnDisplayConfigurationChanged() {
   if (!tablet_mode_behavior_.observe_display_events)
     return;
 
-  if (!HasActiveInternalDisplay()) {
-    AttemptLeaveTabletMode();
-  } else if (tablet_mode_switch_is_on_ && !InTabletMode()) {
-    // The internal display has returned, as we are exiting docked mode.
-    // The device is still in tablet mode, so trigger tablet mode, as this
-    // switch leads to the ignoring of accelerometer events. When the switch is
-    // not set the next stable accelerometer readings will trigger maximize
-    // mode.
-    AttemptEnterTabletMode();
-  }
+  // Display config changes might be due to entering or exiting docked mode, in
+  // which case the availability of an active internal display changes.
+  // Therefore we update the physical tablet state of the device.
+  SetIsInTabletPhysicalState(CalculateIsInTabletPhysicalState());
 }
 
 void TabletModeController::OnChromeTerminating() {
@@ -525,10 +518,11 @@ void TabletModeController::LidEventReceived(
     chromeos::PowerManagerClient::LidState state,
     const base::TimeTicks& time) {
   VLOG(1) << "Lid event received: " << static_cast<int>(state);
-  const bool open = state == chromeos::PowerManagerClient::LidState::OPEN;
-  lid_is_closed_ = !open;
-  if (tablet_mode_behavior_.use_sensor && !tablet_mode_switch_is_on_)
-    AttemptLeaveTabletMode();
+  lid_is_closed_ = state != chromeos::PowerManagerClient::LidState::OPEN;
+  if (!tablet_mode_behavior_.use_sensor)
+    return;
+
+  SetIsInTabletPhysicalState(CalculateIsInTabletPhysicalState());
 }
 
 void TabletModeController::TabletModeEventReceived(
@@ -543,26 +537,7 @@ void TabletModeController::TabletModeEventReceived(
   tablet_mode_switch_is_on_ = on;
   tablet_mode_behavior_ = on ? kOnBySensor : kDefault;
 
-  // Do not change if docked.
-  if (!HasActiveInternalDisplay())
-    return;
-
-  // For updated EC, the tablet mode switch activates at 200 degrees, and
-  // deactivates at 160 degrees.
-  // For old EC, the tablet mode switch activates at 300 degrees, so it's
-  // always reliable when |on|. However we wish to exit tablet mode at a
-  // smaller angle, so when |on| is false we ignore if it is possible to
-  // calculate the lid angle.
-  if (on && !InTabletMode()) {
-    AttemptEnterTabletMode();
-  } else if (!on && InTabletMode() && !can_detect_lid_angle_) {
-    AttemptLeaveTabletMode();
-  } else {
-    // Even if we do not change its ui mode, we should update its input device
-    // blocker as tablet mode events may come in because of the lid angle/or
-    // folio keyboard state changes but ui mode might still stay the same.
-    UpdateInternalInputDevicesEventBlocker();
-  }
+  SetIsInTabletPhysicalState(CalculateIsInTabletPhysicalState());
 }
 
 void TabletModeController::SuspendImminent(
@@ -669,8 +644,6 @@ bool TabletModeController::ShouldShowOverviewButton() const {
 ////////////////////////////////////////////////////////////////////////////////
 // TabletModeContrller, private:
 
-// TODO(jcliang): Remove SetTabletModeEnabledInternal
-// (http://crbug.com/620241).
 void TabletModeController::SetTabletModeEnabledInternal(bool should_enable) {
   if (InTabletMode() == should_enable)
     return;
@@ -777,10 +750,10 @@ void TabletModeController::HandleHingeRotation(
   if (lid_angle_ < 0.0f)
     lid_angle_ += 360.0f;
 
-  bool is_angle_stable = is_angle_reliable && lid_angle_ >= kMinStableAngle &&
+  lid_angle_is_stable_ = is_angle_reliable && lid_angle_ >= kMinStableAngle &&
                          lid_angle_ <= kMaxStableAngle;
 
-  if (is_angle_stable) {
+  if (lid_angle_is_stable_) {
     // Reset the timestamp of first unstable lid angle because we get a stable
     // reading.
     first_unstable_lid_angle_time_ = base::TimeTicks();
@@ -788,15 +761,9 @@ void TabletModeController::HandleHingeRotation(
     first_unstable_lid_angle_time_ = tick_clock_->NowTicks();
   }
 
-  // Toggle tablet mode on or off when corresponding thresholds are passed.
-  if (is_angle_stable && lid_angle_ <= kExitTabletModeAngle) {
-    tablet_mode_behavior_ = kDefault;
-    AttemptLeaveTabletMode();
-  } else if (!lid_is_closed_ && lid_angle_ >= kEnterTabletModeAngle &&
-             (is_angle_stable || CanUseUnstableLidAngle())) {
-    tablet_mode_behavior_ = kOnBySensor;
-    AttemptEnterTabletMode();
-  }
+  const bool new_tablet_physical_state = CalculateIsInTabletPhysicalState();
+  tablet_mode_behavior_ = new_tablet_physical_state ? kOnBySensor : kDefault;
+  SetIsInTabletPhysicalState(new_tablet_physical_state);
 
   // Start reporting the lid angle if we aren't already doing so.
   if (!record_lid_angle_timer_.IsRunning()) {
@@ -830,26 +797,6 @@ bool TabletModeController::CanEnterTabletMode() {
   // trigger tablet mode at some point in the future.
   // All TabletMode-enabled devices can enter tablet mode.
   return have_seen_accelerometer_data_ || InTabletMode();
-}
-
-void TabletModeController::AttemptEnterTabletMode() {
-  if (InTabletMode() ||
-      (has_external_pointing_device_ &&
-       tablet_mode_behavior_.observe_external_pointer_device_events)) {
-    UpdateInternalInputDevicesEventBlocker();
-    return;
-  }
-
-  SetTabletModeEnabledInternal(true);
-}
-
-void TabletModeController::AttemptLeaveTabletMode() {
-  if (!InTabletMode()) {
-    UpdateInternalInputDevicesEventBlocker();
-    return;
-  }
-
-  SetTabletModeEnabledInternal(false);
 }
 
 void TabletModeController::RecordTabletModeUsageInterval(
@@ -922,19 +869,9 @@ void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
   if (!tablet_mode_behavior_.observe_external_pointer_device_events)
     return;
 
-  // Enter clamshell mode whenever an external pointing device is attached.
-  if (has_external_pointing_device) {
-    AttemptLeaveTabletMode();
-  } else if (HasActiveInternalDisplay() &&
-             (LidAngleInTabletModeRange() || tablet_mode_switch_is_on_)) {
-    // If there is no external pointing device, only enter tablet mode if docked
-    // mode is inactive and 1) the lid angle can be detected and is in tablet
-    // mode angle range. or 2) if the lid angle can't be detected (e.g., tablet
-    // device or clamshell device) and |tablet_mode_switch_is_on_| is true (it
-    // can only happen for tablet device as |tablet_mode_switch_is_on_| should
-    // never be true for a clamshell device).
-    AttemptEnterTabletMode();
-  }
+  // External pointing devices affect only the UI state (i.e. may result in
+  // switching to tablet or clamshell UI modes).
+  UpdateUiTabletState();
 }
 
 void TabletModeController::OnBluetoothAdapterOrDeviceChanged(
@@ -954,24 +891,18 @@ void TabletModeController::OnBluetoothAdapterOrDeviceChanged(
 }
 
 void TabletModeController::UpdateInternalInputDevicesEventBlocker() {
-  bool should_block_internal_events = false;
-  if (InTabletMode()) {
-    // If we are currently in tablet mode, the internal input events should
-    // be blocked if its specified by the behavior.
-    should_block_internal_events =
-        tablet_mode_behavior_.block_internal_input_device;
-  } else if (HasActiveInternalDisplay()) {
-    // If we are currently in clamshell mode, the intenral input events should
-    // only be blocked if the current lid angle belongs to tablet mode angle,
-    // or |tablet_mode_switch_on_| is true and with input device blocking is
-    // on. Note if we don't have an active internal display, the device is
-    // currently in docked mode, and the user may still want to use the internal
-    // keyboard and mouse in docked mode, we don't block internal events in this
-    // case.
-    should_block_internal_events =
-        (LidAngleInTabletModeRange() || tablet_mode_switch_is_on_) &&
-        tablet_mode_behavior_.block_internal_input_device;
-  }
+  // Internal input devices should be blocked (as long as the current
+  // tablet_mode_behavior_ allows it) if we're in UI tablet mode, or if the
+  // device is in physical tablet state.
+  // Note that |is_in_tablet_physical_state_| takes into account whether the
+  // device is in docked mode (with no active internal display), in which case
+  // internal input devices should NOT be blocked, since the user may still want
+  // to use the internal keyboard and mouse in docked mode. This can happen if
+  // the user turns off the internal display without closing the lid by means of
+  // setting the brightness to 0.
+  const bool should_block_internal_events =
+      tablet_mode_behavior_.block_internal_input_device &&
+      (InTabletMode() || is_in_tablet_physical_state_);
 
   if (should_block_internal_events == AreInternalInputDeviceEventsBlocked())
     return;
@@ -979,11 +910,6 @@ void TabletModeController::UpdateInternalInputDevicesEventBlocker() {
   event_blocker_->UpdateInternalInputDevices(should_block_internal_events);
   for (auto& observer : tablet_mode_observers_)
     observer.OnTabletModeEventsBlockingChanged();
-}
-
-bool TabletModeController::LidAngleInTabletModeRange() {
-  return can_detect_lid_angle_ && !lid_is_closed_ &&
-         lid_angle_ >= kEnterTabletModeAngle;
 }
 
 void TabletModeController::SuspendOcclusionTracker() {
@@ -1087,6 +1013,75 @@ void TabletModeController::OnScreenshotTaken(
                                             top_window->layer());
 
   std::move(on_screenshot_taken).Run();
+}
+
+bool TabletModeController::CalculateIsInTabletPhysicalState() const {
+  if (!HasActiveInternalDisplay())
+    return false;
+
+  // For updated EC, the tablet mode switch activates at 200 degrees, and
+  // deactivates at 160 degrees.
+  // For old EC, the tablet mode switch activates at 300 degrees, so it's
+  // always reliable when |tablet_mode_switch_is_on_|.
+  if (tablet_mode_switch_is_on_)
+    return true;
+
+  if (!can_detect_lid_angle_)
+    return false;
+
+  if (lid_is_closed_)
+    return false;
+
+  // Toggle tablet mode on or off when corresponding thresholds are passed.
+  if (lid_angle_ >= kEnterTabletModeAngle &&
+      (lid_angle_is_stable_ || CanUseUnstableLidAngle())) {
+    return true;
+  }
+
+  if (lid_angle_ <= kExitTabletModeAngle && lid_angle_is_stable_) {
+    // For angles that are in the exit range, we only consider the stable ones,
+    // (i.e. we don't check `CanUseUnstableLidAngle()`) in order to avoid
+    // changing the mode when the lid is almost closed, or recently opened.
+    return false;
+  }
+
+  // The state should remain the same.
+  return is_in_tablet_physical_state_;
+}
+
+bool TabletModeController::ShouldUiBeInTabletMode() const {
+  if (forced_ui_mode_ == UiMode::kTabletMode)
+    return true;
+
+  if (forced_ui_mode_ == UiMode::kClamshell)
+    return false;
+
+  if (has_external_pointing_device_ &&
+      tablet_mode_behavior_.observe_external_pointer_device_events) {
+    return false;
+  }
+
+  return is_in_tablet_physical_state_;
+}
+
+void TabletModeController::SetIsInTabletPhysicalState(bool new_state) {
+  if (new_state == is_in_tablet_physical_state_)
+    return;
+
+  is_in_tablet_physical_state_ = new_state;
+
+  // Even if we do not change the UI mode, we should update the input devices
+  // blocker as tablet mode events may come in because of the lid angle/or
+  // folio keyboard state changes but UI mode might still stay the same.
+  UpdateInternalInputDevicesEventBlocker();
+
+  UpdateUiTabletState();
+}
+
+void TabletModeController::UpdateUiTabletState() {
+  const bool should_be_in_tablet_mode = ShouldUiBeInTabletMode();
+  if (should_be_in_tablet_mode != InTabletMode())
+    SetTabletModeEnabledInternal(should_be_in_tablet_mode);
 }
 
 }  // namespace ash

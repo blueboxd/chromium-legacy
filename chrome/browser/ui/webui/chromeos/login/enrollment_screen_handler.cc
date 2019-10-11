@@ -788,11 +788,10 @@ void EnrollmentScreenHandler::HandleCompleteLogin(const std::string& user) {
           Profile::FromWebUI(web_ui()));
   content::StoragePartition* partition =
       signin_partition_manager->GetCurrentStoragePartition();
-  net::CookieOptions cookie_options;
-  cookie_options.set_include_httponly();
 
   partition->GetCookieManagerForBrowserProcess()->GetCookieList(
-      GaiaUrls::GetInstance()->gaia_url(), cookie_options,
+      GaiaUrls::GetInstance()->gaia_url(),
+      net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&EnrollmentScreenHandler::OnGetCookiesForCompleteLogin,
                      weak_ptr_factory_.GetWeakPtr(), user));
 }

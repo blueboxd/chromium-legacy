@@ -482,7 +482,8 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  if (action == @selector(copy:)) {
+  // Allow copying if the steady location bar is visible.
+  if (!self.locationBarSteadyView.hidden && action == @selector(copy:)) {
     return YES;
   }
 

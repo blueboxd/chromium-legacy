@@ -104,7 +104,7 @@ void AddServiceWorker(const std::string& origin,
       FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(&ServiceWorkerContextWrapper::RegisterServiceWorker,
                      base::Unretained(service_worker_context), js_url, options,
-                     base::Bind(&AddServiceWorkerCallback)));
+                     base::BindOnce(&AddServiceWorkerCallback)));
 
   // Wait for its activation.
   base::RunLoop run_loop;
@@ -131,8 +131,8 @@ std::vector<StorageUsageInfo> GetServiceWorkers(
       base::BindOnce(
           &ServiceWorkerContextWrapper::GetAllOriginsInfo,
           base::Unretained(service_worker_context),
-          base::Bind(&GetServiceWorkersCallback, run_loop.QuitClosure(),
-                     base::Unretained(&service_workers))));
+          base::BindOnce(&GetServiceWorkersCallback, run_loop.QuitClosure(),
+                         base::Unretained(&service_workers))));
   run_loop.Run();
 
   return service_workers;

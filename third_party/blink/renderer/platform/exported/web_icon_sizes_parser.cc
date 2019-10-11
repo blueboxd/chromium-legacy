@@ -65,7 +65,7 @@ WebVector<WebSize> WebIconSizesParser::ParseIconSizes(
       break;
 
     // See if the current size is "any".
-    if (sizes_string.FindIgnoringCase("any", i) == i &&
+    if (sizes_string.Substring(i, 3).StartsWithIgnoringCase("any") &&
         (i + 3 == length || IsWhitespace(sizes_string[i + 3]))) {
       icon_sizes.push_back(WebSize(0, 0));
       i = i + 3;

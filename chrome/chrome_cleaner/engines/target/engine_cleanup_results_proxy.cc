@@ -12,13 +12,14 @@
 namespace chrome_cleaner {
 
 EngineCleanupResultsProxy::EngineCleanupResultsProxy(
-    mojom::EngineCleanupResultsAssociatedPtr cleanup_results_ptr,
+    mojo::PendingAssociatedRemote<mojom::EngineCleanupResults> cleanup_results,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : cleanup_results_ptr_(std::move(cleanup_results_ptr)),
-      task_runner_(task_runner) {}
+    : task_runner_(task_runner) {
+  cleanup_results_.Bind(std::move(cleanup_results));
+}
 
-void EngineCleanupResultsProxy::UnbindCleanupResultsPtr() {
-  cleanup_results_ptr_.reset();
+void EngineCleanupResultsProxy::UnbindCleanupResults() {
+  cleanup_results_.reset();
 }
 
 void EngineCleanupResultsProxy::CleanupDone(uint32_t result) {
@@ -30,11 +31,11 @@ void EngineCleanupResultsProxy::CleanupDone(uint32_t result) {
 EngineCleanupResultsProxy::~EngineCleanupResultsProxy() = default;
 
 void EngineCleanupResultsProxy::OnDone(uint32_t result) {
-  if (!cleanup_results_ptr_.is_bound()) {
+  if (!cleanup_results_.is_bound()) {
     LOG(ERROR) << "Cleanup result reported after the engine was shut down";
     return;
   }
-  cleanup_results_ptr_->Done(result);
+  cleanup_results_->Done(result);
 }
 
 }  // namespace chrome_cleaner

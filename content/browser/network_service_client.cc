@@ -27,7 +27,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/load_info_util.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
@@ -49,8 +48,9 @@ WebContents* GetWebContents(int process_id, int routing_id) {
 }  // namespace
 
 NetworkServiceClient::NetworkServiceClient(
-    network::mojom::NetworkServiceClientRequest network_service_client_request)
-    : binding_(this, std::move(network_service_client_request))
+    mojo::PendingReceiver<network::mojom::NetworkServiceClient>
+        network_service_client_receiver)
+    : receiver_(this, std::move(network_service_client_receiver))
 #if defined(OS_ANDROID)
       ,
       app_status_listener_(base::android::ApplicationStatusListener::New(

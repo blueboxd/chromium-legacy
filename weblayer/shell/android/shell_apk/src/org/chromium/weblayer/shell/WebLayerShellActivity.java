@@ -29,6 +29,7 @@ import org.chromium.weblayer.BrowserController;
 import org.chromium.weblayer.BrowserFragment;
 import org.chromium.weblayer.BrowserFragmentController;
 import org.chromium.weblayer.BrowserObserver;
+import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.UnsupportedVersionException;
 import org.chromium.weblayer.WebLayer;
@@ -212,5 +213,18 @@ public class WebLayerShellActivity extends FragmentActivity {
         // When restoring Fragments, FragmentManager tries to put them in the containers with same
         // ids as before.
         outState.putInt(KEY_MAIN_VIEW_ID, mMainViewId);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mBrowserFragmentController != null) {
+            NavigationController controller = mBrowserFragmentController.getBrowserController()
+                    .getNavigationController();
+            if (controller.canGoBack()) {
+                controller.goBack();
+                return;
+            }
+        }
+        super.onBackPressed();
     }
 }

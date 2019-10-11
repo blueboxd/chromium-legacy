@@ -65,7 +65,7 @@ class MediaInternalsAudioFocusHelper
 
   // Holds a remote to the media session service and it's debug interface.
   mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus_;
-  media_session::mojom::AudioFocusManagerDebugPtr audio_focus_debug_ptr_;
+  mojo::Remote<media_session::mojom::AudioFocusManagerDebug> audio_focus_debug_;
 
   // Must only be accessed on the UI thread.
   base::DictionaryValue audio_focus_data_;

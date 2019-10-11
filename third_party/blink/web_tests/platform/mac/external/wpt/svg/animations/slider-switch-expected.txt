@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Check correct event bases for onclick assert_equals: expected "block" but got "none"
+Harness: the test ran to completion.
+

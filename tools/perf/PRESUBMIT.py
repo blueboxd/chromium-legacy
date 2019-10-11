@@ -29,6 +29,7 @@ def _CommonChecks(input_api, output_api, block_on_failure=False):
       _CheckPerfJsonConfigs(input_api, output_api, block_on_failure))
   results.extend(_CheckWprShaFiles(input_api, output_api))
   results.extend(_CheckShardMaps(input_api, output_api, block_on_failure))
+  results.extend(_CheckVersionsInSmokeTests(input_api, output_api))
   results.extend(input_api.RunTests(input_api.canned_checks.GetPylint(
       input_api, output_api, extra_paths_list=_GetPathsToPrepend(input_api),
       pylintrc='pylintrc')))
@@ -171,6 +172,20 @@ def _CheckJson(input_api, output_api):
       return [output_api.PresubmitError('Error parsing JSON in %s!' % filename)]
   return []
 
+def _CheckVersionsInSmokeTests(input_api, output_api):
+  results = []
+  perf_dir = input_api.PresubmitLocalPath()
+  vpython = 'vpython.bat' if input_api.is_windows else 'vpython'
+  out, return_code = _RunArgs([
+      vpython,
+      input_api.os_path.join(
+          perf_dir, 'benchmarks', 'system_health_load_tests_smoke_test.py')],
+      input_api)
+  if return_code:
+    results.append(output_api.PresubmitError(
+        'Validating story versions failed', long_text=out))
+
+  return results
 
 def CheckChangeOnUpload(input_api, output_api):
   report = []

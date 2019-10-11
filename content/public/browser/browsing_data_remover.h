@@ -199,8 +199,8 @@ class BrowsingDataRemover {
   // |continue_to_completion| to finish the task. Used in tests to artificially
   // prolong execution.
   virtual void SetWouldCompleteCallbackForTesting(
-      const base::Callback<void(const base::Closure& continue_to_completion)>&
-          callback) = 0;
+      const base::RepeatingCallback<
+          void(base::OnceClosure continue_to_completion)>& callback) = 0;
 
   // Parameters of the last call are exposed to be used by tests. Removal and
   // origin type masks equal to -1 mean that no removal has ever been executed.

@@ -207,12 +207,12 @@ network::mojom::NetworkService* GetNetworkService() {
       }
 
       AddNetworkServiceDebugEvent("START");
-      network::mojom::NetworkServiceClientPtr client_ptr;
-      auto client_request = mojo::MakeRequest(&client_ptr);
+      mojo::PendingRemote<network::mojom::NetworkServiceClient> client_remote;
+      auto client_receiver = client_remote.InitWithNewPipeAndPassReceiver();
       // Call SetClient before creating NetworkServiceClient, as the latter
       // might make requests to NetworkService that depend on initialization.
       (*g_network_service_ptr)
-          ->SetClient(std::move(client_ptr), CreateNetworkServiceParams());
+          ->SetClient(std::move(client_remote), CreateNetworkServiceParams());
       g_network_service_is_responding = false;
       g_network_service_ptr->QueryVersion(base::BindRepeating(
           [](base::Time start_time, uint32_t) {
@@ -232,7 +232,7 @@ network::mojom::NetworkService* GetNetworkService() {
           base::Time::Now()));
 
       delete g_client;  // In case we're recreating the network service.
-      g_client = new NetworkServiceClient(std::move(client_request));
+      g_client = new NetworkServiceClient(std::move(client_receiver));
 
       const base::CommandLine* command_line =
           base::CommandLine::ForCurrentProcess();

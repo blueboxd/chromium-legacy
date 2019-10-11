@@ -17,6 +17,7 @@
 #include "google_apis/drive/base_requests.h"
 #include "google_apis/drive/dummy_auth_service.h"
 #include "google_apis/drive/request_sender.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -82,11 +83,12 @@ class FilesListRequestRunnerTest : public testing::Test {
         network_context_.BindNewPipeAndPassReceiver(),
         std::move(context_params));
 
-    network::mojom::NetworkServiceClientPtr network_service_client_ptr;
+    mojo::PendingRemote<network::mojom::NetworkServiceClient>
+        network_service_client_remote;
     network_service_client_ =
         std::make_unique<network::TestNetworkServiceClient>(
-            mojo::MakeRequest(&network_service_client_ptr));
-    network_service_ptr->SetClient(std::move(network_service_client_ptr),
+            network_service_client_remote.InitWithNewPipeAndPassReceiver());
+    network_service_ptr->SetClient(std::move(network_service_client_remote),
                                    network::mojom::NetworkServiceParams::New());
 
     network::mojom::URLLoaderFactoryParamsPtr params =

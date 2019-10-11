@@ -507,8 +507,12 @@ void RenderFrameHostManager::SwapOutOldFrame(
     TRACE_EVENT1("navigation", "BackForwardCache_MaybeStorePage", "can_store",
                  can_store.ToString());
     if (can_store) {
+      std::set<RenderViewHostImpl*> old_render_view_hosts;
+
       // Prepare the main frame.
       back_forward_cache.Freeze(old_render_frame_host.get());
+      old_render_view_hosts.insert(static_cast<RenderViewHostImpl*>(
+          old_render_frame_host->GetRenderViewHost()));
 
       // Prepare the proxies.
       RenderFrameProxyHostMap old_proxy_hosts;
@@ -517,8 +521,10 @@ void RenderFrameHostManager::SwapOutOldFrame(
         // This avoids including the proxy created when starting a
         // new cross-process, cross-BrowsingInstance navigation, as well as any
         // restored proxies which are also in a different BrowsingInstance.
-        if (instance->IsRelatedSiteInstance(it.second->GetSiteInstance()))
+        if (instance->IsRelatedSiteInstance(it.second->GetSiteInstance())) {
+          old_render_view_hosts.insert(it.second->GetRenderViewHost());
           old_proxy_hosts[it.first] = std::move(it.second);
+        }
       }
       // Remove the previously extracted proxies from the
       // RenderFrameHostManager, which also remove their respective
@@ -526,8 +532,13 @@ void RenderFrameHostManager::SwapOutOldFrame(
       for (auto& it : old_proxy_hosts)
         DeleteRenderFrameProxyHost(it.second->GetSiteInstance());
 
+      // Ensures RenderViewHosts are not reused while they are in the cache.
+      for (RenderViewHostImpl* rvh : old_render_view_hosts)
+        rvh->EnterBackForwardCache();
+
       auto entry = std::make_unique<BackForwardCacheImpl::Entry>(
-          std::move(old_render_frame_host), std::move(old_proxy_hosts));
+          std::move(old_render_frame_host), std::move(old_proxy_hosts),
+          std::move(old_render_view_hosts));
       back_forward_cache.StoreEntry(std::move(entry));
       return;
     }
@@ -2494,9 +2505,9 @@ void RenderFrameHostManager::CommitPending(
   // If a document is being restored from the BackForwardCache, restore all
   // cached state now.
   if (pending_bfcache_entry) {
-    RenderFrameProxyHostMap pending_proxy_hosts =
+    RenderFrameProxyHostMap proxy_hosts_to_restore =
         std::move(pending_bfcache_entry->proxy_hosts);
-    for (auto& proxy : pending_proxy_hosts) {
+    for (auto& proxy : proxy_hosts_to_restore) {
       // We only cache pages when swapping BrowsingInstance, so we should never
       // be reusing SiteInstances.
       CHECK(!base::Contains(proxy_hosts_,
@@ -2505,6 +2516,11 @@ void RenderFrameHostManager::CommitPending(
           ->AddObserver(this);
       proxy_hosts_.insert(std::move(proxy));
     }
+
+    std::set<RenderViewHostImpl*> render_view_hosts_to_restore =
+        std::move(pending_bfcache_entry->render_view_hosts);
+    for (RenderViewHostImpl* rvh : render_view_hosts_to_restore)
+      rvh->LeaveBackForwardCache();
   }
 
   // For top-level frames, the RenderWidget{Host} will not be destroyed when the

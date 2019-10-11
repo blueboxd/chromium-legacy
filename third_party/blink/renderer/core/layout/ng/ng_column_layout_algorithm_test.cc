@@ -2798,6 +2798,34 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingEmptyBlock) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingSingleLine) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        line-height: 20px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <br>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x20
+    offset:0,0 size:320x20
+      offset:0,0 size:100x20
+        offset:0,0 size:0x20
+          offset:0,9 size:0x1
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingOverflow) {
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -3160,6 +3188,56 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLinesAvoidBreakInside) {
           offset:0,0 size:0x20
             offset:0,9 size:0x1
           offset:0,20 size:0x20
+            offset:0,9 size:0x1
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLinesAvoidBreakInside2) {
+  // We have 5 lines and 3 columns. If we make the columns tall enough to hold 2
+  // lines each, it should all fit. But then there's a block with 3 lines and
+  // break-inside:avoid...
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        line-height: 20px;
+        orphans: 1;
+        widows: 1;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <br>
+        <div style="break-inside:avoid;">
+           <br><br><br>
+        </div>
+        <br>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x60
+    offset:0,0 size:320x60
+      offset:0,0 size:100x60
+        offset:0,0 size:100x20
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+      offset:110,0 size:100x60
+        offset:0,0 size:100x60
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+          offset:0,20 size:0x20
+            offset:0,9 size:0x1
+          offset:0,40 size:0x20
+            offset:0,9 size:0x1
+      offset:220,0 size:100x20
+        offset:0,0 size:100x20
+          offset:0,0 size:0x20
             offset:0,9 size:0x1
 )DUMP";
   EXPECT_EQ(expectation, dump);

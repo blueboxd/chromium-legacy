@@ -202,8 +202,8 @@ Length HTMLMetaElement::ParseViewportValueAsLength(Document* document,
     return Length();  // auto
 
   if (document && document->GetPage()) {
-    value =
-        document->GetPage()->GetChromeClient().WindowToViewportScalar(value);
+    value = document->GetPage()->GetChromeClient().WindowToViewportScalar(
+        document->GetFrame(), value);
   }
   return Length::Fixed(ClampLengthValue(value));
 }

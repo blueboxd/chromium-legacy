@@ -24,7 +24,7 @@ FieldTypeGroup GroupTypeOfHtmlFieldType(HtmlFieldType field_type,
 // and for associating form fields with form values in the Web Database.
 class AutofillType {
  public:
-  explicit AutofillType(ServerFieldType field_type);
+  explicit AutofillType(ServerFieldType field_type = NO_SERVER_DATA);
   AutofillType(HtmlFieldType field_type, HtmlFieldMode mode);
   AutofillType(const AutofillType& autofill_type) = default;
   AutofillType& operator=(const AutofillType& autofill_type) = default;

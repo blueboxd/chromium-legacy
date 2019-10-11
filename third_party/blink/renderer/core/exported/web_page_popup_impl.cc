@@ -106,6 +106,11 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   }
 
   float WindowToViewportScalar(const float scalar_value) const override {
+    return WindowToViewportScalar(nullptr, scalar_value);
+  }
+
+  float WindowToViewportScalar(LocalFrame*,
+                               const float scalar_value) const override {
     WebFloatRect viewport_rect(0, 0, scalar_value, 0);
     popup_->WidgetClient()->ConvertWindowToViewport(&viewport_rect);
     return viewport_rect.width;

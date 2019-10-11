@@ -423,7 +423,8 @@ int main(int argc, char** argv) {
   // Set up our test environment.
   media::test::VideoPlayerTestEnvironment* test_environment =
       media::test::VideoPlayerTestEnvironment::Create(
-          video_path, video_metadata_path, false, use_vd);
+          video_path, video_metadata_path, false, use_vd,
+          base::FilePath(output_folder));
   if (!test_environment)
     return EXIT_FAILURE;
 

@@ -500,8 +500,8 @@ void BrowsingDataRemoverImpl::RemoveObserver(Observer* observer) {
 }
 
 void BrowsingDataRemoverImpl::SetWouldCompleteCallbackForTesting(
-    const base::Callback<void(const base::Closure& continue_to_completion)>&
-        callback) {
+    const base::RepeatingCallback<
+        void(base::OnceClosure continue_to_completion)>& callback) {
   would_complete_callback_ = callback;
 }
 
@@ -612,7 +612,7 @@ void BrowsingDataRemoverImpl::OnTaskComplete(TracingDataType data_type) {
 
   if (!would_complete_callback_.is_null()) {
     would_complete_callback_.Run(
-        base::Bind(&BrowsingDataRemoverImpl::Notify, GetWeakPtr()));
+        base::BindOnce(&BrowsingDataRemoverImpl::Notify, GetWeakPtr()));
     return;
   }
 

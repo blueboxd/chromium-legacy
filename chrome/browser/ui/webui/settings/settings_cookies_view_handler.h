@@ -46,6 +46,10 @@ class CookiesViewHandler : public SettingsPageUIHandler,
   void TreeModelEndBatch(CookiesTreeModel* model) override;
 
  private:
+  friend class CookiesViewHandlerTest;
+  FRIEND_TEST_ALL_PREFIXES(CookiesViewHandlerTest,
+                           HandleReloadCookiesAndGetDisplayList);
+
   // Creates the CookiesTreeModel if necessary.
   void EnsureCookiesTreeModelCreated();
 

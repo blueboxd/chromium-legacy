@@ -68,6 +68,11 @@ struct NigoriState {
   // key. These keys are not a part of Nigori node and are persisted
   // separately. Must be encrypted with OSCrypt before persisting.
   std::vector<std::string> keystore_keys;
+
+  // Represents |keystore_decryptor_token| from NigoriSpecifics in case it
+  // can't be decrypted right after remote update arrival due to lack of
+  // keystore keys. May be set only for keystore Nigori.
+  base::Optional<sync_pb::EncryptedData> pending_keystore_decryptor_token;
 };
 
 }  // namespace syncer

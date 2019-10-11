@@ -670,8 +670,7 @@ class IDLParser(object):
   def p_AsyncIterable(self, p):
     """AsyncIterable : ASYNC ITERABLE '<' TypeWithExtendedAttributes ',' TypeWithExtendedAttributes '>' ';'"""
     childlist = ListFromConcat(p[4], p[6])
-    p[0] = self.BuildProduction('Iterable', p, 2, childlist)
-    p[0].AddChildren(self.BuildTrue('ASYNC'))
+    p[0] = self.BuildProduction('AsyncIterable', p, 2, childlist)
 
   def p_ReadWriteMaplike(self, p):
     """ReadWriteMaplike : MaplikeRest"""

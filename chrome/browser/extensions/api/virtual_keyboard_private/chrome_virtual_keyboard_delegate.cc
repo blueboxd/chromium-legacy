@@ -389,6 +389,9 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       "floatingkeyboarddefault",
       base::FeatureList::IsEnabled(
           chromeos::features::kVirtualKeyboardFloatingDefault)));
+  features->AppendString(GenerateFeatureFlag(
+      "mozcinputlogic",
+      base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicMozc)));
 
   results->Set("features", std::move(features));
 

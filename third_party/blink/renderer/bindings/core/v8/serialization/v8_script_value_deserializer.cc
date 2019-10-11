@@ -693,7 +693,7 @@ v8::MaybeLocal<v8::WasmModuleObject>
 V8ScriptValueDeserializer::GetWasmModuleFromId(v8::Isolate* isolate,
                                                uint32_t id) {
   if (id < serialized_script_value_->WasmModules().size()) {
-    return v8::WasmModuleObject::FromTransferrableModule(
+    return v8::WasmModuleObject::FromCompiledModule(
         isolate, serialized_script_value_->WasmModules()[id]);
   }
   CHECK(serialized_script_value_->WasmModules().IsEmpty());

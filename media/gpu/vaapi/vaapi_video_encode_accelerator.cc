@@ -133,7 +133,7 @@ class VaapiEncodeJob : public AcceleratedVideoEncoder::EncodeJob {
  private:
   ~VaapiEncodeJob() override = default;
 
-  // Input surface for video frame data.
+  // Input surface for video frame data or scaled data.
   const scoped_refptr<VASurface> input_surface_;
 
   // Surface for the reconstructed picture, used for reference
@@ -383,39 +383,48 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
     return;
   }
 
-  aligned_input_size_ =
-      GetInputFrameSize(config.input_format, config.input_visible_size);
-  if (aligned_input_size_.IsEmpty()) {
-    NOTIFY_ERROR(kPlatformFailureError, "Failed to get frame size");
-    return;
-  }
-
   output_buffer_byte_size_ = encoder_->GetBitstreamBufferSize();
-  const size_t max_ref_frames = encoder_->GetMaxNumOfRefFrames();
-
-  // Use at least kMinNumFramesInFlight if encoder requested less for
-  // pipeline depth.
-  const size_t num_frames_in_flight =
-      std::max(kMinNumFramesInFlight, max_ref_frames);
-  DVLOGF(1) << "Frames in flight: " << num_frames_in_flight;
 
   va_surface_release_cb_ = BindToCurrentLoop(
       base::BindRepeating(&VaapiVideoEncodeAccelerator::RecycleVASurfaceID,
                           base::Unretained(this)));
+  vpp_va_surface_release_cb_ = BindToCurrentLoop(
+      base::BindRepeating(&VaapiVideoEncodeAccelerator::RecycleVPPVASurfaceID,
+                          base::Unretained(this)));
 
-  // In native input mode, an input surface is needed only if scaling
-  // is not required. Since we cannot find the necessity of the scaling here,
-  // we allocate input surfaces always, which is redundant.
-  //
-  // TODO(hiroh): Think about moving this surface creation in the first
-  // Encode().
-  va_surfaces_per_video_frame_ =
-      kNumSurfacesForOutputPicture + kNumSurfacesPerInputVideoFrame;
+  // The surface size for a reconstructed surface is a coded size.
+  gfx::Size reconstructed_surface_size = encoder_->GetCodedSize();
+  if (native_input_mode_) {
+    // In native input mode, we do not need surfaces for input frames.
+    va_surfaces_per_video_frame_ = kNumSurfacesForOutputPicture;
+    // The aligned input size must be the same as a size of a native graphic
+    // buffer.
+    aligned_input_size_ =
+        GetInputFrameSize(config.input_format, config.input_visible_size);
+    if (aligned_input_size_.IsEmpty()) {
+      NOTIFY_ERROR(kPlatformFailureError, "Failed to get frame size");
+      return;
+    }
+  } else {
+    // In non-native mode, we need to create additional surfaces for input
+    // frames.
+    va_surfaces_per_video_frame_ =
+        kNumSurfacesForOutputPicture + kNumSurfacesPerInputVideoFrame;
+    // There is no way to know aligned size that a client provided, so we
+    // request coded size.
+    aligned_input_size_ = encoder_->GetCodedSize();
+  }
+
+  // The number of required buffers is the number of required reference frames
+  // + 1 for the current frame to be encoded.
+  const size_t max_ref_frames = encoder_->GetMaxNumOfRefFrames();
+  num_frames_in_flight_ = std::max(kMinNumFramesInFlight, max_ref_frames);
+  DVLOGF(1) << "Frames in flight: " << num_frames_in_flight_;
 
   if (!vaapi_wrapper_->CreateContextAndSurfaces(
-          kVaSurfaceFormat, aligned_input_size_,
+          kVaSurfaceFormat, reconstructed_surface_size,
           VaapiWrapper::SurfaceUsageHint::kVideoEncoder,
-          (num_frames_in_flight + 1) * va_surfaces_per_video_frame_,
+          (num_frames_in_flight_ + 1) * va_surfaces_per_video_frame_,
           &available_va_surface_ids_)) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed creating VASurfaces");
     return;
@@ -423,7 +432,7 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
 
   child_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Client::RequireBitstreamBuffers, client_,
-                                num_frames_in_flight, aligned_input_size_,
+                                num_frames_in_flight_, aligned_input_size_,
                                 output_buffer_byte_size_));
 
   SetState(kEncoding);
@@ -435,6 +444,15 @@ void VaapiVideoEncodeAccelerator::RecycleVASurfaceID(
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   available_va_surface_ids_.push_back(va_surface_id);
+  EncodePendingInputs();
+}
+
+void VaapiVideoEncodeAccelerator::RecycleVPPVASurfaceID(
+    VASurfaceID va_surface_id) {
+  DVLOGF(4) << "va_surface_id: " << va_surface_id;
+  DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
+
+  available_vpp_va_surface_ids_.push_back(va_surface_id);
   EncodePendingInputs();
 }
 
@@ -566,7 +584,8 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
     return nullptr;
   }
 
-  if (available_va_surface_ids_.size() < va_surfaces_per_video_frame_) {
+  if (available_va_surface_ids_.size() < va_surfaces_per_video_frame_ ||
+      (vpp_vaapi_wrapper_ && available_vpp_va_surface_ids_.empty())) {
     DVLOGF(4) << "Not enough surfaces available";
     return nullptr;
   }
@@ -618,15 +637,27 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
                      "Failed to initialize VppVaapiWrapper");
         return nullptr;
       }
+
+      // Allocate the same number of surfaces as reconstructed surfaces.
+      if (vpp_vaapi_wrapper_->CreateContextAndSurfaces(
+              kVaSurfaceFormat, aligned_input_size_,
+              VaapiWrapper::SurfaceUsageHint::kVideoProcessWrite,
+              num_frames_in_flight_ + 1, &available_vpp_va_surface_ids_)) {
+        NOTIFY_ERROR(kPlatformFailureError,
+                     "Failed creating VASurfaces for scaling");
+        vpp_vaapi_wrapper_ = nullptr;
+        return nullptr;
+      };
     }
-    scoped_refptr<VASurface> scaled_surface =
-        new VASurface(available_va_surface_ids_.back(), aligned_input_size_,
-                      kVaSurfaceFormat, base::BindOnce(va_surface_release_cb_));
-    available_va_surface_ids_.pop_back();
+
+    scoped_refptr<VASurface> scaled_surface = new VASurface(
+        available_vpp_va_surface_ids_.back(), aligned_input_size_,
+        kVaSurfaceFormat, base::BindOnce(vpp_va_surface_release_cb_));
+    available_vpp_va_surface_ids_.pop_back();
     // Scale frame->coded_size() -> |aligned_input_size_| here.
     vpp_vaapi_wrapper_->BlitSurface(input_surface, scaled_surface);
-    // We can destroy the original |input_surface| because the buffer is alive
-    // as long as |frame| is alive.
+    // We can destroy the original |input_surface| because the buffer is already
+    // copied to scaled_surface.
     input_surface = std::move(scaled_surface);
   }
 
@@ -815,6 +846,11 @@ void VaapiVideoEncodeAccelerator::DestroyTask() {
   // Clean up members that are to be accessed on the encoder thread only.
   if (vaapi_wrapper_)
     vaapi_wrapper_->DestroyContextAndSurfaces(available_va_surface_ids_);
+  if (vpp_vaapi_wrapper_) {
+    vpp_vaapi_wrapper_->DestroyContextAndSurfaces(
+        available_vpp_va_surface_ids_);
+  }
+
   available_va_buffer_ids_.clear();
 
   while (!available_bitstream_buffers_.empty())

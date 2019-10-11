@@ -44,7 +44,6 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   int GetDialogButtons() const override;
-  bool ShouldSnapFrameWidth() const override;
   // TODO(crbug.com/1003072): This override is copied from PasswordItemsView to
   // contrain the width. It would be nice to have a unified way of getting the
   // preferred size to not duplicate the code.

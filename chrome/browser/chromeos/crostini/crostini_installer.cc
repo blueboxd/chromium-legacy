@@ -73,7 +73,6 @@ constexpr int kUninitializedDiskSpace = -1;
 constexpr char kCrostiniSetupResultHistogram[] = "Crostini.SetupResult";
 constexpr char kCrostiniTimeFromDeviceSetupToInstall[] =
     "Crostini.TimeFromDeviceSetupToInstall";
-constexpr char kCrostiniDiskImageSizeHistogram[] = "Crostini.DiskImageSize";
 constexpr char kCrostiniTimeToInstallSuccess[] =
     "Crostini.TimeToInstallSuccess";
 constexpr char kCrostiniTimeToInstallCancel[] = "Crostini.TimeToInstallCancel";
@@ -316,10 +315,6 @@ void CrostiniInstaller::OnDiskImageCreated(
   }
   if (status == vm_tools::concierge::DiskImageStatus::DISK_STATUS_EXISTS) {
     require_cleanup_ = false;
-  } else {
-    // Record the max space for the disk image at creation time, measured in GiB
-    base::UmaHistogramCustomCounts(kCrostiniDiskImageSizeHistogram,
-                                   disk_size_available >> 30, 1, 1024, 64);
   }
   UpdateInstallingState(InstallerState::kStartTerminaVm);
 }

@@ -1,10 +1,10 @@
-# (in PST)
+# primary (in CET)
+antrim@chromium.org
+rsorokin@chromium.org
+
+# secondary (in PST)
 achuith@chromium.org
 alemate@chromium.org
 tbarzic@chromium.org
-
-# (in CET)
-antrim@chromium.org
-per-file *active_directory*=rsorokin@chromium.org
 
 # COMPONENT: UI>Shell>OOBE

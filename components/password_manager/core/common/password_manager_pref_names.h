@@ -63,6 +63,10 @@ extern const char kWasSignInPasswordPromoClicked[];
 // Number of times the Chrome Sign in promo popped up.
 extern const char kNumberSignInPasswordPromoShown[];
 
+// True if the counters for the sign in promo were reset for M79.
+// Safe to remove for M82.
+extern const char kSignInPasswordPromoRevive[];
+
 // String that represents the sync password hash.
 extern const char kSyncPasswordHash[];
 

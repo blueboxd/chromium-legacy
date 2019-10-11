@@ -6,6 +6,7 @@ cr.define('sync.confirmation', function() {
   'use strict';
 
   function initialize() {
+    cr.addWebUIListener('clear-focus', clearFocus);
     const syncConfirmationBrowserProxy =
         sync.confirmation.SyncConfirmationBrowserProxyImpl.getInstance();
     // Prefer using |document.body.offsetHeight| instead of
@@ -24,7 +25,6 @@ cr.define('sync.confirmation', function() {
   }
 
   return {
-    clearFocus: clearFocus,
     initialize: initialize,
   };
 });

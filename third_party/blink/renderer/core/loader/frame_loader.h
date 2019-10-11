@@ -292,7 +292,6 @@ class CORE_EXPORT FrameLoader final {
   // is either committed or cancelled.
   struct ClientNavigationState {
     KURL url;
-    AtomicString http_method;
     bool is_history_navigation_in_new_frame = false;
   };
   std::unique_ptr<ClientNavigationState> client_navigation_;

@@ -14,10 +14,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
-#include "content/renderer/media/webrtc/rtc_rtp_receiver.h"
-#include "content/renderer/media/webrtc/rtc_rtp_sender.h"
-#include "content/renderer/media/webrtc/rtc_rtp_transceiver.h"
-#include "content/renderer/media/webrtc/transceiver_state_surfacer.h"
+#include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_receiver_impl.h"
+#include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_sender_impl.h"
+#include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_transceiver_impl.h"
+#include "third_party/blink/public/web/modules/peerconnection/transceiver_state_surfacer.h"
 #include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/webrtc/api/jsep.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
@@ -50,7 +50,7 @@ class CONTENT_EXPORT WebRtcSetDescriptionObserver
 
     webrtc::PeerConnectionInterface::SignalingState signaling_state;
     blink::WebRTCSctpTransportSnapshot sctp_transport_state;
-    std::vector<RtpTransceiverState> transceiver_states;
+    std::vector<blink::RtpTransceiverState> transceiver_states;
 
     DISALLOW_COPY_AND_ASSIGN(States);
   };
@@ -104,7 +104,7 @@ class CONTENT_EXPORT WebRtcSetDescriptionObserverHandlerImpl
   void OnSetDescriptionCompleteOnMainThread(
       webrtc::RTCError error,
       webrtc::PeerConnectionInterface::SignalingState signaling_state,
-      TransceiverStateSurfacer transceiver_state_surfacer);
+      blink::TransceiverStateSurfacer transceiver_state_surfacer);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner_;

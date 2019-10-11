@@ -75,6 +75,10 @@ NigoriState NigoriState::CreateFromProto(const sync_pb::NigoriModel& proto) {
   for (int i = 0; i < proto.keystore_key_size(); ++i) {
     state.keystore_keys.push_back(proto.keystore_key(i));
   }
+  if (proto.has_pending_keystore_decryptor_token()) {
+    state.pending_keystore_decryptor_token =
+        proto.pending_keystore_decryptor_token();
+  }
   return state;
 }
 
@@ -126,6 +130,10 @@ sync_pb::NigoriModel NigoriState::ToProto() const {
   // remove them few milestones after USS migration completed.
   for (const std::string& keystore_key : keystore_keys) {
     proto.add_keystore_key(keystore_key);
+  }
+  if (pending_keystore_decryptor_token.has_value()) {
+    *proto.mutable_pending_keystore_decryptor_token() =
+        *pending_keystore_decryptor_token;
   }
   return proto;
 }

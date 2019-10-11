@@ -990,7 +990,10 @@ class TestWidthSnapDelegate : public TestBubbleDialogDelegateView {
   ~TestWidthSnapDelegate() override { GetWidget()->CloseNow(); }
 
   // TestBubbleDialogDelegateView:
-  bool ShouldSnapFrameWidth() const override { return should_snap_; }
+  int GetDialogButtons() const override {
+    // Only dialogs with buttons get snapped by BubbleFrameView.
+    return should_snap_ ? ui::DIALOG_BUTTON_OK : ui::DIALOG_BUTTON_NONE;
+  }
 
  private:
   bool should_snap_;

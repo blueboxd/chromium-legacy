@@ -18,6 +18,7 @@
 namespace blink {
 
 class NGBlockBreakToken;
+class NGInlineCursor;
 struct LayoutSelectionStatus;
 struct NGContainerInkOverflow;
 enum class NGOutlineType;
@@ -184,8 +185,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   IntRect VisualRect() const override;
   IntRect PartialInvalidationVisualRect() const override;
 
-  PhysicalRect ComputeLocalSelectionRectForText(
-      const LayoutSelectionStatus&) const;
   PhysicalRect ComputeLocalSelectionRectForReplaced() const;
 
   // Set ShouldDoFullPaintInvalidation flag in the corresponding LayoutObject.
@@ -428,6 +427,10 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT
     NGPaintFragment::List<NGPaintFragment::TraverseNextForSameLayoutObject>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     NGPaintFragment::List<NGPaintFragment::TraverseNextSibling>;
+
+PhysicalRect ComputeLocalSelectionRectForText(
+    const NGInlineCursor& cursor,
+    const LayoutSelectionStatus& selection_status);
 
 }  // namespace blink
 

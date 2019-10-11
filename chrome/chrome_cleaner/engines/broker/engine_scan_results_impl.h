@@ -11,7 +11,8 @@
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
 #include "chrome/chrome_cleaner/mojom/engine_sandbox.mojom.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 namespace chrome_cleaner {
 
@@ -27,9 +28,10 @@ class EngineScanResultsImpl : public mojom::EngineScanResults {
       base::RepeatingCallback<void(UwSId pup_id, const PUPData::PUP& pup)>;
   using DoneCallback = base::OnceCallback<void(uint32_t result_code)>;
 
-  void BindToCallbacks(mojom::EngineScanResultsAssociatedPtrInfo* ptr_info,
-                       FoundUwSCallback found_uws_callback,
-                       DoneCallback done_callback);
+  void BindToCallbacks(
+      mojo::PendingAssociatedRemote<mojom::EngineScanResults>* scan_results,
+      FoundUwSCallback found_uws_callback,
+      DoneCallback done_callback);
 
   // mojom::EngineScanResults
 
@@ -37,7 +39,7 @@ class EngineScanResultsImpl : public mojom::EngineScanResults {
   void Done(uint32_t result_code) override;
 
  private:
-  mojo::AssociatedBinding<mojom::EngineScanResults> binding_;
+  mojo::AssociatedReceiver<mojom::EngineScanResults> receiver_{this};
   FoundUwSCallback found_uws_callback_;
   DoneCallback done_callback_;
   InterfaceMetadataObserver* metadata_observer_ = nullptr;

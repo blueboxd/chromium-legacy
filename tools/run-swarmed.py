@@ -46,7 +46,7 @@ def _Spawn(args):
   """
   index, args, isolated_hash = args
   json_file = os.path.join(args.results, '%d.json' % index)
-  trigger_args = [
+  trigger_args = [sys.executable,
       'tools/swarming_client/swarming.py', 'trigger',
       '-S', 'https://chromium-swarm.appspot.com',
       '-I', 'https://isolateserver.appspot.com',
@@ -62,7 +62,9 @@ def _Spawn(args):
       '-d', 'gpu', 'none',
       '-d', 'cpu', args.arch,
     ]
-  elif args.target_os == 'android':
+  elif args.target_os == 'android' or args.target_os == 'win':
+    if args.target_os == 'android':
+      trigger_args += ['-d', 'device_os', args.device_os]
     # The canonical version numbers are stored in the infra repository here:
     # build/scripts/slave/recipe_modules/swarming/api.py
     cpython_version = 'version:2.7.15.chromium14'
@@ -77,7 +79,6 @@ def _Spawn(args):
         '.swarming_module:infra/tools/luci/vpython/${platform}:' +
         vpython_version)
     trigger_args += [
-        '-d', 'device_os', args.device_os,
         '--cipd-package', cpython_pkg,
         '--cipd-package', vpython_native_pkg,
         '--cipd-package', vpython_pkg,
@@ -104,7 +105,7 @@ def _Spawn(args):
 
 def _Collect(spawn_result):
   index, json_file, args = spawn_result
-  p = subprocess.Popen([
+  p = subprocess.Popen([sys.executable,
     'tools/swarming_client/swarming.py', 'collect',
     '-S', 'https://chromium-swarm.appspot.com',
     '--json', json_file,
@@ -177,8 +178,8 @@ def main():
     else:
       args.arch = 'x86-64'
 
-  subprocess.check_call(
-      ['tools/mb/mb.py', 'isolate', '//' + args.out_dir, args.target_name])
+  subprocess.check_call([sys.executable, 'tools/mb/mb.py',
+      'isolate', '//' + args.out_dir, args.target_name])
 
   print('If you get authentication errors, follow:')
   print(
@@ -187,7 +188,7 @@ def main():
 
   print('Uploading to isolate server, this can take a while...')
   archive_output = subprocess.check_output(
-      ['tools/swarming_client/isolate.py', 'archive',
+      [sys.executable,'tools/swarming_client/isolate.py', 'archive',
        '-I', 'https://isolateserver.appspot.com',
        '-i', os.path.join(args.out_dir, args.target_name + '.isolate'),
        '-s', os.path.join(args.out_dir, args.target_name + '.isolated')])

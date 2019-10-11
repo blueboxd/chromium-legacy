@@ -57,11 +57,6 @@ bool ExternalProtocolDialog::ShouldShowCloseButton() const {
   return false;
 }
 
-base::string16 ExternalProtocolDialog::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return delegate_->GetDialogButtonLabel(button);
-}
-
 base::string16 ExternalProtocolDialog::GetWindowTitle() const {
   return delegate_->GetTitleText();
 }
@@ -104,6 +99,13 @@ ExternalProtocolDialog::ExternalProtocolDialog(
     WebContents* web_contents)
     : delegate_(std::move(delegate)), creation_time_(base::TimeTicks::Now()) {
   DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      delegate_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      delegate_->GetDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL));
+
   views::MessageBoxView::InitParams params(delegate_->GetMessageText());
   message_box_view_ = new views::MessageBoxView(params);
 

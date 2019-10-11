@@ -12,8 +12,8 @@ installedapp_test((t, mock) => {
   // list of related_applications from this page's manifest. The mock service
   // returns the empty list, implying that none are installed.
   mock.pushExpectedCall(
-      [{platform: 'play', url: null, id: 'com.test'},
-       {platform: 'itunes', url: 'https://itunes.apple.com/', id: null}],
+      [{platform: 'play', url: null, id: 'com.test', version: null},
+       {platform: 'itunes', url: 'https://itunes.apple.com/', id: null, version: null}],
       []);
   return navigator.getInstalledRelatedApps().then(result => {
     assert_array_relatedapplication_equals(result, []);
@@ -44,13 +44,13 @@ installedapp_test((t, mock) => {
   mock.pushExpectedCall(
       [{platform: 'play', url: null, id: 'com.test'},
        {platform: 'itunes', url: 'https://itunes.apple.com/', id: null}],
-      [{platform: 'play', url: null, id: 'com.test'},
-       {platform: 'itunes', url: 'https://itunes.apple.com/', id: null}]);
+      [{platform: 'play', url: null, id: 'com.test', version: '1.4.2'},
+       {platform: 'itunes', url: 'https://itunes.apple.com/', id: null, version: null}]);
 
   return navigator.getInstalledRelatedApps().then(result => {
     assert_array_relatedapplication_equals(
         result,
-        [{platform: 'play', id: 'com.test'},
+        [{platform: 'play', id: 'com.test', version: '1.4.2'},
          {platform: 'itunes', url: 'https://itunes.apple.com/'}]);
   });
 }, 'getInstalledRelatedApps with multiple related and installed apps');

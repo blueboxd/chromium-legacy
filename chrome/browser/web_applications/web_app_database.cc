@@ -62,13 +62,13 @@ void WebAppDatabase::Write(
     write_batch->WriteData(web_app->app_id(), proto->SerializeAsString());
   }
 
-  for (const AppId& app_id : update_data.apps_to_delete)
-    write_batch->DeleteData(app_id);
-
-  for (const WebApp* web_app : update_data.apps_to_update) {
+  for (const std::unique_ptr<WebApp>& web_app : update_data.apps_to_update) {
     auto proto = CreateWebAppProto(*web_app);
     write_batch->WriteData(web_app->app_id(), proto->SerializeAsString());
   }
+
+  for (const AppId& app_id : update_data.apps_to_delete)
+    write_batch->DeleteData(app_id);
 
   store_->CommitWriteBatch(
       std::move(write_batch),
@@ -216,7 +216,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     parsed_sync_data.name = sync_data.name();
   if (sync_data.has_theme_color())
     parsed_sync_data.theme_color = sync_data.theme_color();
-  web_app->SetSyncData(parsed_sync_data);
+  web_app->SetSyncData(std::move(parsed_sync_data));
 
   WebApp::Icons icons;
   for (int i = 0; i < local_data.icons_size(); ++i) {

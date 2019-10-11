@@ -401,6 +401,7 @@ jumbo_component("platform") {
     "bindings/callback_method_retriever.cc",
     "bindings/callback_method_retriever.h",
     "bindings/custom_wrappable.h",
+    "bindings/dom_data_store.cc",
     "bindings/dom_data_store.h",
     "bindings/dom_wrapper_world.cc",
     "bindings/dom_wrapper_world.h",

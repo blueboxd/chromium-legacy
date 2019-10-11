@@ -60,9 +60,9 @@ BrowsingDataRemoverCompletionInhibitor::BrowsingDataRemoverCompletionInhibitor(
       origin_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(remover);
   remover_->SetWouldCompleteCallbackForTesting(
-      base::Bind(&BrowsingDataRemoverCompletionInhibitor::
-                     OnBrowsingDataRemoverWouldComplete,
-                 base::Unretained(this)));
+      base::BindRepeating(&BrowsingDataRemoverCompletionInhibitor::
+                              OnBrowsingDataRemoverWouldComplete,
+                          base::Unretained(this)));
 }
 
 BrowsingDataRemoverCompletionInhibitor::
@@ -74,7 +74,7 @@ void BrowsingDataRemoverCompletionInhibitor::Reset() {
   if (!remover_)
     return;
   remover_->SetWouldCompleteCallbackForTesting(
-      base::Callback<void(const base::Closure&)>());
+      base::RepeatingCallback<void(base::OnceClosure)>());
   remover_ = nullptr;
 }
 
@@ -90,14 +90,13 @@ void BrowsingDataRemoverCompletionInhibitor::BlockUntilNearCompletion() {
 
 void BrowsingDataRemoverCompletionInhibitor::ContinueToCompletion() {
   DCHECK(!continue_to_completion_callback_.is_null());
-  continue_to_completion_callback_.Run();
-  continue_to_completion_callback_.Reset();
+  std::move(continue_to_completion_callback_).Run();
 }
 
 void BrowsingDataRemoverCompletionInhibitor::OnBrowsingDataRemoverWouldComplete(
-    const base::Closure& continue_to_completion) {
+    base::OnceClosure continue_to_completion) {
   DCHECK(continue_to_completion_callback_.is_null());
-  continue_to_completion_callback_ = continue_to_completion;
+  continue_to_completion_callback_ = std::move(continue_to_completion);
   browsing_data_remover_would_complete_done_ = true;
   QuitRunLoopWhenTasksComplete();
 }

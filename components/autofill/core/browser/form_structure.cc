@@ -564,25 +564,13 @@ FormStructure::FormStructure(const FormData& form)
       name_attribute_(form.name_attribute),
       form_name_(form.name),
       button_titles_(form.button_titles),
-      submission_event_(SubmissionIndicatorEvent::NONE),
       source_url_(form.url),
       target_url_(form.action),
       main_frame_origin_(form.main_frame_origin),
-      autofill_count_(0),
-      active_field_count_(0),
-      upload_required_(USE_UPLOAD_RATES),
-      has_author_specified_types_(false),
-      has_author_specified_sections_(false),
-      has_author_specified_upi_vpa_hint_(false),
-      was_parsed_for_autocomplete_attributes_(false),
-      has_password_field_(false),
       is_form_tag_(form.is_form_tag),
       is_formless_checkout_(form.is_formless_checkout),
       all_fields_are_passwords_(!form.fields.empty()),
       form_parsed_timestamp_(base::TimeTicks::Now()),
-      passwords_were_revealed_(false),
-      password_symbol_vote_(0),
-      developer_engagement_metrics_(0),
       unique_renderer_id_(form.unique_renderer_id) {
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
@@ -609,7 +597,15 @@ FormStructure::FormStructure(const FormData& form)
   ProcessExtractedFields();
 }
 
-FormStructure::~FormStructure() {}
+FormStructure::FormStructure(
+    FormSignature form_signature,
+    const std::vector<FieldSignature>& field_signatures)
+    : form_signature_(form_signature) {
+  for (const auto& signature : field_signatures)
+    fields_.push_back(AutofillField::CreateForPasswordManagerUpload(signature));
+}
+
+FormStructure::~FormStructure() = default;
 
 void FormStructure::DetermineHeuristicTypes(LogManager* log_manager) {
   const auto determine_heuristic_types_start_time = base::TimeTicks::Now();
@@ -907,6 +903,14 @@ bool FormStructure::IsAutofillFieldMetadataEnabled() {
   const std::string group_name =
       base::FieldTrialList::FindFullName("AutofillFieldMetadata");
   return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
+}
+
+std::unique_ptr<FormStructure> FormStructure::CreateForPasswordManagerUpload(
+    FormSignature form_signature,
+    const std::vector<FieldSignature>& field_signatures) {
+  std::unique_ptr<FormStructure> form;
+  form.reset(new FormStructure(form_signature, field_signatures));
+  return form;
 }
 
 std::string FormStructure::FormSignatureAsStr() const {

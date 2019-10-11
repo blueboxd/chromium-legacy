@@ -21,9 +21,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-class ConnectionHelpTabHelperTest : public InProcessBrowserTest {
+class ConnectionHelpTabHelperTestBase : public InProcessBrowserTest {
  public:
-  ConnectionHelpTabHelperTest()
+  ConnectionHelpTabHelperTestBase()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         https_expired_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
@@ -52,8 +52,29 @@ class ConnectionHelpTabHelperTest : public InProcessBrowserTest {
  private:
   net::EmbeddedTestServer https_server_;
   net::EmbeddedTestServer https_expired_server_;
-  base::test::ScopedFeatureList scoped_feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(ConnectionHelpTabHelperTest);
+  DISALLOW_COPY_AND_ASSIGN(ConnectionHelpTabHelperTestBase);
+};
+
+class ConnectionHelpTabHelperTest : public ConnectionHelpTabHelperTestBase {
+ public:
+  ConnectionHelpTabHelperTest() {
+    feature_list_.InitAndEnableFeature(features::kBundledConnectionHelpFeature);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+class ConnectionHelpTabHelperTestWithFeatureDisabled
+    : public ConnectionHelpTabHelperTestBase {
+ public:
+  ConnectionHelpTabHelperTestWithFeatureDisabled() {
+    feature_list_.InitAndDisableFeature(
+        features::kBundledConnectionHelpFeature);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests that the chrome://connection-help redirect is not triggered (and
@@ -63,8 +84,6 @@ IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
                        InterstitialOnNonSupportURL) {
   const char kHistogramName[] = "SSL.CertificateErrorHelpCenterVisited";
   base::HistogramTester histograms;
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kBundledConnectionHelpFeature);
 
   GURL expired_non_support_url = https_expired_server()->GetURL("/title2.html");
   GURL good_support_url = https_server()->GetURL("/title2.html");
@@ -84,8 +103,6 @@ IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
                        SupportURLWithNoInterstitial) {
   const char kHistogramName[] = "SSL.CertificateErrorHelpCenterVisited";
   base::HistogramTester histograms;
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kBundledConnectionHelpFeature);
 
   GURL good_support_url = https_server()->GetURL("/title2.html");
   SetHelpCenterUrl(browser(), good_support_url);
@@ -105,8 +122,6 @@ IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
 IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest, InterstitialOnSupportURL) {
   const char kHistogramName[] = "SSL.CertificateErrorHelpCenterVisited";
   base::HistogramTester histograms;
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kBundledConnectionHelpFeature);
 
   GURL expired_url = https_expired_server()->GetURL("/title2.html");
   SetHelpCenterUrl(browser(), expired_url);
@@ -126,12 +141,10 @@ IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest, InterstitialOnSupportURL) {
 
 // Tests that histogram logs correctly when an interstitial is triggered on the
 // support URL if the feature is disabled.
-IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
-                       InterstitialOnSupportURLWithFeatureDisabled) {
+IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTestWithFeatureDisabled,
+                       InterstitialOnSupportURL) {
   const char kHistogramName[] = "SSL.CertificateErrorHelpCenterVisited";
   base::HistogramTester histograms;
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kBundledConnectionHelpFeature);
 
   GURL expired_url = https_expired_server()->GetURL("/title2.html");
   SetHelpCenterUrl(browser(), expired_url);
@@ -166,9 +179,6 @@ IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest, NetworkErrorOnSupportURL) {
 // expanded.
 IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
                        CorrectlyExpandsCertErrorSection) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kBundledConnectionHelpFeature);
-
   GURL expired_url = https_expired_server()->GetURL("/title2.html#-200");
   GURL::Replacements replacements;
   replacements.ClearRef();
@@ -198,9 +208,6 @@ IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
 // to an expired certificate, the clock section is automatically expanded.
 IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
                        CorrectlyExpandsClockSection) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kBundledConnectionHelpFeature);
-
   GURL expired_url = https_expired_server()->GetURL("/title2.html#-201");
   GURL::Replacements replacements;
   replacements.ClearRef();

@@ -400,6 +400,8 @@ TEST_F(ManagePasswordsBubbleModelTest, EditCredential) {
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, SuppressSignInPromo) {
+  prefs()->SetBoolean(password_manager::prefs::kSignInPasswordPromoRevive,
+                      true);
   prefs()->SetBoolean(password_manager::prefs::kWasSignInPasswordPromoClicked,
                       true);
   PretendPasswordWaiting();

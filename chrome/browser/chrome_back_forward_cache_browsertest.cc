@@ -2,30 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/network_session_configurator/common/network_switches.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 class ChromeBackForwardCacheBrowserTest : public InProcessBrowserTest {
  public:
-  ChromeBackForwardCacheBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kBackForwardCache,
-        {
-            // Set a very long TTL before expiration (longer than the test
-            // timeout) so tests that are expecting deletion don't pass when
-            // they shouldn't.
-            {"TimeToLiveInBackForwardCacheInSeconds", "3600"},
-        });
-  }
-  ~ChromeBackForwardCacheBrowserTest() override {}
+  ChromeBackForwardCacheBrowserTest() = default;
+  ~ChromeBackForwardCacheBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -45,6 +43,26 @@ class ChromeBackForwardCacheBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // For using an HTTPS server.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kIgnoreCertificateErrors);
+    // For using WebBluetooth.
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kBackForwardCache,
+        {
+            // Set a very long TTL before expiration (longer than the test
+            // timeout) so tests that are expecting deletion don't pass when
+            // they shouldn't.
+            {"TimeToLiveInBackForwardCacheInSeconds", "3600"},
+        });
+
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+  }
+
   content::WebContents* web_contents() const {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
@@ -143,4 +161,41 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest, BasicIframe) {
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
   EXPECT_EQ("rfh_a", content::EvalJs(rfh_a, "token"));
   EXPECT_EQ("rfh_b", content::EvalJs(rfh_b, "token"));
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest, WebBluetooth) {
+  // Fake the BluetoothAdapter to say it's present.
+  scoped_refptr<device::MockBluetoothAdapter> adapter =
+      new testing::NiceMock<device::MockBluetoothAdapter>;
+  device::BluetoothAdapterFactory::SetAdapterForTesting(adapter);
+
+  // WebBluetooth requires HTTPS.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  ASSERT_TRUE(https_server.Start());
+  GURL url(https_server.GetURL("a.com", "/back_forward_cache/no-favicon.html"));
+
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), url));
+  content::BackForwardCacheDisabledTester tester;
+
+  EXPECT_EQ("device not found", content::EvalJs(current_frame_host(), R"(
+    new Promise(resolve => {
+      navigator.bluetooth.requestDevice({
+        filters: [
+          { services: [0x1802, 0x1803] },
+        ]
+      })
+      .then(() => resolve("device found"))
+      .catch(() => resolve("device not found"))
+    });
+  )"));
+  EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
+      current_frame_host()->GetProcess()->GetID(),
+      current_frame_host()->GetRoutingID(), "WebBluetooth"));
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  content::RenderFrameDeletedObserver delete_observer(current_frame_host());
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), GetURL("b.com")));
+  delete_observer.WaitUntilDeleted();
 }

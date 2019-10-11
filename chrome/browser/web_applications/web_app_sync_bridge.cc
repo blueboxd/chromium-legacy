@@ -13,6 +13,7 @@
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/optional.h"
+#include "base/util/type_safety/pass_key.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database.h"
@@ -81,7 +82,7 @@ void ApplySyncDataToApp(const sync_pb::WebAppSpecifics& sync_data,
   parsed_sync_data.name = sync_data.name();
   if (sync_data.has_theme_color())
     parsed_sync_data.theme_color = sync_data.theme_color();
-  app->SetSyncData(parsed_sync_data);
+  app->SetSyncData(std::move(parsed_sync_data));
 }
 
 bool AreAppsLocallyInstalledByDefault() {
@@ -133,7 +134,8 @@ WebAppSyncBridge::~WebAppSyncBridge() = default;
 std::unique_ptr<WebAppRegistryUpdate> WebAppSyncBridge::BeginUpdate() {
   DCHECK(!is_in_update_);
   is_in_update_ = true;
-  return std::make_unique<WebAppRegistryUpdate>(registrar_);
+  return std::make_unique<WebAppRegistryUpdate>(
+      registrar_, util::PassKey<WebAppSyncBridge>());
 }
 
 void WebAppSyncBridge::CommitUpdate(
@@ -197,11 +199,11 @@ void WebAppSyncBridge::CheckRegistryUpdateData(
   for (const std::unique_ptr<WebApp>& web_app : update_data.apps_to_create)
     DCHECK(!registrar_->GetAppById(web_app->app_id()));
 
+  for (const std::unique_ptr<WebApp>& web_app : update_data.apps_to_update)
+    DCHECK(registrar_->GetAppById(web_app->app_id()));
+
   for (const AppId& app_id : update_data.apps_to_delete)
     DCHECK(registrar_->GetAppById(app_id));
-
-  for (const WebApp* web_app : update_data.apps_to_update)
-    DCHECK(registrar_->GetAppById(web_app->app_id()));
 #endif
 }
 
@@ -217,8 +219,13 @@ std::vector<std::unique_ptr<WebApp>> WebAppSyncBridge::UpdateRegistrar(
     registrar_->registry().emplace(std::move(app_id), std::move(web_app));
   }
 
-  // update_data->apps_to_update are ignored here because we do in-place
-  // updates.
+  for (std::unique_ptr<WebApp>& web_app : update_data->apps_to_update) {
+    WebApp* original_web_app = registrar_->GetAppByIdMutable(web_app->app_id());
+    DCHECK(original_web_app);
+    // Commit previously created copy into original. Preserve original web_app
+    // object pointer value (the object's identity) to support stored pointers.
+    *original_web_app = std::move(*web_app);
+  }
 
   for (const AppId& app_id : update_data->apps_to_delete) {
     auto it = registrar_->registry().find(app_id);
@@ -252,11 +259,12 @@ void WebAppSyncBridge::UpdateSync(
 
   // An app may obtain or may loose IsSynced flag without being deleted. We
   // should conservatively include or exclude the app from the synced apps
-  // subset.
+  // subset. TODO(loyso): Use previous state of the app (and CoW) to detect
+  // if IsSynced flag changed.
   //
   // TODO(loyso): Send an update to sync server only if any sync-specific
   // data was changed. Implement some dirty flags in WebApp setter methods.
-  for (const WebApp* app : update_data.apps_to_update) {
+  for (const std::unique_ptr<WebApp>& app : update_data.apps_to_update) {
     if (app->IsSynced()) {
       change_processor()->Put(app->app_id(), CreateSyncEntityData(*app),
                               metadata_change_list);
@@ -266,7 +274,8 @@ void WebAppSyncBridge::UpdateSync(
   }
 
   // We should unconditionally delete from sync (in case IsSynced flag was
-  // removed during the update).
+  // removed during the update). TODO(loyso): Use previous state of the app (and
+  // CoW) to detect if IsSynced flag changed.
   for (const AppId& app_id : update_data.apps_to_delete) {
     const WebApp* app = registrar_->GetAppById(app_id);
     DCHECK(app);
@@ -328,7 +337,7 @@ void WebAppSyncBridge::ApplySyncDataChange(
   // app_id is storage key.
   const AppId& app_id = change.storage_key();
 
-  WebApp* existing_web_app = registrar_->GetAppByIdMutable(app_id);
+  const WebApp* existing_web_app = registrar_->GetAppByIdMutable(app_id);
 
   // Handle deletion first.
   if (change.type() == syncer::EntityChange::ACTION_DELETE) {
@@ -336,10 +345,12 @@ void WebAppSyncBridge::ApplySyncDataChange(
       DLOG(ERROR) << "ApplySyncDataChange error: no app to delete";
       return;
     }
-    existing_web_app->RemoveSource(Source::kSync);
+    // Do copy on write:
+    auto app_copy = std::make_unique<WebApp>(*existing_web_app);
+    app_copy->RemoveSource(Source::kSync);
 
-    if (existing_web_app->HasAnySources())
-      update_local_data->apps_to_update.insert(existing_web_app);
+    if (app_copy->HasAnySources())
+      update_local_data->apps_to_update.push_back(std::move(app_copy));
     else
       update_local_data->apps_to_delete.push_back(app_id);
 
@@ -352,10 +363,12 @@ void WebAppSyncBridge::ApplySyncDataChange(
 
   if (existing_web_app) {
     // Any entities that appear in both sets must be merged.
-    ApplySyncDataToApp(specifics, existing_web_app);
+    // Do copy on write:
+    auto app_copy = std::make_unique<WebApp>(*existing_web_app);
+    ApplySyncDataToApp(specifics, app_copy.get());
     // Preserve web_app->is_locally_installed user's choice here.
 
-    update_local_data->apps_to_update.insert(existing_web_app);
+    update_local_data->apps_to_update.push_back(std::move(app_copy));
   } else {
     // Any remote entities that don’t exist locally must be written to local
     // storage.

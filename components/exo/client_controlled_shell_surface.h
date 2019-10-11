@@ -122,6 +122,12 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
     drag_finished_callback_ = callback;
   }
 
+  // Set callback to run when user requests to change a zoom level.
+  using ChangeZoomLevelCallback = base::RepeatingCallback<void(ZoomChange)>;
+  void set_change_zoom_level_callback(const ChangeZoomLevelCallback& callback) {
+    change_zoom_level_callback_ = callback;
+  }
+
   // Returns true if this shell surface is currently being dragged.
   bool IsDragging();
 
@@ -298,6 +304,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   BoundsChangedCallback bounds_changed_callback_;
   DragStartedCallback drag_started_callback_;
   DragFinishedCallback drag_finished_callback_;
+  ChangeZoomLevelCallback change_zoom_level_callback_;
 
   // TODO(reveman): Use configure callbacks for orientation. crbug.com/765954
   Orientation pending_orientation_ = Orientation::LANDSCAPE;

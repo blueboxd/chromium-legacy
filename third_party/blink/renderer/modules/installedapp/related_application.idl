@@ -9,4 +9,5 @@ dictionary RelatedApplication {
     required USVString platform;
     USVString url;
     DOMString id;
+    DOMString version;
 };

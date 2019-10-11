@@ -185,6 +185,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
   self.styler.separatorInset =
       UIEdgeInsetsMake(0, kSeparatorEdgeInset, 0, kSeparatorEdgeInset);
+  self.styler.separatorColor = [UIColor colorNamed:kSeparatorColor];
 }
 
 #pragma mark UICollectionViewDataSource

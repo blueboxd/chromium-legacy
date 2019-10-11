@@ -34,9 +34,10 @@ class FakeReportClient
     : public network::mojom::TrialComparisonCertVerifierReportClient {
  public:
   explicit FakeReportClient(
-      network::mojom::TrialComparisonCertVerifierReportClientRequest
-          report_client_request)
-      : binding_(this, std::move(report_client_request)) {}
+      mojo::PendingReceiver<
+          network::mojom::TrialComparisonCertVerifierReportClient>
+          report_client_receiver)
+      : receiver_(this, std::move(report_client_receiver)) {}
 
   // TrialComparisonCertVerifierReportClient implementation:
   void SendTrialReport(
@@ -70,8 +71,8 @@ class FakeReportClient
   void WaitForReport() { run_loop_.Run(); }
 
  private:
-  mojo::Binding<network::mojom::TrialComparisonCertVerifierReportClient>
-      binding_;
+  mojo::Receiver<network::mojom::TrialComparisonCertVerifierReportClient>
+      receiver_;
 
   std::vector<ReceivedReport> reports_;
   base::RunLoop run_loop_;
@@ -114,11 +115,12 @@ TEST(TrialComparisonCertVerifierMojoTest, SendReportDebugInfo) {
   net::CertVerifyProcBuiltinResultDebugData::Create(&trial_result, time,
                                                     der_time);
 
-  network::mojom::TrialComparisonCertVerifierReportClientPtrInfo
-      report_client_ptr;
-  FakeReportClient report_client(mojo::MakeRequest(&report_client_ptr));
+  mojo::PendingRemote<network::mojom::TrialComparisonCertVerifierReportClient>
+      report_client_remote;
+  FakeReportClient report_client(
+      report_client_remote.InitWithNewPipeAndPassReceiver());
   network::TrialComparisonCertVerifierMojo tccvm(
-      true, {}, std::move(report_client_ptr), nullptr, nullptr);
+      true, {}, std::move(report_client_remote), nullptr, nullptr);
 
   tccvm.OnSendTrialReport("example.com", unverified_cert, false, false, false,
                           false, primary_result, trial_result);

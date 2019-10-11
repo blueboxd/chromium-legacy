@@ -23,6 +23,8 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -214,6 +216,10 @@ ScriptPromise LockManager::request(ScriptState* script_state,
 
   ExecutionContext* context = ExecutionContext::From(script_state);
   DCHECK(context->IsContextThread());
+
+  context->GetScheduler()->RegisterStickyFeature(
+      blink::SchedulingPolicy::Feature::kWebLocks,
+      {blink::SchedulingPolicy::RecordMetricsForBackForwardCache()});
 
   // 5. If origin is an opaque origin, then reject promise with a
   // "SecurityError" DOMException.

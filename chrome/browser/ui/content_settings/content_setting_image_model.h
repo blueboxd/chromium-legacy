@@ -92,8 +92,14 @@ class ContentSettingImageModel {
   // we don't wish to show anything.
   int explanatory_string_id() const { return explanatory_string_id_; }
   const base::string16& get_tooltip() const { return tooltip_; }
+  const gfx::VectorIcon* get_icon_badge() const { return icon_badge_; }
 
   ImageType image_type() const { return image_type_; }
+
+  // Public for testing.
+  void set_explanatory_string_id(int text_id) {
+    explanatory_string_id_ = text_id;
+  }
 
  protected:
   explicit ContentSettingImageModel(ImageType type);
@@ -113,9 +119,6 @@ class ContentSettingImageModel {
     icon_badge_ = &badge;
   }
 
-  void set_explanatory_string_id(int text_id) {
-    explanatory_string_id_ = text_id;
-  }
   void set_tooltip(const base::string16& tooltip) { tooltip_ = tooltip; }
 
  private:

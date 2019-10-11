@@ -69,7 +69,7 @@ class PLATFORM_EXPORT MemoryPressureListenerRegistry final
   static bool is_low_end_device_;
 
   HeapHashSet<WeakMember<MemoryPressureListener>> clients_;
-  HashSet<Thread*> threads_;
+  HashSet<Thread*> threads_ GUARDED_BY(threads_mutex_);
   Mutex threads_mutex_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryPressureListenerRegistry);

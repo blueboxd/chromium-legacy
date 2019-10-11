@@ -98,6 +98,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   enum class SurfaceUsageHint : uint8_t {
     kVideoDecoder,
     kVideoEncoder,
+    kVideoProcessWrite,
     kGeneric,
   };
 

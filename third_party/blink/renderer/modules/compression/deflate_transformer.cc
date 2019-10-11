@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/modules/compression/zlib_partition_alloc.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "v8/include/v8.h"
@@ -26,6 +27,7 @@ DeflateTransformer::DeflateTransformer(ScriptState* script_state,
     : script_state_(script_state), out_buffer_(kBufferSize) {
   DCHECK(level >= 1 && level <= 9);
   memset(&stream_, 0, sizeof(z_stream));
+  ZlibPartitionAlloc::Configure(&stream_);
   constexpr int kWindowBits = 15;
   constexpr int kUseGzip = 16;
   int err;

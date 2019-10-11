@@ -50,7 +50,7 @@ class LocalFrame;
 class FrameCaret;
 class GranularityStrategy;
 class GraphicsContext;
-class NGPaintFragment;
+class NGInlineCursor;
 class Range;
 class SelectionEditor;
 class LayoutSelection;
@@ -69,7 +69,7 @@ enum class CaretVisibility;
 enum class HandleVisibility { kNotVisible, kVisible };
 enum class SelectSoftLineBreak { kNotSelected, kSelected };
 
-// This is return type of ComputeLayoutSelectionStatus(paintfragment).
+// This is return type of ComputeLayoutSelectionStatus(cursor).
 // This structure represents how the fragment is selected.
 // |start|, |end| : Selection start/end offset. This offset is based on
 //   the text of NGInlineNode of a parent block thus
@@ -281,7 +281,7 @@ class CORE_EXPORT FrameSelection final
   LayoutTextSelectionStatus ComputeLayoutSelectionStatus(
       const LayoutText& text) const;
   LayoutSelectionStatus ComputeLayoutSelectionStatus(
-      const NGPaintFragment&) const;
+      const NGInlineCursor& cursor) const;
 
   void Trace(Visitor*) override;
 

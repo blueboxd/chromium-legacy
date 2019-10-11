@@ -52,6 +52,12 @@ class ValidationMessageChromeClient : public EmptyChromeClient {
     return main_chrome_client_->WindowToViewportScalar(scalar_value);
   }
 
+  float WindowToViewportScalar(LocalFrame* local_frame,
+                               const float scalar_value) const override {
+    return main_chrome_client_->WindowToViewportScalar(local_frame,
+                                                       scalar_value);
+  }
+
  private:
   Member<ChromeClient> main_chrome_client_;
   Member<LocalFrameView> anchor_view_;

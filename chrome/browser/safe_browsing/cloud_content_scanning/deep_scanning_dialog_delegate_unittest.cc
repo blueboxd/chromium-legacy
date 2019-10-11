@@ -30,6 +30,14 @@ namespace {
 const char kDmToken[] = "dm_token";
 const char kTestUrl[] = "http://example.com";
 
+const char kTestHttpsSchemePatternUrl[] = "https://*";
+const char kTestChromeSchemePatternUrl[] = "chrome://*";
+const char kTestDevtoolsSchemePatternUrl[] = "devtools://*";
+
+const char kTestPathPatternUrl[] = "*/a/specific/path/";
+const char kTestPortPatternUrl[] = "*:1234";
+const char kTestQueryPatternUrl[] = "*?q=5678";
+
 class BaseTest : public testing::Test {
  public:
   BaseTest() : profile_manager_(TestingBrowserProcess::GetGlobal()) {
@@ -68,7 +76,13 @@ class BaseTest : public testing::Test {
     updater->GetList().emplace_back(url.host());
   }
 
-  TestingProfile* profile() { return profile_; }
+  void AddUrlToList(const char* pref_name, const char* url) {
+    ListPrefUpdate updater(TestingBrowserProcess::GetGlobal()->local_state(),
+                           pref_name);
+    updater->GetList().emplace_back(url);
+  }
+
+  Profile* profile() { return profile_; }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
@@ -163,6 +177,92 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpDisabledByList) {
   EXPECT_FALSE(data.do_malware_scan);
 }
 
+TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpDisabledByListWithPatterns) {
+  EnableFeatures({kDeepScanningOfUploads});
+  SetDMToken(kDmToken);
+  SetDlpPolicy(CHECK_UPLOADS);
+  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent, kTestUrl);
+  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent,
+               kTestHttpsSchemePatternUrl);
+  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent,
+               kTestChromeSchemePatternUrl);
+  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent,
+               kTestDevtoolsSchemePatternUrl);
+  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent,
+               kTestHttpsSchemePatternUrl);
+  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent,
+               kTestPathPatternUrl);
+  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent,
+               kTestPortPatternUrl);
+  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent,
+               kTestQueryPatternUrl);
+
+  DeepScanningDialogDelegate::Data data;
+
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://example.com"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://google.com"), &data));
+  EXPECT_TRUE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("https://google.com"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("custom://google.com"), &data));
+  EXPECT_TRUE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("chrome://version/"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("custom://version"), &data));
+  EXPECT_TRUE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("devtools://devtools/bundled/inspector.html"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("custom://devtools/bundled/inspector.html"), &data));
+  EXPECT_TRUE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://google.com/a/specific/path/"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://google.com/not/a/specific/path/"), &data));
+  EXPECT_TRUE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://google.com:1234"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://google.com:4321"), &data));
+  EXPECT_TRUE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://google.com?q=5678"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://google.com?q=8765"), &data));
+  EXPECT_TRUE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+}
+
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoPref) {
   EnableFeatures({kDeepScanningOfUploads});
   SetDMToken(kDmToken);
@@ -244,6 +344,90 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoScanInIncognito) {
   // The same URL should not trigger a scan in incognito.
   EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
       profile()->GetOffTheRecordProfile(), url, &data));
+}
+
+TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareEnabledWithPatterns) {
+  EnableFeatures({kDeepScanningOfUploads});
+  SetDMToken(kDmToken);
+  SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
+  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent, kTestUrl);
+  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent,
+               kTestHttpsSchemePatternUrl);
+  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent,
+               kTestChromeSchemePatternUrl);
+  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent,
+               kTestDevtoolsSchemePatternUrl);
+  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent,
+               kTestPathPatternUrl);
+  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent,
+               kTestPortPatternUrl);
+  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent,
+               kTestQueryPatternUrl);
+
+  DeepScanningDialogDelegate::Data data;
+
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://example.com"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_TRUE(data.do_malware_scan);
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://google.com"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("chrome://version/"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_TRUE(data.do_malware_scan);
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("custom://version/"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("devtools://devtools/bundled/inspector.html"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_TRUE(data.do_malware_scan);
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("custom://devtools/bundled/inspector.html"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("https://google.com"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_TRUE(data.do_malware_scan);
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("custom://google.com"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://google.com/a/specific/path/"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_TRUE(data.do_malware_scan);
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://google.com/not/a/specific/path/"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://google.com:1234"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_TRUE(data.do_malware_scan);
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://google.com:4321"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://google.com?q=5678"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_TRUE(data.do_malware_scan);
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), GURL("http://google.com?q=8765"), &data));
+  EXPECT_FALSE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
 }
 
 class DeepScanningDialogDelegateAuditOnlyTest : public BaseTest {

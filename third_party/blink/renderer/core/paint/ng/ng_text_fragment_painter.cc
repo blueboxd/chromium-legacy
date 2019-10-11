@@ -98,19 +98,26 @@ inline std::pair<LayoutUnit, LayoutUnit> GetLineLeftAndRightForOffsets(
 // |NGFragmentItem| is done. http://crbug.com/982194
 inline LayoutSelectionStatus ComputeLayoutSelectionStatus(
     const NGInlineCursor& cursor) {
-  // TODO(yosin): We should implement |NGInlineCursor| version of
-  // ComputeLayoutSelectionStatus
-  return LayoutSelectionStatus(0, 0, SelectSoftLineBreak::kNotSelected);
-}
-
-inline LayoutSelectionStatus ComputeLayoutSelectionStatus(
-    const NGTextPainterCursor& cursor) {
   return cursor.CurrentItem()
       ->GetLayoutObject()
       ->GetDocument()
       .GetFrame()
       ->Selection()
-      .ComputeLayoutSelectionStatus(cursor.PaintFragment());
+      .ComputeLayoutSelectionStatus(cursor);
+}
+
+inline LayoutSelectionStatus ComputeLayoutSelectionStatus(
+    const NGTextPainterCursor& cursor) {
+  // Note:: Because of this function is hot, we should not use |NGInlineCursor|
+  // on paint fragment which requires traversing ancestors to root.
+  NGInlineCursor inline_cursor(cursor.RootPaintFragment());
+  inline_cursor.MoveTo(cursor.PaintFragment());
+  return cursor.CurrentItem()
+      ->GetLayoutObject()
+      ->GetDocument()
+      .GetFrame()
+      ->Selection()
+      .ComputeLayoutSelectionStatus(inline_cursor);
 }
 
 // TODO(yosin): Remove |ComputeLocalRect| once the transition to
@@ -305,26 +312,30 @@ void PaintDocumentMarkers(GraphicsContext& context,
 
 }  // namespace
 
+const NGPaintFragment& NGTextPainterCursor::RootPaintFragment() const {
+  if (!root_paint_fragment_)
+    root_paint_fragment_ = paint_fragment_.Root();
+  return *root_paint_fragment_;
+}
+
 template <typename Cursor>
 NGTextFragmentPainter<Cursor>::NGTextFragmentPainter(const Cursor& cursor)
     : cursor_(cursor) {}
 
+static PhysicalRect ComputeLocalSelectionRectForText(
+    const NGTextPainterCursor& cursor,
+    const LayoutSelectionStatus& selection_status) {
+  NGInlineCursor inline_cursor(cursor.RootPaintFragment());
+  inline_cursor.MoveTo(cursor.PaintFragment());
+  return ComputeLocalSelectionRectForText(inline_cursor, selection_status);
+}
+
 // Logic is copied from InlineTextBoxPainter::PaintSelection.
 // |selection_start| and |selection_end| should be between
 // [text_fragment.StartOffset(), text_fragment.EndOffset()].
-// TODO(yosin): We should implement |NGInlineCursor| version of
-// |PaintSelection()|
+template <typename Cursor>
 static void PaintSelection(GraphicsContext& context,
-                           const NGInlineCursor& cursor,
-                           Node* node,
-                           const Document& document,
-                           const ComputedStyle& style,
-                           Color text_color,
-                           const PhysicalRect& box_rect,
-                           const LayoutSelectionStatus& selection_status) {}
-
-static void PaintSelection(GraphicsContext& context,
-                           const NGTextPainterCursor& cursor,
+                           const Cursor& cursor,
                            Node* node,
                            const Document& document,
                            const ComputedStyle& style,
@@ -334,7 +345,7 @@ static void PaintSelection(GraphicsContext& context,
   const Color color =
       SelectionBackgroundColor(document, style, node, text_color);
   const PhysicalRect selection_rect =
-      cursor.PaintFragment().ComputeLocalSelectionRectForText(selection_status);
+      ComputeLocalSelectionRectForText(cursor, selection_status);
   PaintRect(context, box_rect.offset, selection_rect, color);
 }
 

@@ -86,10 +86,6 @@ int ExtensionsMenuView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-bool ExtensionsMenuView::ShouldSnapFrameWidth() const {
-  return true;
-}
-
 gfx::Size ExtensionsMenuView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                         DISTANCE_BUBBLE_PREFERRED_WIDTH) -

@@ -441,6 +441,9 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     // business, but we store its appeal, so that we don't look for breakpoints
     // with lower appeal than that.
     container_builder_.SetBreakAppeal(ConstraintSpace().EarlyBreakAppeal());
+
+    if (ConstraintSpace().IsInitialColumnBalancingPass())
+      container_builder_.SetIsInitialColumnBalancingPass();
   }
   container_builder_.SetBfcLineOffset(
       ConstraintSpace().BfcOffset().line_offset);
@@ -2091,12 +2094,26 @@ NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
     appeal_before = kBreakAppealLastResort;
   }
 
-  // We only care about soft breaks if we have a fragmentainer block-size.
-  // During column balancing this may be unknown.
-  if (!ConstraintSpace().HasKnownFragmentainerBlockSize())
-    return kContinueWithoutBreaking;
-
   const auto& physical_fragment = layout_result.PhysicalFragment();
+  NGFragment fragment(ConstraintSpace().GetWritingMode(), physical_fragment);
+
+  if (!ConstraintSpace().HasKnownFragmentainerBlockSize()) {
+    if (ConstraintSpace().IsInitialColumnBalancingPass()) {
+      if (child.IsMonolithic() ||
+          (child.IsBlock() &&
+           IsAvoidBreakValue(ConstraintSpace(), child.Style().BreakInside()))) {
+        // If this is the initial column balancing pass, attempt to make the
+        // column block-size at least as large as the tallest piece of
+        // monolithic content and/or block with break-inside:avoid.
+        container_builder_.PropagateTallestUnbreakableBlockSize(
+            fragment.BlockSize());
+      }
+    }
+    // We only care about soft breaks if we have a fragmentainer block-size.
+    // During column balancing this may be unknown.
+    return kContinueWithoutBreaking;
+  }
+
   if (IsA<NGBlockBreakToken>(physical_fragment.BreakToken())) {
     // The block child broke inside. We now need to decide whether to keep that
     // break, or if it would be better to break before it.
@@ -2116,8 +2133,6 @@ NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
     if (child.IsMonolithic()) {
       // If the monolithic piece of content (e.g. a line, or block-level
       // replaced content) doesn't fit, we need a break.
-      NGFragment fragment(ConstraintSpace().GetWritingMode(),
-                          physical_fragment);
       want_break = fragment.BlockSize() > space_left;
     } else {
       // If the block-offset is past the fragmentainer boundary (or exactly at

@@ -1931,17 +1931,6 @@ void WebLocalFrameImpl::DidFailLoad(const ResourceError& error,
   Client()->DidFailLoad(web_error, web_commit_type);
 }
 
-void WebLocalFrameImpl::DidFailProvisionalLoad(
-    const ResourceError& error,
-    const AtomicString& http_method) {
-  if (!Client())
-    return;
-  WebURLError web_error = error;
-  if (WebPluginContainerImpl* plugin = GetFrame()->GetWebPluginContainer())
-    plugin->DidFailLoading(error);
-  Client()->DidFailProvisionalLoad(web_error, http_method);
-}
-
 void WebLocalFrameImpl::DidFinish() {
   if (!Client())
     return;

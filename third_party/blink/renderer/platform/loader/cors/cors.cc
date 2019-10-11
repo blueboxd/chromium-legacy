@@ -12,6 +12,7 @@
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/preflight_cache.h"
 #include "services/network/public/cpp/request_mode.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors_error_string.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"

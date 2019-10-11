@@ -141,8 +141,23 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   }
 
   LayoutUnit MinimalSpaceShortage() const {
-    return HasRareData() ? rare_data_->minimal_space_shortage
-                         : LayoutUnit::Max();
+    if (!HasRareData())
+      return LayoutUnit::Max();
+#if DCHECK_IS_ON()
+    // This field shares storage with another field.
+    DCHECK(!rare_data_->has_tallest_unbreakable_block_size);
+#endif
+    return rare_data_->minimal_space_shortage;
+  }
+
+  LayoutUnit TallestUnbreakableBlockSize() const {
+    if (!HasRareData())
+      return LayoutUnit();
+#if DCHECK_IS_ON()
+    // This field shares storage with another field.
+    DCHECK(rare_data_->has_tallest_unbreakable_block_size);
+#endif
+    return rare_data_->tallest_unbreakable_block_size;
   }
 
   SerializedScriptValue* CustomLayoutData() const {
@@ -310,9 +325,24 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     NGMarginStrut end_margin_strut;
     NGUnpositionedListMarker unpositioned_list_marker;
     NGBlockNode column_spanner = nullptr;
-    LayoutUnit minimal_space_shortage = LayoutUnit::Max();
+    union {
+      // Only set in the initial column balancing layout pass, when we have no
+      // clue what the column block-size is going to be.
+      LayoutUnit tallest_unbreakable_block_size;
+
+      // Only set in subsequent column balancing passes, when we have set a
+      // tentative column block-size. At every column boundary we'll record
+      // space shortage, and store the smallest one here. If the columns
+      // couldn't fit all the content, and we're allowed to stretch columns
+      // further, we'll perform another pass with the column block-size
+      // increased by this amount.
+      LayoutUnit minimal_space_shortage = LayoutUnit::Max();
+    };
     NGExclusionSpace exclusion_space;
     scoped_refptr<SerializedScriptValue> custom_layout_data;
+#if DCHECK_IS_ON()
+    bool has_tallest_unbreakable_block_size = false;
+#endif
   };
 
   bool HasRareData() const { return bitfields_.has_rare_data; }

@@ -52,7 +52,6 @@ class CollectedCookiesViews
   // views::DialogDelegate:
   base::string16 GetWindowTitle() const override;
   int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Accept() override;
   ui::ModalType GetModalType() const override;
   bool ShouldShowCloseButton() const override;

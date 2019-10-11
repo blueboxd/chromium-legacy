@@ -101,7 +101,7 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
         mToolbar = mView.findViewById(R.id.download_toolbar);
         mShadow = mView.findViewById(R.id.shadow);
 
-        mToolbar.initialize(selectionDelegate, 0 /* titleResId */, R.id.normal_menu_group,
+        mToolbar.initialize(selectionDelegate, R.string.menu_downloads, R.id.normal_menu_group,
                 R.id.selection_mode_menu_group, hasCloseButton);
         mToolbar.setOnMenuItemClickListener(this ::onMenuItemClick);
 

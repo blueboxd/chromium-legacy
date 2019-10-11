@@ -128,14 +128,6 @@ class PLATFORM_EXPORT ScriptWrappable
     return true;
   }
 
-  // Dissociates the wrapper, if any, from this instance.
-  void UnsetWrapperIfAny() {
-    if (ContainsWrapper()) {
-      main_world_wrapper_.Get().Reset();
-      WrapperTypeInfo::WrapperDestroyed();
-    }
-  }
-
   bool IsEqualTo(const v8::Local<v8::Object>& other) const {
     return main_world_wrapper_.Get() == other;
   }
@@ -151,15 +143,13 @@ class PLATFORM_EXPORT ScriptWrappable
   ScriptWrappable() = default;
 
  private:
-  // These classes are exceptionally allowed to use MainWorldWrapper().
-  friend class DOMDataStore;
-  friend class HeapSnaphotWrapperVisitor;
-  friend class V8HiddenValue;
-  friend class V8PrivateProperty;
-
   v8::Local<v8::Object> MainWorldWrapper(v8::Isolate* isolate) const {
     return main_world_wrapper_.NewLocal(isolate);
   }
+
+  // Clear the main world wrapper if it is set to |handle|.
+  bool UnsetMainWorldWrapperIfSet(
+      const v8::TracedReference<v8::Object>& handle);
 
   static_assert(
       std::is_trivially_destructible<
@@ -168,8 +158,25 @@ class PLATFORM_EXPORT ScriptWrappable
 
   TraceWrapperV8Reference<v8::Object> main_world_wrapper_;
 
+  // These classes are exceptionally allowed to directly interact with the main
+  // world wrapper.
+  friend class DOMDataStore;
+  friend class DOMWrapperWorld;
+  friend class HeapSnaphotWrapperVisitor;
+  friend class V8HiddenValue;
+  friend class V8PrivateProperty;
+
   DISALLOW_COPY_AND_ASSIGN(ScriptWrappable);
 };
+
+inline bool ScriptWrappable::UnsetMainWorldWrapperIfSet(
+    const v8::TracedReference<v8::Object>& handle) {
+  if (main_world_wrapper_.Get() == handle) {
+    main_world_wrapper_.Clear();
+    return true;
+  }
+  return false;
+}
 
 // Defines |GetWrapperTypeInfo| virtual method which returns the WrapperTypeInfo
 // of the instance. Also declares a static member of type WrapperTypeInfo, of

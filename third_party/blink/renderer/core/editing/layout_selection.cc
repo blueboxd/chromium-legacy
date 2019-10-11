@@ -33,11 +33,12 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
@@ -117,6 +118,13 @@ enum class SelectionMode {
   kRange,
   kBlockCursor,
 };
+
+void LayoutSelection::AssertIsValid() const {
+  const Document& document = frame_selection_->GetDocument();
+  DCHECK_GE(document.Lifecycle().GetState(), DocumentLifecycle::kLayoutClean);
+  DCHECK(!document.IsSlotAssignmentOrLegacyDistributionDirty());
+  DCHECK(!has_pending_selection_);
+}
 
 static SelectionMode ComputeSelectionMode(
     const FrameSelection& frame_selection) {
@@ -549,49 +557,11 @@ static SelectionPaintRange* ComputeNewPaintRange(
       *paint_range.start_node, start_offset, *paint_range.end_node, end_offset);
 }
 
-// ClampOffset modifies |offset| fixed in a range of |text_fragment| start/end
-// offsets.
 static unsigned ClampOffset(unsigned offset,
-                            const NGPhysicalTextFragment& text_fragment) {
-  return std::min(std::max(offset, text_fragment.StartOffset()),
-                  text_fragment.EndOffset());
-}
-
-// We don't paint a line break the end of inline-block
-// because if an inline-block is at the middle of line, we should not paint
-// a line break.
-// Old layout paints line break if the inline-block is at the end of line, but
-// since its complex to determine if the inline-block is at the end of line on NG,
-// we just cancels block-end line break painting for any inline-block.
-static bool IsLastLineInInlineBlock(const NGPaintFragment& line) {
-  DCHECK(line.PhysicalFragment().IsLineBox());
-  NGPaintFragment* parent = line.Parent();
-  if (!parent->PhysicalFragment().IsAtomicInline())
-    return false;
-  return &parent->Children().back() == &line;
-}
-
-static bool IsBeforeSoftLineBreak(const NGPaintFragment& fragment) {
-  if (To<NGPhysicalTextFragment>(fragment.PhysicalFragment()).IsLineBreak())
-    return false;
-
-  // TODO(yoichio): InlineBlock should not be container line box.
-  // See paint/selection/text-selection-inline-block.html.
-  const NGPaintFragment* container_line_box = fragment.ContainerLineBox();
-  DCHECK(container_line_box);
-  if (IsLastLineInInlineBlock(*container_line_box))
-    return false;
-  const auto& physical_line_box =
-      To<NGPhysicalLineBoxFragment>(container_line_box->PhysicalFragment());
-  const NGPhysicalFragment* last_leaf = physical_line_box.LastLogicalLeaf();
-  DCHECK(last_leaf);
-  if (&fragment.PhysicalFragment() != last_leaf)
-    return false;
-  // Even If |fragment| is before linebreak, if its direction differs to line
-  // direction, we don't paint line break. See
-  // paint/selection/text-selection-newline-mixed-ltr-rtl.html.
-  return physical_line_box.BaseDirection() ==
-         fragment.PhysicalFragment().ResolvedDirection();
+                            unsigned start_offset,
+                            unsigned end_offset) {
+  DCHECK_LE(start_offset, end_offset);
+  return std::min(std::max(offset, start_offset), end_offset);
 }
 
 static Text* AssociatedTextNode(const LayoutText& text) {
@@ -611,6 +581,12 @@ static SelectionState GetSelectionStateFor(const LayoutText& layout_text) {
     return node->GetLayoutObject()->GetSelectionState();
   }
   return layout_text.GetSelectionState();
+}
+
+static SelectionState GetSelectionStateFor(const NGInlineCursor& cursor) {
+  DCHECK(cursor.CurrentLayoutObject() &&
+         cursor.CurrentLayoutObject()->IsText());
+  return GetSelectionStateFor(ToLayoutText(*cursor.CurrentLayoutObject()));
 }
 
 bool LayoutSelection::IsSelected(const LayoutObject& layout_object) {
@@ -650,10 +626,7 @@ static LayoutTextSelectionStatus ComputeSelectionStatusForNode(
 
 LayoutTextSelectionStatus LayoutSelection::ComputeSelectionStatus(
     const LayoutText& layout_text) const {
-  Document& document = frame_selection_->GetDocument();
-  DCHECK_GE(document.Lifecycle().GetState(), DocumentLifecycle::kLayoutClean);
-  DCHECK(!document.IsSlotAssignmentOrLegacyDistributionDirty());
-  DCHECK(!has_pending_selection_);
+  AssertIsValid();
   const SelectionState selection_state = GetSelectionStateFor(layout_text);
   if (selection_state == SelectionState::kNone)
     return {0, 0, SelectionIncludeEnd::kNotInclude};
@@ -683,54 +656,50 @@ LayoutTextSelectionStatus FrameSelection::ComputeLayoutSelectionStatus(
 // FrameSelection holds selection offsets in layout block flow at
 // LayoutSelection::Commit() if selection starts/ends within Text that
 // each LayoutObject::SelectionState indicates.
-// These offset can be out of |text_fragment| because SelectionState is of each
-// LayoutText and not of each NGPhysicalTextFragment for it.
+// These offset can be out of fragment because SelectionState is of each
+// LayoutText and not of each fragment for it.
 LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
-    const NGPaintFragment& fragment) const {
-  Document& document = frame_selection_->GetDocument();
-  DCHECK_GE(document.Lifecycle().GetState(), DocumentLifecycle::kLayoutClean);
-  DCHECK(!document.IsSlotAssignmentOrLegacyDistributionDirty());
-  const auto& text_fragment =
-      To<NGPhysicalTextFragment>(fragment.PhysicalFragment());
+    const NGInlineCursor& cursor) const {
   // We don't paint selection on ellipsis.
-  if (text_fragment.StyleVariant() == NGStyleVariant::kEllipsis)
+  if (cursor.IsEllipsis())
     return {0, 0, SelectSoftLineBreak::kNotSelected};
-  // Needs GetSelectionStateFor
-  DCHECK(text_fragment.GetLayoutObject());
-  switch (
-      GetSelectionStateFor(ToLayoutText(*text_fragment.GetLayoutObject()))) {
+  const unsigned start_offset = cursor.CurrentTextStartOffset();
+  const unsigned end_offset = cursor.CurrentTextEndOffset();
+  switch (GetSelectionStateFor(cursor)) {
     case SelectionState::kStart: {
       const unsigned start_in_block = paint_range_->start_offset.value();
-      const bool is_continuous = start_in_block <= text_fragment.EndOffset();
-      return {ClampOffset(start_in_block, text_fragment),
-              text_fragment.EndOffset(),
-              (is_continuous && IsBeforeSoftLineBreak(fragment))
+      const bool is_continuous = start_in_block <= end_offset;
+      return {ClampOffset(start_in_block, start_offset, end_offset), end_offset,
+              (is_continuous && cursor.IsBeforeSoftLineBreak())
                   ? SelectSoftLineBreak::kSelected
                   : SelectSoftLineBreak::kNotSelected};
     }
     case SelectionState::kEnd: {
       const unsigned end_in_block = paint_range_->end_offset.value();
-      const unsigned end_in_fragment = ClampOffset(end_in_block, text_fragment);
-      const bool is_continuous = text_fragment.EndOffset() < end_in_block;
-      return {text_fragment.StartOffset(), end_in_fragment,
-              (is_continuous && IsBeforeSoftLineBreak(fragment))
+      const unsigned end_in_fragment =
+          ClampOffset(end_in_block, start_offset, end_offset);
+      const bool is_continuous = end_offset < end_in_block;
+      return {start_offset, end_in_fragment,
+              (is_continuous && cursor.IsBeforeSoftLineBreak())
                   ? SelectSoftLineBreak::kSelected
                   : SelectSoftLineBreak::kNotSelected};
     }
     case SelectionState::kStartAndEnd: {
       const unsigned start_in_block = paint_range_->start_offset.value();
       const unsigned end_in_block = paint_range_->end_offset.value();
-      const unsigned end_in_fragment = ClampOffset(end_in_block, text_fragment);
-      const bool is_continuous = start_in_block <= text_fragment.EndOffset() &&
-                                 text_fragment.EndOffset() < end_in_block;
-      return {ClampOffset(start_in_block, text_fragment), end_in_fragment,
-              (is_continuous && IsBeforeSoftLineBreak(fragment))
+      const unsigned end_in_fragment =
+          ClampOffset(end_in_block, start_offset, end_offset);
+      const bool is_continuous =
+          start_in_block <= end_offset && end_offset < end_in_block;
+      return {ClampOffset(start_in_block, start_offset, end_offset),
+              end_in_fragment,
+              (is_continuous && cursor.IsBeforeSoftLineBreak())
                   ? SelectSoftLineBreak::kSelected
                   : SelectSoftLineBreak::kNotSelected};
     }
     case SelectionState::kInside: {
-      return {text_fragment.StartOffset(), text_fragment.EndOffset(),
-              IsBeforeSoftLineBreak(fragment)
+      return {start_offset, end_offset,
+              cursor.IsBeforeSoftLineBreak()
                   ? SelectSoftLineBreak::kSelected
                   : SelectSoftLineBreak::kNotSelected};
     }

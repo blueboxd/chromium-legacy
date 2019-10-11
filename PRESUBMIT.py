@@ -380,7 +380,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^components/variations/',
   '^components/visitedlink/',
   '^components/web_cache/',
-  '^components/web_resource/',
   '^components/webcrypto/',
   '^components/webdata/',
   '^components/webdata_services/',

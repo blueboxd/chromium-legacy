@@ -918,10 +918,18 @@ void SVGSMILElement::UpdateInterval(SMILTime presentation_time) {
           ? interval_.end
           : SMILTime::Earliest();
   SMILInterval next_interval = ResolveInterval(begin_after, presentation_time);
-  if (!next_interval.IsResolved() || next_interval == interval_)
+  // It's the same interval that we resolved before. Do nothing.
+  if (next_interval == interval_)
     return;
   if (interval_.IsResolved())
     previous_interval_ = interval_;
+  // If there are no more intervals to resolve, we have to wait for an event to
+  // occur in order to get a new instance time.
+  if (!next_interval.IsResolved()) {
+    interval_ = next_interval;
+    next_interval_time_ = SMILTime::Unresolved();
+    return;
+  }
   SetNewInterval(next_interval, presentation_time);
   interval_has_changed_ = true;
 }

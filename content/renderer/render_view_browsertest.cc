@@ -1587,7 +1587,7 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
   }
 }
 
-TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
+TEST_F(RenderViewImplTest, DroppedNavigationStaysInViewSourceMode) {
   GetMainFrame()->EnableViewSourceMode(true);
   WebURLError error(net::ERR_ABORTED, GURL("http://foo"));
   WebLocalFrame* web_frame = GetMainFrame();
@@ -1600,7 +1600,7 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   frame()->Navigate(std::move(common_params), CreateCommitNavigationParams());
 
   // A cancellation occurred.
-  view()->GetMainRenderFrame()->DidFailProvisionalLoad(error, "GET");
+  view()->GetMainRenderFrame()->OnDroppedNavigation();
   // Frame should stay in view-source mode.
   EXPECT_TRUE(web_frame->IsViewSourceModeEnabled());
 }

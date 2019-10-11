@@ -890,10 +890,7 @@ class SSLUITestBase : public InProcessBrowserTest,
 
 class SSLUITest : public SSLUITestBase {
  public:
-  SSLUITest() : SSLUITestBase() {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SSLUITestBase::SetUpCommandLine(command_line);
+  SSLUITest() : SSLUITestBase() {
     scoped_feature_list_.InitAndDisableFeature(
         blink::features::kMixedContentAutoupgrade);
   }
@@ -2008,15 +2005,22 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCert) {
   EXPECT_TRUE(base::LowerCaseEqualsASCII(result, "pass"));
 }
 
+class SSLUITestWithHttpDangerous : public SSLUITest {
+ public:
+  SSLUITestWithHttpDangerous() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        security_state::features::kMarkHttpAsFeature,
+        {{security_state::features::kMarkHttpAsFeatureParameterName,
+          security_state::features::kMarkHttpAsParameterDangerous}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Ensure that non-standard origins are marked as neutral when the
 // MarkNonSecureAs Dangerous flag is enabled.
-IN_PROC_BROWSER_TEST_F(SSLUITest, MarkFileAsNonSecure) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      security_state::features::kMarkHttpAsFeature,
-      {{security_state::features::kMarkHttpAsFeatureParameterName,
-        security_state::features::kMarkHttpAsParameterDangerous}});
-
+IN_PROC_BROWSER_TEST_F(SSLUITestWithHttpDangerous, MarkFileAsNonSecure) {
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
@@ -2030,13 +2034,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkFileAsNonSecure) {
 
 // Ensure that about-protocol origins are marked as neutral when the
 // MarkNonSecureAs Dangerous flag is enabled.
-IN_PROC_BROWSER_TEST_F(SSLUITest, MarkAboutAsNonSecure) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      security_state::features::kMarkHttpAsFeature,
-      {{security_state::features::kMarkHttpAsFeatureParameterName,
-        security_state::features::kMarkHttpAsParameterDangerous}});
-
+IN_PROC_BROWSER_TEST_F(SSLUITestWithHttpDangerous, MarkAboutAsNonSecure) {
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
@@ -2063,13 +2061,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkDataAsNonSecure) {
 
 // Ensure that HTTP-protocol origins are marked as Dangerous when the
 // MarkNonSecureAs Dangerous flag is enabled.
-IN_PROC_BROWSER_TEST_F(SSLUITest, MarkHTTPAsDangerous) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      security_state::features::kMarkHttpAsFeature,
-      {{security_state::features::kMarkHttpAsFeatureParameterName,
-        security_state::features::kMarkHttpAsParameterDangerous}});
-
+IN_PROC_BROWSER_TEST_F(SSLUITestWithHttpDangerous, MarkHTTPAsDangerous) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Navigate to a non-local HTTP page.
@@ -2087,13 +2079,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkHTTPAsDangerous) {
 
 // Ensure that blob-protocol origins are marked as neutral when the
 // MarkNonSecureAs Dangerous flag is enabled.
-IN_PROC_BROWSER_TEST_F(SSLUITest, MarkBlobAsNonSecure) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      security_state::features::kMarkHttpAsFeature,
-      {{security_state::features::kMarkHttpAsFeatureParameterName,
-        security_state::features::kMarkHttpAsParameterDangerous}});
-
+IN_PROC_BROWSER_TEST_F(SSLUITestWithHttpDangerous, MarkBlobAsNonSecure) {
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
@@ -4560,26 +4546,16 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
 // request to be issued during the test.
 class SSLNetworkTimeBrowserTest : public SSLUITest {
  public:
-  SSLNetworkTimeBrowserTest() : SSLUITest() {}
-  ~SSLNetworkTimeBrowserTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SSLUITest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(
-        switches::kForceFieldTrials,
-        "SSLNetworkTimeBrowserTestFieldTrial/Enabled/");
-    command_line->AppendSwitchASCII(
-        variations::switches::kForceFieldTrialParams,
-        "SSLNetworkTimeBrowserTestFieldTrial.Enabled:FetchBehavior/"
-        "on-demand-only");
+  SSLNetworkTimeBrowserTest() : SSLUITest() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        network_time::kNetworkTimeServiceQuerying,
+        {{"FetchBehavior", "on-demand-only"}});
   }
+
+  ~SSLNetworkTimeBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
     SSLUITest::SetUpOnMainThread();
-    std::map<std::string, std::string> parameters;
-    parameters["FetchBehavior"] = "on-demand-only";
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        network_time::kNetworkTimeServiceQuerying, parameters);
     controllable_response_ =
         std::make_unique<net::test_server::ControllableHttpResponse>(
             embedded_test_server(), "/", true);
@@ -4891,9 +4867,6 @@ class CommonNameMismatchBrowserTest : public CertVerifierBrowserTest {
   void TearDownOnMainThread() override {
     CertVerifierBrowserTest::TearDownOnMainThread();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Visit the URL www.mail.example.com on a server that presents a valid
@@ -6024,9 +5997,27 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreLocalhostCertErrors,
   ASSERT_TRUE(content::ExecuteScript(tab, "window.open()"));
 }
 
-// Put captive portal related tests under a different namespace for nicer
-// pattern matching.
-using SSLUICaptivePortalListTest = SSLUITest;
+class SSLUICaptivePortalListEnabledTest : public SSLUITest {
+ public:
+  SSLUICaptivePortalListEnabledTest() {
+    feature_list_.InitWithFeatures(
+        {kCaptivePortalCertificateList} /* enabled */, {} /* disabled */);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+class SSLUICaptivePortalListDisabledTest : public SSLUITest {
+ public:
+  SSLUICaptivePortalListDisabledTest() {
+    feature_list_.InitWithFeatures(
+        {} /* enabled */, {kCaptivePortalCertificateList} /* disabled */);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
 
 std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
 MakeCaptivePortalConfig(int version_id,
@@ -6042,11 +6033,7 @@ MakeCaptivePortalConfig(int version_id,
 
 // Tests that the captive portal certificate list is not used when the feature
 // is disabled via Finch. The list is passed to SSLErrorHandler via a proto.
-IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, Disabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {} /* enabled */, {kCaptivePortalCertificateList} /* disabled */);
-
+IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListDisabledTest, Disabled) {
   ASSERT_TRUE(https_server_mismatched_.Start());
   base::HistogramTester histograms;
 
@@ -6081,11 +6068,7 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, Disabled) {
 
 // Tests that the captive portal certificate list is used when the feature
 // is enabled via Finch. The list is passed to SSLErrorHandler via a proto.
-IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, Enabled_FromProto) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {kCaptivePortalCertificateList} /* enabled */, {} /* disabled */);
-
+IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListEnabledTest, Enabled_FromProto) {
   ASSERT_TRUE(https_server_mismatched_.Start());
   base::HistogramTester histograms;
 
@@ -6161,14 +6144,22 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, OSReportsCaptivePortal) {
   EXPECT_TRUE(netwok_connectivity_reported);
 }
 
+class SSLUITestWithCaptivePortalInterstitialDisabled : public SSLUITest {
+ public:
+  SSLUITestWithCaptivePortalInterstitialDisabled() {
+    feature_list_.InitWithFeatures({} /* enabled */,
+                                   {kCaptivePortalInterstitial} /* disabled */);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests the scenario where the OS reports a captive portal but captive portal
 // interstitial feature is disabled. A captive portal interstitial should not be
 // displayed.
-IN_PROC_BROWSER_TEST_F(SSLUITest, OSReportsCaptivePortal_FeatureDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {} /* enabled */, {kCaptivePortalInterstitial} /* disabled */);
-
+IN_PROC_BROWSER_TEST_F(SSLUITestWithCaptivePortalInterstitialDisabled,
+                       OSReportsCaptivePortal_FeatureDisabled) {
   ASSERT_TRUE(https_server_mismatched_.Start());
   base::HistogramTester histograms;
 
@@ -6231,6 +6222,8 @@ class SSLUICaptivePortalListResourceBundleTest
   SSLUICaptivePortalListResourceBundleTest()
       : CertVerifierBrowserTest(),
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    feature_list_.InitWithFeatures(
+        {kCaptivePortalCertificateList} /* enabled */, {} /* disabled */);
     https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
 
@@ -6293,7 +6286,7 @@ class SSLUICaptivePortalListResourceBundleTest
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList feature_list_;
   net::EmbeddedTestServer https_server_;
 };
 
@@ -6302,9 +6295,6 @@ class SSLUICaptivePortalListResourceBundleTest
 // Same as CaptivePortalCertificateList_Enabled_FromProto, but this time the
 // cert's SPKI hash is listed in ssl_error_assistant.asciipb.
 IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest, Enabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {kCaptivePortalCertificateList} /* enabled */, {} /* disabled */);
   ASSERT_TRUE(https_server()->Start());
   base::HistogramTester histograms;
 
@@ -6338,9 +6328,6 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest, Enabled) {
 // update should always override the proto loaded from the resource bundle.
 IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
                        Enabled_DynamicUpdate) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {kCaptivePortalCertificateList} /* enabled */, {} /* disabled */);
   ASSERT_TRUE(https_server()->Start());
 
   // Mark the server's cert as a captive portal cert.
@@ -6447,10 +6434,6 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
 // authority-invalid. Captive portal interstitial should not be shown.
 IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
                        Enabled_AuthorityInvalid) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {kCaptivePortalCertificateList} /* enabled */, {} /* disabled */);
-
   TestNoCaptivePortalInterstitial(net::CERT_STATUS_AUTHORITY_INVALID,
                                   net::ERR_CERT_AUTHORITY_INVALID);
 }
@@ -6460,10 +6443,6 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
 // interstitial should not be shown when name mismatch isn't the only error.
 IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
                        Enabled_NameMismatchAndWeakKey) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {kCaptivePortalCertificateList} /* enabled */, {} /* disabled */);
-
   const net::CertStatus cert_status =
       net::CERT_STATUS_COMMON_NAME_INVALID | net::CERT_STATUS_WEAK_KEY;
   // Sanity check that COMMON_NAME_INVALID is seen as the net error, since the
@@ -6601,7 +6580,6 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
 
  private:
   net::EmbeddedTestServer https_server_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(SSLUIMITMSoftwareTest);
 };
 
@@ -6614,13 +6592,15 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
 
 class SSLUIMITMSoftwareEnabledTest : public SSLUIMITMSoftwareTest {
  public:
-  SSLUIMITMSoftwareEnabledTest() {}
+  SSLUIMITMSoftwareEnabledTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {kMITMSoftwareInterstitial} /* enabled */, {} /* disabled */);
+  }
+
   ~SSLUIMITMSoftwareEnabledTest() override {}
 
   void SetUpOnMainThread() override {
     SSLUIMITMSoftwareTest::SetUpOnMainThread();
-    scoped_feature_list_.InitWithFeatures(
-        {kMITMSoftwareInterstitial} /* enabled */, {} /* disabled */);
   }
 
  private:
@@ -6631,13 +6611,15 @@ class SSLUIMITMSoftwareEnabledTest : public SSLUIMITMSoftwareTest {
 
 class SSLUIMITMSoftwareDisabledTest : public SSLUIMITMSoftwareTest {
  public:
-  SSLUIMITMSoftwareDisabledTest() {}
+  SSLUIMITMSoftwareDisabledTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {} /* enabled */, {kMITMSoftwareInterstitial} /* disabled */);
+  }
+
   ~SSLUIMITMSoftwareDisabledTest() override {}
 
   void SetUpOnMainThread() override {
     SSLUIMITMSoftwareTest::SetUpOnMainThread();
-    scoped_feature_list_.InitWithFeatures(
-        {} /* enabled */, {kMITMSoftwareInterstitial} /* disabled */);
   }
 
  private:
@@ -7683,9 +7665,6 @@ class RecurrentInterstitialBrowserTest : public CertVerifierBrowserTest {
     CertVerifierBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests that a message is added to the interstitial when an error code recurs

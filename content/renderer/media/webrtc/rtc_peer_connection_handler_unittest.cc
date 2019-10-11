@@ -25,7 +25,6 @@
 #include "base/values.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/audio/mock_audio_device_factory.h"
-#include "content/renderer/media/webrtc/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,6 +54,7 @@
 #include "third_party/blink/public/web/modules/peerconnection/mock_data_channel_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_impl.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
@@ -289,7 +289,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   RTCPeerConnectionHandlerTest() : mock_peer_connection_(nullptr) {}
 
   void SetUp() override {
-    mock_client_.reset(new NiceMock<MockWebRTCPeerConnectionHandlerClient>());
+    mock_client_.reset(
+        new NiceMock<blink::MockWebRTCPeerConnectionHandlerClient>());
     mock_dependency_factory_.reset(
         new blink::MockPeerConnectionDependencyFactory());
 
@@ -420,8 +421,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
             error_or_transceiver.value()->ImplementationType(),
             blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
         auto sender = error_or_transceiver.value()->Sender();
-        senders_.push_back(std::unique_ptr<RTCRtpSender>(
-            static_cast<RTCRtpSender*>(sender.release())));
+        senders_.push_back(std::unique_ptr<blink::RTCRtpSenderImpl>(
+            static_cast<blink::RTCRtpSenderImpl*>(sender.release())));
       }
     }
     for (const auto& web_video_track : web_stream.VideoTracks()) {
@@ -432,15 +433,15 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
             error_or_transceiver.value()->ImplementationType(),
             blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
         auto sender = error_or_transceiver.value()->Sender();
-        senders_.push_back(std::unique_ptr<RTCRtpSender>(
-            static_cast<RTCRtpSender*>(sender.release())));
+        senders_.push_back(std::unique_ptr<blink::RTCRtpSenderImpl>(
+            static_cast<blink::RTCRtpSenderImpl*>(sender.release())));
       }
     }
     return senders_size_before_add < senders_.size();
   }
 
-  std::vector<std::unique_ptr<RTCRtpSender>>::iterator FindSenderForTrack(
-      const blink::WebMediaStreamTrack& web_track) {
+  std::vector<std::unique_ptr<blink::RTCRtpSenderImpl>>::iterator
+  FindSenderForTrack(const blink::WebMediaStreamTrack& web_track) {
     for (auto it = senders_.begin(); it != senders_.end(); ++it) {
       if ((*it)->Track().UniqueId() == web_track.UniqueId())
         return it;
@@ -588,7 +589,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   std::unique_ptr<AudioCapturerSourceTestingPlatformSupport>
       webrtc_audio_device_platform_support_;
   blink::Platform* platform_original_ = nullptr;
-  std::unique_ptr<MockWebRTCPeerConnectionHandlerClient> mock_client_;
+  std::unique_ptr<blink::MockWebRTCPeerConnectionHandlerClient> mock_client_;
   std::unique_ptr<blink::MockPeerConnectionDependencyFactory>
       mock_dependency_factory_;
   std::unique_ptr<NiceMock<MockPeerConnectionTracker>> mock_tracker_;
@@ -598,7 +599,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   // Weak reference to the mocked native peer connection implementation.
   blink::MockPeerConnectionImpl* mock_peer_connection_;
 
-  std::vector<std::unique_ptr<RTCRtpSender>> senders_;
+  std::vector<std::unique_ptr<blink::RTCRtpSenderImpl>> senders_;
   std::map<webrtc::MediaStreamTrackInterface*,
            rtc::scoped_refptr<webrtc::RtpReceiverInterface>>
       receivers_by_track_;

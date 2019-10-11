@@ -14,39 +14,28 @@
 
 namespace autofill {
 
-AutofillField::AutofillField()
-    : server_type_(NO_SERVER_DATA),
-      heuristic_type_(UNKNOWN_TYPE),
-      overall_type_(AutofillType(NO_SERVER_DATA)),
-      html_type_(HTML_TYPE_UNSPECIFIED),
-      html_mode_(HTML_MODE_NONE),
-      phone_part_(IGNORED),
-      credit_card_number_offset_(0),
-      previously_autofilled_(false),
-      only_fill_when_focused_(false),
-      generation_type_(AutofillUploadContents::Field::NO_GENERATION),
-      generated_password_changed_(false),
-      vote_type_(AutofillUploadContents::Field::NO_INFORMATION) {}
+AutofillField::AutofillField() = default;
+
+AutofillField::AutofillField(FieldSignature field_signature)
+    : field_signature_(field_signature) {}
 
 AutofillField::AutofillField(const FormFieldData& field,
                              const base::string16& unique_name)
     : FormFieldData(field),
       unique_name_(unique_name),
-      server_type_(NO_SERVER_DATA),
-      heuristic_type_(UNKNOWN_TYPE),
-      overall_type_(AutofillType(NO_SERVER_DATA)),
-      html_type_(HTML_TYPE_UNSPECIFIED),
-      html_mode_(HTML_MODE_NONE),
-      phone_part_(IGNORED),
-      credit_card_number_offset_(0),
-      previously_autofilled_(false),
-      only_fill_when_focused_(false),
-      parseable_name_(field.name),
-      generation_type_(AutofillUploadContents::Field::NO_GENERATION),
-      generated_password_changed_(false),
-      vote_type_(AutofillUploadContents::Field::NO_INFORMATION) {}
+      parseable_name_(field.name) {
+  field_signature_ =
+      CalculateFieldSignatureByNameAndType(name, form_control_type);
+}
 
-AutofillField::~AutofillField() {}
+AutofillField::~AutofillField() = default;
+
+std::unique_ptr<AutofillField> AutofillField::CreateForPasswordManagerUpload(
+    FieldSignature field_signature) {
+  std::unique_ptr<AutofillField> field;
+  field.reset(new AutofillField(field_signature));
+  return field;
+}
 
 void AutofillField::set_heuristic_type(ServerFieldType type) {
   if (type >= 0 && type < MAX_VALID_FIELD_TYPE &&
@@ -178,7 +167,9 @@ bool AutofillField::IsEmpty() const {
 }
 
 FieldSignature AutofillField::GetFieldSignature() const {
-  return CalculateFieldSignatureByNameAndType(name, form_control_type);
+  return field_signature_
+             ? *field_signature_
+             : CalculateFieldSignatureByNameAndType(name, form_control_type);
 }
 
 std::string AutofillField::FieldSignatureAsStr() const {

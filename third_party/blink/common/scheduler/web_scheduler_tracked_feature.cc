@@ -73,6 +73,8 @@ const char* FeatureToString(WebSchedulerTrackedFeature feature) {
       return "WebVR";
     case WebSchedulerTrackedFeature::kWebXR:
       return "WebXR";
+    case WebSchedulerTrackedFeature::kWebLocks:
+      return "WebLocks";
   }
 }
 

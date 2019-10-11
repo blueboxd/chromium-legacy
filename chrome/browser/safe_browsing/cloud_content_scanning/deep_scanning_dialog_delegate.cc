@@ -19,8 +19,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/policy/core/browser/url_blacklist_manager.h"
+#include "components/policy/core/browser/url_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/web_contents.h"
 #include "crypto/sha2.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -253,13 +256,11 @@ bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
   if (data->do_dlp_scan &&
       g_browser_process->local_state()->HasPrefPath(
           prefs::kDomainsToNotCheckComplianceOfUploadedContent)) {
-    const base::ListValue* domains = g_browser_process->local_state()->GetList(
+    const base::ListValue* filters = g_browser_process->local_state()->GetList(
         prefs::kDomainsToNotCheckComplianceOfUploadedContent);
-    data->do_dlp_scan = std::none_of(
-        domains->GetList().begin(), domains->GetList().end(),
-        [&](const base::Value& domain) {
-          return domain.is_string() && domain.GetString() == url.host();
-        });
+    url_matcher::URLMatcher matcher;
+    policy::url_util::AddAllowFilters(&matcher, filters);
+    data->do_dlp_scan = matcher.MatchURL(url).empty();
   }
 
   // See if malware checks are needed.
@@ -272,14 +273,12 @@ bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
   if (data->do_malware_scan) {
     if (g_browser_process->local_state()->HasPrefPath(
             prefs::kDomainsToCheckForMalwareOfUploadedContent)) {
-      const base::ListValue* domains =
+      const base::ListValue* filters =
           g_browser_process->local_state()->GetList(
               prefs::kDomainsToCheckForMalwareOfUploadedContent);
-      data->do_malware_scan = std::any_of(
-          domains->GetList().begin(), domains->GetList().end(),
-          [&](const base::Value& domain) {
-            return domain.is_string() && domain.GetString() == url.host();
-          });
+      url_matcher::URLMatcher matcher;
+      policy::url_util::AddAllowFilters(&matcher, filters);
+      data->do_malware_scan = !matcher.MatchURL(url).empty();
     } else {
       data->do_malware_scan = false;
     }

@@ -13,4 +13,5 @@ struct RelatedApplication {
   // WebRelatedApplication as well).
   string? url;
   string? id;
+  string? version;
 };

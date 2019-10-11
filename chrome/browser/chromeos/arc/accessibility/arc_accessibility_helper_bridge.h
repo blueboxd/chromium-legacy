@@ -22,6 +22,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/wm/public/activation_change_observer.h"
 
+class PrefService;
 class Profile;
 
 namespace content {
@@ -36,6 +37,8 @@ namespace arc {
 
 class AXTreeSourceArc;
 class ArcBridgeService;
+
+arc::mojom::CaptionStylePtr GetCaptionStyleFromPrefs(PrefService* prefs);
 
 // ArcAccessibilityHelperBridge is an instance to receive converted Android
 // accessibility events and info via mojo interface and dispatch them to chrome

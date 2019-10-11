@@ -58,8 +58,12 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/test/browser_test_utils.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
+#include "content/public/test/back_forward_cache_util.h"
+#include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -87,6 +91,38 @@ class PasswordManagerBrowserTest : public PasswordManagerBrowserTestBase {
   }
 
   ~PasswordManagerBrowserTest() override = default;
+};
+
+// Test class for testing password manager with the BackForwardCache feature
+// enabled. More info about the BackForwardCache, see:
+// http://doc/1YrBKX_eFMA9KoYof-eVThT35jcTqWcH_rRxYbR5RapU
+class PasswordManagerBackForwardCacheBrowserTest
+    : public PasswordManagerBrowserTest {
+ public:
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    PasswordManagerBrowserTest ::SetUpOnMainThread();
+  }
+
+  bool IsGetCredentialsSuccessful() {
+    return "success" == content::EvalJs(WebContents()->GetMainFrame(), R"(
+      new Promise(resolve => {
+        navigator.credentials.get({password: true, unmediated: true })
+          .then(m => { resolve("success"); })
+          .catch(()=> { resolve("error"); });
+        });
+    )");
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        ::features::kBackForwardCache,
+        {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}});
+    PasswordManagerBrowserTest::SetUpCommandLine(command_line);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class MockHttpAuthObserver : public password_manager::HttpAuthObserver {
@@ -3922,6 +3958,69 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ParserAnnotations) {
       base::StringPrintf(kGetAnnotation, "chg_new_password_2"),
       &cofirmation_password_annotation));
   EXPECT_EQ("confirmation_password_element", cofirmation_password_annotation);
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBackForwardCacheBrowserTest,
+                       SavePasswordOnRestoredPage) {
+  // Navigate to a page with a password form.
+  NavigateToFile("/password/password_form.html");
+  content::RenderFrameHost* rfh = WebContents()->GetMainFrame();
+  content::RenderFrameDeletedObserver rfh_deleted_observer(rfh);
+
+  // Navigate away so that the password form page is stored in the cache.
+  EXPECT_TRUE(NavigateToURL(
+      WebContents(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+  EXPECT_FALSE(rfh_deleted_observer.deleted());
+  EXPECT_TRUE(content::IsInBackForwardCache(rfh));
+
+  // Restore the cached page.
+  WebContents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(WebContents()));
+  EXPECT_EQ(rfh, WebContents()->GetMainFrame());
+
+  // Fill out and submit the password form.
+  NavigationObserver observer(WebContents());
+  std::string fill_and_submit =
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('password_field').value = 'random';"
+      "document.getElementById('input_submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
+  observer.Wait();
+
+  // Save the password and check the store.
+  BubbleObserver bubble_observer(WebContents());
+  EXPECT_TRUE(bubble_observer.IsSavePromptShownAutomatically());
+  bubble_observer.AcceptSavePrompt();
+  WaitForPasswordStore();
+
+  CheckThatCredentialsStored("temp", "random");
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBackForwardCacheBrowserTest,
+                       CallAPIOnRestoredPage) {
+  // Navigate to a page with a password form.
+  NavigateToFile("/password/password_form.html");
+  content::RenderFrameHost* rfh = WebContents()->GetMainFrame();
+  content::RenderFrameDeletedObserver rfh_deleted_observer(rfh);
+
+  // Make sure the password manager API works.
+  EXPECT_TRUE(IsGetCredentialsSuccessful());
+
+  // Navigate away so that the password form page is stored in the cache.
+  EXPECT_TRUE(NavigateToURL(
+      WebContents(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+  EXPECT_FALSE(rfh_deleted_observer.deleted());
+  EXPECT_TRUE(content::IsInBackForwardCache(rfh));
+
+  // Restore the cached page.
+  WebContents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(WebContents()));
+  EXPECT_EQ(rfh, WebContents()->GetMainFrame());
+
+  // Make sure the password manager API still works now that the page has been
+  // stored/restored.
+  // TODO(https://crbug.com/1012707): This is currently broken.
+  EXPECT_FALSE(IsGetCredentialsSuccessful());
 }
 
 }  // namespace

@@ -26,6 +26,7 @@ namespace content {
 
 class RenderFrameHostImpl;
 class RenderFrameProxyHost;
+class RenderViewHostImpl;
 
 // BackForwardCache:
 //
@@ -41,7 +42,8 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
                            std::unique_ptr<RenderFrameProxyHost>>;
 
     Entry(std::unique_ptr<RenderFrameHostImpl> rfh,
-          RenderFrameProxyHostMap proxy_hosts);
+          RenderFrameProxyHostMap proxy_hosts,
+          std::set<RenderViewHostImpl*> render_view_hosts);
     ~Entry();
 
     // The main document being stored.
@@ -52,6 +54,17 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
     // the page, because pages using window.open and nested WebContents are not
     // cached.
     RenderFrameProxyHostMap proxy_hosts;
+
+    // RenderViewHosts belonging to the main frame, and its proxies (if any).
+    //
+    // While RenderViewHostImpl(s) are in the BackForwardCache, they aren't
+    // reused for pages outside the cache. This prevents us from having two main
+    // frames, (one in the cache, one live), associated with a single
+    // RenderViewHost.
+    //
+    // Keeping these here also prevents RenderFrameHostManager code from
+    // unwittingly iterating over RenderViewHostImpls that are in the cache.
+    std::set<RenderViewHostImpl*> render_view_hosts;
 
     DISALLOW_COPY_AND_ASSIGN(Entry);
   };

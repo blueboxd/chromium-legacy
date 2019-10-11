@@ -4,7 +4,7 @@
 
 from page_sets import press_story
 from telemetry import story
-from telemetry.value import scalar
+
 
 class Jetstream2Story(press_story.PressStory):
   URL = 'http://browserbench.org/JetStream/'
@@ -57,25 +57,19 @@ class Jetstream2Story(press_story.PressStory):
         })();"""
     )
 
-    self.AddJavascriptMetricValue(
-      scalar.ScalarValue(self, 'Score', 'score', score))
-
+    self.AddMeasurement('Score', 'score', score)
     for k, v in result.iteritems():
       # Replace '.' in the benchmark name, because '.' is interpreted
       # as a sub-category of the metric
       benchmark = str(k).replace('.', '_')
-      self.AddJavascriptMetricValue(scalar.ScalarValue(
-          self, benchmark, 'score', v['Score'],
-          important=False,
-          description='Geometric mean of the iterations'))
-      self.AddJavascriptMetricValue(scalar.ScalarValue(
-          self, benchmark+'.Iterations', 'number', v['Iterations'],
-          important=False,
-          description='Total number of iterations'))
+      self.AddMeasurement(
+          benchmark, 'score', v['Score'],
+          description='Geometric mean of the iterations')
+      self.AddMeasurement(
+          '%s.Iterations' % benchmark, 'number', v['Iterations'],
+          description='Total number of iterations')
       for sub_k, sub_v in v['SubResults'].iteritems():
-        self.AddJavascriptMetricValue(scalar.ScalarValue(
-            self, benchmark+'.'+str(sub_k), 'score', sub_v,
-            important=False))
+        self.AddMeasurement('%s.%s' % (benchmark, sub_k), 'score', sub_v)
 
 
 class Jetstream2StorySet(story.StorySet):

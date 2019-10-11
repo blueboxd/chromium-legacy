@@ -1981,12 +1981,15 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AppBannersUserResponse">
-  <int value="1" label="Native app banner was accepted by the user"/>
-  <int value="2" label="Web app banner was accepted by the user"/>
-  <int value="3" label="Native app banner was dismissed by the user"/>
-  <int value="4" label="Web app banner was dismissed by the user"/>
-  <int value="5" label="Native app banner was ignored by the user"/>
-  <int value="6" label="Web app banner was ignored by the user"/>
+  <int value="1" label="Native app install dialog was accepted by the user"/>
+  <int value="2"
+      label="Web app add-to-homescreen dialog was accepted by the user"/>
+  <int value="3" label="Native app install dialog was dismissed by the user"/>
+  <int value="4"
+      label="Web app add-to-homescreen dialog was dismissed by the user"/>
+  <int value="5"
+      label="Native app banner was ignored by the user (deprecated)"/>
+  <int value="6" label="Web app banner was ignored by the user (deprecated)"/>
 </enum>
 
 <enum name="AppCacheCheckResponseResult">
@@ -24917,6 +24920,10 @@ Called by update_net_error_codes.py.-->
   <int value="3053" label="UserTimingL3"/>
   <int value="3054" label="GetGamepadsFromCrossOriginSubframe"/>
   <int value="3055" label="GetGamepadsFromInsecureContext"/>
+  <int value="3056" label="OriginCleanImageBitmapSerialization"/>
+  <int value="3057" label="NonOriginCleanImageBitmapSerialization"/>
+  <int value="3058" label="OriginCleanImageBitmapTransfer"/>
+  <int value="3059" label="NonOriginCleanImageBitmapTransfer"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -63053,9 +63060,10 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="WebApkInstallEvent">
-  <int value="0" label="Infobar is ignored"/>
-  <int value="1" label="Infobar is dismissed before installation"/>
-  <int value="2" label="Infobar is dismissed during installation"/>
+  <int value="0" label="Infobar is ignored (deprecated)"/>
+  <int value="1"
+      label="Add-to-homescreen dialog dismissed prior to installation"/>
+  <int value="2" label="Infobar is dismissed during installation (deprecated)"/>
   <int value="3" label="Success"/>
   <int value="4" label="Failed"/>
 </enum>

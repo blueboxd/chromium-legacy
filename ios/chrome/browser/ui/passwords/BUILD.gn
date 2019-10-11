@@ -21,6 +21,7 @@ source_set("passwords") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/colors",
     "//ios/chrome/common/ui_util",
     "//ui/base",

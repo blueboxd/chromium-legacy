@@ -135,7 +135,8 @@ class PLATFORM_EXPORT MediaStreamSource final
   bool requires_consumer_;
   HeapHashSet<WeakMember<Observer>> observers_;
   Mutex audio_consumers_lock_;
-  HashSet<AudioDestinationConsumer*> audio_consumers_;
+  HashSet<AudioDestinationConsumer*> audio_consumers_
+      GUARDED_BY(audio_consumers_lock_);
   std::unique_ptr<WebPlatformMediaStreamSource> platform_source_;
   WebMediaConstraints constraints_;
   WebMediaStreamSource::Capabilities capabilities_;

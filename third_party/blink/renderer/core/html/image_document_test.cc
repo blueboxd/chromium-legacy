@@ -69,6 +69,9 @@ class WindowToViewportScalingChromeClient : public EmptyChromeClient {
   float WindowToViewportScalar(const float s) const override {
     return s * scale_factor_;
   }
+  float WindowToViewportScalar(LocalFrame*, const float s) const override {
+    return s * scale_factor_;
+  }
 
  private:
   float scale_factor_;

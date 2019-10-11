@@ -19,6 +19,10 @@ WebApp::WebApp(const AppId& app_id)
 
 WebApp::~WebApp() = default;
 
+WebApp::WebApp(const WebApp& web_app) = default;
+
+WebApp& WebApp::operator=(WebApp&& web_app) = default;
+
 void WebApp::AddSource(Source::Type source) {
   sources_[source] = true;
 }
@@ -74,13 +78,17 @@ void WebApp::SetIcons(Icons icons) {
   icons_ = std::move(icons);
 }
 
-void WebApp::SetSyncData(const SyncData& sync_data) {
-  sync_data_ = sync_data;
+void WebApp::SetSyncData(SyncData sync_data) {
+  sync_data_ = std::move(sync_data);
 }
 
 WebApp::SyncData::SyncData() = default;
 
 WebApp::SyncData::~SyncData() = default;
+
+WebApp::SyncData::SyncData(const SyncData& sync_data) = default;
+
+WebApp::SyncData& WebApp::SyncData::operator=(SyncData&& sync_data) = default;
 
 std::ostream& operator<<(std::ostream& out, const WebApp& app) {
   const std::string theme_color =

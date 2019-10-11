@@ -168,6 +168,7 @@ void TabSharingUIViews::StopSharing() {
     std::move(stop_callback_).Run();
   RemoveInfobarsForAllTabs();
   SetContentsBorderVisible(shared_tab_, false);
+  tab_capture_indicator_ui_.reset();
   shared_tab_ = nullptr;
 }
 
@@ -180,7 +181,6 @@ void TabSharingUIViews::OnBrowserRemoved(Browser* browser) {
   BrowserList* browser_list = BrowserList::GetInstance();
   if (browser_list->empty())
     browser_list->RemoveObserver(this);
-
   browser->tab_strip_model()->RemoveObserver(this);
 }
 
@@ -192,17 +192,6 @@ void TabSharingUIViews::OnTabStripModelChanged(
     for (const auto& contents : change.GetInsert()->contents) {
       if (infobars_.find(contents.contents) == infobars_.end())
         CreateInfobarForWebContents(contents.contents);
-    }
-  } else if (change.type() == TabStripModelChange::kRemoved) {
-    auto* remove = change.GetRemove();
-    if (remove->will_be_deleted) {
-      bool remove_shared_tab = false;
-      for (const auto& contents : remove->contents) {
-        remove_shared_tab |= contents.contents == shared_tab_;
-        infobars_.erase(contents.contents);
-      }
-      if (remove_shared_tab)
-        StopSharing();
     }
   }
 
@@ -227,18 +216,18 @@ void TabSharingUIViews::TabChangedAt(content::WebContents* contents,
     CreateInfobarForWebContents(contents);
 }
 
-void TabSharingUIViews::OnInfoBarRemoved(infobars::InfoBar* info_bar,
+void TabSharingUIViews::OnInfoBarRemoved(infobars::InfoBar* infobar,
                                          bool animate) {
   auto infobars_entry = std::find_if(infobars_.begin(), infobars_.end(),
-                                     [info_bar](const auto& infobars_entry) {
-                                       return infobars_entry.second == info_bar;
+                                     [infobar](const auto& infobars_entry) {
+                                       return infobars_entry.second == infobar;
                                      });
   if (infobars_entry == infobars_.end())
     return;
 
-  info_bar->owner()->RemoveObserver(this);
+  infobar->owner()->RemoveObserver(this);
   infobars_.erase(infobars_entry);
-  if (infobars_entry->first == shared_tab_)
+  if (InfoBarService::WebContentsFromInfoBar(infobar) == shared_tab_)
     StopSharing();
 }
 

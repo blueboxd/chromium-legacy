@@ -81,8 +81,9 @@ BrowsingDataFilterBuilder::Create(Mode mode) {
 }
 
 // static
-base::Callback<bool(const GURL&)> BrowsingDataFilterBuilder::BuildNoopFilter() {
-  return base::Bind([](const GURL&) { return true; });
+base::RepeatingCallback<bool(const GURL&)>
+BrowsingDataFilterBuilder::BuildNoopFilter() {
+  return base::BindRepeating([](const GURL&) { return true; });
 }
 
 BrowsingDataFilterBuilderImpl::BrowsingDataFilterBuilderImpl(Mode mode)

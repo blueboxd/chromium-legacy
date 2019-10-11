@@ -51,6 +51,18 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
     }
 
     @Override
+    public boolean canGoBack() {
+        return NavigationControllerImplJni.get().canGoBack(
+                mNativeNavigationController, NavigationControllerImpl.this);
+    }
+
+    @Override
+    public boolean canGoForward() {
+        return NavigationControllerImplJni.get().canGoForward(
+                mNativeNavigationController, NavigationControllerImpl.this);
+    }
+
+    @Override
     public void reload() {
         NavigationControllerImplJni.get().reload(
                 mNativeNavigationController, NavigationControllerImpl.this);
@@ -139,6 +151,8 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
                 long nativeNavigationControllerImpl, NavigationControllerImpl caller, String uri);
         void goBack(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
         void goForward(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
+        boolean canGoBack(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
+        boolean canGoForward(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
         void reload(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
         void stop(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
         int getNavigationListSize(

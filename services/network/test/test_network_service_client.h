@@ -10,6 +10,8 @@
 
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
@@ -21,7 +23,8 @@ namespace network {
 class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
  public:
   TestNetworkServiceClient();
-  explicit TestNetworkServiceClient(mojom::NetworkServiceClientRequest request);
+  explicit TestNetworkServiceClient(
+      mojo::PendingReceiver<mojom::NetworkServiceClient> receiver);
   ~TestNetworkServiceClient() override;
 
   // network::mojom::NetworkServiceClient implementation:
@@ -45,7 +48,7 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
       const base::Optional<std::string>& raw_response_headers) override;
 
  private:
-  mojo::Binding<mojom::NetworkServiceClient> binding_;
+  mojo::Receiver<mojom::NetworkServiceClient> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkServiceClient);
 };

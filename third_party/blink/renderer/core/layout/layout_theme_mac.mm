@@ -752,7 +752,7 @@ int LayoutThemeMac::PopupInternalPaddingStart(
   return 0;
 }
 
-int LayoutThemeMac::PopupInternalPaddingEnd(const ChromeClient*,
+int LayoutThemeMac::PopupInternalPaddingEnd(LocalFrame*,
                                             const ComputedStyle& style) const {
   if (style.EffectiveAppearance() == kMenulistPart)
     return PopupButtonPadding(ControlSizeForFont(style))[kRightMargin] *

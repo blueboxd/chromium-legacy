@@ -607,6 +607,7 @@ VISIT_PROTO_FIELDS(const sync_pb::NigoriModel& proto) {
   VISIT(encrypt_everything);
   VISIT_REP(encrypted_types_specifics_field_number);
   VISIT_REP(keystore_key);
+  VISIT(pending_keystore_decryptor_token);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::NigoriLocalData& proto) {

@@ -73,13 +73,12 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
       return event_router_->GetEventCount(event_name);
     }
 
-   protected:
+   private:
     aura::Window* GetActiveWindow() override { return window_.get(); }
     extensions::EventRouter* GetEventRouter() const override {
       return event_router_;
     }
 
-   private:
     std::unique_ptr<aura::Window> window_;
     extensions::TestEventRouter* const event_router_;
 

@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/serial/serial_port_underlying_source.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_interface.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
@@ -28,22 +27,25 @@ SerialPortUnderlyingSource::SerialPortUnderlyingSource(
 }
 
 ScriptPromise SerialPortUnderlyingSource::pull(ScriptState* script_state) {
-  // Only one pending call to pull() is allowed by the spec.
-  DCHECK(!pending_pull_);
-  // pull() shouldn't be called if an error has been signaled to the controller.
+  // pull() signals that the stream wants more data. By resolving immediately
+  // we allow the stream to be canceled before that data is received. pull()
+  // will not be called again until a chunk is enqueued or if an error has been
+  // signaled to the controller.
   DCHECK(data_pipe_);
 
-  if (ReadData())
-    return ScriptPromise::CastUndefined(script_state);
+  if (!ReadData())
+    ArmWatcher();
 
-  return ArmWatcher(script_state);
+  return ScriptPromise::CastUndefined(script_state);
 }
 
 ScriptPromise SerialPortUnderlyingSource::Cancel(ScriptState* script_state,
                                                  ScriptValue reason) {
-  // TODO(crbug.com/989653): cancel() should trigger a purge of the serial
-  // read buffer.
+  // TODO(crbug.com/989653): Rather than calling Close(), cancel() should
+  // trigger a purge of the serial read buffer and wait for the pipe to close to
+  // indicate the purge has been completed.
   Close();
+  ExpectPipeClose();
   return ScriptPromise::CastUndefined(script_state);
 }
 
@@ -70,19 +72,7 @@ void SerialPortUnderlyingSource::SignalErrorOnClose(DOMException* exception) {
   serial_port_->UnderlyingSourceClosed();
 }
 
-void SerialPortUnderlyingSource::ExpectClose() {
-  if (data_pipe_) {
-    // Pipe is still open. Wait for PipeClosed() to be called.
-    expect_close_ = true;
-    return;
-  }
-
-  Controller()->Close();
-  serial_port_->UnderlyingSourceClosed();
-}
-
 void SerialPortUnderlyingSource::Trace(Visitor* visitor) {
-  visitor->Trace(pending_pull_);
   visitor->Trace(pending_exception_);
   visitor->Trace(serial_port_);
   UnderlyingSourceBase::Trace(visitor);
@@ -113,15 +103,12 @@ bool SerialPortUnderlyingSource::ReadData() {
   }
 }
 
-ScriptPromise SerialPortUnderlyingSource::ArmWatcher(
-    ScriptState* script_state) {
+void SerialPortUnderlyingSource::ArmWatcher() {
   MojoResult ready_result;
   mojo::HandleSignalsState ready_state;
   MojoResult result = watcher_.Arm(&ready_result, &ready_state);
-  if (result == MOJO_RESULT_OK) {
-    pending_pull_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    return pending_pull_->Promise();
-  }
+  if (result == MOJO_RESULT_OK)
+    return;
 
   DCHECK_EQ(ready_result, MOJO_RESULT_OK);
   if (ready_state.readable()) {
@@ -130,24 +117,15 @@ ScriptPromise SerialPortUnderlyingSource::ArmWatcher(
   } else if (ready_state.peer_closed()) {
     PipeClosed();
   }
-
-  return ScriptPromise::CastUndefined(script_state);
 }
 
 void SerialPortUnderlyingSource::OnHandleReady(
     MojoResult result,
     const mojo::HandleSignalsState& state) {
-  DCHECK(pending_pull_);
-
   switch (result) {
     case MOJO_RESULT_OK: {
       bool read_result = ReadData();
       DCHECK(read_result);
-      // If the pipe was closed |pending_pull_| will have been resolved.
-      if (pending_pull_) {
-        pending_pull_->Resolve();
-        pending_pull_ = nullptr;
-      }
       break;
     }
     case MOJO_RESULT_SHOULD_WAIT:
@@ -157,6 +135,17 @@ void SerialPortUnderlyingSource::OnHandleReady(
       PipeClosed();
       break;
   }
+}
+
+void SerialPortUnderlyingSource::ExpectPipeClose() {
+  if (data_pipe_) {
+    // The pipe is still open. Wait for PipeClosed() to be called.
+    expect_close_ = true;
+    return;
+  }
+
+  Controller()->Close();
+  serial_port_->UnderlyingSourceClosed();
 }
 
 void SerialPortUnderlyingSource::PipeClosed() {
@@ -174,10 +163,6 @@ void SerialPortUnderlyingSource::PipeClosed() {
 void SerialPortUnderlyingSource::Close() {
   watcher_.Cancel();
   data_pipe_.reset();
-  if (pending_pull_) {
-    pending_pull_->Resolve();
-    pending_pull_ = nullptr;
-  }
 }
 
 }  // namespace blink

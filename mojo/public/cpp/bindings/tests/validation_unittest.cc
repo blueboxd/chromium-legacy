@@ -17,9 +17,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/bindings/connector.h"
-#include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/message_dispatcher.h"
 #include "mojo/public/cpp/bindings/message_header_validator.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -208,6 +208,23 @@ void RunValidationTests(const std::string& prefix,
   }
 }
 
+class TwoStepValidator : public MessageReceiver {
+ public:
+  TwoStepValidator(std::unique_ptr<MessageReceiver> first_validator,
+                   std::unique_ptr<MessageReceiver> second_validator)
+      : first_validator_(std::move(first_validator)),
+        second_validator_(std::move(second_validator)) {}
+
+  bool Accept(Message* message) override {
+    return first_validator_->Accept(message) &&
+           second_validator_->Accept(message);
+  }
+
+ private:
+  std::unique_ptr<MessageReceiver> first_validator_;
+  std::unique_ptr<MessageReceiver> second_validator_;
+};
+
 class DummyMessageReceiver : public MessageReceiver {
  public:
   bool Accept(Message* message) override {
@@ -395,18 +412,21 @@ TEST_F(ValidationTest, InputParser) {
 
 TEST_F(ValidationTest, Conformance) {
   DummyMessageReceiver dummy_receiver;
-  mojo::FilterChain validators(&dummy_receiver);
-  validators.Append<mojo::MessageHeaderValidator>();
-  validators.Append<ConformanceTestInterface::RequestValidator_>();
+  mojo::MessageDispatcher validators(&dummy_receiver);
+  validators.SetValidator(std::make_unique<TwoStepValidator>(
+      std::make_unique<mojo::MessageHeaderValidator>(),
+      std::make_unique<ConformanceTestInterface::RequestValidator_>()));
 
   RunValidationTests("conformance_", &validators);
 }
 
 TEST_F(ValidationTest, AssociatedConformace) {
   DummyMessageReceiver dummy_receiver;
-  mojo::FilterChain validators(&dummy_receiver);
-  validators.Append<mojo::MessageHeaderValidator>();
-  validators.Append<AssociatedConformanceTestInterface::RequestValidator_>();
+  mojo::MessageDispatcher validators(&dummy_receiver);
+  validators.SetValidator(std::make_unique<TwoStepValidator>(
+      std::make_unique<mojo::MessageHeaderValidator>(),
+      std::make_unique<
+          AssociatedConformanceTestInterface::RequestValidator_>()));
 
   RunValidationTests("associated_conformance_", &validators);
 }
@@ -416,19 +436,20 @@ TEST_F(ValidationTest, AssociatedConformace) {
 // detection of off-by-one errors in method ordinals.
 TEST_F(ValidationTest, BoundsCheck) {
   DummyMessageReceiver dummy_receiver;
-  mojo::FilterChain validators(&dummy_receiver);
-  validators.Append<mojo::MessageHeaderValidator>();
-  validators.Append<BoundsCheckTestInterface::RequestValidator_>();
-
+  mojo::MessageDispatcher validators(&dummy_receiver);
+  validators.SetValidator(std::make_unique<TwoStepValidator>(
+      std::make_unique<mojo::MessageHeaderValidator>(),
+      std::make_unique<BoundsCheckTestInterface::RequestValidator_>()));
   RunValidationTests("boundscheck_", &validators);
 }
 
 // This test is similar to the Conformance test but for responses.
 TEST_F(ValidationTest, ResponseConformance) {
   DummyMessageReceiver dummy_receiver;
-  mojo::FilterChain validators(&dummy_receiver);
-  validators.Append<mojo::MessageHeaderValidator>();
-  validators.Append<ConformanceTestInterface::ResponseValidator_>();
+  mojo::MessageDispatcher validators(&dummy_receiver);
+  validators.SetValidator(std::make_unique<TwoStepValidator>(
+      std::make_unique<mojo::MessageHeaderValidator>(),
+      std::make_unique<ConformanceTestInterface::ResponseValidator_>()));
 
   RunValidationTests("resp_conformance_", &validators);
 }
@@ -436,9 +457,10 @@ TEST_F(ValidationTest, ResponseConformance) {
 // This test is similar to the BoundsCheck test but for responses.
 TEST_F(ValidationTest, ResponseBoundsCheck) {
   DummyMessageReceiver dummy_receiver;
-  mojo::FilterChain validators(&dummy_receiver);
-  validators.Append<mojo::MessageHeaderValidator>();
-  validators.Append<BoundsCheckTestInterface::ResponseValidator_>();
+  mojo::MessageDispatcher validators(&dummy_receiver);
+  validators.SetValidator(std::make_unique<TwoStepValidator>(
+      std::make_unique<mojo::MessageHeaderValidator>(),
+      std::make_unique<BoundsCheckTestInterface::ResponseValidator_>()));
 
   RunValidationTests("resp_boundscheck_", &validators);
 }

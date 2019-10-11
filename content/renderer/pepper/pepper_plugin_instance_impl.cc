@@ -2636,9 +2636,10 @@ PP_Bool PepperPluginInstanceImpl::GetScreenSize(PP_Instance instance,
     *size = view_data_.rect.size;
   } else {
     // All other cases: Report the screen size.
-    if (!render_frame_ || !render_frame_->GetLocalRootRenderWidget())
+    if (!render_frame_)
       return PP_FALSE;
-    blink::WebScreenInfo info = render_frame_->render_view()->GetScreenInfo();
+    blink::WebScreenInfo info =
+        render_frame_->GetLocalRootRenderWidget()->GetScreenInfo();
     *size = PP_MakeSize(info.rect.width, info.rect.height);
   }
   return PP_TRUE;
@@ -3221,7 +3222,8 @@ void PepperPluginInstanceImpl::SetSizeAttributesForFullscreen() {
   // behavior, the width and height should probably be set to 100%, rather than
   // a fixed screen size.
 
-  blink::WebScreenInfo info = render_frame_->render_view()->GetScreenInfo();
+  blink::WebScreenInfo info =
+      render_frame_->GetLocalRootRenderWidget()->GetScreenInfo();
   screen_size_for_fullscreen_ = gfx::Size(info.rect.width, info.rect.height);
   std::string width = base::NumberToString(screen_size_for_fullscreen_.width());
   std::string height =

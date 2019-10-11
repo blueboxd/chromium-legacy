@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/test/task_environment.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 
 namespace content {
 
@@ -24,7 +24,7 @@ class PeerConnectionDependencyFactoryTestingPlatformSupport
     : public blink::Platform {
  public:
   PeerConnectionDependencyFactoryTestingPlatformSupport(
-      MockPeerConnectionDependencyFactory* dependency_factory)
+      blink::MockPeerConnectionDependencyFactory* dependency_factory)
       : dependency_factory_(dependency_factory) {}
 
   std::unique_ptr<blink::WebRTCPeerConnectionHandler>
@@ -36,13 +36,13 @@ class PeerConnectionDependencyFactoryTestingPlatformSupport
   }
 
  private:
-  MockPeerConnectionDependencyFactory* dependency_factory_ = nullptr;
+  blink::MockPeerConnectionDependencyFactory* dependency_factory_ = nullptr;
 };
 
 class PeerConnectionDependencyFactoryTest : public ::testing::Test {
  public:
   void SetUp() override {
-    dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
+    dependency_factory_.reset(new blink::MockPeerConnectionDependencyFactory());
 
     platform_original_ = blink::Platform::Current();
     peer_connection_dependency_factory_platform_support_.reset(
@@ -58,7 +58,8 @@ class PeerConnectionDependencyFactoryTest : public ::testing::Test {
 
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
-  std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
+  std::unique_ptr<blink::MockPeerConnectionDependencyFactory>
+      dependency_factory_;
 
   std::unique_ptr<PeerConnectionDependencyFactoryTestingPlatformSupport>
       peer_connection_dependency_factory_platform_support_;

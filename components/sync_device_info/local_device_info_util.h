@@ -13,6 +13,8 @@ namespace syncer {
 
 sync_pb::SyncEnums::DeviceType GetLocalDeviceType();
 
+// Returns the personalizable device name. This may contain
+// personally-identifiable information - e.g. Alex's MacbookPro.
 std::string GetPersonalizableDeviceNameBlocking();
 
 }  // namespace syncer

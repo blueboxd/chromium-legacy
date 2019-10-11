@@ -5,13 +5,15 @@
 package org.chromium.chrome.browser.omnibox.status;
 
 import android.content.res.Resources;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 
 import androidx.annotation.DrawableRes;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -21,7 +23,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * A component for displaying a status icon (e.g. security icon or navigation icon) and optional
  * verbose status text.
  */
-public class StatusViewCoordinator implements View.OnClickListener, UrlBar.UrlTextChangeListener {
+public class StatusViewCoordinator implements View.OnClickListener, TextWatcher {
     private final StatusView mStatusView;
     private final StatusMediator mMediator;
     private final PropertyModel mModel;
@@ -34,8 +36,10 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlBar.UrlTe
      * Creates a new StatusViewCoordinator.
      * @param isTablet Whether the UI is shown on a tablet.
      * @param statusView The status view, used to supply and manipulate child views.
+     * @param urlBarEditingTextStateProvider The url coordinator.
      */
-    public StatusViewCoordinator(boolean isTablet, StatusView statusView) {
+    public StatusViewCoordinator(boolean isTablet, StatusView statusView,
+            UrlBarEditingTextStateProvider urlBarEditingTextStateProvider) {
         mIsTablet = isTablet;
         mStatusView = statusView;
 
@@ -44,7 +48,8 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlBar.UrlTe
                          .build();
 
         PropertyModelChangeProcessor.create(mModel, mStatusView, new StatusViewBinder());
-        mMediator = new StatusMediator(mModel, mStatusView.getResources());
+        mMediator = new StatusMediator(
+                mModel, mStatusView.getResources(), urlBarEditingTextStateProvider);
 
         Resources res = mStatusView.getResources();
         mMediator.setUrlMinWidth(res.getDimensionPixelSize(R.dimen.location_bar_min_url_width)
@@ -216,7 +221,13 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlBar.UrlTe
     }
 
     @Override
-    public void onTextChanged(String textWithoutAutocomplete, String textWithAutocomplete) {
-        mMediator.onTextChanged(textWithoutAutocomplete, textWithAutocomplete);
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+    @Override
+    public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+        mMediator.onTextChanged(charSequence);
     }
+
+    @Override
+    public void afterTextChanged(Editable editable) {}
 }

@@ -297,6 +297,22 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
   DISALLOW_COPY_AND_ASSIGN(Message);
 };
 
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) MessageFilter {
+ public:
+  virtual ~MessageFilter() {}
+
+  // The filter may mutate the given message.  This method is called before
+  // the message is dispatched to the associated MessageReceiver. Returns true
+  // if the message was accepted and false otherwise, indicating that the
+  // message was invalid or malformed.
+  virtual bool WillDispatch(Message* message) WARN_UNUSED_RESULT = 0;
+
+  // The filter receives notification that the message was dispatched or
+  // rejected. Since the message filter is owned by the receiver it will not be
+  // invoked if the receiver is closed during a dispatch of a message.
+  virtual void DidDispatchOrReject(Message* message, bool accepted) = 0;
+};
+
 class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) MessageReceiver {
  public:
   virtual ~MessageReceiver() {}

@@ -156,6 +156,9 @@ AXSelection AXSelection::FromCurrentSelection(
       *ax_text_control, static_cast<int>(text_control.selectionEnd()),
       extent_affinity);
 
+  if (!ax_base.IsValid() || !ax_extent.IsValid())
+    return {};
+
   AXSelection::Builder selection_builder;
   selection_builder.SetBase(ax_base).SetExtent(ax_extent);
   return selection_builder.Build();

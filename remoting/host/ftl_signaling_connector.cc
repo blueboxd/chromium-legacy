@@ -92,7 +92,7 @@ void FtlSignalingConnector::OnSignalStrategyStateChange(
 
   if (state == SignalStrategy::CONNECTED) {
     HOST_LOG << "Signaling connected. New JID: "
-             << signal_strategy_->GetLocalAddress().jid();
+             << signal_strategy_->GetLocalAddress().id();
     backoff_reset_timer_.Start(FROM_HERE, kBackoffResetDelay, &backoff_,
                                &net::BackoffEntry::Reset);
   } else if (state == SignalStrategy::DISCONNECTED) {

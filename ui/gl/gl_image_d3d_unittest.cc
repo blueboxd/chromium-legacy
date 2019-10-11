@@ -14,7 +14,7 @@ namespace {
 
 const uint8_t kImageColor[] = {0x30, 0x40, 0x10, 0xFF};
 
-template <DXGI_FORMAT texture_format, GLenum internal_format>
+template <DXGI_FORMAT texture_format, GLenum internal_format, GLenum data_type>
 class GLImageD3DTestDelegate : public GLImageTestDelegateBase {
  public:
   void DidSetUp() override {
@@ -49,7 +49,7 @@ class GLImageD3DTestDelegate : public GLImageTestDelegateBase {
     EXPECT_TRUE(SUCCEEDED(hr));
 
     auto image = base::MakeRefCounted<GLImageD3D>(
-        size, internal_format, std::move(d3d11_texture), nullptr);
+        size, internal_format, data_type, std::move(d3d11_texture), nullptr);
     EXPECT_TRUE(image->Initialize());
     return image;
   }
@@ -86,14 +86,28 @@ class GLImageD3DTestDelegate : public GLImageTestDelegateBase {
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
 };
 
-using GLImageTestTypes = testing::Types<
-    GLImageD3DTestDelegate<DXGI_FORMAT_B8G8R8A8_UNORM, GL_BGRA_EXT>,
-    GLImageD3DTestDelegate<DXGI_FORMAT_B8G8R8A8_UNORM, GL_RGBA>,
-    GLImageD3DTestDelegate<DXGI_FORMAT_B8G8R8A8_UNORM, GL_RGB>,
-    GLImageD3DTestDelegate<DXGI_FORMAT_R8G8B8A8_UNORM, GL_RGBA>,
-    GLImageD3DTestDelegate<DXGI_FORMAT_R8G8B8A8_UNORM, GL_RGB>,
-    GLImageD3DTestDelegate<DXGI_FORMAT_R16G16B16A16_FLOAT, GL_RGBA>,
-    GLImageD3DTestDelegate<DXGI_FORMAT_R16G16B16A16_FLOAT, GL_RGB>>;
+using GLImageTestTypes =
+    testing::Types<GLImageD3DTestDelegate<DXGI_FORMAT_B8G8R8A8_UNORM,
+                                          GL_BGRA_EXT,
+                                          GL_UNSIGNED_BYTE>,
+                   GLImageD3DTestDelegate<DXGI_FORMAT_B8G8R8A8_UNORM,
+                                          GL_RGBA,
+                                          GL_UNSIGNED_BYTE>,
+                   GLImageD3DTestDelegate<DXGI_FORMAT_B8G8R8A8_UNORM,
+                                          GL_RGB,
+                                          GL_UNSIGNED_BYTE>,
+                   GLImageD3DTestDelegate<DXGI_FORMAT_R8G8B8A8_UNORM,
+                                          GL_RGBA,
+                                          GL_UNSIGNED_BYTE>,
+                   GLImageD3DTestDelegate<DXGI_FORMAT_R8G8B8A8_UNORM,
+                                          GL_RGB,
+                                          GL_UNSIGNED_BYTE>,
+                   GLImageD3DTestDelegate<DXGI_FORMAT_R16G16B16A16_FLOAT,
+                                          GL_RGBA,
+                                          GL_HALF_FLOAT_OES>,
+                   GLImageD3DTestDelegate<DXGI_FORMAT_R16G16B16A16_FLOAT,
+                                          GL_RGB,
+                                          GL_HALF_FLOAT_OES>>;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(GLImageD3D, GLImageTest, GLImageTestTypes);
 INSTANTIATE_TYPED_TEST_SUITE_P(GLImageD3D,

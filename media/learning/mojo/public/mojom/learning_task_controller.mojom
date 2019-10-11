@@ -23,9 +23,12 @@ interface LearningTaskController {
   // features into an example for training a model, then call
   // CompleteObservation with the same id and an ObservationCompletion.
   // Otherwise, call CancelObservation with |id|.  It's also okay to destroy the
-  // controller with outstanding observations; these will be cancelled.
+  // controller with outstanding observations; these will be cancelled if no
+  // |default_target| was specified, else they will be completed using that as
+  // the target value.
   BeginObservation(mojo_base.mojom.UnguessableToken id,
-          array<FeatureValue> features);
+          array<FeatureValue> features,
+          TargetValue? default_target);
 
   // Complete observation |id| by providing |completion|.
   CompleteObservation(mojo_base.mojom.UnguessableToken id,

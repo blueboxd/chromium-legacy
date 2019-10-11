@@ -16,6 +16,7 @@
 #include "media/audio/audio_features.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
+#include "media/webrtc/webrtc_switches.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
@@ -1011,7 +1012,7 @@ class DeviceContainer {
     }
     if (is_reconfiguration_allowed || source_info.type() == SourceType::kNone ||
         source_info.type() == SourceType::kApmProcessed) {
-      if (IsApmInAudioServiceEnabled()) {
+      if (media::IsWebRtcApmInAudioServiceEnabled()) {
         processing_based_containers_.push_back(
             ProcessingBasedContainer::CreateRemoteApmProcessedContainer(
                 source_info, is_device_capture, device_parameters_,

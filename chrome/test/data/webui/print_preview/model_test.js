@@ -35,11 +35,11 @@ cr.define('model_test', function() {
         dpi: {},
         mediaSize: {},
         marginsType: 0, /* default */
-        customScaling: false,
         scaling: '100',
+        scalingType: print_preview.ScalingType.DEFAULT,
+        scalingTypePdf: print_preview.ScalingType.DEFAULT,
         isHeaderFooterEnabled: true,
         isCssBackgroundEnabled: false,
-        isFitToPageEnabled: false,
         isCollateEnabled: true,
         isDuplexEnabled: true,
         isDuplexShortEdge: false,
@@ -59,11 +59,11 @@ cr.define('model_test', function() {
         dpi: {horizontal_dpi: 1000, vertical_dpi: 500},
         mediaSize: {width_microns: 43180, height_microns: 21590},
         marginsType: 2, /* none */
-        customScaling: true,
         scaling: '85',
+        scalingType: print_preview.ScalingType.CUSTOM,
+        scalingTypePdf: print_preview.ScalingType.FIT_TO_PAGE,
         isHeaderFooterEnabled: false,
         isCssBackgroundEnabled: true,
-        isFitToPageEnabled: true,
         isCollateEnabled: false,
         isDuplexEnabled: false,
         isDuplexShortEdge: true,
@@ -129,16 +129,15 @@ cr.define('model_test', function() {
               .then(
                   () =>
                       testStickySetting('duplexShortEdge', 'isDuplexShortEdge'))
-              .then(() => testStickySetting('fitToPage', 'isFitToPageEnabled'))
               .then(
                   () => testStickySetting(
                       'headerFooter', 'isHeaderFooterEnabled'))
               .then(() => testStickySetting('layout', 'isLandscapeEnabled'))
               .then(() => testStickySetting('margins', 'marginsType'))
               .then(() => testStickySetting('mediaSize', 'mediaSize'))
-              .then(() => testStickySetting('customScaling', 'customScaling'))
               .then(() => testStickySetting('scaling', 'scaling'))
-              .then(() => testStickySetting('fitToPage', 'isFitToPageEnabled'))
+              .then(() => testStickySetting('scalingType', 'scalingType'))
+              .then(() => testStickySetting('scalingTypePdf', 'scalingTypePdf'))
               .then(() => testStickySetting('vendorItems', 'vendorOptions'));
       if (cr.isChromeOS) {
         promise = promise.then(() => testStickySetting('pin', 'isPinEnabled'))
@@ -178,9 +177,6 @@ cr.define('model_test', function() {
 
     /** @param {!print_preview.Destination} testDestination */
     function toggleSettings(testDestination) {
-      // Some non default setting values to change to.
-      // Manually set fit to page to available so it can be toggled.
-      model.settings.fitToPage.available = true;
       const settingsChange = {
         pages: [2],
         copies: 2,
@@ -199,9 +195,9 @@ cr.define('model_test', function() {
           horizontal_dpi: 100,
           vertical_dpi: 100,
         },
-        fitToPage: false,
-        customScaling: true,
         scaling: '90',
+        scalingType: print_preview.ScalingType.CUSTOM,
+        scalingTypePdf: print_preview.ScalingType.CUSTOM,
         duplex: true,
         duplexShortEdge: true,
         cssBackground: true,
@@ -230,6 +226,7 @@ cr.define('model_test', function() {
         hasCssMediaStyles: false,
         hasSelection: true,
         isModifiable: true,
+        isPdf: false,
         isScalingDisabled: false,
         fitToPageScaling: 100,
         pageCount: 3,
@@ -285,11 +282,8 @@ cr.define('model_test', function() {
         shouldPrintBackgrounds: false,
         shouldPrintSelectionOnly: false,
         previewModifiable: true,
-        printToPDF: false,
         printToGoogleDrive: false,
-        printWithCloudPrint: false,
-        printWithPrivet: false,
-        printWithExtension: false,
+        printerType: print_preview.PrinterType.LOCAL_PRINTER,
         rasterizePDF: false,
         scaleFactor: 100,
         pagesPerSheet: 1,
@@ -297,7 +291,7 @@ cr.define('model_test', function() {
         dpiVertical: 200,
         dpiDefault: true,
         deviceName: 'FooDevice',
-        fitToPageEnabled: true,
+        fitToPageEnabled: false,
         pageWidth: 612,
         pageHeight: 792,
         showSystemDialog: false,
@@ -326,11 +320,8 @@ cr.define('model_test', function() {
         shouldPrintBackgrounds: true,
         shouldPrintSelectionOnly: false,  // Only for Print Preview.
         previewModifiable: true,
-        printToPDF: false,
         printToGoogleDrive: false,
-        printWithCloudPrint: false,
-        printWithPrivet: false,
-        printWithExtension: false,
+        printerType: print_preview.PrinterType.LOCAL_PRINTER,
         rasterizePDF: true,
         scaleFactor: 90,
         pagesPerSheet: 1,

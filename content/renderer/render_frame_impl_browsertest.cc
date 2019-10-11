@@ -358,9 +358,8 @@ TEST_F(RenderFrameImplTest, DownloadUrlLimit) {
       blink::WebSecurityOrigin::Create(GURL("http://test")));
 
   for (int i = 0; i < 10; ++i) {
-    frame()->DownloadURL(
-        request, blink::WebLocalFrameClient::CrossOriginRedirects::kNavigate,
-        mojo::ScopedMessagePipeHandle());
+    frame()->DownloadURL(request, network::mojom::RedirectMode::kManual,
+                         mojo::ScopedMessagePipeHandle());
     base::RunLoop().RunUntilIdle();
     const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
         FrameHostMsg_DownloadUrl::ID);
@@ -369,9 +368,8 @@ TEST_F(RenderFrameImplTest, DownloadUrlLimit) {
     render_thread_->sink().ClearMessages();
   }
 
-  frame()->DownloadURL(
-      request, blink::WebLocalFrameClient::CrossOriginRedirects::kNavigate,
-      mojo::ScopedMessagePipeHandle());
+  frame()->DownloadURL(request, network::mojom::RedirectMode::kManual,
+                       mojo::ScopedMessagePipeHandle());
   base::RunLoop().RunUntilIdle();
   const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
       FrameHostMsg_DownloadUrl::ID);

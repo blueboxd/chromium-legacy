@@ -59,6 +59,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/base/features.h"
 #include "net/net_buildflags.h"
 #include "net/third_party/uri_template/uri_template.h"
 #include "services/network/network_service.h"
@@ -252,6 +253,20 @@ bool ShouldEnableAsyncDns() {
   return feature_can_be_enabled &&
          base::FeatureList::IsEnabled(features::kAsyncDns);
 }
+
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+bool ShouldUseBuiltinCertVerifier(PrefService* local_state) {
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
+  const PrefService::Preference* builtin_cert_verifier_enabled_pref =
+      local_state->FindPreference(prefs::kBuiltinCertificateVerifierEnabled);
+  if (builtin_cert_verifier_enabled_pref->IsManaged())
+    return builtin_cert_verifier_enabled_pref->GetValue()->GetBool();
+#endif
+
+  return base::FeatureList::IsEnabled(
+      net::features::kCertVerifierBuiltinFeature);
+}
+#endif
 
 }  // namespace
 
@@ -538,6 +553,13 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kQuickCheckEnabled, true);
 
   registry->RegisterIntegerPref(prefs::kMaxConnectionsPerProxy, -1);
+
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
+  // Note that the default value is not relevant because the pref is only
+  // evaluated when it is managed.
+  registry->RegisterBooleanPref(prefs::kBuiltinCertificateVerifierEnabled,
+                                false);
+#endif
 }
 
 void SystemNetworkContextManager::OnNetworkServiceCreated(
@@ -756,6 +778,11 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
       network_context_params->ct_logs.push_back(std::move(log_info));
     }
   }
+#endif
+
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+  network_context_params->use_builtin_cert_verifier =
+      ShouldUseBuiltinCertVerifier(local_state_);
 #endif
 
   return network_context_params;

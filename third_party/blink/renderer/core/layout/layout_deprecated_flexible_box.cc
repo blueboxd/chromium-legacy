@@ -433,7 +433,7 @@ void LayoutDeprecatedFlexibleBox::UpdateBlockLayout(bool relayout_children) {
     TextAutosizer::LayoutScope text_autosizer_layout_scope(this);
 
     if (previous_size != Size() ||
-        (Parent()->IsDeprecatedFlexibleBox() &&
+        (Parent()->StyleRef().IsDeprecatedWebkitBox() &&
          Parent()->StyleRef().BoxOrient() == EBoxOrient::kHorizontal &&
          Parent()->StyleRef().BoxAlign() == EBoxAlignment::kStretch))
       relayout_children = true;

@@ -23,6 +23,7 @@ using blink::mojom::NativeFileSystemStatus;
 using storage::BlobDataHandle;
 using storage::BlobImpl;
 using storage::FileSystemOperation;
+using storage::FileSystemOperationRunner;
 using storage::IsolatedContext;
 
 namespace content {
@@ -63,13 +64,14 @@ void NativeFileSystemFileHandleImpl::AsBlob(AsBlobCallback callback) {
 
   // TODO(mek): Check backend::SupportsStreaming and create snapshot file if
   // streaming is not supported.
-  operation_runner()->GetMetadata(
+  DoFileSystemOperation(
+      FROM_HERE, &FileSystemOperationRunner::GetMetadata,
+      base::BindOnce(&NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob,
+                     weak_factory_.GetWeakPtr(), std::move(callback)),
       url(),
       FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
           FileSystemOperation::GET_METADATA_FIELD_SIZE |
-          FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
-      base::BindOnce(&NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+          FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED);
 }
 
 void NativeFileSystemFileHandleImpl::CreateFileWriter(
@@ -229,13 +231,13 @@ void NativeFileSystemFileHandleImpl::CreateSwapFile(
     swap_file_system = std::move(handle.file_system);
   }
 
-  operation_runner()->CreateFile(
-      swap_url,
-      /*exclusive=*/true,
+  DoFileSystemOperation(
+      FROM_HERE, &FileSystemOperationRunner::CreateFile,
       base::BindOnce(&NativeFileSystemFileHandleImpl::DidCreateSwapFile,
                      weak_factory_.GetWeakPtr(), count, swap_url,
-                     swap_file_system, keep_existing_data,
-                     std::move(callback)));
+                     swap_file_system, keep_existing_data, std::move(callback)),
+      swap_url,
+      /*exclusive=*/true);
 }
 
 void NativeFileSystemFileHandleImpl::DidCreateSwapFile(
@@ -273,14 +275,15 @@ void NativeFileSystemFileHandleImpl::DidCreateSwapFile(
     return;
   }
 
-  operation_runner()->Copy(
+  DoFileSystemOperation(
+      FROM_HERE, &FileSystemOperationRunner::Copy,
+      base::BindOnce(&NativeFileSystemFileHandleImpl::DidCopySwapFile,
+                     weak_factory_.GetWeakPtr(), swap_url, swap_file_system,
+                     std::move(callback)),
       url(), swap_url,
       storage::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
       storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
-      storage::FileSystemOperation::CopyProgressCallback(),
-      base::BindOnce(&NativeFileSystemFileHandleImpl::DidCopySwapFile,
-                     weak_factory_.GetWeakPtr(), swap_url, swap_file_system,
-                     std::move(callback)));
+      storage::FileSystemOperation::CopyProgressCallback());
 }
 
 void NativeFileSystemFileHandleImpl::DidCopySwapFile(

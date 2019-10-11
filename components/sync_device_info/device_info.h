@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -56,6 +57,7 @@ class DeviceInfo {
              const std::string& sync_user_agent,
              const sync_pb::SyncEnums::DeviceType device_type,
              const std::string& signin_scoped_device_id,
+             const base::SysInfo::HardwareInfo& hardware_info,
              base::Time last_updated_timestamp,
              bool send_tab_to_self_receiving_enabled,
              const base::Optional<SharingInfo>& sharing_info);
@@ -87,6 +89,8 @@ class DeviceInfo {
   // Device_id that is stable until user signs out. This device_id is used for
   // annotating login scoped refresh token.
   const std::string& signin_scoped_device_id() const;
+
+  const base::SysInfo::HardwareInfo& hardware_info() const;
 
   // Returns the time at which this device was last updated to the sync servers.
   base::Time last_updated_timestamp() const;
@@ -138,6 +142,8 @@ class DeviceInfo {
   // ids in that the same device will have different id for different apps
   // and they are also reset when app/extension is uninstalled.
   std::string public_id_;
+
+  base::SysInfo::HardwareInfo hardware_info_;
 
   const base::Time last_updated_timestamp_;
 

@@ -119,16 +119,29 @@ bool ShouldShowOnboarding(PrefService* prefs,
   if (is_password_update) {
     return false;
   }
-  if (prefs->GetInteger(
-          password_manager::prefs::kPasswordManagerOnboardingState) ==
-      static_cast<int>(OnboardingState::kShouldShow)) {
-    // It is very important that the feature is checked last when we are certain
-    // that the onboarding needs to be shown. Otherwise, experiment data will be
-    // polluted.
-    return base::FeatureList::IsEnabled(
-        password_manager::features::kPasswordManagerOnboardingAndroid);
+
+  int pref_value = prefs->GetInteger(
+      password_manager::prefs::kPasswordManagerOnboardingState);
+
+  bool should_show =
+      (pref_value == static_cast<int>(OnboardingState::kShouldShow));
+  bool already_shown =
+      (pref_value == static_cast<int>(OnboardingState::kShown));
+  bool is_eligible = should_show || already_shown;
+
+  if (!is_eligible) {
+    return false;
   }
-  return false;
+
+  // It is very important that the feature is checked only for eligible users.
+  // otherwise the data will be diluted. It's also important that the feature is
+  // checked in all eligible cases, even if the onboarding prompt was shown,
+  // otherwise the data will be incomplete.
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordManagerOnboardingAndroid)) {
+    return false;
+  }
+  return should_show;
 }
 
 SavingFlowMetricsRecorder::SavingFlowMetricsRecorder() = default;

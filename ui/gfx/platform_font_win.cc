@@ -275,9 +275,25 @@ HRESULT GetFamilyNameFromDirectWriteFont(IDWriteFont* dwrite_font,
 PlatformFontWin::PlatformFontWin() : font_ref_(GetBaseFontRef()) {
 }
 
-PlatformFontWin::PlatformFontWin(const std::string& font_name,
-                                 int font_size) {
+PlatformFontWin::PlatformFontWin(const std::string& font_name, int font_size) {
   InitWithFontNameAndSize(font_name, font_size);
+}
+
+PlatformFontWin::PlatformFontWin(sk_sp<SkTypeface> typeface,
+                                 int font_size_pixels,
+                                 const base::Optional<FontRenderParams>& params)
+    : typeface_(std::move(typeface)) {
+  DCHECK(typeface_);
+
+  // TODO(http://crbug.com/944227): This is a transitional code path until we
+  // complete migrating to PlatformFontSkia on Windows. Being unable to wrap the
+  // SkTypeface into a PlatformFontSkia and performing a rematching by font
+  // family name instead loses platform font handles encapsulated in SkTypeface,
+  // and in turn leads to instantiating a different font than what was returned
+  // by font fallback, compare https://crbug.com/1003829.
+  SkString family_name;
+  typeface_->getFamilyName(&family_name);
+  InitWithFontNameAndSize(family_name.c_str(), font_size_pixels);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -360,7 +376,7 @@ const FontRenderParams& PlatformFontWin::GetFontRenderParams() {
 }
 
 sk_sp<SkTypeface> PlatformFontWin::GetNativeSkTypefaceIfAvailable() const {
-  return nullptr;
+  return sk_sp<SkTypeface>(typeface_);
 }
 
 NativeFont PlatformFontWin::GetNativeFont() const {
@@ -657,16 +673,7 @@ PlatformFont* PlatformFont::CreateFromSkTypeface(
   TRACE_EVENT0("fonts", "PlatformFont::CreateFromSkTypeface");
   if (base::FeatureList::IsEnabled(kPlatformFontSkiaOnWindows))
     return new PlatformFontSkia(typeface, font_size, params);
-
-  // This is a transitional code path until we complete migrating to
-  // PlatformFontSkia on Windows. Being unable to wrap the SkTypeface into a
-  // PlatformFontSkia and performing a rematching by font family name instead
-  // loses platform font handles encapsulated in SkTypeface, and in turn leads
-  // to instantiating a different font than what was returned by font fallback,
-  // compare https://crbug.com/1003829.
-  SkString family_name;
-  typeface->getFamilyName(&family_name);
-  return new PlatformFontWin(family_name.c_str(), font_size);
+  return new PlatformFontWin(typeface, font_size, params);
 }
 
 }  // namespace gfx

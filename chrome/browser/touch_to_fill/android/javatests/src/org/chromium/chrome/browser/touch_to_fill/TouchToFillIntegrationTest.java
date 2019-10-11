@@ -76,8 +76,9 @@ public class TouchToFillIntegrationTest {
     @MediumTest
     @DisabledTest(message = "crbug.com/1012221")
     public void testClickingSuggestionsTriggersCallback() {
-        runOnUiThreadBlocking(
-                () -> { mTouchToFill.showCredentials(EXAMPLE_URL, Arrays.asList(ANA, BOB)); });
+        runOnUiThreadBlocking(() -> {
+            mTouchToFill.showCredentials(EXAMPLE_URL, true, Arrays.asList(ANA, BOB));
+        });
         pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
 
         pollUiThread(() -> getCredentials().getChildAt(1) != null);
@@ -90,8 +91,9 @@ public class TouchToFillIntegrationTest {
     @Test
     @MediumTest
     public void testBackDismissesAndCallsCallback() {
-        runOnUiThreadBlocking(
-                () -> { mTouchToFill.showCredentials(EXAMPLE_URL, Arrays.asList(ANA, BOB)); });
+        runOnUiThreadBlocking(() -> {
+            mTouchToFill.showCredentials(EXAMPLE_URL, true, Arrays.asList(ANA, BOB));
+        });
         pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
 
         Espresso.pressBack();

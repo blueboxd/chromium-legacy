@@ -84,14 +84,6 @@ void LogAudioProcesingProperties(
 }
 }  // namespace
 
-bool IsApmInAudioServiceEnabled() {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  return base::FeatureList::IsEnabled(features::kWebRtcApmInAudioService);
-#else
-  return false;
-#endif
-}
-
 ProcessedLocalAudioSource::ProcessedLocalAudioSource(
     WebLocalFrame* web_frame,
     const blink::MediaStreamDevice& device,
@@ -268,7 +260,7 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
   DCHECK(params.IsValid());
   media::AudioSourceParameters source_params(device().session_id());
   const bool use_remote_apm =
-      IsApmInAudioServiceEnabled() &&
+      media::IsWebRtcApmInAudioServiceEnabled() &&
       MediaStreamAudioProcessor::WouldModifyAudio(audio_processing_properties_);
   if (use_remote_apm) {
     audio_processor_proxy_ =

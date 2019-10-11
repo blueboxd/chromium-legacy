@@ -14,6 +14,8 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gl/buffer_format_utils.h"
+#include "ui/gl/gl_image.h"
 
 namespace viz {
 
@@ -28,7 +30,7 @@ BufferQueue::BufferQueue(gpu::gles2::GLES2Interface* gl,
                                                   format,
                                                   capabilities)),
       internal_format_(base::strict_cast<uint32_t>(
-          gpu::InternalFormatForGpuMemoryBufferFormat(format))),
+          gl::BufferFormatToGLInternalFormat(format))),
       format_(format),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       surface_handle_(surface_handle) {}

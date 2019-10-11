@@ -100,7 +100,8 @@ public class StartSurfaceCoordinator implements StartSurface {
                         : mExploreSurfaceCoordinator.getFeedSurfaceCreator(),
                 mSurfaceMode == SurfaceMode.SINGLE_PANE ? this::initializeSecondaryTasksSurface
                                                         : null,
-                mSurfaceMode, mStartSurfaceLocationBarDelegate);
+                mSurfaceMode, mStartSurfaceLocationBarDelegate,
+                mActivity.getNightModeStateProvider());
     }
 
     // Implements StartSurface.

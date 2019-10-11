@@ -1124,7 +1124,7 @@ bool OmniboxEditModel::WillHandleEscapeKey() const {
 
 bool OmniboxEditModel::OnEscapeKeyPressed() {
   if (has_temporary_text_) {
-    RevertTemporaryText(true);
+    RevertTemporaryTextAndPopup();
     return true;
   }
 
@@ -1178,9 +1178,13 @@ void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
     // If, as a result of the key press, we would select the first result, then
     // we should revert the temporary text same as what pressing escape would
     // have done.
+    //
+    // This doesn't apply for on-focus suggestions, for which the first result
+    // can be completely distinct from the omnibox contents. We enforce that
+    // via user_input_in_progress_, which is false for ZeroSuggest.
     const size_t line_no = GetNewSelectedLine(count);
-    if (has_temporary_text_ && user_input_in_progress_ && line_no == 0) {
-      RevertTemporaryText(true);
+    if (has_temporary_text_ && line_no == 0 && user_input_in_progress_) {
+      RevertTemporaryTextAndPopup();
     } else {
       popup_model()->MoveTo(line_no);
     }
@@ -1290,8 +1294,9 @@ void OmniboxEditModel::OnPopupDataChanged(
     //
     // It may also be possible to reach here if we're reverting from having
     // temporary text back to a default match that's a keyword search, but in
-    // that case the RevertTemporaryText() call below will reset the caret or
-    // selection correctly so the caret positioning we do here won't matter.
+    // that case the RevertTemporaryTextAndPopup() call below will reset the
+    // caret or selection correctly so the caret positioning we do here won't
+    // matter.
     view_->SetWindowTextAndCaretPos(user_text, 0, false, true);
   } else if (view_->OnInlineAutocompleteTextMaybeChanged(
                  user_text + inline_autocomplete_text_, user_text.length())) {
@@ -1521,14 +1526,14 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
   }
 }
 
-void OmniboxEditModel::RevertTemporaryText(bool revert_popup) {
+void OmniboxEditModel::RevertTemporaryTextAndPopup() {
   // The user typed something, then selected a different item.  Restore the
   // text they typed and change back to the default item.
   // NOTE: This purposefully does not reset paste_state_.
   just_deleted_text_ = false;
   has_temporary_text_ = false;
 
-  if (revert_popup && popup_model())
+  if (popup_model())
     popup_model()->ResetToDefaultMatch();
 
   const AutocompleteMatch& match = CurrentMatch(nullptr);

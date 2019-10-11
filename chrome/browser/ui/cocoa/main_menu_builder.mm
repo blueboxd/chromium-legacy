@@ -402,8 +402,20 @@ base::scoped_nsobject<NSMenuItem> BuildTabMenu(
               Item(IDS_NEXT_TAB_MAC).command_id(IDC_SELECT_NEXT_TAB),
               Item(IDS_PREV_TAB_MAC).command_id(IDC_SELECT_PREVIOUS_TAB),
               Item(IDS_DUPLICATE_TAB_MAC).command_id(IDC_DUPLICATE_TAB),
+              Item(IDS_DUPLICATE_TARGET_TAB_MAC)
+                  .command_id(IDC_DUPLICATE_TARGET_TAB)
+                  .is_alternate()
+                  .key_equivalent(@"", NSAlternateKeyMask),
               Item(IDS_MUTE_SITE_MAC).command_id(IDC_WINDOW_MUTE_SITE),
+              Item(IDS_MUTE_TARGET_SITE_MAC)
+                  .command_id(IDC_MUTE_TARGET_SITE)
+                  .is_alternate()
+                  .key_equivalent(@"", NSAlternateKeyMask),
               Item(IDS_PIN_TAB_MAC).command_id(IDC_WINDOW_PIN_TAB),
+              Item(IDS_PIN_TARGET_TAB_MAC)
+                  .command_id(IDC_PIN_TARGET_TAB)
+                  .is_alternate()
+                  .key_equivalent(@"", NSAlternateKeyMask),
               Item().is_separator(),
           })
           .Build();

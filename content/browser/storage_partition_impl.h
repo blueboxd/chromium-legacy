@@ -300,7 +300,8 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   // Override the origin policy manager for testing use only.
   void SetOriginPolicyManagerForBrowserProcessForTesting(
-      network::mojom::OriginPolicyManagerPtr test_origin_policy_manager);
+      mojo::PendingRemote<network::mojom::OriginPolicyManager>
+          test_origin_policy_manager);
   void ResetOriginPolicyManagerForBrowserProcessForTesting();
 
  private:
@@ -487,7 +488,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   bool is_test_url_loader_factory_for_browser_process_with_corb_ = false;
   mojo::Remote<network::mojom::CookieManager>
       cookie_manager_for_browser_process_;
-  network::mojom::OriginPolicyManagerPtr
+  mojo::Remote<network::mojom::OriginPolicyManager>
       origin_policy_manager_for_browser_process_;
 
   // See comments for site_for_service_worker().

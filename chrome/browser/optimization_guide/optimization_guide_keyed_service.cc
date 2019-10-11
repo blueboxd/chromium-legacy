@@ -144,8 +144,10 @@ void OptimizationGuideKeyedService::Initialize(
       database_provider, top_host_provider_.get(),
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess());
-  prediction_manager_ =
-      std::make_unique<optimization_guide::PredictionManager>();
+  if (optimization_guide::features::IsOptimizationTargetPredictionEnabled()) {
+    prediction_manager_ =
+        std::make_unique<optimization_guide::PredictionManager>();
+  }
 }
 
 void OptimizationGuideKeyedService::MaybeLoadHintForNavigation(
@@ -164,9 +166,10 @@ void OptimizationGuideKeyedService::RegisterOptimizationTypesAndTargets(
     const std::vector<optimization_guide::proto::OptimizationTarget>&
         optimization_targets) {
   DCHECK(hints_manager_);
-  DCHECK(prediction_manager_);
   hints_manager_->RegisterOptimizationTypes(optimization_types);
-  prediction_manager_->RegisterOptimizationTargets(optimization_targets);
+
+  if (prediction_manager_)
+    prediction_manager_->RegisterOptimizationTargets(optimization_targets);
 }
 
 optimization_guide::OptimizationGuideDecision
@@ -183,6 +186,13 @@ OptimizationGuideKeyedService::CanApplyOptimization(
       navigation_handle, optimization_target, optimization_type,
       &optimization_target_decision, &optimization_type_decision,
       optimization_metadata);
+
+  if (prediction_manager_) {
+    optimization_target_decision = prediction_manager_->ShouldTargetNavigation(
+        navigation_handle, optimization_target);
+    // TODO(crbug/1001194): Add feature param for propagating decision that
+    // allows for us to collect metrics without tainting the data.
+  }
 
   LogDecisions(navigation_handle, optimization_target,
                optimization_target_decision, optimization_type,

@@ -977,6 +977,9 @@ extern const char kUsageStatsEnabled[];
 #if defined(OS_CHROMEOS)
 extern const char kClientCertificateManagementAllowed[];
 extern const char kCACertificateManagementAllowed[];
+#endif
+
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
 extern const char kBuiltinCertificateVerifierEnabled[];
 #endif
 

@@ -144,22 +144,21 @@ void SetupFragmentation(const NGConstraintSpace& parent_space,
                         bool is_new_fc) {
   DCHECK(parent_space.HasBlockFragmentation());
 
-  LayoutUnit space_available =
-      parent_space.FragmentainerSpaceAtBfcStart() - new_bfc_block_offset;
-
   builder->SetFragmentainerBlockSize(parent_space.FragmentainerBlockSize());
-  builder->SetFragmentainerSpaceAtBfcStart(space_available);
+  new_bfc_block_offset += parent_space.FragmentainerOffsetAtBfc();
+  builder->SetFragmentainerOffsetAtBfc(new_bfc_block_offset);
   builder->SetFragmentationType(parent_space.BlockFragmentationType());
 
   if (parent_space.IsInColumnBfc() && !is_new_fc)
     builder->SetIsInColumnBfc();
 }
 
-void FinishFragmentation(NGBoxFragmentBuilder* builder,
+void FinishFragmentation(const NGConstraintSpace& space,
                          LayoutUnit block_size,
                          LayoutUnit intrinsic_block_size,
                          LayoutUnit previously_consumed_block_size,
-                         LayoutUnit space_left) {
+                         LayoutUnit space_left,
+                         NGBoxFragmentBuilder* builder) {
   if (builder->DidBreak()) {
     // One of our children broke. Even if we fit within the remaining space, we
     // need to prepare a break token.
@@ -177,7 +176,9 @@ void FinishFragmentation(NGBoxFragmentBuilder* builder,
     builder->SetBreakAppeal(kBreakAppealPerfect);
     builder->SetBlockSize(space_left);
     builder->SetIntrinsicBlockSize(space_left);
-    builder->PropagateSpaceShortage(block_size - space_left);
+    if (space.BlockFragmentationType() == kFragmentColumn &&
+        !space.IsInitialColumnBalancingPass())
+      builder->PropagateSpaceShortage(block_size - space_left);
     return;
   }
 

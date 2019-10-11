@@ -1147,7 +1147,7 @@ static IntPoint DragLocationForLink(const DragImage* link_image,
 
 // static
 std::unique_ptr<DragImage> DragController::DragImageForSelection(
-    const LocalFrame& frame,
+    LocalFrame& frame,
     float opacity) {
   if (!frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange())
     return nullptr;
@@ -1244,7 +1244,7 @@ bool DragController::StartDrag(LocalFrame* src,
                                  src->GetPage()->GetVisualViewport().Scale());
 
       float screen_device_scale_factor =
-          src->GetPage()->GetChromeClient().GetScreenInfo().device_scale_factor;
+          src->GetChromeClient().GetScreenInfo(*src).device_scale_factor;
       // Pass the selected image size in DIP becasue dragImageForImage clips the
       // image in DIP.  The coordinates of the locations are in Viewport
       // coordinates, and they're converted in the Blink client.
@@ -1281,7 +1281,7 @@ bool DragController::StartDrag(LocalFrame* src,
     if (!drag_image) {
       DCHECK(src->GetPage());
       float screen_device_scale_factor =
-          src->GetPage()->GetChromeClient().GetScreenInfo().device_scale_factor;
+          src->GetChromeClient().GetScreenInfo(*src).device_scale_factor;
       drag_image = DragImageForLink(link_url, hit_test_result.TextContent(),
                                     screen_device_scale_factor);
       drag_location = DragLocationForLink(drag_image.get(), mouse_dragged_point,
@@ -1328,7 +1328,7 @@ void DragController::DoSystemDrag(DragImage* image,
   if (image) {
     float resolution_scale = image->ResolutionScale();
     float device_scale_factor =
-        page_->GetChromeClient().GetScreenInfo().device_scale_factor;
+        frame->GetChromeClient().GetScreenInfo(*frame).device_scale_factor;
     if (device_scale_factor != resolution_scale) {
       DCHECK_GT(resolution_scale, 0);
       float scale = device_scale_factor / resolution_scale;

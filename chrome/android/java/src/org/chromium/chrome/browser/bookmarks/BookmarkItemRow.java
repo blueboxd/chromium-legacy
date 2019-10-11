@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.bookmarks;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 
 import org.chromium.chrome.R;
@@ -76,14 +76,8 @@ public class BookmarkItemRow extends BookmarkRow implements LargeIconCallback {
     @Override
     public void onLargeIconAvailable(Bitmap icon, int fallbackColor, boolean isFallbackColorDefault,
             @IconType int iconType) {
-        if (icon == null) {
-            mIconGenerator.setBackgroundColor(fallbackColor);
-            icon = mIconGenerator.generateIconForUrl(mUrl);
-            setIconDrawable(new BitmapDrawable(getResources(), icon));
-        } else {
-            setIconDrawable(FaviconUtils.createRoundedBitmapDrawable(getResources(),
-                    Bitmap.createScaledBitmap(
-                            icon, mDisplayedIconSize, mDisplayedIconSize, false)));
-        }
+        Drawable iconDrawable = FaviconUtils.getIconDrawableWithoutFilter(
+                icon, mUrl, fallbackColor, mIconGenerator, getResources(), mDisplayedIconSize);
+        setIconDrawable(iconDrawable);
     }
 }

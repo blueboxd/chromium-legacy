@@ -55,6 +55,13 @@
 #include "net/base/features.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+#include "chrome/browser/policy/policy_test_utils.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/policy_constants.h"
+#include "net/base/features.h"
+#endif
+
 // Most tests for this class are in NetworkContextConfigurationBrowserTest.
 class ProfileNetworkContextServiceBrowsertest : public InProcessBrowserTest {
  public:
@@ -355,8 +362,62 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_TRUE(IsActiveProfileUsingBuiltinCertVerifier());
 }
+#elif BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+class ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest
+    : public policy::PolicyTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    scoped_feature_list_.InitWithFeatureState(
+        net::features::kCertVerifierBuiltinFeature,
+        /*enabled=*/GetParam());
+    policy::PolicyTest::SetUpInProcessBrowserTestFixture();
+  }
 
-#endif  // defined(OS_CHROMEOS)
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(
+    ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
+    Test) {
+  ProfileNetworkContextService* profile_network_context_service =
+      ProfileNetworkContextServiceFactory::GetForContext(browser()->profile());
+  base::FilePath empty_relative_partition_path;
+  network::mojom::NetworkContextParamsPtr network_context_params_ptr =
+      profile_network_context_service->CreateNetworkContextParams(
+          /*in_memory=*/false, empty_relative_partition_path);
+  EXPECT_EQ(GetParam(), network_context_params_ptr->use_builtin_cert_verifier);
+
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
+  // If the BuiltinCertificateVerifierEnabled policy is set it should override
+  // the feature flag.
+  policy::PolicyMap policies;
+  SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
+            std::make_unique<base::Value>(true));
+  UpdateProviderPolicy(policies);
+
+  network_context_params_ptr =
+      profile_network_context_service->CreateNetworkContextParams(
+          /*in_memory=*/false, empty_relative_partition_path);
+  EXPECT_TRUE(network_context_params_ptr->use_builtin_cert_verifier);
+
+  SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
+            std::make_unique<base::Value>(false));
+  UpdateProviderPolicy(policies);
+
+  network_context_params_ptr =
+      profile_network_context_service->CreateNetworkContextParams(
+          /*in_memory=*/false, empty_relative_partition_path);
+  EXPECT_FALSE(network_context_params_ptr->use_builtin_cert_verifier);
+#endif
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
+    ::testing::Bool());
+#endif
 
 class CorsExtraSafelistedHeaderNamesTest : public InProcessBrowserTest {
  public:

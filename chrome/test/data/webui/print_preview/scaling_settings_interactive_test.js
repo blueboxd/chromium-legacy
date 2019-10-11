@@ -21,11 +21,12 @@ cr.define('scaling_settings_interactive_test', function() {
       PolymerTest.clearBody();
       model = document.createElement('print-preview-model');
       document.body.appendChild(model);
-      model.set('settings.fitToPage.available', false);
+      model.set('settings.scalingTypePdf.available', false);
 
       scalingSection = document.createElement('print-preview-scaling-settings');
       scalingSection.settings = model.settings;
       scalingSection.disabled = false;
+      scalingSection.isPdf = false;
       test_util.fakeDataBind(model, scalingSection, 'settings');
       document.body.appendChild(scalingSection);
     });
@@ -38,7 +39,9 @@ cr.define('scaling_settings_interactive_test', function() {
       const collapse = scalingSection.$$('iron-collapse');
 
       assertFalse(collapse.opened);
-      assertFalse(scalingSection.getSettingValue('customScaling'));
+      assertEquals(
+          print_preview.ScalingType.DEFAULT,
+          scalingSection.getSettingValue('scalingType'));
 
       // Select custom with the dropdown. This should autofocus the input.
       await Promise.all([
@@ -56,12 +59,15 @@ cr.define('scaling_settings_interactive_test', function() {
             scalingSection, scalingSection.ScalingValue.DEFAULT.toString()),
         test_util.eventToPromise('transitionend', collapse),
       ]);
-      assertFalse(scalingSection.getSettingValue('customScaling'));
+      assertEquals(
+          print_preview.ScalingType.DEFAULT,
+          scalingSection.getSettingValue('scalingType'));
       assertFalse(scalingSection.$$('iron-collapse').opened);
 
       // Set custom in JS, which happens when we set the sticky settings. This
       // should not autofocus the input.
-      scalingSection.setSetting('customScaling', true);
+      scalingSection.setSetting(
+          'scalingType', print_preview.ScalingType.CUSTOM);
       await test_util.eventToPromise('transitionend', collapse);
       assertTrue(collapse.opened);
       assertNotEquals(scalingInput, getDeepActiveElement());

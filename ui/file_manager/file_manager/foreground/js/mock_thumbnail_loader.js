@@ -47,18 +47,18 @@ MockThumbnailLoader.testImageDataUrl = null;
 
 /**
  * Width of test image.
- * @private {number}
+ * @type {number}
  */
 MockThumbnailLoader.testImageWidth = 0;
 
 /**
  * Height of test image.
- * @private {number}
+ * @type {number}
  */
 MockThumbnailLoader.testImageHeight = 0;
 
 /**
  * Error urls.
- * @private {Array<string>}
+ * @type {Array<string>}
  */
 MockThumbnailLoader.errorUrls = [];

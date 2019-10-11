@@ -8,6 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
@@ -59,7 +60,9 @@ class ParkableStringTest : public ::testing::Test {
   }
 
   void WaitForAging() {
-    EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
+    if (base::FeatureList::IsEnabled(kCompressParkableStrings)) {
+      EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
+    }
     task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
         ParkableStringManager::kAgingIntervalInSeconds));
   }
@@ -671,6 +674,18 @@ TEST_F(ParkableStringTest, ReportMemoryDump) {
       2 * kStringSize -
           (kStringSize + 2 * kCompressedSize + 2 * sizeof(ParkableStringImpl)));
   EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(savings))));
+}
+
+TEST_F(ParkableStringTest, CompressionDisabled) {
+  base::test::ScopedFeatureList features;
+  features.InitAndDisableFeature(kCompressParkableStrings);
+
+  ParkableString parkable(MakeLargeString().ReleaseImpl());
+  WaitForDelayedParking();
+  EXPECT_FALSE(parkable.Impl()->is_parked());
+
+  MemoryPressureListenerRegistry::Instance().OnPurgeMemory();
+  EXPECT_FALSE(parkable.Impl()->is_parked());
 }
 
 TEST_F(ParkableStringTest, Aging) {

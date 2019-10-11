@@ -250,19 +250,20 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
                                        const std::string& device_id,
                                        bool is_in_pairing_mode) override;
 
-  FidoDiscoveryFactory* fido_discovery_factory_;
-
  private:
   friend class FidoRequestHandlerTest;
 
   void InitDiscoveries(
+      FidoDiscoveryFactory* fido_discovery_factory,
+      service_manager::Connector* connector,
       const base::flat_set<FidoTransportProtocol>& available_transports);
 #if defined(OS_WIN)
   void InitDiscoveriesWin(
+      FidoDiscoveryFactory* fido_discovery_factory,
+      service_manager::Connector* connector,
       const base::flat_set<FidoTransportProtocol>& available_transports);
 #endif
 
-  void AddAuthenticator(FidoAuthenticator* authenticator);
   void NotifyObserverTransportAvailability();
 
   // Invokes FidoAuthenticator::InitializeAuthenticator(), followed by
@@ -278,7 +279,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   TransportAvailabilityInfo transport_availability_info_;
   base::RepeatingClosure notify_observer_callback_;
   std::unique_ptr<BleAdapterManager> bluetooth_adapter_manager_;
-  service_manager::Connector* const connector_;
 
   base::WeakPtrFactory<FidoRequestHandlerBase> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FidoRequestHandlerBase);

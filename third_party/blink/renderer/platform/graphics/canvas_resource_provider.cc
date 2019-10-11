@@ -752,9 +752,6 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
       case CanvasResourceType::kDirect3DGpuMemoryBuffer:
         if (!is_gpu_memory_buffer_image_allowed)
           continue;
-        DCHECK_EQ(color_params.GLUnsizedInternalFormat(),
-                  gpu::InternalFormatForGpuMemoryBufferFormat(
-                      color_params.GetBufferFormat()));
         provider = std::make_unique<CanvasResourceProviderPassThrough>(
             size, filter_quality, color_params, context_provider_wrapper,
             resource_dispatcher);
@@ -1145,6 +1142,11 @@ cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheF16() {
 
 void CanvasResourceProvider::RecycleResource(
     scoped_refptr<CanvasResource> resource) {
+  // We don't want to keep an arbitrary large number of canvases.
+  if (canvas_resources_.size() >
+      canvas_heuristic_parameters::kMaxRecycledCanvasResources)
+    return;
+
   // Need to check HasOneRef() because if there are outstanding references to
   // the resource, it cannot be safely recycled.
   if (resource->HasOneRef() && resource_recycling_enabled_ &&

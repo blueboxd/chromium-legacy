@@ -180,7 +180,7 @@ class RTCRtpTransceiver::RTCRtpTransceiverInternal
  public:
   RTCRtpTransceiverInternal(
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-      scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_map,
+      scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map,
       RtpTransceiverState state)
       : main_task_runner_(state.main_task_runner()),
         signaling_task_runner_(state.signaling_task_runner()),
@@ -291,7 +291,7 @@ uintptr_t RTCRtpTransceiver::GetId(
 
 RTCRtpTransceiver::RTCRtpTransceiver(
     scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-    scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_map,
+    scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map,
     RtpTransceiverState transceiver_state)
     : internal_(new RTCRtpTransceiverInternal(std::move(native_peer_connection),
                                               std::move(track_map),

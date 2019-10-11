@@ -393,43 +393,35 @@ void HTMLCanvasElement::DidDraw() {
   DidDraw(FloatRect(0, 0, Size().Width(), Size().Height()));
 }
 
-void HTMLCanvasElement::FinalizeFrame() {
-  TRACE_EVENT0("blink", "HTMLCanvasElement::FinalizeFrame");
+void HTMLCanvasElement::PreFinalizeFrame() {
   RecordCanvasSizeToUMA(size_);
 
-  // FinalizeFrame indicates the end of a script task that may have rendered
+  // PreFinalizeFrame indicates the end of a script task that may have rendered
   // into the canvas, now is a good time to unlock cache entries.
   auto* resource_provider = ResourceProvider();
   if (resource_provider)
     resource_provider->ReleaseLockedImages();
 
-  // Low-latency 2d canvases will produce their frames after the resource gets
-  // single buffered
-  if (context_ && !(Is2d() && LowLatencyEnabled()))
-    context_->FinalizeFrame();
-
+  // Low-latency 2d canvases produce their frames after the resource gets
+  // single buffered.
   if (LowLatencyEnabled() && !dirty_rect_.IsEmpty()) {
     if (GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
       const bool webgl_overlay_enabled =
           RuntimeEnabledFeatures::WebGLImageChromiumEnabled() ||
           context_->UsingSwapChain();
-      // TryEnableSingleBuffering() the first time we FinalizeFrame().
+      // TryEnableSingleBuffering() the first time we finalize a frame.
       if (!ResourceProvider()->IsSingleBuffered()) {
         ResourceProvider()->TryEnableSingleBuffering();
         if (Is3d() && webgl_overlay_enabled)
           context_->ProvideBackBufferToResourceProvider();
       }
+    }
+  }
+}
 
-      // TODO(aaronhk) This should just be a generic call to finalize frame
-      // but the pixel 2 bot hanging prevents it (crbug.com/1002946)
-      if (canvas2d_bridge_) {
-        canvas2d_bridge_->FlushRecording();
-      } else {
-        DCHECK(Is3d());
-        if (!webgl_overlay_enabled)
-          context_->PaintRenderingResultsToCanvas(kBackBuffer);
-      }
-
+void HTMLCanvasElement::PostFinalizeFrame() {
+  if (LowLatencyEnabled() && !dirty_rect_.IsEmpty()) {
+    if (GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
       const base::TimeTicks start_time = base::TimeTicks::Now();
       const scoped_refptr<CanvasResource> canvas_resource =
           ResourceProvider()->ProduceCanvasResource();

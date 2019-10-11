@@ -27,6 +27,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
+import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -93,6 +94,7 @@ class StartSurfaceMediator
     private boolean mIsIncognito;
     @Nullable
     private Delegate mDelegate;
+    private NightModeStateProvider mNightModeStateProvider;
     @Nullable
     UrlFocusChangeListener mUrlFocusChangeListener;
     @Nullable
@@ -102,13 +104,15 @@ class StartSurfaceMediator
             @Nullable PropertyModel propertyModel,
             @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator,
             @Nullable SecondaryTasksSurfaceInitializer secondaryTasksSurfaceInitializer,
-            @SurfaceMode int surfaceMode, @Nullable Delegate delegate) {
+            @SurfaceMode int surfaceMode, @Nullable Delegate delegate,
+            NightModeStateProvider nightModeStateProvider) {
         mController = controller;
         mPropertyModel = propertyModel;
         mFeedSurfaceCreator = feedSurfaceCreator;
         mSecondaryTasksSurfaceInitializer = secondaryTasksSurfaceInitializer;
         mSurfaceMode = surfaceMode;
         mDelegate = delegate;
+        mNightModeStateProvider = nightModeStateProvider;
 
         if (mPropertyModel != null) {
             assert mSurfaceMode == SurfaceMode.SINGLE_PANE || mSurfaceMode == SurfaceMode.TWO_PANES
@@ -258,7 +262,8 @@ class StartSurfaceMediator
             if (mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)
                     && mPropertyModel.get(FEED_SURFACE_COORDINATOR) == null) {
                 mPropertyModel.set(FEED_SURFACE_COORDINATOR,
-                        mFeedSurfaceCreator.createFeedSurfaceCoordinator());
+                        mFeedSurfaceCreator.createFeedSurfaceCoordinator(
+                                mNightModeStateProvider.isInNightMode()));
             }
 
             mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
@@ -361,8 +366,9 @@ class StartSurfaceMediator
 
         if (isVisible && mPropertyModel.get(IS_SHOWING_OVERVIEW)
                 && mPropertyModel.get(FEED_SURFACE_COORDINATOR) == null) {
-            mPropertyModel.set(
-                    FEED_SURFACE_COORDINATOR, mFeedSurfaceCreator.createFeedSurfaceCoordinator());
+            mPropertyModel.set(FEED_SURFACE_COORDINATOR,
+                    mFeedSurfaceCreator.createFeedSurfaceCoordinator(
+                            mNightModeStateProvider.isInNightMode()));
         }
 
         mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, isVisible);

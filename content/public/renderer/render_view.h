@@ -55,9 +55,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Get the routing ID of the view.
   virtual int GetRoutingID() = 0;
 
-  // Returns the device scale factor of the display the render view is in.
-  virtual float GetDeviceScaleFactor() = 0;
-
   // Returns the page's zoom level for the render view.
   virtual float GetZoomLevel() = 0;
 

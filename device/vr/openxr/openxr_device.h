@@ -37,7 +37,7 @@ class DEVICE_VR_EXPORT OpenXrDevice
 
   mojo::PendingRemote<mojom::IsolatedXRGamepadProviderFactory>
   BindGamepadFactory();
-  mojom::XRCompositorHostPtr BindCompositorHost();
+  mojo::PendingRemote<mojom::XRCompositorHost> BindCompositorHost();
 
  private:
   // XRSessionController
@@ -68,7 +68,7 @@ class DEVICE_VR_EXPORT OpenXrDevice
       gamepad_provider_factory_receiver_{this};
   mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> provider_receiver_;
 
-  mojo::Binding<mojom::XRCompositorHost> compositor_host_binding_;
+  mojo::Receiver<mojom::XRCompositorHost> compositor_host_receiver_{this};
   mojo::PendingReceiver<mojom::ImmersiveOverlay> overlay_receiver_;
 
   base::WeakPtrFactory<OpenXrDevice> weak_ptr_factory_;

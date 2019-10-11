@@ -25,7 +25,7 @@ class CommandLineTopHostProvider : public TopHostProvider {
   ~CommandLineTopHostProvider() override;
 
   // TopHostProvider implementation:
-  std::vector<std::string> GetTopHosts(size_t max_sites) override;
+  std::vector<std::string> GetTopHosts() override;
 
  private:
   explicit CommandLineTopHostProvider(

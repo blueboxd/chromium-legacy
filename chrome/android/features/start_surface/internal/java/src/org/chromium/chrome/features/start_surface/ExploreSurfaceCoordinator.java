@@ -40,9 +40,10 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
     interface FeedSurfaceCreator {
         /**
          * Creates the {@link FeedSurfaceCoordinator} for the specified mode.
+         * @param isInNightMode Whether or not the feed surface is going to display in night mode.
          * @return The {@link FeedSurfaceCoordinator}.
          */
-        FeedSurfaceCoordinator createFeedSurfaceCoordinator();
+        FeedSurfaceCoordinator createFeedSurfaceCoordinator(boolean isInNightMode);
     }
 
     ExploreSurfaceCoordinator(ChromeActivity activity, ViewGroup parentView,
@@ -60,8 +61,8 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
                 ExploreSurfaceViewBinder::bind);
         mFeedSurfaceCreator = new FeedSurfaceCreator() {
             @Override
-            public FeedSurfaceCoordinator createFeedSurfaceCoordinator() {
-                return internalCreateFeedSurfaceCoordinator(mHasHeader);
+            public FeedSurfaceCoordinator createFeedSurfaceCoordinator(boolean isInNightMode) {
+                return internalCreateFeedSurfaceCoordinator(mHasHeader, isInNightMode);
             }
         };
     }
@@ -85,7 +86,8 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
         return false;
     }
 
-    private FeedSurfaceCoordinator internalCreateFeedSurfaceCoordinator(boolean hasHeader) {
+    private FeedSurfaceCoordinator internalCreateFeedSurfaceCoordinator(
+            boolean hasHeader, boolean isInNightMode) {
         if (mExploreSurfaceNavigationDelegate == null) {
             mExploreSurfaceNavigationDelegate = new ExploreSurfaceNavigationDelegate(mActivity);
         }
@@ -104,7 +106,7 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
                     (SectionHeaderView) inflater.inflate(R.layout.ss_feed_header, null, false);
         }
         return new FeedSurfaceCoordinator(mActivity, null, null, null, sectionHeaderView,
-                exploreSurfaceActionHandler, false, this);
+                exploreSurfaceActionHandler, isInNightMode, this);
         // TODO(crbug.com/982018): Customize surface background for incognito and dark mode.
         // TODO(crbug.com/982018): Hide signin promo UI in incognito mode.
     }

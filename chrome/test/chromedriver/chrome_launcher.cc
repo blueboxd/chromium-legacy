@@ -237,9 +237,10 @@ Status WaitForDevToolsAndCheckVersion(
         std::move(window_types), capabilities->page_load_strategy));
   }
 
-  base::TimeTicks deadline =
-      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(wait_time);
-  Status status = client->Init(deadline - base::TimeTicks::Now());
+  const base::TimeTicks initial = base::TimeTicks::Now();
+  const base::TimeTicks deadline =
+      initial + base::TimeDelta::FromSeconds(wait_time);
+  Status status = client->Init(deadline - initial);
   if (status.IsError())
     return status;
 
@@ -281,9 +282,13 @@ Status WaitForDevToolsAndCheckVersion(
     }
   }
 
-  while (base::TimeTicks::Now() < deadline) {
+  // Always try GetWebViewsInfo at least once if the client
+  // initialized successfully.
+  do {
     WebViewsInfo views_info;
-    client->GetWebViewsInfo(&views_info);
+    status = client->GetWebViewsInfo(&views_info);
+    if (status.IsError())
+      return status;
     for (size_t i = 0; i < views_info.GetSize(); ++i) {
       if (views_info.Get(i).type == WebViewInfo::kPage) {
         *user_client = std::move(client);
@@ -291,7 +296,8 @@ Status WaitForDevToolsAndCheckVersion(
       }
     }
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
-  }
+  } while (base::TimeTicks::Now() < deadline);
+
   return Status(kUnknownError, "unable to discover open pages");
 }
 

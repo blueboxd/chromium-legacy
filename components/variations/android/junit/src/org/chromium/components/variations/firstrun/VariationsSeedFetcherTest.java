@@ -30,10 +30,12 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.text.ParseException;
 
 /**
  * Tests for VariationsSeedFetcher
@@ -41,6 +43,8 @@ import java.net.HttpURLConnection;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class VariationsSeedFetcherTest {
+    private static final String RFC_822_DATE = "Sat, 01 Jan 2000 00:00:00 GMT";
+
     private HttpURLConnection mConnection;
     private VariationsSeedFetcher mFetcher;
     private SharedPreferences mPrefs;
@@ -74,14 +78,14 @@ public class VariationsSeedFetcherTest {
      * @throws IOException
      */
     @Test
-    public void testFetchSeed() throws IOException {
+    public void testFetchSeed() throws IOException, ParseException {
         // Pretend we are on a background thread; set the UI thread looper to something other than
         // the current thread.
 
         when(mConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
         when(mConnection.getHeaderField("X-Seed-Signature")).thenReturn("signature");
         when(mConnection.getHeaderField("X-Country")).thenReturn("Nowhere Land");
-        when(mConnection.getHeaderField("Date")).thenReturn("A date");
+        when(mConnection.getHeaderField("Date")).thenReturn(RFC_822_DATE);
         when(mConnection.getHeaderField("IM")).thenReturn("gzip");
         when(mConnection.getInputStream())
                 .thenReturn(new ByteArrayInputStream(ApiCompatibilityUtils.getBytesUtf8("1234")));
@@ -92,8 +96,8 @@ public class VariationsSeedFetcherTest {
                 equalTo("signature"));
         assertThat(mPrefs.getString(VariationsSeedBridge.VARIATIONS_FIRST_RUN_SEED_COUNTRY, ""),
                 equalTo("Nowhere Land"));
-        assertThat(mPrefs.getString(VariationsSeedBridge.VARIATIONS_FIRST_RUN_SEED_DATE, ""),
-                equalTo("A date"));
+        assertThat(mPrefs.getLong(VariationsSeedBridge.VARIATIONS_FIRST_RUN_SEED_DATE, 0),
+                equalTo(SeedInfo.parseDateHeader(RFC_822_DATE)));
         assertTrue(mPrefs.getBoolean(
                 VariationsSeedBridge.VARIATIONS_FIRST_RUN_SEED_IS_GZIP_COMPRESSED, false));
         assertThat(mPrefs.getString(VariationsSeedBridge.VARIATIONS_FIRST_RUN_SEED_BASE64, ""),

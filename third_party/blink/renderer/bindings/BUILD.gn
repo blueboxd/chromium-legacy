@@ -134,7 +134,6 @@ action_with_pydeps("generate_bindings_example") {
 
   inputs = [
     web_idl_database,
-    "${bindings_scripts_dir}/bind_gen/example.cc.tmpl",
   ]
   outputs = [
     "${bindings_output_dir}/core/v8/v8_example.cc",

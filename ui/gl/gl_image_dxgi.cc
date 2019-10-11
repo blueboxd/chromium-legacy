@@ -203,6 +203,10 @@ unsigned GLImageDXGI::GetInternalFormat() {
     return HasAlpha(buffer_format_) ? GL_RGBA : GL_RGB;
 }
 
+unsigned GLImageDXGI::GetDataType() {
+  return GL_UNSIGNED_BYTE;
+}
+
 gfx::Size GLImageDXGI::GetSize() {
   return size_;
 }

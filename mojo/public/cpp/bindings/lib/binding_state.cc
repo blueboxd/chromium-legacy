@@ -17,9 +17,9 @@ BindingStateBase::BindingStateBase() = default;
 
 BindingStateBase::~BindingStateBase() = default;
 
-void BindingStateBase::AddFilter(std::unique_ptr<MessageReceiver> filter) {
+void BindingStateBase::SetFilter(std::unique_ptr<MessageFilter> filter) {
   DCHECK(endpoint_client_);
-  endpoint_client_->AddFilter(std::move(filter));
+  endpoint_client_->SetFilter(std::move(filter));
 }
 
 bool BindingStateBase::HasAssociatedInterfaces() const {

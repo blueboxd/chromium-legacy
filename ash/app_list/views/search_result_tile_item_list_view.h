@@ -13,8 +13,9 @@
 #include "base/timer/timer.h"
 
 namespace views {
-class Textfield;
+class BoxLayout;
 class Separator;
+class Textfield;
 }  // namespace views
 
 namespace ash {
@@ -40,6 +41,7 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   // Overridden from views::View:
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   const char* GetClassName() const override;
+  void Layout() override;
 
   const std::vector<SearchResultTileItemView*>& tile_views_for_test() const {
     return tile_views_;
@@ -71,8 +73,9 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   std::vector<views::Separator*> separator_views_;
 
   // Owned by the views hierarchy.
-  SearchResultPageView* const search_result_page_view_;
-  views::Textfield* search_box_;
+  SearchResultPageView* const search_result_page_view_ = nullptr;
+  views::Textfield* search_box_ = nullptr;
+  views::BoxLayout* layout_ = nullptr;
 
   base::string16 recent_playstore_query_;
 

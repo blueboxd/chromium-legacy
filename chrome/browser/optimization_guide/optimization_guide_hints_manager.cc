@@ -472,13 +472,9 @@ void OptimizationGuideHintsManager::ScheduleTopHostsHintsFetch() {
 void OptimizationGuideHintsManager::FetchTopHostsHints() {
   DCHECK(top_host_provider_);
 
-  size_t max_hints_to_fetch = optimization_guide::features::
-      MaxHostsForOptimizationGuideServiceHintsFetch();
-  std::vector<std::string> top_hosts =
-      top_host_provider_->GetTopHosts(max_hints_to_fetch);
+  std::vector<std::string> top_hosts = top_host_provider_->GetTopHosts();
   if (top_hosts.empty())
     return;
-  DCHECK_GE(max_hints_to_fetch, top_hosts.size());
 
   if (!hints_fetcher_) {
     hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
@@ -636,11 +632,6 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
   for (const auto& url : prediction->sorted_predicted_urls()) {
     if (!IsAllowedToFetchNavigationHints(url))
       continue;
-    if (target_hosts.size() >=
-        optimization_guide::features::
-            MaxHostsForOptimizationGuideServiceHintsFetch()) {
-      break;
-    }
 
     // Insert the host to |target_hosts|. The host is inserted to
     // |target_hosts_serialized| only if it was not a duplicate insertion to

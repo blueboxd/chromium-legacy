@@ -150,6 +150,9 @@ void VROrientationDevice::RequestSession(
   }
 
   std::move(callback).Run(std::move(session), std::move(controller));
+
+  // The sensor may have been suspended, so resume it now.
+  sensor_->Resume();
 }
 
 void VROrientationDevice::EndMagicWindowSession(VROrientationSession* session) {
@@ -157,10 +160,18 @@ void VROrientationDevice::EndMagicWindowSession(VROrientationSession* session) {
                 [session](const std::unique_ptr<VROrientationSession>& item) {
                   return item.get() == session;
                 });
+
+  // If there are no more magic window sessions, suspend the sensor until we get
+  // a new one.
+  if (magic_window_sessions_.empty()) {
+    sensor_->Suspend();
+  }
 }
 
 void VROrientationDevice::GetInlineFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
+  // Orientation sessions should never be exclusive or presenting.
+  DCHECK(!HasExclusiveSession());
   if (!inline_poses_enabled_) {
     std::move(callback).Run(nullptr);
     return;

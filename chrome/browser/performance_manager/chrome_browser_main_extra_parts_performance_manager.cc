@@ -127,13 +127,11 @@ void ChromeBrowserMainExtraPartsPerformanceManager::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_CREATED: {
-      Profile* profile = content::Source<Profile>(source).ptr();
-      CreateSharedWorkerWatcher(profile);
+      // TODO(1013168): Create the worker watchers here.
       break;
     }
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      Profile* profile = content::Source<Profile>(source).ptr();
-      DeleteSharedWorkerWatcher(profile);
+      // TODO(1013168): Delete the worker watchers here.
       break;
     }
     default:

@@ -5,7 +5,6 @@
 package org.chromium.weblayer;
 
 import android.os.RemoteException;
-import android.support.v4.app.Fragment;
 import android.view.View;
 import android.webkit.ValueCallback;
 
@@ -18,20 +17,13 @@ import org.chromium.weblayer_private.aidl.ObjectWrapper;
  */
 public final class BrowserFragmentController {
     private final IBrowserFragmentController mImpl;
-    private final BrowserFragment mFragment;
+    private final ProfileManager mProfileManager;
     private BrowserController mController;
 
-    BrowserFragmentController(IBrowserFragmentController impl, BrowserFragment fragment) {
-        mImpl = impl;
-        mFragment = fragment;
-    }
 
-    public void destroy() {
-        try {
-            mImpl.destroy();
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+    BrowserFragmentController(IBrowserFragmentController impl, ProfileManager profileManager) {
+        mImpl = impl;
+        mProfileManager = profileManager;
     }
 
     // TODO(pshmakov): rename this to BrowserTabController.
@@ -44,10 +36,6 @@ public final class BrowserFragmentController {
             }
         }
         return mController;
-    }
-
-    public Fragment getFragment() {
-        return mFragment;
     }
 
     public void setTopView(View view) {
@@ -78,6 +66,18 @@ public final class BrowserFragmentController {
                         }
                     }));
             return listenableResult;
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Returns {@link Profile} associated with this Browser Fragment. Multiple fragments can share
+     * the same Profile.
+     */
+    public Profile getProfile() {
+        try {
+            return mProfileManager.getProfileFor(mImpl.getProfile());
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

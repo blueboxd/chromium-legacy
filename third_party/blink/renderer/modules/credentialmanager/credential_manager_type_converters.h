@@ -8,7 +8,7 @@
 #include "base/optional.h"
 
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-blink.h"
-#include "third_party/blink/public/mojom/webauthn/authenticator.mojom-blink.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 

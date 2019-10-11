@@ -13,7 +13,7 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 // Only run in release builds because we frequently see test timeouts in debug.
 // We suspect this is because the settings page loads slowly in debug.
 // https://crbug.com/1003483
-// GEN('#if defined(NDEBUG)');
+GEN('#if defined(NDEBUG)');
 
 GEN('#include "ash/public/cpp/ash_features.h"');
 GEN('#include "build/branding_buildflags.h"');
@@ -112,8 +112,7 @@ var OSSettingsPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
-TEST_F('OSSettingsPageTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsPageTest', 'AllJsTests', () => {
   // Run all registered tests.
   mocha.run();
 });
@@ -189,8 +188,7 @@ var OSSettingsAppManagementDomSwitchTest =
   }
 };
 
-// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
-TEST_F('OSSettingsAppManagementDomSwitchTest', 'DISABLED_All', function() {
+TEST_F('OSSettingsAppManagementDomSwitchTest', 'All', function() {
   mocha.run();
 });
 
@@ -211,8 +209,7 @@ var OSSettingsAppManagementPageTest =
   }
 };
 
-// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
-TEST_F('OSSettingsAppManagementPageTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsAppManagementPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -233,12 +230,9 @@ var OSSettingsAppManagementPwaPermissionViewTest =
   }
 };
 
-// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
-TEST_F(
-    'OSSettingsAppManagementPwaPermissionViewTest', 'DISABLED_AllJsTests',
-    () => {
-      mocha.run();
-    });
+TEST_F('OSSettingsAppManagementPwaPermissionViewTest', 'AllJsTests', () => {
+  mocha.run();
+});
 
 // Test fixture for the app management arc permission view element.
 // eslint-disable-next-line no-var
@@ -257,12 +251,9 @@ var OSSettingsAppManagementArcPermissionViewTest =
   }
 };
 
-// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
-TEST_F(
-    'OSSettingsAppManagementArcPermissionViewTest', 'DISABLED_AllJsTests',
-    () => {
-      mocha.run();
-    });
+TEST_F('OSSettingsAppManagementArcPermissionViewTest', 'AllJsTests', () => {
+  mocha.run();
+});
 
 // Test fixture for the app management managed app view.
 // eslint-disable-next-line no-var
@@ -281,8 +272,7 @@ var OSSettingsAppManagementManagedAppTest =
   }
 };
 
-// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
-TEST_F('OSSettingsAppManagementManagedAppTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsAppManagementManagedAppTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -299,8 +289,7 @@ var OSSettingsAppManagementReducersTest =
   }
 };
 
-// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
-TEST_F('OSSettingsAppManagementReducersTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsAppManagementReducersTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -574,8 +563,7 @@ var OSSettingsMainTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
-TEST_F('OSSettingsMainTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsMainTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -591,8 +579,7 @@ var OSSettingsMenuTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
-TEST_F('OSSettingsMenuTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsMenuTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -860,8 +847,7 @@ var OSSettingsPeoplePageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
-TEST_F('OSSettingsPeoplePageTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsPeoplePageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -879,8 +865,7 @@ var OSSettingsPersonalizationPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Failing on linux-chromeos-dbg bot, see https://crbug.com/1013094
-TEST_F('OSSettingsPersonalizationPageTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsPersonalizationPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -1084,4 +1069,4 @@ TEST_F('OSSettingsSmbPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
-// GEN('#endif  // defined(NDEBUG)');
+GEN('#endif  // defined(NDEBUG)');

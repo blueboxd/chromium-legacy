@@ -41,7 +41,8 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   void ShowActiveFolder(AppListFolderItem* folder_item);
 
   // Shows the root level apps list. This is called when UI navigate back from
-  // a folder view with |folder_item|. If |folder_item| is NULL skips animation.
+  // a folder view with |folder_item|. If |folder_item| is nullptr skips
+  // animation.
   void ShowApps(AppListFolderItem* folder_item);
 
   // Resets the app list to a state where it shows the main grid view. This is

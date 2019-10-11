@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGConstraintSpace_h
-#define NGConstraintSpace_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_CONSTRAINT_SPACE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_CONSTRAINT_SPACE_H_
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
@@ -255,14 +255,34 @@ class CORE_EXPORT NGConstraintSpace final {
                          : kIndefiniteSize;
   }
 
-  // Return the block space that was available in the current fragmentainer at
-  // the start of the current block formatting context. Note that if the start
-  // of the current block formatting context is in a previous fragmentainer, the
-  // size of the current fragmentainer is returned instead.
-  LayoutUnit FragmentainerSpaceAtBfcStart() const {
+  // Return true if we're column-balancing, and are in the initial pass where
+  // we're calculating the initial minimal column block-size.
+  bool IsInitialColumnBalancingPass() const {
+    return BlockFragmentationType() == kFragmentColumn &&
+           FragmentainerBlockSize() == kIndefiniteSize;
+  }
+
+  // Return true if we're block-fragmented and know our fragmentainer
+  // block-size.
+  bool HasKnownFragmentainerBlockSize() const {
+    if (!HasBlockFragmentation() || IsInitialColumnBalancingPass())
+      return false;
+    // The only case where we allow an unknown fragmentainer block-size is if
+    // we're in the initial column balancing pass.
+    DCHECK(FragmentainerBlockSize() != kIndefiniteSize);
+    return true;
+  }
+
+  // Return the block-offset from the block-start of the fragmentainer
+  // relative to the block-start of the current block formatting context in
+  // the current fragmentainer. Note that if the current block formatting
+  // context starts in a previous fragmentainer, we'll return the block-offset
+  // relative to the current fragmentainer.
+  LayoutUnit FragmentainerOffsetAtBfc() const {
     DCHECK(HasBlockFragmentation());
-    return HasRareData() ? rare_data_->fragmentainer_space_at_bfc_start
-                         : kIndefiniteSize;
+    if (HasRareData())
+      return rare_data_->fragmentainer_offset_at_bfc;
+    return LayoutUnit();
   }
 
   // Whether the current constraint space is for the newly established
@@ -579,8 +599,7 @@ class CORE_EXPORT NGConstraintSpace final {
               other.replaced_percentage_resolution_block_size),
           bfc_offset(other.bfc_offset),
           fragmentainer_block_size(other.fragmentainer_block_size),
-          fragmentainer_space_at_bfc_start(
-              other.fragmentainer_space_at_bfc_start),
+          fragmentainer_offset_at_bfc(other.fragmentainer_offset_at_bfc),
           data_union_type(other.data_union_type),
           block_direction_fragmentation_type(
               other.block_direction_fragmentation_type),
@@ -635,7 +654,7 @@ class CORE_EXPORT NGConstraintSpace final {
     NGBfcOffset bfc_offset;
 
     LayoutUnit fragmentainer_block_size = kIndefiniteSize;
-    LayoutUnit fragmentainer_space_at_bfc_start = kIndefiniteSize;
+    LayoutUnit fragmentainer_offset_at_bfc;
 
     unsigned data_union_type : 2;
     unsigned block_direction_fragmentation_type : 2;
@@ -645,8 +664,7 @@ class CORE_EXPORT NGConstraintSpace final {
 
     bool MaySkipLayout(const RareData& other) const {
       if (fragmentainer_block_size != other.fragmentainer_block_size ||
-          fragmentainer_space_at_bfc_start !=
-              other.fragmentainer_space_at_bfc_start ||
+          fragmentainer_offset_at_bfc != other.fragmentainer_offset_at_bfc ||
           data_union_type != other.data_union_type ||
           block_direction_fragmentation_type !=
               other.block_direction_fragmentation_type ||
@@ -671,7 +689,7 @@ class CORE_EXPORT NGConstraintSpace final {
     // Must be kept in sync with members checked within |MaySkipLayout|.
     bool IsInitialForMaySkipLayout() const {
       if (fragmentainer_block_size != kIndefiniteSize ||
-          fragmentainer_space_at_bfc_start != kIndefiniteSize ||
+          fragmentainer_offset_at_bfc ||
           block_direction_fragmentation_type != kFragmentNone ||
           is_inside_balanced_columns || is_in_column_bfc ||
           early_break_appeal != kBreakAppealLastResort)
@@ -956,4 +974,4 @@ inline std::ostream& operator<<(std::ostream& stream,
 
 }  // namespace blink
 
-#endif  // NGConstraintSpace_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_CONSTRAINT_SPACE_H_

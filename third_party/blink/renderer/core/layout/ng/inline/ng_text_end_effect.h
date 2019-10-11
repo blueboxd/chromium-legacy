@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGTextEndEffect_h
-#define NGTextEndEffect_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_TEXT_END_EFFECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_TEXT_END_EFFECT_H_
 
 namespace blink {
 
@@ -17,4 +17,4 @@ enum class NGTextEndEffect {
 
 }  // namespace blink
 
-#endif  // NGTextEndEffect_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_TEXT_END_EFFECT_H_

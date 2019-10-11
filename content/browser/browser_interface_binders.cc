@@ -9,6 +9,7 @@
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/content_index/content_index_service_impl.h"
+#include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/image_capture/image_capture_impl.h"
@@ -47,6 +48,7 @@
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
+#include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
@@ -293,6 +295,8 @@ void PopulateBinderMapWithContext(
     service_manager::BinderMapWithContext<RenderFrameHost*>* map) {
   map->Add<blink::mojom::BackgroundFetchService>(
       base::BindRepeating(&BackgroundFetchServiceImpl::CreateForFrame));
+  map->Add<blink::mojom::CookieStore>(
+      base::BindRepeating(&CookieStoreContext::CreateServiceForFrame));
   map->Add<blink::mojom::ContentIndexService>(
       base::BindRepeating(&ContentIndexServiceImpl::CreateForFrame));
   map->Add<blink::mojom::KeyboardLockService>(
@@ -479,12 +483,17 @@ void PopulateBinderMapWithContext(
         base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker));
     map->Add<blink::mojom::ContentIndexService>(
         base::BindRepeating(&ContentIndexServiceImpl::CreateForWorker));
+    map->Add<blink::mojom::CookieStore>(
+        base::BindRepeating(&CookieStoreContext::CreateServiceForWorker));
   } else {
     map->Add<blink::mojom::BackgroundFetchService>(
         base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker),
         base::CreateSingleThreadTaskRunner(BrowserThread::UI));
     map->Add<blink::mojom::ContentIndexService>(
         base::BindRepeating(&ContentIndexServiceImpl::CreateForWorker),
+        base::CreateSingleThreadTaskRunner(BrowserThread::UI));
+    map->Add<blink::mojom::CookieStore>(
+        base::BindRepeating(&CookieStoreContext::CreateServiceForWorker),
         base::CreateSingleThreadTaskRunner(BrowserThread::UI));
   }
 }

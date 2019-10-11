@@ -10,7 +10,7 @@ import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
 import {CustomElement} from './custom_element.js';
 import {TabElement} from './tab.js';
 import {TabStripViewProxy} from './tab_strip_view_proxy.js';
-import {TabsApiProxy} from './tabs_api_proxy.js';
+import {TabData, TabsApiProxy} from './tabs_api_proxy.js';
 
 /**
  * The amount of padding to leave between the edge of the screen and the active
@@ -111,7 +111,7 @@ class TabListElement extends CustomElement {
   }
 
   /**
-   * @param {!Tab} tab
+   * @param {!TabData} tab
    * @return {!TabElement}
    * @private
    */
@@ -246,22 +246,28 @@ class TabListElement extends CustomElement {
    * @private
    */
   onTabActivated_(tabId) {
-    const previouslyActiveTab = this.getActiveTab_();
-    if (previouslyActiveTab) {
-      previouslyActiveTab.tab = /** @type {!Tab} */ (
-          Object.assign({}, previouslyActiveTab.tab, {active: false}));
-    }
+    // There may be more than 1 TabElement marked as active if other events
+    // have updated a Tab to have an active state. For example, if a
+    // tab is created with an already active state, there may be 2 active
+    // TabElements: the newly created tab and the previously active tab.
+    this.shadowRoot.querySelectorAll('tabstrip-tab[active]')
+        .forEach((previouslyActiveTab) => {
+          if (previouslyActiveTab.tab.id !== tabId) {
+            previouslyActiveTab.tab = /** @type {!TabData} */ (
+                Object.assign({}, previouslyActiveTab.tab, {active: false}));
+          }
+        });
 
     const newlyActiveTab = this.findTabElement_(tabId);
     if (newlyActiveTab) {
-      newlyActiveTab.tab = /** @type {!Tab} */ (
+      newlyActiveTab.tab = /** @type {!TabData} */ (
           Object.assign({}, newlyActiveTab.tab, {active: true}));
       this.moveOrScrollToActiveTab_();
     }
   }
 
   /**
-   * @param {!Tab} tab
+   * @param {!TabData} tab
    * @private
    */
   onTabCreated_(tab) {
@@ -311,7 +317,7 @@ class TabListElement extends CustomElement {
   }
 
   /**
-   * @param {!Tab} tab
+   * @param {!TabData} tab
    * @private
    */
   onTabUpdated_(tab) {

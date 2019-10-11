@@ -415,4 +415,8 @@ Decimal RangeInputType::FindClosestTickMarkValue(const Decimal& value) {
   return closest_left;
 }
 
+void RangeInputType::ValueAttributeChanged() {
+  UpdateView();
+}
+
 }  // namespace blink

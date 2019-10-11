@@ -55,15 +55,8 @@ class TabSpinnerTest : public UIPerformanceTest {
   DISALLOW_COPY_AND_ASSIGN(TabSpinnerTest);
 };
 
-// TODO(crbug.com/974349) This test is timing out on ChromeOS, Mac, and Linux
-// debug builds.
-#if (defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_LINUX)) && \
-    !defined(NDEBUG)
-#define MAYBE_LoadTabsOneByOne DISABLED_LoadTabsOneByOne
-#else
-#define MAYBE_LoadTabsOneByOne LoadTabsOneByOne
-#endif
-IN_PROC_BROWSER_TEST_F(TabSpinnerTest, MAYBE_LoadTabsOneByOne) {
+// TODO(crbug.com/974349) This test is timing out on all platforms
+IN_PROC_BROWSER_TEST_F(TabSpinnerTest, DISABLED_LoadTabsOneByOne) {
   IgnorePriorHistogramSamples();
 
   // Navigate to a custom page that takes 10 seconds to load. Wait for the

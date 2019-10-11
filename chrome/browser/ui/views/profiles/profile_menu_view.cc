@@ -176,7 +176,7 @@ void ProfileMenuView::BuildMenu() {
   if (profile->IsRegularProfile()) {
     BuildIdentity();
     BuildSyncInfo();
-    BuildAccountFeatureButtons();
+    BuildFeatureButtons();
     BuildAutofillButtons();
   } else if (profile->IsIncognitoProfile()) {
     BuildIncognitoIdentity();
@@ -186,9 +186,9 @@ void ProfileMenuView::BuildMenu() {
     NOTREACHED();
   }
 
-  BuildProfileHeading();
+  BuildProfileManagementHeading();
   BuildSelectableProfiles();
-  BuildProfileFeatureButtons();
+  BuildProfileManagementFeatureButtons();
 }
 
 void ProfileMenuView::OnAvatarMenuChanged(
@@ -416,15 +416,16 @@ void ProfileMenuView::BuildIdentity() {
   base::Optional<AccountInfo> account_info =
       identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
           account);
+  ProfileAttributesEntry* profile_attributes =
+      GetProfileAttributesEntry(profile);
 
   if (account_info.has_value()) {
+    SetHeading(profile_attributes->GetLocalProfileName());
     SetIdentityInfo(account_info.value().account_image.AsImageSkia(),
                     GetSyncIcon(),
                     base::UTF8ToUTF16(account_info.value().full_name),
                     base::UTF8ToUTF16(account_info.value().email));
   } else {
-    ProfileAttributesEntry* profile_attributes =
-        GetProfileAttributesEntry(profile);
     SetIdentityInfo(
         profile_attributes->GetAvatarIcon().AsImageSkia(), GetSyncIcon(),
         profile_attributes->GetName(),
@@ -563,13 +564,13 @@ void ProfileMenuView::BuildSyncInfo() {
   }
 }
 
-void ProfileMenuView::BuildAccountFeatureButtons() {
+void ProfileMenuView::BuildFeatureButtons() {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(browser()->profile());
   if (!identity_manager->HasUnconsentedPrimaryAccount())
     return;
 
-  AddAccountFeatureButton(
+  AddFeatureButton(
 #if defined(GOOGLE_CHROME_BUILD)
       // The Google G icon needs to be shrunk, so it won't look too big
       // compared to the other icons.
@@ -583,7 +584,7 @@ void ProfileMenuView::BuildAccountFeatureButtons() {
 
   if (!identity_manager->HasPrimaryAccount()) {
     // The sign-out button is only shown when sync is off.
-    AddAccountFeatureButton(
+    AddFeatureButton(
         ImageForMenu(kSignOutIcon),
         l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT),
         base::BindRepeating(&ProfileMenuView::OnSignoutButtonClicked,
@@ -591,8 +592,8 @@ void ProfileMenuView::BuildAccountFeatureButtons() {
   }
 }
 
-void ProfileMenuView::BuildProfileHeading() {
-  SetProfileHeading(
+void ProfileMenuView::BuildProfileManagementHeading() {
+  SetProfileManagementHeading(
       l10n_util::GetStringUTF16(IDS_PROFILES_OTHER_PROFILES_TITLE));
 }
 
@@ -620,14 +621,14 @@ void ProfileMenuView::BuildSelectableProfiles() {
   }
 }
 
-void ProfileMenuView::BuildProfileFeatureButtons() {
-  AddProfileShortcutFeatureButton(
+void ProfileMenuView::BuildProfileManagementFeatureButtons() {
+  AddProfileManagementShortcutFeatureButton(
       ImageForMenu(vector_icons::kSettingsIcon, kShortcutIconToImageRatio),
       l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON),
       base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
                           base::Unretained(this)));
 
-  AddProfileFeatureButton(
+  AddProfileManagementFeatureButton(
       ImageForMenu(kAddIcon, /*icon_to_image_ratio=*/0.75),
       l10n_util::GetStringUTF16(IDS_ADD),
       base::BindRepeating(&ProfileMenuView::OnAddNewProfileButtonClicked,

@@ -149,6 +149,33 @@ component("app_list") {
   ]
 }
 
+component("presenter") {
+  sources = [
+    "app_list_presenter_delegate.h",
+    "app_list_presenter_export.h",
+    "app_list_presenter_impl.cc",
+    "app_list_presenter_impl.h",
+  ]
+
+  defines = [ "APP_LIST_PRESENTER_IMPLEMENTATION" ]
+
+  public_deps = [
+    "//ash/app_list",
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//ui/aura",
+    "//ui/compositor",
+    "//ui/gfx/geometry",
+    "//ui/views",
+    "//ui/wm",
+    "//ui/wm/public",
+
+    # Temporary dependency to fix compile flake in http://crbug.com/611898.
+    # TODO(tapted): Remove once http://crbug.com/612382 is fixed.
+    "//ui/accessibility:ax_enums_mojo",
+  ]
+}
+
 static_library("test_support") {
   testonly = true
 

@@ -1496,7 +1496,8 @@ void LayoutBlock::ComputePreferredLogicalWidths() {
   const ComputedStyle& style_to_use = StyleRef();
   if (!IsTableCell() && style_to_use.LogicalWidth().IsFixed() &&
       style_to_use.LogicalWidth().Value() >= 0 &&
-      !(IsDeprecatedFlexItem() && !style_to_use.LogicalWidth().IntValue()))
+      !(IsFlexItemCommon() && Parent()->StyleRef().IsDeprecatedWebkitBox() &&
+        !style_to_use.LogicalWidth().IntValue()))
     min_preferred_logical_width_ = max_preferred_logical_width_ =
         AdjustContentBoxLogicalWidthForBoxSizing(
             LayoutUnit(style_to_use.LogicalWidth().Value()));

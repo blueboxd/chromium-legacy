@@ -1410,6 +1410,12 @@ void WebGLRenderingContextBase::FinalizeFrame() {
   if (GetDrawingBuffer() && GetDrawingBuffer()->UsingSwapChain())
     GetDrawingBuffer()->PresentSwapChain();
   marked_canvas_dirty_ = false;
+
+  // For low-latency canvases
+  const bool webgl_overlay_enabled =
+      RuntimeEnabledFeatures::WebGLImageChromiumEnabled() || UsingSwapChain();
+  if (canvas() && canvas()->LowLatencyEnabled() && !webgl_overlay_enabled)
+    PaintRenderingResultsToCanvas(kBackBuffer);
 }
 
 void WebGLRenderingContextBase::OnErrorMessage(const char* message,

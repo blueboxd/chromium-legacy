@@ -13,12 +13,14 @@ import android.os.StrictMode;
 import android.provider.Settings;
 import android.support.v13.view.inputmethod.EditorInfoCompat;
 import android.support.v4.text.BidiFormatter;
+import android.support.v4.util.ObjectsCompat;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.Layout;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.text.style.ReplacementSpan;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -97,7 +99,8 @@ public abstract class UrlBar extends AutocompleteEditText {
     private int mUrlDirection;
 
     private UrlBarDelegate mUrlBarDelegate;
-    private UrlTextChangeListener mTextChangeListener;
+    private UrlTextChangeListener mUrlTextChangeListener;
+    private TextWatcher mTextChangedListener;
     private UrlBarTextContextMenuDelegate mTextContextMenuDelegate;
     private UrlDirectionListener mUrlDirectionListener;
 
@@ -590,7 +593,22 @@ public abstract class UrlBar extends AutocompleteEditText {
      * @param listener The listener to be notified.
      */
     public void setUrlTextChangeListener(UrlTextChangeListener listener) {
-        mTextChangeListener = listener;
+        mUrlTextChangeListener = listener;
+    }
+
+    /**
+     * Set the listener to be notified when the view's text has changed.
+     * @param textChangedListener The listener to be notified.
+     */
+    public void setTextChangedListener(TextWatcher textChangedListener) {
+        if (ObjectsCompat.equals(mTextChangedListener, textChangedListener)) {
+            return;
+        } else if (mTextChangedListener != null) {
+            removeTextChangedListener(mTextChangedListener);
+        }
+
+        mTextChangedListener = textChangedListener;
+        addTextChangedListener(mTextChangedListener);
     }
 
     /**
@@ -950,12 +968,13 @@ public abstract class UrlBar extends AutocompleteEditText {
         if (DEBUG) {
             Log.i(TAG, "onAutocompleteTextStateChanged: DIS[%b]", updateDisplay);
         }
-        if (mTextChangeListener == null) return;
+        if (mUrlTextChangeListener == null) return;
         if (updateDisplay) limitDisplayableLength();
         // crbug.com/764749
         Log.w(TAG, "Text change observed, triggering autocomplete.");
 
-        mTextChangeListener.onTextChanged(getTextWithoutAutocomplete(), getTextWithAutocomplete());
+        mUrlTextChangeListener.onTextChanged(
+                getTextWithoutAutocomplete(), getTextWithAutocomplete());
     }
 
     /**

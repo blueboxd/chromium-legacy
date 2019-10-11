@@ -1215,11 +1215,7 @@ void Layer::SetPropertyTreesNeedRebuild() {
 
 #if DCHECK_IS_ON()
 std::string Layer::DebugName() const {
-  if (inputs_.client) {
-    if (auto debug_info = inputs_.client->TakeDebugInfo(this))
-      return debug_info->ToBaseValue()->FindKey("layer_name")->GetString();
-  }
-  return "";
+  return inputs_.client ? inputs_.client->LayerDebugName(this) : "";
 }
 #endif
 

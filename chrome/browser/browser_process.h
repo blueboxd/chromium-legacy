@@ -19,7 +19,6 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/common/buildflags.h"
 #include "media/media_buildflags.h"
 
@@ -265,12 +264,6 @@ class BrowserProcess {
 
   virtual resource_coordinator::ResourceCoordinatorParts*
   resource_coordinator_parts() = 0;
-
-  // Returns the default web client state of Chrome (i.e., was it the user's
-  // default browser) at the time a previous check was made sometime between
-  // process startup and now.
-  virtual shell_integration::DefaultWebClientState
-  CachedDefaultWebClientState() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);

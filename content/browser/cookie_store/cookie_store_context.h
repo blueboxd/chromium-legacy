@@ -18,7 +18,9 @@
 namespace content {
 
 class CookieStoreManager;
+class RenderFrameHost;
 class ServiceWorkerContextWrapper;
+struct ServiceWorkerVersionInfo;
 
 // UI thread handle to a CookieStoreManager.
 //
@@ -64,10 +66,26 @@ class CONTENT_EXPORT CookieStoreContext
   void ListenToCookieChanges(::network::mojom::NetworkContext* network_context,
                              base::OnceCallback<void(bool)> success_callback);
 
-  // Routes a mojo receiver to the CookieStoreManager on the service worker core
-  // thread.
-  void CreateService(mojo::PendingReceiver<blink::mojom::CookieStore> receiver,
-                     const url::Origin& origin);
+  // Routes a mojo receiver to the CookieStoreManager.
+  //
+  // Production code should use the CreateServiceFor*() helpers below.
+  void CreateServiceForTesting(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::CookieStore> receiver);
+
+  // Routes a mojo receiver from a Frame to the CookieStoreManager.
+  //
+  // Must be called on the UI thread.
+  static void CreateServiceForFrame(
+      RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<blink::mojom::CookieStore> receiver);
+
+  // Routes a mojo receiver from a Service Worker to the CookieStoreManager.
+  //
+  // Must be called on the UI thread.
+  static void CreateServiceForWorker(
+      const ServiceWorkerVersionInfo& info,
+      mojo::PendingReceiver<blink::mojom::CookieStore> receiver);
 
  private:
   friend class base::RefCountedDeleteOnSequence<CookieStoreContext>;
@@ -84,8 +102,8 @@ class CONTENT_EXPORT CookieStoreContext
       base::OnceCallback<void(bool)> success_callback);
 
   void CreateServiceOnCoreThread(
-      mojo::PendingReceiver<blink::mojom::CookieStore> receiver,
-      const url::Origin& origin);
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::CookieStore> receiver);
 
   // Only accessed on the service worker core thread.
   std::unique_ptr<CookieStoreManager> cookie_store_manager_;

@@ -52,6 +52,15 @@ suite('cr-searchable-drop-down', function() {
     MockInteractions.keyDownOn(searchInput, 'Tab', [], 'Tab');
   }
 
+  function pointerDown(element) {
+    element.dispatchEvent(new PointerEvent('pointerdown', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      buttons: 1,
+    }));
+  }
+
   function getSelectedElement() {
     return dropDown.shadowRoot.querySelector('[selected_]');
   }
@@ -152,7 +161,7 @@ suite('cr-searchable-drop-down', function() {
     assertTrue(dropDown.$$('iron-dropdown').opened);
     assertNotEquals('dog', dropDown.value);
 
-    MockInteractions.downAndUp(outsideElement, null, null);
+    pointerDown(outsideElement);
     assertNotEquals('dog', dropDown.value);
     assertFalse(dropDown.$$('iron-dropdown').opened);
   });

@@ -2,18 +2,67 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os.path
-
-from mako.lookup import TemplateLookup
-
-_TEMPLATES_DIR = os.path.dirname(__file__)
+import mako.lookup
+import mako.template
 
 
 class MakoRenderer(object):
-    def __init__(self, template_dirs=None):
-        template_dirs = template_dirs or [_TEMPLATES_DIR]
-        self._template_lookup = TemplateLookup(directories=template_dirs)
+    """Represents a renderer object implemented with Mako templates."""
 
-    def render(self, template_path, **variable_bindings):
-        template = self._template_lookup.get_template(template_path)
-        return template.render(**variable_bindings)
+    def __init__(self, template_dirs=None):
+        template_dirs = template_dirs or []
+        self._template_lookup = mako.lookup.TemplateLookup(
+            directories=template_dirs)
+
+        self._caller_stack = []
+
+    def render(self,
+               caller,
+               template_path=None,
+               template_text=None,
+               template_vars=None):
+        """
+        Renders the template with variable bindings.
+
+        It's okay to invoke |render| method recursively and |caller| is pushed
+        onto the call stack, which is accessible via |callers| and |last_caller|
+        methods.
+
+        Args:
+            template_path: A filepath to a template file.
+            template_text: A text content to be used as a template.  Either of
+                |template_path| or |template_text| must be specified.
+            template_vars: Template variable bindings.
+            caller: An object to be pushed onto the call stack.
+        """
+
+        assert not (template_path is None and template_text is None)
+        assert not (template_path and template_text)
+        assert isinstance(template_vars, dict)
+        assert caller is not None
+
+        self._caller_stack.append(caller)
+
+        try:
+            if template_path:
+                template = self._template_lookup.get_template(template_path)
+            elif template_text:
+                template = mako.template.Template(text=template_text)
+            text = template.render(**template_vars)
+        finally:
+            self._caller_stack.pop()
+
+        return text
+
+    @property
+    def callers(self):
+        """
+        Returns the callers of this renderer in the order from the last caller
+        to the first caller.
+        """
+        return reversed(self._caller_stack)
+
+    @property
+    def last_caller(self):
+        """Returns the last caller in the call stack of this renderer."""
+        return self._caller_stack[-1]

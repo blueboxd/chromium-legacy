@@ -87,7 +87,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
           static_cast<HTMLCanvasElement*>(host), attrs);
     }
     CanvasRenderingContext::ContextType GetContextType() const override {
-      return CanvasRenderingContext::kContext2d;
+      return CanvasRenderingContext::kContext2D;
     }
 
    private:
@@ -237,7 +237,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void UpdateElementAccessibility(const Path&, Element*);
 
   CanvasRenderingContext::ContextType GetContextType() const override {
-    return CanvasRenderingContext::kContext2d;
+    return CanvasRenderingContext::kContext2D;
   }
 
   String ColorSpaceAsString() const override;

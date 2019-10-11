@@ -9,12 +9,14 @@ android_library("java") {
   java_files = [
     "org/chromium/weblayer_private/BrowserControllerImpl.java",
     "org/chromium/weblayer_private/BrowserFragmentControllerImpl.java",
+    "org/chromium/weblayer_private/BrowserFragmentImpl.java",
     "org/chromium/weblayer_private/BrowserObserverProxy.java",
     "org/chromium/weblayer_private/ContentView.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
     "org/chromium/weblayer_private/ProfileImpl.java",
+    "org/chromium/weblayer_private/ProfileManager.java",
     "org/chromium/weblayer_private/TopControlsContainerView.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
     "org/chromium/weblayer_private/ChildProcessServiceImpl.java",
@@ -48,6 +50,7 @@ android_library("client_java") {
     "org/chromium/weblayer_private/aidl/ObjectWrapper.java",
     "org/chromium/weblayer_private/aidl/WebLayerVersion.java",
     "org/chromium/weblayer_private/aidl/APICallException.java",
+    "org/chromium/weblayer_private/aidl/BrowserFragmentArgs.java",
   ]
 
   srcjar_deps = [ ":aidl" ]
@@ -58,6 +61,7 @@ android_aidl("aidl") {
   sources = [
     "org/chromium/weblayer_private/aidl/IBrowserController.aidl",
     "org/chromium/weblayer_private/aidl/IBrowserControllerClient.aidl",
+    "org/chromium/weblayer_private/aidl/IBrowserFragment.aidl",
     "org/chromium/weblayer_private/aidl/IBrowserFragmentController.aidl",
     "org/chromium/weblayer_private/aidl/IChildProcessService.aidl",
     "org/chromium/weblayer_private/aidl/IClientNavigation.aidl",

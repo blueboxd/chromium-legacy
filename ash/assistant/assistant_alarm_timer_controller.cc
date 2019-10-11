@@ -19,6 +19,10 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/icu/source/common/unicode/utypes.h"
+#include "third_party/icu/source/i18n/unicode/measfmt.h"
+#include "third_party/icu/source/i18n/unicode/measunit.h"
+#include "third_party/icu/source/i18n/unicode/measure.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -43,15 +47,62 @@ std::string CreateTimerNotificationId(const std::string& alarm_timer_id) {
   return std::string(kTimerNotificationIdPrefix) + alarm_timer_id;
 }
 
+// Creates a notification message for the given |alarm_timer| which has the
+// specified amount of |time_remaining|. Note that if the alarm/timer is expired
+// the amount of time remaining will be negated.
 std::string CreateTimerNotificationMessage(const AlarmTimer& alarm_timer,
                                            base::TimeDelta time_remaining) {
-  const int minutes_remaining = time_remaining.InMinutes();
-  const int seconds_remaining =
-      (time_remaining - base::TimeDelta::FromMinutes(minutes_remaining))
-          .InSeconds();
-  return base::UTF16ToUTF8(base::i18n::MessageFormatter::FormatWithNumberedArgs(
-      l10n_util::GetStringUTF16(IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE),
-      alarm_timer.expired() ? "-" : "", minutes_remaining, seconds_remaining));
+  // Method aliases to prevent line-wrapping below.
+  const auto createHour = icu::MeasureUnit::createHour;
+  const auto createMinute = icu::MeasureUnit::createMinute;
+  const auto createSecond = icu::MeasureUnit::createSecond;
+
+  // Calculate hours/minutes/seconds remaining.
+  const int64_t total_seconds = time_remaining.InSeconds();
+  const int64_t hours = total_seconds / 3600;
+  const int64_t minutes = (total_seconds - hours * 3600) / 60;
+  const int64_t seconds = total_seconds % 60;
+
+  // Success of the ICU APIs is tracked by |status|.
+  UErrorCode status = U_ZERO_ERROR;
+
+  // Create our distinct |measures| to be formatted. We only show |hours| if
+  // necessary, otherwise they are omitted.
+  std::vector<icu::Measure> measures;
+  if (hours)
+    measures.push_back(icu::Measure(hours, createHour(status), status));
+  measures.push_back(icu::Measure(minutes, createMinute(status), status));
+  measures.push_back(icu::Measure(seconds, createSecond(status), status));
+
+  // Format our |measures| into a |unicode_message|.
+  icu::UnicodeString unicode_message;
+  icu::FieldPosition field_position = icu::FieldPosition::DONT_CARE;
+  UMeasureFormatWidth width = UMEASFMT_WIDTH_NUMERIC;
+  icu::MeasureFormat measure_format(icu::Locale::getDefault(), width, status);
+  measure_format.formatMeasures(measures.data(), measures.size(),
+                                unicode_message, field_position, status);
+
+  std::string message;
+  if (U_SUCCESS(status)) {
+    // If formatting was successful, convert our |unicode_message| into UTF-8.
+    unicode_message.toUTF8String(message);
+  } else {
+    // If something went wrong, we'll fall back to using "hh:mm:ss" instead.
+    LOG(ERROR) << "Error formatting timer notification message: " << status;
+    message = base::StringPrintf("%02ld:%02ld:%02ld", hours, minutes, seconds);
+  }
+
+  // If time has elapsed since the |alarm_timer| has expired, we'll need to
+  // negate the amount of time remaining.
+  if (total_seconds && alarm_timer.expired()) {
+    const auto format = l10n_util::GetStringUTF16(
+        IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE_EXPIRED);
+    return base::UTF16ToUTF8(
+        base::i18n::MessageFormatter::FormatWithNumberedArgs(format, message));
+  }
+
+  // Otherwise, all necessary formatting has been performed.
+  return message;
 }
 
 // TODO(llin): Migrate to use the AlarmManager API to better support multiple

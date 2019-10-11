@@ -84,13 +84,23 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
     }
 
     /**
-     * Renders the given url into the subtitle.
+     * Renders the given secure url into the subtitle.
      * @param formattedUrl A {@link String} containing a URL already formatted to display.
      */
-    void setFormattedUrl(String formattedUrl) {
+    void setSecureSubtitle(String formattedUrl) {
         TextView sheetSubtitleText = mContentView.findViewById(R.id.touch_to_fill_sheet_subtitle);
-        sheetSubtitleText.setText(String.format(
-                mContext.getString(R.string.touch_to_fill_sheet_subtitle), formattedUrl));
+        sheetSubtitleText.setText(formattedUrl);
+    }
+
+    /**
+     * Renders the given non-secure url into the subtitle.
+     * @param formattedUrl A {@link String} containing a URL already formatted to display.
+     */
+    void setNonSecureSubtitle(String formattedUrl) {
+        TextView sheetSubtitleText = mContentView.findViewById(R.id.touch_to_fill_sheet_subtitle);
+        String subtitleText = String.format(
+                mContext.getString(R.string.touch_to_fill_sheet_subtitle_not_secure), formattedUrl);
+        sheetSubtitleText.setText(subtitleText);
     }
 
     void setCredentialListAdapter(ListAdapter adapter) {

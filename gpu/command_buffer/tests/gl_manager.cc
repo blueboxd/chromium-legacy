@@ -42,6 +42,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_ref_counted_memory.h"
 #include "ui/gl/gl_share_group.h"
@@ -501,8 +502,8 @@ int32_t GLManager::CreateImage(ClientBuffer buffer,
   if (use_iosurface_memory_buffers_) {
     IOSurfaceGpuMemoryBuffer* gpu_memory_buffer =
         IOSurfaceGpuMemoryBuffer::FromClientBuffer(buffer);
-    unsigned internalformat = gpu::InternalFormatForGpuMemoryBufferFormat(
-        gpu_memory_buffer->GetFormat());
+    unsigned internalformat =
+        gl::BufferFormatToGLInternalFormat(gpu_memory_buffer->GetFormat());
     scoped_refptr<gl::GLImageIOSurface> image(
         gl::GLImageIOSurface::Create(size, internalformat));
     if (!image->Initialize(gpu_memory_buffer->iosurface(),

@@ -17,8 +17,6 @@ import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInf
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.text.ParseException;
-import java.util.Date;
 
 /**
  * VariationsSeedHolder is a singleton which manages the local copy of the variations seed - both
@@ -79,16 +77,7 @@ public class VariationsSeedHolder {
                 // If there's no seed available, the app will have to request again.
                 if (VariationsSeedHolder.this.mSeed == null) return;
 
-                Date loadedSeedDate;
-                try {
-                    loadedSeedDate = VariationsSeedHolder.this.mSeed.parseDate();
-                } catch (ParseException e) {
-                    // Should never happen, as date was alread verified by readSeedFile.
-                    assert false;
-                    return;
-                }
-
-                if (mDestinationDate < loadedSeedDate.getTime()) {
+                if (mDestinationDate < VariationsSeedHolder.this.mSeed.date) {
                     writeSeedWithoutClosing(VariationsSeedHolder.this.mSeed, mDestination);
                 }
             } finally {

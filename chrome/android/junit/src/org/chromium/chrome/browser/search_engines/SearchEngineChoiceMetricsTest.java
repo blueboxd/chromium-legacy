@@ -156,4 +156,15 @@ public final class SearchEngineChoiceMetricsTest {
                 .getDefaultSearchEngineTemplateUrl();
         assertFalse(SearchEngineChoiceMetrics.isSearchEnginePossiblyDifferent());
     }
+
+    @Test
+    @SmallTest
+    public void recordEventV2_sanityCheck() {
+        SearchEngineChoiceMetrics.recordEventV2(
+                SearchEngineChoiceMetrics.EventsV2.CHOICE_REQUEST_VALID);
+        assertEquals(1,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        "Android.SearchEngineChoice.EventsV2",
+                        SearchEngineChoiceMetrics.EventsV2.CHOICE_REQUEST_VALID));
+    }
 }

@@ -391,18 +391,21 @@ void MixerInputConnection::SetPaused(bool paused) {
                             &MixerInputConnection::OnInactivityTimeout);
   }
 
-  base::AutoLock lock(lock_);
-  if (paused == paused_) {
-    return;
-  }
+  {
+    base::AutoLock lock(lock_);
+    if (paused == paused_) {
+      return;
+    }
 
-  paused_ = paused;
-  mixer_rendering_delay_ = RenderingDelay();
-  // Clear start timestamp, since a pause should invalidate the start
-  // timestamp anyway. The AV sync code can restart (hard correction) on
-  // resume if needed.
-  use_start_timestamp_ = false;
-  playback_start_timestamp_ = INT64_MIN;
+    paused_ = paused;
+    mixer_rendering_delay_ = RenderingDelay();
+    // Clear start timestamp, since a pause should invalidate the start
+    // timestamp anyway. The AV sync code can restart (hard correction) on
+    // resume if needed.
+    use_start_timestamp_ = false;
+    playback_start_timestamp_ = INT64_MIN;
+  }
+  mixer_->UpdateStreamCounts();
 }
 
 int MixerInputConnection::num_channels() {
@@ -425,6 +428,11 @@ int MixerInputConnection::desired_read_size() {
 }
 int MixerInputConnection::playout_channel() {
   return playout_channel_;
+}
+
+bool MixerInputConnection::active() {
+  base::AutoLock lock(lock_);
+  return !paused_;
 }
 
 void MixerInputConnection::WritePcm(scoped_refptr<net::IOBuffer> data) {

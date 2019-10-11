@@ -370,6 +370,9 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   // the case by this point).
   web_view_->DidAttachLocalMainFrame();
 
+  web_view_->SetDeviceScaleFactor(
+      test_web_widget_client_->GetScreenInfo().device_scale_factor);
+
   // Set an initial size for subframes.
   if (frame->Parent())
     frame->FrameWidget()->Resize(WebSize());
@@ -497,8 +500,6 @@ void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
             .GetAllowUniversalAccessFromFileURLs());
   }
 
-  web_view_->SetDeviceScaleFactor(
-      test_web_view_client_->GetScreenInfo().device_scale_factor);
   web_view_->SetDefaultPageScaleLimits(1, 4);
 }
 

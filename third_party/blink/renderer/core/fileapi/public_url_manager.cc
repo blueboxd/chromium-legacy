@@ -164,7 +164,8 @@ void PublicURLManager::Revoke(const KURL& url) {
 
 void PublicURLManager::Resolve(
     const KURL& url,
-    network::mojom::blink::URLLoaderFactoryRequest factory_request) {
+    mojo::PendingReceiver<network::mojom::blink::URLLoaderFactory>
+        factory_receiver) {
   if (is_stopped_)
     return;
 
@@ -174,7 +175,7 @@ void PublicURLManager::Resolve(
         GetExecutionContext()->GetSecurityOrigin(),
         url_store_.BindNewEndpointAndPassReceiver());
   }
-  url_store_->ResolveAsURLLoaderFactory(url, std::move(factory_request));
+  url_store_->ResolveAsURLLoaderFactory(url, std::move(factory_receiver));
 }
 
 void PublicURLManager::Resolve(

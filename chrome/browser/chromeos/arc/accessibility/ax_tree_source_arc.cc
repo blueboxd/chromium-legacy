@@ -262,7 +262,7 @@ void AXTreeSourceArc::GetChildren(
   // descendants.
   std::sort(
       out_children->begin(), out_children->end(),
-      [this, id_to_index](auto left, auto right) {
+      [this, &id_to_index](auto left, auto right) {
         auto left_bounds = ComputeEnclosingBounds(left);
         auto right_bounds = ComputeEnclosingBounds(right);
 

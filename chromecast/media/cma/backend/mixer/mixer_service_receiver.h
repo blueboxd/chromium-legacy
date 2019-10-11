@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "chromecast/media/audio/mixer_service/receiver/receiver.h"
 
@@ -24,7 +25,12 @@ class MixerServiceReceiver : public mixer_service::Receiver {
   explicit MixerServiceReceiver(StreamMixer* mixer);
   ~MixerServiceReceiver() override;
 
+  // Called by the mixer when the active stream count changes.
+  void OnStreamCountChanged(int primary, int sfx);
+
  private:
+  class ControlConnection;
+
   // mixer_service::Receiver implementation:
   void CreateOutputStream(std::unique_ptr<mixer_service::MixerSocket> socket,
                           const mixer_service::Generic& message) override;
@@ -38,7 +44,14 @@ class MixerServiceReceiver : public mixer_service::Receiver {
       std::unique_ptr<mixer_service::MixerSocket> socket,
       const mixer_service::Generic& message) override;
 
+  void RemoveControlConnection(ControlConnection* ptr);
+
   StreamMixer* const mixer_;
+
+  base::flat_map<ControlConnection*, std::unique_ptr<ControlConnection>>
+      control_connections_;
+  int primary_stream_count_ = 0;
+  int sfx_stream_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MixerServiceReceiver);
 };

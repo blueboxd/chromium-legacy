@@ -21,7 +21,10 @@ include_rules = [
 ]
 
 specific_include_rules = {
-    "rtc_data_channel_test\.cc" : [
+    ".*test\.cc" : [
         "+base/run_loop.h",
+        "+base/test/bind_test_util.h",
+        "+base/test/test_timeouts.h",
+        "+ui/gfx/color_space.h",
     ],
 }

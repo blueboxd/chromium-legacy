@@ -75,7 +75,7 @@ class CONTENT_EXPORT SharedWorkerHost
   // This method must be called either on the UI thread or before threads start.
   // This callback is run on the UI thread.
   using CreateNetworkFactoryCallback = base::RepeatingCallback<void(
-      network::mojom::URLLoaderFactoryRequest request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int worker_process_id,
       network::mojom::URLLoaderFactoryPtrInfo original_factory)>;
   static void SetNetworkFactoryForSubresourcesForTesting(

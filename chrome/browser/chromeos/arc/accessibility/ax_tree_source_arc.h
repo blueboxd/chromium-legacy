@@ -89,11 +89,11 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
 
   bool is_input_method_window() { return is_input_method_window_; }
 
- protected:
+ private:
+  // virtual for testing.
   virtual extensions::AutomationEventRouterInterface* GetAutomationEventRouter()
       const;
 
- private:
   friend class arc::AXTreeSourceArcTest;
   class FocusStealer;
 

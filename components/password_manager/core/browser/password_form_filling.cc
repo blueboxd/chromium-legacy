@@ -90,6 +90,16 @@ LikelyFormFilling SendFillInformationToRenderer(
   DCHECK(driver);
   DCHECK_EQ(PasswordForm::Scheme::kHtml, observed_form.scheme);
 
+  if (autofill::IsShowAutofillSignaturesEnabled()) {
+    driver->AnnotateFieldsWithParsingResult(
+        {.username_renderer_id = observed_form.username_element_renderer_id,
+         .password_renderer_id = observed_form.password_element_renderer_id,
+         .new_password_renderer_id =
+             observed_form.new_password_element_renderer_id,
+         .confirm_password_renderer_id =
+             observed_form.confirmation_password_element_renderer_id});
+  }
+
   if (best_matches.empty()) {
     driver->InformNoSavedCredentials();
     metrics_recorder->RecordFillEvent(

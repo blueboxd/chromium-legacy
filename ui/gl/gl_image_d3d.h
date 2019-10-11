@@ -19,11 +19,14 @@ class GL_EXPORT GLImageD3D : public GLImage {
  public:
   // Creates a GLImage backed by a D3D11 |texture| with given |size| and GL
   // unsized |internal_format|, optionally associated with |swap_chain|.  The
-  // |internal_format| is passed to ANGLE and used for GL operations.  It may be
-  // different from the internal format associated with the  DXGI_FORMAT of the
-  // texture (e.g. RGB instead of BGRA_EXT for DXGI_FORMAT_B8G8R8A8_UNORM).
+  // |internal_format| and |data_type| are passed to ANGLE and used for GL
+  // operations.  |internal_format| may be different from the internal format
+  // associated with the DXGI_FORMAT of the texture (e.g. RGB instead of
+  // BGRA_EXT for DXGI_FORMAT_B8G8R8A8_UNORM).  |data_type| should match the
+  // data type accociated with the DXGI_FORMAT of the texture.
   GLImageD3D(const gfx::Size& size,
              unsigned internal_format,
+             unsigned data_type,
              Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
              Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain);
 
@@ -37,6 +40,7 @@ class GL_EXPORT GLImageD3D : public GLImage {
   BindOrCopy ShouldBindOrCopy() override;
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
+  unsigned GetDataType() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override {}
   bool CopyTexImage(unsigned target) override;
@@ -67,8 +71,9 @@ class GL_EXPORT GLImageD3D : public GLImage {
   ~GLImageD3D() override;
 
   const gfx::Size size_;
-  const unsigned internal_format_; /* GLenum */
-  void* egl_image_ = nullptr; /* EGLImageKHR */
+  const unsigned internal_format_;  // GLenum
+  const unsigned data_type_;        // GLenum
+  void* egl_image_ = nullptr;       // EGLImageKHR
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture_;
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain_;
 

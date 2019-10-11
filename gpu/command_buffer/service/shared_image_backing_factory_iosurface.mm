@@ -554,7 +554,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
                            gles2::Texture::BOUND);
     texture->SetImmutable(true, false);
 
-    DCHECK_EQ(image->GetInternalFormat(), gl_info.format);
+    DCHECK_EQ(image->GetInternalFormat(), gl_info.internal_format);
 
     api->glBindTextureFn(GL_TEXTURE_RECTANGLE, old_texture_binding);
     return texture;

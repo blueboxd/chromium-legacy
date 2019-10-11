@@ -62,8 +62,13 @@ namespace content {
 
 class CompositedScrollingBrowserTest : public ContentBrowserTest {
  public:
-  CompositedScrollingBrowserTest() {}
-  ~CompositedScrollingBrowserTest() override {}
+  CompositedScrollingBrowserTest() {
+    // Disable scroll resampling because this is checking scroll distance.
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kResamplingScrollEvents);
+  }
+
+  ~CompositedScrollingBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch(switches::kEnablePreferCompositingToLCDText);
@@ -149,6 +154,7 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositedScrollingBrowserTest);
@@ -166,9 +172,6 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
 #endif
 IN_PROC_BROWSER_TEST_F(CompositedScrollingBrowserTest,
                        MAYBE_Scroll3DTransformedScroller) {
-  // Disable scroll resampling because this is checking scroll distance.
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndDisableFeature(features::kResamplingScrollEvents);
   LoadURL();
   double scroll_distance =
       DoTouchScroll(gfx::Point(50, 150), gfx::Vector2d(0, 100));

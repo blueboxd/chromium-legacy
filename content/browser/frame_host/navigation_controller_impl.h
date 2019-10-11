@@ -8,7 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -60,7 +62,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // each change to the pending entry
   class PendingEntryRef {
    public:
-    PendingEntryRef(base::WeakPtr<NavigationControllerImpl> controller);
+    explicit PendingEntryRef(
+        base::WeakPtr<NavigationControllerImpl> controller);
     ~PendingEntryRef();
 
    private:
@@ -535,7 +538,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // ---------------------------------------------------------------------------
 
   // The user browser context associated with this controller.
-  BrowserContext* browser_context_;
+  BrowserContext* const browser_context_;
 
   // List of |NavigationEntry|s for this controller.
   std::vector<std::unique_ptr<NavigationEntryImpl>> entries_;
@@ -547,7 +550,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // This may refer to an item in the entries_ list if the pending_entry_index_
   // != -1, or it may be its own entry that should be deleted. Be careful with
   // the memory management.
-  NavigationEntryImpl* pending_entry_;
+  NavigationEntryImpl* pending_entry_ = nullptr;
 
   // This keeps track of the NavigationRequests associated with the pending
   // NavigationEntry. When all of them have been deleted, or have stopped
@@ -565,21 +568,21 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // issues: 1. This might hang around longer than we'd like if there is no
   // error page loaded, and 2. This doesn't work very well for frames.
   // http://crbug.com/474261
-  int failed_pending_entry_id_;
+  int failed_pending_entry_id_ = 0;
 
   // The index of the currently visible entry.
-  int last_committed_entry_index_;
+  int last_committed_entry_index_ = -1;
 
   // The index of the pending entry if it is in entries_, or -1 if
   // pending_entry_ is a new entry (created by LoadURL).
-  int pending_entry_index_;
+  int pending_entry_index_ = -1;
 
   // The index for the entry that is shown until a navigation occurs.  This is
   // used for interstitial pages. -1 if there are no such entry.
   // Note that this entry really appears in the list of entries, but only
   // temporarily (until the next navigation).  Any index pointing to an entry
   // after the transient entry will become invalid if you navigate forward.
-  int transient_entry_index_;
+  int transient_entry_index_ = -1;
 
   // The delegate associated with the controller. Possibly NULL during
   // setup.
@@ -589,7 +592,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   SSLManager ssl_manager_;
 
   // Whether we need to be reloaded when made active.
-  bool needs_reload_;
+  bool needs_reload_ = false;
 
   // Source of when |needs_reload_| is set. Only valid when |needs_reload_|
   // is set.
@@ -597,10 +600,10 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // Whether this is the initial navigation.
   // Becomes false when initial navigation commits.
-  bool is_initial_navigation_;
+  bool is_initial_navigation_ = true;
 
   // Prevent unsafe re-entrant calls to NavigateToPendingEntry.
-  bool in_navigate_to_pending_entry_;
+  bool in_navigate_to_pending_entry_ = false;
 
   // Used to find the appropriate SessionStorageNamespace for the storage
   // partition of a NavigationEntry.
@@ -616,7 +619,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // If a repost is pending, its type (RELOAD or RELOAD_BYPASSING_CACHE),
   // NO_RELOAD otherwise.
-  ReloadType pending_reload_;
+  ReloadType pending_reload_ = ReloadType::NONE;
 
   // Used to get timestamps for newly-created navigation entries.
   base::RepeatingCallback<base::Time()> get_timestamp_callback_;

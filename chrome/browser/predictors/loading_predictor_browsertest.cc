@@ -677,7 +677,6 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
 // Tests that the LoadingPredictor has a prediction for a host after navigating
 // to it.
 IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, LearnFromNavigation) {
-  base::test::ScopedFeatureList scoped_feature_list;
   GURL url = embedded_test_server()->GetURL(
       "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
                                              embedded_test_server()->port()));
@@ -697,15 +696,22 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, LearnFromNavigation) {
               testing::UnorderedElementsAreArray(requests));
 }
 
+class LoadingPredictorBrowserTestLearnAllResources
+    : public LoadingPredictorBrowserTest {
+ public:
+  LoadingPredictorBrowserTestLearnAllResources() {
+    feature_list_.InitAndDisableFeature(
+        features::kLoadingOnlyLearnHighPriorityResources);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests that the LoadingPredictor has a prediction for a host after navigating
 // to it. Disables kLoadingOnlyLearnHighPriorityResources.
-IN_PROC_BROWSER_TEST_F(
-    LoadingPredictorBrowserTest,
-    LearnFromNavigation_DisablekLoadingOnlyLearnHighPriorityResources) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kLoadingOnlyLearnHighPriorityResources);
-
+IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestLearnAllResources,
+                       LearnFromNavigation) {
   GURL url = embedded_test_server()->GetURL(
       "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
                                              embedded_test_server()->port()));

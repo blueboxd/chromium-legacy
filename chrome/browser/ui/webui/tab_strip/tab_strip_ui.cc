@@ -18,6 +18,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -35,8 +36,10 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "third_party/skia/include/core/SkImageEncoder.h"
 #include "third_party/skia/include/core/SkStream.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace {
 
@@ -65,11 +68,54 @@ class BufferWStream : public SkWStream {
   std::vector<unsigned char> result_;
 };
 
+std::string EncodeImage(gfx::ImageSkia image,
+                        SkEncodedImageFormat format,
+                        float scale_factor) {
+  const SkBitmap& bitmap = image.GetRepresentation(scale_factor).GetBitmap();
+  BufferWStream stream;
+  const bool encoding_succeeded = SkEncodeImage(&stream, bitmap, format, 100);
+  DCHECK(encoding_succeeded);
+  const std::vector<unsigned char> image_data = stream.GetBuffer();
+
+  std::string mime_subtype;
+  if (format == SkEncodedImageFormat::kJPEG) {
+    mime_subtype = "jpeg";
+  } else if (format == SkEncodedImageFormat::kPNG) {
+    mime_subtype = "png";
+  } else {
+    NOTREACHED();
+  }
+
+  return "data:image/" + mime_subtype + ";base64," +
+         base::Base64Encode(base::as_bytes(base::make_span(image_data)));
+}
+
+class WebUITabContextMenu : public ui::SimpleMenuModel::Delegate,
+                            public TabMenuModel {
+ public:
+  WebUITabContextMenu(TabStripModel* tab_strip_model, int tab_index)
+      : TabMenuModel(this, tab_strip_model, tab_index),
+        tab_strip_model_(tab_strip_model),
+        tab_index_(tab_index) {}
+  ~WebUITabContextMenu() override = default;
+
+  void ExecuteCommand(int command_id, int event_flags) override {
+    DCHECK_LT(tab_index_, tab_strip_model_->count());
+    tab_strip_model_->ExecuteContextMenuCommand(
+        tab_index_, static_cast<TabStripModel::ContextMenuCommand>(command_id));
+  }
+
+ private:
+  TabStripModel* const tab_strip_model_;
+  const int tab_index_;
+};
+
 class TabStripUIHandler : public content::WebUIMessageHandler,
                           public TabStripModelObserver {
  public:
-  explicit TabStripUIHandler(Browser* browser)
+  explicit TabStripUIHandler(Browser* browser, TabStripUI::Embedder* embedder)
       : browser_(browser),
+        embedder_(embedder),
         thumbnail_tracker_(base::Bind(&TabStripUIHandler::HandleThumbnailUpdate,
                                       base::Unretained(this))) {}
   ~TabStripUIHandler() override = default;
@@ -156,6 +202,10 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     web_ui()->RegisterMessageCallback(
         "removeTrackedTab", base::Bind(&TabStripUIHandler::RemoveTrackedTab,
                                        base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "showTabContextMenu",
+        base::Bind(&TabStripUIHandler::HandleShowTabContextMenu,
+                   base::Unretained(this)));
   }
 
  private:
@@ -166,21 +216,24 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
                         browser_->tab_strip_model()->active_index() == index);
     tab_data.SetInteger("id", extensions::ExtensionTabUtil::GetTabId(contents));
     tab_data.SetInteger("index", index);
-    tab_data.SetString("status", extensions::ExtensionTabUtil::GetTabStatusText(
-                                     contents->IsLoading()));
-
-    // TODO(johntlee): Replace with favicon from TabRendererData
-    content::NavigationEntry* visible_entry =
-        contents->GetController().GetVisibleEntry();
-    if (visible_entry && visible_entry->GetFavicon().valid) {
-      tab_data.SetString("favIconUrl", visible_entry->GetFavicon().url.spec());
-    }
 
     TabRendererData tab_renderer_data =
         TabRendererData::FromTabInModel(browser_->tab_strip_model(), index);
     tab_data.SetBoolean("pinned", tab_renderer_data.pinned);
     tab_data.SetString("title", tab_renderer_data.title);
     tab_data.SetString("url", tab_renderer_data.visible_url.GetContent());
+
+    if (!tab_renderer_data.favicon.isNull()) {
+      tab_data.SetString(
+          "favIconUrl",
+          EncodeImage(tab_renderer_data.favicon, SkEncodedImageFormat::kPNG,
+                      web_ui()->GetDeviceScaleFactor()));
+    }
+
+    tab_data.SetInteger("networkState",
+                        static_cast<int>(tab_renderer_data.network_state));
+    tab_data.SetBoolean("shouldHideThrobber",
+                        tab_renderer_data.should_hide_throbber);
     // TODO(johntlee): Add the rest of TabRendererData
 
     return tab_data;
@@ -225,6 +278,9 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     colors.SetString("--tabstrip-tab-loading-spinning-color",
                      color_utils::SkColorToRgbaString(tp.GetColor(
                          ThemeProperties::COLOR_TAB_THROBBER_SPINNING)));
+    colors.SetString("--tabstrip-tab-waiting-spinning-color",
+                     color_utils::SkColorToRgbaString(tp.GetColor(
+                         ThemeProperties::COLOR_TAB_THROBBER_WAITING)));
     colors.SetString("--tabstrip-indicator-recording-color",
                      color_utils::SkColorToRgbaString(tp.GetColor(
                          ThemeProperties::COLOR_TAB_ALERT_RECORDING)));
@@ -236,6 +292,33 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
                          ThemeProperties::COLOR_TAB_ALERT_CAPTURING)));
 
     ResolveJavascriptCallback(callback_id, colors);
+  }
+
+  void HandleShowTabContextMenu(const base::ListValue* args) {
+    int tab_id = 0;
+    args->GetInteger(0, &tab_id);
+
+    gfx::PointF point;
+    {
+      double x = 0;
+      args->GetDouble(1, &x);
+      double y = 0;
+      args->GetDouble(2, &y);
+      point = gfx::PointF(x, y);
+    }
+
+    TabStripModel* tab_strip_model = nullptr;
+    int tab_index = -1;
+    const bool got_tab = extensions::ExtensionTabUtil::GetTabById(
+        tab_id, browser_->profile(), true /* include_incognito */, nullptr,
+        &tab_strip_model, nullptr, &tab_index);
+    DCHECK(got_tab);
+    DCHECK_EQ(tab_strip_model, browser_->tab_strip_model());
+
+    DCHECK(embedder_);
+    embedder_->ShowContextMenuAtPoint(
+        gfx::ToRoundedPoint(point),
+        std::make_unique<WebUITabContextMenu>(tab_strip_model, tab_index));
   }
 
   void AddTrackedTab(const base::ListValue* args) {
@@ -267,14 +350,6 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   // Callback passed to |thumbnail_tracker_|. Called when a tab's thumbnail
   // changes, or when we start watching the tab.
   void HandleThumbnailUpdate(content::WebContents* tab, gfx::ImageSkia image) {
-    const SkBitmap& bitmap =
-        image.GetRepresentation(web_ui()->GetDeviceScaleFactor()).GetBitmap();
-    BufferWStream stream;
-    const bool encoding_succeeded =
-        SkEncodeImage(&stream, bitmap, SkEncodedImageFormat::kJPEG, 100);
-    DCHECK(encoding_succeeded);
-    const std::vector<unsigned char> image_data = stream.GetBuffer();
-
     // Send base-64 encoded image to JS side.
     //
     // TODO(crbug.com/991393): streamline the process from tab capture to
@@ -286,9 +361,8 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     // copies of essentially the same image, and it is de-encoded and re-encoded
     // to the same format. We can reduce the number of copies and avoid the
     // redundant encoding.
-    std::string encoded_image =
-        base::Base64Encode(base::as_bytes(base::make_span(image_data)));
-    encoded_image = "data:image/jpeg;base64," + encoded_image;
+    std::string encoded_image = EncodeImage(image, SkEncodedImageFormat::kJPEG,
+                                            web_ui()->GetDeviceScaleFactor());
 
     const int tab_id = extensions::ExtensionTabUtil::GetTabId(tab);
     FireWebUIListener("tab-thumbnail-updated", base::Value(tab_id),
@@ -296,6 +370,8 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   }
 
   Browser* const browser_;
+  TabStripUI::Embedder* const embedder_;
+
   ThumbnailTracker thumbnail_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStripUIHandler);
@@ -341,6 +417,9 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
 
 TabStripUI::~TabStripUI() {}
 
-void TabStripUI::Initialize(Browser* browser) {
-  web_ui()->AddMessageHandler(std::make_unique<TabStripUIHandler>(browser));
+void TabStripUI::Initialize(Browser* browser, Embedder* embedder) {
+  content::WebUI* const web_ui = TabStripUI::web_ui();
+  DCHECK_EQ(Profile::FromWebUI(web_ui), browser->profile());
+  web_ui->AddMessageHandler(
+      std::make_unique<TabStripUIHandler>(browser, embedder));
 }

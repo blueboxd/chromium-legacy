@@ -4,42 +4,31 @@
 
 package org.chromium.weblayer_private;
 
-import android.content.Context;
-
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.weblayer_private.aidl.IBrowserFragmentController;
-import org.chromium.weblayer_private.aidl.IObjectWrapper;
 import org.chromium.weblayer_private.aidl.IProfile;
-import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 @JNINamespace("weblayer")
 public final class ProfileImpl extends IProfile.Stub {
     private long mNativeProfile;
+    private Runnable mOnDestroyCallback;
 
-    public ProfileImpl(String path) {
+    ProfileImpl(String path, Runnable onDestroyCallback) {
         mNativeProfile = ProfileImplJni.get().createProfile(path);
+        mOnDestroyCallback = onDestroyCallback;
     }
 
     @Override
     public void destroy() {
         ProfileImplJni.get().deleteProfile(mNativeProfile);
         mNativeProfile = 0;
+        mOnDestroyCallback.run();
+        mOnDestroyCallback = null;
     }
 
     @Override
     public void clearBrowsingData() {
         ProfileImplJni.get().clearBrowsingData(mNativeProfile);
-    }
-
-    @Override
-    public IBrowserFragmentController createBrowserFragmentController(IRemoteFragmentClient
-            fragmentClient,
-            IObjectWrapper context) {
-        BrowserControllerImpl browserController = new BrowserControllerImpl(
-                    ObjectWrapper.unwrap(context, Context.class), this);
-        return new BrowserFragmentControllerImpl(browserController, fragmentClient);
     }
 
     long getNativeProfile() {

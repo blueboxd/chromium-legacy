@@ -124,11 +124,12 @@ class PreviewsPageLoadMetricsObserverTest
   void ValidateTimingHistogram(const std::string& histogram,
                                const base::Optional<base::TimeDelta>& event,
                                bool preview_was_active) {
-    histogram_tester().ExpectTotalCount(histogram, preview_was_active ? 1 : 0);
+    tester()->histogram_tester().ExpectTotalCount(histogram,
+                                                  preview_was_active ? 1 : 0);
     if (!preview_was_active) {
-      histogram_tester().ExpectTotalCount(histogram, 0);
+      tester()->histogram_tester().ExpectTotalCount(histogram, 0);
     } else {
-      histogram_tester().ExpectUniqueSample(
+      tester()->histogram_tester().ExpectUniqueSample(
           histogram,
           static_cast<base::HistogramBase::Sample>(
               event.value().InMilliseconds()),
@@ -140,12 +141,12 @@ class PreviewsPageLoadMetricsObserverTest
                               int network_resources,
                               int64_t network_bytes) {
     if (network_resources > 0) {
-      histogram_tester().ExpectUniqueSample(
+      tester()->histogram_tester().ExpectUniqueSample(
           "PageLoad.Clients." + preview_type_name +
               ".Experimental.Bytes.NetworkIncludingHeaders",
           static_cast<int>(network_bytes / 1024), 1);
     } else {
-      histogram_tester().ExpectTotalCount(
+      tester()->histogram_tester().ExpectTotalCount(
           "PageLoad.Clients." + preview_type_name +
               ".Experimental.Bytes.NetworkIncludingHeaders",
           0);
@@ -188,10 +189,10 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, NoActivePreview) {
 
   auto resources =
       GetSampleResourceDataUpdateForTesting(10 * 1024 /* resource_size */);
-  SimulateResourceDataUseUpdate(resources);
+  tester()->SimulateResourceDataUseUpdate(resources);
 
-  SimulateTimingUpdate(timing_);
-  NavigateToUntrackedUrl();
+  tester()->SimulateTimingUpdate(timing_);
+  tester()->NavigateToUntrackedUrl();
 
   ValidateTimingHistograms("NoScriptPreview", false /* preview_was_active */);
   ValidateTimingHistograms("ResourceLoadingHintsPreview",
@@ -212,10 +213,10 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, NoScriptPreviewActive) {
 
   auto resources =
       GetSampleResourceDataUpdateForTesting(10 * 1024 /* resource_size */);
-  SimulateResourceDataUseUpdate(resources);
+  tester()->SimulateResourceDataUseUpdate(resources);
 
-  SimulateTimingUpdate(timing_);
-  NavigateToUntrackedUrl();
+  tester()->SimulateTimingUpdate(timing_);
+  tester()->NavigateToUntrackedUrl();
 
   ValidateTimingHistograms("NoScriptPreview", true /* preview_was_active */);
   ValidateDataHistograms("NoScriptPreview", 1 /* network_resources */,
@@ -232,10 +233,10 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, ResourceLoadingHintsPreviewActive) {
 
   auto resources =
       GetSampleResourceDataUpdateForTesting(10 * 1024 /* resource_size */);
-  SimulateResourceDataUseUpdate(resources);
+  tester()->SimulateResourceDataUseUpdate(resources);
 
-  SimulateTimingUpdate(timing_);
-  NavigateToUntrackedUrl();
+  tester()->SimulateTimingUpdate(timing_);
+  tester()->NavigateToUntrackedUrl();
 
   ValidateTimingHistograms("ResourceLoadingHintsPreview",
                            true /* preview_was_active */);
@@ -263,7 +264,7 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, NoScriptDataSavings) {
   auto resource_data_update = ResourceDataUpdate::New();
   resource_data_update->delta_bytes = 5 * 1024;
   resources.push_back(std::move(resource_data_update));
-  SimulateResourceDataUseUpdate(resources);
+  tester()->SimulateResourceDataUseUpdate(resources);
   data_use += (5 * 1024);
 
   resources.clear();
@@ -271,10 +272,10 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, NoScriptDataSavings) {
   resource_data_update = ResourceDataUpdate::New();
   resource_data_update->delta_bytes = 20 * 1024;
   resources.push_back(std::move(resource_data_update));
-  SimulateResourceDataUseUpdate(resources);
+  tester()->SimulateResourceDataUseUpdate(resources);
   data_use += (20 * 1024);
 
-  SimulateTimingUpdate(timing_);
+  tester()->SimulateTimingUpdate(timing_);
 
   int64_t expected_savings = (data_use * inflation) / 100 + constant_savings;
 
@@ -302,7 +303,7 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, ResourceLoadingHintsDataSavings) {
   auto resource_data_update = ResourceDataUpdate::New();
   resource_data_update->delta_bytes = 5 * 1024;
   resources.push_back(std::move(resource_data_update));
-  SimulateResourceDataUseUpdate(resources);
+  tester()->SimulateResourceDataUseUpdate(resources);
   data_use += (5 * 1024);
 
   resources.clear();
@@ -310,10 +311,10 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, ResourceLoadingHintsDataSavings) {
   resource_data_update = ResourceDataUpdate::New();
   resource_data_update->delta_bytes = 20 * 1024;
   resources.push_back(std::move(resource_data_update));
-  SimulateResourceDataUseUpdate(resources);
+  tester()->SimulateResourceDataUseUpdate(resources);
   data_use += (20 * 1024);
 
-  SimulateTimingUpdate(timing_);
+  tester()->SimulateTimingUpdate(timing_);
 
   int64_t expected_savings = (data_use * inflation) / 100 + constant_savings;
 

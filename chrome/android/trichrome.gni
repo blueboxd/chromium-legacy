@@ -152,12 +152,15 @@ template("trichrome_library_apk_tmpl") {
         "//chrome/android/java/trichrome.flags",
       ]
       if (trichrome_synchronized_proguard) {
-        proguard_configs += [ "//chrome/android/java/static_library_dex_reference_workarounds.flags" ]
-      }
-      if (enable_proguard_obfuscation) {
-        proguard_configs +=
-            [ "//base/android/proguard/enable_obfuscation.flags" ]
+        proguard_configs += [
+          "//chrome/android/java/static_library_dex_reference_workarounds.flags",
+          "//base/android/proguard/enable_obfuscation.flags",
+        ]
       } else {
+        # Disabling all obfuscation for the Trichrome library as a temporary
+        # workaround for crbug.com/1012842. There were naming conflicts between
+        # Library and Chrome, since each Proguard run doesn't know about the
+        # other, and thus handed out the first names (a, b, c) to both.
         proguard_configs +=
             [ "//base/android/proguard/disable_all_obfuscation.flags" ]
       }

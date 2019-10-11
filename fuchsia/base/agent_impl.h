@@ -76,6 +76,10 @@ class AgentImpl : public ::fuchsia::modular::Agent {
           &ComponentStateBase::TeardownIfUnused, base::Unretained(this)));
     }
 
+    // Requests that this instance be torn-down, regardless of whether one or
+    // more keep-alive bindings (see above) have clients.
+    void DisconnectClientsAndTeardown();
+
    private:
     friend class AgentImpl;
 

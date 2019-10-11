@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "ash/app_list/presenter/app_list_presenter_delegate.h"
+#include "ash/app_list/app_list_presenter_delegate.h"
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_observer.h"

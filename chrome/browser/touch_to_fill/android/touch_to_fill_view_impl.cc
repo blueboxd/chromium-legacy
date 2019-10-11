@@ -57,6 +57,7 @@ TouchToFillViewImpl::~TouchToFillViewImpl() {
 
 void TouchToFillViewImpl::Show(
     base::StringPiece16 formatted_url,
+    IsOriginSecure is_origin_secure,
     base::span<const password_manager::CredentialPair> credentials) {
   // Serialize the |credentials| span into a Java array and instruct the bridge
   // to show it together with |formatted_url| to the user.
@@ -76,7 +77,7 @@ void TouchToFillViewImpl::Show(
 
   Java_TouchToFillBridge_showCredentials(
       env, java_object_, ConvertUTF16ToJavaString(env, formatted_url),
-      credential_array);
+      is_origin_secure.value(), credential_array);
 }
 
 void TouchToFillViewImpl::OnCredentialSelected(

@@ -11,6 +11,7 @@
 #include "base/big_endian.h"
 #include "base/logging.h"
 #include "chromecast/media/audio/mixer_service/constants.h"
+#include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "net/base/io_buffer.h"
 #include "net/socket/stream_socket.h"
 

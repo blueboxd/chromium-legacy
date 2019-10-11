@@ -120,12 +120,14 @@ void SyncEngineImpl::SetDecryptionPassphrase(const std::string& passphrase) {
 }
 
 void SyncEngineImpl::AddTrustedVaultDecryptionKeys(
-    const std::vector<std::string>& keys) {
+    const std::vector<std::string>& keys,
+    base::OnceClosure done_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_task_runner_->PostTask(
+  sync_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&SyncEngineBackend::DoAddTrustedVaultDecryptionKeys,
-                     backend_, keys));
+                     backend_, keys),
+      std::move(done_cb));
 }
 
 void SyncEngineImpl::StopSyncingForShutdown() {

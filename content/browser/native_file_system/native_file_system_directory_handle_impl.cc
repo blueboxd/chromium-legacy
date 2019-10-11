@@ -24,6 +24,7 @@ using blink::mojom::NativeFileSystemEntryPtr;
 using blink::mojom::NativeFileSystemHandle;
 using blink::mojom::NativeFileSystemStatus;
 using blink::mojom::NativeFileSystemTransferToken;
+using storage::FileSystemOperationRunner;
 
 namespace content {
 
@@ -116,11 +117,12 @@ void NativeFileSystemDirectoryHandleImpl::GetFile(const std::string& basename,
         }),
         std::move(callback));
   } else {
-    operation_runner()->FileExists(
-        child_url,
+    DoFileSystemOperation(
+        FROM_HERE, &FileSystemOperationRunner::FileExists,
         base::BindOnce(&NativeFileSystemDirectoryHandleImpl::DidGetFile,
                        weak_factory_.GetWeakPtr(), child_url,
-                       std::move(callback)));
+                       std::move(callback)),
+        child_url);
   }
 }
 
@@ -162,11 +164,12 @@ void NativeFileSystemDirectoryHandleImpl::GetDirectory(
         }),
         std::move(callback));
   } else {
-    operation_runner()->DirectoryExists(
-        child_url,
+    DoFileSystemOperation(
+        FROM_HERE, &FileSystemOperationRunner::DirectoryExists,
         base::BindOnce(&NativeFileSystemDirectoryHandleImpl::DidGetDirectory,
                        weak_factory_.GetWeakPtr(), child_url,
-                       std::move(callback)));
+                       std::move(callback)),
+        child_url);
   }
 }
 
@@ -174,11 +177,13 @@ void NativeFileSystemDirectoryHandleImpl::GetEntries(
     GetEntriesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  operation_runner()->ReadDirectory(
-      url(), base::BindRepeating(
-                 &NativeFileSystemDirectoryHandleImpl::DidReadDirectory,
-                 weak_factory_.GetWeakPtr(),
-                 base::Owned(new ReadDirectoryState{std::move(callback)})));
+  DoFileSystemOperation(
+      FROM_HERE, &FileSystemOperationRunner::ReadDirectory,
+      base::BindRepeating(
+          &NativeFileSystemDirectoryHandleImpl::DidReadDirectory,
+          weak_factory_.GetWeakPtr(),
+          base::Owned(new ReadDirectoryState{std::move(callback)})),
+      url());
 }
 
 void NativeFileSystemDirectoryHandleImpl::RemoveEntry(
@@ -219,11 +224,13 @@ void NativeFileSystemDirectoryHandleImpl::GetFileWithWritePermission(
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
-  operation_runner()->CreateFile(
-      child_url, /*exclusive=*/false,
+  DoFileSystemOperation(
+      FROM_HERE, &FileSystemOperationRunner::CreateFile,
       base::BindOnce(&NativeFileSystemDirectoryHandleImpl::DidGetFile,
                      weak_factory_.GetWeakPtr(), child_url,
-                     std::move(callback)));
+                     std::move(callback)),
+      child_url,
+      /*exclusive=*/false);
 }
 
 void NativeFileSystemDirectoryHandleImpl::DidGetFile(
@@ -250,11 +257,13 @@ void NativeFileSystemDirectoryHandleImpl::GetDirectoryWithWritePermission(
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
-  operation_runner()->CreateDirectory(
-      child_url, /*exclusive=*/false, /*recursive=*/false,
+  DoFileSystemOperation(
+      FROM_HERE, &FileSystemOperationRunner::CreateDirectory,
       base::BindOnce(&NativeFileSystemDirectoryHandleImpl::DidGetDirectory,
                      weak_factory_.GetWeakPtr(), child_url,
-                     std::move(callback)));
+                     std::move(callback)),
+      child_url,
+      /*exclusive=*/false, /*recursive=*/false);
 }
 
 void NativeFileSystemDirectoryHandleImpl::DidGetDirectory(
@@ -320,14 +329,15 @@ void NativeFileSystemDirectoryHandleImpl::RemoveEntryImpl(
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
-  operation_runner()->Remove(
-      url, recurse,
+  DoFileSystemOperation(
+      FROM_HERE, &FileSystemOperationRunner::Remove,
       base::BindOnce(
           [](RemoveEntryCallback callback, base::File::Error result) {
             std::move(callback).Run(
                 native_file_system_error::FromFileError(result));
           },
-          std::move(callback)));
+          std::move(callback)),
+      url, recurse);
 }
 
 blink::mojom::NativeFileSystemErrorPtr

@@ -62,7 +62,7 @@ double MediaValues::CalculateViewportHeight(LocalFrame* frame) {
 int MediaValues::CalculateDeviceWidth(LocalFrame* frame) {
   DCHECK(frame && frame->View() && frame->GetSettings() && frame->GetPage());
   blink::WebScreenInfo screen_info =
-      frame->GetPage()->GetChromeClient().GetScreenInfo();
+      frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
   int device_width = screen_info.rect.width;
   if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
     device_width = static_cast<int>(
@@ -74,7 +74,7 @@ int MediaValues::CalculateDeviceWidth(LocalFrame* frame) {
 int MediaValues::CalculateDeviceHeight(LocalFrame* frame) {
   DCHECK(frame && frame->View() && frame->GetSettings() && frame->GetPage());
   blink::WebScreenInfo screen_info =
-      frame->GetPage()->GetChromeClient().GetScreenInfo();
+      frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
   int device_height = screen_info.rect.height;
   if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
     device_height = static_cast<int>(
@@ -96,23 +96,21 @@ float MediaValues::CalculateDevicePixelRatio(LocalFrame* frame) {
 int MediaValues::CalculateColorBitsPerComponent(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetPage());
-  if (frame->GetPage()->GetChromeClient().GetScreenInfo().is_monochrome)
+  WebScreenInfo screen_info =
+      frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
+  if (screen_info.is_monochrome)
     return 0;
-  return frame->GetPage()
-      ->GetChromeClient()
-      .GetScreenInfo()
-      .depth_per_component;
+  return screen_info.depth_per_component;
 }
 
 int MediaValues::CalculateMonochromeBitsPerComponent(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetPage());
-  if (!frame->GetPage()->GetChromeClient().GetScreenInfo().is_monochrome)
+  WebScreenInfo screen_info =
+      frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
+  if (!screen_info.is_monochrome)
     return 0;
-  return frame->GetPage()
-      ->GetChromeClient()
-      .GetScreenInfo()
-      .depth_per_component;
+  return screen_info.depth_per_component;
 }
 
 int MediaValues::CalculateDefaultFontSize(LocalFrame* frame) {
@@ -183,14 +181,17 @@ int MediaValues::CalculateAvailableHoverTypes(LocalFrame* frame) {
 DisplayShape MediaValues::CalculateDisplayShape(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetPage());
-  return frame->GetPage()->GetChromeClient().GetScreenInfo().display_shape;
+  return frame->GetPage()
+      ->GetChromeClient()
+      .GetScreenInfo(*frame)
+      .display_shape;
 }
 
 ColorSpaceGamut MediaValues::CalculateColorGamut(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetPage());
   return color_space_utilities::GetColorSpaceGamut(
-      frame->GetPage()->GetChromeClient().GetScreenInfo());
+      frame->GetPage()->GetChromeClient().GetScreenInfo(*frame));
 }
 
 PreferredColorScheme MediaValues::CalculatePreferredColorScheme(

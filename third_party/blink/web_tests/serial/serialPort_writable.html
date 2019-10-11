@@ -13,10 +13,15 @@ serial_test(async (t, fake) => {
   assert_equals(port.writable, null);
 
   await port.open({ baudrate: 9600 });
-  assert_true(port.writable instanceof WritableStream);
+  const writable = port.writable;
+  assert_true(writable instanceof WritableStream);
 
-  port.close();
+  await port.close();
   assert_equals(port.writable, null);
+
+  const writer = writable.getWriter();
+  const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
+  await promise_rejects(t, 'InvalidStateError', writer.write(data));
 }, 'open() and close() set and unset SerialPort.writable');
 
 serial_test(async (t, fake) => {
@@ -26,12 +31,12 @@ serial_test(async (t, fake) => {
   assert_true(port.writable instanceof WritableStream);
 
   const writer = port.writable.getWriter();
-  port.close();
+  await promise_rejects(t, new TypeError(), port.close());
 
-  const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
-  await promise_rejects(t, 'NetworkError', writer.write(data));
+  writer.releaseLock();
+  await port.close();
   assert_equals(port.writable, null);
-}, 'SerialPort.writable reports errors after close()');
+}, 'Port cannot be closed while writable is locked');
 
 serial_test(async (t, fake) => {
   const { port, fakePort } = await getFakeSerialPort(fake);
@@ -42,11 +47,12 @@ serial_test(async (t, fake) => {
   const writer = port.writable.getWriter();
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
   let writePromise = writer.write(data);
+  writer.close();
   let { value, done } = await fakePort.read();
   await writePromise;
   compareArrays(value, data);
 
-  port.close();
+  await port.close();
   assert_equals(port.writable, null);
 }, 'Can write a small amount of data');
 
@@ -63,9 +69,11 @@ serial_test(async (t, fake) => {
   writer.close();
 
   const reader = fakePort.readable_.getReader();
-  const value = await readAll(reader);
+  const value = await readWithLength(reader, data.byteLength);
   reader.releaseLock();
   compareArrays(data, value);
+
+  await port.close();
 }, 'Can read a large amount of data');
 
 serial_test(async (t, fake) => {
@@ -75,15 +83,17 @@ serial_test(async (t, fake) => {
   assert_true(port.writable instanceof WritableStream);
 
   const encoder = new TextEncoderStream();
-  encoder.readable.pipeTo(port.writable);
+  const encodingComplete = encoder.readable.pipeTo(port.writable);
   const writer = encoder.writable.getWriter();
   let writePromise = writer.write("Hello world!");
   let { value, done } = await fakePort.read();
   await writePromise;
   assert_equals("Hello world!", new TextDecoder().decode(value));
+  await writer.close();
+  await encodingComplete;
 
-  port.close();
-  assert_equals(null, port.writable);
+  await port.close();
+  assert_equals(port.writable, null);
 }, 'Can pipe a stream to writable');
 
 </script>

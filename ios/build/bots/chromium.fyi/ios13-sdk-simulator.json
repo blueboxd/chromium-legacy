@@ -1,8 +1,8 @@
 {
   "comments": [
-    "Runs tests on 64-bit iOS 11.4 and 12.2 and 13.0 tests"
+    "Runs tests on 64-bit iOS 13.1 tests"
   ],
-  "xcode build version": "11a420a",
+  "xcode build version": "11a1027",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
@@ -21,7 +21,8 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s Plus",
-      "os": "13.0",
+      "xcode build version": "11a1027",
+      "os": "13.1",
       "pool":"Chrome",
       "host os": "Mac-10.14.6",
       "priority": 30
@@ -29,7 +30,8 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s",
-      "os": "13.0",
+      "xcode build version": "11a1027",
+      "os": "13.1",
       "pool":"Chrome",
       "host os": "Mac-10.14.6",
       "priority": 30
@@ -37,7 +39,8 @@
     {
       "include": "common_tests.json",
       "device type": "iPhone 6s",
-      "os": "13.0",
+      "xcode build version": "11a1027",
+      "os": "13.1",
       "pool":"Chrome",
       "host os": "Mac-10.14.6",
       "priority": 30
@@ -45,7 +48,8 @@
     {
       "include": "eg_tests.json",
       "device type": "iPhone 7",
-      "os": "13.0",
+      "xcode build version": "11a1027",
+      "os": "13.1",
       "pool":"Chrome",
       "host os": "Mac-10.14.6",
       "priority": 30
@@ -53,7 +57,8 @@
     {
       "include": "eg_tests.json",
       "device type": "iPad Air 2",
-      "os": "13.0",
+      "xcode build version": "11a1027",
+      "os": "13.1",
       "pool":"Chrome",
       "host os": "Mac-10.14.6",
       "priority": 30
@@ -61,7 +66,8 @@
     {
       "include": "eg_tests.json",
       "device type": "iPhone X",
-      "os": "13.0",
+      "xcode build version": "11a1027",
+      "os": "13.1",
       "pool":"Chrome",
       "host os": "Mac-10.14.6",
       "priority": 30
@@ -69,7 +75,8 @@
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
-      "os": "13.0",
+      "xcode build version": "11a1027",
+      "os": "13.1",
       "pool":"Chrome",
       "host os": "Mac-10.14.6",
       "priority": 30
@@ -77,7 +84,8 @@
     {
       "include": "eg_cq_tests.json",
       "device type": "iPad Air 2",
-      "os": "13.0",
+      "xcode build version": "11a1027",
+      "os": "13.1",
       "pool":"Chrome",
       "host os": "Mac-10.14.6",
       "priority": 30

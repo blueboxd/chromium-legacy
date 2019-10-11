@@ -11,9 +11,12 @@ generate_token.py http://127.0.0.1:8000 Badging --expire-timestamp=2000000000
 <script src="/resources/origin-trials-helper.js"></script>
 <script>
 
+function assert_function_on(object, function_name, explanation) {
+  assert_equals(typeof object[function_name], 'function', explanation);
+}
+
 test(t => {
-  assert_own_property(window, 'ExperimentalBadge', 'ExperimentalBadge is not defined on the window');
-  assert_own_property(window.ExperimentalBadge, 'set', 'Set is not defined on the ExperimentalBadge API');
-  assert_own_property(window.ExperimentalBadge, 'clear', 'Clear is not defined on the ExperimentalBadge API');
+  assert_function_on(navigator, 'setExperimentalAppBadge', 'setExperimentalAppBadge is not defined on navigator');
+  assert_function_on(navigator, 'clearExperimentalAppBadge', 'clearExperimentalAppBadge is not defined on navigator');
 }, 'Badge API interfaces and properties in Origin-Trial enabled document.');
 </script>

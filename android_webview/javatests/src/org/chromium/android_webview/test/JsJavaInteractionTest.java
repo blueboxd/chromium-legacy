@@ -4,8 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -29,8 +27,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Test suite for JavaScript Java interaction.
@@ -56,9 +52,6 @@ public class JsJavaInteractionTest {
     private static final String JS_OBJECT_NAME_2 = "myObject2";
     private static final String DATA_HTML = "<html><body>data</body></html>";
     private static final int MESSAGE_COUNT = 10000;
-
-    // Timeout to failure, in milliseconds
-    private static final long TIMEOUT = scaleTimeout(5000);
 
     private EmbeddedTestServer mTestServer;
     private TestAwContentsClient mContentsClient;
@@ -92,21 +85,12 @@ public class JsJavaInteractionTest {
         }
 
         public Data waitForOnPostMessage() throws Exception {
-            return waitForNextQueueElement(mQueue);
+            return AwActivityTestRule.waitForNextQueueElement(mQueue);
         }
 
         public boolean hasNoMoreOnPostMessage() {
             return mQueue.isEmpty();
         }
-    }
-
-    private static <T> T waitForNextQueueElement(LinkedBlockingQueue<T> queue) throws Exception {
-        T value = queue.poll(TIMEOUT, TimeUnit.MILLISECONDS);
-        if (value == null) {
-            throw new TimeoutException(
-                    "Timeout while trying to take next entry from BlockingQueue");
-        }
-        return value;
     }
 
     @Before

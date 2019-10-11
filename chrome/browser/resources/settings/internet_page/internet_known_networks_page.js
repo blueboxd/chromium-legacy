@@ -191,14 +191,18 @@ Polymer({
   /** @private */
   onRemovePreferredTap_: function() {
     assert(this.networkType !== undefined);
-    this.setProperties_({type: this.networkType, priority: {value: 0}});
+    const config = OncMojo.getDefaultConfigProperties(this.networkType);
+    config.priority = {value: 0};
+    this.setProperties_(config);
     /** @type {!CrActionMenuElement} */ (this.$.dotsMenu).close();
   },
 
   /** @private */
   onAddPreferredTap_: function() {
     assert(this.networkType !== undefined);
-    this.setProperties_({type: this.networkType, priority: {value: 1}});
+    const config = OncMojo.getDefaultConfigProperties(this.networkType);
+    config.priority = {value: 1};
+    this.setProperties_(config);
     /** @type {!CrActionMenuElement} */ (this.$.dotsMenu).close();
   },
 

@@ -415,6 +415,17 @@ BookmarkUndoService* ChromeSyncClient::GetBookmarkUndoService() {
   return BookmarkUndoServiceFactory::GetForProfile(profile_);
 }
 
+syncer::TrustedVaultClient* ChromeSyncClient::GetTrustedVaultClient() {
+#if defined(OS_ANDROID)
+  // TODO(crbug.com/1012659): Instantiate a client for Android.
+  NOTIMPLEMENTED();
+#else
+  // TODO(crbug.com/1012660): Instantiate a generic client for other platforms.
+  NOTIMPLEMENTED();
+#endif  // defined(OS_ANDROID)
+  return nullptr;
+}
+
 invalidation::InvalidationService* ChromeSyncClient::GetInvalidationService() {
   invalidation::ProfileInvalidationProvider* provider =
       invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile_);

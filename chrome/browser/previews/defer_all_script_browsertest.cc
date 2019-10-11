@@ -80,10 +80,7 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
 class DeferAllScriptBrowserTest : public InProcessBrowserTest,
                                   public testing::WithParamInterface<bool> {
  public:
-  DeferAllScriptBrowserTest() = default;
-  ~DeferAllScriptBrowserTest() override = default;
-
-  void SetUp() override {
+  DeferAllScriptBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
         {previews::features::kPreviews,
          previews::features::kDeferAllScriptPreviews,
@@ -99,9 +96,9 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest,
       param_feature_list_.InitWithFeatures(
           {}, {optimization_guide::features::kOptimizationGuideKeyedService});
     }
-
-    InProcessBrowserTest::SetUp();
   }
+
+  ~DeferAllScriptBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
     g_browser_process->network_quality_tracker()
@@ -300,6 +297,14 @@ IN_PROC_BROWSER_TEST_P(
       &histogram_tester, "Previews.DeferAllScript.DenyListMatch", 1);
   histogram_tester.ExpectUniqueSample("Previews.DeferAllScript.DenyListMatch",
                                       true, 1);
+  // Verify UKM entry.
+  using UkmEntry = ukm::builders::Previews;
+  auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  auto* entry = entries.at(0);
+  test_ukm_recorder.ExpectEntryMetric(
+      entry, UkmEntry::kdefer_all_script_eligibility_reasonName,
+      static_cast<int>(previews::PreviewsEligibilityReason::DENY_LIST_MATCHED));
 
   EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog());
 }
@@ -333,18 +338,26 @@ IN_PROC_BROWSER_TEST_P(
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 0);
 }
 
+class DeferAllScriptBrowserTestWithCoinFlipHoldback
+    : public DeferAllScriptBrowserTest {
+ public:
+  DeferAllScriptBrowserTestWithCoinFlipHoldback() {
+    // Holdback the page load from previews and also disable offline previews to
+    // ensure that only post-commit previews are enabled.
+    feature_list_.InitWithFeaturesAndParameters(
+        {{previews::features::kCoinFlipHoldback,
+          {{"force_coin_flip_always_holdback", "true"}}}},
+        {previews::features::kOfflinePreviews});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 IN_PROC_BROWSER_TEST_P(
-    DeferAllScriptBrowserTest,
+    DeferAllScriptBrowserTestWithCoinFlipHoldback,
     DISABLE_ON_WIN_MAC_CHROMESOS(
         DeferAllScriptHttpsWhitelistedButWithCoinFlipHoldback)) {
-  // Holdback the page load from previews and also disable offline previews to
-  // ensure that only post-commit previews are enabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeaturesAndParameters(
-      {{previews::features::kCoinFlipHoldback,
-        {{"force_coin_flip_always_holdback", "true"}}}},
-      {previews::features::kOfflinePreviews});
-
   GURL url = https_url();
 
   // Whitelist DeferAllScript for any path for the url's host.
@@ -389,6 +402,10 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
+INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
+                         DeferAllScriptBrowserTestWithCoinFlipHoldback,
+                         testing::Bool());
+
 // The client_redirect_url (/client_redirect_base.html) performs a client
 // redirect to "/client_redirect_loop_with_defer_all_script.html" which
 // peforms a client redirect back to the initial client_redirect_url if
@@ -430,6 +447,7 @@ IN_PROC_BROWSER_TEST_P(
   histogram_tester.ExpectTotalCount(
       "Navigation.ClientRedirectCycle.RedirectToReferrer", 2);
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 3);
+
   EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
       client_redirect_url()));
   EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
@@ -538,4 +556,14 @@ IN_PROC_BROWSER_TEST_P(
   // preview.
   EXPECT_TRUE(
       previews_service->IsUrlEligibleForDeferAllScriptPreview(https_url()));
+
+  // Verify UKM entry.
+  using UkmEntry = ukm::builders::Previews;
+  auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+  ASSERT_EQ(4u, entries.size());
+  auto* entry = entries.at(3);
+  test_ukm_recorder.ExpectEntryMetric(
+      entry, UkmEntry::kdefer_all_script_eligibility_reasonName,
+      static_cast<int>(
+          previews::PreviewsEligibilityReason::REDIRECT_LOOP_DETECTED));
 }

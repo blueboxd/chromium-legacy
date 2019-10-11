@@ -487,8 +487,7 @@ sk_sp<SkImage> MakeTextureImage(viz::RasterContextProvider* context,
 
 size_t GetUploadedTextureSizeFromSkImage(const sk_sp<SkImage>& plane,
                                          const GrMipMapped mipped) {
-  const size_t plane_size = GrContext::ComputeTextureSize(
-      plane->colorType(), plane->width(), plane->height(), mipped);
+  const size_t plane_size = GrContext::ComputeImageSize(plane, mipped);
   return plane_size;
 }
 

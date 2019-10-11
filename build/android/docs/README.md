@@ -2,6 +2,7 @@
 
 * [android_app_bundles.md](android_app_bundles.md)
 * [build_config.md](build_config.md)
+* [building_dex.md](building_dex.md)
 * [coverage.md](coverage.md)
 * [lint.md](lint.md)
 * [life_of_a_resource.md](life_of_a_resource.md)

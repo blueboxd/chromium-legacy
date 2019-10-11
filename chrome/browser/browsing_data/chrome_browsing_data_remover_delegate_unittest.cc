@@ -1995,6 +1995,38 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       RemoveLeakedCredentialsByTimeOnly) {
+  RemovePasswordsTester tester(GetProfile());
+  base::Callback<bool(const GURL&)> empty_filter;
+
+  EXPECT_CALL(*tester.store(), RemoveLeakedCredentialsByUrlAndTimeImpl(
+                                   ProbablySameFilter(empty_filter),
+                                   base::Time(), base::Time::Max()));
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, false);
+}
+
+// TODO(crbug.com/589586): Disabled, since history is not yet marked as
+// a filterable datatype.
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       DISABLED_RemoveLeakedCredentialsByUrlAndTime) {
+  RemovePasswordsTester tester(GetProfile());
+  auto builder =
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
+  builder->AddRegisterableDomain(kTestRegisterableDomain1);
+  base::RepeatingCallback<bool(const GURL&)> filter =
+      builder->BuildGeneralFilter();
+
+  EXPECT_CALL(*tester.store(),
+              RemoveLeakedCredentialsByUrlAndTimeImpl(
+                  ProbablySameFilter(filter), base::Time(), base::Time::Max()));
+  BlockUntilOriginDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, std::move(builder));
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        RemoveContentSettingsWithBlacklist) {
   // Add our settings.
   HostContentSettingsMap* host_content_settings_map =

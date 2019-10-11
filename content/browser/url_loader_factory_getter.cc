@@ -18,7 +18,6 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/content_switches.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -136,11 +135,11 @@ void URLLoaderFactoryGetter::Initialize(StoragePartitionImpl* partition) {
   // TODO(mmenke):  Is one less thread hop on startup worth the extra complexity
   // of two different pipe creation paths?
   network::mojom::URLLoaderFactoryPtr network_factory;
-  network::mojom::URLLoaderFactoryRequest pending_network_factory_request =
-      MakeRequest(&network_factory);
+  mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+      pending_network_factory_receiver = MakeRequest(&network_factory);
 
   HandleNetworkFactoryRequestOnUIThread(
-      std::move(pending_network_factory_request), false);
+      std::move(pending_network_factory_receiver), false);
 
   base::PostTask(FROM_HERE, {BrowserThread::IO},
                  base::BindOnce(&URLLoaderFactoryGetter::InitializeOnIOThread,
@@ -205,9 +204,10 @@ network::mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetURLLoaderFactory(
 }
 
 void URLLoaderFactoryGetter::CloneNetworkFactory(
-    network::mojom::URLLoaderFactoryRequest network_factory_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+        network_factory_receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  GetURLLoaderFactory(false)->Clone(std::move(network_factory_request));
+  GetURLLoaderFactory(false)->Clone(std::move(network_factory_receiver));
 }
 
 void URLLoaderFactoryGetter::SetNetworkFactoryForTesting(
@@ -279,7 +279,8 @@ void URLLoaderFactoryGetter::ReinitializeOnIOThread(
 }
 
 void URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread(
-    network::mojom::URLLoaderFactoryRequest network_factory_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+        network_factory_receiver,
     bool is_corb_enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // |StoragePartitionImpl| may have went away while |URLLoaderFactoryGetter| is
@@ -296,7 +297,7 @@ void URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity);
   partition_->GetNetworkContext()->CreateURLLoaderFactory(
-      std::move(network_factory_request), std::move(params));
+      std::move(network_factory_receiver), std::move(params));
 }
 
 }  // namespace content

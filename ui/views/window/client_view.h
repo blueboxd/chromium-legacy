@@ -59,7 +59,6 @@ class VIEWS_EXPORT ClientView : public View {
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
-  void Layout() override;
 
  protected:
   // Overridden from View:

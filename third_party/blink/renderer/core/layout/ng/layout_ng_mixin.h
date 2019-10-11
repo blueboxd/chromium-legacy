@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayoutNGMixin_h
-#define LayoutNGMixin_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LAYOUT_NG_MIXIN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LAYOUT_NG_MIXIN_H_
 
 #include <type_traits>
 
@@ -44,4 +44,4 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT
 
 }  // namespace blink
 
-#endif  // LayoutNGMixin_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LAYOUT_NG_MIXIN_H_

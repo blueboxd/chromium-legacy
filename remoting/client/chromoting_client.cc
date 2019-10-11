@@ -20,8 +20,8 @@
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/video_renderer.h"
 #include "remoting/protocol/webrtc_connection_to_host.h"
-#include "remoting/signaling/jid_util.h"
 #include "remoting/signaling/signaling_address.h"
+#include "remoting/signaling/signaling_id_util.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
@@ -73,7 +73,7 @@ void ChromotingClient::Start(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!session_manager_);  // Start must not be called more than once.
 
-  host_jid_ = NormalizeJid(host_jid);
+  host_jid_ = NormalizeSignalingId(host_jid);
   local_capabilities_ = capabilities;
 
   if (!protocol_config_) {
@@ -244,7 +244,7 @@ void ChromotingClient::OnSignalStrategyStateChange(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state == SignalStrategy::CONNECTED) {
-    VLOG(1) << "Connected as: " << signal_strategy_->GetLocalAddress().jid();
+    VLOG(1) << "Connected as: " << signal_strategy_->GetLocalAddress().id();
     // After signaling has been connected we can try connecting to the host.
     if (connection_ &&
         connection_->state() == protocol::ConnectionToHost::INITIALIZING) {

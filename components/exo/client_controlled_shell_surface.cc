@@ -55,6 +55,20 @@ namespace exo {
 
 namespace {
 
+// Client controlled specific accelerators.
+const struct {
+  ui::KeyboardCode keycode;
+  int modifiers;
+  ClientControlledAcceleratorAction action;
+} kAccelerators[] = {
+    {ui::VKEY_OEM_MINUS, ui::EF_CONTROL_DOWN,
+     ClientControlledAcceleratorAction::ZOOM_OUT},
+    {ui::VKEY_OEM_PLUS, ui::EF_CONTROL_DOWN,
+     ClientControlledAcceleratorAction::ZOOM_IN},
+    {ui::VKEY_0, ui::EF_CONTROL_DOWN,
+     ClientControlledAcceleratorAction::ZOOM_RESET},
+};
+
 ClientControlledShellSurface::DelegateFactoryCallback& GetFactoryForTesting() {
   using CallbackType = ClientControlledShellSurface::DelegateFactoryCallback;
   static base::NoDestructor<CallbackType> factory;
@@ -611,6 +625,10 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
   }
 }
 
+void ClientControlledShellSurface::ChangeZoomLevel(ZoomChange change) {
+  // TODO(walczakm): Send wayland event.
+}
+
 void ClientControlledShellSurface::OnDragStarted(int component) {
   in_drag_ = true;
   if (drag_started_callback_)
@@ -904,6 +922,19 @@ void ClientControlledShellSurface::InitializeWindowState(
   UpdateFrameWidth();
   if (initial_orientation_lock_ != ash::OrientationLockType::kAny)
     SetOrientationLock(initial_orientation_lock_);
+
+  // Register Client controlled accelerators.
+  views::FocusManager* focus_manager = widget_->GetFocusManager();
+  accelerator_target_ =
+      std::make_unique<ClientControlledAcceleratorTarget>(this);
+
+  for (const auto& entry : kAccelerators) {
+    focus_manager->RegisterAccelerator(
+        ui::Accelerator(entry.keycode, entry.modifiers),
+        ui::AcceleratorManager::kNormalPriority, accelerator_target_.get());
+    accelerator_target_->RegisterAccelerator(
+        ui::Accelerator(entry.keycode, entry.modifiers), entry.action);
+  }
 }
 
 float ClientControlledShellSurface::GetScale() const {

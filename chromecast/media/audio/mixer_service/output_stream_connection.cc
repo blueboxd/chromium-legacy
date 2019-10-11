@@ -154,7 +154,7 @@ void OutputStreamConnection::OnConnected(
 
 void OutputStreamConnection::OnConnectionError() {
   socket_.reset();
-  Connect();
+  MixerConnection::Connect();
 }
 
 bool OutputStreamConnection::HandleMetadata(const Generic& message) {

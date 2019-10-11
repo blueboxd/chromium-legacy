@@ -122,22 +122,35 @@ SecurityStateTabHelper::SecurityStateTabHelper(
 
 SecurityStateTabHelper::~SecurityStateTabHelper() {}
 
-security_state::SecurityLevel SecurityStateTabHelper::GetSecurityLevel() const {
+security_state::SecurityLevel SecurityStateTabHelper::GetSecurityLevel() {
   return security_state::GetSecurityLevel(
       *GetVisibleSecurityState(), UsedPolicyInstalledCertificate(),
       base::BindRepeating(&content::IsOriginSecure));
 }
 
 std::unique_ptr<security_state::VisibleSecurityState>
-SecurityStateTabHelper::GetVisibleSecurityState() const {
+SecurityStateTabHelper::GetVisibleSecurityState() {
   auto state = security_state::GetVisibleSecurityState(web_contents());
 
   if (state->connection_info_initialized) {
     state->connection_used_legacy_tls =
         IsLegacyTLS(state->url, state->connection_status);
     if (state->connection_used_legacy_tls) {
-      state->is_legacy_tls_control_site =
-          IsTLSDeprecationConfigControlSite(state->url);
+      // We cache the results of the lookup for the duration of a navigation
+      // entry.
+      int navigation_id =
+          web_contents()->GetController().GetVisibleEntry()->GetUniqueID();
+      if (cached_should_suppress_legacy_tls_warning_ &&
+          cached_should_suppress_legacy_tls_warning_.value().first ==
+              navigation_id) {
+        state->should_suppress_legacy_tls_warning =
+            cached_should_suppress_legacy_tls_warning_.value().second;
+      } else {
+        state->should_suppress_legacy_tls_warning =
+            ShouldSuppressLegacyTLSWarning(state->url);
+        cached_should_suppress_legacy_tls_warning_ = std::pair<int, bool>(
+            navigation_id, state->should_suppress_legacy_tls_warning);
+      }
     }
   }
 

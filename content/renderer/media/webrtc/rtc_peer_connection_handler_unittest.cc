@@ -25,9 +25,6 @@
 #include "base/values.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/audio/mock_audio_device_factory.h"
-#include "content/renderer/media/webrtc/mock_data_channel_impl.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
 #include "content/renderer/media/webrtc/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -55,6 +52,9 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_data_channel_impl.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_impl.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
@@ -274,8 +274,8 @@ class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {
             dependency_factory,
             blink::scheduler::GetSingleThreadTaskRunnerForTesting()) {}
 
-  MockPeerConnectionImpl* native_peer_connection() {
-    return static_cast<MockPeerConnectionImpl*>(
+  blink::MockPeerConnectionImpl* native_peer_connection() {
+    return static_cast<blink::MockPeerConnectionImpl*>(
         RTCPeerConnectionHandler::native_peer_connection());
   }
 
@@ -290,7 +290,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
   void SetUp() override {
     mock_client_.reset(new NiceMock<MockWebRTCPeerConnectionHandlerClient>());
-    mock_dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
+    mock_dependency_factory_.reset(
+        new blink::MockPeerConnectionDependencyFactory());
 
     platform_original_ = blink::Platform::Current();
     webrtc_audio_device_platform_support_ =
@@ -391,12 +392,12 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     rtc::scoped_refptr<webrtc::MediaStreamInterface> stream(
         mock_dependency_factory_->CreateLocalMediaStream(stream_label).get());
     if (!video_track_label.empty()) {
-      InvokeAddTrack(stream,
-                     MockWebRtcVideoTrack::Create(video_track_label).get());
+      InvokeAddTrack(
+          stream, blink::MockWebRtcVideoTrack::Create(video_track_label).get());
     }
     if (!audio_track_label.empty()) {
-      InvokeAddTrack(stream,
-                     MockWebRtcAudioTrack::Create(audio_track_label).get());
+      InvokeAddTrack(
+          stream, blink::MockWebRtcAudioTrack::Create(audio_track_label).get());
     }
     mock_peer_connection_->AddRemoteStream(stream);
     return stream;
@@ -478,7 +479,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
       const rtc::scoped_refptr<webrtc::MediaStreamTrackInterface>& remote_track,
       const rtc::scoped_refptr<webrtc::MediaStreamInterface>& remote_stream) {
     rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver(
-        new rtc::RefCountedObject<FakeRtpReceiver>(remote_track));
+        new rtc::RefCountedObject<blink::FakeRtpReceiver>(remote_track));
     receivers_by_track_.insert(std::make_pair(remote_track.get(), receiver));
     std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>>
         receiver_streams;
@@ -588,13 +589,14 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
       webrtc_audio_device_platform_support_;
   blink::Platform* platform_original_ = nullptr;
   std::unique_ptr<MockWebRTCPeerConnectionHandlerClient> mock_client_;
-  std::unique_ptr<MockPeerConnectionDependencyFactory> mock_dependency_factory_;
+  std::unique_ptr<blink::MockPeerConnectionDependencyFactory>
+      mock_dependency_factory_;
   std::unique_ptr<NiceMock<MockPeerConnectionTracker>> mock_tracker_;
   std::unique_ptr<RTCPeerConnectionHandlerUnderTest> pc_handler_;
   MockAudioDeviceFactory mock_audio_device_factory_;
 
   // Weak reference to the mocked native peer connection implementation.
-  MockPeerConnectionImpl* mock_peer_connection_;
+  blink::MockPeerConnectionImpl* mock_peer_connection_;
 
   std::vector<std::unique_ptr<RTCRtpSender>> senders_;
   std::map<webrtc::MediaStreamTrackInterface*,
@@ -642,7 +644,7 @@ TEST_F(RTCPeerConnectionHandlerTest, NoCallbacksToClientAfterStop) {
   EXPECT_CALL(*mock_client_.get(), DidAddRemoteDataChannel(_)).Times(0);
   webrtc::DataChannelInit config;
   rtc::scoped_refptr<webrtc::DataChannelInterface> remote_data_channel(
-      new rtc::RefCountedObject<MockDataChannel>("dummy", &config));
+      new rtc::RefCountedObject<blink::MockDataChannel>("dummy", &config));
   pc_handler_->observer()->OnDataChannel(remote_data_channel);
 
   RunMessageLoopsUntilIdle();

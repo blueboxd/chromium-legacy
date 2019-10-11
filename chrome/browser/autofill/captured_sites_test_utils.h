@@ -30,18 +30,24 @@ namespace captured_sites_test_utils {
 // 1. A page load error occurred and the page does not have a page element
 //    the test expects. Test should stop waiting.
 // 2. A page contains persistent animation (such as a flash sale count down
-//    timer) that causes the framework's paint-based PageActivityObserver to
-//    wait indefinitely. Test should stop waiting if a sufficiently large time
-//    has expired for the page to load or for the page to respond to the last
-//    user action.
+//    timer) that causes the RenderFrameHost count to never diminish completely.
+//    Test should stop waiting if a sufficiently large time has expired for the
+//    page to load or for the page to respond to the last user action.
 const base::TimeDelta default_action_timeout = base::TimeDelta::FromSeconds(30);
 // The amount of time to wait for a page to trigger a paint in response to a
 // an action. The Captured Site Automation Framework uses this timeout to
 // break out of a wait loop after a hover action.
 const base::TimeDelta visual_update_timeout = base::TimeDelta::FromSeconds(20);
+// When we cause a scroll event, make sure we give the page a moment to react
+// before continuing.
+const base::TimeDelta scroll_wait_timeout = base::TimeDelta::FromSeconds(2);
 // Some times, tests tend to need a break that can't be read from the elements
-// play status
+// play status.
 const base::TimeDelta cool_off_action_timeout = base::TimeDelta::FromSeconds(1);
+// The time to wait between checks for a page to become idle or active based on
+// the loading status and then the render frame count.
+const base::TimeDelta wait_for_idle_loop_length =
+    base::TimeDelta::FromMilliseconds(500);
 
 std::string FilePathToUTF8(const base::FilePath::StringType& str);
 
@@ -71,58 +77,6 @@ struct GetParamAsString {
       return info.param.site_name;
     return base::StrCat({info.param.scenario_dir, "_", info.param.site_name});
   }
-};
-
-// PageActivityObserver
-//
-// PageActivityObserver is a universal wait-for-page-ready object that ensures
-// the current web page finishes responding to user input. The Captured Site
-// Automation Framework, specifically the TestRecipeReplayer class, uses
-// PageActivityObserver to time delays between two test actions. Without the
-// delay, a test may break itself by performing a page action before the page
-// is ready to receive the action.
-//
-// For example, the Amazon.com checkout page runs background scripts after
-// loading. While running the background scripts, the checkout page displays
-// a spinner. If a user clicks on a link while the spinner is present,
-// Amazon.com will dispatch the user to an error page.
-//
-// Page readiness is hard to determine because on real-world sites, page
-// readiness does not correspond to page load events. In the above Amazon.com
-// example, the checkout page starts the background scripts after the page
-// finishes loading.
-//
-// The PageActivityObserver defines page ready as the absence of Chrome paint
-// events. On real-world sites, if a page is busy loading, the Chrome tab
-// should be busy and Chrome should continuously make layout changes and
-// repaint the page. If a site is busy doing background work, most pages
-// typically display some form of persistent animation such as a progress bar
-// or a spinner to tell the user that the page is not ready. Therefore, it
-// is reasonable to assume that a page is ready if Chrome finished painting.
-class PageActivityObserver : public content::WebContentsObserver {
- public:
-  explicit PageActivityObserver(content::WebContents* web_contents);
-  explicit PageActivityObserver(content::RenderFrameHost* frame);
-  ~PageActivityObserver() override = default;
-
-  // Wait until Chrome finishes loading a page and updating the page's visuals.
-  // If Chrome finishes loading a page but continues to paint every half
-  // second, exit after |continuous_paint_timeout| expires since Chrome
-  // finished loading the page.
-  void WaitTillPageIsIdle(
-      base::TimeDelta continuous_paint_timeout = default_action_timeout);
-  // Wait until Chrome makes at least 1 visual update, or until timeout
-  // expires.
-  bool WaitForVisualUpdate(base::TimeDelta timeout = visual_update_timeout);
-
- private:
-  // PageActivityObserver determines if Chrome stopped painting by checking if
-  // the renderer hasn't submitted a compositor frame for a specific amount of
-  // time. kPaintEventCheckInterval defines this amount of time.
-  static constexpr base::TimeDelta kPaintEventCheckInterval =
-      base::TimeDelta::FromMilliseconds(500);
-
-  DISALLOW_COPY_AND_ASSIGN(PageActivityObserver);
 };
 
 // IFrameWaiter
@@ -242,7 +196,6 @@ class TestRecipeReplayer {
   ~TestRecipeReplayer();
   void Setup();
   void Cleanup();
-
   // Replay a test by:
   // 1. Starting a WPR server using the specified capture file.
   // 2. Replaying the specified Test Recipe file.
@@ -362,7 +315,16 @@ class TestRecipeReplayer {
   bool SetupSavedAutofillProfile(
       const base::Value& saved_autofill_profile_container);
   bool SetupSavedPasswords(const base::Value& saved_password_list_container);
-
+  // Wait until Chrome finishes loading a page and updating the page's visuals.
+  // If Chrome finishes loading a page but continues to paint every half
+  // second, exit after |continuous_paint_timeout| expires since Chrome
+  // finished loading the page.
+  void WaitTillPageIsIdle(
+      base::TimeDelta continuous_paint_timeout = default_action_timeout);
+  // Wait until Chrome makes at least 1 visual update, or until timeout
+  // expires. Returns false if no visual update is observed before the given
+  // timeout elapses.
+  bool WaitForVisualUpdate(base::TimeDelta timeout = visual_update_timeout);
   Browser* browser_;
   TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor_;
 

@@ -806,7 +806,7 @@ float PdfAccessibilityTree::GetDeviceScaleFactor() const {
   content::RenderFrame* render_frame =
       host_->GetRenderFrameForInstance(instance_);
   DCHECK(render_frame);
-  return render_frame->GetRenderView()->GetDeviceScaleFactor();
+  return render_frame->GetDeviceScaleFactor();
 }
 
 content::RenderAccessibility* PdfAccessibilityTree::GetRenderAccessibility() {

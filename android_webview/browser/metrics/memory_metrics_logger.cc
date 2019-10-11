@@ -36,7 +36,9 @@ void RecordMemoryMetricsImpl(
     return;
   }
 
+  uint64_t total_private_footprint_kb = 0;
   for (const auto& process_dump : dump->process_dumps()) {
+    total_private_footprint_kb += process_dump.os_dump().private_footprint_kb;
     switch (process_dump.process_type()) {
       case memory_instrumentation::mojom::ProcessType::BROWSER: {
         MEMORY_METRICS_HISTOGRAM_MB(
@@ -66,6 +68,10 @@ void RecordMemoryMetricsImpl(
         NOTREACHED();
         break;
     }
+  }
+  if (total_private_footprint_kb) {
+    MEMORY_METRICS_HISTOGRAM_MB("Memory.Total.PrivateMemoryFootprint",
+                                total_private_footprint_kb / 1024);
   }
   if (done_callback)
     std::move(done_callback).Run(true);

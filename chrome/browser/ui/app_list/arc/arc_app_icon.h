@@ -133,10 +133,14 @@ class ArcAppIcon {
   const int resource_size_in_dip_;
   Observer* const observer_;
   const bool serve_compressed_icons_;
+  // Used to separate first 5 loaded app icons and other app icons.
+  // Only one form of app icons will be loaded, compressed or uncompressed, so
+  // only one counter is needed.
+  int icon_loaded_count_ = 0;
 
   gfx::ImageSkia image_skia_;
   std::map<ui::ScaleFactor, std::string> compressed_images_;
-  std::set<ui::ScaleFactor> incomplete_scale_factors_;
+  std::map<ui::ScaleFactor, base::Time> incomplete_scale_factors_;
 
   // Contains pending image decode requests.
   std::vector<std::unique_ptr<DecodeRequest>> decode_requests_;

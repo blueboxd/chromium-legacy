@@ -18,10 +18,12 @@ VROrientationSession::VROrientationSession(
     : magic_window_receiver_(this, std::move(magic_window_receiver)),
       session_controller_receiver_(this, std::move(session_receiver)),
       device_(device) {
-  // Unretained is safe because the receiver will close when we are destroyed,
-  // so we won't receive any more callbacks after that.
-  session_controller_receiver_.set_disconnect_handler(base::BindOnce(
-      &VROrientationSession::OnMojoConnectionError, base::Unretained(this)));
+  magic_window_receiver_.set_disconnect_handler(
+      base::BindOnce(&VROrientationSession::OnMojoConnectionError,
+                     weak_ptr_factory_.GetWeakPtr()));
+  session_controller_receiver_.set_disconnect_handler(
+      base::BindOnce(&VROrientationSession::OnMojoConnectionError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 VROrientationSession::~VROrientationSession() = default;

@@ -73,7 +73,8 @@
         cloud-print-error-message="[[cloudPrintErrorMessage_]]"
         destination-state="{{destinationState_}}"
         controls-managed="[[controlsManaged_]]" destination="{{destination_}}"
-        error="{{error_}}" new-print-preview-layout="[[newPrintPreviewLayout_]]"
+        error="{{error_}}" is-pdf="[[documentSettings_.isPdf]]"
+        new-print-preview-layout="[[newPrintPreviewLayout_]]"
         page-count="[[documentSettings_.pageCount]]"
         settings="[[settings]]" state="[[state]]" on-focus="onSidebarFocus_"
 <if expr="is_macosx">

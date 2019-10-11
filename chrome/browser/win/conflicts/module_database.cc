@@ -124,7 +124,7 @@ ModuleDatabase::~ModuleDatabase() {
 // static
 scoped_refptr<base::SequencedTaskRunner> ModuleDatabase::GetTaskRunner() {
   static constexpr base::Feature kDistinctModuleDatabaseSequence{
-      "DistinctModuleDatabaseSequence", base::FEATURE_DISABLED_BY_DEFAULT};
+      "DistinctModuleDatabaseSequence", base::FEATURE_ENABLED_BY_DEFAULT};
 
   static base::LazySequencedTaskRunner g_ui_task_runner =
       LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(

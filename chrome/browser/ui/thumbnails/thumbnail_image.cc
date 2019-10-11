@@ -74,6 +74,11 @@ void ThumbnailImage::RequestThumbnailImage() {
   ConvertJPEGDataToImageSkiaAndNotifyObservers();
 }
 
+void ThumbnailImage::RequestCompressedThumbnailData() {
+  if (data_)
+    NotifyCompressedDataObservers(data_);
+}
+
 void ThumbnailImage::AssignJPEGData(std::vector<uint8_t> data) {
   data_ = base::MakeRefCounted<base::RefCountedData<std::vector<uint8_t>>>(
       std::move(data));

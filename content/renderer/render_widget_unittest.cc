@@ -179,7 +179,8 @@ class InteractiveRenderWidget : public RenderWidget {
                      false,
                      mojo::NullReceiver()),
         always_overscroll_(false) {
-    Init(base::NullCallback(), &mock_webwidget_);
+    Init(base::NullCallback(), &mock_webwidget_,
+         &page_properties->GetScreenInfo());
 
     mock_input_handler_host_ = std::make_unique<MockWidgetInputHandlerHost>();
 

@@ -145,6 +145,12 @@
       <structure name="IDR_PRINT_PREVIEW_DATA_DOCUMENT_INFO_JS"
                  file="data/document_info.js"
                  type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_DATA_SCALING_HTML"
+                 file="data/scaling.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_DATA_SCALING_JS"
+                 file="data/scaling.js"
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_DATA_SIZE_HTML"
                  file="data/size.html"
                  type="chrome_html" />

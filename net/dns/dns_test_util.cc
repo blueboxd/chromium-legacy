@@ -488,6 +488,8 @@ class MockDnsClient::MockTransactionFactory : public DnsTransactionFactory {
   void StartDohProbes(URLRequestContext* url_request_context,
                       bool network_change) override {}
 
+  void CancelDohProbes() override {}
+
   DnsConfig::SecureDnsMode GetSecureDnsModeForTest() override {
     return DnsConfig::SecureDnsMode::AUTOMATIC;
   }
@@ -572,6 +574,9 @@ const DnsHosts* MockDnsClient::GetHosts() const {
 }
 
 void MockDnsClient::SetRequestContextForProbes(
+    URLRequestContext* url_request_context) {}
+
+void MockDnsClient::CancelProbesForContext(
     URLRequestContext* url_request_context) {}
 
 DnsTransactionFactory* MockDnsClient::GetTransactionFactory() {

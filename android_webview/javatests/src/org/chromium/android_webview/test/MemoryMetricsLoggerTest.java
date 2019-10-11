@@ -54,6 +54,9 @@ public class MemoryMetricsLoggerTest {
         Assert.assertNotEquals(0,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         "Memory.Renderer.PrivateMemoryFootprint"));
+        Assert.assertNotEquals(0,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        "Memory.Total.PrivateMemoryFootprint"));
     }
 
     @Test
@@ -64,9 +67,13 @@ public class MemoryMetricsLoggerTest {
         Assert.assertNotEquals(0,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         "Memory.Browser.PrivateMemoryFootprint"));
+        // Verify no renderer record in single process mode.
         Assert.assertEquals(0,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         "Memory.Renderer.PrivateMemoryFootprint"));
+        Assert.assertNotEquals(0,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        "Memory.Total.PrivateMemoryFootprint"));
     }
 
     /**

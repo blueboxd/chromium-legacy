@@ -4,13 +4,10 @@
 
 package org.chromium.weblayer;
 
-import android.content.Context;
 import android.os.RemoteException;
 
 import org.chromium.weblayer_private.aidl.APICallException;
-import org.chromium.weblayer_private.aidl.IBrowserFragmentController;
 import org.chromium.weblayer_private.aidl.IProfile;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 /**
  * Profile holds state (typically on disk) needed for browsing. Create a
@@ -18,22 +15,17 @@ import org.chromium.weblayer_private.aidl.ObjectWrapper;
  */
 public final class Profile {
     private IProfile mImpl;
+    private Runnable mOnDestroyRunnable;
 
-    Profile(IProfile impl) {
+
+    /* package */ Profile(IProfile impl, Runnable onDestroyRunnable) {
         mImpl = impl;
+        mOnDestroyRunnable = onDestroyRunnable;
     }
 
     @Override
     protected void finalize() {
         // TODO(sky): figure out right assertion here if mImpl is non-null.
-    }
-
-    public void destroy() {
-        try {
-            mImpl.destroy();
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
     }
 
     public void clearBrowsingData() {
@@ -44,16 +36,14 @@ public final class Profile {
         }
     }
 
-    public BrowserFragmentController createBrowserFragmentController(Context context) {
+    public void destroy() {
         try {
-            BrowserFragment fragment = new BrowserFragment();
-            IBrowserFragmentController browserFragmentImpl =
-                    mImpl.createBrowserFragmentController(fragment.asIRemoteFragmentClient(),
-                            ObjectWrapper.wrap(WebLayer.createRemoteContext(context)));
-            fragment.setRemoteFragment(browserFragmentImpl.getRemoteFragment());
-            return new BrowserFragmentController(browserFragmentImpl, fragment);
+            mImpl.destroy();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
+        mImpl = null;
+        mOnDestroyRunnable.run();
+        mOnDestroyRunnable = null;
     }
 }

@@ -44,7 +44,8 @@ public interface TouchToFillComponent {
     /**
      * Displays the given credentials in a new bottom sheet.
      * @param formattedUrl A {@link String} that contains the URL to display credentials for.
+     * @param isOriginSecure A {@link boolean} that indicates whether the current origin is secure.
      * @param credentials A list of {@link Credential}s that will be displayed.
      */
-    void showCredentials(String formattedUrl, List<Credential> credentials);
+    void showCredentials(String formattedUrl, boolean isOriginSecure, List<Credential> credentials);
 }

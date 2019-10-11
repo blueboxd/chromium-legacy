@@ -18,7 +18,23 @@
 namespace ui {
 
 namespace {
+
 OzonePlatform* g_instance = nullptr;
+
+void EnsureInstance() {
+  if (g_instance)
+    return;
+
+  TRACE_EVENT1("ozone", "OzonePlatform::Initialize", "platform",
+               GetOzonePlatformName());
+  std::unique_ptr<OzonePlatform> platform =
+      PlatformObject<OzonePlatform>::Create();
+
+  // TODO(spang): Currently need to leak this object.
+  OzonePlatform* pl = platform.release();
+  DCHECK_EQ(g_instance, pl);
+}
+
 }  // namespace
 
 OzonePlatform::OzonePlatform() {
@@ -60,23 +76,6 @@ OzonePlatform* OzonePlatform::GetInstance() {
 // static
 const char* OzonePlatform::GetPlatformName() {
   return GetOzonePlatformName();
-}
-
-// static
-OzonePlatform* OzonePlatform::EnsureInstance() {
-  if (!g_instance) {
-    TRACE_EVENT1("ozone",
-                 "OzonePlatform::Initialize",
-                 "platform",
-                 GetOzonePlatformName());
-    std::unique_ptr<OzonePlatform> platform =
-        PlatformObject<OzonePlatform>::Create();
-
-    // TODO(spang): Currently need to leak this object.
-    OzonePlatform* pl = platform.release();
-    DCHECK_EQ(g_instance, pl);
-  }
-  return g_instance;
 }
 
 IPC::MessageFilter* OzonePlatform::GetGpuMessageFilter() {

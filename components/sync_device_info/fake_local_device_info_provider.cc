@@ -4,20 +4,23 @@
 
 #include "components/sync_device_info/fake_local_device_info_provider.h"
 
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 
 namespace syncer {
 
 FakeLocalDeviceInfoProvider::FakeLocalDeviceInfoProvider()
-    : device_info_("id",
-                   "name",
-                   "chrome_version",
-                   "user_agent",
-                   sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                   "device_id",
-                   /*last_updated_timestamp=*/base::Time::Now(),
-                   /*send_tab_to_self_receiving_enabled=*/false,
-                   /*sharing_info=*/base::nullopt) {}
+    : device_info_(
+          "id",
+          "name",
+          "chrome_version",
+          "user_agent",
+          sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+          "device_id",
+          base::SysInfo::HardwareInfo{"model", "manufacturer", "serial"},
+          /*last_updated_timestamp=*/base::Time::Now(),
+          /*send_tab_to_self_receiving_enabled=*/false,
+          /*sharing_info=*/base::nullopt) {}
 
 FakeLocalDeviceInfoProvider::~FakeLocalDeviceInfoProvider() = default;
 

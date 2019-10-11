@@ -1129,7 +1129,7 @@ bool PaintArtifactCompositor::DirectlyUpdateCompositedOpacityValue(
     const EffectPaintPropertyNode& effect) {
   if (auto* property_trees = GetPropertyTreesForDirectUpdate()) {
     return PropertyTreeManager::DirectlyUpdateCompositedOpacityValue(
-        property_trees, effect);
+        property_trees, *root_layer_->layer_tree_host(), effect);
   }
   return false;
 }
@@ -1138,7 +1138,7 @@ bool PaintArtifactCompositor::DirectlyUpdateScrollOffsetTransform(
     const TransformPaintPropertyNode& transform) {
   if (auto* property_trees = GetPropertyTreesForDirectUpdate()) {
     return PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
-        property_trees, transform);
+        property_trees, *root_layer_->layer_tree_host(), transform);
   }
   return false;
 }
@@ -1146,8 +1146,8 @@ bool PaintArtifactCompositor::DirectlyUpdateScrollOffsetTransform(
 bool PaintArtifactCompositor::DirectlyUpdateTransform(
     const TransformPaintPropertyNode& transform) {
   if (auto* property_trees = GetPropertyTreesForDirectUpdate()) {
-    return PropertyTreeManager::DirectlyUpdateTransform(property_trees,
-                                                        transform);
+    return PropertyTreeManager::DirectlyUpdateTransform(
+        property_trees, *root_layer_->layer_tree_host(), transform);
   }
   return false;
 }
@@ -1155,8 +1155,8 @@ bool PaintArtifactCompositor::DirectlyUpdateTransform(
 bool PaintArtifactCompositor::DirectlyUpdatePageScaleTransform(
     const TransformPaintPropertyNode& transform) {
   if (auto* property_trees = GetPropertyTreesForDirectUpdate()) {
-    return PropertyTreeManager::DirectlyUpdatePageScaleTransform(property_trees,
-                                                                 transform);
+    return PropertyTreeManager::DirectlyUpdatePageScaleTransform(
+        property_trees, *root_layer_->layer_tree_host(), transform);
   }
   return false;
 }

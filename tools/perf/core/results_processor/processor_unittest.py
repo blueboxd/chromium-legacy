@@ -94,3 +94,55 @@ class ResultsProcessorUnitTests(unittest.TestCase):
             'src_abc_123_20191001T120000_54321/benchmark/story/trace.html',
             '/trace.html'
         )
+
+  def testAggregateTraces(self):
+    in_results = testing.IntermediateResults(
+        test_results=[
+            testing.TestResult(
+                'benchmark/story1',
+                output_artifacts={
+                    'trace/1.json': testing.Artifact(
+                        '/artifacts/test_run/story1/trace/1.json'),
+                },
+            ),
+            testing.TestResult(
+                'benchmark/story2',
+                output_artifacts={
+                    'trace/1.json': testing.Artifact(
+                        '/artifacts/test_run/story2/trace/1.json'),
+                    'trace/2.json': testing.Artifact(
+                        '/artifacts/test_run/story2/trace/2.json'),
+                },
+            ),
+        ],
+    )
+
+    with mock.patch('tracing.trace_data.trace_data.SerializeAsHtml') as patch:
+      processor.AggregateTraces(in_results)
+
+    call_list = [list(call[0]) for call in patch.call_args_list]
+    self.assertEqual(len(call_list), 2)
+    for call in call_list:
+      call[0] = set(call[0])
+    self.assertIn(
+        [
+            set(['/artifacts/test_run/story1/trace/1.json']),
+            '/artifacts/test_run/story1/trace/trace.html',
+        ],
+        call_list
+    )
+    self.assertIn(
+        [
+            set([
+                '/artifacts/test_run/story2/trace/1.json',
+                '/artifacts/test_run/story2/trace/2.json',
+            ]),
+            '/artifacts/test_run/story2/trace/trace.html',
+        ],
+        call_list
+    )
+
+    for result in in_results['testResults']:
+      artifacts = result['outputArtifacts']
+      self.assertEqual(len(artifacts), 1)
+      self.assertEqual(artifacts.keys()[0], 'trace.html')

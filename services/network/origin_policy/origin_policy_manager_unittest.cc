@@ -133,15 +133,12 @@ class OriginPolicyManagerTest : public testing::Test {
 };
 
 TEST_F(OriginPolicyManagerTest, AddBinding) {
-  mojom::OriginPolicyManagerPtr origin_policy_ptr;
-  mojom::OriginPolicyManagerRequest origin_policy_request(
-      mojo::MakeRequest(&origin_policy_ptr));
+  mojo::Remote<mojom::OriginPolicyManager> origin_policy_remote;
+  EXPECT_EQ(0u, manager()->GetReceiversForTesting().size());
 
-  EXPECT_EQ(0u, manager()->GetBindingsForTesting().size());
+  manager()->AddReceiver(origin_policy_remote.BindNewPipeAndPassReceiver());
 
-  manager()->AddBinding(std::move(origin_policy_request));
-
-  EXPECT_EQ(1u, manager()->GetBindingsForTesting().size());
+  EXPECT_EQ(1u, manager()->GetReceiversForTesting().size());
 }
 
 TEST_F(OriginPolicyManagerTest, ParseHeaders) {
@@ -327,14 +324,14 @@ TEST_F(OriginPolicyManagerTest, EndToEndPolicyRetrieve) {
 // response. The manager will be destroyed before the return callback is called.
 TEST_F(OriginPolicyManagerTest, DestroyWhileCallbackUninvoked) {
   {
-    mojom::OriginPolicyManagerPtr origin_policy_ptr;
+    mojo::Remote<mojom::OriginPolicyManager> origin_policy_remote;
 
     OriginPolicyManager manager(network_context());
 
-    manager.AddBinding(mojo::MakeRequest(&origin_policy_ptr));
+    manager.AddReceiver(origin_policy_remote.BindNewPipeAndPassReceiver());
 
     // This fetch will still be ongoing when the manager is destroyed.
-    origin_policy_ptr->RetrieveOriginPolicy(
+    origin_policy_remote->RetrieveOriginPolicy(
         test_server_origin(), "policy=delayed",
         base::BindOnce(&DummyRetrieveOriginPolicyCallback));
 

@@ -109,6 +109,9 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
   }
 
   void TearDown() override {
+    handle_.reset();
+    manager_.reset();
+
     task_environment_.RunUntilIdle();
     EXPECT_TRUE(dir_.Delete());
   }

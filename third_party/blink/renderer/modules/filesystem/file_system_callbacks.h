@@ -33,7 +33,7 @@
 
 #include <memory>
 
-#include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_entry_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_error_callback.h"

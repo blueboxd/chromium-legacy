@@ -111,7 +111,8 @@ class CORE_EXPORT OffscreenCanvas final
   }
 
   // CanvasRenderingContextHost implementation.
-  void FinalizeFrame() override {}
+  void PreFinalizeFrame() override {}
+  void PostFinalizeFrame() override {}
   void DetachContext() override { context_ = nullptr; }
   CanvasRenderingContext* RenderingContext() const override { return context_; }
 

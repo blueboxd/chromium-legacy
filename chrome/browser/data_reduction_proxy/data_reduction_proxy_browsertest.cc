@@ -349,7 +349,6 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
 
   ClientConfig config_;
   std::unique_ptr<ScopedConfigWaiter> config_waiter_;
-  base::test::ScopedFeatureList param_feature_list_;
   net::EmbeddedTestServer secure_proxy_check_server_;
   net::EmbeddedTestServer config_server_;
   std::unique_ptr<net::test_server::ControllableHttpResponse> favicon_catcher_;
@@ -1228,12 +1227,22 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
       BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
-                       ProxyShortBypassedOn502ErrorWithFeature) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kDataReductionProxyBlockOnBadGatewayResponse,
-      {{"block_duration_seconds", "10"}});
+class DataReductionProxyFallbackBrowsertestWithBlockOnBadGatewayFeature
+    : public DataReductionProxyFallbackBrowsertest {
+ public:
+  DataReductionProxyFallbackBrowsertestWithBlockOnBadGatewayFeature() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kDataReductionProxyBlockOnBadGatewayResponse,
+        {{"block_duration_seconds", "10"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    DataReductionProxyFallbackBrowsertestWithBlockOnBadGatewayFeature,
+    ProxyShortBypassedOn502ErrorWithFeature) {
   base::HistogramTester histogram_tester;
   net::EmbeddedTestServer test_server;
   test_server.RegisterRequestHandler(
@@ -1284,13 +1293,14 @@ class DataReductionProxyWarmupURLBrowsertest
       : via_header_(std::get<1>(GetParam()) ? "1.1 Chrome-Compression-Proxy"
                                             : "bad"),
         primary_server_(GetTestServerType()),
-        secondary_server_(GetTestServerType()) {}
-
-  void SetUpOnMainThread() override {
+        secondary_server_(GetTestServerType()) {
     if (!std::get<2>(GetParam())) {
       scoped_feature_list_.InitAndDisableFeature(
           features::kDataReductionProxyDisableProxyFailedWarmup);
     }
+  }
+
+  void SetUpOnMainThread() override {
     primary_server_loop_ = std::make_unique<base::RunLoop>();
     primary_server_.RegisterRequestHandler(base::BindRepeating(
         &DataReductionProxyWarmupURLBrowsertest::WaitForWarmupRequest,

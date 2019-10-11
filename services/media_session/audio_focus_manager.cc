@@ -221,7 +221,7 @@ void AudioFocusManager::SetSource(const base::UnguessableToken& identity,
                                   const std::string& name) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  auto& context = bindings_.dispatch_context();
+  auto& context = receivers_.current_context();
   context->identity = identity;
   context->source_name = name;
 }
@@ -288,10 +288,10 @@ void AudioFocusManager::SuspendAllSessions() {
 }
 
 void AudioFocusManager::BindToInterface(
-    mojom::AudioFocusManagerRequest request) {
+    mojo::PendingReceiver<mojom::AudioFocusManager> receiver) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  bindings_.AddBinding(this, std::move(request),
-                       std::make_unique<BindingContext>());
+  receivers_.Add(this, std::move(receiver),
+                 std::make_unique<ReceiverContext>());
 }
 
 void AudioFocusManager::BindToDebugInterface(
@@ -415,12 +415,12 @@ bool AudioFocusManager::IsFocusEntryPresent(
 
 const std::string& AudioFocusManager::GetBindingSourceName() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return bindings_.dispatch_context()->source_name;
+  return receivers_.current_context()->source_name;
 }
 
 const base::UnguessableToken& AudioFocusManager::GetBindingIdentity() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return bindings_.dispatch_context()->identity;
+  return receivers_.current_context()->identity;
 }
 
 bool AudioFocusManager::IsSessionOnTopOfAudioFocusStack(

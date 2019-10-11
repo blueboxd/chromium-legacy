@@ -25,6 +25,7 @@ bool IsOutputDeviceId(const std::string& device) {
   return device == ::media::AudioDeviceDescription::kDefaultDeviceId ||
          device == ::media::AudioDeviceDescription::kCommunicationsDeviceId ||
          device == kLocalAudioDeviceId || device == kAlarmAudioDeviceId ||
+         device == kNoDelayDeviceId ||
          device == kPlatformAudioDeviceId /* e.g. bluetooth and aux */ ||
          device == kTtsAudioDeviceId || device == kBypassAudioDeviceId;
 }

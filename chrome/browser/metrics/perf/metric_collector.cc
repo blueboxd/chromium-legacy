@@ -270,7 +270,6 @@ bool MetricCollector::ShouldCollect() const {
 
 void MetricCollector::SaveSerializedPerfProto(
     std::unique_ptr<SampledProfile> sampled_profile,
-    PerfProtoType type,
     std::string serialized_proto) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (serialized_proto.empty()) {
@@ -278,30 +277,13 @@ void MetricCollector::SaveSerializedPerfProto(
     return;
   }
 
-  switch (type) {
-    case PerfProtoType::PERF_TYPE_DATA: {
-      PerfDataProto perf_data_proto;
-      if (!perf_data_proto.ParseFromString(serialized_proto)) {
-        AddToUmaHistogram(CollectionAttemptStatus::PROTOBUF_NOT_PARSED);
-        return;
-      }
-      RemoveUnknownFieldsFromMessagesWithStrings(&perf_data_proto);
-      sampled_profile->mutable_perf_data()->Swap(&perf_data_proto);
-      break;
-    }
-    case PerfProtoType::PERF_TYPE_STAT: {
-      PerfStatProto perf_stat_proto;
-      if (!perf_stat_proto.ParseFromString(serialized_proto)) {
-        AddToUmaHistogram(CollectionAttemptStatus::PROTOBUF_NOT_PARSED);
-        return;
-      }
-      sampled_profile->mutable_perf_stat()->Swap(&perf_stat_proto);
-      break;
-    }
-    case PerfProtoType::PERF_TYPE_UNSUPPORTED:
-      AddToUmaHistogram(CollectionAttemptStatus::PROTOBUF_NOT_PARSED);
-      return;
+  PerfDataProto perf_data_proto;
+  if (!perf_data_proto.ParseFromString(serialized_proto)) {
+    AddToUmaHistogram(CollectionAttemptStatus::PROTOBUF_NOT_PARSED);
+    return;
   }
+  RemoveUnknownFieldsFromMessagesWithStrings(&perf_data_proto);
+  sampled_profile->mutable_perf_data()->Swap(&perf_data_proto);
 
   sampled_profile->set_ms_after_boot(base::SysInfo::Uptime().InMilliseconds());
   DCHECK(!login_time_.is_null());

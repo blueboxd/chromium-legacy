@@ -882,22 +882,25 @@ bool AwContentBrowserClient::HandleExternalProtocol(
     bool has_user_gesture,
     const base::Optional<url::Origin>& initiating_origin,
     network::mojom::URLLoaderFactoryPtr* out_factory) {
-  auto request = mojo::MakeRequest(out_factory);
+  mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver =
+      mojo::MakeRequest(out_factory);
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
     // Manages its own lifetime.
-    new android_webview::AwProxyingURLLoaderFactory(0 /* process_id */,
-                                                    std::move(request), nullptr,
-                                                    true /* intercept_only */);
+    new android_webview::AwProxyingURLLoaderFactory(
+        0 /* process_id */, std::move(receiver), nullptr,
+        true /* intercept_only */);
   } else {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(
-                       [](network::mojom::URLLoaderFactoryRequest request) {
-                         // Manages its own lifetime.
-                         new android_webview::AwProxyingURLLoaderFactory(
-                             0 /* process_id */, std::move(request), nullptr,
-                             true /* intercept_only */);
-                       },
-                       std::move(request)));
+    base::PostTask(
+        FROM_HERE, {content::BrowserThread::IO},
+        base::BindOnce(
+            [](mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+                   receiver) {
+              // Manages its own lifetime.
+              new android_webview::AwProxyingURLLoaderFactory(
+                  0 /* process_id */, std::move(receiver), nullptr,
+                  true /* intercept_only */);
+            },
+            std::move(receiver)));
   }
   return false;
 }

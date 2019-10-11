@@ -7,20 +7,40 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/trusted_vault_client.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/nigori/nigori.h"
 
 namespace syncer {
 
 namespace {
+
+// Used for the case where a null client is passed to SyncServiceCrypto.
+class EmptyTrustedVaultClient : public TrustedVaultClient {
+ public:
+  EmptyTrustedVaultClient() = default;
+  ~EmptyTrustedVaultClient() override = default;
+
+  // TrustedVaultClient implementatio.
+  void FetchKeys(
+      const CoreAccountId& account_id,
+      base::OnceCallback<void(const std::vector<std::string>&)> cb) override {
+    std::move(cb).Run({});
+  }
+
+  void StoreKeys(const CoreAccountId& account_id,
+                 const std::vector<std::string>& keys) override {}
+};
 
 // A SyncEncryptionHandler::Observer implementation that simply posts all calls
 // to another task runner.
@@ -112,6 +132,15 @@ class SyncEncryptionObserverProxy : public SyncEncryptionHandler::Observer {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 
+TrustedVaultClient* ResoveNullClient(TrustedVaultClient* client) {
+  if (client) {
+    return client;
+  }
+
+  static base::NoDestructor<EmptyTrustedVaultClient> empty_client;
+  return empty_client.get();
+}
+
 // Checks if |passphrase| can be used to decrypt the given pending keys. Returns
 // true if decryption was successful. Returns false otherwise. Must be called
 // with non-empty pending keys cache.
@@ -147,13 +176,16 @@ SyncServiceCrypto::State::~State() = default;
 SyncServiceCrypto::SyncServiceCrypto(
     const base::RepeatingClosure& notify_observers,
     const base::RepeatingCallback<void(ConfigureReason)>& reconfigure,
-    CryptoSyncPrefs* sync_prefs)
+    CryptoSyncPrefs* sync_prefs,
+    TrustedVaultClient* trusted_vault_client)
     : notify_observers_(notify_observers),
       reconfigure_(reconfigure),
-      sync_prefs_(sync_prefs) {
+      sync_prefs_(sync_prefs),
+      trusted_vault_client_(ResoveNullClient(trusted_vault_client)) {
   DCHECK(notify_observers_);
   DCHECK(reconfigure_);
   DCHECK(sync_prefs_);
+  DCHECK(trusted_vault_client_);
 }
 
 SyncServiceCrypto::~SyncServiceCrypto() = default;
@@ -172,6 +204,7 @@ bool SyncServiceCrypto::IsPassphraseRequired() const {
 
   switch (state_.required_user_action) {
     case RequiredUserAction::kNone:
+    case RequiredUserAction::kFetchingTrustedVaultKeys:
     case RequiredUserAction::kTrustedVaultKeyRequired:
       return false;
     case RequiredUserAction::kPassphraseRequiredForDecryption:
@@ -286,8 +319,10 @@ bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
 void SyncServiceCrypto::AddTrustedVaultDecryptionKeys(
     const CoreAccountId& account_id,
     const std::vector<std::string>& keys) {
+  trusted_vault_client_->StoreKeys(account_id, keys);
+
   if (state_.engine && state_.account_id == account_id) {
-    state_.engine->AddTrustedVaultDecryptionKeys(keys);
+    state_.engine->AddTrustedVaultDecryptionKeys(keys, base::DoNothing());
   }
 }
 
@@ -360,19 +395,25 @@ void SyncServiceCrypto::OnTrustedVaultKeyRequired() {
     return;
   }
 
-  state_.required_user_action = RequiredUserAction::kTrustedVaultKeyRequired;
+  state_.required_user_action = RequiredUserAction::kFetchingTrustedVaultKeys;
 
-  // Reconfigure without the encrypted types (excluded implicitly via the
-  // failed datatypes handler).
-  reconfigure_.Run(CONFIGURE_REASON_CRYPTO);
+  trusted_vault_client_->FetchKeys(
+      state_.account_id,
+      base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysFetched,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void SyncServiceCrypto::OnTrustedVaultKeyAccepted() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (state_.required_user_action !=
-      RequiredUserAction::kTrustedVaultKeyRequired) {
-    return;
+  switch (state_.required_user_action) {
+    case RequiredUserAction::kNone:
+    case RequiredUserAction::kPassphraseRequiredForDecryption:
+    case RequiredUserAction::kPassphraseRequiredForEncryption:
+      return;
+    case RequiredUserAction::kFetchingTrustedVaultKeys:
+    case RequiredUserAction::kTrustedVaultKeyRequired:
+      break;
   }
 
   state_.required_user_action = RequiredUserAction::kNone;
@@ -448,6 +489,31 @@ SyncServiceCrypto::GetEncryptionObserverProxy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return std::make_unique<SyncEncryptionObserverProxy>(
       weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get());
+}
+
+void SyncServiceCrypto::TrustedVaultKeysFetched(
+    const std::vector<std::string>& keys) {
+  // The engine could have been shut down while keys were being fetched.
+  if (!state_.engine) {
+    return;
+  }
+
+  state_.engine->AddTrustedVaultDecryptionKeys(
+      keys, base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysAdded,
+                           weak_factory_.GetWeakPtr()));
+}
+
+void SyncServiceCrypto::TrustedVaultKeysAdded() {
+  if (state_.required_user_action !=
+      RequiredUserAction::kFetchingTrustedVaultKeys) {
+    return;
+  }
+
+  // Reaching this codepath indicates OnTrustedVaultKeyAccepted() was not
+  // triggered, so reconfigure without the encrypted types (excluded implicitly
+  // via the failed datatypes handler).
+  state_.required_user_action = RequiredUserAction::kTrustedVaultKeyRequired;
+  reconfigure_.Run(CONFIGURE_REASON_CRYPTO);
 }
 
 }  // namespace syncer

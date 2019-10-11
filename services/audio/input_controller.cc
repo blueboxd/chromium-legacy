@@ -96,10 +96,6 @@ float AveragePower(const media::AudioBus& buffer) {
 
 #if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
 
-bool CanRunApm() {
-  return base::FeatureList::IsEnabled(features::kWebRtcApmInAudioService);
-}
-
 bool SamplesNeedClamping(const media::AudioBus& bus) {
   const auto IsOutOfRange = [](float sample) {
     // See comment in CopySamplesWithClamping() for why the conditional is
@@ -411,7 +407,8 @@ InputController::InputController(
 
 #if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
   if (processing_config_) {
-    if (processing_config_->settings.requires_apm() && CanRunApm()) {
+    if (processing_config_->settings.requires_apm() &&
+        media::IsWebRtcApmInAudioServiceEnabled()) {
       processing_helper_.emplace(
           params, processing_config_->settings,
           std::move(processing_config_->controls_receiver));

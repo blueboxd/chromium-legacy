@@ -72,6 +72,7 @@ void InflateTransformer::Flush(
   Inflate(nullptr, 0u, IsFinished(true), controller, exception_state);
   inflateEnd(&stream_);
   was_flush_called_ = true;
+  out_buffer_.clear();
 }
 
 void InflateTransformer::Inflate(

@@ -188,6 +188,11 @@ const GURL& ContentPasswordManagerDriver::GetLastCommittedURL() const {
   return render_frame_host_->GetLastCommittedURL();
 }
 
+void ContentPasswordManagerDriver::AnnotateFieldsWithParsingResult(
+    const autofill::ParsingResult& parsing_result) {
+  GetPasswordAutofillAgent()->AnnotateFieldsWithParsingResult(parsing_result);
+}
+
 void ContentPasswordManagerDriver::GeneratePassword(
     autofill::mojom::PasswordGenerationAgent::
         UserTriggeredGeneratePasswordCallback callback) {

@@ -331,11 +331,10 @@ void LayoutView::UpdateLayout() {
   // to date DSF when layout happens, we plumb this through to the FontCache, so
   // that we can correctly retrieve RenderStyleForStrike from out of
   // process. crbug.com/845468
-  FontCache::SetDeviceScaleFactor(GetFrameView()
-                                      ->GetFrame()
-                                      .GetChromeClient()
-                                      .GetScreenInfo()
-                                      .device_scale_factor);
+  LocalFrame& frame = GetFrameView()->GetFrame();
+  ChromeClient& chrome_client = frame.GetChromeClient();
+  FontCache::SetDeviceScaleFactor(
+      chrome_client.GetScreenInfo(frame).device_scale_factor);
 #endif
 
   LayoutBlockFlow::UpdateLayout();

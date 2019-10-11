@@ -12,7 +12,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -117,22 +116,12 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
                 public void onLargeIconAvailable(Bitmap icon, int fallbackColor,
                         boolean isFallbackColorDefault, @IconType int iconType) {
                     if (this != viewHolder.imageCallback) return;
-                    Drawable image = getFaviconDrawable(icon, fallbackColor, url);
+                    Drawable image = FaviconUtils.getIconDrawableWithoutFilter(
+                            icon, url, fallbackColor, mIconGenerator, getResources(), mFaviconSize);
                     viewHolder.imageView.setImageDrawable(image);
                 }
             };
             mLargeIconBridge.getLargeIconForUrl(url, mFaviconSize, viewHolder.imageCallback);
-        }
-
-        private Drawable getFaviconDrawable(Bitmap icon, int fallbackColor, String url) {
-            if (icon == null) {
-                mIconGenerator.setBackgroundColor(fallbackColor);
-                icon = mIconGenerator.generateIconForUrl(url);
-                return new BitmapDrawable(getResources(), icon);
-            } else {
-                return FaviconUtils.createRoundedBitmapDrawable(getResources(),
-                        Bitmap.createScaledBitmap(icon, mFaviconSize, mFaviconSize, false));
-            }
         }
     }
 

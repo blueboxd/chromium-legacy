@@ -84,7 +84,7 @@ mojom::IntentHandlerInfoPtr Create(const std::string& name,
 // TODO(crbug.com/1011364): Extract this into a common mock file.
 class MockSharingService : public SharingService {
  public:
-  explicit MockSharingService()
+  MockSharingService()
       : SharingService(
             /*sync_prefs=*/nullptr,
             /*vapid_key_manager=*/nullptr,
@@ -1021,6 +1021,7 @@ TEST_F(ArcExternalProtocolDialogTestUtils, TestSelectDeviceForTelLink) {
   devices.emplace_back(std::make_unique<syncer::DeviceInfo>(
       device_guid, "device_name", "chrome_version", "user_agent",
       sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
+      base::SysInfo::HardwareInfo(),
       /*last_updated_timestamp=*/base::Time::Now(),
       /*send_tab_to_self_receiving_enabled=*/false,
       /*sharing_info=*/base::nullopt));

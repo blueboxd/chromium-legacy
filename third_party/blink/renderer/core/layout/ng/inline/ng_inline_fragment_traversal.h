@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGInlineFragmentTraversal_h
-#define NGInlineFragmentTraversal_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_FRAGMENT_TRAVERSAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_FRAGMENT_TRAVERSAL_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
@@ -42,4 +42,4 @@ class CORE_EXPORT NGInlineFragmentTraversal {
 
 }  // namespace blink
 
-#endif  // NGInlineFragmentTraversal_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_FRAGMENT_TRAVERSAL_H_

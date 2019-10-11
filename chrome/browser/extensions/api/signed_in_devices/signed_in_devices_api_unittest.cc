@@ -40,17 +40,19 @@ TEST(SignedInDevicesAPITest, GetSignedInDevices) {
   scoped_refptr<Extension> extension_test =
       extension_prefs.AddExtension(extension_name);
 
-  DeviceInfo device_info1(
-      base::GenerateGUID(), "abc Device", "XYZ v1", "XYZ SyncAgent v1",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", base::Time(),
-      /*send_tab_to_self_receiving_enabled=*/true,
-      /*sharing_info=*/base::nullopt);
+  DeviceInfo device_info1(base::GenerateGUID(), "abc Device", "XYZ v1",
+                          "XYZ SyncAgent v1",
+                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
+                          base::SysInfo::HardwareInfo(), base::Time(),
+                          /*send_tab_to_self_receiving_enabled=*/true,
+                          /*sharing_info=*/base::nullopt);
 
-  DeviceInfo device_info2(
-      base::GenerateGUID(), "def Device", "XYZ v2", "XYZ SyncAgent v2",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", base::Time(),
-      /*send_tab_to_self_receiving_enabled=*/true,
-      /*sharing_info=*/base::nullopt);
+  DeviceInfo device_info2(base::GenerateGUID(), "def Device", "XYZ v2",
+                          "XYZ SyncAgent v2",
+                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
+                          base::SysInfo::HardwareInfo(), base::Time(),
+                          /*send_tab_to_self_receiving_enabled=*/true,
+                          /*sharing_info=*/base::nullopt);
 
   device_tracker.Add(&device_info1);
   device_tracker.Add(&device_info2);
@@ -67,11 +69,12 @@ TEST(SignedInDevicesAPITest, GetSignedInDevices) {
 
   // Add a third device and make sure the first 2 ids are retained and a new
   // id is generated for the third device.
-  DeviceInfo device_info3(
-      base::GenerateGUID(), "def Device", "jkl v2", "XYZ SyncAgent v2",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", base::Time(),
-      /*send_tab_to_self_receiving_enabled=*/true,
-      /*sharing_info=*/base::nullopt);
+  DeviceInfo device_info3(base::GenerateGUID(), "def Device", "jkl v2",
+                          "XYZ SyncAgent v2",
+                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
+                          base::SysInfo::HardwareInfo(), base::Time(),
+                          /*send_tab_to_self_receiving_enabled=*/true,
+                          /*sharing_info=*/base::nullopt);
 
   device_tracker.Add(&device_info3);
 
@@ -133,17 +136,19 @@ TEST_F(ExtensionSignedInDevicesTest, GetAll) {
       DeviceInfoSyncServiceFactory::GetForProfile(profile())
           ->GetDeviceInfoTracker());
 
-  DeviceInfo device_info1(
-      base::GenerateGUID(), "abc Device", "XYZ v1", "XYZ SyncAgent v1",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", base::Time(),
-      /*send_tab_to_self_receiving_enabled=*/true,
-      /*sharing_info=*/base::nullopt);
+  DeviceInfo device_info1(base::GenerateGUID(), "abc Device", "XYZ v1",
+                          "XYZ SyncAgent v1",
+                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
+                          base::SysInfo::HardwareInfo(), base::Time(),
+                          /*send_tab_to_self_receiving_enabled=*/true,
+                          /*sharing_info=*/base::nullopt);
 
-  DeviceInfo device_info2(
-      base::GenerateGUID(), "def Device", "XYZ v2", "XYZ SyncAgent v2",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", base::Time(),
-      /*send_tab_to_self_receiving_enabled=*/true,
-      /*sharing_info=*/base::nullopt);
+  DeviceInfo device_info2(base::GenerateGUID(), "def Device", "XYZ v2",
+                          "XYZ SyncAgent v2",
+                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
+                          base::SysInfo::HardwareInfo(), base::Time(),
+                          /*send_tab_to_self_receiving_enabled=*/true,
+                          /*sharing_info=*/base::nullopt);
 
   device_tracker->Add(&device_info1);
   device_tracker->Add(&device_info2);

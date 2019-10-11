@@ -289,8 +289,13 @@ public class OfflinePageUtilsTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.Add({"enable-features=OfflinePagesSharing"})
-    public void testShareTemporaryOfflinePage() throws Exception {
+    @CommandLineFlags
+            .Add({"enable-features=OfflinePagesSharing"})
+            @DisableIf.Build(message = "https://crbug.com/1001506",
+                    sdk_is_greater_than = Build.VERSION_CODES.N,
+                    sdk_is_less_than = Build.VERSION_CODES.P)
+            public void
+            testShareTemporaryOfflinePage() throws Exception {
         loadOfflinePage(SUGGESTED_ARTICLES_ID);
         final Semaphore semaphore = new Semaphore(0);
         final TestShareCallback shareCallback = new TestShareCallback(semaphore);

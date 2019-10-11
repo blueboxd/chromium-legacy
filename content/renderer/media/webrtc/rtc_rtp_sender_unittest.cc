@@ -13,10 +13,6 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
-#include "content/renderer/media/webrtc/test/webrtc_stats_report_obtainer.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -25,6 +21,10 @@
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_void_request.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_impl.h"
+#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
+#include "third_party/blink/public/web/modules/peerconnection/webrtc_stats_report_obtainer.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
@@ -38,11 +38,11 @@ namespace content {
 class RTCRtpSenderTest : public ::testing::Test {
  public:
   void SetUp() override {
-    dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
+    dependency_factory_.reset(new blink::MockPeerConnectionDependencyFactory());
     main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
-    track_map_ = new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get(),
-                                                      main_thread_);
-    peer_connection_ = new rtc::RefCountedObject<MockPeerConnectionImpl>(
+    track_map_ = new blink::WebRtcMediaStreamTrackAdapterMap(
+        dependency_factory_.get(), main_thread_);
+    peer_connection_ = new rtc::RefCountedObject<blink::MockPeerConnectionImpl>(
         dependency_factory_.get(), nullptr);
     mock_webrtc_sender_ = new rtc::RefCountedObject<webrtc::MockRtpSender>();
   }
@@ -84,7 +84,8 @@ class RTCRtpSenderTest : public ::testing::Test {
 
   std::unique_ptr<RTCRtpSender> CreateSender(
       blink::WebMediaStreamTrack web_track) {
-    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref;
+    std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+        track_ref;
     if (!web_track.IsNull()) {
       track_ref = track_map_->GetOrCreateLocalTrackAdapter(web_track);
       DCHECK(track_ref->is_initialized());
@@ -118,9 +119,9 @@ class RTCRtpSenderTest : public ::testing::Test {
                           std::move(run_loop));
   }
 
-  scoped_refptr<WebRTCStatsReportObtainer> CallGetStats() {
-    scoped_refptr<WebRTCStatsReportObtainer> obtainer =
-        new WebRTCStatsReportObtainer();
+  scoped_refptr<blink::WebRTCStatsReportObtainer> CallGetStats() {
+    scoped_refptr<blink::WebRTCStatsReportObtainer> obtainer =
+        new blink::WebRTCStatsReportObtainer();
     sender_->GetStats(obtainer->GetStatsCallbackWrapper(), {});
     return obtainer;
   }
@@ -145,10 +146,11 @@ class RTCRtpSenderTest : public ::testing::Test {
   base::test::TaskEnvironment task_environment_;
   ChildProcess child_process_;
 
-  std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
+  std::unique_ptr<blink::MockPeerConnectionDependencyFactory>
+      dependency_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_map_;
-  rtc::scoped_refptr<MockPeerConnectionImpl> peer_connection_;
+  scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map_;
+  rtc::scoped_refptr<blink::MockPeerConnectionImpl> peer_connection_;
   rtc::scoped_refptr<webrtc::MockRtpSender> mock_webrtc_sender_;
   std::unique_ptr<RTCRtpSender> sender_;
 };

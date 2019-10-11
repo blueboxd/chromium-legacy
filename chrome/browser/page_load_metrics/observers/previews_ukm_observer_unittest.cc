@@ -201,7 +201,8 @@ class PreviewsUKMObserverTest
           eligibility_reasons,
       base::Optional<base::TimeDelta> navigation_restart_penalty) {
     using UkmEntry = ukm::builders::Previews;
-    auto entries = test_ukm_recorder().GetEntriesByName(UkmEntry::kEntryName);
+    auto entries =
+        tester()->test_ukm_recorder().GetEntriesByName(UkmEntry::kEntryName);
     if (expected_recorded_previews == 0 && opt_out_value == 0 &&
         !origin_opt_out_expected && !save_data_enabled_expected &&
         !previews_likely_expected && !navigation_restart_penalty.has_value()) {
@@ -211,47 +212,50 @@ class PreviewsUKMObserverTest
     EXPECT_EQ(1u, entries.size());
 
     const auto* const entry = entries.front();
-    test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kDefaultTestUrl));
+    tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(
+        entry, GURL(kDefaultTestUrl));
 
     // Collect the set of recorded previews into a PreviewsState bitmask to
     // compare against the expected previews.
     content::PreviewsState recorded_previews = 0;
-    if (test_ukm_recorder().EntryHasMetric(entry,
-                                           UkmEntry::koffline_previewName))
+    if (tester()->test_ukm_recorder().EntryHasMetric(
+            entry, UkmEntry::koffline_previewName))
       recorded_previews |= content::OFFLINE_PAGE_ON;
-    if (test_ukm_recorder().EntryHasMetric(entry, UkmEntry::klite_pageName))
+    if (tester()->test_ukm_recorder().EntryHasMetric(entry,
+                                                     UkmEntry::klite_pageName))
       recorded_previews |= content::SERVER_LITE_PAGE_ON;
-    if (test_ukm_recorder().EntryHasMetric(entry,
-                                           UkmEntry::klite_page_redirectName)) {
+    if (tester()->test_ukm_recorder().EntryHasMetric(
+            entry, UkmEntry::klite_page_redirectName)) {
       recorded_previews |= content::LITE_PAGE_REDIRECT_ON;
     }
-    if (test_ukm_recorder().EntryHasMetric(entry, UkmEntry::knoscriptName))
+    if (tester()->test_ukm_recorder().EntryHasMetric(entry,
+                                                     UkmEntry::knoscriptName))
       recorded_previews |= content::NOSCRIPT_ON;
-    if (test_ukm_recorder().EntryHasMetric(
+    if (tester()->test_ukm_recorder().EntryHasMetric(
             entry, UkmEntry::kresource_loading_hintsName))
       recorded_previews |= content::RESOURCE_LOADING_HINTS_ON;
-    if (test_ukm_recorder().EntryHasMetric(entry,
-                                           UkmEntry::kdefer_all_scriptName))
+    if (tester()->test_ukm_recorder().EntryHasMetric(
+            entry, UkmEntry::kdefer_all_scriptName))
       recorded_previews |= content::DEFER_ALL_SCRIPT_ON;
     EXPECT_EQ(expected_recorded_previews, recorded_previews);
 
-    EXPECT_EQ(opt_out_value != 0, test_ukm_recorder().EntryHasMetric(
+    EXPECT_EQ(opt_out_value != 0, tester()->test_ukm_recorder().EntryHasMetric(
                                       entry, UkmEntry::kopt_outName));
     if (opt_out_value != 0) {
-      test_ukm_recorder().ExpectEntryMetric(entry, UkmEntry::kopt_outName,
-                                            opt_out_value);
+      tester()->test_ukm_recorder().ExpectEntryMetric(
+          entry, UkmEntry::kopt_outName, opt_out_value);
     }
     EXPECT_EQ(origin_opt_out_expected,
-              test_ukm_recorder().EntryHasMetric(
+              tester()->test_ukm_recorder().EntryHasMetric(
                   entry, UkmEntry::korigin_opt_outName));
     EXPECT_EQ(save_data_enabled_expected,
-              test_ukm_recorder().EntryHasMetric(
+              tester()->test_ukm_recorder().EntryHasMetric(
                   entry, UkmEntry::ksave_data_enabledName));
     EXPECT_EQ(previews_likely_expected,
-              test_ukm_recorder().EntryHasMetric(
+              tester()->test_ukm_recorder().EntryHasMetric(
                   entry, UkmEntry::kpreviews_likelyName));
     if (navigation_restart_penalty.has_value()) {
-      test_ukm_recorder().ExpectEntryMetric(
+      tester()->test_ukm_recorder().ExpectEntryMetric(
           entry, UkmEntry::knavigation_restart_penaltyName,
           navigation_restart_penalty.value().InMilliseconds());
     }
@@ -259,55 +263,55 @@ class PreviewsUKMObserverTest
     int want_lite_page_eligibility_reason =
         static_cast<int>(eligibility_reasons[PreviewsType::LITE_PAGE]);
     if (want_lite_page_eligibility_reason) {
-      test_ukm_recorder().ExpectEntryMetric(
+      tester()->test_ukm_recorder().ExpectEntryMetric(
           entry, UkmEntry::kproxy_lite_page_eligibility_reasonName,
           want_lite_page_eligibility_reason);
     } else {
-      EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+      EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
           entry, UkmEntry::kproxy_lite_page_eligibility_reasonName));
     }
 
     int want_lite_page_redirect_eligibility_reason =
         static_cast<int>(eligibility_reasons[PreviewsType::LITE_PAGE_REDIRECT]);
     if (want_lite_page_redirect_eligibility_reason) {
-      test_ukm_recorder().ExpectEntryMetric(
+      tester()->test_ukm_recorder().ExpectEntryMetric(
           entry, UkmEntry::klite_page_redirect_eligibility_reasonName,
           want_lite_page_redirect_eligibility_reason);
     } else {
-      EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+      EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
           entry, UkmEntry::klite_page_redirect_eligibility_reasonName));
     }
 
     int want_noscript_eligibility_reason =
         static_cast<int>(eligibility_reasons[PreviewsType::NOSCRIPT]);
     if (want_noscript_eligibility_reason) {
-      test_ukm_recorder().ExpectEntryMetric(
+      tester()->test_ukm_recorder().ExpectEntryMetric(
           entry, UkmEntry::knoscript_eligibility_reasonName,
           want_noscript_eligibility_reason);
     } else {
-      EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+      EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
           entry, UkmEntry::knoscript_eligibility_reasonName));
     }
 
     int want_resource_loading_hints_eligibility_reason = static_cast<int>(
         eligibility_reasons[PreviewsType::RESOURCE_LOADING_HINTS]);
     if (want_resource_loading_hints_eligibility_reason) {
-      test_ukm_recorder().ExpectEntryMetric(
+      tester()->test_ukm_recorder().ExpectEntryMetric(
           entry, UkmEntry::kresource_loading_hints_eligibility_reasonName,
           want_resource_loading_hints_eligibility_reason);
     } else {
-      EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+      EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
           entry, UkmEntry::kresource_loading_hints_eligibility_reasonName));
     }
 
     int want_offline_eligibility_reason =
         static_cast<int>(eligibility_reasons[PreviewsType::OFFLINE]);
     if (want_offline_eligibility_reason) {
-      test_ukm_recorder().ExpectEntryMetric(
+      tester()->test_ukm_recorder().ExpectEntryMetric(
           entry, UkmEntry::koffline_eligibility_reasonName,
           want_offline_eligibility_reason);
     } else {
-      EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+      EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
           entry, UkmEntry::koffline_eligibility_reasonName));
     }
   }
@@ -316,7 +320,8 @@ class PreviewsUKMObserverTest
       base::Optional<int64_t> hint_generation_timestamp,
       base::Optional<int> hint_source) {
     using UkmEntry = ukm::builders::OptimizationGuide;
-    auto entries = test_ukm_recorder().GetEntriesByName(UkmEntry::kEntryName);
+    auto entries =
+        tester()->test_ukm_recorder().GetEntriesByName(UkmEntry::kEntryName);
     if (!hint_generation_timestamp.has_value() && !hint_source.has_value()) {
       EXPECT_EQ(0u, entries.size());
       return;
@@ -324,20 +329,21 @@ class PreviewsUKMObserverTest
 
     EXPECT_EQ(1u, entries.size());
     for (const auto* const entry : entries) {
-      test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kDefaultTestUrl));
+      tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(
+          entry, GURL(kDefaultTestUrl));
       if (hint_generation_timestamp.has_value()) {
-        test_ukm_recorder().ExpectEntryMetric(
+        tester()->test_ukm_recorder().ExpectEntryMetric(
             entry, UkmEntry::kHintGenerationTimestampName,
             hint_generation_timestamp.value());
       } else {
-        EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+        EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
             entry, UkmEntry::kHintGenerationTimestampName));
       }
       if (hint_source.has_value()) {
-        test_ukm_recorder().ExpectEntryMetric(entry, UkmEntry::kHintSourceName,
-                                              hint_source.value());
+        tester()->test_ukm_recorder().ExpectEntryMetric(
+            entry, UkmEntry::kHintSourceName, hint_source.value());
       } else {
-        EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+        EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
             entry, UkmEntry::kHintSourceName));
       }
     }
@@ -362,7 +368,7 @@ TEST_F(PreviewsUKMObserverTest, NoPreviewSeen) {
           {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::PREVIEWS_UNSPECIFIED, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -380,8 +386,9 @@ TEST_F(PreviewsUKMObserverTest, UntrackedPreviewTypeOptOut) {
           {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
-  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
-  NavigateToUntrackedUrl();
+  tester()->metrics_web_contents_observer()->BroadcastEventToObservers(
+      PreviewsUITabHelper::OptOutEventKey());
+  tester()->NavigateToUntrackedUrl();
 
   // Opt out should not be added since we don't track this type.
   ValidateUKM(content::PREVIEWS_UNSPECIFIED, 0 /* opt_out_value */,
@@ -402,7 +409,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageSeen) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::SERVER_LITE_PAGE_ON, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -421,8 +428,9 @@ TEST_F(PreviewsUKMObserverTest, LitePageOptOutChip) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
-  NavigateToUntrackedUrl();
+  tester()->metrics_web_contents_observer()->BroadcastEventToObservers(
+      PreviewsUITabHelper::OptOutEventKey());
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::SERVER_LITE_PAGE_ON, 2 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -442,7 +450,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageRedirectSeen) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::LITE_PAGE_REDIRECT_ON, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -461,8 +469,9 @@ TEST_F(PreviewsUKMObserverTest, LitePageRedirectOptOutChip) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
-  NavigateToUntrackedUrl();
+  tester()->metrics_web_contents_observer()->BroadcastEventToObservers(
+      PreviewsUITabHelper::OptOutEventKey());
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::LITE_PAGE_REDIRECT_ON, 2 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -479,7 +488,7 @@ TEST_F(PreviewsUKMObserverTest, NoScriptSeenWithBadVersionString) {
           false /* save_data_enabled */, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */, "badversion");
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::NOSCRIPT_ON, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -498,8 +507,9 @@ TEST_F(PreviewsUKMObserverTest, NoScriptOptOutChip) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
-  NavigateToUntrackedUrl();
+  tester()->metrics_web_contents_observer()->BroadcastEventToObservers(
+      PreviewsUITabHelper::OptOutEventKey());
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::NOSCRIPT_ON, 2 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -518,7 +528,7 @@ TEST_F(PreviewsUKMObserverTest, OfflinePreviewsSeen) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::OFFLINE_PAGE_ON, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -537,7 +547,7 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsSeen) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::RESOURCE_LOADING_HINTS_ON, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -556,8 +566,9 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOutChip) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
-  NavigateToUntrackedUrl();
+  tester()->metrics_web_contents_observer()->BroadcastEventToObservers(
+      PreviewsUITabHelper::OptOutEventKey());
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::RESOURCE_LOADING_HINTS_ON, 2 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -576,7 +587,7 @@ TEST_F(PreviewsUKMObserverTest, DeferAllScriptSeen) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::DEFER_ALL_SCRIPT_ON, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -595,8 +606,9 @@ TEST_F(PreviewsUKMObserverTest, DeferAllScriptOptOutChip) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
-  NavigateToUntrackedUrl();
+  tester()->metrics_web_contents_observer()->BroadcastEventToObservers(
+      PreviewsUITabHelper::OptOutEventKey());
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::DEFER_ALL_SCRIPT_ON, 2 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -615,7 +627,7 @@ TEST_F(PreviewsUKMObserverTest, OriginOptOut) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::PREVIEWS_UNSPECIFIED, 0 /* opt_out_value */,
               true /* origin_opt_out_expected */,
@@ -634,7 +646,7 @@ TEST_F(PreviewsUKMObserverTest, DataSaverEnabled) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::PREVIEWS_UNSPECIFIED, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -656,7 +668,7 @@ TEST_F(PreviewsUKMObserverTest, NavigationRestartPenaltySeen) {
       base::TimeDelta::FromMilliseconds(1337) /* navigation_restart_penalty */,
       base::nullopt /* hint_version_string */);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(
       content::PREVIEWS_UNSPECIFIED, 0 /* opt_out_value */,
@@ -676,7 +688,7 @@ TEST_F(PreviewsUKMObserverTest, PreviewsLikelySet_PreCommitDecision) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::OFFLINE_PAGE_ON, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -694,7 +706,7 @@ TEST_F(PreviewsUKMObserverTest, PreviewsLikelyNotSet_PostCommitDecision) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::PREVIEWS_UNSPECIFIED, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -712,7 +724,7 @@ TEST_F(PreviewsUKMObserverTest, PreviewsLikelyNotSet_PreviewsOff) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::PREVIEWS_UNSPECIFIED, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -731,7 +743,7 @@ TEST_F(PreviewsUKMObserverTest, CoinFlipResult_Holdback) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::OFFLINE_PAGE_ON, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -750,7 +762,7 @@ TEST_F(PreviewsUKMObserverTest, CoinFlipResult_Allowed) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::OFFLINE_PAGE_ON, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -778,7 +790,7 @@ TEST_F(PreviewsUKMObserverTest, LogPreviewsEligibilityReason_WithAllowed) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::PREVIEWS_UNSPECIFIED, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -813,7 +825,7 @@ TEST_F(PreviewsUKMObserverTest, LogPreviewsEligibilityReason_NoneAllowed) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::PREVIEWS_UNSPECIFIED, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -845,7 +857,7 @@ TEST_F(PreviewsUKMObserverTest, LogOptimizationGuideHintVersion_NoHintSource) {
           {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */, hint_version_string);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::PREVIEWS_UNSPECIFIED, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -870,7 +882,7 @@ TEST_F(PreviewsUKMObserverTest,
           {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */, hint_version_string);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::PREVIEWS_UNSPECIFIED, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -889,7 +901,7 @@ TEST_F(PreviewsUKMObserverTest,
           {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */, "notahintversion");
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateUKM(content::PREVIEWS_UNSPECIFIED, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -927,7 +939,7 @@ TEST_F(PreviewsUKMObserverTest, CheckReportingForFlushMetrics) {
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
 
-  SimulateAppEnterBackground();
+  tester()->SimulateAppEnterBackground();
 
   ValidateUKM(content::PREVIEWS_UNSPECIFIED, 0 /* opt_out_value */,
               false /* origin_opt_out_expected */,
@@ -941,7 +953,7 @@ TEST_F(PreviewsUKMObserverTest, CheckReportingForFlushMetrics) {
 TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
   std::unique_ptr<base::StatisticsRecorder> recorder(
       base::StatisticsRecorder::CreateTemporaryForTesting());
-  base::HistogramTester tester;
+  base::HistogramTester histogram_tester;
 
   // No preview:
   RunTest(content::PREVIEWS_OFF /* committed_state */,
@@ -950,12 +962,12 @@ TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
           {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
-  NavigateToUntrackedUrl();
-  tester.ExpectUniqueSample(
+  tester()->NavigateToUntrackedUrl();
+  histogram_tester.ExpectUniqueSample(
       "Previews.PageEndReason.None",
       page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
   // The top level metric is not recorded on a non-preview.
-  tester.ExpectTotalCount("Previews.PageEndReason", 0);
+  histogram_tester.ExpectTotalCount("Previews.PageEndReason", 0);
 
   // Lite Page Redirect:
   RunTest(content::LITE_PAGE_REDIRECT_ON /* committed_state */,
@@ -964,13 +976,13 @@ TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
           {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
-  NavigateToUntrackedUrl();
-  tester.ExpectUniqueSample(
+  tester()->NavigateToUntrackedUrl();
+  histogram_tester.ExpectUniqueSample(
       "Previews.PageEndReason.LitePageRedirect",
       page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
-  tester.ExpectBucketCount("Previews.PageEndReason",
-                           page_load_metrics::PageEndReason::END_NEW_NAVIGATION,
-                           1);
+  histogram_tester.ExpectBucketCount(
+      "Previews.PageEndReason",
+      page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
 
   // Defer All Script:
   RunTest(content::DEFER_ALL_SCRIPT_ON /* committed_state */,
@@ -979,13 +991,13 @@ TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
           {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */,
           base::nullopt /* hint_version_string */);
-  NavigateToUntrackedUrl();
-  tester.ExpectUniqueSample(
+  tester()->NavigateToUntrackedUrl();
+  histogram_tester.ExpectUniqueSample(
       "Previews.PageEndReason.DeferAllScript",
       page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
-  tester.ExpectBucketCount("Previews.PageEndReason",
-                           page_load_metrics::PageEndReason::END_NEW_NAVIGATION,
-                           2);
+  histogram_tester.ExpectBucketCount(
+      "Previews.PageEndReason",
+      page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 2);
 }
 
 }  // namespace

@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/unguessable_token.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
@@ -348,10 +349,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   // The client should handle the request as a download.
   // If the request is for a blob: URL, a BlobURLToken should be provided
   // as |blob_url_token| to ensure the correct blob gets downloaded.
-  enum class CrossOriginRedirects { kFollow, kNavigate };
-  virtual void DownloadURL(const WebURLRequest&,
-                           CrossOriginRedirects cross_origin_redirect_behavior,
-                           mojo::ScopedMessagePipeHandle blob_url_token) {}
+  virtual void DownloadURL(
+      const WebURLRequest&,
+      network::mojom::RedirectMode cross_origin_redirect_behavior,
+      mojo::ScopedMessagePipeHandle blob_url_token) {}
 
   // Navigational queries ------------------------------------------------
 

@@ -21,6 +21,14 @@ assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
 # Please keep features in alphabetical order.
 declare_args() {
+  # Platforms where the BuiltinCertificateVerifierEnabled enterprise policy is
+  # supported. This must must match the supported_on list of the policy in
+  # policy_templates.json and be a subset of the
+  # builtin_cert_verifier_feature_supported platforms.
+  # See crbug.com/410574.  This can be removed when the builtin verifier is
+  # unconditionally enabled on all platforms.
+  builtin_cert_verifier_policy_supported = is_chromeos || is_desktop_linux
+
   enable_app_list = is_chromeos
 
   # Enables support for background apps.

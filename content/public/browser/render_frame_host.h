@@ -19,6 +19,7 @@
 #include "content/public/common/isolated_world_ids.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
@@ -354,7 +355,8 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // If this returns true, any redirect safety checks should be bypassed in
   // downstream loaders.
   virtual bool CreateNetworkServiceDefaultFactory(
-      network::mojom::URLLoaderFactoryRequest default_factory_request) = 0;
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+          default_factory_receiver) = 0;
 
   // Requests that future URLLoaderFactoryBundle(s) sent to the renderer should
   // use a separate URLLoaderFactory for requests initiated by isolated worlds

@@ -865,6 +865,7 @@ _CONFIG = [
         'allowed': [
             'absl::.+',
             'base::AutoLock',
+            'base::AutoUnlock',
             'base::Lock',
             # TODO(crbug.com/787254): Remove base::BindOnce, base::Unretained,
             # base::MessageLoopCurrent.

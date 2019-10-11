@@ -50,12 +50,14 @@ class SerialPort final : public ScriptWrappable,
   ScriptPromise setSignals(ScriptState*,
                            const SerialOutputSignals*,
                            ExceptionState&);
-  void close();
+  ScriptPromise close(ScriptState*, ExceptionState&);
 
   const base::UnguessableToken& token() const { return info_->token; }
 
   void UnderlyingSourceClosed();
   void UnderlyingSinkClosed();
+  ScriptPromise ContinueClose(ScriptState*);
+  void AbortClose();
 
   void ContextDestroyed();
   void Trace(Visitor*) override;
@@ -80,6 +82,7 @@ class SerialPort final : public ScriptWrappable,
   void OnGetSignals(ScriptPromiseResolver*,
                     device::mojom::blink::SerialPortControlSignalsPtr);
   void OnSetSignals(ScriptPromiseResolver*, bool success);
+  void OnClose();
 
   mojom::blink::SerialPortInfoPtr info_;
   Member<Serial> parent_;
@@ -93,11 +96,17 @@ class SerialPort final : public ScriptWrappable,
   Member<WritableStream> writable_;
   Member<SerialPortUnderlyingSink> underlying_sink_;
 
+  // Indicates that the port is being closed and so the streams should not be
+  // reopened on demand.
+  bool closing_ = false;
+
   // Resolver for the Promise returned by open().
   Member<ScriptPromiseResolver> open_resolver_;
   // Resolvers for the Promises returned by getSignals() and setSignals() to
   // reject them on Mojo connection failure.
   HeapHashSet<Member<ScriptPromiseResolver>> signal_resolvers_;
+  // Resolver for the Promise returned by ClosePort().
+  Member<ScriptPromiseResolver> close_resolver_;
 };
 
 }  // namespace blink

@@ -73,3 +73,105 @@ The [NetLog
 viewer](https://chromium.googlesource.com/catapult/+/master/netlog_viewer/) for
 instance pretty prints certain parameters based on their names, and the event
 name that added them.
+
+### Example 1
+
+Add an `PROXY_RESOLUTION_SERVICE` event without any parameters, at all capture
+modes.
+
+```
+net_log.BeginEvent(NetLogEventType::PROXY_RESOLUTION_SERVICE);
+```
+
+Analysis:
+
+* Privacy: Logging the event at all capture modes only reveals timing
+  information.
+* Performance: When not logging, has the overhead of an unconditional function
+  call (`BeginEvent`), and then a branch (test on `IsCapturing()`).
+* Size: Minimal data added to NetLog - just one parameterless event per URL
+  request.
+
+### Example 2
+
+Add a `FTP_COMMAND_SENT` event, at all capture modes, along with parameters
+that describe the FTP command.
+
+```
+if (net_log.IsCapturing()) {
+  std::string command = BuildCommandForLog();
+  net_log.AddEventWithStringParams(NetLogEventType::FTP_COMMAND_SENT,
+                                   "command", command);
+}
+```
+
+Analysis:
+
+* Privacy: Low risk given FTP traffic is unencrypted. `BuildCommandForString()`
+  should additionally best-effort strip any identity information, as this is
+  being logged at all capture modes.
+* Performance: Costs one branch when not capturing. The call to
+  `BuildCommandForString()` is only executed when capturing.
+* Size: Cost is proportional to the average FTP command length and frequency of
+  FTP, both of which are low. `BuildCommandForLog()` needn't strictly bound the
+  string length. If a huge FTP command makes it to a NetLog, there is a good
+  chance that is the problem being debugged.
+
+### Example 3
+
+Add a `SSL_CERTIFICATES_RECEIVED` event, along with the full certificate chain,
+at all capture modes.
+
+```
+net_log.AddEvent(NetLogEventType::SSL_CERTIFICATES_RECEIVED, [&] {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  base::Value certs(base::Value::Type::LIST);
+  std::vector<std::string> encoded_chain;
+  server_cert_->GetPEMEncodedChain(&encoded_chain);
+  for (auto& pem : encoded_chain)
+    certs.Append(std::move(pem));
+  dict.SetKey("certificates", std::move(certs));
+  return dict;
+});
+```
+
+Analysis:
+
+* Privacy: Low risk as server certificates are generally public data.
+* Performance: Costs one branch when logging is off (hidden by template
+  expansion). The code in the lambda which builds the `base::Value` parameters is only
+  executed when capturing.
+* Size: On average 8K worth of data per request (average of 2K/certificate,
+  chain length of 3, and the overhead of PEM-encoding). This is heavy-weight
+  for inclusion at `kDefault` capture mode, however justified based on how
+  useful the data is.
+
+### Example 4
+
+Add a `COOKIE_STORE_COOKIE_ADDED` event at all capture modes. Moreover, if the
+capture mode is `kIncludeSensitive` or `kEverything`, also logs the cookie's
+name and value.
+
+```
+net_log.AddEvent(NetLogEventType::COOKIE_STORE_COOKIE_ADDED,
+                 [&](NetLogCaptureMode capture_mode) {
+                   if (!NetLogCaptureIncludesSensitive(capture_mode))
+                     return base::Value();
+                   base::Value dict(base::Value::Type::DICTIONARY);
+                   dict.SetStringKey("name", cookie->Name());
+                   dict.SetStringKey("value", cookie->Value());
+                   return dict;
+                 });
+```
+
+Analysis:
+
+* Privacy: The cookie name and value are not included at the `kDefault` capture
+  mode, so only cookie counts and timing information is revealed.
+* Performance: Costs one branch when logging is off (hidden by template
+  expansion). The code in the lambda which builds the `base::Value` parameters is only
+  executed when capturing.
+* Size: For default captured logs, has a file size cost proportional to the
+  number of cookies added. This is borderline justifiable. It would be better
+  in this case to simply omit the event all together at `kDefault` than to log
+  a parameterless event, as the parameterless event is not broadly useful.

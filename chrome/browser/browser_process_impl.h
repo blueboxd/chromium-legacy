@@ -191,8 +191,6 @@ class BrowserProcessImpl : public BrowserProcess,
   resource_coordinator::TabManager* GetTabManager() override;
   resource_coordinator::ResourceCoordinatorParts* resource_coordinator_parts()
       override;
-  shell_integration::DefaultWebClientState CachedDefaultWebClientState()
-      override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -225,8 +223,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreatePhysicalWebDataSource();
 
   void ApplyDefaultBrowserPolicy();
-
-  void CacheDefaultWebClientState();
 
   // Methods called to control our lifetime. The browser process can be "pinned"
   // to make sure it keeps running.
@@ -394,9 +390,6 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
 
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
-
-  shell_integration::DefaultWebClientState cached_default_web_client_state_ =
-      shell_integration::UNKNOWN_DEFAULT;
 
   std::unique_ptr<resource_coordinator::ResourceCoordinatorParts>
       resource_coordinator_parts_;

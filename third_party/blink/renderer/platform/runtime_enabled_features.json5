@@ -547,6 +547,8 @@
     },
     {
       name: "DisplayLocking",
+      origin_trial_feature_name: "DisplayLocking",
+      depends_on: ["CSSContentSize"],
       status: "experimental",
     },
     {

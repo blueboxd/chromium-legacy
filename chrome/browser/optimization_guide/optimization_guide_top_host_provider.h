@@ -50,7 +50,7 @@ class OptimizationGuideTopHostProvider
       content::NavigationHandle* navigation_handle);
 
   // optimization_guide::TopHostProvider implementation:
-  std::vector<std::string> GetTopHosts(size_t max_sites) override;
+  std::vector<std::string> GetTopHosts() override;
 
  private:
   // Initializes the HintsFetcherTopHostBlacklist with all the hosts in the site

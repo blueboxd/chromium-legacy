@@ -217,24 +217,26 @@ const char* non_cacheable_html_response =
 // default server.
 class NavigationBaseBrowserTest : public ContentBrowserTest,
                                   public ::testing::WithParamInterface<bool> {
+ public:
+  NavigationBaseBrowserTest() { ToggleNavigationImmediateResponse(); }
+
  protected:
   void SetUpOnMainThread() override {
-    ToggleNavigationImmediateResponse();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
  private:
   void ToggleNavigationImmediateResponse() {
     if (GetParam()) {
-      feature_list.InitAndDisableFeature(
+      feature_list_.InitAndDisableFeature(
           features::kNavigationImmediateResponseBody);
     } else {
-      feature_list.InitAndEnableFeature(
+      feature_list_.InitAndEnableFeature(
           features::kNavigationImmediateResponseBody);
     }
   }
 
-  base::test::ScopedFeatureList feature_list;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
@@ -256,8 +258,8 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */,
 class NetworkIsolationNavigationBrowserTest
     : public ContentBrowserTest,
       public ::testing::WithParamInterface<bool> {
- protected:
-  void SetUpOnMainThread() override {
+ public:
+  NetworkIsolationNavigationBrowserTest() {
     if (GetParam()) {
       feature_list_.InitAndEnableFeature(
           net::features::kAppendFrameOriginToNetworkIsolationKey);
@@ -265,6 +267,10 @@ class NetworkIsolationNavigationBrowserTest
       feature_list_.InitAndDisableFeature(
           net::features::kAppendFrameOriginToNetworkIsolationKey);
     }
+  }
+
+ protected:
+  void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
     ContentBrowserTest::SetUpOnMainThread();
   }
@@ -778,7 +784,16 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
 
 class NavigationDisableWebSecurityTest : public NavigationBrowserTest {
  public:
-  NavigationDisableWebSecurityTest() {}
+  NavigationDisableWebSecurityTest() {
+    // To get around DataUrlNavigationThrottle. Other attempts at getting around
+    // it don't work, i.e.:
+    // -if the request is made in a child frame then the frame is torn down
+    // immediately on process killing so the navigation doesn't complete
+    // -if it's classified as same document, then a DCHECK in
+    // NavigationRequest::CreateRendererInitiated fires
+    feature_list_.InitAndEnableFeature(
+        features::kAllowContentInitiatedDataUrlNavigations);
+  }
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -787,6 +802,9 @@ class NavigationDisableWebSecurityTest : public NavigationBrowserTest {
     command_line->AppendSwitch(switches::kDisableWebSecurity);
     NavigationBrowserTest::SetUpCommandLine(command_line);
   }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Test to verify that an exploited renderer process trying to specify a
@@ -805,15 +823,6 @@ IN_PROC_BROWSER_TEST_P(NavigationDisableWebSecurityTest,
   base::FilePath file_path = GetTestFilePath("", "simple_page.html");
   GURL file_url = net::FilePathToFileURL(file_path);
 
-  // To get around DataUrlNavigationThrottle. Other attempts at getting around
-  // it don't work, i.e.:
-  // -if the request is made in a child frame then the frame is torn down
-  // immediately on process killing so the navigation doesn't complete
-  // -if it's classified as same document, then a DCHECK in
-  // NavigationRequest::CreateRendererInitiated fires
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAllowContentInitiatedDataUrlNavigations);
   // Setup a BeginNavigate IPC with non-empty base_url_for_data_url.
   mojom::CommonNavigationParamsPtr common_params =
       mojom::CommonNavigationParams::New(

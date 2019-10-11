@@ -132,7 +132,7 @@ class LearningTaskControllerImplTest : public testing::Test {
 
   void AddExample(const LabelledExample& example) {
     base::UnguessableToken id = base::UnguessableToken::Create();
-    controller_->BeginObservation(id, example.features);
+    controller_->BeginObservation(id, example.features, base::nullopt);
     controller_->CompleteObservation(
         id, ObservationCompletion(example.target_value, example.weight));
   }

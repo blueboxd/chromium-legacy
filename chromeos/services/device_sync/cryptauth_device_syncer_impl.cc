@@ -304,10 +304,10 @@ void CryptAuthDeviceSyncerImpl::SetGroupKey(const CryptAuthKey& new_group_key) {
     if (*current_group_key == new_group_key)
       return;
 
-    PA_LOG(VERBOSE) << "Deleting old DeviceSync BetterTogether group key: "
+    PA_LOG(VERBOSE) << "Deleting old DeviceSync BetterTogether group key:\n"
                     << "public = "
                     << util::EncodeAsString(current_group_key->public_key())
-                    << ", private = "
+                    << ",\nprivate = "
                     << (current_group_key->private_key().empty()
                             ? "[empty]"
                             : "[not empty]");
@@ -316,10 +316,10 @@ void CryptAuthDeviceSyncerImpl::SetGroupKey(const CryptAuthKey& new_group_key) {
         current_group_key->handle());
   }
 
-  PA_LOG(VERBOSE) << "New DeviceSync BetterTogether group key: "
+  PA_LOG(VERBOSE) << "New DeviceSync BetterTogether group key:\n"
                   << "public = "
                   << util::EncodeAsString(new_group_key.public_key())
-                  << ", private = "
+                  << ",\nprivate = "
                   << (new_group_key.private_key().empty() ? "[empty]"
                                                           : "[not empty]");
 
@@ -582,6 +582,13 @@ void CryptAuthDeviceSyncerImpl::ShareGroupPrivateKey() {
 
     id_to_encrypting_key_map.insert_or_assign(
         id_packet_pair.first, id_packet_pair.second.device_public_key());
+  }
+
+  // No device needs the group private key.
+  if (id_to_encrypting_key_map.empty()) {
+    OnShareGroupPrivateKeyFinished(
+        CryptAuthDeviceSyncResult::ResultCode::kSuccess);
+    return;
   }
 
   const CryptAuthKey* group_key = key_registry_->GetActiveKey(

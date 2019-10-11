@@ -525,6 +525,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl);
   void PushSurfaceRangesTo(LayerTreeImpl* tree_impl);
   void PushLayerTreeHostPropertiesTo(LayerTreeHostImpl* host_impl);
+  void MoveChangeTrackingToLayers(LayerTreeImpl* tree_impl);
 
   MutatorHost* mutator_host() const { return mutator_host_; }
 

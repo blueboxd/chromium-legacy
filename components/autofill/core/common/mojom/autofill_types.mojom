@@ -294,3 +294,11 @@ struct PasswordForm {
   SubmissionIndicatorEvent submission_event;
   bool only_for_fallback;
 };
+
+// autofill::ParsingResult
+struct ParsingResult {
+  uint32 username_renderer_id;
+  uint32 password_renderer_id;
+  uint32 new_password_renderer_id;
+  uint32 confirm_password_renderer_id;
+};

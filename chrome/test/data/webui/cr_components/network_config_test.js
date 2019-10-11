@@ -234,6 +234,10 @@ suite('network-config', function() {
             'PEAP',
             networkConfig.managedProperties.typeProperties.ethernet.eap.outer
                 .activeValue);
+        assertEquals(
+            'PEAP',
+            networkConfig.configProperties_.typeConfig.ethernet.eap.outer);
+        assertEquals('PEAP', networkConfig.eapProperties_.outer);
         let outer = networkConfig.$$('#outer');
         assertTrue(!!outer);
         assertTrue(!outer.disabled);

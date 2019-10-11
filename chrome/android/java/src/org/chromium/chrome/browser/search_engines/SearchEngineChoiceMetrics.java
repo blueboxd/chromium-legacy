@@ -38,6 +38,28 @@ public class SearchEngineChoiceMetrics {
     }
 
     /**
+     * AndroidSearchEngineChoiceEventsV2 defined in tools/metrics/histograms/enums.xml. These values
+     * are persisted to logs. Entries should not be renumbered and numeric values should never be
+     * reused.
+     */
+    @IntDef({EventsV2.CHOICE_REQUEST_RECEIVED, EventsV2.CHOICE_SKIPPED,
+            EventsV2.CHOICE_REQUEST_NO_DATA, EventsV2.CHOICE_REQUEST_VALID,
+            EventsV2.CHOICE_REQUEST_METADATA_NULL, EventsV2.CHOICE_REQUEST_PARSE_FAILED,
+            EventsV2.PREVIOUS_CHOICE_REQUEST_FAILED, EventsV2.CHOICE_REQUEST_SUCCESS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface EventsV2 {
+        int CHOICE_REQUEST_RECEIVED = 0;
+        int CHOICE_SKIPPED = 1;
+        int CHOICE_REQUEST_NO_DATA = 1;
+        int CHOICE_REQUEST_VALID = 2;
+        int CHOICE_REQUEST_METADATA_NULL = 3;
+        int CHOICE_REQUEST_PARSE_FAILED = 4;
+        int PREVIOUS_CHOICE_REQUEST_FAILED = 5;
+        int CHOICE_REQUEST_SUCCESS = 6;
+        int MAX = 7;
+    }
+
+    /**
      * Records an event to the search choice histogram. See {@link Events} and histograms.xml for
      * more details.
      * @param event The {@link Events} to be reported.
@@ -45,6 +67,16 @@ public class SearchEngineChoiceMetrics {
     public static void recordEvent(@Events int event) {
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.SearchEngineChoice.Events", event, Events.MAX);
+    }
+
+    /**
+     * Records an event to the search choice histogram. See {@link EventsV2} and histograms.xml for
+     * more details.
+     * @param event The {@link EventsV2} to be reported.
+     */
+    public static void recordEventV2(@EventsV2 int event) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.SearchEngineChoice.EventsV2", event, EventsV2.MAX);
     }
 
     /** Records the search engine type before the user made a choice about which engine to use. */

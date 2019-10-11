@@ -327,6 +327,26 @@ currently supported services:
 * `ProvisionFetcher`: for Android MediaDrm device provisioning
 * `CdmProxy`: (in progress)
 
+### Security
+
+In most cases, the client side runs in the renderer process which is the least
+trusted. Also always assume the client side code may be compromised, e.g. making
+calls in random order or passing in garbage parameters.
+
+Due to the [Flexible Process Model](#Flexible-Process-Model), it's sometimes
+hard to know in which process the service side runs. As a rule of thumb, assume
+all service side code may run in a privileged process (e.g. browser process),
+including the common supporting code like `MojoVideoDecoderService`, as well as
+the concrete [Media Component](#Media-Components), e.g. MediaCodecVideoDecoder
+on Android.  To know exactly which [Media Component](#Media-Components) runs in
+which process in production, see [Adoption](#Adoption) below.
+
+Also note that all the [Secure Auxiliary Services](#Secure-Auxiliary-Services)
+are running in a more privileged process than the process where the media
+components that use them run in. For example, all of the existing services run
+in the browser process except for the `CdmProxy`, which runs in the GPU process.
+They must defend against compromised media components.
+
 ### Adoption
 
 #### Android

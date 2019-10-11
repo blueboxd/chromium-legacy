@@ -83,7 +83,6 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl {
   void PrintPage(blink::WebLocalFrame* frame) override;
   blink::WebString AcceptLanguages() override;
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
-  blink::WebScreenInfo GetScreenInfo() override;
 
   // Exposed for our TestRunner harness.
   using RenderViewImpl::ApplyPageHidden;

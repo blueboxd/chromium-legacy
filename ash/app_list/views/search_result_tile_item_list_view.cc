@@ -81,33 +81,33 @@ SearchResultTileItemListView::SearchResultTileItemListView(
           app_list_features::IsAppReinstallZeroStateEnabled()),
       max_search_result_tiles_(
           AppListConfig::instance().max_search_result_tiles()) {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
+  layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
       gfx::Insets(kItemListVerticalSpacing, kItemListHorizontalSpacing),
       kBetweenItemSpacing));
   for (size_t i = 0; i < max_search_result_tiles_; ++i) {
     if (is_app_reinstall_recommendation_enabled_ ||
         is_play_store_app_search_enabled_) {
-      views::Separator* separator = new views::Separator;
+      views::Separator* separator =
+          AddChildView(std::make_unique<views::Separator>());
       separator->SetVisible(false);
       separator->SetBorder(views::CreateEmptyBorder(
           kSeparatorTopPadding, kSeparatorLeftRightPadding,
           AppListConfig::instance().search_tile_height() - kSeparatorHeight,
           kSeparatorLeftRightPadding));
       separator->SetColor(kSeparatorColor);
-
       separator_views_.push_back(separator);
-      AddChildView(separator);
+      layout_->SetFlexForView(separator, 0);
     }
 
-    SearchResultTileItemView* tile_item = new SearchResultTileItemView(
-        view_delegate, nullptr /* pagination model */,
-        false /* show_in_apps_page */);
+    SearchResultTileItemView* tile_item =
+        AddChildView(std::make_unique<SearchResultTileItemView>(
+            view_delegate, nullptr /* pagination model */,
+            false /* show_in_apps_page */));
     tile_item->set_index_in_container(i);
     tile_item->SetParentBackgroundColor(
         AppListConfig::instance().card_background_color());
     tile_views_.push_back(tile_item);
-    AddChildView(tile_item);
     AddObservedResultView(tile_item);
   }
 
@@ -388,6 +388,14 @@ bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
 
 const char* SearchResultTileItemListView::GetClassName() const {
   return "SearchResultTileItemListView";
+}
+
+void SearchResultTileItemListView::Layout() {
+  const bool flex = GetContentsBounds().width() < GetPreferredSize().width();
+  layout_->SetDefaultFlex(flex ? 1 : 0);
+  layout_->set_between_child_spacing(flex ? 1 : kBetweenItemSpacing);
+
+  views::View::Layout();
 }
 
 void SearchResultTileItemListView::OnShownChanged() {

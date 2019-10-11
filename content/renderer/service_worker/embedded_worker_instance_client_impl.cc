@@ -15,6 +15,7 @@
 #include "content/public/common/content_client.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
+#include "content/renderer/worker/fetch_client_settings_object_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -166,7 +167,10 @@ std::unique_ptr<blink::WebEmbeddedWorkerStartData>
 EmbeddedWorkerInstanceClientImpl::BuildStartData(
     const blink::mojom::EmbeddedWorkerStartParams& params) {
   DCHECK(initiator_thread_task_runner_->BelongsToCurrentThread());
-  auto start_data = std::make_unique<blink::WebEmbeddedWorkerStartData>();
+  auto start_data = std::make_unique<blink::WebEmbeddedWorkerStartData>(
+      FetchClientSettingsObjectFromMojomToWeb(
+          params.outside_fetch_client_settings_object));
+
   start_data->script_url = params.script_url;
   start_data->user_agent = blink::WebString::FromUTF8(params.user_agent);
   start_data->script_type = params.script_type;
@@ -175,15 +179,6 @@ EmbeddedWorkerInstanceClientImpl::BuildStartData(
           ? blink::WebEmbeddedWorkerStartData::kWaitForDebugger
           : blink::WebEmbeddedWorkerStartData::kDontWaitForDebugger;
   start_data->devtools_worker_token = params.devtools_worker_token;
-
-  // TODO(bashi): Consider to have a helper function to convert
-  // mojom::FetchClientSettingsObject to WebFetchClientSettingsObject.
-  start_data->outside_fetch_client_settings_object.referrer_policy =
-      params.outside_fetch_client_settings_object->referrer_policy;
-  start_data->outside_fetch_client_settings_object.outgoing_referrer =
-      params.outside_fetch_client_settings_object->outgoing_referrer;
-  start_data->outside_fetch_client_settings_object.insecure_requests_policy =
-      params.outside_fetch_client_settings_object->insecure_requests_policy;
 
   return start_data;
 }

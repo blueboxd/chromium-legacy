@@ -142,10 +142,15 @@
 #include "base/android/application_status_listener.h"
 #endif
 
-#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
+#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED) || \
+    BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 #include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_proc_builtin.h"
+#include "net/cert/multi_threaded_cert_verifier.h"
+#endif
+
+#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 #include "services/network/trial_comparison_cert_verifier_mojo.h"
 #endif
 
@@ -461,12 +466,12 @@ bool NetworkContext::IsPrimaryNetworkContext() const {
 }
 
 void NetworkContext::CreateURLLoaderFactory(
-    mojom::URLLoaderFactoryRequest request,
+    mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
     mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client) {
   url_loader_factories_.emplace(std::make_unique<cors::CorsURLLoaderFactory>(
       this, std::move(params), std::move(resource_scheduler_client),
-      std::move(request), &cors_origin_access_list_, nullptr));
+      std::move(receiver), &cors_origin_access_list_, nullptr));
 }
 
 void NetworkContext::SetClient(
@@ -476,14 +481,14 @@ void NetworkContext::SetClient(
 }
 
 void NetworkContext::CreateURLLoaderFactory(
-    mojom::URLLoaderFactoryRequest request,
+    mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
     mojom::URLLoaderFactoryParamsPtr params) {
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client;
   resource_scheduler_client = base::MakeRefCounted<ResourceSchedulerClient>(
       params->process_id, ++current_resource_scheduler_client_id_,
       resource_scheduler_.get(),
       url_request_context_->network_quality_estimator());
-  CreateURLLoaderFactory(std::move(request), std::move(params),
+  CreateURLLoaderFactory(std::move(receiver), std::move(params),
                          std::move(resource_scheduler_client));
 }
 
@@ -1516,7 +1521,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     cert_verifier = std::make_unique<WrappedTestingCertVerifier>();
   } else {
 #if defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(OS_CHROMEOS) || \
-    BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
+    BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED) ||                \
+    BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
     cert_net_fetcher_ = base::MakeRefCounted<net::CertNetFetcherImpl>();
 #endif
 #if defined(OS_CHROMEOS)
@@ -1539,8 +1545,9 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
         std::move(params_->initial_additional_certificates));
     cert_verifier_with_trust_anchors_->InitializeOnIOThread(verify_proc);
     cert_verifier = base::WrapUnique(cert_verifier_with_trust_anchors_);
-#elif BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
-    if (params_->trial_comparison_cert_verifier_params) {
+#endif
+#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
+    if (!cert_verifier && params_->trial_comparison_cert_verifier_params) {
       cert_verifier = std::make_unique<net::CachingCertVerifier>(
           std::make_unique<net::CoalescingCertVerifier>(
               std::make_unique<TrialComparisonCertVerifierMojo>(
@@ -1554,6 +1561,18 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
                       cert_net_fetcher_),
                   net::CertVerifyProc::CreateBuiltinVerifyProc(
                       cert_net_fetcher_))));
+    }
+#endif
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+    if (!cert_verifier) {
+      cert_verifier = std::make_unique<net::CachingCertVerifier>(
+          std::make_unique<net::CoalescingCertVerifier>(
+              std::make_unique<net::MultiThreadedCertVerifier>(
+                  params_->use_builtin_cert_verifier
+                      ? net::CertVerifyProc::CreateBuiltinVerifyProc(
+                            cert_net_fetcher_)
+                      : net::CertVerifyProc::CreateSystemVerifyProc(
+                            cert_net_fetcher_))));
     }
 #endif
     if (!cert_verifier)
@@ -2148,8 +2167,8 @@ void NetworkContext::InitializeCorsParams() {
 }
 
 void NetworkContext::GetOriginPolicyManager(
-    mojom::OriginPolicyManagerRequest request) {
-  origin_policy_manager_->AddBinding(std::move(request));
+    mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) {
+  origin_policy_manager_->AddReceiver(std::move(receiver));
 }
 
 mojom::URLLoaderFactoryPtr

@@ -32,18 +32,6 @@ FloatPoint ScrollPosition(const GraphicsLayer& layer) {
   return FloatPoint();
 }
 
-// For kOutputAsLayerTree only.
-void AddTransformJSONProperties(const GraphicsLayer* layer, JSONObject& json) {
-  const TransformationMatrix& transform = layer->Transform();
-  if (!transform.IsIdentity())
-    json.SetArray("transform", TransformAsJSONArray(transform));
-
-  if (!transform.IsIdentityOrTranslation()) {
-    json.SetArray("origin",
-                  PointAsJSONArray(FloatPoint3D(layer->TransformOrigin())));
-  }
-}
-
 std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
     const GraphicsLayer* layer,
     LayerTreeFlags flags,
@@ -91,9 +79,6 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
     json->SetString("backgroundColor",
                     Color(layer->BackgroundColor()).NameForLayoutTreeAsText());
   }
-
-  if (flags & kOutputAsLayerTree)
-    AddTransformJSONProperties(layer, *json);
 
   FloatPoint scroll_position(ScrollPosition(*layer));
   if (scroll_position != FloatPoint())

@@ -69,10 +69,10 @@ class TabRestorePageLoadMetricsObserverTest
   void SimulatePageLoad(bool is_restore, bool simulate_app_background) {
     is_restore_ = is_restore;
     NavigateAndCommit(GURL(kDefaultTestUrl));
-    SimulateTimingUpdate(timing_);
+    tester()->SimulateTimingUpdate(timing_);
 
     auto resources = GetSampleResourceDataUpdateForTesting(10 * 1024);
-    SimulateResourceDataUseUpdate(resources);
+    tester()->SimulateResourceDataUseUpdate(resources);
     for (const auto& resource : resources) {
       if (resource->is_complete) {
         if (resource->cache_type ==
@@ -85,9 +85,9 @@ class TabRestorePageLoadMetricsObserverTest
 
     if (simulate_app_background) {
       // The histograms should be logged when the app is backgrounded.
-      SimulateAppEnterBackground();
+      tester()->SimulateAppEnterBackground();
     } else {
-      NavigateToUntrackedUrl();
+      tester()->NavigateToUntrackedUrl();
     }
   }
 
@@ -111,24 +111,24 @@ class TabRestorePageLoadMetricsObserverTest
 TEST_F(TabRestorePageLoadMetricsObserverTest, NotRestored) {
   ResetTest();
   SimulatePageLoad(false /* is_restore */, false /* simulate_app_background */);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.TabRestore.Experimental.Bytes.Network", 0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.TabRestore.Experimental.Bytes.Cache", 0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.TabRestore.Experimental.Bytes.Total", 0);
 }
 
 TEST_F(TabRestorePageLoadMetricsObserverTest, Restored) {
   ResetTest();
   SimulatePageLoad(true /* is_restore */, false /* simulate_app_background */);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.TabRestore.Experimental.Bytes.Network",
       static_cast<int>(network_bytes_ / 1024), 1);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.TabRestore.Experimental.Bytes.Cache",
       static_cast<int>(cache_bytes_ / 1024), 1);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.TabRestore.Experimental.Bytes.Total",
       static_cast<int>((network_bytes_ + cache_bytes_) / 1024), 1);
 }
@@ -136,13 +136,13 @@ TEST_F(TabRestorePageLoadMetricsObserverTest, Restored) {
 TEST_F(TabRestorePageLoadMetricsObserverTest, RestoredAppBackground) {
   ResetTest();
   SimulatePageLoad(true /* is_restore */, true /* simulate_app_background */);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.TabRestore.Experimental.Bytes.Network",
       static_cast<int>(network_bytes_ / 1024), 1);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.TabRestore.Experimental.Bytes.Cache",
       static_cast<int>(cache_bytes_ / 1024), 1);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.TabRestore.Experimental.Bytes.Total",
       static_cast<int>((network_bytes_ + cache_bytes_) / 1024), 1);
 }

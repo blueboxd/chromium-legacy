@@ -58,32 +58,6 @@ PerfDataProto GetExamplePerfDataProto() {
   return proto;
 }
 
-// Returns an example PerfStatProto. The contents don't have to make sense. They
-// just need to constitute a semantically valid protobuf.
-// |result| is an output parameter that will contain the created protobuf.
-PerfStatProto GetExamplePerfStatProto() {
-  PerfStatProto proto;
-  proto.set_command_line(
-      "perf stat -a -e cycles -e instructions -e branches -- sleep 2");
-
-  PerfStatProto_PerfStatLine* line1 = proto.add_line();
-  line1->set_time_ms(1000);
-  line1->set_count(2000);
-  line1->set_event_name("cycles");
-
-  PerfStatProto_PerfStatLine* line2 = proto.add_line();
-  line2->set_time_ms(2000);
-  line2->set_count(5678);
-  line2->set_event_name("instructions");
-
-  PerfStatProto_PerfStatLine* line3 = proto.add_line();
-  line3->set_time_ms(3000);
-  line3->set_count(9999);
-  line3->set_event_name("branches");
-
-  return proto;
-}
-
 // Creates a serialized data stream containing a string with a field tag number.
 std::string SerializeStringFieldWithTag(int field, const std::string& value) {
   std::string result;
@@ -115,7 +89,6 @@ class TestMetricCollector : public MetricCollector {
       std::unique_ptr<SampledProfile> sampled_profile) override {
     PerfDataProto perf_data_proto = GetExamplePerfDataProto();
     SaveSerializedPerfProto(std::move(sampled_profile),
-                            PerfProtoType::PERF_TYPE_DATA,
                             perf_data_proto.SerializeAsString());
   }
 
@@ -124,7 +97,6 @@ class TestMetricCollector : public MetricCollector {
   using MetricCollector::Init;
   using MetricCollector::IsRunning;
   using MetricCollector::login_time;
-  using MetricCollector::PerfProtoType;
   using MetricCollector::RecordUserLogin;
   using MetricCollector::SaveSerializedPerfProto;
   using MetricCollector::ScheduleIntervalCollection;
@@ -149,8 +121,7 @@ class MetricCollectorTest : public testing::Test {
  public:
   MetricCollectorTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
-        perf_data_proto_(GetExamplePerfDataProto()),
-        perf_stat_proto_(GetExamplePerfStatProto()) {}
+        perf_data_proto_(GetExamplePerfDataProto()) {}
 
   void SaveProfile(std::unique_ptr<SampledProfile> sampled_profile) {
     cached_profile_data_.resize(cached_profile_data_.size() + 1);
@@ -191,16 +162,14 @@ class MetricCollectorTest : public testing::Test {
 
   std::unique_ptr<TestMetricCollector> metric_collector_;
 
-  // Store sample perf data/stat protobufs for testing.
+  // Store sample perf data protobuf for testing.
   PerfDataProto perf_data_proto_;
-  PerfStatProto perf_stat_proto_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricCollectorTest);
 };
 
 TEST_F(MetricCollectorTest, CheckSetup) {
   EXPECT_GT(perf_data_proto_.ByteSize(), 0);
-  EXPECT_GT(perf_stat_proto_.ByteSize(), 0);
 
   // Timer is active after user logs in.
   EXPECT_TRUE(metric_collector_->IsRunning());
@@ -211,9 +180,8 @@ TEST_F(MetricCollectorTest, EmptyProtosAreNotSaved) {
   auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
-  metric_collector_->SaveSerializedPerfProto(
-      std::move(sampled_profile),
-      TestMetricCollector::PerfProtoType::PERF_TYPE_DATA, std::string());
+  metric_collector_->SaveSerializedPerfProto(std::move(sampled_profile),
+                                             std::string());
   task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(cached_profile_data_.empty());
@@ -224,9 +192,7 @@ TEST_F(MetricCollectorTest, PerfDataProto) {
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
   metric_collector_->SaveSerializedPerfProto(
-      std::move(sampled_profile),
-      TestMetricCollector::PerfProtoType::PERF_TYPE_DATA,
-      perf_data_proto_.SerializeAsString());
+      std::move(sampled_profile), perf_data_proto_.SerializeAsString());
   task_environment_.RunUntilIdle();
   ASSERT_EQ(1U, cached_profile_data_.size());
 
@@ -236,7 +202,6 @@ TEST_F(MetricCollectorTest, PerfDataProto) {
   EXPECT_TRUE(profile.has_ms_after_login());
 
   ASSERT_TRUE(profile.has_perf_data());
-  EXPECT_FALSE(profile.has_perf_stat());
   EXPECT_EQ(perf_data_proto_.SerializeAsString(),
             profile.perf_data().SerializeAsString());
 }
@@ -294,9 +259,8 @@ TEST_F(MetricCollectorTest, PerfDataProto_UnknownFieldsDiscarded) {
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
   // Perf data protos are saved from the collector task runner.
-  metric_collector_->SaveSerializedPerfProto(
-      std::move(sampled_profile),
-      TestMetricCollector::PerfProtoType::PERF_TYPE_DATA, perf_data_string);
+  metric_collector_->SaveSerializedPerfProto(std::move(sampled_profile),
+                                             perf_data_string);
   task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1U, cached_profile_data_.size());
@@ -344,30 +308,6 @@ TEST_F(MetricCollectorTest, PerfDataProto_UnknownFieldsDiscarded) {
             stored_metadata.perf_command_line_whole().unknown_fields().size());
 }
 
-TEST_F(MetricCollectorTest, PerfStatProto) {
-  auto sampled_profile = std::make_unique<SampledProfile>();
-  sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
-
-  // Perf data protos are saved from the collector task runner.
-  metric_collector_->SaveSerializedPerfProto(
-      std::move(sampled_profile),
-      TestMetricCollector::PerfProtoType::PERF_TYPE_STAT,
-      perf_stat_proto_.SerializeAsString());
-  task_environment_.RunUntilIdle();
-
-  ASSERT_EQ(1U, cached_profile_data_.size());
-
-  const SampledProfile& profile = cached_profile_data_[0];
-  EXPECT_EQ(SampledProfile::PERIODIC_COLLECTION, profile.trigger_event());
-  EXPECT_TRUE(profile.has_ms_after_boot());
-  EXPECT_TRUE(profile.has_ms_after_login());
-
-  EXPECT_FALSE(profile.has_perf_data());
-  ASSERT_TRUE(profile.has_perf_stat());
-  EXPECT_EQ(perf_stat_proto_.SerializeAsString(),
-            profile.perf_stat().SerializeAsString());
-}
-
 // Change |sampled_profile| between calls to SaveSerializedPerfProto().
 TEST_F(MetricCollectorTest, MultipleCalls) {
   auto sampled_profile = std::make_unique<SampledProfile>();
@@ -375,18 +315,14 @@ TEST_F(MetricCollectorTest, MultipleCalls) {
 
   // Perf data protos are saved from the collector task runner.
   metric_collector_->SaveSerializedPerfProto(
-      std::move(sampled_profile),
-      TestMetricCollector::PerfProtoType::PERF_TYPE_DATA,
-      perf_data_proto_.SerializeAsString());
+      std::move(sampled_profile), perf_data_proto_.SerializeAsString());
   task_environment_.RunUntilIdle();
 
   sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESTORE_SESSION);
   sampled_profile->set_ms_after_restore(3000);
   metric_collector_->SaveSerializedPerfProto(
-      std::move(sampled_profile),
-      TestMetricCollector::PerfProtoType::PERF_TYPE_STAT,
-      perf_stat_proto_.SerializeAsString());
+      std::move(sampled_profile), perf_data_proto_.SerializeAsString());
   task_environment_.RunUntilIdle();
 
   sampled_profile = std::make_unique<SampledProfile>();
@@ -394,20 +330,10 @@ TEST_F(MetricCollectorTest, MultipleCalls) {
   sampled_profile->set_suspend_duration_ms(60000);
   sampled_profile->set_ms_after_resume(1500);
   metric_collector_->SaveSerializedPerfProto(
-      std::move(sampled_profile),
-      TestMetricCollector::PerfProtoType::PERF_TYPE_DATA,
-      perf_data_proto_.SerializeAsString());
+      std::move(sampled_profile), perf_data_proto_.SerializeAsString());
   task_environment_.RunUntilIdle();
 
-  sampled_profile = std::make_unique<SampledProfile>();
-  sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
-  metric_collector_->SaveSerializedPerfProto(
-      std::move(sampled_profile),
-      TestMetricCollector::PerfProtoType::PERF_TYPE_STAT,
-      perf_stat_proto_.SerializeAsString());
-  task_environment_.RunUntilIdle();
-
-  ASSERT_EQ(4U, cached_profile_data_.size());
+  ASSERT_EQ(3U, cached_profile_data_.size());
 
   {
     const SampledProfile& profile = cached_profile_data_[0];
@@ -415,7 +341,6 @@ TEST_F(MetricCollectorTest, MultipleCalls) {
     EXPECT_TRUE(profile.has_ms_after_boot());
     EXPECT_TRUE(profile.has_ms_after_login());
     ASSERT_TRUE(profile.has_perf_data());
-    EXPECT_FALSE(profile.has_perf_stat());
     EXPECT_EQ(perf_data_proto_.SerializeAsString(),
               profile.perf_data().SerializeAsString());
   }
@@ -426,10 +351,9 @@ TEST_F(MetricCollectorTest, MultipleCalls) {
     EXPECT_TRUE(profile.has_ms_after_boot());
     EXPECT_TRUE(profile.has_ms_after_login());
     EXPECT_EQ(3000, profile.ms_after_restore());
-    EXPECT_FALSE(profile.has_perf_data());
-    ASSERT_TRUE(profile.has_perf_stat());
-    EXPECT_EQ(perf_stat_proto_.SerializeAsString(),
-              profile.perf_stat().SerializeAsString());
+    ASSERT_TRUE(profile.has_perf_data());
+    EXPECT_EQ(perf_data_proto_.SerializeAsString(),
+              profile.perf_data().SerializeAsString());
   }
 
   {
@@ -440,20 +364,8 @@ TEST_F(MetricCollectorTest, MultipleCalls) {
     EXPECT_EQ(60000, profile.suspend_duration_ms());
     EXPECT_EQ(1500, profile.ms_after_resume());
     ASSERT_TRUE(profile.has_perf_data());
-    EXPECT_FALSE(profile.has_perf_stat());
     EXPECT_EQ(perf_data_proto_.SerializeAsString(),
               profile.perf_data().SerializeAsString());
-  }
-
-  {
-    const SampledProfile& profile = cached_profile_data_[3];
-    EXPECT_EQ(SampledProfile::PERIODIC_COLLECTION, profile.trigger_event());
-    EXPECT_TRUE(profile.has_ms_after_boot());
-    EXPECT_TRUE(profile.has_ms_after_login());
-    EXPECT_FALSE(profile.has_perf_data());
-    ASSERT_TRUE(profile.has_perf_stat());
-    EXPECT_EQ(perf_stat_proto_.SerializeAsString(),
-              profile.perf_stat().SerializeAsString());
   }
 }
 
@@ -590,7 +502,6 @@ TEST_F(MetricCollectorTest, ScheduleIntervalCollection) {
   EXPECT_TRUE(profile.has_ms_after_boot());
 
   ASSERT_TRUE(profile.has_perf_data());
-  EXPECT_FALSE(profile.has_perf_stat());
   EXPECT_EQ(perf_data_proto_.SerializeAsString(),
             profile.perf_data().SerializeAsString());
 

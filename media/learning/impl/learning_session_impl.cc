@@ -32,28 +32,41 @@ class WeakLearningTaskController : public LearningTaskController {
     if (!weak_session_)
       return;
 
-    // Cancel any outstanding observations.
-    for (auto& id : outstanding_ids_) {
-      controller_->Post(FROM_HERE, &LearningTaskController::CancelObservation,
-                        id);
+    // Cancel any outstanding observation, unless they have a default value.  In
+    // that case, complete them.
+    for (auto& id : outstanding_observations_) {
+      const base::Optional<TargetValue>& default_value = id.second;
+      if (default_value) {
+        controller_->Post(FROM_HERE,
+                          &LearningTaskController::CompleteObservation,
+                          id.first, *default_value);
+      } else {
+        controller_->Post(FROM_HERE, &LearningTaskController::CancelObservation,
+                          id.first);
+      }
     }
   }
 
-  void BeginObservation(base::UnguessableToken id,
-                        const FeatureVector& features) override {
+  void BeginObservation(
+      base::UnguessableToken id,
+      const FeatureVector& features,
+      const base::Optional<TargetValue>& default_target) override {
     if (!weak_session_)
       return;
 
-    outstanding_ids_.insert(id);
+    outstanding_observations_[id] = default_target;
+    // We don't send along the default value because LearningTaskControllerImpl
+    // doesn't support it.  Since all client calls eventually come through us
+    // anyway, it seems okay to handle it here.
     controller_->Post(FROM_HERE, &LearningTaskController::BeginObservation, id,
-                      features);
+                      features, base::nullopt);
   }
 
   void CompleteObservation(base::UnguessableToken id,
                            const ObservationCompletion& completion) override {
     if (!weak_session_)
       return;
-    outstanding_ids_.erase(id);
+    outstanding_observations_.erase(id);
     controller_->Post(FROM_HERE, &LearningTaskController::CompleteObservation,
                       id, completion);
   }
@@ -61,7 +74,7 @@ class WeakLearningTaskController : public LearningTaskController {
   void CancelObservation(base::UnguessableToken id) override {
     if (!weak_session_)
       return;
-    outstanding_ids_.erase(id);
+    outstanding_observations_.erase(id);
     controller_->Post(FROM_HERE, &LearningTaskController::CancelObservation,
                       id);
   }
@@ -72,8 +85,10 @@ class WeakLearningTaskController : public LearningTaskController {
   base::SequenceBound<LearningTaskController>* controller_;
   LearningTask task_;
 
-  // Set of ids that have been started but not completed / cancelled yet.
-  std::set<base::UnguessableToken> outstanding_ids_;
+  // Set of ids that have been started but not completed / cancelled yet, and
+  // any default target value.
+  std::map<base::UnguessableToken, base::Optional<TargetValue>>
+      outstanding_observations_;
 };
 
 LearningSessionImpl::LearningSessionImpl(

@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_enums.h"
@@ -20,99 +21,6 @@ using gfx::BufferFormat;
 
 namespace gl {
 namespace {
-
-GLenum TextureFormat(gfx::BufferFormat format) {
-  switch (format) {
-    case gfx::BufferFormat::R_8:
-      return GL_RED;
-    case gfx::BufferFormat::R_16:
-      return GL_R16_EXT;
-    case gfx::BufferFormat::RG_88:
-      return GL_RG;
-    case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::RGBA_F16:
-      return GL_RGBA;
-    case gfx::BufferFormat::BGRA_8888:
-      return GL_BGRA_EXT;
-    case gfx::BufferFormat::BGR_565:
-    case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::BGRX_8888:
-      return GL_RGB;
-    case gfx::BufferFormat::BGRX_1010102:
-    case gfx::BufferFormat::RGBX_1010102:
-      // Technically speaking we should use an opaque format, but neither
-      // OpenGLES nor OpenGL supports the hypothetical GL_RGB10_EXT.
-      return GL_RGB10_A2_EXT;
-    case gfx::BufferFormat::YVU_420:
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-    case gfx::BufferFormat::P010:
-      NOTREACHED() << gfx::BufferFormatToString(format);
-      return 0;
-  }
-
-  NOTREACHED();
-  return 0;
-}
-
-GLenum DataFormat(gfx::BufferFormat format) {
-  switch (format) {
-    case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::RGBX_1010102:
-      return GL_RGBA;
-    case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::BGRX_1010102:
-      return GL_BGRA_EXT;
-    case gfx::BufferFormat::BGR_565:
-    case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::BGRA_8888:
-    case gfx::BufferFormat::RGBA_F16:
-    case gfx::BufferFormat::R_8:
-    case gfx::BufferFormat::R_16:
-    case gfx::BufferFormat::RG_88:
-      return TextureFormat(format);
-    case gfx::BufferFormat::YVU_420:
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-    case gfx::BufferFormat::P010:
-      NOTREACHED() << gfx::BufferFormatToString(format);
-      return 0;
-  }
-
-  NOTREACHED();
-  return 0;
-}
-
-GLenum DataType(gfx::BufferFormat format) {
-  switch (format) {
-    case gfx::BufferFormat::BGR_565:
-      return GL_UNSIGNED_SHORT_5_6_5_REV;
-    case gfx::BufferFormat::RGBA_4444:
-      return GL_UNSIGNED_SHORT_4_4_4_4;
-    case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::BGRA_8888:
-    case gfx::BufferFormat::R_8:
-    case gfx::BufferFormat::RG_88:
-      return GL_UNSIGNED_BYTE;
-    case gfx::BufferFormat::R_16:
-      return GL_UNSIGNED_SHORT;
-    case gfx::BufferFormat::RGBA_F16:
-      return GL_HALF_FLOAT_OES;
-    case gfx::BufferFormat::BGRX_1010102:
-    case gfx::BufferFormat::RGBX_1010102:
-      return GL_UNSIGNED_INT_2_10_10_10_REV;
-    case gfx::BufferFormat::YVU_420:
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-    case gfx::BufferFormat::P010:
-      NOTREACHED() << gfx::BufferFormatToString(format);
-      return 0;
-  }
-
-  NOTREACHED();
-  return 0;
-}
 
 GLint DataRowLength(size_t stride, gfx::BufferFormat format) {
   switch (format) {
@@ -313,7 +221,31 @@ gfx::Size GLImageMemory::GetSize() {
 }
 
 unsigned GLImageMemory::GetInternalFormat() {
-  return TextureFormat(format_);
+  return gl::BufferFormatToGLInternalFormat(format_);
+}
+
+unsigned GLImageMemory::GetDataFormat() {
+  switch (format_) {
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::RGBX_1010102:
+      return GL_RGBA;
+    case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::BGRX_1010102:
+      return GL_BGRA_EXT;
+    default:
+      break;
+  }
+  return GLImage::GetDataFormat();
+}
+
+unsigned GLImageMemory::GetDataType() {
+  switch (format_) {
+    case gfx::BufferFormat::BGR_565:
+      return GL_UNSIGNED_SHORT_5_6_5_REV;
+    default:
+      break;
+  }
+  return gl::BufferFormatToGLDataType(format_);
 }
 
 GLImage::BindOrCopy GLImageMemory::ShouldBindOrCopy() {
@@ -332,8 +264,8 @@ bool GLImageMemory::CopyTexImage(unsigned target) {
   if (target == GL_TEXTURE_EXTERNAL_OES)
     return false;
 
-  GLenum data_format = DataFormat(format_);
-  GLenum data_type = DataType(format_);
+  GLenum data_format = GetDataFormat();
+  GLenum data_type = GetDataType();
   GLint data_row_length = DataRowLength(stride_, format_);
   std::unique_ptr<uint8_t[]> gles2_data;
 
@@ -345,9 +277,8 @@ bool GLImageMemory::CopyTexImage(unsigned target) {
   if (data_row_length != size_.width())
     glPixelStorei(GL_UNPACK_ROW_LENGTH, data_row_length);
 
-  glTexImage2D(target, 0, TextureFormat(format_), size_.width(), size_.height(),
-               0, data_format, data_type,
-               gles2_data ? gles2_data.get() : memory_);
+  glTexImage2D(target, 0, GetInternalFormat(), size_.width(), size_.height(), 0,
+               data_format, data_type, gles2_data ? gles2_data.get() : memory_);
 
   if (data_row_length != size_.width())
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
@@ -370,8 +301,8 @@ bool GLImageMemory::CopyTexSubImage(unsigned target,
     return false;
 
   const uint8_t* data = memory_ + rect.y() * stride_;
-  GLenum data_format = DataFormat(format_);
-  GLenum data_type = DataType(format_);
+  GLenum data_format = GetDataFormat();
+  GLenum data_type = GetDataType();
   GLint data_row_length = DataRowLength(stride_, format_);
   std::unique_ptr<uint8_t[]> gles2_data;
 

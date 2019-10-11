@@ -493,10 +493,11 @@ float ChromeClientImpl::WindowToViewportScalar(LocalFrame* frame,
   return viewport_rect.width;
 }
 
-WebScreenInfo ChromeClientImpl::GetScreenInfo() const {
-  if (!web_view_->Client())
-    return {};
-  return web_view_->Client()->GetScreenInfo();
+WebScreenInfo ChromeClientImpl::GetScreenInfo(LocalFrame& frame) const {
+  WebWidgetClient* client =
+      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget()->Client();
+  DCHECK(client);
+  return client->GetScreenInfo();
 }
 
 void ChromeClientImpl::OverrideVisibleRectForMainFrame(

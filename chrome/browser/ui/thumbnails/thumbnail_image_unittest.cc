@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/thumbnails/thumbnail_image.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -264,4 +265,18 @@ TEST_F(ThumbnailImageTest, RequestThumbnailImage) {
   EXPECT_FALSE(observer2.thumbnail_image().isNull());
   EXPECT_EQ(gfx::Size(kTestBitmapWidth, kTestBitmapHeight),
             observer2.thumbnail_image().size());
+}
+
+TEST_F(ThumbnailImageTest, RequestCompressedThumbnailData) {
+  auto image = base::MakeRefCounted<ThumbnailImage>(this);
+  TestThumbnailImageObserver observer;
+  observer.scoped_observer()->Add(image.get());
+
+  SkBitmap bitmap = CreateBitmap(kTestBitmapHeight, kTestBitmapHeight);
+  image->AssignSkBitmap(bitmap);
+  observer.WaitForImage();
+
+  const int count_before_request = observer.new_compressed_count();
+  image->RequestCompressedThumbnailData();
+  EXPECT_EQ(count_before_request + 1, observer.new_compressed_count());
 }

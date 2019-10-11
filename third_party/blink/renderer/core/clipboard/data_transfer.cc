@@ -67,7 +67,7 @@ class DraggedNodeImageBuilder {
   STACK_ALLOCATED();
 
  public:
-  DraggedNodeImageBuilder(const LocalFrame& local_frame, Node& node)
+  DraggedNodeImageBuilder(LocalFrame& local_frame, Node& node)
       : local_frame_(&local_frame),
         node_(&node)
 #if DCHECK_IS_ON()
@@ -148,7 +148,7 @@ class DraggedNodeImageBuilder {
   }
 
  private:
-  const Member<const LocalFrame> local_frame_;
+  const Member<LocalFrame> local_frame_;
   const Member<Node> node_;
 #if DCHECK_IS_ON()
   const uint64_t dom_tree_version_;
@@ -383,7 +383,7 @@ FloatSize DataTransfer::DeviceSpaceSize(const FloatSize& css_size,
 // Returns a DragImage whose bitmap contains |contents|, positioned and scaled
 // in device space.
 std::unique_ptr<DragImage> DataTransfer::CreateDragImageForFrame(
-    const LocalFrame& frame,
+    LocalFrame& frame,
     float opacity,
     RespectImageOrientationEnum image_orientation,
     const FloatSize& css_size,
@@ -414,8 +414,9 @@ std::unique_ptr<DragImage> DataTransfer::CreateDragImageForFrame(
 
   scoped_refptr<Image> image =
       StaticBitmapImage::Create(surface->makeImageSnapshot());
+  ChromeClient& chrome_client = frame.GetPage()->GetChromeClient();
   float screen_device_scale_factor =
-      frame.GetPage()->GetChromeClient().GetScreenInfo().device_scale_factor;
+      chrome_client.GetScreenInfo(frame).device_scale_factor;
 
   return DragImage::Create(image.get(), image_orientation,
                            screen_device_scale_factor, kInterpolationDefault,
@@ -423,7 +424,7 @@ std::unique_ptr<DragImage> DataTransfer::CreateDragImageForFrame(
 }
 
 // static
-std::unique_ptr<DragImage> DataTransfer::NodeImage(const LocalFrame& frame,
+std::unique_ptr<DragImage> DataTransfer::NodeImage(LocalFrame& frame,
                                                    Node& node) {
   DraggedNodeImageBuilder image_node(frame, node);
   return image_node.CreateImage();

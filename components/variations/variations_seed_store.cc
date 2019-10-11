@@ -419,13 +419,13 @@ void VariationsSeedStore::ImportInitialSeed(
     return;
   }
 
-  base::Time date;
-  if (!base::Time::FromUTCString(initial_seed->date.c_str(), &date)) {
+  if (initial_seed->date == 0) {
     RecordFirstRunSeedImportResult(
         FirstRunSeedImportResult::FAIL_INVALID_RESPONSE_DATE);
-    LOG(WARNING) << "Invalid response date: " << date;
+    LOG(WARNING) << "Missing response date";
     return;
   }
+  base::Time date = base::Time::FromJavaTime(initial_seed->date);
 
   if (!StoreSeedData(initial_seed->data, initial_seed->signature,
                      initial_seed->country, date, false,

@@ -194,10 +194,15 @@ void MediaPerceptionAPIManager::SetAnalyticsComponent(
 
 void MediaPerceptionAPIManager::LoadComponentCallback(
     APISetAnalyticsComponentCallback callback,
-    bool success,
+    const extensions::api::media_perception_private::ComponentInstallationError
+        installation_error,
     const base::FilePath& mount_point) {
-  if (!success) {
-    std::move(callback).Run(GetFailedToInstallComponentState());
+  if (installation_error != extensions::api::media_perception_private::
+                                COMPONENT_INSTALLATION_ERROR_NONE) {
+    extensions::api::media_perception_private::ComponentState component_state =
+        GetFailedToInstallComponentState();
+    component_state.installation_error_code = installation_error;
+    std::move(callback).Run(std::move(component_state));
     return;
   }
 

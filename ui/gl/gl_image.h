@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -54,8 +55,14 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // Get the size of the image.
   virtual gfx::Size GetSize() = 0;
 
-  // Get the internal format of the image.
+  // Get the GL internal format, format, type of the image.
+  // They are aligned with glTexImage{2|3}D's parameters |internalformat|,
+  // |format|, and |type|.
+  // The returned enums are based on ES2 contexts and are mostly ES3
+  // compatible, except for GL_HALF_FLOAT_OES.
   virtual unsigned GetInternalFormat() = 0;
+  virtual unsigned GetDataFormat();
+  virtual unsigned GetDataType() = 0;
 
   enum BindOrCopy { BIND, COPY };
   // Returns whether this image is meant to be bound or copied to textures. The

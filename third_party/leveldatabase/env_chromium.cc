@@ -213,8 +213,9 @@ class ChromiumSequentialFile : public leveldb::SequentialFile {
       : filename_(fname), file_(std::move(f)), uma_logger_(uma_logger) {}
   virtual ~ChromiumSequentialFile() {}
 
+  // Note: This method is relatively hot during leveldb database
+  // compaction. Please avoid making them slower.
   Status Read(size_t n, Slice* result, char* scratch) override {
-    TRACE_EVENT1("leveldb", "ChromiumSequentialFile::Read", "size", n);
     int bytes_read = file_.ReadAtCurrentPosNoBestEffort(scratch, n);
     if (bytes_read == -1) {
       base::File::Error error = base::File::GetLastFileError();
@@ -306,12 +307,12 @@ class ChromiumEvictableRandomAccessFile : public leveldb::RandomAccessFile {
     file_cache_->Erase(cache_key_);
   }
 
+  // Note: This method is relatively hot during leveldb database
+  // compaction. Please avoid making them slower.
   Status Read(uint64_t offset,
               size_t n,
               Slice* result,
               char* scratch) const override {
-    TRACE_EVENT2("leveldb", "ChromiumEvictableRandomAccessFile::Read", "offset",
-                 offset, "size", n);
     leveldb::Cache::Handle* handle = file_cache_->Lookup(cache_key_);
     if (!handle) {
       int flags = base::File::FLAG_READ | base::File::FLAG_OPEN;
@@ -351,12 +352,12 @@ class ChromiumRandomAccessFile : public leveldb::RandomAccessFile {
 
   virtual ~ChromiumRandomAccessFile() {}
 
+  // Note: This method is relatively hot during leveldb database
+  // compaction. Please avoid making them slower.
   Status Read(uint64_t offset,
               size_t n,
               Slice* result,
               char* scratch) const override {
-    TRACE_EVENT2("leveldb", "ChromiumRandomAccessFile::Read", "offset", offset,
-                 "size", n);
     return ReadFromFileToScratch(offset, n, result, scratch, &file_, filepath_,
                                  uma_logger_);
   }

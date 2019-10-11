@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGColumnLayoutAlgorithm_h
-#define NGColumnLayoutAlgorithm_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_COLUMN_LAYOUT_ALGORITHM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_COLUMN_LAYOUT_ALGORITHM_H_
 
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
@@ -72,8 +72,9 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
   LayoutUnit column_inline_size_;
   LayoutUnit column_inline_progression_;
   LayoutUnit intrinsic_block_size_;
+  bool is_constrained_by_outer_fragmentation_context_ = false;
 };
 
 }  // namespace blink
 
-#endif  // NGColumnLayoutAlgorithm_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_COLUMN_LAYOUT_ALGORITHM_H_

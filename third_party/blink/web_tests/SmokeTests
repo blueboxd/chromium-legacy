@@ -811,6 +811,7 @@ http/tests/htmlimports/csp-not-block-import-in-import.html
 http/tests/linkHeader/link-header-no-crash-space-invalid.php
 http/tests/loading/remove-child-triggers-parser.html
 http/tests/local/formdata/send-form-data-with-null-string.html
+http/tests/mojo/shared-buffer.html
 http/tests/plugins/navigator-plugins-in-cross-origin-frame.html
 http/tests/pointer-lock/iframe-sandboxed.html
 http/tests/preload/avoid_delaying_onload_link_preload.html
@@ -839,7 +840,6 @@ images/text-content-crash.html
 media/video-error-does-not-exist.html
 media/W3C/video/preload/preload_reflects_none.html
 mhtml/mhtml_in_iframe.html
-mojo/shared-buffer.html
 navigator_language/navigator_language.html
 netinfo/type-change-no-listener.html
 paint/float/float-text-clip.html

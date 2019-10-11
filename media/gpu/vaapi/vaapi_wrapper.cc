@@ -142,8 +142,10 @@ static const struct {
     {VP8PROFILE_ANY, VAProfileVP8Version0_3},
     {VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
     {VP9PROFILE_PROFILE1, VAProfileVP9Profile1},
-    {VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
-    {VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
+    // TODO(crbug.com/1011454, crbug.com/1011469): Reenable VP9PROFILE_PROFILE2
+    // and _PROFILE3 when P010 is completely supported.
+    //{VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
+    //{VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
 };
 
 constexpr const char* kMesaGalliumDriverPrefix = "Mesa Gallium driver";

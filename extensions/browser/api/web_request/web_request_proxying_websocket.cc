@@ -360,6 +360,11 @@ void WebRequestProxyingWebSocket::OnBeforeSendHeadersComplete(
 }
 
 void WebRequestProxyingWebSocket::ContinueToStartRequest(int error_code) {
+  if (error_code != net::OK) {
+    OnError(error_code);
+    return;
+  }
+
   base::flat_set<std::string> used_header_names;
   std::vector<network::mojom::HttpHeaderPtr> additional_headers;
   for (net::HttpRequestHeaders::Iterator it(request_headers_); it.GetNext();) {

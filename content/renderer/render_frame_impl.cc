@@ -135,7 +135,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
-#include "content/renderer/render_widget_screen_metrics_emulator.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/resource_timing_info_conversions.h"
 #include "content/renderer/savable_resources.h"
@@ -1474,9 +1473,10 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   auto* web_frame_widget =
       blink::WebFrameWidget::CreateForMainFrame(render_widget, web_frame);
 
-  render_widget->InitForMainFrame(std::move(show_callback));
-  render_view->AttachWebFrameWidget(web_frame_widget);
-
+  render_widget->InitForMainFrame(std::move(show_callback), web_frame_widget,
+                                  &params->visual_properties.screen_info);
+  // AttachWebFrameWidget() is not needed here since InitForMainFrame() received
+  // the WebFrameWidget.
   render_widget->SynchronizeVisualPropertiesFromRenderView(
       params->visual_properties);
 
@@ -1628,7 +1628,8 @@ void RenderFrameImpl::CreateFrame(
     // create the RenderWidget if the RenderFrame owned it instead of having the
     // RenderWidget live for eternity on the RenderView (after setting up the
     // WebFrameWidget since that would be part of creating the RenderWidget).
-    render_view->ReviveUndeadMainFrameRenderWidget();
+    render_view->ReviveUndeadMainFrameRenderWidget(
+        widget_params->visual_properties.screen_info);
 
     // The RenderViewImpl and its RenderWidget already exist by the time we
     // get here (we get them from the RenderFrameProxy).
@@ -1681,7 +1682,8 @@ void RenderFrameImpl::CreateFrame(
     // Adds a reference on RenderWidget, making it self-referencing. So it
     // will not be destroyed by scoped_refptr unless Close() has been called
     // and run.
-    render_widget->InitForChildLocalRoot(web_frame_widget);
+    render_widget->InitForChildLocalRoot(
+        web_frame_widget, widget_params->visual_properties.screen_info);
 
     render_frame->render_widget_ = render_widget.get();
     render_frame->owned_render_widget_ = std::move(render_widget);
@@ -4172,14 +4174,8 @@ WebExternalPopupMenu* RenderFrameImpl::CreateExternalPopupMenu(
     return nullptr;
   external_popup_menu_ = std::make_unique<ExternalPopupMenu>(
       this, popup_menu_info, popup_menu_client);
-
-  // Emulation has never worked appropriately for subframes. Don't bother
-  // applying them if this is not a main frame.
-  if (IsMainFrame() &&
-      render_view_->page_properties()->ScreenMetricsEmulator()) {
-    external_popup_menu_->SetOriginScaleForEmulation(
-        render_view_->page_properties()->ScreenMetricsEmulator()->scale());
-  }
+  external_popup_menu_->SetOriginScaleForEmulation(
+      GetLocalRootRenderWidget()->GetEmulatorScale());
   return external_popup_menu_.get();
 #else
   return nullptr;
@@ -4595,7 +4591,7 @@ void RenderFrameImpl::DidAddMessageToConsole(
 
 void RenderFrameImpl::DownloadURL(
     const blink::WebURLRequest& request,
-    CrossOriginRedirects cross_origin_redirect_behavior,
+    network::mojom::RedirectMode cross_origin_redirect_behavior,
     mojo::ScopedMessagePipeHandle blob_url_token) {
   if (ShouldThrottleDownload())
     return;
@@ -4606,8 +4602,7 @@ void RenderFrameImpl::DownloadURL(
   params.initiator_origin = request.RequestorOrigin();
   if (request.GetSuggestedFilename().has_value())
     params.suggested_name = request.GetSuggestedFilename()->Utf16();
-  params.follow_cross_origin_redirects =
-      (cross_origin_redirect_behavior == CrossOriginRedirects::kFollow);
+  params.cross_origin_redirects = cross_origin_redirect_behavior;
   params.blob_url_token = blob_url_token.release();
 
   Send(new FrameHostMsg_DownloadUrl(routing_id_, params));
@@ -5198,14 +5193,9 @@ void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
     // them to DIP coordiates relative to the WindowScreenRect.
     blink::WebRect position_in_window(params.x, params.y, 0, 0);
     GetLocalRootRenderWidget()->ConvertViewportToWindow(&position_in_window);
-    if (render_view_->page_properties()->ScreenMetricsEmulator()) {
-      const float scale =
-          render_view_->page_properties()->ScreenMetricsEmulator()->scale();
-      position_in_window.x *= scale;
-      position_in_window.y *= scale;
-    }
-    params.x = position_in_window.x;
-    params.y = position_in_window.y;
+    const float scale = GetLocalRootRenderWidget()->GetEmulatorScale();
+    params.x = position_in_window.x * scale;
+    params.y = position_in_window.y * scale;
   }
 
   // Serializing a GURL longer than kMaxURLChars will fail, so don't do
@@ -5259,22 +5249,16 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
   WillSendRequestInternal(
       request, WebURLRequestToResourceType(request),
-      DocumentState::FromDocumentLoader(document_loader),
       GetTransitionType(document_loader, IsMainFrame(), false /* loading */));
 }
 
 void RenderFrameImpl::WillSendRequestInternal(
     blink::WebURLRequest& request,
     ResourceType resource_type,
-    DocumentState* document_state,
     ui::PageTransition transition_type) {
   if (render_view_->renderer_preferences_.enable_do_not_track)
     request.SetHttpHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
                                "1");
-
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentState(document_state);
-  NavigationState* navigation_state = internal_data->navigation_state();
 
   ApplyFilePathAlias(&request);
   GURL new_url;
@@ -5337,25 +5321,6 @@ void RenderFrameImpl::WillSendRequestInternal(
     extra_data->set_url_loader_throttles(
         render_thread->url_loader_throttle_provider()->CreateThrottles(
             routing_id_, request, resource_type));
-  }
-
-  if (request.GetPreviewsState() == WebURLRequest::kPreviewsUnspecified) {
-    if (is_main_frame_ && !navigation_state->request_committed()) {
-      request.SetPreviewsState(static_cast<WebURLRequest::PreviewsState>(
-          navigation_state->common_params().previews_state));
-    } else {
-      WebURLRequest::PreviewsState request_previews_state =
-          static_cast<WebURLRequest::PreviewsState>(GetPreviewsState());
-
-      // The decision of whether or not to enable Client Lo-Fi is made earlier
-      // in the request lifetime, in LocalFrame::MaybeAllowImagePlaceholder(),
-      // so don't add the Client Lo-Fi bit to the request here.
-      request_previews_state &= ~(WebURLRequest::kLazyImageLoadDeferred);
-      if (request_previews_state == WebURLRequest::kPreviewsUnspecified)
-        request_previews_state = WebURLRequest::kPreviewsOff;
-
-      request.SetPreviewsState(request_previews_state);
-    }
   }
 
   // This is an instance where we embed a copy of the routing id
@@ -6468,8 +6433,7 @@ void RenderFrameImpl::BeginNavigation(
   if (info->navigation_policy == blink::kWebNavigationPolicyDownload) {
     mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token =
         CloneBlobURLToken(info->blob_url_token.get());
-    DownloadURL(info->url_request,
-                blink::WebLocalFrameClient::CrossOriginRedirects::kFollow,
+    DownloadURL(info->url_request, network::mojom::RedirectMode::kFollow,
                 blob_url_token.PassPipe());
   } else {
     OpenURL(std::move(info));
@@ -6970,7 +6934,6 @@ void RenderFrameImpl::PrepareRenderViewForNavigation(
 void RenderFrameImpl::BeginNavigationInternal(
     std::unique_ptr<blink::WebNavigationInfo> info,
     bool is_history_navigation_in_new_child_frame) {
-  std::unique_ptr<DocumentState> document_state = BuildDocumentState();
   if (!frame_->WillStartNavigation(*info,
                                    is_history_navigation_in_new_child_frame))
     return;
@@ -7011,7 +6974,7 @@ void RenderFrameImpl::BeginNavigationInternal(
   WillSendRequestInternal(
       request,
       frame_->Parent() ? ResourceType::kSubFrame : ResourceType::kMainFrame,
-      document_state.get(), transition_type);
+      transition_type);
 
   if (!info->url_request.GetExtraData())
     info->url_request.SetExtraData(std::make_unique<RequestExtraData>());
@@ -7605,6 +7568,11 @@ gfx::RectF RenderFrameImpl::ElementBoundsInWindow(
 
 void RenderFrameImpl::ConvertViewportToWindow(blink::WebRect* rect) {
   GetLocalRootRenderWidget()->ConvertViewportToWindow(rect);
+}
+
+float RenderFrameImpl::GetDeviceScaleFactor() {
+  // TODO(danakj): Get this from the RenderWidget.
+  return render_view_->page_properties()->GetDeviceScaleFactor();
 }
 
 }  // namespace content

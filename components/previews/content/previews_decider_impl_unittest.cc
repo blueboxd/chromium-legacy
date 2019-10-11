@@ -161,7 +161,7 @@ class TestTopHostProvider : public optimization_guide::TopHostProvider {
   TestTopHostProvider() {}
   ~TestTopHostProvider() override {}
 
-  std::vector<std::string> GetTopHosts(size_t max_sites) override {
+  std::vector<std::string> GetTopHosts() override {
     return std::vector<std::string>();
   }
 };

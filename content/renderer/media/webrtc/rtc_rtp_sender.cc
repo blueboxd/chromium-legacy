@@ -41,7 +41,8 @@ RtpSenderState::RtpSenderState(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
     scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
-    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref,
+    std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+        track_ref,
     std::vector<std::string> stream_ids)
     : main_task_runner_(std::move(main_task_runner)),
       signaling_task_runner_(std::move(signaling_task_runner)),
@@ -135,14 +136,15 @@ RtpSenderState::webrtc_dtls_transport_information() const {
   return webrtc_dtls_transport_information_;
 }
 
-const std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>&
+const std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>&
 RtpSenderState::track_ref() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   return track_ref_;
 }
 
 void RtpSenderState::set_track_ref(
-    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref) {
+    std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+        track_ref) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(!is_initialized_ || !track_ref || track_ref->is_initialized());
   track_ref_ = std::move(track_ref);
@@ -160,7 +162,7 @@ class RTCRtpSender::RTCRtpSenderInternal
  public:
   RTCRtpSenderInternal(
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-      scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_map,
+      scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map,
       RtpSenderState state)
       : native_peer_connection_(std::move(native_peer_connection)),
         track_map_(std::move(track_map)),
@@ -189,7 +191,8 @@ class RTCRtpSender::RTCRtpSenderInternal
   void ReplaceTrack(blink::WebMediaStreamTrack with_track,
                     base::OnceCallback<void(bool)> callback) {
     DCHECK(main_task_runner_->BelongsToCurrentThread());
-    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref;
+    std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+        track_ref;
     webrtc::MediaStreamTrackInterface* webrtc_track = nullptr;
     if (!with_track.IsNull()) {
       track_ref = track_map_->GetOrCreateLocalTrackAdapter(with_track);
@@ -296,7 +299,8 @@ class RTCRtpSender::RTCRtpSenderInternal
   // |webrtc_track| is passed as an argument because |track_ref->webrtc_track()|
   // cannot be accessed on the signaling thread. https://crbug.com/756436
   void ReplaceTrackOnSignalingThread(
-      std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref,
+      std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+          track_ref,
       webrtc::MediaStreamTrackInterface* webrtc_track,
       base::OnceCallback<void(bool)> callback) {
     DCHECK(signaling_task_runner_->BelongsToCurrentThread());
@@ -310,7 +314,8 @@ class RTCRtpSender::RTCRtpSenderInternal
 
   void ReplaceTrackCallback(
       bool result,
-      std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref,
+      std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+          track_ref,
       base::OnceCallback<void(bool)> callback) {
     DCHECK(main_task_runner_->BelongsToCurrentThread());
     if (result)
@@ -352,7 +357,7 @@ class RTCRtpSender::RTCRtpSenderInternal
   }
 
   const scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
-  const scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_map_;
+  const scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map_;
   // Task runners and webrtc sender: Same information as stored in
   // |state_| but const and safe to touch on the signaling thread to
   // avoid race with set_state().
@@ -388,7 +393,7 @@ uintptr_t RTCRtpSender::getId(const webrtc::RtpSenderInterface* webrtc_sender) {
 
 RTCRtpSender::RTCRtpSender(
     scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-    scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_map,
+    scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map,
     RtpSenderState state)
     : internal_(new RTCRtpSenderInternal(std::move(native_peer_connection),
                                          std::move(track_map),

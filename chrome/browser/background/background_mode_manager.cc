@@ -67,6 +67,7 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_family.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/win/app_icon.h"

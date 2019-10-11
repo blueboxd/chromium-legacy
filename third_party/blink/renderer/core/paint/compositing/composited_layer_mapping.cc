@@ -245,7 +245,6 @@ void CompositedLayerMapping::CreatePrimaryGraphicsLayer() {
                           owning_layer_.GetSquashingDisallowedReasons());
 
   graphics_layer_->SetHitTestable(true);
-  UpdateTransform(GetLayoutObject().StyleRef());
 }
 
 void CompositedLayerMapping::DestroyGraphicsLayers() {
@@ -258,22 +257,6 @@ void CompositedLayerMapping::DestroyGraphicsLayers() {
 
   scrolling_layer_ = nullptr;
   scrolling_contents_layer_ = nullptr;
-}
-
-void CompositedLayerMapping::UpdateTransform(const ComputedStyle& style) {
-  // FIXME: This could use m_owningLayer.transform(), but that currently has
-  // transform-origin baked into it, and we don't want that.
-  TransformationMatrix t;
-  if (owning_layer_.HasTransformRelatedProperty()) {
-    style.ApplyTransform(
-        t, LayoutSize(ToLayoutBox(GetLayoutObject()).PixelSnappedSize()),
-        ComputedStyle::kExcludeTransformOrigin,
-        ComputedStyle::kIncludeMotionPath,
-        ComputedStyle::kIncludeIndependentTransformProperties);
-    MakeMatrixRenderable(t, Compositor()->HasAcceleratedCompositing());
-  }
-
-  graphics_layer_->SetTransform(t);
 }
 
 void CompositedLayerMapping::UpdateBackgroundPaintsOntoScrollingContentsLayer(
@@ -811,11 +794,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
   DCHECK_EQ(owning_layer_.Compositor()->Lifecycle().GetState(),
             DocumentLifecycle::kInCompositingUpdate);
 
-  // Set transform property, if it is not animating. We have to do this here
-  // because the transform is affected by the layer dimensions.
-  if (!GetLayoutObject().StyleRef().IsRunningTransformAnimationOnCompositor())
-    UpdateTransform(GetLayoutObject().StyleRef());
-
   IntRect local_compositing_bounds;
   IntRect relative_compositing_bounds;
   PhysicalOffset offset_from_composited_ancestor;
@@ -843,8 +821,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
       layers_needing_paint_invalidation);
 
   UpdateMaskLayerGeometry();
-  UpdateTransformGeometry(snapped_offset_from_composited_ancestor,
-                          relative_compositing_bounds);
   // TODO(yigu): Currently the decoration layer uses the same contentSize
   // as the foreground layer. There are scenarios where the sizes could be
   // different so the decoration layer size should be calculated separately.
@@ -1011,37 +987,6 @@ void CompositedLayerMapping::UpdateMaskLayerGeometry() {
   mask_layer_->SetPosition(FloatPoint());
   mask_layer_->SetOffsetFromLayoutObject(
       graphics_layer_->OffsetFromLayoutObject());
-}
-
-void CompositedLayerMapping::UpdateTransformGeometry(
-    const IntPoint& snapped_offset_from_composited_ancestor,
-    const IntRect& relative_compositing_bounds) {
-  if (owning_layer_.HasTransformRelatedProperty()) {
-    const LayoutRect border_box =
-        ToLayoutBox(GetLayoutObject()).BorderBoxRect();
-
-    // Get layout bounds in the coords of compositingContainer to match
-    // relativeCompositingBounds.
-    IntRect layer_bounds = PixelSnappedIntRect(
-        PhysicalRect(owning_layer_.SubpixelAccumulation(), border_box.Size()));
-    layer_bounds.MoveBy(snapped_offset_from_composited_ancestor);
-
-    // Update properties that depend on layer dimensions
-    FloatPoint3D transform_origin =
-        ComputeTransformOrigin(IntRect(IntPoint(), layer_bounds.Size()));
-
-    // |transformOrigin| is in the local space of this layer.
-    // layerBounds - relativeCompositingBounds converts to the space of the
-    // compositing bounds relative to the composited ancestor. This does not
-    // apply to the z direction, since the page is 2D.
-    FloatPoint3D composited_transform_origin(
-        layer_bounds.X() - relative_compositing_bounds.X() +
-            transform_origin.X(),
-        layer_bounds.Y() - relative_compositing_bounds.Y() +
-            transform_origin.Y(),
-        transform_origin.Z());
-    graphics_layer_->SetTransformOrigin(composited_transform_origin);
-  }
 }
 
 void CompositedLayerMapping::UpdateScrollingLayerGeometry(

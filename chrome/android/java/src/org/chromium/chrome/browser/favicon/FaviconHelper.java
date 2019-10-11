@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.favicon;
 
-import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -75,14 +75,13 @@ public class FaviconHelper {
             return NewTabPage.isNTPUrl(url) ? R.drawable.chromelogo16 : R.drawable.default_favicon;
         }
 
-        private Bitmap createBitmap(Context context, String url, boolean useDarkIcon) {
-            Bitmap origBitmap =
-                    BitmapFactory.decodeResource(context.getResources(), getResourceId(url));
+        private Bitmap createBitmap(Resources resources, String url, boolean useDarkIcon) {
+            Bitmap origBitmap = BitmapFactory.decodeResource(resources, getResourceId(url));
             Bitmap tintedBitmap = Bitmap.createBitmap(
                     origBitmap.getWidth(), origBitmap.getHeight(), Bitmap.Config.ARGB_8888);
             Canvas c = new Canvas(tintedBitmap);
             @ColorInt
-            int tintColor = ApiCompatibilityUtils.getColor(context.getResources(),
+            int tintColor = ApiCompatibilityUtils.getColor(resources,
                     useDarkIcon ? R.color.default_icon_color : R.color.default_icon_color_white);
             Paint p = new Paint();
             p.setColorFilter(new PorterDuffColorFilter(tintColor, PorterDuff.Mode.SRC_IN));
@@ -92,17 +91,18 @@ public class FaviconHelper {
 
         /**
          * Generate a default favicon bitmap for the given URL.
-         * @param context The context used to fetch the default icons.
+         * @param resources The {@link Resources} to fetch the icons.
          * @param url The URL of the page whose icon is being generated.
          * @param useDarkIcon Whether a dark icon should be used.
          * @return The favicon.
          */
-        public Bitmap getDefaultFaviconBitmap(Context context, String url, boolean useDarkIcon) {
+        public Bitmap getDefaultFaviconBitmap(
+                Resources resources, String url, boolean useDarkIcon) {
             boolean isNtp = NewTabPage.isNTPUrl(url);
             Bitmap bitmap = isNtp ? (useDarkIcon ? mChromeDarkBitmap : mChromeLightBitmap)
                                   : (useDarkIcon ? mDefaultDarkBitmap : mDefaultLightBitmap);
             if (bitmap != null) return bitmap;
-            bitmap = createBitmap(context, url, useDarkIcon);
+            bitmap = createBitmap(resources, url, useDarkIcon);
             if (isNtp && useDarkIcon) {
                 mChromeDarkBitmap = bitmap;
             } else if (isNtp) {
@@ -117,15 +117,15 @@ public class FaviconHelper {
 
         /**
          * Generate a default favicon drawable for the given URL.
-         * @param context The context used to fetch the default icons.
+         * @param resources The {@link Resources} used to fetch the default icons.
          * @param url The URL of the page whose icon is being generated.
          * @param useDarkIcon Whether a dark icon should be used.
          * @return The favicon.
          */
         public Drawable getDefaultFaviconDrawable(
-                Context context, String url, boolean useDarkIcon) {
+                Resources resources, String url, boolean useDarkIcon) {
             return new BitmapDrawable(
-                    context.getResources(), getDefaultFaviconBitmap(context, url, useDarkIcon));
+                    resources, getDefaultFaviconBitmap(resources, url, useDarkIcon));
         }
 
         /** Clears any of the cached default drawables. */

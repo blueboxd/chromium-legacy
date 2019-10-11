@@ -47,6 +47,7 @@
 #include "base/mac/mach_logging.h"
 #include "sandbox/mac/system_services.h"
 #include "services/service_manager/sandbox/features.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #endif
 
 #if defined(OS_WIN)
@@ -199,8 +200,7 @@ UtilityServiceFactory::CreateAudioService(
 #if defined(OS_MACOSX)
   // Don't connect to launch services when running sandboxed
   // (https://crbug.com/874785).
-  if (base::FeatureList::IsEnabled(
-          service_manager::features::kAudioServiceSandbox)) {
+  if (service_manager::IsAudioSandboxEnabled()) {
     sandbox::DisableLaunchServices();
   }
 

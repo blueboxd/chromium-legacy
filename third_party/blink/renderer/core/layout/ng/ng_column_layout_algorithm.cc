@@ -105,8 +105,21 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   used_column_count_ =
       ResolveUsedColumnCount(content_box_size_.inline_size, Style());
 
-  if (ConstraintSpace().HasBlockFragmentation())
+  // If we know the block-size of the fragmentainers in an outer fragmentation
+  // context (if any), our columns may be constrained by that, meaning that we
+  // may have to fragment earlier than what we would have otherwise, and, if
+  // that's the case, that we may also not create overflowing columns (in the
+  // inline axis), but rather finish the row and resume in the next row in the
+  // next outer fragmentainer. Note that it is possible to be nested inside a
+  // fragmentation context that doesn't know the block-size of its
+  // fragmentainers. This would be in the first layout pass of an outer multicol
+  // container, before any tentative column block-size has been calculated.
+  is_constrained_by_outer_fragmentation_context_ =
+      ConstraintSpace().HasKnownFragmentainerBlockSize();
+
+  if (is_constrained_by_outer_fragmentation_context_)
     container_builder_.SetHasBlockFragmentation();
+
   container_builder_.SetIsBlockFragmentationContextRoot();
 
   // Omit leading border+padding+scrollbar for all fragments but the first.
@@ -134,12 +147,13 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     block_size = border_box_size.block_size - previously_consumed_block_size;
   }
 
-  if (ConstraintSpace().HasBlockFragmentation()) {
+  if (is_constrained_by_outer_fragmentation_context_) {
     // In addition to establishing one, we're nested inside another
     // fragmentation context.
-    FinishFragmentation(&container_builder_, block_size, intrinsic_block_size_,
+    FinishFragmentation(ConstraintSpace(), block_size, intrinsic_block_size_,
                         previously_consumed_block_size,
-                        ConstraintSpace().FragmentainerSpaceAtBfcStart());
+                        FragmentainerSpaceAtBfcStart(ConstraintSpace()),
+                        &container_builder_);
   } else {
     container_builder_.SetBlockSize(block_size);
     container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
@@ -306,7 +320,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
   // If block-size is non-auto, subtract the space for content we've consumed in
   // previous fragments. This is necessary when we're nested inside another
   // fragmentation context.
-  if (ConstraintSpace().HasBlockFragmentation() &&
+  if (is_constrained_by_outer_fragmentation_context_ &&
       column_size.block_size != kIndefiniteSize) {
     if (const auto* token = BreakToken())
       column_size.block_size -= token->ConsumedBlockSize();
@@ -323,7 +337,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
   // contexts, not just by a block-size specified on this multicol container.
   bool balance_columns = Style().GetColumnFill() == EColumnFill::kBalance ||
                          (column_size.block_size == kIndefiniteSize &&
-                          !ConstraintSpace().HasBlockFragmentation());
+                          !is_constrained_by_outer_fragmentation_context_);
 
   if (balance_columns) {
     column_size.block_size =
@@ -331,9 +345,9 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
   }
 
   bool needs_more_fragments_in_outer = false;
-  if (ConstraintSpace().HasBlockFragmentation()) {
+  if (is_constrained_by_outer_fragmentation_context_) {
     LayoutUnit available_outer_space =
-        ConstraintSpace().FragmentainerSpaceAtBfcStart() - column_block_offset;
+        FragmentainerSpaceAtBfcStart(ConstraintSpace()) - column_block_offset;
 
     // TODO(mstensho): This should never be negative, or even zero. Turn into a
     // DCHECK when the underlying problem is fixed.
@@ -726,7 +740,6 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
 
   space_builder.SetFragmentationType(kFragmentColumn);
   space_builder.SetFragmentainerBlockSize(column_block_size);
-  space_builder.SetFragmentainerSpaceAtBfcStart(column_block_size);
   space_builder.SetIsAnonymous(true);
   space_builder.SetIsInColumnBfc();
   if (balance_columns)
@@ -747,11 +760,6 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForBalancing(
   NGConstraintSpaceBuilder space_builder(
       ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
   space_builder.SetFragmentationType(kFragmentColumn);
-  // TODO(mstensho): It would be better to use kIndefiniteSize here, rather than
-  // LayoutUnit::Max(), but the fragmentation machinery currently gets confused
-  // by such a value.
-  space_builder.SetFragmentainerBlockSize(LayoutUnit::Max());
-  space_builder.SetFragmentainerSpaceAtBfcStart(LayoutUnit::Max());
   space_builder.SetAvailableSize({column_size.inline_size, kIndefiniteSize});
   space_builder.SetPercentageResolutionSize(column_size);
   space_builder.SetIsAnonymous(true);

@@ -27,6 +27,16 @@ namespace storage {
 
 using OperationID = FileSystemOperationRunner::OperationID;
 
+FileSystemOperationRunner::FileSystemOperationRunner(
+    util::PassKey<FileSystemContext>,
+    const scoped_refptr<FileSystemContext>& file_system_context)
+    : FileSystemOperationRunner(file_system_context.get()) {}
+
+FileSystemOperationRunner::FileSystemOperationRunner(
+    util::PassKey<FileSystemContext>,
+    FileSystemContext* file_system_context)
+    : FileSystemOperationRunner(file_system_context) {}
+
 FileSystemOperationRunner::~FileSystemOperationRunner() = default;
 
 void FileSystemOperationRunner::Shutdown() {
@@ -272,7 +282,7 @@ OperationID FileSystemOperationRunner::Write(
   return id;
 }
 
-OperationID FileSystemOperationRunner::Write(
+OperationID FileSystemOperationRunner::WriteStream(
     const FileSystemURL& url,
     mojo::ScopedDataPipeConsumerHandle data_pipe,
     int64_t offset,

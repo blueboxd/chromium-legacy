@@ -20,8 +20,10 @@ class MockLearningTaskController : public LearningTaskController {
   MockLearningTaskController(const LearningTask& task) : task_(task) {}
   ~MockLearningTaskController() override = default;
 
-  MOCK_METHOD2(BeginObservation,
-               void(base::UnguessableToken id, const FeatureVector& features));
+  MOCK_METHOD3(BeginObservation,
+               void(base::UnguessableToken id,
+                    const FeatureVector& features,
+                    const base::Optional<TargetValue>& default_value));
   MOCK_METHOD2(CompleteObservation,
                void(base::UnguessableToken id,
                     const ObservationCompletion& completion));
@@ -68,7 +70,7 @@ class ExperimentHelperTest : public testing::Test {
 };
 
 TEST_F(ExperimentHelperTest, BeginComplete) {
-  EXPECT_CALL(*controller_raw_, BeginObservation(_, _));
+  EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _));
   helper_->BeginObservation(dict_);
   TargetValue target(123);
   EXPECT_CALL(*controller_raw_,
@@ -85,21 +87,21 @@ TEST_F(ExperimentHelperTest, BeginComplete) {
 }
 
 TEST_F(ExperimentHelperTest, BeginCancel) {
-  EXPECT_CALL(*controller_raw_, BeginObservation(_, _));
+  EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _));
   helper_->BeginObservation(dict_);
   EXPECT_CALL(*controller_raw_, CancelObservation(_));
   helper_->CancelObservationIfNeeded();
 }
 
 TEST_F(ExperimentHelperTest, CompleteWithoutBeginDoesNothing) {
-  EXPECT_CALL(*controller_raw_, BeginObservation(_, _)).Times(0);
+  EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _)).Times(0);
   EXPECT_CALL(*controller_raw_, CompleteObservation(_, _)).Times(0);
   EXPECT_CALL(*controller_raw_, CancelObservation(_)).Times(0);
   helper_->CompleteObservationIfNeeded(TargetValue(123));
 }
 
 TEST_F(ExperimentHelperTest, CancelWithoutBeginDoesNothing) {
-  EXPECT_CALL(*controller_raw_, BeginObservation(_, _)).Times(0);
+  EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _)).Times(0);
   EXPECT_CALL(*controller_raw_, CompleteObservation(_, _)).Times(0);
   EXPECT_CALL(*controller_raw_, CancelObservation(_)).Times(0);
   helper_->CancelObservationIfNeeded();

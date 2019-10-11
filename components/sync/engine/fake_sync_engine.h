@@ -46,8 +46,8 @@ class FakeSyncEngine : public SyncEngine {
 
   void SetDecryptionPassphrase(const std::string& passphrase) override;
 
-  void AddTrustedVaultDecryptionKeys(
-      const std::vector<std::string>& keys) override;
+  void AddTrustedVaultDecryptionKeys(const std::vector<std::string>& keys,
+                                     base::OnceClosure done_cb) override;
 
   void StopSyncingForShutdown() override;
 

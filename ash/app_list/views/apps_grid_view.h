@@ -521,8 +521,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   gfx::Rect GetExpectedTileBounds(const GridIndex& index) const;
 
   // Gets the item view currently displayed at |slot| on the current page. If
-  // there is no item displayed at |slot|, returns NULL. Note that this finds an
-  // item *displayed* at a slot, which may differ from the item's location in
+  // there is no item displayed at |slot|, returns nullptr. Note that this finds
+  // an item *displayed* at a slot, which may differ from the item's location in
   // the model (as it may have been temporarily moved during a drag operation).
   AppListItemView* GetViewDisplayedAtSlotOnCurrentPage(int slot) const;
 
@@ -688,7 +688,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   AppListModel* model_ = nullptr;         // Owned by AppListView.
   AppListItemList* item_list_ = nullptr;  // Not owned.
 
-  // This can be NULL. Only grid views inside folders have a folder delegate.
+  // This can be nullptr. Only grid views inside folders have a folder delegate.
   AppsGridViewFolderDelegate* folder_delegate_ = nullptr;
 
   ash::PaginationModel pagination_model_{this};

@@ -83,7 +83,7 @@ void DataReductionProxyMetricsObserverTestBase::RunTest(
   opt_out_expected_ = opt_out_expected;
   black_listed_ = black_listed;
   NavigateAndCommit(GURL(kDefaultTestUrl));
-  SimulateTimingUpdate(timing_);
+  tester()->SimulateTimingUpdate(timing_);
 }
 
 void DataReductionProxyMetricsObserverTestBase::
@@ -92,7 +92,7 @@ void DataReductionProxyMetricsObserverTestBase::
                                      bool opt_out_expected) {
   RunTest(data_reduction_proxy_used, is_using_lite_page, opt_out_expected,
           false);
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 }
 
 void DataReductionProxyMetricsObserverTestBase::RunLitePageRedirectTest(
@@ -101,7 +101,7 @@ void DataReductionProxyMetricsObserverTestBase::RunLitePageRedirectTest(
   preview_info_ = preview_info;
   ect_ = ect;
   NavigateAndCommit(GURL(kDefaultTestUrl));
-  SimulateTimingUpdate(timing_);
+  tester()->SimulateTimingUpdate(timing_);
 }
 
 // Verify that, if expected and actual are set, their values are equal.

@@ -84,6 +84,7 @@ void MixerConnection::ConnectCallback(int result) {
 
   connection_timeout_.Stop();
   if (result == net::OK) {
+    LOG_IF(INFO, !log_timeout_) << "Now connected to mixer service";
     log_connection_failure_ = true;
     log_timeout_ = true;
     OnConnected(std::move(connecting_socket_));

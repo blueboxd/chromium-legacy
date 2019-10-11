@@ -21,6 +21,7 @@
 #include "extensions/browser/content_verify_job.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace base {
@@ -126,9 +127,10 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
                          ContentHashCallback orig_callback,
                          scoped_refptr<const ContentHash> content_hash);
 
-  // Binds an URLLoaderFactoryRequest on the UI thread.
-  void BindURLLoaderFactoryRequestOnUIThread(
-      network::mojom::URLLoaderFactoryRequest url_loader_factory_request);
+  // Binds an URLLoaderFactoryReceiver on the UI thread.
+  void BindURLLoaderFactoryReceiverOnUIThread(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+          url_loader_factory_receiver);
 
   // Performs IO thread operations after extension load.
   void OnExtensionLoadedOnIO(

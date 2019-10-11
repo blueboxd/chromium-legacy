@@ -45,8 +45,8 @@ class MockSyncEngine : public SyncEngine {
   MOCK_METHOD0(StartSyncingWithServer, void());
   MOCK_METHOD1(SetEncryptionPassphrase, void(const std::string&));
   MOCK_METHOD1(SetDecryptionPassphrase, void(const std::string&));
-  MOCK_METHOD1(AddTrustedVaultDecryptionKeys,
-               void(const std::vector<std::string>&));
+  MOCK_METHOD2(AddTrustedVaultDecryptionKeys,
+               void(const std::vector<std::string>&, base::OnceClosure));
   MOCK_METHOD0(StopSyncingForShutdown, void());
   MOCK_METHOD1(Shutdown, void(ShutdownReason));
   MOCK_METHOD0(EnableEncryptEverything, void());

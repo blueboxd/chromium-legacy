@@ -157,8 +157,7 @@ void WebFrameTestProxy::DidAddMessageToConsole(
 
 void WebFrameTestProxy::DownloadURL(
     const blink::WebURLRequest& request,
-    blink::WebLocalFrameClient::CrossOriginRedirects
-        cross_origin_redirect_behavior,
+    network::mojom::RedirectMode cross_origin_redirect_behavior,
     mojo::ScopedMessagePipeHandle blob_url_token) {
   test_client_->DownloadURL(request, cross_origin_redirect_behavior,
                             mojo::ScopedMessagePipeHandle());

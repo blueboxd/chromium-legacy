@@ -234,6 +234,9 @@ class TabStrip : public views::AccessiblePaneView,
   // ongoing this does a layout.
   void StopAnimating(bool layout);
 
+  // Returns the index of the focused tab, if any.
+  base::Optional<int> GetFocusedTabIndex() const;
+
   // TabController:
   const ui::ListSelectionModel& GetSelectionModel() const override;
   bool SupportsMultipleSelection() override;
@@ -588,6 +591,7 @@ class TabStrip : public views::AccessiblePaneView,
   // views::ViewObserver:
   void OnViewIsDeleting(views::View* observed_view) override;
   void OnViewFocused(views::View* observed_view) override;
+  void OnViewBlurred(views::View* observed_view) override;
 
   // views::WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;

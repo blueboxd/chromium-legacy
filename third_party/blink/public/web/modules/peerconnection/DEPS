@@ -9,3 +9,10 @@ include_rules = [
     "+base/synchronization/waitable_event.h",
     "+base/threading/thread.h",
 ]
+
+specific_include_rules = {
+    ".*obtainer\.h|mock.*\.h": [
+        "+base/run_loop.h",
+        "+testing/gmock/include/gmock/gmock.h",
+    ],
+}

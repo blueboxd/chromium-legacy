@@ -327,6 +327,7 @@
       'win-password-manager-captured-sites-rel': 'release_bot',
       'win-pixel-builder-rel': 'release_bot',
       'win32-arm64-rel': 'win32_arm64_release_bot',
+      'win10-code-coverage': 'clang_code_coverage_nofuzzer',
     },
 
     'chromium.goma': {
@@ -649,6 +650,7 @@
     },
 
     'tryserver.chromium.android': {
+      'android-opus-kitkat-arm-rel': 'android_release_trybot',
       # TODO(crbug/597596): Switch this back to debug_trybot when cronet's
       # shared library loading is fixed.
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
@@ -899,6 +901,7 @@
       'gpu-fyi-try-win10-nvidia-exp-64': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-win10-nvidia-rel-32': 'gpu_tests_release_trybot_x86_resource_whitelisting',
       'gpu-fyi-try-win10-nvidia-rel-64': 'gpu_fyi_tests_release_trybot',
+      'gpu-fyi-try-win10-nvidia-skgl-64': 'gpu_fyi_tests_release_trybot',
       'win10_chromium_x64_dbg_ng': 'gpu_tests_debug_trybot',
       'win10_chromium_x64_rel_ng': 'gpu_tests_release_trybot_resource_whitelisting',
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',
@@ -1319,6 +1322,10 @@
 
     'clang_code_coverage_ios': [
       'use_clang_coverage', 'debug_static_bot', 'x64', 'ios'
+    ],
+
+    'clang_code_coverage_nofuzzer': [
+      'release_bot', 'clang', 'use_clang_coverage', 'no_symbols',
     ],
 
     'clang_tot_asan_lsan_static_release': [
@@ -2138,11 +2145,15 @@
 
     # Settings used by the codesearch builders to generate cross-references.
     'codesearch': {
-      'gn_args': 'clang_use_chrome_plugins=false enable_kythe_annotations=true',
+      'gn_args': ('clang_use_chrome_plugins=false '
+                  'enable_kythe_annotations=true '
+                  'is_chrome_branded=true'),
       'mixins': ['goma', 'clang', 'shared', 'debug', 'minimal_symbols'],
     },
     'codesearch_release': {
-      'gn_args': 'clang_use_chrome_plugins=false enable_kythe_annotations=true',
+      'gn_args': ('clang_use_chrome_plugins=false '
+                  'enable_kythe_annotations=true '
+                  'is_chrome_branded=true'),
       'mixins': ['release', 'static', 'goma'],
     },
 

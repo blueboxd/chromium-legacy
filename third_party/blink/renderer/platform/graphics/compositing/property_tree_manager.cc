@@ -114,6 +114,7 @@ static void SetTransformTreePageScaleFactor(
 
 bool PropertyTreeManager::DirectlyUpdateCompositedOpacityValue(
     cc::PropertyTrees* property_trees,
+    cc::LayerTreeHost& host,
     const EffectPaintPropertyNode& effect) {
   auto* cc_effect = property_trees->effect_tree.Node(
       effect.CcNodeId(property_trees->sequence_number));
@@ -128,11 +129,13 @@ bool PropertyTreeManager::DirectlyUpdateCompositedOpacityValue(
   cc_effect->opacity = effect.Opacity();
   cc_effect->effect_changed = true;
   property_trees->effect_tree.set_needs_update(true);
+  host.SetNeedsCommit();
   return true;
 }
 
 bool PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
     cc::PropertyTrees* property_trees,
+    cc::LayerTreeHost& host,
     const TransformPaintPropertyNode& transform) {
   auto* scroll_node = transform.ScrollNode();
   // Only handle scroll adjustments.
@@ -158,11 +161,13 @@ bool PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
   cc_transform->transform_changed = true;
   property_trees->transform_tree.set_needs_update(true);
   property_trees->scroll_tree.set_needs_update(true);
+  host.SetNeedsCommit();
   return true;
 }
 
 bool PropertyTreeManager::DirectlyUpdateTransform(
     cc::PropertyTrees* property_trees,
+    cc::LayerTreeHost& host,
     const TransformPaintPropertyNode& transform) {
   // If we have a ScrollNode, we should be using
   // DirectlyUpdateScrollOffsetTransform().
@@ -182,11 +187,13 @@ bool PropertyTreeManager::DirectlyUpdateTransform(
 
   cc_transform->transform_changed = true;
   property_trees->transform_tree.set_needs_update(true);
+  host.SetNeedsCommit();
   return true;
 }
 
 bool PropertyTreeManager::DirectlyUpdatePageScaleTransform(
     cc::PropertyTrees* property_trees,
+    cc::LayerTreeHost& host,
     const TransformPaintPropertyNode& transform) {
   DCHECK(!transform.ScrollNode());
 
@@ -200,6 +207,7 @@ bool PropertyTreeManager::DirectlyUpdatePageScaleTransform(
                                   cc_transform);
   cc_transform->transform_changed = true;
   property_trees->transform_tree.set_needs_update(true);
+  host.SetNeedsCommit();
   return true;
 }
 

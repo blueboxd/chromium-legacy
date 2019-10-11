@@ -20,10 +20,11 @@ MojoLearningTaskController::~MojoLearningTaskController() = default;
 
 void MojoLearningTaskController::BeginObservation(
     base::UnguessableToken id,
-    const FeatureVector& features) {
+    const FeatureVector& features,
+    const base::Optional<TargetValue>& default_target) {
   // We don't need to keep track of in-flight observations, since the service
   // side handles it for us.
-  controller_ptr_->BeginObservation(id, features);
+  controller_ptr_->BeginObservation(id, features, default_target);
 }
 
 void MojoLearningTaskController::CompleteObservation(

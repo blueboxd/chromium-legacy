@@ -269,7 +269,11 @@ void VulkanInstance::CollectInfo() {
     DLOG_IF(ERROR, result != VK_SUCCESS)
         << "vkEnumerateDeviceLayerProperties failed: " << result;
 
-    if (vkGetPhysicalDeviceFeatures2) {
+    // The API version of the VkInstance might be different than the supported
+    // API version of the VkPhysicalDevice, so we need to check the GPU's
+    // API version instead of just testing to see if
+    // vkGetPhysicalDeviceFeatures2 is non-null.
+    if (info.properties.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
       VkPhysicalDeviceSamplerYcbcrConversionFeatures ycbcr_converson_features =
           {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES};
       VkPhysicalDeviceProtectedMemoryFeatures protected_memory_feature = {

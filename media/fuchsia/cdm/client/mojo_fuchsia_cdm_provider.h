@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "media/fuchsia/cdm/fuchsia_cdm_provider.h"
 #include "media/fuchsia/mojom/fuchsia_cdm_provider.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace service_manager {
 class InterfaceProvider;
@@ -30,7 +31,7 @@ class MojoFuchsiaCdmProvider : public FuchsiaCdmProvider {
 
  private:
   service_manager::InterfaceProvider* const interface_provider_;
-  media::mojom::FuchsiaCdmProviderPtr cdm_provider_;
+  mojo::Remote<media::mojom::FuchsiaCdmProvider> cdm_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoFuchsiaCdmProvider);
 };

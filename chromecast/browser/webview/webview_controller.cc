@@ -15,6 +15,7 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/web_preferences.h"
 #include "ui/aura/window.h"
@@ -55,6 +56,7 @@ WebviewController::WebviewController(content::BrowserContext* browser_context,
   cast_contents_init.delegate = this;
   cast_web_contents_ = std::make_unique<CastWebContentsImpl>(
       contents_.get(), cast_contents_init);
+  cast_web_contents_->AddObserver(this);
 
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
@@ -65,7 +67,9 @@ WebviewController::WebviewController(content::BrowserContext* browser_context,
   client->EnqueueSend(std::move(response));
 }
 
-WebviewController::~WebviewController() {}
+WebviewController::~WebviewController() {
+  cast_web_contents_->RemoveObserver(this);
+}
 
 std::unique_ptr<content::NavigationThrottle>
 WebviewController::MaybeGetNavigationThrottle(
@@ -222,7 +226,8 @@ void WebviewController::ProcessInputEvent(const webview::InputEvent& ev) {
   if (!contents_->GetNativeView()->HasFocus())
     contents_->GetNativeView()->Focus();
 
-  ui::EventHandler* handler = contents_->GetNativeView()->delegate();
+  ui::EventHandler* handler =
+      contents_->GetRenderWidgetHostView()->GetNativeView()->delegate();
   ui::EventType type = static_cast<ui::EventType>(ev.event_type());
   switch (type) {
     case ui::ET_TOUCH_RELEASED:
@@ -243,7 +248,33 @@ void WebviewController::ProcessInputEvent(const webview::InputEvent& ev) {
                 touch.twist(), touch.tilt_x(), touch.tilt_y(),
                 touch.tangential_pressure()),
             ev.flags());
+
+        ui::TouchEvent root_relative_event(evt);
+        root_relative_event.set_location_f(evt.root_location_f());
+
+        // GestureRecognizerImpl makes several APIs private so cast it to the
+        // interface.
+        ui::GestureRecognizer* recognizer = &gesture_recognizer_;
+
+        // Run touches through the gesture recognition pipeline, web content
+        // typically wants to process gesture events, not touch events.
+        if (!recognizer->ProcessTouchEventPreDispatch(
+                &root_relative_event, contents_->GetNativeView())) {
+          return;
+        }
+
         handler->OnTouchEvent(&evt);
+
+        // Normally this would be done when the renderer acknowledges the touch
+        // event and using flags from the renderer, inside
+        // RenderWidgetHostViewAura, but we don't have those so... fake it.
+        auto list =
+            recognizer->AckTouchEvent(evt.unique_event_id(), ui::ER_UNHANDLED,
+                                      false, contents_->GetNativeView());
+        for (auto& e : list) {
+          // Forward all gestures.
+          handler->OnGestureEvent(e.get());
+        }
       } else {
         client_->OnError("touch() not supplied for touch event");
       }

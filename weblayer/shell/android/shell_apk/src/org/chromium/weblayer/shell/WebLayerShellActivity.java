@@ -7,12 +7,15 @@ package org.chromium.weblayer.shell;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
@@ -23,16 +26,21 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.weblayer.BrowserController;
+import org.chromium.weblayer.BrowserFragment;
 import org.chromium.weblayer.BrowserFragmentController;
 import org.chromium.weblayer.BrowserObserver;
 import org.chromium.weblayer.Profile;
+import org.chromium.weblayer.UnsupportedVersionException;
 import org.chromium.weblayer.WebLayer;
+
+import java.util.List;
 
 /**
  * Activity for managing the Demo Shell.
  */
 public class WebLayerShellActivity extends FragmentActivity {
     private static final String TAG = "WebLayerShell";
+    private static final String KEY_MAIN_VIEW_ID = "mainViewId";
 
     private Profile mProfile;
     private BrowserFragmentController mBrowserFragmentController;
@@ -40,6 +48,9 @@ public class WebLayerShellActivity extends FragmentActivity {
     private EditText mUrlView;
     private ProgressBar mLoadProgressBar;
     private View mMainView;
+    private int mMainViewId;
+    private ViewGroup mTopContentsContainer;
+    private BrowserFragment mFragment;
 
     public BrowserController getBrowserController() {
         return mBrowserController;
@@ -52,17 +63,13 @@ public class WebLayerShellActivity extends FragmentActivity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        WebLayer webLayer = null;
-        try {
-            webLayer = WebLayer.create(getApplication()).get();
-        } catch (Exception e) {
-            throw new RuntimeException("failed loading WebLayer", e);
-        }
-
         LinearLayout mainView = new LinearLayout(this);
-        int viewId = View.generateViewId();
-        mainView.setId(viewId);
+        if (savedInstanceState == null) {
+            mMainViewId = View.generateViewId();
+        } else {
+            mMainViewId = savedInstanceState.getInt(KEY_MAIN_VIEW_ID);
+        }
+        mainView.setId(mMainViewId);
         mMainView = mainView;
         setContentView(mainView);
 
@@ -93,8 +100,8 @@ public class WebLayerShellActivity extends FragmentActivity {
         mLoadProgressBar.setVisibility(View.INVISIBLE);
 
         // The progress bar sits above the URL bar in Z order and at its bottom in Y.
-        RelativeLayout topContentsContainer = new RelativeLayout(this);
-        topContentsContainer.addView(mUrlView,
+        mTopContentsContainer = new RelativeLayout(this);
+        mTopContentsContainer.addView(mUrlView,
                 new RelativeLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
@@ -102,17 +109,28 @@ public class WebLayerShellActivity extends FragmentActivity {
                 LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         progressLayoutParams.addRule(RelativeLayout.ALIGN_BOTTOM, mUrlView.getId());
         progressLayoutParams.setMargins(0, 0, 0, -10);
-        topContentsContainer.addView(mLoadProgressBar, progressLayoutParams);
+        mTopContentsContainer.addView(mLoadProgressBar, progressLayoutParams);
 
-        mProfile = webLayer.createProfile(null);
+        try {
+            // This ensures asynchronous initialization of WebLayer on first start of activity.
+            // If activity is re-created during process restart, FragmentManager attaches
+            // BrowserFragment immediately, resulting in synchronous init. By the time this line
+            // executes, the synchronous init has already happened.
+            WebLayer.create(getApplication()).addCallback(webLayer -> onWebLayerReady(
+                    savedInstanceState));
+        } catch (UnsupportedVersionException e) {
+            throw new RuntimeException("Failed to initialize WebLayer", e);
+        }
+    }
 
-        mBrowserFragmentController = mProfile.createBrowserFragmentController(this);
+    private void onWebLayerReady(Bundle savedInstanceState) {
+        if (isFinishing() || isDestroyed()) return;
 
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(viewId, mBrowserFragmentController.getFragment());
-        transaction.commit();
+        mFragment = getOrCreateBrowserFragment(savedInstanceState);
+        mBrowserFragmentController = mFragment.getController();
+        mProfile = mBrowserFragmentController.getProfile();
 
-        mBrowserFragmentController.setTopView(topContentsContainer);
+        mBrowserFragmentController.setTopView(mTopContentsContainer);
 
         mBrowserController = mBrowserFragmentController.getBrowserController();
         String startupUrl = getUrlFromIntent(getIntent());
@@ -139,11 +157,28 @@ public class WebLayerShellActivity extends FragmentActivity {
         });
     }
 
-    @Override
-    protected void onDestroy() {
-        if (mProfile != null) mProfile.destroy();
-        if (mBrowserFragmentController != null) mBrowserFragmentController.destroy();
-        super.onDestroy();
+    private BrowserFragment getOrCreateBrowserFragment(Bundle savedInstanceState) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        if (savedInstanceState != null) {
+            // FragmentManager could have re-created the fragment.
+            List<Fragment> fragments = fragmentManager.getFragments();
+            if (fragments.size() > 1) {
+                throw new IllegalStateException("More than one fragment added, shouldn't happen");
+            }
+            if (fragments.size() == 1) {
+                return (BrowserFragment) fragments.get(0);
+            }
+        }
+
+        BrowserFragment fragment = WebLayer.createBrowserFragment(null);
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.add(mMainViewId, fragment);
+
+        // Note the commitNow() instead of commit(). We want the fragment to get attached to
+        // activity synchronously, so we can use all the functionality immediately. Otherwise we'd
+        // have to wait until the commit is executed.
+        transaction.commitNow();
+        return fragment;
     }
 
     @Override
@@ -169,5 +204,13 @@ public class WebLayerShellActivity extends FragmentActivity {
         if (url == null) return null;
         if (url.startsWith("www.") || url.indexOf(":") == -1) url = "http://" + url;
         return url;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // When restoring Fragments, FragmentManager tries to put them in the containers with same
+        // ids as before.
+        outState.putInt(KEY_MAIN_VIEW_ID, mMainViewId);
     }
 }

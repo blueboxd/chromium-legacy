@@ -40,7 +40,7 @@ public class AwVariationsSeedBridge {
     }
 
     @CalledByNative
-    private static String getDate() {
+    private static long getDate() {
         return sSeed.date;
     }
 

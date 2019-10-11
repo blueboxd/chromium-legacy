@@ -27,8 +27,7 @@ std::unique_ptr<variations::SeedResponse> GetAndClearJavaSeed() {
       Java_AwVariationsSeedBridge_getSignature(env);
   base::android::ScopedJavaLocalRef<jstring> j_country =
       Java_AwVariationsSeedBridge_getCountry(env);
-  base::android::ScopedJavaLocalRef<jstring> j_date =
-      Java_AwVariationsSeedBridge_getDate(env);
+  jlong j_date = Java_AwVariationsSeedBridge_getDate(env);
   jboolean j_is_gzip_compressed =
       Java_AwVariationsSeedBridge_getIsGzipCompressed(env);
   base::android::ScopedJavaLocalRef<jbyteArray> j_data =
@@ -39,7 +38,7 @@ std::unique_ptr<variations::SeedResponse> GetAndClearJavaSeed() {
   base::android::JavaByteArrayToString(env, j_data, &java_seed->data);
   java_seed->signature = base::android::ConvertJavaStringToUTF8(j_signature);
   java_seed->country = base::android::ConvertJavaStringToUTF8(j_country);
-  java_seed->date = base::android::ConvertJavaStringToUTF8(j_date);
+  java_seed->date = static_cast<long>(j_date);
   java_seed->is_gzip_compressed = static_cast<bool>(j_is_gzip_compressed);
   return java_seed;
 }

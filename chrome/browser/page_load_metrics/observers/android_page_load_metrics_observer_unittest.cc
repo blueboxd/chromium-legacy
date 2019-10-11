@@ -200,7 +200,8 @@ TEST_F(AndroidPageLoadMetricsObserverTest, LoadTimingInfo) {
       nullptr
       /* data_reduction_proxy_data */,
       content::ResourceType::kMainFrame, 0, std::move(load_timing_info));
-  SimulateLoadedResource(info, navigation_simulator->GetGlobalRequestID());
+  tester()->SimulateLoadedResource(info,
+                                   navigation_simulator->GetGlobalRequestID());
   EXPECT_EQ(kNow.since_origin().InMilliseconds(),
             observer()->reported_dns_start_ms());
 }
@@ -218,7 +219,7 @@ TEST_F(AndroidPageLoadMetricsObserverTest, LoadEvents) {
       base::TimeDelta::FromMilliseconds(20);
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("https://www.example.com"));
-  SimulateTimingUpdate(timing);
+  tester()->SimulateTimingUpdate(timing);
   EXPECT_EQ(30, observer()->reported_load_event_start_ms());
   EXPECT_EQ(GetNavigationStartMicroseconds(),
             observer()->reported_navigation_start_tick_load());

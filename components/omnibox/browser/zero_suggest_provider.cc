@@ -157,29 +157,29 @@ constexpr char kArbitraryInsecureUrlString[] = "http://www.google.com/";
 constexpr char kOmniboxZeroSuggestEligibleHistogramName[] =
     "Omnibox.ZeroSuggest.Eligible.OnFocusV2";
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
-// If the user is not signed-in or the user does not have Google set up as their
-// default search engine, the remote suggestions service is replaced with the
-// most visited service.
-bool RemoteSuggestionsShouldFallBackToMostVisited(
+// Remote suggestions are allowed only if the user is signed-in and has Google
+// set up as their default search engine. This only applies to
+// kRemoteNoUrlVariant since most of these checks are done in
+// BaseSearchProvider::CanSendURL (with the exception of the authentication
+// state) which applies to kRemoteSendUrlVariant.
+bool RemoteNoUrlSuggestionsAreAllowed(
     AutocompleteProviderClient* client,
     const TemplateURLService* template_url_service) {
   if (!client->SearchSuggestEnabled())
-    return true;
+    return false;
 
   if (!client->IsAuthenticated())
-    return true;
+    return false;
 
   if (template_url_service == nullptr)
     return false;
 
   const TemplateURL* default_provider =
       template_url_service->GetDefaultSearchProvider();
-  return default_provider == nullptr ||
+  return default_provider &&
          default_provider->GetEngineType(
-             template_url_service->search_terms_data()) != SEARCH_ENGINE_GOOGLE;
+             template_url_service->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
 }
-#endif
 
 }  // namespace
 
@@ -702,16 +702,17 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
     return REMOTE_NO_URL;
 
   if (base::Contains(field_trial_variants, kRemoteNoUrlVariant)) {
+    if (RemoteNoUrlSuggestionsAreAllowed(client(), template_url_service))
+      return REMOTE_NO_URL;
+
 #if defined(OS_ANDROID) || defined(OS_IOS)
-    // TODO(tommycli): It's odd that this doesn't apply to kRemoteSendUrlVariant
-    // as well. Most likely this fallback concept should be replaced by
+    // Remote suggestions are replaced with the most visited ones.
+    // TODO(tommycli): Most likely this fallback concept should be replaced by
     // a more general configuration setup.
-    if (RemoteSuggestionsShouldFallBackToMostVisited(client(),
-                                                     template_url_service)) {
-      return MOST_VISITED;
-    }
-#endif
-    return REMOTE_NO_URL;
+    return MOST_VISITED;
+#else
+    return NONE;
+#endif  //  defined(OS_ANDROID) || defined(OS_IOS)
   }
 
   if (base::Contains(field_trial_variants, kRemoteSendUrlVariant) &&

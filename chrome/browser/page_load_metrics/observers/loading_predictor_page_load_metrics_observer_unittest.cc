@@ -69,12 +69,12 @@ class LoadingPredictorPageLoadMetricsObserverTest
         .WillOnce(testing::Return(is_preconnectable));
 
     NavigateAndCommit(main_frame_url);
-    SimulateTimingUpdate(timing_);
+    tester()->SimulateTimingUpdate(timing_);
 
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         internal::kHistogramLoadingPredictorFirstContentfulPaintPreconnectable,
         is_preconnectable ? 1 : 0);
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         internal::kHistogramLoadingPredictorFirstMeaningfulPaintPreconnectable,
         is_preconnectable ? 1 : 0);
   }

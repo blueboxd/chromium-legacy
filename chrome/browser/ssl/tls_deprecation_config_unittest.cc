@@ -15,7 +15,7 @@ using chrome_browser_ssl::LegacyTLSExperimentConfig;
 
 // Tests the case where no proto has been set by the component installer.
 TEST(TLSDeprecationConfigTest, NoProto) {
-  EXPECT_FALSE(IsTLSDeprecationConfigControlSite(GURL("https://example.test")));
+  EXPECT_TRUE(ShouldSuppressLegacyTLSWarning(GURL("https://example.test")));
 }
 
 // This tests that when no sites are in the control set,
@@ -30,7 +30,7 @@ TEST(TLSDeprecationConfigTest, NoControlSites) {
   auto config = std::make_unique<LegacyTLSExperimentConfig>();
   SetRemoteTLSDeprecationConfigProto(std::move(config));
 
-  EXPECT_FALSE(IsTLSDeprecationConfigControlSite(control_site));
+  EXPECT_FALSE(ShouldSuppressLegacyTLSWarning(control_site));
 }
 
 // This tests that when only a single control site is in the control set,
@@ -53,11 +53,11 @@ TEST(TLSDeprecationConfigTest, SingleControlSite) {
 
   SetRemoteTLSDeprecationConfigProto(std::move(config));
 
-  EXPECT_TRUE(IsTLSDeprecationConfigControlSite(control_site));
-  EXPECT_FALSE(IsTLSDeprecationConfigControlSite(non_control_site));
+  EXPECT_TRUE(ShouldSuppressLegacyTLSWarning(control_site));
+  EXPECT_FALSE(ShouldSuppressLegacyTLSWarning(non_control_site));
 
   // And HTTP sites should not count either.
-  EXPECT_FALSE(IsTLSDeprecationConfigControlSite(http_site));
+  EXPECT_FALSE(ShouldSuppressLegacyTLSWarning(http_site));
 }
 
 // This tests that the binary search in IsTLSDeprecationControlSite() works for
@@ -98,8 +98,8 @@ TEST(TLSDeprecationConfigTest, ManyControlSites) {
   SetRemoteTLSDeprecationConfigProto(std::move(config));
 
   for (auto& site : kControlSites) {
-    EXPECT_TRUE(IsTLSDeprecationConfigControlSite(site.url));
+    EXPECT_TRUE(ShouldSuppressLegacyTLSWarning(site.url));
   }
 
-  EXPECT_FALSE(IsTLSDeprecationConfigControlSite(non_control_site));
+  EXPECT_FALSE(ShouldSuppressLegacyTLSWarning(non_control_site));
 }

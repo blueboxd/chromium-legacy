@@ -14,6 +14,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 
 using password_manager::CredentialPair;
 using password_manager::PasswordManagerDriver;
@@ -31,9 +32,11 @@ void TouchToFillController::Show(base::span<const CredentialPair> credentials,
   if (!view_)
     view_ = TouchToFillViewFactory::Create(this);
 
+  const GURL& url = driver_->GetLastCommittedURL();
   view_->Show(url_formatter::FormatUrlForSecurityDisplay(
-                  driver_->GetLastCommittedURL(),
-                  url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),
+                  url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS),
+              TouchToFillView::IsOriginSecure(
+                  network::IsUrlPotentiallyTrustworthy(url)),
               credentials);
 }
 

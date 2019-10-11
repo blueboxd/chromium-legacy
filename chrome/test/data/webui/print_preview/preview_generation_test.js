@@ -128,13 +128,15 @@ cr.define('preview_generation_test', function() {
           'cssBackground', false, true, 'shouldPrintBackgrounds', false, true);
     });
 
-    /** Validate changing the fit to page setting updates the preview. */
+    /** Validate changing the scalingTypePdf setting updates the preview. */
     test(assert(TestNames.FitToPage), function() {
       // Set PDF document so setting is available.
       initialSettings.previewModifiable = false;
       initialSettings.previewIsPdf = true;
       return testSimpleSetting(
-          'fitToPage', false, true, 'fitToPageEnabled', false, true);
+          'scalingTypePdf', print_preview.ScalingType.DEFAULT,
+          print_preview.ScalingType.FIT_TO_PAGE, 'fitToPageEnabled', false,
+          true);
     });
 
     /** Validate changing the header/footer setting updates the preview. */
@@ -353,8 +355,10 @@ cr.define('preview_generation_test', function() {
             assertEquals(100, ticket.scaleFactor);
             nativeLayer.resetResolver('getPreview');
             assertEquals('100', page.getSettingValue('scaling'));
-            assertEquals(false, page.getSettingValue('customScaling'));
-            page.setSetting('customScaling', true);
+            assertEquals(
+                print_preview.ScalingType.DEFAULT,
+                page.getSettingValue('scalingType'));
+            page.setSetting('scalingType', print_preview.ScalingType.CUSTOM);
             // Need to set custom value != 100 for preview to regenerate.
             page.setSetting('scaling', '90');
             return nativeLayer.whenCalled('getPreview');
@@ -365,10 +369,12 @@ cr.define('preview_generation_test', function() {
             assertEquals(1, ticket.requestID);
             nativeLayer.resetResolver('getPreview');
             assertEquals('90', page.getSettingValue('scaling'));
-            assertEquals(true, page.getSettingValue('customScaling'));
+            assertEquals(
+                print_preview.ScalingType.CUSTOM,
+                page.getSettingValue('scalingType'));
             // This should regenerate the preview, since the custom value is not
             // 100.
-            page.setSetting('customScaling', false);
+            page.setSetting('scalingType', print_preview.ScalingType.DEFAULT);
             return nativeLayer.whenCalled('getPreview');
           })
           .then(function(args) {
@@ -377,8 +383,10 @@ cr.define('preview_generation_test', function() {
             assertEquals(2, ticket.requestID);
             nativeLayer.resetResolver('getPreview');
             assertEquals('90', page.getSettingValue('scaling'));
-            assertEquals(false, page.getSettingValue('customScaling'));
-            page.setSetting('customScaling', true);
+            assertEquals(
+                print_preview.ScalingType.DEFAULT,
+                page.getSettingValue('scalingType'));
+            page.setSetting('scalingType', print_preview.ScalingType.CUSTOM);
             return nativeLayer.whenCalled('getPreview');
           })
           .then(function(args) {
@@ -388,7 +396,9 @@ cr.define('preview_generation_test', function() {
             assertEquals(3, ticket.requestID);
             nativeLayer.resetResolver('getPreview');
             assertEquals('90', page.getSettingValue('scaling'));
-            assertEquals(true, page.getSettingValue('customScaling'));
+            assertEquals(
+                print_preview.ScalingType.CUSTOM,
+                page.getSettingValue('scalingType'));
             // When custom scaling is set, changing scaling updates preview.
             page.setSetting('scaling', '80');
             return nativeLayer.whenCalled('getPreview');
@@ -398,7 +408,9 @@ cr.define('preview_generation_test', function() {
             assertEquals(80, ticket.scaleFactor);
             assertEquals(4, ticket.requestID);
             assertEquals('80', page.getSettingValue('scaling'));
-            assertEquals(true, page.getSettingValue('customScaling'));
+            assertEquals(
+                print_preview.ScalingType.CUSTOM,
+                page.getSettingValue('scalingType'));
           });
     });
 

@@ -1547,7 +1547,15 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
         chromeos::features::kEnableFileManagerFormatDialog);
   }
 
-  feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  // This is destroyed in |TearDown()|. We cannot initialize this in the
+  // constructor due to this feature values' above dependence on virtual
+  // method calls, but by convention subclasses of this fixture may initialize
+  // ScopedFeatureList instances in their own constructor. Ensuring construction
+  // here and destruction in |TearDown()| ensures that we preserve an acceptable
+  // relative lifetime ordering between this ScopedFeatureList and those of any
+  // subclasses.
+  feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+  feature_list_->InitWithFeatures(enabled_features, disabled_features);
 
   extensions::ExtensionApiTest::SetUpCommandLine(command_line);
 }
@@ -1695,6 +1703,11 @@ void FileManagerBrowserTestBase::TearDownOnMainThread() {
   file_tasks_observer_.reset();
   select_factory_ = nullptr;
   ui::SelectFileDialog::SetFactory(nullptr);
+}
+
+void FileManagerBrowserTestBase::TearDown() {
+  extensions::ExtensionApiTest::TearDown();
+  feature_list_.reset();
 }
 
 bool FileManagerBrowserTestBase::GetTabletMode() const {

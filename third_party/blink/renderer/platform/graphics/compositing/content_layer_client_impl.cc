@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 
@@ -149,8 +148,7 @@ std::unique_ptr<base::trace_event::TracedValue>
 ContentLayerClientImpl::TakeDebugInfo(const cc::Layer* layer) {
   DCHECK_EQ(layer, cc_picture_layer_.get());
   auto traced_value = std::make_unique<base::trace_event::TracedValue>();
-  traced_value->SetString("layer_name",
-                          WTF::StringUTF8Adaptor(debug_name_).AsStringPiece());
+  traced_value->SetString("layer_name", LayerDebugName(layer));
   if (auto* tracking = raster_invalidator_.GetTracking()) {
     tracking->AddToTracedValue(*traced_value);
     tracking->ClearInvalidations();
@@ -158,6 +156,12 @@ ContentLayerClientImpl::TakeDebugInfo(const cc::Layer* layer) {
   // TODO(wangxianzhu): Do we need compositing_reasons,
   // squashing_disallowed_reasons and owner_node_id?
   return traced_value;
+}
+
+std::string ContentLayerClientImpl::LayerDebugName(
+    const cc::Layer* layer) const {
+  DCHECK_EQ(layer, cc_picture_layer_.get());
+  return debug_name_.Utf8();
 }
 
 scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(

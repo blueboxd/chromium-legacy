@@ -38,12 +38,12 @@ Environment* env = new Environment();
 
 /* MessageReceiver which dumps raw message bytes to disk in the provided
  * directory. */
-class MessageDumper : public mojo::MessageReceiver {
+class MessageDumper : public mojo::MessageFilter {
  public:
   explicit MessageDumper(std::string directory)
       : directory_(directory), count_(0) {}
 
-  bool Accept(mojo::Message* message) override {
+  bool WillDispatch(mojo::Message* message) override {
     base::FilePath path = directory_.Append(FILE_PATH_LITERAL("message_") +
                                             base::NumberToString(count_++) +
                                             FILE_PATH_LITERAL(".mojomsg"));
@@ -64,6 +64,8 @@ class MessageDumper : public mojo::MessageReceiver {
     }
     return true;
   }
+
+  void DidDispatchOrReject(mojo::Message* message, bool accepted) override {}
 
   base::FilePath directory_;
   int count_;
@@ -230,7 +232,7 @@ void DumpMessages(std::string output_directory) {
 
   /* Create the impl and add a MessageDumper to the filter chain. */
   env->impl = std::make_unique<FuzzImpl>(MakeRequest(&fuzz));
-  env->impl->binding_.RouterForTesting()->AddIncomingMessageFilter(
+  env->impl->binding_.RouterForTesting()->SetIncomingMessageFilter(
       std::make_unique<MessageDumper>(output_directory));
 
   /* Call methods in various ways to generate interesting messages. */

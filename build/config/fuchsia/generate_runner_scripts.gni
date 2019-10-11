@@ -97,6 +97,10 @@ template("fuchsia_package_runner") {
       "${boot_image_root}/qemu/zircon-a.zbi",
     ]
 
+    if (host_cpu == "x64" && target_cpu == "x64") {
+      data += [ "${aemu_root}/" ]
+    }
+
     executable_args = []
 
     package_paths = [ rebase_path(_package_path, root_build_dir) ]

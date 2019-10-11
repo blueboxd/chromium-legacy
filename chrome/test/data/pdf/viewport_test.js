@@ -221,6 +221,11 @@ var tests = [
     mockWindow.scrollTo(0, 170);
     chrome.test.assertEq(1, viewport.getMostVisiblePage());
 
+    // Zoom out so that more than one page fits and scroll to the bottom.
+    viewport.setZoom(0.4);
+    mockWindow.scrollTo(0, 160);
+    chrome.test.assertEq(2, viewport.getMostVisiblePage());
+
     // Zoomed out with the entire document visible.
     viewport.setZoom(0.25);
     mockWindow.scrollTo(0, 0);

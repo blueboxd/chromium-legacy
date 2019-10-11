@@ -38,16 +38,6 @@ class PdfPrinterHandler;
 class PrinterHandler;
 class PrintPreviewUI;
 
-// Must match print_preview.PrinterType in
-// chrome/browser/resources/print_preview/native_layer.js
-enum PrinterType {
-  kPrivetPrinter,
-  kExtensionPrinter,
-  kPdfPrinter,
-  kLocalPrinter,
-  kCloudPrinter
-};
-
 // The handler for Javascript messages related to the print preview dialog.
 class PrintPreviewHandler : public content::WebUIMessageHandler,
                             public signin::IdentityManager::Observer {

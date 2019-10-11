@@ -321,6 +321,9 @@ void GetAssertionRequestHandler::AuthenticatorAdded(
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
 #if defined(OS_MACOSX)
+  // Indicate to the UI whether a GetAssertion call to Touch ID would succeed
+  // or not. This needs to happen before the base AuthenticatorAdded()
+  // implementation runs |notify_observer_callback_| for this callback.
   if (authenticator->IsTouchIdAuthenticator()) {
     transport_availability_info().has_recognized_mac_touch_id_credential =
         static_cast<fido::mac::TouchIdAuthenticator*>(authenticator)

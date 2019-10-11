@@ -12,11 +12,11 @@
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
+#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtp_sender_interface.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
@@ -63,7 +63,8 @@ class CONTENT_EXPORT RtpSenderState {
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
       scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
-      std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref,
+      std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+          track_ref,
       std::vector<std::string> stream_ids);
   RtpSenderState(RtpSenderState&&);
   RtpSenderState(const RtpSenderState&) = delete;
@@ -84,10 +85,11 @@ class CONTENT_EXPORT RtpSenderState {
   rtc::scoped_refptr<webrtc::DtlsTransportInterface> webrtc_dtls_transport()
       const;
   webrtc::DtlsTransportInformation webrtc_dtls_transport_information() const;
-  const std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>&
+  const std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>&
   track_ref() const;
   void set_track_ref(
-      std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref);
+      std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+          track_ref);
   std::vector<std::string> stream_ids() const;
 
  private:
@@ -97,7 +99,8 @@ class CONTENT_EXPORT RtpSenderState {
   rtc::scoped_refptr<webrtc::DtlsTransportInterface> webrtc_dtls_transport_;
   webrtc::DtlsTransportInformation webrtc_dtls_transport_information_;
   bool is_initialized_;
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref_;
+  std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+      track_ref_;
   std::vector<std::string> stream_ids_;
 };
 
@@ -116,7 +119,7 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
 
   RTCRtpSender(
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-      scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_map,
+      scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map,
       RtpSenderState state);
   RTCRtpSender(const RTCRtpSender& other);
   ~RTCRtpSender() override;

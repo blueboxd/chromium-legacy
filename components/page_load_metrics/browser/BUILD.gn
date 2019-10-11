@@ -45,6 +45,10 @@ source_set("browser") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "observers/page_load_metrics_observer_tester.cc",
+    "observers/page_load_metrics_observer_tester.h",
+    "page_load_metrics_test_content_browser_client.cc",
+    "page_load_metrics_test_content_browser_client.h",
     "page_load_metrics_test_waiter.cc",
     "page_load_metrics_test_waiter.h",
     "test_metrics_web_contents_observer_embedder.cc",
@@ -53,10 +57,13 @@ source_set("test_support") {
   deps = [
     ":browser",
     "//base",
+    "//base/test:test_support",
     "//components/page_load_metrics/common:page_load_metrics_mojom",
     "//components/page_load_metrics/common:test_support",
+    "//components/ukm:test_support",
     "//content/public/browser",
     "//content/public/common",
+    "//content/test:test_support",
     "//testing/gtest",
     "//ui/gfx/geometry",
   ]
@@ -66,6 +73,9 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "metrics_web_contents_observer_unittest.cc",
+    "observers/page_load_metrics_observer_content_test_harness.cc",
+    "observers/page_load_metrics_observer_content_test_harness.h",
+    "observers/use_counter_page_load_metrics_observer_unittest.cc",
     "page_load_metrics_util_unittest.cc",
     "resource_tracker_unittest.cc",
   ]
@@ -75,6 +85,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/page_load_metrics/common:page_load_metrics_mojom",
     "//components/page_load_metrics/common:test_support",
+    "//components/ukm/content",
     "//content/public/browser",
     "//content/test:test_support",
     "//testing/gtest",

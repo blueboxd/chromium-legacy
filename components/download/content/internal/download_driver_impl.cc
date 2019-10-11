@@ -183,7 +183,8 @@ void DownloadDriverImpl::Start(
   download_url_params->set_download_source(
       download::DownloadSource::INTERNAL_API);
   download_url_params->set_post_body(post_body);
-  download_url_params->set_follow_cross_origin_redirects(true);
+  download_url_params->set_cross_origin_redirects(
+      network::mojom::RedirectMode::kFollow);
   download_url_params->set_upload_progress_callback(
       base::BindRepeating(&DownloadDriverImpl::OnUploadProgress,
                           weak_ptr_factory_.GetWeakPtr(), guid));

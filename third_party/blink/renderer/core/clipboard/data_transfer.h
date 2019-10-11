@@ -149,14 +149,14 @@ class CORE_EXPORT DataTransfer final : public ScriptWrappable,
   // |paint_offset| is the offset from the origin of the dragged
   // object of the PaintRecordBuilder.
   static std::unique_ptr<DragImage> CreateDragImageForFrame(
-      const LocalFrame&,
+      LocalFrame&,
       float,
       RespectImageOrientationEnum,
       const FloatSize& css_size,
       const FloatPoint& paint_offset,
       PaintRecordBuilder&,
       const PropertyTreeState&);
-  static std::unique_ptr<DragImage> NodeImage(const LocalFrame&, Node&);
+  static std::unique_ptr<DragImage> NodeImage(LocalFrame&, Node&);
 
   void Trace(blink::Visitor*) override;
 

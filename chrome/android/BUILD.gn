@@ -1420,6 +1420,7 @@ template("libmonochrome_apk_or_bundle_tmpl") {
     ]
     deps = [
       "//android_webview:common",
+      "//components/about_ui:about_ui_android",
       "//components/crash/android:crashpad_main",
       "//weblayer:weblayer_lib",
     ]
@@ -2468,7 +2469,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/complex_tasks/endpoint_fetcher/EndpointFetcher.java",
     "java/src/org/chromium/chrome/browser/complex_tasks/endpoint_fetcher/EndpointResponse.java",
     "java/src/org/chromium/chrome/browser/component_updater/UpdateScheduler.java",
-    "java/src/org/chromium/chrome/browser/component_updater/VrAssetsComponentInstaller.java",
     "java/src/org/chromium/chrome/browser/compositor/CompositorView.java",
     "java/src/org/chromium/chrome/browser/compositor/LayerTitleCache.java",
     "java/src/org/chromium/chrome/browser/compositor/bottombar/OverlayPanelContent.java",
@@ -2730,5 +2730,9 @@ generate_jni("chrome_jni_headers") {
       "feed/core/java/src/org/chromium/chrome/browser/feed/FeedOfflineBridge.java",
       "feed/core/java/src/org/chromium/chrome/browser/feed/FeedSchedulerBridge.java",
     ]
+  }
+
+  if (enable_vr) {
+    sources += [ "java/src/org/chromium/chrome/browser/component_updater/VrAssetsComponentInstaller.java" ]
   }
 }

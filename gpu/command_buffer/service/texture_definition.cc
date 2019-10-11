@@ -34,6 +34,7 @@ class GLImageSync : public gl::GLImage {
   // Implement GLImage.
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
+  unsigned GetDataType() override;
   BindOrCopy ShouldBindOrCopy() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override;
@@ -82,6 +83,10 @@ gfx::Size GLImageSync::GetSize() {
 
 unsigned GLImageSync::GetInternalFormat() {
   return GL_RGBA;
+}
+
+unsigned GLImageSync::GetDataType() {
+  return GL_UNSIGNED_BYTE;
 }
 
 GLImageSync::BindOrCopy GLImageSync::ShouldBindOrCopy() {

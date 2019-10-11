@@ -22,7 +22,6 @@ import "app_notification_specifics.proto";
 import "app_setting_specifics.proto";
 import "app_specifics.proto";
 import "arc_package_specifics.proto";
-import "article_specifics.proto";
 import "autofill_specifics.proto";
 import "bookmark_specifics.proto";
 import "client_commands.proto";
@@ -115,7 +114,9 @@ message EntitySpecifics {
     PreferenceSpecifics preference = 37702;
     TypedUrlSpecifics typed_url = 40781;
     ThemeSpecifics theme = 41210;
-    AppNotification app_notification = 45184;
+    // TODO(crbug.com/1012648): |app_notification| isn't used by the client
+    // anymore, but the server still needs it for now.
+    AppNotification app_notification = 45184 [deprecated = true];
     PasswordSpecifics password = 45873;
     NigoriSpecifics nigori = 47745;
     ExtensionSpecifics extension = 48119;
@@ -126,8 +127,13 @@ message EntitySpecifics {
     ExtensionSettingSpecifics extension_setting = 96159;
     AppSettingSpecifics app_setting = 103656;
     HistoryDeleteDirectiveSpecifics history_delete_directive = 150251;
-    SyncedNotificationSpecifics synced_notification = 153108;
-    SyncedNotificationAppInfoSpecifics synced_notification_app_info = 235816;
+    // TODO(crbug.com/1012648): |synced_notification| and
+    // |synced_notification_app_info| aren't used by the client anymore, but the
+    // server still needs them for now.
+    SyncedNotificationSpecifics synced_notification = 153108
+        [deprecated = true];
+    SyncedNotificationAppInfoSpecifics synced_notification_app_info = 235816
+        [deprecated = true];
     DeviceInfoSpecifics device_info = 154522;
     ExperimentsSpecifics experiments = 161496;
     PriorityPreferenceSpecifics priority_preference = 163425;
@@ -136,9 +142,6 @@ message EntitySpecifics {
     FaviconImageSpecifics favicon_image = 182019;
     ManagedUserSettingSpecifics managed_user_setting = 186662;
     ManagedUserWhitelistSpecifics managed_user_whitelist = 306060;
-    // TODO(crbug.com/1007942): |article| isn't used by Sync anymore, but it
-    // can't be removed because dom_distiller code uses it for local storage.
-    ArticleSpecifics article = 223759 [deprecated = true];
     AppListSpecifics app_list = 229170;
     AutofillWalletSpecifics autofill_wallet = 306270;
     WalletMetadataSpecifics wallet_metadata = 330441;
@@ -159,6 +162,8 @@ message EntitySpecifics {
   reserved "managed_user_shared_setting";
   reserved 218175;
   reserved "wifi_credential";
+  reserved 223759;
+  reserved "article";
 }
 
 message SyncEntity {

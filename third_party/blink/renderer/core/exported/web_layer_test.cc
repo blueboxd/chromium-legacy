@@ -947,7 +947,10 @@ TEST_P(WebLayerListSimTest, LayerSubtreeOverflowClipPropertyChanged) {
   // both layers.
   outer_element->setAttribute(html_names::kStyleAttr, "width: 200px;");
   UpdateAllLifecyclePhases();
-  EXPECT_TRUE(outer_element_layer->subtree_property_changed());
+  // The overflow clip does not affect |outer_element_layer|, so
+  // subtree_property_changed should be false for it. It does affect
+  // |inner_element_layer| though.
+  EXPECT_FALSE(outer_element_layer->subtree_property_changed());
   EXPECT_TRUE(inner_element_layer->subtree_property_changed());
 
   // After a frame the |subtree_property_changed| value should be reset.

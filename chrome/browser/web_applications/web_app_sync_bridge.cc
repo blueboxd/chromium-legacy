@@ -133,9 +133,6 @@ WebAppSyncBridge::~WebAppSyncBridge() = default;
 std::unique_ptr<WebAppRegistryUpdate> WebAppSyncBridge::BeginUpdate() {
   DCHECK(!is_in_update_);
   is_in_update_ = true;
-
-  database_->BeginTransaction();
-
   return std::make_unique<WebAppRegistryUpdate>(registrar_);
 }
 
@@ -146,7 +143,6 @@ void WebAppSyncBridge::CommitUpdate(
   is_in_update_ = false;
 
   if (update == nullptr || update->update_data().IsEmpty()) {
-    database_->CancelTransaction();
     std::move(callback).Run(/*success*/ true);
     return;
   }
@@ -159,7 +155,7 @@ void WebAppSyncBridge::CommitUpdate(
 
   UpdateSync(*update_data, metadata_change_list.get());
 
-  database_->CommitTransaction(
+  database_->Write(
       *update_data, std::move(metadata_change_list),
       base::BindOnce(&WebAppSyncBridge::OnDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -409,8 +405,6 @@ base::Optional<syncer::ModelError> WebAppSyncBridge::MergeSyncData(
 
   auto update_local_data = std::make_unique<RegistryUpdateData>();
 
-  database_->BeginTransaction();
-
   for (const auto& change : entity_data) {
     DCHECK_NE(change->type(), syncer::EntityChange::ACTION_DELETE);
     ApplySyncDataChange(*change, update_local_data.get());
@@ -418,8 +412,8 @@ base::Optional<syncer::ModelError> WebAppSyncBridge::MergeSyncData(
 
   MergeLocalAppsToSync(entity_data, metadata_change_list.get());
 
-  database_->CommitTransaction(
-      *update_local_data, std::move(metadata_change_list), base::DoNothing());
+  database_->Write(*update_local_data, std::move(metadata_change_list),
+                   base::DoNothing());
 
   ApplySyncChangesToRegistrar(std::move(update_local_data));
   return base::nullopt;
@@ -432,13 +426,11 @@ base::Optional<syncer::ModelError> WebAppSyncBridge::ApplySyncChanges(
 
   auto update_local_data = std::make_unique<RegistryUpdateData>();
 
-  database_->BeginTransaction();
-
   for (const auto& change : entity_changes)
     ApplySyncDataChange(*change, update_local_data.get());
 
-  database_->CommitTransaction(
-      *update_local_data, std::move(metadata_change_list), base::DoNothing());
+  database_->Write(*update_local_data, std::move(metadata_change_list),
+                   base::DoNothing());
 
   ApplySyncChangesToRegistrar(std::move(update_local_data));
   return base::nullopt;

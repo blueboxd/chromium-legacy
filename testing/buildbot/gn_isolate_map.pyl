@@ -1461,6 +1461,10 @@
     "label": "//jingle:jingle_unittests",
     "type": "console_test_launcher",
   },
+  "json_web_key_fuzzer": {
+    "label": "//media:json_web_key_fuzzer",
+    "type": "fuzzer",
+  },
   "junit_unit_tests": {
     "label": "//testing/android/junit:junit_unit_tests",
     "type": "junit_test",
@@ -2097,6 +2101,11 @@
   "ocmock_support_unittests": {
     "args": [],
     "label": "//ios/testing:ocmock_support_unittests",
+    "type": "raw",
+  },
+  "opus_decoder_unittests": {
+    "args": [],
+    "label": "//third_party/opus:test_opus_decode",
     "type": "raw",
   },
   "origin_policy_parser_fuzzer": {
@@ -2865,11 +2874,6 @@
   "v8_wasm_fuzzer": {
     "label": "//testing/libfuzzer/fuzzers:v8_wasm_fuzzer",
     "type": "fuzzer",
-  },
-  "video_decode_accelerator_unittest": {
-    "args": [],
-    "label": "//media/gpu:video_decode_accelerator_unittest",
-    "type": "raw",
   },
   "views_perftests": {
     "args": [

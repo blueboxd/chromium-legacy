@@ -17,10 +17,6 @@ namespace printing {
 const char kDummyPrinterName[] = "DefaultPrinter";
 
 base::Value GetPrintTicket(PrinterType type) {
-  bool is_cloud_printer = type == kCloudPrinter;
-  bool is_privet_printer = type == kPrivetPrinter;
-  bool is_extension_printer = type == kExtensionPrinter;
-
   base::Value ticket(base::Value::Type::DICTIONARY);
 
   // Letter
@@ -42,10 +38,7 @@ base::Value GetPrintTicket(PrinterType type) {
   ticket.SetBoolKey(kSettingShouldPrintSelectionOnly, false);
   ticket.SetBoolKey(kSettingPreviewModifiable, true);
   ticket.SetBoolKey(kSettingPreviewIsPdf, false);
-  ticket.SetBoolKey(kSettingPrintToPDF, type == kPdfPrinter);
-  ticket.SetBoolKey(kSettingCloudPrintDialog, is_cloud_printer);
-  ticket.SetBoolKey(kSettingPrintWithPrivet, is_privet_printer);
-  ticket.SetBoolKey(kSettingPrintWithExtension, is_extension_printer);
+  ticket.SetIntKey(kSettingPrinterType, type);
   ticket.SetBoolKey(kSettingRasterizePdf, false);
   ticket.SetIntKey(kSettingScaleFactor, 100);
   ticket.SetIntKey(kSettingPagesPerSheet, 1);
@@ -57,10 +50,9 @@ base::Value GetPrintTicket(PrinterType type) {
   ticket.SetIntKey(kSettingPageHeight, 279400);
   ticket.SetBoolKey(kSettingShowSystemDialog, false);
 
-  if (is_cloud_printer)
+  if (type == kCloudPrinter) {
     ticket.SetStringKey(kSettingCloudPrintId, kDummyPrinterName);
-
-  if (is_privet_printer || is_extension_printer) {
+  } else if (type == kPrivetPrinter || type == kExtensionPrinter) {
     base::Value capabilities(base::Value::Type::DICTIONARY);
     capabilities.SetBoolKey("duplex", true);  // non-empty
     std::string caps_string;

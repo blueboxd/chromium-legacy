@@ -44,7 +44,7 @@ class SubresourceLoadingPageLoadMetricsObserverTest
     }
 
     NavigateAndCommit(navigation_url_);
-    SimulateTimingUpdate(timing_);
+    tester()->SimulateTimingUpdate(timing_);
   }
 
   page_load_metrics::mojom::ResourceDataUpdatePtr CreateCSSResource(
@@ -131,13 +131,13 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_CSS) {
                                         true /* is_complete */,
                                         true /* completed_before_fcp */));
 
-  SimulateResourceDataUseUpdate(resources);
-  NavigateToUntrackedUrl();
+  tester()->SimulateResourceDataUseUpdate(resources);
+  tester()->NavigateToUntrackedUrl();
 
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Noncached", 2,
       1);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 3, 1);
 }
 
@@ -162,13 +162,13 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_JS) {
                                        true /* is_complete */,
                                        true /* completed_before_fcp */));
 
-  SimulateResourceDataUseUpdate(resources);
-  NavigateToUntrackedUrl();
+  tester()->SimulateResourceDataUseUpdate(resources);
+  tester()->NavigateToUntrackedUrl();
 
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Noncached", 2,
       1);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 3, 1);
 }
 
@@ -193,13 +193,13 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_Other) {
                                           true /* is_complete */,
                                           true /* completed_before_fcp */));
 
-  SimulateResourceDataUseUpdate(resources);
-  NavigateToUntrackedUrl();
+  tester()->SimulateResourceDataUseUpdate(resources);
+  tester()->NavigateToUntrackedUrl();
 
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Noncached", 0,
       1);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 0, 1);
 }
 
@@ -224,13 +224,13 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_NotComplete) {
                                         false /* is_complete */,
                                         false /* completed_before_fcp */));
 
-  SimulateResourceDataUseUpdate(resources);
-  NavigateToUntrackedUrl();
+  tester()->SimulateResourceDataUseUpdate(resources);
+  tester()->NavigateToUntrackedUrl();
 
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Noncached", 0,
       1);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 0, 1);
 }
 
@@ -256,13 +256,13 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_Subframe) {
                                         true /* is_complete */,
                                         true /* completed_before_fcp */));
 
-  SimulateResourceDataUseUpdate(resources);
-  NavigateToUntrackedUrl();
+  tester()->SimulateResourceDataUseUpdate(resources);
+  tester()->NavigateToUntrackedUrl();
 
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Noncached", 0,
       1);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 0, 1);
 }
 
@@ -287,13 +287,13 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, AfterFCP) {
                                         true /* is_complete */,
                                         false /* completed_before_fcp */));
 
-  SimulateResourceDataUseUpdate(resources);
-  NavigateToUntrackedUrl();
+  tester()->SimulateResourceDataUseUpdate(resources);
+  tester()->NavigateToUntrackedUrl();
 
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Noncached", 0,
       1);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 0, 1);
 }
 
@@ -320,11 +320,11 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, DontRecordForNonHttp) {
                                         true /* is_complete */,
                                         true /* completed_before_fcp */));
 
-  SimulateResourceDataUseUpdate(resources);
-  NavigateToUntrackedUrl();
+  tester()->SimulateResourceDataUseUpdate(resources);
+  tester()->NavigateToUntrackedUrl();
 
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Noncached", 0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 0);
 }

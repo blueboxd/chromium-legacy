@@ -1575,12 +1575,6 @@ void BluetoothAdapterBlueZ::StopScan(DiscoverySessionResultCallback callback) {
 
   DCHECK_EQ(NumDiscoverySessions(), 0);
 
-  if (!IsDiscovering()) {
-    std::move(callback).Run(
-        /*is_error=*/false, UMABluetoothDiscoverySessionOutcome::SUCCESS);
-    return;
-  }
-
   // Confirm that there are no more discovery sessions left.
   DCHECK_EQ(NumDiscoverySessions(), 0);
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));

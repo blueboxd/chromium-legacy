@@ -309,6 +309,7 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
+#include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -456,6 +457,7 @@
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/browser_switcher/browser_switcher_navigation_throttle.h"
+#include "services/service_manager/sandbox/features.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -3895,22 +3897,43 @@ void ChromeContentBrowserClient::BindHostReceiverForRendererOnIOThread(
 }
 
 void ChromeContentBrowserClient::WillStartServiceManager() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   if (startup_data_) {
     auto* chrome_feature_list_creator =
         startup_data_->chrome_feature_list_creator();
     // This has to run very early before ServiceManagerContext is created.
-    const base::Value* force_network_in_process_value =
+    const policy::PolicyMap& policies =
         chrome_feature_list_creator->browser_policy_connector()
             ->GetPolicyService()
             ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
-                                                  std::string()))
-            .GetValue(policy::key::kForceNetworkInProcess);
+                                                  std::string()));
+
+#if defined(OS_WIN)
+    const base::Value* force_network_in_process_value =
+        policies.GetValue(policy::key::kForceNetworkInProcess);
     bool force_network_in_process = false;
     if (force_network_in_process_value)
       force_network_in_process_value->GetAsBoolean(&force_network_in_process);
     if (force_network_in_process)
       content::ForceInProcessNetworkService(true);
+#endif
+    bool enable_audio_process =
+        base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess);
+    bool enable_audio_sandbox = base::FeatureList::IsEnabled(
+        service_manager::features::kAudioServiceSandbox);
+    const base::Value* audio_sandbox_enabled_policy_value =
+        policies.GetValue(policy::key::kAudioSandboxEnabled);
+    if (audio_sandbox_enabled_policy_value)
+      audio_sandbox_enabled_policy_value->GetAsBoolean(&enable_audio_sandbox);
+    service_manager::EnableAudioSandbox(enable_audio_sandbox);
+    if (!enable_audio_sandbox || !enable_audio_process) {
+      // Disabling the audio process or audio sandbox implies disabling APM in
+      // the audio service for security reasons. Append a switch so that this
+      // is communicated to the audio and renderer processes.
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kForceDisableWebRtcApmInAudioService);
+    }
   }
 #endif
 }

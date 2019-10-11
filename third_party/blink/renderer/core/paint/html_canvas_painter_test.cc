@@ -85,7 +85,9 @@ TEST_P(HTMLCanvasPainterTestForCAP, Canvas2DLayerAppearsInLayerTree) {
   ASSERT_TRUE(element->IsAccelerated());
 
   // Force the page to paint.
-  element->FinalizeFrame();
+  element->PreFinalizeFrame();
+  context->FinalizeFrame();
+  element->PostFinalizeFrame();
   UpdateAllLifecyclePhasesForTest();
 
   // Fetch the layer associated with the <canvas>, and check that it was

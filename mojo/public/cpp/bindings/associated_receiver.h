@@ -186,12 +186,13 @@ class AssociatedReceiver {
     return PendingAssociatedReceiver<Interface>(binding_.Unbind().PassHandle());
   }
 
-  // Adds a message filter to be notified of each incoming message before
+  // Sets a message filter to be notified of each incoming message before
   // dispatch. If a filter returns |false| from Accept(), the message is not
-  // dispatched and the pipe is closed. Filters cannot be removed once added.
-  void AddFilter(std::unique_ptr<MessageReceiver> filter) {
+  // dispatched and the pipe is closed. Filters cannot be removed once added
+  // and only one can be set.
+  void SetFilter(std::unique_ptr<MessageFilter> filter) {
     DCHECK(is_bound());
-    binding_.AddFilter(std::move(filter));
+    binding_.SetFilter(std::move(filter));
   }
 
   // Sends a message on the underlying message pipe and runs the current

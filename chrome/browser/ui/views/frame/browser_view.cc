@@ -455,7 +455,10 @@ BrowserView* BrowserView::GetBrowserViewForBrowser(const Browser* browser) {
   //
   // Also, tests don't always have a non-null NativeWindow backing the
   // BrowserWindow, so be sure to check for that as well.
-  if (!browser->window()->GetNativeWindow())
+  //
+  // Lastly note that this function can be called during construction of
+  // Browser, at which point browser->window() might return nullptr.
+  if (!browser->window() || !browser->window()->GetNativeWindow())
     return nullptr;
   return GetBrowserViewForNativeWindow(browser->window()->GetNativeWindow());
 }
@@ -485,6 +488,11 @@ bool BrowserView::IsTabStripVisible() const {
   // Return false if this window does not normally display a tabstrip.
   if (!browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
     return false;
+
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (base::FeatureList::IsEnabled(features::kWebUITabStrip))
+    return false;
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
   // Return false if the tabstrip has not yet been created (by InitViews()),
   // since callers may otherwise try to access it. Note that we can't just check

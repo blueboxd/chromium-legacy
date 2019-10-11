@@ -130,22 +130,10 @@ class FakeTopHostProvider : public optimization_guide::TopHostProvider {
   explicit FakeTopHostProvider(std::vector<std::string> top_hosts)
       : top_hosts_(top_hosts) {}
 
-  std::vector<std::string> GetTopHosts(size_t max_sites) override {
+  std::vector<std::string> GetTopHosts() override {
     num_top_hosts_called_++;
 
-    if (top_hosts_.size() <= max_sites) {
       return top_hosts_;
-    }
-
-    std::vector<std::string> top_hosts;
-    top_hosts.reserve(max_sites);
-    for (const auto& top_host : top_hosts_) {
-      if (top_hosts.size() >= max_sites)
-        return top_hosts;
-
-      top_hosts.push_back(top_host);
-    }
-    return top_hosts;
   }
 
   int get_num_top_hosts_called() const { return num_top_hosts_called_; }

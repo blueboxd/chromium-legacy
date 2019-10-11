@@ -466,7 +466,7 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
   void SetDeviceScaleFactor(float dsf) {
     view()->GetWidget()->SynchronizeVisualPropertiesFromRenderView(
         MakeVisualPropertiesWithDeviceScaleFactor(dsf));
-    ASSERT_EQ(dsf, view()->page_properties()->GetDeviceScaleFactor());
+    ASSERT_EQ(dsf, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
     ASSERT_EQ(dsf,
               view()->GetWidget()->GetOriginalScreenInfo().device_scale_factor);
   }
@@ -1010,7 +1010,7 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
 
   // Verify that the system device scale factor has propagated into the
   // RenderFrameProxy.
-  EXPECT_EQ(device_scale, view()->page_properties()->GetDeviceScaleFactor());
+  EXPECT_EQ(device_scale, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
   EXPECT_EQ(device_scale,
             view()->GetWidget()->GetOriginalScreenInfo().device_scale_factor);
   EXPECT_EQ(device_scale, child_proxy->screen_info().device_scale_factor);
@@ -1018,7 +1018,7 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
   TestEmulatedSizeDprDsf(640, 480, 3.f, compositor_dsf);
 
   // Verify that the RenderFrameProxy device scale factor is still the same.
-  EXPECT_EQ(3.f, view()->page_properties()->GetDeviceScaleFactor());
+  EXPECT_EQ(3.f, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
   EXPECT_EQ(device_scale,
             view()->GetWidget()->GetOriginalScreenInfo().device_scale_factor);
   EXPECT_EQ(device_scale, child_proxy->screen_info().device_scale_factor);
@@ -1075,7 +1075,7 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
 TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
   const float device_scale = 3.0f;
   SetDeviceScaleFactor(device_scale);
-  EXPECT_EQ(device_scale, view()->GetDeviceScaleFactor());
+  EXPECT_EQ(device_scale, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
 
   LoadHTML("Hello world!");
 
@@ -1135,7 +1135,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
                               CreateCommitNavigationParams());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(device_scale, view()->GetDeviceScaleFactor());
+  EXPECT_EQ(device_scale, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
   EXPECT_EQ(device_scale, view()->webview()->ZoomFactorForDeviceScaleFactor());
 
   double device_pixel_ratio;

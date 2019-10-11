@@ -551,7 +551,7 @@ Polymer({
    * @private
    */
   getDefaultConfigProperties_: function() {
-    return {type: this.managedProperties_.type};
+    return OncMojo.getDefaultConfigProperties(this.managedProperties_.type);
   },
 
   /**
@@ -1169,14 +1169,14 @@ Polymer({
     OncMojo.setConfigProperty(config, field, value);
     // Ensure that any required configuration properties for partial
     // configurations are set.
-    if (config.vpn) {
-      config.vpn.type = this.managedProperties_.typeProperties.vpn.type;
-      if (config.vpn.openVpn &&
-          config.vpn.openVpn.saveCredentials == undefined) {
-        config.vpn.openVpn.saveCredentials = false;
+    const vpnConfig = config.typeConfig.vpn;
+    if (vpnConfig) {
+      vpnConfig.type = this.managedProperties_.typeProperties.vpn.type;
+      if (vpnConfig.openVpn && vpnConfig.openVpn.saveCredentials == undefined) {
+        vpnConfig.openVpn.saveCredentials = false;
       }
-      if (config.vpn.l2tp && config.vpn.l2tp.saveCredentials == undefined) {
-        config.vpn.l2tp.saveCredentials = false;
+      if (vpnConfig.l2tp && vpnConfig.l2tp.saveCredentials == undefined) {
+        vpnConfig.l2tp.saveCredentials = false;
       }
     }
     this.setMojoNetworkProperties_(config);
@@ -1192,7 +1192,7 @@ Polymer({
     }
     const config = this.getDefaultConfigProperties_();
     const apn = event.detail;
-    config.cellular = {apn: apn};
+    config.typeConfig.cellular = {apn: apn};
     this.setMojoNetworkProperties_(config);
   },
 

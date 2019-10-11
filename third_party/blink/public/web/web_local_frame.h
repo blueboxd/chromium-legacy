@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/callback.h"
-#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"

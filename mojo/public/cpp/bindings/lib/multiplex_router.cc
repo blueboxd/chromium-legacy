@@ -317,7 +317,7 @@ MultiplexRouter::MultiplexRouter(
     scoped_refptr<base::SequencedTaskRunner> runner)
     : set_interface_id_namespace_bit_(set_interface_id_namesapce_bit),
       task_runner_(runner),
-      filters_(this),
+      dispatcher_(this),
       connector_(std::move(message_pipe),
                  config == MULTI_INTERFACE ? Connector::MULTI_THREADED_SEND
                                            : Connector::SINGLE_THREADED_SEND,
@@ -337,7 +337,7 @@ MultiplexRouter::MultiplexRouter(
     // on a different sequence.
     connector_.AllowWokenUpBySyncWatchOnSameThread();
   }
-  connector_.set_incoming_receiver(&filters_);
+  connector_.set_incoming_receiver(&dispatcher_);
   connector_.set_connection_error_handler(
       base::BindOnce(&MultiplexRouter::OnPipeConnectionError,
                      base::Unretained(this), false /* force_async_dispatch */));
@@ -345,7 +345,7 @@ MultiplexRouter::MultiplexRouter(
   std::unique_ptr<MessageHeaderValidator> header_validator =
       std::make_unique<MessageHeaderValidator>();
   header_validator_ = header_validator.get();
-  filters_.Append(std::move(header_validator));
+  dispatcher_.SetValidator(std::move(header_validator));
 }
 
 MultiplexRouter::~MultiplexRouter() {
@@ -358,9 +358,9 @@ MultiplexRouter::~MultiplexRouter() {
   endpoints_.clear();
 }
 
-void MultiplexRouter::AddIncomingMessageFilter(
-    std::unique_ptr<MessageReceiver> filter) {
-  filters_.Append(std::move(filter));
+void MultiplexRouter::SetIncomingMessageFilter(
+    std::unique_ptr<MessageFilter> filter) {
+  dispatcher_.SetFilter(std::move(filter));
 }
 
 void MultiplexRouter::SetMasterInterfaceName(const char* name) {

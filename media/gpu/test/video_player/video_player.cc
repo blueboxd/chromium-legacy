@@ -50,8 +50,8 @@ bool VideoPlayer::CreateDecoderClient(
     std::unique_ptr<FrameRenderer> frame_renderer,
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK_EQ(video_player_state_, VideoPlayerState::kUninitialized);
-  CHECK(frame_renderer);
+  DCHECK_EQ(video_player_state_, VideoPlayerState::kUninitialized);
+  DCHECK(frame_renderer);
   DVLOGF(4);
 
   // base::Unretained is safe here as we will never receive callbacks after
@@ -73,7 +73,7 @@ bool VideoPlayer::CreateDecoderClient(
 
 void VideoPlayer::Destroy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK_NE(video_player_state_, VideoPlayerState::kDestroyed);
+  DCHECK_NE(video_player_state_, VideoPlayerState::kDestroyed);
   DVLOGF(4);
 
   decoder_client_.reset();
@@ -89,9 +89,9 @@ void VideoPlayer::SetEventWaitTimeout(base::TimeDelta timeout) {
 
 bool VideoPlayer::Initialize(const Video* video) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(video_player_state_ == VideoPlayerState::kUninitialized ||
-        video_player_state_ == VideoPlayerState::kIdle);
-  CHECK(video);
+  DCHECK(video_player_state_ == VideoPlayerState::kUninitialized ||
+         video_player_state_ == VideoPlayerState::kIdle);
+  DCHECK(video);
   DVLOGF(4);
 
   decoder_client_->Initialize(video);
@@ -107,7 +107,7 @@ bool VideoPlayer::Initialize(const Video* video) {
 
 void VideoPlayer::Play() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK_EQ(video_player_state_, VideoPlayerState::kIdle);
+  DCHECK_EQ(video_player_state_, VideoPlayerState::kIdle);
   DVLOGF(4);
 
   // Play until the end of the video.
@@ -116,8 +116,8 @@ void VideoPlayer::Play() {
 
 void VideoPlayer::PlayUntil(VideoPlayerEvent event, size_t event_count) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK_EQ(video_player_state_, VideoPlayerState::kIdle);
-  CHECK(video_);
+  DCHECK_EQ(video_player_state_, VideoPlayerState::kIdle);
+  DCHECK(video_);
   DVLOGF(4);
 
   // Start decoding the video.
@@ -163,7 +163,7 @@ FrameRenderer* VideoPlayer::GetFrameRenderer() const {
 
 bool VideoPlayer::WaitForEvent(VideoPlayerEvent event, size_t times) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK_GE(times, 1u);
+  DCHECK_GE(times, 1u);
   DVLOGF(4) << "Event ID: " << static_cast<size_t>(event);
 
   base::TimeDelta time_waiting;

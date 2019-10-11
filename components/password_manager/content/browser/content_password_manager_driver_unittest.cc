@@ -27,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
+using autofill::ParsingResult;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
 using base::ASCIIToUTF16;
@@ -82,9 +83,10 @@ class FakePasswordAutofillAgent
   }
 
   // autofill::mojom::PasswordAutofillAgent:
-  MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
+  MOCK_METHOD1(FillPasswordForm, void(const PasswordFormFillData&));
   MOCK_METHOD2(FillIntoFocusedField, void(bool, const base::string16&));
   MOCK_METHOD0(TouchToFillDismissed, void());
+  MOCK_METHOD1(AnnotateFieldsWithParsingResult, void(const ParsingResult&));
 
   MOCK_METHOD0(BlacklistedFormFound, void());
 

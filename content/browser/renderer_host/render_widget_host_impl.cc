@@ -404,8 +404,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
 
   if (!command_line->HasSwitch(switches::kDisableNewContentRenderingTimeout)) {
     new_content_rendering_timeout_ = std::make_unique<TimeoutMonitor>(
-        base::Bind(&RenderWidgetHostImpl::ClearDisplayedGraphics,
-                   weak_factory_.GetWeakPtr()));
+        base::BindRepeating(&RenderWidgetHostImpl::ClearDisplayedGraphics,
+                            weak_factory_.GetWeakPtr()));
   }
 
   enable_viz_ = features::IsVizDisplayCompositorEnabled();
@@ -1754,12 +1754,12 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
 }
 
 void RenderWidgetHostImpl::GetSnapshotFromBrowser(
-    const GetSnapshotFromBrowserCallback& callback,
+    GetSnapshotFromBrowserCallback callback,
     bool from_surface) {
   int snapshot_id = next_browser_snapshot_id_++;
   if (from_surface) {
     pending_surface_browser_snapshots_.insert(
-        std::make_pair(snapshot_id, callback));
+        std::make_pair(snapshot_id, std::move(callback)));
     Send(new WidgetMsg_ForceRedraw(GetRoutingID(), snapshot_id));
     return;
   }
@@ -1772,7 +1772,8 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
     GetWakeLock()->RequestWakeLock();
 #endif
   // TODO(nzolghadr): Remove the duplication here and the if block just above.
-  pending_browser_snapshots_.insert(std::make_pair(snapshot_id, callback));
+  pending_browser_snapshots_.insert(
+      std::make_pair(snapshot_id, std::move(callback)));
   Send(new WidgetMsg_ForceRedraw(GetRoutingID(), snapshot_id));
 }
 
@@ -2884,8 +2885,8 @@ void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
 
     ui::GrabViewSnapshotAsync(
         GetView()->GetNativeView(), snapshot_bounds,
-        base::Bind(&RenderWidgetHostImpl::OnSnapshotReceived,
-                   weak_factory_.GetWeakPtr(), snapshot_id));
+        base::BindOnce(&RenderWidgetHostImpl::OnSnapshotReceived,
+                       weak_factory_.GetWeakPtr(), snapshot_id));
   }
 }
 
@@ -2911,7 +2912,7 @@ void RenderWidgetHostImpl::OnSnapshotFromSurfaceReceived(
   auto it = pending_surface_browser_snapshots_.begin();
   while (it != pending_surface_browser_snapshots_.end()) {
     if (it->first <= snapshot_id) {
-      it->second.Run(image);
+      std::move(it->second).Run(image);
       pending_surface_browser_snapshots_.erase(it++);
     } else {
       ++it;
@@ -2926,7 +2927,7 @@ void RenderWidgetHostImpl::OnSnapshotReceived(int snapshot_id,
   auto it = pending_browser_snapshots_.begin();
   while (it != pending_browser_snapshots_.end()) {
     if (it->first <= snapshot_id) {
-      it->second.Run(image);
+      std::move(it->second).Run(image);
       pending_browser_snapshots_.erase(it++);
     } else {
       ++it;

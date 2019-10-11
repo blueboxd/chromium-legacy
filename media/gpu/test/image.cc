@@ -59,8 +59,8 @@ Image::Image(const base::FilePath& file_path) : file_path_(file_path) {}
 Image::~Image() {}
 
 bool Image::Load() {
-  CHECK(!file_path_.empty());
-  CHECK(!IsLoaded());
+  DCHECK(!file_path_.empty());
+  DCHECK(!IsLoaded());
 
   ResolveTestFilePath(&file_path_);
 

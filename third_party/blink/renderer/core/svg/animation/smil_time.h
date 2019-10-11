@@ -70,10 +70,10 @@ class SMILTime {
     return base::TimeDelta::FromMicroseconds(1);
   }
   static constexpr SMILTime FromSecondsD(double seconds) {
-    return base::TimeDelta::FromSecondsD(seconds);
+    return std::min(SMILTime(base::TimeDelta::FromSecondsD(seconds)), Latest());
   }
   static constexpr SMILTime FromMicroseconds(int64_t us) {
-    return base::TimeDelta::FromMicroseconds(us);
+    return std::min(SMILTime(base::TimeDelta::FromMicroseconds(us)), Latest());
   }
 
   // Used for computing progress. Don't use for anything else.

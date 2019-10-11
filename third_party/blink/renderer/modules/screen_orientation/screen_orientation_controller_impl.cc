@@ -87,13 +87,14 @@ void ScreenOrientationControllerImpl::UpdateOrientation() {
   DCHECK(orientation_);
   DCHECK(GetPage());
   ChromeClient& chrome_client = GetPage()->GetChromeClient();
-  WebScreenInfo screen_info = chrome_client.GetScreenInfo();
+  WebScreenInfo screen_info = chrome_client.GetScreenInfo(*GetFrame());
   WebScreenOrientationType orientation_type = screen_info.orientation_type;
   if (orientation_type == kWebScreenOrientationUndefined) {
     // The embedder could not provide us with an orientation, deduce it
     // ourselves.
-    orientation_type = ComputeOrientation(chrome_client.GetScreenInfo().rect,
-                                          screen_info.orientation_angle);
+    orientation_type =
+        ComputeOrientation(chrome_client.GetScreenInfo(*GetFrame()).rect,
+                           screen_info.orientation_angle);
   }
   DCHECK(orientation_type != kWebScreenOrientationUndefined);
 
@@ -122,7 +123,7 @@ void ScreenOrientationControllerImpl::PageVisibilityChanged() {
   // The orientation type and angle are tied in a way that if the angle has
   // changed, the type must have changed.
   uint16_t current_angle =
-      GetPage()->GetChromeClient().GetScreenInfo().orientation_angle;
+      GetPage()->GetChromeClient().GetScreenInfo(*GetFrame()).orientation_angle;
 
   // FIXME: sendOrientationChangeEvent() currently send an event all the
   // children of the frame, so it should only be called on the frame on

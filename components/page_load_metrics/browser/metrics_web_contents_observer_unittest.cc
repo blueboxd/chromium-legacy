@@ -12,10 +12,9 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
-#include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
+#include "components/page_load_metrics/browser/page_load_metrics_test_content_browser_client.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/browser/test_metrics_web_contents_observer_embedder.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/test/navigation_simulator.h"
@@ -59,24 +58,6 @@ content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
   resource_load_info->load_timing_info.request_start = base::TimeTicks::Now();
   return resource_load_info;
 }
-
-class PageLoadMetricsTestContentBrowserClient
-    : public content::ContentBrowserClient {
- public:
-  PageLoadMetricsTestContentBrowserClient() = default;
-  ~PageLoadMetricsTestContentBrowserClient() override = default;
-
-  std::vector<std::unique_ptr<content::NavigationThrottle>>
-  CreateThrottlesForNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
-    if (navigation_handle->IsInMainFrame()) {
-      throttles.push_back(page_load_metrics::MetricsNavigationThrottle::Create(
-          navigation_handle));
-    }
-    return throttles;
-  }
-};
 
 }  //  namespace
 

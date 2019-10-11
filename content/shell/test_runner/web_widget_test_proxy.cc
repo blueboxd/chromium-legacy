@@ -120,6 +120,21 @@ void WebWidgetTestProxy::StartDragging(network::mojom::ReferrerPolicy policy,
   event_sender()->DoDragDrop(data, mask);
 }
 
+blink::WebScreenInfo WebWidgetTestProxy::GetScreenInfo() {
+  blink::WebScreenInfo info = RenderWidget::GetScreenInfo();
+
+  MockScreenOrientationClient* mock_client =
+      GetTestRunner()->GetMockScreenOrientationClient();
+
+  if (!mock_client->IsDisabled()) {
+    // Override screen orientation information with mock data.
+    info.orientation_type = mock_client->CurrentOrientationType();
+    info.orientation_angle = mock_client->CurrentOrientationAngle();
+  }
+
+  return info;
+}
+
 WebViewTestProxy* WebWidgetTestProxy::GetWebViewTestProxy() {
   if (delegate()) {
     // TODO(https://crbug.com/545684): Because WebViewImpl still inherits

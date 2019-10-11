@@ -1127,7 +1127,7 @@ void RenderAccessibilityImpl::Scroll(const ui::AXActionTarget* target,
 void RenderAccessibilityImpl::RecordImageMetrics(AXContentTreeUpdate* update) {
   if (!render_frame_->accessibility_mode().has_mode(ui::AXMode::kScreenReader))
     return;
-  float scale_factor = render_frame_->GetRenderView()->GetDeviceScaleFactor();
+  float scale_factor = render_frame_->GetDeviceScaleFactor();
   for (size_t i = 0; i < update->nodes.size(); ++i) {
     ui::AXNodeData& node_data = update->nodes[i];
     if (node_data.role != ax::mojom::Role::kImage)

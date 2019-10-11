@@ -265,9 +265,9 @@ class FileManagerUI {
 
     /**
      * List container.
-     * @type {ListContainer}
+     * @type {!ListContainer}
      */
-    this.listContainer = null;
+    this.listContainer;
 
     /**
      * @type {!HTMLElement}

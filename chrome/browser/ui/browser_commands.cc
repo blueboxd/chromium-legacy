@@ -717,6 +717,12 @@ bool CanDuplicateTab(const Browser* browser) {
   return CanDuplicateTabAt(browser, browser->tab_strip_model()->active_index());
 }
 
+bool CanDuplicateKeyboardFocusedTab(const Browser* browser) {
+  if (!HasKeyboardFocusedTab(browser))
+    return false;
+  return CanDuplicateTabAt(browser, *GetKeyboardFocusedTabIndex(browser));
+}
+
 WebContents* DuplicateTabAt(Browser* browser, int index) {
   WebContents* contents = browser->tab_strip_model()->GetWebContentsAt(index);
   CHECK(contents);
@@ -789,6 +795,32 @@ void MuteSite(Browser* browser) {
   browser->tab_strip_model()->ExecuteContextMenuCommand(
       browser->tab_strip_model()->active_index(),
       TabStripModel::ContextMenuCommand::CommandToggleSiteMuted);
+}
+
+void MuteSiteForKeyboardFocusedTab(Browser* browser) {
+  if (!HasKeyboardFocusedTab(browser))
+    return;
+  browser->tab_strip_model()->ExecuteContextMenuCommand(
+      *GetKeyboardFocusedTabIndex(browser),
+      TabStripModel::ContextMenuCommand::CommandToggleSiteMuted);
+}
+
+void PinKeyboardFocusedTab(Browser* browser) {
+  if (!HasKeyboardFocusedTab(browser))
+    return;
+  browser->tab_strip_model()->ExecuteContextMenuCommand(
+      *GetKeyboardFocusedTabIndex(browser),
+      TabStripModel::ContextMenuCommand::CommandTogglePinned);
+}
+
+void DuplicateKeyboardFocusedTab(Browser* browser) {
+  if (HasKeyboardFocusedTab(browser)) {
+    DuplicateTabAt(browser, *GetKeyboardFocusedTabIndex(browser));
+  }
+}
+
+bool HasKeyboardFocusedTab(const Browser* browser) {
+  return GetKeyboardFocusedTabIndex(browser).has_value();
 }
 
 void ConvertPopupToTabbedBrowser(Browser* browser) {
@@ -1330,5 +1362,11 @@ bool CanCreateBookmarkApp(const Browser* browser) {
   return web_app::CanCreateWebApp(browser);
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if !defined(TOOLKIT_VIEWS)
+base::Optional<int> GetKeyboardFocusedTabIndex(const Browser* browser) {
+  return base::nullopt;
+}
+#endif
 
 }  // namespace chrome

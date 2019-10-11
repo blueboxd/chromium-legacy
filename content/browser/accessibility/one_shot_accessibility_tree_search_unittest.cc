@@ -232,9 +232,9 @@ TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest,
   EXPECT_EQ(4, search.GetMatchAtIndex(0)->GetId());
 }
 
-TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, VisibleOnly) {
+TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, OnscreenOnly) {
   OneShotAccessibilityTreeSearch search(tree_->GetRoot());
-  search.SetVisibleOnly(true);
+  search.SetOnscreenOnly(true);
   ASSERT_EQ(5U, search.CountMatches());
   EXPECT_EQ(1, search.GetMatchAtIndex(0)->GetId());
   EXPECT_EQ(2, search.GetMatchAtIndex(1)->GetId());

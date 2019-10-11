@@ -23,8 +23,10 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.weblayer.BrowserController;
+import org.chromium.weblayer.BrowserFragment;
 import org.chromium.weblayer.BrowserFragmentController;
 import org.chromium.weblayer.BrowserObserver;
+import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.WebLayer;
 
@@ -37,11 +39,11 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
     private static final boolean USE_WEBVIEW = false;
 
     private Profile mProfile;
-    private final BrowserFragmentController mBrowserFragmentControllers[] =
-            new BrowserFragmentController[4];
+    private final BrowserFragment mBrowserFragments[] = new BrowserFragment[4];
     private final ContainerFrameLayout mContainerViews[] = new ContainerFrameLayout[4];
     private final MyWebView mWebViews[] = new MyWebView[4];
     private FrameLayout mMainView;
+    private WebLayer mWebLayer;
 
     public static class ContainerFrameLayout extends FrameLayout {
         private final BrowserFragmentController mFragmentController;
@@ -115,21 +117,22 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
     }
 
     private void createNewFragment(int index) {
-        mBrowserFragmentControllers[index] = mProfile.createBrowserFragmentController(this);
-        final BrowserController controller = mBrowserFragmentControllers[index]
-                .getBrowserController();
+        int viewId = View.generateViewId();
+
+        mBrowserFragments[index] = WebLayer.createBrowserFragment(null);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.add(viewId, mBrowserFragments[index]);
+        transaction.commitNow();
+
+        final BrowserController controller = getFragmentController(index).getBrowserController();
 
         ContainerFrameLayout container =
-                new ContainerFrameLayout(this, mBrowserFragmentControllers[index],
-                        index);
+                new ContainerFrameLayout(this, getFragmentController(index), index);
         mContainerViews[index] = container;
-        int viewId = View.generateViewId();
         container.setId(viewId);
         mMainView.addView(container);
 
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(viewId, mBrowserFragmentControllers[index].getFragment());
-        transaction.commit();
+
 
         EditText urlView = new EditText(this);
         urlView.setSelectAllOnFocus(true);
@@ -151,7 +154,7 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
                 return true;
             }
         });
-        mBrowserFragmentControllers[index].setTopView(urlView);
+        getFragmentController(index).setTopView(urlView);
 
         controller.addObserver(new BrowserObserver() {
             @Override
@@ -189,11 +192,15 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
             }
         } else {
             // Only call init for main process.
-            WebLayer webLayer = null;
             try {
-                webLayer = WebLayer.create(getApplication()).get();
+                mWebLayer = WebLayer.create(getApplication()).get();
             } catch (Exception e) {
                 throw new RuntimeException("failed loading WebLayer", e);
+            }
+            if (savedInstanceState != null) {
+                // This prevents FragmentManager from restoring fragments.
+                // TODO(pshmakov): restore fragments properly, as in WebLayerShellActivity.
+                savedInstanceState.remove("android:support:fragments");
             }
 
             super.onCreate(savedInstanceState);
@@ -202,30 +209,15 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
             mMainView = mainView;
             setContentView(mainView);
 
-            mProfile = webLayer.createProfile(null);
-
             createNewFragment(0);
             createNewFragment(1);
             createNewFragment(2);
+            mProfile = getFragmentController(0).getProfile();
 
-            mBrowserFragmentControllers[0].getBrowserController().getNavigationController()
-                    .navigate(Uri.parse(sanitizeUrl("https://www.google.com")));
-            mBrowserFragmentControllers[1].getBrowserController().getNavigationController()
-                    .navigate(Uri.parse(sanitizeUrl("https://en.wikipedia.org")));
-            mBrowserFragmentControllers[2].getBrowserController().getNavigationController()
-                    .navigate(Uri.parse(sanitizeUrl("https://www.chromium.org")));
+            getNavigationController(0).navigate(Uri.parse(sanitizeUrl("https://www.google.com")));
+            getNavigationController(1).navigate(Uri.parse(sanitizeUrl("https://en.wikipedia.org")));
+            getNavigationController(2).navigate(Uri.parse(sanitizeUrl("https://www.chromium.org")));
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        for (int i = 0; i < mBrowserFragmentControllers.length; ++i) {
-            BrowserFragmentController fragment = mBrowserFragmentControllers[i];
-            if (fragment != null) fragment.destroy();
-            mBrowserFragmentControllers[i] = null;
-        }
-        if (mProfile != null) mProfile.destroy();
-        super.onDestroy();
     }
 
     @Override
@@ -252,14 +244,22 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
             mContainerViews[1].setOnClickListener(new OnClickImpl());
             mContainerViews[2].setOnClickListener(new OnClickImpl());
             mContainerViews[0].post(() -> {
-                mBrowserFragmentControllers[0].setSupportsEmbedding(true).addCallback(
+                getFragmentController(0).setSupportsEmbedding(true).addCallback(
                         (Boolean result) -> animateDown(mContainerViews[0]));
-                mBrowserFragmentControllers[1].setSupportsEmbedding(true).addCallback(
+                getFragmentController(1).setSupportsEmbedding(true).addCallback(
                         (Boolean result) -> animateDown(mContainerViews[1]));
-                mBrowserFragmentControllers[2].setSupportsEmbedding(true).addCallback(
+                getFragmentController(2).setSupportsEmbedding(true).addCallback(
                         (Boolean result) -> animateDown(mContainerViews[2]));
             });
         }
+    }
+
+    private BrowserFragmentController getFragmentController(int index) {
+        return mBrowserFragments[index].getController();
+    }
+
+    private NavigationController getNavigationController(int index) {
+        return getFragmentController(index).getBrowserController().getNavigationController();
     }
 
     private ContainerFrameLayout mFullscreenContainer;

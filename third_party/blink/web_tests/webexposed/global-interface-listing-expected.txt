@@ -2357,11 +2357,6 @@ interface EventTarget
     method constructor
     method dispatchEvent
     method removeEventListener
-interface ExperimentalBadge
-    static method clear
-    static method set
-    attribute @@toStringTag
-    method constructor
 interface External
     attribute @@toStringTag
     method AddSearchProvider
@@ -5215,6 +5210,7 @@ interface Navigator
     getter webkitTemporaryStorage
     getter xr
     method canShare
+    method clearExperimentalAppBadge
     method constructor
     method getBattery
     method getGamepads
@@ -5227,6 +5223,7 @@ interface Navigator
     method requestMIDIAccess
     method requestMediaKeySystemAccess
     method sendBeacon
+    method setExperimentalAppBadge
     method share
     method unregisterProtocolHandler
     method vibrate

@@ -124,14 +124,19 @@ class MediaPipelineBackendManager {
 
   BufferDelegate* buffer_delegate() const { return buffer_delegate_; }
 
-  bool IsPlaying(bool include_sfx, AudioContentType type);
-
   // If |power_save_enabled| is |false|, power save will be turned off and
   // automatic power save will be disabled until this is called with |true|.
   void SetPowerSaveEnabled(bool power_save_enabled);
 
  private:
   friend class ActiveMediaPipelineBackendWrapper;
+
+  class MixerConnection {
+   public:
+    virtual ~MixerConnection() = default;
+  };
+
+  void CreateMixerConnection();
 
   // Backend wrapper instances must use these APIs when allocating and releasing
   // decoder objects, so we can enforce global limit on #concurrent decoders.
@@ -142,6 +147,9 @@ class MediaPipelineBackendManager {
   void UpdatePlayingAudioCount(bool sfx,
                                const AudioContentType type,
                                int change);
+  void OnMixerStreamCountChange(int primary_streams, int sfx_streams);
+  void HandlePlayingAudioStreamsChange(bool had_playing_audio_streams,
+                                       bool prev_allow_feedback);
   int TotalPlayingAudioStreamsCount();
   int TotalPlayingNoneffectsAudioStreamsCount();
 
@@ -169,6 +177,10 @@ class MediaPipelineBackendManager {
   bool power_save_enabled_ = true;
 
   base::OneShotTimer power_save_timer_;
+
+  std::unique_ptr<MixerConnection> mixer_connection_;
+  int mixer_primary_stream_count_ = 0;
+  int mixer_sfx_stream_count_ = 0;
 
   base::WeakPtrFactory<MediaPipelineBackendManager> weak_factory_;
 

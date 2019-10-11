@@ -56,10 +56,10 @@ cr.define('restore_state_test', function() {
        ['headerFooter', 'isHeaderFooterEnabled'],
        ['layout', 'isLandscapeEnabled'],
        ['collate', 'isCollateEnabled'],
-       ['fitToPage', 'isFitToPageEnabled'],
        ['cssBackground', 'isCssBackgroundEnabled'],
        ['scaling', 'scaling'],
-       ['customScaling', 'customScaling'],
+       ['scalingType', 'scalingType'],
+       ['scalingTypePdf', 'scalingTypePdf'],
       ].forEach(keys => {
         assertEquals(stickySettings[keys[1]], page.settings[keys[0]].value);
       });
@@ -114,11 +114,11 @@ cr.define('restore_state_test', function() {
           printArea: 6,
         },
         marginsType: 3, /* custom */
-        customScaling: true,
         scaling: '90',
+        scalingType: print_preview.ScalingType.CUSTOM,
+        scalingTypePdf: print_preview.ScalingType.FIT_TO_PAGE,
         isHeaderFooterEnabled: true,
         isCssBackgroundEnabled: true,
-        isFitToPageEnabled: true,
         isCollateEnabled: true,
         isDuplexEnabled: true,
         isDuplexShortEdge: true,
@@ -154,11 +154,11 @@ cr.define('restore_state_test', function() {
           printArea: 4,
         },
         marginsType: 0, /* default */
-        customScaling: false,
         scaling: '120',
+        scalingType: print_preview.ScalingType.DEFAULT,
+        scalingTypePdf: print_preview.ScalingType.DEFAULT,
         isHeaderFooterEnabled: false,
         isCssBackgroundEnabled: false,
-        isFitToPageEnabled: false,
         isCollateEnabled: false,
         isDuplexEnabled: false,
         isDuplexShortEdge: false,
@@ -229,9 +229,15 @@ cr.define('restore_state_test', function() {
         },
         {
           section: 'print-preview-scaling-settings',
-          settingName: 'customScaling',
-          key: 'customScaling',
-          value: true,
+          settingName: 'scalingType',
+          key: 'scalingType',
+          value: print_preview.ScalingType.CUSTOM,
+        },
+        {
+          section: 'print-preview-scaling-settings',
+          settingName: 'scalingTypePdf',
+          key: 'scalingTypePdf',
+          value: print_preview.ScalingType.CUSTOM,
         },
         {
           section: 'print-preview-scaling-settings',

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -162,6 +163,11 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
         switches::autoplay::kNoUserGestureRequiredPolicy);
   }
 
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(media::kGlobalMediaControls);
+    InProcessBrowserTest::SetUp();
+  }
+
   MediaToolbarButtonView* GetToolbarIcon() {
     return BrowserView::GetBrowserViewForBrowser(browser())
         ->toolbar()
@@ -273,6 +279,8 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   content::WebContents* GetWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
+
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDialogViewBrowserTest);
 };

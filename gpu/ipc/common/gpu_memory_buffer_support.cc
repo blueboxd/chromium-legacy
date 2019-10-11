@@ -110,8 +110,8 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
   NOTREACHED();
   return false;
 #elif defined(USE_OZONE)
-  return ui::OzonePlatform::EnsureInstance()->IsNativePixmapConfigSupported(
-      format, usage);
+  return ui::OzonePlatform::GetInstance()->IsNativePixmapConfigSupported(format,
+                                                                         usage);
 #elif defined(OS_LINUX)
   return false;  // TODO(julian.isorce): Add linux support.
 #elif defined(OS_WIN)

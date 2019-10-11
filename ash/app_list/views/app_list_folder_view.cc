@@ -565,7 +565,7 @@ void AppListFolderView::OnAppListItemWillBeDeleted(AppListItem* item) {
   if (item == folder_item_) {
     items_grid_view_->OnFolderItemRemoved();
     folder_header_view_->OnFolderItemRemoved();
-    folder_item_ = NULL;
+    folder_item_ = nullptr;
 
     // Do not change state if it is hidden.
     if (hide_for_reparent_ || contents_container_->layer()->opacity() == 0.0f)
@@ -574,9 +574,9 @@ void AppListFolderView::OnAppListItemWillBeDeleted(AppListItem* item) {
     // If the folder item associated with this view is removed from the model,
     // (e.g. the last item in the folder was deleted), reset the view and signal
     // the container view to show the app list instead.
-    // Pass NULL to ShowApps() to avoid triggering animation from the deleted
+    // Pass nullptr to ShowApps() to avoid triggering animation from the deleted
     // folder.
-    container_view_->ShowApps(NULL);
+    container_view_->ShowApps(nullptr);
   }
 }
 

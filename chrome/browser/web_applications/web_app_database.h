@@ -48,13 +48,9 @@ class WebAppDatabase {
   void OpenDatabase(RegistryOpenedCallback callback);
 
   using CompletionCallback = base::OnceCallback<void(bool success)>;
-  // There can be only 1 transaction at a time.
-  void BeginTransaction();
-  void CommitTransaction(
-      const RegistryUpdateData& update_data,
-      std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
-      CompletionCallback callback);
-  void CancelTransaction();
+  void Write(const RegistryUpdateData& update_data,
+             std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+             CompletionCallback callback);
 
   // Exposed for testing.
   static std::unique_ptr<WebAppProto> CreateWebAppProto(const WebApp& web_app);
@@ -83,7 +79,6 @@ class WebAppDatabase {
                      const base::Optional<syncer::ModelError>& error);
 
   std::unique_ptr<syncer::ModelTypeStore> store_;
-  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch_;
   AbstractWebAppDatabaseFactory* const database_factory_;
   ReportErrorCallback error_callback_;
 

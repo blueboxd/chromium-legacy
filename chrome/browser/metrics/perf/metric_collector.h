@@ -75,13 +75,6 @@ class MetricCollector {
   }
 
  protected:
-  // Perf proto type.
-  enum class PerfProtoType {
-    PERF_TYPE_DATA,
-    PERF_TYPE_STAT,
-    PERF_TYPE_UNSUPPORTED,
-  };
-
   // Enumeration representing success and various failure modes for collecting
   // profile data. These values are persisted to logs. Entries should not be
   // renumbered and numeric values should never be reused.
@@ -149,11 +142,9 @@ class MetricCollector {
   // Collector specific logic for stopping the current collection.
   virtual void StopCollection() {}
 
-  // Parses the given serialized perf proto of the given type (data or stat).
-  // If valid, it adds it to the given sampled_profile and stores it in the
-  // local profile data cache.
+  // Parses the given serialized perf data proto. If valid, it adds it to the
+  // given sampled_profile and stores it in the local profile data cache.
   void SaveSerializedPerfProto(std::unique_ptr<SampledProfile> sampled_profile,
-                               PerfProtoType type,
                                std::string serialized_proto);
 
   // Returns a const reference to the collection_params.

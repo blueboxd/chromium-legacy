@@ -23,11 +23,6 @@ var SigninSyncConfirmationTest = class extends PolymerTest {
   }
 
   /** @override */
-  testGenPreamble() {
-    GEN('  EnableUnity();');
-  }
-
-  /** @override */
   get browsePreload() {
     return 'chrome://sync-confirmation/sync_confirmation_app.html';
   }

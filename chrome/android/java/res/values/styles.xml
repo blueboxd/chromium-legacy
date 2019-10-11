@@ -633,6 +633,20 @@
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
 
+    <!-- Tab Layout -->
+    <style name="TabLayoutStyle">
+        <item name="tabIndicator">@drawable/tab_indicator</item>
+        <item name="tabIndicatorFullWidth">false</item>
+        <item name="tabIndicatorHeight">@dimen/tab_indicator_height</item>
+        <item name="tabPaddingStart">5dp</item>
+        <item name="tabPaddingEnd">5dp</item>
+        <item name="tabMode">fixed</item>
+        <item name="tabGravity">fill</item>
+        <item name="tabTextColor">@color/default_text_color_secondary</item>
+        <item name="tabSelectedTextColor">@color/tab_layout_selected_tab_color</item>
+        <item name="android:background">@color/modern_primary_color</item>
+    </style>
+
     <!-- Misc styles -->
     <style name="LocationBarButton">
         <item name="android:background">@null</item>

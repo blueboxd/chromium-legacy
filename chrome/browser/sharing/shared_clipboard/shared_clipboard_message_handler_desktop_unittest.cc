@@ -34,7 +34,7 @@ const char kDeviceNameInMessage[] = "DeviceNameInMessage";
 
 class MockSharingDeviceRegistration : public SharingDeviceRegistration {
  public:
-  explicit MockSharingDeviceRegistration()
+  MockSharingDeviceRegistration()
       : SharingDeviceRegistration(/* pref_service_= */ nullptr,
                                   /* sharing_sync_preference_= */ nullptr,
                                   /* instance_id_driver_= */ nullptr,
@@ -160,6 +160,7 @@ TEST_F(SharedClipboardMessageHandlerTest,
                   /*chrome_version=*/"78.0.0.0",
                   /*sync_user_agent=*/"Chrome", sync_pb::SyncEnums::TYPE_LINUX,
                   /*signin_scoped_device_id=*/base::GenerateGUID(),
+                  base::SysInfo::HardwareInfo(),
                   /*last_updated_timestamp=*/base::Time::Now(),
                   /*send_tab_to_self_receiving_enabled=*/false,
                   /*sharing_info=*/base::nullopt);

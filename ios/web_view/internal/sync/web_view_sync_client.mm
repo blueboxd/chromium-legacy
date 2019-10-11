@@ -161,6 +161,10 @@ invalidation::InvalidationService* WebViewSyncClient::GetInvalidationService() {
   return nullptr;
 }
 
+syncer::TrustedVaultClient* WebViewSyncClient::GetTrustedVaultClient() {
+  return nullptr;
+}
+
 scoped_refptr<syncer::ExtensionsActivity>
 WebViewSyncClient::GetExtensionsActivity() {
   return nullptr;

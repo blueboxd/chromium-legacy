@@ -17,6 +17,7 @@
 #include "chrome/browser/vr/service/vr_ui_host.h"
 #include "components/bubble/bubble_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/geolocation_config.mojom.h"
 
@@ -33,13 +34,13 @@ class VRUiHostImpl : public VRUiHost,
                      public DesktopMediaPickerManager::DialogObserver {
  public:
   VRUiHostImpl(device::mojom::XRDeviceId device_id,
-               device::mojom::XRCompositorHostPtr compositor);
+               mojo::PendingRemote<device::mojom::XRCompositorHost> compositor);
   ~VRUiHostImpl() override;
 
   // Factory for use with VRUiHost::{Set,Get}Factory
   static std::unique_ptr<VRUiHost> Create(
       device::mojom::XRDeviceId device_id,
-      device::mojom::XRCompositorHostPtr compositor);
+      mojo::PendingRemote<device::mojom::XRCompositorHost> compositor);
 
  private:
   // This class manages the transience of each of a CapturingStateModel's flags.
@@ -102,7 +103,7 @@ class VRUiHostImpl : public VRUiHost,
   void InitCapturingStates();
   void PollCapturingState();
 
-  device::mojom::XRCompositorHostPtr compositor_;
+  mojo::Remote<device::mojom::XRCompositorHost> compositor_;
   std::unique_ptr<VRBrowserRendererThreadWin> ui_rendering_thread_;
   device::mojom::VRDisplayInfoPtr info_;
   content::WebContents* web_contents_ = nullptr;

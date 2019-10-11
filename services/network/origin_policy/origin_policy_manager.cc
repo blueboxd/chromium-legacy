@@ -30,9 +30,9 @@ OriginPolicyManager::OriginPolicyManager(NetworkContext* owner_network_context)
 
 OriginPolicyManager::~OriginPolicyManager() {}
 
-void OriginPolicyManager::AddBinding(
-    mojom::OriginPolicyManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void OriginPolicyManager::AddReceiver(
+    mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void OriginPolicyManager::RetrieveOriginPolicy(

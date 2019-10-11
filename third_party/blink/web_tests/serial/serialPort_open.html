@@ -7,15 +7,6 @@
 <script src="resources/serial-test-utils.js"></script>
 <script>
 
-// Waits for |port| to be marked closed by waiting for the ReadableStream to
-// close.
-async function closePortAndWait(port) {
-  const reader = port.readable.getReader();
-  port.close();
-  const { value, done } = await reader.read();
-  assert_true(done);
-}
-
 serial_test(async (t, fake) => {
   const { port, fakePort } = await getFakeSerialPort(fake);
 
@@ -52,7 +43,7 @@ serial_test(async (t, fake) => {
   await [undefined, 7, 8].reduce(async (previousTest, databits) => {
     await previousTest;
     await port.open({ baudrate: 9600, databits });
-    await closePortAndWait(port);
+    await port.close();
   }, Promise.resolve());
 }, 'Data bits must be 7 or 8');
 
@@ -69,7 +60,7 @@ serial_test(async (t, fake) => {
       async (previousTest, parity) => {
         await previousTest;
         await port.open({ baudrate: 9600, parity });
-        await closePortAndWait(port);
+        await port.close();
       }, Promise.resolve());
 }, 'Parity must be "none", "even" or "odd"');
 
@@ -84,7 +75,7 @@ serial_test(async (t, fake) => {
   await [undefined, 1, 2].reduce(async (previousTest, stopbits) => {
     await previousTest;
     await port.open({ baudrate: 9600, stopbits });
-    await closePortAndWait(port);
+    await port.close();
   }, Promise.resolve());
 }, 'Stop bits must be 1 or 2');
 

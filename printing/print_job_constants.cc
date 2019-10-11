@@ -21,9 +21,6 @@ const char kSettingCapabilities[] = "capabilities";
 // Print using cloud print: true if selected, false if not.
 const char kSettingCloudPrintId[] = "cloudPrintID";
 
-// Print using cloud print dialog: true if selected, false if not.
-const char kSettingCloudPrintDialog[] = "printWithCloudPrint";
-
 // Print job setting 'collate'.
 const char kSettingCollate[] = "collate";
 
@@ -162,28 +159,20 @@ const char kSettingPrintableAreaY[] = "printableAreaY";
 const char kSettingPrintableAreaWidth[] = "printableAreaWidth";
 const char kSettingPrintableAreaHeight[] = "printableAreaHeight";
 
-// Printer name.
-const char kSettingPrinterName[] = "printerName";
-
 // Printer description.
 const char kSettingPrinterDescription[] = "printerDescription";
+
+// Printer name.
+const char kSettingPrinterName[] = "printerName";
 
 // Additional printer options.
 const char kSettingPrinterOptions[] = "printerOptions";
 
+// The printer type is an enum PrinterType.
+const char kSettingPrinterType[] = "printerType";
+
 // Print to Google Drive option: true if selected, false if not.
 const char kSettingPrintToGoogleDrive[] = "printToGoogleDrive";
-
-// Print to PDF option: true if selected, false if not.
-const char kSettingPrintToPDF[] = "printToPDF";
-
-// Print using Privet option: true if destination is a Privet printer, false if
-// not.
-const char kSettingPrintWithPrivet[] = "printWithPrivet";
-
-// Print using extension option: true if destination is an extension printer,
-// false if not.
-const char kSettingPrintWithExtension[] = "printWithExtension";
 
 // Scaling factor
 const char kSettingScaleFactor[] = "scaleFactor";

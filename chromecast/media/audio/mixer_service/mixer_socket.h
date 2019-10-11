@@ -11,8 +11,13 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "chromecast/net/small_message_socket.h"
+
+namespace google {
+namespace protobuf {
+class MessageLite;
+}  // namespace protobuf
+}  // namespace google
 
 namespace net {
 class IOBuffer;
@@ -22,6 +27,7 @@ class StreamSocket;
 namespace chromecast {
 namespace media {
 namespace mixer_service {
+class Generic;
 
 // Base class for sending and receiving messages to/from the mixer service.
 // Not thread-safe; all usage of a given instance must be on the same sequence.

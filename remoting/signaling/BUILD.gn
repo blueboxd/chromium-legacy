@@ -23,8 +23,6 @@ static_library("signaling") {
     "ftl_signal_strategy.h",
     "iq_sender.cc",
     "iq_sender.h",
-    "jid_util.cc",
-    "jid_util.h",
     "message_reception_channel.h",
     "message_tracker.cc",
     "message_tracker.h",
@@ -40,6 +38,8 @@ static_library("signaling") {
     "signal_strategy.h",
     "signaling_address.cc",
     "signaling_address.h",
+    "signaling_id_util.cc",
+    "signaling_id_util.h",
     "xmpp_log_to_server.cc",
     "xmpp_log_to_server.h",
   ]
@@ -128,13 +128,13 @@ source_set("unit_tests") {
     "ftl_registration_manager_unittest.cc",
     "ftl_signal_strategy_unittest.cc",
     "iq_sender_unittest.cc",
-    "jid_util_unittest.cc",
     "message_tracker_unittest.cc",
     "push_notification_subscriber_unittest.cc",
     "remoting_log_to_server_unittest.cc",
     "server_log_entry_unittest.cc",
     "server_log_entry_unittest.h",
     "signaling_address_unittest.cc",
+    "signaling_id_util_unittest.cc",
     "xmpp_log_to_server_unittest.cc",
   ]
 

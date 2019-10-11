@@ -152,6 +152,7 @@ TEST_F(SharingSyncPreferenceTest, GetSharingInfoFromProvider) {
       std::make_unique<syncer::DeviceInfo>(
           kDeviceGuid, kDeviceName, "chrome_version", "user_agent",
           sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
+          base::SysInfo::HardwareInfo(),
           /*last_updated_timestamp=*/base::Time::Now(),
           /*send_tab_to_self_receiving_enabled=*/false,
           /*sharing_info=*/base::nullopt);

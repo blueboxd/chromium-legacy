@@ -274,7 +274,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     network::mojom::URLResponseHeadPtr head) {
   if (redirect_url_ != redirect_info.new_url &&
-      !IsRedirectSafe(request_.url, redirect_info.new_url)) {
+      !IsRedirectSafe(request_.url, redirect_info.new_url,
+                      info_->is_navigation_request)) {
     OnRequestError(
         network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT));
     return;
@@ -842,8 +843,11 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
 // Determines whether it is safe to redirect from |from_url| to |to_url|.
 bool WebRequestProxyingURLLoaderFactory::InProgressRequest::IsRedirectSafe(
     const GURL& from_url,
-    const GURL& to_url) {
-  if (to_url.SchemeIs(extensions::kExtensionScheme)) {
+    const GURL& to_url,
+    bool is_navigation_request) {
+  // For navigations, non-web accessible resources will be blocked by
+  // ExtensionNavigationThrottle.
+  if (!is_navigation_request && to_url.SchemeIs(extensions::kExtensionScheme)) {
     const Extension* extension =
         ExtensionRegistry::Get(factory_->browser_context_)
             ->enabled_extensions()
@@ -900,7 +904,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
     int render_process_id,
     scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
-    network::mojom::URLLoaderFactoryRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
     mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
         header_client_receiver,
@@ -910,7 +914,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
 
   auto proxy = std::make_unique<WebRequestProxyingURLLoaderFactory>(
       browser_context, render_process_id, std::move(request_id_generator),
-      std::move(navigation_ui_data), std::move(loader_request),
+      std::move(navigation_ui_data), std::move(loader_receiver),
       std::move(target_factory_info), std::move(header_client_receiver),
       proxies, loader_factory_type);
 

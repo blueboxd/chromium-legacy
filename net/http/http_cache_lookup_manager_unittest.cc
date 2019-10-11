@@ -5,8 +5,10 @@
 #include <memory>
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_cache_lookup_manager.h"
@@ -135,6 +137,13 @@ TEST(HttpCacheLookupManagerTest, ServerPushDoNotCreateCacheEntry) {
 }
 
 TEST(HttpCacheLookupManagerTest, ServerPushHitCache) {
+  // Skip test if split cache is enabled, as it breaks push.
+  // crbug.com/1009619
+  if (base::FeatureList::IsEnabled(
+          net::features::kSplitCacheByNetworkIsolationKey)) {
+    return;
+  }
+
   base::test::TaskEnvironment task_environment;
   MockHttpCache mock_cache;
   HttpCacheLookupManager push_delegate(mock_cache.http_cache());
@@ -173,6 +182,13 @@ TEST(HttpCacheLookupManagerTest, ServerPushHitCache) {
 // pending lookup transaction for the same URL, the new server push will not
 // send a new lookup transaction and should not be canceled.
 TEST(HttpCacheLookupManagerTest, ServerPushPendingLookup) {
+  // Skip test if split cache is enabled, as it breaks push.
+  // crbug.com/1009619
+  if (base::FeatureList::IsEnabled(
+          net::features::kSplitCacheByNetworkIsolationKey)) {
+    return;
+  }
+
   base::test::TaskEnvironment task_environment;
   MockHttpCache mock_cache;
   HttpCacheLookupManager push_delegate(mock_cache.http_cache());
@@ -218,6 +234,13 @@ TEST(HttpCacheLookupManagerTest, ServerPushPendingLookup) {
 
 // Test the server push lookup is based on the full url.
 TEST(HttpCacheLookupManagerTest, ServerPushLookupOnUrl) {
+  // Skip test if split cache is enabled, as it breaks push.
+  // crbug.com/1009619
+  if (base::FeatureList::IsEnabled(
+          net::features::kSplitCacheByNetworkIsolationKey)) {
+    return;
+  }
+
   base::test::TaskEnvironment task_environment;
   MockHttpCache mock_cache;
   HttpCacheLookupManager push_delegate(mock_cache.http_cache());

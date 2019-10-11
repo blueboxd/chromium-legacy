@@ -18,9 +18,9 @@
 #include "remoting/host/host_details.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/signaling/iq_sender.h"
-#include "remoting/signaling/jid_util.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
+#include "remoting/signaling/signaling_id_util.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 
@@ -152,7 +152,7 @@ std::unique_ptr<XmlElement> XmppRegisterSupportHostRequest::CreateSignature(
   signature_tag->AddAttr(QName(kChromotingXmlNamespace, kSignatureTimeAttr),
                          time_str);
 
-  std::string message = NormalizeJid(jid) + ' ' + time_str;
+  std::string message = NormalizeSignalingId(jid) + ' ' + time_str;
   std::string signature(key_pair_->SignMessage(message));
   signature_tag->AddText(signature);
 

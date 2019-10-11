@@ -39,6 +39,7 @@ DeviceInfo::DeviceInfo(const std::string& guid,
                        const std::string& sync_user_agent,
                        const sync_pb::SyncEnums::DeviceType device_type,
                        const std::string& signin_scoped_device_id,
+                       const base::SysInfo::HardwareInfo& hardware_info,
                        base::Time last_updated_timestamp,
                        bool send_tab_to_self_receiving_enabled,
                        const base::Optional<SharingInfo>& sharing_info)
@@ -48,6 +49,7 @@ DeviceInfo::DeviceInfo(const std::string& guid,
       sync_user_agent_(sync_user_agent),
       device_type_(device_type),
       signin_scoped_device_id_(signin_scoped_device_id),
+      hardware_info_(hardware_info),
       last_updated_timestamp_(last_updated_timestamp),
       send_tab_to_self_receiving_enabled_(send_tab_to_self_receiving_enabled),
       sharing_info_(sharing_info) {}
@@ -80,6 +82,10 @@ sync_pb::SyncEnums::DeviceType DeviceInfo::device_type() const {
 
 const std::string& DeviceInfo::signin_scoped_device_id() const {
   return signin_scoped_device_id_;
+}
+
+const base::SysInfo::HardwareInfo& DeviceInfo::hardware_info() const {
+  return hardware_info_;
 }
 
 base::Time DeviceInfo::last_updated_timestamp() const {

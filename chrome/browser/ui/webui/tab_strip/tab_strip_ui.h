@@ -5,22 +5,44 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_TAB_STRIP_TAB_STRIP_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_TAB_STRIP_TAB_STRIP_UI_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/tab_strip/thumbnail_tracker.h"
 #include "content/public/browser/web_ui_controller.h"
 
 class Browser;
 
+namespace gfx {
+class Point;
+}
+
+namespace ui {
+class MenuModel;
+}
+
 // The WebUI version of the tab strip in the browser. It is currently only
 // supported on ChromeOS in tablet mode.
 class TabStripUI : public content::WebUIController {
  public:
+  // Interface to be implemented by the embedder. Provides native UI
+  // functionality such as showing context menus.
+  class Embedder {
+   public:
+    Embedder() = default;
+    virtual ~Embedder() {}
+
+    virtual void ShowContextMenuAtPoint(
+        gfx::Point point,
+        std::unique_ptr<ui::MenuModel> menu_model) = 0;
+  };
+
   explicit TabStripUI(content::WebUI* web_ui);
   ~TabStripUI() override;
 
-  // Initialize TabStripUI with the Browser it is running in. Must be called
-  // exactly once. The WebUI won't work until this is called.
-  void Initialize(Browser* browser);
+  // Initialize TabStripUI with its embedder and the Browser it's running in.
+  // Must be called exactly once. The WebUI won't work until this is called.
+  void Initialize(Browser* browser, Embedder* embedder);
 
  private:
   void HandleThumbnailUpdate(int extension_tab_id, gfx::ImageSkia image);

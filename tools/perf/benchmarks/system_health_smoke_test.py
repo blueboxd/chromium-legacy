@@ -11,6 +11,8 @@ stories as memory ones, only with fewer actions (no memory dumping).
 
 import unittest
 
+from collections import defaultdict
+
 from core import path_util
 from core import perf_benchmark
 
@@ -75,6 +77,8 @@ _DISABLED_TESTS = frozenset({
   'system_health.memory_desktop/browse:news:reddit',
   'system_health.memory_desktop/browse:media:tumblr',
   'system_health.memory_desktop/browse:social:twitter_infinite_scroll',
+  'system_health.memory_mobile/load:social:twitter',
+  'system_health.memory_desktop/load:social:vk',
 
   # crbug.com/637230
   'system_health.memory_desktop/browse:news:cnn',
@@ -313,15 +317,54 @@ def load_tests(loader, standard_tests, pattern):
       names_stories_to_smoke_tests.append(
           benchmark_class.Name() + '/' + story_to_smoke_test.name)
 
-  for i, story_name in enumerate(names_stories_to_smoke_tests):
-    for j in xrange(i + 1, len(names_stories_to_smoke_tests)):
-      other_story_name = names_stories_to_smoke_tests[j]
-      if (other_story_name.startswith(story_name + ':') and
-          story_name not in _DISABLED_TESTS):
-        raise ValueError(
-            'Story %s is to be replaced by %s. Please put %s in '
-            '_DISABLED_TESTS list to save CQ capacity (see crbug.com/893615)). '
-            'You can use crbug.com/878390 for the disabling reference.' %
-            (repr(story_name), repr(other_story_name), repr(story_name)))
+  # The full story name should follow this convention: story_name[:version],
+  # where version is a year. Please refer to the link below for details:
+  # https://docs.google.com/document/d/134u_j_Lk2hLiDHYxK3NVdZM_sOtExrsExU-hiNFa1uw
+  # Raise exception for stories which have more than one version enabled.
+  multi_version_stories = find_multi_version_stories(
+      names_stories_to_smoke_tests, _DISABLED_TESTS)
+  if len(multi_version_stories):
+    msg = ''
+    for prefix, stories in multi_version_stories.items():
+      msg += prefix + ' : ' + ','.join(stories) + '\n'
+    raise ValueError(
+        'The stories below has multiple versions.'
+        'In order to save CQ capacity, we should only run the latest '
+        'version on CQ. Please put the legacy stories in _DISABLED_TESTS '
+        'list or remove them to save CQ capacity (see crbug.com/893615)). '
+        'You can use crbug.com/878390 for the disabling reference.'
+        '[StoryName] : [StoryVersion1],[StoryVersion2]...\n%s' % (msg))
 
   return suite
+
+
+def find_multi_version_stories(stories, disabled):
+  """Looks for stories with multiple versions enabled.
+
+  Args:
+    stories: list of strings, which are names of all the candidate stories.
+    disabled: frozenset of strings, which are names of stories which are
+      disabled.
+
+  Returns:
+    A dict mapping from a prefix string to a list of stories each of which
+    has the name with that prefix and has multiple versions enabled.
+  """
+  prefixes = defaultdict(list)
+  for name in stories:
+    if name in disabled:
+      continue
+    lastColon = name.rfind(':')
+    if lastColon == -1:
+      prefix = name
+    else:
+      version = name[lastColon+1:]
+      if version.isdigit():
+        prefix = name[:lastColon]
+      else:
+        prefix = name
+    prefixes[prefix].append(name)
+  for prefix, stories in prefixes.items():
+    if len(stories) == 1:
+      prefixes.pop(prefix)
+  return prefixes

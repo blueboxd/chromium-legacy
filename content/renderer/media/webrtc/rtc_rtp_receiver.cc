@@ -17,7 +17,8 @@ RtpReceiverState::RtpReceiverState(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
     scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver,
-    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref,
+    std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+        track_ref,
     std::vector<std::string> stream_id)
     : main_task_runner_(std::move(main_task_runner)),
       signaling_task_runner_(std::move(signaling_task_runner)),
@@ -114,7 +115,7 @@ RtpReceiverState::webrtc_dtls_transport_information() const {
   return webrtc_dtls_transport_information_;
 }
 
-const std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>&
+const std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>&
 RtpReceiverState::track_ref() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   return track_ref_;

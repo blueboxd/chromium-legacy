@@ -15,8 +15,10 @@ class WebauthnOfferDialogModel;
 // model of the dialog.
 class WebauthnOfferDialogView {
  public:
-  static WebauthnOfferDialogModel* CreateAndShow(
+  static WebauthnOfferDialogView* CreateAndShow(
       WebauthnOfferDialogController* controller);
+
+  virtual WebauthnOfferDialogModel* GetDialogModel() const = 0;
 };
 
 }  // namespace autofill

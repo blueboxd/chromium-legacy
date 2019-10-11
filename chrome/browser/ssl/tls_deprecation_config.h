@@ -16,6 +16,6 @@ class LegacyTLSExperimentConfig;
 void SetRemoteTLSDeprecationConfigProto(
     std::unique_ptr<chrome_browser_ssl::LegacyTLSExperimentConfig> proto);
 
-bool IsTLSDeprecationConfigControlSite(const GURL& url);
+bool ShouldSuppressLegacyTLSWarning(const GURL& url);
 
 #endif  // CHROME_BROWSER_SSL_TLS_DEPRECATION_CONFIG_H_

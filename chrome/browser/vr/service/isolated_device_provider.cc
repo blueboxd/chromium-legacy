@@ -40,7 +40,7 @@ void IsolatedVRDeviceProvider::OnDeviceAdded(
     device::mojom::XRRuntimePtr device,
     mojo::PendingRemote<device::mojom::IsolatedXRGamepadProviderFactory>
         gamepad_factory,
-    device::mojom::XRCompositorHostPtr compositor_host,
+    mojo::PendingRemote<device::mojom::XRCompositorHost> compositor_host,
     device::mojom::XRDeviceId device_id) {
   add_device_callback_.Run(device_id, nullptr, std::move(device));
 

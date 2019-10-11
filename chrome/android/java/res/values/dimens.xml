@@ -135,7 +135,7 @@
 
     <!-- Overlay panel dimensions -->
     <dimen name="overlay_panel_bar_height_legacy">56dp</dimen>
-    <dimen name="overlay_panel_bar_height">60dp</dimen>
+    <dimen name="overlay_panel_bar_height">70dp</dimen>
     <dimen name="preview_tab_favicon_size">24dp</dimen>
 
     <!-- Autofill keyboard accessory dimensions -->
@@ -685,4 +685,9 @@
     <dimen name="theme_preferences_checkbox_margin_end">8dp</dimen>
     <dimen name="theme_preferences_checkbox_container_padding_start">60dp</dimen>
     <dimen name="theme_preferences_checkbox_container_padding_end">16dp</dimen>
+
+    <!-- Dimens of tab indicator -->
+    <dimen name="tab_indicator_height">3dp</dimen>
+    <dimen name="tab_indicator_radius">3dp</dimen>
+    <dimen name="tab_indicator_padding">2dp</dimen>
 </resources>

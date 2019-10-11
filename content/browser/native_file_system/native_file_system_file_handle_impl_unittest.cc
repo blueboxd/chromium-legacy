@@ -72,6 +72,8 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
             allow_grant_, allow_grant_, /*file_system=*/{}));
   }
 
+  void TearDown() override { task_environment_.RunUntilIdle(); }
+
   std::string ReadFile(const FileSystemURL& url) {
     std::unique_ptr<storage::FileStreamReader> reader =
         file_system_context_->CreateFileStreamReader(

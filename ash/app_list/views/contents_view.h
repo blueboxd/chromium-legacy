@@ -97,7 +97,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // The app list gets closed and drag and drop operations need to be cancelled.
   void CancelDrag();
 
-  // If |drag_and_drop| is not NULL it will be called upon drag and drop
+  // If |drag_and_drop| is not nullptr it will be called upon drag and drop
   // operations outside the application list.
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);

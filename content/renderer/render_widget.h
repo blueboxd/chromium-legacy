@@ -121,6 +121,7 @@ class RenderFrameImpl;
 class RenderFrameProxy;
 class RenderViewImpl;
 class RenderWidgetDelegate;
+class RenderWidgetScreenMetricsEmulator;
 class WidgetInputHandlerManager;
 struct VisualProperties;
 
@@ -229,25 +230,31 @@ class CONTENT_EXPORT RenderWidget
       mojo::PendingReceiver<mojom::Widget> widget_receiver);
 
   // Initialize a new RenderWidget for a popup. The |show_callback| is called
-  // when RenderWidget::Show() happens.
+  // when RenderWidget::Show() happens. The |opener_widget| is the local root
+  // of the frame that is opening the popup.
   void InitForPopup(ShowCallback show_callback,
-                    blink::WebPagePopup* web_page_popup);
+                    RenderWidget* opener_widget,
+                    blink::WebPagePopup* web_page_popup,
+                    const ScreenInfo& screen_info);
 
   // Initialize a new RenderWidget for pepper fullscreen. The |show_callback| is
   // called when RenderWidget::Show() happens.
   void InitForPepperFullscreen(ShowCallback show_callback,
-                               blink::WebWidget* web_widget);
+                               blink::WebWidget* web_widget,
+                               const ScreenInfo& screen_info);
 
   // Initialize a new RenderWidget that will be attached to a RenderFrame (via
-  // the WebFrameWidget), for a frame that is a main frame. At the time of
-  // initialization, the WebWidget is not always available, and it will be set
-  // once the main frame is attached.
-  void InitForMainFrame(ShowCallback show_callback);
+  // the WebFrameWidget), for a frame that is a main frame. When WebFrameWidget
+  // is given, a ScreenInfo must be also.
+  void InitForMainFrame(ShowCallback show_callback,
+                        blink::WebFrameWidget* web_frame_widget,
+                        const ScreenInfo* screen_info);
 
   // Initialize a new RenderWidget that will be attached to a RenderFrame (via
   // the WebFrameWidget), for a frame that is a local root, but not the main
   // frame.
-  void InitForChildLocalRoot(blink::WebFrameWidget* web_frame_widget);
+  void InitForChildLocalRoot(blink::WebFrameWidget* web_frame_widget,
+                             const ScreenInfo& screen_info);
 
   // Sets a delegate to handle certain RenderWidget operations that need an
   // escape to the RenderView.
@@ -267,8 +274,6 @@ class CONTENT_EXPORT RenderWidget
 
   int32_t routing_id() const { return routing_id_; }
 
-  // TODO(https://crbug.com/912193): Use CompositorDependencies on
-  // PageProperties instead.
   CompositorDependencies* compositor_deps() const { return compositor_deps_; }
 
   // This can return nullptr while the RenderWidget is closing. When for_frame()
@@ -303,7 +308,8 @@ class CONTENT_EXPORT RenderWidget
   // otherwise act as if it is dead. Only whitelisted new IPC messages will be
   // sent, and it does no compositing. The process is free to exit when there
   // are no other non-undead RenderWidgets.
-  void SetIsUndead(bool is_undead);
+  void SetIsUndead();
+  void SetIsRevivedFromUndead(const ScreenInfo& screen_info);
 
   // A main frame RenderWidget is made undead instead of being deleted. Then
   // when a provisional frame is created, the RenderWidget is recycled and
@@ -415,6 +421,7 @@ class CONTENT_EXPORT RenderWidget
   void AutoscrollEnd() override;
   void ClosePopupWidgetSoon() override;
   void Show(blink::WebNavigationPolicy) override;
+  blink::WebScreenInfo GetScreenInfo() override;
   blink::WebRect WindowRect() override;
   blink::WebRect ViewRect() override;
   void SetToolTipText(const blink::WebString& text,
@@ -491,6 +498,12 @@ class CONTENT_EXPORT RenderWidget
                                 float bottom_height,
                                 bool shrink_viewport) override;
   viz::FrameSinkId GetFrameSinkId() override;
+
+  // Returns the scale being applied to the document in blink by the device
+  // emulator. Returns 1 if there is no emulation active. Use this to position
+  // things when the coordinates did not come from blink, such as from the mouse
+  // position.
+  float GetEmulatorScale() const;
 
   // Registers a SwapPromise to report presentation time and possibly swap time.
   // If |swap_time_callback| is not a null callback, it would be called once
@@ -714,13 +727,13 @@ class CONTENT_EXPORT RenderWidget
 
   // Called by Create() functions and subclasses to finish initialization.
   // |show_callback| will be invoked once WebWidgetClient::Show() occurs, and
-  // should be null if Show() won't be triggered for this widget.
-  void Init(ShowCallback show_callback, blink::WebWidget* web_widget);
+  // should be null if Show() won't be triggered for this widget. The WebWidget
+  // and ScreenInfo are both null or both not.
+  void Init(ShowCallback show_callback,
+            blink::WebWidget* web_widget,
+            const ScreenInfo* screen_info);
 
-  // Creates the compositor, but leaves it in a stopped state, where it will
-  // not set up IPC channels or begin trying to produce frames until started
-  // via StartStopCompositor().
-  LayerTreeView* InitializeLayerTreeView();
+  void InitCompositing(const ScreenInfo& screen_info);
 
   // If appropriate, initiates the compositor to set up IPC channels and begin
   // its scheduler. Otherwise, pauses the scheduler and tears down its IPC
@@ -854,9 +867,9 @@ class CONTENT_EXPORT RenderWidget
   blink::WebFrameWidget* GetFrameWidget() const;
 
   // Applies/Removes the DevTools device emulation transformation to/from a
-  // window rect.
-  void ScreenRectToEmulatedIfNeeded(blink::WebRect* window_rect) const;
-  void EmulatedToScreenRectIfNeeded(blink::WebRect* window_rect) const;
+  // screen rect.
+  void ScreenRectToEmulated(gfx::Rect* screen_rect) const;
+  void EmulatedToScreenRect(gfx::Rect* screen_rect) const;
 
   void UpdateSurfaceAndScreenInfo(
       const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
@@ -932,6 +945,19 @@ class CONTENT_EXPORT RenderWidget
   std::unique_ptr<LayerTreeView> layer_tree_view_;
   // This is valid while |layer_tree_view_| is valid.
   cc::LayerTreeHost* layer_tree_host_ = nullptr;
+
+  // Present when emulation is enabled, only in a main frame RenderWidget. Used
+  // to override values given from the browser such as ScreenInfo,
+  // WidgetScreenRect, WindowScreenRect, and the widget's size.
+  std::unique_ptr<RenderWidgetScreenMetricsEmulator> device_emulator_;
+
+  // When emulation is enabled, and a popup widget is opened, the popup widget
+  // needs these values to move between the popup's (non-emulated) coordinates
+  // and the opener widget's (emulated) coordinates. They are only valid when
+  // the |opener_emulator_scale_| is non-zero.
+  gfx::Point opener_widget_screen_origin_;
+  gfx::Point opener_original_widget_screen_origin_;
+  float opener_emulator_scale_ = 0;
 
   // The rect where this view should be initially shown.
   gfx::Rect initial_rect_;

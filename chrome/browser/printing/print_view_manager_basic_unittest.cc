@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/print_view_manager_basic.h"
 
+#include <utility>
+
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_test_utils.h"

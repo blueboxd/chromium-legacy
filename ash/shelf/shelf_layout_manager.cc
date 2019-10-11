@@ -1337,7 +1337,9 @@ void ShelfLayoutManager::CalculateTargetBounds(
 
   if (state.IsShelfAutoHidden()) {
     shelf_in_screen_portion =
-        ShelfConfig::Get()->hidden_shelf_in_screen_portion();
+        home_launcher_animation_state_ == kShowing
+            ? shelf_size
+            : ShelfConfig::Get()->hidden_shelf_in_screen_portion();
   } else if (state.visibility_state == SHELF_HIDDEN ||
              work_area->IsKeyboardShown()) {
     shelf_in_screen_portion = 0;
@@ -1789,6 +1791,13 @@ float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
       state.visibility_state == SHELF_VISIBLE) {
     return 1.0f;
   }
+  // The shelf should not become transparent during the animation to or from
+  // HomeLauncher.
+  if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletModeEnabled() &&
+      home_launcher_animation_state_ != kFinished) {
+    return 1.0f;
+  }
+
   // In Chrome OS Material Design, when shelf is hidden during auto hide state,
   // target bounds are also hidden. So the window can extend to the edge of
   // screen.

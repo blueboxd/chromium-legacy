@@ -466,17 +466,6 @@ XRFrameProvider* XR::frameProvider() {
   return frame_provider_;
 }
 
-bool XR::CanRequestNonImmersiveFrameData() const {
-  return !!magic_window_provider_;
-}
-
-void XR::GetNonImmersiveFrameData(
-    device::mojom::blink::XRFrameDataRequestOptionsPtr options,
-    device::mojom::blink::XRFrameDataProvider::GetFrameDataCallback callback) {
-  DCHECK(CanRequestNonImmersiveFrameData());
-  magic_window_provider_->GetFrameData(std::move(options), std::move(callback));
-}
-
 const device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr&
 XR::xrEnvironmentProviderPtr() {
   return environment_provider_;
@@ -936,16 +925,18 @@ void XR::OnRequestSessionReturned(
       std::move(session_ptr->display_info), session_ptr->uses_input_eventing,
       enabled_features);
 
+  frameProvider()->OnSessionStarted(session, std::move(session_ptr));
+
   if (query->mode() == XRSession::kModeImmersiveVR ||
       query->mode() == XRSession::kModeImmersiveAR) {
-    frameProvider()->BeginImmersiveSession(session, std::move(session_ptr));
     if (environment_integration) {
       // See Task Sources spreadsheet for more information:
       // https://docs.google.com/spreadsheets/d/1b-dus1Ug3A8y0lX0blkmOjJILisUASdj8x9YN_XMwYc/view
-      frameProvider()->GetDataProvider()->GetEnvironmentIntegrationProvider(
-          mojo::MakeRequest(&environment_provider_,
-                            GetExecutionContext()->GetTaskRunner(
-                                TaskType::kMiscPlatformAPI)));
+      frameProvider()
+          ->GetImmersiveDataProvider()
+          ->GetEnvironmentIntegrationProvider(mojo::MakeRequest(
+              &environment_provider_, GetExecutionContext()->GetTaskRunner(
+                                          TaskType::kMiscPlatformAPI)));
       environment_provider_.set_connection_error_handler(WTF::Bind(
           &XR::OnEnvironmentProviderDisconnect, WrapWeakPersistent(this)));
       LocalFrame* frame = GetFrame();
@@ -991,14 +982,9 @@ void XR::OnRequestSessionReturned(
 
     if (query->mode() == XRSession::kModeImmersiveVR &&
         session->UsesInputEventing()) {
-      frameProvider()->GetDataProvider()->SetInputSourceButtonListener(
+      frameProvider()->GetImmersiveDataProvider()->SetInputSourceButtonListener(
           session->GetInputClickListener());
     }
-  } else {
-    magic_window_provider_.reset();
-    magic_window_provider_.Bind(std::move(session_ptr->data_provider));
-    magic_window_provider_.set_disconnect_handler(WTF::Bind(
-        &XR::OnMagicWindowProviderDisconnect, WrapWeakPersistent(this)));
   }
 
   UseCounter::Count(ExecutionContext::From(query->GetScriptState()),
@@ -1123,17 +1109,6 @@ void XR::OnEnvironmentProviderDisconnect() {
 
   environment_provider_error_callbacks_.clear();
   environment_provider_.reset();
-}
-
-// Ends all non-immersive sessions when the magic window provider got
-// disconnected.
-void XR::OnMagicWindowProviderDisconnect() {
-  for (auto& session : sessions_) {
-    if (!session->immersive() && !session->ended()) {
-      session->ForceEnd();
-    }
-  }
-  magic_window_provider_.reset();
 }
 
 void XR::Trace(blink::Visitor* visitor) {

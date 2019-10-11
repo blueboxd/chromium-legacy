@@ -4,13 +4,6 @@
 
 cr.exportPath('print_preview');
 
-/** @enum {number} */
-const ScalingValue = {
-  DEFAULT: 0,
-  FIT_TO_PAGE: 1,
-  CUSTOM: 2,
-};
-
 /*
  * When fit to page is available, the checkbox and input interact as follows:
  * 1. When checkbox is checked, the fit to page scaling value is displayed in
@@ -30,6 +23,8 @@ Polymer({
       observer: 'onDisabledChanged_',
     },
 
+    isPdf: Boolean,
+
     /** @private {string} */
     currentValue_: {
       type: String,
@@ -39,8 +34,8 @@ Polymer({
     /** @private {boolean} */
     customSelected_: {
       type: Boolean,
-      computed: 'computeCustomSelected_(settings.customScaling.*, ' +
-          'settings.fitToPage.*)',
+      computed: 'computeCustomSelected_(settingKey_, ' +
+          'settings.scalingType.*, settings.scalingTypePdf.*)',
     },
 
     /** @private {boolean} */
@@ -52,14 +47,23 @@ Polymer({
       value: false,
     },
 
+    /** @private {string} */
+    settingKey_: {
+      type: String,
+      computed: 'computeSettingKey_(isPdf)',
+    },
+
     /** Mirroring the enum so that it can be used from HTML bindings. */
-    ScalingValue: Object,
+    ScalingValue: {
+      type: Object,
+      value: print_preview.ScalingType,
+    },
   },
 
   observers: [
-    'onFitToPageSettingChange_(settings.fitToPage.value)',
+    'onScalingTypeSettingChanged_(settingKey_, settings.scalingType.value, ' +
+        'settings.scalingTypePdf.value)',
     'onScalingSettingChanged_(settings.scaling.value)',
-    'onCustomScalingSettingChanged_(settings.customScaling.value)',
   ],
 
   /** @private {string} */
@@ -81,28 +85,24 @@ Polymer({
    */
   userSelectedCustomScaling_: false,
 
-  /** @override */
-  ready: function() {
-    this.ScalingValue = ScalingValue;
-  },
-
   onProcessSelectChange: function(value) {
-    if (value === ScalingValue.FIT_TO_PAGE.toString()) {
-      this.setSetting('fitToPage', true);
-      return;
-    }
-
-    const fitToPageAvailable = this.getSetting('fitToPage').available;
-    if (fitToPageAvailable) {
-      this.setSetting('fitToPage', false);
-    }
-    const isCustom = value === ScalingValue.CUSTOM.toString();
+    const isCustom = value === print_preview.ScalingType.CUSTOM.toString();
     if (isCustom && !this.customScalingSettingSet_) {
       this.userSelectedCustomScaling_ = true;
     } else {
       this.customScalingSettingSet_ = false;
     }
-    this.setSetting('customScaling', isCustom);
+
+    const valueAsNumber = parseInt(value, 10);
+    if (value !== print_preview.ScalingType.FIT_TO_PAGE.toString()) {
+      this.setSetting('scalingType', valueAsNumber);
+    }
+    if (this.isPdf ||
+        this.getSetting('scalingTypePdf').value !==
+            print_preview.ScalingType.FIT_TO_PAGE) {
+      this.setSetting('scalingTypePdf', valueAsNumber);
+    }
+
     if (isCustom) {
       this.setSetting('scaling', this.currentValue_);
     }
@@ -117,35 +117,6 @@ Polymer({
     }
   },
 
-  /** @private */
-  onFitToPageSettingChange_: function() {
-    if (!this.getSettingValue('fitToPage') ||
-        !this.getSetting('fitToPage').available) {
-      return;
-    }
-
-    this.updateScalingToValid_();
-    this.selectedValue = ScalingValue.FIT_TO_PAGE.toString();
-  },
-
-  /** @private */
-  onCustomScalingSettingChanged_: function() {
-    if (this.getSettingValue('fitToPage') &&
-        this.getSetting('fitToPage').available) {
-      return;
-    }
-
-    const isCustom =
-        /** @type {boolean} */ (this.getSetting('customScaling').value);
-    if (!isCustom) {
-      this.updateScalingToValid_();
-    } else {
-      this.customScalingSettingSet_ = true;
-    }
-    this.selectedValue = isCustom ? ScalingValue.CUSTOM.toString() :
-                                    ScalingValue.DEFAULT.toString();
-  },
-
   /**
    * Updates the input string when scaling setting is set.
    * @private
@@ -154,6 +125,22 @@ Polymer({
     const value = /** @type {string} */ (this.getSetting('scaling').value);
     this.lastValidScaling_ = value;
     this.currentValue_ = value;
+  },
+
+  /** @private */
+  onScalingTypeSettingChanged_: function() {
+    if (!this.settingKey_) {
+      return;
+    }
+
+    const value = /** @type {!print_preview.ScalingType} */
+        (this.getSettingValue(this.settingKey_));
+    if (value !== print_preview.ScalingType.CUSTOM) {
+      this.updateScalingToValid_();
+    } else {
+      this.customScalingSettingSet_ = true;
+    }
+    this.selectedValue = value.toString();
   },
 
   /**
@@ -188,9 +175,17 @@ Polymer({
    * @private
    */
   computeCustomSelected_: function() {
-    return /** @type {boolean} */ (this.getSettingValue('customScaling')) &&
-        (!this.getSetting('fitToPage').available ||
-         !(/** @type {boolean} */ (this.getSettingValue('fitToPage'))));
+    return !!this.settingKey_ &&
+        this.getSettingValue(this.settingKey_) ===
+        print_preview.ScalingType.CUSTOM;
+  },
+
+  /**
+   * @return {string} The key of the appropriate scaling setting.
+   * @private
+   */
+  computeSettingKey_: function() {
+    return this.isPdf ? 'scalingTypePdf' : 'scalingType';
   },
 
   /** @private */

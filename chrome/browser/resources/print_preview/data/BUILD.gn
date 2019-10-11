@@ -19,6 +19,7 @@ js_type_check("closure_compile") {
     ":measurement_system",
     ":model",
     ":printable_area",
+    ":scaling",
     ":size",
     ":state",
   ]
@@ -50,6 +51,7 @@ js_library("invitation_store") {
 js_library("local_parsers") {
   deps = [
     ":destination",
+    ":destination_match",
     "..:native_layer",
     "//ui/webui/resources/js:cr",
   ]
@@ -58,7 +60,6 @@ js_library("local_parsers") {
 js_library("destination_match") {
   deps = [
     ":destination",
-    "..:native_layer",
     "//ui/webui/resources/js:cr",
   ]
 }
@@ -111,8 +112,10 @@ js_library("measurement_system") {
 js_library("model") {
   deps = [
     ":destination",
+    ":destination_match",
     ":document_info",
     ":margins",
+    ":scaling",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:promise_resolver",
   ]
@@ -122,6 +125,12 @@ js_library("printable_area") {
   deps = [
     ":coordinate2d",
     ":size",
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
+js_library("scaling") {
+  deps = [
     "//ui/webui/resources/js:cr",
   ]
 }

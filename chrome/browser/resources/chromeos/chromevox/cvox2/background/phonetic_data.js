@@ -58,5 +58,8 @@ PhoneticData.getPhoneticDisambiguation = function(language, character) {
   // language code to do a lookup.
   if (!PhoneticData.phoneticMap_[language])
     language = language.split('-')[0];
+  // If language still isn't in the map, return empty string.
+  if (!PhoneticData.phoneticMap_[language])
+    return '';
   return PhoneticData.phoneticMap_[language][character] || '';
 };

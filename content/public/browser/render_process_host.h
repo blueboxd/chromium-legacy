@@ -415,11 +415,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Create an URLLoaderFactory that can be used by |origin| being hosted in
   // |this| process.
   //
-  // When NetworkService is enabled, |request| will be bound with a new
+  // When NetworkService is enabled, |receiver| will be bound with a new
   // URLLoaderFactory created from the storage partition's Network Context. Note
   // that the URLLoaderFactory returned by this method does NOT support
   // auto-reconnect after a crash of Network Service.
-  // When NetworkService is not enabled, |request| will be bound with a
+  // When NetworkService is not enabled, |receiver| will be bound with a
   // URLLoaderFactory which routes requests to ResourceDispatcherHost.
   //
   // |preferences| is an optional argument that might be used to control some
@@ -442,11 +442,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
           header_client,
-      network::mojom::URLLoaderFactoryRequest request) = 0;
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) = 0;
 
   // Whether this process is locked out from ever being reused for sites other
   // than the ones it currently has.
-  virtual void SetIsNeverSuitableForReuse() = 0;
   virtual bool MayReuseHost() = 0;
 
   // Indicates whether this RenderProcessHost is "unused".  This starts out as

@@ -435,8 +435,8 @@ class OmniboxEditModel {
                              GURL* alternate_nav_url) const;
 
   // Reverts the edit box from a temporary text back to the original user text.
-  // If |revert_popup| is true then the popup will be reverted as well.
-  void RevertTemporaryText(bool revert_popup);
+  // Also resets the popup to the default match.
+  void RevertTemporaryTextAndPopup();
 
   // Accepts current keyword if the user just typed a space at the end of
   // |new_text|.  This handles both of the following cases:

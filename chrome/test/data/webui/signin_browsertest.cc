@@ -7,7 +7,9 @@
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "components/unified_consent/scoped_unified_consent.h"
 
-SigninBrowserTest::SigninBrowserTest() {}
+SigninBrowserTest::SigninBrowserTest() {
+  EnableUnity();
+}
 
 SigninBrowserTest::~SigninBrowserTest() {}
 

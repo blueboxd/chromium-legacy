@@ -115,16 +115,19 @@ public class VariationsUtils {
             info.isGzipCompressed = proto.getIsGzipCompressed();
             info.seedData = proto.getSeedData().toByteArray();
 
-            try {
-                info.parseDate();
-            } catch (ParseException e) {
-                Log.e(TAG, "Malformed seed date: " + e.getMessage());
-                return null;
+            // |dateHeader| is deprecated in favor of |date|, but parse |dateHeader| in case this
+            // seed predates the deprecation.
+            // TODO(crbug.com/1013390): Remove this fallback logic.
+            if (proto.hasDateHeader()) {
+                info.date = SeedInfo.parseDateHeader(proto.getDateHeader());
             }
 
             return info;
         } catch (IOException e) {
             Log.e(TAG, "Failed reading seed file \"" + inFile + "\": " + e.getMessage());
+            return null;
+        } catch (ParseException e) {
+            Log.e(TAG, "Malformed seed date: " + e.getMessage());
             return null;
         } finally {
             closeSafely(in);

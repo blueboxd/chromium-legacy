@@ -26,6 +26,7 @@
 
 namespace mojo {
 
+class MessageFilter;
 class MessageReceiver;
 
 // Base class used to factor out code in AssociatedBinding<T> expansions, in
@@ -35,10 +36,11 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) AssociatedBindingBase {
   AssociatedBindingBase();
   virtual ~AssociatedBindingBase();
 
-  // Adds a message filter to be notified of each incoming message before
+  // Sets a message filter to be notified of each incoming message before
   // dispatch. If a filter returns |false| from Accept(), the message is not
-  // dispatched and the pipe is closed. Filters cannot be removed.
-  void AddFilter(std::unique_ptr<MessageReceiver> filter);
+  // dispatched and the pipe is closed. Filters cannot be removed once added
+  // and only one can be set.
+  void SetFilter(std::unique_ptr<MessageFilter> filter);
 
   // Closes the associated interface. Puts this object into a state where it can
   // be rebound.

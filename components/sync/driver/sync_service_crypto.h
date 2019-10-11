@@ -21,16 +21,21 @@
 namespace syncer {
 
 class CryptoSyncPrefs;
+class TrustedVaultClient;
 
 // This class functions as mostly independent component of SyncService that
 // handles things related to encryption, including holding lots of state and
 // encryption communications with the sync thread.
 class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
  public:
+  // |sync_prefs| must not be null and must outlive this object.
+  // |trusted_vault_client| may be null, but if non-null, the pointee must
+  // outlive this object.
   SyncServiceCrypto(
       const base::RepeatingClosure& notify_observers,
       const base::RepeatingCallback<void(ConfigureReason)>& reconfigure,
-      CryptoSyncPrefs* sync_prefs);
+      CryptoSyncPrefs* sync_prefs,
+      TrustedVaultClient* trusted_vault_client);
   ~SyncServiceCrypto() override;
 
   void Reset();
@@ -84,8 +89,18 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
     kNone,
     kPassphraseRequiredForDecryption,
     kPassphraseRequiredForEncryption,
+    // Trusted vault keys are required but a silent attempt to fetch keys is in
+    // progress before prompting the user.
+    kFetchingTrustedVaultKeys,
+    // Silent attempt is completed and user action is definitely required to
+    // retrieve trusted vault keys.
     kTrustedVaultKeyRequired,
   };
+
+  // Called at various stages of asynchronously fetching and processing trusted
+  // vault encryption keys.
+  void TrustedVaultKeysFetched(const std::vector<std::string>& keys);
+  void TrustedVaultKeysAdded();
 
   // Calls SyncServiceBase::NotifyObservers(). Never null.
   const base::RepeatingClosure notify_observers_;
@@ -95,6 +110,9 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // A pointer to the crypto-relevant sync prefs. Never null and guaranteed to
   // outlive us.
   CryptoSyncPrefs* const sync_prefs_;
+
+  // Never null and guaranteed to outlive us.
+  TrustedVaultClient* const trusted_vault_client_;
 
   // All the mutable state is wrapped in a struct so that it can be easily
   // reset to its default values.

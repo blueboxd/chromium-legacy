@@ -105,7 +105,8 @@ class DataReductionProxyMetricsObserverBaseTest
                    uint64_t want_original_bytes,
                    uint64_t want_uuid) {
     using UkmEntry = ukm::builders::DataReductionProxy;
-    auto entries = test_ukm_recorder().GetEntriesByName(UkmEntry::kEntryName);
+    auto entries =
+        tester()->test_ukm_recorder().GetEntriesByName(UkmEntry::kEntryName);
 
     if (!want_ukm) {
       EXPECT_EQ(0u, entries.size());
@@ -114,12 +115,13 @@ class DataReductionProxyMetricsObserverBaseTest
 
     EXPECT_EQ(1u, entries.size());
     for (const auto* const entry : entries) {
-      test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kDefaultTestUrl));
+      tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(
+          entry, GURL(kDefaultTestUrl));
 
-      test_ukm_recorder().ExpectEntryMetric(
+      tester()->test_ukm_recorder().ExpectEntryMetric(
           entry, UkmEntry::kEstimatedOriginalNetworkBytesName,
           want_original_bytes);
-      test_ukm_recorder().ExpectEntryMetric(
+      tester()->test_ukm_recorder().ExpectEntryMetric(
           entry, UkmEntry::kDataSaverPageUUIDName, want_uuid);
     }
   }
@@ -163,9 +165,9 @@ TEST_F(DataReductionProxyMetricsObserverBaseTest,
       false /* was_cached */, 2 * 1024 /* delta_bytes */,
       true /* is_complete */, true /* proxy_used*/, 5 /* compression_ratio */));
 
-  SimulateResourceDataUseUpdate(resources);
+  tester()->SimulateResourceDataUseUpdate(resources);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
   // Use https://play.golang.org/p/XnMDcTiPzt8 to generate an updated uuid.
   ValidateUKM(true, 9918U, 5261012271403106530);
 }
@@ -185,9 +187,9 @@ TEST_F(DataReductionProxyMetricsObserverBaseTest,
       false /* was_cached */, 2 * 1024 /* delta_bytes */,
       true /* is_complete */, true /* proxy_used*/, 5 /* compression_ratio */));
 
-  SimulateResourceDataUseUpdate(resources);
+  tester()->SimulateResourceDataUseUpdate(resources);
 
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
   // Use https://play.golang.org/p/XnMDcTiPzt8 to generate an updated uuid.
   ValidateUKM(true, 9918U, 7538012597823726222);
 }

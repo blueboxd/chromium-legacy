@@ -5,6 +5,7 @@
 package org.chromium.weblayer_private;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.webkit.ValueCallback;
 
@@ -18,8 +19,9 @@ import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.ui.base.ResourceBundle;
+import org.chromium.weblayer_private.aidl.IBrowserFragment;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
-import org.chromium.weblayer_private.aidl.IProfile;
+import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
 import org.chromium.weblayer_private.aidl.IWebLayer;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 import org.chromium.weblayer_private.aidl.WebLayerVersion;
@@ -31,6 +33,8 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "weblayer";
     // TODO: Configure this from the client.
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/weblayer-command-line";
+
+    private final ProfileManager mProfileManager = new ProfileManager();
 
     @UsedByReflection("WebLayer")
     public static IBinder create() {
@@ -45,11 +49,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     @UsedByReflection("WebLayer")
     public static boolean checkVersion(int clientVersion) {
         return clientVersion == WebLayerVersion.sVersionNumber;
-    }
-
-    @Override
-    public IProfile createProfile(String path) {
-        return new ProfileImpl(path);
     }
 
     @Override
@@ -96,5 +95,14 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
                 .startBrowserProcessesSync(
                         /* singleProcess*/ false);
+    }
+
+    @Override
+    public IBrowserFragment createBrowserFragmentImpl(IRemoteFragmentClient fragmentClient,
+            IObjectWrapper fragmentArgs) {
+        Bundle unwrappedArgs = ObjectWrapper.unwrap(fragmentArgs, Bundle.class);
+        BrowserFragmentImpl fragment = new BrowserFragmentImpl(mProfileManager, fragmentClient,
+                unwrappedArgs);
+        return fragment.asIBrowserFragment();
     }
 }

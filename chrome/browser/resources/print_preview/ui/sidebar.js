@@ -47,6 +47,8 @@ Polymer({
       notify: true,
     },
 
+    isPdf: Boolean,
+
     newPrintPreviewLayout: {
       type: Boolean,
       reflectToAttribute: true,

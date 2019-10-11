@@ -108,10 +108,10 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   gfx::ImageSkia GetSyncIcon();
   void BuildAutofillButtons();
   void BuildSyncInfo();
-  void BuildAccountFeatureButtons();
-  void BuildProfileHeading();
+  void BuildFeatureButtons();
+  void BuildProfileManagementHeading();
   void BuildSelectableProfiles();
-  void BuildProfileFeatureButtons();
+  void BuildProfileManagementFeatureButtons();
 
   // Adds the profile chooser view.
   void AddProfileMenuView(AvatarMenu* avatar_menu);

@@ -17,6 +17,7 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/mac/display_icc_profiles.h"
 #include "ui/gfx/mac/io_surface.h"
+#include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_enums.h"
@@ -242,6 +243,10 @@ gfx::Size GLImageIOSurface::GetSize() {
 
 unsigned GLImageIOSurface::GetInternalFormat() {
   return internalformat_;
+}
+
+unsigned GLImageIOSurface::GetDataType() {
+  return gl::BufferFormatToGLDataType(format_);
 }
 
 GLImageIOSurface::BindOrCopy GLImageIOSurface::ShouldBindOrCopy() {

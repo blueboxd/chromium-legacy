@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGLineBreaker_h
-#define NGLineBreaker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_LINE_BREAKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_LINE_BREAKER_H_
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -308,4 +308,4 @@ class CORE_EXPORT NGLineBreaker {
 
 }  // namespace blink
 
-#endif  // NGLineBreaker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_LINE_BREAKER_H_

@@ -274,6 +274,27 @@ ProfileMenuViewBase::~ProfileMenuViewBase() {
   DCHECK(menu_item_groups_.empty());
 }
 
+void ProfileMenuViewBase::SetHeading(const base::string16& heading) {
+  constexpr int kVerticalPadding = 8;
+  const SkColor kBackgroundColor =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor);
+  const int kCornerRadius =
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
+
+  heading_container_->RemoveAllChildViews(/*delete_children=*/true);
+  heading_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
+  heading_container_->SetBackground(
+      views::CreateRoundedRectBackground(kBackgroundColor, kCornerRadius));
+
+  views::Label* label =
+      heading_container_->AddChildView(std::make_unique<views::Label>(
+          heading, views::style::CONTEXT_LABEL, STYLE_HINT));
+  label->SetHandlesTooltips(false);
+  label->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kVerticalPadding, kMenuEdgeMargin)));
+}
+
 void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
                                           const gfx::ImageSkia& badge,
                                           const base::string16& title,
@@ -397,35 +418,35 @@ void ProfileMenuViewBase::AddShortcutFeatureButton(
   RegisterClickAction(button, std::move(action));
 }
 
-void ProfileMenuViewBase::AddAccountFeatureButton(
-    const gfx::ImageSkia& icon,
-    const base::string16& text,
-    base::RepeatingClosure action) {
+void ProfileMenuViewBase::AddFeatureButton(const gfx::ImageSkia& icon,
+                                           const base::string16& text,
+                                           base::RepeatingClosure action) {
   constexpr int kIconSize = 16;
 
   // Initialize layout if this is the first time a button is added.
-  if (!account_features_container_->GetLayoutManager()) {
-    account_features_container_->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(
-            views::BoxLayout::Orientation::kVertical));
+  if (!features_container_->GetLayoutManager()) {
+    features_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
   }
 
   views::Button* button =
-      account_features_container_->AddChildView(std::make_unique<HoverButton>(
+      features_container_->AddChildView(std::make_unique<HoverButton>(
           this, SizeImage(ColorImage(icon, GetDefaultIconColor()), kIconSize),
           text));
 
   RegisterClickAction(button, std::move(action));
 }
 
-void ProfileMenuViewBase::SetProfileHeading(const base::string16& heading) {
-  profile_heading_container_->RemoveAllChildViews(/*delete_children=*/true);
-  profile_heading_container_->SetLayoutManager(
+void ProfileMenuViewBase::SetProfileManagementHeading(
+    const base::string16& heading) {
+  profile_mgmt_heading_container_->RemoveAllChildViews(
+      /*delete_children=*/true);
+  profile_mgmt_heading_container_->SetLayoutManager(
       std::make_unique<views::FillLayout>());
 
-  views::Label* label =
-      profile_heading_container_->AddChildView(std::make_unique<views::Label>(
-          heading, views::style::CONTEXT_LABEL, STYLE_HINT));
+  views::Label* label = profile_mgmt_heading_container_->AddChildView(
+      std::make_unique<views::Label>(heading, views::style::CONTEXT_LABEL,
+                                     STYLE_HINT));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetHandlesTooltips(false);
   label->SetBorder(views::CreateEmptyBorder(gfx::Insets(0, kMenuEdgeMargin)));
@@ -452,38 +473,39 @@ void ProfileMenuViewBase::AddSelectableProfile(const gfx::ImageSkia& image,
   RegisterClickAction(button, std::move(action));
 }
 
-void ProfileMenuViewBase::AddProfileShortcutFeatureButton(
+void ProfileMenuViewBase::AddProfileManagementShortcutFeatureButton(
     const gfx::ImageSkia& icon,
     const base::string16& text,
     base::RepeatingClosure action) {
   // Initialize layout if this is the first time a button is added.
-  if (!profile_shortcut_features_container_->GetLayoutManager()) {
-    profile_shortcut_features_container_->SetLayoutManager(
+  if (!profile_mgmt_shortcut_features_container_->GetLayoutManager()) {
+    profile_mgmt_shortcut_features_container_->SetLayoutManager(
         CreateBoxLayout(views::BoxLayout::Orientation::kHorizontal,
                         views::BoxLayout::CrossAxisAlignment::kCenter,
                         gfx::Insets(0, 0, 0, /*right=*/kMenuEdgeMargin)));
   }
 
-  views::Button* button = profile_shortcut_features_container_->AddChildView(
-      CreateCircularImageButton(this, icon, text));
+  views::Button* button =
+      profile_mgmt_shortcut_features_container_->AddChildView(
+          CreateCircularImageButton(this, icon, text));
 
   RegisterClickAction(button, std::move(action));
 }
 
-void ProfileMenuViewBase::AddProfileFeatureButton(
+void ProfileMenuViewBase::AddProfileManagementFeatureButton(
     const gfx::ImageSkia& icon,
     const base::string16& text,
     base::RepeatingClosure action) {
   constexpr int kIconSize = 22;
 
   // Initialize layout if this is the first time a button is added.
-  if (!profile_features_container_->GetLayoutManager()) {
-    profile_features_container_->SetLayoutManager(
+  if (!profile_mgmt_features_container_->GetLayoutManager()) {
+    profile_mgmt_features_container_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kVertical));
   }
 
-  views::Button* button = profile_features_container_->AddChildView(
+  views::Button* button = profile_mgmt_features_container_->AddChildView(
       std::make_unique<HoverButton>(this, SizeImage(icon, kIconSize), text));
 
   RegisterClickAction(button, std::move(action));
@@ -597,31 +619,33 @@ void ProfileMenuViewBase::Reset() {
   // Create and add new component containers in the correct order.
   // First, add the bordered box with the identity and feature buttons.
   views::View* bordered_box = components->AddChildView(CreateBorderedBoxView());
+  heading_container_ =
+      bordered_box->AddChildView(std::make_unique<views::View>());
   identity_info_container_ =
       bordered_box->AddChildView(std::make_unique<views::View>());
   shortcut_features_container_ =
       bordered_box->AddChildView(std::make_unique<views::View>());
   sync_info_container_ =
       bordered_box->AddChildView(std::make_unique<views::View>());
-  account_features_container_ =
+  features_container_ =
       bordered_box->AddChildView(std::make_unique<views::View>());
   // Second, add the profile header.
   auto profile_header = std::make_unique<views::View>();
   views::BoxLayout* profile_header_layout =
       profile_header->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal));
-  profile_heading_container_ =
+  profile_mgmt_heading_container_ =
       profile_header->AddChildView(std::make_unique<views::View>());
-  profile_header_layout->SetFlexForView(profile_heading_container_, 1);
-  profile_shortcut_features_container_ =
+  profile_header_layout->SetFlexForView(profile_mgmt_heading_container_, 1);
+  profile_mgmt_shortcut_features_container_ =
       profile_header->AddChildView(std::make_unique<views::View>());
-  profile_header_layout->SetFlexForView(profile_shortcut_features_container_,
-                                        0);
+  profile_header_layout->SetFlexForView(
+      profile_mgmt_shortcut_features_container_, 0);
   components->AddChildView(std::move(profile_header));
   // Third, add the profile buttons at the bottom.
   selectable_profiles_container_ =
       components->AddChildView(std::make_unique<views::View>());
-  profile_features_container_ =
+  profile_mgmt_features_container_ =
       components->AddChildView(std::make_unique<views::View>());
 
   // Create a scroll view to hold the components.

@@ -207,6 +207,7 @@ class SharingServiceTest : public testing::Test {
     return std::make_unique<syncer::DeviceInfo>(
         id, name, "chrome_version", "user_agent",
         sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
+        base::SysInfo::HardwareInfo(),
         /*last_updated_timestamp=*/base::Time::Now(),
         /*send_tab_to_self_receiving_enabled=*/false,
         syncer::DeviceInfo::SharingInfo(

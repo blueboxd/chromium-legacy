@@ -67,6 +67,9 @@ class NET_EXPORT DnsClient {
   virtual void SetRequestContextForProbes(
       URLRequestContext* url_request_context) = 0;
 
+  virtual void CancelProbesForContext(
+      URLRequestContext* url_request_context) = 0;
+
   // Returns null if the current config is not valid.
   virtual DnsTransactionFactory* GetTransactionFactory() = 0;
 

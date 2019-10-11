@@ -5,6 +5,19 @@
 cr.define('print_preview', function() {
   'use strict';
   /**
+   * Printer types for capabilities and printer list requests.
+   * Must match PrinterType in printing/print_job_constants.h
+   * @enum {number}
+   */
+  const PrinterType = {
+    PRIVET_PRINTER: 0,
+    EXTENSION_PRINTER: 1,
+    PDF_PRINTER: 2,
+    LOCAL_PRINTER: 3,
+    CLOUD_PRINTER: 4
+  };
+
+  /**
    * Converts DestinationOrigin to PrinterType.
    * @param {!print_preview.DestinationOrigin} origin The printer's
    *     destination origin.
@@ -24,6 +37,19 @@ cr.define('print_preview', function() {
     assert(print_preview.CloudOrigins.includes(origin));
     return print_preview.PrinterType.CLOUD_PRINTER;
   };
+
+  /**
+   * @param {!print_preview.Destination} destination The destination to figure
+   *     out the printer type of.
+   * @return {!print_preview.PrinterType} Map the destination to a PrinterType.
+   */
+  function getPrinterTypeForDestination(destination) {
+    if (destination.id ==
+        print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
+      return print_preview.PrinterType.PDF_PRINTER;
+    }
+    return print_preview.originToType(destination.origin);
+  }
 
   class DestinationMatch {
     /**
@@ -116,5 +142,10 @@ cr.define('print_preview', function() {
   }
 
   // Export
-  return {originToType: originToType, DestinationMatch: DestinationMatch};
+  return {
+    DestinationMatch: DestinationMatch,
+    PrinterType: PrinterType,
+    getPrinterTypeForDestination: getPrinterTypeForDestination,
+    originToType: originToType,
+  };
 });

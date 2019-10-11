@@ -594,6 +594,7 @@ void StreamMixer::SignalError(MixerInput::Source::MixerError error) {
   }
   inputs_.clear();
   SetCloseTimeout();
+  UpdateStreamCounts();
 }
 
 int StreamMixer::GetEffectiveChannelCount(MixerInput::Source* input_source) {
@@ -664,6 +665,7 @@ void StreamMixer::AddInput(MixerInput::Source* input_source) {
 
   inputs_[input_source] = std::move(input);
   UpdatePlayoutChannel();
+  UpdateStreamCounts();
 }
 
 void StreamMixer::RemoveInput(MixerInput::Source* input_source) {
@@ -687,6 +689,7 @@ void StreamMixer::RemoveInputOnThread(MixerInput::Source* input_source) {
 
   ignored_inputs_.erase(input_source);
   UpdatePlayoutChannel();
+  UpdateStreamCounts();
 
   if (inputs_.empty()) {
     SetCloseTimeout();
@@ -723,6 +726,20 @@ void StreamMixer::UpdatePlayoutChannel() {
   LOG(INFO) << "Update playout channel: " << playout_channel;
   playout_channel_ = playout_channel;
   mixer_pipeline_->SetPlayoutChannel(playout_channel_);
+}
+
+void StreamMixer::UpdateStreamCounts() {
+  MAKE_SURE_MIXER_THREAD(UpdateStreamCounts);
+
+  int primary = 0;
+  int sfx = 0;
+  for (const auto& it : inputs_) {
+    if (it.second->source()->active()) {
+      (it.second->primary() ? primary : sfx) += 1;
+    }
+  }
+  receiver_.Post(FROM_HERE, &MixerServiceReceiver::OnStreamCountChanged,
+                 primary, sfx);
 }
 
 MediaPipelineBackend::AudioDecoder::RenderingDelay
@@ -941,9 +958,9 @@ void StreamMixer::SetVolumeMultiplier(MixerInput::Source* source,
   }
 }
 
-void StreamMixer::SetPostProcessorConfig(const std::string& name,
-                                         const std::string& config) {
-  MAKE_SURE_MIXER_THREAD(SetPostProcessorConfig, name, config);
+void StreamMixer::SetPostProcessorConfig(std::string name, std::string config) {
+  MAKE_SURE_MIXER_THREAD(SetPostProcessorConfig, std::move(name),
+                         std::move(config));
 
   mixer_pipeline_->SetPostProcessorConfig(name, config);
 }

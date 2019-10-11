@@ -16,6 +16,7 @@
 #include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/util/type_safety/pass_key.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/fileapi/file_system_operation.h"
@@ -50,6 +51,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
 
   using OperationID = uint64_t;
 
+  // |file_system_context| is stored as a raw pointer. The caller must ensure
+  // that |file_system_context| outlives the new instance.
+  FileSystemOperationRunner(
+      util::PassKey<FileSystemContext>,
+      const scoped_refptr<FileSystemContext>& file_system_context);
+  FileSystemOperationRunner(util::PassKey<FileSystemContext>,
+                            FileSystemContext* file_system_context);
   virtual ~FileSystemOperationRunner();
 
   // Cancels all inflight operations.
@@ -116,10 +124,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
                     const WriteCallback& callback);
 
   // Writes contents of |data_pipe| to |url| at |offset|.
-  OperationID Write(const FileSystemURL& url,
-                    mojo::ScopedDataPipeConsumerHandle data_pipe,
-                    int64_t offset,
-                    const WriteCallback& callback);
+  OperationID WriteStream(const FileSystemURL& url,
+                          mojo::ScopedDataPipeConsumerHandle data_pipe,
+                          int64_t offset,
+                          const WriteCallback& callback);
 
   // Truncates a file at |url| to |length|. If |length| is larger than
   // the original file size, the file will be extended, and the extended
@@ -244,7 +252,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
                                         base::FilePath* platform_path);
 
  private:
-  friend class FileSystemContext;
   explicit FileSystemOperationRunner(FileSystemContext* file_system_context);
 
   void DidFinish(const OperationID id,

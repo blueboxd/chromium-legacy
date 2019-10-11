@@ -13,15 +13,25 @@ WebauthnOfferDialogControllerImpl::WebauthnOfferDialogControllerImpl(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
 
-WebauthnOfferDialogControllerImpl::~WebauthnOfferDialogControllerImpl() =
-    default;
+WebauthnOfferDialogControllerImpl::~WebauthnOfferDialogControllerImpl() {
+  // This part of code is executed only if browser window is closed when the
+  // dialog is visible. In this case the controller is destroyed before
+  // WebauthnOfferDialogViewImpl::dtor() being called, but the reference to
+  // controller is not reset. Need to reset via
+  // WebauthnOfferDialogViewImpl::Hide() to avoid crash.
+  if (dialog_model_) {
+    dialog_model_->SetDialogState(
+        WebauthnOfferDialogModel::DialogState::kInactive);
+  }
+}
 
 void WebauthnOfferDialogControllerImpl::ShowOfferDialog(
     AutofillClient::WebauthnOfferDialogCallback callback) {
   DCHECK(!dialog_model_);
 
   offer_dialog_callback_ = std::move(callback);
-  dialog_model_ = WebauthnOfferDialogView::CreateAndShow(this);
+  dialog_view_ = WebauthnOfferDialogView::CreateAndShow(this);
+  dialog_model_ = dialog_view_->GetDialogModel();
 }
 
 bool WebauthnOfferDialogControllerImpl::CloseDialog() {
@@ -40,6 +50,7 @@ void WebauthnOfferDialogControllerImpl::UpdateDialogWithError() {
 
 void WebauthnOfferDialogControllerImpl::OnDialogClosed() {
   dialog_model_ = nullptr;
+  dialog_view_ = nullptr;
   offer_dialog_callback_.Reset();
 }
 

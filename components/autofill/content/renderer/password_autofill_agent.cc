@@ -72,6 +72,7 @@ using blink::WebView;
 
 namespace autofill {
 
+using form_util::FindFormControlElementsByUniqueRendererId;
 using form_util::IsFormControlVisible;
 using form_util::IsFormVisible;
 
@@ -87,6 +88,7 @@ const size_t kMaximumTextSizeForAutocomplete = 1000;
 // Names of HTML attributes to show form and field signatures for debugging.
 const char kDebugAttributeForFormSignature[] = "form_signature";
 const char kDebugAttributeForFieldSignature[] = "field_signature";
+const char kDebugAttributeForParserAnnotations[] = "pm_parser_annotation";
 
 // Maps element names to the actual elements to simplify form filling.
 typedef std::map<base::string16, WebInputElement> FormInputElementMap;
@@ -378,6 +380,19 @@ bool FormHasNonEmptyPasswordField(const FormData& form) {
     }
   }
   return false;
+}
+
+void AnnotateFieldWithParsingResult(WebDocument doc,
+                                    uint32_t renderer_id,
+                                    const std::string& text) {
+  if (renderer_id == FormData::kNotSetFormRendererId)
+    return;
+  auto element = FindFormControlElementsByUniqueRendererId(doc, renderer_id);
+  if (element.IsNull())
+    return;
+  element.SetAttribute(
+      WebString::FromASCII(kDebugAttributeForParserAnnotations),
+      WebString::FromASCII(text));
 }
 
 }  // namespace
@@ -1177,6 +1192,28 @@ void PasswordAutofillAgent::FillPasswordForm(
                           logger.get());
 }
 
+void PasswordAutofillAgent::SetLoggingState(bool active) {
+  logging_state_active_ = active;
+}
+
+void PasswordAutofillAgent::TouchToFillDismissed() {
+  should_show_touch_to_fill_ = false;
+}
+
+void PasswordAutofillAgent::AnnotateFieldsWithParsingResult(
+    const ParsingResult& parsing_result) {
+  WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
+  AnnotateFieldWithParsingResult(doc, parsing_result.username_renderer_id,
+                                 "username_element");
+  AnnotateFieldWithParsingResult(doc, parsing_result.password_renderer_id,
+                                 "password_element");
+  AnnotateFieldWithParsingResult(doc, parsing_result.new_password_renderer_id,
+                                 "new_password_element");
+  AnnotateFieldWithParsingResult(doc,
+                                 parsing_result.confirm_password_renderer_id,
+                                 "confirmation_password_element");
+}
+
 void PasswordAutofillAgent::FocusedNodeHasChanged(const blink::WebNode& node) {
   DCHECK(!node.IsNull());
   focused_input_element_.Reset();
@@ -1259,15 +1296,6 @@ PasswordAutofillAgent::GetSimplifiedPasswordFormFromUnownedInputElements() {
     return nullptr;
   return CreateSimplifiedPasswordFormFromUnownedInputElements(
       *web_frame, &field_data_manager_, &username_detector_cache_);
-}
-
-// mojom::PasswordAutofillAgent:
-void PasswordAutofillAgent::SetLoggingState(bool active) {
-  logging_state_active_ = active;
-}
-
-void PasswordAutofillAgent::TouchToFillDismissed() {
-  should_show_touch_to_fill_ = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

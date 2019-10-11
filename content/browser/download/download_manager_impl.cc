@@ -65,6 +65,7 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_utils.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
@@ -219,10 +220,11 @@ std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 CreateSharedURLLoaderFactoryInfo(StoragePartitionImpl* storage_partition,
                                  RenderFrameHost* rfh,
                                  bool is_download) {
-  // TODO(crbug.com/955171): Replace these with PendingRemote and
-  // PendingReceiver.
+  // TODO(crbug.com/955171): Replace |proxy_factory_ptr_info| with
+  // PendingRemote.
   network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info;
-  network::mojom::URLLoaderFactoryRequest proxy_factory_request;
+  mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+      proxy_factory_receiver;
   if (rfh) {
     bool should_proxy = false;
 
@@ -250,13 +252,13 @@ CreateSharedURLLoaderFactoryInfo(StoragePartitionImpl* storage_partition,
     // intermediate pipe along to the NetworkDownloadURLLoaderFactoryInfo.
     if (should_proxy) {
       proxy_factory_ptr_info = std::move(maybe_proxy_factory_ptr_info);
-      proxy_factory_request = std::move(maybe_proxy_factory_receiver);
+      proxy_factory_receiver = std::move(maybe_proxy_factory_receiver);
     }
   }
 
   return std::make_unique<NetworkDownloadURLLoaderFactoryInfo>(
       storage_partition->url_loader_factory_getter(),
-      std::move(proxy_factory_ptr_info), std::move(proxy_factory_request));
+      std::move(proxy_factory_ptr_info), std::move(proxy_factory_receiver));
 }
 
 std::unique_ptr<network::SharedURLLoaderFactoryInfo>

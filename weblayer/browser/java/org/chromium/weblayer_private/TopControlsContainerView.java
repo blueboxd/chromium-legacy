@@ -52,6 +52,7 @@ class TopControlsContainerView extends FrameLayout {
 
     // Used to  delay updating the image for the layer.
     private final Runnable mRefreshResourceIdRunnable = () -> {
+        if (mView == null) return;
         TopControlsContainerViewJni.get().updateTopControlsResource(
                 mNativeTopControlsContainerView, TopControlsContainerView.this);
     };

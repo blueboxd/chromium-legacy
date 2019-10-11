@@ -137,12 +137,12 @@ class AXTreeSourceArcTest : public testing::Test,
                         MockAutomationEventRouter* router)
         : AXTreeSourceArc(delegate), router_(router) {}
 
+   private:
     extensions::AutomationEventRouterInterface* GetAutomationEventRouter()
         const override {
       return router_;
     }
 
-   private:
     MockAutomationEventRouter* const router_;
   };
 
@@ -338,6 +338,76 @@ TEST_F(AXTreeSourceArcTest, ReorderChildrenByLayout) {
   EXPECT_EQ(10, GetDispatchedEventCount(ax::mojom::Event::kFocus));
 }
 
+TEST_F(AXTreeSourceArcTest, AccessibleNameComputationTextField) {
+  auto event = AXEventData::New();
+  event->source_id = 0;
+  event->task_id = 1;
+  event->event_type = AXEventType::VIEW_FOCUSED;
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* root = event->node_data.back().get();
+  root->id = 0;
+
+  std::unique_ptr<ui::AXNodeData> data;
+  SetProperty(root, AXStringProperty::CLASS_NAME, "");
+  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({1}));
+
+  // Child.
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* child1 = event->node_data.back().get();
+  child1->id = 1;
+  SetProperty(child1, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({2, 3}));
+
+  // Second child.
+  // This test requires two children.
+  // see SerializeNode function in arc/a11y/ax_tree_source_arc.cc
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* child2 = event->node_data.back().get();
+  child2->id = 2;
+
+  // Third child.
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* child3 = event->node_data.back().get();
+  child3->id = 3;
+
+  // Populate the tree source with the data.
+  CallNotifyAccessibilityEvent(event.get());
+
+  SetProperty(child2, AXBooleanProperty::EDITABLE, true);
+  SetProperty(child2, AXStringProperty::TEXT, "foo@example.com");
+  SetProperty(child2, AXStringProperty::CONTENT_DESCRIPTION,
+              "Type your email here.");
+
+  CallSerializeNode(child2, &data);
+
+  std::string prop;
+  ASSERT_TRUE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &prop));
+  EXPECT_EQ("Type your email here.", prop);
+
+  ASSERT_TRUE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kValue, &prop));
+  EXPECT_EQ("foo@example.com", prop);
+
+  ASSERT_FALSE(data->GetStringAttribute(
+      ax::mojom::StringAttribute::kDescription, &prop));
+
+  // Case for when text property is empty.
+  SetProperty(child3, AXBooleanProperty::EDITABLE, true);
+  SetProperty(child3, AXStringProperty::CONTENT_DESCRIPTION,
+              "Type your email here.");
+
+  CallSerializeNode(child3, &data);
+
+  ASSERT_TRUE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &prop));
+  EXPECT_EQ("Type your email here.", prop);
+  ASSERT_TRUE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kValue, &prop));
+  ASSERT_FALSE(data->GetStringAttribute(
+      ax::mojom::StringAttribute::kDescription, &prop));
+}
+
 TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   auto event = AXEventData::New();
   event->source_id = 0;
@@ -374,9 +444,9 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   SetProperty(root, AXStringProperty::TEXT, "");
 
   CallSerializeNode(root, &data);
-  ASSERT_TRUE(
+  // With crrev/1786363, empty text on node will not set the name.
+  ASSERT_FALSE(
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-  EXPECT_EQ("", name);
 
   // Text (non-empty).
   root->string_properties->clear();
@@ -402,7 +472,7 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   CallSerializeNode(root, &data);
   ASSERT_TRUE(
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-  EXPECT_EQ("label content description", name);
+  EXPECT_EQ("label content description label text", name);
 
   // Name from contents.
 

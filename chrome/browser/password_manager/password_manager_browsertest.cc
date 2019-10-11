@@ -39,6 +39,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
@@ -66,6 +67,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 
+using autofill::ParsingResult;
 using base::ASCIIToUTF16;
 using base::Feature;
 using testing::_;
@@ -3885,6 +3887,41 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, FormDynamicallyChanged) {
 
   WaitForElementValue("username_field", "temp");
   WaitForElementValue("password_field", "pw");
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ParserAnnotations) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kShowAutofillSignatures);
+  NavigateToFile("/password/password_form.html");
+  const char kGetAnnotation[] =
+      "window.domAutomationController.send("
+      "  document.getElementById('%s').getAttribute('pm_parser_annotation'));";
+
+  std::string username_annotation;
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
+      RenderFrameHost(), base::StringPrintf(kGetAnnotation, "username_field"),
+      &username_annotation));
+  EXPECT_EQ("username_element", username_annotation);
+
+  std::string password_annotation;
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
+      RenderFrameHost(), base::StringPrintf(kGetAnnotation, "password_field"),
+      &password_annotation));
+  EXPECT_EQ("password_element", password_annotation);
+
+  std::string new_password_annotation;
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
+      RenderFrameHost(),
+      base::StringPrintf(kGetAnnotation, "chg_new_password_1"),
+      &new_password_annotation));
+  EXPECT_EQ("new_password_element", new_password_annotation);
+
+  std::string cofirmation_password_annotation;
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
+      RenderFrameHost(),
+      base::StringPrintf(kGetAnnotation, "chg_new_password_2"),
+      &cofirmation_password_annotation));
+  EXPECT_EQ("confirmation_password_element", cofirmation_password_annotation);
 }
 
 }  // namespace

@@ -41,6 +41,7 @@
 #include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/sandbox/features.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 
 #if !defined(OS_ANDROID)
 #include "media/filters/decrypting_video_decoder.h"
@@ -429,6 +430,11 @@ void MediaInternals::SendGeneralAudioInformation() {
                                                           : "Disabled"));
   };
 
+  auto set_explicit_feature_data = [&](auto& feature, bool feature_value) {
+    audio_info_data.SetKey(feature.name,
+                           base::Value(feature_value ? "Enabled" : "Disabled"));
+  };
+
   set_feature_data(features::kAudioServiceAudioStreams);
   set_feature_data(features::kAudioServiceOutOfProcess);
 
@@ -448,8 +454,10 @@ void MediaInternals::SendGeneralAudioInformation() {
                          base::Value(feature_value_string));
 
   set_feature_data(features::kAudioServiceLaunchOnStartup);
-  set_feature_data(service_manager::features::kAudioServiceSandbox);
-  set_feature_data(features::kWebRtcApmInAudioService);
+  set_explicit_feature_data(service_manager::features::kAudioServiceSandbox,
+                            service_manager::IsAudioSandboxEnabled());
+  set_explicit_feature_data(features::kWebRtcApmInAudioService,
+                            media::IsWebRtcApmInAudioServiceEnabled());
 
   base::string16 audio_info_update =
       SerializeUpdate("media.updateGeneralAudioInformation", &audio_info_data);

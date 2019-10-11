@@ -103,7 +103,7 @@ TEST_F(ContentFaviconDriverTest, ShouldCauseImageDownload) {
 
 // Test that no download is initiated when DocumentOnLoadCompletedInMainFrame()
 // is not triggered (e.g. user stopped an ongoing page load).
-TEST_F(ContentFaviconDriverTest, DISABLED_ShouldNotCauseImageDownload) {
+TEST_F(ContentFaviconDriverTest, ShouldNotCauseImageDownload) {
   ContentFaviconDriver* favicon_driver =
       ContentFaviconDriver::FromWebContents(web_contents());
   web_contents_tester()->NavigateAndCommit(kPageURL);
@@ -120,8 +120,7 @@ TEST_F(ContentFaviconDriverTest, DISABLED_ShouldNotCauseImageDownload) {
 
 // Test that Favicon is not requested repeatedly during the same session if
 // the favicon is known to be unavailable (e.g. due to HTTP 404 status).
-TEST_F(ContentFaviconDriverTest,
-       DISABLED_ShouldNotRequestRepeatedlyIfUnavailable) {
+TEST_F(ContentFaviconDriverTest, ShouldNotRequestRepeatedlyIfUnavailable) {
   ON_CALL(favicon_service_, WasUnableToDownloadFavicon(kIconURL))
       .WillByDefault(Return(true));
   // Mimic a page load.

@@ -24,11 +24,9 @@ public class VariationsTestUtils {
     }
 
     public static boolean seedsEqual(SeedInfo a, SeedInfo b) {
-        return strEqual(a.signature, b.signature) &&
-            strEqual(a.country, b.country) &&
-            strEqual(a.date, b.date) &&
-            (a.isGzipCompressed == b.isGzipCompressed) &&
-            Arrays.equals(a.seedData, b.seedData);
+        return strEqual(a.signature, b.signature) && strEqual(a.country, b.country)
+                && (a.date == b.date) && (a.isGzipCompressed == b.isGzipCompressed)
+                && Arrays.equals(a.seedData, b.seedData);
     }
 
     private static boolean strEqual(String a, String b) {
@@ -40,7 +38,7 @@ public class VariationsTestUtils {
         seed.seedData = "bogus seed data".getBytes();
         seed.signature = "bogus seed signature";
         seed.country = "GB";
-        seed.date = "Sun, 23 Jun 1912 00:00:00 GMT";
+        seed.date = 946684800000L; // New Year's 2000 GMT
         return seed;
     }
 

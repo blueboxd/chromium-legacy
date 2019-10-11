@@ -262,8 +262,9 @@ bool ExtensionAppShimHandler::AppState::IsMultiProfile() const {
 
 std::unique_ptr<AvatarMenu> ExtensionAppShimHandler::Delegate::CreateAvatarMenu(
     AvatarMenuObserver* observer) {
-  // TODO(https://crbug.com/1008947): Fix use-after-free caused by AvatarMenu.
-  return nullptr;
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  return std::make_unique<AvatarMenu>(
+      &profile_manager->GetProfileAttributesStorage(), observer, nullptr);
 }
 
 Profile* ExtensionAppShimHandler::Delegate::ProfileForPath(

@@ -20,6 +20,7 @@
 using blink::mojom::NativeFileSystemStatus;
 using storage::BlobDataHandle;
 using storage::FileSystemOperation;
+using storage::FileSystemOperationRunner;
 
 namespace {
 
@@ -98,17 +99,19 @@ NativeFileSystemFileWriterImpl::NativeFileSystemFileWriterImpl(
 
 NativeFileSystemFileWriterImpl::~NativeFileSystemFileWriterImpl() {
   if (can_purge()) {
-    manager()->operation_runner()->RemoveFile(
-        swap_url(), base::BindOnce(
-                        [](const storage::FileSystemURL& swap_url,
-                           base::File::Error result) {
-                          if (result != base::File::FILE_OK) {
-                            DLOG(ERROR) << "Error Deleting Swap File, status: "
-                                        << base::File::ErrorToString(result)
-                                        << " path: " << swap_url.path();
-                          }
-                        },
-                        swap_url()));
+    DoFileSystemOperation(FROM_HERE, &FileSystemOperationRunner::RemoveFile,
+                          base::BindOnce(
+                              [](const storage::FileSystemURL& swap_url,
+                                 base::File::Error result) {
+                                if (result != base::File::FILE_OK) {
+                                  DLOG(ERROR)
+                                      << "Error Deleting Swap File, status: "
+                                      << base::File::ErrorToString(result)
+                                      << " path: " << swap_url.path();
+                                }
+                              },
+                              swap_url()),
+                          swap_url());
   }
 }
 
@@ -210,11 +213,12 @@ void NativeFileSystemFileWriterImpl::DoWriteBlob(
     return;
   }
 
-  operation_runner()->Write(
-      swap_url(), std::move(blob), position,
+  DoFileSystemOperation(
+      FROM_HERE, &FileSystemOperationRunner::Write,
       base::BindRepeating(&NativeFileSystemFileWriterImpl::DidWrite,
                           weak_factory_.GetWeakPtr(),
-                          base::Owned(new WriteState{std::move(callback)})));
+                          base::Owned(new WriteState{std::move(callback)})),
+      swap_url(), std::move(blob), position);
 }
 
 void NativeFileSystemFileWriterImpl::WriteStreamImpl(
@@ -234,11 +238,12 @@ void NativeFileSystemFileWriterImpl::WriteStreamImpl(
     return;
   }
 
-  operation_runner()->Write(
-      swap_url(), std::move(stream), offset,
+  DoFileSystemOperation(
+      FROM_HERE, &FileSystemOperationRunner::WriteStream,
       base::BindRepeating(&NativeFileSystemFileWriterImpl::DidWrite,
                           weak_factory_.GetWeakPtr(),
-                          base::Owned(new WriteState{std::move(callback)})));
+                          base::Owned(new WriteState{std::move(callback)})),
+      swap_url(), std::move(stream), offset);
 }
 
 void NativeFileSystemFileWriterImpl::DidWrite(WriteState* state,
@@ -269,14 +274,15 @@ void NativeFileSystemFileWriterImpl::TruncateImpl(uint64_t length,
     return;
   }
 
-  operation_runner()->Truncate(
-      swap_url(), length,
+  DoFileSystemOperation(
+      FROM_HERE, &FileSystemOperationRunner::Truncate,
       base::BindOnce(
           [](TruncateCallback callback, base::File::Error result) {
             std::move(callback).Run(
                 native_file_system_error::FromFileError(result));
           },
-          std::move(callback)));
+          std::move(callback)),
+      swap_url(), length);
 }
 
 void NativeFileSystemFileWriterImpl::CloseImpl(CloseCallback callback) {
@@ -372,11 +378,12 @@ void NativeFileSystemFileWriterImpl::DidPassAfterWriteCheck(
   // will not exist anymore.
   // In case of error, the swap file URL will point to a valid filesystem
   // location. The file at this URL will be deleted when the mojo pipe closes.
-  operation_runner()->Move(
-      swap_url(), url(),
-      storage::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
+  DoFileSystemOperation(
+      FROM_HERE, &FileSystemOperationRunner::Move,
       base::BindOnce(&NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_factory_.GetWeakPtr(), std::move(callback)),
+      swap_url(), url(),
+      storage::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED);
 }
 
 void NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose(

@@ -34,16 +34,24 @@ WebauthnOfferDialogViewImpl::WebauthnOfferDialogViewImpl(
 
 WebauthnOfferDialogViewImpl::~WebauthnOfferDialogViewImpl() {
   model_->RemoveObserver(this);
+  if (controller_) {
+    controller_->OnDialogClosed();
+    controller_ = nullptr;
+  }
 }
 
 // static
-WebauthnOfferDialogModel* WebauthnOfferDialogView::CreateAndShow(
+WebauthnOfferDialogView* WebauthnOfferDialogView::CreateAndShow(
     WebauthnOfferDialogController* controller) {
   WebauthnOfferDialogViewImpl* dialog =
       new WebauthnOfferDialogViewImpl(controller);
   constrained_window::ShowWebModalDialogViews(dialog,
                                               controller->GetWebContents());
-  return dialog->model();
+  return dialog;
+}
+
+WebauthnOfferDialogModel* WebauthnOfferDialogViewImpl::GetDialogModel() const {
+  return model_;
 }
 
 void WebauthnOfferDialogViewImpl::OnDialogStateChanged() {
@@ -124,14 +132,14 @@ bool WebauthnOfferDialogViewImpl::ShouldShowCloseButton() const {
   return false;
 }
 
-void WebauthnOfferDialogViewImpl::WindowClosing() {
+void WebauthnOfferDialogViewImpl::Hide() {
+  // Reset controller reference if the controller has been destroyed before the
+  // view being destroyed. This happens if browser window is closed when the
+  // dialog is visible.
   if (controller_) {
     controller_->OnDialogClosed();
     controller_ = nullptr;
   }
-}
-
-void WebauthnOfferDialogViewImpl::Hide() {
   GetWidget()->Close();
 }
 

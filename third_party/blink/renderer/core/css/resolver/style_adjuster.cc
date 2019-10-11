@@ -566,7 +566,9 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     AdjustStyleForFirstLetter(style);
   }
 
-  if (element && RuntimeEnabledFeatures::DisplayLockingEnabled() &&
+  if (element &&
+      RuntimeEnabledFeatures::DisplayLockingEnabled(
+          element->GetExecutionContext()) &&
       element->hasAttribute(html_names::kRendersubtreeAttr)) {
     // The element has the rendersubtree attr, so we should add style and
     // layout containment. If the attribute contains "invisible" we should

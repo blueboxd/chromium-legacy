@@ -274,40 +274,57 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   // String properties.
   int labelled_by = -1;
 
-  // Accessible name computation picks the first non-empty string from content
-  // description, text, labelled by text, or pane title.
-  std::string name;
-  bool has_name = GetProperty(AXStringProperty::CONTENT_DESCRIPTION, &name);
-  if (name.empty())
-    has_name |= GetProperty(AXStringProperty::TEXT, &name);
-  if (name.empty() && GetProperty(AXIntProperty::LABELED_BY, &labelled_by)) {
+  // Accessible name computation is a concatenated string comprising of:
+  // content description, text, labelled by text, and pane title.
+  std::string text;
+  std::string content_description;
+  std::string label;
+  std::string pane_title;
+  GetProperty(AXStringProperty::CONTENT_DESCRIPTION, &content_description);
+  GetProperty(AXStringProperty::TEXT, &text);
+
+  if (GetProperty(AXIntProperty::LABELED_BY, &labelled_by)) {
     ArcAccessibilityInfoData* labelled_by_node =
         tree_source_->GetFromId(labelled_by);
     if (labelled_by_node && labelled_by_node->IsNode()) {
       ui::AXNodeData labelled_by_data;
       tree_source_->SerializeNode(labelled_by_node, &labelled_by_data);
-      has_name |= labelled_by_data.GetStringAttribute(
-          ax::mojom::StringAttribute::kName, &name);
+      labelled_by_data.GetStringAttribute(ax::mojom::StringAttribute::kName,
+                                          &label);
     }
   }
-  if (name.empty())
-    has_name |= GetProperty(AXStringProperty::PANE_TITLE, &name);
+
+  GetProperty(AXStringProperty::PANE_TITLE, &pane_title);
 
   // If it exists, set tooltip value as description on node.
   std::string tooltip;
   if (GetProperty(AXStringProperty::TOOLTIP, &tooltip)) {
     out_data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
                                  tooltip);
-    if (GetProperty(AXStringProperty::TEXT, &name)) {
-      out_data->SetName(name);
-    }
   }
 
-  if (has_name) {
-    if (out_data->role == ax::mojom::Role::kTextField)
-      out_data->AddStringAttribute(ax::mojom::StringAttribute::kValue, name);
-    else
-      out_data->SetName(name);
+  if (!text.empty() || !content_description.empty() || !label.empty() ||
+      !pane_title.empty()) {
+    // Append non empty properties to name attribute.
+    std::vector<std::string> names;
+    if (!content_description.empty())
+      names.push_back(content_description);
+    if (!label.empty())
+      names.push_back(label);
+    if (!pane_title.empty())
+      names.push_back(pane_title);
+    // For a textField, the editable text is contained in the text property, and
+    // this should be set as the value.
+    // This ensures that the edited text will be read out appropriately.
+    if (out_data->role == ax::mojom::Role::kTextField) {
+      out_data->SetValue(text);
+    } else {
+      names.push_back(text);
+    }
+    // TODO (sarakato): Exposing all possible labels for a node, may result in
+    // too much being spoken. For ARC ++, this may result in divergent behaviour
+    // from Talkback.
+    out_data->SetName(base::JoinString(names, " "));
   } else if (GetProperty(AXBooleanProperty::CLICKABLE)) {
     // Compute the name by joining all nodes with names.
     std::vector<std::string> names;

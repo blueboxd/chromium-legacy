@@ -576,6 +576,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "cryptauth-v2-devicesync",
+    "owners": [ "khorimoto", "nohle" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "cryptauth-v2-enrollment",
     "owners": [ "khorimoto", "nohle" ],
     "expiry_milestone": 82
@@ -1032,11 +1037,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "enable-avoid-flash-between-navigation",
-    "owners": [ "schenney", "paint-dev" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "enable-backdrop-filter",
     "owners": [ "masonfreed", "paint-dev@chromium.org" ],
     "expiry_milestone": 78
@@ -1141,7 +1141,7 @@
   {
     "name": "enable-cups-printers-ui-overhaul",
     "owners": [ "jimmyxgong" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 81
   },
   {
     "name": "enable-custom-mac-paper-sizes",
@@ -1519,6 +1519,11 @@
   {
     "name": "enable-oop-rasterization",
     "owners": [ "enne", "khushalsagar" ],
+    "expiry_milestone": 80
+  },
+    {
+    "name": "enable-paint-holding",
+    "owners": [ "schenney", "paint-dev" ],
     "expiry_milestone": 80
   },
   {
@@ -2449,6 +2454,11 @@
     "name": "message-center-redesign",
     "owners": ["amehfooz", "tengs"],
     "expiry_milestone": 81
+  },
+  {
+    "name": "metal",
+    "owners": ["ccameron", "jvanverth"],
+    "expiry_milestone": 83
   },
   {
     "name": "mime-handler-view-in-cross-process-frame",

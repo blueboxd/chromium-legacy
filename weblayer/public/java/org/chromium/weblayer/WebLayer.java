@@ -4,7 +4,6 @@
 
 package org.chromium.weblayer;
 
-import android.app.Application;
 import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -21,11 +20,13 @@ import android.webkit.WebViewDelegate;
 import android.webkit.WebViewFactory;
 
 import org.chromium.weblayer_private.aidl.APICallException;
+import org.chromium.weblayer_private.aidl.BrowserFragmentArgs;
+import org.chromium.weblayer_private.aidl.IBrowserFragment;
+import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
 import org.chromium.weblayer_private.aidl.IWebLayer;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 import org.chromium.weblayer_private.aidl.WebLayerVersion;
 
-import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.concurrent.TimeUnit;
@@ -40,13 +41,14 @@ public final class WebLayer {
 
     private static ListenableFuture<WebLayer> sFuture;
 
-    private IWebLayer mImpl;
+    private final IWebLayer mImpl;
+    private final ProfileManager mProfileManager = new ProfileManager();
 
     /**
      * Loads the WebLayer implementation and returns the IWebLayer. This does *not* trigger the
      * implementation to start.
      */
-    private static IWebLayer connectToWebLayerImplementation(Application application)
+    private static IWebLayer connectToWebLayerImplementation(Context application)
             throws UnsupportedVersionException {
         try {
             // TODO: Make asset loading work on L, where WebViewDelegate doesn't exist.
@@ -88,15 +90,16 @@ public final class WebLayer {
      * Asynchronously creates and initializes WebLayer. Calling this more than once returns the same
      * object.
      *
-     * @param application The hosting Application
+     * @param appContext The hosting application's Context.
      * @return a ListenableFuture whose value will contain the WebLayer once initialization
      * completes
      */
-    public static ListenableFuture<WebLayer> create(Application application)
+    public static ListenableFuture<WebLayer> create(Context appContext)
             throws UnsupportedVersionException {
         if (sFuture == null) {
-            IWebLayer iWebLayer = connectToWebLayerImplementation(application);
-            sFuture = new WebLayerLoadFuture(iWebLayer, application);
+            IWebLayer iWebLayer = connectToWebLayerImplementation(
+                    appContext.getApplicationContext());
+            sFuture = new WebLayerLoadFuture(iWebLayer, appContext);
         }
         return sFuture;
     }
@@ -107,7 +110,7 @@ public final class WebLayer {
     private static final class WebLayerLoadFuture extends ListenableFuture<WebLayer> {
         private final IWebLayer mIWebLayer;
 
-        WebLayerLoadFuture(IWebLayer iWebLayer, Application application) {
+        WebLayerLoadFuture(IWebLayer iWebLayer, Context application) {
             mIWebLayer = iWebLayer;
             ValueCallback<Boolean> loadCallback = new ValueCallback<Boolean>() {
                 @Override
@@ -159,21 +162,37 @@ public final class WebLayer {
 
     public void destroy() {
         // TODO: implement me.
+        mProfileManager.destroy();
     }
 
     private WebLayer(IWebLayer iWebLayer) {
         mImpl = iWebLayer;
     }
 
+    public static BrowserFragment createBrowserFragment(String profilePath) {
+        // TODO: use a profile id instead of the path to the actual file.
+        Bundle args = new Bundle();
+        args.putString(BrowserFragmentArgs.PROFILE_PATH, profilePath == null ? "" : profilePath);
+        BrowserFragment fragment = new BrowserFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     /**
-     * Creates a new Profile with the given path. Pass in an null path for an in-memory profile.
+     * Returns remote counterpart for the BrowserFragment: an {@link IBrowserFragment}.
      */
-    public Profile createProfile(File path) {
+    /* package */ IBrowserFragment connectFragment(
+            IRemoteFragmentClient remoteFragmentClient, Bundle fragmentArgs) {
         try {
-            return new Profile(mImpl.createProfile(path == null ? "" : path.getPath()));
+            return mImpl.createBrowserFragmentImpl(remoteFragmentClient,
+                    ObjectWrapper.wrap(fragmentArgs));
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
+    }
+
+    /* package */ ProfileManager getProfileManager() {
+        return mProfileManager;
     }
 
     /**

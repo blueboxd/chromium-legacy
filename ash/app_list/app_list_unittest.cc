@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/presenter/app_list_presenter_impl.h"
+#include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"

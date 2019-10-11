@@ -428,7 +428,7 @@ class _AvdInstance(object):
   def __str__(self):
     return '%s|%s' % (self._avd_name, (self._emulator_serial or id(self)))
 
-  def Start(self, read_only=True, snapshot_save=False):
+  def Start(self, read_only=True, snapshot_save=False, window=False):
     """Starts the emulator running an instance of the given AVD."""
     with tempfile_ext.TemporaryFileName() as socket_path, (contextlib.closing(
         socket.socket(socket.AF_UNIX))) as sock:
@@ -439,7 +439,6 @@ class _AvdInstance(object):
           self._avd_name,
           '-report-console',
           'unix:%s' % socket_path,
-          '-no-window',
       ]
       if read_only:
         emulator_cmd.append('-read-only')
@@ -448,6 +447,13 @@ class _AvdInstance(object):
       emulator_env = {}
       if self._emulator_home:
         emulator_env['ANDROID_EMULATOR_HOME'] = self._emulator_home
+      if window:
+        if 'DISPLAY' in os.environ:
+          emulator_env['DISPLAY'] = os.environ.get('DISPLAY')
+        else:
+          raise AvdException('Emulator failed to start: DISPLAY not defined')
+      else:
+        emulator_cmd.append('-no-window')
       sock.listen(1)
 
       logging.info('Starting emulator.')

@@ -2542,6 +2542,17 @@ void HostResolverManager::SetRequestContextForProbes(
   dns_client_->SetRequestContextForProbes(url_request_context);
 }
 
+void HostResolverManager::CancelProbesForContext(
+    URLRequestContext* url_request_context) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // If no DnsClient, there are no probes to cancel.
+  if (!dns_client_)
+    return;
+
+  dns_client_->CancelProbesForContext(url_request_context);
+}
+
 void HostResolverManager::AddHostCacheInvalidator(
     HostCache::Invalidator* invalidator) {
   host_cache_invalidators_.AddObserver(invalidator);

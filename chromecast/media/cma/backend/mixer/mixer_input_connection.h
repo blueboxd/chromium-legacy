@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/timer/timer.h"
+#include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "chromecast/media/audio/mixer_service/mixer_socket.h"
 #include "chromecast/media/cma/backend/audio_fader.h"
 #include "chromecast/media/cma/backend/mixer/mixer_input.h"
@@ -95,6 +96,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   AudioContentType content_type() override;
   int desired_read_size() override;
   int playout_channel() override;
+  bool active() override;
 
   void InitializeAudioPlayback(int read_size,
                                RenderingDelay initial_rendering_delay) override;

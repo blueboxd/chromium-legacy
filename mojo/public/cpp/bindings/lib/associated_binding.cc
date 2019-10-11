@@ -13,9 +13,9 @@ AssociatedBindingBase::AssociatedBindingBase() {}
 
 AssociatedBindingBase::~AssociatedBindingBase() {}
 
-void AssociatedBindingBase::AddFilter(std::unique_ptr<MessageReceiver> filter) {
+void AssociatedBindingBase::SetFilter(std::unique_ptr<MessageFilter> filter) {
   DCHECK(endpoint_client_);
-  endpoint_client_->AddFilter(std::move(filter));
+  endpoint_client_->SetFilter(std::move(filter));
 }
 
 void AssociatedBindingBase::Close() {

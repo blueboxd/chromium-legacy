@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -22,6 +24,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
@@ -48,8 +51,10 @@ WebUITabStripContainerView::WebUITabStripContainerView(Browser* browser)
 
   TabStripUI* tab_strip_ui = static_cast<TabStripUI*>(
       web_view_->GetWebContents()->GetWebUI()->GetController());
-  tab_strip_ui->Initialize(browser_);
+  tab_strip_ui->Initialize(browser_, this);
 }
+
+WebUITabStripContainerView::~WebUITabStripContainerView() = default;
 
 views::NativeViewHost* WebUITabStripContainerView::GetNativeViewHost() {
   return web_view_->holder();
@@ -73,6 +78,19 @@ WebUITabStripContainerView::CreateToggleButton() {
   toggle_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_WEBUI_TAB_STRIP_TOGGLE_BUTTON));
   return toggle_button;
+}
+
+void WebUITabStripContainerView::ShowContextMenuAtPoint(
+    gfx::Point point,
+    std::unique_ptr<ui::MenuModel> menu_model) {
+  ConvertPointToScreen(this, &point);
+  context_menu_model_ = std::move(menu_model);
+  context_menu_runner_ = std::make_unique<views::MenuRunner>(
+      context_menu_model_.get(),
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU);
+  context_menu_runner_->RunMenuAt(
+      GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
+      views::MenuAnchorPosition::kTopLeft, ui::MENU_SOURCE_MOUSE);
 }
 
 int WebUITabStripContainerView::GetHeightForWidth(int w) const {

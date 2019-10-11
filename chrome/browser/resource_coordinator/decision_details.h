@@ -82,6 +82,12 @@ enum class DecisionFailureReason : int32_t {
   // The tab is opted out of the intervention as it's currently connected to a
   // bluetooth device.
   LIVE_STATE_USING_BLUETOOTH,
+  // The tab is opted out of the intervention as it's currently holding at least
+  // one WebLock.
+  LIVE_STATE_USING_WEBLOCK,
+  // The tab is opted out of the intervention as it's currently holding at least
+  // one IndexedDB lock.
+  LIVE_STATE_USING_INDEXEDDB_LOCK,
   // This must remain last.
   MAX,
 };

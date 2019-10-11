@@ -11,6 +11,7 @@
 #include "content/browser/native_file_system/file_system_chooser_test_helpers.h"
 #include "content/browser/native_file_system/mock_native_file_system_permission_context.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -57,6 +58,17 @@ class FileSystemChooserBrowserTest : public ContentBrowserTest {
     ContentBrowserTest::TearDown();
     ASSERT_TRUE(temp_dir_.Delete());
     ui::SelectFileDialog::SetFactory(nullptr);
+  }
+
+  bool IsFullscreen() {
+    WebContents* web_contents = shell()->web_contents();
+    return web_contents->IsFullscreenForCurrentTab();
+  }
+
+  void EnterFullscreen(GURL url) {
+    WebContentsImpl* web_contents_impl =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    web_contents_impl->EnterFullscreenMode(url, blink::WebFullscreenOptions());
   }
 
   base::FilePath CreateTestFile(const std::string& contents) {
@@ -112,6 +124,25 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenFile) {
       EvalJs(shell(),
              "(async () => { const file = await self.selected_entry.getFile(); "
              "return await file.text(); })()"));
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, FullscreenOpenFile) {
+  const std::string file_contents = "hello world!";
+  const base::FilePath test_file = CreateTestFile(file_contents);
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_file}, &dialog_params));
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  EnterFullscreen(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(IsFullscreen());
+  EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
+            EvalJs(shell(),
+                   "(async () => {"
+                   "  let e = await self.chooseFileSystemEntries();"
+                   "  self.selected_entry = e;"
+                   "  return e.name; })()"));
+  EXPECT_FALSE(IsFullscreen());
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SaveFile_NonExistingFile) {
@@ -204,6 +235,25 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
   EXPECT_EQ(ui::SelectFileDialog::SELECT_NONE, dialog_params.type);
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, FullscreenSaveFile) {
+  const base::FilePath test_file = CreateTestFile("Hello World");
+
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_file}, &dialog_params));
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  EnterFullscreen(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
+            EvalJs(shell(),
+                   "(async () => {"
+                   "  let e = await self.chooseFileSystemEntries("
+                   "      {type: 'saveFile'});"
+                   "  self.entry = e;"
+                   "  return e.name; })()"));
+  EXPECT_FALSE(IsFullscreen());
+}
+
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenMultipleFiles) {
   const base::FilePath test_file1 = CreateTestFile("file1");
   const base::FilePath test_file2 = CreateTestFile("file2");
@@ -222,6 +272,26 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenMultipleFiles) {
   EXPECT_EQ(ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE, dialog_params.type);
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
+                       FullscreenOpenMultipleFiles) {
+  const base::FilePath test_file1 = CreateTestFile("file1");
+  const base::FilePath test_file2 = CreateTestFile("file2");
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(new FakeSelectFileDialogFactory(
+      {test_file1, test_file2}, &dialog_params));
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  EnterFullscreen(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_EQ(ListValueOf(test_file1.BaseName().AsUTF8Unsafe(),
+                        test_file2.BaseName().AsUTF8Unsafe()),
+            EvalJs(shell(),
+                   "(async () => {"
+                   "  let e = await self.chooseFileSystemEntries("
+                   "      {multiple: true});"
+                   "  return e.map(x => x.name); })()"));
+  EXPECT_FALSE(IsFullscreen());
+}
+
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory) {
   base::FilePath test_dir = CreateTestDir();
   SelectFileDialogParams dialog_params;
@@ -237,6 +307,24 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory) {
                    "  self.selected_entry = e;"
                    "  return e.name; })()"));
   EXPECT_EQ(ui::SelectFileDialog::SELECT_FOLDER, dialog_params.type);
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, FullscreenOpenDirectory) {
+  base::FilePath test_dir = CreateTestDir();
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_dir}, &dialog_params));
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  EnterFullscreen(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_EQ(test_dir.BaseName().AsUTF8Unsafe(),
+            EvalJs(shell(),
+                   "(async () => {"
+                   "  let e = await self.chooseFileSystemEntries("
+                   "      {type: 'openDirectory'});"
+                   "  self.selected_entry = e;"
+                   "  return e.name; })()"));
+  EXPECT_FALSE(IsFullscreen());
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory_DenyAccess) {

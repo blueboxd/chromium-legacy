@@ -119,10 +119,6 @@ class WebSpellCheckPanelHostClient;
 struct WebScrollIntoViewParams;
 class WebTextCheckClient;
 
-// Whether to follow cross origin redirects when downloading, or treating
-// the download as a navigation instead.
-enum class DownloadCrossOriginRedirects { kFollow, kNavigate };
-
 class CORE_EXPORT LocalFrameClient : public FrameClient {
  public:
   ~LocalFrameClient() override = default;
@@ -190,7 +186,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void ForwardResourceTimingToParent(const WebResourceTimingInfo&) = 0;
 
   virtual void DownloadURL(const ResourceRequest&,
-                           DownloadCrossOriginRedirects) = 0;
+                           network::mojom::RedirectMode) = 0;
 
   virtual bool NavigateBackForward(int offset) const = 0;
 

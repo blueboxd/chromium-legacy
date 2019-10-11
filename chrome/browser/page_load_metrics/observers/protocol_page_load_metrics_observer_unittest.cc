@@ -49,7 +49,7 @@ class ProtocolPageLoadMetricsObserverTest
 
     page_load_metrics::mojom::PageLoadTiming timing;
     InitializeTestPageLoadTiming(&timing);
-    SimulateTimingUpdate(timing);
+    tester()->SimulateTimingUpdate(timing);
 
     // Navigate again to force OnComplete, which happens when a new navigation
     // occurs.
@@ -60,7 +60,7 @@ class ProtocolPageLoadMetricsObserverTest
     int count = 0;
 
     base::HistogramTester::CountsMap counts_map =
-        histogram_tester().GetTotalCountsForPrefix(
+        tester()->histogram_tester().GetTotalCountsForPrefix(
             "PageLoad.Clients.Protocol.");
     for (const auto& entry : counts_map)
       count += entry.second;
@@ -75,21 +75,21 @@ class ProtocolPageLoadMetricsObserverTest
     std::string prefix = "PageLoad.Clients.Protocol.";
     prefix += protocol;
 
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         prefix + ".ParseTiming.NavigationToParseStart", 1);
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         prefix + ".PaintTiming.ParseStartToFirstContentfulPaint", 1);
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         prefix + ".PaintTiming.NavigationToFirstContentfulPaint", 1);
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         prefix + ".Experimental.PaintTiming.ParseStartToFirstMeaningfulPaint",
         1);
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         prefix + ".Experimental.PaintTiming.NavigationToFirstMeaningfulPaint",
         1);
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         prefix + ".DocumentTiming.NavigationToDOMContentLoadedEventFired", 1);
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         prefix + ".DocumentTiming.NavigationToLoadEventFired", 1);
   }
 

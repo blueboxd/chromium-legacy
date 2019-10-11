@@ -48,7 +48,7 @@ class SchemePageLoadMetricsObserverTest
 
     page_load_metrics::mojom::PageLoadTiming timing;
     InitializeTestPageLoadTiming(&timing);
-    SimulateTimingUpdate(timing);
+    tester()->SimulateTimingUpdate(timing);
 
     // Navigate again to force OnComplete, which happens when a new navigation
     // occurs.
@@ -59,13 +59,14 @@ class SchemePageLoadMetricsObserverTest
   int CountTotalProtocolMetricsRecorded(const std::string& protocol) {
     int count = 0;
     base::HistogramTester::CountsMap counts_map =
-        histogram_tester().GetTotalCountsForPrefix("PageLoad.Clients.Scheme.");
+        tester()->histogram_tester().GetTotalCountsForPrefix(
+            "PageLoad.Clients.Scheme.");
     for (const auto& entry : counts_map)
       count += entry.second;
 
     int understat_count = 0;
     base::HistogramTester::CountsMap understat_counts_map =
-        histogram_tester().GetTotalCountsForPrefix(
+        tester()->histogram_tester().GetTotalCountsForPrefix(
             "PageLoad.Clients.Scheme." + base::ToUpperASCII(protocol) +
             ".PaintTiming.UnderStat");
     for (const auto& entry : understat_counts_map)
@@ -77,10 +78,10 @@ class SchemePageLoadMetricsObserverTest
   // Returns the value of the sample present in |histogram_name|. Should be
   // called only if |histogram_name| contains exactly 1 sample.
   int32_t GetRecordedMetricValue(const std::string& histogram_name) const {
-    histogram_tester().ExpectTotalCount(histogram_name, 1);
+    tester()->histogram_tester().ExpectTotalCount(histogram_name, 1);
 
     std::vector<base::Bucket> buckets =
-        histogram_tester().GetAllSamples(histogram_name);
+        tester()->histogram_tester().GetAllSamples(histogram_name);
     for (const auto& bucket : buckets) {
       if (bucket.count == 1) {
         return bucket.min;
@@ -106,25 +107,26 @@ class SchemePageLoadMetricsObserverTest
     std::string fcp_understat_new_nav_histogram_name(
         fcp_understat_histogram_name + ".UserInitiated.NewNavigation");
 
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         prefix + ".ParseTiming.NavigationToParseStart", 1);
-    histogram_tester().ExpectTotalCount(fcp_histogram_name, 1);
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(fcp_histogram_name, 1);
+    tester()->histogram_tester().ExpectTotalCount(
         prefix + ".PaintTiming.ParseStartToFirstContentfulPaint", 1);
-    histogram_tester().ExpectUniqueSample(
+    tester()->histogram_tester().ExpectUniqueSample(
         prefix + ".PaintTiming.ParseStartToFirstContentfulPaint",
         static_cast<base::HistogramBase::Sample>(200), 1);
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         prefix + ".Experimental.PaintTiming.NavigationToFirstMeaningfulPaint",
         1);
 
-    histogram_tester().ExpectBucketCount(fcp_understat_histogram_name, 0, 1);
+    tester()->histogram_tester().ExpectBucketCount(fcp_understat_histogram_name,
+                                                   0, 1);
     if (new_navigation) {
-      histogram_tester().ExpectBucketCount(fcp_understat_new_nav_histogram_name,
-                                           0, 1);
+      tester()->histogram_tester().ExpectBucketCount(
+          fcp_understat_new_nav_histogram_name, 0, 1);
     } else {
-      histogram_tester().ExpectTotalCount(fcp_understat_new_nav_histogram_name,
-                                          0);
+      tester()->histogram_tester().ExpectTotalCount(
+          fcp_understat_new_nav_histogram_name, 0);
     }
 
     // Must remain synchronized with the array of the same name in
@@ -140,10 +142,10 @@ class SchemePageLoadMetricsObserverTest
       base::TimeDelta threshold(base::TimeDelta::FromSeconds(
           kUnderStatRecordingIntervalsSeconds[index]));
       if (recorded_fcp_value <= threshold) {
-        histogram_tester().ExpectBucketCount(fcp_understat_histogram_name,
-                                             index + 1, 1);
+        tester()->histogram_tester().ExpectBucketCount(
+            fcp_understat_histogram_name, index + 1, 1);
         if (new_navigation) {
-          histogram_tester().ExpectBucketCount(
+          tester()->histogram_tester().ExpectBucketCount(
               fcp_understat_new_nav_histogram_name, index + 1, 1);
         }
       }
@@ -152,7 +154,7 @@ class SchemePageLoadMetricsObserverTest
     // Overflow bucket should be empty. This also ensures that
     // kUnderStatRecordingIntervalsSeconds above is synchronized with the array
     // of the same name in scheme_page_load_metrics_observer.cc.
-    histogram_tester().ExpectBucketCount(
+    tester()->histogram_tester().ExpectBucketCount(
         fcp_understat_histogram_name,
         base::size(kUnderStatRecordingIntervalsSeconds) + 1, 0);
   }

@@ -16,6 +16,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -304,10 +305,12 @@ class BasePreviewsLitePageRedirectServerBrowserTest
         {"origin_probe_timeout_ms", "500"},
     };
 
-    scoped_parameterized_feature_list_.InitAndEnableFeatureWithParameters(
+    scoped_parameterized_feature_list_.emplace();
+    scoped_parameterized_feature_list_->InitAndEnableFeatureWithParameters(
         previews::features::kLitePageServerPreviews, feature_parameters);
 
-    scoped_feature_list_.InitWithFeatures(
+    scoped_feature_list_.emplace();
+    scoped_feature_list_->InitWithFeatures(
         {previews::features::kPreviews,
          optimization_guide::features::kOptimizationHints,
          previews::features::kResourceLoadingHints,
@@ -316,17 +319,26 @@ class BasePreviewsLitePageRedirectServerBrowserTest
          network::features::kReporting},
         {network::features::kNetworkErrorLogging});
 
+    opt_guide_keyed_service_feature_list_.emplace();
     if (UseOptimizationGuideKeyedServiceImplementation()) {
-      opt_guide_keyed_service_feature_list_.InitWithFeatures(
+      opt_guide_keyed_service_feature_list_->InitWithFeatures(
           {optimization_guide::features::kOptimizationGuideKeyedService}, {});
     } else {
-      opt_guide_keyed_service_feature_list_.InitWithFeatures(
+      opt_guide_keyed_service_feature_list_->InitWithFeatures(
           {}, {optimization_guide::features::kOptimizationGuideKeyedService});
     }
 
-    drp_holdback_feature_list_.InitWithFeatureState(
+    drp_holdback_feature_list_.emplace();
+    drp_holdback_feature_list_->InitWithFeatureState(
         data_reduction_proxy::features::kDataReductionProxyHoldback,
         ShouldEnableDRPHoldback());
+  }
+
+  void TearDown() override {
+    drp_holdback_feature_list_.reset();
+    opt_guide_keyed_service_feature_list_.reset();
+    scoped_feature_list_.reset();
+    scoped_parameterized_feature_list_.reset();
   }
 
   void SetUpOnMainThread() override {
@@ -897,11 +909,12 @@ class BasePreviewsLitePageRedirectServerBrowserTest
     previews_server_connections_.insert(unique_socket_id);
   }
 
-  base::test::ScopedFeatureList scoped_parameterized_feature_list_;
-  base::test::ScopedFeatureList scoped_feature_list_;
-  base::test::ScopedFeatureList url_loader_feature_list_;
-  base::test::ScopedFeatureList opt_guide_keyed_service_feature_list_;
-  base::test::ScopedFeatureList drp_holdback_feature_list_;
+  base::Optional<base::test::ScopedFeatureList>
+      scoped_parameterized_feature_list_;
+  base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
+  base::Optional<base::test::ScopedFeatureList>
+      opt_guide_keyed_service_feature_list_;
+  base::Optional<base::test::ScopedFeatureList> drp_holdback_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> previews_server_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
@@ -1212,14 +1225,22 @@ IN_PROC_BROWSER_TEST_P(
       1);
 }
 
-IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageRedirectServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(CoinFlipHoldbackTriggering)) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      {previews::features::kCoinFlipHoldback},
-      {{"force_coin_flip_always_holdback", "true"}});
+class PreviewsLitePageRedirectServerBrowserTestWithAlwaysHoldback
+    : public PreviewsLitePageRedirectServerBrowserTest {
+ public:
+  PreviewsLitePageRedirectServerBrowserTestWithAlwaysHoldback() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        {previews::features::kCoinFlipHoldback},
+        {{"force_coin_flip_always_holdback", "true"}});
+  }
 
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageRedirectServerBrowserTestWithAlwaysHoldback,
+    DISABLE_ON_WIN_MAC_CHROMESOS(CoinFlipHoldbackTriggering)) {
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
 }
@@ -1923,8 +1944,6 @@ class PreviewsLitePageRedirectServerNetworkIsolationBrowserTest
       public testing::WithParamInterface<NetworkIsolationKeyMode> {
  public:
   void SetUp() override {
-    BasePreviewsLitePageRedirectServerBrowserTest::SetUp();
-
     switch (GetParam()) {
       case NetworkIsolationKeyMode::kNone:
         break;
@@ -1950,6 +1969,8 @@ class PreviewsLitePageRedirectServerNetworkIsolationBrowserTest
             {});
         break;
     }
+
+    BasePreviewsLitePageRedirectServerBrowserTest::SetUp();
   }
 
   bool UseOptimizationGuideKeyedServiceImplementation() const override {
@@ -2106,13 +2127,14 @@ IN_PROC_BROWSER_TEST_P(
 class CoinFlipHoldbackExperimentBrowserTest
     : public PreviewsLitePageRedirectAndPageHintsBrowserTest {
  public:
-  CoinFlipHoldbackExperimentBrowserTest() = default;
+  CoinFlipHoldbackExperimentBrowserTest() {
+    ukm_feature_list_.InitAndEnableFeature(ukm::kUkmFeature);
+  }
 
   ~CoinFlipHoldbackExperimentBrowserTest() override = default;
 
   void SetUp() override {
     PreviewsLitePageRedirectAndPageHintsBrowserTest::SetUp();
-    ukm_feature_list_.InitAndEnableFeature(ukm::kUkmFeature);
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -2125,9 +2147,6 @@ class CoinFlipHoldbackExperimentBrowserTest
     ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
-  // |coin_flip_holdback_enabled|: Whether the coin flip holdback feature flag
-  // should be enabled.
-  //
   // |redirect_navigation|: Whether a preview should only be eligible on a
   // redirect.
   //
@@ -2136,27 +2155,10 @@ class CoinFlipHoldbackExperimentBrowserTest
   //
   // |allow_resource_loading|: Whether a resource loading preview should be
   // eligible.
-  //
-  // |set_random_navigation_coin_flip|: What the random coin flip should be.
-  // True is holdback, false is allowed.
-  void RunTest(bool coin_flip_holdback_enabled,
-               bool redirect_navigation,
+  void RunTest(bool redirect_navigation,
                bool allow_lite_page_redirect,
-               bool allow_resource_loading,
-               bool set_random_navigation_coin_flip) {
+               bool allow_resource_loading) {
     ukm::InitializeSourceUrlRecorderForWebContents(GetWebContents());
-
-    if (coin_flip_holdback_enabled) {
-      scoped_feature_list_.InitAndEnableFeatureWithParameters(
-          previews::features::kCoinFlipHoldback,
-          {{"force_coin_flip_always_holdback",
-            set_random_navigation_coin_flip ? "true" : "false"},
-           {"force_coin_flip_always_allow",
-            !set_random_navigation_coin_flip ? "true" : "false"}});
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          previews::features::kCoinFlipHoldback);
-    }
 
     GURL final_url = blacklisted_https_url();
     GURL starting_url = redirect_navigation
@@ -2253,8 +2255,46 @@ class CoinFlipHoldbackExperimentBrowserTest
 
  private:
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedFeatureList ukm_feature_list_;
+};
+
+class CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip
+    : public CoinFlipHoldbackExperimentBrowserTest {
+ public:
+  CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        previews::features::kCoinFlipHoldback,
+        {{"force_coin_flip_always_holdback", "true"},
+         {"force_coin_flip_always_allow", "false"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+class CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip
+    : public CoinFlipHoldbackExperimentBrowserTest {
+ public:
+  CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        previews::features::kCoinFlipHoldback,
+        {{"force_coin_flip_always_holdback", "false"},
+         {"force_coin_flip_always_allow", "true"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+class CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled
+    : public CoinFlipHoldbackExperimentBrowserTest {
+ public:
+  CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled() {
+    feature_list_.InitAndDisableFeature(previews::features::kCoinFlipHoldback);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // First param is true if testing using the OptimizationGuideKeyedService
@@ -2264,17 +2304,31 @@ INSTANTIATE_TEST_SUITE_P(
     CoinFlipHoldbackExperimentBrowserTest,
     ::testing::Combine(::testing::Bool(), ::testing::Bool()));
 
-IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(NoPreviews_NoCoinFlip)) {
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
+    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
+    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
+    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+
+IN_PROC_BROWSER_TEST_P(
+    CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
+    DISABLE_ON_WIN_MAC_CHROMESOS(NoPreviews_NoCoinFlip)) {
   // Set ECT so that we are sure to not trigger any preview.
   g_browser_process->network_quality_tracker()
       ->ReportEffectiveConnectionTypeForTesting(
           net::EFFECTIVE_CONNECTION_TYPE_4G);
 
-  RunTest(false /* coin_flip_holdback_enabled */,
-          false /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
-          false /* allow_resource_loading*/,
-          false /* set_random_navigation_coin_flip*/);
+  RunTest(false /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
+          false /* allow_resource_loading*/);
 
   ValidateResult(false /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2283,12 +2337,10 @@ IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(
-    CoinFlipHoldbackExperimentBrowserTest,
+    CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
     DISABLE_ON_WIN_MAC_CHROMESOS(BothPreviewsAllowedWantLPR_NoCoinFlip)) {
-  RunTest(false /* coin_flip_holdback_enabled */,
-          false /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
-          true /* allow_resource_loading*/,
-          false /* set_random_navigation_coin_flip*/);
+  RunTest(false /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
+          true /* allow_resource_loading*/);
 
   ValidateResult(true /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2296,12 +2348,11 @@ IN_PROC_BROWSER_TEST_P(
                  true /* want_ukm_previews_likely */);
 }
 
-IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(LPRAllowed_NoCoinFlip)) {
-  RunTest(false /* coin_flip_holdback_enabled */,
-          false /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
-          false /* allow_resource_loading*/,
-          false /* set_random_navigation_coin_flip*/);
+IN_PROC_BROWSER_TEST_P(
+    CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LPRAllowed_NoCoinFlip)) {
+  RunTest(false /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
+          false /* allow_resource_loading*/);
 
   ValidateResult(true /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2309,12 +2360,11 @@ IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
                  true /* want_ukm_previews_likely */);
 }
 
-IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(RLHAllowed_NoCoinFlip)) {
-  RunTest(false /* coin_flip_holdback_enabled */,
-          false /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
-          true /* allow_resource_loading*/,
-          false /* set_random_navigation_coin_flip*/);
+IN_PROC_BROWSER_TEST_P(
+    CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
+    DISABLE_ON_WIN_MAC_CHROMESOS(RLHAllowed_NoCoinFlip)) {
+  RunTest(false /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
+          true /* allow_resource_loading*/);
 
   ValidateResult(false /* want_lite_page_redirect_committed */,
                  true /* want_resource_loading_committed */,
@@ -2323,17 +2373,15 @@ IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(
-    CoinFlipHoldbackExperimentBrowserTest,
+    CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
     DISABLE_ON_WIN_MAC_CHROMESOS(NoPreviews_WithRedirect_NoCoinFlip)) {
   // Set ECT so that we are sure to not trigger any preview.
   g_browser_process->network_quality_tracker()
       ->ReportEffectiveConnectionTypeForTesting(
           net::EFFECTIVE_CONNECTION_TYPE_4G);
 
-  RunTest(false /* coin_flip_holdback_enabled */, true /* redirect_navigation*/,
-          false /* allow_lite_page_redirect*/,
-          false /* allow_resource_loading*/,
-          false /* set_random_navigation_coin_flip*/);
+  RunTest(true /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
+          false /* allow_resource_loading*/);
 
   ValidateResult(false /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2342,12 +2390,11 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    CoinFlipHoldbackExperimentBrowserTest,
+    CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
     DISABLE_ON_WIN_MAC_CHROMESOS(
         BothPreviewsAllowedWantLPR_WithRedirect_NoCoinFlip)) {
-  RunTest(false /* coin_flip_holdback_enabled */, true /* redirect_navigation*/,
-          true /* allow_lite_page_redirect*/, true /* allow_resource_loading*/,
-          false /* set_random_navigation_coin_flip*/);
+  RunTest(true /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
+          true /* allow_resource_loading*/);
 
   ValidateResult(true /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2356,12 +2403,10 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    CoinFlipHoldbackExperimentBrowserTest,
+    CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
     DISABLE_ON_WIN_MAC_CHROMESOS(LPRAllowed_WithRedirect_NoCoinFlip)) {
-  RunTest(false /* coin_flip_holdback_enabled */, true /* redirect_navigation*/,
-          true /* allow_lite_page_redirect*/,
-          false /* allow_resource_loading */,
-          false /* set_random_navigation_coin_flip*/);
+  RunTest(true /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
+          false /* allow_resource_loading */);
 
   ValidateResult(true /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2370,11 +2415,10 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    CoinFlipHoldbackExperimentBrowserTest,
+    CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
     DISABLE_ON_WIN_MAC_CHROMESOS(RLHAllowed_WithRedirect_NoCoinFlip)) {
-  RunTest(false /* coin_flip_holdback_enabled */, true /* redirect_navigation*/,
-          false /* allow_lite_page_redirect*/, true /* allow_resource_loading*/,
-          false /* set_random_navigation_coin_flip*/);
+  RunTest(true /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
+          true /* allow_resource_loading*/);
 
   ValidateResult(false /* want_lite_page_redirect_committed */,
                  true /* want_resource_loading_committed */,
@@ -2383,17 +2427,15 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    CoinFlipHoldbackExperimentBrowserTest,
+    CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
     DISABLE_ON_WIN_MAC_CHROMESOS(NoPreviews_CoinFlipEnabled_Allowed)) {
   // Set ECT so that we are sure to not trigger any preview.
   g_browser_process->network_quality_tracker()
       ->ReportEffectiveConnectionTypeForTesting(
           net::EFFECTIVE_CONNECTION_TYPE_4G);
 
-  RunTest(true /* coin_flip_holdback_enabled */, false /* redirect_navigation*/,
-          false /* allow_lite_page_redirect*/,
-          false /* allow_resource_loading*/,
-          false /* set_random_navigation_coin_flip*/);
+  RunTest(false /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
+          false /* allow_resource_loading*/);
 
   ValidateResult(false /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2402,12 +2444,11 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    CoinFlipHoldbackExperimentBrowserTest,
+    CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
     DISABLE_ON_WIN_MAC_CHROMESOS(
         BothPreviewsAllowedWantLPR_CoinFlipEnabled_Allowed)) {
-  RunTest(true /* coin_flip_holdback_enabled */, false /* redirect_navigation*/,
-          true /* allow_lite_page_redirect*/, true /* allow_resource_loading*/,
-          false /* set_random_navigation_coin_flip*/);
+  RunTest(false /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
+          true /* allow_resource_loading*/);
 
   ValidateResult(true /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2416,11 +2457,10 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    CoinFlipHoldbackExperimentBrowserTest,
+    CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
     DISABLE_ON_WIN_MAC_CHROMESOS(LPRAllowed_CoinFlipEnabled_Allowed)) {
-  RunTest(true /* coin_flip_holdback_enabled */, false /* redirect_navigation*/,
-          true /* allow_lite_page_redirect*/, false /* allow_resource_loading*/,
-          false /* set_random_navigation_coin_flip*/);
+  RunTest(false /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
+          false /* allow_resource_loading*/);
 
   ValidateResult(true /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2429,11 +2469,10 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    CoinFlipHoldbackExperimentBrowserTest,
+    CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
     DISABLE_ON_WIN_MAC_CHROMESOS(RLHAllowed_CoinFlipEnabled_Allowed)) {
-  RunTest(true /* coin_flip_holdback_enabled */, false /* redirect_navigation*/,
-          false /* allow_lite_page_redirect*/, true /* allow_resource_loading*/,
-          false /* set_random_navigation_coin_flip*/);
+  RunTest(false /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
+          true /* allow_resource_loading*/);
 
   ValidateResult(false /* want_lite_page_redirect_committed */,
                  true /* want_resource_loading_committed */,
@@ -2441,18 +2480,17 @@ IN_PROC_BROWSER_TEST_P(
                  true /* want_ukm_previews_likely */);
 }
 
-IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(
-                           NoPreviews_WithRedirect_CoinFlipEnabled_Allowed)) {
+IN_PROC_BROWSER_TEST_P(
+    CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
+    DISABLE_ON_WIN_MAC_CHROMESOS(
+        NoPreviews_WithRedirect_CoinFlipEnabled_Allowed)) {
   // Set ECT so that we are sure to not trigger any preview.
   g_browser_process->network_quality_tracker()
       ->ReportEffectiveConnectionTypeForTesting(
           net::EFFECTIVE_CONNECTION_TYPE_4G);
 
-  RunTest(true /* coin_flip_holdback_enabled */, true /* redirect_navigation*/,
-          false /* allow_lite_page_redirect*/,
-          false /* allow_resource_loading*/,
-          false /* set_random_navigation_coin_flip*/);
+  RunTest(true /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
+          false /* allow_resource_loading*/);
 
   ValidateResult(false /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2461,12 +2499,11 @@ IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(
-    CoinFlipHoldbackExperimentBrowserTest,
+    CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
     DISABLE_ON_WIN_MAC_CHROMESOS(
         BothPreviewsAllowedWantLPR_WithRedirect_CoinFlipEnabled_Allowed)) {
-  RunTest(true /* coin_flip_holdback_enabled */, true /* redirect_navigation*/,
-          true /* allow_lite_page_redirect*/, true /* allow_resource_loading*/,
-          false /* set_random_navigation_coin_flip*/);
+  RunTest(true /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
+          true /* allow_resource_loading*/);
 
   ValidateResult(true /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2474,13 +2511,12 @@ IN_PROC_BROWSER_TEST_P(
                  true /* want_ukm_previews_likely */);
 }
 
-IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(
-                           LPRAllowed_WithRedirect_CoinFlipEnabled_Allowed)) {
-  RunTest(true /* coin_flip_holdback_enabled */, true /* redirect_navigation*/,
-          true /* allow_lite_page_redirect*/,
-          false /* allow_resource_loading */,
-          false /* set_random_navigation_coin_flip*/);
+IN_PROC_BROWSER_TEST_P(
+    CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
+    DISABLE_ON_WIN_MAC_CHROMESOS(
+        LPRAllowed_WithRedirect_CoinFlipEnabled_Allowed)) {
+  RunTest(true /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
+          false /* allow_resource_loading */);
 
   ValidateResult(true /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2488,12 +2524,12 @@ IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
                  true /* want_ukm_previews_likely */);
 }
 
-IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(
-                           RLHAllowed_WithRedirect_CoinFlipEnabled_Allowed)) {
-  RunTest(true /* coin_flip_holdback_enabled */, true /* redirect_navigation*/,
-          false /* allow_lite_page_redirect*/, true /* allow_resource_loading*/,
-          false /* set_random_navigation_coin_flip*/);
+IN_PROC_BROWSER_TEST_P(
+    CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
+    DISABLE_ON_WIN_MAC_CHROMESOS(
+        RLHAllowed_WithRedirect_CoinFlipEnabled_Allowed)) {
+  RunTest(true /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
+          true /* allow_resource_loading*/);
 
   ValidateResult(false /* want_lite_page_redirect_committed */,
                  true /* want_resource_loading_committed */,
@@ -2502,17 +2538,15 @@ IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(
-    CoinFlipHoldbackExperimentBrowserTest,
+    CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
     DISABLE_ON_WIN_MAC_CHROMESOS(NoPreviews_CoinFlipEnabled_Holdback)) {
   // Set ECT so that we are sure to not trigger any preview.
   g_browser_process->network_quality_tracker()
       ->ReportEffectiveConnectionTypeForTesting(
           net::EFFECTIVE_CONNECTION_TYPE_4G);
 
-  RunTest(true /* coin_flip_holdback_enabled */, false /* redirect_navigation*/,
-          false /* allow_lite_page_redirect*/,
-          false /* allow_resource_loading*/,
-          true /* set_random_navigation_coin_flip*/);
+  RunTest(false /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
+          false /* allow_resource_loading*/);
 
   ValidateResult(false /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2521,12 +2555,11 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    CoinFlipHoldbackExperimentBrowserTest,
+    CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
     DISABLE_ON_WIN_MAC_CHROMESOS(
         BothPreviewsAllowedWantLPR_CoinFlipEnabled_Holdback)) {
-  RunTest(true /* coin_flip_holdback_enabled */, false /* redirect_navigation*/,
-          true /* allow_lite_page_redirect*/, true /* allow_resource_loading*/,
-          true /* set_random_navigation_coin_flip*/);
+  RunTest(false /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
+          true /* allow_resource_loading*/);
 
   ValidateResult(false /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2535,11 +2568,10 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    CoinFlipHoldbackExperimentBrowserTest,
+    CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
     DISABLE_ON_WIN_MAC_CHROMESOS(LPRAllowed_CoinFlipEnabled_Holdback)) {
-  RunTest(true /* coin_flip_holdback_enabled */, false /* redirect_navigation*/,
-          true /* allow_lite_page_redirect*/, false /* allow_resource_loading*/,
-          true /* set_random_navigation_coin_flip*/);
+  RunTest(false /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
+          false /* allow_resource_loading*/);
 
   ValidateResult(false /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2548,11 +2580,10 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    CoinFlipHoldbackExperimentBrowserTest,
+    CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
     DISABLE_ON_WIN_MAC_CHROMESOS(RLHAllowed_CoinFlipEnabled_Holdback)) {
-  RunTest(true /* coin_flip_holdback_enabled */, false /* redirect_navigation*/,
-          false /* allow_lite_page_redirect*/, true /* allow_resource_loading*/,
-          true /* set_random_navigation_coin_flip*/);
+  RunTest(false /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
+          true /* allow_resource_loading*/);
 
   ValidateResult(false /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2561,12 +2592,11 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    CoinFlipHoldbackExperimentBrowserTest,
+    CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
     DISABLE_ON_WIN_MAC_CHROMESOS(
         BothPreviewsAllowedWantLPR_WithRedirect_CoinFlipEnabled_Holdback)) {
-  RunTest(true /* coin_flip_holdback_enabled */, true /* redirect_navigation*/,
-          true /* allow_lite_page_redirect*/, true /* allow_resource_loading*/,
-          true /* set_random_navigation_coin_flip*/);
+  RunTest(true /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
+          true /* allow_resource_loading*/);
 
   ValidateResult(false /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2574,13 +2604,12 @@ IN_PROC_BROWSER_TEST_P(
                  true /* want_ukm_previews_likely */);
 }
 
-IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(
-                           LPRAllowed_WithRedirect_CoinFlipEnabled_Holdback)) {
-  RunTest(true /* coin_flip_holdback_enabled */, true /* redirect_navigation*/,
-          true /* allow_lite_page_redirect*/,
-          false /* allow_resource_loading */,
-          true /* set_random_navigation_coin_flip*/);
+IN_PROC_BROWSER_TEST_P(
+    CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
+    DISABLE_ON_WIN_MAC_CHROMESOS(
+        LPRAllowed_WithRedirect_CoinFlipEnabled_Holdback)) {
+  RunTest(true /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
+          false /* allow_resource_loading */);
 
   ValidateResult(false /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,
@@ -2588,12 +2617,12 @@ IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
                  true /* want_ukm_previews_likely */);
 }
 
-IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(
-                           RLHAllowed_WithRedirect_CoinFlipEnabled_Holdback)) {
-  RunTest(true /* coin_flip_holdback_enabled */, true /* redirect_navigation*/,
-          false /* allow_lite_page_redirect*/, true /* allow_resource_loading*/,
-          true /* set_random_navigation_coin_flip*/);
+IN_PROC_BROWSER_TEST_P(
+    CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
+    DISABLE_ON_WIN_MAC_CHROMESOS(
+        RLHAllowed_WithRedirect_CoinFlipEnabled_Holdback)) {
+  RunTest(true /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
+          true /* allow_resource_loading*/);
 
   ValidateResult(false /* want_lite_page_redirect_committed */,
                  false /* want_resource_loading_committed */,

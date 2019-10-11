@@ -30,8 +30,9 @@ cr.define('print_preview', function() {
    *   mediaSize: !print_preview.Setting,
    *   margins: !print_preview.Setting,
    *   dpi: !print_preview.Setting,
-   *   fitToPage: !print_preview.Setting,
    *   scaling: !print_preview.Setting,
+   *   scalingType: !print_preview.Setting,
+   *   scalingTypePdf: !print_preview.Setting,
    *   duplex: !print_preview.Setting,
    *   duplexShortEdge: !print_preview.Setting,
    *   cssBackground: !print_preview.Setting,
@@ -67,9 +68,10 @@ cr.define('print_preview', function() {
    *    isHeaderFooterEnabled: (boolean | undefined),
    *    isLandscapeEnabled: (boolean | undefined),
    *    isCollateEnabled: (boolean | undefined),
-   *    isFitToPageEnabled: (boolean | undefined),
    *    isCssBackgroundEnabled: (boolean | undefined),
    *    scaling: (string | undefined),
+   *    scalingType: (print_preview.ScalingType | undefined),
+   *    scalingTypePdf: (print_preview.ScalingType | undefined),
    *    vendor_options: (Object | undefined),
    *    isPinEnabled: (boolean | undefined),
    *    pinValue: (string | undefined)
@@ -147,8 +149,7 @@ cr.define('print_preview.Model', () => {
 'use strict';
 
 /**
- * Sticky setting names. Alphabetical except for fitToPage, which must be set
- * after scaling in updateFromStickySettings().
+ * Sticky setting names in alphabetical order.
  * @type {!Array<string>}
  */
 const STICKY_SETTING_NAMES = [
@@ -164,9 +165,9 @@ const STICKY_SETTING_NAMES = [
   'layout',
   'margins',
   'mediaSize',
-  'customScaling',
   'scaling',
-  'fitToPage',
+  'scalingType',
+  'scalingTypePdf',
   'vendorItems',
 ];
 // <if expr="chromeos">
@@ -291,16 +292,6 @@ Polymer({
             key: 'dpi',
             updatesPreview: false,
           },
-          fitToPage: {
-            value: false,
-            unavailableValue: false,
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            setFromUi: false,
-            key: 'isFitToPageEnabled',
-            updatesPreview: true,
-          },
           scaling: {
             value: '100',
             unavailableValue: '100',
@@ -311,14 +302,24 @@ Polymer({
             key: 'scaling',
             updatesPreview: true,
           },
-          customScaling: {
-            value: false,
-            unavailableValue: false,
+          scalingType: {
+            value: print_preview.ScalingType.DEFAULT,
+            unavailableValue: print_preview.ScalingType.DEFAULT,
             valid: true,
             available: true,
             setByPolicy: false,
             setFromUi: false,
-            key: 'customScaling',
+            key: 'scalingType',
+            updatesPreview: true,
+          },
+          scalingTypePdf: {
+            value: print_preview.ScalingType.DEFAULT,
+            unavailableValue: print_preview.ScalingType.DEFAULT,
+            valid: true,
+            available: true,
+            setByPolicy: false,
+            setFromUi: false,
+            key: 'scalingTypePdf',
             updatesPreview: true,
           },
           duplex: {
@@ -705,15 +706,15 @@ Polymer({
     const knownSizeToSaveAsPdf = isSaveAsPDF &&
         (!this.documentSettings.isModifiable ||
          this.documentSettings.hasCssMediaStyles);
-    this.setSettingPath_('fitToPage.unavailableValue', !isSaveAsPDF);
+    const scalingAvailable = !knownSizeToSaveAsPdf &&
+        (this.documentSettings.isModifiable || this.documentSettings.isPdf);
+    this.setSettingPath_('scaling.available', scalingAvailable);
     this.setSettingPath_(
-        'fitToPage.available',
-        !knownSizeToSaveAsPdf && this.documentSettings.isPdf);
+        'scalingType.available',
+        scalingAvailable && !this.documentSettings.isPdf);
     this.setSettingPath_(
-        'scaling.available',
-        !knownSizeToSaveAsPdf &&
-            (this.documentSettings.isModifiable ||
-             this.documentSettings.isPdf));
+        'scalingTypePdf.available',
+        scalingAvailable && this.documentSettings.isPdf);
     const caps = this.destination && this.destination.capabilities ?
         this.destination.capabilities.printer :
         null;
@@ -1021,21 +1022,14 @@ Polymer({
   },
 
   applyStickySettings: function() {
-    const defaultScaling = '100';
     if (this.stickySettings_) {
       STICKY_SETTING_NAMES.forEach(settingName => {
         const setting = this.get(settingName, this.settings);
         const value = this.stickySettings_[setting.key];
         if (value != undefined) {
           this.setSetting(settingName, value);
-        } else if (
-            settingName === 'customScaling' &&
-            !!this.stickySettings_['scaling']) {
-          // If users with an old set of sticky settings intentionally set a non
-          // default value, set customScaling to true so the value is restored.
-          // Otherwise, set to false with noSticky=true.
-          const scalingIsDefault = this.stickySettings_['scaling'] === '100';
-          this.setSetting(settingName, !scalingIsDefault, scalingIsDefault);
+        } else {
+          this.applyScalingStickySettings_(settingName);
         }
       });
     }
@@ -1054,6 +1048,39 @@ Polymer({
     this.updateManaged_();
     this.stickySettings_ = null;
     this.fire('sticky-settings-changed', this.getStickySettings_());
+  },
+
+  /**
+   * Helper function for applyStickySettings(). Checks if the setting
+   * is a scaling setting and applies by applying the old types
+   * that rely on 'fitToPage' and 'customScaling'.
+   * @param {string} settingName Name of the setting being applied.
+   * @private
+   */
+  applyScalingStickySettings_: function(settingName) {
+    // TODO(dhoss): Remove checks for 'customScaling' and 'fitToPage'
+    if (settingName === 'scalingType' &&
+        'customScaling' in this.stickySettings_) {
+      const isCustom = this.stickySettings_['customScaling'];
+      const scalingType = isCustom ? print_preview.ScalingType.CUSTOM :
+                                     print_preview.ScalingType.DEFAULT;
+      this.setSetting(settingName, scalingType);
+    } else if (settingName === 'scalingTypePdf') {
+      if ('isFitToPageEnabled' in this.stickySettings_) {
+        const isFitToPage = this.stickySettings_['isFitToPageEnabled'];
+        const scalingTypePdf = isFitToPage ?
+            print_preview.ScalingType.FIT_TO_PAGE :
+            this.getSetting('scalingType').value;
+        this.setSetting(settingName, scalingTypePdf);
+      } else if (
+          this.getSetting('scalingType').value ===
+          print_preview.ScalingType.CUSTOM) {
+        // In the event that 'isFitToPageEnabled' was not in the sticky
+        // settings, and 'scalingType' has been set to custom, we want
+        // 'scalingTypePdf' to match.
+        this.setSetting(settingName, print_preview.ScalingType.CUSTOM);
+      }
+    }
   },
 
   // <if expr="chromeos">
@@ -1207,6 +1234,9 @@ Polymer({
                     vendor_id: (number | undefined)}}
          */
         (this.getSettingValue('dpi'));
+    const scalingSettingKey = this.getSetting('scalingTypePdf').available ?
+        'scalingTypePdf' :
+        'scalingType';
     const ticket = {
       mediaSize: this.getSettingValue('mediaSize'),
       pageCount: this.getSettingValue('pages').length,
@@ -1221,15 +1251,12 @@ Polymer({
       shouldPrintBackgrounds: this.getSettingValue('cssBackground'),
       shouldPrintSelectionOnly: false,  // only used in print preview
       previewModifiable: this.documentSettings.isModifiable,
-      printToPDF: destination.id ==
-          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
       printToGoogleDrive:
           destination.id == print_preview.Destination.GooglePromotedId.DOCS,
-      printWithCloudPrint: !destination.isLocal,
-      printWithPrivet: destination.isPrivet,
-      printWithExtension: destination.isExtension,
+      printerType: print_preview.getPrinterTypeForDestination(destination),
       rasterizePDF: this.getSettingValue('rasterize'),
-      scaleFactor: this.getSettingValue('customScaling') ?
+      scaleFactor: this.getSettingValue(scalingSettingKey) ===
+              print_preview.ScalingType.CUSTOM ?
           parseInt(this.getSettingValue('scaling'), 10) :
           100,
       pagesPerSheet: this.getSettingValue('pagesPerSheet'),
@@ -1237,7 +1264,9 @@ Polymer({
       dpiVertical: (dpi && 'vertical_dpi' in dpi) ? dpi.vertical_dpi : 0,
       dpiDefault: (dpi && 'is_default' in dpi) ? dpi.is_default : false,
       deviceName: destination.id,
-      fitToPageEnabled: this.getSettingValue('fitToPage'),
+      // TODO(dhoss): Pass the enum in the ticket.
+      fitToPageEnabled: this.getSettingValue(scalingSettingKey) ===
+          print_preview.ScalingType.FIT_TO_PAGE,
       pageWidth: this.pageSize.width,
       pageHeight: this.pageSize.height,
       showSystemDialog: showSystemDialog,

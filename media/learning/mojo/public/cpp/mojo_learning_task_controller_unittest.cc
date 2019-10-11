@@ -22,10 +22,13 @@ class MojoLearningTaskControllerTest : public ::testing::Test {
   // Impl of a mojom::LearningTaskController that remembers call arguments.
   class FakeMojoLearningTaskController : public mojom::LearningTaskController {
    public:
-    void BeginObservation(const base::UnguessableToken& id,
-                          const FeatureVector& features) override {
+    void BeginObservation(
+        const base::UnguessableToken& id,
+        const FeatureVector& features,
+        const base::Optional<TargetValue>& default_target) override {
       begin_args_.id_ = id;
       begin_args_.features_ = features;
+      begin_args_.default_target_ = default_target;
     }
 
     void CompleteObservation(const base::UnguessableToken& id,
@@ -41,6 +44,7 @@ class MojoLearningTaskControllerTest : public ::testing::Test {
     struct {
       base::UnguessableToken id_;
       FeatureVector features_;
+      base::Optional<TargetValue> default_target_;
     } begin_args_;
 
     struct {
@@ -87,13 +91,26 @@ TEST_F(MojoLearningTaskControllerTest, GetLearningTask) {
   EXPECT_EQ(learning_controller_->GetLearningTask().name, task_.name);
 }
 
-TEST_F(MojoLearningTaskControllerTest, Begin) {
+TEST_F(MojoLearningTaskControllerTest, BeginWithoutDefaultTarget) {
   base::UnguessableToken id = base::UnguessableToken::Create();
   FeatureVector features = {FeatureValue(123), FeatureValue(456)};
-  learning_controller_->BeginObservation(id, features);
+  learning_controller_->BeginObservation(id, features, base::nullopt);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(id, fake_learning_controller_.begin_args_.id_);
   EXPECT_EQ(features, fake_learning_controller_.begin_args_.features_);
+  EXPECT_FALSE(fake_learning_controller_.begin_args_.default_target_);
+}
+
+TEST_F(MojoLearningTaskControllerTest, BeginWithDefaultTarget) {
+  base::UnguessableToken id = base::UnguessableToken::Create();
+  TargetValue default_target(987);
+  FeatureVector features = {FeatureValue(123), FeatureValue(456)};
+  learning_controller_->BeginObservation(id, features, default_target);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(id, fake_learning_controller_.begin_args_.id_);
+  EXPECT_EQ(features, fake_learning_controller_.begin_args_.features_);
+  EXPECT_EQ(default_target,
+            fake_learning_controller_.begin_args_.default_target_);
 }
 
 TEST_F(MojoLearningTaskControllerTest, Complete) {

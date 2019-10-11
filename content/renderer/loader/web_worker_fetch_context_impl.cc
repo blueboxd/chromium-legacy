@@ -47,14 +47,14 @@ void CreateServiceWorkerSubresourceLoaderFactory(
         remote_container_host,
     const std::string& client_id,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory,
-    network::mojom::URLLoaderFactoryRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   ServiceWorkerSubresourceLoaderFactory::Create(
       base::MakeRefCounted<ControllerServiceWorkerConnector>(
           std::move(remote_container_host),
           mojo::NullRemote() /* remote_controller */, client_id),
       network::SharedURLLoaderFactory::Create(std::move(fallback_factory)),
-      std::move(request), std::move(task_runner));
+      std::move(receiver), std::move(task_runner));
 }
 
 }  // namespace

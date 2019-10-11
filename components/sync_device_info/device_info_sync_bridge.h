@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/sync/model/model_error.h"
@@ -101,6 +102,7 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   // Methods used as callbacks given to DataTypeStore.
   void OnStoreCreated(const base::Optional<syncer::ModelError>& error,
                       std::unique_ptr<ModelTypeStore> store);
+  void OnHardwareInfoRetrieved(base::SysInfo::HardwareInfo hardware_info);
   void OnReadAllData(std::unique_ptr<ClientIdToSpecifics> all_data,
                      std::unique_ptr<std::string> session_name,
                      const base::Optional<syncer::ModelError>& error);
@@ -142,6 +144,7 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   std::string local_cache_guid_;
   std::string local_personalizable_device_name_;
   ClientIdToSpecifics all_data_;
+  base::SysInfo::HardwareInfo local_hardware_info_;
 
   // Registered observers, not owned.
   base::ObserverList<Observer, true>::Unchecked observers_;

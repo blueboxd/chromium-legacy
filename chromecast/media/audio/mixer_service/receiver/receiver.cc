@@ -61,7 +61,8 @@ class Receiver::InitialSocket : public MixerSocket::Delegate {
                message.has_set_device_muted() ||
                message.has_set_volume_limit() ||
                message.has_configure_postprocessor() ||
-               message.has_reload_postprocessors()) {
+               message.has_reload_postprocessors() ||
+               message.has_request_stream_count()) {
       receiver_->CreateControlConnection(std::move(socket_), message);
       receiver_->RemoveInitialSocket(this);
     }

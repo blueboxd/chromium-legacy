@@ -7,6 +7,7 @@
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import './reset_password.mojom-lite.js';
 
 import {$} from 'chrome://resources/js/util.m.js';

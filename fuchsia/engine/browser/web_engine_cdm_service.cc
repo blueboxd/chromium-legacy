@@ -20,6 +20,7 @@
 #include "media/base/provision_fetcher.h"
 #include "media/fuchsia/cdm/service/fuchsia_cdm_manager.h"
 #include "media/fuchsia/mojom/fuchsia_cdm_provider.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 namespace {
@@ -27,10 +28,11 @@ namespace {
 class FuchsiaCdmProviderImpl
     : public content::FrameServiceBase<media::mojom::FuchsiaCdmProvider> {
  public:
-  FuchsiaCdmProviderImpl(media::FuchsiaCdmManager* cdm_manager,
-                         media::CreateFetcherCB create_fetcher_cb,
-                         content::RenderFrameHost* render_frame_host,
-                         media::mojom::FuchsiaCdmProviderRequest request);
+  FuchsiaCdmProviderImpl(
+      media::FuchsiaCdmManager* cdm_manager,
+      media::CreateFetcherCB create_fetcher_cb,
+      content::RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<media::mojom::FuchsiaCdmProvider> receiver);
   ~FuchsiaCdmProviderImpl() final;
 
   // media::mojom::FuchsiaCdmProvider implementation.
@@ -50,8 +52,8 @@ FuchsiaCdmProviderImpl::FuchsiaCdmProviderImpl(
     media::FuchsiaCdmManager* cdm_manager,
     media::CreateFetcherCB create_fetcher_cb,
     content::RenderFrameHost* render_frame_host,
-    media::mojom::FuchsiaCdmProviderRequest request)
-    : FrameServiceBase(render_frame_host, std::move(request)),
+    mojo::PendingReceiver<media::mojom::FuchsiaCdmProvider> receiver)
+    : FrameServiceBase(render_frame_host, std::move(receiver)),
       cdm_manager_(cdm_manager),
       create_fetcher_cb_(std::move(create_fetcher_cb)) {
   DCHECK(cdm_manager_);
@@ -67,9 +69,10 @@ void FuchsiaCdmProviderImpl::CreateCdmInterface(
                                    std::move(request));
 }
 
-void BindFuchsiaCdmProvider(media::FuchsiaCdmManager* cdm_manager,
-                            media::mojom::FuchsiaCdmProviderRequest request,
-                            content::RenderFrameHost* const frame_host) {
+void BindFuchsiaCdmProvider(
+    media::FuchsiaCdmManager* cdm_manager,
+    mojo::PendingReceiver<media::mojom::FuchsiaCdmProvider> receiver,
+    content::RenderFrameHost* const frame_host) {
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(
           frame_host->GetProcess()->GetBrowserContext())
@@ -80,7 +83,7 @@ void BindFuchsiaCdmProvider(media::FuchsiaCdmManager* cdm_manager,
       cdm_manager,
       base::BindRepeating(&content::CreateProvisionFetcher,
                           std::move(loader_factory)),
-      frame_host, std::move(request));
+      frame_host, std::move(receiver));
 }
 
 class WidevineHandler : public media::FuchsiaCdmManager::KeySystemHandler {

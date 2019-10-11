@@ -11,12 +11,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
+#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
@@ -64,7 +64,8 @@ class CONTENT_EXPORT RtpReceiverState {
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
       scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver,
-      std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref,
+      std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+          track_ref,
       std::vector<std::string> stream_ids);
   RtpReceiverState(RtpReceiverState&&);
   RtpReceiverState(const RtpReceiverState&) = delete;
@@ -86,7 +87,7 @@ class CONTENT_EXPORT RtpReceiverState {
       const;
   webrtc::DtlsTransportInformation webrtc_dtls_transport_information() const;
 
-  const std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>&
+  const std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>&
   track_ref() const;
   const std::vector<std::string>& stream_ids() const;
 
@@ -97,7 +98,8 @@ class CONTENT_EXPORT RtpReceiverState {
   rtc::scoped_refptr<webrtc::DtlsTransportInterface> webrtc_dtls_transport_;
   webrtc::DtlsTransportInformation webrtc_dtls_transport_information_;
   bool is_initialized_;
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref_;
+  std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+      track_ref_;
   std::vector<std::string> stream_ids_;
 };
 

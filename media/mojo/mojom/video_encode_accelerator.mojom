@@ -33,7 +33,9 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 // of these messages are acknowledged.
 
 interface VideoEncodeAcceleratorProvider {
-  CreateVideoEncodeAccelerator(VideoEncodeAccelerator& request);
+  // Creates a VideoEncodeAccelerator bound to |receiver|.
+  CreateVideoEncodeAccelerator(
+        pending_receiver<VideoEncodeAccelerator> receiver);
 };
 
 // Class that describes how video bitrate, in bps, is allocated across temporal

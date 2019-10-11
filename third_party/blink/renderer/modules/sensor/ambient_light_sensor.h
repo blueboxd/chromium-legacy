@@ -21,8 +21,6 @@ class AmbientLightSensor final : public Sensor {
   AmbientLightSensor(ExecutionContext*, const SensorOptions*, ExceptionState&);
 
   double illuminance(bool& is_null) const;
-
-  void Trace(blink::Visitor*) override;
 };
 
 }  // namespace blink

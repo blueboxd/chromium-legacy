@@ -43,49 +43,37 @@ void WebAppDatabase::OpenDatabase(RegistryOpenedCallback callback) {
                           weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void WebAppDatabase::BeginTransaction() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(opened_);
-
-  DCHECK(!write_batch_);
-  write_batch_ = store_->CreateWriteBatch();
-}
-
-void WebAppDatabase::CommitTransaction(
+void WebAppDatabase::Write(
     const RegistryUpdateData& update_data,
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     CompletionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(opened_);
 
-  DCHECK(write_batch_);
   DCHECK(!update_data.IsEmpty());
 
-  write_batch_->TakeMetadataChangesFrom(std::move(metadata_change_list));
+  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
+      store_->CreateWriteBatch();
+
+  write_batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
 
   for (const std::unique_ptr<WebApp>& web_app : update_data.apps_to_create) {
     auto proto = CreateWebAppProto(*web_app);
-    write_batch_->WriteData(web_app->app_id(), proto->SerializeAsString());
+    write_batch->WriteData(web_app->app_id(), proto->SerializeAsString());
   }
 
   for (const AppId& app_id : update_data.apps_to_delete)
-    write_batch_->DeleteData(app_id);
+    write_batch->DeleteData(app_id);
 
   for (const WebApp* web_app : update_data.apps_to_update) {
     auto proto = CreateWebAppProto(*web_app);
-    write_batch_->WriteData(web_app->app_id(), proto->SerializeAsString());
+    write_batch->WriteData(web_app->app_id(), proto->SerializeAsString());
   }
 
   store_->CommitWriteBatch(
-      std::move(write_batch_),
+      std::move(write_batch),
       base::BindOnce(&WebAppDatabase::OnDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  write_batch_.reset();
-}
-
-void WebAppDatabase::CancelTransaction() {
-  DCHECK(write_batch_);
-  write_batch_.reset();
 }
 
 // static

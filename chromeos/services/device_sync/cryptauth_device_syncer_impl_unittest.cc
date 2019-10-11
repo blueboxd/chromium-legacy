@@ -500,6 +500,54 @@ TEST_F(DeviceSyncCryptAuthDeviceSyncerImplTest, Success_InitialGroupKeyValid) {
 }
 
 TEST_F(DeviceSyncCryptAuthDeviceSyncerImplTest,
+       Success_InitialGroupKeyValid_NoDevicesNeedGroupPrivateKey) {
+  // Add the correct group key to the registry.
+  AddInitialGroupKeyToRegistry(GetGroupKey());
+
+  CallSync();
+
+  std::string encrypted_group_private_key = MakeFakeEncryptedString(
+      GetGroupKey().private_key(),
+      GetLocalDeviceForTest().device_better_together_public_key);
+
+  // Only return the local device metadata, noting that it does not need the
+  // group private key. So, there is no need to share the group private key.
+  std::vector<cryptauthv2::DeviceMetadataPacket> device_metadata_packets = {
+      ConvertTestDeviceToMetadataPacket(GetLocalDeviceForTest(),
+                                        kGroupPublicKey,
+                                        false /* need_group_private_key */)};
+  VerifyMetadataSyncerInput(&GetGroupKey());
+
+  // The initial group key is valid, so a new group key was not created.
+  FinishMetadataSyncerAttempt(
+      device_metadata_packets, base::nullopt /* new_group_key */,
+      encrypted_group_private_key, cryptauthv2::GetClientDirectiveForTest(),
+      CryptAuthDeviceSyncResult::ResultCode::kSuccess);
+
+  VerifyGroupKeyInRegistry(GetGroupKey());
+
+  base::flat_set<std::string> device_ids = {
+      GetLocalDeviceForTest().instance_id()};
+  VerifyFeatureStatusGetterInput(device_ids);
+  FinishFeatureStatusGetterAttempt(
+      device_ids, CryptAuthDeviceSyncResult::ResultCode::kSuccess);
+
+  // Even though we have the unencrypted group private key in the key registry,
+  // we decrypt the group private key from CryptAuth and check consistency.
+  RunGroupPrivateKeyDecryptor(encrypted_group_private_key, true /* succeed */);
+
+  RunDeviceMetadataDecryptor(device_metadata_packets,
+                             GetGroupKey().private_key(),
+                             {} /* device_ids_to_fail */);
+
+  VerifyDeviceSyncResult(
+      CryptAuthDeviceSyncResult(CryptAuthDeviceSyncResult::ResultCode::kSuccess,
+                                true /* device_registry_changed */,
+                                cryptauthv2::GetClientDirectiveForTest()),
+      {GetLocalDeviceForTest()});
+}
+
+TEST_F(DeviceSyncCryptAuthDeviceSyncerImplTest,
        Success_InitialGroupPublicKeyValid_NeedGroupPrivateKey) {
   // Add the correct group public key to the registry. Note that we still need
   // the group private key from CryptAuth.

@@ -26,8 +26,10 @@ class MediaPerceptionAPIDelegate {
  public:
   // Callback for loading a CrOS component. |mount_point| will contain a path to
   // the loaded component, if |success| is true (installation succeeded).
-  using LoadCrOSComponentCallback =
-      base::OnceCallback<void(bool success, const base::FilePath& mount_point)>;
+  using LoadCrOSComponentCallback = base::OnceCallback<void(
+      const api::media_perception_private::ComponentInstallationError
+          installation_error,
+      const base::FilePath& mount_point)>;
 
   using MediaPerceptionRequestHandler = base::RepeatingCallback<void(
       chromeos::media_perception::mojom::MediaPerceptionRequest request)>;

@@ -77,7 +77,7 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   virtual const char* GetItemType() const;
 
   // Returns the item matching |id| contained in this item (e.g. if the item is
-  // a folder), or NULL if the item was not found or this is not a container.
+  // a folder), or nullptr if the item was not found or this is not a container.
   virtual AppListItem* FindChildItem(const std::string& id);
 
   // Returns the number of child items if it has any (e.g. is a folder) or 0.

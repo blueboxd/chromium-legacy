@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -147,7 +148,7 @@ class URLLoaderInterceptor {
 
   // Used to create a factory for subresources in the network service case.
   void CreateURLLoaderFactoryForSubresources(
-      network::mojom::URLLoaderFactoryRequest request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int process_id,
       network::mojom::URLLoaderFactoryPtrInfo original_factory);
 
@@ -173,7 +174,7 @@ class URLLoaderInterceptor {
   // URLLoaderFactory with a network::mojom::TrustedURLLoaderHeaderClient or
   // for a non-network-service scheme.
   void InterceptNavigationRequestCallback(
-      network::mojom::URLLoaderFactoryRequest* request);
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>* receiver);
 
   // Attempts to intercept the given request, returning true if it was
   // intercepted.

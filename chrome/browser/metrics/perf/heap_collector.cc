@@ -445,8 +445,7 @@ void HeapCollector::ParseProfileOnThreadPool(
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&HeapCollector::SaveSerializedPerfProto, heap_collector,
-                     std::move(sampled_profile), PerfProtoType::PERF_TYPE_DATA,
-                     std::move(output)));
+                     std::move(sampled_profile), std::move(output)));
 }
 
 }  // namespace metrics

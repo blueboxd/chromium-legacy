@@ -58,13 +58,15 @@ MediaPipelineBackendManager::MediaPipelineBackendManager(
       buffer_delegate_(nullptr),
       weak_factory_(this) {
   DCHECK(media_task_runner_);
-  DCHECK(playing_audio_streams_count_.size() ==
-         static_cast<unsigned long>(AudioContentType::kNumTypes));
-  DCHECK(playing_noneffects_audio_streams_count_.size() ==
-         static_cast<unsigned long>(AudioContentType::kNumTypes));
+  DCHECK_EQ(playing_audio_streams_count_.size(),
+            static_cast<size_t>(AudioContentType::kNumTypes));
+  DCHECK_EQ(playing_noneffects_audio_streams_count_.size(),
+            static_cast<size_t>(AudioContentType::kNumTypes));
   for (int i = 0; i < NUM_DECODER_TYPES; ++i) {
     decoder_count_[i] = 0;
   }
+
+  RUN_ON_MEDIA_THREAD(CreateMixerConnection);
 }
 
 MediaPipelineBackendManager::~MediaPipelineBackendManager() {
@@ -124,12 +126,43 @@ void MediaPipelineBackendManager::UpdatePlayingAudioCount(
     bool sfx,
     const AudioContentType type,
     int change) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(change == -1 || change == 1) << "bad count change: " << change;
 
   bool had_playing_audio_streams = (TotalPlayingAudioStreamsCount() > 0);
+  // Volume feedback sounds are only allowed when there are no non-effects
+  // audio streams playing.
+  bool prev_allow_feedback = (TotalPlayingNoneffectsAudioStreamsCount() == 0);
+
   playing_audio_streams_count_[type] += change;
   DCHECK_GE(playing_audio_streams_count_[type], 0);
 
+  if (!sfx) {
+    playing_noneffects_audio_streams_count_[type] += change;
+    DCHECK_GE(playing_noneffects_audio_streams_count_[type], 0);
+  }
+
+  HandlePlayingAudioStreamsChange(had_playing_audio_streams,
+                                  prev_allow_feedback);
+}
+
+void MediaPipelineBackendManager::OnMixerStreamCountChange(int primary_streams,
+                                                           int sfx_streams) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  bool had_playing_audio_streams = (TotalPlayingAudioStreamsCount() > 0);
+  bool prev_allow_feedback = (TotalPlayingNoneffectsAudioStreamsCount() == 0);
+
+  mixer_primary_stream_count_ = primary_streams;
+  mixer_sfx_stream_count_ = sfx_streams;
+
+  HandlePlayingAudioStreamsChange(had_playing_audio_streams,
+                                  prev_allow_feedback);
+}
+
+void MediaPipelineBackendManager::HandlePlayingAudioStreamsChange(
+    bool had_playing_audio_streams,
+    bool prev_allow_feedback) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
   int new_playing_audio_streams = TotalPlayingAudioStreamsCount();
   if (new_playing_audio_streams == 0) {
     power_save_timer_.Start(FROM_HERE, kPowerSaveWaitTime, this,
@@ -143,17 +176,7 @@ void MediaPipelineBackendManager::UpdatePlayingAudioCount(
     }
   }
 
-  if (sfx) {
-    return;
-  }
-
-  // Volume feedback sounds are only allowed when there are no non-effects
-  // audio streams playing.
-  bool prev_allow_feedback = (TotalPlayingNoneffectsAudioStreamsCount() == 0);
-  playing_noneffects_audio_streams_count_[type] += change;
-  DCHECK_GE(playing_noneffects_audio_streams_count_[type], 0);
   bool new_allow_feedback = (TotalPlayingNoneffectsAudioStreamsCount() == 0);
-
   if (new_allow_feedback != prev_allow_feedback) {
     allow_volume_feedback_observers_->Notify(
         FROM_HERE, &AllowVolumeFeedbackObserver::AllowVolumeFeedbackSounds,
@@ -166,7 +189,7 @@ int MediaPipelineBackendManager::TotalPlayingAudioStreamsCount() {
   for (auto entry : playing_audio_streams_count_) {
     total += entry.second;
   }
-  return total;
+  return std::max(total, mixer_primary_stream_count_ + mixer_sfx_stream_count_);
 }
 
 int MediaPipelineBackendManager::TotalPlayingNoneffectsAudioStreamsCount() {
@@ -174,7 +197,7 @@ int MediaPipelineBackendManager::TotalPlayingNoneffectsAudioStreamsCount() {
   for (auto entry : playing_noneffects_audio_streams_count_) {
     total += entry.second;
   }
-  return total;
+  return std::max(total, mixer_primary_stream_count_);
 }
 
 void MediaPipelineBackendManager::EnterPowerSaveMode() {
@@ -217,15 +240,6 @@ void MediaPipelineBackendManager::SetBufferDelegate(
   DCHECK(buffer_delegate);
   DCHECK(!buffer_delegate_);
   buffer_delegate_ = buffer_delegate;
-}
-
-bool MediaPipelineBackendManager::IsPlaying(bool include_sfx,
-                                            AudioContentType type) {
-  if (include_sfx) {
-    return playing_audio_streams_count_[type];
-  } else {
-    return playing_noneffects_audio_streams_count_[type];
-  }
 }
 
 void MediaPipelineBackendManager::SetPowerSaveEnabled(bool power_save_enabled) {

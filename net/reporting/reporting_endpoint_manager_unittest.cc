@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/strings/stringprintf.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "net/base/backoff_entry.h"
@@ -530,6 +531,64 @@ TEST_F(ReportingEndpointManagerTest, NetworkIsolationKeyWithMultipleEndpoints) {
       kNetworkIsolationKey2, kOrigin, kGroup);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kEndpoint3, endpoint.info.url);
+}
+
+TEST_F(ReportingEndpointManagerTest, CacheEviction) {
+  // Add |kMaxEndpointBackoffCacheSize| endpoints.
+  for (int i = 0; i < ReportingEndpointManager::kMaxEndpointBackoffCacheSize;
+       ++i) {
+    SetEndpoint(GURL(base::StringPrintf("https://endpoint%i/", i)));
+  }
+
+  // Mark each endpoint as bad, one-at-a-time. Use FindEndpointForDelivery() to
+  // pick which one to mark as bad, both to exercise the code walking through
+  // all endpoints, and as a sanity check.
+  std::set<GURL> seen_endpoints;
+  for (int i = 0; i < ReportingEndpointManager::kMaxEndpointBackoffCacheSize;
+       ++i) {
+    ReportingEndpoint endpoint = endpoint_manager_->FindEndpointForDelivery(
+        NetworkIsolationKey(), kOrigin, kGroup);
+    EXPECT_TRUE(endpoint);
+    EXPECT_FALSE(seen_endpoints.count(endpoint.info.url));
+    seen_endpoints.insert(endpoint.info.url);
+    endpoint_manager_->InformOfEndpointRequest(NetworkIsolationKey(),
+                                               endpoint.info.url, false);
+  }
+  // All endpoints should now be marked as bad.
+  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(NetworkIsolationKey(),
+                                                          kOrigin, kGroup));
+
+  // Add another endpoint with a different NetworkIsolationKey;
+  const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+  SetEndpoint(kEndpoint, ReportingEndpoint::EndpointInfo::kDefaultPriority,
+              ReportingEndpoint::EndpointInfo::kDefaultWeight,
+              kNetworkIsolationKey);
+  // All endpoints associated with the empty NetworkIsolationKey should still be
+  // marked as bad.
+  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(NetworkIsolationKey(),
+                                                          kOrigin, kGroup));
+
+  // Make the endpoint added for the kNetworkIsolationKey as bad.
+  endpoint_manager_->InformOfEndpointRequest(kNetworkIsolationKey, kEndpoint,
+                                             false);
+  // The only endpoint for kNetworkIsolationKey should still be marked as bad.
+  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(kNetworkIsolationKey,
+                                                          kOrigin, kGroup));
+  // One of the endpoints for the empty NetworkIsolationKey should no longer be
+  // marked as bad, due to eviction.
+  ReportingEndpoint endpoint = endpoint_manager_->FindEndpointForDelivery(
+      NetworkIsolationKey(), kOrigin, kGroup);
+  EXPECT_TRUE(endpoint);
+
+  // Reporting a success for the (only) good endpoint for the empty
+  // NetworkIsolationKey should evict the entry for kNetworkIsolationKey, since
+  // the most recent FindEndpointForDelivery() call visited all of the empty
+  // NetworkIsolationKey's cached bad entries.
+  endpoint_manager_->InformOfEndpointRequest(NetworkIsolationKey(),
+                                             endpoint.info.url, true);
+
+  EXPECT_TRUE(endpoint_manager_->FindEndpointForDelivery(kNetworkIsolationKey,
+                                                         kOrigin, kGroup));
 }
 
 }  // namespace

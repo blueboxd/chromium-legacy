@@ -980,8 +980,8 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
       is_closed_(false),
       dependency_factory_(dependency_factory),
       track_adapter_map_(
-          new WebRtcMediaStreamTrackAdapterMap(dependency_factory_,
-                                               task_runner)),
+          new blink::WebRtcMediaStreamTrackAdapterMap(dependency_factory_,
+                                                      task_runner)),
       task_runner_(std::move(task_runner)) {
   CHECK(client_);
 
@@ -1602,8 +1602,8 @@ RTCPeerConnectionHandler::AddTransceiverWithTrack(
     const webrtc::RtpTransceiverInit& init) {
   DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref =
-      track_adapter_map_->GetOrCreateLocalTrackAdapter(web_track);
+  std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+      track_ref = track_adapter_map_->GetOrCreateLocalTrackAdapter(web_track);
   TransceiverStateSurfacer transceiver_state_surfacer(task_runner_,
                                                       signaling_thread());
   webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
@@ -1705,8 +1705,8 @@ RTCPeerConnectionHandler::AddTrack(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::AddTrack");
 
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref =
-      track_adapter_map_->GetOrCreateLocalTrackAdapter(track);
+  std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+      track_ref = track_adapter_map_->GetOrCreateLocalTrackAdapter(track);
   std::vector<std::string> stream_ids(streams.size());
   for (size_t i = 0; i < streams.size(); ++i)
     stream_ids[i] = streams[i].Id().Utf8();

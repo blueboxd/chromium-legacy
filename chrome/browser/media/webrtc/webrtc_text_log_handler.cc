@@ -38,6 +38,7 @@
 #include "net/base/network_interfaces.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/sandbox/features.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
@@ -472,21 +473,26 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceList(
                       ", gl-version=" + gpu_info.gl_version);
 
   // AudioService features
-  auto enabled_or_disabled_string = [](auto& feature) {
+  auto enabled_or_disabled_feature_string = [](auto& feature) {
     return base::FeatureList::IsEnabled(feature) ? "enabled" : "disabled";
+  };
+  auto enabled_or_disabled_bool_string = [](bool value) {
+    return value ? "enabled" : "disabled";
   };
   LogToCircularBuffer(base::StrCat(
       {"AudioService: AudioStreams=",
-       enabled_or_disabled_string(features::kAudioServiceAudioStreams),
+       enabled_or_disabled_feature_string(features::kAudioServiceAudioStreams),
        ", OutOfProcess=",
-       enabled_or_disabled_string(features::kAudioServiceOutOfProcess),
+       enabled_or_disabled_feature_string(features::kAudioServiceOutOfProcess),
        ", LaunchOnStartup=",
-       enabled_or_disabled_string(features::kAudioServiceLaunchOnStartup),
+       enabled_or_disabled_feature_string(
+           features::kAudioServiceLaunchOnStartup),
        ", Sandbox=",
-       enabled_or_disabled_string(
-           service_manager::features::kAudioServiceSandbox),
+       enabled_or_disabled_bool_string(
+           service_manager::IsAudioSandboxEnabled()),
        ", ApmInAudioService=",
-       enabled_or_disabled_string(features::kWebRtcApmInAudioService)}));
+       enabled_or_disabled_bool_string(
+           media::IsWebRtcApmInAudioServiceEnabled())}));
 
   // Audio manager
   // On some platforms, this can vary depending on build flags and failure

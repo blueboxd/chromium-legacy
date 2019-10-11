@@ -54,6 +54,8 @@ class MixerInput {
     virtual AudioContentType content_type() = 0;
     virtual int desired_read_size() = 0;
     virtual int playout_channel() = 0;
+    // Returns true if the source is currently providing audio to be mixed.
+    virtual bool active() = 0;
 
     // Called when the input has been added to the mixer, before any other
     // calls are made. The |read_size| is the number of frames that will be

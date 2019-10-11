@@ -63,7 +63,7 @@ AppListItem* AppListModel::FindItem(const std::string& id) {
     if (child_item)
       return child_item;
   }
-  return NULL;
+  return nullptr;
 }
 
 AppListFolderItem* AppListModel::FindFolderItem(const std::string& id) {
@@ -71,7 +71,7 @@ AppListFolderItem* AppListModel::FindFolderItem(const std::string& id) {
   if (item && item->GetItemType() == AppListFolderItem::kItemType)
     return static_cast<AppListFolderItem*>(item);
   DCHECK(!item);
-  return NULL;
+  return nullptr;
 }
 
 AppListItem* AppListModel::AddItem(std::unique_ptr<AppListItem> item) {
@@ -96,7 +96,7 @@ AppListItem* AppListModel::AddItemToFolder(std::unique_ptr<AppListItem> item,
   DCHECK_NE(AppListFolderItem::kItemType, item->GetItemType());
   AppListFolderItem* dest_folder = FindOrCreateFolderItem(folder_id);
   if (!dest_folder)
-    return NULL;
+    return nullptr;
   DCHECK(!dest_folder->item_list()->FindItem(item->id()))
       << "Already in folder: " << dest_folder->id();
   return AddItemToFolderItemAndNotify(dest_folder, std::move(item));
@@ -315,7 +315,7 @@ void AppListModel::OnListItemMoved(size_t from_index,
 AppListFolderItem* AppListModel::FindOrCreateFolderItem(
     const std::string& folder_id) {
   if (folder_id.empty())
-    return NULL;
+    return nullptr;
 
   AppListFolderItem* dest_folder = FindFolderItem(folder_id);
   if (dest_folder)

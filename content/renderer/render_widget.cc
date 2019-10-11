@@ -197,24 +197,14 @@ class WebWidgetLockTarget : public content::MouseLockDispatcher::LockTarget {
       : render_widget_(render_widget) {}
 
   void OnLockMouseACK(bool succeeded) override {
-    // TODO(https://crbug.com/995981): Once RenderWidget and WebWidget lifetimes
-    // are synchronized, we should remove these conditionals.
-    WebWidget* web_widget = render_widget_->GetWebWidget();
-    if (!web_widget)
-      return;
-
     if (succeeded)
-      web_widget->DidAcquirePointerLock();
+      render_widget_->GetWebWidget()->DidAcquirePointerLock();
     else
-      web_widget->DidNotAcquirePointerLock();
+      render_widget_->GetWebWidget()->DidNotAcquirePointerLock();
   }
 
   void OnMouseLockLost() override {
-    WebWidget* web_widget = render_widget_->GetWebWidget();
-    if (!web_widget)
-      return;
-
-    web_widget->DidLosePointerLock();
+    render_widget_->GetWebWidget()->DidLosePointerLock();
   }
 
   bool HandleMouseLockedInputEvent(const blink::WebMouseEvent& event) override {
@@ -505,25 +495,39 @@ RenderWidget* RenderWidget::FromRoutingID(int32_t routing_id) {
 }
 
 void RenderWidget::InitForPopup(ShowCallback show_callback,
-                                blink::WebPagePopup* web_page_popup) {
+                                RenderWidget* opener_widget,
+                                blink::WebPagePopup* web_page_popup,
+                                const ScreenInfo& screen_info) {
   popup_ = true;
-  Init(std::move(show_callback), web_page_popup);
+  Init(std::move(show_callback), web_page_popup, &screen_info);
+
+  if (opener_widget->device_emulator_) {
+    opener_widget_screen_origin_ =
+        opener_widget->device_emulator_->ViewRectOrigin();
+    opener_original_widget_screen_origin_ =
+        opener_widget->device_emulator_->original_view_rect().origin();
+    opener_emulator_scale_ = opener_widget->GetEmulatorScale();
+  }
 }
 
 void RenderWidget::InitForPepperFullscreen(ShowCallback show_callback,
-                                           blink::WebWidget* web_widget) {
+                                           blink::WebWidget* web_widget,
+                                           const ScreenInfo& screen_info) {
   pepper_fullscreen_ = true;
-  Init(std::move(show_callback), web_widget);
+  Init(std::move(show_callback), web_widget, &screen_info);
 }
 
-void RenderWidget::InitForMainFrame(ShowCallback show_callback) {
-  Init(std::move(show_callback), /*web_frame_widget=*/nullptr);
+void RenderWidget::InitForMainFrame(ShowCallback show_callback,
+                                    blink::WebFrameWidget* web_frame_widget,
+                                    const ScreenInfo* screen_info) {
+  Init(std::move(show_callback), web_frame_widget, screen_info);
 }
 
 void RenderWidget::InitForChildLocalRoot(
-    blink::WebFrameWidget* web_frame_widget) {
+    blink::WebFrameWidget* web_frame_widget,
+    const ScreenInfo& screen_info) {
   for_child_local_root_frame_ = true;
-  Init(base::NullCallback(), web_frame_widget);
+  Init(base::NullCallback(), web_frame_widget, &screen_info);
 }
 
 void RenderWidget::CloseForFrame(std::unique_ptr<RenderWidget> widget) {
@@ -533,49 +537,27 @@ void RenderWidget::CloseForFrame(std::unique_ptr<RenderWidget> widget) {
   Close(std::move(widget));
 }
 
-void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
+void RenderWidget::Init(ShowCallback show_callback,
+                        WebWidget* web_widget,
+                        const ScreenInfo* screen_info) {
+  DCHECK_EQ(is_undead_, !web_widget);  // There is a WebWidget when not undead.
   DCHECK(!webwidget_);
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
 
   input_handler_ = std::make_unique<RenderWidgetInputHandler>(this, this);
 
-  LayerTreeView* layer_tree_view = InitializeLayerTreeView();
+  if (!is_undead_) {
+    InitCompositing(*screen_info);
 
-  // TODO(https://crbug.com/995981): This conditional is temporary logic to
-  // handle the case of remote main frame RenderWidgets [which shouldn't exist
-  // to begin with].
-  if (web_widget)
-    web_widget->SetAnimationHost(layer_tree_view->animation_host());
+    // If the widget is hidden, delay starting the compositor until the user
+    // shows it. Also if the RenderWidget is undead, we delay starting the
+    // compositor until we expect to use the widget, which will be signaled
+    // through reviving the undead RenderWidget.
+    if (!is_hidden_)
+      StartStopCompositor();
 
-  blink::scheduler::WebThreadScheduler* main_thread_scheduler =
-      compositor_deps_->GetWebMainThreadScheduler();
-
-  blink::scheduler::WebThreadScheduler* compositor_thread_scheduler =
-      blink::scheduler::WebThreadScheduler::CompositorThreadScheduler();
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_input_task_runner;
-  // Use the compositor thread task runner unless this is a popup or other such
-  // non-frame widgets. The |compositor_thread_scheduler| can be null in tests
-  // without a compositor thread.
-  if (for_frame() && compositor_thread_scheduler) {
-    compositor_input_task_runner =
-        compositor_thread_scheduler->InputTaskRunner();
+    web_widget->SetAnimationHost(layer_tree_view_->animation_host());
   }
-
-  input_event_queue_ = base::MakeRefCounted<MainThreadEventQueue>(
-      this, main_thread_scheduler->InputTaskRunner(), main_thread_scheduler,
-      /*allow_raf_aligned_input=*/!compositor_never_visible_);
-
-  // We only use an external input handler for frame RenderWidgets because only
-  // frames use the compositor for input handling. Other kinds of RenderWidgets
-  // (e.g.  popups, plugins) must forward their input directly through
-  // RenderWidgetInputHandler into Blink.
-  bool uses_input_handler = for_frame();
-  widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
-      weak_ptr_factory_.GetWeakPtr(), std::move(compositor_input_task_runner),
-      main_thread_scheduler, uses_input_handler);
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAllowPreCommitInput))
-    widget_input_handler_manager_->AllowPreCommitInput();
 
   show_callback_ = std::move(show_callback);
 
@@ -600,18 +582,23 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   if (is_undead_)
     return false;
 
+  // The EnableDeviceEmulation message is sent to a provisional RenderWidget
+  // before the navigation completes. Some investigation into why is done in
+  // https://chromium-review.googlesource.com/c/chromium/src/+/1853675/5#message-e6edc3fd708d7d267ee981ffe43cae090b37a906
+  // but it's unclear what would need to be done to delay this until after
+  // navigation.
   bool handled = false;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
     IPC_MESSAGE_HANDLER(WidgetMsg_EnableDeviceEmulation,
                         OnEnableDeviceEmulation)
-    IPC_MESSAGE_HANDLER(WidgetMsg_DisableDeviceEmulation,
-                        OnDisableDeviceEmulation)
   IPC_END_MESSAGE_MAP()
   if (handled)
     return true;
 
-  // TODO(https://crbug.com/1000502): We shouldn't process IPC messages on
-  // provisional frames.
+  // We shouldn't receive IPC messages on provisional frames. It's possible the
+  // message was destined for a RenderWidget that was made undead and then
+  // revived since it keeps the same routing id. Just drop it here if that
+  // happened.
   if (IsForProvisionalFrame())
     return false;
 
@@ -619,11 +606,12 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   if (IPC_MESSAGE_CLASS(message) == TextInputClientMsgStart)
     return text_input_client_observer_->OnMessageReceived(message);
 #endif
-  if (mouse_lock_dispatcher_ &&
-      mouse_lock_dispatcher_->OnMessageReceived(message))
+  if (mouse_lock_dispatcher_->OnMessageReceived(message))
     return true;
 
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
+    IPC_MESSAGE_HANDLER(WidgetMsg_DisableDeviceEmulation,
+                        OnDisableDeviceEmulation)
     IPC_MESSAGE_HANDLER(WidgetMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(WidgetMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(WidgetMsg_WasHidden, OnWasHidden)
@@ -704,6 +692,12 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
     const VisualProperties& visual_properties_from_browser) {
   TRACE_EVENT0("renderer",
                "RenderWidget::SynchronizeVisualPropertiesFromRenderView");
+
+  // TODO(crbug.com/995981): We shouldn't be sending VisualProperties to undead
+  // RenderWidgets already, but if we do we could crash if the RenderWidget
+  // hasn't been initialized yet. So this acts defensively until we destroy
+  // undead RenderWidgets.
+  DCHECK(!is_undead_);
 
   VisualProperties visual_properties = visual_properties_from_browser;
   // Web tests can override the device scale factor in the renderer.
@@ -798,58 +792,51 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
 
   gfx::Size old_visible_viewport_size = visible_viewport_size_;
 
-  bool ignore_resize_ipc = false;
-  if (synchronous_resize_mode_for_testing_) {
+  if (device_emulator_) {
+    DCHECK(!auto_resize_mode_);
+    DCHECK(!synchronous_resize_mode_for_testing_);
+
+    // TODO(danakj): Have RenderWidget grab emulated values from the emulator
+    // instead of making it call back into RenderWidget, then we can do this
+    // with a single UpdateSurfaceAndScreenInfo() call. The emulator may
+    // change the ScreenInfo and then will call back to RenderWidget. Before
+    // that we keep the current (possibly emulated) ScreenInfo.
+    UpdateSurfaceAndScreenInfo(
+        visual_properties.local_surface_id_allocation.value_or(
+            viz::LocalSurfaceIdAllocation()),
+        visual_properties.compositor_viewport_pixel_rect,
+        page_properties_->GetScreenInfo());
+
+    // This will call back into this class to set the widget size, visible
+    // viewport size, screen info and screen rects, based on the device
+    // emulation.
+    device_emulator_->OnSynchronizeVisualProperties(
+        visual_properties.screen_info, visual_properties.new_size,
+        visual_properties.visible_viewport_size);
+  } else {
     // We can ignore browser-initialized resizing during synchronous
     // (renderer-controlled) mode, unless it is switching us to/from
     // fullsreen mode or changing the device scale factor.
-    // TODO(danakj): Does the browser actually change DSF inside a web test??
-    // TODO(danakj): Isn't the display mode check redundant with the fullscreen
-    // one?
-    if (visual_properties.is_fullscreen_granted == is_fullscreen_granted_ &&
-        visual_properties.display_mode == display_mode_ &&
-        visual_properties.screen_info.device_scale_factor ==
-            page_properties_->GetDeviceScaleFactor())
-      ignore_resize_ipc = true;
-  }
+    bool ignore_resize_ipc = synchronous_resize_mode_for_testing_;
+    if (ignore_resize_ipc) {
+      // TODO(danakj): Does the browser actually change DSF inside a web test??
+      // TODO(danakj): Isn't the display mode check redundant with the
+      // fullscreen one?
+      if (visual_properties.is_fullscreen_granted != is_fullscreen_granted_ ||
+          visual_properties.display_mode != display_mode_ ||
+          visual_properties.screen_info.device_scale_factor !=
+              page_properties_->GetDeviceScaleFactor())
+        ignore_resize_ipc = false;
+    }
 
-  // When controlling the size in the renderer, we should ignore sizes given by
-  // the browser IPC here.
-  // TODO(danakj): There are many things also being ignored that aren't the
-  // widget's size params. It works because tests that use this mode don't
-  // change those parameters, I guess. But it's more complicated then because it
-  // looks like they are related to sync resize mode. Let's move them out of
-  // this block.
-  // TODO(danakj): It would be nice if we can still use the emulator to emulate
-  // things other than the size if we are in sync resize mode - if the emulator
-  // is even used in sync resize tests. It probably isn't though, so either way
-  // it'd be good to get the emulator out of this block (maybe by overwriting
-  // some of |visual_properties| in sync resize mode instead of just
-  // skipping the emulator.
-  if (!ignore_resize_ipc) {
-    if (delegate_ && page_properties_->ScreenMetricsEmulator()) {
-      DCHECK(!auto_resize_mode_);
-      // TODO(danakj): Have RenderWidget grab emulated values from the emulator
-      // instead of making it call back into RenderWidget, then we can do this
-      // with a single UpdateSurfaceAndScreenInfo() call. The emulator may
-      // change the ScreenInfo and then will call back to RenderWidget. Before
-      // that we keep the current (possibly emulated) ScreenInfo.
-      UpdateSurfaceAndScreenInfo(
-          visual_properties.local_surface_id_allocation.value_or(
-              viz::LocalSurfaceIdAllocation()),
-          visual_properties.compositor_viewport_pixel_rect,
-          page_properties_->GetScreenInfo());
-
-      // This will call our SynchronizeVisualProperties() method with a
-      // different set of VisualProperties, holding emulated values. Though not
-      // all VisualProperties are modified by the metrics emulator, so it's a
-      // bit unclear to do this with the full structure. Anything it does not
-      // modify can be consumed directly here instead of in
-      // SynchronizeVisualProperties().
-      page_properties_->ScreenMetricsEmulator()->OnSynchronizeVisualProperties(
-          visual_properties.screen_info, visual_properties.new_size,
-          visual_properties.visible_viewport_size);
-    } else {
+    // When controlling the size in the renderer, we should ignore sizes given
+    // by the browser IPC here.
+    // TODO(danakj): There are many things also being ignored that aren't the
+    // widget's size params. It works because tests that use this mode don't
+    // change those parameters, I guess. But it's more complicated then because
+    // it looks like they are related to sync resize mode. Let's move them out
+    // of this block.
+    if (!ignore_resize_ipc) {
       gfx::Rect new_compositor_viewport_pixel_rect =
           visual_properties.compositor_viewport_pixel_rect;
       if (auto_resize_mode_) {
@@ -947,29 +934,36 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
 void RenderWidget::OnEnableDeviceEmulation(
     const blink::WebDeviceEmulationParams& params) {
   // Device emulation can only be applied to the local main frame render widget.
-  // TODO(https://crbug.com/1006052): We should fix the IPC to send to
-  // RenderView instead.
+  // TODO(https://crbug.com/1006052): We should move emulation into the browser
+  // and send consistent ScreenInfo and ScreenRects to all RenderWidgets based
+  // on emulation.
   if (!delegate_)
     return;
 
-  if (!page_properties_->ScreenMetricsEmulator()) {
-    page_properties_->SetScreenMetricsEmulator(
-        std::make_unique<RenderWidgetScreenMetricsEmulator>(
-            this, page_properties_->GetScreenInfo(), size_,
-            visible_viewport_size_, widget_screen_rect_, window_screen_rect_));
+  if (!device_emulator_) {
+    device_emulator_ = std::make_unique<RenderWidgetScreenMetricsEmulator>(
+        this, page_properties_->GetScreenInfo(), size_, visible_viewport_size_,
+        widget_screen_rect_, window_screen_rect_);
   }
-  page_properties_->ScreenMetricsEmulator()->ChangeEmulationParams(params);
+  device_emulator_->ChangeEmulationParams(params);
 }
 
 void RenderWidget::OnDisableDeviceEmulation() {
   // Device emulation can only be applied to the local main frame render widget.
-  // TODO(https://crbug.com/1006052): We should fix the IPC to send to
-  // RenderView instead.
+  // TODO(https://crbug.com/1006052): We should move emulation into the browser
+  // and send consistent ScreenInfo and ScreenRects to all RenderWidgets based
+  // on emulation.
   if (!delegate_)
     return;
-  DCHECK(page_properties_->ScreenMetricsEmulator());
-  page_properties_->ScreenMetricsEmulator()->DisableAndApply();
-  page_properties_->SetScreenMetricsEmulator(nullptr);
+  DCHECK(device_emulator_);
+  device_emulator_->DisableAndApply();
+  device_emulator_.reset();
+}
+
+float RenderWidget::GetEmulatorScale() const {
+  if (device_emulator_)
+    return device_emulator_->scale();
+  return 1;
 }
 
 void RenderWidget::SetAutoResizeMode(bool auto_resize,
@@ -1321,9 +1315,8 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
   // would also be used for other widgets such as popups.
   const char* client_name = for_child_local_root_frame_ ? kOOPIF : kRenderer;
   compositor_deps_->RequestNewLayerTreeFrameSink(
-      routing_id_, frame_swap_message_queue_, std::move(url),
-      std::move(callback), std::move(client_receiver),
-      std::move(observer_remote), client_name);
+      this, frame_swap_message_queue_, std::move(url), std::move(callback),
+      std::move(client_receiver), std::move(observer_remote), client_name);
 }
 
 void RenderWidget::DidCommitAndDrawCompositorFrame() {
@@ -1935,7 +1928,8 @@ void RenderWidget::Show(WebNavigationPolicy policy) {
   SetPendingWindowRect(initial_rect_);
 }
 
-LayerTreeView* RenderWidget::InitializeLayerTreeView() {
+void RenderWidget::InitCompositing(const ScreenInfo& screen_info) {
+  DCHECK(!is_undead_);
   TRACE_EVENT0("blink", "RenderWidget::InitializeLayerTreeView");
 
   layer_tree_view_ = std::make_unique<LayerTreeView>(
@@ -1945,31 +1939,44 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
       compositor_deps_->GetWebMainThreadScheduler());
   layer_tree_view_->Initialize(
       GenerateLayerTreeSettings(compositor_deps_, for_child_local_root_frame_,
-                                page_properties_->GetScreenInfo().rect.size(),
-                                page_properties_->GetDeviceScaleFactor()),
+                                screen_info.rect.size(),
+                                screen_info.device_scale_factor),
       compositor_deps_->CreateUkmRecorderFactory());
   layer_tree_host_ = layer_tree_view_->layer_tree_host();
 
-  ScreenInfo screen_info = page_properties_->GetScreenInfo();
-  // A popup widget does not get emulated. So we hand it the real screen info
-  // and adjust values it gives back into the emulated space later.
-  if (popup_) {
-    RenderWidgetScreenMetricsEmulator* emulator =
-        page_properties_->ScreenMetricsEmulator();
-    if (emulator)
-      screen_info = emulator->original_screen_info();
-  }
-
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportRect(), screen_info);
-  // If the widget is hidden, delay starting the compositor until the user shows
-  // it. Also if the RenderWidget is undead, we delay starting the compositor
-  // until we expect to use the widget, which will be signaled through
-  // reviving the undead RenderWidget.
-  if (!is_hidden_ && !is_undead_)
-    StartStopCompositor();
 
-  return layer_tree_view_.get();
+  blink::scheduler::WebThreadScheduler* main_thread_scheduler =
+      compositor_deps_->GetWebMainThreadScheduler();
+
+  blink::scheduler::WebThreadScheduler* compositor_thread_scheduler =
+      blink::scheduler::WebThreadScheduler::CompositorThreadScheduler();
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_input_task_runner;
+  // Use the compositor thread task runner unless this is a popup or other such
+  // non-frame widgets. The |compositor_thread_scheduler| can be null in tests
+  // without a compositor thread.
+  if (for_frame() && compositor_thread_scheduler) {
+    compositor_input_task_runner =
+        compositor_thread_scheduler->InputTaskRunner();
+  }
+
+  input_event_queue_ = base::MakeRefCounted<MainThreadEventQueue>(
+      this, main_thread_scheduler->InputTaskRunner(), main_thread_scheduler,
+      /*allow_raf_aligned_input=*/!compositor_never_visible_);
+
+  // We only use an external input handler for frame RenderWidgets because only
+  // frames use the compositor for input handling. Other kinds of RenderWidgets
+  // (e.g.  popups, plugins) must forward their input directly through
+  // RenderWidgetInputHandler into Blink.
+  bool uses_input_handler = for_frame();
+  widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
+      weak_ptr_factory_.GetWeakPtr(), std::move(compositor_input_task_runner),
+      main_thread_scheduler, uses_input_handler);
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kAllowPreCommitInput))
+    widget_input_handler_manager_->AllowPreCommitInput();
 }
 
 void RenderWidget::StartStopCompositor() {
@@ -1996,13 +2003,43 @@ void RenderWidget::StartStopCompositor() {
   }
 }
 
-void RenderWidget::SetIsUndead(bool is_undead) {
-  DCHECK_NE(is_undead, is_undead_);
-  is_undead_ = is_undead;
+void RenderWidget::SetIsUndead() {
+  DCHECK(!is_undead_);
+  is_undead_ = true;
   // If hidden, then changing undead state doesn't change anything with the
   // compositor since when hidden the compositor is always stopped.
   if (!is_hidden_)
     StartStopCompositor();
+
+  // Remove undead RenderWidgets from the routing map so that they cannot be
+  // looked up with FromRoutingId().
+  g_routing_id_widget_map.Get().erase(routing_id_);
+}
+
+void RenderWidget::SetIsRevivedFromUndead(const ScreenInfo& screen_info) {
+  DCHECK(is_undead_);
+  is_undead_ = false;
+  // If started as undead, the compositor was not created yet.
+  if (!layer_tree_view_)
+    InitCompositing(screen_info);
+  // If hidden, then changing undead state doesn't change anything with the
+  // compositor since when hidden the compositor is always stopped.
+  if (!is_hidden_)
+    StartStopCompositor();
+
+  // Put revived RenderWidgets back into the routing id map so they can be
+  // looked up with FromRoutingId().
+  g_routing_id_widget_map.Get().emplace(routing_id_, this);
+
+  // Reviving from undead is like making a "new" RenderWidget, initialization
+  // that should not bleed across from the last local main frame can happen
+  // here.
+  // TODO(crbug.com/419087): This initialization can be done during
+  // InitCompositing() or when constructing the RenderWidget once there are
+  // no undead RenderWidgets.
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  SetShowFPSCounter(command_line.HasSwitch(cc::switches::kShowFPSCounter));
 }
 
 // static
@@ -2052,29 +2089,35 @@ void RenderWidget::Close(std::unique_ptr<RenderWidget> widget) {
     g_routing_id_widget_map.Get().erase(routing_id_);
   }
 
-  // Stop handling main thread input events immediately so we don't have them
-  // running while things are partly shut down.
-  input_event_queue_->ClearClient();
-
   // The |webwidget_| will be null when the main frame RenderWidget is undead.
   if (webwidget_)
     webwidget_->Close();
   webwidget_ = nullptr;
 
-  // The LayerTreeHost may already be in the call stack, if this RenderWidget is
-  // being destroyed during an animation callback for instance. We can not
-  // delete it here and unwind the stack back up to it, or it will crash. So we
-  // post the deletion to another task, but disconnect the LayerTreeHost (via
-  // the LayerTreeView) from the destroying RenderWidget. The LayerTreeView owns
-  // the LayerTreeHost, and is its client, so they are kept alive together for a
-  // clean call stack.
-  layer_tree_view_->Disconnect();
-  compositor_deps_->GetCleanupTaskRunner()->DeleteSoon(
-      FROM_HERE, std::move(layer_tree_view_));
-  // The |widget_input_handler_manager_| is referenced through the LayerTreeHost
-  // on the compositor thread, so must outlive the LayerTreeHost.
-  compositor_deps_->GetCleanupTaskRunner()->ReleaseSoon(
-      FROM_HERE, std::move(widget_input_handler_manager_));
+  // A RenderWidget can be created as undead and never revived, so never
+  // initialized compositing.
+  if (layer_tree_view_) {
+    // The |input_event_queue_| is refcounted and will live while an event is
+    // being handled. This drops the connection back to this RenderWidget which
+    // is being destroyed.
+    input_event_queue_->ClearClient();
+
+    // The LayerTreeHost may already be in the call stack, if this RenderWidget
+    // is being destroyed during an animation callback for instance. We can not
+    // delete it here and unwind the stack back up to it, or it will crash. So
+    // we post the deletion to another task, but disconnect the LayerTreeHost
+    // (via the LayerTreeView) from the destroying RenderWidget. The
+    // LayerTreeView owns the LayerTreeHost, and is its client, so they are kept
+    // alive together for a clean call stack.
+    layer_tree_view_->Disconnect();
+    compositor_deps_->GetCleanupTaskRunner()->DeleteSoon(
+        FROM_HERE, std::move(layer_tree_view_));
+    // The |widget_input_handler_manager_| is referenced through the
+    // LayerTreeHost on the compositor thread, so must outlive the
+    // LayerTreeHost.
+    compositor_deps_->GetCleanupTaskRunner()->ReleaseSoon(
+        FROM_HERE, std::move(widget_input_handler_manager_));
+  }
 
   // Note the ACK is a control message going to the RenderProcessHost.
   RenderThread::Get()->Send(new WidgetHostMsg_Close_ACK(routing_id()));
@@ -2102,46 +2145,65 @@ bool RenderWidget::IsForProvisionalFrame() const {
   return frame_widget->LocalRoot()->IsProvisional();
 }
 
-void RenderWidget::ScreenRectToEmulatedIfNeeded(WebRect* window_rect) const {
-  DCHECK(window_rect);
-
-  if (!popup_)
-    return;
-  RenderWidgetScreenMetricsEmulator* emulator =
-      page_properties_->ScreenMetricsEmulator();
-  if (!emulator)
-    return;
-
-  window_rect->x =
-      emulator->ViewRectOrigin().x() +
-      (window_rect->x - emulator->original_view_rect().origin().x()) /
-          emulator->scale();
-  window_rect->y =
-      emulator->ViewRectOrigin().y() +
-      (window_rect->y - emulator->original_view_rect().origin().y()) /
-          emulator->scale();
+void RenderWidget::ScreenRectToEmulated(gfx::Rect* screen_rect) const {
+  screen_rect->set_x(
+      opener_widget_screen_origin_.x() +
+      (screen_rect->x() - opener_original_widget_screen_origin_.x()) /
+          opener_emulator_scale_);
+  screen_rect->set_y(
+      opener_widget_screen_origin_.y() +
+      (screen_rect->y() - opener_original_widget_screen_origin_.y()) /
+          opener_emulator_scale_);
 }
 
-void RenderWidget::EmulatedToScreenRectIfNeeded(WebRect* window_rect) const {
-  DCHECK(window_rect);
+void RenderWidget::EmulatedToScreenRect(gfx::Rect* screen_rect) const {
+  screen_rect->set_x(opener_original_widget_screen_origin_.x() +
+                     (screen_rect->x() - opener_widget_screen_origin_.x()) *
+                         opener_emulator_scale_);
+  screen_rect->set_y(opener_original_widget_screen_origin_.y() +
+                     (screen_rect->y() - opener_widget_screen_origin_.y()) *
+                         opener_emulator_scale_);
+}
 
-  if (!popup_)
-    return;
-  RenderWidgetScreenMetricsEmulator* emulator =
-      page_properties_->ScreenMetricsEmulator();
-  if (!emulator)
-    return;
+blink::WebScreenInfo RenderWidget::GetScreenInfo() {
+  const ScreenInfo& info = page_properties_->GetScreenInfo();
 
-  window_rect->x =
-      emulator->original_view_rect().origin().x() +
-      (window_rect->x - emulator->ViewRectOrigin().x()) * emulator->scale();
-  window_rect->y =
-      emulator->original_view_rect().origin().y() +
-      (window_rect->y - emulator->ViewRectOrigin().y()) * emulator->scale();
+  blink::WebScreenInfo web_screen_info;
+  web_screen_info.device_scale_factor = info.device_scale_factor;
+  web_screen_info.color_space = info.color_space;
+  web_screen_info.depth = info.depth;
+  web_screen_info.depth_per_component = info.depth_per_component;
+  web_screen_info.is_monochrome = info.is_monochrome;
+  web_screen_info.rect = blink::WebRect(info.rect);
+  web_screen_info.available_rect = blink::WebRect(info.available_rect);
+  switch (info.orientation_type) {
+    case SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY:
+      web_screen_info.orientation_type =
+          blink::kWebScreenOrientationPortraitPrimary;
+      break;
+    case SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY:
+      web_screen_info.orientation_type =
+          blink::kWebScreenOrientationPortraitSecondary;
+      break;
+    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY:
+      web_screen_info.orientation_type =
+          blink::kWebScreenOrientationLandscapePrimary;
+      break;
+    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY:
+      web_screen_info.orientation_type =
+          blink::kWebScreenOrientationLandscapeSecondary;
+      break;
+    default:
+      web_screen_info.orientation_type = blink::kWebScreenOrientationUndefined;
+      break;
+  }
+  web_screen_info.orientation_angle = info.orientation_angle;
+
+  return web_screen_info;
 }
 
 WebRect RenderWidget::WindowRect() {
-  WebRect rect;
+  gfx::Rect rect;
   if (pending_window_rect_count_) {
     // NOTE(mbelshe): If there is a pending_window_rect_, then getting
     // the RootWindowRect is probably going to return wrong results since the
@@ -2153,13 +2215,24 @@ WebRect RenderWidget::WindowRect() {
     rect = window_screen_rect_;
   }
 
-  ScreenRectToEmulatedIfNeeded(&rect);
+  // Popup widgets aren't emulated, but the WindowRect (aka WindowScreenRect)
+  // given to them should be.
+  if (opener_emulator_scale_) {
+    DCHECK(popup_);
+    ScreenRectToEmulated(&rect);
+  }
   return rect;
 }
 
 WebRect RenderWidget::ViewRect() {
-  WebRect rect = widget_screen_rect_;
-  ScreenRectToEmulatedIfNeeded(&rect);
+  gfx::Rect rect = widget_screen_rect_;
+
+  // Popup widgets aren't emulated, but the ViewRect (aka WidgetScreenRect)
+  // given to them should be.
+  if (opener_emulator_scale_) {
+    DCHECK(popup_);
+    ScreenRectToEmulated(&rect);
+  }
   return rect;
 }
 
@@ -2177,8 +2250,15 @@ void RenderWidget::SetWindowRect(const WebRect& rect_in_screen) {
   if (for_child_local_root_frame_)
     return;
 
-  WebRect window_rect = rect_in_screen;
-  EmulatedToScreenRectIfNeeded(&window_rect);
+  gfx::Rect window_rect = rect_in_screen;
+
+  // Popups aren't emulated, but the WidgetScreenRect and WindowScreenRect
+  // given to them are. When they set the WindowScreenRect it is based on those
+  // emulated values, so we reverse the emulation.
+  if (opener_emulator_scale_) {
+    DCHECK(popup_);
+    EmulatedToScreenRect(&window_rect);
+  }
 
   if (synchronous_resize_mode_for_testing_) {
     // This is a web-test-only path. At one point, it was planned to be
@@ -2414,9 +2494,9 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
 
 void RenderWidget::OnUpdateScreenRects(const gfx::Rect& widget_screen_rect,
                                        const gfx::Rect& window_screen_rect) {
-  if (delegate_ && page_properties_->ScreenMetricsEmulator()) {
-    page_properties_->ScreenMetricsEmulator()->OnUpdateScreenRects(
-        widget_screen_rect, window_screen_rect);
+  if (device_emulator_) {
+    device_emulator_->OnUpdateScreenRects(widget_screen_rect,
+                                          window_screen_rect);
   } else {
     SetScreenRects(widget_screen_rect, window_screen_rect);
   }
@@ -3730,8 +3810,8 @@ void RenderWidget::OnWaitNextFrameForTests(
 }
 
 const ScreenInfo& RenderWidget::GetOriginalScreenInfo() const {
-  if (page_properties_->ScreenMetricsEmulator())
-    return page_properties_->ScreenMetricsEmulator()->original_screen_info();
+  if (device_emulator_)
+    return device_emulator_->original_screen_info();
   return page_properties_->GetScreenInfo();
 }
 
@@ -3952,12 +4032,13 @@ base::WeakPtr<RenderWidget> RenderWidget::AsWeakPtr() {
 }
 
 void RenderWidget::SetWebWidgetInternal(blink::WebWidget* webwidget) {
-  // TODO(https://crbug.com/995981): This method should not need to exist, since
-  // we should be creating and destroying a RenderWidget along with the
-  // WebWidget.
-  if (webwidget)
-    webwidget->SetAnimationHost(layer_tree_view_->animation_host());
+  // Undead state is changed first, and the WebWidget is set accordingly. That
+  // means the compositor is always initialized before we get here.
+  DCHECK_EQ(is_undead_, !webwidget);
+
   webwidget_ = webwidget;
+  if (webwidget_)
+    webwidget_->SetAnimationHost(layer_tree_view_->animation_host());
 }
 
 }  // namespace content

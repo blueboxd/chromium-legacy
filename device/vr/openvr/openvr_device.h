@@ -12,7 +12,6 @@
 #include "device/vr/openvr/openvr_api_wrapper.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device_base.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -52,7 +51,7 @@ class DEVICE_VR_EXPORT OpenVRDevice
 
   mojo::PendingRemote<mojom::IsolatedXRGamepadProviderFactory>
   BindGamepadFactory();
-  mojom::XRCompositorHostPtr BindCompositorHost();
+  mojo::PendingRemote<mojom::XRCompositorHost> BindCompositorHost();
 
  private:
   // XRSessionController
@@ -84,7 +83,7 @@ class DEVICE_VR_EXPORT OpenVRDevice
       gamepad_provider_factory_receiver_{this};
   mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> provider_receiver_;
 
-  mojo::Binding<mojom::XRCompositorHost> compositor_host_binding_;
+  mojo::Receiver<mojom::XRCompositorHost> compositor_host_receiver_{this};
   mojo::PendingReceiver<mojom::ImmersiveOverlay> overlay_receiver_;
 
   base::WeakPtrFactory<OpenVRDevice> weak_ptr_factory_{this};

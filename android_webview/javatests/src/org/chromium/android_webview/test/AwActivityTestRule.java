@@ -37,8 +37,10 @@ import org.chromium.net.test.util.TestWebServer;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -481,6 +483,22 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
      */
     public void pollUiThread(final Callable<Boolean> callable) {
         pollInstrumentationThread(() -> TestThreadUtils.runOnUiThreadBlocking(callable));
+    }
+
+    /**
+     * Takes an element out of the {@link BlockingQueue} (or times out).
+     */
+    public static <T> T waitForNextQueueElement(BlockingQueue<T> queue) throws Exception {
+        T value = queue.poll(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        if (value == null) {
+            // {@code null} is the special value which means {@link BlockingQueue#poll} has timed
+            // out (also: there's no risk for collision with real values, because BlockingQueue does
+            // not allow null entries). Instead of returning this special value, let's throw a
+            // proper TimeoutException.
+            throw new TimeoutException(
+                    "Timeout while trying to take next entry from BlockingQueue");
+        }
+        return value;
     }
 
     /**

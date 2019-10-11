@@ -68,7 +68,6 @@ class TestMetricCollector : public internal::MetricCollector {
       std::unique_ptr<SampledProfile> sampled_profile) override {
     PerfDataProto perf_data_proto = GetExamplePerfDataProto();
     SaveSerializedPerfProto(std::move(sampled_profile),
-                            PerfProtoType::PERF_TYPE_DATA,
                             perf_data_proto.SerializeAsString());
   }
 

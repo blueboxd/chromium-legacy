@@ -14,8 +14,8 @@
 #include "remoting/protocol/negotiating_host_authenticator.h"
 #include "remoting/protocol/rejecting_authenticator.h"
 #include "remoting/protocol/token_validator.h"
-#include "remoting/signaling/jid_util.h"
 #include "remoting/signaling/signaling_address.h"
+#include "remoting/signaling/signaling_id_util.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 namespace remoting {
@@ -71,8 +71,8 @@ std::unique_ptr<Authenticator>
 Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& original_local_jid,
     const std::string& original_remote_jid) {
-  std::string local_jid = NormalizeJid(original_local_jid);
-  std::string remote_jid = NormalizeJid(original_remote_jid);
+  std::string local_jid = NormalizeSignalingId(original_local_jid);
+  std::string remote_jid = NormalizeSignalingId(original_remote_jid);
 
   std::string remote_jid_prefix;
 
@@ -81,7 +81,7 @@ Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     // where the host owner account does not have an email associated with it.
     // In those cases, the only guarantee we have is that JIDs for the same
     // account will have the same prefix.
-    if (!SplitJidResource(local_jid, &remote_jid_prefix, nullptr)) {
+    if (!SplitSignalingIdResource(local_jid, &remote_jid_prefix, nullptr)) {
       LOG(DFATAL) << "Invalid local JID:" << local_jid;
       return base::WrapUnique(
           new RejectingAuthenticator(Authenticator::INVALID_CREDENTIALS));
@@ -125,8 +125,8 @@ Me2MeHostAuthenticatorFactory::CreateAuthenticator(
   }
 
   if (!local_cert_.empty() && key_pair_.get()) {
-    std::string normalized_local_jid = NormalizeJid(local_jid);
-    std::string normalized_remote_jid = NormalizeJid(remote_jid);
+    std::string normalized_local_jid = NormalizeSignalingId(local_jid);
+    std::string normalized_remote_jid = NormalizeSignalingId(remote_jid);
 
     if (token_validator_factory_) {
       return NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(

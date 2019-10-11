@@ -25,6 +25,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -42,6 +43,8 @@ public final class StatusMediatorUnitTest {
     @Mock
     ToolbarCommonPropertiesModel mToolbarCommonPropertiesModel;
     @Mock
+    UrlBarEditingTextStateProvider mUrlBarEditingTextStateProvider;
+    @Mock
     StatusMediator.StatusMediatorDelegate mDelegate;
     @Mock
     Bitmap mBitmap;
@@ -56,7 +59,7 @@ public final class StatusMediatorUnitTest {
         MockitoAnnotations.initMocks(this);
 
         mModel = new PropertyModel(StatusProperties.ALL_KEYS);
-        mMediator = new StatusMediator(mModel, mResources);
+        mMediator = new StatusMediator(mModel, mResources, mUrlBarEditingTextStateProvider);
         mMediator.setToolbarCommonPropertiesModel(mToolbarCommonPropertiesModel);
         mMediator.setDelegateForTesting(mDelegate);
     }
@@ -123,7 +126,7 @@ public final class StatusMediatorUnitTest {
 
         mMediator.setUrlHasFocus(true);
         mMediator.setShowIconsWhenUrlFocused(true);
-        mMediator.onTextChanged("", "testing");
+        mMediator.onTextChanged(TEST_SEARCH_URL);
         Assert.assertEquals(R.drawable.ic_globe_24dp, mModel.get(StatusProperties.STATUS_ICON_RES));
     }
 

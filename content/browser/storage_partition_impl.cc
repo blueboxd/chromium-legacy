@@ -2335,24 +2335,26 @@ network::mojom::OriginPolicyManager*
 StoragePartitionImpl::GetOriginPolicyManagerForBrowserProcess() {
   DCHECK(initialized_);
   if (!origin_policy_manager_for_browser_process_ ||
-      origin_policy_manager_for_browser_process_.encountered_error()) {
+      !origin_policy_manager_for_browser_process_.is_connected()) {
     GetNetworkContext()->GetOriginPolicyManager(
-        mojo::MakeRequest(&origin_policy_manager_for_browser_process_));
+        origin_policy_manager_for_browser_process_
+            .BindNewPipeAndPassReceiver());
   }
   return origin_policy_manager_for_browser_process_.get();
 }
 
 void StoragePartitionImpl::SetOriginPolicyManagerForBrowserProcessForTesting(
-    network::mojom::OriginPolicyManagerPtr test_origin_policy_manager) {
+    mojo::PendingRemote<network::mojom::OriginPolicyManager>
+        test_origin_policy_manager) {
   DCHECK(initialized_);
-  origin_policy_manager_for_browser_process_ =
-      std::move(test_origin_policy_manager);
+  origin_policy_manager_for_browser_process_.Bind(
+      std::move(test_origin_policy_manager));
 }
 
 void StoragePartitionImpl::
     ResetOriginPolicyManagerForBrowserProcessForTesting() {
   DCHECK(initialized_);
-  origin_policy_manager_for_browser_process_ = nullptr;
+  origin_policy_manager_for_browser_process_.reset();
 }
 
 }  // namespace content

@@ -28,6 +28,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+#include "chrome/browser/policy/policy_test_utils.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/policy_constants.h"
+#include "net/base/features.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
 #endif
@@ -440,3 +447,53 @@ INSTANTIATE_TEST_SUITE_P(
     ,
     SystemNetworkContextManagerCertificateTransparencyBrowsertest,
     ::testing::Values(base::nullopt, true, false));
+
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+class SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest
+    : public policy::PolicyTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    scoped_feature_list_.InitWithFeatureState(
+        net::features::kCertVerifierBuiltinFeature,
+        /*enabled=*/GetParam());
+    policy::PolicyTest::SetUpInProcessBrowserTestFixture();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(
+    SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
+    Test) {
+  // If no BuiltinCertificateVerifierEnabled policy is set, the
+  // use_builtin_cert_verifier param should be set from the feature flag.
+  EXPECT_EQ(GetParam(), g_browser_process->system_network_context_manager()
+                            ->CreateDefaultNetworkContextParams()
+                            ->use_builtin_cert_verifier);
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
+  // If the BuiltinCertificateVerifierEnabled policy is set it should override
+  // the feature flag.
+  policy::PolicyMap policies;
+  SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
+            std::make_unique<base::Value>(true));
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(g_browser_process->system_network_context_manager()
+                  ->CreateDefaultNetworkContextParams()
+                  ->use_builtin_cert_verifier);
+
+  SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
+            std::make_unique<base::Value>(false));
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(g_browser_process->system_network_context_manager()
+                   ->CreateDefaultNetworkContextParams()
+                   ->use_builtin_cert_verifier);
+#endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
+    ::testing::Bool());
+#endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)

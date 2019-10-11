@@ -31,7 +31,8 @@ AuditorResult::AuditorResult(Type type,
          type == AuditorResult::Type::ERROR_MISSING_SECOND_ID ||
          type == AuditorResult::Type::ERROR_DIRECT_ASSIGNMENT ||
          type == AuditorResult::Type::ERROR_TEST_ANNOTATION ||
-         type == AuditorResult::Type::ERROR_INVALID_OS);
+         type == AuditorResult::Type::ERROR_INVALID_OS ||
+         type == AuditorResult::Type::ERROR_MUTABLE_TAG);
   if (!message.empty())
     details_.push_back(message);
 }

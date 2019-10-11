@@ -26,6 +26,7 @@ import org.chromium.components.version_info.Channel;
 import org.chromium.components.version_info.VersionConstants;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -141,10 +142,10 @@ public class AwVariationsSeedFetcher extends JobService {
                             newSeed, /*onFinished=*/() -> jobFinished(mParams));
                     shouldFinish = false; // jobFinished will be deferred until updateSeed is done.
                 }
-            } catch (IOException e) {
-                // downloadContent() logs and re-throws IOExceptions, so there's no need to log
-                // here. IOException includes InterruptedIOException, which may happen inside
-                // downloadContent() if the task is cancelled.
+            } catch (IOException | ParseException e) {
+                // downloadContent() logs and re-throws these exceptions, so there's no need to log
+                // here. IOException includes SocketTimeoutException and UnknownHostException,
+                // which may happen inside downloadContent().
             } finally {
                 if (shouldFinish) jobFinished(mParams);
             }

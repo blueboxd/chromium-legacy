@@ -802,11 +802,8 @@ void XRSession::ForceEnd() {
     canvas_input_provider_ = nullptr;
   }
 
-  // If this session is the active immersive session, notify the frameProvider
-  // that it's ended.
-  if (xr_->frameProvider()->immersive_session() == this) {
-    xr_->frameProvider()->OnImmersiveSessionEnded();
-  }
+  // Notify the frame provider that we've ended
+  xr_->frameProvider()->OnSessionEnded(this);
 
   DispatchEvent(*XRSessionEvent::Create(event_type_names::kEnd, this));
 }

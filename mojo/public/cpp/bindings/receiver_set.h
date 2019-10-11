@@ -287,7 +287,7 @@ class ReceiverSetBase {
           receiver_set_(receiver_set),
           receiver_id_(receiver_id),
           context_(std::move(context)) {
-      receiver_.AddFilter(std::make_unique<DispatchFilter>(this));
+      receiver_.SetFilter(std::make_unique<DispatchFilter>(this));
       receiver_.set_disconnect_with_reason_handler(
           base::BindOnce(&Entry::OnDisconnect, base::Unretained(this)));
     }
@@ -299,17 +299,19 @@ class ReceiverSetBase {
     void FlushForTesting() { receiver_.FlushForTesting(); }
 
    private:
-    class DispatchFilter : public MessageReceiver {
+    class DispatchFilter : public MessageFilter {
      public:
       explicit DispatchFilter(Entry* entry) : entry_(entry) {}
       ~DispatchFilter() override {}
 
      private:
-      // MessageReceiver:
-      bool Accept(Message* message) override {
+      // MessageFilter:
+      bool WillDispatch(Message* message) override {
         entry_->WillDispatch();
         return true;
       }
+
+      void DidDispatchOrReject(Message* message, bool accepted) override {}
 
       Entry* entry_;
 

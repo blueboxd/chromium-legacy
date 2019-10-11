@@ -94,6 +94,10 @@ interface PasswordAutofillAgent {
 
   // Informs the renderer that the Touch To Fill sheet has been dismissed.
   TouchToFillDismissed();
+
+  // Annotate password related (username, password) DOM input elements with
+  // corresponding HTML attributes. It is used only for debugging.
+  AnnotateFieldsWithParsingResult(ParsingResult parsing_result);
 };
 
 // There is one instance of this interface per render frame in the render

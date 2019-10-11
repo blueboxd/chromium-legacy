@@ -134,7 +134,7 @@ void PrintMockRenderThread::OnUpdatePrintSettings(
       !job_settings.FindBoolKey(printing::kSettingLandscape) ||
       !job_settings.FindBoolKey(printing::kSettingCollate) ||
       !job_settings.FindIntKey(printing::kSettingColor) ||
-      !job_settings.FindBoolKey(printing::kSettingPrintToPDF) ||
+      !job_settings.FindIntKey(printing::kSettingPrinterType) ||
       !job_settings.FindBoolKey(printing::kIsFirstRequest) ||
       !job_settings.FindStringKey(printing::kSettingDeviceName) ||
       !job_settings.FindIntKey(printing::kSettingDuplexMode) ||

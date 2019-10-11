@@ -277,7 +277,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void PageImportanceSignalsChanged() override;
   void DidAutoResize(const blink::WebSize& newSize) override;
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
-  blink::WebScreenInfo GetScreenInfo() override;
   bool CanHandleGestureEvent() override;
   bool AllowPopupsDuringPageUnload() override;
 
@@ -286,7 +285,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   bool Send(IPC::Message* message) override;
   RenderFrameImpl* GetMainRenderFrame() override;
   int GetRoutingID() override;
-  float GetDeviceScaleFactor() override;
   float GetZoomLevel() override;
   const WebPreferences& GetWebkitPreferences() override;
   void SetWebkitPreferences(const WebPreferences& preferences) override;
@@ -328,7 +326,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   // Instead of creating a new RenderWidget, this revives the undead
   // RenderWidget for use with a new local main frame.
-  void ReviveUndeadMainFrameRenderWidget();
+  void ReviveUndeadMainFrameRenderWidget(const ScreenInfo& screen_info);
 
  private:
   // For unit tests.

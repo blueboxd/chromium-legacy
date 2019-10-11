@@ -32,14 +32,8 @@ bool SyncChange::IsValid() const {
   // Local changes must always have a tag and specify a valid datatype.
   if (SyncDataLocal(sync_data_).GetTag().empty())
     return false;
-  // TODO(crbug.com/1007942): The ARTICLES data type has been removed and so is
-  // not considered a "real" data type anymore, but dom_distiller code still
-  // uses it for its local storage, and will DCHECK-fail if we don't consider
-  // article data as valid here.
-  if (!IsRealDataType(sync_data_.GetDataType()) &&
-      !sync_data_.GetSpecifics().has_article()) {
+  if (!IsRealDataType(sync_data_.GetDataType()))
     return false;
-  }
 
   // Adds and updates must have a non-unique-title.
   if (change_type_ == ACTION_ADD || change_type_ == ACTION_UPDATE)

@@ -145,14 +145,14 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
 IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
                        CrossSiteFrameCannotChangeMainFrameBadge) {
   // Clearing from cross site frame should affect only the cross site app.
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.clear()",
+  ExecuteScriptAndWaitForBadgeChange("navigator.clearExperimentalAppBadge()",
                                      cross_site_frame_);
   ASSERT_TRUE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
   ASSERT_EQ(cross_site_app_id(), changed_app_id_);
 
   // Setting from cross site frame should affect only the cross site app.
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(77)",
+  ExecuteScriptAndWaitForBadgeChange("navigator.setExperimentalAppBadge(77)",
                                      cross_site_frame_);
   ASSERT_FALSE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
@@ -163,7 +163,8 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
 // Tests that setting the badge to an integer will be propagated across
 // processes.
 IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeCanBeSetToAnInteger) {
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(99)", main_frame_);
+  ExecuteScriptAndWaitForBadgeChange("navigator.setExperimentalAppBadge(99)",
+                                     main_frame_);
   ASSERT_FALSE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
   ASSERT_EQ(main_app_id(), changed_app_id_);
@@ -173,13 +174,15 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeCanBeSetToAnInteger) {
 // Tests that calls to |Badge.clear| are propagated across processes.
 IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
                        BadgeCanBeClearedWithClearMethod) {
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(55)", main_frame_);
+  ExecuteScriptAndWaitForBadgeChange("navigator.setExperimentalAppBadge(55)",
+                                     main_frame_);
   ASSERT_FALSE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
   ASSERT_EQ(main_app_id(), changed_app_id_);
   ASSERT_EQ(base::Optional<uint64_t>(55u), last_badge_content_);
 
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.clear()", main_frame_);
+  ExecuteScriptAndWaitForBadgeChange("navigator.clearExperimentalAppBadge()",
+                                     main_frame_);
   ASSERT_TRUE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
   ASSERT_EQ(main_app_id(), changed_app_id_);
@@ -189,7 +192,8 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
 // Tests that calling Badge.set(0) is equivalent to calling |Badge.clear| and
 // that it propagates across processes.
 IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeCanBeClearedWithZero) {
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(0)", main_frame_);
+  ExecuteScriptAndWaitForBadgeChange("navigator.setExperimentalAppBadge(0)",
+                                     main_frame_);
   ASSERT_TRUE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
   ASSERT_EQ(main_app_id(), changed_app_id_);
@@ -198,7 +202,8 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeCanBeClearedWithZero) {
 
 // Tests that setting the badge without content is propagated across processes.
 IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeCanBeSetWithoutAValue) {
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set()", main_frame_);
+  ExecuteScriptAndWaitForBadgeChange("navigator.setExperimentalAppBadge()",
+                                     main_frame_);
   ASSERT_FALSE(was_cleared_);
   ASSERT_TRUE(was_flagged_);
   ASSERT_EQ(main_app_id(), changed_app_id_);
@@ -208,14 +213,14 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeCanBeSetWithoutAValue) {
 // Tests that the badge can be set and cleared from an in scope frame.
 IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
                        BadgeCanBeSetAndClearedFromInScopeFrame) {
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set()",
+  ExecuteScriptAndWaitForBadgeChange("navigator.setExperimentalAppBadge()",
                                      in_scope_frame_);
   ASSERT_FALSE(was_cleared_);
   ASSERT_TRUE(was_flagged_);
   ASSERT_EQ(main_app_id(), changed_app_id_);
   ASSERT_EQ(base::nullopt, last_badge_content_);
 
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.clear()",
+  ExecuteScriptAndWaitForBadgeChange("navigator.clearExperimentalAppBadge()",
                                      in_scope_frame_);
   ASSERT_TRUE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
@@ -232,10 +237,10 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
                                          ->GetActiveWebContents()
                                          ->GetMainFrame();
 
-  ASSERT_TRUE(
-      content::ExecuteScript(incognito_frame, "ExperimentalBadge.set()"));
-  ASSERT_TRUE(
-      content::ExecuteScript(incognito_frame, "ExperimentalBadge.clear()"));
+  ASSERT_TRUE(content::ExecuteScript(incognito_frame,
+                                     "navigator.setExperimentalAppBadge()"));
+  ASSERT_TRUE(content::ExecuteScript(incognito_frame,
+                                     "navigator.clearExperimentalAppBadge()"));
 }
 
 INSTANTIATE_TEST_SUITE_P(

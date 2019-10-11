@@ -62,10 +62,10 @@ namespace blink {
 
 namespace {
 
-class MockChromeClientForImpl : public EmptyChromeClient {
+class FakeChromeClient : public EmptyChromeClient {
  public:
-  // EmptyChromeClient overrides:
-  WebScreenInfo GetScreenInfo() const override {
+  // ChromeClient overrides.
+  WebScreenInfo GetScreenInfo(LocalFrame&) const override {
     WebScreenInfo screen_info;
     screen_info.orientation_type = kWebScreenOrientationLandscapePrimary;
     return screen_info;
@@ -171,7 +171,7 @@ class MediaControlsImplTest : public PageTestBase,
   void InitializePage() {
     Page::PageClients clients;
     FillWithEmptyClients(clients);
-    clients.chrome_client = MakeGarbageCollected<MockChromeClientForImpl>();
+    clients.chrome_client = MakeGarbageCollected<FakeChromeClient>();
     SetupPageWithClients(&clients,
                          MakeGarbageCollected<StubLocalFrameClientForImpl>());
 

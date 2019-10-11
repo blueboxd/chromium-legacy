@@ -217,6 +217,9 @@ void SafeBrowsingUrlCheckerImpl::OnTimeout() {
 
   database_manager_->CancelCheck(this);
 
+  // Any pending callbacks on this URL check should be skipped.
+  weak_factory_.InvalidateWeakPtrs();
+
   OnUrlResult(urls_[next_index_].url, safe_browsing::SB_THREAT_TYPE_SAFE,
               ThreatMetadata());
 }

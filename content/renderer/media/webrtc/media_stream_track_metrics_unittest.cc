@@ -9,9 +9,9 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "content/renderer/media/webrtc/media_stream_track_metrics.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 using webrtc::AudioSourceInterface;
@@ -91,7 +91,7 @@ class MediaStreamTrackMetricsTest : public testing::Test {
 
   void SetUp() override {
     metrics_.reset(new MockMediaStreamTrackMetrics());
-    stream_ = new rtc::RefCountedObject<MockMediaStream>("stream");
+    stream_ = new rtc::RefCountedObject<blink::MockMediaStream>("stream");
     signaling_thread_.Start();
   }
 

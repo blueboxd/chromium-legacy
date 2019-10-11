@@ -45,7 +45,7 @@ class TestNetworkContext : public mojom::NetworkContext {
   void SetClient(
       mojo::PendingRemote<mojom::NetworkContextClient> client) override {}
   void CreateURLLoaderFactory(
-      mojom::URLLoaderFactoryRequest request,
+      mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
       mojom::URLLoaderFactoryParamsPtr params) override {}
   void GetCookieManager(
       mojo::PendingReceiver<mojom::CookieManager> cookie_manager) override {}
@@ -236,7 +236,7 @@ class TestNetworkContext : public mojom::NetworkContext {
       const GURL& url,
       LookupBasicAuthCredentialsCallback callback) override {}
   void GetOriginPolicyManager(
-      mojom::OriginPolicyManagerRequest request) override {}
+      mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) override {}
 };
 
 }  // namespace network

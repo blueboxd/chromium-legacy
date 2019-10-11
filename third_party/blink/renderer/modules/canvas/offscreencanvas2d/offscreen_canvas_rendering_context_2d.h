@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 
 namespace blink {
 
@@ -40,7 +41,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
     }
 
     CanvasRenderingContext::ContextType GetContextType() const override {
-      return CanvasRenderingContext::kContext2d;
+      return CanvasRenderingContext::kContext2D;
     }
   };
 
@@ -57,7 +58,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   // CanvasRenderingContext implementation
   ~OffscreenCanvasRenderingContext2D() override;
-  ContextType GetContextType() const override { return kContext2d; }
+  ContextType GetContextType() const override { return kContext2D; }
   bool Is2d() const override { return true; }
   bool IsComposited() const override { return false; }
   bool IsAccelerated() const override;
@@ -95,6 +96,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   int Height() const final;
 
   bool CanCreateCanvas2dResourceProvider() const final;
+  CanvasResourceProvider* GetOrCreateCanvasResourceProvider() const;
   CanvasResourceProvider* GetCanvasResourceProvider() const;
 
   bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
@@ -120,6 +122,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   bool PushFrame() override;
 
+  bool HasRecordedDrawCommands() { return have_recorded_draw_commands_; }
+
  protected:
   void NeedsFinalizeFrame() override {
     CanvasRenderingContext::NeedsFinalizeFrame();
@@ -132,6 +136,13 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
                    int y) override;
 
  private:
+  void StartRecording();
+  bool is_deferral_enabled_;
+  std::unique_ptr<PaintRecorder> recorder_;
+  bool have_recorded_draw_commands_;
+  void FinalizeFrame() final;
+  void FlushRecording();
+
   bool IsPaintable() const final;
   bool IsCanvas2DBufferValid() const override;
 
@@ -147,6 +158,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   String ColorSpaceAsString() const override;
   CanvasPixelFormat PixelFormat() const override;
   SkIRect dirty_rect_for_commit_;
+
+  bool is_valid_size_ = false;
 
   std::mt19937 random_generator_;
   std::bernoulli_distribution bernoulli_distribution_;

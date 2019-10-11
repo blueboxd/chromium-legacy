@@ -7,6 +7,7 @@
 
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
@@ -25,7 +26,7 @@ class FakeBlobURLStore : public mojom::blink::BlobURLStore {
   void Resolve(const KURL&, ResolveCallback) override;
   void ResolveAsURLLoaderFactory(
       const KURL&,
-      network::mojom::blink::URLLoaderFactoryRequest) override;
+      mojo::PendingReceiver<network::mojom::blink::URLLoaderFactory>) override;
   void ResolveForNavigation(
       const KURL&,
       mojo::PendingReceiver<mojom::blink::BlobURLToken>) override;

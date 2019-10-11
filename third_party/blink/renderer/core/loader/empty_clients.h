@@ -180,7 +180,9 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   float WindowToViewportScalar(LocalFrame*, const float s) const override {
     return s;
   }
-  WebScreenInfo GetScreenInfo() const override { return WebScreenInfo(); }
+  WebScreenInfo GetScreenInfo(LocalFrame&) const override {
+    return WebScreenInfo();
+  }
   void ContentsSizeChanged(LocalFrame*, const IntSize&) const override {}
 
   void ShowMouseOverURL(const HitTestResult&) override {}
@@ -320,7 +322,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void ForwardResourceTimingToParent(const WebResourceTimingInfo&) override {}
 
   void DownloadURL(const ResourceRequest&,
-                   DownloadCrossOriginRedirects) override {}
+                   network::mojom::RedirectMode) override {}
 
   DocumentLoader* CreateDocumentLoader(
       LocalFrame*,

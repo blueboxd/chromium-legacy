@@ -7,6 +7,7 @@
 
 #include "components/safe_browsing/base_ui_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
 namespace network {
@@ -63,7 +64,7 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
   // Called on the UI thread to create a URLLoaderFactory interface ptr for
   // the IO thread.
   void CreateURLLoaderFactoryForIO(
-      network::mojom::URLLoaderFactoryRequest request);
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver);
 
   // Provides phishing and malware statistics. Accessed on IO thread.
   std::unique_ptr<safe_browsing::PingManager> ping_manager_;

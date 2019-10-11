@@ -183,7 +183,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:service_worker", "renderer",
               std::set<const char*>{
-                  "blink.mojom.CacheStorage", "blink.mojom.CookieStore",
+                  "blink.mojom.CacheStorage",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.touch_to_fill;
 
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CREDENTIAL_LIST;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ORIGIN_SECURE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VIEW_EVENT_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 import static org.chromium.chrome.browser.util.UrlUtilities.stripScheme;
@@ -67,8 +68,12 @@ class TouchToFillViewBinder {
             view.setEventListener(model.get(VIEW_EVENT_LISTENER));
         } else if (propertyKey == VISIBLE) {
             view.setVisible(model.get(VISIBLE));
-        } else if (propertyKey == FORMATTED_URL) {
-            view.setFormattedUrl(model.get(FORMATTED_URL));
+        } else if (propertyKey == FORMATTED_URL || propertyKey == ORIGIN_SECURE) {
+            if (model.get(ORIGIN_SECURE)) {
+                view.setSecureSubtitle(model.get(FORMATTED_URL));
+            } else {
+                view.setNonSecureSubtitle(model.get(FORMATTED_URL));
+            }
         } else if (propertyKey == CREDENTIAL_LIST) {
             // No binding required. Single items are bound via bindCredentialView.
         } else {

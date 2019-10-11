@@ -122,6 +122,7 @@ TEST_F(OfflineItemUtilsTest, BasicConversions) {
   base::FilePath file_name(FILE_PATH_LITERAL("image.png"));
   std::string mime_type = "image/png";
   base::Time creation_time = base::Time::Now();
+  base::Time completion_time = base::Time::Now();
   base::Time last_access_time = base::Time::Now();
   download::DownloadInterruptReason interrupt_reason =
       download::DOWNLOAD_INTERRUPT_REASON_NONE;
@@ -149,6 +150,7 @@ TEST_F(OfflineItemUtilsTest, BasicConversions) {
   ON_CALL(*download, AllowMetered()).WillByDefault(Return(allow_metered));
   ON_CALL(*download, GetReceivedBytes()).WillByDefault(Return(received_bytes));
   ON_CALL(*download, GetTotalBytes()).WillByDefault(Return(total_bytes));
+  ON_CALL(*download, GetEndTime()).WillByDefault(Return(completion_time));
 
   ON_CALL(*download, TimeRemaining(_))
       .WillByDefault(testing::DoAll(
@@ -173,6 +175,7 @@ TEST_F(OfflineItemUtilsTest, BasicConversions) {
   EXPECT_EQ(total_bytes, offline_item.total_size_bytes);
   EXPECT_EQ(externally_removed, offline_item.externally_removed);
   EXPECT_EQ(creation_time, offline_item.creation_time);
+  EXPECT_EQ(completion_time, offline_item.completion_time);
   EXPECT_EQ(last_access_time, offline_item.last_accessed_time);
   EXPECT_EQ(is_openable, offline_item.is_openable);
   EXPECT_EQ(file_path, offline_item.file_path);

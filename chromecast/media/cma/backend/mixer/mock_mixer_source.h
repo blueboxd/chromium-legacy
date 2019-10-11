@@ -39,6 +39,7 @@ class MockMixerSource : public MixerInput::Source {
   AudioContentType content_type() override { return content_type_; }
   int desired_read_size() override { return 1; }
   int playout_channel() override { return playout_channel_; }
+  bool active() override { return true; }
 
   MOCK_METHOD2(InitializeAudioPlayback, void(int, RenderingDelay));
   MOCK_METHOD3(FillAudioPlaybackFrames,

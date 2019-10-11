@@ -20,8 +20,6 @@
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "content/renderer/worker/worker_thread_registry.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -40,7 +38,7 @@ void CreateSubresourceLoaderFactoryForProviderContext(
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
     mojo::PendingReceiver<blink::mojom::ControllerServiceWorkerConnector>
         connector_receiver,
-    network::mojom::URLLoaderFactoryRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   auto connector = base::MakeRefCounted<ControllerServiceWorkerConnector>(
       std::move(remote_container_host), std::move(remote_controller),
@@ -49,7 +47,7 @@ void CreateSubresourceLoaderFactoryForProviderContext(
   ServiceWorkerSubresourceLoaderFactory::Create(
       std::move(connector),
       network::SharedURLLoaderFactory::Create(std::move(fallback_factory_info)),
-      std::move(request), std::move(task_runner));
+      std::move(receiver), std::move(task_runner));
 }
 
 }  // namespace

@@ -27,10 +27,10 @@
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/connection_group.h"
 #include "mojo/public/cpp/bindings/disconnect_reason.h"
-#include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/control_message_handler.h"
 #include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/message_dispatcher.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace mojo {
@@ -84,9 +84,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
 
   AssociatedGroup* associated_group();
 
-  // Adds a MessageReceiver which can filter a message after validation but
+  // Sets a MessageFilter which can filter a message after validation but
   // before dispatch.
-  void AddFilter(std::unique_ptr<MessageReceiver> filter);
+  void SetFilter(std::unique_ptr<MessageFilter> filter);
 
   // After this call the object is in an invalid state and shouldn't be reused.
   ScopedInterfaceEndpointHandle PassHandle();
@@ -251,7 +251,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
 
   MessageReceiverWithResponderStatus* const incoming_receiver_ = nullptr;
   HandleIncomingMessageThunk thunk_{this};
-  FilterChain filters_;
+  MessageDispatcher dispatcher_;
 
   AsyncResponderMap async_responders_;
   SyncResponseMap sync_responses_;

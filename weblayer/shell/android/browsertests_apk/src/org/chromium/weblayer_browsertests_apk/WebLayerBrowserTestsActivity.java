@@ -18,6 +18,7 @@ import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.native_test.NativeBrowserTest;
 import org.chromium.native_test.NativeBrowserTestActivity;
 import org.chromium.weblayer.BrowserController;
+import org.chromium.weblayer.BrowserFragment;
 import org.chromium.weblayer.BrowserFragmentController;
 import org.chromium.weblayer.BrowserObserver;
 import org.chromium.weblayer.ListenableFuture;
@@ -36,13 +37,6 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
     private BrowserController mBrowserController;
     private EditText mUrlView;
     private View mMainView;
-
-    @Override
-    protected void onDestroy() {
-        if (mProfile != null) mProfile.destroy();
-        if (mBrowserFragmentController != null) mBrowserFragmentController.destroy();
-        super.onDestroy();
-    }
 
     @Override
     protected void initializeBrowserProcess() {
@@ -85,12 +79,12 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
                 new RelativeLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        mProfile = mWebLayer.createProfile(null);
-
-        mBrowserFragmentController = mProfile.createBrowserFragmentController(this);
+        BrowserFragment fragment = WebLayer.createBrowserFragment(null);
+        mBrowserFragmentController = fragment.getController();
+        mProfile = mBrowserFragmentController.getProfile();
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(viewId, mBrowserFragmentController.getFragment());
+        transaction.add(viewId, fragment);
         transaction.commit();
 
         mBrowserFragmentController.setTopView(topContentsContainer);

@@ -200,6 +200,43 @@ chrome.tabs.getCurrent(function(tab) {
       testWebSocketConnection(url, true /* expectedToConnect */);
     },
 
+    // Tries to open a WebSocket connection, with a blocking handler that
+    // cancels the request. The connection will not be established.
+    function handshakeRequestCancelledWithExtraHeaders() {
+      var url = getWSTestURL(testWebSocketPort);
+      expect(
+        [  // events
+          { label: 'onBeforeRequest',
+            event: 'onBeforeRequest',
+            details: {
+              url: url,
+              type: 'websocket',
+              frameUrl: 'unknown frame URL',
+              initiator: getDomain(initiators.WEB_INITIATED)
+            },
+            retval: {cancel: true}
+          },
+          // Cancelling is considered an error.
+          { label: 'onErrorOccurred',
+            event: 'onErrorOccurred',
+            details: {
+              url: url,
+              type: 'websocket',
+              fromCache: false,
+              initiator: getDomain(initiators.WEB_INITIATED),
+              error: 'net::ERR_BLOCKED_BY_CLIENT'
+            }
+          },
+        ],
+        [  // event order
+          ['onBeforeRequest', 'onErrorOccurred']
+        ],
+        {urls: ['ws://*/*']},  // filter
+        ['blocking', 'extraHeaders']  // extraInfoSpec
+      );
+      testWebSocketConnection(url, false /* expectedToConnect */);
+    },
+
     // Tests that all the requests headers that are added by net/ are visible
     // if extraHeaders is specified.
     function testExtraRequestHeadersVisible() {

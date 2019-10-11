@@ -153,7 +153,7 @@ InterfaceEndpointClient::InterfaceEndpointClient(
     : expect_sync_requests_(expect_sync_requests),
       handle_(std::move(handle)),
       incoming_receiver_(receiver),
-      filters_(&thunk_),
+      dispatcher_(&thunk_),
       task_runner_(std::move(runner)),
       control_message_handler_(this, interface_version),
       interface_name_(interface_name) {
@@ -162,7 +162,7 @@ InterfaceEndpointClient::InterfaceEndpointClient(
   // TODO(yzshen): the way to use validator (or message filter in general)
   // directly is a little awkward.
   if (payload_validator)
-    filters_.Append(std::move(payload_validator));
+    dispatcher_.SetValidator(std::move(payload_validator));
 
   if (handle_.pending_association()) {
     handle_.SetAssociationEventHandler(base::Bind(
@@ -202,9 +202,8 @@ ScopedInterfaceEndpointHandle InterfaceEndpointClient::PassHandle() {
   return std::move(handle_);
 }
 
-void InterfaceEndpointClient::AddFilter(
-    std::unique_ptr<MessageReceiver> filter) {
-  filters_.Append(std::move(filter));
+void InterfaceEndpointClient::SetFilter(std::unique_ptr<MessageFilter> filter) {
+  dispatcher_.SetFilter(std::move(filter));
 }
 
 void InterfaceEndpointClient::RaiseError() {
@@ -354,7 +353,7 @@ bool InterfaceEndpointClient::SendMessageWithResponder(
 
 bool InterfaceEndpointClient::HandleIncomingMessage(Message* message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return filters_.Accept(message);
+  return dispatcher_.Accept(message);
 }
 
 void InterfaceEndpointClient::NotifyError(

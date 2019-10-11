@@ -1899,7 +1899,7 @@ TEST_P(MediaStreamConstraintsRemoteAPMTest, Channels) {
   constraint_factory_.basic().echo_cancellation.SetExact(true);
   result = SelectSettings();
 
-  if (IsApmInAudioServiceEnabled() && GetParam())
+  if (media::IsWebRtcApmInAudioServiceEnabled() && GetParam())
     EXPECT_FALSE(result.HasValue());
   else
     EXPECT_TRUE(result.HasValue());
@@ -1916,7 +1916,7 @@ TEST_P(MediaStreamConstraintsRemoteAPMTest, SampleRate) {
   constraint_factory_.basic().echo_cancellation.SetExact(true);
   result = SelectSettings();
 
-  if (IsApmInAudioServiceEnabled() && GetParam())
+  if (media::IsWebRtcApmInAudioServiceEnabled() && GetParam())
     EXPECT_TRUE(result.HasValue());
   else
     EXPECT_FALSE(result.HasValue());

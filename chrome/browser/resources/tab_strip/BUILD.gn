@@ -33,23 +33,15 @@ js_library("tab") {
   deps = [
     "//ui/webui/resources/js:icon.m",
   ]
-  externs_list = [ "$externs_path/chrome.js" ]
 }
 
 js_library("tab_list") {
-  deps = [
-    ":types",
-  ]
-  externs_list = [ "$externs_path/chrome.js" ]
 }
 
 js_library("tab_strip_view_proxy") {
   deps = [
     "//ui/webui/resources/js:cr.m",
   ]
-}
-
-js_library("types") {
 }
 
 group("tab_strip_modules") {

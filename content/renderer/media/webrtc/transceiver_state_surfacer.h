@@ -6,8 +6,8 @@
 #define CONTENT_RENDERER_MEDIA_WEBRTC_TRANSCEIVER_STATE_SURFACER_H_
 
 #include "content/renderer/media/webrtc/rtc_rtp_transceiver.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
+#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
 #include "third_party/webrtc/api/sctp_transport_interface.h"
 #include "third_party/webrtc/rtc_base/ref_count.h"
@@ -42,7 +42,7 @@ class CONTENT_EXPORT TransceiverStateSurfacer {
   // Must be invoked on the signaling thread.
   void Initialize(
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-      scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
+      scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
       std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
           transceivers);
 

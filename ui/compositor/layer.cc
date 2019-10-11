@@ -1292,6 +1292,10 @@ std::unique_ptr<base::trace_event::TracedValue> Layer::TakeDebugInfo(
   return value;
 }
 
+std::string Layer::LayerDebugName(const cc::Layer* layer) const {
+  return name_;
+}
+
 void Layer::DidChangeScrollbarsHiddenIfOverlay(bool) {}
 
 void Layer::CollectAnimators(

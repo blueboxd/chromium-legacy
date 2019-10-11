@@ -420,11 +420,6 @@ resource_coordinator::TabManager* TestingBrowserProcess::GetTabManager() {
   return resource_coordinator_parts()->tab_manager();
 }
 
-shell_integration::DefaultWebClientState
-TestingBrowserProcess::CachedDefaultWebClientState() {
-  return shell_integration::UNKNOWN_DEFAULT;
-}
-
 void TestingBrowserProcess::SetSharedURLLoaderFactory(
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory) {
   shared_url_loader_factory_ = shared_url_loader_factory;

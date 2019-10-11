@@ -432,16 +432,24 @@ IN_PROC_BROWSER_TEST_F(
                                     3);
 }
 
-// Test that we preconnect after the last preconnect timed out.
-IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
-                       DISABLE_ON_CHROMEOS(ActionAccuracy_timeout)) {
-  base::HistogramTester histogram_tester;
+class NavigationPredictorBrowserTestWithUnusedIdleSocketTimeout
+    : public NavigationPredictorBrowserTest {
+ public:
+  NavigationPredictorBrowserTestWithUnusedIdleSocketTimeout() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        net::features::kNetUnusedIdleSocketTimeout,
+        {{"unused_idle_socket_timeout_seconds", "0"}});
+  }
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  std::map<std::string, std::string> parameters;
-  parameters["unused_idle_socket_timeout_seconds"] = "0";
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      net::features::kNetUnusedIdleSocketTimeout, parameters);
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Test that we preconnect after the last preconnect timed out.
+IN_PROC_BROWSER_TEST_F(
+    NavigationPredictorBrowserTestWithUnusedIdleSocketTimeout,
+    DISABLE_ON_CHROMEOS(ActionAccuracy_timeout)) {
+  base::HistogramTester histogram_tester;
 
   const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
   ui_test_utils::NavigateToURL(browser(), url);
@@ -459,22 +467,30 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        NavigationPredictor::Action::kPreconnectAfterTimeout)));
 }
 
+class NavigationPredictorBrowserTestWithNegativePredictorRetryPreconnect
+    : public NavigationPredictorBrowserTest {
+ public:
+  NavigationPredictorBrowserTestWithNegativePredictorRetryPreconnect() {
+    // -1 would force synchronous retries if retries were not disabled.
+    net_feature_list_.InitAndEnableFeatureWithParameters(
+        net::features::kNetUnusedIdleSocketTimeout,
+        {{"unused_idle_socket_timeout_seconds", "-1"}});
+    predictor_feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kNavigationPredictor,
+        {{"retry_preconnect_wait_time_ms", "-1"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList net_feature_list_;
+  base::test::ScopedFeatureList predictor_feature_list_;
+};
+
 // Test that we don't preconnect after the last preconnect timed out when
 // retry_preconnect_wait_time_ms is negative.
-IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
-                       DISABLE_ON_CHROMEOS(ActionAccuracy_timeout_no_retry)) {
+IN_PROC_BROWSER_TEST_F(
+    NavigationPredictorBrowserTestWithNegativePredictorRetryPreconnect,
+    DISABLE_ON_CHROMEOS(ActionAccuracy_timeout_no_retry)) {
   base::HistogramTester histogram_tester;
-
-  base::test::ScopedFeatureList scoped_feature_list_net;
-  // -1 would force synchronous retries if retries were not disabled.
-  scoped_feature_list_net.InitAndEnableFeatureWithParameters(
-      net::features::kNetUnusedIdleSocketTimeout,
-      {{"unused_idle_socket_timeout_seconds", "-1"}});
-
-  base::test::ScopedFeatureList scoped_feature_list_predictor;
-  scoped_feature_list_predictor.InitAndEnableFeatureWithParameters(
-      blink::features::kNavigationPredictor,
-      {{"retry_preconnect_wait_time_ms", "-1"}});
 
   const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
   ui_test_utils::NavigateToURL(browser(), url);
@@ -486,18 +502,25 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        NavigationPredictor::Action::kPreconnectAfterTimeout)));
 }
 
+class NavigationPredictorBrowserTestWithDefaultPredictorEnabled
+    : public NavigationPredictorBrowserTest {
+ public:
+  NavigationPredictorBrowserTestWithDefaultPredictorEnabled() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kNavigationPredictor, {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Test that the action accuracy is properly recorded and when same origin
 // preconnections are enabled, then navigation predictor initiates the
 // preconnection.
 IN_PROC_BROWSER_TEST_F(
-    NavigationPredictorBrowserTest,
+    NavigationPredictorBrowserTestWithDefaultPredictorEnabled,
     DISABLE_ON_CHROMEOS(
         ActionAccuracy_DifferentOrigin_VisibilityChangedPreconnectEnabled)) {
-  std::map<std::string, std::string> parameters;
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      blink::features::kNavigationPredictor, parameters);
-
   base::HistogramTester histogram_tester;
 
   const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
@@ -542,15 +565,22 @@ IN_PROC_BROWSER_TEST_F(
       NavigationPredictor::Action::kPreconnectOnVisibilityChange, 2);
 }
 
-IN_PROC_BROWSER_TEST_F(
-    NavigationPredictorBrowserTest,
-    DISABLE_ON_CHROMEOS(NoPreconnectNonSearchOnOtherHostLinks)) {
-  std::map<std::string, std::string> parameters;
-  base::test::ScopedFeatureList feature_list;
-  parameters["preconnect_skip_link_scores"] = "false";
-  feature_list.InitAndEnableFeatureWithParameters(
-      blink::features::kNavigationPredictor, parameters);
+class NavigationPredictorBrowserTestNoSkipLinkScores
+    : public NavigationPredictorBrowserTest {
+ public:
+  NavigationPredictorBrowserTestNoSkipLinkScores() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kNavigationPredictor,
+        {{"preconnect_skip_link_scores", "false"}});
+  }
 
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    NavigationPredictorBrowserTestNoSkipLinkScores,
+    DISABLE_ON_CHROMEOS(NoPreconnectNonSearchOnOtherHostLinks)) {
   base::HistogramTester histogram_tester;
 
   // This page only has non-same host links.
@@ -563,13 +593,9 @@ IN_PROC_BROWSER_TEST_F(
       NavigationPredictor::Action::kNone, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
-                       DISABLE_ON_CHROMEOS(PreconnectNonSearch)) {
-  std::map<std::string, std::string> parameters;
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      blink::features::kNavigationPredictor, parameters);
-
+IN_PROC_BROWSER_TEST_F(
+    NavigationPredictorBrowserTestWithDefaultPredictorEnabled,
+    DISABLE_ON_CHROMEOS(PreconnectNonSearch)) {
   base::HistogramTester histogram_tester;
 
   // This page only has non-same host links.
@@ -582,20 +608,28 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
       NavigationPredictor::Action::kPreconnect, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
-                       DISABLE_ON_CHROMEOS(PrefetchAfterPreconnect)) {
+class NavigationPredictorBrowserTestWithPrefetchAfterPreconnect
+    : public NavigationPredictorBrowserTest {
+ public:
+  NavigationPredictorBrowserTestWithPrefetchAfterPreconnect() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kNavigationPredictor,
+        {{"prefetch_after_preconnect", "true"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    NavigationPredictorBrowserTestWithPrefetchAfterPreconnect,
+    DISABLE_ON_CHROMEOS(PrefetchAfterPreconnect)) {
   prerender::PrerenderManager::SetMode(
       prerender::PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
 
   const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder =
       std::make_unique<ukm::TestAutoSetUkmRecorder>();
-
-  std::map<std::string, std::string> parameters;
-  base::test::ScopedFeatureList feature_list;
-  parameters["prefetch_after_preconnect"] = "true";
-  feature_list.InitAndEnableFeatureWithParameters(
-      blink::features::kNavigationPredictor, parameters);
 
   base::HistogramTester histogram_tester;
 
@@ -632,17 +666,12 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
-                       DISABLE_ON_CHROMEOS(NoPreconnectSearch)) {
+IN_PROC_BROWSER_TEST_F(
+    NavigationPredictorBrowserTestWithDefaultPredictorEnabled,
+    DISABLE_ON_CHROMEOS(NoPreconnectSearch)) {
   static const char kShortName[] = "test";
   static const char kSearchURL[] =
       "/anchors_different_area.html?q={searchTerms}";
-
-  // Force Preconnect on
-  std::map<std::string, std::string> parameters;
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      blink::features::kNavigationPredictor, parameters);
 
   // Set up default search engine.
   TemplateURLService* model =
@@ -1025,8 +1054,9 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, Incognito) {
 }
 
 // Verify that the observers are notified of predictions on search results page.
-IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
-                       DISABLE_ON_CHROMEOS(ObserverNotifiedOnSearchPage)) {
+IN_PROC_BROWSER_TEST_F(
+    NavigationPredictorBrowserTestWithDefaultPredictorEnabled,
+    DISABLE_ON_CHROMEOS(ObserverNotifiedOnSearchPage)) {
   TestObserver observer;
 
   NavigationPredictorKeyedService* service =
@@ -1037,12 +1067,6 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   static const char kShortName[] = "test";
   static const char kSearchURL[] =
       "/anchors_different_area.html?q={searchTerms}";
-
-  // Force Preconnect on
-  std::map<std::string, std::string> parameters;
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      blink::features::kNavigationPredictor, parameters);
 
   // Set up default search engine.
   TemplateURLService* model =

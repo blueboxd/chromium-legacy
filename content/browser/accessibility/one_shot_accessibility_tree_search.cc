@@ -44,7 +44,7 @@ OneShotAccessibilityTreeSearch::OneShotAccessibilityTreeSearch(
       result_limit_(UNLIMITED_RESULTS),
       immediate_descendants_only_(false),
       can_wrap_to_last_element_(false),
-      visible_only_(false),
+      onscreen_only_(false),
       did_search_(false) {}
 
 OneShotAccessibilityTreeSearch::~OneShotAccessibilityTreeSearch() {}
@@ -82,9 +82,9 @@ void OneShotAccessibilityTreeSearch::SetCanWrapToLastElement(
   can_wrap_to_last_element_ = can_wrap_to_last_element;
 }
 
-void OneShotAccessibilityTreeSearch::SetVisibleOnly(bool visible_only) {
+void OneShotAccessibilityTreeSearch::SetOnscreenOnly(bool onscreen_only) {
   DCHECK(!did_search_);
-  visible_only_ = visible_only;
+  onscreen_only_ = onscreen_only;
 }
 
 void OneShotAccessibilityTreeSearch::SetSearchText(const std::string& text) {
@@ -197,11 +197,11 @@ bool OneShotAccessibilityTreeSearch::Matches(BrowserAccessibility* node) {
       return false;
   }
 
-  if (visible_only_) {
-    if (node->HasState(ax::mojom::State::kInvisible) || node->IsOffscreen()) {
-      return false;
-    }
-  }
+  if (node->HasState(ax::mojom::State::kInvisible))
+    return false;  // Programmatically hidden, e.g. aria-hidden or via CSS.
+
+  if (onscreen_only_ && node->IsOffscreen())
+    return false;  // Partly scrolled offscreen.
 
   if (!search_text_.empty()) {
     base::string16 search_text_lower =

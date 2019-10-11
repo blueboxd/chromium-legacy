@@ -31,18 +31,18 @@ namespace content {
 class SecFetchBrowserTest : public ContentBrowserTest {
  public:
   SecFetchBrowserTest()
-      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    feature_list_.InitWithFeatures(
+        {network::features::kFetchMetadata,
+         network::features::kFetchMetadataDestination},
+        {});
+  }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     https_test_server_.AddDefaultHandlers(GetTestDataFilePath());
     https_test_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
     ASSERT_TRUE(https_test_server_.Start());
-
-    feature_list_.InitWithFeatures(
-        {network::features::kFetchMetadata,
-         network::features::kFetchMetadataDestination},
-        {});
   }
 
   WebContents* web_contents() { return shell()->web_contents(); }

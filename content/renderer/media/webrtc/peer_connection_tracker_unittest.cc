@@ -9,7 +9,6 @@
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/media/webrtc/fake_rtc_rtp_transceiver.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "ipc/ipc_message_macros.h"
@@ -22,6 +21,7 @@
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 
 using ::testing::_;
 
@@ -131,7 +131,7 @@ class MockPeerConnectionHandler : public RTCPeerConnectionHandler {
   MOCK_METHOD0(CloseClientPeerConnection, void());
 
  private:
-  MockPeerConnectionDependencyFactory dependency_factory_;
+  blink::MockPeerConnectionDependencyFactory dependency_factory_;
   MockWebRTCPeerConnectionHandlerClient client_;
 };
 

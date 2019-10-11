@@ -2204,6 +2204,11 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
         view, std::unique_ptr<gfx::AnimationDelegate>(
                   new FadeOutAnimationDelegate(this, view)));
   } else {
+    // If there is no fade out animation, notify the parent view of the
+    // changed size before bounds animations start.
+    if (chromeos::switches::ShouldShowScrollableShelf())
+      PreferredSizeChanged();
+
     // We don't need to show a fade out animation for invisible |view|. When an
     // item is ripped out from the shelf, its |view| is already invisible.
     AnimateToIdealBounds();

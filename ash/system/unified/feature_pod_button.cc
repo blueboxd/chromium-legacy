@@ -42,8 +42,9 @@ void ConfigureFeaturePodLabel(views::Label* label) {
 
 }  // namespace
 
-FeaturePodIconButton::FeaturePodIconButton(views::ButtonListener* listener)
-    : views::ImageButton(listener) {
+FeaturePodIconButton::FeaturePodIconButton(views::ButtonListener* listener,
+                                           bool is_togglable)
+    : views::ImageButton(listener), is_togglable_(is_togglable) {
   SetPreferredSize(kUnifiedFeaturePodIconSize);
   SetBorder(views::CreateEmptyBorder(kUnifiedFeaturePodIconPadding));
   SetImageHorizontalAlignment(ALIGN_CENTER);
@@ -55,6 +56,9 @@ FeaturePodIconButton::FeaturePodIconButton(views::ButtonListener* listener)
 FeaturePodIconButton::~FeaturePodIconButton() = default;
 
 void FeaturePodIconButton::SetToggled(bool toggled) {
+  if (!is_togglable_)
+    return;
+
   toggled_ = toggled;
   SchedulePaint();
 }
@@ -114,9 +118,13 @@ std::unique_ptr<views::InkDropMask> FeaturePodIconButton::CreateInkDropMask()
 void FeaturePodIconButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ImageButton::GetAccessibleNodeData(node_data);
   node_data->SetName(GetTooltipText(gfx::Point()));
-  node_data->role = ax::mojom::Role::kToggleButton;
-  node_data->SetCheckedState(toggled_ ? ax::mojom::CheckedState::kTrue
-                                      : ax::mojom::CheckedState::kFalse);
+  if (is_togglable_) {
+    node_data->role = ax::mojom::Role::kToggleButton;
+    node_data->SetCheckedState(toggled_ ? ax::mojom::CheckedState::kTrue
+                                        : ax::mojom::CheckedState::kFalse);
+  } else {
+    node_data->role = ax::mojom::Role::kButton;
+  }
 }
 
 const char* FeaturePodIconButton::GetClassName() const {
@@ -270,9 +278,10 @@ void FeaturePodLabelButton::LayoutInCenter(views::View* child, int y) {
       child_width, preferred_size.height());
 }
 
-FeaturePodButton::FeaturePodButton(FeaturePodControllerBase* controller)
+FeaturePodButton::FeaturePodButton(FeaturePodControllerBase* controller,
+                                   bool is_togglable)
     : controller_(controller),
-      icon_button_(new FeaturePodIconButton(this)),
+      icon_button_(new FeaturePodIconButton(this, is_togglable)),
       label_button_(new FeaturePodLabelButton(this)) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),

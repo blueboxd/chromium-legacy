@@ -4,8 +4,12 @@
 
 package org.chromium.weblayer.test;
 
+import android.app.Activity;
+import android.app.Instrumentation.ActivityMonitor;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
@@ -15,6 +19,8 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.shell.WebLayerShellActivity;
+
+import java.lang.reflect.Field;
 
 /**
  * ActivityTestRule for WebLayerShellActivity.
@@ -63,5 +69,37 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
      */
     public void loadUrl(String url) {
         TestThreadUtils.runOnUiThreadBlocking(() -> { getActivity().loadUrl(url); });
+    }
+
+    /**
+     * Rotates the Activity, blocking until the Activity is re-created.
+     * After calling this, getActivity() returns the new Activity.
+     */
+    public void rotateActivity() {
+        Activity activity = getActivity();
+
+        ActivityMonitor monitor = new ActivityMonitor(WebLayerShellActivity.class.getName(),
+                null, false);
+        InstrumentationRegistry.getInstrumentation().addMonitor(monitor);
+
+        int current = activity.getResources().getConfiguration().orientation;
+        int requested = current == Configuration.ORIENTATION_LANDSCAPE ?
+                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT :
+                ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+        activity.setRequestedOrientation(requested);
+        CriteriaHelper.pollUiThread(() ->
+            monitor.getLastActivity() != null && monitor.getLastActivity() != activity
+        );
+        InstrumentationRegistry.getInstrumentation().removeMonitor(monitor);
+
+        // There is no way to rotate the activity using ActivityTestRule or even notify it.
+        // So we have to hack...
+        try {
+            Field field = ActivityTestRule.class.getDeclaredField("mActivity");
+            field.setAccessible(true);
+            field.set(this, monitor.getLastActivity());
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

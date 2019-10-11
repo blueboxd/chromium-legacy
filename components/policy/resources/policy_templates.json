@@ -7237,7 +7237,7 @@
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:77-'],
+      'supported_on': ['chrome_os:77-', 'chrome.linux:79-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -7246,11 +7246,13 @@
       'id': 575,
       'caption': '''Determines whether the built-in certificate verifier will be used to verify server certificates''',
       'tags': [],
-      'desc': '''When this setting is enabled, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will perform verification of server certificates using the built-in certificate verifier.
-      When this setting is disabled, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will perform verification of server certificates using the legacy certificate verifier provided by the platform.
-      When this setting is not set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> the built-in or the legacy certificate verifier may be used.
+      'desc': '''When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will perform verification of server certificates using the built-in certificate verifier.
+      When this setting is disabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will perform verification of server certificates using the legacy certificate verifier provided by the platform.
+      When this setting is not set, the built-in or the legacy certificate verifier may be used.
 
       This policy is planned to be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 81, when support for the legacy certificate verifier on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> is planned to be removed.
+
+      This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for Linux version 83, when support for the legacy certificate verifier on Linux is planned to be removed.
       ''',
     },
     {
@@ -18345,6 +18347,27 @@
       After it is enabled by default, administrators who need more time to upgrade affected proxies may use this policy to temporarily disable this security feature. This policy will be removed after version 85.
       '''
     },
+    {
+      'name': 'AudioSandboxEnabled',
+      'owners': ['services/audio/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.win:79-', 'chrome.linux:79-', 'chrome.mac:79-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 627,
+      'caption': '''Allow the audio sandbox to run''',
+      'tags': ['system-security'],
+      'desc': '''This policy controls the audio process sandboxed.
+      If this policy is enabled, the audio process will run sandboxed.
+      If this policy is disabled, the audio process will run unsandboxed and the WebRTC audio-processing module will run in the renderer process.
+      This leaves users open to security risks related to running the audio stack unsandboxed.
+      If this policy is not set, the default configuration for the audio sandbox will be used, which may differ per platform.
+      This policy is intended to give enterprises flexibility to disable the audio sandbox if they use security software setups that interfere with the sandbox.'''
+    }
   ],
 
   'messages': {
@@ -19165,6 +19188,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 626,
+  'highest_id_currently_used': 627,
   'highest_atomic_group_id_currently_used': 38
 }

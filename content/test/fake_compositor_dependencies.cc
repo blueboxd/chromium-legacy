@@ -88,7 +88,7 @@ FakeCompositorDependencies::CreateUkmRecorderFactory() {
 }
 
 void FakeCompositorDependencies::RequestNewLayerTreeFrameSink(
-    int widget_routing_id,
+    RenderWidget* render_widget,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     const GURL& url,
     LayerTreeFrameSinkCallback callback,

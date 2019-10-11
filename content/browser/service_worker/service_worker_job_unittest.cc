@@ -122,6 +122,31 @@ void RequestTermination(
   (*host)->RequestTermination(base::DoNothing());
 }
 
+class EmbeddedWorkerStatusObserver : public ServiceWorkerVersion::Observer {
+ public:
+  EmbeddedWorkerStatusObserver(base::OnceClosure quit_closure,
+                               EmbeddedWorkerStatus running_status)
+      : quit_closure_(std::move(quit_closure)),
+        expected_running_status_(running_status) {}
+
+  void OnRunningStateChanged(ServiceWorkerVersion* version) override {
+    if (!quit_closure_)
+      return;
+
+    if (version->running_status() == expected_running_status_)
+      std::move(quit_closure_).Run();
+  }
+
+ private:
+  EmbeddedWorkerStatusObserver(const EmbeddedWorkerStatusObserver&) = delete;
+  EmbeddedWorkerStatusObserver& operator=(const EmbeddedWorkerStatusObserver&) =
+      delete;
+
+  base::OnceClosure quit_closure_;
+
+  EmbeddedWorkerStatus expected_running_status_;
+};
+
 }  // namespace
 
 class ServiceWorkerJobTest : public testing::Test {
@@ -152,6 +177,8 @@ class ServiceWorkerJobTest : public testing::Test {
   void RunUnregisterJob(const GURL& scope,
                         blink::ServiceWorkerStatusCode expected_status =
                             blink::ServiceWorkerStatusCode::kOk);
+  void WaitForVersionRunningStatus(scoped_refptr<ServiceWorkerVersion> version,
+                                   EmbeddedWorkerStatus running_status);
   scoped_refptr<ServiceWorkerRegistration> FindRegistrationForScope(
       const GURL& scope,
       blink::ServiceWorkerStatusCode expected_status =
@@ -183,6 +210,19 @@ void ServiceWorkerJobTest::RunUnregisterJob(
   job_coordinator()->Unregister(
       scope, SaveUnregistration(expected_status, run_loop.QuitClosure()));
   run_loop.Run();
+}
+
+void ServiceWorkerJobTest::WaitForVersionRunningStatus(
+    scoped_refptr<ServiceWorkerVersion> version,
+    EmbeddedWorkerStatus running_status) {
+  if (version->running_status() == running_status)
+    return;
+
+  base::RunLoop run_loop;
+  EmbeddedWorkerStatusObserver observer(run_loop.QuitClosure(), running_status);
+  version->AddObserver(&observer);
+  run_loop.Run();
+  version->RemoveObserver(&observer);
 }
 
 scoped_refptr<ServiceWorkerRegistration>
@@ -325,8 +365,11 @@ TEST_F(ServiceWorkerJobTest, Register) {
           helper_.get());
   scoped_refptr<ServiceWorkerRegistration> registration = RunRegisterJob(
       GURL("https://www.example.com/service_worker.js"), options);
-  // Wait until the worker becomes active.
-  base::RunLoop().RunUntilIdle();
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  registration->SetTaskRunnerForTest(runner);
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilActivated(registration->installing_version(), runner);
+  scoped_refptr<ServiceWorkerVersion> version = registration->active_version();
 
   EXPECT_TRUE(registration);
   ASSERT_EQ(2u, worker->events().size());
@@ -340,8 +383,10 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
   options.scope = GURL("https://www.example.com/");
   scoped_refptr<ServiceWorkerRegistration> registration = RunRegisterJob(
       GURL("https://www.example.com/service_worker.js"), options);
-  // Wait until the worker becomes active.
-  base::RunLoop().RunUntilIdle();
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  registration->SetTaskRunnerForTest(runner);
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilActivated(registration->installing_version(), runner);
   scoped_refptr<ServiceWorkerVersion> version = registration->active_version();
 
   ServiceWorkerProviderHost* provider_host =
@@ -355,8 +400,8 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
   EXPECT_EQ(1UL, provider_host->service_worker_object_hosts_.size());
 
   RunUnregisterJob(options.scope);
-  // Wait until the worker becomes redundant.
-  base::RunLoop().RunUntilIdle();
+
+  WaitForVersionRunningStatus(version, EmbeddedWorkerStatus::STOPPED);
 
   // The service worker registration object host and service worker object host
   // have been destroyed together with |provider_host| by the above
@@ -384,11 +429,12 @@ TEST_F(ServiceWorkerJobTest, Unregister_NothingRegistered) {
 TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = GURL("https://www.example.com/");
-
   scoped_refptr<ServiceWorkerRegistration> old_registration = RunRegisterJob(
       GURL("https://www.example.com/service_worker.js"), options);
-  // Wait until the worker becomes active.
-  base::RunLoop().RunUntilIdle();
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  old_registration->SetTaskRunnerForTest(runner);
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilActivated(old_registration->installing_version(), runner);
 
   scoped_refptr<ServiceWorkerRegistration> old_registration_by_scope =
       FindRegistrationForScope(options.scope);
@@ -708,8 +754,7 @@ TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
   EXPECT_EQ(ServiceWorkerVersion::INSTALLED, version->status());
 
   RunUnregisterJob(GURL("https://www.example.com/"));
-  // Wait until the worker becomes redundant.
-  base::RunLoop().RunUntilIdle();
+  WaitForVersionRunningStatus(version, EmbeddedWorkerStatus::STOPPED);
 
   // The version should be stopped since there is no controllee after
   // unregistration.
@@ -724,17 +769,20 @@ TEST_F(ServiceWorkerJobTest, UnregisterActiveSetsRedundant) {
   options.scope = GURL("https://www.example.com/");
   scoped_refptr<ServiceWorkerRegistration> registration = RunRegisterJob(
       GURL("https://www.example.com/service_worker.js"), options);
-  // Wait until the worker becomes active.
-  base::RunLoop().RunUntilIdle();
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  registration->SetTaskRunnerForTest(runner);
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilActivated(registration->installing_version(), runner);
   ASSERT_TRUE(registration.get());
 
   scoped_refptr<ServiceWorkerVersion> version = registration->active_version();
+  observer.RunUntilStatusChange(version.get(), ServiceWorkerVersion::ACTIVATED);
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, version->status());
 
   RunUnregisterJob(GURL("https://www.example.com/"));
-  // Wait until the worker becomes redundant.
-  base::RunLoop().RunUntilIdle();
+
+  WaitForVersionRunningStatus(version, EmbeddedWorkerStatus::STOPPED);
 
   // The version should be stopped since there is no controllee after
   // unregistration.
@@ -750,8 +798,10 @@ TEST_F(ServiceWorkerJobTest,
   options.scope = GURL("https://www.example.com/");
   scoped_refptr<ServiceWorkerRegistration> registration = RunRegisterJob(
       GURL("https://www.example.com/service_worker.js"), options);
-  // Wait until the worker becomes active.
-  base::RunLoop().RunUntilIdle();
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  registration->SetTaskRunnerForTest(runner);
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilActivated(registration->installing_version(), runner);
   ASSERT_TRUE(registration.get());
 
   ServiceWorkerProviderHost* host = CreateControllee();
@@ -768,8 +818,7 @@ TEST_F(ServiceWorkerJobTest,
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, version->status());
 
   registration->active_version()->RemoveControllee(host->client_uuid());
-  // Wait until the worker becomes redundant.
-  base::RunLoop().RunUntilIdle();
+  WaitForVersionRunningStatus(version, EmbeddedWorkerStatus::STOPPED);
 
   // The version should be stopped since there is no controllee.
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
@@ -876,8 +925,9 @@ TEST_F(ServiceWorkerJobTest, RegisterAndUnregisterWhileUninstalling) {
   EXPECT_EQ(ServiceWorkerVersion::INSTALLED, new_version->status());
 
   old_version->RemoveControllee(host->client_uuid());
-  // Wait until the worker becomes redundant.
-  base::RunLoop().RunUntilIdle();
+
+  WaitForVersionRunningStatus(old_version, EmbeddedWorkerStatus::STOPPED);
+  WaitForVersionRunningStatus(new_version, EmbeddedWorkerStatus::STOPPED);
 
   EXPECT_FALSE(registration->is_uninstalling());
   EXPECT_TRUE(registration->is_uninstalled());
@@ -1803,8 +1853,10 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_UninstallingRegistration) {
   options.scope = GURL("https://www.example.com/one/");
   scoped_refptr<ServiceWorkerRegistration> registration = RunRegisterJob(
       GURL("https://www.example.com/service_worker.js"), options);
-  // Wait until the worker becomes active.
-  base::RunLoop().RunUntilIdle();
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  registration->SetTaskRunnerForTest(runner);
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilActivated(registration->installing_version(), runner);
 
   // Add a controllee and queue an unregister to force the uninstalling state.
   ServiceWorkerProviderHost* host = CreateControllee();
@@ -1865,9 +1917,9 @@ TEST_P(ServiceWorkerUpdateJobTest, RegisterMultipleTimesWhileUninstalling) {
   EXPECT_TRUE(registration->is_uninstalling());
 
   EXPECT_EQ(registration, RunRegisterJob(script3, options));
-  // Wait until the worker becomes redundant.
-  base::RunLoop().RunUntilIdle();
-
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilStatusChange(second_version.get(),
+                                ServiceWorkerVersion::REDUNDANT);
   scoped_refptr<ServiceWorkerVersion> third_version =
       registration->waiting_version();
   ASSERT_TRUE(third_version);
@@ -1879,7 +1931,6 @@ TEST_P(ServiceWorkerUpdateJobTest, RegisterMultipleTimesWhileUninstalling) {
   RequestTermination(&initial_client->host());
 
   // Wait for activated.
-  TestServiceWorkerObserver observer(helper_->context_wrapper());
   observer.RunUntilActivated(third_version.get(), runner);
 
   // Verify the new version is activated.

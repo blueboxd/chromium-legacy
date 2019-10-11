@@ -87,12 +87,16 @@ TEST_F(ShelfConfigTest, DenseChangeOnTabletModeChange) {
 // Make sure that the shelf size changes when switching between contexts:
 // home vs in-app, clamshell vs tablet, dense vs not dense.
 TEST_F(ShelfConfigTest, ShelfSizeChangesWithContext) {
-  // For both the shelf size and the shelf control button size, the ordering
-  // should be as follows, in increasing order:
+  // For shelf size, the ordering should be as follows, in increasing order:
   // * Tablet, dense, in-app
   // * Tablet, standard, in-app
   // * Tablet, dense, home == Clamshell (all modes)
   // * Tablet, standard, home
+
+  // For shelf control button size, the ordering should be as follows, in
+  // increasing order:
+  // * Tablet, dense (in-app and home) == Clamshell (all modes)
+  // * Tablet, standard (in-app and home)
 
   UpdateDisplay("300x1000");
   SetTabletMode(true);
@@ -136,11 +140,11 @@ TEST_F(ShelfConfigTest, ShelfSizeChangesWithContext) {
   EXPECT_EQ(clamshell_home, clamshell_in_app);
   EXPECT_LT(tablet_dense_home, tablet_standard_home);
 
-  EXPECT_LT(control_tablet_dense_in_app, control_tablet_standard_in_app);
-  EXPECT_LT(control_tablet_standard_in_app, control_tablet_dense_home);
-  EXPECT_EQ(control_tablet_dense_home, control_clamshell_home);
-  EXPECT_EQ(control_clamshell_home, control_clamshell_in_app);
-  EXPECT_LT(control_tablet_dense_home, control_tablet_standard_home);
+  EXPECT_EQ(control_tablet_dense_in_app, control_tablet_dense_home);
+  EXPECT_EQ(control_tablet_dense_home, control_clamshell_in_app);
+  EXPECT_EQ(control_clamshell_in_app, control_clamshell_home);
+  EXPECT_LT(control_clamshell_home, control_tablet_standard_in_app);
+  EXPECT_EQ(control_tablet_standard_in_app, control_tablet_standard_home);
 }
 
 // Make sure that we consider ourselves inside an app when appropriate.

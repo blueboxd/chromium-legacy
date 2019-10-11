@@ -35,8 +35,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioInputImpl
   AudioInputImpl(mojom::Client* client,
                  PowerManagerClient* power_manager_client,
                  CrasAudioHandler* cras_audio_handler,
-                 const std::string& device_id,
-                 const std::string& hotword_device_id);
+                 const std::string& device_id);
   ~AudioInputImpl() override;
 
   class HotwordStateManager {
@@ -92,10 +91,12 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioInputImpl
 
   void RecreateAudioInputStream(bool use_dsp);
 
-  bool IsHotwordAvailable();
+  bool IsHotwordAvailable() const;
 
   // Returns the recording state used in unittests.
   bool IsRecordingForTesting() const;
+  // Returns if the hotword device is used for recording now.
+  bool IsUsingHotwordDeviceForTesting() const;
 
  private:
   void StartRecording();
@@ -108,11 +109,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioInputImpl
 
   scoped_refptr<media::AudioCapturerSource> source_;
 
-  // Should audio input always recording actively.
-  bool default_on_ = true;
-
   // User explicitly requested to open microphone.
   bool mic_open_ = false;
+
+  // Whether hotword is currently enabled.
+  bool hotword_enabled_ = true;
 
   // Guards observers_;
   base::Lock lock_;
@@ -142,10 +143,12 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioInputImpl
 
   std::unique_ptr<HotwordStateManager> state_manager_;
 
-  // Audio input device which will be used for capture.
-  std::string device_id_;
+  // Preferred audio input device which will be used for capture.
+  std::string preferred_device_id_;
   // Hotword input device used for hardware based hotword detection.
   std::string hotword_device_id_;
+  // Device currently being used for recording.
+  std::string device_id_;
 
   chromeos::PowerManagerClient::LidState lid_state_ =
       chromeos::PowerManagerClient::LidState::NOT_PRESENT;

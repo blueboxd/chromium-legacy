@@ -2437,7 +2437,8 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   // will only be sent to the URL returned by GetURL().
   download_params->set_referrer(GetReferrerUrl());
   download_params->set_referrer_policy(net::URLRequest::NEVER_CLEAR_REFERRER);
-  download_params->set_follow_cross_origin_redirects(false);
+  download_params->set_cross_origin_redirects(
+      network::mojom::RedirectMode::kError);
 
   TransitionTo(RESUMING_INTERNAL);
   RecordDownloadCountWithSource(source == ResumptionRequestSource::USER

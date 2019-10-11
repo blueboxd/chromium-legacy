@@ -95,6 +95,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   virtual void BuildMenu() = 0;
 
   // API to build the profile menu.
+  void SetHeading(const base::string16& heading);
   void SetIdentityInfo(const gfx::ImageSkia& image,
                        const gfx::ImageSkia& badge,
                        const base::string16& title,
@@ -106,19 +107,19 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void AddShortcutFeatureButton(const gfx::ImageSkia& icon,
                                 const base::string16& text,
                                 base::RepeatingClosure action);
-  void AddAccountFeatureButton(const gfx::ImageSkia& icon,
-                               const base::string16& text,
-                               base::RepeatingClosure action);
-  void SetProfileHeading(const base::string16& heading);
+  void AddFeatureButton(const gfx::ImageSkia& icon,
+                        const base::string16& text,
+                        base::RepeatingClosure action);
+  void SetProfileManagementHeading(const base::string16& heading);
   void AddSelectableProfile(const gfx::ImageSkia& image,
                             const base::string16& name,
                             base::RepeatingClosure action);
-  void AddProfileShortcutFeatureButton(const gfx::ImageSkia& icon,
-                                       const base::string16& text,
-                                       base::RepeatingClosure action);
-  void AddProfileFeatureButton(const gfx::ImageSkia& icon,
-                               const base::string16& text,
-                               base::RepeatingClosure action);
+  void AddProfileManagementShortcutFeatureButton(const gfx::ImageSkia& icon,
+                                                 const base::string16& text,
+                                                 base::RepeatingClosure action);
+  void AddProfileManagementFeatureButton(const gfx::ImageSkia& icon,
+                                         const base::string16& text,
+                                         base::RepeatingClosure action);
   // 0 < |icon_to_image_ratio| <= 1 is the size ratio of |icon| in the returned
   // image. E.g. a value of 0.8 means that |icon| only takes up 80% of the
   // returned image, with the rest being padding around it.
@@ -227,14 +228,15 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   std::map<views::View*, base::RepeatingClosure> click_actions_;
 
   // Component containers.
+  views::View* heading_container_ = nullptr;
   views::View* identity_info_container_ = nullptr;
   views::View* sync_info_container_ = nullptr;
   views::View* shortcut_features_container_ = nullptr;
-  views::View* account_features_container_ = nullptr;
-  views::View* profile_heading_container_ = nullptr;
+  views::View* features_container_ = nullptr;
+  views::View* profile_mgmt_heading_container_ = nullptr;
   views::View* selectable_profiles_container_ = nullptr;
-  views::View* profile_shortcut_features_container_ = nullptr;
-  views::View* profile_features_container_ = nullptr;
+  views::View* profile_mgmt_shortcut_features_container_ = nullptr;
+  views::View* profile_mgmt_features_container_ = nullptr;
 
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
 

@@ -8,8 +8,10 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.net.Uri;
+import android.text.Editable;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.text.format.DateUtils;
 import android.view.ActionMode;
 
@@ -41,7 +43,8 @@ import java.util.List;
 /**
  * Handles collecting and pushing state information to the UrlBar model.
  */
-class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate, UrlBar.UrlTextChangeListener {
+class UrlBarMediator
+        implements UrlBar.UrlBarTextContextMenuDelegate, UrlBar.UrlTextChangeListener, TextWatcher {
     private final PropertyModel mModel;
 
     private Callback<Boolean> mOnFocusChangeCallback;
@@ -58,6 +61,7 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate, UrlBar.Url
     private static final int NUM_OF_BUCKETS = 100;
 
     private final List<UrlTextChangeListener> mUrlTextChangeListeners = new ArrayList<>();
+    private final List<TextWatcher> mTextChangedListeners = new ArrayList<>();
 
     public UrlBarMediator(PropertyModel model) {
         mModel = model;
@@ -66,6 +70,7 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate, UrlBar.Url
         mModel.set(UrlBarProperties.SHOW_CURSOR, false);
         mModel.set(UrlBarProperties.TEXT_CONTEXT_MENU_DELEGATE, this);
         mModel.set(UrlBarProperties.URL_TEXT_CHANGE_LISTENER, this);
+        mModel.set(UrlBarProperties.TEXT_CHANGED_LISTENER, this);
         setUseDarkTextColors(true);
     }
 
@@ -79,6 +84,11 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate, UrlBar.Url
     /** @see UrlBarMediator#setDelegate(UrlBarDelegate) */
     public void addUrlTextChangeListener(UrlTextChangeListener listener) {
         mUrlTextChangeListeners.add(listener);
+    }
+
+    /** @see android.widget.TextView#addTextChangedListener */
+    public void addTextChangedListener(TextWatcher textWatcher) {
+        mTextChangedListeners.add(textWatcher);
     }
 
     /**
@@ -355,11 +365,36 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate, UrlBar.Url
         return url.substring(0, pathIndex);
     }
 
+    /** @see UrlTextChangeListener */
     @Override
     public void onTextChanged(String textWithoutAutocomplete, String textWithAutocomplete) {
         for (int i = 0; i < mUrlTextChangeListeners.size(); i++) {
             mUrlTextChangeListeners.get(i).onTextChanged(
                     textWithoutAutocomplete, textWithAutocomplete);
+        }
+    }
+
+    /** @see TextWatcher */
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        for (int i = 0; i < mTextChangedListeners.size(); i++) {
+            mTextChangedListeners.get(i).beforeTextChanged(s, start, count, after);
+        }
+    }
+
+    /** @see TextWatcher */
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+        for (int i = 0; i < mTextChangedListeners.size(); i++) {
+            mTextChangedListeners.get(i).onTextChanged(s, start, before, count);
+        }
+    }
+
+    /** @see TextWatcher */
+    @Override
+    public void afterTextChanged(Editable editable) {
+        for (int i = 0; i < mTextChangedListeners.size(); i++) {
+            mTextChangedListeners.get(i).afterTextChanged(editable);
         }
     }
 

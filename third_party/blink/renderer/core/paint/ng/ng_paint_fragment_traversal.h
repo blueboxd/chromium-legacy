@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGPaintFragmentTraversal_h
-#define NGPaintFragmentTraversal_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_PAINT_FRAGMENT_TRAVERSAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_PAINT_FRAGMENT_TRAVERSAL_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
@@ -203,4 +203,4 @@ class CORE_EXPORT NGPaintFragmentTraversal {
 
 }  // namespace blink
 
-#endif  // NGPaintFragmentTraversal_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_PAINT_FRAGMENT_TRAVERSAL_H_

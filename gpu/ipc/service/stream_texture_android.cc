@@ -261,6 +261,10 @@ unsigned StreamTexture::GetInternalFormat() {
   return GL_RGBA;
 }
 
+unsigned StreamTexture::GetDataType() {
+  return GL_UNSIGNED_BYTE;
+}
+
 bool StreamTexture::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(StreamTexture, message)

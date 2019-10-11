@@ -21,6 +21,7 @@ class TouchToFillViewImpl : public TouchToFillView {
   // TouchToFillView:
   void Show(
       base::StringPiece16 formatted_url,
+      IsOriginSecure is_origin_secure,
       base::span<const password_manager::CredentialPair> credentials) override;
   void OnCredentialSelected(
       const password_manager::CredentialPair& credential) override;

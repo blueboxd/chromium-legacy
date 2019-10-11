@@ -62,7 +62,7 @@ class OfflinePagePreviewsPageLoadMetricsObserverTest
   void RunTest(bool is_offline_preview) {
     is_offline_preview_ = is_offline_preview;
     NavigateAndCommit(GURL(kDefaultTestUrl1));
-    SimulateTimingUpdate(timing_);
+    tester()->SimulateTimingUpdate(timing_);
 
     // Navigate again to force OnComplete, which happens when a new navigation
     // occurs.
@@ -96,10 +96,11 @@ class OfflinePagePreviewsPageLoadMetricsObserverTest
 
   void ValidateHistogramsFor(const std::string& histogram,
                              const base::HistogramBase::Sample sample) {
-    histogram_tester().ExpectTotalCount(histogram, is_offline_preview_ ? 1 : 0);
+    tester()->histogram_tester().ExpectTotalCount(histogram,
+                                                  is_offline_preview_ ? 1 : 0);
     if (!is_offline_preview_)
       return;
-    histogram_tester().ExpectUniqueSample(histogram, sample, 1);
+    tester()->histogram_tester().ExpectUniqueSample(histogram, sample, 1);
   }
 
  protected:

@@ -215,6 +215,8 @@ ScriptPromise OffscreenCanvas::CreateImageBitmap(
     EventTarget&,
     base::Optional<IntRect> crop_rect,
     const ImageBitmapOptions* options) {
+  if (context_)
+    context_->FinalizeFrame();
   return ImageBitmapSource::FulfillImageBitmap(
       script_state,
       IsPaintable() ? ImageBitmap::Create(this, crop_rect, options) : nullptr);

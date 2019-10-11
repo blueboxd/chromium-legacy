@@ -4570,8 +4570,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE" desc="The title of the account chooser dialog.">
         Sign in as
       </message>
-      <message name="IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE" desc="The title text used in the passwords bubble when the user has saved a password.">
+      <message name="IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE" desc="The title text used in the passwords bubble after the user has saved a password.">
         Password saved
+      </message>
+      <message name="IDS_PASSWORD_MANAGER_SYNC_PROMO_TITLE" desc="The title text used in the sync promo bubble when the user has saved a password.">
+        Password saved on this device
       </message>
       <message name="IDS_PASSWORD_GENERATION_SUGGESTION" desc="Text shown next to a generated password describing it as a suggestion.">
         Use suggested password
@@ -4620,7 +4623,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <message name="IDS_PASSWORD_MANAGER_SIGNIN_PROMO_LABEL" desc="Promotion text for Chrome sign-in appearing in the password bubble after a password is saved.">
-        To get your passwords on all your devices, sign in to Chrome.
+        To save passwords to your Google Account, turn on sync.
       </message>
       <!-- Password manager onboarding strings -->
       <message name="IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_A" desc="The title shown in the password manager onboarding dialog.">
@@ -4641,10 +4644,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Begin of Sync Promo strings for Desktop Identity Consistency. -->
       <message name="IDS_PASSWORD_MANAGER_DICE_PROMO_SIGNIN_MESSAGE" desc="Text of the sync promo displayed at the bottom of the save password bubble asking the user to sign in and enable sync.">
-        To get all your passwords on all your devices, sign in and turn on sync.
+        To save passwords to your Google Account, sign in and turn on sync.
       </message>
       <message name="IDS_PASSWORD_MANAGER_DICE_PROMO_SYNC_MESSAGE" desc="Text of the sync promo displayed at the bottom of the save password bubble asking the user to enable sync.">
-        To get all your passwords on all your devices, turn on sync.
+        To save passwords to your Google Account, turn on sync.
       </message>
       <!-- End of Sync Promo strings for Desktop Identity Consistency. -->
 
@@ -8251,11 +8254,20 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_DUPLICATE_TAB_MAC" desc="The Mac menu item for duplicating the selected tab(s).">
           Duplicate Tab
         </message>
+        <message name="IDS_DUPLICATE_TARGET_TAB_MAC" desc="The Mac menu item for duplicating the selected tab(s).">
+          Duplicate Selected Tab
+        </message>
         <message name="IDS_MUTE_SITE_MAC" desc="The Mac menu item for muting the selected tab(s).">
           Mute Site
         </message>
         <message name="IDS_PIN_TAB_MAC" desc="The Mac menu item for pinning the selected tab(s).">
           Pin Tab
+        </message>
+        <message name="IDS_MUTE_TARGET_SITE_MAC" desc="The Mac menu item for muting the selected tab(s).">
+          Mute Selected Site
+        </message>
+        <message name="IDS_PIN_TARGET_TAB_MAC" desc="The Mac menu item for pinning the selected tab(s).">
+          Pin Selected Tab
         </message>
         <!-- Help menu -->
         <message name="IDS_FEEDBACK_MAC" desc="The Mac menu item to report a bug in the Help menu.">

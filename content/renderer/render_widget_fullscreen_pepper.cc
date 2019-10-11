@@ -285,7 +285,8 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
       routing_id, compositor_deps, page_properties, plugin,
       std::move(widget_receiver));
   widget->InitForPepperFullscreen(
-      std::move(show_callback), new PepperWidget(widget, local_main_frame_url));
+      std::move(show_callback), new PepperWidget(widget, local_main_frame_url),
+      page_properties->GetScreenInfo());
   return widget;
 }
 

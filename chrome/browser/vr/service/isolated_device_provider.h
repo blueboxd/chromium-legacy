@@ -42,7 +42,7 @@ class IsolatedVRDeviceProvider
       device::mojom::XRRuntimePtr device,
       mojo::PendingRemote<device::mojom::IsolatedXRGamepadProviderFactory>
           gamepad_factory,
-      device::mojom::XRCompositorHostPtr compositor_host,
+      mojo::PendingRemote<device::mojom::XRCompositorHost> compositor_host,
       device::mojom::XRDeviceId device_id) override;
   void OnDeviceRemoved(device::mojom::XRDeviceId id) override;
   void OnDevicesEnumerated() override;

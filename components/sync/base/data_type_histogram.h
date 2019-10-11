@@ -89,17 +89,8 @@ void SyncRecordModelTypeCountHistogram(syncer::ModelType model_type,
       case ::syncer::EXTENSION_SETTINGS:                       \
         PER_DATA_TYPE_MACRO("ExtensionSettings");              \
         break;                                                 \
-      case ::syncer::DEPRECATED_APP_NOTIFICATIONS:             \
-        PER_DATA_TYPE_MACRO("AppNotifications");               \
-        break;                                                 \
       case ::syncer::HISTORY_DELETE_DIRECTIVES:                \
         PER_DATA_TYPE_MACRO("HistoryDeleteDirectives");        \
-        break;                                                 \
-      case ::syncer::DEPRECATED_SYNCED_NOTIFICATIONS:          \
-        PER_DATA_TYPE_MACRO("SyncedNotifications");            \
-        break;                                                 \
-      case ::syncer::DEPRECATED_SYNCED_NOTIFICATION_APP_INFO:  \
-        PER_DATA_TYPE_MACRO("SyncedNotificationAppInfo");      \
         break;                                                 \
       case ::syncer::DICTIONARY:                               \
         PER_DATA_TYPE_MACRO("Dictionary");                     \

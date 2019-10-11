@@ -21,6 +21,7 @@
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/syncable/directory_cryptographer.h"
+#include "content/public/test/test_launcher.h"
 
 namespace {
 
@@ -249,12 +250,24 @@ class SingleClientPasswordsSyncUssMigratorTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientPasswordsSyncUssMigratorTest);
 };
 
-// Creates and syncs two passwords before USS being enabled.
-IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncUssMigratorTest,
-                       PRE_ExerciseUssMigrator) {
-  base::test::ScopedFeatureList override_features;
-  override_features.InitAndDisableFeature(switches::kSyncUSSPasswords);
+class SingleClientPasswordsSyncUssMigratorTestWithUssTransition
+    : public SingleClientPasswordsSyncUssMigratorTest {
+ public:
+  SingleClientPasswordsSyncUssMigratorTestWithUssTransition() {
+    if (content::IsPreTest())
+      feature_list_.InitAndDisableFeature(switches::kSyncUSSPasswords);
+    else
+      feature_list_.InitAndEnableFeature(switches::kSyncUSSPasswords);
+  }
 
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Creates and syncs two passwords before USS being enabled.
+IN_PROC_BROWSER_TEST_F(
+    SingleClientPasswordsSyncUssMigratorTestWithUssTransition,
+    PRE_ExerciseUssMigrator) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   AddLogin(GetPasswordStore(0), CreateTestPasswordForm(0));
   AddLogin(GetPasswordStore(0), CreateTestPasswordForm(1));
@@ -262,20 +275,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncUssMigratorTest,
   ASSERT_EQ(2, GetPasswordCount(0));
 }
 
-// TODO(https://crbug.com/952074): re-enable once flakiness is addressed.
-#if defined(THREAD_SANITIZER)
-#define MAYBE_ExerciseUssMigrator DISABLED_ExerciseUssMigrator
-#else
-#define MAYBE_ExerciseUssMigrator ExerciseUssMigrator
-#endif
-
 // Now that local passwords, the local sync directory and the sever are
 // populated with two passwords, USS is enabled for passwords.
-IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncUssMigratorTest,
-                       MAYBE_ExerciseUssMigrator) {
-  base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(switches::kSyncUSSPasswords);
-
+IN_PROC_BROWSER_TEST_F(
+    SingleClientPasswordsSyncUssMigratorTestWithUssTransition,
+    ExerciseUssMigrator) {
   base::HistogramTester histogram_tester;
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   ASSERT_EQ(2, GetPasswordCount(0));

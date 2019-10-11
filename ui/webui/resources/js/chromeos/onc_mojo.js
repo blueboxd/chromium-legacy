@@ -663,7 +663,7 @@ class OncMojo {
    * @param {!chromeos.networkConfig.mojom.NetworkType} type
    * @param {string} guid
    * @param {string} name
-   * @return {chromeos.networkConfig.mojom.ManagedProperties}
+   * @return {!chromeos.networkConfig.mojom.ManagedProperties}
    */
   static getDefaultManagedProperties(type, guid, name) {
     const mojom = chromeos.networkConfig.mojom;
@@ -726,6 +726,34 @@ class OncMojo {
         break;
     }
     return result;
+  }
+
+  /**
+   * Returns a ConfigProperties object with a default networkType struct
+   * based on |type|.
+   * @param {!chromeos.networkConfig.mojom.NetworkType} type
+   * @return {!chromeos.networkConfig.mojom.ConfigProperties}
+   */
+  static getDefaultConfigProperties(type) {
+    const mojom = chromeos.networkConfig.mojom;
+    switch (type) {
+      case mojom.NetworkType.kCellular:
+        return {typeConfig: {cellular: {}}};
+        break;
+      case mojom.NetworkType.kEthernet:
+        return {typeConfig: {ethernet: {authentication: 'None'}}};
+        break;
+      case mojom.NetworkType.kVPN:
+        return {typeConfig: {vpn: {type: mojom.VpnType.kOpenVPN}}};
+        break;
+      case mojom.NetworkType.kWiFi:
+        return {
+          typeConfig: {wifi: {ssid: '', security: mojom.SecurityType.kNone}}
+        };
+        break;
+    }
+    assertNotReached('Unexpected type: ' + type.toString());
+    return {typeConfig: {}};
   }
 
   /**
@@ -931,7 +959,7 @@ class OncMojo {
     }
 
     // Set ONC IP config properties to existing values + new values.
-    const config = {type: managedProperties.type};
+    const config = OncMojo.getDefaultConfigProperties(managedProperties.type);
     config.ipAddressConfigType = ipConfigType;
     config.nameServersConfigType = nsConfigType;
     if (ipConfigType == 'Static') {

@@ -25,6 +25,7 @@
 #include "media/base/channel_layout.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
@@ -341,8 +342,9 @@ class MediaInternalsAudioFocusTest : public RenderViewHostTestHarness,
                             base::Unretained(this));
     run_loop_ = std::make_unique<base::RunLoop>();
 
-    content::GetSystemConnector()->BindInterface(
-        media_session::mojom::kServiceName, &audio_focus_ptr_);
+    content::GetSystemConnector()->Connect(
+        media_session::mojom::kServiceName,
+        audio_focus_.BindNewPipeAndPassReceiver());
 
     content::MediaInternals::GetInstance()->AddUpdateCallback(update_cb_);
   }
@@ -404,14 +406,14 @@ class MediaInternalsAudioFocusTest : public RenderViewHostTestHarness,
   std::string GetRequestIdForTopFocusRequest() {
     std::string result;
 
-    audio_focus_ptr_->GetFocusRequests(base::BindOnce(
+    audio_focus_->GetFocusRequests(base::BindOnce(
         [](std::string* out, std::vector<AudioFocusRequestStatePtr> requests) {
           DCHECK(!requests.empty());
           *out = requests.back()->request_id.value().ToString();
         },
         &result));
 
-    audio_focus_ptr_.FlushForTesting();
+    audio_focus_.FlushForTesting();
     return result;
   }
 
@@ -424,7 +426,7 @@ class MediaInternalsAudioFocusTest : public RenderViewHostTestHarness,
   base::Lock lock_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
+  mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus_;
 };
 
 TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {

@@ -665,6 +665,16 @@ template("test_runner_script") {
         "--suite",
         invoker.test_suite,
       ]
+      if (use_clang_coverage) {
+        # Set a default coverage output directory (can be overridden by user
+        # passing the same flag).
+        _rebased_coverage_dir =
+            rebase_path("$root_out_dir/coverage", root_build_dir)
+        executable_args += [
+          "--coverage-dir",
+          "@WrappedPath(${_rebased_coverage_dir})",
+        ]
+      }
     } else if (_test_type == "instrumentation") {
       _test_apk = "@WrappedPath(@FileArg($_rebased_apk_build_config:deps_info:apk_path))"
       if (_incremental_install) {

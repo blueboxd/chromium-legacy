@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -188,21 +189,23 @@ ChromeBlobStorageContext::URLLoaderFactoryForToken(
     BrowserContext* browser_context,
     mojo::PendingRemote<blink::mojom::BlobURLToken> token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  network::mojom::URLLoaderFactoryPtr blob_url_loader_factory_ptr;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      blob_url_loader_factory_remote;
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           [](scoped_refptr<ChromeBlobStorageContext> context,
-             network::mojom::URLLoaderFactoryRequest request,
+             mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
              mojo::PendingRemote<blink::mojom::BlobURLToken> token) {
             storage::BlobURLLoaderFactory::Create(
                 std::move(token), context->context()->AsWeakPtr(),
-                std::move(request));
+                std::move(receiver));
           },
           base::WrapRefCounted(GetFor(browser_context)),
-          MakeRequest(&blob_url_loader_factory_ptr), std::move(token)));
+          blob_url_loader_factory_remote.InitWithNewPipeAndPassReceiver(),
+          std::move(token)));
   return base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
-      std::move(blob_url_loader_factory_ptr));
+      std::move(blob_url_loader_factory_remote));
 }
 
 // static
@@ -211,21 +214,24 @@ ChromeBlobStorageContext::URLLoaderFactoryForUrl(
     BrowserContext* browser_context,
     const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  network::mojom::URLLoaderFactoryPtr blob_url_loader_factory_ptr;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      blob_url_loader_factory_remote;
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           [](scoped_refptr<ChromeBlobStorageContext> context,
-             network::mojom::URLLoaderFactoryRequest request, const GURL& url) {
+             mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+             const GURL& url) {
             auto blob_remote = context->context()->GetBlobFromPublicURL(url);
             storage::BlobURLLoaderFactory::Create(
                 std::move(blob_remote), url, context->context()->AsWeakPtr(),
-                std::move(request));
+                std::move(receiver));
           },
           base::WrapRefCounted(GetFor(browser_context)),
-          MakeRequest(&blob_url_loader_factory_ptr), url));
+          blob_url_loader_factory_remote.InitWithNewPipeAndPassReceiver(),
+          url));
   return base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
-      std::move(blob_url_loader_factory_ptr));
+      std::move(blob_url_loader_factory_remote));
 }
 
 // static

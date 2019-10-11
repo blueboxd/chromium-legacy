@@ -29,21 +29,8 @@ CommandLineTopHostProvider::CommandLineTopHostProvider(
 
 CommandLineTopHostProvider::~CommandLineTopHostProvider() = default;
 
-std::vector<std::string> CommandLineTopHostProvider::GetTopHosts(
-    size_t max_sites) {
-  if (top_hosts_.size() <= max_sites) {
-    return top_hosts_;
-  }
-
-  std::vector<std::string> top_hosts;
-  top_hosts.reserve(max_sites);
-  for (const auto& top_host : top_hosts_) {
-    if (top_hosts.size() >= max_sites)
-      return top_hosts;
-
-    top_hosts.push_back(top_host);
-  }
-  return top_hosts;
+std::vector<std::string> CommandLineTopHostProvider::GetTopHosts() {
+  return top_hosts_;
 }
 
 }  // namespace optimization_guide

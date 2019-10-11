@@ -79,7 +79,7 @@ void MediaControlDownloadButtonElement::DefaultEventHandler(Event& event) {
     request.SetRequestContext(mojom::RequestContextType::DOWNLOAD);
     request.SetRequestorOrigin(SecurityOrigin::Create(GetDocument().Url()));
     GetDocument().GetFrame()->Client()->DownloadURL(
-        request, DownloadCrossOriginRedirects::kFollow);
+        request, network::mojom::RedirectMode::kError);
   }
   MediaControlInputElement::DefaultEventHandler(event);
 }

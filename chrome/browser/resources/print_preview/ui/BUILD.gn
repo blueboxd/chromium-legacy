@@ -232,6 +232,7 @@ js_library("scaling_settings") {
   deps = [
     ":number_settings_section",
     ":settings_behavior",
+    "../data:scaling",
   ]
 }
 
@@ -317,6 +318,7 @@ js_library("preview_area") {
     "../../pdf:pdf_scripting_api",
     "../data:coordinate2d",
     "../data:destination",
+    "../data:destination_match",
     "../data:margins",
     "../data:model",
     "../data:printable_area",

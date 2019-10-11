@@ -164,15 +164,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // is used to reuse the existing ResourceSchedulerClient for cloned
   // URLLoaderFactory.
   void CreateURLLoaderFactory(
-      mojom::URLLoaderFactoryRequest request,
+      mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
       mojom::URLLoaderFactoryParamsPtr params,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client);
 
   // mojom::NetworkContext implementation:
   void SetClient(
       mojo::PendingRemote<mojom::NetworkContextClient> client) override;
-  void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest request,
-                              mojom::URLLoaderFactoryParamsPtr params) override;
+  void CreateURLLoaderFactory(
+      mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
+      mojom::URLLoaderFactoryParamsPtr params) override;
   void ResetURLLoaderFactories() override;
   void GetCookieManager(
       mojo::PendingReceiver<mojom::CookieManager> receiver) override;
@@ -360,7 +361,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       LookupBasicAuthCredentialsCallback callback) override;
 
   void GetOriginPolicyManager(
-      mojom::OriginPolicyManagerRequest request) override;
+      mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) override;
 
   // Destroys |request| when a proxy lookup completes.
   void OnProxyLookupComplete(ProxyLookupRequest* proxy_lookup_request);

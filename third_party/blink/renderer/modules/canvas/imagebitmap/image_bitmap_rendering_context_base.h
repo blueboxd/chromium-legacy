@@ -43,7 +43,7 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
   void SetIsHidden(bool) override {}
   bool isContextLost() const override { return false; }
   void SetImage(ImageBitmap*);
-  // The acceleration hing here is ignored as GetImage(AccelerationHint) only
+  // The acceleration hint here is ignored as GetImage(AccelerationHint) only
   // calls to image_layer_bridge->GetImage(), without giving it a hint
   scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) final;
   // This function resets the internal image resource to a image of the same

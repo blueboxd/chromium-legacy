@@ -28,7 +28,6 @@ import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInf
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -148,13 +147,7 @@ public class VariationsSeedLoader {
 
             // Note the date field of whatever seed was loaded, if any.
             if (seed != null) {
-                try {
-                    mCurrentSeedDate = seed.parseDate().getTime();
-                } catch (ParseException e) {
-                    // Should never happen, as date was already verified by readSeedFile.
-                    assert false;
-                    return null;
-                }
+                mCurrentSeedDate = seed.date;
             }
 
             return seed;

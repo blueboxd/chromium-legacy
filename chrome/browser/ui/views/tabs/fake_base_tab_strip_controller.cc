@@ -179,6 +179,9 @@ void FakeBaseTabStripController::OnStartedDraggingTabs() {}
 
 void FakeBaseTabStripController::OnStoppedDraggingTabs() {}
 
+void FakeBaseTabStripController::OnKeyboardFocusedTabChanged(
+    base::Optional<int> index) {}
+
 bool FakeBaseTabStripController::IsFrameCondensed() const {
   return false;
 }

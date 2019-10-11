@@ -39,10 +39,6 @@ void NSSCertDatabaseChromeOS::SetSystemSlot(
   profile_filter_.Init(GetPublicSlot(), GetPrivateSlot(), GetSystemSlot());
 }
 
-ScopedCERTCertificateList NSSCertDatabaseChromeOS::ListCertsSync() {
-  return ListCertsImpl(profile_filter_);
-}
-
 void NSSCertDatabaseChromeOS::ListCerts(
     NSSCertDatabase::ListCertsCallback callback) {
   base::PostTaskAndReplyWithResult(

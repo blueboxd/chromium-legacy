@@ -553,7 +553,8 @@ void DownloadManagerService::RetryDownloadInternal(
       item->GetURL(), traffic_annotation);
 
   // Retry allows redirect.
-  download_url_params->set_follow_cross_origin_redirects(true);
+  download_url_params->set_cross_origin_redirects(
+      network::mojom::RedirectMode::kFollow);
 
   // Retry is triggered through user gesture, and don't have renderer
   // associated, content initiated has to be false to avoid download being

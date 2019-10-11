@@ -56,6 +56,9 @@ class DEVICE_VR_EXPORT VROrientationSession
   mojo::Receiver<mojom::XRSessionController> session_controller_receiver_;
   device::VROrientationDevice* device_;
   bool restrict_frame_data_ = true;
+
+  // This must be the last member
+  base::WeakPtrFactory<VROrientationSession> weak_ptr_factory_{this};
 };
 
 }  // namespace device

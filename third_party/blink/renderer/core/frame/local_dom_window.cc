@@ -454,14 +454,12 @@ void LocalDOMWindow::SendOrientationChangeEvent() {
 int LocalDOMWindow::orientation() const {
   DCHECK(RuntimeEnabledFeatures::OrientationEventEnabled());
 
-  if (!GetFrame() || !GetFrame()->GetPage())
+  LocalFrame* frame = GetFrame();
+  if (!frame)
     return 0;
 
-  int orientation = GetFrame()
-                        ->GetPage()
-                        ->GetChromeClient()
-                        .GetScreenInfo()
-                        .orientation_angle;
+  ChromeClient& chrome_client = frame->GetChromeClient();
+  int orientation = chrome_client.GetScreenInfo(*frame).orientation_angle;
   // For backward compatibility, we want to return a value in the range of
   // [-90; 180] instead of [0; 360[ because window.orientation used to behave
   // like that in WebKit (this is a WebKit proprietary API).
@@ -796,7 +794,7 @@ int LocalDOMWindow::outerHeight() const {
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     return static_cast<int>(
         lroundf(chrome_client.RootWindowRect(*frame).Height() *
-                chrome_client.GetScreenInfo().device_scale_factor));
+                chrome_client.GetScreenInfo(*frame).device_scale_factor));
   }
   return chrome_client.RootWindowRect(*frame).Height();
 }
@@ -814,7 +812,7 @@ int LocalDOMWindow::outerWidth() const {
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     return static_cast<int>(
         lroundf(chrome_client.RootWindowRect(*frame).Width() *
-                chrome_client.GetScreenInfo().device_scale_factor));
+                chrome_client.GetScreenInfo(*frame).device_scale_factor));
   }
   return chrome_client.RootWindowRect(*frame).Width();
 }
@@ -874,7 +872,7 @@ int LocalDOMWindow::screenX() const {
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     return static_cast<int>(
         lroundf(chrome_client.RootWindowRect(*frame).X() *
-                chrome_client.GetScreenInfo().device_scale_factor));
+                chrome_client.GetScreenInfo(*frame).device_scale_factor));
   }
   return chrome_client.RootWindowRect(*frame).X();
 }
@@ -892,7 +890,7 @@ int LocalDOMWindow::screenY() const {
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     return static_cast<int>(
         lroundf(chrome_client.RootWindowRect(*frame).Y() *
-                chrome_client.GetScreenInfo().device_scale_factor));
+                chrome_client.GetScreenInfo(*frame).device_scale_factor));
   }
   return chrome_client.RootWindowRect(*frame).Y();
 }

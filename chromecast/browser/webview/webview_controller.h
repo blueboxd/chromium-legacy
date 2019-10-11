@@ -11,6 +11,7 @@
 #include "base/supports_user_data.h"
 #include "chromecast/browser/cast_web_contents.h"
 #include "chromecast/browser/webview/proto/webview.pb.h"
+#include "ui/events/gestures/gesture_recognizer_impl.h"
 #include "url/gurl.h"
 
 namespace aura {
@@ -106,6 +107,8 @@ class WebviewController : public CastWebContents::Delegate,
   bool stopped_ = false;
 
   bool has_navigation_delegate_ = false;
+
+  ui::GestureRecognizerImpl gesture_recognizer_;
 
   // The navigation throttle for the current navigation event, if any.
   // Is set only:

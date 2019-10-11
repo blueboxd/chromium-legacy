@@ -86,6 +86,10 @@ unsigned CodecImage::GetInternalFormat() {
   return GL_RGBA;
 }
 
+unsigned CodecImage::GetDataType() {
+  return GL_UNSIGNED_BYTE;
+}
+
 CodecImage::BindOrCopy CodecImage::ShouldBindOrCopy() {
   // If we're using an overlay, then pretend it's bound.  That way, we'll get
   // calls to ScheduleOverlayPlane.  Otherwise, CopyTexImage needs to be called.

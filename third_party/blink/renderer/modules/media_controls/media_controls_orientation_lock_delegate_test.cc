@@ -131,7 +131,7 @@ class MockChromeClientForOrientationLockDelegate final
         WTF::Bind(DidExitFullscreen, WrapPersistent(frame.GetDocument())));
   }
 
-  MOCK_CONST_METHOD0(GetScreenInfo, WebScreenInfo());
+  MOCK_CONST_METHOD1(GetScreenInfo, WebScreenInfo(LocalFrame&));
 
   MockScreenOrientation& ScreenOrientationClient() {
     return mock_screen_orientation_;
@@ -373,7 +373,7 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
                     screen_info.rect, screen_info.orientation_angle));
 
     testing::Mock::VerifyAndClearExpectations(&ChromeClient());
-    EXPECT_CALL(ChromeClient(), GetScreenInfo())
+    EXPECT_CALL(ChromeClient(), GetScreenInfo(_))
         .Times(AtLeast(1))
         .WillRepeatedly(Return(screen_info));
 
@@ -589,31 +589,31 @@ TEST_F(MediaControlsOrientationLockDelegateTest, ComputeOrientationLock) {
   // 100x100 has more subtilities, it depends on the current screen orientation.
   WebScreenInfo screen_info;
   screen_info.orientation_type = kWebScreenOrientationUndefined;
-  EXPECT_CALL(ChromeClient(), GetScreenInfo())
+  EXPECT_CALL(ChromeClient(), GetScreenInfo(_))
       .Times(1)
       .WillOnce(Return(screen_info));
   EXPECT_EQ(kWebScreenOrientationLockLandscape, ComputeOrientationLock());
 
   screen_info.orientation_type = kWebScreenOrientationPortraitPrimary;
-  EXPECT_CALL(ChromeClient(), GetScreenInfo())
+  EXPECT_CALL(ChromeClient(), GetScreenInfo(_))
       .Times(1)
       .WillOnce(Return(screen_info));
   EXPECT_EQ(kWebScreenOrientationLockPortrait, ComputeOrientationLock());
 
   screen_info.orientation_type = kWebScreenOrientationPortraitPrimary;
-  EXPECT_CALL(ChromeClient(), GetScreenInfo())
+  EXPECT_CALL(ChromeClient(), GetScreenInfo(_))
       .Times(1)
       .WillOnce(Return(screen_info));
   EXPECT_EQ(kWebScreenOrientationLockPortrait, ComputeOrientationLock());
 
   screen_info.orientation_type = kWebScreenOrientationLandscapePrimary;
-  EXPECT_CALL(ChromeClient(), GetScreenInfo())
+  EXPECT_CALL(ChromeClient(), GetScreenInfo(_))
       .Times(1)
       .WillOnce(Return(screen_info));
   EXPECT_EQ(kWebScreenOrientationLockLandscape, ComputeOrientationLock());
 
   screen_info.orientation_type = kWebScreenOrientationLandscapeSecondary;
-  EXPECT_CALL(ChromeClient(), GetScreenInfo())
+  EXPECT_CALL(ChromeClient(), GetScreenInfo(_))
       .Times(1)
       .WillOnce(Return(screen_info));
   EXPECT_EQ(kWebScreenOrientationLockLandscape, ComputeOrientationLock());

@@ -169,6 +169,14 @@ class DnsClientImpl : public DnsClient,
     url_request_context_for_probes_ = url_request_context;
   }
 
+  void CancelProbesForContext(URLRequestContext* url_request_context) override {
+    if (url_request_context_for_probes_ != url_request_context || !factory_)
+      return;
+
+    factory_->CancelDohProbes();
+    url_request_context_for_probes_ = nullptr;
+  }
+
   DnsTransactionFactory* GetTransactionFactory() override {
     return session_.get() ? factory_.get() : nullptr;
   }
@@ -267,6 +275,9 @@ class DnsClientImpl : public DnsClient,
   }
 
   void StartDohProbes(bool network_change) {
+    if (!url_request_context_for_probes_)
+      return;
+
     if (probes_allowed_) {
       factory_->StartDohProbes(url_request_context_for_probes_, network_change);
     } else {

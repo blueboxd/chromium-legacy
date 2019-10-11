@@ -87,6 +87,10 @@ enum class PreviewsEligibilityReason {
   NOT_ALLOWED_BY_OPTIMIZATION_GUIDE = 19,
   // The preview was not performed due to a coinflip experiment holdback.
   COINFLIP_HOLDBACK = 20,
+  // A redirect loop was detected.
+  REDIRECT_LOOP_DETECTED = 21,
+  // URL matched the deny list.
+  DENY_LIST_MATCHED = 22,
   LAST,
 };
 

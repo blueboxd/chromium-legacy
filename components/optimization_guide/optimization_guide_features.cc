@@ -49,13 +49,17 @@ const base::Feature kOptimizationHintsFetching{
 const base::Feature kOptimizationGuideKeyedService{
     "OptimizationGuideKeyedService", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the prediction of optimization targets.
+const base::Feature kOptimizationTargetPrediction{
+    "OptimizationTargetPrediction", base::FEATURE_DISABLED_BY_DEFAULT};
+
 size_t MaxHintsFetcherTopHostBlacklistSize() {
   // The blacklist will be limited to the most engaged hosts and will hold twice
   // (2*N) as many hosts that the HintsFetcher request hints for. The extra N
   // hosts on the blacklist are meant to cover the case that the engagement
   // scores on some of the top N host engagement scores decay and they fall out
   // of the top N.
-  return GetFieldTrialParamByFeatureAsInt(features::kOptimizationHintsFetching,
+  return GetFieldTrialParamByFeatureAsInt(kOptimizationHintsFetching,
                                           "top_host_blacklist_size_multiplier",
                                           2) *
          MaxHostsForOptimizationGuideServiceHintsFetch();
@@ -63,13 +67,13 @@ size_t MaxHintsFetcherTopHostBlacklistSize() {
 
 size_t MaxHostsForOptimizationGuideServiceHintsFetch() {
   return GetFieldTrialParamByFeatureAsInt(
-      features::kOptimizationHintsFetching,
+      kOptimizationHintsFetching,
       "max_hosts_for_optimization_guide_service_hints_fetch", 30);
 }
 
 size_t MaxHostsForRecordingSuccessfullyCovered() {
   return GetFieldTrialParamByFeatureAsInt(
-      features::kOptimizationHintsFetching,
+      kOptimizationHintsFetching,
       "max_hosts_for_recording_successfully_covered", 200);
 }
 
@@ -78,19 +82,19 @@ double MinTopHostEngagementScoreThreshold() {
   // points for a navigation from the omnibox and 1.5 points for the first
   // navigation of the day.
   return GetFieldTrialParamByFeatureAsDouble(
-      features::kOptimizationHintsFetching,
-      "min_top_host_engagement_score_threshold", 3.0);
+      kOptimizationHintsFetching, "min_top_host_engagement_score_threshold",
+      3.0);
 }
 
 base::TimeDelta StoredFetchedHintsFreshnessDuration() {
   return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
-      features::kOptimizationHintsFetching,
+      kOptimizationHintsFetching,
       "max_store_duration_for_featured_hints_in_days", 7));
 }
 
 base::TimeDelta DurationApplyLowEngagementScoreThreshold() {
   return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
-      features::kOptimizationHintsFetching,
+      kOptimizationHintsFetching,
       "duration_apply_low_engagement_score_threshold_in_days", 30));
 }
 
@@ -115,7 +119,7 @@ GURL GetOptimizationGuideServiceURL() {
   }
 
   std::string url = base::GetFieldTrialParamValueByFeature(
-      features::kOptimizationHintsFetching, "optimization_guide_service_url");
+      kOptimizationHintsFetching, "optimization_guide_service_url");
   if (url.empty() || !GURL(url).SchemeIs(url::kHttpsScheme)) {
     if (!url.empty())
       LOG(WARNING)
@@ -128,27 +132,26 @@ GURL GetOptimizationGuideServiceURL() {
 }
 
 bool IsOptimizationHintsEnabled() {
-  return base::FeatureList::IsEnabled(features::kOptimizationHints);
+  return base::FeatureList::IsEnabled(kOptimizationHints);
 }
 
 bool IsHintsFetchingEnabled() {
-  return base::FeatureList::IsEnabled(features::kOptimizationHintsFetching);
+  return base::FeatureList::IsEnabled(kOptimizationHintsFetching);
 }
 
 bool IsOptimizationGuideKeyedServiceEnabled() {
-  return base::FeatureList::IsEnabled(features::kOptimizationGuideKeyedService);
+  return base::FeatureList::IsEnabled(kOptimizationGuideKeyedService);
 }
 
 int MaxServerBloomFilterByteSize() {
-  return base::GetFieldTrialParamByFeatureAsInt(features::kOptimizationHints,
-                                                "max_bloom_filter_byte_size",
-                                                250 * 1024 /* 250KB */);
+  return base::GetFieldTrialParamByFeatureAsInt(
+      kOptimizationHints, "max_bloom_filter_byte_size", 250 * 1024 /* 250KB */);
 }
 
 base::Optional<net::EffectiveConnectionType>
 GetMaxEffectiveConnectionTypeForNavigationHintsFetch() {
   std::string param_value = base::GetFieldTrialParamValueByFeature(
-      features::kOptimizationHintsFetching,
+      kOptimizationHintsFetching,
       "max_effective_connection_type_for_navigation_hints_fetch");
 
   // Use a default value.
@@ -160,6 +163,10 @@ GetMaxEffectiveConnectionTypeForNavigationHintsFetch() {
 
 base::TimeDelta GetHintsFetchRefreshDuration() {
   return base::TimeDelta::FromHours(72);
+}
+
+bool IsOptimizationTargetPredictionEnabled() {
+  return base::FeatureList::IsEnabled(kOptimizationTargetPrediction);
 }
 
 }  // namespace features

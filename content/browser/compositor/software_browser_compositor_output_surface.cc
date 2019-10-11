@@ -73,9 +73,9 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
 
   gfx::VSyncProvider* vsync_provider = software_device()->GetVSyncProvider();
   if (vsync_provider) {
-    vsync_provider->GetVSyncParameters(
-        base::Bind(&SoftwareBrowserCompositorOutputSurface::UpdateVSyncCallback,
-                   weak_factory_.GetWeakPtr()));
+    vsync_provider->GetVSyncParameters(base::BindOnce(
+        &SoftwareBrowserCompositorOutputSurface::UpdateVSyncCallback,
+        weak_factory_.GetWeakPtr()));
   }
 
   software_device()->OnSwapBuffers(base::BindOnce(

@@ -627,10 +627,9 @@ bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
   if (patterns_.empty())
     return false;
 
-  // TODO(crbug.com/955171): Replace these with PendingReceiver and
-  // PendingRemote.
-  network::mojom::URLLoaderFactoryRequest original_request =
+  mojo::PendingReceiver<network::mojom::URLLoaderFactory> original_receiver =
       std::move(*receiver);
+  // TODO(crbug.com/955171): Replace |target_ptr_info| with PendingRemote.
   network::mojom::URLLoaderFactoryPtrInfo target_ptr_info;
   *receiver = MakeRequest(&target_ptr_info);
   mojo::PendingRemote<network::mojom::CookieManager> cookie_manager;
@@ -638,7 +637,7 @@ bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
   rph->GetStoragePartition()->GetNetworkContext()->GetCookieManager(
       cookie_manager.InitWithNewPipeAndPassReceiver());
   new DevToolsURLLoaderFactoryProxy(
-      frame_token, process_id, is_download, std::move(original_request),
+      frame_token, process_id, is_download, std::move(original_receiver),
       std::move(target_ptr_info), std::move(cookie_manager),
       weak_factory_.GetWeakPtr());
   return true;

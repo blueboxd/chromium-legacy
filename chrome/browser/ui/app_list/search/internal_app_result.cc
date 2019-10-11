@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/chromeos/release_notes/release_notes_storage.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,21 +24,6 @@
 #include "ui/gfx/image/image_skia_operations.h"
 
 namespace app_list {
-
-// TODO(crbug.com/826982): move UMA_HISTOGRAM_ENUMERATION code to
-// built_in_chromeos_apps.cc when the AppService feature is enabled by default.
-
-// static
-void InternalAppResult::RecordShowHistogram(const std::string& app_id) {
-  InternalAppName name = GetInternalAppNameByAppId(app_id);
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show", name);
-}
-
-// static
-void InternalAppResult::RecordOpenHistogram(const std::string& app_id) {
-  InternalAppName name = GetInternalAppNameByAppId(app_id);
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Open", name);
-}
 
 InternalAppResult::InternalAppResult(Profile* profile,
                                      const std::string& app_id,
@@ -76,7 +62,7 @@ InternalAppResult::InternalAppResult(Profile* profile,
     SetPositionPriority(1.0f);
   }
 
-  RecordShowHistogram(app_id);
+  apps::RecordBuiltInAppSearchResult(app_id);
 }
 
 InternalAppResult::~InternalAppResult() = default;
@@ -86,7 +72,7 @@ void InternalAppResult::ExecuteLaunchCommand(int event_flags) {
 }
 
 void InternalAppResult::Open(int event_flags) {
-  RecordOpenHistogram(id());
+  apps::RecordAppLaunch(id(), apps::mojom::LaunchSource::kFromAppListQuery);
 
   if (id() == ash::kInternalAppIdContinueReading &&
       url_for_continuous_reading_.is_valid()) {

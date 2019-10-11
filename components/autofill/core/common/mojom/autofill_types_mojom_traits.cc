@@ -308,4 +308,16 @@ bool StructTraits<autofill::mojom::ValueElementPairDataView,
   return true;
 }
 
+bool StructTraits<
+    autofill::mojom::ParsingResultDataView,
+    autofill::ParsingResult>::Read(autofill::mojom::ParsingResultDataView data,
+                                   autofill::ParsingResult* out) {
+  out->username_renderer_id = data.username_renderer_id();
+  out->password_renderer_id = data.password_renderer_id();
+  out->new_password_renderer_id = data.new_password_renderer_id();
+  out->confirm_password_renderer_id = data.confirm_password_renderer_id();
+
+  return true;
+}
+
 }  // namespace mojo

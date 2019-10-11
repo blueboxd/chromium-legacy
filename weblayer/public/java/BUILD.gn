@@ -34,6 +34,7 @@ template("weblayer_java") {
       "org/chromium/weblayer/NavigationObserver.java",
       "org/chromium/weblayer/ObserverList.java",
       "org/chromium/weblayer/Profile.java",
+      "org/chromium/weblayer/ProfileManager.java",
       "org/chromium/weblayer/WebLayer.java",
       "org/chromium/weblayer/ChildProcessService.java",
       "org/chromium/weblayer/UnsupportedVersionException.java",

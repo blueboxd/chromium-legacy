@@ -508,6 +508,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetAllowsCrossBrowsingInstanceFrameLookup() override;
   gfx::RectF ElementBoundsInWindow(const blink::WebElement& element) override;
   void ConvertViewportToWindow(blink::WebRect* rect) override;
+  float GetDeviceScaleFactor() override;
 
   // blink::mojom::AutoplayConfigurationClient implementation:
   void AddAutoplayFlags(const url::Origin& origin,
@@ -732,7 +733,7 @@ class CONTENT_EXPORT RenderFrameImpl
                               unsigned source_line,
                               const blink::WebString& stack_trace) override;
   void DownloadURL(const blink::WebURLRequest& request,
-                   CrossOriginRedirects cross_origin_redirect_behavior,
+                   network::mojom::RedirectMode cross_origin_redirect_behavior,
                    mojo::ScopedMessagePipeHandle blob_url_token) override;
   void BeginNavigation(std::unique_ptr<blink::WebNavigationInfo> info) override;
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
@@ -1292,13 +1293,9 @@ class CONTENT_EXPORT RenderFrameImpl
   bool ShouldDisplayErrorPageForFailedLoad(int error_code,
                                            const GURL& unreachable_url);
 
-  // |document_state| and |transition_type| correspond to the document which
-  // triggered this request. For main resource requests (navigations),
-  // |document_state| is a newly created one, and will be used for committing
-  // the navigation and creating the new document.
+  // |transition_type| corresponds to the document which triggered this request.
   void WillSendRequestInternal(blink::WebURLRequest& request,
                                ResourceType resource_type,
-                               DocumentState* document_state,
                                ui::PageTransition transition_type);
 
   // Returns the URL being loaded by the |frame_|'s request.

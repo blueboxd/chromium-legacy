@@ -12,7 +12,6 @@
 namespace blink {
 
 class DOMException;
-class ScriptPromiseResolver;
 class SerialPort;
 
 class SerialPortUnderlyingSource : public UnderlyingSourceBase {
@@ -28,7 +27,6 @@ class SerialPortUnderlyingSource : public UnderlyingSourceBase {
 
   void SignalErrorImmediately(DOMException*);
   void SignalErrorOnClose(DOMException*);
-  void ExpectClose();
 
   void Trace(Visitor*) override;
 
@@ -37,15 +35,15 @@ class SerialPortUnderlyingSource : public UnderlyingSourceBase {
   // |Controller()| or the pipe was closed, and false otherwise.
   bool ReadData();
 
-  ScriptPromise ArmWatcher(ScriptState*);
+  void ArmWatcher();
   void OnHandleReady(MojoResult, const mojo::HandleSignalsState&);
+  void ExpectPipeClose();
   void PipeClosed();
   void Close();
 
   mojo::ScopedDataPipeConsumerHandle data_pipe_;
   mojo::SimpleWatcher watcher_;
   Member<SerialPort> serial_port_;
-  Member<ScriptPromiseResolver> pending_pull_;
   Member<DOMException> pending_exception_;
   bool expect_close_ = false;
 };

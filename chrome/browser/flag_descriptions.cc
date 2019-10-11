@@ -3120,6 +3120,11 @@ const char kMacSystemMediaPermissionsInfoUiDescription[] =
     "the Omnibox, which, when clicked, displays a bubble with information on "
     "how to toggle Chrome's system-level media permissions.";
 
+const char kMetalName[] = "Metal";
+const char kMetalDescription[] =
+    "Use Metal instead of OpenGL for rasterization (if out-of-process "
+    "rasterization is enabled) and display (if the Skia renderer is enabled)";
+
 #endif
 
 // Chrome OS -------------------------------------------------------------------
@@ -3276,6 +3281,10 @@ const char kCrostiniUsbAllowUnsupportedDescription[] =
 const char kCrostiniWebUIInstallerName[] = "Crostini WebUI Installer";
 const char kCrostiniWebUIInstallerDescription[] =
     "Enable the new WebUI Crostini Installer.";
+
+const char kCryptAuthV2DeviceSyncName[] = "CryptAuth v2 DeviceSync";
+const char kCryptAuthV2DeviceSyncDescription[] =
+    "Use the CryptAuth v2 DeviceSync protocol.";
 
 const char kCryptAuthV2EnrollmentName[] = "CryptAuth v2 Enrollment";
 const char kCryptAuthV2EnrollmentDescription[] =
@@ -3894,6 +3903,13 @@ const char kAutofillCreditCardUploadDescription[] =
 
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
+const char kPaintHoldingName[] =
+    "Delay the commit to screen for same-origin navigations";
+const char kPaintHoldingDescription[] =
+    "Enables a delay before commiting the page to screen when navigating "
+    "between pages in the same origin. This may help avoid a flash of unstyled "
+    "content for same-origin navigations";
+
 #if defined(WEBRTC_USE_PIPEWIRE)
 
 extern const char kWebrtcPipeWireCapturerName[] = "WebRTC PipeWire support";
@@ -3902,13 +3918,6 @@ extern const char kWebrtcPipeWireCapturerDescription[] =
     "capturing the desktop content on the Wayland display server.";
 
 #endif  // #if defined(WEBRTC_USE_PIPEWIRE)
-
-const char kAvoidFlashBetweenNavigationName[] =
-    "Enable flash avoidance between same-origin navigations";
-const char kAvoidFlahsBetweenNavigationDescription[] =
-    "Enables experimental flash avoidance when navigating between pages "
-    "in the same origin. This feature is in the implementation stages and "
-    "currently has no effect.";
 
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in

@@ -72,6 +72,7 @@ class SharingDialogViewTest : public ChromeViewsTestBase {
           base::StrCat({"device_guid_", base::NumberToString(i)}),
           base::StrCat({"device", base::NumberToString(i)}), "chrome_version",
           "user_agent", sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
+          base::SysInfo::HardwareInfo(),
           /*last_updated_timestamp=*/base::Time::Now(),
           /*send_tab_to_self_receiving_enabled=*/false,
           /*sharing_info=*/base::nullopt));
@@ -144,12 +145,13 @@ TEST_F(SharingDialogViewTest, PopulateDialogView) {
 }
 
 TEST_F(SharingDialogViewTest, DevicePressed) {
-  syncer::DeviceInfo device_info(
-      "device_guid_1", "device1", "chrome_version", "user_agent",
-      sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
-      /*last_updated_timestamp=*/base::Time::Now(),
-      /*send_tab_to_self_receiving_enabled=*/false,
-      /*sharing_info=*/base::nullopt);
+  syncer::DeviceInfo device_info("device_guid_1", "device1", "chrome_version",
+                                 "user_agent",
+                                 sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
+                                 "device_id", base::SysInfo::HardwareInfo(),
+                                 /*last_updated_timestamp=*/base::Time::Now(),
+                                 /*send_tab_to_self_receiving_enabled=*/false,
+                                 /*sharing_info=*/base::nullopt);
   EXPECT_CALL(device_callback, Call(DeviceEquals(&device_info)));
 
   auto dialog_data = CreateDialogData(/*devices=*/3, /*apps=*/2);

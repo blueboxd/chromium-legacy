@@ -38,7 +38,7 @@ def FilterLine(filename, line, output):
 
     module_name = match.group(1)
     if module_name == _MOJO_INTERNAL_MODULE_NAME:
-      output.write("var mojo = { internal: {} };")
+      output.write("self.mojo = { internal: {} };")
     else:
       output.write("%s('%s');\n" % (_MOJO_EXPORT_MODULE_SYMBOL, module_name))
     return

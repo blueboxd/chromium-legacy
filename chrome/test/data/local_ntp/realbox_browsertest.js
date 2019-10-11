@@ -564,10 +564,15 @@ test.realbox.testSupportedDeletion = function() {
   assertEquals(1, test.realbox.deletedLines.length);
   assertEquals(1, test.realbox.deletedLines[0]);
 
+  matchesEl.children[1].focus();
+  assertEquals(matchesEl.children[1], document.activeElement);
+
   chrome.embeddedSearch.searchBox.ondeleteautocompletematch(
       {success: true, matches: [test.realbox.getSearchMatch()]});
 
-  assertEquals(1, $(test.realbox.IDS.REALBOX_MATCHES).children.length);
+  const newMatchesEl = $(test.realbox.IDS.REALBOX_MATCHES);
+  assertEquals(1, newMatchesEl.children.length);
+  assertEquals(newMatchesEl.children[0], document.activeElement);
 };
 
 test.realbox.testRemoveIcon = function() {

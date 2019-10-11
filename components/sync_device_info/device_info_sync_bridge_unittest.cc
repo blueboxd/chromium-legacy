@@ -80,6 +80,8 @@ MATCHER_P(ModelEqualsSpecifics, expected_specifics, "") {
     }
   }
 
+  base::SysInfo::HardwareInfo hardware_info = arg.hardware_info();
+
   // Note that we ignore the device name here to avoid having to inject the
   // local device's.
   return expected_specifics.cache_guid() == arg.guid() &&
@@ -88,6 +90,8 @@ MATCHER_P(ModelEqualsSpecifics, expected_specifics, "") {
          expected_specifics.chrome_version() == arg.chrome_version() &&
          expected_specifics.signin_scoped_device_id() ==
              arg.signin_scoped_device_id() &&
+         expected_specifics.model() == hardware_info.model &&
+         expected_specifics.manufacturer() == hardware_info.manufacturer &&
          expected_specifics.feature_fields()
                  .send_tab_to_self_receiving_enabled() ==
              arg.send_tab_to_self_receiving_enabled();
@@ -136,6 +140,21 @@ std::string SigninScopedDeviceIdForSuffix(int suffix) {
   return base::StringPrintf("signin scoped device id %d", suffix);
 }
 
+std::string ModelForSuffix(int suffix) {
+  return base::StringPrintf("model %d", suffix);
+}
+
+std::string ManufacturerForSuffix(int suffix) {
+  return base::StringPrintf("manufacturer %d", suffix);
+}
+
+base::SysInfo::HardwareInfo HardwareInfoForSuffix(int suffix) {
+  base::SysInfo::HardwareInfo info;
+  info.manufacturer = ManufacturerForSuffix(suffix);
+  info.model = ModelForSuffix(suffix);
+  return info;
+}
+
 std::string SharingFcmTokenForSuffix(int suffix) {
   return base::StringPrintf("sharing fcm token %d", suffix);
 }
@@ -170,6 +189,8 @@ DeviceInfoSpecifics CreateSpecifics(
   specifics.set_sync_user_agent(SyncUserAgentForSuffix(suffix));
   specifics.set_chrome_version(ChromeVersionForSuffix(suffix));
   specifics.set_signin_scoped_device_id(SigninScopedDeviceIdForSuffix(suffix));
+  specifics.set_model(ModelForSuffix(suffix));
+  specifics.set_manufacturer(ManufacturerForSuffix(suffix));
   specifics.set_last_updated_timestamp(TimeToProtoTime(last_updated));
   specifics.mutable_feature_fields()->set_send_tab_to_self_receiving_enabled(
       true);
@@ -233,15 +254,20 @@ class TestLocalDeviceInfoProvider : public MutableLocalDeviceInfoProvider {
   ~TestLocalDeviceInfoProvider() override = default;
 
   // MutableLocalDeviceInfoProvider implementation.
+  // TODO(himanshujaju) - |hardware_info| is ignored right now. We could reuse
+  // it by calling GetHardwareInfo and storing locally before starting the
+  // tests.
   void Initialize(const std::string& cache_guid,
-                  const std::string& session_name) override {
+                  const std::string& session_name,
+                  const base::SysInfo::HardwareInfo& hardware_info) override {
     std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
         sharing_enabled_features{SharingEnabledFeaturesForSuffix(kLocalSuffix)};
     local_device_info_ = std::make_unique<DeviceInfo>(
         cache_guid, session_name, ChromeVersionForSuffix(kLocalSuffix),
         SyncUserAgentForSuffix(kLocalSuffix),
         sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-        SigninScopedDeviceIdForSuffix(kLocalSuffix), base::Time(),
+        SigninScopedDeviceIdForSuffix(kLocalSuffix),
+        HardwareInfoForSuffix(kLocalSuffix), base::Time(),
         /*send_tab_to_self_receiving_enabled=*/true,
         DeviceInfo::SharingInfo(SharingFcmTokenForSuffix(kLocalSuffix),
                                 SharingP256dhForSuffix(kLocalSuffix),
@@ -305,7 +331,7 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
   // cause all initialization callbacks between the sevice and store to fire.
   void InitializeAndPump() {
     InitializeBridge();
-    base::RunLoop().RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // Creates the bridge with no prior data on the store, and mimics sync being

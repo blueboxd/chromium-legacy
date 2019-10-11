@@ -669,10 +669,6 @@ blink::WebPlugin* BlinkTestRunner::CreatePluginPlaceholder(
   return placeholder->plugin();
 }
 
-float BlinkTestRunner::GetDeviceScaleFactor() const {
-  return render_view()->GetDeviceScaleFactor();
-}
-
 void BlinkTestRunner::RunIdleTasks(base::OnceClosure callback) {
   SchedulerRunIdleTasks(std::move(callback));
 }

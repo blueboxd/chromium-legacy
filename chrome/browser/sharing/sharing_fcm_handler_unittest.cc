@@ -64,6 +64,7 @@ class SharingFCMHandlerTest : public testing::Test {
     fake_device_info_ = std::make_unique<syncer::DeviceInfo>(
         kSenderGuid, kSenderName, "chrome_version", "user_agent",
         sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
+        base::SysInfo::HardwareInfo(),
         /*last_updated_timestamp=*/base::Time::Now(),
         /*send_tab_to_self_receiving_enabled=*/false,
         syncer::DeviceInfo::SharingInfo(

@@ -42,7 +42,7 @@ enum class ReadCacheResult {
 };
 
 constexpr base::Feature kInspectionResultsCache{
-    "InspectionResultsCache", base::FEATURE_DISABLED_BY_DEFAULT};
+    "InspectionResultsCache", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The InspectionResultsCache maps ModuleInfoKey to a ModuleInspectionResult.
 // The uint32_t is a time stamp that keep tracks of when the inspection result

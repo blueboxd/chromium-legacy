@@ -19,8 +19,10 @@ void MojoFuchsiaCdmProvider::CreateCdmInterface(
     const std::string& key_system,
     fidl::InterfaceRequest<fuchsia::media::drm::ContentDecryptionModule>
         cdm_request) {
-  if (!cdm_provider_)
-    interface_provider_->GetInterface(mojo::MakeRequest(&cdm_provider_));
+  if (!cdm_provider_) {
+    interface_provider_->GetInterface(
+        cdm_provider_.BindNewPipeAndPassReceiver());
+  }
 
   cdm_provider_->CreateCdmInterface(key_system, std::move(cdm_request));
 }

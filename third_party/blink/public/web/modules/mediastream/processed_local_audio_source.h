@@ -26,10 +26,8 @@ class AudioProcessorControls;
 
 namespace blink {
 
-// TODO(crbug.com/704136): Move this class and method out of the Blink exposed
+// TODO(crbug.com/704136): Move this class out of the Blink exposed
 // API when all users of it have been Onion souped.
-
-BLINK_MODULES_EXPORT bool IsApmInAudioServiceEnabled();
 
 class AudioServiceAudioProcessorProxy;
 class MediaStreamAudioProcessor;

@@ -101,7 +101,7 @@ OfflineItem EntryToOfflineItem(const content::ContentIndexEntry& entry) {
   item.description = entry.description->description;
   item.filter = CategoryToFilter(entry.description->category);
   item.is_transient = false;
-  item.is_suggested = false;
+  item.is_suggested = true;
   item.creation_time = entry.registration_time;
   item.is_openable = true;
   item.state = offline_items_collection::OfflineItemState::COMPLETE;

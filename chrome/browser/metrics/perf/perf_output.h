@@ -31,7 +31,6 @@ class PerfOutputCall {
   // The callback may delete this object.
   // The argument is one of:
   // - Output from "perf record", in PerfDataProto format, OR
-  // - Output from "perf stat", in PerfStatProto format, OR
   // - The empty string if there was an error.
   // The output is transferred to |perf_stdout|.
   using DoneCallback = base::OnceCallback<void(std::string perf_stdout)>;

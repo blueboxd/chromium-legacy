@@ -22,7 +22,7 @@ class MockCommandLinePrivate {
     }
 
     if (!chrome.commandLinePrivate) {
-      /** @suppress {checkTypes} */
+      /** @suppress {checkTypes, const} */
       chrome.commandLinePrivate = {};
     }
     chrome.commandLinePrivate.hasSwitch = (name, callback) => {
@@ -53,7 +53,7 @@ class MockChromeStorageAPI {
     window.chrome = window.chrome || {};
     /** @suppress {const} */
     window.chrome.runtime = window.chrome.runtime || {};  // For lastError.
-    /** @suppress {checkTypes} */
+    /** @suppress {checkTypes, const} */
     window.chrome.storage = {
       local: {
         get: this.get_.bind(this),

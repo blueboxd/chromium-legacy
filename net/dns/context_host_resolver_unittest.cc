@@ -300,8 +300,10 @@ TEST_F(ContextHostResolverTest, OnShutdown_PendingRequest) {
                      false /* delay */);
   SetMockDnsRules(std::move(rules));
 
+  URLRequestContext context;
   auto resolver = std::make_unique<ContextHostResolver>(
       manager_.get(), nullptr /* host_cache */);
+  resolver->SetRequestContext(&context);
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("example.com", 100),
                               NetLogWithSource(), base::nullopt);
@@ -330,8 +332,10 @@ TEST_F(ContextHostResolverTest, OnShutdown_CompletedRequests) {
                      false /* delay */);
   SetMockDnsRules(std::move(rules));
 
+  URLRequestContext context;
   auto resolver = std::make_unique<ContextHostResolver>(
       manager_.get(), nullptr /* host_cache */);
+  resolver->SetRequestContext(&context);
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("example.com", 100),
                               NetLogWithSource(), base::nullopt);
@@ -348,8 +352,10 @@ TEST_F(ContextHostResolverTest, OnShutdown_CompletedRequests) {
 }
 
 TEST_F(ContextHostResolverTest, OnShutdown_SubsequentRequests) {
+  URLRequestContext context;
   auto resolver = std::make_unique<ContextHostResolver>(
       manager_.get(), nullptr /* host_cache */);
+  resolver->SetRequestContext(&context);
   resolver->OnShutdown();
 
   std::unique_ptr<HostResolver::ResolveHostRequest> request1 =
@@ -382,8 +388,10 @@ TEST_F(ContextHostResolverTest, OnShutdown_DelayedStartRequest) {
                      MockDnsClientRule::Result(MockDnsClientRule::EMPTY),
                      false /* delay */);
 
+  URLRequestContext context;
   auto resolver = std::make_unique<ContextHostResolver>(
       manager_.get(), nullptr /* host_cache */);
+  resolver->SetRequestContext(&context);
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("example.com", 100),
                               NetLogWithSource(), base::nullopt);

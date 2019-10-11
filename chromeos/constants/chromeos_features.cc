@@ -59,6 +59,10 @@ const base::Feature kCrostiniUsbAllowUnsupported{
 const base::Feature kCrostiniWebUIInstaller{"CrostiniWebUIInstaller",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the CryptAuth v2 DeviceSync flow.
+const base::Feature kCryptAuthV2DeviceSync{"CryptAuthV2DeviceSync",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the CryptAuth v2 Enrollment flow.
 const base::Feature kCryptAuthV2Enrollment{"CryptAuthV2Enrollment",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

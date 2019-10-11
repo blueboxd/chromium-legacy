@@ -14,8 +14,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "remoting/signaling/jid_util.h"
 #include "remoting/signaling/signal_strategy.h"
+#include "remoting/signaling/signaling_id_util.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 
@@ -116,7 +116,7 @@ bool IqSender::OnSignalStrategyIncomingStanza(const jingle_xmpp::XmlElement* sta
 
   IqRequest* request = it->second;
 
-  if (NormalizeJid(request->addressee_) != NormalizeJid(from)) {
+  if (NormalizeSignalingId(request->addressee_) != NormalizeSignalingId(from)) {
     LOG(ERROR) << "Received IQ response from an invalid JID. Ignoring it."
                << " Message received from: " << from
                << " Original JID: " << request->addressee_;

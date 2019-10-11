@@ -652,17 +652,24 @@ IN_PROC_BROWSER_TEST_P(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
 }
 
+class ResourceLoadingHintsBrowserTestWithExperimentEnabled
+    : public ResourceLoadingHintsBrowserTest {
+ public:
+  ResourceLoadingHintsBrowserTestWithExperimentEnabled() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        optimization_guide::features::kOptimizationHintsExperiments,
+        {{optimization_guide::features::kOptimizationHintsExperimentNameParam,
+          optimization_guide::testing::kFooExperimentName}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Sets only the experimental hints, and enables the matching experiment.
 // Verifies that the hints are used, and the resource loading is blocked.
-IN_PROC_BROWSER_TEST_P(
-    ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(ExperimentalHints_ExperimentIsEnabled)) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeatureWithParameters(
-      optimization_guide::features::kOptimizationHintsExperiments,
-      {{optimization_guide::features::kOptimizationHintsExperimentNameParam,
-        optimization_guide::testing::kFooExperimentName}});
-
+IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTestWithExperimentEnabled,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(ExperimentalHints)) {
   GURL url = https_url();
 
   // Whitelist resource loading hints for https_hint_setup_url()'s' host.
@@ -696,15 +703,8 @@ IN_PROC_BROWSER_TEST_P(
 // Sets both the experimental and default hints, and enables the matching
 // experiment. Verifies that the hints are used, and the resource loading is
 // blocked.
-IN_PROC_BROWSER_TEST_P(
-    ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(MixExperimentalHints_ExperimentIsEnabled)) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeatureWithParameters(
-      optimization_guide::features::kOptimizationHintsExperiments,
-      {{optimization_guide::features::kOptimizationHintsExperimentNameParam,
-        optimization_guide::testing::kFooExperimentName}});
-
+IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTestWithExperimentEnabled,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(MixExperimentalHints)) {
   GURL url = https_url();
 
   // Whitelist resource loading hints for https_hint_setup_url()'s' host. Set
@@ -831,18 +831,25 @@ IN_PROC_BROWSER_TEST_P(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
 }
 
+class ResourceLoadingHintsBrowserTestWithExperimentDisabled
+    : public ResourceLoadingHintsBrowserTest {
+ public:
+  ResourceLoadingHintsBrowserTestWithExperimentDisabled() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        optimization_guide::features::kOptimizationHintsExperiments,
+        {{optimization_guide::features::kOptimizationHintsExperimentNameParam,
+          "some_other_experiment"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Sets both the experimental and default hints, but does not enable the
 // matching experiment. Verifies that the hints from the experiment are not
 // used.
-IN_PROC_BROWSER_TEST_P(
-    ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(MixExperimentalHints_ExperimentIsNotEnabled)) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeatureWithParameters(
-      optimization_guide::features::kOptimizationHintsExperiments,
-      {{optimization_guide::features::kOptimizationHintsExperimentNameParam,
-        "some_other_experiment"}});
-
+IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTestWithExperimentDisabled,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(MixExperimentalHints)) {
   GURL url = https_url();
 
   // Whitelist resource loading hints for https_hint_setup_url()'s' host.
@@ -978,18 +985,26 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
 }
 
+class ResourceLoadingHintsBrowserTestWithCoinFlipAlwaysHoldback
+    : public ResourceLoadingHintsBrowserTest {
+ public:
+  ResourceLoadingHintsBrowserTestWithCoinFlipAlwaysHoldback() {
+    // Holdback the page load from previews and also disable offline previews to
+    // ensure that only post-commit previews are enabled.
+    feature_list_.InitWithFeaturesAndParameters(
+        {{previews::features::kCoinFlipHoldback,
+          {{"force_coin_flip_always_holdback", "true"}}}},
+        {previews::features::kOfflinePreviews});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 IN_PROC_BROWSER_TEST_P(
-    ResourceLoadingHintsBrowserTest,
+    ResourceLoadingHintsBrowserTestWithCoinFlipAlwaysHoldback,
     DISABLE_ON_WIN_MAC_CHROMESOS(
         ResourceLoadingHintsHttpsWhitelistedButShouldNotApplyBecauseCoinFlipHoldback)) {
-  // Holdback the page load from previews and also disable offline previews to
-  // ensure that only post-commit previews are enabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeaturesAndParameters(
-      {{previews::features::kCoinFlipHoldback,
-        {{"force_coin_flip_always_holdback", "true"}}}},
-      {previews::features::kOfflinePreviews});
-
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
   GURL url = https_url();

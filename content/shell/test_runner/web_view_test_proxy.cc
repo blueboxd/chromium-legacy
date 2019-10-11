@@ -75,21 +75,6 @@ void WebViewTestProxy::DidFocus(blink::WebLocalFrame* calling_frame) {
   RenderViewImpl::DidFocus(calling_frame);
 }
 
-blink::WebScreenInfo WebViewTestProxy::GetScreenInfo() {
-  blink::WebScreenInfo info = RenderViewImpl::GetScreenInfo();
-
-  MockScreenOrientationClient* mock_client =
-      GetTestRunner()->GetMockScreenOrientationClient();
-
-  if (!mock_client->IsDisabled()) {
-    // Override screen orientation information with mock data.
-    info.orientation_type = mock_client->CurrentOrientationType();
-    info.orientation_angle = mock_client->CurrentOrientationAngle();
-  }
-
-  return info;
-}
-
 void WebViewTestProxy::Reset() {
   // TODO(https://crbug.com/961499): There is a race condition where Reset()
   // can be called after GetWidget() has been nulled, but before this is

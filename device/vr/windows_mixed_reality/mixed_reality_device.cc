@@ -62,8 +62,7 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo(device::mojom::XRDeviceId id) {
 }  // namespace
 
 MixedRealityDevice::MixedRealityDevice()
-    : VRDeviceBase(device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID),
-      compositor_host_binding_(this) {
+    : VRDeviceBase(device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID) {
   SetVRDisplayInfo(CreateFakeVRDisplayInfo(GetId()));
 }
 
@@ -76,10 +75,9 @@ MixedRealityDevice::BindGamepadFactory() {
   return gamepad_provider_factory_receiver_.BindNewPipeAndPassRemote();
 }
 
-mojom::XRCompositorHostPtr MixedRealityDevice::BindCompositorHost() {
-  mojom::XRCompositorHostPtr ret;
-  compositor_host_binding_.Bind(mojo::MakeRequest(&ret));
-  return ret;
+mojo::PendingRemote<mojom::XRCompositorHost>
+MixedRealityDevice::BindCompositorHost() {
+  return compositor_host_receiver_.BindNewPipeAndPassRemote();
 }
 
 void MixedRealityDevice::RequestSession(

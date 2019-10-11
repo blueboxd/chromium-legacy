@@ -341,33 +341,60 @@ cr.define('model_settings_availability_test', function() {
 
     });
 
-    test('fit to page', function() {
+    test('scalingType', function() {
       // HTML -> printer
-      assertFalse(model.settings.fitToPage.available);
+      assertTrue(model.settings.scalingType.available);
 
       // HTML -> Save as PDF
       const defaultDestination = model.destination;
       setSaveAsPdfDestination();
-      assertFalse(model.settings.fitToPage.available);
+      assertTrue(model.settings.scalingType.available);
 
       // PDF -> Save as PDF
       model.set('documentSettings.isModifiable', false);
       model.set('documentSettings.isPdf', true);
-      assertFalse(model.settings.fitToPage.available);
+      assertFalse(model.settings.scalingType.available);
 
       // PDF -> printer
       model.set('destination', defaultDestination);
-      assertTrue(model.settings.fitToPage.available);
-      assertFalse(model.settings.fitToPage.setFromUi);
+      assertFalse(model.settings.scalingType.available);
 
       // Non-PDF Plugin -> Save as PDF
       setSaveAsPdfDestination();
       model.set('documentSettings.isPdf', false);
-      assertFalse(model.settings.fitToPage.available);
+      assertFalse(model.settings.scalingType.available);
 
       // Non-PDF Plugin -> printer
       model.set('destination', defaultDestination);
-      assertFalse(model.settings.fitToPage.available);
+      assertFalse(model.settings.scalingType.available);
+    });
+
+    test('scalingTypePdf', function() {
+      // HTML -> printer
+      assertFalse(model.settings.scalingTypePdf.available);
+
+      // HTML -> Save as PDF
+      const defaultDestination = model.destination;
+      setSaveAsPdfDestination();
+      assertFalse(model.settings.scalingTypePdf.available);
+
+      // PDF -> Save as PDF
+      model.set('documentSettings.isModifiable', false);
+      model.set('documentSettings.isPdf', true);
+      assertFalse(model.settings.scalingTypePdf.available);
+
+      // PDF -> printer
+      model.set('destination', defaultDestination);
+      assertTrue(model.settings.scalingTypePdf.available);
+
+      // Non-PDF Plugin -> Save as PDF
+      setSaveAsPdfDestination();
+      model.set('documentSettings.isPdf', false);
+      assertFalse(model.settings.scalingTypePdf.available);
+
+      // Non-PDF Plugin -> printer
+      model.set('destination', defaultDestination);
+      assertFalse(model.settings.scalingTypePdf.available);
     });
 
     test('header footer', function() {

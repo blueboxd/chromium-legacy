@@ -1738,6 +1738,20 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Search engine changed"/>
 </enum>
 
+<enum name="AndroidSearchEngineChoiceEventsV2">
+  <summary>Events related to Search Engine Choice V2 feature.</summary>
+  <int value="0" label="Request recieved from play"/>
+  <int value="1"
+      label="User skipped (didn't complete) Search Engine Choice flow"/>
+  <int value="2" label="Play API returned empty list of providers"/>
+  <int value="3" label="User selected valid search provider"/>
+  <int value="4" label="Search engine metadata value was null"/>
+  <int value="5" label="Failed to parse search engine metadata JSON"/>
+  <int value="6"
+      label="Previous attempt to persist search engine metadata failed"/>
+  <int value="7" label="Request success"/>
+</enum>
+
 <enum name="AndroidSeccompSandboxStatus">
   <int value="0" label="Not Supported"/>
   <int value="1" label="Detection Failed"/>
@@ -7694,6 +7708,7 @@ histogram as enum -->
   <int value="29" label="kHostCache"/>
   <int value="30" label="kTpmAttestationKeys"/>
   <int value="31" label="kStrikes"/>
+  <int value="32" label="kLeakedCredentials"/>
 </enum>
 
 <enum name="ChromeChannelForHistogram">
@@ -18240,6 +18255,7 @@ Called by update_net_error_codes.py.-->
   <int value="624" label="LegacySameSiteCookieBehaviorEnabledForDomainList"/>
   <int value="625" label="PrintJobHistoryExpirationPeriod"/>
   <int value="626" label="TLS13HardeningForLocalAnchorsEnabled"/>
+  <int value="627" label="ForceDisableAudioSandbox"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -35043,7 +35059,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1998927516" label="enable-md-settings"/>
   <int value="-1996233283"
       label="OmniboxGroupSuggestionsBySearchVsUrl:enabled"/>
-  <int value="-1992319691" label="AvoidFlashBetweenNavigation:enabled"/>
   <int value="-1990614981" label="StoragePressureUI:disabled"/>
   <int value="-1989747818" label="TabStripKeyboardFocus:disabled"/>
   <int value="-1985452239" label="SmartDim20190221:disabled"/>
@@ -35203,6 +35218,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
   <int value="-1832575380" label="show-saved-copy"/>
   <int value="-1832221649" label="disable-out-of-process-pac"/>
+  <int value="-1830472348" label="CryptAuthV2DeviceSync:enabled"/>
   <int value="-1826649921" label="ContextualSuggestionsButton:disabled"/>
   <int value="-1826309726" label="ArcCustomTabsExperiment:disabled"/>
   <int value="-1823193038" label="QuietNotificationPrompts:disabled"/>
@@ -35898,6 +35914,7 @@ from previous Chrome versions.
   <int value="-950384924" label="OmniboxDisableInstantExtendedLimit:enabled"/>
   <int value="-949178861" label="enable-new-avatar-menu"/>
   <int value="-945806012" label="DownloadsUi:enabled"/>
+  <int value="-943304570" label="PaintHolding:enabled"/>
   <int value="-938178614" label="enable-suggestions-with-substring-match"/>
   <int value="-933377608"
       label="OmniboxUIExperimentHideSteadyStateUrlScheme:enabled"/>
@@ -36262,6 +36279,7 @@ from previous Chrome versions.
   <int value="-468697885" label="ArcInputMethod:enabled"/>
   <int value="-462554210"
       label="OminboxUIExperimentUseGenericSearchEngineIcon:enabled"/>
+  <int value="-462404204" label="CryptAuthV2DeviceSync:disabled"/>
   <int value="-462205750" label="enable-service-worker-sync"/>
   <int value="-461292699" label="ContentSuggestionsCategoryOrder:enabled"/>
   <int value="-460313418" label="ProgressBarThrottle:enabled"/>
@@ -36273,6 +36291,7 @@ from previous Chrome versions.
   <int value="-450976085"
       label="AutofillSaveCreditCardUsesImprovedMessaging:disabled"/>
   <int value="-449465495" label="disable-browser-task-scheduler"/>
+  <int value="-444867364" label="Metal:enabled"/>
   <int value="-438379844" label="SwapSideVolumeButtonsForOrientation:enabled"/>
   <int value="-436470115" label="TouchpadAndWheelScrollLatching:enabled"/>
   <int value="-435914745" label="ClipboardContentSetting:disabled"/>
@@ -36446,7 +36465,6 @@ from previous Chrome versions.
   <int value="-195029497" label="MediaRemoting:disabled"/>
   <int value="-192919826" label="ViewsSimplifiedFullscreenUI:enabled"/>
   <int value="-192389983" label="NoStatePrefetch:enabled"/>
-  <int value="-191256027" label="AvoidFlashBetweenNavigation:disabled"/>
   <int value="-189478545" label="ArcCustomTabsExperiment:enabled"/>
   <int value="-186707397" label="HideArcMediaNotifications:enabled"/>
   <int value="-185162926" label="IncreaseInputAudioBufferSize:enabled"/>
@@ -37160,6 +37178,7 @@ from previous Chrome versions.
   <int value="740056959" label="ImeServiceConnectable:enabled"/>
   <int value="740619684" label="ExtensionsToolbarMenu:enabled"/>
   <int value="742083923" label="MimeHandlerViewInCrossProcessFrame:disabled"/>
+  <int value="745541471" label="PaintHolding:disabled"/>
   <int value="745783589" label="translate-force-trigger-on-english"/>
   <int value="745868416" label="disable-system-timezone-automatic-detection"/>
   <int value="746765012" label="AutofillEnableToolbarStatusChip:disabled"/>
@@ -37567,6 +37586,7 @@ from previous Chrome versions.
   <int value="1308537004" label="force-pnacl-subzero"/>
   <int value="1311860720" label="ChromeHomeNtpRedesign:disabled"/>
   <int value="1312025202" label="NTPOfflinePageSuggestions:disabled"/>
+  <int value="1313850691" label="Metal:disabled"/>
   <int value="1314681756" label="NoStatePrefetch:disabled"/>
   <int value="1317562265" label="SeccompSandboxAndroid:disabled"/>
   <int value="1318073661" label="MaterialDesignExtensions:enabled"/>
@@ -49819,6 +49839,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="18" label="The navigation URL had an excluded media suffix."/>
   <int value="19" label="Not allowed by server rules provided to the client."/>
   <int value="20" label="Coin flip holdback encountered."/>
+  <int value="21" label="Redirect loop detected."/>
+  <int value="22" label="URL matched deny list."/>
 </enum>
 
 <enum name="PreviewsHintCacheLevelDBStoreLoadMetadataResult">
@@ -61807,6 +61829,7 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VariationsFirstRunSeedFetchResult">
+  <int value="-4" label="Invalid Date header when fetching seed"/>
   <int value="-3" label="UnknownHostException fetching seed"/>
   <int value="-2" label="SocketTimeoutException fetching seed"/>
   <int value="-1" label="IOException fetching seed"/>

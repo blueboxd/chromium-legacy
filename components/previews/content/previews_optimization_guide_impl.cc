@@ -263,13 +263,8 @@ void PreviewsOptimizationGuideImpl::FetchHints() {
   base::Optional<std::vector<std::string>> top_hosts =
       optimization_guide::switches::ParseHintsFetchOverrideFromCommandLine();
   if (!top_hosts) {
-    top_hosts = top_host_provider_->GetTopHosts(
-        optimization_guide::features::
-            MaxHostsForOptimizationGuideServiceHintsFetch());
+    top_hosts = top_host_provider_->GetTopHosts();
   }
-  DCHECK_GE(optimization_guide::features::
-                MaxHostsForOptimizationGuideServiceHintsFetch(),
-            top_hosts->size());
 
   if (!hints_fetcher_) {
     hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(

@@ -518,10 +518,11 @@ bool FindBestContextMenuCandidate(Node*& target_node,
       subtargets, touch_adjustment::HybridDistanceFunction);
 }
 
-LayoutSize GetHitTestRectForAdjustment(const LocalFrame& frame,
+LayoutSize GetHitTestRectForAdjustment(LocalFrame& frame,
                                        const LayoutSize& touch_area) {
+  ChromeClient& chrome_client = frame.GetChromeClient();
   float device_scale_factor =
-      frame.GetPage()->GetChromeClient().GetScreenInfo().device_scale_factor;
+      chrome_client.GetScreenInfo(frame).device_scale_factor;
   // Check if zoom-for-dsf is enabled. If not, touch_area is in dip, so we don't
   // need to convert max_size_in_dip to physical pixel.
   if (frame.GetPage()->DeviceScaleFactorDeprecated() != 1)

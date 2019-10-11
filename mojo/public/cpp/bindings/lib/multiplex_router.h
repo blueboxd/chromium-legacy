@@ -26,8 +26,8 @@
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/connection_group.h"
 #include "mojo/public/cpp/bindings/connector.h"
-#include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
+#include "mojo/public/cpp/bindings/message_dispatcher.h"
 #include "mojo/public/cpp/bindings/message_header_validator.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_handler.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_handler_delegate.h"
@@ -79,9 +79,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MultiplexRouter
                   bool set_interface_id_namespace_bit,
                   scoped_refptr<base::SequencedTaskRunner> runner);
 
-  // Adds a MessageReceiver which can filter a message after validation but
+  // Sets a MessageReceiver which can filter a message after validation but
   // before dispatch.
-  void AddIncomingMessageFilter(std::unique_ptr<MessageReceiver> filter);
+  void SetIncomingMessageFilter(std::unique_ptr<MessageFilter> filter);
 
   // Sets the master interface name for this router. Only used when reporting
   // message header or control message validation errors.
@@ -163,7 +163,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MultiplexRouter
   }
 
   bool SimulateReceivingMessageForTesting(Message* message) {
-    return filters_.Accept(message);
+    return dispatcher_.Accept(message);
   }
 
  private:
@@ -251,10 +251,10 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MultiplexRouter
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  // Owned by |filters_| below.
+  // Owned by |dispatcher_| below.
   MessageHeaderValidator* header_validator_ = nullptr;
 
-  FilterChain filters_;
+  MessageDispatcher dispatcher_;
   Connector connector_;
 
   SEQUENCE_CHECKER(sequence_checker_);

@@ -210,7 +210,7 @@ bool FtlSignalStrategy::Core::SendStanza(
   DCHECK(to_error.empty());
 
   // Synthesizing the from attribute in the message.
-  stanza->SetAttr(jingle_xmpp::QN_FROM, local_address_.jid());
+  stanza->SetAttr(jingle_xmpp::QN_FROM, local_address_.id());
 
   std::string stanza_id = stanza->Attr(jingle_xmpp::QN_ID);
   SendMessage(to, stanza_id, stanza->Str());
@@ -342,7 +342,7 @@ void FtlSignalStrategy::Core::SendMessage(const SignalingAddress& receiver,
   bool get_info_result =
       receiver.GetFtlInfo(&receiver_username, &receiver_registration_id);
   if (!get_info_result) {
-    LOG(DFATAL) << "Receiver is not in FTL address: " << receiver.jid();
+    LOG(DFATAL) << "Receiver is not in FTL address: " << receiver.id();
     return;
   }
 
@@ -380,8 +380,8 @@ void FtlSignalStrategy::Core::OnSendMessageResponse(
   auto error_iq = std::make_unique<jingle_xmpp::XmlElement>(jingle_xmpp::QN_IQ);
   error_iq->SetAttr(jingle_xmpp::QN_TYPE, jingle_xmpp::STR_ERROR);
   error_iq->SetAttr(jingle_xmpp::QN_ID, stanza_id);
-  error_iq->SetAttr(jingle_xmpp::QN_FROM, receiver.jid());
-  error_iq->SetAttr(jingle_xmpp::QN_TO, local_address_.jid());
+  error_iq->SetAttr(jingle_xmpp::QN_FROM, receiver.id());
+  error_iq->SetAttr(jingle_xmpp::QN_TO, local_address_.id());
   OnStanza(receiver, std::move(error_iq));
 }
 
@@ -412,12 +412,12 @@ void FtlSignalStrategy::Core::OnStanza(
     return;
   }
   if (SignalingAddress(stanza->Attr(jingle_xmpp::QN_FROM)) != sender_address) {
-    LOG(DFATAL) << "Expected sender: " << sender_address.jid()
+    LOG(DFATAL) << "Expected sender: " << sender_address.id()
                 << ", but received: " << stanza->Attr(jingle_xmpp::QN_FROM);
     return;
   }
   if (SignalingAddress(stanza->Attr(jingle_xmpp::QN_TO)) != local_address_) {
-    LOG(DFATAL) << "Expected receiver: " << local_address_.jid()
+    LOG(DFATAL) << "Expected receiver: " << local_address_.id()
                 << ", but received: " << stanza->Attr(jingle_xmpp::QN_TO);
     return;
   }

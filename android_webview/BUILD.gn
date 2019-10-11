@@ -40,7 +40,6 @@ generate_jni("common_jni_headers") {
 
 generate_jni("browser_jni_headers") {
   sources = [
-    "apk/java/src/com/android/webview/chromium/WebViewApkApplication.java",
     "java/src/org/chromium/android_webview/AndroidProtocolHandler.java",
     "java/src/org/chromium/android_webview/AwAutofillClient.java",
     "java/src/org/chromium/android_webview/AwBrowserContext.java",
@@ -387,6 +386,7 @@ source_set("webview_entry_point") {
 shared_library("libwebviewchromium") {
   deps = [
     ":webview_entry_point",
+    "//components/about_ui:about_ui_android",
   ]
   configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
   configs += [ "//build/config/android:hide_all_but_jni" ]
@@ -458,7 +458,6 @@ if (enable_resource_whitelist_generation) {
 
 source_set("common") {
   sources = [
-    "apk/webview_apk_application.cc",
     "lib/aw_main_delegate.cc",
     "lib/aw_main_delegate.h",
     "lib/webview_jni_onload.cc",
@@ -467,14 +466,13 @@ source_set("common") {
 
   deps = [
     ":browser_jni_headers",
+    "//android_webview/apk",
+    "//android_webview/apk:webview_license_provider",
     "//android_webview/browser",
     "//android_webview/browser/gfx",
     "//android_webview/common",
     "//android_webview/gpu",
     "//android_webview/renderer",
-
-    # Called via JNI
-    "//components/about_ui",
     "//components/autofill/core/common",
     "//components/crash/android:crashpad_main",
     "//components/gwp_asan/buildflags",
@@ -832,7 +830,6 @@ android_library("services_java") {
     ":common_platform_services_java",
     ":common_variations_utils_java",
     ":system_webview_manifest",
-    "//android_webview/apk:apk_java",
     "//base:base_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/minidump_uploader:minidump_uploader_java",

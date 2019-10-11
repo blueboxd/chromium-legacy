@@ -2465,7 +2465,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   DisplayLockContext* GetDisplayLockContext() const {
-    if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
+    if (!RuntimeEnabledFeatures::DisplayLockingEnabled(&GetDocument()))
       return nullptr;
     auto* element = DynamicTo<Element>(GetNode());
     if (!element)

@@ -59,11 +59,6 @@ class XR final : public EventTargetWithInlineData,
 
   XRFrameProvider* frameProvider();
 
-  bool CanRequestNonImmersiveFrameData() const;
-  void GetNonImmersiveFrameData(
-      device::mojom::blink::XRFrameDataRequestOptionsPtr,
-      device::mojom::blink::XRFrameDataProvider::GetFrameDataCallback);
-
   const device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr&
   xrEnvironmentProviderPtr();
 
@@ -283,7 +278,6 @@ class XR final : public EventTargetWithInlineData,
   void Dispose();
 
   void OnEnvironmentProviderDisconnect();
-  void OnMagicWindowProviderDisconnect();
 
   // Indicates whether use of requestDevice has already been logged.
   bool did_log_supports_immersive_ = false;
@@ -302,10 +296,7 @@ class XR final : public EventTargetWithInlineData,
 
   Member<XRFrameProvider> frame_provider_;
   HeapHashSet<WeakMember<XRSession>> sessions_;
-
   mojo::Remote<device::mojom::blink::VRService> service_;
-  mojo::Remote<device::mojom::blink::XRFrameDataProvider>
-      magic_window_provider_;
   device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr
       environment_provider_;
   mojo::Receiver<device::mojom::blink::VRServiceClient> receiver_{this};

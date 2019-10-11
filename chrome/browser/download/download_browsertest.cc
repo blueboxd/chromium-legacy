@@ -3880,10 +3880,25 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SecurityLevels) {
                                     2);
 }
 
+class DownloadTestWithOptionalSafetyTipsFeature
+    : public DownloadTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  DownloadTestWithOptionalSafetyTipsFeature() {
+    if (GetParam())
+      feature_list_.InitAndEnableFeature(features::kSafetyTipUI);
+    else
+      feature_list_.InitAndDisableFeature(features::kSafetyTipUI);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests that the Safety Tip status of the initiating page is used for the
 // histogram rather than the status of the download URL, and that downloads in
 // new tabs are not tracked.
-IN_PROC_BROWSER_TEST_F(DownloadTest, SafetyTips) {
+IN_PROC_BROWSER_TEST_P(DownloadTestWithOptionalSafetyTipsFeature, SafetyTips) {
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
   ASSERT_TRUE(embedded_test_server()->Start());
   net::EmbeddedTestServer download_server;
@@ -3907,33 +3922,29 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SafetyTips) {
   // disabled. The same metrics should be recorded either way.
   SetSafetyTipBadRepPatterns(
       {embedded_test_server()->GetURL("/").host() + "/"});
-  for (const auto& enable_feature : {true, false}) {
-    base::test::ScopedFeatureList feature_list;
-    if (enable_feature) {
-      feature_list.InitAndEnableFeature(features::kSafetyTipUI);
-    } else {
-      feature_list.InitAndDisableFeature(features::kSafetyTipUI);
-    }
 
-    base::HistogramTester histogram_tester;
-    ui_test_utils::NavigateToURL(
-        browser(), embedded_test_server()->GetURL("/simple.html"));
-    DownloadAndWait(browser(), download_url);
-    histogram_tester.ExpectUniqueSample(
-        "Security.SafetyTips.DownloadStarted",
-        security_state::SafetyTipStatus::kBadReputation, 1);
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/simple.html"));
+  DownloadAndWait(browser(), download_url);
+  histogram_tester.ExpectUniqueSample(
+      "Security.SafetyTips.DownloadStarted",
+      security_state::SafetyTipStatus::kBadReputation, 1);
 
-    // Test that no Safety Tip status is recorded for a download in a new tab.
-    ui_test_utils::NavigateToURL(
-        browser(), embedded_test_server()->GetURL("/simple.html"));
-    DownloadAndWaitWithDisposition(browser(), download_url,
-                                   WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                                   ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-    histogram_tester.ExpectUniqueSample(
-        "Security.SafetyTips.DownloadStarted",
-        security_state::SafetyTipStatus::kBadReputation, 1);
-  }
+  // Test that no Safety Tip status is recorded for a download in a new tab.
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/simple.html"));
+  DownloadAndWaitWithDisposition(browser(), download_url,
+                                 WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                                 ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  histogram_tester.ExpectUniqueSample(
+      "Security.SafetyTips.DownloadStarted",
+      security_state::SafetyTipStatus::kBadReputation, 1);
 }
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         DownloadTestWithOptionalSafetyTipsFeature,
+                         ::testing::Bool());
 
 // Tests that opening the downloads page will cause file existence check.
 IN_PROC_BROWSER_TEST_F(DownloadTest, FileExistenceCheckOpeningDownloadsPage) {

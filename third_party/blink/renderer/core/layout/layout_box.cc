@@ -3188,7 +3188,7 @@ bool LayoutBox::ColumnFlexItemHasStretchAlignment() const {
 
 bool LayoutBox::IsStretchingColumnFlexItem() const {
   LayoutObject* parent = Parent();
-  if (parent->IsDeprecatedFlexibleBox() &&
+  if (parent->StyleRef().IsDeprecatedWebkitBox() &&
       parent->StyleRef().BoxOrient() == EBoxOrient::kVertical &&
       parent->StyleRef().BoxAlign() == EBoxAlignment::kStretch)
     return true;

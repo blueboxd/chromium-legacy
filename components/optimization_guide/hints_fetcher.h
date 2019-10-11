@@ -96,8 +96,9 @@ class HintsFetcher {
   void UpdateHostsSuccessfullyFetched();
 
   // Returns the subset of hosts from |hosts| for which the hints should be
-  // refreshed.
-  std::vector<std::string> GetHostsDueForHintsRefresh(
+  // refreshed. The count of returned hosts is limited to
+  // features::MaxHostsForOptimizationGuideServiceHintsFetch().
+  std::vector<std::string> GetSizeLimitedHostsDueForHintsRefresh(
       const std::vector<std::string>& hosts) const;
 
   // Used to hold the GetHintsRequest being constructed and sent as a remote

@@ -371,6 +371,7 @@ void LayerTreeHost::FinishCommitOnImplThread(
     TRACE_EVENT0("cc", "LayerTreeHost::AnimationHost::PushProperties");
     DCHECK(host_impl->mutator_host());
     mutator_host_->PushPropertiesTo(host_impl->mutator_host());
+    MoveChangeTrackingToLayers(sync_tree);
 
     // Updating elements affects whether animations are in effect based on their
     // properties so run after pushing updated animation properties.
@@ -402,6 +403,27 @@ void LayerTreeHost::FinishCommitOnImplThread(
             << sync_tree->property_trees()->ToString() << "\n"
             << "cc::LayerImpls:\n"
             << sync_tree->LayerListAsJson();
+  }
+}
+
+void LayerTreeHost::MoveChangeTrackingToLayers(LayerTreeImpl* tree_impl) {
+  // This is only true for single-thread compositing (i.e. not via Blink).
+  bool property_trees_changed_on_active_tree =
+      tree_impl->IsActiveTree() && tree_impl->property_trees()->changed;
+
+  if (property_trees_changed_on_active_tree) {
+    // Property trees may store damage status. We preserve the sync tree damage
+    // status by pushing the damage status from sync tree property trees to main
+    // thread property trees or by moving it onto the layers.
+    if (root_layer_) {
+      if (property_trees_.sequence_number ==
+          tree_impl->property_trees()->sequence_number)
+        tree_impl->property_trees()->PushChangeTrackingTo(&property_trees_);
+      else
+        tree_impl->MoveChangeTrackingToLayers();
+    }
+  } else {
+    tree_impl->MoveChangeTrackingToLayers();
   }
 }
 

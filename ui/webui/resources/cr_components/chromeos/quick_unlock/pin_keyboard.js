@@ -492,12 +492,20 @@ Polymer({
   },
 
   /**
-   * Catch and stop propagation of context menu events since we the backspace
-   * button can be held down on touch.
-   * @param {!Event} e
+   * @param {!MouseEvent} e
    * @private
    */
-  onContextMenu_: function(e) {
+  onBackspaceContextMenu_: function(e) {
+    // Note: If e.which is 0, this represents "no button" (i.e., a long-press).
+    // If this event was triggered by another value (e.g., right click - 3),
+    // return early and allow the context menu to be shown.
+    if (e.which) {
+      return;
+    }
+
+    // If the user was long-pressing the backspace button, that user likely was
+    // trying to remove several numbers from the PIN text field rapidly, so
+    // don't show the context menu.
     e.preventDefault();
     e.stopPropagation();
   },

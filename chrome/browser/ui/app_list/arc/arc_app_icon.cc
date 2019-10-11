@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -267,7 +268,8 @@ ArcAppIcon::ArcAppIcon(content::BrowserContext* context,
 
   const std::vector<ui::ScaleFactor>& scale_factors =
       ui::GetSupportedScaleFactors();
-  incomplete_scale_factors_.insert(scale_factors.begin(), scale_factors.end());
+  for (const auto& scale_factor : scale_factors)
+    incomplete_scale_factors_.insert({scale_factor, base::Time::Now()});
 }
 
 ArcAppIcon::~ArcAppIcon() {
@@ -276,13 +278,14 @@ ArcAppIcon::~ArcAppIcon() {
 void ArcAppIcon::LoadSupportedScaleFactors() {
   if (serve_compressed_icons_) {
     for (auto scale_factor : incomplete_scale_factors_)
-      LoadForScaleFactor(scale_factor);
+      LoadForScaleFactor(scale_factor.first);
   } else {
     // Calling GetRepresentation indirectly calls LoadForScaleFactor but also
     // first initializes image_skia_ with the placeholder icons (e.g.
     // IDR_APP_DEFAULT_ICON), via ArcAppIcon::Source::GetImageForScale.
     for (auto scale_factor : incomplete_scale_factors_)
-      image_skia_.GetRepresentation(ui::GetScaleForScaleFactor(scale_factor));
+      image_skia_.GetRepresentation(
+          ui::GetScaleForScaleFactor(scale_factor.first));
   }
 }
 
@@ -418,8 +421,16 @@ void ArcAppIcon::UpdateUncompressed(ui::ScaleFactor scale_factor,
   image_skia_.AddRepresentation(image_rep);
   image_skia_.RemoveUnsupportedRepresentationsForScale(image_rep.scale());
 
+  if (icon_loaded_count_++ < 5) {
+    base::UmaHistogramTimes(
+        "Arc.IconLoadFromFileTime.uncompressedFirst5",
+        base::Time::Now() - incomplete_scale_factors_[scale_factor]);
+  } else {
+    base::UmaHistogramTimes(
+        "Arc.IconLoadFromFileTime.uncompressedOthers",
+        base::Time::Now() - incomplete_scale_factors_[scale_factor]);
+  }
   incomplete_scale_factors_.erase(scale_factor);
-
   observer_->OnIconUpdated(this);
 }
 
@@ -427,6 +438,16 @@ void ArcAppIcon::UpdateCompressed(ui::ScaleFactor scale_factor,
                                   std::string data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   compressed_images_[scale_factor] = std::move(data);
+
+  if (icon_loaded_count_++ < 5) {
+    base::UmaHistogramTimes(
+        "Arc.IconLoadFromFileTime.compressedFirst5",
+        base::Time::Now() - incomplete_scale_factors_[scale_factor]);
+  } else {
+    base::UmaHistogramTimes(
+        "Arc.IconLoadFromFileTime.compressedOthers",
+        base::Time::Now() - incomplete_scale_factors_[scale_factor]);
+  }
   incomplete_scale_factors_.erase(scale_factor);
   observer_->OnIconUpdated(this);
 }

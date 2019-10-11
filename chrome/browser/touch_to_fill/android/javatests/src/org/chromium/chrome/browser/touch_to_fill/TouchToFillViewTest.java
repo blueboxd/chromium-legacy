@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CREDENTIAL_LIST;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ORIGIN_SECURE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollUiThread;
 
@@ -93,17 +94,21 @@ public class TouchToFillViewTest {
     public void testSubtitleUrlChangedByModel() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.set(FORMATTED_URL, "www.example.org");
+            mModel.set(ORIGIN_SECURE, true);
             mModel.set(VISIBLE, true);
         });
         pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
         TextView subtitle =
                 mTouchToFillView.getContentView().findViewById(R.id.touch_to_fill_sheet_subtitle);
 
-        assertThat(subtitle.getText(), is(getFormattedSubtitle("www.example.org")));
+        assertThat(subtitle.getText(), is("www.example.org"));
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(FORMATTED_URL, "m.example.org"));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.set(FORMATTED_URL, "m.example.org");
+            mModel.set(ORIGIN_SECURE, false);
+        });
 
-        assertThat(subtitle.getText(), is(getFormattedSubtitle("m.example.org")));
+        assertThat(subtitle.getText(), is(getFormattedNotSecureSubtitle("m.example.org")));
     }
 
     @Test
@@ -171,8 +176,8 @@ public class TouchToFillViewTest {
         return mActivityTestRule.getActivity();
     }
 
-    private String getFormattedSubtitle(String url) {
-        return getActivity().getString(R.string.touch_to_fill_sheet_subtitle, url);
+    private String getFormattedNotSecureSubtitle(String url) {
+        return getActivity().getString(R.string.touch_to_fill_sheet_subtitle_not_secure, url);
     }
 
     private @SheetState int getBottomSheetState() {

@@ -18,7 +18,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
-import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
@@ -89,15 +89,18 @@ class StatusMediator {
     private StatusMediatorDelegate mDelegate;
     private Resources mResources;
     private ToolbarCommonPropertiesModel mToolbarCommonPropertiesModel;
+    private UrlBarEditingTextStateProvider mUrlBarEditingTextStateProvider;
     private String mUrlBarTextWithAutocomplete = "";
     private boolean mUrlBarTextIsValidUrl;
 
-    StatusMediator(PropertyModel model, Resources resources) {
+    StatusMediator(PropertyModel model, Resources resources,
+            UrlBarEditingTextStateProvider urlBarEditingTextStateProvider) {
         mModel = model;
         mDelegate = new StatusMediatorDelegate();
         updateColorTheme();
 
         mResources = resources;
+        mUrlBarEditingTextStateProvider = urlBarEditingTextStateProvider;
     }
 
     /**
@@ -497,8 +500,13 @@ class StatusMediator {
         return 0;
     }
 
-    /** @see {@link UrlBar.UrlTextChangeListener} */
-    void onTextChanged(String urlTextWithoutAutocomplete, String urlTextWithAutocomplete) {
+    /** @see android.text.TextWatcher#onTextChanged */
+    void onTextChanged(CharSequence charSequence) {
+        // TODO (crbug.com/1012870): This is a workaround for the linked bug. Once the bug is fixed,
+        //                           it should be removed.
+        String urlTextWithAutocomplete = TextUtils.isEmpty(charSequence)
+                ? ""
+                : mUrlBarEditingTextStateProvider.getTextWithAutocomplete();
         if (TextUtils.equals(mUrlBarTextWithAutocomplete, urlTextWithAutocomplete)) {
             return;
         }

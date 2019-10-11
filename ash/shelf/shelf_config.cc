@@ -179,10 +179,7 @@ int ShelfConfig::control_size() const {
   if (!IsTabletMode())
     return 36;
 
-  if (is_dense_)
-    return is_in_app() ? 28 : 36;
-  else
-    return is_in_app() ? 30 : 40;
+  return is_dense_ ? 36 : 40;
 }
 
 int ShelfConfig::control_border_radius() const {

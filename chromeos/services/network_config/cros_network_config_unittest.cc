@@ -740,7 +740,8 @@ TEST_F(CrosNetworkConfigTest, SetProperties) {
 
   // Set priority.
   auto config = mojom::ConfigProperties::New();
-  config->type = mojom::NetworkType::kWiFi;
+  config->type_config = mojom::NetworkTypeConfigProperties::NewWifi(
+      mojom::WiFiConfigProperties::New());
   config->priority = mojom::PriorityConfig::New();
   config->priority->value = 1;
   bool success = SetProperties(kGUID, std::move(config));
@@ -757,7 +758,8 @@ TEST_F(CrosNetworkConfigTest, SetProperties) {
 
   // Set auto connect only. Priority should remain unchanged.
   config = mojom::ConfigProperties::New();
-  config->type = mojom::NetworkType::kWiFi;
+  config->type_config = mojom::NetworkTypeConfigProperties::NewWifi(
+      mojom::WiFiConfigProperties::New());
   config->auto_connect = mojom::AutoConnectConfig::New();
   config->auto_connect->value = true;
   success = SetProperties(kGUID, std::move(config));
@@ -780,9 +782,10 @@ TEST_F(CrosNetworkConfigTest, ConfigureNetwork) {
   const std::string ssid = "new_wifi_ssid";
   // Configure a new wifi network.
   auto config = mojom::ConfigProperties::New();
-  config->type = mojom::NetworkType::kWiFi;
-  config->wifi = mojom::WiFiConfigProperties::New();
-  config->wifi->ssid = ssid;
+  auto wifi = mojom::WiFiConfigProperties::New();
+  wifi->ssid = ssid;
+  config->type_config =
+      mojom::NetworkTypeConfigProperties::NewWifi(std::move(wifi));
   std::string guid = ConfigureNetwork(std::move(config), shared);
   EXPECT_FALSE(guid.empty());
 

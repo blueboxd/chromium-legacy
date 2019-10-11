@@ -2782,7 +2782,9 @@ const char kClientCertificateManagementAllowed[] =
 // Controlled by CACertificateManagementAllowed policy.
 const char kCACertificateManagementAllowed[] =
     "ca_certificate_management_allowed";
+#endif
 
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
 // Boolean that specifies whether the built-in certificate verifier should be
 // used. If false, Chrome will use the platform certificate verifier. If not
 // set, Chrome will choose the certificate verifier based on experiments.

@@ -17,4 +17,12 @@ FetchClientSettingsObjectFromWebToMojom(
       web_settings_object.insecure_requests_policy);
 }
 
+blink::WebFetchClientSettingsObject FetchClientSettingsObjectFromMojomToWeb(
+    const blink::mojom::FetchClientSettingsObjectPtr& mojom_settings_object) {
+  return blink::WebFetchClientSettingsObject(
+      mojom_settings_object->referrer_policy,
+      mojom_settings_object->outgoing_referrer,
+      mojom_settings_object->insecure_requests_policy);
+}
+
 }  // namespace content

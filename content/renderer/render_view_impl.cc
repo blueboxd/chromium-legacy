@@ -78,7 +78,6 @@
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
-#include "content/renderer/render_widget_screen_metrics_emulator.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/savable_resources.h"
 #include "content/renderer/v8_value_converter_impl.h"
@@ -516,7 +515,12 @@ void RenderViewImpl::Initialize(
         page_properties(), params->visual_properties.display_mode,
         /*is_undead=*/true, params->never_visible);
     undead_render_widget_->set_delegate(this);
-    undead_render_widget_->InitForMainFrame(std::move(show_callback));
+    // We intentionally pass in a null webwidget since it is not needed
+    // for remote frames, and we don't have one or a ScreenInfo until we have
+    // a local main frame.
+    undead_render_widget_->InitForMainFrame(std::move(show_callback),
+                                            /*web_frame_widget=*/nullptr,
+                                            /*screen_info=*/nullptr);
 
     RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id, GetRoutingID(),
                                        opener_frame, MSG_ROUTING_NONE,
@@ -1049,15 +1053,6 @@ void RenderViewImpl::Destroy() {
   // to do it here.
   bool close_render_widget_here = !main_render_frame_;
 
-  // Disable emulation before destroying everything. Turning off emulation
-  // accesses the WebViewImpl and the main frame (if it exists).
-  // TODO(danakj): Since we are being destroyed, is there even a reason to turn
-  // emulation off before closing?
-  if (page_properties()->ScreenMetricsEmulator()) {
-    page_properties()->ScreenMetricsEmulator()->DisableAndApply();
-    page_properties()->SetScreenMetricsEmulator(nullptr);
-  }
-
   webview_->Close();
   // The webview_ is already destroyed by the time we get here, remove any
   // references to it.
@@ -1473,12 +1468,12 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   RenderWidget::ShowCallback opener_callback = base::BindOnce(
       &RenderViewImpl::ShowCreatedPopupWidget, weak_ptr_factory_.GetWeakPtr());
 
-  RenderWidget* render_widget =
+  RenderWidget* opener_render_widget =
       RenderFrameImpl::FromWebFrame(creator)->GetLocalRootRenderWidget();
 
   RenderWidget* popup_widget = RenderWidget::CreateForPopup(
-      widget_routing_id, render_widget->compositor_deps(), page_properties(),
-      blink::mojom::DisplayMode::kUndefined,
+      widget_routing_id, opener_render_widget->compositor_deps(),
+      page_properties(), blink::mojom::DisplayMode::kUndefined,
       /*hidden=*/false,
       /*never_visible=*/false, std::move(widget_channel_receiver));
 
@@ -1490,7 +1485,9 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   // Adds a self-reference on the |popup_widget| so it will not be destroyed
   // when leaving scope. The WebPagePopup takes responsibility for Close()ing
   // and thus destroying the RenderWidget.
-  popup_widget->InitForPopup(std::move(opener_callback), popup_web_widget);
+  popup_widget->InitForPopup(std::move(opener_callback), opener_render_widget,
+                             popup_web_widget,
+                             opener_render_widget->GetOriginalScreenInfo());
   // TODO(crbug.com/419087): RenderWidget has some weird logic for picking a
   // WebWidget which doesn't apply to this case. So we verify. This can go away
   // when RenderWidget::GetWebWidget() is just a simple accessor.
@@ -1543,16 +1540,10 @@ void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
   // The previous WebFrameWidget must already be detached by
   // DetachWebFrameWidget().
   DCHECK(!render_widget_->GetWebWidget());
-
   render_widget_->SetWebWidgetInternal(frame_widget);
 
-  // Initialization for the WebFrameWidget that should only occur for the main
-  // frame, and that uses types not allowed in blink. This should maybe be
-  // passed to the creation of the WebFrameWidget or the main RenderFrame.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  render_widget_->SetShowFPSCounter(
-      command_line.HasSwitch(cc::switches::kShowFPSCounter));
+  // Note that when a main frame RenderWidget is created with a main frame, then
+  // this method is not used, so other initialization should not be done here.
 }
 
 void RenderViewImpl::DetachWebFrameWidget() {
@@ -1574,7 +1565,7 @@ void RenderViewImpl::DetachWebFrameWidget() {
     // detached and replaced with a remote frame proxy. We can't close the
     // RenderWidget, and it is marked undead instead, but we do need to close
     // the WebFrameWidget and remove it from the RenderWidget.
-    render_widget_->SetIsUndead(true);
+    render_widget_->SetIsUndead();
     // The WebWidget needs to be closed even though the RenderWidget won't be
     // closed here (since it is marked undead instead).
     render_widget_->GetWebWidget()->Close();
@@ -1893,10 +1884,6 @@ int RenderViewImpl::GetRoutingID() {
   return routing_id_;
 }
 
-float RenderViewImpl::GetDeviceScaleFactor() {
-  return page_properties()->GetDeviceScaleFactor();
-}
-
 float RenderViewImpl::GetZoomLevel() {
   return page_zoom_level_;
 }
@@ -1929,9 +1916,10 @@ void RenderViewImpl::ApplyPageHidden(bool hidden, bool initial_setting) {
   // does not change when tests override the visibility of the Page.
 }
 
-void RenderViewImpl::ReviveUndeadMainFrameRenderWidget() {
+void RenderViewImpl::ReviveUndeadMainFrameRenderWidget(
+    const ScreenInfo& screen_info) {
   render_widget_ = std::move(undead_render_widget_);
-  render_widget_->SetIsUndead(false);
+  render_widget_->SetIsRevivedFromUndead(screen_info);
 }
 
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
@@ -2044,33 +2032,23 @@ void RenderViewImpl::OnPageWasShown() {
 void RenderViewImpl::OnUpdateVisualProperties(
     const VisualProperties& visual_properties,
     int widget_routing_id) {
-  // TODO(https://crbug.com/998273): We should not forward visual properties to
-  // frozen render widgets.
   // The widget may have been destroyed while the IPC was in flight.
   RenderWidget* widget = RenderWidget::FromRoutingID(widget_routing_id);
-  if (widget) {
+  if (widget && !widget->IsUndeadOrProvisional())
     widget->SynchronizeVisualPropertiesFromRenderView(visual_properties);
-  }
 }
 
 void RenderViewImpl::OnUpdatePageVisualProperties(
-    const gfx::Size& viewport_size) {
+    const gfx::Size& viewport_size_for_blink) {
   // TODO(https://crbug.com/998273): Handle visual_properties appropriately.
   // Using this pathway to update the visual viewport should only happen for
   // remote main frames. Local main frames will update the viewport size by
   // RenderWidget calling RenderViewImpl::ResizeVisualViewport() directly.
-  if (!main_render_frame_) {
-    // Since the viewport size comes directly from the browser, we may
-    // need to adjust it for device scale factor.
-    // TODO(wjmaclean): we should look into having the browser apply this scale
-    // before sending the viewport size.
-    gfx::Size device_scale_factor_scaled_visual_viewport_size = viewport_size;
-    if (RenderThreadImpl::current()->IsUseZoomForDSFEnabled()) {
-      device_scale_factor_scaled_visual_viewport_size = gfx::ScaleToCeiledSize(
-          viewport_size, GetScreenInfo().device_scale_factor);
-    }
-    webview()->Resize(device_scale_factor_scaled_visual_viewport_size);
-  }
+  // TODO(danakj): This should be part of VisualProperties and walk down the
+  // RenderWidget tree like other VisualProperties do, in order to set the
+  // value in each WebView holds a part of the local frame tree.
+  if (!main_render_frame_)
+    webview()->Resize(viewport_size_for_blink);
 }
 
 void RenderViewImpl::ResizeVisualViewportForWidget(
@@ -2166,43 +2144,6 @@ void RenderViewImpl::DidFocus(blink::WebLocalFrame* calling_frame) {
     if (calling_render_frame)
       calling_render_frame->FrameDidCallFocus();
   }
-}
-
-blink::WebScreenInfo RenderViewImpl::GetScreenInfo() {
-  const ScreenInfo& info = page_properties()->GetScreenInfo();
-
-  blink::WebScreenInfo web_screen_info;
-  web_screen_info.device_scale_factor = info.device_scale_factor;
-  web_screen_info.color_space = info.color_space;
-  web_screen_info.depth = info.depth;
-  web_screen_info.depth_per_component = info.depth_per_component;
-  web_screen_info.is_monochrome = info.is_monochrome;
-  web_screen_info.rect = blink::WebRect(info.rect);
-  web_screen_info.available_rect = blink::WebRect(info.available_rect);
-  switch (info.orientation_type) {
-    case SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationPortraitPrimary;
-      break;
-    case SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationPortraitSecondary;
-      break;
-    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationLandscapePrimary;
-      break;
-    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationLandscapeSecondary;
-      break;
-    default:
-      web_screen_info.orientation_type = blink::kWebScreenOrientationUndefined;
-      break;
-  }
-  web_screen_info.orientation_angle = info.orientation_angle;
-
-  return web_screen_info;
 }
 
 #if defined(OS_ANDROID)

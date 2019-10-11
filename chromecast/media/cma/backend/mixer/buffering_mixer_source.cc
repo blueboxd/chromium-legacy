@@ -240,6 +240,11 @@ int BufferingMixerSource::playout_channel() {
   return playout_channel_;
 }
 
+bool BufferingMixerSource::active() {
+  base::AutoLock lock(lock_);
+  return !paused_;
+}
+
 void BufferingMixerSource::WritePcm(scoped_refptr<DecoderBufferBase> data) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
@@ -301,13 +306,16 @@ BufferingMixerSource::RenderingDelay BufferingMixerSource::QueueData(
 void BufferingMixerSource::SetPaused(bool paused) {
   LOG(INFO) << (paused ? "Pausing " : "Unpausing ") << device_id_ << " ("
             << this << ")";
-  base::AutoLock lock(lock_);
-  // Clear start timestamp, since a pause should invalidate the start timestamp
-  // anyway. The AV sync code can restart (hard correction) on resume if
-  // needed.
-  playback_start_timestamp_ = INT64_MIN;
-  mixer_rendering_delay_ = RenderingDelay();
-  paused_ = paused;
+  {
+    base::AutoLock lock(lock_);
+    // Clear start timestamp, since a pause should invalidate the start
+    // timestamp anyway. The AV sync code can restart (hard correction) on
+    // resume if needed.
+    playback_start_timestamp_ = INT64_MIN;
+    mixer_rendering_delay_ = RenderingDelay();
+    paused_ = paused;
+  }
+  mixer_->UpdateStreamCounts();
 }
 
 void BufferingMixerSource::SetVolumeMultiplier(float multiplier) {

@@ -934,4 +934,60 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardIfConnectedToBluetooth) {
       ->SetIsConnectedToBluetoothDevice(false);
 }
 
+TEST_F(TabLifecycleUnitTest, CannotFreezeIfHoldingWebLock) {
+  TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
+                                      usage_clock_.get(), web_contents_,
+                                      tab_strip_model_.get());
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
+                                                   LoadingState::LOADED);
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+
+  DecisionDetails decision_details;
+  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
+
+  tab_lifecycle_unit.SetIsHoldingWebLock(true);
+
+  // A tab holding a WebLock can't be frozen.
+  decision_details.Clear();
+  EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionFailureReason::LIVE_STATE_USING_WEBLOCK,
+            decision_details.FailureReason());
+
+  // This tab should still be discardable.
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+
+  tab_lifecycle_unit.SetIsHoldingWebLock(false);
+}
+
+TEST_F(TabLifecycleUnitTest, CannotFreezeIfHoldingIndexedDBLock) {
+  TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
+                                      usage_clock_.get(), web_contents_,
+                                      tab_strip_model_.get());
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
+                                                   LoadingState::LOADED);
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+
+  DecisionDetails decision_details;
+  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
+
+  tab_lifecycle_unit.SetIsHoldingIndexedDBLock(true);
+
+  // A tab holding an IndexedDB Lock can't be frozen.
+  decision_details.Clear();
+  EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionFailureReason::LIVE_STATE_USING_INDEXEDDB_LOCK,
+            decision_details.FailureReason());
+
+  // This tab should still be discardable.
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+
+  tab_lifecycle_unit.SetIsHoldingIndexedDBLock(false);
+}
+
 }  // namespace resource_coordinator

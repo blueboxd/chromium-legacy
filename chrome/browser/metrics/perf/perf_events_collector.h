@@ -40,10 +40,6 @@ class PerfCollector : public internal::MetricCollector {
   const char* ToolName() const override;
 
  protected:
-  // Returns the perf proto type associated with the given vector of perf
-  // arguments, starting with "perf" itself in |args[0]|.
-  static PerfProtoType GetPerfProtoType(const std::vector<std::string>& args);
-
   // For testing to mock PerfOutputCall.
   virtual std::unique_ptr<PerfOutputCall> CreatePerfOutputCall(
       base::TimeDelta duration,
@@ -53,19 +49,17 @@ class PerfCollector : public internal::MetricCollector {
   void OnPerfOutputComplete(
       std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
       std::unique_ptr<SampledProfile> sampled_profile,
-      PerfProtoType type,
       bool has_cycles,
       std::string perf_stdout);
 
-  // Parses a PerfDataProto or PerfStatProto from serialized data |perf_stdout|,
-  // if non-empty. Which proto to use depends on |subcommand|. If |perf_stdout|
-  // is empty, it is counted as an error. |incognito_observer| indicates
-  // whether an incognito window had been opened during the profile collection
-  // period. If there was an incognito window, discard the incoming data.
+  // Parses a PerfDataProto from serialized data |perf_stdout|, if non-empty.
+  // If |perf_stdout| is empty, it is counted as an error. |incognito_observer|
+  // indicates whether an incognito window had been opened during the profile
+  // collection period. If there was an incognito window, discard the incoming
+  // data.
   void ParseOutputProtoIfValid(
       std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
       std::unique_ptr<SampledProfile> sampled_profile,
-      PerfProtoType type,
       bool has_cycles,
       std::string perf_stdout);
 

@@ -13,7 +13,8 @@
 #include "base/component_export.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/origin_policy/origin_policy_constants.h"
 #include "services/network/origin_policy/origin_policy_header_values.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
@@ -37,9 +38,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyManager
   explicit OriginPolicyManager(NetworkContext* owner_network_context);
   ~OriginPolicyManager() override;
 
-  // Bind a request to this object.  Mojo messages coming through the associated
-  // pipe will be served by this object.
-  void AddBinding(mojom::OriginPolicyManagerRequest request);
+  // Bind a receiver to this object.  Mojo messages coming through the
+  // associated pipe will be served by this object.
+  void AddReceiver(mojo::PendingReceiver<mojom::OriginPolicyManager> receiver);
 
   // mojom::OriginPolicyManager
   void RetrieveOriginPolicy(const url::Origin& origin,
@@ -65,8 +66,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyManager
                    const GURL& policy_url);
 
   // ForTesting methods
-  mojo::BindingSet<mojom::OriginPolicyManager>& GetBindingsForTesting() {
-    return bindings_;
+  mojo::ReceiverSet<mojom::OriginPolicyManager>& GetReceiversForTesting() {
+    return receivers_;
   }
 
   static OriginPolicyHeaderValues
@@ -109,12 +110,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyManager
   // Used for fetching requests
   mojom::URLLoaderFactoryPtr url_loader_factory_;
 
-  // This object's set of bindings.
+  // This object's set of receivers.
   // This MUST be below origin_policy_fetchers_ to ensure it is destroyed before
   // it. Otherwise it's possible that un-invoked OnceCallbacks owned by members
-  // of origin_policy_fetchers_ will be destroyed before the beinding they are
+  // of origin_policy_fetchers_ will be destroyed before the receiver they are
   // on is destroyed.
-  mojo::BindingSet<mojom::OriginPolicyManager> bindings_;
+  mojo::ReceiverSet<mojom::OriginPolicyManager> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyManager);
 };

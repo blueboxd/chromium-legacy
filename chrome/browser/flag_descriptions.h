@@ -1832,6 +1832,9 @@ extern const char kMacViewsTaskManagerDescription[];
 extern const char kMacSystemMediaPermissionsInfoUiName[];
 extern const char kMacSystemMediaPermissionsInfoUiDescription[];
 
+extern const char kMetalName[];
+extern const char kMetalDescription[];
+
 // Non-Mac --------------------------------------------------------------------
 
 #else  // !defined(OS_MACOSX)
@@ -1943,6 +1946,9 @@ extern const char kCrostiniUsbAllowUnsupportedDescription[];
 
 extern const char kCrostiniWebUIInstallerName[];
 extern const char kCrostiniWebUIInstallerDescription[];
+
+extern const char kCryptAuthV2DeviceSyncName[];
+extern const char kCryptAuthV2DeviceSyncDescription[];
 
 extern const char kCryptAuthV2EnrollmentName[];
 extern const char kCryptAuthV2EnrollmentDescription[];
@@ -2354,8 +2360,8 @@ extern const char kAutofillCreditCardUploadDescription[];
 
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
-extern const char kAvoidFlashBetweenNavigationName[];
-extern const char kAvoidFlahsBetweenNavigationDescription[];
+extern const char kPaintHoldingName[];
+extern const char kPaintHoldingDescription[];
 
 #if defined(WEBRTC_USE_PIPEWIRE)
 

@@ -5,8 +5,10 @@
 
 goog.provide('mojo.internal');
 
+// "self" is always defined as opposed to "this", which isn't defined in
+// modules, or "window", which isn't defined in workers.
 /** @const {!Object} */
-mojo.internal.globalScope = this;
+mojo.internal.globalScope = self;
 
 /**
  * This is effectively the same as goog.provide, but it's made available under

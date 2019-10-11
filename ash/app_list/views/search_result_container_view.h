@@ -97,8 +97,8 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   void ListItemMoved(size_t index, size_t target_index) override;
   void ListItemsChanged(size_t start, size_t count) override;
 
-  // Returns the first result in the container view. Returns NULL if it does not
-  // exist.
+  // Returns the first result in the container view. Returns nullptr if it does
+  // not exist.
   virtual SearchResultBaseView* GetFirstResultView();
 
   // Called from SearchResultPageView OnShown/OnHidden

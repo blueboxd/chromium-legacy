@@ -49,7 +49,8 @@ LearningTaskControllerImpl::~LearningTaskControllerImpl() = default;
 
 void LearningTaskControllerImpl::BeginObservation(
     base::UnguessableToken id,
-    const FeatureVector& features) {
+    const FeatureVector& features,
+    const base::Optional<TargetValue>& default_target) {
   // TODO(liberato): Should we enforce that the right number of features are
   // present here?  Right now, we allow it to be shorter, so that features from
   // a FeatureProvider may be omitted.  Of course, they have to be at the end in
@@ -57,6 +58,12 @@ void LearningTaskControllerImpl::BeginObservation(
   // starts adding the placeholder features.
   if (!trainer_)
     return;
+
+  // We don't support default targets, since we're the base learner and can't
+  // easily do that.  However, defaults are handled by (weak) controllers
+  // handed out by LearningSessionImpl.  So, we don't bother since they never
+  // get here anyway.
+  DCHECK(!default_target);
 
   helper_->BeginObservation(id, features);
 }

@@ -82,10 +82,6 @@ NSSCertDatabase::NSSCertDatabase(crypto::ScopedPK11Slot public_slot,
 
 NSSCertDatabase::~NSSCertDatabase() = default;
 
-ScopedCERTCertificateList NSSCertDatabase::ListCertsSync() {
-  return ListCertsImpl(crypto::ScopedPK11Slot());
-}
-
 void NSSCertDatabase::ListCerts(ListCertsCallback callback) {
   base::PostTaskAndReplyWithResult(
       FROM_HERE,

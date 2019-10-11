@@ -3699,6 +3699,8 @@ class MockGLImage : public gl::GLImage {
   // Overridden from gl::GLImage:
   MOCK_METHOD0(GetSize, gfx::Size());
   MOCK_METHOD0(GetInternalFormat, unsigned());
+  MOCK_METHOD0(GetDataFormat, unsigned());
+  MOCK_METHOD0(GetDataType, unsigned());
   MOCK_METHOD0(ShouldBindOrCopy, gl::GLImage::BindOrCopy());
   MOCK_METHOD1(BindTexImage, bool(unsigned));
   MOCK_METHOD1(ReleaseTexImage, void(unsigned));
@@ -3752,6 +3754,14 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImage) {
   EXPECT_CALL(*image.get(), GetInternalFormat())
       .Times(1)
       .WillOnce(Return(GL_RGBA))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*image.get(), GetDataFormat())
+      .Times(1)
+      .WillOnce(Return(GL_RGBA))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*image.get(), GetDataType())
+      .Times(1)
+      .WillOnce(Return(GL_UNSIGNED_BYTE))
       .RetiresOnSaturation();
   // ScopedGLErrorSuppressor calls GetError on its constructor and destructor.
   DoBindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId);
@@ -3816,6 +3826,14 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImage) {
   EXPECT_CALL(*image.get(), GetInternalFormat())
       .Times(1)
       .WillOnce(Return(GL_RGBA))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*image.get(), GetDataFormat())
+      .Times(1)
+      .WillOnce(Return(GL_RGBA))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*image.get(), GetDataType())
+      .Times(1)
+      .WillOnce(Return(GL_UNSIGNED_BYTE))
       .RetiresOnSaturation();
   DoBindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId);
 

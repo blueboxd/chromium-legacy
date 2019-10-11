@@ -320,6 +320,11 @@ def AddEmulatorOptions(parser):
       type=int,
       default=1,
       help='Number of emulators to use.')
+  parser.add_argument(
+      '--emulator-window',
+      action='store_true',
+      default=False,
+      help='Enable graphical window display on the emulator.')
 
 
 def AddGTestOptions(parser):

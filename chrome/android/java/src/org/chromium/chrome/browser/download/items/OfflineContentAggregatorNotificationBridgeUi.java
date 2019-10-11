@@ -10,7 +10,6 @@ import org.chromium.chrome.browser.download.DownloadNotifier;
 import org.chromium.chrome.browser.download.DownloadServiceDelegate;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LaunchLocation;
-import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
@@ -150,7 +149,7 @@ public class OfflineContentAggregatorNotificationBridgeUi
     private void pushItemToUi(OfflineItem item, OfflineItemVisuals visuals) {
         // TODO(http://crbug.com/855141): Find a cleaner way to hide unimportant UI updates.
         // If it's a suggested page, do not add it to the notification UI.
-        if (LegacyHelpers.isLegacyOfflinePage(item.id) && item.isSuggested) return;
+        if (item.isSuggested) return;
 
         DownloadInfo info = DownloadInfo.fromOfflineItem(item, visuals);
         switch (item.state) {

@@ -96,6 +96,8 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
   virtual void StartDohProbes(URLRequestContext* context,
                               bool network_change) = 0;
 
+  virtual void CancelDohProbes() = 0;
+
   // Returns the default SecureDnsMode in the config.
   virtual DnsConfig::SecureDnsMode GetSecureDnsModeForTest() = 0;
 

@@ -967,16 +967,10 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 }
 
 // https://crbug.com/517492
-#if defined(OS_WIN)
 // Fails on XP: http://crbug.com/515717
-#define MAYBE_RemoveAllRulesAfterExtensionUninstall \
-  DISABLED_RemoveAllRulesAfterExtensionUninstall
-#else
-#define MAYBE_RemoveAllRulesAfterExtensionUninstall \
-  RemoveAllRulesAfterExtensionUninstall
-#endif
+// Fails on other platfomrs: http://crbug.com/1013457
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
-                       MAYBE_RemoveAllRulesAfterExtensionUninstall) {
+                       DISABLED_RemoveAllRulesAfterExtensionUninstall) {
   ext_dir_.WriteManifest(kDeclarativeContentManifest);
   ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
 
@@ -1014,7 +1008,6 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
   EXPECT_EQ("remove_rule1",
             ExecuteScriptInBackgroundPage(extension->id(), kRemoveTestRule1));
 }
-
 
 // TODO(wittman): Once ChromeContentRulesRegistry operates on condition and
 // action interfaces, add a test that checks that a navigation always evaluates

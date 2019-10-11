@@ -15,9 +15,8 @@ class TopHostProvider {
  public:
   virtual ~TopHostProvider() {}
 
-  // Returns a vector of at most |max_sites| top hosts, the order of hosts is
-  // not guaranteed.
-  virtual std::vector<std::string> GetTopHosts(size_t max_sites) = 0;
+  // Returns a vector of at top hosts, the order of hosts is not guaranteed.
+  virtual std::vector<std::string> GetTopHosts() = 0;
 
  protected:
   TopHostProvider() {}

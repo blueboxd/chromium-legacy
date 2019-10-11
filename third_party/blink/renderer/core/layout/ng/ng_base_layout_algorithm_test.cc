@@ -111,7 +111,7 @@ NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
   builder.SetPercentageResolutionSize(size);
   builder.SetTextDirection(direction);
   builder.SetIsShrinkToFit(shrink_to_fit);
-  builder.SetFragmentainerSpaceAtBfcStart(fragmentainer_space_available);
+  builder.SetFragmentainerBlockSize(fragmentainer_space_available);
   builder.SetFragmentationType(block_fragmentation);
   return builder.ToConstraintSpace();
 }

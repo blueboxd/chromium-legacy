@@ -42,8 +42,4 @@ double AmbientLightSensor::illuminance(bool& is_null) const {
   return GetReading().als.value;
 }
 
-void AmbientLightSensor::Trace(blink::Visitor* visitor) {
-  Sensor::Trace(visitor);
-}
-
 }  // namespace blink

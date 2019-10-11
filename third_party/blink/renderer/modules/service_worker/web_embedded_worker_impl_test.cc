@@ -217,7 +217,12 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
   }
 
   std::unique_ptr<WebEmbeddedWorkerStartData> CreateStartData() {
-    auto start_data = std::make_unique<WebEmbeddedWorkerStartData>();
+    WebFetchClientSettingsObject outside_settings_object(
+        network::mojom::ReferrerPolicy::kDefault,
+        /*outgoing_referrer=*/WebURL(script_url_),
+        blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade);
+    auto start_data = std::make_unique<WebEmbeddedWorkerStartData>(
+        std::move(outside_settings_object));
     start_data->script_url = script_url_;
     start_data->user_agent = WebString("dummy user agent");
     start_data->script_type = mojom::ScriptType::kClassic;

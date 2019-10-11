@@ -463,6 +463,18 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
         previews_state &= ~content::DEFER_ALL_SCRIPT_ON;
         UMA_HISTOGRAM_BOOLEAN(
             "Previews.DeferAllScript.RedirectLoopDetectedUsingCache", true);
+        if (previews_service->previews_ui_service()) {
+          previews::PreviewsDeciderImpl* previews_decider_impl =
+              previews_service->previews_ui_service()->previews_decider_impl();
+          DCHECK(previews_decider_impl);
+          std::vector<PreviewsEligibilityReason> passed_reasons;
+          previews_decider_impl->LogPreviewDecisionMade(
+              PreviewsEligibilityReason::REDIRECT_LOOP_DETECTED,
+              navigation_handle->GetURL(),
+              base::DefaultClock::GetInstance()->Now(),
+              PreviewsType::DEFER_ALL_SCRIPT, std::move(passed_reasons),
+              previews_data);
+        }
       }
     }
   }
@@ -478,6 +490,18 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
           previews_service->MatchesDeferAllScriptDenyListRegexp(url)) {
         previews_state &= ~content::DEFER_ALL_SCRIPT_ON;
         UMA_HISTOGRAM_BOOLEAN("Previews.DeferAllScript.DenyListMatch", true);
+        if (previews_service->previews_ui_service()) {
+          previews::PreviewsDeciderImpl* previews_decider_impl =
+              previews_service->previews_ui_service()->previews_decider_impl();
+          DCHECK(previews_decider_impl);
+          std::vector<PreviewsEligibilityReason> passed_reasons;
+          previews_decider_impl->LogPreviewDecisionMade(
+              PreviewsEligibilityReason::DENY_LIST_MATCHED,
+              navigation_handle->GetURL(),
+              base::DefaultClock::GetInstance()->Now(),
+              PreviewsType::DEFER_ALL_SCRIPT, std::move(passed_reasons),
+              previews_data);
+        }
       }
     }
   }

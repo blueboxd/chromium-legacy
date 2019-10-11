@@ -50,8 +50,10 @@ LocalDeviceInfoProviderImpl::RegisterOnInitializedCallback(
   return callback_list_.Add(callback);
 }
 
-void LocalDeviceInfoProviderImpl::Initialize(const std::string& cache_guid,
-                                             const std::string& session_name) {
+void LocalDeviceInfoProviderImpl::Initialize(
+    const std::string& cache_guid,
+    const std::string& session_name,
+    const base::SysInfo::HardwareInfo& hardware_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!cache_guid.empty());
 
@@ -60,6 +62,7 @@ void LocalDeviceInfoProviderImpl::Initialize(const std::string& cache_guid,
   local_device_info_ = std::make_unique<DeviceInfo>(
       cache_guid, session_name, version_, MakeUserAgentForSync(channel_),
       GetLocalDeviceType(), sync_client_->GetSigninScopedDeviceId(),
+      hardware_info,
       /*last_updated_timestamp=*/base::Time(),
       sync_client_->GetSendTabToSelfReceivingEnabled(),
       sync_client_->GetLocalSharingInfo());

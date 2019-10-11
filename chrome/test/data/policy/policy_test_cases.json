@@ -938,7 +938,7 @@
   },
 
   "BuiltinCertificateVerifierEnabled": {
-    "os": ["chromeos"],
+    "os": ["chromeos", "linux"],
     "test_policy": { "BuiltinCertificateVerifierEnabled": true },
     "pref_mappings": [
       { "pref": "builtin_certificate_verifier_enabled",
@@ -3866,6 +3866,10 @@
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "SharedClipboardEnabled": false },
     "pref_mappings": [{ "pref": "browser.shared_clipboard_enabled" }]
+  },
+
+  "AudioSandboxEnabled": {
+    "note": "This policy is used directly through the policy service instead of through a pref."
   },
 
   "----- Chrome OS device policies ---------------------------------------": {},

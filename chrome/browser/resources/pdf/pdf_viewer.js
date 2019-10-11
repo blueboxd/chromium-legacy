@@ -1009,9 +1009,10 @@ class PDFViewer {
 
     // TODO(raymes): Give pageIndicator_ the same API as toolbar_.
     if (this.pageIndicator_) {
+      const lastIndex = this.pageIndicator_.index;
       this.pageIndicator_.index = visiblePage;
       if (this.documentDimensions_.pageDimensions.length > 1 &&
-          hasScrollbars.vertical) {
+          hasScrollbars.vertical && lastIndex !== undefined) {
         this.pageIndicator_.style.visibility = 'visible';
       } else {
         this.pageIndicator_.style.visibility = 'hidden';

@@ -1966,13 +1966,15 @@ LayoutUnit NGBlockLayoutAlgorithm::PositionSelfCollapsingChildWithParentBfc(
 
 LayoutUnit NGBlockLayoutAlgorithm::FragmentainerSpaceAvailable() const {
   DCHECK(container_builder_.BfcBlockOffset());
-  return ConstraintSpace().FragmentainerSpaceAtBfcStart() -
+  return FragmentainerSpaceAtBfcStart(ConstraintSpace()) -
          *container_builder_.BfcBlockOffset();
 }
 
 bool NGBlockLayoutAlgorithm::IsFragmentainerOutOfSpace(
     LayoutUnit block_offset) const {
-  if (!ConstraintSpace().HasBlockFragmentation())
+  if (did_break_before_child_)
+    return true;
+  if (!ConstraintSpace().HasKnownFragmentainerBlockSize())
     return false;
   if (!container_builder_.BfcBlockOffset().has_value())
     return false;
@@ -1980,33 +1982,6 @@ bool NGBlockLayoutAlgorithm::IsFragmentainerOutOfSpace(
 }
 
 bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
-  LayoutUnit consumed_block_size =
-      BreakToken() ? BreakToken()->ConsumedBlockSize() : LayoutUnit();
-  LayoutUnit block_size =
-      ComputeBlockSizeForFragment(ConstraintSpace(), Style(), border_padding_,
-                                  consumed_block_size + intrinsic_block_size_);
-
-  block_size -= consumed_block_size;
-  DCHECK_GE(block_size, LayoutUnit())
-      << "Adding and subtracting the consumed_block_size shouldn't leave the "
-         "block_size for this fragment smaller than zero.";
-
-  LayoutUnit space_left = FragmentainerSpaceAvailable();
-
-  if (space_left <= LayoutUnit()) {
-    // The amount of space available may be zero, or even negative, if the
-    // border-start edge of this block starts exactly at, or even after the
-    // fragmentainer boundary. We're going to need a break before this block,
-    // because no part of it fits in the current fragmentainer. Due to margin
-    // collapsing with children, this situation is something that we cannot
-    // always detect prior to layout. The fragment produced by this algorithm is
-    // going to be thrown away. The parent layout algorithm will eventually
-    // detect that there's no room for a fragment for this node, and drop the
-    // fragment on the floor. Therefore it doesn't matter how we set up the
-    // container builder, so just return.
-    return true;
-  }
-
   if (Node().ChildrenInline() && !early_break_) {
     if (container_builder_.DidBreak() || first_overflowing_line_) {
       if (first_overflowing_line_ &&
@@ -2036,8 +2011,38 @@ bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
     }
   }
 
-  FinishFragmentation(&container_builder_, block_size, intrinsic_block_size_,
-                      consumed_block_size, space_left);
+  if (!ConstraintSpace().HasKnownFragmentainerBlockSize())
+    return true;
+
+  LayoutUnit consumed_block_size =
+      BreakToken() ? BreakToken()->ConsumedBlockSize() : LayoutUnit();
+  LayoutUnit block_size =
+      ComputeBlockSizeForFragment(ConstraintSpace(), Style(), border_padding_,
+                                  consumed_block_size + intrinsic_block_size_);
+
+  block_size -= consumed_block_size;
+  DCHECK_GE(block_size, LayoutUnit())
+      << "Adding and subtracting the consumed_block_size shouldn't leave the "
+         "block_size for this fragment smaller than zero.";
+
+  LayoutUnit space_left = FragmentainerSpaceAvailable();
+
+  if (space_left <= LayoutUnit()) {
+    // The amount of space available may be zero, or even negative, if the
+    // border-start edge of this block starts exactly at, or even after the
+    // fragmentainer boundary. We're going to need a break before this block,
+    // because no part of it fits in the current fragmentainer. Due to margin
+    // collapsing with children, this situation is something that we cannot
+    // always detect prior to layout. The fragment produced by this algorithm is
+    // going to be thrown away. The parent layout algorithm will eventually
+    // detect that there's no room for a fragment for this node, and drop the
+    // fragment on the floor. Therefore it doesn't matter how we set up the
+    // container builder, so just return.
+    return true;
+  }
+
+  FinishFragmentation(ConstraintSpace(), block_size, intrinsic_block_size_,
+                      consumed_block_size, space_left, &container_builder_);
 
   return true;
 }
@@ -2085,6 +2090,11 @@ NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
     // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
     appeal_before = kBreakAppealLastResort;
   }
+
+  // We only care about soft breaks if we have a fragmentainer block-size.
+  // During column balancing this may be unknown.
+  if (!ConstraintSpace().HasKnownFragmentainerBlockSize())
+    return kContinueWithoutBreaking;
 
   const auto& physical_fragment = layout_result.PhysicalFragment();
   if (IsA<NGBlockBreakToken>(physical_fragment.BreakToken())) {
@@ -2253,10 +2263,17 @@ void NGBlockLayoutAlgorithm::BreakBeforeChild(
     NGBreakAppeal appeal,
     bool is_forced_break,
     NGPreviousInflowPosition* previous_inflow_position) {
-  // The remaining part of the fragmentainer (the unusable space for child
-  // content, due to the break) should still be occupied by this container.
-  previous_inflow_position->logical_block_offset =
-      FragmentainerSpaceAvailable();
+  did_break_before_child_ = true;
+
+  if (ConstraintSpace().HasKnownFragmentainerBlockSize()) {
+    // The remaining part of the fragmentainer (the unusable space for child
+    // content, due to the break) should still be occupied by this container.
+    previous_inflow_position->logical_block_offset =
+        FragmentainerSpaceAvailable();
+  }
+
+  DCHECK(is_forced_break || ConstraintSpace().HasKnownFragmentainerBlockSize());
+
   // This will drop the fragment (if any) on the floor and retry at the start of
   // the next fragmentainer.
   container_builder_.AddBreakBeforeChild(child, appeal, is_forced_break);
@@ -2265,6 +2282,15 @@ void NGBlockLayoutAlgorithm::BreakBeforeChild(
 void NGBlockLayoutAlgorithm::PropagateSpaceShortage(
     const NGLayoutResult& layout_result,
     LayoutUnit block_offset) {
+  // There's no shortage to report in the initial column balancing pass, since
+  // we haven't even calculated a tentative column block-size yet.
+  if (ConstraintSpace().IsInitialColumnBalancingPass())
+    return;
+
+  // Only multicol cares about space shortage.
+  if (ConstraintSpace().BlockFragmentationType() != kFragmentColumn)
+    return;
+
   LayoutUnit space_shortage;
   if (layout_result.MinimalSpaceShortage() == LayoutUnit::Max()) {
     // Calculate space shortage: Figure out how much more space would have been

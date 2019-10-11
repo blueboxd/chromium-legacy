@@ -69,11 +69,11 @@ ScriptPromise SerialPortUnderlyingSink::close(ScriptState* script_state) {
 
   watcher_.Cancel();
   data_pipe_.reset();
+  serial_port_->UnderlyingSinkClosed();
 
   if (pending_exception_) {
     DOMException* exception = pending_exception_;
     pending_exception_ = nullptr;
-    serial_port_->UnderlyingSinkClosed();
     return ScriptPromise::RejectWithDOMException(script_state, exception);
   }
 

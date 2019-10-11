@@ -616,7 +616,7 @@ class PingProviderImpl : public AssociatedPingProvider {
   base::OnceClosure quit_waiting_;
 };
 
-class CallbackFilter : public MessageReceiver {
+class CallbackFilter : public MessageFilter {
  public:
   explicit CallbackFilter(base::RepeatingClosure callback)
       : callback_(std::move(callback)) {}
@@ -626,11 +626,13 @@ class CallbackFilter : public MessageReceiver {
     return std::make_unique<CallbackFilter>(std::move(callback));
   }
 
-  // MessageReceiver:
-  bool Accept(Message* message) override {
+  // MessageFilter:
+  bool WillDispatch(Message* message) override {
     callback_.Run();
     return true;
   }
+
+  void DidDispatchOrReject(Message* message, bool accepted) override {}
 
  private:
   base::RepeatingClosure callback_;
@@ -655,45 +657,19 @@ TEST_F(AssociatedInterfaceTest, ReceiverWithFilters) {
   int a_status = 0;
   int b_status = 0;
 
-  ping_a_impl.receiver().AddFilter(
+  ping_a_impl.receiver().SetFilter(
       CallbackFilter::Wrap(base::BindLambdaForTesting([&] {
         EXPECT_EQ(0, a_status);
         EXPECT_EQ(0, b_status);
         a_status = 1;
       })));
 
-  ping_a_impl.receiver().AddFilter(
+  ping_b_impl.receiver().SetFilter(
       CallbackFilter::Wrap(base::BindLambdaForTesting([&] {
         EXPECT_EQ(1, a_status);
         EXPECT_EQ(0, b_status);
-        a_status = 2;
-      })));
-
-  ping_a_impl.set_ping_handler(base::BindLambdaForTesting([&] {
-    EXPECT_EQ(2, a_status);
-    EXPECT_EQ(0, b_status);
-    a_status = 3;
-  }));
-
-  ping_b_impl.receiver().AddFilter(
-      CallbackFilter::Wrap(base::BindLambdaForTesting([&] {
-        EXPECT_EQ(3, a_status);
-        EXPECT_EQ(0, b_status);
         b_status = 1;
       })));
-
-  ping_b_impl.receiver().AddFilter(
-      CallbackFilter::Wrap(base::BindLambdaForTesting([&] {
-        EXPECT_EQ(3, a_status);
-        EXPECT_EQ(1, b_status);
-        b_status = 2;
-      })));
-
-  ping_b_impl.set_ping_handler(base::BindLambdaForTesting([&] {
-    EXPECT_EQ(3, a_status);
-    EXPECT_EQ(2, b_status);
-    b_status = 3;
-  }));
 
   for (int i = 0; i < 10; ++i) {
     a_status = 0;
@@ -705,7 +681,7 @@ TEST_F(AssociatedInterfaceTest, ReceiverWithFilters) {
       loop.Run();
     }
 
-    EXPECT_EQ(3, a_status);
+    EXPECT_EQ(1, a_status);
     EXPECT_EQ(0, b_status);
 
     {
@@ -714,8 +690,8 @@ TEST_F(AssociatedInterfaceTest, ReceiverWithFilters) {
       loop.Run();
     }
 
-    EXPECT_EQ(3, a_status);
-    EXPECT_EQ(3, b_status);
+    EXPECT_EQ(1, a_status);
+    EXPECT_EQ(1, b_status);
   }
 }
 

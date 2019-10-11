@@ -30,6 +30,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/passwords/save_passwords_consumer.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
@@ -464,6 +466,11 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   leakCheckItem.text = l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SWITCH);
   leakCheckItem.on = [passwordLeakCheckEnabled_ value];
   leakCheckItem.accessibilityIdentifier = @"leakCheckItem_switch";
+
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(browserState_);
+  leakCheckItem.enabled = authService->IsAuthenticated();
+
   return leakCheckItem;
 }
 
@@ -1243,11 +1250,14 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 }
 
 // Sets the leak check switch item's enabled status to |enabled| and
-// reconfigures the corresponding cell.
+// reconfigures the corresponding cell. If the user is not sign in, |enabled| is
+// overriden with |NO|.
 - (void)setLeakCheckSwitchItemEnabled:(BOOL)enabled {
   if (!base::FeatureList::IsEnabled(password_manager::features::kLeakDetection))
     return;
-  [leakCheckItem_ setEnabled:enabled];
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(browserState_);
+  [leakCheckItem_ setEnabled:enabled && authService->IsAuthenticated()];
   [self reconfigureCellsForItems:@[ leakCheckItem_ ]];
 }
 

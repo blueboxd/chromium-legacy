@@ -3,14 +3,18 @@
 // found in the LICENSE file.
 
 #include <lib/fdio/directory.h>
+#include <lib/vfs/cpp/pseudo_dir.h>
+#include <lib/vfs/cpp/vmo_file.h>
 
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/path_service.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_restrictions.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/browser/content_directory_loader_factory.h"
@@ -145,6 +149,53 @@ IN_PROC_BROWSER_TEST_F(ContentDirectoryTest, ImgSubresource) {
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       controller.get(), fuchsia::web::LoadUrlParams(), kUrl.spec()));
   navigation_listener_.RunUntilUrlAndTitleEquals(kUrl, "image fetched");
+}
+
+// Reads content sourced from VFS PseudoDirs and VmoFiles.
+IN_PROC_BROWSER_TEST_F(ContentDirectoryTest, FromVfsPseudoDir) {
+  base::ScopedAllowBlockingForTesting allow_block;
+
+  // Get the file contents and store it in a VMO.
+  std::string contents;
+  base::FilePath pkg_path;
+  base::PathService::Get(base::DIR_ASSETS, &pkg_path);
+  ASSERT_TRUE(base::ReadFileToString(
+      pkg_path.AppendASCII("fuchsia/engine/test/data/title1.html"), &contents));
+  zx::vmo contents_vmo;
+  zx_status_t status = zx::vmo::create(contents.size(), 0, &contents_vmo);
+  ASSERT_EQ(status, ZX_OK);
+  status = contents_vmo.write(contents.data(), 0, contents.size());
+  ASSERT_EQ(status, ZX_OK);
+
+  // Build up the directory structure of a VmoFile inside a PseudoDir.
+  auto vmo_file = std::make_unique<vfs::VmoFile>(
+      std::move(contents_vmo), 0, contents.size(),
+      vfs::VmoFile::WriteOption::READ_ONLY, vfs::VmoFile::Sharing::CLONE_COW);
+  vfs::PseudoDir pseudo_dir;
+  status = pseudo_dir.AddEntry("title1.html", std::move(vmo_file));
+  ASSERT_EQ(status, ZX_OK);
+
+  // Serve the PseudoDir under the "pseudo-dir" URL.
+  fuchsia::web::ContentDirectoryProvider provider;
+  provider.set_name("pseudo-dir");
+  fidl::InterfaceHandle<fuchsia::io::Directory> directory_channel;
+  pseudo_dir.Serve(
+      fuchsia::io::OPEN_FLAG_DIRECTORY | fuchsia::io::OPEN_RIGHT_READABLE,
+      directory_channel.NewRequest().TakeChannel());
+  provider.set_directory(std::move(directory_channel));
+  std::vector<fuchsia::web::ContentDirectoryProvider> providers;
+  providers.emplace_back(std::move(provider));
+  ContentDirectoryLoaderFactory::SetContentDirectoriesForTest(
+      std::move(providers));
+
+  // Access the VmoFile under the PseudoDir.
+  const GURL kUrl("fuchsia-dir://pseudo-dir/title1.html");
+  fuchsia::web::FramePtr frame = CreateFrame();
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      controller.get(), fuchsia::web::LoadUrlParams(), kUrl.spec()));
+  navigation_listener_.RunUntilUrlAndTitleEquals(kUrl, "title 1");
 }
 
 // Verify that resource providers are origin-isolated.

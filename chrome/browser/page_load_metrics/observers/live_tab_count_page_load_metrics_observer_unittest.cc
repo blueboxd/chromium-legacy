@@ -70,7 +70,7 @@ class LiveTabCountPageLoadMetricsObserverTest
       web_contents()->WasShown();
     }
 
-    SimulateTimingUpdate(timing);
+    tester()->SimulateTimingUpdate(timing);
   }
 
  protected:
@@ -86,7 +86,7 @@ class LiveTabCountPageLoadMetricsObserverTest
         std::string(internal::kHistogramPrefixLiveTabCount) +
         std::string(page_load_histogram_suffix);
     for (size_t bucket = 0; bucket < expected_counts.size(); bucket++) {
-      histogram_tester().ExpectTotalCount(
+      tester()->histogram_tester().ExpectTotalCount(
           tab_count_metrics::HistogramName(histogram_prefix,
                                            /* live_tabs_only = */ true, bucket),
           expected_counts[bucket]);

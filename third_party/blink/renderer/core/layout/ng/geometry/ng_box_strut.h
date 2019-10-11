@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGBoxStrut_h
-#define NGBoxStrut_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GEOMETRY_NG_BOX_STRUT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GEOMETRY_NG_BOX_STRUT_H_
 
 #include <utility>
 
@@ -241,4 +241,4 @@ inline NGPhysicalBoxStrut NGBoxStrut::ConvertToPhysical(
 
 }  // namespace blink
 
-#endif  // NGBoxStrut_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GEOMETRY_NG_BOX_STRUT_H_

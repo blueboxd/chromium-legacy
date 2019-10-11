@@ -83,6 +83,7 @@ TEST_F(ContentIndexProviderImplTest, OfflineItemCreation) {
   EXPECT_FALSE(item.title.empty());
   EXPECT_FALSE(item.description.empty());
   EXPECT_FALSE(item.is_transient);
+  EXPECT_TRUE(item.is_suggested);
   EXPECT_TRUE(item.is_openable);
   EXPECT_EQ(item.page_url, kLaunchURL);
 }

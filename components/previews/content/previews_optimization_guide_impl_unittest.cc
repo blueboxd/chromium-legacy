@@ -101,7 +101,7 @@ class TestOptimizationGuideService
 // A mock class implementation for unittesting previews_optimization_guide.
 class MockTopHostProvider : public optimization_guide::TopHostProvider {
  public:
-  MOCK_METHOD1(GetTopHosts, std::vector<std::string>(size_t max_sites));
+  MOCK_METHOD0(GetTopHosts, std::vector<std::string>());
 };
 
 std::unique_ptr<optimization_guide::proto::GetHintsResponse> BuildHintsResponse(
@@ -1890,7 +1890,7 @@ TEST_F(PreviewsOptimizationGuideImplTest, HintsFetcherEnabledNoHosts) {
   guide()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
 
-  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_)).Times(1);
+  EXPECT_CALL(*top_host_provider(), GetTopHosts()).Times(1);
 
   // Load hints so that OnHintsUpdated is called. This will force FetchHints to
   // be triggered if OptimizationHintsFetching is enabled.
@@ -1910,7 +1910,7 @@ TEST_F(PreviewsOptimizationGuideImplTest,
 
   // This should be called exactly once, confirming that hints are not fetched
   // again after |kTestFetchRetryDelaySecs|.
-  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_))
+  EXPECT_CALL(*top_host_provider(), GetTopHosts())
       .Times(1)
       .WillRepeatedly(testing::Return(hosts));
 
@@ -1927,7 +1927,7 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   // Check that hints should not be fetched again after the delay for a failed
   // hints fetch attempt.
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_)).Times(0);
+  EXPECT_CALL(*top_host_provider(), GetTopHosts()).Times(0);
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest, HintsFetcherEnabledWithHosts) {
@@ -1940,7 +1940,7 @@ TEST_F(PreviewsOptimizationGuideImplTest, HintsFetcherEnabledWithHosts) {
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
 
   std::vector<std::string> hosts = {"example1.com", "example2.com"};
-  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_))
+  EXPECT_CALL(*top_host_provider(), GetTopHosts())
       .Times(1)
       .WillRepeatedly(testing::Return(hosts));
 
@@ -1964,7 +1964,7 @@ TEST_F(PreviewsOptimizationGuideImplTest, HintsFetcherTimerRetryDelay) {
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchFailed));
 
   std::vector<std::string> hosts = {"example1.com", "example2.com"};
-  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_))
+  EXPECT_CALL(*top_host_provider(), GetTopHosts())
       .Times(2)
       .WillRepeatedly(testing::Return(hosts));
 
@@ -1994,7 +1994,7 @@ TEST_F(PreviewsOptimizationGuideImplTest, HintsFetcherTimerFetchSucceeds) {
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
 
   std::vector<std::string> hosts = {"example1.com", "example2.com"};
-  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_))
+  EXPECT_CALL(*top_host_provider(), GetTopHosts())
       .WillRepeatedly(testing::Return(hosts));
 
   // Force hints fetch scheduling.
@@ -2022,7 +2022,7 @@ TEST_F(PreviewsOptimizationGuideImplTest, HintsFetcherDisabled) {
   scoped_list.InitAndDisableFeature(
       optimization_guide::features::kOptimizationHintsFetching);
 
-  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_)).Times(0);
+  EXPECT_CALL(*top_host_provider(), GetTopHosts()).Times(0);
   CreateServiceAndGuide();
   // Load hints so that OnHintsUpdated is called. This will
   // check that FetcHints is not triggered by making sure that top_host_provider
@@ -2049,7 +2049,7 @@ TEST_F(PreviewsOptimizationGuideImplTest, HintsFetcherLastFetchAtttempt) {
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
 
   std::vector<std::string> hosts = {"example1.com", "example2.com"};
-  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_))
+  EXPECT_CALL(*top_host_provider(), GetTopHosts())
       .Times(1)
       .WillRepeatedly(testing::Return(hosts));
 
@@ -2096,7 +2096,7 @@ TEST_F(PreviewsOptimizationGuideDataSaverOffTest,
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
 
   std::vector<std::string> hosts = {"example1.com", "example2.com"};
-  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_)).Times(0);
+  EXPECT_CALL(*top_host_provider(), GetTopHosts()).Times(0);
 
   // Load hints so that OnHintsUpdated is called. This will force FetchHints to
   // be triggered if OptimizationHintsFetching is enabled.

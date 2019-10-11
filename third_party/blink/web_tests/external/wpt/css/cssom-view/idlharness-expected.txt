@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 359 tests; 284 PASS, 75 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 379 tests; 304 PASS, 75 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Window: original interface defined
@@ -123,6 +123,26 @@ FAIL CSSPseudoElement interface: operation getBoxQuads(BoxQuadOptions) assert_ow
 FAIL CSSPseudoElement interface: operation convertQuadFromNode(DOMQuadInit, GeometryNode, ConvertCoordinateOptions) assert_own_property: self does not have own property "CSSPseudoElement" expected property "CSSPseudoElement" missing
 FAIL CSSPseudoElement interface: operation convertRectFromNode(DOMRectReadOnly, GeometryNode, ConvertCoordinateOptions) assert_own_property: self does not have own property "CSSPseudoElement" expected property "CSSPseudoElement" missing
 FAIL CSSPseudoElement interface: operation convertPointFromNode(DOMPointInit, GeometryNode, ConvertCoordinateOptions) assert_own_property: self does not have own property "CSSPseudoElement" expected property "CSSPseudoElement" missing
+PASS MouseEvent interface: attribute screenX
+PASS MouseEvent interface: attribute screenY
+PASS MouseEvent interface: attribute pageX
+PASS MouseEvent interface: attribute pageY
+PASS MouseEvent interface: attribute clientX
+PASS MouseEvent interface: attribute clientY
+PASS MouseEvent interface: attribute x
+PASS MouseEvent interface: attribute y
+PASS MouseEvent interface: attribute offsetX
+PASS MouseEvent interface: attribute offsetY
+PASS MouseEvent interface: new MouseEvent("foo") must inherit property "screenX" with the proper type
+PASS MouseEvent interface: new MouseEvent("foo") must inherit property "screenY" with the proper type
+PASS MouseEvent interface: new MouseEvent("foo") must inherit property "pageX" with the proper type
+PASS MouseEvent interface: new MouseEvent("foo") must inherit property "pageY" with the proper type
+PASS MouseEvent interface: new MouseEvent("foo") must inherit property "clientX" with the proper type
+PASS MouseEvent interface: new MouseEvent("foo") must inherit property "clientY" with the proper type
+PASS MouseEvent interface: new MouseEvent("foo") must inherit property "x" with the proper type
+PASS MouseEvent interface: new MouseEvent("foo") must inherit property "y" with the proper type
+PASS MouseEvent interface: new MouseEvent("foo") must inherit property "offsetX" with the proper type
+PASS MouseEvent interface: new MouseEvent("foo") must inherit property "offsetY" with the proper type
 PASS HTMLElement interface: attribute offsetParent
 PASS HTMLElement interface: attribute offsetTop
 PASS HTMLElement interface: attribute offsetLeft

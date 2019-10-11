@@ -120,12 +120,6 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     bool supports_overlays = false;
   };
 
-  // Ensures that the OzonePlatform instance exists, without doing any
-  // initialization. No-op in case the instance is already created. This is
-  // useful in order to call virtual methods that depend on the Ozone platform
-  // selected at runtime, e.g. IsNativePixmapConfigSupported().
-  static OzonePlatform* EnsureInstance();
-
   // Initializes the subsystems/resources necessary for the UI process (e.g.
   // events) with additional properties to customize the ozone platform
   // implementation. Ozone will not retain InitParams after returning from

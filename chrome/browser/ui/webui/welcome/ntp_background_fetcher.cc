@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/search/background/ntp_backgrounds.h"

@@ -102,6 +102,9 @@ int DirectMixerSource::desired_read_size() {
 int DirectMixerSource::playout_channel() {
   return playout_channel_;
 }
+bool DirectMixerSource::active() {
+  return true;
+}
 
 void DirectMixerSource::SetVolumeMultiplier(float multiplier) {
   mixer_->SetVolumeMultiplier(this, multiplier);

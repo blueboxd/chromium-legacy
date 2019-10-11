@@ -49,7 +49,7 @@ constexpr int kSeparatorCommandId = -1;
 
 class MockSharingDeviceRegistration : public SharingDeviceRegistration {
  public:
-  explicit MockSharingDeviceRegistration()
+  MockSharingDeviceRegistration()
       : SharingDeviceRegistration(/* pref_service_= */ nullptr,
                                   /* sharing_sync_preference_= */ nullptr,
                                   /* instance_id_driver_= */ nullptr,
@@ -130,6 +130,7 @@ class ClickToCallContextMenuObserverTest : public testing::Test {
           base::StrCat({"guid", base::NumberToString(i)}), "name",
           "chrome_version", "user_agent",
           sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
+          base::SysInfo::HardwareInfo(),
           /*last_updated_timestamp=*/base::Time::Now(),
           /*send_tab_to_self_receiving_enabled=*/false,
           /*sharing_info=*/base::nullopt));

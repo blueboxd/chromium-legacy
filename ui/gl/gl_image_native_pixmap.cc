@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_enums.h"
@@ -38,37 +39,16 @@ namespace gl {
 namespace {
 
 // Returns corresponding internalformat if supported, and GL_NONE otherwise.
-unsigned GetInternalFormatFromFormat(gfx::BufferFormat format) {
+unsigned GLInternalFormat(gfx::BufferFormat format) {
   switch (format) {
-    case gfx::BufferFormat::R_8:
-      return GL_RED_EXT;
-    case gfx::BufferFormat::R_16:
-      return GL_R16_EXT;
-    case gfx::BufferFormat::RG_88:
-      return GL_RG_EXT;
-    case gfx::BufferFormat::BGR_565:
-    case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::BGRX_8888:
-      return GL_RGB;
-    case gfx::BufferFormat::RGBA_8888:
-      return GL_RGBA;
-    case gfx::BufferFormat::RGBX_1010102:
-    case gfx::BufferFormat::BGRX_1010102:
-      return GL_RGB10_A2_EXT;
-    case gfx::BufferFormat::BGRA_8888:
-      return GL_BGRA_EXT;
-    case gfx::BufferFormat::YVU_420:
-      return GL_RGB_YCRCB_420_CHROMIUM;
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-      return GL_RGB_YCBCR_420V_CHROMIUM;
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::P010:
       return GL_RGB_YCBCR_P010_CHROMIUM;
+    default:
+      break;
   }
-
-  NOTREACHED();
-  return GL_NONE;
+  return gl::BufferFormatToGLInternalFormat(format);
 }
 
 EGLint FourCC(gfx::BufferFormat format) {
@@ -153,7 +133,7 @@ GLImageNativePixmap::~GLImageNativePixmap() {}
 
 bool GLImageNativePixmap::Initialize(scoped_refptr<gfx::NativePixmap> pixmap) {
   DCHECK(!pixmap_);
-  if (GetInternalFormatFromFormat(format_) == GL_NONE) {
+  if (GLInternalFormat(format_) == GL_NONE) {
     LOG(ERROR) << "Unsupported format: " << gfx::BufferFormatToString(format_);
     return false;
   }
@@ -209,7 +189,7 @@ bool GLImageNativePixmap::Initialize(scoped_refptr<gfx::NativePixmap> pixmap) {
 }
 
 bool GLImageNativePixmap::InitializeFromTexture(uint32_t texture_id) {
-  if (GetInternalFormatFromFormat(format_) == GL_NONE) {
+  if (GLInternalFormat(format_) == GL_NONE) {
     LOG(ERROR) << "Unsupported format: " << gfx::BufferFormatToString(format_);
     return false;
   }
@@ -311,7 +291,11 @@ gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
 }
 
 unsigned GLImageNativePixmap::GetInternalFormat() {
-  return GetInternalFormatFromFormat(format_);
+  return GLInternalFormat(format_);
+}
+
+unsigned GLImageNativePixmap::GetDataType() {
+  return gl::BufferFormatToGLDataType(format_);
 }
 
 bool GLImageNativePixmap::CopyTexImage(unsigned target) {

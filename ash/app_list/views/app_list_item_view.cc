@@ -937,7 +937,7 @@ void AppListItemView::ItemPercentDownloadedChanged() {
 void AppListItemView::ItemBeingDestroyed() {
   DCHECK(item_weak_);
   item_weak_->RemoveObserver(this);
-  item_weak_ = NULL;
+  item_weak_ = nullptr;
 }
 
 int AppListItemView::GetPreviewCircleRadius() const {

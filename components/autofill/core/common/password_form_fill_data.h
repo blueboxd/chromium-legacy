@@ -13,6 +13,14 @@
 
 namespace autofill {
 
+// Contains renderer ids of password related elements found by the form parser.
+struct ParsingResult {
+  uint32_t username_renderer_id;
+  uint32_t password_renderer_id;
+  uint32_t new_password_renderer_id;
+  uint32_t confirm_password_renderer_id;
+};
+
 struct PasswordAndRealm {
   base::string16 password;
   std::string realm;

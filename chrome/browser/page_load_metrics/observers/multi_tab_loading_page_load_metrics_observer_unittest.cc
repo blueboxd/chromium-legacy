@@ -70,7 +70,7 @@ class MultiTabLoadingPageLoadMetricsObserverTest
       web_contents()->WasShown();
     }
 
-    SimulateTimingUpdate(timing);
+    tester()->SimulateTimingUpdate(timing);
   }
 
  protected:
@@ -84,14 +84,14 @@ class MultiTabLoadingPageLoadMetricsObserverTest
                           base::HistogramBase::Count expected_base,
                           base::HistogramBase::Count expected_2_or_more,
                           base::HistogramBase::Count expected_5_or_more) {
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         std::string(internal::kHistogramPrefixMultiTabLoading).append(suffix),
         expected_base);
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         std::string(internal::kHistogramPrefixMultiTabLoading2OrMore)
             .append(suffix),
         expected_2_or_more);
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         std::string(internal::kHistogramPrefixMultiTabLoading5OrMore)
             .append(suffix),
         expected_5_or_more);

@@ -184,6 +184,9 @@ void ContextHostResolver::OnShutdown() {
   for (auto* active_request : handed_out_requests_)
     active_request->OnShutdown();
 
+  DCHECK(context_);
+  manager_->CancelProbesForContext(context_);
+
   context_ = nullptr;
   shutting_down_ = true;
 

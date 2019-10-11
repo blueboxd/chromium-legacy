@@ -101,6 +101,12 @@ std::string GetReasonDescription(PreviewsEligibilityReason reason,
     case PreviewsEligibilityReason::COINFLIP_HOLDBACK:
       DCHECK(!want_inverse_description);
       return "Coin flip holdback encountered";
+    case PreviewsEligibilityReason::REDIRECT_LOOP_DETECTED:
+      DCHECK(!want_inverse_description);
+      return "Redirect loop detected";
+    case PreviewsEligibilityReason::DENY_LIST_MATCHED:
+      DCHECK(!want_inverse_description);
+      return "URL matched deny list";
     case PreviewsEligibilityReason::LAST:
       break;
   }

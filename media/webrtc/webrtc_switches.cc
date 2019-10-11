@@ -4,6 +4,9 @@
 
 #include "media/webrtc/webrtc_switches.h"
 
+#include "base/command_line.h"
+#include "build/build_config.h"
+
 namespace switches {
 
 // Override the default minimum starting volume of the Automatic Gain Control
@@ -29,3 +32,25 @@ const base::Feature kWebRtcHybridAgc{"WebRtcHybridAgc",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
+
+namespace switches {
+
+const char kForceDisableWebRtcApmInAudioService[] =
+    "disable-webrtc-apm-in-audio-service";
+
+}  // namespace switches
+
+namespace media {
+
+bool IsWebRtcApmInAudioServiceEnabled() {
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  return base::FeatureList::IsEnabled(features::kWebRtcApmInAudioService) &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kForceDisableWebRtcApmInAudioService);
+#else
+  return false;
+#endif
+}
+
+}  // namespace media

@@ -127,6 +127,7 @@ js_library("cloud_print_interface_native") {
 js_library("native_layer") {
   deps = [
     "data:destination",
+    "data:destination_match",
     "data:measurement_system",
     "//ui/webui/resources/js:cr",
   ]

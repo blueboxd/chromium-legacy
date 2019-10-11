@@ -68,6 +68,22 @@ cast_source_set("output_stream_connection") {
   ]
 }
 
+cast_source_set("control_connection") {
+  sources = [
+    "control_connection.cc",
+    "control_connection.h",
+  ]
+
+  deps = [
+    ":common",
+    ":connection",
+    ":proto",
+    "//base",
+    "//chromecast/public",
+    "//net",
+  ]
+}
+
 cast_source_set("audio_socket_service") {
   sources = [
     "audio_socket_service.cc",

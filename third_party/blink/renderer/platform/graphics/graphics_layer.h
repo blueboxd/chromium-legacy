@@ -124,15 +124,9 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   const gfx::PointF& GetPosition() const;
   void SetPosition(const gfx::PointF&);
 
-  const gfx::Point3F& TransformOrigin() const;
-  void SetTransformOrigin(const gfx::Point3F&);
-
   // The size of the layer.
   const gfx::Size& Size() const;
   void SetSize(const gfx::Size&);
-
-  const TransformationMatrix& Transform() const { return transform_; }
-  void SetTransform(const TransformationMatrix&);
 
   void SetRenderingContext(int id);
 
@@ -236,6 +230,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // cc::LayerClient implementation.
   std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
       const cc::Layer*) override;
+  std::string LayerDebugName(const cc::Layer*) const override;
   void DidChangeScrollbarsHiddenIfOverlay(bool) override;
 
   PaintController& GetPaintController() const;

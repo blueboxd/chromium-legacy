@@ -758,10 +758,15 @@ struct WiFiConfigProperties {
   SecurityType security = kNone;
 };
 
+union NetworkTypeConfigProperties {
+  CellularConfigProperties cellular;
+  EthernetConfigProperties ethernet;
+  VPNConfigProperties vpn;
+  WiFiConfigProperties wifi;
+};
+
 struct ConfigProperties {
   AutoConnectConfig? auto_connect;
-  CellularConfigProperties? cellular;
-  EthernetConfigProperties? ethernet;
   string? ip_address_config_type;
   // Name is only required for new configurations.
   string? name;
@@ -769,10 +774,8 @@ struct ConfigProperties {
   PriorityConfig? priority;
   ProxySettings? proxy_settings;
   IPConfigProperties? static_ip_config;
-  // |type| must match the existing configuration when used with SetProperties.
-  NetworkType type;
-  VPNConfigProperties? vpn;
-  WiFiConfigProperties? wifi;
+  // NetworkType is inferred from |type_config|.
+  NetworkTypeConfigProperties type_config;
 };
 
 // Properties provided to SetCellularSimState.

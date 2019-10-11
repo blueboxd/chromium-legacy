@@ -1,5 +1,5 @@
-FAIL Width of isolated word should match width of word with markup.
-FAIL Width of partial glyph in ligature should not match width of isolated glyph.
+PASS Width of isolated word does match width of word with markup.
+PASS Width of partial glyph in ligature does not match width of isolated glyph.
 PASS successfullyParsed is true
 
 TEST COMPLETE

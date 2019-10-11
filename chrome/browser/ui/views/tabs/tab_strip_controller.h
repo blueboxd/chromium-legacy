@@ -115,6 +115,10 @@ class TabStripController {
   // from this tabstrip but the user is still dragging the tabs.
   virtual void OnStoppedDraggingTabs() = 0;
 
+  // Notifies controller that the index of the tab with keyboard focus changed
+  // to |index|.
+  virtual void OnKeyboardFocusedTabChanged(base::Optional<int> index) = 0;
+
   // Returns the TabGroupVisualData instance for the given |group|.
   virtual const TabGroupVisualData* GetVisualDataForGroup(
       TabGroupId group) const = 0;

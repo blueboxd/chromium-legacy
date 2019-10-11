@@ -26,8 +26,10 @@ class COMPONENT_EXPORT(MEDIA_LEARNING_MOJO) MojoLearningTaskController
   ~MojoLearningTaskController() override;
 
   // LearningTaskController
-  void BeginObservation(base::UnguessableToken id,
-                        const FeatureVector& features) override;
+  void BeginObservation(
+      base::UnguessableToken id,
+      const FeatureVector& features,
+      const base::Optional<TargetValue>& default_target) override;
   void CompleteObservation(base::UnguessableToken id,
                            const ObservationCompletion& completion) override;
   void CancelObservation(base::UnguessableToken id) override;

@@ -11,6 +11,7 @@
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -43,14 +44,14 @@ class ServiceConnectionImpl : public ServiceConnection {
   // binding is accomplished via D-Bus bootstrap.
   void BindMachineLearningServiceIfNeeded();
 
-  // Mojo connection error handler. Resets |machine_learning_service_|, which
+  // Mojo disconnect handler. Resets |machine_learning_service_|, which
   // will be reconnected upon next use.
-  void OnConnectionError();
+  void OnMojoDisconnect();
 
   // Response callback for MlClient::BootstrapMojoConnection.
   void OnBootstrapMojoConnectionResponse(bool success);
 
-  mojom::MachineLearningServicePtr machine_learning_service_;
+  mojo::Remote<mojom::MachineLearningService> machine_learning_service_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -95,13 +96,13 @@ void ServiceConnectionImpl::BindMachineLearningServiceIfNeeded() {
                                  base::kNullProcessHandle,
                                  platform_channel.TakeLocalEndpoint());
 
-  // Bind our end of |pipe| to our MachineLearningServicePtr. The daemon should
-  // bind its end to a MachineLearningService implementation.
+  // Bind our end of |pipe| to our mojo::Remote<MachineLearningService>. The
+  // daemon should bind its end to a MachineLearningService implementation.
   machine_learning_service_.Bind(
-      machine_learning::mojom::MachineLearningServicePtrInfo(std::move(pipe),
-                                                             0u /* version */));
-  machine_learning_service_.set_connection_error_handler(base::BindOnce(
-      &ServiceConnectionImpl::OnConnectionError, base::Unretained(this)));
+      mojo::PendingRemote<machine_learning::mojom::MachineLearningService>(
+          std::move(pipe), 0u /* version */));
+  machine_learning_service_.set_disconnect_handler(base::BindOnce(
+      &ServiceConnectionImpl::OnMojoDisconnect, base::Unretained(this)));
 
   // Send the file descriptor for the other end of |platform_channel| to the
   // ML service daemon over D-Bus.
@@ -115,7 +116,7 @@ ServiceConnectionImpl::ServiceConnectionImpl() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-void ServiceConnectionImpl::OnConnectionError() {
+void ServiceConnectionImpl::OnMojoDisconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Connection errors are not expected so log a warning.
   LOG(WARNING) << "ML Service Mojo connection closed";

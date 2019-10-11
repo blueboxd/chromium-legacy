@@ -22,6 +22,7 @@ extern const base::Feature kOptimizationHintsExperiments;
 constexpr char kOptimizationHintsExperimentNameParam[] = "experiment_name";
 extern const base::Feature kOptimizationHintsFetching;
 extern const base::Feature kOptimizationGuideKeyedService;
+extern const base::Feature kOptimizationTargetPrediction;
 
 // The maximum number of hosts that can be stored in the
 // |kHintsFetcherTopHostBlacklist| dictionary pref when initialized. The top
@@ -85,6 +86,9 @@ GetMaxEffectiveConnectionTypeForNavigationHintsFetch();
 // time T, then they are eligible for refresh at T -
 // GetHintsFetchRefreshDuration().
 base::TimeDelta GetHintsFetchRefreshDuration();
+
+// Returns true if optimization target prediction is enabled.
+bool IsOptimizationTargetPredictionEnabled();
 
 }  // namespace features
 }  // namespace optimization_guide

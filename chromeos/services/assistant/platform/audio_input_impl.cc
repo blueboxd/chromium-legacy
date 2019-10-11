@@ -193,15 +193,13 @@ void AudioInputImpl::HotwordStateManager::RecreateAudioInputStream() {
 AudioInputImpl::AudioInputImpl(mojom::Client* client,
                                PowerManagerClient* power_manager_client,
                                CrasAudioHandler* cras_audio_handler,
-                               const std::string& device_id,
-                               const std::string& hotword_device_id)
+                               const std::string& device_id)
     : client_(client),
       power_manager_client_(power_manager_client),
       power_manager_client_observer_(this),
       cras_audio_handler_(cras_audio_handler),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      device_id_(device_id),
-      hotword_device_id_(hotword_device_id),
+      preferred_device_id_(device_id),
       weak_factory_(this) {
   DETACH_FROM_SEQUENCE(observer_sequence_checker_);
 
@@ -287,15 +285,7 @@ assistant_client::BufferFormat AudioInputImpl::GetFormat() const {
 void AudioInputImpl::AddObserver(
     assistant_client::AudioInput::Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(observer_sequence_checker_);
-  VLOG(1) << device_id_ << " add observer";
-
-  // Feed the observer one frame of empty data to work around crbug/942268
-  std::vector<int16_t> buffer(g_current_format.num_channels);
-  int64_t time = features::IsAudioEraserEnabled()
-                     ? base::TimeTicks::Now().since_origin().InMicroseconds()
-                     : 0;
-  AudioInputBufferImpl input_buffer(buffer.data(), /*frame_count=*/1);
-  observer->OnAudioBufferAvailable(input_buffer, time);
+  VLOG(1) << " add observer";
 
   bool have_first_observer = false;
   {
@@ -372,18 +362,20 @@ void AudioInputImpl::OnConversationTurnFinished() {
 void AudioInputImpl::OnHotwordEnabled(bool enable) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  if (default_on_ == enable)
+  if (hotword_enabled_ == enable)
     return;
 
-  default_on_ = enable;
+  hotword_enabled_ = enable;
   UpdateRecordingState();
 }
 
 void AudioInputImpl::SetDeviceId(const std::string& device_id) {
-  if (device_id_ == device_id)
+  if (preferred_device_id_ == device_id)
     return;
 
-  device_id_ = device_id;
+  preferred_device_id_ = device_id;
+
+  UpdateRecordingState();
   if (source_)
     state_manager_->RecreateAudioInputStream();
 }
@@ -449,34 +441,41 @@ void AudioInputImpl::RecreateAudioInputStream(bool use_dsp) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   StopRecording();
 
+  device_id_ = preferred_device_id_.empty()
+                   ? media::AudioDeviceDescription::kDefaultDeviceId
+                   : preferred_device_id_;
+
   // AUDIO_PCM_LINEAR and AUDIO_PCM_LOW_LATENCY are the same on CRAS.
   auto param = media::AudioParameters(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
       GetChannelLayout(g_current_format), g_current_format.sample_rate,
       g_current_format.sample_rate / 10 /* buffer size for 100 ms */);
 
-  std::string* device_id = &device_id_;
   if (use_dsp && !hotword_device_id_.empty()) {
     param.set_effects(media::AudioParameters::PlatformEffectsMask::HOTWORD);
-    device_id = &hotword_device_id_;
+    device_id_ = hotword_device_id_;
   }
 
   mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory;
   client_->RequestAudioStreamFactory(
       stream_factory.InitWithNewPipeAndPassReceiver());
-  source_ = audio::CreateInputDevice(std::move(stream_factory), *device_id);
+  source_ = audio::CreateInputDevice(std::move(stream_factory), device_id_);
 
   source_->Initialize(param, this);
   source_->Start();
   VLOG(1) << device_id_ << " start recording";
 }
 
-bool AudioInputImpl::IsHotwordAvailable() {
+bool AudioInputImpl::IsHotwordAvailable() const {
   return features::IsDspHotwordEnabled() && !hotword_device_id_.empty();
 }
 
 bool AudioInputImpl::IsRecordingForTesting() const {
   return !!source_;
+}
+
+bool AudioInputImpl::IsUsingHotwordDeviceForTesting() const {
+  return device_id_ == hotword_device_id_ && IsHotwordAvailable();
 }
 
 void AudioInputImpl::StartRecording() {
@@ -491,6 +490,7 @@ void AudioInputImpl::StopRecording() {
     VLOG(1) << device_id_ << " stop recording";
     source_->Stop();
     source_.reset();
+    device_id_ = std::string();
     VLOG(1) << device_id_
             << " ending captured frames: " << captured_frames_count_;
   }
@@ -508,20 +508,18 @@ void AudioInputImpl::OnSwitchStatesReceived(
 void AudioInputImpl::UpdateRecordingState() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  bool should_start;
+  bool has_observers = false;
   {
     base::AutoLock lock(lock_);
-
-    switch (lid_state_) {
-      case chromeos::PowerManagerClient::LidState::OPEN:
-      case chromeos::PowerManagerClient::LidState::NOT_PRESENT:
-        should_start = (default_on_ || mic_open_) && observers_.size() > 0;
-        break;
-      case chromeos::PowerManagerClient::LidState::CLOSED:
-        should_start = false;
-        break;
-    }
+    has_observers = observers_.size() > 0;
   }
+
+  bool is_lid_closed =
+      lid_state_ == chromeos::PowerManagerClient::LidState::CLOSED;
+  bool should_enable_hotword =
+      hotword_enabled_ && (!preferred_device_id_.empty());
+  bool should_start =
+      !is_lid_closed && (should_enable_hotword || mic_open_) && has_observers;
 
   if (!source_ && should_start)
     StartRecording();

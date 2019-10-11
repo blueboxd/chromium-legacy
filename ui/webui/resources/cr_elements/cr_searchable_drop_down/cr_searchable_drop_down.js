@@ -97,15 +97,18 @@ Polymer({
     'mousemove': 'onMouseMove_',
   },
 
+  /** @private {number} */
+  openDropdownTimeoutId_: 0,
+
   /** @override */
   attached: function() {
-    this.mouseDownListener_ = this.onMouseDown_.bind(this);
-    document.addEventListener('mousedown', this.mouseDownListener_);
+    this.pointerDownListener_ = this.onPointerDown_.bind(this);
+    document.addEventListener('pointerdown', this.pointerDownListener_);
   },
 
   /** @override */
   detached: function() {
-    document.removeEventListener('mousedown', this.mouseDownListener_);
+    document.removeEventListener('pointerdown', this.pointerDownListener_);
   },
 
   /**
@@ -131,8 +134,27 @@ Polymer({
 
   /** @private */
   closeDropdown_: function() {
+    if (this.openDropdownTimeoutId_) {
+      clearTimeout(this.openDropdownTimeoutId_);
+    }
+
     this.$$('iron-dropdown').close();
     this.opened_ = false;
+  },
+
+  /**
+   * Enqueues a task to open the iron-dropdown. Any pending task is canceled and
+   * a new task is enqueued.
+   * @private
+   */
+  enqueueOpenDropdown_: function() {
+    if (this.opened_) {
+      return;
+    }
+    if (this.openDropdownTimeoutId_) {
+      clearTimeout(this.openDropdownTimeoutId_);
+    }
+    this.openDropdownTimeoutId_ = setTimeout(this.openDropdown_.bind(this));
   },
 
   /**
@@ -184,7 +206,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onMouseDown_: function(event) {
+  onPointerDown_: function(event) {
     if (this.readonly) {
       return;
     }
@@ -199,8 +221,12 @@ Polymer({
       // Prevent any other field from gaining focus due to this event.
       event.preventDefault();
     } else if (paths.includes(searchInput)) {
-      // A click on the search input should open the dropdown.
-      this.openDropdown_();
+      // A click on the search input should open the dropdown. Opening the
+      // dropdown is done on a new task because when the IronDropdown element is
+      // opened, it may capture and cancel the touch event, preventing the
+      // searchInput field from receiving focus. Replacing iron-dropdown
+      // (crbug.com/1013408) will eliminate the need for this work around.
+      this.enqueueOpenDropdown_();
     } else {
       // A click outside either the search input or dropdown should close the
       // dropdown. Implicitly, the search input has lost focus at this point.

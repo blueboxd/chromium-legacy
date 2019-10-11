@@ -16,6 +16,8 @@ class TouchToFillProperties {
             new PropertyModel.WritableBooleanPropertyKey("visible");
     static final PropertyModel.WritableObjectPropertyKey<String> FORMATTED_URL =
             new PropertyModel.WritableObjectPropertyKey<>("formatted_url");
+    static final PropertyModel.WritableBooleanPropertyKey ORIGIN_SECURE =
+            new PropertyModel.WritableBooleanPropertyKey("origin_secure");
     static final PropertyModel.ReadableObjectPropertyKey<ListModel<Credential>> CREDENTIAL_LIST =
             new PropertyModel.ReadableObjectPropertyKey<>("credential_list");
     static final PropertyModel.ReadableObjectPropertyKey<ViewEventListener> VIEW_EVENT_LISTENER =
@@ -23,8 +25,10 @@ class TouchToFillProperties {
 
     static PropertyModel createDefaultModel(ViewEventListener listener) {
         return new PropertyModel
-                .Builder(VISIBLE, FORMATTED_URL, CREDENTIAL_LIST, VIEW_EVENT_LISTENER)
+                .Builder(
+                        VISIBLE, FORMATTED_URL, ORIGIN_SECURE, CREDENTIAL_LIST, VIEW_EVENT_LISTENER)
                 .with(VISIBLE, false)
+                .with(ORIGIN_SECURE, false)
                 .with(CREDENTIAL_LIST, new ListModel<>())
                 .with(VIEW_EVENT_LISTENER, listener)
                 .build();

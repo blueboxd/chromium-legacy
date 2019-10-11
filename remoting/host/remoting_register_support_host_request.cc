@@ -136,7 +136,7 @@ void RemotingRegisterSupportHostRequest::RegisterHost() {
 
   apis::v1::RegisterSupportHostRequest request;
   request.set_public_key(key_pair_->GetPublicKey());
-  request.set_tachyon_id(signal_strategy_->GetLocalAddress().jid());
+  request.set_tachyon_id(signal_strategy_->GetLocalAddress().id());
   request.set_host_version(STRINGIZE(VERSION));
   request.set_host_os_name(GetHostOperatingSystemName());
   request.set_host_os_version(GetHostOperatingSystemVersion());

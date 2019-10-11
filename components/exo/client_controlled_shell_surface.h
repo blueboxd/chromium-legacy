@@ -12,6 +12,7 @@
 #include "ash/wm/client_controlled_state.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/exo/client_controlled_accelerators.h"
 #include "components/exo/shell_surface_base.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/compositor_lock.h"
@@ -30,8 +31,10 @@ enum class WindowPinType;
 
 namespace exo {
 class Surface;
+class ClientControlledAcceleratorTarget;
 
 enum class Orientation { PORTRAIT, LANDSCAPE };
+enum class ZoomChange { IN, OUT, RESET };
 
 // This class implements a ShellSurface whose window state and bounds are
 // controlled by a remote shell client rather than the window manager. The
@@ -153,6 +156,9 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   // Set resize outset for surface.
   void SetResizeOutset(int outset);
+
+  // Sends the request to change the zoom level to the client.
+  void ChangeZoomLevel(ZoomChange change);
 
   // Sends the window state change event to client.
   void OnWindowStateChangeEvent(ash::WindowStateType old_state,
@@ -339,6 +345,9 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   // True if the window state has changed during the commit.
   bool state_changed_ = false;
+
+  // Client controlled specific accelerator target.
+  std::unique_ptr<ClientControlledAcceleratorTarget> accelerator_target_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientControlledShellSurface);
 };

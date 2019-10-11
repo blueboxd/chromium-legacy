@@ -297,7 +297,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       BrowserContext* browser_context,
       const GURL& url,
       bool is_main_frame,
-      network::mojom::URLLoaderFactoryRequest proxied_factory_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+          proxied_factory_receiver,
       network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info,
       std::set<std::string> known_schemes,
       bool bypass_redirect_checks,
@@ -307,12 +308,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         url_(url),
         owner_(owner),
         response_loader_binding_(this),
-        proxied_factory_request_(std::move(proxied_factory_request)),
+        proxied_factory_receiver_(std::move(proxied_factory_receiver)),
         proxied_factory_info_(std::move(proxied_factory_info)),
         known_schemes_(std::move(known_schemes)),
         bypass_redirect_checks_(bypass_redirect_checks),
-        browser_context_(browser_context) {
-  }
+        browser_context_(browser_context) {}
 
   ~URLLoaderRequestController() override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -385,9 +385,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (needs_loader_factory_interceptor &&
         g_loader_factory_interceptor.Get()) {
       network::mojom::URLLoaderFactoryPtr factory;
-      auto request = mojo::MakeRequest(&factory);
-      g_loader_factory_interceptor.Get().Run(&request);
-      network_loader_factory_->Clone(std::move(request));
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver =
+          mojo::MakeRequest(&factory);
+      g_loader_factory_interceptor.Get().Run(&receiver);
+      network_loader_factory_->Clone(std::move(receiver));
       network_loader_factory_ =
           base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
               std::move(factory));
@@ -676,7 +677,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         network::mojom::URLLoaderFactoryPtr& non_network_factory =
             non_network_url_loader_factories_[resource_request_->url.scheme()];
         if (!non_network_factory.is_bound()) {
-          owner_->BindNonNetworkURLLoaderFactoryRequest(
+          owner_->BindNonNetworkURLLoaderFactoryReceiver(
               frame_tree_node_id_, resource_request_->url,
               mojo::MakeRequest(&non_network_factory));
         }
@@ -687,9 +688,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
       if (g_loader_factory_interceptor.Get()) {
         network::mojom::URLLoaderFactoryPtr factory_ptr;
-        auto request = mojo::MakeRequest(&factory_ptr);
-        g_loader_factory_interceptor.Get().Run(&request);
-        factory->Clone(std::move(request));
+        mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver =
+            mojo::MakeRequest(&factory_ptr);
+        g_loader_factory_interceptor.Get().Run(&receiver);
+        factory->Clone(std::move(receiver));
         factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
             std::move(factory_ptr));
       }
@@ -701,10 +703,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // or AppCache). Hence this code is only reachable when one of the above
       // interceptors isn't used and the URL is either a data URL or has a
       // scheme which is handled by the network service.
-      if (proxied_factory_request_.is_pending()) {
+      if (proxied_factory_receiver_.is_valid()) {
         DCHECK(proxied_factory_info_.is_valid());
         // We don't worry about reconnection since it's a single navigation.
-        network_loader_factory_->Clone(std::move(proxied_factory_request_));
+        network_loader_factory_->Clone(std::move(proxied_factory_receiver_));
         factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
             std::move(proxied_factory_info_));
       } else {
@@ -1183,13 +1185,14 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   base::Optional<network::URLLoaderCompletionStatus> status_;
 
   // Before creating this URLLoaderRequestController on UI thread, the embedder
-  // may have elected to proxy the URLLoaderFactory request, in which case these
-  // fields will contain input (info) and output (request) endpoints for the
-  // proxy. If this controller is handling a request for which proxying is
-  // supported, requests will be plumbed through these endpoints.
+  // may have elected to proxy the URLLoaderFactory receiver, in which case
+  // these fields will contain input (info) and output (receiver) endpoints for
+  // the proxy. If this controller is handling a receiver for which proxying is
+  // supported, receivers will be plumbed through these endpoints.
   //
-  // Note that these are only used for requests that go to the Network Service.
-  network::mojom::URLLoaderFactoryRequest proxied_factory_request_;
+  // Note that these are only used for receivers that go to the Network Service.
+  mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+      proxied_factory_receiver_;
   network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info_;
 
   // The schemes that this loader can use. For anything else we'll try external
@@ -1280,7 +1283,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   }
 
   network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info;
-  network::mojom::URLLoaderFactoryRequest proxied_factory_request;
+  mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+      proxied_factory_receiver;
   mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
       header_client;
   bool bypass_redirect_checks = false;
@@ -1292,7 +1296,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
             frame_tree_node_id, &non_network_url_loader_factories_);
 
     // The embedder may want to proxy all network-bound URLLoaderFactory
-    // requests that it can. If it elects to do so, we'll pass its proxy
+    // receivers that it can. If it elects to do so, we'll pass its proxy
     // endpoints off to the URLLoaderRequestController where wthey will be
     // connected if the request type supports proxying.
     mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_factory;
@@ -1308,7 +1312,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       use_proxy = true;
     }
     if (use_proxy) {
-      proxied_factory_request = std::move(factory_receiver);
+      proxied_factory_receiver = std::move(factory_receiver);
       proxied_factory_info = std::move(pending_factory);
     }
 
@@ -1371,7 +1375,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   request_controller_ = std::make_unique<URLLoaderRequestController>(
       std::move(initial_interceptors), std::move(new_request), browser_context,
       request_info->common_params->url, request_info->is_main_frame,
-      std::move(proxied_factory_request), std::move(proxied_factory_info),
+      std::move(proxied_factory_receiver), std::move(proxied_factory_info),
       std::move(known_schemes), bypass_redirect_checks,
       weak_factory_.GetWeakPtr());
   request_controller_->Start(
@@ -1484,7 +1488,7 @@ void NavigationURLLoaderImpl::OnRequestStarted(base::TimeTicks timestamp) {
   delegate_->OnRequestStarted(timestamp);
 }
 
-void NavigationURLLoaderImpl::BindNonNetworkURLLoaderFactoryRequest(
+void NavigationURLLoaderImpl::BindNonNetworkURLLoaderFactoryReceiver(
     int frame_tree_node_id,
     const GURL& url,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver) {

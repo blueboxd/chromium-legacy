@@ -17,6 +17,7 @@ namespace cc {
 class ClipTree;
 class EffectTree;
 class Layer;
+class LayerTreeHost;
 class PropertyTrees;
 class ScrollTree;
 class TransformTree;
@@ -119,14 +120,18 @@ class PropertyTreeManager {
 
   static bool DirectlyUpdateCompositedOpacityValue(
       cc::PropertyTrees*,
+      cc::LayerTreeHost&,
       const EffectPaintPropertyNode&);
   static bool DirectlyUpdateScrollOffsetTransform(
       cc::PropertyTrees*,
+      cc::LayerTreeHost&,
       const TransformPaintPropertyNode&);
   static bool DirectlyUpdateTransform(cc::PropertyTrees*,
+                                      cc::LayerTreeHost&,
                                       const TransformPaintPropertyNode&);
   static bool DirectlyUpdatePageScaleTransform(
       cc::PropertyTrees*,
+      cc::LayerTreeHost&,
       const TransformPaintPropertyNode&);
 
  private:

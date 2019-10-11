@@ -33,7 +33,7 @@ void FakeBlobURLStore::Resolve(const KURL& url, ResolveCallback callback) {
 
 void FakeBlobURLStore::ResolveAsURLLoaderFactory(
     const KURL&,
-    network::mojom::blink::URLLoaderFactoryRequest) {
+    mojo::PendingReceiver<network::mojom::blink::URLLoaderFactory>) {
   NOTREACHED();
 }
 

@@ -7,10 +7,12 @@ package org.chromium.native_test;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Process;
+import android.system.Os;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
@@ -36,6 +38,8 @@ public class NativeTest {
             "org.chromium.native_test.NativeTest.Shard";
     public static final String EXTRA_STDOUT_FILE =
             "org.chromium.native_test.NativeTest.StdoutFile";
+    public static final String EXTRA_COVERAGE_DEVICE_FILE =
+            "org.chromium.native_test.NativeTest.CoverageDeviceFile";
 
     private static final String TAG = "cr_NativeTest";
 
@@ -65,7 +69,14 @@ public class NativeTest {
     }
 
     public void preCreate(Activity activity) {
-        // Empty, but subclasses override.
+        String coverageDeviceFile = activity.getIntent().getStringExtra(EXTRA_COVERAGE_DEVICE_FILE);
+        if (coverageDeviceFile != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            try {
+                Os.setenv("LLVM_PROFILE_FILE", coverageDeviceFile, true);
+            } catch (Exception e) {
+                Log.w(TAG, "failed to set LLVM_PROFILE_FILE", e);
+            }
+        }
     }
 
     public void postCreate(Activity activity) {

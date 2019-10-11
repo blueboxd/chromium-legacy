@@ -86,11 +86,7 @@ PlatformApiImpl::PlatformApiImpl(
     scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
     std::string pref_locale)
-    : audio_input_provider_(client,
-                            power_manager_client,
-                            cras_audio_handler,
-                            media::AudioDeviceDescription::kDefaultDeviceId,
-                            /*hotword_device_id=*/std::string()),
+    : audio_input_provider_(client, power_manager_client, cras_audio_handler),
       audio_output_provider_(client,
                              power_manager_client,
                              cras_audio_handler,
@@ -171,12 +167,16 @@ void PlatformApiImpl::OnAudioNodesChanged() {
         break;
     }
   }
-  if (input_device)
-    audio_input_provider_.SetDeviceId(base::NumberToString(input_device->id));
+
+  audio_input_provider_.SetDeviceId(
+      input_device ? base::NumberToString(input_device->id) : std::string());
+
   if (hotword_device) {
     audio_input_provider_.SetHotwordDeviceId(
         base::NumberToString(hotword_device->id));
     audio_input_provider_.SetDspHotwordLocale(pref_locale_);
+  } else {
+    audio_input_provider_.SetHotwordDeviceId(std::string());
   }
 }
 

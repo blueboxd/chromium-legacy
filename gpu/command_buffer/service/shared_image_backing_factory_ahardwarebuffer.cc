@@ -681,15 +681,13 @@ gles2::Texture* SharedImageBackingAHB::GenGLTexture() {
       cleared_rect = gfx::Rect(size());
   }
 
-  GLenum gl_format = viz::GLDataFormat(format());
-  GLenum gl_type = viz::GLDataType(format());
   texture->SetLevelInfo(target, 0, egl_image->GetInternalFormat(),
-                        size().width(), size().height(), 1, 0, gl_format,
-                        gl_type, cleared_rect);
+                        size().width(), size().height(), 1, 0,
+                        egl_image->GetDataFormat(), egl_image->GetDataType(),
+                        cleared_rect);
   texture->SetLevelImage(target, 0, egl_image.get(), gles2::Texture::BOUND);
   texture->SetImmutable(true, false);
   api->glBindTextureFn(target, old_texture_binding);
-  DCHECK_EQ(egl_image->GetInternalFormat(), gl_format);
   return texture;
 }
 

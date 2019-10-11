@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/component_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/blob/blob_registry_impl.h"
@@ -31,7 +32,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLStoreImpl
   void Resolve(const GURL& url, ResolveCallback callback) override;
   void ResolveAsURLLoaderFactory(
       const GURL& url,
-      network::mojom::URLLoaderFactoryRequest request) override;
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override;
   void ResolveForNavigation(
       const GURL& url,
       mojo::PendingReceiver<blink::mojom::BlobURLToken> token) override;

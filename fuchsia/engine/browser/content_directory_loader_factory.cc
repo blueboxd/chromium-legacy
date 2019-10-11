@@ -335,10 +335,23 @@ void ContentDirectoryLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
+  std::string requested_path = request.url.path();
+  if (requested_path.empty()) {
+    client->OnComplete(
+        network::URLLoaderCompletionStatus(net::ERR_INVALID_URL));
+    return;
+  }
+
+  // Not all VFS implementations handle leading slashes in the same way, so
+  // remove it for maximum compatibility.
+  // TODO(fxb/38339): Update this comment when issue is resolved.
+  if (requested_path[0] == '/')
+    requested_path = requested_path.substr(1, requested_path.size() - 1);
+
   fidl::InterfaceHandle<fuchsia::io::Node> file_handle;
-  net::Error open_result = OpenFileFromDirectory(
-      request.url.GetOrigin().host(), base::FilePath(request.url.path()),
-      file_handle.NewRequest());
+  net::Error open_result = OpenFileFromDirectory(request.url.GetOrigin().host(),
+                                                 base::FilePath(requested_path),
+                                                 file_handle.NewRequest());
   if (open_result != net::OK) {
     client->OnComplete(network::URLLoaderCompletionStatus(open_result));
     return;
@@ -351,7 +364,7 @@ void ContentDirectoryLoaderFactory::CreateLoaderAndStart(
   fidl::InterfaceHandle<fuchsia::io::Node> metadata_handle;
   open_result =
       OpenFileFromDirectory(request.url.GetOrigin().host(),
-                            base::FilePath(request.url.path() + "._metadata"),
+                            base::FilePath(requested_path + "._metadata"),
                             metadata_handle.NewRequest());
   if (open_result != net::OK) {
     client->OnComplete(network::URLLoaderCompletionStatus(open_result));

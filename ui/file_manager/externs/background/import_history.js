@@ -78,7 +78,10 @@ importer.ImportHistory = class {
 /**
  * @enum {string} Import history changed event |state| values.
  */
-importer.ImportHistoryState = {};
+importer.ImportHistoryState = {
+  'COPIED': 'copied',
+  'IMPORTED': 'imported'
+};
 
 /**
  * Import history changed event (sent to ImportHistory.Observer's).

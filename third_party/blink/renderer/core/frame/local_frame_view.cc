@@ -198,18 +198,16 @@ void LogCursorSizeCounter(LocalFrame* frame, const Cursor& cursor) {
 // flash between navigations. The delay should be small enough so that it won't
 // confuse users expecting a new page to appear after navigation and the omnibar
 // has updated the url display.
-constexpr int kAvoidFlashCommitDelayDefaultInMs = 500;  // 30 frames @ 60hz
-constexpr char kAvoidFlashCommitDelayParameterName[] = "commit_delay";
+constexpr int kPaintHoldingCommitDelayDefaultInMs = 500;  // 30 frames @ 60hz
+constexpr char kPaintHoldingCommitDelayParameterName[] = "commit_delay";
 
-// Get the field trial parameter value for AvoidFlashBetweenNavigation.
-base::TimeDelta GetCommitDelayForAvoidFlashBetweenNavigation() {
-  DCHECK(base::FeatureList::IsEnabled(
-      blink::features::kAvoidFlashBetweenNavigation));
+// Get the field trial parameter value for Paint Holding.
+base::TimeDelta GetCommitDelayForPaintHolding() {
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kPaintHolding));
   return base::TimeDelta::FromMilliseconds(
       base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kAvoidFlashBetweenNavigation,
-          kAvoidFlashCommitDelayParameterName,
-          kAvoidFlashCommitDelayDefaultInMs));
+          blink::features::kPaintHolding, kPaintHoldingCommitDelayParameterName,
+          kPaintHoldingCommitDelayDefaultInMs));
 }
 
 }  // namespace
@@ -4170,12 +4168,11 @@ void LocalFrameView::BeginLifecycleUpdates() {
   // and we do not want to defer a second time if we have already done
   // so once and resumed commits already.
   if (document &&
-      base::FeatureList::IsEnabled(
-          blink::features::kAvoidFlashBetweenNavigation) &&
+      base::FeatureList::IsEnabled(blink::features::kPaintHolding) &&
       document->DeferredCompositorCommitIsAllowed() &&
       !have_deferred_commits_) {
-    chrome_client.StartDeferringCommits(
-        GetFrame(), GetCommitDelayForAvoidFlashBetweenNavigation());
+    chrome_client.StartDeferringCommits(GetFrame(),
+                                        GetCommitDelayForPaintHolding());
     have_deferred_commits_ = true;
   }
 

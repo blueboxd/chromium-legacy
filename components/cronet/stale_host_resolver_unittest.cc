@@ -174,9 +174,12 @@ class StaleHostResolverTest : public testing::Test {
 
   std::unique_ptr<net::ContextHostResolver>
   CreateMockInnerResolverWithDnsClient(
-      std::unique_ptr<net::DnsClient> dns_client) {
+      std::unique_ptr<net::DnsClient> dns_client,
+      net::URLRequestContext* context = nullptr) {
     std::unique_ptr<net::ContextHostResolver> inner_resolver(
         net::HostResolver::CreateStandaloneContextResolver(nullptr));
+    if (context)
+      inner_resolver->SetRequestContext(context);
 
     net::ProcTaskParams proc_params(mock_proc_.get(), 1u);
     inner_resolver->SetProcParamsForTesting(proc_params);
@@ -209,10 +212,11 @@ class StaleHostResolverTest : public testing::Test {
     resolver_ = nullptr;
   }
 
-  void SetResolver(StaleHostResolver* stale_resolver) {
+  void SetResolver(StaleHostResolver* stale_resolver,
+                   net::URLRequestContext* context = nullptr) {
     DCHECK(!resolver_);
     stale_resolver->inner_resolver_ =
-        CreateMockInnerResolverWithDnsClient(nullptr);
+        CreateMockInnerResolverWithDnsClient(nullptr /* dns_client */, context);
     resolver_ = stale_resolver;
   }
 
@@ -696,7 +700,8 @@ TEST_F(StaleHostResolverTest, CreatedByContext) {
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
 
   // Experimental options ensure context's resolver is a StaleHostResolver.
-  SetResolver(reinterpret_cast<StaleHostResolver*>(context->host_resolver()));
+  SetResolver(reinterpret_cast<StaleHostResolver*>(context->host_resolver()),
+              context.get());
   // Note: Experimental config above sets 0ms stale delay.
   CreateCacheEntry(kAgeExpiredSec, net::OK);
 

@@ -108,15 +108,6 @@ std::string SerializeSeed(const VariationsSeed& seed) {
   seed.SerializeToString(&serialized_seed);
   return serialized_seed;
 }
-
-// Returns the |time| formatted as a UTC string.
-std::string ToUTCString(base::Time time) {
-  base::Time::Exploded exploded;
-  time.UTCExplode(&exploded);
-  return base::StringPrintf("%d-%d-%d %d:%d:%d UTC", exploded.year,
-                            exploded.month, exploded.day_of_month,
-                            exploded.hour, exploded.minute, exploded.second);
-}
 #endif  // OS_ANDROID
 
 class TestPlatformFieldTrials : public PlatformFieldTrials {
@@ -487,7 +478,7 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_LoadsCountryOnFirstRun) {
   initial_seed->data = SerializeSeed(CreateTestSeedWithCountryFilter());
   initial_seed->signature = kTestSeedSignature;
   initial_seed->country = kTestSeedCountry;
-  initial_seed->date = ToUTCString(one_day_ago);
+  initial_seed->date = one_day_ago.ToJavaTime();
   initial_seed->is_gzip_compressed = false;
 
   TestVariationsServiceClient variations_service_client;

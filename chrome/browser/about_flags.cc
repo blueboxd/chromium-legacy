@@ -1675,6 +1675,9 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kBluetoothAggressiveAppearanceFilter)},
+    {"cryptauth-v2-devicesync", flag_descriptions::kCryptAuthV2DeviceSyncName,
+     flag_descriptions::kCryptAuthV2DeviceSyncDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCryptAuthV2DeviceSync)},
     {"cryptauth-v2-enrollment", flag_descriptions::kCryptAuthV2EnrollmentName,
      flag_descriptions::kCryptAuthV2EnrollmentDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCryptAuthV2Enrollment)},
@@ -3908,10 +3911,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kHardwareMediaKeyHandling)},
 #endif
 
-    {"enable-avoid-flash-between-navigation",
-     flag_descriptions::kAvoidFlashBetweenNavigationName,
-     flag_descriptions::kAvoidFlahsBetweenNavigationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kAvoidFlashBetweenNavigation)},
+    {"enable-paint-holding", flag_descriptions::kPaintHoldingName,
+     flag_descriptions::kPaintHoldingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kPaintHolding)},
 
 #if !defined(OS_ANDROID)
     {"app-management", flag_descriptions::kAppManagementName,
@@ -4648,6 +4650,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExoPointerLockDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kExoPointerLock)},
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_MACOSX)
+    {"metal", flag_descriptions::kMetalName,
+     flag_descriptions::kMetalDescription, kOsMac,
+     FEATURE_VALUE_TYPE(features::kMetal)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

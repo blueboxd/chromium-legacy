@@ -259,7 +259,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   virtual WebViewImpl* GetWebView() const = 0;
 
-  virtual WebScreenInfo GetScreenInfo() const = 0;
+  virtual WebScreenInfo GetScreenInfo(LocalFrame& frame) const = 0;
   virtual void SetCursor(const Cursor&, LocalFrame* local_root) = 0;
 
   virtual void SetCursorOverridden(bool) = 0;

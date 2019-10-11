@@ -3369,6 +3369,18 @@
       "features": [
         "exit_on_context_lost"
       ]
-    }
+    },
+    {
+      "id": 314,
+      "cr_bugs": [1010338],
+      "description": "Crash on Adreno when using GL_EXT_shader_framebuffer_fetch",
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "Adreno.*",
+      "disabled_extensions": [
+        "GL_EXT_shader_framebuffer_fetch"
+      ]
+   }
   ]
 }

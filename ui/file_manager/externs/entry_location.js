@@ -11,7 +11,7 @@ class EntryLocation {
   constructor() {
     /**
      * Volume information.
-     * @type {!VolumeInfo}
+     * @type {VolumeInfo}
      */
     this.volumeInfo;
 

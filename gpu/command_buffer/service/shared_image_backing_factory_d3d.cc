@@ -494,8 +494,11 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryD3D::MakeBacking(
   // The GL internal format can differ from the underlying swap chain format
   // e.g. RGBA8 or RGB8 instead of BGRA8.
   const GLenum internal_format = viz::GLInternalFormat(format);
-  auto image = base::MakeRefCounted<gl::GLImageD3D>(size, internal_format,
-                                                    d3d11_texture, swap_chain);
+  const GLenum data_type = viz::GLDataType(format);
+  const GLenum data_format = viz::GLDataFormat(format);
+  auto image = base::MakeRefCounted<gl::GLImageD3D>(
+      size, internal_format, data_type, d3d11_texture, swap_chain);
+  DCHECK_EQ(image->GetDataFormat(), data_format);
   if (!image->Initialize()) {
     DLOG(ERROR) << "GLImageD3D::Initialize failed";
     return nullptr;
@@ -517,11 +520,6 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryD3D::MakeBacking(
                                &texture_memory_size);
     texture_passthrough->SetEstimatedSize(texture_memory_size);
   } else {
-    const GLenum gl_format =
-        gles2::TextureManager::ExtractFormatFromStorageFormat(internal_format);
-    const GLenum gl_type =
-        gles2::TextureManager::ExtractTypeFromStorageFormat(internal_format);
-
     texture = new gles2::Texture(service_id);
     texture->SetLightweightRef();
     texture->SetTarget(target, 1);
@@ -531,7 +529,7 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryD3D::MakeBacking(
     texture->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
     texture->SetLevelInfo(target, 0 /* level */, internal_format, size.width(),
                           size.height(), 1 /* depth */, 0 /* border */,
-                          gl_format, gl_type, gfx::Rect(size));
+                          data_format, data_type, gfx::Rect(size));
     texture->SetLevelImage(target, 0 /* level */, image.get(),
                            gles2::Texture::BOUND);
     texture->SetImmutable(true, false);

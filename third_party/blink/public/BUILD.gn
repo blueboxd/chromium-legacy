@@ -34,6 +34,7 @@ group("test_support") {
     ":test_headers",
     "//third_party/blink/renderer/modules/exported:test_support",
     "//third_party/blink/renderer/modules/mediastream:test_support",
+    "//third_party/blink/renderer/modules/peerconnection:test_support",
     "//third_party/blink/renderer/platform:test_support",
   ]
 }
@@ -103,12 +104,23 @@ source_set("test_headers") {
     "web/modules/mediastream/mock_media_stream_registry.h",
     "web/modules/mediastream/mock_media_stream_video_sink.h",
     "web/modules/mediastream/mock_media_stream_video_source.h",
+
+    # TODO(crbug.com/787254): Remove the group of mock_.h files
+    # below when content/renderer/media/webrtc Onion souping is
+    # done.
+    "web/modules/peerconnection/mock_data_channel_impl.h",
+    "web/modules/peerconnection/mock_peer_connection_dependency_factory.h",
+    "web/modules/peerconnection/mock_peer_connection_impl.h",
+    "web/modules/peerconnection/webrtc_stats_report_obtainer.h",
   ]
   deps = [
     ":blink_headers",
     "//base:base",
     "//cc:cc",
     "//testing/gmock:gmock",
+    "//third_party/webrtc/api:libjingle_peerconnection_api",
+    "//third_party/webrtc/api:media_stream_interface",
+    "//third_party/webrtc/api:rtc_stats_api",
   ]
 }
 
@@ -375,6 +387,7 @@ source_set("blink_headers") {
     "web/modules/peerconnection/media_stream_video_webrtc_sink.h",
     "web/modules/peerconnection/peer_connection_dependency_factory.h",
     "web/modules/peerconnection/webrtc_media_stream_track_adapter.h",
+    "web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h",
     "web/modules/service_worker/web_service_worker_context_client.h",
     "web/modules/service_worker/web_service_worker_context_proxy.h",
     "web/modules/webrtc/webrtc_audio_device_impl.h",

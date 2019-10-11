@@ -194,7 +194,6 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -680,63 +679,6 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
   RenderProcessHost* spare_render_process_host_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SpareRenderProcessHostManager);
-};
-
-const void* const kDefaultSubframeProcessHostHolderKey =
-    &kDefaultSubframeProcessHostHolderKey;
-
-class DefaultSubframeProcessHostHolder : public base::SupportsUserData::Data,
-                                         public RenderProcessHostObserver {
- public:
-  explicit DefaultSubframeProcessHostHolder(BrowserContext* browser_context)
-      : browser_context_(browser_context) {}
-  ~DefaultSubframeProcessHostHolder() override {}
-
-  // Gets the correct render process to use for this SiteInstance.
-  RenderProcessHost* GetProcessHost(SiteInstance* site_instance,
-                                    bool is_for_guests_only) {
-    StoragePartitionImpl* default_partition =
-        static_cast<StoragePartitionImpl*>(
-            BrowserContext::GetDefaultStoragePartition(browser_context_));
-    StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-        BrowserContext::GetStoragePartition(browser_context_, site_instance));
-
-    // Is this the default storage partition? If it isn't, then just give it its
-    // own non-shared process.
-    if (partition != default_partition || is_for_guests_only) {
-      RenderProcessHost* host = RenderProcessHostImpl::CreateRenderProcessHost(
-          browser_context_, partition, site_instance, is_for_guests_only);
-      host->SetIsNeverSuitableForReuse();
-      return host;
-    }
-
-    // If we already have a shared host for the default storage partition, use
-    // it.
-    if (host_)
-      return host_;
-
-    host_ = RenderProcessHostImpl::CreateRenderProcessHost(
-        browser_context_, partition, site_instance,
-        false /* is for guests only */);
-    host_->SetIsNeverSuitableForReuse();
-    host_->AddObserver(this);
-
-    return host_;
-  }
-
-  // Implementation of RenderProcessHostObserver.
-  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
-    DCHECK_EQ(host_, host);
-    host_->RemoveObserver(this);
-    host_ = nullptr;
-  }
-
- private:
-  BrowserContext* browser_context_;
-
-  // The default subframe render process used for the default storage partition
-  // of this BrowserContext.
-  RenderProcessHost* host_ = nullptr;
 };
 
 // Forwards service requests to Service Manager since the renderer cannot launch
@@ -2490,7 +2432,7 @@ mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::Optional<url::Origin> request_initiator_site_lock;
@@ -2511,7 +2453,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
                          network::mojom::CrossOriginEmbedderPolicy::kNone,
                          nullptr /* preferences */, net::NetworkIsolationKey(),
                          mojo::NullRemote() /* header_client */,
-                         std::move(request));
+                         std::move(receiver));
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactory(
@@ -2521,10 +2463,10 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
     const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   CreateURLLoaderFactoryInternal(
       origin, embedder_policy, preferences, network_isolation_key,
-      std::move(header_client), std::move(request), false /* is_trusted */);
+      std::move(header_client), std::move(receiver), false /* is_trusted */);
 }
 
 void RenderProcessHostImpl::CreateTrustedURLLoaderFactory(
@@ -2533,10 +2475,10 @@ void RenderProcessHostImpl::CreateTrustedURLLoaderFactory(
     const WebPreferences* preferences,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   CreateURLLoaderFactoryInternal(origin, embedder_policy, preferences,
                                  base::nullopt, std::move(header_client),
-                                 std::move(request), true /* is_trusted */);
+                                 std::move(receiver), true /* is_trusted */);
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
@@ -2546,7 +2488,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
     const base::Optional<net::NetworkIsolationKey>& network_isolation_key,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
-    network::mojom::URLLoaderFactoryRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     bool is_trusted) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -2557,7 +2499,8 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
 
   network::mojom::NetworkContext* network_context =
       storage_partition_impl_->GetNetworkContext();
-  network::mojom::URLLoaderFactoryPtrInfo embedder_provided_factory;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      embedder_provided_factory;
   if (origin.has_value()) {
     embedder_provided_factory =
         GetContentClient()->browser()->CreateURLLoaderFactoryForNetworkRequests(
@@ -2565,8 +2508,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
             network_isolation_key);
   }
   if (embedder_provided_factory) {
-    mojo::FuseInterface(std::move(request),
-                        std::move(embedder_provided_factory));
+    mojo::FusePipes(std::move(receiver), std::move(embedder_provided_factory));
   } else {
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
@@ -2600,19 +2542,12 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
       params->is_corb_enabled = true;
     }
 
-    network_context->CreateURLLoaderFactory(std::move(request),
+    network_context->CreateURLLoaderFactory(std::move(receiver),
                                             std::move(params));
   }
 }
 
-void RenderProcessHostImpl::SetIsNeverSuitableForReuse() {
-  is_never_suitable_for_reuse_ = true;
-}
-
 bool RenderProcessHostImpl::MayReuseHost() {
-  if (is_never_suitable_for_reuse_)
-    return false;
-
   return GetContentClient()->browser()->MayReuseHost(this);
 }
 
@@ -3099,8 +3034,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebGLImageChromium,
     switches::kEnableWebVR,
     switches::kFileUrlPathAlias,
-    switches::kForceDisplayColorProfile,
     switches::kForceDeviceScaleFactor,
+    switches::kForceDisableWebRtcApmInAudioService,
+    switches::kForceDisplayColorProfile,
     switches::kForceGpuMemAvailableMb,
     switches::kForceGpuRasterization,
     switches::kForceHighContrast,

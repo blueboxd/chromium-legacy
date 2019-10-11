@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
@@ -193,14 +194,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
 // The unconsented primary account (aka secondary account) isn't supported on
 // ChromeOS, see IdentityManager::ComputeUnconsentedPrimaryAccountInfo().
 #if !defined(OS_CHROMEOS)
-// Flaky on ASan/TSan, crbug.com/1004312.
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
-#define MAYBE_ReusesSameCacheGuid DISABLED_ReusesSameCacheGuid
-#else
-#define MAYBE_ReusesSameCacheGuid ReusesSameCacheGuid
-#endif
 IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
-                       MAYBE_ReusesSameCacheGuid) {
+                       ReusesSameCacheGuid) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
 
@@ -214,6 +209,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   ASSERT_FALSE(prefs.GetCacheGuid().empty());
 
   std::string old_cache_guid;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   ASSERT_TRUE(
       base::ReadFileToString(GetTestFilePathForCacheGuid(), &old_cache_guid));
   ASSERT_FALSE(old_cache_guid.empty());

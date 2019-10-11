@@ -350,7 +350,7 @@ struct NetworkContextParams {
 
   // If true, the built-in cert verifier will be used. If false, the platform
   // cert verifier will be used.
-  [EnableIf=is_chromeos]
+  [EnableIf=is_builtin_cert_verifier_feature_supported]
   bool use_builtin_cert_verifier = false;
 
   // Parameters for the cert verifier comparison trial. This is a temporary
@@ -741,7 +741,7 @@ interface NetworkContext {
   SetClient(pending_remote<NetworkContextClient> client);
 
   // Creates a new URLLoaderFactory with the given |params|.
-  CreateURLLoaderFactory(URLLoaderFactory& url_loader_factory,
+  CreateURLLoaderFactory(pending_receiver<URLLoaderFactory> url_loader_factory,
                          URLLoaderFactoryParams params);
 
   // Destroys all URLLoaderFactory bindings, which should then be regenerated.
@@ -1201,5 +1201,6 @@ interface NetworkContext {
   ForceDomainReliabilityUploadsForTesting() => ();
 
   // Gets the OriginPolicyManager associated with this network context.
-  GetOriginPolicyManager(OriginPolicyManager& origin_policy_manager);
+  GetOriginPolicyManager(
+      pending_receiver<OriginPolicyManager> origin_policy_manager);
 };

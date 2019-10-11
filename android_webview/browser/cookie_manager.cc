@@ -405,9 +405,6 @@ void CookieManager::SetCookieSync(JNIEnv* env,
 void CookieManager::SetCookieHelper(const GURL& host,
                                     const std::string& value,
                                     base::OnceCallback<void(bool)> callback) {
-  net::CookieOptions options;
-  options.set_include_httponly();
-
   const GURL& new_host = MaybeFixUpSchemeForSecureCookie(host, value);
 
   net::CanonicalCookie::CookieInclusionStatus status;
@@ -429,12 +426,13 @@ void CookieManager::SetCookieHelper(const GURL& host,
     // *cc.get() is safe, because network::CookieManager::SetCanonicalCookie
     // will make a copy before our smart pointer goes out of scope.
     GetMojoCookieManager()->SetCanonicalCookie(
-        *cc.get(), new_host.scheme(), options,
+        *cc.get(), new_host.scheme(), net::CookieOptions::MakeAllInclusive(),
         net::cookie_util::AdaptCookieInclusionStatusToBool(
             std::move(callback)));
   } else {
     GetCookieStore()->SetCanonicalCookieAsync(
-        std::move(cc), new_host.scheme(), options,
+        std::move(cc), new_host.scheme(),
+        net::CookieOptions::MakeAllInclusive(),
         net::cookie_util::AdaptCookieInclusionStatusToBool(
             std::move(callback)));
   }
@@ -458,10 +456,7 @@ ScopedJavaLocalRef<jstring> CookieManager::GetCookie(
 void CookieManager::GetCookieListAsyncHelper(const GURL& host,
                                              net::CookieList* result,
                                              base::OnceClosure complete) {
-  net::CookieOptions options;
-  options.set_include_httponly();
-  options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+  net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
 
   if (GetMojoCookieManager()) {
     GetMojoCookieManager()->GetCookieList(

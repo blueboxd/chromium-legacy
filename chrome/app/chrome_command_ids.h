@@ -104,6 +104,12 @@
 #define IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET  35019
 #define IDC_QRCODE_GENERATOR            35020
 
+// Page-manipulation commands that target a specified tab, which may not be the
+// active one.
+#define IDC_MUTE_TARGET_SITE            35050
+#define IDC_PIN_TARGET_TAB              35051
+#define IDC_DUPLICATE_TARGET_TAB        35052
+
 // Clipboard commands
 #define IDC_CUT                         36000
 #define IDC_COPY                        36001

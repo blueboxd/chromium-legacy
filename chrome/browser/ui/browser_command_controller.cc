@@ -309,6 +309,11 @@ void BrowserCommandController::ExtensionStateChanged() {
   UpdateCommandsForBookmarkEditing();
 }
 
+void BrowserCommandController::TabKeyboardFocusChangedTo(
+    base::Optional<int> index) {
+  UpdateCommandsForTabKeyboardFocus(index);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, CommandUpdater implementation:
 
@@ -742,6 +747,15 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       ShowSingletonTab(browser_, GURL(kChromeUIManagementURL));
       break;
     }
+    case IDC_MUTE_TARGET_SITE:
+      MuteSiteForKeyboardFocusedTab(browser_);
+      break;
+    case IDC_PIN_TARGET_TAB:
+      PinKeyboardFocusedTab(browser_);
+      break;
+    case IDC_DUPLICATE_TARGET_TAB:
+      DuplicateKeyboardFocusedTab(browser_);
+      break;
     // Hosted App commands
     case IDC_COPY_URL:
       CopyURL(browser_);
@@ -1026,6 +1040,7 @@ void BrowserCommandController::InitCommandState() {
   UpdateCommandsForContentRestrictionState();
   UpdateCommandsForBookmarkEditing();
   UpdateCommandsForIncognitoAvailability();
+  UpdateCommandsForTabKeyboardFocus(GetKeyboardFocusedTabIndex(browser_));
 }
 
 // static
@@ -1132,6 +1147,7 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   UpdateCommandsForMediaRouter();
   // Update the zoom commands when an active tab is selected.
   UpdateCommandsForZoomState();
+  UpdateCommandsForTabKeyboardFocus(GetKeyboardFocusedTabIndex(browser_));
 }
 
 void BrowserCommandController::UpdateCommandsForZoomState() {
@@ -1426,6 +1442,19 @@ void BrowserCommandController::UpdateCommandsForMediaRouter() {
 
   command_updater_.UpdateCommandEnabled(IDC_ROUTE_MEDIA,
                                         CanRouteMedia(browser_));
+}
+
+void BrowserCommandController::UpdateCommandsForTabKeyboardFocus(
+    base::Optional<int> target_index) {
+  command_updater_.UpdateCommandEnabled(
+      IDC_DUPLICATE_TARGET_TAB, !browser_->deprecated_is_app() &&
+                                    target_index.has_value() &&
+                                    CanDuplicateTabAt(browser_, *target_index));
+  const bool normal_window = browser_->is_type_normal();
+  command_updater_.UpdateCommandEnabled(
+      IDC_MUTE_TARGET_SITE, normal_window && target_index.has_value());
+  command_updater_.UpdateCommandEnabled(
+      IDC_PIN_TARGET_TAB, normal_window && target_index.has_value());
 }
 
 void BrowserCommandController::AddInterstitialObservers(WebContents* contents) {

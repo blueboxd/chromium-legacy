@@ -79,6 +79,7 @@ void DeflateTransformer::Flush(
   Deflate(nullptr, 0u, IsFinished(true), controller, exception_state);
   was_flush_called_ = true;
   deflateEnd(&stream_);
+  out_buffer_.clear();
 }
 
 void DeflateTransformer::Deflate(

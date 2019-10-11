@@ -49,7 +49,7 @@ class APP_LIST_EXPORT AppListMainView
 
   SearchBoxView* search_box_view() const { return search_box_view_; }
 
-  // If |drag_and_drop_host| is not NULL it will be called upon drag and drop
+  // If |drag_and_drop_host| is not nullptr it will be called upon drag and drop
   // operations outside the application list.
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);

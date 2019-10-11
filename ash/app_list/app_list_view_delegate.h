@@ -89,7 +89,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
                                         int event_flags) = 0;
 
   // Returns the context menu model for a ChromeSearchResult with |result_id|,
-  // or NULL if there is currently no menu for the result.
+  // or nullptr if there is currently no menu for the result.
   // Note the returned menu model is owned by that result.
   using GetContextMenuModelCallback =
       base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
@@ -118,8 +118,8 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
                             int event_flags,
                             ash::AppListLaunchedFrom launched_from) = 0;
 
-  // Returns the context menu model for a ChromeAppListItem with |id|, or NULL
-  // if there is currently no menu for the item (e.g. during install).
+  // Returns the context menu model for a ChromeAppListItem with |id|, or
+  // nullptr if there is currently no menu for the item (e.g. during install).
   // Note the returned menu model is owned by that item.
   virtual void GetContextMenuModel(const std::string& id,
                                    GetContextMenuModelCallback callback) = 0;

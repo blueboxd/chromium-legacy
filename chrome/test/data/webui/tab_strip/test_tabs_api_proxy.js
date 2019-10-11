@@ -12,6 +12,7 @@ export class TestTabsApiProxy extends TestBrowserProxy {
       'getTabs',
       'moveTab',
       'trackThumbnailForTab',
+      'showTabContextMenu',
     ]);
 
     this.tabs_;
@@ -39,6 +40,10 @@ export class TestTabsApiProxy extends TestBrowserProxy {
 
   setTabs(tabs) {
     this.tabs_ = tabs;
+  }
+
+  showTabContextMenu(tabId, locationX, locationY) {
+    this.methodCalled('showTabContextMenu', [tabId, locationX, locationY]);
   }
 
   trackThumbnailForTab(tabId) {

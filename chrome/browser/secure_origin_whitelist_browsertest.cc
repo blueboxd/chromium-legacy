@@ -168,17 +168,26 @@ IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, Simple) {
   }
 }
 
+class SecureOriginWhitelistBrowsertestWithMarkHttpDangerous
+    : public SecureOriginWhitelistBrowsertest {
+ public:
+  SecureOriginWhitelistBrowsertestWithMarkHttpDangerous() {
+    // TODO(crbug.com/917693): Remove this forced feature/param when the feature
+    // fully launches.
+    feature_list_.InitAndEnableFeatureWithParameters(
+        security_state::features::kMarkHttpAsFeature,
+        {{security_state::features::kMarkHttpAsFeatureParameterName,
+          security_state::features::kMarkHttpAsParameterDangerous}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests that whitelisted insecure origins are correctly set as security level
 // NONE instead of the default level DANGEROUS.
-IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, SecurityIndicators) {
-  // TODO(crbug.com/917693): Remove this forced feature/param when the feature
-  // fully launches.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      security_state::features::kMarkHttpAsFeature,
-      {{security_state::features::kMarkHttpAsFeatureParameterName,
-        security_state::features::kMarkHttpAsParameterDangerous}});
-
+IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertestWithMarkHttpDangerous,
+                       SecurityIndicators) {
   ui_test_utils::NavigateToURL(
       browser(),
       embedded_test_server()->GetURL(

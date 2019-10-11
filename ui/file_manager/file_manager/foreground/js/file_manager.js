@@ -19,9 +19,9 @@ class FileManager extends cr.EventTarget {
 
     /**
      * Volume manager.
-     * @private {?FilteredVolumeManager}
+     * @private {!FilteredVolumeManager}
      */
-    this.volumeManager_ = null;
+    this.volumeManager_;
 
     /** @private {?importer.HistoryLoader} */
     this.historyLoader_ = null;
@@ -438,7 +438,7 @@ class FileManager extends cr.EventTarget {
   }
 
   /**
-   * @return {FilteredVolumeManager}
+   * @return {!FilteredVolumeManager}
    */
   get volumeManager() {
     return this.volumeManager_;

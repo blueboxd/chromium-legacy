@@ -47,6 +47,7 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
   // cc::LayerClient
   std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
       const cc::Layer*) override;
+  std::string LayerDebugName(const cc::Layer*) const override;
   void DidChangeScrollbarsHiddenIfOverlay(bool) override {}
 
   bool Matches(const PaintChunk& paint_chunk) const {

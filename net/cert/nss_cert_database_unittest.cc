@@ -134,15 +134,6 @@ class CertDatabaseNSSTest : public TestWithTaskEnvironment {
   scoped_refptr<CRLSet> crl_set_;
 };
 
-TEST_F(CertDatabaseNSSTest, ListCertsSync) {
-  // This test isn't terribly useful, though it might help with memory
-  // leak tests.
-  ScopedCERTCertificateList certs = cert_db_->ListCertsSync();
-  // The test DB is empty, but let's assume there will always be something in
-  // the other slots.
-  EXPECT_LT(0U, certs.size());
-}
-
 TEST_F(CertDatabaseNSSTest, ListCerts) {
   // This test isn't terribly useful, though it might help with memory
   // leak tests.

@@ -159,7 +159,7 @@ SecurityLevel GetSecurityLevel(
   if (base::FeatureList::IsEnabled(
           security_state::features::kLegacyTLSWarnings) &&
       visible_security_state.connection_used_legacy_tls &&
-      !visible_security_state.is_legacy_tls_control_site) {
+      !visible_security_state.should_suppress_legacy_tls_warning) {
     return WARNING;
   }
 
@@ -231,7 +231,7 @@ VisibleSecurityState::VisibleSecurityState()
       is_view_source(false),
       is_devtools(false),
       connection_used_legacy_tls(false),
-      is_legacy_tls_control_site(false) {}
+      should_suppress_legacy_tls_warning(false) {}
 
 VisibleSecurityState::~VisibleSecurityState() {}
 

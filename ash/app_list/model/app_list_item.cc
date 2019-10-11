@@ -78,7 +78,7 @@ const char* AppListItem::GetItemType() const {
 }
 
 AppListItem* AppListItem::FindChildItem(const std::string& id) {
-  return NULL;
+  return nullptr;
 }
 
 size_t AppListItem::ChildItemCount() const {

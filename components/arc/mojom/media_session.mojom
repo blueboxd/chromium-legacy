@@ -13,7 +13,8 @@ interface MediaSessionInstance {
   // Enable audio focus integration on the Android side and register the
   // unified AudioPolicy. The audio policy will send audio focus requests
   // to |service|.
-  EnableAudioFocus@1(media_session.mojom.AudioFocusManager service);
+  EnableAudioFocus@1(
+      pending_remote<media_session.mojom.AudioFocusManager> service);
 
   // Disable audio focus integration if it is enabled.
   DisableAudioFocus@2();

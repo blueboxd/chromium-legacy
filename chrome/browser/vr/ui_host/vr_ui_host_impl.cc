@@ -122,8 +122,9 @@ void VRUiHostImpl::CapturingStateModelTransience::
     *active_capture_state_model_ = CapturingStateModel();
 }
 
-VRUiHostImpl::VRUiHostImpl(device::mojom::XRDeviceId device_id,
-                           device::mojom::XRCompositorHostPtr compositor)
+VRUiHostImpl::VRUiHostImpl(
+    device::mojom::XRDeviceId device_id,
+    mojo::PendingRemote<device::mojom::XRCompositorHost> compositor)
     : compositor_(std::move(compositor)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       triggered_capturing_transience_(&triggered_capturing_state_model_) {
@@ -156,7 +157,7 @@ VRUiHostImpl::~VRUiHostImpl() {
 // static
 std::unique_ptr<VRUiHost> VRUiHostImpl::Create(
     device::mojom::XRDeviceId device_id,
-    device::mojom::XRCompositorHostPtr compositor) {
+    mojo::PendingRemote<device::mojom::XRCompositorHost> compositor) {
   DVLOG(1) << __func__;
   return std::make_unique<VRUiHostImpl>(device_id, std::move(compositor));
 }

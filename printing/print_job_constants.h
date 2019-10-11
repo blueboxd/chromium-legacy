@@ -14,7 +14,6 @@ PRINTING_EXPORT extern const char kPreviewRequestID[];
 PRINTING_EXPORT extern const char kPreviewUIID[];
 PRINTING_EXPORT extern const char kSettingCapabilities[];
 PRINTING_EXPORT extern const char kSettingCloudPrintId[];
-PRINTING_EXPORT extern const char kSettingCloudPrintDialog[];
 PRINTING_EXPORT extern const char kSettingCollate[];
 PRINTING_EXPORT extern const char kSettingColor[];
 PRINTING_EXPORT extern const char kSettingSetColorAsDefault[];
@@ -59,9 +58,6 @@ PRINTING_EXPORT extern const char kSettingPolicies[];
 PRINTING_EXPORT extern const char kSettingPreviewIsPdf[];
 PRINTING_EXPORT extern const char kSettingPreviewModifiable[];
 PRINTING_EXPORT extern const char kSettingPrintToGoogleDrive[];
-PRINTING_EXPORT extern const char kSettingPrintToPDF[];
-PRINTING_EXPORT extern const char kSettingPrintWithPrivet[];
-PRINTING_EXPORT extern const char kSettingPrintWithExtension[];
 PRINTING_EXPORT extern const char kSettingPrintableAreaHeight[];
 PRINTING_EXPORT extern const char kSettingPrintableAreaWidth[];
 PRINTING_EXPORT extern const char kSettingPrintableAreaX[];
@@ -69,6 +65,7 @@ PRINTING_EXPORT extern const char kSettingPrintableAreaY[];
 PRINTING_EXPORT extern const char kSettingPrinterDescription[];
 PRINTING_EXPORT extern const char kSettingPrinterName[];
 PRINTING_EXPORT extern const char kSettingPrinterOptions[];
+PRINTING_EXPORT extern const char kSettingPrinterType[];
 PRINTING_EXPORT extern const char kSettingRasterizePdf[];
 PRINTING_EXPORT extern const char kSettingScaleFactor[];
 PRINTING_EXPORT extern const char kSettingTicket[];
@@ -154,6 +151,16 @@ enum MarginType {
   PRINTABLE_AREA_MARGINS,
   CUSTOM_MARGINS,
   MARGIN_TYPE_LAST = CUSTOM_MARGINS
+};
+
+// Must match print_preview.PrinterType in
+// chrome/browser/resources/print_preview/data/destination_match.js
+enum PrinterType {
+  kPrivetPrinter,
+  kExtensionPrinter,
+  kPdfPrinter,
+  kLocalPrinter,
+  kCloudPrinter
 };
 
 }  // namespace printing

@@ -541,5 +541,7 @@ if (is_win) {
       "//net",
       "//net:net_fuzzer_test_support",
     ]
+    dict = "//net/data/fuzzer_dictionaries/net_dns_hosts_parse_fuzzer.dict"
+    seed_corpus = "//net/data/fuzzer_data/dns_parse_domain_ascii_win_fuzzer"
   }
 }

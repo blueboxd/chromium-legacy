@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_PUBLIC_URL_MANAGER_H_
 
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -59,7 +60,8 @@ class CORE_EXPORT PublicURLManager final
   void Revoke(const KURL&);
   // When mojo Blob URLs are enabled this resolves the provided URL to a
   // factory capable of creating loaders for the specific URL.
-  void Resolve(const KURL&, network::mojom::blink::URLLoaderFactoryRequest);
+  void Resolve(const KURL&,
+               mojo::PendingReceiver<network::mojom::blink::URLLoaderFactory>);
   // When mojo Blob URLs are enabled this resolves the provided URL to a mojom
   // BlobURLToken. This token can be used by the browser process to securely
   // lookup what blob a URL used to refer to, even after the URL is revoked.

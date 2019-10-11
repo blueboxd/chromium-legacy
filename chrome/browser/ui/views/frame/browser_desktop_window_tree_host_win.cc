@@ -32,6 +32,7 @@
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/icon_util.h"
+#include "ui/gfx/image/image_family.h"
 #include "ui/views/controls/menu/native_menu_win.h"
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LegacyLayoutTreeWalking_h
-#define LegacyLayoutTreeWalking_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LEGACY_LAYOUT_TREE_WALKING_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LEGACY_LAYOUT_TREE_WALKING_H_
 
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 
@@ -106,4 +106,4 @@ inline bool IsManagedByLayoutNG(const LayoutObject& object) {
 
 }  // namespace blink
 
-#endif  // LegacyLayoutTreeWalking_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LEGACY_LAYOUT_TREE_WALKING_H_

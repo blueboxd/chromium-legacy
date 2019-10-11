@@ -15,7 +15,15 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/web_preferences.h"
 
-using ChromeContentBrowserClientChromeOsPartTest = InProcessBrowserTest;
+class ChromeContentBrowserClientChromeOsPartTest : public InProcessBrowserTest {
+ public:
+  ChromeContentBrowserClientChromeOsPartTest() {
+    feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettings);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
 
 IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientChromeOsPartTest,
                        SettingsWindowFontSize) {
@@ -27,9 +35,6 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientChromeOsPartTest,
   const content::WebPreferences kDefaultPrefs;
   const int kDefaultFontSize = kDefaultPrefs.default_font_size;
   const int kDefaultFixedFontSize = kDefaultPrefs.default_fixed_font_size;
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(chromeos::features::kSplitSettings);
 
   // Set the browser font sizes to non-default values.
   Profile* profile = browser()->profile();

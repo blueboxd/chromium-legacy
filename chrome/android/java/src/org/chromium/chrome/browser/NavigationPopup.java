@@ -227,7 +227,8 @@ public class NavigationPopup implements AdapterView.OnItemClickListener {
     private void onFaviconAvailable(String pageUrl, Bitmap favicon) {
         if (favicon == null) {
             if (mDefaultFaviconHelper == null) mDefaultFaviconHelper = new DefaultFaviconHelper();
-            favicon = mDefaultFaviconHelper.getDefaultFaviconBitmap(mContext, pageUrl, true);
+            favicon = mDefaultFaviconHelper.getDefaultFaviconBitmap(
+                    mContext.getResources(), pageUrl, true);
         }
         for (int i = 0; i < mHistory.getEntryCount(); i++) {
             NavigationEntry entry = mHistory.getEntryAtIndex(i);

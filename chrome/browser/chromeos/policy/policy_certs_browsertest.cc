@@ -362,14 +362,11 @@ bool HasSubjectCommonName(CERTCertificate* cert_handle,
   return result;
 }
 
-void IsCertInNSSDatabaseOnIOThreadWithCertDb(
+void IsCertInNSSDatabaseOnIOThreadWithCertList(
     const std::string& subject_common_name,
     bool* out_system_slot_available,
     base::OnceClosure done_closure,
-    net::NSSCertDatabase* cert_db) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  base::ScopedAllowBlockingForTesting scoped_allow_blocking_for_testing;
-  net::ScopedCERTCertificateList certs = cert_db->ListCertsSync();
+    net::ScopedCERTCertificateList certs) {
   for (const net::ScopedCERTCertificate& cert : certs) {
     if (HasSubjectCommonName(cert.get(), subject_common_name)) {
       *out_system_slot_available = true;
@@ -377,6 +374,17 @@ void IsCertInNSSDatabaseOnIOThreadWithCertDb(
     }
   }
   std::move(done_closure).Run();
+}
+
+void IsCertInNSSDatabaseOnIOThreadWithCertDb(
+    const std::string& subject_common_name,
+    bool* out_system_slot_available,
+    base::OnceClosure done_closure,
+    net::NSSCertDatabase* cert_db) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  cert_db->ListCerts(base::BindOnce(
+      &IsCertInNSSDatabaseOnIOThreadWithCertList, subject_common_name,
+      out_system_slot_available, std::move(done_closure)));
 }
 
 void IsCertInNSSDatabaseOnIOThread(content::ResourceContext* resource_context,

@@ -830,7 +830,7 @@ void PageInfo::ComputeUIInputs(
     if (base::FeatureList::IsEnabled(
             security_state::features::kLegacyTLSWarnings) &&
         visible_security_state.connection_used_legacy_tls &&
-        !visible_security_state.is_legacy_tls_control_site) {
+        !visible_security_state.should_suppress_legacy_tls_warning) {
       site_connection_status_ = SITE_CONNECTION_STATUS_LEGACY_TLS;
     }
 

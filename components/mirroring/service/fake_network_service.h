@@ -82,7 +82,7 @@ class MockNetworkContext final : public network::TestNetworkContext {
       mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
       mojo::PendingRemote<network::mojom::UDPSocketListener> listener) override;
   void CreateURLLoaderFactory(
-      network::mojom::URLLoaderFactoryRequest request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       network::mojom::URLLoaderFactoryParamsPtr params) override;
 
   MockUdpSocket* udp_socket() const { return udp_socket_.get(); }

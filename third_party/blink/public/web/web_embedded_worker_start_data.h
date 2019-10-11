@@ -58,7 +58,11 @@ struct WebEmbeddedWorkerStartData {
 
   WebFetchClientSettingsObject outside_fetch_client_settings_object;
 
-  WebEmbeddedWorkerStartData() : wait_for_debugger_mode(kDontWaitForDebugger) {}
+  explicit WebEmbeddedWorkerStartData(
+      WebFetchClientSettingsObject outside_fetch_client_settings_object)
+      : wait_for_debugger_mode(kDontWaitForDebugger),
+        outside_fetch_client_settings_object(
+            std::move(outside_fetch_client_settings_object)) {}
 };
 
 }  // namespace blink

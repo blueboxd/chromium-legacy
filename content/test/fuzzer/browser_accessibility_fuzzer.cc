@@ -160,7 +160,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                           : OneShotAccessibilityTreeSearch::BACKWARDS);
   search.SetImmediateDescendantsOnly(fdp.ConsumeBool());
   search.SetCanWrapToLastElement(fdp.ConsumeBool());
-  search.SetVisibleOnly(fdp.ConsumeBool());
+  search.SetOnscreenOnly(fdp.ConsumeBool());
   if (fdp.ConsumeBool())
     search.AddPredicate(AccessibilityButtonPredicate);
   if (fdp.ConsumeBool())

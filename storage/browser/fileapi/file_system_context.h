@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "base/threading/sequence_bound.h"
 #include "build/build_config.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/open_file_system_mode.h"
@@ -259,7 +260,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
 
   // Creates a new FileSystemOperationRunner. Callers have to make sure that
   // this FileSystemContext outlives the returned FileSystemOperationRunner.
+  // This must be called on the IO thread.
   std::unique_ptr<FileSystemOperationRunner> CreateFileSystemOperationRunner();
+
+  // Similar to above, but this method can be called on any thread.
+  base::SequenceBound<FileSystemOperationRunner>
+  CreateSequenceBoundFileSystemOperationRunner();
 
   base::SequencedTaskRunner* default_file_task_runner() {
     return default_file_task_runner_.get();

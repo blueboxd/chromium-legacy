@@ -231,7 +231,7 @@ Polymer({
    * @private
    */
   getDefaultConfigProperties_: function() {
-    return {type: this.managedProperties_.type};
+    return OncMojo.getDefaultConfigProperties(this.managedProperties_.type);
   },
 
   /**
@@ -489,7 +489,7 @@ Polymer({
     }
     const config = this.getDefaultConfigProperties_();
     const apn = event.detail;
-    config.cellular = {apn: apn};
+    config.typeConfig.cellular = {apn: apn};
     this.setMojoNetworkProperties_(config);
   },
 

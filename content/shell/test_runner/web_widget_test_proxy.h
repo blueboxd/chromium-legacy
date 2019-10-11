@@ -77,6 +77,7 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget {
                      blink::WebDragOperationsMask mask,
                      const SkBitmap& drag_image,
                      const gfx::Point& image_offset) override;
+  blink::WebScreenInfo GetScreenInfo() override;
 
   // In the test runner code, it can be expected that the RenderViewImpl will
   // actually be a WebViewTestProxy as the creation of RenderView/Frame/Widget

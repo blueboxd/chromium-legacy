@@ -257,13 +257,9 @@ TEST_F(OptimizationGuideTopHostProviderTest, GetTopHostsMaxSites) {
   SetTopHostBlacklistState(optimization_guide::prefs::
                                HintsFetcherTopHostBlacklistState::kInitialized);
   size_t engaged_hosts = 5;
-  size_t max_top_hosts = 3;
   AddEngagedHosts(engaged_hosts);
 
-  std::vector<std::string> hosts =
-      top_host_provider()->GetTopHosts(max_top_hosts);
-
-  EXPECT_EQ(max_top_hosts, hosts.size());
+  EXPECT_EQ(engaged_hosts, top_host_provider()->GetTopHosts().size());
 }
 
 TEST_F(OptimizationGuideTopHostProviderTest,
@@ -271,15 +267,12 @@ TEST_F(OptimizationGuideTopHostProviderTest,
   SetTopHostBlacklistState(optimization_guide::prefs::
                                HintsFetcherTopHostBlacklistState::kInitialized);
   size_t engaged_hosts = 5;
-  size_t max_top_hosts = 5;
   size_t num_hosts_blacklisted = 2;
   AddEngagedHosts(engaged_hosts);
 
   PopulateTopHostBlacklist(num_hosts_blacklisted);
 
-  std::vector<std::string> hosts =
-      top_host_provider()->GetTopHosts(max_top_hosts);
-
+  std::vector<std::string> hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(hosts.size(), engaged_hosts - num_hosts_blacklisted);
 }
 
@@ -289,11 +282,9 @@ TEST_F(OptimizationGuideTopHostProviderTest,
             optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
                 kNotInitialized);
   size_t engaged_hosts = 5;
-  size_t max_top_hosts = 5;
   AddEngagedHosts(engaged_hosts);
 
-  std::vector<std::string> hosts =
-      top_host_provider()->GetTopHosts(max_top_hosts);
+  std::vector<std::string> hosts = top_host_provider()->GetTopHosts();
   // On initialization, GetTopHosts should always return zero hosts.
   EXPECT_EQ(hosts.size(), 0u);
   EXPECT_EQ(GetCurrentTopHostBlacklistState(),
@@ -304,19 +295,17 @@ TEST_F(OptimizationGuideTopHostProviderTest,
 TEST_F(OptimizationGuideTopHostProviderTest,
        GetTopHostsBlacklistStateNotInitializedToInitialized) {
   size_t engaged_hosts = 5;
-  size_t max_top_hosts = 5;
   size_t num_hosts_blacklisted = 5;
   AddEngagedHosts(engaged_hosts);
 
-  std::vector<std::string> hosts =
-      top_host_provider()->GetTopHosts(max_top_hosts);
+  std::vector<std::string> hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(hosts.size(), 0u);
 
   // Blacklist should now have items removed.
   size_t num_navigations = 2;
   RemoveHostsFromBlacklist(num_navigations);
 
-  hosts = top_host_provider()->GetTopHosts(max_top_hosts);
+  hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(hosts.size(),
             engaged_hosts - (num_hosts_blacklisted - num_navigations));
   EXPECT_EQ(GetCurrentTopHostBlacklistState(),
@@ -327,19 +316,17 @@ TEST_F(OptimizationGuideTopHostProviderTest,
 TEST_F(OptimizationGuideTopHostProviderTest,
        GetTopHostsBlacklistStateNotInitializedToEmpty) {
   size_t engaged_hosts = 5;
-  size_t max_top_hosts = 5;
   size_t num_hosts_blacklisted = 5;
   AddEngagedHosts(engaged_hosts);
 
-  std::vector<std::string> hosts =
-      top_host_provider()->GetTopHosts(max_top_hosts);
+  std::vector<std::string> hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(hosts.size(), 0u);
 
   // Blacklist should now have items removed.
   size_t num_navigations = 5;
   RemoveHostsFromBlacklist(num_navigations);
 
-  hosts = top_host_provider()->GetTopHosts(max_top_hosts);
+  hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(hosts.size(),
             engaged_hosts - (num_hosts_blacklisted - num_navigations));
   EXPECT_EQ(
@@ -350,32 +337,28 @@ TEST_F(OptimizationGuideTopHostProviderTest,
 TEST_F(OptimizationGuideTopHostProviderTest,
        MaybeUpdateTopHostBlacklistNavigationsOnBlacklist) {
   size_t engaged_hosts = 5;
-  size_t max_top_hosts = 5;
   size_t num_top_hosts = 3;
   AddEngagedHosts(engaged_hosts);
 
   // The blacklist should be populated on the first request.
-  std::vector<std::string> hosts =
-      top_host_provider()->GetTopHosts(max_top_hosts);
+  std::vector<std::string> hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(hosts.size(), 0u);
 
   // Navigate to some engaged hosts to trigger their removal from the top host
   // blacklist.
   SimulateUniqueNavigationsToTopHosts(num_top_hosts);
 
-  hosts = top_host_provider()->GetTopHosts(max_top_hosts);
+  hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(hosts.size(), num_top_hosts);
 }
 
 TEST_F(OptimizationGuideTopHostProviderTest,
        MaybeUpdateTopHostBlacklistEmptyBlacklist) {
   size_t engaged_hosts = 5;
-  size_t max_top_hosts = 5;
   size_t num_top_hosts = 5;
   AddEngagedHosts(engaged_hosts);
 
-  std::vector<std::string> hosts =
-      top_host_provider()->GetTopHosts(max_top_hosts);
+  std::vector<std::string> hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(hosts.size(), 0u);
 
   SimulateUniqueNavigationsToTopHosts(num_top_hosts);
@@ -384,14 +367,13 @@ TEST_F(OptimizationGuideTopHostProviderTest,
       GetCurrentTopHostBlacklistState(),
       optimization_guide::prefs::HintsFetcherTopHostBlacklistState::kEmpty);
 
-  hosts = top_host_provider()->GetTopHosts(max_top_hosts);
+  hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(hosts.size(), num_top_hosts);
 }
 
 TEST_F(OptimizationGuideTopHostProviderTest,
        HintsFetcherTopHostBlacklistNonHTTPOrHTTPSHost) {
   size_t engaged_hosts = 5;
-  size_t max_top_hosts = 5;
   size_t num_hosts_blacklisted = 5;
   GURL http_url = GURL("http://anyscheme.com");
   GURL file_url = GURL("file://anyscheme.com");
@@ -406,15 +388,14 @@ TEST_F(OptimizationGuideTopHostProviderTest,
 
   // A Non HTTP/HTTPS navigation should not remove a host from the blacklist.
   SimulateNavigation(file_url);
-  std::vector<std::string> hosts =
-      top_host_provider()->GetTopHosts(max_top_hosts);
+  std::vector<std::string> hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(hosts.size(), 0u);
   // The host, anyscheme.com, should still be on the blacklist.
   EXPECT_TRUE(IsHostBlacklisted(file_url.host()));
 
   // TopHostProviderImpl prevents HTTP hosts from being returned.
   SimulateNavigation(http_url);
-  hosts = top_host_provider()->GetTopHosts(max_top_hosts);
+  hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(hosts.size(), 0u);
 
   EXPECT_FALSE(IsHostBlacklisted(http_url.host()));
@@ -424,16 +405,13 @@ TEST_F(OptimizationGuideTopHostProviderTest,
        IntializeTopHostBlacklistWithMaxTopSites) {
   size_t engaged_hosts =
       optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize() + 1;
-  size_t max_top_hosts =
-      optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize() + 1;
   AddEngagedHosts(engaged_hosts);
 
   // Blacklist should be populated on the first request.
-  std::vector<std::string> hosts =
-      top_host_provider()->GetTopHosts(max_top_hosts);
+  std::vector<std::string> hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(hosts.size(), 0u);
 
-  hosts = top_host_provider()->GetTopHosts(max_top_hosts);
+  hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(
       hosts.size(),
       engaged_hosts -
@@ -457,11 +435,6 @@ TEST_F(OptimizationGuideTopHostProviderTest,
   size_t engaged_hosts =
       optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize() + 1;
 
-  // Set the count of maximum hosts requested to a large number so that the
-  // count itself does not prevent top_host_provider() from returning hosts that
-  // it would have otherwise returned.
-  static const size_t kMaxHostsRequested = INT16_MAX;
-
   AddEngagedHosts(engaged_hosts);
   // Add two hosts with very low engagement scores that should not be returned
   // by the top host provider.
@@ -470,11 +443,10 @@ TEST_F(OptimizationGuideTopHostProviderTest,
 
   // Blacklist should be populated on the first request. Set the count of
   // desired
-  std::vector<std::string> hosts =
-      top_host_provider()->GetTopHosts(kMaxHostsRequested);
+  std::vector<std::string> hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(hosts.size(), 0u);
 
-  hosts = top_host_provider()->GetTopHosts(kMaxHostsRequested);
+  hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(1u, hosts.size());
   EXPECT_EQ(GetCurrentTopHostBlacklistState(),
             optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
@@ -495,7 +467,7 @@ TEST_F(OptimizationGuideTopHostProviderTest,
   AddEngagedHost(GURL("https://lowengagement3.com"), 1);
   AddEngagedHost(GURL("https://lowengagement4.com"), 1);
 
-  hosts = top_host_provider()->GetTopHosts(kMaxHostsRequested);
+  hosts = top_host_provider()->GetTopHosts();
   // Four hosts lowengagement[1-4] should now be present in |hosts|.
   EXPECT_EQ(
       engaged_hosts + 4 -
@@ -522,11 +494,6 @@ TEST_F(OptimizationGuideTopHostProviderTest,
   size_t engaged_hosts =
       optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize() + 1;
 
-  // Set the count of maximum hosts requested to a large number so that the
-  // count itself does not prevent top_host_provider() from returning hosts that
-  // it would have otherwise returned.
-  static const size_t kMaxHostsRequested = INT16_MAX;
-
   AddEngagedHostsWithPoints(engaged_hosts, 15);
   // Add two hosts with engagement scores less than 15. These hosts should not
   // be returned by the top host provider because the minimum engagement score
@@ -540,11 +507,10 @@ TEST_F(OptimizationGuideTopHostProviderTest,
             GetHintsFetcherDataSaverTopHostBlacklistMinimumEngagementScore());
 
   // Blacklist should be populated on the first request.
-  std::vector<std::string> hosts =
-      top_host_provider()->GetTopHosts(kMaxHostsRequested);
+  std::vector<std::string> hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(hosts.size(), 0u);
 
-  hosts = top_host_provider()->GetTopHosts(kMaxHostsRequested);
+  hosts = top_host_provider()->GetTopHosts();
   EXPECT_NEAR(GetHintsFetcherDataSaverTopHostBlacklistMinimumEngagementScore(),
               GetHintsFetcherDataSaverTopHostBlacklistMinimumEngagementScore(),
               1);
@@ -563,17 +529,11 @@ TEST_F(OptimizationGuideTopHostProviderTest,
   size_t engaged_hosts =
       optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize() - 2;
 
-  // Set the count of maximum hosts requested to a large number so that the
-  // count itself does not prevent top_host_provider() from returning hosts that
-  // it would have otherwise returned.
-  static const size_t kMaxHostsRequested = INT16_MAX;
-
   AddEngagedHostsWithPoints(engaged_hosts, 2);
 
   // Blacklist should be populated on the first request. Set the count of
   // desired
-  std::vector<std::string> hosts =
-      top_host_provider()->GetTopHosts(kMaxHostsRequested);
+  std::vector<std::string> hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(hosts.size(), 0u);
 
   // Add two hosts with very low engagement scores. These hosts should be
@@ -583,7 +543,7 @@ TEST_F(OptimizationGuideTopHostProviderTest,
   AddEngagedHost(GURL("https://lowengagement1.com"), 1);
   AddEngagedHost(GURL("https://lowengagement2.com"), 1);
 
-  hosts = top_host_provider()->GetTopHosts(kMaxHostsRequested);
+  hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(2u, hosts.size());
   EXPECT_EQ(GetCurrentTopHostBlacklistState(),
             optimization_guide::prefs::HintsFetcherTopHostBlacklistState::

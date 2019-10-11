@@ -325,6 +325,16 @@ public class CookieManagerTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
+    public void testSetCookieSameSite() {
+        String url = "http://www.example.com";
+        String cookie = "name=test";
+        mCookieManager.setCookie(url, cookie + "; SameSite=Lax");
+        assertCookieEquals(cookie, url);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
     public void testSetCookieWithDomainForUrl() {
         // If the app passes ".www.example.com" or "http://.www.example.com", the glue layer "fixes"
         // this to "http:///.www.example.com"

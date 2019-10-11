@@ -29,6 +29,7 @@
  */
 #include "third_party/blink/renderer/modules/filesystem/entry.h"
 
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"

@@ -314,6 +314,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // independent.
   virtual void ConvertViewportToWindow(blink::WebRect* rect) = 0;
 
+  // Returns the device scale factor of the display the render frame is in.
+  virtual float GetDeviceScaleFactor() = 0;
+
  protected:
   ~RenderFrame() override {}
 

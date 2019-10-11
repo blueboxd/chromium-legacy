@@ -78,6 +78,8 @@ class HintsFetcherTest : public testing::Test {
         network::mojom::ConnectionType::CONNECTION_4G);
   }
 
+  // Updates the pref so that hints for each of the host in |hosts| are set to
+  // expire at |host_invalid_time|.
   void SeedCoveredHosts(const std::vector<std::string>& hosts,
                         base::Time host_invalid_time) {
     DictionaryPrefUpdate hosts_fetched(
@@ -450,7 +452,7 @@ TEST_F(HintsFetcherTest, HintsFetcherSuccessfullyFetchedHostsFull) {
   std::vector<std::string> hosts;
   size_t max_hosts =
       optimization_guide::features::MaxHostsForRecordingSuccessfullyCovered();
-  for (size_t i = 0; i < max_hosts - 1; i++) {
+  for (size_t i = 0; i < max_hosts - 1; ++i) {
     hosts.push_back("host" + base::NumberToString(i) + ".com");
   }
   base::Time host_expiry_time =
@@ -472,6 +474,36 @@ TEST_F(HintsFetcherTest, HintsFetcherSuccessfullyFetchedHostsFull) {
 
   EXPECT_TRUE(WasHostCoveredByFetch(extra_hosts[0]));
   EXPECT_TRUE(WasHostCoveredByFetch(extra_hosts[1]));
+}
+
+TEST_F(HintsFetcherTest, MaxHostsForOptimizationGuideServiceHintsFetch) {
+  base::HistogramTester histogram_tester;
+  std::string response_content;
+  std::vector<std::string> all_hosts;
+  size_t max_hosts_in_fetch_request = optimization_guide::features::
+      MaxHostsForOptimizationGuideServiceHintsFetch();
+  for (size_t i = 0; i < max_hosts_in_fetch_request; ++i) {
+    all_hosts.push_back("host" + base::NumberToString(i) + ".com");
+  }
+
+  all_hosts.push_back("extra1.com");
+  all_hosts.push_back("extra2.com");
+
+  EXPECT_TRUE(FetchHints(all_hosts));
+  VerifyHasPendingFetchRequests();
+  EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
+  EXPECT_TRUE(hints_fetched());
+
+  DictionaryPrefUpdate hosts_fetched(
+      pref_service(), prefs::kHintsFetcherHostsSuccessfullyFetched);
+  EXPECT_EQ(max_hosts_in_fetch_request, hosts_fetched->size());
+  EXPECT_EQ(all_hosts.size(), max_hosts_in_fetch_request + 2);
+
+  for (size_t i = 0; i < all_hosts.size(); ++i) {
+    // Only the first |max_hosts_in_fetch_request| should be requested.
+    EXPECT_EQ(i < max_hosts_in_fetch_request,
+              WasHostCoveredByFetch(all_hosts[i]));
+  }
 }
 
 }  // namespace optimization_guide

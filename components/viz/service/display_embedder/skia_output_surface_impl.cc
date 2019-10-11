@@ -685,7 +685,11 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
   DCHECK(backend_format.isValid());
   auto characterization = gr_context_thread_safe->createCharacterization(
       cache_max_resource_bytes, image_info, backend_format, 0 /* sampleCount */,
-      kTopLeft_GrSurfaceOrigin, surface_props, mipmap);
+      kTopLeft_GrSurfaceOrigin, surface_props, mipmap,
+      false /* willUseGLFBO0 */, true /* isTextureable */,
+      impl_on_gpu_->GetGpuPreferences().enforce_vulkan_protected_memory
+          ? GrProtected::kYes
+          : GrProtected::kNo);
   DCHECK(characterization.isValid());
   return characterization;
 }

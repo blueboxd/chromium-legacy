@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGPhysicalContainerFragment_h
-#define NGPhysicalContainerFragment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_CONTAINER_FRAGMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_CONTAINER_FRAGMENT_H_
 
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -179,4 +179,4 @@ struct DowncastTraits<NGPhysicalContainerFragment> {
 
 }  // namespace blink
 
-#endif  // NGPhysicalContainerFragment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_CONTAINER_FRAGMENT_H_

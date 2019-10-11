@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayoutNGTableCell_h
-#define LayoutNGTableCell_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LAYOUT_NG_TABLE_CELL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LAYOUT_NG_TABLE_CELL_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
@@ -23,4 +23,4 @@ class CORE_EXPORT LayoutNGTableCell final
 
 }  // namespace blink
 
-#endif  // LayoutNGTableCell_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LAYOUT_NG_TABLE_CELL_H_

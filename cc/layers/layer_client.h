@@ -6,6 +6,7 @@
 #define CC_LAYERS_LAYER_CLIENT_H_
 
 #include <memory>
+#include <string>
 
 #include "cc/cc_export.h"
 
@@ -30,6 +31,8 @@ class CC_EXPORT LayerClient {
   // which service multiple layers.
   virtual std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
       const Layer* layer) = 0;
+
+  virtual std::string LayerDebugName(const Layer* layer) const = 0;
 
   virtual void DidChangeScrollbarsHiddenIfOverlay(bool) = 0;
 

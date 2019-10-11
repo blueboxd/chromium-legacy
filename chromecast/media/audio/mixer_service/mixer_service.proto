@@ -155,6 +155,17 @@ message ConfigurePostprocessor {
 // Instructs the mixer to reload postprocessors based on the config file.
 message ReloadPostprocessors {}
 
+// Asks the mixer to send / stop sending stream count updates.
+message RequestStreamCount {
+  optional bool subscribe = 1;
+}
+
+// Indicates how many output streams are currently being handled by the mixer.
+message StreamCount {
+  optional int32 primary = 1;
+  optional int32 sfx = 2;
+}
+
 // Indicates an error on an audio stream.
 message Error {
   enum Type {
@@ -183,5 +194,7 @@ message Generic {
   optional SetVolumeLimit set_volume_limit = 15;
   optional ConfigurePostprocessor configure_postprocessor = 16;
   optional ReloadPostprocessors reload_postprocessors = 17;
-  optional Error error = 18;
+  optional RequestStreamCount request_stream_count = 18;
+  optional StreamCount stream_count = 19;
+  optional Error error = 20;
 }

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/serial_chooser.h"
@@ -41,6 +42,12 @@ SerialService::SerialService(RenderFrameHost* render_frame_host)
     : render_frame_host_(render_frame_host) {
   DCHECK(render_frame_host_->IsFeatureEnabled(
       blink::mojom::FeaturePolicyFeature::kSerial));
+  // Serial API is not supported for back-forward cache for now because we
+  // don't have support for closing/freezing ports when the frame is added to
+  // the back-forward cache, so we mark frames that use this API as disabled
+  // for back-forward cache.
+  BackForwardCache::DisableForRenderFrameHost(render_frame_host, "Serial");
+
   watchers_.set_disconnect_handler(base::BindRepeating(
       &SerialService::OnWatcherConnectionError, base::Unretained(this)));
 }

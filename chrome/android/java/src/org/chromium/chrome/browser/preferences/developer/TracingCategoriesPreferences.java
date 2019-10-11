@@ -10,6 +10,7 @@ import android.support.v7.preference.CheckBoxPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceScreen;
+import android.text.TextUtils;
 
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.tracing.TracingController;
@@ -28,11 +29,15 @@ public class TracingCategoriesPreferences
         extends PreferenceFragmentCompat implements Preference.OnPreferenceChangeListener {
     public static final String EXTRA_CATEGORY_TYPE = "type";
 
-    private @TracingPreferences.CategoryType int mType;
-    private Set<String> mEnabledCategories;
-
     // Non-translated strings:
     private static final String MSG_CATEGORY_SELECTION_TITLE = "Select categories";
+
+    private static final String SELECT_ALL_KEY = "select-all";
+    private static final String SELECT_ALL_TITLE = "Select all";
+
+    private @TracingPreferences.CategoryType int mType;
+    private Set<String> mEnabledCategories;
+    private List<CheckBoxPreference> mAllPreferences;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -43,14 +48,29 @@ public class TracingCategoriesPreferences
 
         mType = getArguments().getInt(EXTRA_CATEGORY_TYPE);
         mEnabledCategories = new HashSet<>(TracingPreferences.getEnabledCategories(mType));
+        mAllPreferences = new ArrayList<>();
 
         List<String> sortedCategories =
                 new ArrayList<>(TracingController.getInstance().getKnownCategories());
         Collections.sort(sortedCategories);
+
+        // Special preference to select all or deselect the entire list.
+        CheckBoxPreference selectAllPreference =
+                new ChromeBaseCheckBoxPreference(getStyledContext(), null);
+        selectAllPreference.setKey(SELECT_ALL_KEY);
+        selectAllPreference.setTitle(SELECT_ALL_TITLE);
+        selectAllPreference.setPersistent(false);
+        selectAllPreference.setOnPreferenceChangeListener(this);
+        preferenceScreen.addPreference(selectAllPreference);
+
         for (String category : sortedCategories) {
-            if (TracingPreferences.getCategoryType(category) == mType)
-                preferenceScreen.addPreference(createPreference(category));
+            if (TracingPreferences.getCategoryType(category) == mType) {
+                CheckBoxPreference pref = createPreference(category);
+                mAllPreferences.add(pref);
+                preferenceScreen.addPreference(pref);
+            }
         }
+        selectAllPreference.setChecked(mEnabledCategories.size() == mAllPreferences.size());
         setPreferenceScreen(preferenceScreen);
     }
 
@@ -70,6 +90,11 @@ public class TracingCategoriesPreferences
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         boolean value = (boolean) newValue;
+        if (TextUtils.equals(SELECT_ALL_KEY, preference.getKey())) {
+            setStateForAllPreferences(value);
+            return true;
+        }
+
         if (value) {
             mEnabledCategories.add(preference.getKey());
         } else {
@@ -81,5 +106,12 @@ public class TracingCategoriesPreferences
 
     private Context getStyledContext() {
         return getPreferenceManager().getContext();
+    }
+
+    private void setStateForAllPreferences(boolean enabled) {
+        for (CheckBoxPreference pref : mAllPreferences) {
+            pref.setChecked(enabled);
+            pref.callChangeListener(pref.isChecked());
+        }
     }
 }

@@ -12,15 +12,17 @@ namespace blink {
 
 namespace {
 
-class MockChromeClient : public RenderingTestChromeClient {
+class FakeChromeClient : public RenderingTestChromeClient {
  public:
-  MockChromeClient() = default;
+  FakeChromeClient() = default;
 
   void SetDeviceScaleFactor(float device_scale_factor) {
     screen_info_.device_scale_factor = device_scale_factor;
   }
 
-  WebScreenInfo GetScreenInfo() const override { return screen_info_; }
+  WebScreenInfo GetScreenInfo(LocalFrame&) const override {
+    return screen_info_;
+  }
 
  private:
   WebScreenInfo screen_info_;
@@ -32,11 +34,11 @@ class TouchAdjustmentTest : public RenderingTest {
  protected:
   TouchAdjustmentTest()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
-        chrome_client_(MakeGarbageCollected<MockChromeClient>()) {}
+        chrome_client_(MakeGarbageCollected<FakeChromeClient>()) {}
 
   LocalFrame& GetFrame() const { return *GetDocument().GetFrame(); }
 
-  MockChromeClient& GetChromeClient() const override { return *chrome_client_; }
+  FakeChromeClient& GetChromeClient() const override { return *chrome_client_; }
 
   void SetZoomAndScale(float device_scale_factor,
                        float browser_zoom_factor,
@@ -53,7 +55,7 @@ class TouchAdjustmentTest : public RenderingTest {
   const LayoutSize min_touch_area_dip_unscaled = LayoutSize(20, 20);
 
  private:
-  Persistent<MockChromeClient> chrome_client_;
+  Persistent<FakeChromeClient> chrome_client_;
 
   float device_scale_factor_;
   float page_scale_factor_;

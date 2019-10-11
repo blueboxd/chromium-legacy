@@ -28,6 +28,11 @@ AgentImpl::ComponentStateBase::ComponentStateBase(
       &ComponentStateBase::TeardownIfUnused, base::Unretained(this)));
 }
 
+void AgentImpl::ComponentStateBase::DisconnectClientsAndTeardown() {
+  agent_impl_->DeleteComponentState(component_id_);
+  // Do not touch |this|, since it is already gone.
+}
+
 void AgentImpl::ComponentStateBase::TeardownIfUnused() {
   DCHECK(agent_impl_);
 
@@ -41,7 +46,7 @@ void AgentImpl::ComponentStateBase::TeardownIfUnused() {
       return;
   }
 
-  agent_impl_->DeleteComponentState(component_id_);
+  DisconnectClientsAndTeardown();
   // Do not touch |this|, since it is already gone.
 }
 

@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/i18n/rtl.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -265,6 +266,8 @@ CastContentBrowserClient::GetMediaTaskRunner() {
   if (!media_thread_) {
     media_thread_.reset(new base::Thread("CastMediaThread"));
     base::Thread::Options options;
+    // We need the media thread to be IO-capable to use the mixer service.
+    options.message_pump_type = base::MessagePumpType::IO;
     options.priority = base::ThreadPriority::REALTIME_AUDIO;
     CHECK(media_thread_->StartWithOptions(options));
     // Start the media_resource_tracker as soon as the media thread is created.

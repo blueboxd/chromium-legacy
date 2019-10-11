@@ -100,7 +100,8 @@ void RecordAnimatedCssProperty(CSSSampleId animated_property) {
 
 }  // namespace
 
-UseCounterPageLoadMetricsObserver::UseCounterPageLoadMetricsObserver() {}
+UseCounterPageLoadMetricsObserver::UseCounterPageLoadMetricsObserver() =
+    default;
 
 UseCounterPageLoadMetricsObserver::~UseCounterPageLoadMetricsObserver() =
     default;

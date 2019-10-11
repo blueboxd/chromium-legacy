@@ -104,6 +104,11 @@ class PasswordManagerDriver
   // Returns the last committed URL of the frame.
   virtual const GURL& GetLastCommittedURL() const = 0;
 
+  // Annotate password related (username, password) DOM input elements with
+  // corresponding HTML attributes. It is used only for debugging.
+  virtual void AnnotateFieldsWithParsingResult(
+      const autofill::ParsingResult& parsing_result) {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDriver);
 };

@@ -10,59 +10,29 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "remoting/base/name_value_map.h"
-#include "remoting/base/remoting_bot.h"
-#include "remoting/signaling/jid_util.h"
+#include "remoting/signaling/signaling_id_util.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 namespace remoting {
 
 namespace {
 
-constexpr char kJingleNamespace[] = "urn:xmpp:jingle:1";
-constexpr char kLcsResourcePrefix[] = "chromoting_lcs_";
-
-// FTL JID format:
+// FTL ID format:
 // user@domain.com/chromoting_ftl_(registration ID)
-// The FTL JID is only used local to the program.
+// The FTL ID is only used local to the program.
 constexpr char kFtlResourcePrefix[] = "chromoting_ftl_";
 
-// Represents the XML attrbute names for the various address fields in the
-// iq stanza.
-enum class Field { JID, CHANNEL, ENDPOINT_ID };
-
-const NameMapElement<SignalingAddress::Channel> kChannelTypes[] = {
-    {SignalingAddress::Channel::LCS, "lcs"},
-    {SignalingAddress::Channel::XMPP, "xmpp"},
-    {SignalingAddress::Channel::FTL, "ftl"},
-};
-
-jingle_xmpp::QName GetQNameByField(Field attr, SignalingAddress::Direction direction) {
-  const char* attribute_name = nullptr;
-  switch (attr) {
-    case Field::JID:
-      attribute_name = (direction == SignalingAddress::FROM) ? "from" : "to";
-      break;
-    case Field::ENDPOINT_ID:
-      attribute_name = (direction == SignalingAddress::FROM)
-                           ? "from-endpoint-id"
-                           : "to-endpoint-id";
-      break;
-    case Field::CHANNEL:
-      attribute_name =
-          (direction == SignalingAddress::FROM) ? "from-channel" : "to-channel";
-      break;
-  }
+jingle_xmpp::QName GetIdQName(SignalingAddress::Direction direction) {
+  const char* attribute_name = attribute_name =
+      (direction == SignalingAddress::FROM) ? "from" : "to";
   return jingle_xmpp::QName("", attribute_name);
 }
 
 SignalingAddress::Channel GetChannelType(std::string address) {
-  std::string bare_jid;
+  std::string email;
   std::string resource;
-  bool has_jid_resource = SplitJidResource(address, &bare_jid, &resource);
-  if (has_jid_resource) {
-    if (resource.find(kLcsResourcePrefix) == 0) {
-      return SignalingAddress::Channel::LCS;
-    }
+  bool has_resource = SplitSignalingIdResource(address, &email, &resource);
+  if (has_resource) {
     if (resource.find(kFtlResourcePrefix) == 0) {
       return SignalingAddress::Channel::FTL;
     }
@@ -72,43 +42,24 @@ SignalingAddress::Channel GetChannelType(std::string address) {
 
 }  // namespace
 
-SignalingAddress::SignalingAddress()
-    : channel_(SignalingAddress::Channel::XMPP) {}
+SignalingAddress::SignalingAddress() = default;
 
 SignalingAddress::SignalingAddress(const std::string& address) {
+  DCHECK(!address.empty());
   channel_ = GetChannelType(address);
   switch (channel_) {
-    case SignalingAddress::Channel::XMPP:
-      jid_ = NormalizeJid(address);
-      break;
-    case SignalingAddress::Channel::LCS:
-      endpoint_id_ = NormalizeJid(address);
-      jid_ = kRemotingBotJid;
-      break;
-    case SignalingAddress::Channel::FTL:
-      jid_ = NormalizeJid(address);
+    case Channel::XMPP:
+    case Channel::FTL:
+      id_ = NormalizeSignalingId(address);
+      DCHECK(!id_.empty()) << "Missing signaling ID.";
       break;
     default:
       NOTREACHED();
   }
-
-  DCHECK(!jid_.empty()) << "Missing JID.";
-  DCHECK(endpoint_id_.empty() != (channel_ == Channel::LCS))
-      << "EndpointId should be set if and only if the Channel is LCS";
-}
-
-SignalingAddress::SignalingAddress(const std::string& jid,
-                                   const std::string& endpoint_id,
-                                   Channel channel)
-    : jid_(NormalizeJid(jid)),
-      endpoint_id_(NormalizeJid(endpoint_id)),
-      channel_(channel) {
-  DCHECK(!jid.empty());
 }
 
 bool SignalingAddress::operator==(const SignalingAddress& other) const {
-  return (other.jid_ == jid_) && (other.endpoint_id_ == endpoint_id_) &&
-         (other.channel_ == channel_);
+  return (other.id_ == id_) && (other.channel_ == channel_);
 }
 
 bool SignalingAddress::operator!=(const SignalingAddress& other) const {
@@ -128,91 +79,17 @@ SignalingAddress SignalingAddress::CreateFtlSignalingAddress(
 SignalingAddress SignalingAddress::Parse(const jingle_xmpp::XmlElement* iq,
                                          SignalingAddress::Direction direction,
                                          std::string* error) {
-  std::string jid(iq->Attr(GetQNameByField(Field::JID, direction)));
-  if (jid.empty()) {
+  std::string id = iq->Attr(GetIdQName(direction));
+  if (id.empty()) {
     return SignalingAddress();
   }
-
-  const jingle_xmpp::XmlElement* jingle =
-      iq->FirstNamed(jingle_xmpp::QName(kJingleNamespace, "jingle"));
-
-  if (!jingle || GetChannelType(jid) == SignalingAddress::Channel::FTL) {
-    return SignalingAddress(jid);
-  }
-
-  std::string type(iq->Attr(jingle_xmpp::QName(std::string(), "type")));
-  // For error IQs, invert the direction as the jingle node represents the
-  // original request.
-  if (type == "error") {
-    direction = (direction == FROM) ? TO : FROM;
-  }
-
-  std::string endpoint_id(
-      jingle->Attr(GetQNameByField(Field::ENDPOINT_ID, direction)));
-  std::string channel_str(
-      jingle->Attr(GetQNameByField(Field::CHANNEL, direction)));
-  SignalingAddress::Channel channel;
-
-  if (channel_str.empty()) {
-    channel = SignalingAddress::Channel::XMPP;
-  } else if (!NameToValue(kChannelTypes, channel_str, &channel)) {
-    *error = "Unknown channel: " + channel_str;
-    return SignalingAddress();
-  }
-
-  bool is_lcs = (channel == SignalingAddress::Channel::LCS);
-
-  if (is_lcs == endpoint_id.empty()) {
-    *error = (is_lcs ? "Missing |endpoint-id| for LCS channel"
-                     : "|endpoint_id| should be empty for XMPP channel");
-    return SignalingAddress();
-  }
-
-  if (direction == FROM && is_lcs && !IsValidBotJid(jid)) {
-    *error = "Reject LCS message from untrusted sender: " + jid;
-    return SignalingAddress();
-  }
-
-  return SignalingAddress(jid, endpoint_id, channel);
+  return SignalingAddress(id);
 }
 
 void SignalingAddress::SetInMessage(jingle_xmpp::XmlElement* iq,
                                     Direction direction) const {
   DCHECK(!empty()) << "Signaling Address is empty";
-
-  if (direction == FROM) {
-    // The from JID is not used for routing but for sender identification on the
-    // receiving end. Use the ID for specificity.
-    iq->SetAttr(GetQNameByField(Field::JID, direction), id());
-  } else {
-    // The to JID is used for routing and must be a valid XMPP endpoint.  Always
-    // use the XMPP JID.
-    iq->SetAttr(GetQNameByField(Field::JID, direction), jid_);
-  }
-
-  // Do not tamper the routing-info in the jingle tag for error IQ's, as
-  // it corresponds to the original message.
-  std::string type(iq->Attr(jingle_xmpp::QName(std::string(), "type")));
-  if (type == "error") {
-    return;
-  }
-
-  jingle_xmpp::XmlElement* jingle =
-      iq->FirstNamed(jingle_xmpp::QName(kJingleNamespace, "jingle"));
-
-  if (jingle) {
-    // Start from a fresh slate regardless of the previous address format.
-    jingle->ClearAttr(GetQNameByField(Field::CHANNEL, direction));
-    jingle->ClearAttr(GetQNameByField(Field::ENDPOINT_ID, direction));
-
-    // Only set the channel and endpoint_id in the LCS channel.
-    if (channel_ == SignalingAddress::Channel::LCS) {
-      jingle->AddAttr(GetQNameByField(Field::ENDPOINT_ID, direction),
-                      endpoint_id_);
-      jingle->AddAttr(GetQNameByField(Field::CHANNEL, direction),
-                      ValueToName(kChannelTypes, channel_));
-    }
-  }
+  iq->SetAttr(GetIdQName(direction), id_);
 }
 
 bool SignalingAddress::GetFtlInfo(std::string* username,
@@ -221,8 +98,8 @@ bool SignalingAddress::GetFtlInfo(std::string* username,
     return false;
   }
   std::string resource;
-  bool has_jid_resource = SplitJidResource(jid_, username, &resource);
-  DCHECK(has_jid_resource);
+  bool has_resource = SplitSignalingIdResource(id_, username, &resource);
+  DCHECK(has_resource);
   size_t ftl_resource_prefix_length = strlen(kFtlResourcePrefix);
   DCHECK_LT(ftl_resource_prefix_length, resource.length());
   *registration_id = resource.substr(ftl_resource_prefix_length);

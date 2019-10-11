@@ -74,11 +74,15 @@ base::Optional<DeviceInfo::SharingInfo> SpecificsToSharingInfo(
 // Converts DeviceInfoSpecifics into a freshly allocated DeviceInfo.
 std::unique_ptr<DeviceInfo> SpecificsToModel(
     const DeviceInfoSpecifics& specifics) {
+  base::SysInfo::HardwareInfo hardware_info;
+  hardware_info.model = specifics.model();
+  hardware_info.manufacturer = specifics.manufacturer();
+
   return std::make_unique<DeviceInfo>(
       specifics.cache_guid(), specifics.client_name(),
       specifics.chrome_version(), specifics.sync_user_agent(),
       specifics.device_type(), specifics.signin_scoped_device_id(),
-      ProtoTimeToTime(specifics.last_updated_timestamp()),
+      hardware_info, ProtoTimeToTime(specifics.last_updated_timestamp()),
       specifics.feature_fields().send_tab_to_self_receiving_enabled(),
       SpecificsToSharingInfo(specifics));
 }
@@ -95,6 +99,7 @@ std::unique_ptr<EntityData> CopyToEntityData(
 // Converts a local DeviceInfo into a freshly allocated DeviceInfoSpecifics.
 std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
     const DeviceInfo& info) {
+  auto hardware_info = info.hardware_info();
   auto specifics = std::make_unique<DeviceInfoSpecifics>();
   specifics->set_cache_guid(info.guid());
   specifics->set_client_name(info.client_name());
@@ -102,6 +107,8 @@ std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
   specifics->set_sync_user_agent(info.sync_user_agent());
   specifics->set_device_type(info.device_type());
   specifics->set_signin_scoped_device_id(info.signin_scoped_device_id());
+  specifics->set_model(hardware_info.model);
+  specifics->set_manufacturer(hardware_info.manufacturer);
   // The local device should have not been updated yet. Set the last updated
   // timestamp to now.
   DCHECK(info.last_updated_timestamp() == base::Time());
@@ -210,7 +217,8 @@ base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
   DCHECK(!local_cache_guid_.empty());
 
   local_device_info_provider_->Initialize(local_cache_guid_,
-                                          local_personalizable_device_name_);
+                                          local_personalizable_device_name_,
+                                          local_hardware_info_);
 
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   for (const auto& change : entity_data) {
@@ -399,6 +407,15 @@ void DeviceInfoSyncBridge::OnStoreCreated(
 
   store_ = std::move(store);
 
+  base::SysInfo::GetHardwareInfo(
+      base::BindOnce(&DeviceInfoSyncBridge::OnHardwareInfoRetrieved,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DeviceInfoSyncBridge::OnHardwareInfoRetrieved(
+    base::SysInfo::HardwareInfo hardware_info) {
+  local_hardware_info_ = std::move(hardware_info);
+
   auto all_data = std::make_unique<ClientIdToSpecifics>();
   ClientIdToSpecifics* all_data_copy = all_data.get();
 
@@ -428,6 +445,7 @@ void DeviceInfoSyncBridge::OnReadAllData(
   }
 
   all_data_ = std::move(*all_data);
+
   local_personalizable_device_name_ =
       std::move(*local_personalizable_device_name);
 
@@ -481,7 +499,8 @@ void DeviceInfoSyncBridge::OnReadAllMetadata(
   // initialize the provider immediately.
   local_cache_guid_ = local_cache_guid_in_metadata;
   local_device_info_provider_->Initialize(local_cache_guid_,
-                                          local_personalizable_device_name_);
+                                          local_personalizable_device_name_,
+                                          local_hardware_info_);
 
   // This probably isn't strictly needed, but in case the cache_guid has changed
   // we save the new one to prefs.

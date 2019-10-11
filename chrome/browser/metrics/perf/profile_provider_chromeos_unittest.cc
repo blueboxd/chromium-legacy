@@ -82,7 +82,6 @@ class TestMetricCollector : public internal::MetricCollector {
     auto observer = WindowedIncognitoMonitor::CreateObserver();
     if (!observer->IncognitoActive()) {
       SaveSerializedPerfProto(std::move(sampled_profile),
-                              PerfProtoType::PERF_TYPE_DATA,
                               perf_data_proto.SerializeAsString());
     }
   }

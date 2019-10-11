@@ -24,9 +24,7 @@ class AudioInputProviderImpl : public assistant_client::AudioInputProvider {
  public:
   AudioInputProviderImpl(mojom::Client* client,
                          PowerManagerClient* power_manager_client,
-                         CrasAudioHandler* cras_audio_handler,
-                         const std::string& input_device_id,
-                         const std::string& hotword_device_id);
+                         CrasAudioHandler* cras_audio_handler);
   ~AudioInputProviderImpl() override;
 
   // assistant_client::AudioInputProvider overrides:

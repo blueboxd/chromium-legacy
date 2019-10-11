@@ -19,6 +19,7 @@
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
@@ -391,6 +392,12 @@ void BrowserTabStripController::OnStoppedDraggingTabs() {
     browser_view_->TabDraggingStatusChanged(/*is_dragging=*/false);
   if (source_browser_view && !TabDragController::IsActive())
     source_browser_view->TabDraggingStatusChanged(/*is_dragging=*/false);
+}
+
+void BrowserTabStripController::OnKeyboardFocusedTabChanged(
+    base::Optional<int> index) {
+  browser_view_->browser()->command_controller()->TabKeyboardFocusChangedTo(
+      index);
 }
 
 const TabGroupVisualData* BrowserTabStripController::GetVisualDataForGroup(

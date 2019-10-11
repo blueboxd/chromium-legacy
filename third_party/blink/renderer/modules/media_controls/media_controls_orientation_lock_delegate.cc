@@ -293,11 +293,12 @@ MediaControlsOrientationLockDelegate::ComputeOrientationLock() const {
   // consistency. Use WebScreenOrientationLockLandscape as a fallback value.
   // TODO(mlamouri): we could improve this by having direct access to
   // `window.screen.orientation.type`.
-  Frame* frame = GetDocument().GetFrame();
+  LocalFrame* frame = GetDocument().GetFrame();
   if (!frame)
     return kWebScreenOrientationLockLandscape;
 
-  switch (frame->GetChromeClient().GetScreenInfo().orientation_type) {
+  ChromeClient& chrome_client = frame->GetChromeClient();
+  switch (chrome_client.GetScreenInfo(*frame).orientation_type) {
     case kWebScreenOrientationPortraitPrimary:
     case kWebScreenOrientationPortraitSecondary:
       return kWebScreenOrientationLockPortrait;

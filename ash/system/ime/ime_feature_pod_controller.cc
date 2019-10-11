@@ -64,7 +64,7 @@ IMEFeaturePodController::~IMEFeaturePodController() {
 }
 
 FeaturePodButton* IMEFeaturePodController::CreateButton() {
-  button_ = new FeaturePodButton(this);
+  button_ = new FeaturePodButton(this, /*is_togglable=*/false);
   button_->SetVectorIcon(kUnifiedMenuKeyboardIcon);
   button_->SetLabel(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME_SHORT));
   button_->SetIconAndLabelTooltips(GetTooltipString());

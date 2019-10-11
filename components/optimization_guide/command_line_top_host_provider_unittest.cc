@@ -38,8 +38,7 @@ TEST(CommandLineTopHostProviderTest,
   std::unique_ptr<CommandLineTopHostProvider> top_host_provider =
       CommandLineTopHostProvider::CreateIfEnabled();
   ASSERT_TRUE(top_host_provider);
-  std::vector<std::string> top_hosts =
-      top_host_provider->GetTopHosts(/*max_size=*/2);
+  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts();
   EXPECT_EQ(1ul, top_hosts.size());
   EXPECT_EQ("whatever.com", top_hosts[0]);
 }
@@ -52,10 +51,10 @@ TEST(CommandLineTopHostProviderTest,
   std::unique_ptr<CommandLineTopHostProvider> top_host_provider =
       CommandLineTopHostProvider::CreateIfEnabled();
   ASSERT_TRUE(top_host_provider);
-  std::vector<std::string> top_hosts =
-      top_host_provider->GetTopHosts(/*max_size=*/1);
-  EXPECT_EQ(1ul, top_hosts.size());
+  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts();
+  EXPECT_EQ(2u, top_hosts.size());
   EXPECT_EQ("whatever.com", top_hosts[0]);
+  EXPECT_EQ("awesome.com", top_hosts[1]);
 }
 
 }  // namespace optimization_guide

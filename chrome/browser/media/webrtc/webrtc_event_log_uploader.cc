@@ -15,6 +15,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_status_code.h"
@@ -102,13 +103,14 @@ std::string MimeContentType() {
   return content_type;
 }
 
-void BindURLLoaderFactoryRequest(
-    network::mojom::URLLoaderFactoryRequest url_loader_factory_request) {
+void BindURLLoaderFactoryReceiver(
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+        url_loader_factory_receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory =
       g_browser_process->shared_url_loader_factory();
   DCHECK(shared_url_loader_factory);
-  shared_url_loader_factory->Clone(std::move(url_loader_factory_request));
+  shared_url_loader_factory->Clone(std::move(url_loader_factory_receiver));
 }
 
 void OnURLLoadUploadProgress(uint64_t current, uint64_t total) {
@@ -280,7 +282,7 @@ void WebRtcEventLogUploaderImpl::StartUpload(const std::string& upload_data) {
   // thread.
   network::mojom::URLLoaderFactoryPtr url_loader_factory_ptr;
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(BindURLLoaderFactoryRequest,
+                 base::BindOnce(BindURLLoaderFactoryReceiver,
                                 mojo::MakeRequest(&url_loader_factory_ptr)));
 
   url_loader_ = network::SimpleURLLoader::Create(

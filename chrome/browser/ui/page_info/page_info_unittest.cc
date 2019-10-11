@@ -872,7 +872,7 @@ TEST_F(PageInfoTest, LegacyTLS) {
   visible_security_state_.connection_status = status;
   visible_security_state_.connection_info_initialized = true;
   visible_security_state_.connection_used_legacy_tls = true;
-  visible_security_state_.is_legacy_tls_control_site = false;
+  visible_security_state_.should_suppress_legacy_tls_warning = false;
 
   SetDefaultUIExpectations(mock_ui());
 
@@ -900,7 +900,7 @@ TEST_F(PageInfoTest, LegacyTLSControlSite) {
   visible_security_state_.connection_status = status;
   visible_security_state_.connection_info_initialized = true;
   visible_security_state_.connection_used_legacy_tls = true;
-  visible_security_state_.is_legacy_tls_control_site = true;
+  visible_security_state_.should_suppress_legacy_tls_warning = true;
 
   SetDefaultUIExpectations(mock_ui());
 

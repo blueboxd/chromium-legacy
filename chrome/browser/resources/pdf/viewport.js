@@ -621,7 +621,7 @@ class Viewport {
       const bottom =
           this.pageDimensions_[page].y + this.pageDimensions_[page].height;
 
-      if (top <= y && bottom > y) {
+      if (top <= y && y <= bottom) {
         return page;
       }
 

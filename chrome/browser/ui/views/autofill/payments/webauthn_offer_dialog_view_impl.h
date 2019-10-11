@@ -28,6 +28,9 @@ class WebauthnOfferDialogViewImpl : public WebauthnOfferDialogView,
       WebauthnOfferDialogController* controller);
   ~WebauthnOfferDialogViewImpl() override;
 
+  // WebauthnOfferDialogView:
+  WebauthnOfferDialogModel* GetDialogModel() const override;
+
   // WebauthnOfferDialogModelObserver:
   void OnDialogStateChanged() override;
 
@@ -43,9 +46,7 @@ class WebauthnOfferDialogViewImpl : public WebauthnOfferDialogView,
   base::string16 GetWindowTitle() const override;
   bool ShouldShowWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
-  void WindowClosing() override;
 
-  WebauthnOfferDialogModel* model() { return model_; }
 
  private:
   // Closes the dialog.

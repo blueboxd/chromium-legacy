@@ -115,10 +115,13 @@ class StreamMixer : public MixerControl {
   void SetVolumeMultiplier(MixerInput::Source* source, float multiplier);
 
   // Sends configuration string |config| to processor |name|.
-  void SetPostProcessorConfig(const std::string& name,
-                              const std::string& config);
+  void SetPostProcessorConfig(std::string name, std::string config);
 
   void ResetPostProcessors(CastMediaShlib::ResultCallback callback);
+
+  // Updates the counts of active streams and signals any observing control
+  // connections.
+  void UpdateStreamCounts();
 
   // Test-only methods.
   StreamMixer(std::unique_ptr<MixerOutputStream> output,

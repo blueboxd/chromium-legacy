@@ -591,6 +591,30 @@ struct StructTraits<autofill::mojom::ValueElementPairDataView,
                    autofill::ValueElementPair* out);
 };
 
+template <>
+struct StructTraits<autofill::mojom::ParsingResultDataView,
+                    autofill::ParsingResult> {
+  static uint32_t username_renderer_id(const autofill::ParsingResult& r) {
+    return r.username_renderer_id;
+  }
+
+  static uint32_t password_renderer_id(const autofill::ParsingResult& r) {
+    return r.password_renderer_id;
+  }
+
+  static uint32_t new_password_renderer_id(const autofill::ParsingResult& r) {
+    return r.new_password_renderer_id;
+  }
+
+  static uint32_t confirm_password_renderer_id(
+      const autofill::ParsingResult& r) {
+    return r.confirm_password_renderer_id;
+  }
+
+  static bool Read(autofill::mojom::ParsingResultDataView data,
+                   autofill::ParsingResult* out);
+};
+
 }  // namespace mojo
 
 #endif  // COMPONENTS_AUTOFILL_CORE_COMMON_MOJOM_AUTOFILL_TYPES_MOJOM_TRAITS_H_

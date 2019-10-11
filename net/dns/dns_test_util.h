@@ -277,6 +277,7 @@ class MockDnsClient : public DnsClient {
   const DnsHosts* GetHosts() const override;
   void SetRequestContextForProbes(
       URLRequestContext* url_request_context) override;
+  void CancelProbesForContext(URLRequestContext* url_request_context) override;
   DnsTransactionFactory* GetTransactionFactory() override;
   AddressSorter* GetAddressSorter() override;
   void IncrementInsecureFallbackFailures() override;

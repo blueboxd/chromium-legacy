@@ -385,6 +385,16 @@ fuzzer_test("cenc_decryptor_fuzzer") {
   ]
 }
 
+fuzzer_test("json_web_key_fuzzer") {
+  sources = [
+    "cdm/json_web_key_fuzzer.cc",
+  ]
+  deps = [
+    ":media",
+    "//base",
+  ]
+}
+
 if (proprietary_codecs) {
   fuzzer_test("media_mp4_avcc_parser_fuzzer") {
     sources = [

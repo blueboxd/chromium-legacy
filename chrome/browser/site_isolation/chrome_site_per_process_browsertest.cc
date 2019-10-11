@@ -1781,14 +1781,23 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   EXPECT_EQ(first_web_contents, tab_strip_model->GetActiveWebContents());
 }
 
+class ChromeSitePerProcessTestWithVerifiedUserActivation
+    : public ChromeSitePerProcessTest {
+ public:
+  ChromeSitePerProcessTestWithVerifiedUserActivation() {
+    feature_list_.InitAndEnableFeature(
+        features::kBrowserVerifiedUserActivation);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Test mouse down activation notification with browser verification.
-IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTestWithVerifiedUserActivation,
                        UserActivationBrowserVerificationSameOriginSite) {
   if (!base::FeatureList::IsEnabled(features::kUserActivationV2))
     return;
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kBrowserVerifiedUserActivation);
 
   // Start on a page a.com with same-origin iframe on a.com and cross-origin
   // iframe b.com.

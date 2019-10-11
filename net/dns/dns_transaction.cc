@@ -555,6 +555,8 @@ void ConstructDnsHTTPAttempt(DnsSession* session,
                              std::vector<std::unique_ptr<DnsAttempt>>* attempts,
                              URLRequestContext* url_request_context,
                              RequestPriority request_priority) {
+  DCHECK(url_request_context);
+
   uint16_t id = session->NextQueryId();
   std::unique_ptr<DnsQuery> query;
   if (attempts->empty()) {
@@ -860,6 +862,8 @@ class DnsOverHttpsProbeRunner {
   void StartProbe(int doh_server_index,
                   URLRequestContext* context,
                   bool network_change) {
+    DCHECK(context);
+
     // Clear the existing probe stats.
     probe_stats_[doh_server_index] = std::make_unique<ProbeStats>();
     session_->SetProbeSuccess(doh_server_index, false /* success */);
@@ -868,6 +872,8 @@ class DnsOverHttpsProbeRunner {
                   network_change,
                   base::TimeTicks::Now() /* sequence_start_time */);
   }
+
+  void CancelProbes() { probe_stats_.clear(); }
 
  private:
   struct ProbeStats {
@@ -896,6 +902,7 @@ class DnsOverHttpsProbeRunner {
     // than on probe completion.
     DCHECK(probe_stats);
     DCHECK(probe_stats->backoff_entry);
+    DCHECK(context);
     probe_stats->backoff_entry->InformOfRequest(false /* success */);
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
@@ -1188,6 +1195,8 @@ class DnsTransactionImpl : public DnsTransaction,
 
   AttemptResult MakeHTTPAttempt() {
     DCHECK(secure_);
+    DCHECK(url_request_context_);
+
     // doh_attempts_ counts the number of attempts made via HTTPS. To
     // get a server index cap that by the number of DoH servers we
     // have configured and search for the next good server.
@@ -1476,11 +1485,18 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
 
   void StartDohProbes(URLRequestContext* context,
                       bool network_change) override {
+    if (!context) {
+      // Unable to run DoH probes without a URLRequestContext.
+      return;
+    }
+
     for (size_t i = 0; i < session_->config().dns_over_https_servers.size();
          i++) {
       probe_runner_->StartProbe(i, context, network_change);
     }
   }
+
+  void CancelDohProbes() override { probe_runner_->CancelProbes(); }
 
   DnsConfig::SecureDnsMode GetSecureDnsModeForTest() override {
     return session_->config().secure_dns_mode;

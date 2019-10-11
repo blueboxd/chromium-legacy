@@ -1351,7 +1351,7 @@ component("ash") {
     "//ui/wm",
   ]
   deps = [
-    "//ash/app_list/presenter",
+    "//ash/app_list:presenter",
     "//ash/app_menu",
     "//ash/assistant/model",
     "//ash/assistant/ui",
@@ -1533,7 +1533,7 @@ static_library("ash_shell_lib") {
   deps = [
     ":ash",
     ":test_support",
-    "//ash/app_list/presenter",
+    "//ash/app_list:presenter",
     "//ash/public/cpp",
     "//base",
     "//base:i18n",
@@ -1653,14 +1653,15 @@ test("ash_unittests") {
     "app_list/app_list_controller_impl_unittest.cc",
     "app_list/app_list_metrics_unittest.cc",
     "app_list/app_list_presenter_delegate_unittest.cc",
+    "app_list/app_list_presenter_impl_unittest.cc",
     "app_list/app_list_unittest.cc",
     "app_list/model/app_list_item_list_unittest.cc",
     "app_list/model/app_list_model_unittest.cc",
-    "app_list/presenter/app_list_presenter_impl_unittest.cc",
     "app_list/views/assistant/assistant_page_view_unittest.cc",
     "app_menu/notification_menu_controller_unittest.cc",
     "app_menu/notification_menu_view_unittest.cc",
     "app_menu/notification_overflow_view_unittest.cc",
+    "assistant/assistant_alarm_timer_controller_unittest.cc",
     "assistant/assistant_notification_controller_unittest.cc",
     "assistant/assistant_screen_context_controller_unittest.cc",
     "assistant/assistant_state_controller_unittest.cc",
@@ -1971,8 +1972,8 @@ test("ash_unittests") {
   deps = [
     ":ash",
     ":test_support",
+    "//ash/app_list:presenter",
     "//ash/app_list:test_support",
-    "//ash/app_list/presenter",
     "//ash/app_menu",
     "//ash/assistant/model",
     "//ash/assistant/ui",
@@ -2317,8 +2318,8 @@ static_library("test_support") {
   ]
   deps = [
     "//ash",
+    "//ash/app_list:presenter",
     "//ash/app_list:test_support",
-    "//ash/app_list/presenter",
     "//ash/app_menu",
     "//ash/assistant/model:model",
     "//ash/components/fast_ink",

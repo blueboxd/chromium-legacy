@@ -14,11 +14,6 @@ PageProperties::PageProperties(CompositorDependencies* compositor_deps)
     : compositor_deps_(compositor_deps) {}
 PageProperties::~PageProperties() = default;
 
-void PageProperties::SetScreenMetricsEmulator(
-    std::unique_ptr<RenderWidgetScreenMetricsEmulator> emulator) {
-  screen_metrics_emulator_ = std::move(emulator);
-}
-
 CompositorDependencies* PageProperties::GetCompositorDependencies() {
   return compositor_deps_;
 }

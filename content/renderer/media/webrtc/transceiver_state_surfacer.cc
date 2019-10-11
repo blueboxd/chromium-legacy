@@ -55,7 +55,7 @@ TransceiverStateSurfacer& TransceiverStateSurfacer::operator=(
 
 void TransceiverStateSurfacer::Initialize(
     scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-    scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
+    scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
     std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
         webrtc_transceivers) {
   DCHECK(signaling_task_runner_->BelongsToCurrentThread());
@@ -78,7 +78,7 @@ void TransceiverStateSurfacer::Initialize(
     base::Optional<RtpSenderState> sender_state;
     auto webrtc_sender = webrtc_transceiver->sender();
     if (webrtc_sender) {
-      std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+      std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
           sender_track_ref;
       if (webrtc_sender->track()) {
         // The track adapter for this track must already exist for us to obtain

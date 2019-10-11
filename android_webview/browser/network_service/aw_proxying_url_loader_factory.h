@@ -67,7 +67,7 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   // static
   static void CreateProxy(
       int process_id,
-      network::mojom::URLLoaderFactoryRequest loader,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info);
 
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,

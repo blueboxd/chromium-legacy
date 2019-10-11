@@ -241,7 +241,7 @@ int SearchResultListView::DoUpdate() {
       result_view->SetResult(display_results[i]);
       result_view->SetVisible(true);
     } else {
-      result_view->SetResult(NULL);
+      result_view->SetResult(nullptr);
       result_view->SetVisible(false);
     }
   }

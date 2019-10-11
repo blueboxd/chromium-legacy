@@ -13,8 +13,17 @@ static_library("about_ui") {
     "//ui/base",
     "//ui/resources",
   ]
+}
 
-  if (is_android) {
-    deps += [ "//components/about_ui/android:about_ui_jni_headers" ]
+if (is_android) {
+  static_library("about_ui_android") {
+    sources = [
+      "credit_utils_android.cc",
+    ]
+    deps = [
+      ":about_ui",
+      "//base",
+      "//components/about_ui/android:about_ui_jni_headers",
+    ]
   }
 }

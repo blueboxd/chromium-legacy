@@ -219,8 +219,7 @@ void OptimizationGuideTopHostProvider::UpdateCurrentBlacklistState(
       static_cast<int>(new_state));
 }
 
-std::vector<std::string> OptimizationGuideTopHostProvider::GetTopHosts(
-    size_t max_sites) {
+std::vector<std::string> OptimizationGuideTopHostProvider::GetTopHosts() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(browser_context_);
@@ -269,7 +268,6 @@ std::vector<std::string> OptimizationGuideTopHostProvider::GetTopHosts(
   }
 
   std::vector<std::string> top_hosts;
-  top_hosts.reserve(max_sites);
 
   // Create a vector of the top hosts by engagement score up to |max_sites|
   // size. Currently utilizes just the first |max_sites| entries. Only HTTPS
@@ -293,10 +291,6 @@ std::vector<std::string> OptimizationGuideTopHostProvider::GetTopHosts(
       (time_clock_->Now() - blacklist_initialized_time);
 
   for (const auto& detail : engagement_details) {
-    if (top_hosts.size() >= max_sites)
-      return top_hosts;
-    // TODO(b/968542): Skip origins that are local hosts (e.g., IP addresses,
-    // localhost:8080 etc.).
     if (!detail.origin.SchemeIs(url::kHttpsScheme))
       continue;
     // Once the engagement score is less than the initial engagement score for a

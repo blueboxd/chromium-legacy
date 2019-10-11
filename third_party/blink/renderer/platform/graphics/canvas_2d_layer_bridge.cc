@@ -732,11 +732,9 @@ void Canvas2DLayerBridge::FinalizeFrame() {
   if (!GetOrCreateResourceProvider(kPreferAcceleration))
     return;
 
+  FlushRecording();
   ++frames_since_last_commit_;
   if (frames_since_last_commit_ >= 2) {
-    // TODO(aaronhk) Ideally we'd want to call FlushRecording() here, but this
-    // causes webview to hang for pixel 2. See crbug.com/1002946
-    ResourceProvider()->FlushSkia();
     if (IsAccelerated() && !rate_limiter_) {
       // Make sure the GPU is never more than two animation frames behind.
       constexpr unsigned kMaxCanvasAnimationBacklog = 2;

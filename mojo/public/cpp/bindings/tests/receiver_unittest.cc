@@ -338,25 +338,34 @@ class PingServiceImpl : public test::PingService {
   DISALLOW_COPY_AND_ASSIGN(PingServiceImpl);
 };
 
-class CallbackFilter : public MessageReceiver {
+class CallbackFilter : public MessageFilter {
  public:
-  explicit CallbackFilter(const base::RepeatingClosure& callback)
-      : callback_(callback) {}
+  explicit CallbackFilter(const base::RepeatingClosure& will_dispatch_callback,
+                          const base::RepeatingClosure& did_dispatch_callback)
+      : will_dispatch_callback_(will_dispatch_callback),
+        did_dispatch_callback_(did_dispatch_callback) {}
   ~CallbackFilter() override {}
 
   static std::unique_ptr<CallbackFilter> Wrap(
-      const base::RepeatingClosure& callback) {
-    return std::make_unique<CallbackFilter>(callback);
+      const base::RepeatingClosure& will_dispatch_callback,
+      const base::RepeatingClosure& did_dispatch_callback) {
+    return std::make_unique<CallbackFilter>(will_dispatch_callback,
+                                            did_dispatch_callback);
   }
 
-  // MessageReceiver:
-  bool Accept(Message* message) override {
-    callback_.Run();
+  // MessageFilter:
+  bool WillDispatch(Message* message) override {
+    will_dispatch_callback_.Run();
     return true;
   }
 
+  void DidDispatchOrReject(Message* message, bool accepted) override {
+    did_dispatch_callback_.Run();
+  }
+
  private:
-  const base::RepeatingClosure callback_;
+  const base::RepeatingClosure will_dispatch_callback_;
+  const base::RepeatingClosure did_dispatch_callback_;
 };
 
 // Verifies that message filters are notified in the order they were added and
@@ -368,19 +377,18 @@ TEST_P(ReceiverTest, MessageFilter) {
                                        remote.BindNewPipeAndPassReceiver());
 
   int status = 0;
-  receiver.AddFilter(CallbackFilter::Wrap(base::BindLambdaForTesting([&] {
-    EXPECT_EQ(0, status);
-    status = 1;
-  })));
-
-  receiver.AddFilter(CallbackFilter::Wrap(base::BindLambdaForTesting([&] {
-    EXPECT_EQ(1, status);
-    status = 2;
-  })));
+  receiver.SetFilter(CallbackFilter::Wrap(base::BindLambdaForTesting([&] {
+                                            EXPECT_EQ(0, status);
+                                            status = 1;
+                                          }),
+                                          base::BindLambdaForTesting([&] {
+                                            EXPECT_EQ(2, status);
+                                            status = 3;
+                                          })));
 
   impl.set_ping_handler(base::BindLambdaForTesting([&] {
-    EXPECT_EQ(2, status);
-    status = 3;
+    EXPECT_EQ(1, status);
+    status = 2;
   }));
 
   for (int i = 0; i < 10; ++i) {

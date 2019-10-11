@@ -74,12 +74,8 @@ class CORE_EXPORT SpaceSplitString {
 
     ~Data();
 
-    bool Contains(const AtomicString& string) {
-      for (const auto& item : vector_) {
-        if (item == string)
-          return true;
-      }
-      return false;
+    bool Contains(const AtomicString& string) const {
+      return vector_.Contains(string);
     }
 
     bool ContainsAll(Data&);

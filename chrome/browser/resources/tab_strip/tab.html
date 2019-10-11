@@ -47,7 +47,7 @@
     width: var(--favicon-size);
   }
 
-  #loading,
+  #progressSpinner,
   #favicon,
   #crashedIcon {
     height: var(--favicon-size);
@@ -58,11 +58,10 @@
     width: var(--favicon-size);
   }
 
-  #loading {
+  #progressSpinner {
     -webkit-mask:
         url(chrome://resources/images/throbber_small.svg)
         center/contain no-repeat;
-    background-color: var(--tabstrip-tab-loading-spinning-color);
     display: none;
   }
 
@@ -93,8 +92,8 @@
     width: 6px;
   }
 
-  :host([loading]) #loading,
-  :host([loading]) #favicon {
+  :host([waiting]) #progressSpinner,
+  :host([loading]) #progressSpinner {
     display: block;
   }
 
@@ -103,6 +102,20 @@
     height: calc(var(--favicon-size) - 6px);
     overflow: hidden;
     width: calc(var(--favicon-size) - 6px);
+  }
+
+  :host([waiting]) #progressSpinner {
+    background-color: var(--tabstrip-tab-waiting-spinning-color);
+    transform: /* Center first, then flip horizontally. */
+              translate(-50%, -50%) scaleX(-1);
+  }
+
+  :host([waiting]) #favicon {
+    display: none;
+  }
+
+  :host([loading]) #progressSpinner {
+    background-color: var(--tabstrip-tab-loading-spinning-color);
   }
 
   :host([crashed]) #favicon {
@@ -222,7 +235,7 @@
 <div id="dragImage">
   <header id="title">
     <div id="faviconContainer">
-      <div id="loading"></div>
+      <div id="progressSpinner"></div>
       <div id="favicon"></div>
       <div id="crashedIcon"></div>
       <div id="blocked"></div>

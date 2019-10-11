@@ -54,7 +54,7 @@ class AudioInputImplTest : public testing::Test,
 
     audio_input_impl_ = std::make_unique<AudioInputImpl>(
         &fake_assistant_client_, FakePowerManagerClient::Get(),
-        CrasAudioHandler::Get(), "fake-device-id", "fake-hotword-device-id");
+        CrasAudioHandler::Get(), "fake-device-id");
 
     audio_input_impl_->AddObserver(this);
   }
@@ -62,12 +62,19 @@ class AudioInputImplTest : public testing::Test,
   ~AudioInputImplTest() override {
     audio_input_impl_->RemoveObserver(this);
     audio_input_impl_.reset();
+    CrasAudioHandler::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
   }
 
   bool GetRecordingStatus() const {
     return audio_input_impl_->IsRecordingForTesting();
   }
+
+  bool IsUsingHotwordDevice() const {
+    return audio_input_impl_->IsUsingHotwordDeviceForTesting();
+  }
+
+  AudioInputImpl* audio_input_impl() { return audio_input_impl_.get(); }
 
   // assistant_client::AudioInput::Observer overrides:
   void OnAudioBufferAvailable(const assistant_client::AudioBuffer& buffer,
@@ -102,6 +109,80 @@ TEST_F(AudioInputImplTest, StopRecordingWhenLidClosed) {
   // Trigger a lid open event again.
   ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
   EXPECT_TRUE(GetRecordingStatus());
+}
+
+TEST_F(AudioInputImplTest, StopRecordingWithNoPreferredDevice) {
+  // Start as recording.
+  ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
+  EXPECT_TRUE(GetRecordingStatus());
+
+  // Preferred input device is lost.
+  audio_input_impl()->SetDeviceId(std::string());
+  EXPECT_FALSE(GetRecordingStatus());
+
+  // Preferred input device is set again.
+  audio_input_impl()->SetDeviceId("fake-device_id");
+  EXPECT_TRUE(GetRecordingStatus());
+}
+
+TEST_F(AudioInputImplTest, StopRecordingWhenDisableHotword) {
+  // Start as recording.
+  ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
+  EXPECT_TRUE(GetRecordingStatus());
+
+  // Hotword disabled should stop recording.
+  audio_input_impl()->OnHotwordEnabled(false);
+  EXPECT_FALSE(GetRecordingStatus());
+
+  // Hotword enabled again should start recording.
+  audio_input_impl()->OnHotwordEnabled(true);
+  EXPECT_TRUE(GetRecordingStatus());
+}
+
+TEST_F(AudioInputImplTest, StartRecordingWhenDisableHotwordAndForceOpenMic) {
+  // Start as recording.
+  ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
+  EXPECT_TRUE(GetRecordingStatus());
+
+  // Hotword disabled should stop recording.
+  audio_input_impl()->OnHotwordEnabled(false);
+  EXPECT_FALSE(GetRecordingStatus());
+
+  // Force open mic should start recording.
+  audio_input_impl()->SetMicState(true);
+  EXPECT_TRUE(GetRecordingStatus());
+
+  // Stop force open mic should stop recording.
+  audio_input_impl()->SetMicState(false);
+  EXPECT_FALSE(GetRecordingStatus());
+}
+
+TEST_F(AudioInputImplTest, SettingHotwordDeviceDoesNotAffectRecordingState) {
+  // Start as recording.
+  ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
+  EXPECT_TRUE(GetRecordingStatus());
+
+  // Hotword device does not change recording state.
+  audio_input_impl()->SetHotwordDeviceId(std::string());
+  EXPECT_TRUE(GetRecordingStatus());
+
+  audio_input_impl()->SetHotwordDeviceId("fake-hotword-device");
+  EXPECT_TRUE(GetRecordingStatus());
+}
+
+TEST_F(AudioInputImplTest, SettingHotwordDeviceUsesHotwordDeviceForRecording) {
+  // Start as recording.
+  ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
+  EXPECT_TRUE(GetRecordingStatus());
+
+  // Hotword device does not change recording state.
+  audio_input_impl()->SetHotwordDeviceId(std::string());
+  EXPECT_TRUE(GetRecordingStatus());
+  EXPECT_FALSE(IsUsingHotwordDevice());
+
+  audio_input_impl()->SetHotwordDeviceId("fake-hotword-device");
+  EXPECT_TRUE(GetRecordingStatus());
+  EXPECT_TRUE(IsUsingHotwordDevice());
 }
 
 }  // namespace assistant

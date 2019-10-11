@@ -158,4 +158,8 @@ mojom("mojom") {
     enabled_features += [ "is_trial_comparison_cert_verifier_supported" ]
     sources += [ "trial_comparison_cert_verifier.mojom" ]
   }
+
+  if (builtin_cert_verifier_feature_supported) {
+    enabled_features += [ "is_builtin_cert_verifier_feature_supported" ]
+  }
 }

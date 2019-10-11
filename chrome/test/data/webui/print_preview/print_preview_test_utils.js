@@ -11,6 +11,7 @@ cr.define('print_preview_test_utils', function() {
       thousandsDelimiter: ',',
       decimalDelimiter: '.',
       unitType: 1,
+      previewIsPdf: false,
       previewModifiable: true,
       documentTitle: 'title',
       documentHasSelection: true,

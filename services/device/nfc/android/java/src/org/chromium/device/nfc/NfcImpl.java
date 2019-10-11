@@ -18,6 +18,7 @@ import android.nfc.TagLostException;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Process;
+import android.os.Vibrator;
 import android.util.SparseArray;
 
 import org.chromium.base.Callback;
@@ -119,6 +120,11 @@ public class NfcImpl implements Nfc {
      */
     private Runnable mPushTimeoutRunnable;
 
+    /**
+     * Vibrator. @see android.os.Vibrator
+     */
+    private Vibrator mVibrator;
+
     public NfcImpl(int hostId, NfcDelegate delegate) {
         mHostId = hostId;
         mDelegate = delegate;
@@ -148,6 +154,9 @@ public class NfcImpl implements Nfc {
                 mNfcAdapter = mNfcManager.getDefaultAdapter();
             }
         }
+
+        mVibrator = (Vibrator) ContextUtils.getApplicationContext().getSystemService(
+                Context.VIBRATOR_SERVICE);
     }
 
     /**
@@ -437,7 +446,8 @@ public class NfcImpl implements Nfc {
         mReaderCallbackHandler = new ReaderCallbackHandler(this);
         mNfcAdapter.enableReaderMode(mActivity, mReaderCallbackHandler,
                 NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_NFC_B
-                        | NfcAdapter.FLAG_READER_NFC_F | NfcAdapter.FLAG_READER_NFC_V,
+                        | NfcAdapter.FLAG_READER_NFC_F | NfcAdapter.FLAG_READER_NFC_V
+                        | NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS,
                 null);
     }
 
@@ -652,6 +662,7 @@ public class NfcImpl implements Nfc {
      * Called by ReaderCallbackHandler when NFC tag is in proximity.
      */
     public void onTagDiscovered(Tag tag) {
+        mVibrator.vibrate(200);
         processPendingOperations(NfcTagHandler.create(tag));
     }
 

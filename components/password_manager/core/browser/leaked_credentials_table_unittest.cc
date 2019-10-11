@@ -170,7 +170,7 @@ TEST_F(LeakedCredentialsTableTest, RemoveRowsCreatedUpUntilNow) {
                           leaked_credentials3));
 
   EXPECT_TRUE(db()->RemoveRowsByUrlAndTime(base::NullCallback(), base::Time(),
-                                           base::Time()));
+                                           base::Time::Max()));
 
   EXPECT_THAT(db()->GetAllRows(), IsEmpty());
 }
@@ -195,7 +195,7 @@ TEST_F(LeakedCredentialsTableTest, RemoveRowsByUrlAndTime) {
 
   EXPECT_TRUE(db()->RemoveRowsByUrlAndTime(
       base::BindRepeating(std::not_equal_to<GURL>(), leaked_credentials1.url),
-      base::Time(), base::Time()));
+      base::Time(), base::Time::Max()));
   // With unbounded time range and given url filter all rows that are not
   // matching the |leaked_credentials1.url| should be removed.
   EXPECT_THAT(db()->GetAllRows(),

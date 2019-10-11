@@ -27,6 +27,7 @@ class SyncApiComponentFactory;
 class SyncableService;
 class SyncService;
 class SyncTypePreferenceProvider;
+class TrustedVaultClient;
 
 // Interface for clients of the Sync API to plumb through necessary dependent
 // components. This interface is purely for abstracting dependencies, and
@@ -53,6 +54,7 @@ class SyncClient {
       SyncService* sync_service) = 0;
 
   virtual invalidation::InvalidationService* GetInvalidationService() = 0;
+  virtual TrustedVaultClient* GetTrustedVaultClient() = 0;
   virtual scoped_refptr<ExtensionsActivity> GetExtensionsActivity() = 0;
 
   // Returns a weak pointer to the syncable service specified by |type|.

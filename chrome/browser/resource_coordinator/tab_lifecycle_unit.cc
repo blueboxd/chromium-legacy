@@ -542,6 +542,16 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze(
     CanFreezeHeuristicsChecks(decision_details);
     CheckIfTabIsUsedInBackground(decision_details,
                                  InterventionType::kProactive);
+
+    if (is_holding_weblock_) {
+      decision_details->AddReason(
+          DecisionFailureReason::LIVE_STATE_USING_WEBLOCK);
+    }
+
+    if (is_holding_indexeddb_lock_) {
+      decision_details->AddReason(
+          DecisionFailureReason::LIVE_STATE_USING_INDEXEDDB_LOCK);
+    }
   }
 
   if (decision_details->reasons().empty()) {

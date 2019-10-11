@@ -607,10 +607,11 @@ bool InitializeAccessibilityTreeSearch(OneShotAccessibilityTreeSearch* search,
   if ([immediateDescendantsOnlyParameter isKindOfClass:[NSNumber class]])
     immediateDescendantsOnly = [immediateDescendantsOnlyParameter boolValue];
 
-  bool visibleOnly = false;
-  NSNumber* visibleOnlyParameter = [dictionary objectForKey:@"AXVisibleOnly"];
-  if ([visibleOnlyParameter isKindOfClass:[NSNumber class]])
-    visibleOnly = [visibleOnlyParameter boolValue];
+  bool onscreenOnly = false;
+  // AXVisibleOnly actually means onscreen objects only -- nothing scrolled off.
+  NSNumber* onscreenOnlyParameter = [dictionary objectForKey:@"AXVisibleOnly"];
+  if ([onscreenOnlyParameter isKindOfClass:[NSNumber class]])
+    onscreenOnly = [onscreenOnlyParameter boolValue];
 
   content::OneShotAccessibilityTreeSearch::Direction direction =
       content::OneShotAccessibilityTreeSearch::FORWARDS;
@@ -634,7 +635,7 @@ bool InitializeAccessibilityTreeSearch(OneShotAccessibilityTreeSearch* search,
 
   search->SetDirection(direction);
   search->SetImmediateDescendantsOnly(immediateDescendantsOnly);
-  search->SetVisibleOnly(visibleOnly);
+  search->SetOnscreenOnly(onscreenOnly);
   search->SetSearchText(searchText);
 
   // Mac uses resultsLimit == -1 for unlimited, that that's

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system_base.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 

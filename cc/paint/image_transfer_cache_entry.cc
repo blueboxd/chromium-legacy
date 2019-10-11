@@ -429,10 +429,6 @@ bool ServiceImageTransferCacheEntry::Deserialize(
       if (!reader.valid())
         return false;
       DCHECK(SkIsAlign4(reinterpret_cast<uintptr_t>(plane_pixel_data)));
-      const size_t plane_size = GrContext::ComputeTextureSize(
-          yuv_plane_color_type, plane_width, plane_height, gr_mips);
-      size_ += plane_size;
-      plane_sizes_.push_back(plane_size);
 
       // Const-cast away the "volatile" on |pixel_data|. We specifically
       // understand that a malicious caller may change our pixels under us, and
@@ -449,6 +445,11 @@ bool ServiceImageTransferCacheEntry::Deserialize(
       if (!plane)
         return false;
       DCHECK(plane->isTextureBacked());
+
+      const size_t plane_size = GrContext::ComputeImageSize(plane, gr_mips);
+      size_ += plane_size;
+      plane_sizes_.push_back(plane_size);
+
       // |plane_images_| must be set for use in EnsureMips(), memory dumps, and
       // unit tests.
       plane_images_.push_back(std::move(plane));
@@ -501,16 +502,19 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   if (width == 0 || height == 0)
     return false;
 
-  // Match GrTexture::onGpuMemorySize so that memory traces agree.
-  auto gr_mips = has_mips_ ? GrMipMapped::kYes : GrMipMapped::kNo;
-  size_ = GrContext::ComputeTextureSize(color_type, width, height, gr_mips);
-
   // Const-cast away the "volatile" on |pixel_data|. We specifically understand
   // that a malicious caller may change our pixels under us, and are OK with
   // this as the worst case scenario is visual corruption.
   SkPixmap pixmap(image_info, const_cast<const void*>(pixel_data),
                   image_info.minRowBytes());
   image_ = MakeSkImage(pixmap, width, height, target_color_space);
+
+  if (image_) {
+    // Match GrTexture::onGpuMemorySize so that memory traces agree.
+    auto gr_mips = has_mips_ ? GrMipMapped::kYes : GrMipMapped::kNo;
+    size_ = GrContext::ComputeImageSize(image_, gr_mips);
+  }
+
   return !!image_;
 }
 

@@ -171,14 +171,8 @@
 #include "media/mojo/services/media_interface_provider.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/video_decode_perf_history.h"
-#include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -1306,10 +1300,11 @@ void RenderFrameHostImpl::ExecuteMediaPlayerActionAtLocation(
 }
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
-    network::mojom::URLLoaderFactoryRequest default_factory_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+        default_factory_receiver) {
   return CreateNetworkServiceDefaultFactoryInternal(
       last_committed_origin_, network_isolation_key_,
-      std::move(default_factory_request));
+      std::move(default_factory_receiver));
 }
 
 void RenderFrameHostImpl::MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
@@ -3976,8 +3971,8 @@ void RenderFrameHostImpl::OnDownloadUrl(
     return;
 
   DownloadUrl(params.url, params.referrer, params.initiator_origin,
-              params.suggested_name, false,
-              params.follow_cross_origin_redirects, std::move(blob_url_token));
+              params.suggested_name, false, params.cross_origin_redirects,
+              std::move(blob_url_token));
 }
 
 void RenderFrameHostImpl::OnSaveImageFromDataURL(const std::string& url_str) {
@@ -3989,8 +3984,8 @@ void RenderFrameHostImpl::OnSaveImageFromDataURL(const std::string& url_str) {
   if (!data_url.is_valid() || !data_url.SchemeIs(url::kDataScheme))
     return;
 
-  DownloadUrl(data_url, Referrer(), url::Origin(), base::string16(), true, true,
-              mojo::NullRemote());
+  DownloadUrl(data_url, Referrer(), url::Origin(), base::string16(), true,
+              network::mojom::RedirectMode::kFollow, mojo::NullRemote());
 }
 
 void RenderFrameHostImpl::DownloadUrl(
@@ -3999,7 +3994,7 @@ void RenderFrameHostImpl::DownloadUrl(
     const url::Origin& initiator,
     const base::string16& suggested_name,
     const bool use_prompt,
-    const bool follow_cross_origin_redirects,
+    const network::mojom::RedirectMode cross_origin_redirects,
     mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("renderer_initiated_download", R"(
@@ -4033,7 +4028,7 @@ void RenderFrameHostImpl::DownloadUrl(
   parameters->set_content_initiated(true);
   parameters->set_suggested_name(suggested_name);
   parameters->set_prompt(use_prompt);
-  parameters->set_follow_cross_origin_redirects(follow_cross_origin_redirects);
+  parameters->set_cross_origin_redirects(cross_origin_redirects);
   parameters->set_referrer(referrer.url);
   parameters->set_referrer_policy(
       Referrer::ReferrerPolicyForUrlRequest(referrer.policy));

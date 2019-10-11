@@ -154,7 +154,14 @@ class NET_EXPORT HostResolverManager
   void SetDnsConfigOverrides(DnsConfigOverrides overrides);
 
   // Sets the URLRequestContext to use for issuing DoH probes.
+  // TODO(crbug.com/1006902): Convert DoH probes to an API more consistent with
+  // normal requests with a Request or cancellation handle to control start and
+  // cancel.
   void SetRequestContextForProbes(URLRequestContext* url_request_context);
+
+  // Iff |url_request_context| is being used for DoH probes, cancels the probes
+  // and clears the set context.
+  void CancelProbesForContext(URLRequestContext* url_request_context);
 
   // Support for invalidating HostCaches on changes to network or DNS
   // configuration. HostCaches should register/deregister invalidators here

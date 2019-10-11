@@ -217,11 +217,11 @@ public class LocationBarLayout extends FrameLayout
 
         StatusView statusView = findViewById(R.id.location_bar_status);
         statusView.setCompositeTouchDelegate(mCompositeTouchDelegate);
-        mStatusViewCoordinator = new StatusViewCoordinator(mIsTablet, statusView);
+        mStatusViewCoordinator = new StatusViewCoordinator(mIsTablet, statusView, mUrlCoordinator);
+        mUrlCoordinator.addTextChangedListener(mStatusViewCoordinator);
 
         updateShouldAnimateIconChanges();
         mUrlBar.setOnKeyListener(new UrlBarKeyListener());
-        mUrlCoordinator.addUrlTextChangeListener(mStatusViewCoordinator);
 
         // mLocationBar's direction is tied to this UrlBar's text direction. Icons inside the
         // location bar, e.g. lock, refresh, X, should be reversed if UrlBar's text is RTL.
@@ -1118,6 +1118,5 @@ public class LocationBarLayout extends FrameLayout
         String textWithoutAutocomplete = mUrlCoordinator.getTextWithoutAutocomplete();
         String textWithAutocomplete = mUrlCoordinator.getTextWithAutocomplete();
         mAutocompleteCoordinator.onTextChanged(textWithoutAutocomplete, textWithAutocomplete);
-        mStatusViewCoordinator.onTextChanged(textWithoutAutocomplete, textWithAutocomplete);
     }
 }

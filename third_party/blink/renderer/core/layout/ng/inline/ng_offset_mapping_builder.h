@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGOffsetMappingBuilder_h
-#define NGOffsetMappingBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_OFFSET_MAPPING_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_OFFSET_MAPPING_BUILDER_H_
 
 #include <memory>
 #include "base/auto_reset.h"
@@ -146,4 +146,4 @@ class CORE_EXPORT NGOffsetMappingBuilder {
 
 }  // namespace blink
 
-#endif  // OffsetMappingBuilder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_OFFSET_MAPPING_BUILDER_H_

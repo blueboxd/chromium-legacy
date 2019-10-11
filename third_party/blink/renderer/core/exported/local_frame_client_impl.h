@@ -141,7 +141,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void ProgressEstimateChanged(double progress_estimate) override;
   void ForwardResourceTimingToParent(const WebResourceTimingInfo&) override;
   void DownloadURL(const ResourceRequest&,
-                   DownloadCrossOriginRedirects) override;
+                   network::mojom::RedirectMode) override;
   bool NavigateBackForward(int offset) const override;
   void DidAccessInitialDocument() override;
   void DidDisplayInsecureContent() override;

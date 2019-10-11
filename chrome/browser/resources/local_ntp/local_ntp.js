@@ -1083,15 +1083,28 @@ function onDeleteAutocompleteMatch(result) {
     return matchEl.classList.contains(CLASSES.SELECTED);
   });
 
+  const wasFocused = matchEls[selected].contains(document.activeElement);
+
   populateAutocompleteMatches(result.matches);
 
   if (result.matches.length === 0) {
+    if (wasFocused) {
+      $(IDS.REALBOX).focus();
+    }
     return;
   }
 
   const newMatchEls = Array.from($(IDS.REALBOX_MATCHES).children);
   const newSelected = Math.min(newMatchEls.length - 1, selected);
-  selectMatchEl(newMatchEls[newSelected]);
+  const newSelectedEl = newMatchEls[newSelected];
+
+  selectMatchEl(newSelectedEl);
+
+  if (wasFocused) {
+    const removeIcon = newSelectedEl.querySelector(`.${CLASSES.REMOVE_ICON}`);
+    assert(removeIcon || newSelectedEl).focus();
+  }
+
   updateRealboxOutput({
     moveCursorToEnd: true,
     inline: '',

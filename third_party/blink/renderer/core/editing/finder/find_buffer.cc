@@ -244,7 +244,8 @@ bool FindBuffer::PushScopedForcedUpdateIfNeeded(const Element& element) {
 void FindBuffer::CollectScopedForcedUpdates(Node& start_node,
                                             const Node* search_range_end_node,
                                             const Node* node_after_block) {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(
+          start_node.GetExecutionContext()))
     return;
   if (start_node.GetDocument().LockedDisplayLockCount() ==
       start_node.GetDocument().ActivationBlockingDisplayLockCount())

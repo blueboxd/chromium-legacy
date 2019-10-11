@@ -25,8 +25,6 @@ source_set("base") {
     "name_value_map.h",
     "rate_counter.cc",
     "rate_counter.h",
-    "remoting_bot.cc",
-    "remoting_bot.h",
     "result.h",
     "rsa_key_pair.cc",
     "rsa_key_pair.h",

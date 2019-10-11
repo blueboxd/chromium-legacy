@@ -12,21 +12,27 @@
 <script>
 
 // Negative value not allowed.
-badge_test(() => { ExperimentalBadge.set(-1); }, undefined, 'TypeError');
+badge_test(() => navigator.setExperimentalAppBadge(-1), undefined,
+  'TypeError');
 
 // Value too large (2^53).
-badge_test(() => { ExperimentalBadge.set(9007199254740992); },
+badge_test(() => navigator.setExperimentalAppBadge(Number.MAX_SAFE_INTEGER + 1),
   undefined,
   'TypeError');
 
 // Illegal numeric values.
-badge_test(() => { ExperimentalBadge.set(Infinity); }, undefined, 'TypeError');
-badge_test(() => { ExperimentalBadge.set(-Infinity); }, undefined, 'TypeError');
-badge_test(() => { ExperimentalBadge.set(NaN); }, undefined, 'TypeError');
+badge_test(() => navigator.setExperimentalAppBadge(Infinity), undefined,
+  'TypeError');
+badge_test(() => navigator.setExperimentalAppBadge(-Infinity), undefined,
+  'TypeError');
+badge_test(() => navigator.setExperimentalAppBadge(NaN), undefined,
+  'TypeError');
 
 // Other values that can't convert to a long.
-badge_test(() => { ExperimentalBadge.set("Foo"); }, undefined, 'TypeError');
-badge_test(() => { ExperimentalBadge.set({}); }, undefined, 'TypeError');
+badge_test(() => navigator.setExperimentalAppBadge("Foo"), undefined,
+  'TypeError');
+badge_test(() => navigator.setExperimentalAppBadge({}), undefined,
+  'TypeError');
 
 </script>
 </body>

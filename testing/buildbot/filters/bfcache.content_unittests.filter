@@ -12,15 +12,6 @@
 -RenderFrameHostManagerTest.CommitNewNavigationBeforeSendingSwapOut
 -RenderFrameHostManagerTest.SwapOutFrameAfterSwapOutACK
 
-# WebSerial:
-#
-# WebContentsImpl::IsConnectedToSerialPort() returns true, because the previous
-# document uses the WebSerial and continue to do so after entering the
-# BackForwardCache.
-#
-# See https://crbug.com/992851
--SerialTest.OpenAndNavigateCrossOrigin
-
 # Test:
 # 1) Normal navigation to a non-webui URL.
 # 2) Add the webui capability to the RenderFrameHost.

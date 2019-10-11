@@ -40,6 +40,9 @@ class FuchsiaStreamDecryptorBase : public StreamProcessorHelper::Client {
 
   SysmemBufferWriterQueue input_writer_queue_;
 
+  // Key ID for which we received the last OnNewKey() event.
+  std::string last_new_key_id_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
  private:
@@ -115,6 +118,8 @@ class FuchsiaSecureStreamDecryptor : public FuchsiaStreamDecryptorBase {
     virtual ~Client() = default;
   };
 
+  using NewKeyCB = base::RepeatingCallback<void(const std::string& key_id)>;
+
   FuchsiaSecureStreamDecryptor(fuchsia::media::StreamProcessorPtr processor,
                                Client* client);
   ~FuchsiaSecureStreamDecryptor() override;
@@ -136,7 +141,7 @@ class FuchsiaSecureStreamDecryptor : public FuchsiaStreamDecryptorBase {
   // FuchsiaClearStreamDecryptor and media::Decryptor: they report NO_KEY error
   // to the caller and expect the caller to resubmit same buffers again after
   // the key is updated.
-  base::RepeatingClosure GetOnNewKeyClosure();
+  NewKeyCB GetOnNewKeyClosure();
 
   // Drops all pending decryption requests.
   void Reset();
@@ -152,7 +157,7 @@ class FuchsiaSecureStreamDecryptor : public FuchsiaStreamDecryptorBase {
 
   // Callback returned by GetOnNewKeyClosure(). When waiting for a key this
   // method unpauses the stream to decrypt any pending buffers.
-  void OnNewKey();
+  void OnNewKey(const std::string& key_id);
 
   Client* const client_;
 

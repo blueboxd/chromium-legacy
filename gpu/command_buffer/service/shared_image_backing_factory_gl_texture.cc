@@ -13,7 +13,6 @@
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -30,6 +29,7 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -763,7 +763,7 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
     info.allow_scanout = true;
     info.buffer_format = buffer_format;
     DCHECK_EQ(info.gl_format,
-              gpu::InternalFormatForGpuMemoryBufferFormat(buffer_format));
+              gl::BufferFormatToGLInternalFormat(buffer_format));
     if (base::Contains(gpu_preferences.texture_target_exception_list,
                        gfx::BufferUsageAndFormat(gfx::BufferUsage::SCANOUT,
                                                  buffer_format)))
@@ -1010,10 +1010,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
 
   GLuint internal_format =
       is_rgb_emulation ? GL_RGB : image->GetInternalFormat();
-  GLenum gl_format =
-      gles2::TextureManager::ExtractFormatFromStorageFormat(internal_format);
-  GLenum gl_type =
-      gles2::TextureManager::ExtractTypeFromStorageFormat(internal_format);
+  GLenum gl_format = is_rgb_emulation ? GL_RGB : image->GetDataFormat();
+  GLenum gl_type = image->GetDataType();
 
   return MakeBacking(use_passthrough_, mailbox, target, service_id, image,
                      image_state, internal_format, gl_format, gl_type, nullptr,

@@ -9,6 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/frame_host/back_forward_cache_impl.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -56,6 +57,8 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
         switches::kUseFakeUIForMediaStream);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kIgnoreCertificateErrors);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
     feature_list_.InitAndEnableFeatureWithParameters(
         features::kBackForwardCache, GetFeatureParams());
 
@@ -2773,6 +2776,99 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebUSB) {
         current_frame_host()->GetRoutingID(), "WebUSB"));
   }
 }
+
+#if !defined(OS_ANDROID)
+// Check that the back-forward cache is disabled when the Serial API is used.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Serial) {
+  // Serial API requires HTTPS.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(GetTestDataFilePath());
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  ASSERT_TRUE(https_server.Start());
+
+  // Main document.
+  {
+    content::BackForwardCacheDisabledTester tester;
+    GURL url(https_server.GetURL("a.com", "/title1.html"));
+
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+
+    EXPECT_FALSE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_EQ("Found 0 ports", content::EvalJs(current_frame_host(), R"(
+        new Promise(async resolve => {
+          let ports = await navigator.serial.getPorts();
+          resolve("Found " + ports.length + " ports");
+        });
+    )"));
+    EXPECT_TRUE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
+        current_frame_host()->GetProcess()->GetID(),
+        current_frame_host()->GetRoutingID(), "Serial"));
+  }
+
+  // Nested document.
+  {
+    content::BackForwardCacheDisabledTester tester;
+    GURL url(
+        https_server.GetURL("c.com", "/cross_site_iframe_factory.html?c(d)"));
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+    RenderFrameHostImpl* rfh_c = current_frame_host();
+    RenderFrameHostImpl* rfh_d = rfh_c->child_at(0)->current_frame_host();
+
+    EXPECT_FALSE(rfh_c->is_back_forward_cache_disallowed());
+    EXPECT_FALSE(rfh_d->is_back_forward_cache_disallowed());
+    EXPECT_EQ("Found 0 ports", content::EvalJs(rfh_c, R"(
+        new Promise(async resolve => {
+          let ports = await navigator.serial.getPorts();
+          resolve("Found " + ports.length + " ports");
+        });
+    )"));
+    EXPECT_TRUE(rfh_c->is_back_forward_cache_disallowed());
+    EXPECT_FALSE(rfh_d->is_back_forward_cache_disallowed());
+    EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
+        rfh_c->GetProcess()->GetID(), rfh_c->GetRoutingID(), "Serial"));
+  }
+
+  // Worker.
+  {
+    content::BackForwardCacheDisabledTester tester;
+    GURL url(https_server.GetURL("e.com", "/title1.html"));
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+    EXPECT_FALSE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_EQ("Found 0 ports", content::EvalJs(current_frame_host(), R"(
+        new Promise(async resolve => {
+          const worker = new Worker("/back_forward_cache/serial/worker.js");
+          worker.onmessage = message => resolve(message.data);
+          worker.postMessage("Run");
+        });
+    )"));
+    EXPECT_TRUE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
+        current_frame_host()->GetProcess()->GetID(),
+        current_frame_host()->GetRoutingID(), "Serial"));
+  }
+
+  // Nested worker.
+  {
+    content::BackForwardCacheDisabledTester tester;
+    GURL url(https_server.GetURL("f.com", "/title1.html"));
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+    EXPECT_FALSE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_EQ("Found 0 ports", content::EvalJs(current_frame_host(), R"(
+        new Promise(async resolve => {
+          const worker = new Worker(
+            "/back_forward_cache/serial/nested-worker.js");
+          worker.onmessage = message => resolve(message.data);
+          worker.postMessage("Run");
+        });
+    )"));
+    EXPECT_TRUE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
+        current_frame_host()->GetProcess()->GetID(),
+        current_frame_host()->GetRoutingID(), "Serial"));
+  }
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Encoding) {
   ASSERT_TRUE(embedded_test_server()->Start());

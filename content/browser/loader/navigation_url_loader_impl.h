@@ -14,6 +14,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/previews_state.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -71,7 +72,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   // schemes not handled by network service (e.g. files). This must be called on
   // the UI thread or before threads start.
   using URLLoaderFactoryInterceptor = base::RepeatingCallback<void(
-      network::mojom::URLLoaderFactoryRequest* request)>;
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>* receiver)>;
   static void SetURLLoaderFactoryInterceptorForTesting(
       const URLLoaderFactoryInterceptor& interceptor);
 
@@ -92,7 +93,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   class URLLoaderRequestController;
   void OnRequestStarted(base::TimeTicks timestamp);
 
-  void BindNonNetworkURLLoaderFactoryRequest(
+  void BindNonNetworkURLLoaderFactoryReceiver(
       int frame_tree_node_id,
       const GURL& url,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver);

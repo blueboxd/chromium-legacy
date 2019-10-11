@@ -98,8 +98,8 @@ std::unique_ptr<VideoDecoderClient> VideoDecoderClient::Create(
 
 bool VideoDecoderClient::CreateDecoder() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(video_player_sequence_checker_);
-  CHECK(!decoder_client_thread_.IsRunning());
-  CHECK(event_cb_ && frame_renderer_);
+  DCHECK(!decoder_client_thread_.IsRunning());
+  DCHECK(event_cb_ && frame_renderer_);
 
   if (!decoder_client_thread_.Start()) {
     VLOGF(1) << "Failed to start decoder thread";
@@ -143,7 +143,7 @@ FrameRenderer* VideoDecoderClient::GetFrameRenderer() const {
 
 void VideoDecoderClient::Initialize(const Video* video) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(video_player_sequence_checker_);
-  CHECK(video);
+  DCHECK(video);
 
   base::WaitableEvent done;
   decoder_client_thread_.task_runner()->PostTask(
@@ -176,7 +176,7 @@ void VideoDecoderClient::Reset() {
 void VideoDecoderClient::CreateDecoderTask(bool* success,
                                            base::WaitableEvent* done) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
-  CHECK_EQ(decoder_client_state_, VideoDecoderClientState::kUninitialized);
+  DCHECK_EQ(decoder_client_state_, VideoDecoderClientState::kUninitialized);
   LOG_ASSERT(!decoder_) << "Can't create decoder: already created";
 
   if (decoder_client_config_.use_vd) {
@@ -206,8 +206,8 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
 void VideoDecoderClient::InitializeDecoderTask(const Video* video,
                                                base::WaitableEvent* done) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
-  CHECK(decoder_client_state_ == VideoDecoderClientState::kUninitialized ||
-        decoder_client_state_ == VideoDecoderClientState::kIdle);
+  DCHECK(decoder_client_state_ == VideoDecoderClientState::kUninitialized ||
+         decoder_client_state_ == VideoDecoderClientState::kIdle);
   LOG_ASSERT(decoder_) << "Can't initialize decoder: not created yet";
   LOG_ASSERT(video);
 
@@ -236,15 +236,15 @@ void VideoDecoderClient::InitializeDecoderTask(const Video* video,
   decoder_->Initialize(config, false, nullptr, std::move(init_cb), output_cb,
                        WaitingCB());
 
-  CHECK_LE(decoder_client_config_.max_outstanding_decode_requests,
-           static_cast<size_t>(decoder_->GetMaxDecodeRequests()));
+  DCHECK_LE(decoder_client_config_.max_outstanding_decode_requests,
+            static_cast<size_t>(decoder_->GetMaxDecodeRequests()));
 
   done->Signal();
 }
 
 void VideoDecoderClient::DestroyDecoderTask(base::WaitableEvent* done) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
-  CHECK_EQ(0u, num_outstanding_decode_requests_);
+  DCHECK_EQ(0u, num_outstanding_decode_requests_);
   DVLOGF(4);
 
   // Invalidate all scheduled tasks.
@@ -355,8 +355,8 @@ void VideoDecoderClient::ResetTask() {
 
 void VideoDecoderClient::DecoderInitializedTask(bool status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
-  CHECK(decoder_client_state_ == VideoDecoderClientState::kUninitialized ||
-        decoder_client_state_ == VideoDecoderClientState::kIdle);
+  DCHECK(decoder_client_state_ == VideoDecoderClientState::kUninitialized ||
+         decoder_client_state_ == VideoDecoderClientState::kIdle);
   LOG_ASSERT(status) << "Initializing decoder failed";
 
   decoder_client_state_ = VideoDecoderClientState::kIdle;
@@ -365,7 +365,7 @@ void VideoDecoderClient::DecoderInitializedTask(bool status) {
 
 void VideoDecoderClient::DecodeDoneTask(media::DecodeStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
-  CHECK_NE(VideoDecoderClientState::kIdle, decoder_client_state_);
+  DCHECK_NE(VideoDecoderClientState::kIdle, decoder_client_state_);
   LOG_ASSERT(status != media::DecodeStatus::ABORTED ||
              decoder_client_state_ == VideoDecoderClientState::kResetting);
   DVLOGF(4);
@@ -397,7 +397,7 @@ void VideoDecoderClient::FrameReadyTask(scoped_refptr<VideoFrame> video_frame) {
 
 void VideoDecoderClient::FlushDoneTask(media::DecodeStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
-  CHECK_EQ(0u, num_outstanding_decode_requests_);
+  DCHECK_EQ(0u, num_outstanding_decode_requests_);
 
   // Send an EOS frame to the renderer, so it can reset any internal state it
   // might keep in preparation of the next stream of video frames.
@@ -408,7 +408,7 @@ void VideoDecoderClient::FlushDoneTask(media::DecodeStatus status) {
 
 void VideoDecoderClient::ResetDoneTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
-  CHECK_EQ(0u, num_outstanding_decode_requests_);
+  DCHECK_EQ(0u, num_outstanding_decode_requests_);
 
   // We finished resetting to a different point in the stream, so we should
   // update the frame index. Currently only resetting to the start of the stream

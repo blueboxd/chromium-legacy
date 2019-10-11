@@ -628,7 +628,7 @@ bool CanvasRenderingContext2DState::HasPattern() const {
          FillStyle()->GetCanvasPattern()->GetPattern();
 }
 
-// Only to be used if the CanvasRenderingContext2dState has Pattern
+// Only to be used if the CanvasRenderingContext2DState has Pattern
 bool CanvasRenderingContext2DState::PatternIsAccelerated() const {
   DCHECK(HasPattern());
   return FillStyle()->GetCanvasPattern()->GetPattern()->IsTextureBacked();

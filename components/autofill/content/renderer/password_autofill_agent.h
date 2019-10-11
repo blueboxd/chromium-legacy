@@ -130,6 +130,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                             const base::string16& credential) override;
   void SetLoggingState(bool active) override;
   void TouchToFillDismissed() override;
+  void AnnotateFieldsWithParsingResult(
+      const ParsingResult& parsing_result) override;
 
   // FormTracker::Observer
   void OnProvisionallySaveForm(const blink::WebFormElement& form,

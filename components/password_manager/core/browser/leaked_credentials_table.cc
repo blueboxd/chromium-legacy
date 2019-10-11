@@ -110,9 +110,6 @@ bool LeakedCredentialsTable::RemoveRowsByUrlAndTime(
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time remove_begin,
     base::Time remove_end) {
-  if (remove_end.is_null())
-    remove_end = base::Time::Max();
-
   const int64_t remove_begin_us =
       remove_begin.ToDeltaSinceWindowsEpoch().InMicroseconds();
   const int64_t remove_end_us =

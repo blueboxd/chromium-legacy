@@ -6,7 +6,11 @@ package org.chromium.chrome.browser.favicon;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -57,6 +61,63 @@ public class FaviconUtils {
             Resources resources, Bitmap icon) {
         return ViewUtils.createRoundedBitmapDrawable(resources, icon,
                 resources.getDimensionPixelSize(R.dimen.default_favicon_corner_radius));
+    }
+
+    /**
+     * Creates a {@link Drawable} with the provided icon with
+     * nearest-neighbor scaling through {@link Bitmap#createScaledBitmap(Bitmap, int, int,
+     * boolean)}, or a fallback monogram.
+     * @param icon {@link Bitmap} with the icon to display. If null, a fallback monogram will be
+     *         generated.
+     * @param url Url to generate a monogram. Used only if {@code icon} is null.
+     * @param fallbackColor Color to generate a monogram. Used only if {@code icon} is null.
+     * @param iconGenerator RoundedIconGenerator to generate a monogram. Used only if {@code icon}
+     *         is null. Side effect: {@link RoundedIconGenerator#setBackgroundColor(int)} will be
+     *         called.
+     * @param resources {@link Resources} to create a {@link BitmapDrawable}.
+     * @param iconSize Width and height of the returned icon in px.
+     * @return A {@link Drawable} to be displayed as the favicon.
+     */
+    public static Drawable getIconDrawableWithoutFilter(@Nullable Bitmap icon, String url,
+            int fallbackColor, RoundedIconGenerator iconGenerator, Resources resources,
+            int iconSize) {
+        if (icon == null) {
+            iconGenerator.setBackgroundColor(fallbackColor);
+            icon = iconGenerator.generateIconForUrl(url);
+            return new BitmapDrawable(resources, icon);
+        }
+        return createRoundedBitmapDrawable(
+                resources, Bitmap.createScaledBitmap(icon, iconSize, iconSize, false));
+    }
+
+    /**
+     * Creates a {@link Drawable} with the provided icon, or a fallback monogram, with bilinear
+     * scaling through {@link Bitmap#createScaledBitmap(Bitmap, int, int, boolean)}, or a fallback
+     * default favicon.
+     * @param icon {@link Bitmap} with the icon to display. If null, a fallback monogram will be
+     *         generated.
+     * @param url Url to generate a monogram. Used only if {@code icon} is null.
+     * @param iconGenerator RoundedIconGenerator to generate a monogram. Used only if {@code icon}
+     *         is null.
+     * @param defaultFaviconHelper Helper to generate default favicons.
+     * @param resources {@link Resources} to create a {@link BitmapDrawable}.
+     * @param iconSize Width and height of the returned icon.
+     * @return A {@link Drawable} to be displayed as the favicon.
+     */
+    public static Drawable getIconDrawableWithFilter(@Nullable Bitmap icon, @Nullable String url,
+            RoundedIconGenerator iconGenerator,
+            FaviconHelper.DefaultFaviconHelper defaultFaviconHelper, Resources resources,
+            int iconSize) {
+        if (url == null) {
+            return defaultFaviconHelper.getDefaultFaviconDrawable(resources, url, true);
+        }
+        if (icon == null) {
+            icon = iconGenerator.generateIconForUrl(url);
+            return new BitmapDrawable(
+                    resources, Bitmap.createScaledBitmap(icon, iconSize, iconSize, true));
+        }
+        return createRoundedBitmapDrawable(
+                resources, Bitmap.createScaledBitmap(icon, iconSize, iconSize, true));
     }
 
     private static int getIconColor(Resources resources) {

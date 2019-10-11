@@ -119,7 +119,7 @@ class CanvasRenderingContext2DState final
 
   bool HasPattern() const;
 
-  // Only to be used if the CanvasRenderingContext2dState has Pattern
+  // Only to be used if the CanvasRenderingContext2DState has Pattern
   bool PatternIsAccelerated() const;
 
   enum Direction { kDirectionInherit, kDirectionRTL, kDirectionLTR };

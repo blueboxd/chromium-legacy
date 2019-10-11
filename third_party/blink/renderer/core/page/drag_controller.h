@@ -84,8 +84,7 @@ class CORE_EXPORT DragController final
 
   DragState& GetDragState();
 
-  static std::unique_ptr<DragImage> DragImageForSelection(const LocalFrame&,
-                                                          float);
+  static std::unique_ptr<DragImage> DragImageForSelection(LocalFrame&, float);
 
   // Return the selection bounds in absolute coordinates for the frame, clipped
   // to the visual viewport.

@@ -269,6 +269,12 @@
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "media/webrtc/webrtc_switches.h"
+#include "services/service_manager/sandbox/features.h"
+#endif
+
 using content::BrowserThread;
 using safe_browsing::ReusedPasswordAccountType;
 using testing::_;
@@ -5819,5 +5825,67 @@ IN_PROC_BROWSER_TEST_F(SharedClipboardPolicyTest, SharedClipboardEnabled) {
   EXPECT_TRUE(prefs->IsManagedPreference(prefs::kSharedClipboardEnabled));
   EXPECT_TRUE(prefs->GetBoolean(prefs::kSharedClipboardEnabled));
 }
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+
+class AudioSandboxEnabledTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface<
+          /*policy::key::kAllowAudioSandbox=*/base::Optional<bool>> {
+ public:
+  // InProcessBrowserTest implementation:
+  void SetUp() override {
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::PolicyMap values;
+    if (GetParam().has_value()) {
+      values.Set(policy::key::kAudioSandboxEnabled,
+                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
+                 policy::POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(*GetParam()), nullptr);
+    }
+    policy_provider_.UpdateChromePolicy(values);
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+
+    InProcessBrowserTest::SetUp();
+  }
+
+ private:
+  policy::MockConfigurationPolicyProvider policy_provider_;
+};
+
+IN_PROC_BROWSER_TEST_P(AudioSandboxEnabledTest, IsRespected) {
+  base::Optional<bool> enable_sandbox_via_policy = GetParam();
+  bool is_sandbox_enabled_by_default = base::FeatureList::IsEnabled(
+      service_manager::features::kAudioServiceSandbox);
+  bool is_apm_enabled_by_default =
+      base::FeatureList::IsEnabled(features::kWebRtcApmInAudioService);
+
+  ASSERT_EQ(enable_sandbox_via_policy.value_or(is_sandbox_enabled_by_default),
+            service_manager::IsAudioSandboxEnabled());
+  ASSERT_EQ(
+      is_apm_enabled_by_default && service_manager::IsAudioSandboxEnabled(),
+      media::IsWebRtcApmInAudioServiceEnabled());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    Enabled,
+    AudioSandboxEnabledTest,
+    ::testing::Values(/*policy::key::kAudioSandboxEnabled=*/true));
+
+INSTANTIATE_TEST_SUITE_P(
+    Disabled,
+    AudioSandboxEnabledTest,
+    ::testing::Values(/*policy::key::kAudioSandboxEnabled=*/false));
+
+INSTANTIATE_TEST_SUITE_P(
+    NotSet,
+    AudioSandboxEnabledTest,
+    ::testing::Values(/*policy::key::kAudioSandboxEnabled=*/base::nullopt));
+
+#endif  //  defined(OS_WIN) || defined (OS_MACOSX) || (defined(OS_LINUX) &&
+        //  !defined(OS_CHROMEOS))
 
 }  // namespace policy

@@ -148,7 +148,7 @@ class FakePasswordAutofillAgent
         logging_state_active_(false),
         binding_(this) {}
 
-  ~FakePasswordAutofillAgent() override {}
+  ~FakePasswordAutofillAgent() override = default;
 
   void BindRequest(mojo::ScopedInterfaceEndpointHandle handle) {
     binding_.Bind(autofill::mojom::PasswordAutofillAgentAssociatedRequest(
@@ -171,6 +171,8 @@ class FakePasswordAutofillAgent
 
   void FillIntoFocusedField(bool is_password,
                             const base::string16& credential) override {}
+  void AnnotateFieldsWithParsingResult(
+      const autofill::ParsingResult& parsing_result) override {}
 
   void SetLoggingState(bool active) override {
     called_set_logging_state_ = true;

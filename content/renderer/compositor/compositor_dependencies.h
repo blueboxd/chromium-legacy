@@ -35,6 +35,7 @@ class WebThreadScheduler;
 
 namespace content {
 class FrameSwapMessageQueue;
+class RenderWidget;
 
 class CONTENT_EXPORT CompositorDependencies {
  public:
@@ -63,7 +64,7 @@ class CONTENT_EXPORT CompositorDependencies {
   using LayerTreeFrameSinkCallback =
       base::OnceCallback<void(std::unique_ptr<cc::LayerTreeFrameSink>)>;
   virtual void RequestNewLayerTreeFrameSink(
-      int widget_routing_id,
+      RenderWidget* render_widget,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url,
       LayerTreeFrameSinkCallback callback,

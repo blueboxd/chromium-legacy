@@ -182,8 +182,6 @@ class TwoClientCustomPassphraseSyncTestWithScryptEncryptionEnabled
 IN_PROC_BROWSER_TEST_F(
     TwoClientCustomPassphraseSyncTestWithScryptEncryptionEnabled,
     ClientsCanSyncData) {
-  ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
-                                     /*use_for_new_passphrases=*/true);
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
@@ -205,19 +203,11 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(WaitForBookmarksToMatchVerifier());
 }
 
-#if defined(THREAD_SANITIZER)
-// https://crbug.com/915219. This data race is hard to avoid as overriding
-// g_feature_list after it has been used is needed for this test.
-#define MAYBE_ClientsCanSyncDataWhenScryptEncryptionEnabledInOne \
-  DISABLED_ClientsCanSyncDataWhenScryptEncryptionEnabledInOne
-#else
-#define MAYBE_ClientsCanSyncDataWhenScryptEncryptionEnabledInOne \
-  ClientsCanSyncDataWhenScryptEncryptionEnabledInOne
-#endif
-
+// See crbug.com/915219. This test needs to be rewritten to not rely on
+// FeatureList mutation after browser threads have started.
 IN_PROC_BROWSER_TEST_F(
     TwoClientCustomPassphraseSyncTest,
-    MAYBE_ClientsCanSyncDataWhenScryptEncryptionEnabledInOne) {
+    DISABLED_ClientsCanSyncDataWhenScryptEncryptionEnabledInOne) {
   ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
                                      /*use_for_new_passphrases=*/false);
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";

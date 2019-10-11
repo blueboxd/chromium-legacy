@@ -77,6 +77,8 @@ class ContentPasswordManagerDriver
   autofill::AutofillDriver* GetAutofillDriver() override;
   bool IsMainFrame() const override;
   const GURL& GetLastCommittedURL() const override;
+  void AnnotateFieldsWithParsingResult(
+      const autofill::ParsingResult& parsing_result) override;
 
   // Notify the renderer that the user wants to generate password manually.
   void GeneratePassword(autofill::mojom::PasswordGenerationAgent::

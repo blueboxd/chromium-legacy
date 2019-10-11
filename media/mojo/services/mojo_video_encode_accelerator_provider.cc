@@ -38,9 +38,9 @@ MojoVideoEncodeAcceleratorProvider::~MojoVideoEncodeAcceleratorProvider() =
     default;
 
 void MojoVideoEncodeAcceleratorProvider::CreateVideoEncodeAccelerator(
-    mojom::VideoEncodeAcceleratorRequest request) {
+    mojo::PendingReceiver<mojom::VideoEncodeAccelerator> receiver) {
   MojoVideoEncodeAcceleratorService::Create(
-      std::move(request), create_vea_callback_, gpu_preferences_);
+      std::move(receiver), create_vea_callback_, gpu_preferences_);
 }
 
 }  // namespace media

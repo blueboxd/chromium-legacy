@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CREDENTIAL_LIST;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ORIGIN_SECURE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VIEW_EVENT_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 
@@ -62,17 +63,19 @@ public class TouchToFillControllerTest {
         assertNotNull(mModel.get(VIEW_EVENT_LISTENER));
         assertThat(mModel.get(VISIBLE), is(false));
         assertThat(mModel.get(FORMATTED_URL), is(nullValue()));
+        assertThat(mModel.get(ORIGIN_SECURE), is(false));
     }
 
     @Test
     public void testShowCredentialsSetsFormattedUrl() {
-        mMediator.showCredentials(TEST_URL, Arrays.asList(ANA, CARL, BOB));
+        mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL, BOB));
         assertThat(mModel.get(FORMATTED_URL), is(TEST_URL));
+        assertThat(mModel.get(ORIGIN_SECURE), is(true));
     }
 
     @Test
     public void testShowCredentialsSetsCredentialList() {
-        mMediator.showCredentials(TEST_URL, Arrays.asList(ANA, CARL, BOB));
+        mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL, BOB));
         assertThat(mModel.get(CREDENTIAL_LIST).size(), is(3));
         assertThat(mModel.get(CREDENTIAL_LIST).get(0), is(ANA));
         assertThat(mModel.get(CREDENTIAL_LIST).get(1), is(CARL));
@@ -81,25 +84,25 @@ public class TouchToFillControllerTest {
 
     @Test
     public void testClearsCredentialListWhenShowingAgain() {
-        mMediator.showCredentials(TEST_URL, Collections.singletonList(ANA));
+        mMediator.showCredentials(TEST_URL, true, Collections.singletonList(ANA));
         assertThat(mModel.get(CREDENTIAL_LIST).size(), is(1));
         assertThat(mModel.get(CREDENTIAL_LIST).get(0), is(ANA));
 
         // Showing the sheet a second time should replace all changed credentials.
-        mMediator.showCredentials(TEST_URL, Collections.singletonList(BOB));
+        mMediator.showCredentials(TEST_URL, true, Collections.singletonList(BOB));
         assertThat(mModel.get(CREDENTIAL_LIST).size(), is(1));
         assertThat(mModel.get(CREDENTIAL_LIST).get(0), is(BOB));
     }
 
     @Test
     public void testShowCredentialsSetsVisibile() {
-        mMediator.showCredentials(TEST_URL, Arrays.asList(ANA, CARL, BOB));
+        mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL, BOB));
         assertThat(mModel.get(VISIBLE), is(true));
     }
 
     @Test
     public void testCallsCallbackAndHidesOnSelectingItem() {
-        mMediator.showCredentials(TEST_URL, Arrays.asList(ANA, CARL));
+        mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL));
         mMediator.onSelectItemAt(1);
         verify(mMockDelegate).onCredentialSelected(CARL);
         assertThat(mModel.get(VISIBLE), is(false));
@@ -107,7 +110,7 @@ public class TouchToFillControllerTest {
 
     @Test
     public void testCallsDelegateAndHidesOnDismiss() {
-        mMediator.showCredentials(TEST_URL, Arrays.asList(ANA, CARL));
+        mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL));
         mMediator.onDismissed();
         verify(mMockDelegate).onDismissed();
         assertThat(mModel.get(VISIBLE), is(false));

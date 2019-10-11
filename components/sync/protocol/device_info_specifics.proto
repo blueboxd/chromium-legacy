@@ -59,6 +59,12 @@ message DeviceInfoSpecifics {
 
   // Device specific information for Sharing feature.
   optional SharingSpecificFields sharing_fields = 10;
+
+  // Model of device.
+  optional string model = 11;
+
+  // Name of device manufacturer.
+  optional string manufacturer = 12;
 }
 
 // Feature specific information about the device that is running a sync-enabled

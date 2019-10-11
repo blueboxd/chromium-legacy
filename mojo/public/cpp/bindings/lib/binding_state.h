@@ -19,7 +19,6 @@
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/connection_group.h"
-#include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -40,7 +39,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) BindingStateBase {
   BindingStateBase();
   ~BindingStateBase();
 
-  void AddFilter(std::unique_ptr<MessageReceiver> filter);
+  void SetFilter(std::unique_ptr<MessageFilter> filter);
 
   bool HasAssociatedInterfaces() const;
 

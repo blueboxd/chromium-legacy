@@ -284,7 +284,7 @@ void FtlSignalingPlayground::OnSignalStrategyStateChange(
 
   if (state == SignalStrategy::CONNECTED) {
     HOST_LOG << "Signaling connected. New JID: "
-             << signal_strategy_->GetLocalAddress().jid();
+             << signal_strategy_->GetLocalAddress().id();
     if (on_signaling_connected_callback_) {
       std::move(on_signaling_connected_callback_).Run();
     }

@@ -102,6 +102,8 @@ source_set("exo") {
       "//chromeos/constants",
     ]
     sources += [
+      "client_controlled_accelerators.cc",
+      "client_controlled_accelerators.h",
       "client_controlled_shell_surface.cc",
       "client_controlled_shell_surface.h",
       "gaming_seat.cc",

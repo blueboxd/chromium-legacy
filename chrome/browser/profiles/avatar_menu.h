@@ -200,8 +200,8 @@ class AvatarMenu :
       supervised_user_observer_{this};
 #endif
 
-  // The storage that provides the profile attributes. Weak.
-  ProfileAttributesStorage* profile_storage_;
+  // The storage that provides the profile attributes.
+  base::WeakPtr<ProfileAttributesStorage> profile_storage_;
 
   // The observer of this model, which is notified of changes. Weak.
   AvatarMenuObserver* observer_;

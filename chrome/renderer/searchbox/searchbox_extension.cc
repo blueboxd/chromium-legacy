@@ -871,13 +871,13 @@ v8::Local<v8::Value> NewTabPageBindings::GetMostVisited(v8::Isolate* isolate) {
   if (!search_box)
     return v8::Null(isolate);
 
-  content::RenderView* render_view =
-      GetMainRenderFrameForCurrentContext()->GetRenderView();
+  content::RenderFrame* render_frame = GetMainRenderFrameForCurrentContext();
+  content::RenderView* render_view = render_frame->GetRenderView();
 
   // This corresponds to "window.devicePixelRatio" in JavaScript.
   float zoom_factor =
       blink::PageZoomLevelToZoomFactor(render_view->GetZoomLevel());
-  float device_pixel_ratio = render_view->GetDeviceScaleFactor() * zoom_factor;
+  float device_pixel_ratio = render_frame->GetDeviceScaleFactor() * zoom_factor;
 
   int render_view_id = render_view->GetRoutingID();
 

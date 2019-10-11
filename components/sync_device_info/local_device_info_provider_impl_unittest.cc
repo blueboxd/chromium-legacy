@@ -58,7 +58,8 @@ class LocalDeviceInfoProviderImplTest : public testing::Test {
   void InitializeProvider() { InitializeProvider(kLocalDeviceGuid); }
 
   void InitializeProvider(const std::string& guid) {
-    provider_->Initialize(guid, kLocalDeviceSessionName);
+    provider_->Initialize(guid, kLocalDeviceSessionName,
+                          base::SysInfo::HardwareInfo());
   }
 
   testing::NiceMock<MockDeviceInfoSyncClient> device_info_sync_client_;

@@ -16,7 +16,7 @@ serial_test(async (t, fake) => {
   const readable = port.readable;
   assert_true(readable instanceof ReadableStream);
 
-  port.close();
+  await port.close();
   assert_equals(port.readable, null);
 
   const reader = readable.getReader();
@@ -24,6 +24,20 @@ serial_test(async (t, fake) => {
   assert_true(done);
   assert_equals(value, undefined);
 }, 'SerialPort.readable is set by open() and closes on port close');
+
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+
+  await port.open({ baudrate: 9600 });
+  assert_true(port.readable instanceof ReadableStream);
+
+  const reader = port.readable.getReader();
+  await promise_rejects(t, new TypeError(), port.close());
+
+  reader.releaseLock();
+  await port.close();
+  assert_equals(port.readable, null);
+}, 'Port cannot be closed while readable is locked');
 
 serial_test(async (t, fake) => {
   const { port, fakePort } = await getFakeSerialPort(fake);
@@ -37,12 +51,9 @@ serial_test(async (t, fake) => {
   let { value, done } = await reader.read();
   assert_false(done);
   compareArrays(data, value);
+  reader.releaseLock();
 
-  port.close();
-
-  ({ value, done } = await reader.read());
-  assert_true(done);
-  assert_equals(undefined, value);
+  await port.close();
 }, 'Can read a small amount of data');
 
 serial_test(async (t, fake) => {
@@ -56,9 +67,11 @@ serial_test(async (t, fake) => {
   fakePort.write(data);
 
   const reader = port.readable.getReader();
-  port.close();
-  const value = await readAll(reader);
+  const value = await readWithLength(reader, data.byteLength);
   compareArrays(data, value);
+  reader.releaseLock();
+
+  await port.close();
 }, 'Can read a large amount of data');
 
 serial_test(async (t, fake) => {
@@ -89,13 +102,10 @@ serial_test(async (t, fake) => {
   ({ value, done } = await reader.read());
   assert_false(done);
   compareArrays(data, value);
+  reader.releaseLock();
 
-  port.close();
+  await port.close();
   assert_equals(port.readable, null);
-
-  ({ value, done } = await reader.read());
-  assert_true(done);
-  assert_equals(undefined, value);
 }, 'Parity error closes readable and replaces it with a new stream');
 
 serial_test(async (t, fake) => {
@@ -109,12 +119,24 @@ serial_test(async (t, fake) => {
   let { value, done } = await reader.read();
   assert_false(done);
   assert_equals("Hello world!", value);
+  await reader.cancel();
 
-  port.close();
+  await port.close();
+}, 'Can pipe readable through a transform stream.')
 
-  ({ value, done } = await reader.read());
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+  // Select a buffer size smaller than the amount of data transferred.
+  await port.open({ baudrate: 9600, buffersize: 64 });
+
+  const reader = port.readable.getReader();
+  const readPromise = reader.read();
+  await reader.cancel();
+  let { value, done } = await readPromise;
   assert_true(done);
   assert_equals(undefined, value);
-}, 'Can pipe readable through a transform stream.')
+
+  await port.close();
+}, 'Can cancel while reading');
 
 </script>

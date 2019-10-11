@@ -103,9 +103,12 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   if (url_loader_)
     return false;
 
-  std::vector<std::string> filtered_hosts = GetHostsDueForHintsRefresh(hosts);
+  std::vector<std::string> filtered_hosts =
+      GetSizeLimitedHostsDueForHintsRefresh(hosts);
   if (filtered_hosts.empty())
     return false;
+  DCHECK_GE(features::MaxHostsForOptimizationGuideServiceHintsFetch(),
+            filtered_hosts.size());
 
   hints_fetch_start_time_ = base::TimeTicks::Now();
   request_context_ = request_context;
@@ -283,7 +286,7 @@ void HintsFetcher::OnURLLoadComplete(
   url_loader_.reset();
 }
 
-std::vector<std::string> HintsFetcher::GetHostsDueForHintsRefresh(
+std::vector<std::string> HintsFetcher::GetSizeLimitedHostsDueForHintsRefresh(
     const std::vector<std::string>& hosts) const {
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -294,6 +297,9 @@ std::vector<std::string> HintsFetcher::GetHostsDueForHintsRefresh(
   target_hosts.reserve(hosts.size());
 
   for (const auto& host : hosts) {
+    // TODO(b/968542): Skip origins that are local hosts (e.g., IP addresses,
+    // localhost:8080 etc.).
+
     bool host_hints_due_for_refresh = true;
 
     base::Optional<double> value =
@@ -307,7 +313,14 @@ std::vector<std::string> HintsFetcher::GetHostsDueForHintsRefresh(
     }
     if (host_hints_due_for_refresh)
       target_hosts.push_back(host);
+
+    if (target_hosts.size() >=
+        features::MaxHostsForOptimizationGuideServiceHintsFetch()) {
+      break;
+    }
   }
+  DCHECK_GE(features::MaxHostsForOptimizationGuideServiceHintsFetch(),
+            target_hosts.size());
   return target_hosts;
 }
 

@@ -64,6 +64,8 @@ jumbo_component("gl") {
     "android/surface_texture.h",
     "android/surface_texture_listener.cc",
     "android/surface_texture_listener.h",
+    "buffer_format_utils.cc",
+    "buffer_format_utils.h",
     "ca_renderer_layer_params.cc",
     "ca_renderer_layer_params.h",
     "color_space_utils.cc",

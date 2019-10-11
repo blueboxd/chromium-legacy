@@ -14,12 +14,7 @@
         android:id="@+id/tabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:tabMaxWidth="0dp"
-        app:tabMode="fixed"
-        app:tabGravity="fill"
-        app:tabTextColor="@color/default_text_color_tertiary"
-        app:tabSelectedTextColor="@color/tab_layout_selected_tab_color"
-        android:background="@color/modern_primary_color">
+        style="@style/TabLayoutStyle" >
 
         <android.support.design.widget.TabItem
             android:id="@+id/files_tab"

@@ -212,8 +212,6 @@ target(link_target_type, "renderer") {
     "media/webrtc/rtc_rtp_transceiver.h",
     "media/webrtc/transceiver_state_surfacer.cc",
     "media/webrtc/transceiver_state_surfacer.h",
-    "media/webrtc/webrtc_media_stream_track_adapter_map.cc",
-    "media/webrtc/webrtc_media_stream_track_adapter_map.h",
     "media/webrtc/webrtc_set_description_observer.cc",
     "media/webrtc/webrtc_set_description_observer.h",
     "menu_item_builder.cc",

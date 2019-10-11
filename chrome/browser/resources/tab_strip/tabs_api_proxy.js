@@ -4,10 +4,40 @@
 
 import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
+/**
+ * Must be kept in sync with TabNetworkState from
+ * //chrome/browser/ui/tabs/tab_network_state.h.
+ * @enum {number}
+ */
+export const TabNetworkState = {
+  NONE: 0,
+  WAITING: 1,
+  LOADING: 2,
+  ERROR: 3,
+};
+
+/**
+ * @typedef {{
+ *    active: boolean,
+ *    favIconUrl: string,
+ *    id: number,
+ *    index: number,
+ *    networkState: !TabNetworkState,
+ *    pinned: boolean,
+ *    shouldHideThrobber: boolean,
+ *    title: string,
+ *    url: string,
+ * }}
+ */
+export let TabData;
+
+/** @typedef {!Tab} */
+let ExtensionsApiTab;
+
 export class TabsApiProxy {
   /**
    * @param {number} tabId
-   * @return {!Promise<!Tab>}
+   * @return {!Promise<!ExtensionsApiTab>}
    */
   activateTab(tabId) {
     return new Promise(resolve => {
@@ -16,7 +46,7 @@ export class TabsApiProxy {
   }
 
   /**
-   * @return {!Promise<!Array<!Tab>>}
+   * @return {!Promise<!Array<!TabData>>}
    */
   getTabs() {
     return sendWithPromise('getTabs');
@@ -35,7 +65,7 @@ export class TabsApiProxy {
   /**
    * @param {number} tabId
    * @param {number} newIndex
-   * @return {!Promise<!Tab>}
+   * @return {!Promise<!ExtensionsApiTab>}
    */
   moveTab(tabId, newIndex) {
     return new Promise(resolve => {
@@ -50,6 +80,15 @@ export class TabsApiProxy {
    */
   trackThumbnailForTab(tabId) {
     chrome.send('addTrackedTab', [tabId]);
+  }
+
+  /**
+   * @param {number} tabId
+   * @param {number} locationX
+   * @param {number} locationY
+   */
+  showTabContextMenu(tabId, locationX, locationY) {
+    chrome.send('showTabContextMenu', [tabId, locationX, locationY]);
   }
 }
 

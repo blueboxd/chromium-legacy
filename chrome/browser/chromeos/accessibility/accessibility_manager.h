@@ -29,6 +29,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -492,7 +493,7 @@ class AccessibilityManager
       caret_bounds_observer_for_test_;
 
   // Used to set the audio focus enforcement type for ChromeVox.
-  media_session::mojom::AudioFocusManagerPtr audio_focus_manager_ptr_;
+  mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus_manager_;
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_{this};
 

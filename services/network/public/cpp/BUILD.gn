@@ -31,6 +31,8 @@ jumbo_component("cpp") {
     "cors/preflight_result.h",
     "cross_thread_shared_url_loader_factory_info.cc",
     "cross_thread_shared_url_loader_factory_info.h",
+    "data_pipe_to_source_stream.cc",
+    "data_pipe_to_source_stream.h",
     "features.cc",
     "features.h",
     "header_util.cc",
@@ -60,6 +62,8 @@ jumbo_component("cpp") {
     "simple_url_loader.cc",
     "simple_url_loader.h",
     "simple_url_loader_stream_consumer.h",
+    "source_stream_to_data_pipe.cc",
+    "source_stream_to_data_pipe.h",
     "weak_wrapper_shared_url_loader_factory.cc",
     "weak_wrapper_shared_url_loader_factory.h",
     "wrapper_shared_url_loader_factory.cc",
@@ -198,6 +202,7 @@ source_set("tests") {
     "cors/preflight_cache_unittest.cc",
     "cors/preflight_result_unittest.cc",
     "cross_thread_shared_url_loader_factory_info_unittest.cc",
+    "data_pipe_to_source_stream_unittest.cc",
     "default_credentials_mojom_traits_unittest.cc",
     "digitally_signed_mojom_traits_unittest.cc",
     "header_util_unittest.cc",
@@ -212,6 +217,7 @@ source_set("tests") {
     "network_quality_tracker_unittest.cc",
     "proxy_config_mojom_traits_unittest.cc",
     "simple_url_loader_unittest.cc",
+    "source_stream_to_data_pipe_unittest.cc",
     "url_request_mojom_traits_unittest.cc",
   ]
 

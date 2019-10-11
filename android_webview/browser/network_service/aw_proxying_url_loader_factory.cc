@@ -743,12 +743,12 @@ AwProxyingURLLoaderFactory::~AwProxyingURLLoaderFactory() {}
 // static
 void AwProxyingURLLoaderFactory::CreateProxy(
     int process_id,
-    network::mojom::URLLoaderFactoryRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // will manage its own lifetime
-  new AwProxyingURLLoaderFactory(process_id, std::move(loader_request),
+  new AwProxyingURLLoaderFactory(process_id, std::move(loader_receiver),
                                  std::move(target_factory_info), false);
 }
 

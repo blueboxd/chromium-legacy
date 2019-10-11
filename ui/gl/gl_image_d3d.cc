@@ -15,16 +15,45 @@
 
 namespace gl {
 
+namespace {
+
+bool ValidGLInternalFormat(unsigned internal_format) {
+  switch (internal_format) {
+    case GL_RGB:
+    case GL_RGBA:
+    case GL_BGRA_EXT:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool ValidGLDataType(unsigned data_type) {
+  switch (data_type) {
+    case GL_UNSIGNED_BYTE:
+    case GL_HALF_FLOAT_OES:
+      return true;
+    default:
+      return false;
+  }
+}
+
+}  // namespace
+
 GLImageD3D::GLImageD3D(const gfx::Size& size,
                        unsigned internal_format,
+                       unsigned data_type,
                        Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
                        Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain)
     : GLImage(),
       size_(size),
       internal_format_(internal_format),
+      data_type_(data_type),
       texture_(std::move(texture)),
       swap_chain_(std::move(swap_chain)) {
   DCHECK(texture_);
+  DCHECK(ValidGLInternalFormat(internal_format_));
+  DCHECK(ValidGLDataType(data_type_));
 }
 
 GLImageD3D::~GLImageD3D() {
@@ -73,6 +102,10 @@ gfx::Size GLImageD3D::GetSize() {
 
 unsigned GLImageD3D::GetInternalFormat() {
   return internal_format_;
+}
+
+unsigned GLImageD3D::GetDataType() {
+  return data_type_;
 }
 
 bool GLImageD3D::BindTexImage(unsigned target) {

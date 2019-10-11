@@ -49,25 +49,16 @@ class MockBadgeService {
 
 let mockBadgeService = new MockBadgeService();
 
-function callAndObserveErrors(func, expectedErrorName) {
-  return new Promise((resolve, reject) => {
-    try {
-      func();
-    } catch (error) {
-      try {
-        assert_equals(error.name, expectedErrorName);
-        resolve();
-      } catch (reason) {
-        reject(reason);
-      }
-    }
-  });
-}
-
 function badge_test(func, expectedAction, expectedError) {
-  promise_test(() => {
+  promise_test(async () => {
     let mockPromise = mockBadgeService.init_(expectedAction);
-    return Promise.race(
-        [callAndObserveErrors(func, expectedError), mockPromise]);
+
+    try {
+      await func();
+    } catch (error) {
+      return assert_equals(error.name, expectedError);
+    }
+
+    await mockPromise;
   });
 }

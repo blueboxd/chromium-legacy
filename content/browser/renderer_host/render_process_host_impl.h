@@ -58,6 +58,7 @@
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "net/base/network_isolation_key.h"
@@ -234,9 +235,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
           header_client,
-      network::mojom::URLLoaderFactoryRequest request) override;
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override;
 
-  void SetIsNeverSuitableForReuse() override;
   bool MayReuseHost() override;
   bool IsUnused() override;
   void SetIsUsed() override;
@@ -280,7 +281,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const WebPreferences* preferences,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
           header_client,
-      network::mojom::URLLoaderFactoryRequest request);
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver);
 
   // Call this function when it is evident that the child process is actively
   // performing some operation, for example if we just received an IPC message.
@@ -776,7 +777,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // URLLoaderFactories are associated with a specific origin and an execution
   // context (e.g. a frame, a service worker or any other kind of worker).
   void CreateURLLoaderFactoryForRendererProcess(
-      network::mojom::URLLoaderFactoryRequest request);
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver);
 
   // Creates a URLLoaderFactory whose NetworkIsolationKey is set if
   // |network_isoation_key| has a value, and whose trust is given by
@@ -789,7 +790,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const base::Optional<net::NetworkIsolationKey>& network_isolation_key,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
           header_client,
-      network::mojom::URLLoaderFactoryRequest request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       bool is_trusted);
 
   // Handles incoming requests to bind a process-scoped receiver from the
@@ -806,10 +807,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Set in DisableKeepAliveRefCount(). When true, |keep_alive_ref_count_| must
   // no longer be modified.
   bool is_keep_alive_ref_count_disabled_;
-
-  // Whether this host is never suitable for reuse as determined in the
-  // MayReuseHost() function.
-  bool is_never_suitable_for_reuse_ = false;
 
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.

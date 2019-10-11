@@ -33,7 +33,8 @@ class SyncUserSettingsTest : public testing::Test {
 
     sync_service_crypto_ = std::make_unique<SyncServiceCrypto>(
         /*notify_observers=*/base::DoNothing(),
-        /*reconfigure=*/base::DoNothing(), sync_prefs_.get());
+        /*reconfigure=*/base::DoNothing(), sync_prefs_.get(),
+        /*trusted_vault_client=*/nullptr);
   }
 
   std::unique_ptr<SyncUserSettingsImpl> MakeSyncUserSettings(

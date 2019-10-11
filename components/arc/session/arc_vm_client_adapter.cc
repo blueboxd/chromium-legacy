@@ -4,31 +4,233 @@
 
 #include "components/arc/session/arc_vm_client_adapter.h"
 
+#include <sys/statvfs.h>
+#include <time.h>
+
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/process/launch.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
+#include "chromeos/system/statistics_provider.h"
+#include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
 
 namespace arc {
 namespace {
 
 constexpr const char kArcVmServerProxyJobName[] = "arcvm_2dserver_2dproxy";
+constexpr const char kBuiltinPath[] = "/opt/google/vms/android";
+constexpr const char kCrosSystemPath[] = "/usr/bin/crossystem";
+constexpr const char kDlcPath[] = "/run/imageloader/arcvm-dlc/package/root";
+constexpr const char kFstab[] = "fstab";
+constexpr const char kHomeDirectory[] = "/home";
+constexpr const char kKernel[] = "vmlinux";
+constexpr const char kRootFs[] = "system.raw.img";
+constexpr const char kVendorImage[] = "vendor.raw.img";
 
 chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
+}
+
+bool IsHostRootfsWritable() {
+  struct statvfs buf;
+  if (statvfs("/", &buf) < 0) {
+    PLOG(ERROR) << "statvfs() failed";
+    return false;
+  }
+  const bool rw = !(buf.f_flag & ST_RDONLY);
+  VLOG(1) << "Host's rootfs is " << (rw ? "rw" : "ro");
+  return rw;
+}
+
+base::FilePath SelectDlcOrBuiltin(const base::FilePath& file) {
+  const base::FilePath dlc_path = base::FilePath(kDlcPath).Append(file);
+  if (base::PathExists(dlc_path)) {
+    VLOG(1) << "arcvm-dlc will be used for " << file.value();
+    return dlc_path;
+  }
+  return base::FilePath(kBuiltinPath).Append(file);
+}
+
+// TODO(pliard): Export host-side /data to the VM, and remove the function.
+vm_tools::concierge::CreateDiskImageRequest CreateArcDiskRequest(
+    const std::string& user_id_hash,
+    int64_t free_disk_bytes) {
+  DCHECK(!user_id_hash.empty());
+
+  vm_tools::concierge::CreateDiskImageRequest request;
+  request.set_cryptohome_id(user_id_hash);
+  request.set_disk_path("arcvm");
+
+  // The type of disk image to be created.
+  request.set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
+  request.set_storage_location(vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT);
+
+  // The logical size of the new disk image, in bytes.
+  request.set_disk_size(free_disk_bytes / 2);
+
+  return request;
+}
+
+std::string GetReleaseChannel() {
+  constexpr const char kUnknown[] = "unknown";
+  const std::set<std::string> channels = {"beta",    "canary", "dev",
+                                          "dogfood", "stable", "testimage"};
+
+  std::string value;
+  if (!base::SysInfo::GetLsbReleaseValue("CHROMEOS_RELEASE_TRACK", &value)) {
+    LOG(ERROR) << "Could not load lsb-release";
+    return kUnknown;
+  }
+
+  auto pieces = base::SplitString(value, "-", base::KEEP_WHITESPACE,
+                                  base::SPLIT_WANT_ALL);
+
+  if (pieces.size() != 2 || pieces[1] != "channel") {
+    LOG(ERROR) << "Misformatted CHROMEOS_RELEASE_TRACK value in lsb-release";
+    return kUnknown;
+  }
+  if (channels.find(pieces[0]) == channels.end()) {
+    LOG(WARNING) << "Unknown ChromeOS channel: \"" << pieces[0] << "\"";
+    return kUnknown;
+  }
+
+  return pieces[0];
+}
+
+std::string MonotonicTimestamp() {
+  struct timespec ts;
+  const int ret = clock_gettime(CLOCK_BOOTTIME, &ts);
+  DPCHECK(ret == 0);
+  const int64_t time =
+      ts.tv_sec * base::Time::kNanosecondsPerSecond + ts.tv_nsec;
+  return base::NumberToString(time);
+}
+
+std::vector<std::string> GenerateKernelCmdline(
+    int32_t lcd_density,
+    const base::Optional<bool>& play_store_auto_update,
+    bool is_dev_mode,
+    bool is_host_on_vm) {
+  const std::string release_channel = GetReleaseChannel();
+  const bool stable_or_beta =
+      release_channel == "stable" || release_channel == "beta";
+
+  std::vector<std::string> result = {
+      "androidboot.hardware=bertha",
+      "androidboot.container=1",
+      // TODO(b/139480143): when ArcNativeBridgeExperiment is enabled, switch
+      // to ndk_translation.
+      "androidboot.native_bridge=libhoudini.so",
+      base::StringPrintf("androidboot.dev_mode=%d", is_dev_mode),
+      base::StringPrintf("androidboot.disable_runas=%d", !is_dev_mode),
+      base::StringPrintf("androidboot.vm=%d", is_host_on_vm),
+      // TODO(yusukes): get this from arc-setup config or equivalent.
+      "androidboot.debuggable=1",
+      base::StringPrintf("androidboot.lcd_density=%d", lcd_density),
+      base::StringPrintf(
+          "androidboot.arc_file_picker=%d",
+          base::FeatureList::IsEnabled(kFilePickerExperimentFeature)),
+      base::StringPrintf(
+          "androidboot.arc_custom_tabs=%d",
+          base::FeatureList::IsEnabled(kCustomTabsExperimentFeature) &&
+              !stable_or_beta),
+      base::StringPrintf(
+          "androidboot.arc_print_spooler=%d",
+          base::FeatureList::IsEnabled(kPrintSpoolerExperimentFeature) &&
+              !stable_or_beta),
+      "androidboot.chromeos_channel=" + release_channel,
+      "androidboot.boottime_offset=" + MonotonicTimestamp(),
+      // TODO(yusukes): remove this once arcvm supports SELinux.
+      "androidboot.selinux=permissive",
+  };
+
+  if (play_store_auto_update) {
+    result.push_back(base::StringPrintf("androidboot.play_store_auto_update=%d",
+                                        *play_store_auto_update));
+  }
+
+  // TODO(yusukes): include command line parameters from arcbootcontinue.
+  return result;
+}
+
+vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
+    const std::string& user_id_hash,
+    uint32_t cpus,
+    const std::string& disk_path,
+    std::vector<std::string> kernel_cmdline) {
+  vm_tools::concierge::StartArcVmRequest request;
+
+  request.set_name(kArcVmName);
+  request.set_owner_id(user_id_hash);
+
+  request.add_params("root=/dev/vda");
+  if (IsHostRootfsWritable())
+    request.add_params("rw");
+  request.add_params("init=/init");
+  for (auto& entry : kernel_cmdline)
+    request.add_params(std::move(entry));
+
+  vm_tools::concierge::VirtualMachineSpec* vm = request.mutable_vm();
+
+  vm->set_kernel(SelectDlcOrBuiltin(base::FilePath(kKernel)).value());
+
+  // Add / as /dev/vda.
+  vm->set_rootfs(SelectDlcOrBuiltin(base::FilePath(kRootFs)).value());
+
+  // Add /data as /dev/vdb.
+  vm_tools::concierge::DiskImage* disk_image = request.add_disks();
+  disk_image->set_path(disk_path);
+  disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
+  disk_image->set_writable(true);
+  disk_image->set_do_mount(true);
+  // Add /vendor as /dev/vdc.
+  disk_image = request.add_disks();
+  disk_image->set_path(
+      SelectDlcOrBuiltin(base::FilePath(kVendorImage)).value());
+
+  disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
+  disk_image->set_writable(false);
+  disk_image->set_do_mount(true);
+
+  // Add Android fstab.
+  request.set_fstab(SelectDlcOrBuiltin(base::FilePath(kFstab)).value());
+
+  // Add cpus.
+  request.set_cpus(cpus);
+
+  return request;
+}
+
+int GetSystemPropertyInt(const std::string& property) {
+  std::string output;
+  if (!base::GetAppOutput({kCrosSystemPath, property}, &output))
+    return -1;
+  int output_int;
+  return base::StringToInt(output, &output_int) ? output_int : -1;
 }
 
 }  // namespace
@@ -37,7 +239,13 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                            public chromeos::ConciergeClient::VmObserver,
                            public chromeos::ConciergeClient::Observer {
  public:
-  ArcVmClientAdapter() {
+  // Initializing |is_dev_mode_| and |is_host_on_vm_| is not always very fast.
+  // Try to initialize them in the constructor which usually runs when the
+  // system is not busy.
+  ArcVmClientAdapter()
+      : is_dev_mode_(GetSystemPropertyInt("cros_debug") == 1),
+        is_host_on_vm_(chromeos::system::StatisticsProvider::GetInstance()
+                           ->IsRunningOnVm()) {
     auto* client = GetConciergeClient();
     client->AddVmObserver(this);
     client->AddObserver(this);
@@ -86,6 +294,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     }
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), true));
+    should_notify_observers_ = true;
   }
 
   void UpgradeArc(const UpgradeArcContainerRequest& request,
@@ -94,30 +303,17 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     chromeos::UpstartClient::Get()->StartJob(
         kArcVmServerProxyJobName, /*environment=*/{},
         base::BindOnce(&ArcVmClientAdapter::OnArcVmServerProxyJobStarted,
-                       weak_factory_.GetWeakPtr()));
-
-    VLOG(1) << "Starting ARCVM";
-    std::vector<std::string> env{
-        {"USER_ID_HASH=" + user_id_hash_},
-        {base::StringPrintf("ARC_LCD_DENSITY=%d", lcd_density_)},
-        {base::StringPrintf("CPUS=%u", cpus_)},
-    };
-    if (play_store_auto_update_) {
-      env.push_back(base::StringPrintf("PLAY_STORE_AUTO_UPDATE=%d",
-                                       *play_store_auto_update_));
-    }
-    chromeos::UpstartClient::Get()->StartJob("arcvm", env, std::move(callback));
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void StopArcInstance() override {
     VLOG(1) << "Stopping arcvm";
-    // TODO(yusukes): This method should eventually call ArcInstanceStopped()
-    // even when only the (yet nonexistent) 'mini' VM is running.
-    std::vector<std::string> env{{"USER_ID_HASH=" + user_id_hash_}};
-    chromeos::UpstartClient::Get()->StopJob(
-        "arcvm", env,
-        base::BindOnce(&ArcVmClientAdapter::OnArcVmJobStopped,
-                       weak_factory_.GetWeakPtr()));
+    vm_tools::concierge::StopVmRequest request;
+    request.set_name(kArcVmName);
+    request.set_owner_id(user_id_hash_);
+    GetConciergeClient()->StopVm(
+        request, base::BindOnce(&ArcVmClientAdapter::OnStopVmReply,
+                                weak_factory_.GetWeakPtr()));
   }
 
   void SetUserIdHashForProfile(const std::string& hash) override {
@@ -136,6 +332,92 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   void ConciergeServiceRestarted() override {}
 
  private:
+  void OnConciergeStarted(chromeos::VoidDBusMethodCallback callback,
+                          bool success) {
+    if (!success) {
+      LOG(ERROR) << "Failed to start Concierge service for arcvm";
+      std::move(callback).Run(false);
+      return;
+    }
+    VLOG(1) << "Concierge service started for arcvm.";
+
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+        base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
+                       base::FilePath(kHomeDirectory)),
+        base::BindOnce(&ArcVmClientAdapter::CreateDiskImageAfterSizeCheck,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void CreateDiskImageAfterSizeCheck(chromeos::VoidDBusMethodCallback callback,
+                                     int64_t free_disk_bytes) {
+    VLOG(2) << "Got free disk size: " << free_disk_bytes;
+    if (user_id_hash_.empty()) {
+      LOG(ERROR) << "User ID hash is not set";
+      std::move(callback).Run(false);
+      return;
+    }
+    // TODO(yusukes): Don't start the VM when |free_disk_bytes| is too small.
+    // TODO(pliard): Export host-side /data to the VM, and remove the call.
+    GetConciergeClient()->CreateDiskImage(
+        CreateArcDiskRequest(user_id_hash_, free_disk_bytes),
+        base::BindOnce(&ArcVmClientAdapter::OnDiskImageCreated,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  // TODO(pliard): Export host-side /data to the VM, and remove the first half
+  // of the function.
+  void OnDiskImageCreated(
+      chromeos::VoidDBusMethodCallback callback,
+      base::Optional<vm_tools::concierge::CreateDiskImageResponse> reply) {
+    if (!reply.has_value()) {
+      LOG(ERROR) << "Failed to create disk image. Empty response.";
+      std::move(callback).Run(false);
+      return;
+    }
+
+    const vm_tools::concierge::CreateDiskImageResponse& response =
+        reply.value();
+    if (response.status() != vm_tools::concierge::DISK_STATUS_EXISTS &&
+        response.status() != vm_tools::concierge::DISK_STATUS_CREATED) {
+      LOG(ERROR) << "Failed to create disk image: "
+                 << response.failure_reason();
+      std::move(callback).Run(false);
+      return;
+    }
+    VLOG(1) << "Disk image for arcvm ready. status=" << response.status()
+            << ", disk=" << response.disk_path();
+
+    std::vector<std::string> kernel_cmdline = GenerateKernelCmdline(
+        lcd_density_, play_store_auto_update_, is_dev_mode_, is_host_on_vm_);
+    auto start_request = CreateStartArcVmRequest(
+        user_id_hash_, cpus_, response.disk_path(), std::move(kernel_cmdline));
+    GetConciergeClient()->StartArcVm(
+        start_request,
+        base::BindOnce(&ArcVmClientAdapter::OnStartArcVmReply,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void OnStartArcVmReply(
+      chromeos::VoidDBusMethodCallback callback,
+      base::Optional<vm_tools::concierge::StartVmResponse> reply) {
+    if (!reply.has_value()) {
+      LOG(ERROR) << "Failed to start arcvm. Empty response.";
+      std::move(callback).Run(false);
+      return;
+    }
+
+    const vm_tools::concierge::StartVmResponse& response = reply.value();
+    if (response.status() != vm_tools::concierge::VM_STATUS_RUNNING) {
+      LOG(ERROR) << "Failed to start arcvm: status=" << response.status()
+                 << ", reason=" << response.failure_reason();
+      std::move(callback).Run(false);
+      return;
+    }
+    VLOG(1) << "arcvm started.";
+    std::move(callback).Run(true);
+  }
+
   void OnArcInstanceStopped() {
     VLOG(1) << "ARCVM stopped. Stopping arcvm-server-proxy";
 
@@ -146,31 +428,60 @@ class ArcVmClientAdapter : public ArcClientAdapter,
         base::BindOnce(&ArcVmClientAdapter::OnArcVmServerProxyJobStopped,
                        weak_factory_.GetWeakPtr()));
 
+    // If this method is called before even mini VM is started (e.g. very early
+    // vm_concierge crash), or this method is called twice (e.g. crosvm crash
+    // followed by vm_concierge crash), do nothing.
+    if (!should_notify_observers_)
+      return;
+    should_notify_observers_ = false;
+
     for (auto& observer : observer_list_)
       observer.ArcInstanceStopped();
   }
 
-  // TODO(yusukes): Remove this method when we remove arcvm.conf.
-  void OnArcVmJobStopped(bool result) {
-    if (!result)
-      LOG(ERROR) << "Failed to stop arcvm.";
+  void OnStopVmReply(
+      base::Optional<vm_tools::concierge::StopVmResponse> reply) {
+    // If the reply indicates the D-Bus call is successfully done, do nothing.
+    // Concierge call OnVmStopped() eventually.
+    if (reply.has_value() && reply.value().success())
+      return;
+
+    // We likely tried to stop mini VM which doesn't exist today. Notify
+    // observers.
+    // TODO(yusukes): Remove the fallback once we implement mini VM.
+    OnArcInstanceStopped();
   }
 
-  void OnArcVmServerProxyJobStarted(bool result) {
-    VLOG(1) << "OnArcVmServerProxyJobStarted result=" << result;
+  void OnArcVmServerProxyJobStarted(chromeos::VoidDBusMethodCallback callback,
+                                    bool result) {
+    if (!result) {
+      LOG(ERROR) << "Failed to start arcvm-server-proxy job";
+      std::move(callback).Run(false);
+      return;
+    }
+
+    VLOG(1) << "Starting Concierge service";
+    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StartConcierge(
+        base::BindOnce(&ArcVmClientAdapter::OnConciergeStarted,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void OnArcVmServerProxyJobStopped(bool result) {
     VLOG(1) << "OnArcVmServerProxyJobStopped result=" << result;
   }
 
+  const bool is_dev_mode_;
+  // True when the *host* is running on a VM.
+  const bool is_host_on_vm_;
+
   // A hash of the primary profile user ID.
   std::string user_id_hash_;
 
   int32_t lcd_density_;
   uint32_t cpus_;
-
   base::Optional<bool> play_store_auto_update_;
+
+  bool should_notify_observers_ = false;
 
   // For callbacks.
   base::WeakPtrFactory<ArcVmClientAdapter> weak_factory_{this};

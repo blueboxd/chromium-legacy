@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace content {
@@ -62,8 +63,8 @@ class MediaInternalsAudioFocusHelper
       const media_session::mojom::AudioFocusRequestStatePtr& state,
       const std::string& provided_state) const;
 
-  // Holds a pointer to the media session service and it's debug interface.
-  media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
+  // Holds a remote to the media session service and it's debug interface.
+  mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus_;
   media_session::mojom::AudioFocusManagerDebugPtr audio_focus_debug_ptr_;
 
   // Must only be accessed on the UI thread.

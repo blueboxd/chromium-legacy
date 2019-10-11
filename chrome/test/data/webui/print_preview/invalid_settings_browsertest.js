@@ -29,6 +29,7 @@ cr.define('invalid_settings_browsertest', function() {
       thousandsDelimiter: ',',
       decimalDelimiter: '.',
       unitType: 1,
+      previewIsPdf: false,
       previewModifiable: true,
       documentTitle: 'title',
       documentHasSelection: true,
@@ -75,7 +76,7 @@ cr.define('invalid_settings_browsertest', function() {
 
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
-      page.$.documentInfo.init(true, 'title', false);
+      page.$.documentInfo.init(true, false, 'title', false);
       const previewArea = page.$.previewArea;
     }
 
@@ -289,7 +290,7 @@ cr.define('invalid_settings_browsertest', function() {
           })
           .then(function() {
             // Set this to enable the scaling input.
-            page.setSetting('customScaling', true);
+            page.setSetting('scalingType', print_preview.ScalingType.CUSTOM);
 
             destinationSettings.destinationStore_.startLoadCloudDestinations();
 

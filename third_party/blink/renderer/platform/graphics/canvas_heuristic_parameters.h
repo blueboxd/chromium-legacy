@@ -53,6 +53,11 @@ enum {
   // underlying GrContext is flushed.
   kMaxDrawsBeforeContextFlush = 50,
 
+  // Canvas resource provider
+  // ========================
+
+  // The maximum number of inflight resources waiting to be used for recycling.
+  kMaxRecycledCanvasResources = 2,
 };  // enum
 
 }  // namespace canvas_heuristic_parameters

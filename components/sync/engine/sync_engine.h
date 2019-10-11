@@ -139,9 +139,10 @@ class SyncEngine : public ModelTypeConfigurer {
   // TRUSTED_VAULT_PASSPHRASE: it provides new decryption keys that could
   // allow decrypting pending Nigori keys. Notifies observers of the result of
   // the operation via OnTrustedVaultKeyAccepted if the provided keys
-  // successfully decrypted pending keys.
+  // successfully decrypted pending keys. |done_cb| is invoked at the very end.
   virtual void AddTrustedVaultDecryptionKeys(
-      const std::vector<std::string>& keys) = 0;
+      const std::vector<std::string>& keys,
+      base::OnceClosure done_cb) = 0;
 
   // Kick off shutdown procedure. Attempts to cut short any long-lived or
   // blocking sync thread tasks so that the shutdown on sync thread task that

@@ -20,6 +20,9 @@ blink::mojom::FetchClientSettingsObjectPtr
 FetchClientSettingsObjectFromWebToMojom(
     const blink::WebFetchClientSettingsObject& web_settings_object);
 
+blink::WebFetchClientSettingsObject FetchClientSettingsObjectFromMojomToWeb(
+    const blink::mojom::FetchClientSettingsObjectPtr& mojom_settings_object);
+
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_WORKER_FETCH_CLIENT_SETTINGS_OBJECT_HELPERS_H_

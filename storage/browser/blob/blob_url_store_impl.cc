@@ -5,7 +5,6 @@
 #include "storage/browser/blob/blob_url_store_impl.h"
 
 #include "base/bind.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -140,10 +139,10 @@ void BlobURLStoreImpl::Resolve(const GURL& url, ResolveCallback callback) {
 
 void BlobURLStoreImpl::ResolveAsURLLoaderFactory(
     const GURL& url,
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   BlobURLLoaderFactory::Create(
       context_ ? context_->GetBlobFromPublicURL(url) : mojo::NullRemote(), url,
-      context_, std::move(request));
+      context_, std::move(receiver));
 }
 
 void BlobURLStoreImpl::ResolveForNavigation(

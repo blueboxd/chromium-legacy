@@ -109,11 +109,11 @@ class ArcAccessibilityHelperBridge
 
   void set_filter_type_all_for_test() { use_filter_type_all_for_test_ = true; }
 
- protected:
+ private:
+  // virtual for testing.
   virtual aura::Window* GetActiveWindow();
   virtual extensions::EventRouter* GetEventRouter() const;
 
- private:
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   void UpdateCaptionSettings() const;
 

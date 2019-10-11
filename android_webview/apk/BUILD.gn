@@ -4,6 +4,12 @@
 
 import("//build/config/android/rules.gni")
 
+generate_jni("apk_jni_headers") {
+  sources = [
+    "java/src/com/android/webview/chromium/WebViewApkApplication.java",
+  ]
+}
+
 # Monochrome uses a different copy of LicenseContentProvider.java.
 # This one is used in Trichrome and SystemWebview.
 android_library("webview_license_provider_java") {
@@ -16,10 +22,12 @@ android_library("webview_license_provider_java") {
   ]
 }
 
-# TODO(agrieve): Delete once downstream reference is updated.
-java_group("webview_license_activity_java") {
+# Contains the native dependencies used by LicenseContentProvider via JNI.
+# This should be included in the shared library of any APK that depends on
+# :webview_license_provider_java.
+group("webview_license_provider") {
   deps = [
-    ":apk_java",
+    "//components/about_ui",
   ]
 }
 
@@ -39,4 +47,15 @@ android_library("apk_java") {
     "//ui/android:ui_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+}
+
+source_set("apk") {
+  sources = [
+    "webview_apk_application.cc",
+  ]
+  deps = [
+    ":apk_jni_headers",
+    "//android_webview/common",
+    "//base",
+  ]
 }

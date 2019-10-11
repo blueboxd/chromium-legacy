@@ -36,16 +36,17 @@ class TestMediaPerceptionAPIDelegate : public MediaPerceptionAPIDelegate {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::BindOnce(
-              std::move(load_callback), true,
+              std::move(load_callback),
+              media_perception::COMPONENT_INSTALLATION_ERROR_NONE,
               base::FilePath("/run/imageloader/rtanalytics-light/1.0")));
       return;
     }
 
-    // Firing callback with false indicates that the installation of the
-    // component failed.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(load_callback), false, base::FilePath()));
+        base::BindOnce(std::move(load_callback),
+                       media_perception::COMPONENT_INSTALLATION_ERROR_NOT_FOUND,
+                       base::FilePath()));
   }
 
   void BindVideoSourceProvider(

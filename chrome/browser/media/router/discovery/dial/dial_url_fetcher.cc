@@ -11,6 +11,7 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -62,12 +63,12 @@ constexpr net::NetworkTrafficAnnotationTag kDialUrlFetcherTrafficAnnotation =
           }
         })");
 
-void BindURLLoaderFactoryRequestOnUIThread(
-    network::mojom::URLLoaderFactoryRequest request) {
+void BindURLLoaderFactoryReceiverOnUIThread(
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   network::mojom::URLLoaderFactory* factory =
       g_browser_process->system_network_context_manager()
           ->GetURLLoaderFactory();
-  factory->Clone(std::move(request));
+  factory->Clone(std::move(receiver));
 }
 
 }  // namespace
@@ -170,7 +171,7 @@ void DialURLFetcher::StartDownload() {
   auto mojo_request = mojo::MakeRequest(&loader_factory);
   if (content::BrowserThread::IsThreadInitialized(content::BrowserThread::UI)) {
     base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&BindURLLoaderFactoryRequestOnUIThread,
+                   base::BindOnce(&BindURLLoaderFactoryReceiverOnUIThread,
                                   std::move(mojo_request)));
   }
 

@@ -416,6 +416,9 @@ class HintsFetcherDisabledBrowserTest
     optimization_guide::proto::GetHintsRequest hints_request;
     EXPECT_TRUE(hints_request.ParseFromString(request.content));
     EXPECT_FALSE(hints_request.hosts().empty());
+    EXPECT_GE(optimization_guide::features::
+                  MaxHostsForOptimizationGuideServiceHintsFetch(),
+              static_cast<size_t>(hints_request.hosts().size()));
 
     VerifyHintsMatchExpectedHosts(hints_request);
 
@@ -1325,10 +1328,10 @@ IN_PROC_BROWSER_TEST_P(HintsFetcherChangeDefaultBlacklistSizeBrowserTest,
   }
   ASSERT_TRUE(top_host_provider);
 
-  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts(1);
+  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts();
   EXPECT_EQ(0u, top_hosts.size());
 
-  top_hosts = top_host_provider->GetTopHosts(1000);
+  top_hosts = top_host_provider->GetTopHosts();
   EXPECT_EQ(0u, top_hosts.size());
 
   // Everything HTTPS origin within the site engagement service should now be in

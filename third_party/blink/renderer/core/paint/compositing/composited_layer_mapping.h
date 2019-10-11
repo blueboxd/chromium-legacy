@@ -323,9 +323,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       IntPoint graphics_layer_parent_location);
   void UpdateChildTransformLayerGeometry();
   void UpdateMaskLayerGeometry();
-  void UpdateTransformGeometry(
-      const IntPoint& snapped_offset_from_composited_ancestor,
-      const IntRect& relative_compositing_bounds);
   void UpdateForegroundLayerGeometry();
   void UpdateDecorationOutlineLayerGeometry(
       const IntSize& relative_compositing_bounds_size);

@@ -45,13 +45,15 @@ void SetRemoteTLSDeprecationConfigProto(
   TLSDeprecationConfigSingleton::GetInstance().SetProto(std::move(proto));
 }
 
-bool IsTLSDeprecationConfigControlSite(const GURL& url) {
+bool ShouldSuppressLegacyTLSWarning(const GURL& url) {
   if (!url.has_host() || !url.SchemeIsCryptographic())
     return false;
 
   auto* proto = TLSDeprecationConfigSingleton::GetInstance().GetProto();
+  // If the config is not yet loaded, we err on the side of not showing warnings
+  // for any sites.
   if (!proto)
-    return false;
+    return true;
 
   // Convert bytes from crypto::SHA256 so we can compare to the proto contents.
   std::string host_hash_bytes = crypto::SHA256HashString(url.host_piece());

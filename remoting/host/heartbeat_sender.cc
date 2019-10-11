@@ -324,7 +324,7 @@ apis::v1::HeartbeatRequest HeartbeatSender::CreateHeartbeatRequest() {
 
   apis::v1::HeartbeatRequest heartbeat;
   std::string signaling_id;
-  heartbeat.set_tachyon_id(signal_strategy_->GetLocalAddress().jid());
+  heartbeat.set_tachyon_id(signal_strategy_->GetLocalAddress().id());
   heartbeat.set_host_id(host_id_);
   if (!host_offline_reason_.empty()) {
     heartbeat.set_host_offline_reason(host_offline_reason_);

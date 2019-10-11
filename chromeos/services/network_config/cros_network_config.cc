@@ -503,6 +503,14 @@ void SetString(const char* key,
   dict->SetStringKey(key, *property);
 }
 
+void SetStringIfNotEmpty(const char* key,
+                         const base::Optional<std::string>& property,
+                         base::Value* dict) {
+  if (!property || property->empty())
+    return;
+  dict->SetStringKey(key, *property);
+}
+
 void SetStringList(const char* key,
                    const base::Optional<std::vector<std::string>>& property,
                    base::Value* dict) {
@@ -1446,35 +1454,19 @@ base::Value GetEAPProperties(const mojom::EAPConfigProperties& eap) {
 
 std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
     const mojom::ConfigProperties* properties) {
-  std::string onc_type = MojoNetworkTypeToOnc(properties->type);
-  if (onc_type.empty()) {
-    NET_LOG(ERROR) << "Invalid NetworkConfig properties";
-    return nullptr;
-  }
   auto onc = std::make_unique<base::DictionaryValue>();
 
-  // kType is a required / intrinsic property.
-  SetString(::onc::network_config::kType, onc_type, onc.get());
-
-  // Configurations have only one type dictionary, set below (unless empty).
+  // Process |properties->network_type| and set |type|. Configurations have only
+  // one type dictionary.
+  mojom::NetworkType type = mojom::NetworkType::kAll;  // Invalid type
   base::Value type_dict(base::Value::Type::DICTIONARY);
 
-  // Process remaining |properties| members. Order matches the mojo struct.
-
-  if (properties->auto_connect) {
-    NetworkTypePattern type = MojoTypeToPattern(properties->type);
-    if (type.Equals(NetworkTypePattern::Cellular()) ||
-        type.Equals(NetworkTypePattern::VPN()) ||
-        type.Equals(NetworkTypePattern::WiFi())) {
-      // Note: All type dicts use the same kAutoConnect key.
-      type_dict.SetBoolKey(::onc::wifi::kAutoConnect,
-                           properties->auto_connect->value);
-    }
-  }
-
-  if (properties->cellular) {
-    if (properties->cellular->apn) {
-      const mojom::ApnProperties& apn = *properties->cellular->apn;
+  if (properties->type_config->is_cellular()) {
+    type = mojom::NetworkType::kCellular;
+    const mojom::CellularConfigProperties& cellular =
+        *properties->type_config->get_cellular();
+    if (cellular.apn) {
+      const mojom::ApnProperties& apn = *cellular.apn;
       base::Value apn_dict(base::Value::Type::DICTIONARY);
       apn_dict.SetStringKey(::onc::cellular_apn::kAccessPointName,
                             apn.access_point_name);
@@ -1488,72 +1480,19 @@ std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
       SetString(::onc::cellular_apn::kUsername, apn.username, &apn_dict);
       type_dict.SetKey(::onc::cellular::kAPN, std::move(apn_dict));
     }
-  }
-
-  if (properties->ethernet) {
-    const mojom::EthernetConfigProperties& ethernet = *properties->ethernet;
+  } else if (properties->type_config->is_ethernet()) {
+    type = mojom::NetworkType::kEthernet;
+    const mojom::EthernetConfigProperties& ethernet =
+        *properties->type_config->get_ethernet();
     SetString(::onc::ethernet::kAuthentication, ethernet.authentication,
               &type_dict);
     if (ethernet.eap) {
       type_dict.SetKey(::onc::ethernet::kEAP,
                        GetEAPProperties(*ethernet.eap.get()));
     }
-  }
-
-  if (properties->ip_address_config_type) {
-    onc->SetStringKey(::onc::network_config::kIPAddressConfigType,
-                      *properties->ip_address_config_type);
-  }
-
-  SetString(::onc::network_config::kName, properties->name, onc.get());
-
-  SetString(::onc::network_config::kNameServersConfigType,
-            properties->name_servers_config_type, onc.get());
-
-  if (properties->priority) {
-    onc->SetIntKey(::onc::network_config::kPriority,
-                   properties->priority->value);
-  }
-
-  if (properties->proxy_settings) {
-    const mojom::ProxySettings& proxy = *properties->proxy_settings;
-    base::Value proxy_dict(base::Value::Type::DICTIONARY);
-    proxy_dict.SetStringKey(::onc::proxy::kType, proxy.type);
-    if (proxy.manual) {
-      const mojom::ManualProxySettings& manual = *proxy.manual;
-      base::Value manual_dict(base::Value::Type::DICTIONARY);
-      SetProxyLocation(::onc::proxy::kHttp, manual.http_proxy, &manual_dict);
-      SetProxyLocation(::onc::proxy::kHttps, manual.secure_http_proxy,
-                       &manual_dict);
-      SetProxyLocation(::onc::proxy::kFtp, manual.ftp_proxy, &manual_dict);
-      SetProxyLocation(::onc::proxy::kSocks, manual.socks, &manual_dict);
-      proxy_dict.SetKey(::onc::proxy::kManual, std::move(manual_dict));
-    }
-    SetStringList(::onc::proxy::kExcludeDomains, proxy.exclude_domains,
-                  &proxy_dict);
-    SetString(::onc::proxy::kPAC, proxy.pac, &proxy_dict);
-    onc->SetKey(::onc::network_config::kProxySettings, std::move(proxy_dict));
-  }
-
-  if (properties->static_ip_config) {
-    const mojom::IPConfigProperties& ip_config = *properties->static_ip_config;
-    base::Value ip_config_dict(base::Value::Type::DICTIONARY);
-    SetString(::onc::ipconfig::kGateway, ip_config.gateway, &ip_config_dict);
-    SetString(::onc::ipconfig::kIPAddress, ip_config.ip_address,
-              &ip_config_dict);
-    SetStringList(::onc::ipconfig::kNameServers, ip_config.name_servers,
-                  &ip_config_dict);
-    ip_config_dict.SetIntKey(::onc::ipconfig::kRoutingPrefix,
-                             ip_config.routing_prefix);
-    SetString(::onc::ipconfig::kType, ip_config.type, &ip_config_dict);
-    SetString(::onc::ipconfig::kWebProxyAutoDiscoveryUrl,
-              ip_config.web_proxy_auto_discovery_url, &ip_config_dict);
-    onc->SetKey(::onc::network_config::kStaticIPConfig,
-                std::move(ip_config_dict));
-  }
-
-  if (properties->vpn) {
-    const mojom::VPNConfigProperties& vpn = *properties->vpn;
+  } else if (properties->type_config->is_vpn()) {
+    type = mojom::NetworkType::kVPN;
+    const mojom::VPNConfigProperties& vpn = *properties->type_config->get_vpn();
     SetString(::onc::vpn::kHost, vpn.host, &type_dict);
     if (vpn.ip_sec) {
       const mojom::IPSecConfigProperties& ip_sec = *vpn.ip_sec;
@@ -1609,17 +1548,89 @@ std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
       type_dict.SetKey(::onc::vpn::kOpenVPN, std::move(open_vpn_dict));
     }
     SetString(::onc::vpn::kType, MojoVpnTypeToOnc(vpn.type), &type_dict);
-  }
-
-  if (properties->wifi) {
-    const mojom::WiFiConfigProperties& wifi = *properties->wifi;
+  } else if (properties->type_config->is_wifi()) {
+    type = mojom::NetworkType::kWiFi;
+    const mojom::WiFiConfigProperties& wifi =
+        *properties->type_config->get_wifi();
     SetString(::onc::wifi::kPassphrase, wifi.passphrase, &type_dict);
-    SetString(::onc::wifi::kSSID, wifi.ssid, &type_dict);
+    SetStringIfNotEmpty(::onc::wifi::kSSID, wifi.ssid, &type_dict);
     SetString(::onc::wifi::kPassphrase, wifi.passphrase, &type_dict);
     SetString(::onc::wifi::kSecurity, MojoSecurityTypeToOnc(wifi.security),
               &type_dict);
     if (wifi.eap) {
       type_dict.SetKey(::onc::wifi::kEAP, GetEAPProperties(*wifi.eap.get()));
+    }
+  }
+
+  std::string onc_type = MojoNetworkTypeToOnc(type);
+  if (onc_type.empty()) {
+    NET_LOG(ERROR) << "Invalid NetworkConfig properties";
+    return nullptr;
+  }
+  SetString(::onc::network_config::kType, onc_type, onc.get());
+
+  // Process other |properties| members. Order matches the mojo struct.
+
+  if (properties->ip_address_config_type) {
+    onc->SetStringKey(::onc::network_config::kIPAddressConfigType,
+                      *properties->ip_address_config_type);
+  }
+
+  SetString(::onc::network_config::kName, properties->name, onc.get());
+
+  SetString(::onc::network_config::kNameServersConfigType,
+            properties->name_servers_config_type, onc.get());
+
+  if (properties->priority) {
+    onc->SetIntKey(::onc::network_config::kPriority,
+                   properties->priority->value);
+  }
+
+  if (properties->proxy_settings) {
+    const mojom::ProxySettings& proxy = *properties->proxy_settings;
+    base::Value proxy_dict(base::Value::Type::DICTIONARY);
+    proxy_dict.SetStringKey(::onc::proxy::kType, proxy.type);
+    if (proxy.manual) {
+      const mojom::ManualProxySettings& manual = *proxy.manual;
+      base::Value manual_dict(base::Value::Type::DICTIONARY);
+      SetProxyLocation(::onc::proxy::kHttp, manual.http_proxy, &manual_dict);
+      SetProxyLocation(::onc::proxy::kHttps, manual.secure_http_proxy,
+                       &manual_dict);
+      SetProxyLocation(::onc::proxy::kFtp, manual.ftp_proxy, &manual_dict);
+      SetProxyLocation(::onc::proxy::kSocks, manual.socks, &manual_dict);
+      proxy_dict.SetKey(::onc::proxy::kManual, std::move(manual_dict));
+    }
+    SetStringList(::onc::proxy::kExcludeDomains, proxy.exclude_domains,
+                  &proxy_dict);
+    SetString(::onc::proxy::kPAC, proxy.pac, &proxy_dict);
+    onc->SetKey(::onc::network_config::kProxySettings, std::move(proxy_dict));
+  }
+
+  if (properties->static_ip_config) {
+    const mojom::IPConfigProperties& ip_config = *properties->static_ip_config;
+    base::Value ip_config_dict(base::Value::Type::DICTIONARY);
+    SetString(::onc::ipconfig::kGateway, ip_config.gateway, &ip_config_dict);
+    SetString(::onc::ipconfig::kIPAddress, ip_config.ip_address,
+              &ip_config_dict);
+    SetStringList(::onc::ipconfig::kNameServers, ip_config.name_servers,
+                  &ip_config_dict);
+    ip_config_dict.SetIntKey(::onc::ipconfig::kRoutingPrefix,
+                             ip_config.routing_prefix);
+    SetString(::onc::ipconfig::kType, ip_config.type, &ip_config_dict);
+    SetString(::onc::ipconfig::kWebProxyAutoDiscoveryUrl,
+              ip_config.web_proxy_auto_discovery_url, &ip_config_dict);
+    onc->SetKey(::onc::network_config::kStaticIPConfig,
+                std::move(ip_config_dict));
+  }
+
+  if (properties->auto_connect) {
+    NetworkTypePattern type_pattern = MojoTypeToPattern(type);
+    if (type_pattern.Equals(NetworkTypePattern::Cellular()) ||
+        type_pattern.Equals(NetworkTypePattern::VPN()) ||
+        type_pattern.Equals(NetworkTypePattern::WiFi())) {
+      // Note: All type dicts use the same kAutoConnect key.
+      type_dict.SetBoolKey(::onc::wifi::kAutoConnect,
+                           properties->auto_connect->value);
     }
   }
 
@@ -1937,8 +1948,9 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
   // apply the configuration to the EthernetEAP service. Currently we only
   // support configuration of EAP properties or other properties (e.g IP
   // Config), not both.
-  if (network->type() == shill::kTypeEthernet && properties->ethernet &&
-      properties->ethernet->eap) {
+  if (network->type() == shill::kTypeEthernet &&
+      properties->type_config->is_ethernet() &&
+      properties->type_config->get_ethernet()->eap) {
     const NetworkState* eap_state = network_state_handler_->GetEAPForEthernet(
         network->path(), /*connected_only=*/false);
     if (!eap_state) {

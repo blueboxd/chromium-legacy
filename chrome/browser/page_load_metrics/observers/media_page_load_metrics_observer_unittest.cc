@@ -51,13 +51,13 @@ class MediaPageLoadMetricsObserverTest
     NavigateAndCommit(GURL(kDefaultTestUrl));
 
     if (simulate_play_media)
-      SimulateMediaPlayed();
+      tester()->SimulateMediaPlayed();
 
-    SimulateTimingUpdate(timing_);
+    tester()->SimulateTimingUpdate(timing_);
 
     auto resources =
         GetSampleResourceDataUpdateForTesting(10 * 1024 /* resource_size */);
-    SimulateResourceDataUseUpdate(resources);
+    tester()->SimulateResourceDataUseUpdate(resources);
     for (const auto& resource : resources) {
       if (resource->is_complete) {
         if (resource->cache_type ==
@@ -70,9 +70,9 @@ class MediaPageLoadMetricsObserverTest
 
     if (simulate_app_background) {
       // The histograms should be logged when the app is backgrounded.
-      SimulateAppEnterBackground();
+      tester()->SimulateAppEnterBackground();
     } else {
-      NavigateToUntrackedUrl();
+      tester()->NavigateToUntrackedUrl();
     }
   }
 
@@ -96,13 +96,13 @@ TEST_F(MediaPageLoadMetricsObserverTest, MediaPlayed) {
   SimulatePageLoad(true /* simulate_play_media */,
                    false /* simulate_app_background */);
 
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.MediaPageLoad.Experimental.Bytes.Network",
       static_cast<int>(network_bytes_ / 1024), 1);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.MediaPageLoad.Experimental.Bytes.Cache",
       static_cast<int>(cache_bytes_ / 1024), 1);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.MediaPageLoad.Experimental.Bytes.Total",
       static_cast<int>((network_bytes_ + cache_bytes_) / 1024), 1);
 }
@@ -112,13 +112,13 @@ TEST_F(MediaPageLoadMetricsObserverTest, MediaPlayedAppBackground) {
   SimulatePageLoad(true /* simulate_play_media */,
                    true /* simulate_app_background */);
 
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.MediaPageLoad.Experimental.Bytes.Network",
       static_cast<int>(network_bytes_ / 1024), 1);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.MediaPageLoad.Experimental.Bytes.Cache",
       static_cast<int>(cache_bytes_ / 1024), 1);
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.MediaPageLoad.Experimental.Bytes.Total",
       static_cast<int>((network_bytes_ + cache_bytes_) / 1024), 1);
 }
@@ -128,10 +128,10 @@ TEST_F(MediaPageLoadMetricsObserverTest, MediaNotPlayed) {
   SimulatePageLoad(false /* simulate_play_media */,
                    false /* simulate_app_background */);
 
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.MediaPageLoad.Experimental.Bytes.Network", 0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.MediaPageLoad.Experimental.Bytes.Cache", 0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.MediaPageLoad.Experimental.Bytes.Total", 0);
 }

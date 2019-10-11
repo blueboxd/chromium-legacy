@@ -75,6 +75,9 @@ class ProfileNetworkContextService
                            DefaultCacheSize);
   FRIEND_TEST_ALL_PREFIXES(ProfileNetworkContextServiceDiskCacheBrowsertest,
                            DiskCacheSize);
+  FRIEND_TEST_ALL_PREFIXES(
+      ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
+      Test);
 
   // Checks |quic_allowed_|, and disables QUIC if needed.
   void DisableQuicIfNotAllowed();

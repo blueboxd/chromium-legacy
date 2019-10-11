@@ -150,7 +150,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Sets the state of all child views to be re-shown, then shows the view.
   void Show(bool is_side_shelf, bool is_tablet_mode);
 
-  // If |drag_and_drop_host| is not NULL it will be called upon drag and drop
+  // If |drag_and_drop_host| is not nullptr it will be called upon drag and drop
   // operations outside the application list. This has to be called after
   // Initialize was called since the app list object needs to exist so that
   // it can set the host.

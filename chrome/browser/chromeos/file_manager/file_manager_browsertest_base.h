@@ -51,6 +51,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
+  void TearDown() override;
 
   // Mandatory overrides for each File Manager test extension type.
   virtual GuestMode GetGuestMode() const = 0;
@@ -146,7 +147,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   // Called during tests to determine if SMB file shares is enabled.
   bool IsSmbEnabled() const;
 
-  base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
   crostini::FakeCrostiniFeatures crostini_features_;
 
   std::unique_ptr<DownloadsTestVolume> local_volume_;

@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/sequence_bound.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/native_file_system/file_system_chooser.h"
 #include "content/common/content_export.h"
@@ -160,7 +161,8 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   storage::BlobStorageContext* blob_context() {
     return blob_context_->context();
   }
-  storage::FileSystemOperationRunner* operation_runner();
+  const base::SequenceBound<storage::FileSystemOperationRunner>&
+  operation_runner();
 
   NativeFileSystemPermissionContext* permission_context() {
     return permission_context_;
@@ -245,7 +247,7 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
 
   const scoped_refptr<storage::FileSystemContext> context_;
   const scoped_refptr<ChromeBlobStorageContext> blob_context_;
-  std::unique_ptr<storage::FileSystemOperationRunner> operation_runner_;
+  base::SequenceBound<storage::FileSystemOperationRunner> operation_runner_;
   NativeFileSystemPermissionContext* permission_context_;
 
   // All the mojo receivers for this NativeFileSystemManager itself. Keeps track

@@ -141,6 +141,7 @@ class BufferingMixerSource : public MixerInput::Source,
   AudioContentType content_type() override;
   int desired_read_size() override;
   int playout_channel() override;
+  bool active() override;
 
   void InitializeAudioPlayback(int read_size,
                                RenderingDelay initial_rendering_delay) override;

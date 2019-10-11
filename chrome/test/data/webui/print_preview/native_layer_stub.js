@@ -170,7 +170,8 @@ cr.define('print_preview', function() {
     /** @override */
     print(printTicket) {
       this.methodCalled('print', printTicket);
-      if (JSON.parse(printTicket).printWithCloudPrint) {
+      if (JSON.parse(printTicket).printerType ==
+          print_preview.PrinterType.CLOUD_PRINTER) {
         return Promise.resolve('sample data');
       }
       return Promise.resolve();

@@ -40,10 +40,13 @@ class LearningSessionImplTest : public testing::Test {
       }
     }
 
-    void BeginObservation(base::UnguessableToken id,
-                          const FeatureVector& features) override {
+    void BeginObservation(
+        base::UnguessableToken id,
+        const FeatureVector& features,
+        const base::Optional<TargetValue>& default_target) override {
       id_ = id;
       features_ = features;
+      default_target_ = default_target;
     }
 
     void CompleteObservation(base::UnguessableToken id,
@@ -66,6 +69,7 @@ class LearningSessionImplTest : public testing::Test {
     SequenceBoundFeatureProvider feature_provider_;
     base::UnguessableToken id_;
     FeatureVector features_;
+    base::Optional<TargetValue> default_target_;
     LabelledExample example_;
 
     // Most recently cancelled id.
@@ -228,6 +232,30 @@ TEST_F(LearningSessionImplTest, DestroyingControllerCancelsObservations) {
   controller.reset();
   task_environment_.RunUntilIdle();
   EXPECT_EQ(task_controllers_[0]->cancelled_id_, id);
+}
+
+TEST_F(LearningSessionImplTest,
+       DestroyingControllerCompletesObservationsWithDefaultValues) {
+  // Also verifies that we don't send the default to the underlying controller,
+  // because LearningTaskControllerImpl doesn't support it.
+  session_->RegisterTask(task_0_);
+
+  std::unique_ptr<LearningTaskController> controller =
+      session_->GetController(task_0_.name);
+  task_environment_.RunUntilIdle();
+
+  // Start an observation and verify that it doesn't forward the default target.
+  base::UnguessableToken id = base::UnguessableToken::Create();
+  TargetValue default_target(123);
+  controller->BeginObservation(id, FeatureVector(), default_target);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(task_controllers_[0]->id_, id);
+  EXPECT_FALSE(task_controllers_[0]->default_target_);
+
+  // Should result in completes the observation.
+  controller.reset();
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(task_controllers_[0]->example_.target_value, default_target);
 }
 
 }  // namespace learning

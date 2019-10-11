@@ -25,9 +25,8 @@ class IntentPickerBubbleViewBrowserTest
  public:
   void SetUp() override {
     // TODO(schenney): Stop disabling Paint Holding. crbug.com/1001189
-    scoped_feature_list_.InitWithFeatures(
-        {features::kIntentPicker},
-        {blink::features::kAvoidFlashBetweenNavigation});
+    scoped_feature_list_.InitWithFeatures({features::kIntentPicker},
+                                          {blink::features::kPaintHolding});
     extensions::test::BookmarkAppNavigationBrowserTest::SetUp();
   }
 

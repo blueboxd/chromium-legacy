@@ -8,6 +8,7 @@
 
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_store.h"
 #include "third_party/blink/renderer/modules/cookie_store/global_cookie_store_impl.h"
@@ -24,8 +25,9 @@ CookieStore* GlobalCookieStoreImpl<WorkerGlobalScope>::BuildCookieStore(
   interface_provider->GetInterface(
       cookie_manager_remote.BindNewPipeAndPassReceiver(
           execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+
   mojo::Remote<blink::mojom::blink::CookieStore> cookie_store_remote;
-  interface_provider->GetInterface(
+  execution_context->GetBrowserInterfaceBroker().GetInterface(
       cookie_store_remote.BindNewPipeAndPassReceiver(
           execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
 

@@ -49,7 +49,7 @@ class AMPPageLoadMetricsObserverTest
 
   void RunTest(const GURL& url) {
     NavigateAndCommit(url);
-    SimulateTimingUpdate(timing_);
+    tester()->SimulateTimingUpdate(timing_);
 
     // Navigate again to force OnComplete, which happens when a new navigation
     // occurs.
@@ -63,17 +63,18 @@ class AMPPageLoadMetricsObserverTest
     const size_t kTypeOffset = strlen("PageLoad.Clients.AMP.");
     std::string view_type_histogram = histogram;
     view_type_histogram.insert(kTypeOffset, view_type);
-    histogram_tester().ExpectTotalCount(histogram, expect_histograms ? 1 : 0);
-    histogram_tester().ExpectTotalCount(view_type_histogram,
-                                        expect_histograms ? 1 : 0);
+    tester()->histogram_tester().ExpectTotalCount(histogram,
+                                                  expect_histograms ? 1 : 0);
+    tester()->histogram_tester().ExpectTotalCount(view_type_histogram,
+                                                  expect_histograms ? 1 : 0);
     if (!expect_histograms)
       return;
-    histogram_tester().ExpectUniqueSample(
+    tester()->histogram_tester().ExpectUniqueSample(
         histogram,
         static_cast<base::HistogramBase::Sample>(
             event.value().InMilliseconds()),
         1);
-    histogram_tester().ExpectUniqueSample(
+    tester()->histogram_tester().ExpectUniqueSample(
         view_type_histogram,
         static_cast<base::HistogramBase::Sample>(
             event.value().InMilliseconds()),
@@ -82,10 +83,10 @@ class AMPPageLoadMetricsObserverTest
 
   ukm::mojom::UkmEntryPtr GetAmpPageLoadUkmEntry(const GURL& url) {
     ukm::mojom::UkmEntryPtr entry;
-    for (auto& it : test_ukm_recorder().GetMergedEntriesByName(
+    for (auto& it : tester()->test_ukm_recorder().GetMergedEntriesByName(
              ukm::builders::AmpPageLoad::kEntryName)) {
       const ukm::UkmSource* source =
-          test_ukm_recorder().GetSourceForSourceId(it.first);
+          tester()->test_ukm_recorder().GetSourceForSourceId(it.first);
       if (source->url() == url) {
         entry = std::move(it.second);
       }
@@ -106,42 +107,48 @@ class AMPPageLoadMetricsObserverTest
 
 TEST_F(AMPPageLoadMetricsObserverTest, AMPCachePage) {
   RunTest(GURL("https://cdn.ampproject.org/page"));
-  EXPECT_TRUE(test_ukm_recorder()
+  EXPECT_TRUE(tester()
+                  ->test_ukm_recorder()
                   .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
                   .empty());
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPCachePage) {
   RunTest(GURL("https://www.google.com/amp/page"));
-  EXPECT_TRUE(test_ukm_recorder()
+  EXPECT_TRUE(tester()
+                  ->test_ukm_recorder()
                   .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
                   .empty());
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPCachePageBaseURL) {
   RunTest(GURL("https://www.google.com/amp/"));
-  EXPECT_TRUE(test_ukm_recorder()
+  EXPECT_TRUE(tester()
+                  ->test_ukm_recorder()
                   .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
                   .empty());
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, GoogleNewsAMPCachePage) {
   RunTest(GURL("https://news.google.com/news/amp?page"));
-  EXPECT_TRUE(test_ukm_recorder()
+  EXPECT_TRUE(tester()
+                  ->test_ukm_recorder()
                   .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
                   .empty());
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, GoogleNewsAMPCachePageBaseURL) {
   RunTest(GURL("https://news.google.com/news/amp"));
-  EXPECT_TRUE(test_ukm_recorder()
+  EXPECT_TRUE(tester()
+                  ->test_ukm_recorder()
                   .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
                   .empty());
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, NonAMPPage) {
   RunTest(GURL("https://www.google.com/not-amp/page"));
-  EXPECT_TRUE(test_ukm_recorder()
+  EXPECT_TRUE(tester()
+                  ->test_ukm_recorder()
                   .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
                   .empty());
 }
@@ -156,18 +163,19 @@ TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPViewerSameDocument) {
       ->CommitSameDocument();
 
   // Verify that subframe metrics aren't recorded without an AMP subframe.
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
       0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
       0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming."
       "MainFrameToSubFrameNavigationDelta.Subframe",
       0);
 
-  EXPECT_TRUE(test_ukm_recorder()
+  EXPECT_TRUE(tester()
+                  ->test_ukm_recorder()
                   .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
                   .empty());
 }
@@ -195,20 +203,20 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameInputBeforeNavigation) {
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
-  SimulateMetadataUpdate(metadata, subframe);
+  tester()->SimulateMetadataUpdate(metadata, subframe);
 
   // Navigate the main frame to trigger metrics recording.
   NavigationSimulator::CreateRendererInitiated(
       GURL("https://ampviewer.com/other"), main_rfh())
       ->CommitSameDocument();
 
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
       0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
       1);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming."
       "MainFrameToSubFrameNavigationDelta.Subframe",
       0);
@@ -221,16 +229,18 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameInputBeforeNavigation) {
 
   // We expect a source with a negative NavigationDelta metric, since the main
   // frame navigation occurred before the AMP subframe navigation.
-  const int64_t* nav_delta_metric = test_ukm_recorder().GetEntryMetric(
-      sub_frame_entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
+  const int64_t* nav_delta_metric =
+      tester()->test_ukm_recorder().GetEntryMetric(
+          sub_frame_entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
   EXPECT_NE(nullptr, nav_delta_metric);
   EXPECT_GE(*nav_delta_metric, 0ll);
 
-  const int64_t* amp_subframe_metric = test_ukm_recorder().GetEntryMetric(
-      main_frame_entry.get(), "SubFrameAmpPageLoad");
+  const int64_t* amp_subframe_metric =
+      tester()->test_ukm_recorder().GetEntryMetric(main_frame_entry.get(),
+                                                   "SubFrameAmpPageLoad");
   EXPECT_NE(nullptr, amp_subframe_metric);
   EXPECT_GE(*amp_subframe_metric, 1ll);
-  EXPECT_EQ(nullptr, test_ukm_recorder().GetEntryMetric(
+  EXPECT_EQ(nullptr, tester()->test_ukm_recorder().GetEntryMetric(
                          main_frame_entry.get(), "MainFrameAmpPageLoad"));
 }
 
@@ -257,20 +267,20 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameNavigationBeforeInput) {
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
-  SimulateMetadataUpdate(metadata, subframe);
+  tester()->SimulateMetadataUpdate(metadata, subframe);
 
   // Navigate the main frame to trigger metrics recording.
   NavigationSimulator::CreateRendererInitiated(
       GURL("https://ampviewer.com/other"), main_rfh())
       ->CommitSameDocument();
 
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
       1);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
       0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming."
       "MainFrameToSubFrameNavigationDelta.Subframe",
       0);
@@ -280,9 +290,10 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameNavigationBeforeInput) {
 
   // We expect a source with a positive NavigationDelta metric, since the main
   // frame navigation occurred after the AMP subframe navigation.
-  test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
-  const int64_t* nav_delta_metric = test_ukm_recorder().GetEntryMetric(
-      entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
+  const int64_t* nav_delta_metric =
+      tester()->test_ukm_recorder().GetEntryMetric(
+          entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
   EXPECT_NE(nullptr, nav_delta_metric);
   EXPECT_LE(*nav_delta_metric, 0ll);
 }
@@ -307,7 +318,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics) {
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
-  SimulateMetadataUpdate(metadata, subframe);
+  tester()->SimulateMetadataUpdate(metadata, subframe);
 
   page_load_metrics::mojom::PageLoadTiming subframe_timing;
   page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
@@ -323,30 +334,30 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics) {
       base::TimeDelta::FromMilliseconds(3);
   PopulateRequiredTimingFields(&subframe_timing);
 
-  SimulateTimingUpdate(subframe_timing, subframe);
+  tester()->SimulateTimingUpdate(subframe_timing, subframe);
 
   // Navigate the main frame to trigger metrics recording.
   NavigationSimulator::CreateRendererInitiated(
       GURL("https://ampviewer.com/other"), main_rfh())
       ->CommitSameDocument();
 
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.PaintTiming.InputToFirstContentfulPaint.Subframe",
       1);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.PaintTiming.InputToLargestContentfulPaint.Subframe",
       1);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.InteractiveTiming.FirstInputDelay4.Subframe", 1);
 
   ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
   ASSERT_NE(nullptr, entry.get());
-  test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
-  test_ukm_recorder().ExpectEntryMetric(
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
+  tester()->test_ukm_recorder().ExpectEntryMetric(
       entry.get(), "SubFrame.InteractiveTiming.FirstInputDelay4", 3);
-  test_ukm_recorder().ExpectEntryMetric(
+  tester()->test_ukm_recorder().ExpectEntryMetric(
       entry.get(), "SubFrame.PaintTiming.NavigationToFirstContentfulPaint", 5);
-  test_ukm_recorder().ExpectEntryMetric(
+  tester()->test_ukm_recorder().ExpectEntryMetric(
       entry.get(), "SubFrame.PaintTiming.NavigationToLargestContentfulPaint",
       10);
 }
@@ -371,26 +382,26 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics_LayoutInstability) {
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
-  SimulateMetadataUpdate(metadata, subframe);
+  tester()->SimulateMetadataUpdate(metadata, subframe);
 
   page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 0.5);
-  SimulateRenderDataUpdate(render_data, subframe);
+  tester()->SimulateRenderDataUpdate(render_data, subframe);
 
   // Navigate the main frame to trigger metrics recording.
   NavigationSimulator::CreateRendererInitiated(
       GURL("https://ampviewer.com/other"), main_rfh())
       ->CommitSameDocument();
 
-  histogram_tester().ExpectUniqueSample(
+  tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.AMP.LayoutInstability.CumulativeShiftScore.Subframe",
       10, 1);
 
   ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
   ASSERT_NE(nullptr, entry.get());
-  test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
-  test_ukm_recorder().ExpectEntryMetric(
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
+  tester()->test_ukm_recorder().ExpectEntryMetric(
       entry.get(), "SubFrame.LayoutInstability.CumulativeShiftScore", 100);
-  test_ukm_recorder().ExpectEntryMetric(
+  tester()->test_ukm_recorder().ExpectEntryMetric(
       entry.get(),
       "SubFrame.LayoutInstability.CumulativeShiftScore.BeforeInputOrScroll",
       50);
@@ -411,7 +422,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetricsFullNavigation) {
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
-  SimulateMetadataUpdate(metadata, subframe);
+  tester()->SimulateMetadataUpdate(metadata, subframe);
 
   page_load_metrics::mojom::PageLoadTiming subframe_timing;
   page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
@@ -427,33 +438,33 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetricsFullNavigation) {
       base::TimeDelta::FromMilliseconds(3);
   PopulateRequiredTimingFields(&subframe_timing);
 
-  SimulateTimingUpdate(subframe_timing, subframe);
+  tester()->SimulateTimingUpdate(subframe_timing, subframe);
 
   // Navigate the main frame to trigger metrics recording.
   NavigationSimulator::CreateRendererInitiated(
       GURL("https://ampviewer.com/other"), main_rfh())
       ->CommitSameDocument();
 
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.PaintTiming.InputToFirstContentfulPaint.Subframe."
       "FullNavigation",
       1);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.PaintTiming.InputToLargestContentfulPaint.Subframe."
       "FullNavigation",
       1);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.InteractiveTiming.FirstInputDelay4.Subframe."
       "FullNavigation",
       1);
 
   ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
-  test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
-  test_ukm_recorder().ExpectEntryMetric(
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
+  tester()->test_ukm_recorder().ExpectEntryMetric(
       entry.get(), "SubFrame.InteractiveTiming.FirstInputDelay4", 3);
-  test_ukm_recorder().ExpectEntryMetric(
+  tester()->test_ukm_recorder().ExpectEntryMetric(
       entry.get(), "SubFrame.PaintTiming.NavigationToFirstContentfulPaint", 5);
-  test_ukm_recorder().ExpectEntryMetric(
+  tester()->test_ukm_recorder().ExpectEntryMetric(
       entry.get(), "SubFrame.PaintTiming.NavigationToLargestContentfulPaint",
       10);
 }
@@ -478,23 +489,24 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameRecordOnFullNavigation) {
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
-  SimulateMetadataUpdate(metadata, subframe);
+  tester()->SimulateMetadataUpdate(metadata, subframe);
 
   // Navigate the main frame to trigger metrics recording.
   NavigationSimulator::CreateRendererInitiated(GURL("https://www.example.com/"),
                                                main_rfh())
       ->Commit();
 
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
       1);
 
   // We expect a source with a negative NavigationDelta metric, since the main
   // frame navigation occurred before the AMP subframe navigation.
   ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
-  test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
-  const int64_t* nav_delta_metric = test_ukm_recorder().GetEntryMetric(
-      entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
+  const int64_t* nav_delta_metric =
+      tester()->test_ukm_recorder().GetEntryMetric(
+          entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
   EXPECT_NE(nullptr, nav_delta_metric);
   EXPECT_GE(*nav_delta_metric, 0ll);
 }
@@ -519,25 +531,26 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameRecordOnFrameDeleted) {
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
-  SimulateMetadataUpdate(metadata, subframe);
+  tester()->SimulateMetadataUpdate(metadata, subframe);
 
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
       0);
 
   // Delete the subframe, which should trigger metrics recording.
   content::RenderFrameHostTester::For(subframe)->Detach();
 
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
       1);
 
   // We expect a source with a negative NavigationDelta metric, since the main
   // frame navigation occurred before the AMP subframe navigation.
   ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
-  test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
-  const int64_t* nav_delta_metric = test_ukm_recorder().GetEntryMetric(
-      entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
+  const int64_t* nav_delta_metric =
+      tester()->test_ukm_recorder().GetEntryMetric(
+          entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
   EXPECT_NE(nullptr, nav_delta_metric);
   EXPECT_GE(*nav_delta_metric, 0ll);
 }
@@ -574,8 +587,8 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMultipleFrames) {
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
-  SimulateMetadataUpdate(metadata, subframe1);
-  SimulateMetadataUpdate(metadata, subframe2);
+  tester()->SimulateMetadataUpdate(metadata, subframe1);
+  tester()->SimulateMetadataUpdate(metadata, subframe2);
 
   // Navigate the main frame to trigger metrics recording - we expect metrics to
   // have been recorded for 1 AMP page (the non-prerendered page).
@@ -583,13 +596,13 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMultipleFrames) {
       GURL("https://ampviewer.com/other"), main_rfh())
       ->CommitSameDocument();
 
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
       0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
       1);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming."
       "MainFrameToSubFrameNavigationDelta.Subframe",
       0);
@@ -606,19 +619,19 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMultipleFrames) {
 
   // We now expect one NavigationToInput (for the prerender) and one
   // InputToNavigation (for the non-prerender).
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
       1);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
       1);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming."
       "MainFrameToSubFrameNavigationDelta.Subframe",
       0);
 
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> entries =
-      test_ukm_recorder().GetMergedEntriesByName(
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
           ukm::builders::AmpPageLoad::kEntryName);
   EXPECT_EQ(3ull, entries.size());
 
@@ -626,7 +639,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMultipleFrames) {
   const ukm::UkmSource* source2 = nullptr;
   for (const auto& kv : entries) {
     const ukm::UkmSource* candidate =
-        test_ukm_recorder().GetSourceForSourceId(kv.first);
+        tester()->test_ukm_recorder().GetSourceForSourceId(kv.first);
     ASSERT_NE(nullptr, candidate);
     if (candidate->url() == amp_url1) {
       source1 = candidate;
@@ -647,15 +660,17 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMultipleFrames) {
 
   // The entry for amp_url1 should have a negative NavigationDelta metric, since
   // the main frame navigation occurred before the AMP subframe navigation.
-  const int64_t* entry1_nav_delta_metric = test_ukm_recorder().GetEntryMetric(
-      entry1, "SubFrame.MainFrameToSubFrameNavigationDelta");
+  const int64_t* entry1_nav_delta_metric =
+      tester()->test_ukm_recorder().GetEntryMetric(
+          entry1, "SubFrame.MainFrameToSubFrameNavigationDelta");
   EXPECT_NE(nullptr, entry1_nav_delta_metric);
   EXPECT_GE(*entry1_nav_delta_metric, 0ll);
 
   // The entry for amp_url2 should have a positive NavigationDelta metric, since
   // the main frame navigation occurred after the AMP subframe navigation.
-  const int64_t* entry2_nav_delta_metric = test_ukm_recorder().GetEntryMetric(
-      entry2, "SubFrame.MainFrameToSubFrameNavigationDelta");
+  const int64_t* entry2_nav_delta_metric =
+      tester()->test_ukm_recorder().GetEntryMetric(
+          entry2, "SubFrame.MainFrameToSubFrameNavigationDelta");
   EXPECT_NE(nullptr, entry2_nav_delta_metric);
   EXPECT_LE(*entry2_nav_delta_metric, 0ll);
 }
@@ -677,20 +692,20 @@ TEST_F(AMPPageLoadMetricsObserverTest,
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
-  SimulateMetadataUpdate(metadata, subframe);
+  tester()->SimulateMetadataUpdate(metadata, subframe);
 
   // Navigate the main frame to trigger metrics recording.
   NavigationSimulator::CreateRendererInitiated(
       GURL("https://ampviewer.com/other"), main_rfh())
       ->CommitSameDocument();
 
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
       0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
       0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming."
       "MainFrameToSubFrameNavigationDelta.Subframe",
       1);
@@ -698,9 +713,10 @@ TEST_F(AMPPageLoadMetricsObserverTest,
   // We expect a source with a negative NavigationDelta metric, since the main
   // frame navigation occurred before the AMP subframe navigation.
   ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
-  test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
-  const int64_t* nav_delta_metric = test_ukm_recorder().GetEntryMetric(
-      entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
+  const int64_t* nav_delta_metric =
+      tester()->test_ukm_recorder().GetEntryMetric(
+          entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
   EXPECT_NE(nullptr, nav_delta_metric);
   EXPECT_GE(*nav_delta_metric, 0ll);
 }
@@ -725,18 +741,19 @@ TEST_F(AMPPageLoadMetricsObserverTest, NoSubFrameMetricsForNonAmpSubFrame) {
       GURL("https://ampviewer.com/other"), main_rfh())
       ->CommitSameDocument();
 
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
       0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
       0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming."
       "MainFrameToSubFrameNavigationDelta.Subframe",
       0);
 
-  EXPECT_TRUE(test_ukm_recorder()
+  EXPECT_TRUE(tester()
+                  ->test_ukm_recorder()
                   .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
                   .empty());
 }
@@ -760,20 +777,20 @@ TEST_F(AMPPageLoadMetricsObserverTest,
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
-  SimulateMetadataUpdate(metadata, subframe);
+  tester()->SimulateMetadataUpdate(metadata, subframe);
 
   // Navigate the main frame to trigger metrics recording.
   NavigationSimulator::CreateRendererInitiated(
       GURL("https://ampviewer.com/other"), main_rfh())
       ->CommitSameDocument();
 
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
       0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
       0);
-  histogram_tester().ExpectTotalCount(
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.Experimental.PageTiming."
       "MainFrameToSubFrameNavigationDelta.Subframe",
       0);

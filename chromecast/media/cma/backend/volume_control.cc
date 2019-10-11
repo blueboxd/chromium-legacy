@@ -28,6 +28,7 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chromecast/base/serializers.h"
+#include "chromecast/media/audio/mixer_service/control_connection.h"
 #include "chromecast/media/cma/backend/audio_buildflags.h"
 #include "chromecast/media/cma/backend/cast_audio_json.h"
 #include "chromecast/media/cma/backend/mixer/stream_mixer.h"
@@ -219,6 +220,8 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
   void InitializeOnThread() {
     DCHECK(thread_.task_runner()->BelongsToCurrentThread());
     system_volume_control_ = SystemVolumeControl::Create(this);
+    mixer_ = std::make_unique<mixer_service::ControlConnection>();
+    mixer_->Connect();
 
     double dbfs;
     for (auto type : {AudioContentType::kMedia, AudioContentType::kAlarm,
@@ -229,9 +232,9 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
       if (BUILDFLAG(SYSTEM_OWNS_VOLUME)) {
         // If ALSA owns volume, our internal mixer should not apply any scaling
         // multiplier.
-        StreamMixer::Get()->SetVolume(type, 1.0f);
+        mixer_->SetVolume(type, 1.0f);
       } else {
-        StreamMixer::Get()->SetVolume(type, DbFsToScale(dbfs));
+        mixer_->SetVolume(type, DbFsToScale(dbfs));
       }
 
       // Note that mute state is not persisted across reboots.
@@ -279,8 +282,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
 
     float dbfs = VolumeControl::VolumeToDbFS(level);
     if (!BUILDFLAG(SYSTEM_OWNS_VOLUME)) {
-      StreamMixer::Get()->SetVolume(
-          type, DbFsToScale(dbfs) * volume_multipliers_[type]);
+      mixer_->SetVolume(type, DbFsToScale(dbfs) * volume_multipliers_[type]);
     }
 
     if (!from_system && type == AudioContentType::kMedia) {
@@ -306,7 +308,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     volume_multipliers_[type] = multiplier;
     float scale =
         DbFsToScale(VolumeControl::VolumeToDbFS(volumes_[type])) * multiplier;
-    StreamMixer::Get()->SetVolume(type, scale);
+    mixer_->SetVolume(type, scale);
   }
 
   void SetMutedOnThread(VolumeChangeSource source,
@@ -325,7 +327,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     }
 
     if (!BUILDFLAG(SYSTEM_OWNS_VOLUME)) {
-      StreamMixer::Get()->SetMuted(type, muted);
+      mixer_->SetMuted(type, muted);
     }
 
     if (!from_system && type == AudioContentType::kMedia) {
@@ -350,8 +352,8 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
       return;
     }
     limit = base::ClampToRange(limit, 0.0f, 1.0f);
-    StreamMixer::Get()->SetOutputLimit(
-        type, DbFsToScale(VolumeControl::VolumeToDbFS(limit)));
+    mixer_->SetVolumeLimit(type,
+                           DbFsToScale(VolumeControl::VolumeToDbFS(limit)));
 
     if (type == AudioContentType::kMedia) {
       system_volume_control_->SetLimit(limit);
@@ -389,6 +391,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
   base::WaitableEvent initialize_complete_event_;
 
   std::unique_ptr<SystemVolumeControl> system_volume_control_;
+  std::unique_ptr<mixer_service::ControlConnection> mixer_;
 
   DISALLOW_COPY_AND_ASSIGN(VolumeControlInternal);
 };
@@ -402,6 +405,7 @@ VolumeControlInternal& GetVolumeControl() {
 
 // static
 void VolumeControl::Initialize(const std::vector<std::string>& argv) {
+  StreamMixer::Get();
   GetVolumeControl();
 }
 

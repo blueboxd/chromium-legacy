@@ -1857,7 +1857,7 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
 }
 
 void RenderThreadImpl::RequestNewLayerTreeFrameSink(
-    int widget_routing_id,
+    RenderWidget* render_widget,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     const GURL& url,
     LayerTreeFrameSinkCallback callback,
@@ -1914,10 +1914,10 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   if (is_gpu_compositing_disabled_) {
     DCHECK(!web_test_mode());
     frame_sink_provider_->CreateForWidget(
-        widget_routing_id, std::move(compositor_frame_sink_receiver),
+        render_widget->routing_id(), std::move(compositor_frame_sink_receiver),
         std::move(compositor_frame_sink_client));
     frame_sink_provider_->RegisterRenderFrameMetadataObserver(
-        widget_routing_id,
+        render_widget->routing_id(),
         std::move(render_frame_metadata_observer_client_receiver),
         std::move(render_frame_metadata_observer_remote));
     std::move(callback).Run(
@@ -1976,34 +1976,29 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
 #if defined(OS_ANDROID)
   if (GetContentClient()->UsingSynchronousCompositing()) {
-    RenderWidget* widget = RenderWidget::FromRoutingID(widget_routing_id);
-    if (widget) {
-      // TODO(ericrk): Collapse with non-webview registration below.
-      frame_sink_provider_->RegisterRenderFrameMetadataObserver(
-          widget_routing_id,
-          std::move(render_frame_metadata_observer_client_receiver),
-          std::move(render_frame_metadata_observer_remote));
+    // TODO(ericrk): Collapse with non-webview registration below.
+    frame_sink_provider_->RegisterRenderFrameMetadataObserver(
+        render_widget->routing_id(),
+        std::move(render_frame_metadata_observer_client_receiver),
+        std::move(render_frame_metadata_observer_remote));
 
-      std::move(callback).Run(std::make_unique<SynchronousLayerTreeFrameSink>(
-          std::move(context_provider), std::move(worker_context_provider),
-          compositor_task_runner_, GetGpuMemoryBufferManager(),
-          sync_message_filter(), widget_routing_id,
-          g_next_layer_tree_frame_sink_id++,
-          std::move(params.synthetic_begin_frame_source),
-          widget->widget_input_handler_manager()
-              ->GetSynchronousCompositorRegistry(),
-          std::move(frame_swap_message_queue)));
-      return;
-    } else {
-      NOTREACHED();
-    }
+    std::move(callback).Run(std::make_unique<SynchronousLayerTreeFrameSink>(
+        std::move(context_provider), std::move(worker_context_provider),
+        compositor_task_runner_, GetGpuMemoryBufferManager(),
+        sync_message_filter(), render_widget->routing_id(),
+        g_next_layer_tree_frame_sink_id++,
+        std::move(params.synthetic_begin_frame_source),
+        render_widget->widget_input_handler_manager()
+            ->GetSynchronousCompositorRegistry(),
+        std::move(frame_swap_message_queue)));
+    return;
   }
 #endif
   frame_sink_provider_->CreateForWidget(
-      widget_routing_id, std::move(compositor_frame_sink_receiver),
+      render_widget->routing_id(), std::move(compositor_frame_sink_receiver),
       std::move(compositor_frame_sink_client));
   frame_sink_provider_->RegisterRenderFrameMetadataObserver(
-      widget_routing_id,
+      render_widget->routing_id(),
       std::move(render_frame_metadata_observer_client_receiver),
       std::move(render_frame_metadata_observer_remote));
   params.gpu_memory_buffer_manager = GetGpuMemoryBufferManager();

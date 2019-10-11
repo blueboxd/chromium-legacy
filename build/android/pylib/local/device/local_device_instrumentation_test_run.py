@@ -603,13 +603,12 @@ class LocalDeviceInstrumentationTestRun(
       def handle_coverage_data():
         if self._test_instance.coverage_directory:
           try:
+            if not os.path.exists(self._test_instance.coverage_directory):
+              os.makedirs(self._test_instance.coverage_directory)
             device.PullFile(coverage_device_file,
                             self._test_instance.coverage_directory)
-            device.RunShellCommand(
-                'rm -f %s' % posixpath.join(coverage_directory, '*'),
-                check_return=True,
-                shell=True)
-          except base_error.BaseError as e:
+            device.RemovePath(coverage_device_file, True)
+          except (OSError, base_error.BaseError) as e:
             logging.warning('Failed to handle coverage data after tests: %s', e)
 
       def handle_render_test_data():

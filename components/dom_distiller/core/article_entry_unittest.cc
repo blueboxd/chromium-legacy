@@ -4,15 +4,7 @@
 
 #include "components/dom_distiller/core/article_entry.h"
 
-#include "components/sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using sync_pb::ArticlePage;
-using sync_pb::ArticleSpecifics;
-using sync_pb::EntitySpecifics;
-using testing::AssertionFailure;
-using testing::AssertionResult;
-using testing::AssertionSuccess;
 
 namespace dom_distiller {
 

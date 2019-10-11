@@ -86,7 +86,6 @@ bool OpenXrDevice::IsApiAvailable() {
 
 OpenXrDevice::OpenXrDevice()
     : VRDeviceBase(device::mojom::XRDeviceId::OPENXR_DEVICE_ID),
-      compositor_host_binding_(this),
       weak_ptr_factory_(this) {
   SetVRDisplayInfo(CreateFakeVRDisplayInfo(GetId()));
 }
@@ -105,10 +104,9 @@ OpenXrDevice::BindGamepadFactory() {
   return gamepad_provider_factory_receiver_.BindNewPipeAndPassRemote();
 }
 
-mojom::XRCompositorHostPtr OpenXrDevice::BindCompositorHost() {
-  mojom::XRCompositorHostPtr ret;
-  compositor_host_binding_.Bind(mojo::MakeRequest(&ret));
-  return ret;
+mojo::PendingRemote<mojom::XRCompositorHost>
+OpenXrDevice::BindCompositorHost() {
+  return compositor_host_receiver_.BindNewPipeAndPassRemote();
 }
 
 void OpenXrDevice::EnsureRenderLoop() {

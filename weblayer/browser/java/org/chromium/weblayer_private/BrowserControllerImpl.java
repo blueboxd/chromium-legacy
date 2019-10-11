@@ -130,8 +130,8 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     public void destroy() {
         BrowserControllerImplJni.get().setTopControlsContainerView(
                 mNativeBrowserController, BrowserControllerImpl.this, 0);
-        mContentViewRenderView.destroy();
         mTopControlsContainerView.destroy();
+        mContentViewRenderView.destroy();
         if (mBrowserObserverProxy != null) mBrowserObserverProxy.destroy();
         mBrowserObserverProxy = null;
         mNavigationController = null;

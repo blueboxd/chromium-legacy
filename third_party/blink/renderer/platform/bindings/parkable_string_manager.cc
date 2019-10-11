@@ -25,6 +25,12 @@
 
 namespace blink {
 
+// Disabling this will cause parkable strings to never be compressed.
+// This is useful for headless mode + virtual time. Since virtual time advances
+// quickly, strings may be parked too eagerly in that mode.
+const base::Feature kCompressParkableStrings{"CompressParkableStrings",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 struct ParkableStringManager::Statistics {
   size_t original_size;
   size_t uncompressed_size;
@@ -38,11 +44,18 @@ struct ParkableStringManager::Statistics {
 
 namespace {
 
+bool CompressionEnabled() {
+  return base::FeatureList::IsEnabled(kCompressParkableStrings);
+}
+
 class OnPurgeMemoryListener : public GarbageCollected<OnPurgeMemoryListener>,
                               public MemoryPressureListener {
   USING_GARBAGE_COLLECTED_MIXIN(OnPurgeMemoryListener);
 
   void OnPurgeMemory() override {
+    if (!CompressionEnabled()) {
+      return;
+    }
     ParkableStringManager::Instance().PurgeMemory();
   }
 };
@@ -147,7 +160,8 @@ bool ParkableStringManager::ShouldPark(const StringImpl& string) {
   // Don't attempt to park strings smaller than this size.
   static constexpr unsigned int kSizeThreshold = 10000;
   // TODO(lizeb): Consider parking non-main thread strings.
-  return string.length() > kSizeThreshold && IsMainThread();
+  return string.length() > kSizeThreshold && IsMainThread() &&
+         CompressionEnabled();
 }
 
 scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
@@ -254,6 +268,7 @@ void ParkableStringManager::RecordUnparkingTime(
 
 void ParkableStringManager::ParkAll(ParkableStringImpl::ParkingMode mode) {
   DCHECK(IsMainThread());
+  DCHECK(CompressionEnabled());
 
   size_t total_size = 0;
   for (ParkableStringImpl* str : parked_strings_)
@@ -305,6 +320,8 @@ void ParkableStringManager::RecordStatisticsAfter5Minutes() const {
 }
 
 void ParkableStringManager::AgeStringsAndPark() {
+  DCHECK(CompressionEnabled());
+
   TRACE_EVENT0("blink", "ParkableStringManager::AgeStringsAndPark");
   has_pending_aging_task_ = false;
 
@@ -331,6 +348,9 @@ void ParkableStringManager::AgeStringsAndPark() {
 }
 
 void ParkableStringManager::ScheduleAgingTaskIfNeeded() {
+  if (!CompressionEnabled())
+    return;
+
   if (has_pending_aging_task_)
     return;
 
@@ -346,6 +366,7 @@ void ParkableStringManager::ScheduleAgingTaskIfNeeded() {
 
 void ParkableStringManager::PurgeMemory() {
   DCHECK(IsMainThread());
+  DCHECK(CompressionEnabled());
 
   ParkAll(ParkableStringImpl::ParkingMode::kAlways);
   // Critical memory pressure: drop compressed data for strings that we cannot

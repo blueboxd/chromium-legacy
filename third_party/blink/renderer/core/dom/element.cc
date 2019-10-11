@@ -2352,7 +2352,8 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
       GetElementData()->presentation_attribute_style_is_dirty_ = true;
       SetNeedsStyleRecalc(kLocalStyleChange,
                           StyleChangeReasonForTracing::FromAttribute(name));
-    } else if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
+    } else if (RuntimeEnabledFeatures::DisplayLockingEnabled(
+                   GetExecutionContext()) &&
                name == html_names::kRendersubtreeAttr &&
                params.old_value != params.new_value) {
       UseCounter::Count(GetDocument(), WebFeature::kRenderSubtreeAttribute);
@@ -4198,7 +4199,7 @@ bool Element::IsAutofocusable() const {
 }
 
 bool Element::ActivateDisplayLockIfNeeded() {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(GetExecutionContext()) ||
       GetDocument().LockedDisplayLockCount() ==
           GetDocument().ActivationBlockingDisplayLockCount())
     return false;
@@ -4233,7 +4234,7 @@ bool Element::ActivateDisplayLockIfNeeded() {
 }
 
 bool Element::DisplayLockPreventsActivation() const {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(GetExecutionContext()))
     return false;
 
   if (GetDocument().ActivationBlockingDisplayLockCount() == 0)
@@ -4612,7 +4613,7 @@ void Element::SetNeedsResizeObserverUpdate() {
 }
 
 DisplayLockContext* Element::GetDisplayLockContext() const {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(GetExecutionContext()))
     return nullptr;
   return HasRareData() ? GetElementRareData()->GetDisplayLockContext()
                        : nullptr;

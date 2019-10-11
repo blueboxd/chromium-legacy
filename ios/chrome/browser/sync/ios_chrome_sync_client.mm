@@ -190,6 +190,12 @@ IOSChromeSyncClient::GetInvalidationService() {
   return nullptr;
 }
 
+syncer::TrustedVaultClient* IOSChromeSyncClient::GetTrustedVaultClient() {
+  // TODO(crbug.com/1012660): Instantiate a generic client for ios.
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 scoped_refptr<syncer::ExtensionsActivity>
 IOSChromeSyncClient::GetExtensionsActivity() {
   return nullptr;

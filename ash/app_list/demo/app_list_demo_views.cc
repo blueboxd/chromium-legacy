@@ -28,7 +28,7 @@ const int kInitialItems = 20;
 // window is closed, and to close the window if it is simply dismissed.
 class DemoAppListViewDelegate : public test::AppListTestViewDelegate {
  public:
-  DemoAppListViewDelegate() : view_(NULL) {}
+  DemoAppListViewDelegate() : view_(nullptr) {}
   ~DemoAppListViewDelegate() override {}
 
   AppListView* InitView(gfx::NativeWindow window_context);

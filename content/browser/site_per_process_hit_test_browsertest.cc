@@ -6502,6 +6502,18 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   }
 }
 
+class SitePerProcessHitTestBrowserTestWithBrowserVerifiedUserActivation
+    : public SitePerProcessHitTestBrowserTest {
+ public:
+  SitePerProcessHitTestBrowserTestWithBrowserVerifiedUserActivation() {
+    feature_list_.InitAndEnableFeature(
+        features::kBrowserVerifiedUserActivation);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 #if defined(OS_LINUX)
 // Test is flaky. See https://crbug.com/995285
 #define MAYBE_RenderWidgetUserActivationStateTest \
@@ -6510,12 +6522,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 #define MAYBE_RenderWidgetUserActivationStateTest \
   RenderWidgetUserActivationStateTest
 #endif
-IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       MAYBE_RenderWidgetUserActivationStateTest) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kBrowserVerifiedUserActivation);
-
+IN_PROC_BROWSER_TEST_P(
+    SitePerProcessHitTestBrowserTestWithBrowserVerifiedUserActivation,
+    MAYBE_RenderWidgetUserActivationStateTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "foo.com", "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

@@ -137,7 +137,7 @@ public class VariationsSeedHolderTest {
             throws IOException, TimeoutException, ParseException {
         try {
             SeedInfo mockSeed = VariationsTestUtils.createMockSeed();
-            long mockDateMinusOneDay = mockSeed.parseDate().getTime() - TimeUnit.DAYS.toMillis(1);
+            long mockDateMinusOneDay = mockSeed.date - TimeUnit.DAYS.toMillis(1);
             TestHolder holder = new TestHolder();
             holder.updateSeedBlocking(mockSeed);
             File file = null;
@@ -162,13 +162,12 @@ public class VariationsSeedHolderTest {
             throws IOException, TimeoutException, ParseException {
         try {
             SeedInfo mockSeed = VariationsTestUtils.createMockSeed();
-            long mockDate = mockSeed.parseDate().getTime();
             TestHolder holder = new TestHolder();
             holder.updateSeedBlocking(mockSeed);
             File file = null;
             try {
                 file = File.createTempFile("seed", null, null);
-                holder.writeSeedIfNewerBlocking(file, mockDate);
+                holder.writeSeedIfNewerBlocking(file, mockSeed.date);
                 Assert.assertEquals(0L, file.length());
             } finally {
                 if (file != null) file.delete();

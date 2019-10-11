@@ -73,6 +73,34 @@
       },
     },
 
+    'android_instrumentation_tests': {
+      'chrome_public_test_apk': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'chrome_public_test_vr_apk': {
+        'args': [
+          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
+          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+      },
+      'content_shell_test_apk': {
+        'swarming': {
+          'shards': 3,
+        },
+      },
+      'mojo_test_apk': {},
+      'webview_instrumentation_test_apk': {
+        'swarming': {
+          'shards': 7,
+        },
+      },
+    },
+
     'android_isolated_scripts': {
       'content_shell_crash_test': {
         'args': [
@@ -1140,6 +1168,11 @@
         },
       },
       'javascript_parser_proto_fuzzer': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'json_web_key_fuzzer': {
         'swarming': {
           'can_use_on_swarming_builders': False,
         },
@@ -3590,22 +3623,6 @@
         ],
         'test': 'gles2_conform_test',
       },
-      'video_decode_accelerator_d3d9_unittest': {
-        'args': [
-          '--use-angle=d3d9',
-          '--use-test-data-path',
-          '--test_video_data=test-25fps.h264:320:240:250:258:::1',
-        ],
-        'test': 'video_decode_accelerator_unittest',
-      },
-      'video_decode_accelerator_gl_unittest': {
-        'args': [
-          '--use-angle=gl',
-          '--use-test-data-path',
-          '--test_video_data=test-25fps.h264:320:240:250:258:::1',
-        ],
-        'test': 'video_decode_accelerator_unittest',
-      },
     },
 
     'gpu_fyi_mac_specific_gtests': {
@@ -4148,14 +4165,6 @@
           '--use-cmd-decoder=passthrough',
         ],
       },
-      'video_decode_accelerator_d3d11_unittest': {
-        'args': [
-          '--use-angle=d3d11',
-          '--use-test-data-path',
-          '--test_video_data=test-25fps.h264:320:240:250:258:::1',
-        ],
-        'test': 'video_decode_accelerator_unittest',
-      },
     },
 
     'ios_code_coverage_gtests': {
@@ -4559,6 +4568,13 @@
         ],
         'test': 'services_unittests'
       }
+    },
+
+    'opus_roll_validation_tests': {
+      'opus_decoder_unittests': {
+        # Ad-hoc binary which returns 0 on success.
+       'test': 'audio_decoder_unittests',
+      },
     },
 
     'ozone_linux_gtests': {
@@ -5655,6 +5671,7 @@
       'gpu_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
+      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
     ],
 

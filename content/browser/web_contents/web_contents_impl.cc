@@ -134,6 +134,7 @@
 #include "content/public/common/referrer_type_converters.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_utils.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/common/web_preferences.h"
 #include "media/base/user_input_monitor.h"
 #include "net/base/url_util.h"
@@ -1668,8 +1669,25 @@ void WebContentsImpl::NotifyNavigationStateChanged(
 
 void WebContentsImpl::NotifyVisibleViewportSizeChanged(
     const gfx::Size& visible_viewport_size) {
+  // This viewport size is in screen coordinates, but will be handed to blink
+  // which expects coordinates including the device scale factor when
+  // UseZoomForDSF is enabled.
+  // TODO(danakj): This scaling should be done in the renderer where emulation
+  // may override the device scale factor.
+  gfx::Size visible_viewport_size_for_blink = visible_viewport_size;
+  if (IsUseZoomForDSFEnabled()) {
+    ScreenInfo info;
+    GetMainFrame()->GetRenderWidgetHost()->GetScreenInfo(&info);
+
+    visible_viewport_size_for_blink =
+        gfx::ScaleToCeiledSize(visible_viewport_size, info.device_scale_factor);
+  }
+
+  // TODO(danakj): This should be part of VisualProperties and walk down the
+  // RenderWidget tree like other VisualProperties do, in order to set the
+  // value in each WebView holds a part of the local frame tree.
   SendPageMessage(new PageMsg_UpdatePageVisualProperties(
-      MSG_ROUTING_NONE, visible_viewport_size));
+      MSG_ROUTING_NONE, visible_viewport_size_for_blink));
 }
 
 RenderFrameHostImpl* WebContentsImpl::GetFocusedFrameFromFocusedDelegate() {

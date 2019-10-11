@@ -64,7 +64,12 @@ class ThumbnailImage : public base::RefCounted<ThumbnailImage> {
   // Requests that a thumbnail image be made available to observers. Does not
   // guarantee that Observer::OnThumbnailImageAvailable() will be called, or how
   // long it will take, though in most cases it should happen very quickly.
-  virtual void RequestThumbnailImage();
+  void RequestThumbnailImage();
+
+  // Similar to RequestThumbnailImage() but requests only the compressed JPEG
+  // data. Users should listen for a call to
+  // Observer::OnCompressedThumbnailDataAvailable().
+  void RequestCompressedThumbnailData();
 
   void set_async_operation_finished_callback_for_testing(
       base::RepeatingClosure callback) {

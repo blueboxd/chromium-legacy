@@ -34,7 +34,6 @@ import org.chromium.net.test.util.TestWebServer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * The tests for content postMessage API.
@@ -70,7 +69,7 @@ public class PostMessageTest {
         }
 
         public Data waitForMessage() throws Exception {
-            return waitForNextQueueElement(mQueue);
+            return AwActivityTestRule.waitForNextQueueElement(mQueue);
         }
     }
 
@@ -106,21 +105,12 @@ public class PostMessageTest {
         }
 
         public Data waitForMessageCallback() throws Exception {
-            return waitForNextQueueElement(mQueue);
+            return AwActivityTestRule.waitForNextQueueElement(mQueue);
         }
 
         public boolean isQueueEmpty() {
             return mQueue.isEmpty();
         }
-    }
-
-    private static <T> T waitForNextQueueElement(LinkedBlockingQueue<T> queue) throws Exception {
-        T value = queue.poll(TIMEOUT, TimeUnit.MILLISECONDS);
-        if (value == null) {
-            throw new TimeoutException(
-                    "Timeout while trying to take next entry from BlockingQueue");
-        }
-        return value;
     }
 
     private MessageObject mMessageObject;
@@ -260,7 +250,7 @@ public class PostMessageTest {
             }
             Assert.fail();
         });
-        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+        boolean ignore = latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
     // There are two cases that put a port in a started state.
@@ -286,7 +276,7 @@ public class PostMessageTest {
             }
             Assert.fail();
         });
-        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+        boolean ignore = latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
     // see documentation in testStartedPortCannotBeTransferredUsingPostMessageToMainFrame1
@@ -310,7 +300,7 @@ public class PostMessageTest {
             }
             Assert.fail();
         });
-        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+        boolean ignore = latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
     // see documentation in testStartedPortCannotBeTransferredUsingPostMessageToMainFrame1
@@ -333,7 +323,7 @@ public class PostMessageTest {
             }
             Assert.fail();
         });
-        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+        boolean ignore = latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
     // see documentation in testStartedPortCannotBeTransferredUsingPostMessageToMainFrame1
@@ -357,7 +347,7 @@ public class PostMessageTest {
             }
             Assert.fail();
         });
-        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+        boolean ignore = latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
 
@@ -384,7 +374,7 @@ public class PostMessageTest {
             }
             Assert.fail();
         });
-        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+        boolean ignore = latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
     // Verify a closed port cannot be transferred to a frame.
@@ -406,7 +396,7 @@ public class PostMessageTest {
             }
             Assert.fail();
         });
-        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+        boolean ignore = latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
     // Verify a closed port cannot be transferred to a port.
@@ -428,7 +418,7 @@ public class PostMessageTest {
             }
             Assert.fail();
         });
-        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+        boolean ignore = latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
     // Verify messages cannot be posted to closed ports.
@@ -449,7 +439,7 @@ public class PostMessageTest {
             }
             Assert.fail();
         });
-        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+        boolean ignore = latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
     // Verify messages posted before closing a port is received at the destination port.
@@ -488,7 +478,7 @@ public class PostMessageTest {
             }
             Assert.fail();
         });
-        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+        boolean ignore = latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
     // Verify a transferred port using postMessageToMainFrame cannot be closed.
@@ -512,7 +502,7 @@ public class PostMessageTest {
             }
             Assert.fail();
         });
-        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+        boolean ignore = latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
     // Create two message channels, and while they are in pending state, transfer the

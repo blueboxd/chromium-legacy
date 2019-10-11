@@ -46,7 +46,8 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   virtual void DidDraw(const FloatRect& rect) = 0;
   virtual void DidDraw() = 0;
 
-  virtual void FinalizeFrame() = 0;
+  virtual void PreFinalizeFrame() = 0;
+  virtual void PostFinalizeFrame() = 0;
   virtual bool PushFrame(scoped_refptr<CanvasResource> frame,
                          const SkIRect& damage_rect) = 0;
   virtual bool OriginClean() const = 0;
@@ -96,7 +97,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   CanvasColorParams ColorParams() const;
 
   // For deferred canvases this will have the side effect of drawing recorded
-  // commands in order to finalize the frame
+  // commands in order to finalize the frame.
   ScriptPromise convertToBlob(ScriptState*,
                               const ImageEncodeOptions*,
                               ExceptionState&);

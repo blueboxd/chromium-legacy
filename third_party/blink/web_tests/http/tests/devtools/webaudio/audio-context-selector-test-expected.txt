@@ -62,7 +62,6 @@ Selected Context: {
 
 Running: testOnListItemReplacedCalled
 _onListItemReplaced called with contexts (items) count: 1
-_onListItemReplaced called with contexts (items) count: 0
 _onListItemReplaced called with contexts (items) count: 1
 
 Number of contexts (items): 1

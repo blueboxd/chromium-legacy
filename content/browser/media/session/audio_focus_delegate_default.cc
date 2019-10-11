@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
@@ -60,14 +61,14 @@ class AudioFocusDelegateDefault : public AudioFocusDelegate {
   // Finishes an async audio focus request.
   void FinishAudioFocusRequest(AudioFocusType type, bool success);
 
-  // Ensures that |audio_focus_ptr_| is connected.
+  // Ensures that |audio_focus_| is connected.
   void EnsureServiceConnection();
 
   // Holds the latest MediaSessionInfo for |media_session_|.
   media_session::mojom::MediaSessionInfoPtr session_info_;
 
-  // Holds a pointer to the Media Session service.
-  media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
+  // Holds a remote to the Media Session service.
+  mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus_;
 
   // If the media session has acquired audio focus then this will contain a
   // pointer to that requests AudioFocusRequestClient.
@@ -118,7 +119,7 @@ AudioFocusDelegateDefault::RequestAudioFocus(AudioFocusType audio_focus_type) {
     mojo::PendingRemote<media_session::mojom::MediaSession> media_session =
         media_session_->AddRemote();
 
-    audio_focus_ptr_->RequestGroupedAudioFocus(
+    audio_focus_->RequestGroupedAudioFocus(
         request_id_, request_client_remote_.BindNewPipeAndPassReceiver(),
         std::move(media_session), session_info_.Clone(), audio_focus_type,
         GetAudioFocusGroupId(media_session_),
@@ -140,7 +141,7 @@ void AudioFocusDelegateDefault::AbandonAudioFocus() {
 
   request_client_remote_->AbandonAudioFocus();
   request_client_remote_.reset();
-  audio_focus_ptr_.reset();
+  audio_focus_.reset();
 }
 
 base::Optional<media_session::mojom::AudioFocusType>
@@ -176,19 +177,18 @@ void AudioFocusDelegateDefault::EnsureServiceConnection() {
     return;
   }
 
-  if (audio_focus_ptr_.is_bound() && !audio_focus_ptr_.encountered_error())
+  if (audio_focus_.is_bound() && audio_focus_.is_connected())
     return;
 
-  audio_focus_ptr_.reset();
+  audio_focus_.reset();
 
-  // Connect to the Media Session service and bind |audio_focus_ptr_| to it.
-  GetSystemConnector()->BindInterface(media_session::mojom::kServiceName,
-                                      mojo::MakeRequest(&audio_focus_ptr_));
+  // Connect to the Media Session service and bind |audio_focus_| to it.
+  GetSystemConnector()->Connect(media_session::mojom::kServiceName,
+                                audio_focus_.BindNewPipeAndPassReceiver());
 
   // We associate all media sessions with the browser context so we can filter
   // by browser context in the UI.
-  audio_focus_ptr_->SetSource(media_session_->GetSourceId(),
-                              kAudioFocusSourceName);
+  audio_focus_->SetSource(media_session_->GetSourceId(), kAudioFocusSourceName);
 }
 
 // static

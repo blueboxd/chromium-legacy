@@ -975,6 +975,7 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
 
   Tab* tab = new Tab(this);
   tab->set_context_menu_controller(&context_menu_controller_);
+  tab->AddObserver(this);
   AddChildViewAt(tab, view_index);
   const bool pinned = data.pinned;
   tabs_.Add(tab, model_index);
@@ -1386,6 +1387,14 @@ void TabStrip::StopAnimating(bool layout) {
 
   if (layout)
     CompleteAnimationAndLayout();
+}
+
+base::Optional<int> TabStrip::GetFocusedTabIndex() const {
+  for (int i = 0; i < tabs_.view_size(); ++i) {
+    if (tabs_.view_at(i)->HasFocus())
+      return i;
+  }
+  return base::nullopt;
 }
 
 const ui::ListSelectionModel& TabStrip::GetSelectionModel() const {
@@ -3209,6 +3218,13 @@ void TabStrip::OnViewIsDeleting(views::View* observed_view) {
 void TabStrip::OnViewFocused(views::View* observed_view) {
   if (observed_view == new_tab_button_)
     UpdateHoverCard(nullptr);
+  int index = tabs_.GetIndexOfView(observed_view);
+  if (index != -1)
+    controller_->OnKeyboardFocusedTabChanged(index);
+}
+
+void TabStrip::OnViewBlurred(views::View* observed_view) {
+  controller_->OnKeyboardFocusedTabChanged(base::nullopt);
 }
 
 void TabStrip::OnTouchUiChanged() {

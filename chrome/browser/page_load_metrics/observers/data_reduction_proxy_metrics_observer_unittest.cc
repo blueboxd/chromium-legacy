@@ -108,18 +108,18 @@ class DataReductionProxyMetricsObserverTest
   void ValidateHistogramsForSuffix(
       const std::string& histogram_suffix,
       const base::Optional<base::TimeDelta>& event) {
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         std::string(internal::kHistogramDataReductionProxyPrefix)
             .append(histogram_suffix),
         data_reduction_proxy_used() || cached_data_reduction_proxy_used() ? 1
                                                                           : 0);
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         std::string(internal::kHistogramDataReductionProxyLitePagePrefix)
             .append(histogram_suffix),
         is_using_lite_page() ? 1 : 0);
     if (!(data_reduction_proxy_used() || cached_data_reduction_proxy_used()))
       return;
-    histogram_tester().ExpectUniqueSample(
+    tester()->histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
             .append(histogram_suffix),
         static_cast<base::HistogramBase::Sample>(
@@ -127,7 +127,7 @@ class DataReductionProxyMetricsObserverTest
         1);
     if (!is_using_lite_page())
       return;
-    histogram_tester().ExpectUniqueSample(
+    tester()->histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyLitePagePrefix)
             .append(histogram_suffix),
         event.value().InMilliseconds(), is_using_lite_page() ? 1 : 0);
@@ -138,67 +138,67 @@ class DataReductionProxyMetricsObserverTest
                               int64_t network_bytes,
                               int64_t drp_bytes,
                               int64_t ocl_bytes) {
-    histogram_tester().ExpectUniqueSample(
+    tester()->histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
             .append(internal::kResourcesPercentProxied),
         100 * drp_resources / network_resources, 1);
 
-    histogram_tester().ExpectUniqueSample(
+    tester()->histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
             .append(internal::kBytesPercentProxied),
         static_cast<int>(100 * drp_bytes / network_bytes), 1);
 
-    histogram_tester().ExpectUniqueSample(
+    tester()->histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
             .append(internal::kNetworkResources),
         network_resources, 1);
 
-    histogram_tester().ExpectUniqueSample(
+    tester()->histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
             .append(internal::kResourcesProxied),
         drp_resources, 1);
 
-    histogram_tester().ExpectUniqueSample(
+    tester()->histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
             .append(internal::kResourcesNotProxied),
         network_resources - drp_resources, 1);
 
-    histogram_tester().ExpectUniqueSample(
+    tester()->histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
             .append(internal::kNetworkBytes),
         static_cast<int>(network_bytes / 1024), 1);
 
-    histogram_tester().ExpectUniqueSample(
+    tester()->histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
             .append(internal::kBytesProxied),
         static_cast<int>(drp_bytes / 1024), 1);
 
-    histogram_tester().ExpectUniqueSample(
+    tester()->histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
             .append(internal::kBytesNotProxied),
         static_cast<int>((network_bytes - drp_bytes) / 1024), 1);
 
-    histogram_tester().ExpectUniqueSample(
+    tester()->histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
             .append(internal::kBytesOriginal),
         static_cast<int>(ocl_bytes / 1024), 1);
     if (ocl_bytes < network_bytes) {
-      histogram_tester().ExpectUniqueSample(
+      tester()->histogram_tester().ExpectUniqueSample(
           std::string(internal::kHistogramDataReductionProxyPrefix)
               .append(internal::kBytesInflationPercent),
           static_cast<int>(100 * network_bytes / ocl_bytes - 100), 1);
 
-      histogram_tester().ExpectUniqueSample(
+      tester()->histogram_tester().ExpectUniqueSample(
           std::string(internal::kHistogramDataReductionProxyPrefix)
               .append(internal::kBytesInflation),
           static_cast<int>((network_bytes - ocl_bytes) / 1024), 1);
     } else {
-      histogram_tester().ExpectUniqueSample(
+      tester()->histogram_tester().ExpectUniqueSample(
           std::string(internal::kHistogramDataReductionProxyPrefix)
               .append(internal::kBytesCompressionRatio),
           static_cast<int>(100 * network_bytes / ocl_bytes), 1);
 
-      histogram_tester().ExpectUniqueSample(
+      tester()->histogram_tester().ExpectUniqueSample(
           std::string(internal::kHistogramDataReductionProxyPrefix)
               .append(internal::kBytesSavings),
           static_cast<int>((ocl_bytes - network_bytes) / 1024), 1);
@@ -266,7 +266,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
       false /* is_complete */, true /* proxy_used*/,
       0.5 /* compression_ratio */));
 
-  SimulateResourceDataUseUpdate(resources);
+  tester()->SimulateResourceDataUseUpdate(resources);
 
   int network_resources = 0;
   int drp_resources = 0;
@@ -300,7 +300,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
         ++drp_resources;
     }
   }
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateDataHistograms(network_resources, drp_resources,
                          insecure_network_bytes + secure_network_bytes,
@@ -331,7 +331,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
       false /* is_complete */, true /* proxy_used*/,
       10 /* compression_ratio */));
 
-  SimulateResourceDataUseUpdate(resources);
+  tester()->SimulateResourceDataUseUpdate(resources);
 
   int network_resources = 0;
   int drp_resources = 0;
@@ -369,7 +369,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
         ++drp_resources;
     }
   }
-  NavigateToUntrackedUrl();
+  tester()->NavigateToUntrackedUrl();
 
   ValidateDataHistograms(network_resources, drp_resources,
                          insecure_network_bytes + secure_network_bytes,

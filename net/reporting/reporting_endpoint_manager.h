@@ -35,6 +35,12 @@ struct ReportingPolicy;
 // endpoint from an endpoint group to receive reports for an origin.
 class NET_EXPORT ReportingEndpointManager {
  public:
+  // Maximum size of the backoff cache. This is deliberately much larger than is
+  // likely necessary - the only goal is to prevent it from growing without
+  // bound, while preventing repeatedly trying to upload data to down servrs.
+  // Public for tests.
+  static constexpr int kMaxEndpointBackoffCacheSize = 200;
+
   // The ReportingEndpointManager must not be used after any of the objects
   // passed to its constructor are destroyed.
   static std::unique_ptr<ReportingEndpointManager> Create(

@@ -235,7 +235,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
         handle = CreateGpuMemoryBufferHandle(video_frame.get());
-        CHECK(!handle.is_null());
+        DCHECK(!handle.is_null());
 #else
         NOTREACHED();
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
@@ -312,7 +312,7 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
         video_frame->natural_size(), video_frame->timestamp());
   }
 
-  CHECK(wrapped_video_frame);
+  DCHECK(wrapped_video_frame);
 
   // Flag that the video frame was decoded in a power efficient way.
   wrapped_video_frame->metadata()->SetBoolean(
@@ -345,7 +345,7 @@ void TestVDAVideoDecoder::ReusePictureBufferThunk(
 // Called when a picture buffer is ready to be re-used.
 void TestVDAVideoDecoder::ReusePictureBufferTask(int32_t picture_buffer_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
-  CHECK(decoder_);
+  DCHECK(decoder_);
   DVLOGF(4) << "Picture buffer ID: " << picture_buffer_id;
 
   // Notify the decoder the picture buffer can be reused. The decoder will only
@@ -369,14 +369,14 @@ void TestVDAVideoDecoder::NotifyEndOfBitstreamBuffer(
 
 void TestVDAVideoDecoder::NotifyFlushDone() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
-  CHECK(flush_cb_);
+  DCHECK(flush_cb_);
 
   std::move(flush_cb_).Run(DecodeStatus::OK);
 }
 
 void TestVDAVideoDecoder::NotifyResetDone() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
-  CHECK(reset_cb_);
+  DCHECK(reset_cb_);
 
   std::move(reset_cb_).Run();
 }

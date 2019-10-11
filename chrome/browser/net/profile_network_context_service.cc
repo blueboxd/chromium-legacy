@@ -237,12 +237,6 @@ void ProfileNetworkContextService::RegisterProfilePrefs(
 void ProfileNetworkContextService::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kHSTSPolicyBypassList);
-#if defined(OS_CHROMEOS)
-  // Note that the default value is not relevant because the pref is only
-  // evaluated when it is managed.
-  registry->RegisterBooleanPref(prefs::kBuiltinCertificateVerifierEnabled,
-                                false);
-#endif
 }
 
 void ProfileNetworkContextService::DisableQuicIfNotAllowed() {
@@ -506,7 +500,7 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   network_context_params->enable_expect_ct_reporting = true;
 
 #if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
-  if (!in_memory &&
+  if (!in_memory && !network_context_params->use_builtin_cert_verifier &&
       TrialComparisonCertVerifierController::MaybeAllowedForProfile(profile_)) {
     network::mojom::TrialComparisonCertVerifierConfigClientPtr config_client;
     auto config_client_request = mojo::MakeRequest(&config_client);
@@ -556,6 +550,8 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   }
 
 #if defined(OS_CHROMEOS)
+  // Note: On non-ChromeOS platforms, the |use_builtin_cert_verifier| param
+  // value is inherited from CreateDefaultNetworkContextParams.
   network_context_params->use_builtin_cert_verifier =
       using_builtin_cert_verifier_;
 

@@ -193,6 +193,13 @@
       },
     },
   },
+  'fuchsia_aemu': {
+    '$mixin_append': {
+      'args': [
+        '--device=aemu',
+      ],
+    },
+  },
   'gpu_pool': {
     'swarming': {
       'dimensions': {

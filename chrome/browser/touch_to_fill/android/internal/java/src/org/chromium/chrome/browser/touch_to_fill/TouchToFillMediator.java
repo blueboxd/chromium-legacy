@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.touch_to_fill;
 
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CREDENTIAL_LIST;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ORIGIN_SECURE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
@@ -27,9 +28,11 @@ class TouchToFillMediator implements TouchToFillProperties.ViewEventListener {
         mModel = model;
     }
 
-    void showCredentials(String formattedUrl, List<Credential> credentials) {
+    void showCredentials(
+            String formattedUrl, boolean isOriginSecure, List<Credential> credentials) {
         assert credentials != null;
         mModel.set(FORMATTED_URL, formattedUrl);
+        mModel.set(ORIGIN_SECURE, isOriginSecure);
         mModel.set(VISIBLE, true);
         mModel.get(CREDENTIAL_LIST).clear();
         mModel.get(CREDENTIAL_LIST).addAll(credentials);

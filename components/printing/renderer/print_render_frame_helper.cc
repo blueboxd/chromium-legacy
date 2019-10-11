@@ -366,9 +366,8 @@ bool IsPrintingPdf(blink::WebLocalFrame* frame, const blink::WebNode& node) {
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-// Returns true if the current destination printer is PRINT_TO_PDF.
 bool IsPrintToPdfRequested(const base::DictionaryValue& job_settings) {
-  return job_settings.FindBoolKey(kSettingPrintToPDF).value();
+  return job_settings.FindIntKey(kSettingPrinterType).value() == kPdfPrinter;
 }
 
 bool PrintingFrameHasPageSizeStyle(blink::WebLocalFrame* frame,

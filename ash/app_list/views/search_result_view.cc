@@ -413,7 +413,7 @@ void SearchResultView::SetIconImage(const gfx::ImageSkia& source,
 
 void SearchResultView::OnSearchResultActionActivated(size_t index,
                                                      int event_flags) {
-  // |result()| could be NULL when result list is changing.
+  // |result()| could be nullptr when result list is changing.
   if (!result())
     return;
 
@@ -463,7 +463,7 @@ void SearchResultView::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
-  // |result()| could be NULL when result list is changing.
+  // |result()| could be nullptr when result list is changing.
   if (!result())
     return;
 

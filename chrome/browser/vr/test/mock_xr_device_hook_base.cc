@@ -54,7 +54,7 @@ MockXRDeviceHookBase::MockXRDeviceHookBase()
                            kTrackedDeviceInvalid},
       binding_(this) {
   vr::GetXRDeviceService()->BindTestHook(
-      mojo::MakeRequest(&service_test_hook_));
+      service_test_hook_.BindNewPipeAndPassReceiver());
 
   device_test::mojom::XRTestHookPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
@@ -75,7 +75,7 @@ void MockXRDeviceHookBase::StopHooking() {
   // will potentially deadlock with reentrant or crossing synchronous mojo
   // calls.
   binding_.Close();
-  service_test_hook_ = nullptr;
+  service_test_hook_.reset();
 }
 
 void MockXRDeviceHookBase::OnFrameSubmitted(

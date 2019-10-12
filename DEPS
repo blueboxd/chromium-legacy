@@ -179,7 +179,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'd192e933eb69e96b498a785777b117b145f3f360',
+  'angle_revision': '1948af385c1bc69a9ced516663fe1b4e2dc93383',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -862,7 +862,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '1fce7657a2fdc9a253c2bdbdd945a2b0b431d084',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '483426c9f91a68d43c9e96252fafe33c61f73b56',
       'condition': 'checkout_linux',
   },
 
@@ -1470,7 +1470,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '2701c130839edbeb226735b0775966b6423d9e83',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '373b149d8cf24f2675ffc32ef1e641cf2ecc3112',
+    Var('webrtc_git') + '/src.git' + '@' + '8be669fd96e4574e465b60020f8b570b9d194191',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',

@@ -912,23 +912,26 @@ float GetDeviceScaleAdjustment() {
 AppLoadedInTabSource ClassifyAppLoadedInTabSource(
     const GURL& opener_url,
     const extensions::Extension* target_platform_app) {
-  if (opener_url.SchemeIs(extensions::kExtensionScheme)) {
-    if (opener_url.host_piece() == target_platform_app->id()) {
-      // This platform app was trying to window.open() one of its own URLs.
-      if (opener_url ==
-          extensions::BackgroundInfo::GetBackgroundURL(target_platform_app)) {
-        // Source was the background page.
-        return APP_LOADED_IN_TAB_SOURCE_BACKGROUND_PAGE;
-      } else {
-        // Source was a different page inside the app.
-        return APP_LOADED_IN_TAB_SOURCE_APP;
-      }
-    }
+  if (!opener_url.SchemeIs(extensions::kExtensionScheme)) {
+    // The forbidden app URL was being opened by a non-extension page (e.g.
+    // http).
+    return APP_LOADED_IN_TAB_SOURCE_OTHER;
+  }
+
+  if (opener_url.host_piece() != target_platform_app->id()) {
     // The forbidden app URL was being opened by a different app or extension.
     return APP_LOADED_IN_TAB_SOURCE_OTHER_EXTENSION;
   }
-  // The forbidden app URL was being opened by a non-extension page (e.g. http).
-  return APP_LOADED_IN_TAB_SOURCE_OTHER;
+
+  // This platform app was trying to window.open() one of its own URLs.
+  if (opener_url ==
+      extensions::BackgroundInfo::GetBackgroundURL(target_platform_app)) {
+    // Source was the background page.
+    return APP_LOADED_IN_TAB_SOURCE_BACKGROUND_PAGE;
+  }
+
+  // Source was a different page inside the app.
+  return APP_LOADED_IN_TAB_SOURCE_APP;
 }
 
 // Returns true if there is is an extension matching |url| in

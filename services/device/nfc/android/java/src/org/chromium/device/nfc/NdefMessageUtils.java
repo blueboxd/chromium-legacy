@@ -17,8 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Utility class that provides convesion between Android NdefMessage
- * and mojo NdefMessage data structures.
+ * Utility class that provides conversion between Android NdefMessage and Mojo NdefMessage data
+ * structures.
  */
 public final class NdefMessageUtils {
     private static final String TAG = "NdefMessageUtils";
@@ -33,6 +33,17 @@ public final class NdefMessageUtils {
     public static final String RECORD_TYPE_URL = "url";
     public static final String RECORD_TYPE_JSON = "json";
     public static final String RECORD_TYPE_OPAQUE = "opaque";
+    public static final String RECORD_TYPE_SMART_POSTER = "smart-poster";
+
+    private static class PairOfDomainAndType {
+        private String mDomain;
+        private String mType;
+
+        private PairOfDomainAndType(String domain, String type) {
+            mDomain = domain;
+            mType = type;
+        }
+    }
 
     /**
      * Converts mojo NdefMessage to android.nfc.NdefMessage
@@ -111,10 +122,16 @@ public final class NdefMessageUtils {
             case RECORD_TYPE_EMPTY:
                 return new android.nfc.NdefRecord(
                         android.nfc.NdefRecord.TNF_EMPTY, null, null, null);
-            // TODO(https://crbug.com/520391): Support external type records.
-            default:
+            case RECORD_TYPE_SMART_POSTER:
+                // TODO(https://crbug.com/520391): Support 'smart-poster' type records.
                 throw new InvalidNdefMessageException();
         }
+        PairOfDomainAndType pair = parseDomainAndType(record.recordType);
+        if (pair != null) {
+            return android.nfc.NdefRecord.createExternal(pair.mDomain, pair.mType, record.data);
+        }
+
+        throw new InvalidNdefMessageException();
     }
 
     /**
@@ -134,6 +151,9 @@ public final class NdefMessageUtils {
                 return createWellKnownRecord(ndefRecord);
             case android.nfc.NdefRecord.TNF_UNKNOWN:
                 return createUnKnownRecord(ndefRecord.getPayload());
+            case android.nfc.NdefRecord.TNF_EXTERNAL_TYPE:
+                return createExternalTypeRecord(
+                        new String(ndefRecord.getType(), "UTF-8"), ndefRecord.getPayload());
         }
         return null;
     }
@@ -222,6 +242,8 @@ public final class NdefMessageUtils {
             return createTextRecord(record.getPayload());
         }
 
+        // TODO(https://crbug.com/520391): Support RTD_SMART_POSTER type records.
+
         return null;
     }
 
@@ -234,5 +256,41 @@ public final class NdefMessageUtils {
         nfcRecord.mediaType = OCTET_STREAM_MIME;
         nfcRecord.data = payload;
         return nfcRecord;
+    }
+
+    /**
+     * Constructs External type NdefRecord
+     */
+    private static NdefRecord createExternalTypeRecord(String customType, byte[] payload) {
+        NdefRecord nfcRecord = new NdefRecord();
+        nfcRecord.recordType = customType;
+        nfcRecord.mediaType = OCTET_STREAM_MIME;
+        nfcRecord.data = payload;
+        return nfcRecord;
+    }
+
+    /**
+     * Parses the input custom type to get its domain and type.
+     * e.g. returns a pair ('w3.org', 'xyz') for the input 'w3.org:xyz'.
+     * Returns null for invalid input.
+     * https://w3c.github.io/web-nfc/#the-ndefrecordtype-string
+     *
+     * TODO(https://crbug.com/520391): Refine the validation algorithm here accordingly once there
+     * is a conclusion on some case-sensitive things at https://github.com/w3c/web-nfc/issues/331.
+     */
+    private static PairOfDomainAndType parseDomainAndType(String customType) {
+        int colonIndex = customType.indexOf(':');
+        if (colonIndex == -1) return null;
+
+        // TODO(ThisCL): verify |domain| is a valid FQDN, asking help at
+        // https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/QN2mHt_WgHo.
+        String domain = customType.substring(0, colonIndex);
+        if (domain.isEmpty()) return null;
+
+        String type = customType.substring(colonIndex + 1);
+        if (type.isEmpty()) return null;
+        if (!type.matches("[a-zA-Z0-9()+,\\-:=@;$_!*'.]+")) return null;
+
+        return new PairOfDomainAndType(domain, type);
     }
 }

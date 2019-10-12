@@ -9,6 +9,7 @@
 #include "device/vr/public/mojom/browser_test_interfaces.mojom.h"
 #include "device/vr/test/test_hook.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 class MockXRDeviceHookBase : public device_test::mojom::XRTestHook {
  public:
@@ -63,7 +64,7 @@ class MockXRDeviceHookBase : public device_test::mojom::XRTestHook {
 
  private:
   mojo::Binding<device_test::mojom::XRTestHook> binding_;
-  device_test::mojom::XRServiceTestHookPtr service_test_hook_;
+  mojo::Remote<device_test::mojom::XRServiceTestHook> service_test_hook_;
 };
 
 #endif  // CHROME_BROWSER_VR_TEST_MOCK_XR_DEVICE_HOOK_BASE_H_

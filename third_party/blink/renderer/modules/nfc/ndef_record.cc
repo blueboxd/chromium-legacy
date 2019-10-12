@@ -13,6 +13,8 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
@@ -24,6 +26,45 @@ WTF::Vector<uint8_t> GetUTF8DataFromString(const String& string) {
   WTF::Vector<uint8_t> data;
   data.Append(utf8_string.data(), utf8_string.size());
   return data;
+}
+
+// https://w3c.github.io/web-nfc/#the-ndefrecordtype-string
+// Derives a formatted custom type for the external type record from |input|.
+// Returns a null string for an invalid |input|.
+//
+// TODO(https://crbug.com/520391): Refine the validation algorithm here
+// accordingly once there is a conclusion on some case-sensitive things at
+// https://github.com/w3c/web-nfc/issues/331.
+String ValidateCustomRecordType(const String& input) {
+  static const String kOtherCharsForCustomType("()+,-:=@;$_!*'.");
+
+  if (input.IsEmpty())
+    return String();
+
+  // Finds the separator ':'.
+  wtf_size_t colon_index = input.find(':');
+  if (colon_index == kNotFound)
+    return String();
+
+  // Derives the domain (FQDN) from the part before ':'.
+  String left = input.Left(colon_index);
+  bool success = false;
+  String domain = SecurityOrigin::CanonicalizeHost(left, &success);
+  if (!success || domain.IsEmpty())
+    return String();
+
+  // Validates the part after ':'.
+  String right = input.Substring(colon_index + 1);
+  if (right.length() == 0)
+    return String();
+  for (wtf_size_t i = 0; i < right.length(); i++) {
+    if (!IsASCIIAlphanumeric(right[i]) &&
+        !kOtherCharsForCustomType.Contains(right[i])) {
+      return String();
+    }
+  }
+
+  return domain + ':' + right;
 }
 
 static NDEFRecord* CreateTextRecord(const String& media_type,
@@ -141,6 +182,25 @@ static NDEFRecord* CreateOpaqueRecord(const String& media_type,
                                           std::move(bytes));
 }
 
+static NDEFRecord* CreateExternalRecord(const String& custom_type,
+                                        const ScriptValue& data,
+                                        ExceptionState& exception_state) {
+  // https://w3c.github.io/web-nfc/#dfn-map-external-data-to-ndef
+  if (data.IsEmpty() || !data.V8Value()->IsArrayBuffer()) {
+    exception_state.ThrowTypeError(
+        "The data for external type NDEFRecord must be an ArrayBuffer.");
+    return nullptr;
+  }
+
+  DOMArrayBuffer* array_buffer =
+      V8ArrayBuffer::ToImpl(data.V8Value().As<v8::Object>());
+  WTF::Vector<uint8_t> bytes;
+  bytes.Append(static_cast<uint8_t*>(array_buffer->Data()),
+               array_buffer->ByteLength());
+  return MakeGarbageCollected<NDEFRecord>(
+      custom_type, "application/octet-stream", std::move(bytes));
+}
+
 }  // namespace
 
 // static
@@ -178,12 +238,18 @@ NDEFRecord* NDEFRecord::Create(const NDEFRecordInit* init,
     return CreateJsonRecord(init->mediaType(), init->data(), exception_state);
   } else if (record_type == "opaque") {
     return CreateOpaqueRecord(init->mediaType(), init->data(), exception_state);
+  } else if (record_type == "smart-poster") {
+    // TODO(https://crbug.com/520391): Support creating smart-poster records.
+    exception_state.ThrowTypeError("smart-poster type is not supported yet");
+    return nullptr;
   } else {
-    // TODO(https://crbug.com/520391): Support creating smart-poster and
-    // external type records.
+    String formated_type = ValidateCustomRecordType(record_type);
+    if (!formated_type.IsNull())
+      return CreateExternalRecord(formated_type, init->data(), exception_state);
+  }
+
     exception_state.ThrowTypeError("Unknown NDEFRecord type.");
     return nullptr;
-  }
 }
 
 NDEFRecord::NDEFRecord(const String& record_type,
@@ -228,18 +294,24 @@ String NDEFRecord::toText() const {
 }
 
 DOMArrayBuffer* NDEFRecord::toArrayBuffer() const {
-  if (record_type_ != "json" && record_type_ != "opaque") {
+  if (record_type_ == "empty" || record_type_ == "text" ||
+      record_type_ == "url") {
     return nullptr;
   }
+  DCHECK(record_type_ == "json" || record_type_ == "opaque" ||
+         !ValidateCustomRecordType(record_type_).IsNull());
 
   return DOMArrayBuffer::Create(data_.data(), data_.size());
 }
 
 ScriptValue NDEFRecord::toJSON(ScriptState* script_state,
                                ExceptionState& exception_state) const {
-  if (record_type_ != "json" && record_type_ != "opaque") {
+  if (record_type_ == "empty" || record_type_ == "text" ||
+      record_type_ == "url") {
     return ScriptValue::CreateNull(script_state->GetIsolate());
   }
+  DCHECK(record_type_ == "json" || record_type_ == "opaque" ||
+         !ValidateCustomRecordType(record_type_).IsNull());
 
   ScriptState::Scope scope(script_state);
   v8::Local<v8::Value> json_object = FromJSONString(

@@ -1997,6 +1997,8 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     extension_dict->SetBoolean(kPrefBlacklist, true);
   if (dnr_ruleset_checksum)
     extension_dict->SetInteger(kPrefDNRRulesetChecksum, *dnr_ruleset_checksum);
+  if (extension->creation_flags() & Extension::WITHHOLD_PERMISSIONS)
+    extension_dict->SetBoolean(kGrantExtensionAllHostPermissions, false);
 
   base::FilePath::StringType path = MakePathRelative(install_directory_,
                                                      extension->path());

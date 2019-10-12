@@ -16,9 +16,15 @@ class XRInputSource;
 class XRPlane;
 class XRReferenceSpace;
 
+// XRNativeOriginInformation carries all the information that is required to
+// uniquely identify a native origin on the device side. Native origin roughly
+// represents anything that is known and tracked by the device, for example
+// anchors, planes, input sources, reference spaces.
 class XRNativeOriginInformation {
  public:
   XRNativeOriginInformation(XRNativeOriginInformation&& other) = default;
+
+  device::mojom::blink::XRNativeOriginInformationPtr ToMojo() const;
 
   static base::Optional<XRNativeOriginInformation> Create(
       const XRAnchor* anchor);
@@ -36,10 +42,16 @@ class XRNativeOriginInformation {
   void operator=(const XRNativeOriginInformation& other) = delete;
 
   XRNativeOriginInformation(Type type, uint32_t id);
+  XRNativeOriginInformation(
+      Type type,
+      device::mojom::XRReferenceSpaceCategory reference_space_type);
 
-  // TODO(https://crbug.com/997369): Add reference space category to the union
-  // once mojo changes land.
-  const union { uint32_t id_; };
+  const Type type_;
+
+  const union {
+    uint32_t id_;
+    device::mojom::XRReferenceSpaceCategory reference_space_category_;
+  };
 };
 
 }  // namespace blink

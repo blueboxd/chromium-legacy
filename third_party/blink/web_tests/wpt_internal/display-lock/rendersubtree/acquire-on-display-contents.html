@@ -18,7 +18,7 @@ async_test(async (t) => {
   slot.style = "display: block;";
   document.body.appendChild(slot);
   await setInvisible(slot).then(() => {
-    t.step(() => assert_equals(slot.renderSubtree, "invisible"));
+    t.step(() => assert_equals(slot.renderSubtree, INVISIBLE_NOT_ACTIVATABLE));
     t.done();
   });
 }, "<slot> with changed display type can be locked");

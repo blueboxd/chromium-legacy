@@ -54,21 +54,19 @@ interface WebSocketHandshakeClient {
   // Notify the renderer that the browser has started an opening handshake.
   OnOpeningHandshakeStarted(WebSocketHandshakeRequest request);
 
-  // Called when the HTTP response is received. This doesn't mean the connection
-  // is (or will be) established. This message precedes OnConnectionEstablished.
-  // |response| may contain cookie-related headers when the client has
-  // an access to raw cookie information.
-  OnResponseReceived(WebSocketHandshakeResponse response);
-
   // Called when the connection is established. |selected_protocol| is the
   // sub-protocol the server selected, or empty if no sub-protocol was selected.
   // |extensions| is the list of extensions negotiated for the connection.
   // default threshold value
+  // |response| may contain cookie-related headers when the client has
+  // an access to raw cookie information.
   // |readable| is readable datapipe to receive data from browser.
+  // TODO(yoichio): Merge |selected_protocol| and |extensions| into |response|.
   OnConnectionEstablished(pending_remote<WebSocket> socket,
                           pending_receiver<WebSocketClient> client_receiver,
                           string selected_protocol,
                           string extensions,
+                          WebSocketHandshakeResponse response,
                           handle<data_pipe_consumer> readable);
 };
 

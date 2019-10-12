@@ -496,11 +496,20 @@ IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest, InvokeUi_Guest) {
   ShowAndVerifyUi();
 }
 
+class ProfileMenuViewExtensionsParamTestWithScopedAccountConsistency
+    : public ProfileMenuViewExtensionsParamTest {
+ public:
+  ProfileMenuViewExtensionsParamTestWithScopedAccountConsistency() = default;
+
+ private:
+  ScopedAccountConsistencyDice scoped_dice_;
+};
+
 // Shows the |ProfileMenuView| during a Guest browsing session when the DICE
 // flag is enabled.
-IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest,
-                       InvokeUi_DiceGuest) {
-  ScopedAccountConsistencyDice scoped_dice;
+IN_PROC_BROWSER_TEST_P(
+    ProfileMenuViewExtensionsParamTestWithScopedAccountConsistency,
+    InvokeUi_DiceGuest) {
   ShowAndVerifyUi();
 }
 
@@ -525,6 +534,15 @@ IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest,
   ShowAndVerifyUi();
 }
 
+class ProfileMenuViewExtensionsTestWithScopedAccountConsistency
+    : public ProfileMenuViewExtensionsTest {
+ public:
+  ProfileMenuViewExtensionsTestWithScopedAccountConsistency() = default;
+
+ private:
+  ScopedAccountConsistencyDice scoped_dice_;
+};
+
 // Open the profile chooser to increment the Dice sign-in promo show counter
 // below the threshold.
 // TODO(https://crbug.com/862573): Re-enable when no longer failing when
@@ -536,9 +554,9 @@ IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest,
 #define MAYBE_IncrementDiceSigninPromoShowCounter \
   IncrementDiceSigninPromoShowCounter
 #endif
-IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
-                       MAYBE_IncrementDiceSigninPromoShowCounter) {
-  ScopedAccountConsistencyDice scoped_dice;
+IN_PROC_BROWSER_TEST_F(
+    ProfileMenuViewExtensionsTestWithScopedAccountConsistency,
+    MAYBE_IncrementDiceSigninPromoShowCounter) {
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kDiceSigninUserMenuPromoCount, 7);
   ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
@@ -556,9 +574,9 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
 #define MAYBE_DiceSigninPromoWithoutIllustration \
   DiceSigninPromoWithoutIllustration
 #endif
-IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
-                       MAYBE_DiceSigninPromoWithoutIllustration) {
-  ScopedAccountConsistencyDice scoped_dice;
+IN_PROC_BROWSER_TEST_F(
+    ProfileMenuViewExtensionsTestWithScopedAccountConsistency,
+    MAYBE_DiceSigninPromoWithoutIllustration) {
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kDiceSigninUserMenuPromoCount, 10);
   ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));

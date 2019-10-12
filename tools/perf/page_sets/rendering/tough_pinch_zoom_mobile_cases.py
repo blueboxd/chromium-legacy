@@ -58,7 +58,6 @@ class LinkedinPinchZoomMobile2018Page(ToughPinchZoomMobilePage):
   BASE_NAME = 'linkedin_mobile_pinch'
   YEAR = '2018'
   URL = 'http://www.linkedin.com/in/linustorvalds'
-  TAGS = ToughPinchZoomMobilePage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
   # Linkedin has expensive shader compilation so it can benefit from shader
   # cache from reload.

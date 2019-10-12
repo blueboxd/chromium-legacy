@@ -19,10 +19,6 @@ namespace base {
 class CommandLine;
 }
 
-namespace memory {
-class MemoryPressureMonitor;
-}
-
 // Handle uninstallation when given the appropriate the command-line switch.
 // If |chrome_still_running| is true a modal dialog will be shown asking the
 // user to close the other chrome instance.
@@ -77,11 +73,6 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
  private:
   // Watches module load events and forwards them to the ModuleDatabase.
   std::unique_ptr<ModuleWatcher> module_watcher_;
-
-  // The memory pressure monitor. This is currently only being used to record
-  // metrics, the base::MemoryPressureMonitor is still being used to emit memory
-  // pressure signals.
-  std::unique_ptr<memory::MemoryPressureMonitor> memory_pressure_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsWin);
 };

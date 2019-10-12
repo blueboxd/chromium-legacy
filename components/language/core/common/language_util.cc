@@ -25,8 +25,11 @@ struct LanguageCodePair {
 //
 // If this table is updated, please sync this with the synonym table in
 // chrome/browser/resources/settings/languages_page/languages.js.
-const LanguageCodePair kLanguageCodeSimilitudes[] = {
+const LanguageCodePair kChromeToTranslateLanguageMap[] = {
     {"no", "nb"},
+    {"tl", "fil"},
+};
+const LanguageCodePair kTranslateToChromeLanguageMap[] = {
     {"tl", "fil"},
 };
 
@@ -52,9 +55,10 @@ const LanguageCodePair kLanguageCodeChineseCompatiblePairs[] = {
 };
 
 void ToTranslateLanguageSynonym(std::string* language) {
-  for (size_t i = 0; i < base::size(kLanguageCodeSimilitudes); ++i) {
-    if (*language == kLanguageCodeSimilitudes[i].chrome_language) {
-      *language = kLanguageCodeSimilitudes[i].translate_language;
+  for (size_t i = 0; i < base::size(kChromeToTranslateLanguageMap); ++i) {
+    if (*language == kChromeToTranslateLanguageMap[i].chrome_language) {
+      *language =
+          std::string(kChromeToTranslateLanguageMap[i].translate_language);
       return;
     }
   }
@@ -93,9 +97,9 @@ void ToTranslateLanguageSynonym(std::string* language) {
 }
 
 void ToChromeLanguageSynonym(std::string* language) {
-  for (size_t i = 0; i < base::size(kLanguageCodeSimilitudes); ++i) {
-    if (*language == kLanguageCodeSimilitudes[i].translate_language) {
-      *language = kLanguageCodeSimilitudes[i].chrome_language;
+  for (size_t i = 0; i < base::size(kTranslateToChromeLanguageMap); ++i) {
+    if (*language == kTranslateToChromeLanguageMap[i].translate_language) {
+      *language = std::string(kTranslateToChromeLanguageMap[i].chrome_language);
       return;
     }
   }

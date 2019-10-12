@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.widget.bottomsheet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import android.support.test.filters.MediumTest;
@@ -21,6 +22,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.HeightMode;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
 import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.test.util.UiRestriction;
@@ -29,96 +32,143 @@ import java.util.concurrent.TimeoutException;
 
 /** This class tests the functionality of the {@link BottomSheetObserver}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
+@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // Bottom sheet is only used on phones.
 public class BottomSheetObserverTest {
     @Rule
     public BottomSheetTestRule mBottomSheetTestRule = new BottomSheetTestRule();
     private BottomSheetTestRule.Observer mObserver;
+    private TestBottomSheetContent mSheetContent;
 
     @Before
     public void setUp() throws Exception {
-        mBottomSheetTestRule.startMainActivityOnBottomSheet(BottomSheet.SheetState.PEEK);
+        mBottomSheetTestRule.startMainActivityOnBottomSheet(SheetState.HIDDEN);
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mBottomSheetTestRule.getBottomSheet().showContent(new TestBottomSheetContent(
-                    mBottomSheetTestRule.getActivity(), BottomSheet.ContentPriority.HIGH, false));
+            mSheetContent = new TestBottomSheetContent(
+                    mBottomSheetTestRule.getActivity(), BottomSheet.ContentPriority.HIGH, false);
+            mBottomSheetTestRule.getBottomSheet().showContent(mSheetContent);
         });
         mObserver = mBottomSheetTestRule.getObserver();
     }
 
+    /** Test that the onSheetClosed event is triggered if the sheet is closed without animation. */
+    @Test
+    @MediumTest
+    public void testCloseEventCalled_noAnimation() throws TimeoutException {
+        runCloseEventTest(false, true);
+    }
+
     /**
-     * Test that the onSheetClosed event is triggered if the sheet is closed without animation.
+     * Test that the onSheetClosed event is triggered if the sheet is closed without animation and
+     * without a peeking state.
      */
     @Test
     @MediumTest
-    public void testCloseEventCalledNoAnimation() throws TimeoutException {
-        mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.FULL, false);
+    public void testCloseEventCalled_noAnimationNoPeekState() throws TimeoutException {
+        runCloseEventTest(false, false);
+    }
+
+    /** Test that the onSheetClosed event is triggered if the sheet is closed with animation. */
+    @Test
+    @MediumTest
+    public void testCloseEventCalled_withAnimation() throws TimeoutException {
+        runCloseEventTest(true, true);
+    }
+
+    /**
+     * Test that the onSheetClosed event is triggered if the sheet is closed with animation but
+     * without a peeking state.
+     */
+    @Test
+    @MediumTest
+    public void testCloseEventCalled_withAnimationNoPeekState() throws TimeoutException {
+        runCloseEventTest(true, false);
+    }
+
+    /**
+     * Run different versions of the onSheetClosed event test.
+     * @param animationEnabled Whether to run the test with animation.
+     * @param peekStateEnabled Whether the sheet's content has a peek state.
+     */
+    private void runCloseEventTest(boolean animationEnabled, boolean peekStateEnabled)
+            throws TimeoutException {
+        mBottomSheetTestRule.setSheetState(SheetState.FULL, false);
+
+        mSheetContent.setPeekHeight(peekStateEnabled ? HeightMode.DEFAULT : HeightMode.DISABLED);
 
         CallbackHelper closedCallbackHelper = mObserver.mClosedCallbackHelper;
 
         int initialOpenedCount = mObserver.mOpenedCallbackHelper.getCallCount();
 
         int closedCallbackCount = closedCallbackHelper.getCallCount();
-        mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.PEEK, false);
+        mBottomSheetTestRule.setSheetState(
+                peekStateEnabled ? SheetState.PEEK : SheetState.HIDDEN, animationEnabled);
         closedCallbackHelper.waitForCallback(closedCallbackCount, 1);
 
         assertEquals(initialOpenedCount, mObserver.mOpenedCallbackHelper.getCallCount());
     }
 
+    /** Test that the onSheetOpened event is triggered if the sheet is opened without animation. */
+    @Test
+    @MediumTest
+    public void testOpenedEventCalled_noAnimation() throws TimeoutException {
+        runOpenEventTest(false, true);
+    }
+
     /**
-     * Test that the onSheetClosed event is triggered if the sheet is closed with animation.
+     * Test that the onSheetOpened event is triggered if the sheet is opened without animation and
+     * without a peeking state.
      */
     @Test
     @MediumTest
-    public void testCloseEventCalledWithAnimation() throws TimeoutException {
-        mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.FULL, false);
+    public void testOpenedEventCalled_noAnimationNoPeekState() throws TimeoutException {
+        runOpenEventTest(false, false);
+    }
 
+    /** Test that the onSheetOpened event is triggered if the sheet is opened with animation. */
+    @Test
+    @MediumTest
+    public void testOpenedEventCalled_withAnimation() throws TimeoutException {
+        runOpenEventTest(true, true);
+    }
+
+    /**
+     * Test that the onSheetOpened event is triggered if the sheet is opened with animation and
+     * without a peek state.
+     */
+    @Test
+    @MediumTest
+    public void testOpenedEventCalled_withAnimationNoPeekState() throws TimeoutException {
+        runOpenEventTest(true, false);
+    }
+
+    /**
+     * Run different versions of the onSheetOpened event test.
+     * @param animationEnabled Whether to run the test with animation.
+     * @param peekStateEnabled Whether the sheet's content has a peek state.
+     */
+    private void runOpenEventTest(boolean animationEnabled, boolean peekStateEnabled)
+            throws TimeoutException {
+        mSheetContent.setPeekHeight(peekStateEnabled ? HeightMode.DEFAULT : HeightMode.DISABLED);
+
+        CallbackHelper openedCallbackHelper = mObserver.mOpenedCallbackHelper;
+        int openedCallbackCount = openedCallbackHelper.getCallCount();
         CallbackHelper closedCallbackHelper = mObserver.mClosedCallbackHelper;
+        int initialClosedCount = closedCallbackHelper.getCallCount();
 
-        int initialOpenedCount = mObserver.mOpenedCallbackHelper.getCallCount();
+        mBottomSheetTestRule.setSheetState(
+                mBottomSheetTestRule.getBottomSheet().getOpeningState(), false);
 
-        int closedCallbackCount = closedCallbackHelper.getCallCount();
-        mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.PEEK, true);
-        closedCallbackHelper.waitForCallback(closedCallbackCount, 1);
+        assertNotEquals("Sheet should not be hidden.",
+                mBottomSheetTestRule.getBottomSheet().getSheetState(), SheetState.HIDDEN);
+        if (!peekStateEnabled) {
+            assertNotEquals("Sheet should be above the peeking state when peek is disabled.",
+                    mBottomSheetTestRule.getBottomSheet().getSheetState(), SheetState.PEEK);
+        }
 
-        assertEquals(initialOpenedCount, mObserver.mOpenedCallbackHelper.getCallCount());
-    }
-
-    /**
-     * Test that the onSheetOpened event is triggered if the sheet is opened without animation.
-     */
-    @Test
-    @MediumTest
-    public void testOpenedEventCalledNoAnimation() throws TimeoutException {
-        mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.PEEK, false);
-
-        CallbackHelper openedCallbackHelper = mObserver.mOpenedCallbackHelper;
-
-        int initialClosedCount = mObserver.mClosedCallbackHelper.getCallCount();
-
-        int openedCallbackCount = openedCallbackHelper.getCallCount();
-        mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.FULL, false);
+        mBottomSheetTestRule.setSheetState(SheetState.FULL, animationEnabled);
         openedCallbackHelper.waitForCallback(openedCallbackCount, 1);
 
-        assertEquals(initialClosedCount, mObserver.mClosedCallbackHelper.getCallCount());
-    }
-
-    /**
-     * Test that the onSheetOpened event is triggered if the sheet is opened with animation.
-     */
-    @Test
-    @MediumTest
-    public void testOpenedEventCalledWithAnimation() throws TimeoutException {
-        mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.PEEK, false);
-
-        CallbackHelper openedCallbackHelper = mObserver.mOpenedCallbackHelper;
-
-        int initialClosedCount = mObserver.mClosedCallbackHelper.getCallCount();
-
-        int openedCallbackCount = openedCallbackHelper.getCallCount();
-        mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.FULL, true);
-        openedCallbackHelper.waitForCallback(openedCallbackCount, 1);
-
-        assertEquals(initialClosedCount, mObserver.mClosedCallbackHelper.getCallCount());
+        assertEquals(initialClosedCount, closedCallbackHelper.getCallCount());
     }
 
     /**
@@ -127,7 +177,7 @@ public class BottomSheetObserverTest {
     @Test
     @MediumTest
     public void testOffsetChangedEvent() throws TimeoutException {
-        mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.FULL, false);
+        mBottomSheetTestRule.setSheetState(SheetState.FULL, false);
         CallbackHelper callbackHelper = mObserver.mOffsetChangedCallbackHelper;
 
         BottomSheet bottomSheet = mBottomSheetTestRule.getBottomSheet();
@@ -199,8 +249,8 @@ public class BottomSheetObserverTest {
         callbackHelper.waitForCallback(callCount);
 
         // HALF state is forbidden when wrapping the content.
-        mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.HALF, false);
-        assertEquals(BottomSheet.SheetState.FULL, bottomSheet.getSheetState());
+        mBottomSheetTestRule.setSheetState(SheetState.HALF, false);
+        assertEquals(SheetState.FULL, bottomSheet.getSheetState());
 
         // Check the offset.
         assertEquals(wrappedContentHeight + bottomSheet.getToolbarShadowHeight(),

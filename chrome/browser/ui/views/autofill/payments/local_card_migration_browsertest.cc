@@ -570,20 +570,18 @@ class LocalCardMigrationBrowserTestForStatusChip
     : public LocalCardMigrationBrowserTest {
  protected:
   LocalCardMigrationBrowserTestForStatusChip()
-      : LocalCardMigrationBrowserTest() {}
-
-  ~LocalCardMigrationBrowserTestForStatusChip() override {}
-
-  void SetUp() override {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures(
+      : LocalCardMigrationBrowserTest() {
+    feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillCreditCardUploadFeedback,
                               features::kAutofillEnableToolbarStatusChip,
                               features::kAutofillUpstream},
         /*disabled_features=*/{});
-
-    LocalCardMigrationBrowserTest::SetUp();
   }
+
+  ~LocalCardMigrationBrowserTestForStatusChip() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Ensures that migration is not offered when user saves a new card.
@@ -904,12 +902,21 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   EXPECT_EQ(nullptr, personal_data_->GetCreditCardByNumber(kSecondCardNumber));
 }
 
+class LocalCardMigrationBrowserTestWithStrikeSystemV2
+    : public LocalCardMigrationBrowserTest {
+ public:
+  LocalCardMigrationBrowserTestWithStrikeSystemV2() {
+    feature_list_.InitAndEnableFeature(
+        features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Ensures that rejecting the main migration dialog adds 3 strikes.
-IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestWithStrikeSystemV2,
                        ClosingDialogAddsLocalCardMigrationStrikes) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
   base::HistogramTester histogram_tester;
 
   SaveLocalCard(kFirstCardNumber);
@@ -926,11 +933,8 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
 }
 
 // Ensures that rejecting the migration bubble adds 2 strikes.
-IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestWithStrikeSystemV2,
                        ClosingBubbleAddsLocalCardMigrationStrikes) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
   base::HistogramTester histogram_tester;
 
   SaveLocalCard(kFirstCardNumber);
@@ -949,11 +953,8 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
 
 // Ensures that rejecting the migration bubble repeatedly adds 2 strikes every
 // time, even for the same tab.
-IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestWithStrikeSystemV2,
                        ClosingBubbleAgainAddsLocalCardMigrationStrikes) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
   base::HistogramTester histogram_tester;
 
   SaveLocalCard(kFirstCardNumber);
@@ -976,12 +977,8 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
 
 // Ensures that reshowing and closing bubble after previously closing it does
 // not add strikes.
-IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestWithStrikeSystemV2,
                        ReshowingBubbleDoesNotAddStrikes) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
-
   SaveLocalCard(kFirstCardNumber);
   SaveLocalCard(kSecondCardNumber);
   UseCardAndWaitForMigrationOffer(kFirstCardNumber);

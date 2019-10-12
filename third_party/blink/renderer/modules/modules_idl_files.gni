@@ -1014,8 +1014,6 @@ modules_dependency_idl_files =
           "webdatabase/window_web_database.idl",
           "webgl/webgl2_rendering_context_base.idl",
           "webgl/webgl_rendering_context_base.idl",
-          "webgpu/gpu_programmable_pass_encoder.idl",
-          "webgpu/gpu_render_encoder_base.idl",
           "webgpu/navigator_gpu.idl",
           "webmidi/navigator_web_midi.idl",
           "webshare/navigator_share.idl",

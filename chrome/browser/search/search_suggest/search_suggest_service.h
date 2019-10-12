@@ -28,6 +28,11 @@ class IdentityManager;
 // user signs in or out, the cached value is cleared.
 class SearchSuggestService : public KeyedService {
  public:
+  // Search suggestions should be disabled when on-focus zero-prefix suggestions
+  // are displaying in the NTP. Returns false if omnibox::kZeroSuggestionsOnNTP
+  // or omnibox::kZeroSuggestionsOnNTPRealboxkNtpRealbox are enabled; or
+  // omnibox::kOnFocusSuggestions is enabled and configured to show suggestions
+  // of some type in the NTP Omnibox or Realbox.
   static bool IsEnabled();
 
   SearchSuggestService(Profile* profile,

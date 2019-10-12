@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <numeric>
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
@@ -14,6 +15,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +28,7 @@
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/web_contents.h"
 #include "crypto/sha2.h"
+#include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
 
@@ -195,7 +198,8 @@ void DeepScanningDialogDelegate::FileSourceRequest::OnGotFileContents(
     DataCallback callback,
     FileContents file_contents) {
   if (delegate_)
-    delegate_->SetSha256ForFile(path_, std::move(file_contents.sha256));
+    delegate_->SetFileInfo(path_, std::move(file_contents.sha256),
+                           file_contents.data.contents.length());
 
   std::move(callback).Run(file_contents.result, file_contents.data);
 }
@@ -207,6 +211,10 @@ DeepScanningDialogDelegate::Data::~Data() = default;
 DeepScanningDialogDelegate::Result::Result() = default;
 DeepScanningDialogDelegate::Result::Result(Result&& other) = default;
 DeepScanningDialogDelegate::Result::~Result() = default;
+
+DeepScanningDialogDelegate::FileInfo::FileInfo() = default;
+DeepScanningDialogDelegate::FileInfo::FileInfo(FileInfo&& other) = default;
+DeepScanningDialogDelegate::FileInfo::~FileInfo() = default;
 
 DeepScanningDialogDelegate::~DeepScanningDialogDelegate() = default;
 
@@ -356,16 +364,22 @@ DeepScanningDialogDelegate::DeepScanningDialogDelegate(
   DCHECK(web_contents_);
   result_.text_results.resize(data_.text.size(), false);
   result_.paths_results.resize(data_.paths.size(), false);
-  sha256_.resize(data_.paths.size());
+  file_info_.resize(data_.paths.size());
 }
 
 void DeepScanningDialogDelegate::StringRequestCallback(
     BinaryUploadService::Result result,
     DeepScanningClientResponse response) {
-  MaybeReportDownloadDeepScanningVerdict(
+  MaybeReportDeepScanningVerdict(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
-      web_contents_->GetLastCommittedURL(), "Text data", std::string(), result,
-      response);
+      web_contents_->GetLastCommittedURL(), "Text data", std::string(),
+      "text/plain",
+      extensions::SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
+      std::accumulate(data_.text.begin(), data_.text.end(), 0,
+                      [](int64_t acc, const base::string16& s) {
+                        return acc + s.size() * sizeof(base::char16);
+                      }),
+      result, response);
 
   text_request_complete_ = true;
   bool text_complies = (result == BinaryUploadService::Result::SUCCESS &&
@@ -384,10 +398,17 @@ void DeepScanningDialogDelegate::FileRequestCallback(
   DCHECK(it != data_.paths.end());
   size_t index = std::distance(data_.paths.begin(), it);
 
-  MaybeReportDownloadDeepScanningVerdict(
+  // TODO(crbug.com/1013252): Obtain a more accurate MimeType by parsing the
+  // file content.
+  std::string mime_type;
+  net::GetMimeTypeFromFile(path, &mime_type);
+
+  MaybeReportDeepScanningVerdict(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
-      web_contents_->GetLastCommittedURL(), path.AsUTF8Unsafe(), sha256_[index],
-      result, response);
+      web_contents_->GetLastCommittedURL(), path.AsUTF8Unsafe(),
+      file_info_[index].sha256, mime_type,
+      extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
+      file_info_[index].size, result, response);
 
   bool dlp_ok = DlpTriggeredRulesOK(response.dlp_scan_verdict());
   bool malware_ok = response.malware_scan_verdict().verdict() !=
@@ -533,12 +554,14 @@ void DeepScanningDialogDelegate::RunCallback() {
     std::move(callback_).Run(data_, result_);
 }
 
-void DeepScanningDialogDelegate::SetSha256ForFile(const base::FilePath& path,
-                                                  std::string sha256) {
+void DeepScanningDialogDelegate::SetFileInfo(const base::FilePath& path,
+                                             std::string sha256,
+                                             int64_t size) {
   auto it = std::find(data_.paths.begin(), data_.paths.end(), path);
   DCHECK(it != data_.paths.end());
   size_t index = std::distance(data_.paths.begin(), it);
-  sha256_[index] = std::move(sha256);
+  file_info_[index].sha256 = std::move(sha256);
+  file_info_[index].size = size;
 }
 
 }  // namespace safe_browsing

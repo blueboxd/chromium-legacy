@@ -45,6 +45,10 @@ ClientControlledState::ClientControlledState(std::unique_ptr<Delegate> delegate)
 
 ClientControlledState::~ClientControlledState() = default;
 
+void ClientControlledState::ResetDelegate() {
+  delegate_.reset();
+}
+
 void ClientControlledState::HandleTransitionEvents(WindowState* window_state,
                                                    const WMEvent* event) {
   if (!delegate_)
@@ -127,6 +131,8 @@ void ClientControlledState::DetachState(WindowState* window_state) {}
 
 void ClientControlledState::HandleWorkspaceEvents(WindowState* window_state,
                                                   const WMEvent* event) {
+  if (!delegate_)
+    return;
   // Client is responsible for adjusting bounds after workspace bounds change.
   if (window_state->IsSnapped()) {
     gfx::Rect bounds = GetSnappedWindowBoundsInParent(
@@ -263,7 +269,7 @@ void ClientControlledState::HandleBoundsEvents(WindowState* window_state,
 }
 
 void ClientControlledState::OnWindowDestroying(WindowState* window_state) {
-  delegate_.reset();
+  ResetDelegate();
 }
 
 bool ClientControlledState::EnterNextState(WindowState* window_state,

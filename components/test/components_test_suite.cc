@@ -27,6 +27,7 @@
 #include "components/test/ios_components_test_initializer.h"
 #else
 #include "content/public/common/content_client.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/test/content_test_suite_base.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/public/test/unittest_test_suite.h"
@@ -59,6 +60,8 @@ class ComponentsTestSuite : public base::TestSuite {
 
 #if !defined(OS_IOS)
     gl::GLSurfaceTestSupport::InitializeOneOff();
+
+    content::ForceInProcessNetworkService(true);
 
     // Setup content scheme statics.
     {

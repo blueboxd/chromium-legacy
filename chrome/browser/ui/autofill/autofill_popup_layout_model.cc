@@ -223,7 +223,7 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
                                  gfx::kChromeIconGrey);
   }
   if (icon_str == "httpsInvalid") {
-    return gfx::CreateVectorIcon(omnibox::kHttpsInvalidIcon, kIconSize,
+    return gfx::CreateVectorIcon(omnibox::kNotSecureWarningIcon, kIconSize,
                                  gfx::kGoogleRed700);
   }
   if (icon_str == "keyIcon") {

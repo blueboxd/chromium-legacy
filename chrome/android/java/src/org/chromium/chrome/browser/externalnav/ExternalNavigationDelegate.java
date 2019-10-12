@@ -48,13 +48,6 @@ interface ExternalNavigationDelegate {
     int countSpecializedHandlers(List<ResolveInfo> infos);
 
     /**
-     * Returns the package name of the first valid WebAPK in {@link infos}.
-     * @param infos ResolveInfos to search.
-     * @return The package name of the first valid WebAPK. Null if no valid WebAPK was found.
-     */
-    String findFirstWebApkPackageName(List<ResolveInfo> infos);
-
-    /**
      * Start an activity for the intent. Used for intents that must be handled externally.
      * @param intent The intent we want to send.
      * @param proxy Whether we need to proxy the intent through AuthenticatedProxyActivity (this is
@@ -163,4 +156,10 @@ interface ExternalNavigationDelegate {
      * @return Whether the Intent points to an app that we trust and that launched Chrome.
      */
     boolean isIntentForTrustedCallingApp(Intent intent);
+
+    /**
+     * @param packageName The package to check.
+     * @return Whether the package is a valid WebAPK package.
+     */
+    boolean isValidWebApk(String packageName);
 }

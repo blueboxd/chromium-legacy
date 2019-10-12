@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_view.h"
+#include "components/favicon/core/favicon_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -19,8 +20,22 @@
 using password_manager::CredentialPair;
 using password_manager::PasswordManagerDriver;
 
-TouchToFillController::TouchToFillController(content::WebContents* web_contents)
-    : web_contents_(web_contents) {}
+namespace {
+
+void OnImageFetched(base::OnceCallback<void(const gfx::Image&)> callback,
+                    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
+  gfx::Image image;
+  if (bitmap_result.is_valid())
+    image = gfx::Image::CreateFrom1xPNGBytes(bitmap_result.bitmap_data);
+  std::move(callback).Run(image);
+}
+
+}  // namespace
+
+TouchToFillController::TouchToFillController(
+    content::WebContents* web_contents,
+    favicon::FaviconService* favicon_service)
+    : web_contents_(web_contents), favicon_service_(favicon_service) {}
 
 TouchToFillController::~TouchToFillController() = default;
 
@@ -47,8 +62,9 @@ void TouchToFillController::OnCredentialSelected(
 
   password_manager::metrics_util::LogFilledCredentialIsFromAndroidApp(
       password_manager::IsValidAndroidFacetURI(credential.origin_url.spec()));
-  driver_->FillSuggestion(credential.username, credential.password);
-  std::exchange(driver_, nullptr)->TouchToFillDismissed();
+  driver_->TouchToFillDismissed();
+  std::exchange(driver_, nullptr)
+      ->FillSuggestion(credential.username, credential.password);
 }
 
 void TouchToFillController::OnDismiss() {
@@ -60,4 +76,15 @@ void TouchToFillController::OnDismiss() {
 
 gfx::NativeView TouchToFillController::GetNativeView() {
   return web_contents_->GetNativeView();
+}
+
+void TouchToFillController::FetchFavicon(
+    const std::string& credential_origin,
+    int desired_size_in_pixel,
+    base::OnceCallback<void(const gfx::Image&)> callback) {
+  favicon_service_->GetRawFaviconForPageURL(
+      GURL(credential_origin), {favicon_base::IconType::kFavicon},
+      desired_size_in_pixel,
+      /* fallback_to_host = */ true,
+      base::BindOnce(&OnImageFetched, std::move(callback)), &favicon_tracker_);
 }

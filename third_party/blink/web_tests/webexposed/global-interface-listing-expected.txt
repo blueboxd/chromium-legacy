@@ -11267,7 +11267,6 @@ interface webkitURL
     attribute textInputController
     attribute top
     attribute window
-    getter TrustedTypes
     getter applicationCache
     getter caches
     getter clientInformation
@@ -11428,6 +11427,7 @@ interface webkitURL
     getter statusbar
     getter styleMedia
     getter toolbar
+    getter trustedTypes
     getter visualViewport
     getter webkitStorageInfo
     method NodeFilter

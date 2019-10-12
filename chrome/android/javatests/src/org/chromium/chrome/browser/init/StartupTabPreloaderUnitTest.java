@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.init;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.test.filters.SmallTest;
@@ -38,6 +39,11 @@ public class StartupTabPreloaderUnitTest {
     private static final String INVALID_SCHEME = "javascript:alert()";
     private static final Intent VIEW_INTENT =
             new Intent(Intent.ACTION_VIEW).setData(Uri.parse(SITE_A));
+    private static final Intent CHROME_MAIN_COMPONENT_INTENT =
+            new Intent()
+                    .setComponent(new ComponentName("com.google.android.apps.chrome",
+                            "com.google.android.apps.chrome.Main"))
+                    .setData(Uri.parse(SITE_A));
     private static final Intent INCOGNITO_VIEW_INTENT =
             new Intent(Intent.ACTION_VIEW)
                     .setData(Uri.parse(SITE_A))
@@ -92,6 +98,14 @@ public class StartupTabPreloaderUnitTest {
     public void testShouldLoadTab_AllowViewIntents() {
         Assert.assertTrue(
                 createStartupTabPreloader(VIEW_INTENT, sChromeTabCreator).shouldLoadTab());
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS)
+    public void testShouldLoadTab_AllowChromeMainComponentIntentWithUrl() {
+        Assert.assertTrue(createStartupTabPreloader(CHROME_MAIN_COMPONENT_INTENT, sChromeTabCreator)
+                                  .shouldLoadTab());
     }
 
     @Test

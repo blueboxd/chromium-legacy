@@ -9,6 +9,7 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 class GURL;
 
@@ -17,7 +18,6 @@ struct RedirectInfo;
 }  // namespace net
 
 namespace network {
-struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
 }  // namespace network
 
@@ -47,12 +47,12 @@ void NotifyResourceRedirectReceived(
     int render_frame_id,
     mojom::ResourceLoadInfo* resource_load_info,
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& redirect_response);
+    network::mojom::URLResponseHeadPtr redirect_response);
 
 void NotifyResourceResponseReceived(
     int render_frame_id,
     mojom::ResourceLoadInfo* resource_load_info,
-    const network::ResourceResponseHead& response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     PreviewsState previews_state);
 
 void NotifyResourceTransferSizeUpdated(

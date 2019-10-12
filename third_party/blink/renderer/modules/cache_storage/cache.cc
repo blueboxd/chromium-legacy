@@ -30,8 +30,10 @@
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage.h"
+#include "third_party/blink/renderer/modules/cache_storage/cache_storage_blob_client_list.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage_error.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage_trace_utils.h"
+#include "third_party/blink/renderer/modules/cache_storage/cache_utils.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -41,6 +43,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/data_pipe_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
@@ -316,8 +319,8 @@ class Cache::BarrierCallbackForPut final
         continue;
       }
       uint64_t side_data_blob_size =
-          operation->response->side_data_blob
-              ? operation->response->side_data_blob->size()
+          operation->response->side_data_blob_for_cache_put
+              ? operation->response->side_data_blob_for_cache_put->size()
               : 0;
       global_scope->CountCacheStorageInstalledScript(blob_data_handle->size(),
                                                      side_data_blob_size);
@@ -430,8 +433,9 @@ class Cache::CodeCacheHandleCallbackForPut final
       side_data_blob_data->AppendBytes(serialized_data.data(),
                                        serialized_data.size());
 
-      batch_operation->response->side_data_blob = BlobDataHandle::Create(
-          std::move(side_data_blob_data), serialized_data.size());
+      batch_operation->response->side_data_blob_for_cache_put =
+          BlobDataHandle::Create(std::move(side_data_blob_data),
+                                 serialized_data.size());
     }
 
     barrier_callback_->OnSuccess(index_, std::move(batch_operation));
@@ -621,12 +625,14 @@ Cache::Cache(GlobalFetch::ScopedFetcher* fetcher,
              mojo::PendingAssociatedRemote<mojom::blink::CacheStorageCache>
                  cache_pending_remote,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : scoped_fetcher_(fetcher) {
+    : scoped_fetcher_(fetcher),
+      blob_client_list_(MakeGarbageCollected<CacheStorageBlobClientList>()) {
   cache_remote_.Bind(std::move(cache_pending_remote), std::move(task_runner));
 }
 
 void Cache::Trace(blink::Visitor* visitor) {
   visitor->Trace(scoped_fetcher_);
+  visitor->Trace(blob_client_list_);
   ScriptWrappable::Trace(visitor);
 }
 
@@ -651,14 +657,20 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
     return promise;
   }
 
+  bool in_related_fetch_event = false;
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  if (auto* global_scope = DynamicTo<ServiceWorkerGlobalScope>(context))
+    in_related_fetch_event = global_scope->HasRelatedFetchEvent(request->url());
+
   // Make sure to bind the Cache object to keep the mojo remote alive during
   // the operation. Otherwise GC might prevent the callback from ever being
   // executed.
   cache_remote_->Match(
-      std::move(mojo_request), std::move(mojo_options), trace_id,
+      std::move(mojo_request), std::move(mojo_options), in_related_fetch_event,
+      trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
-             const CacheQueryOptions* options, int64_t trace_id, Cache* _,
+             const CacheQueryOptions* options, int64_t trace_id, Cache* self,
              mojom::blink::MatchResultPtr result) {
             base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
             UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Renderer.Match",
@@ -695,8 +707,15 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
               UMA_HISTOGRAM_LONG_TIMES(
                   "ServiceWorkerCache.Cache.Renderer.Match.Hit", elapsed);
               ScriptState::Scope scope(resolver->GetScriptState());
-              resolver->Resolve(Response::Create(resolver->GetScriptState(),
-                                                 *result->get_response()));
+              if (result->is_eager_response()) {
+                resolver->Resolve(
+                    CreateEagerResponse(resolver->GetScriptState(),
+                                        std::move(result->get_eager_response()),
+                                        self->blob_client_list_));
+              } else {
+                resolver->Resolve(Response::Create(resolver->GetScriptState(),
+                                                   *result->get_response()));
+              }
             }
           },
           WrapPersistent(resolver), base::TimeTicks::Now(),

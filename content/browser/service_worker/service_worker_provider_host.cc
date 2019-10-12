@@ -597,8 +597,15 @@ void ServiceWorkerProviderHost::AddMatchingRegistration(
   if (!IsContextSecureForServiceWorker())
     return;
   size_t key = registration->scope().spec().size();
-  if (base::Contains(matching_registrations_, key))
-    return;
+  if (base::Contains(matching_registrations_, key)) {
+    if (registration == matching_registrations_[key]) {
+      // TODO(https://crbug.com/971571): Verify this can never happen and
+      // replace with a DCHECK.
+      return;
+    }
+    uninstalled_matching_registrations_[key].emplace(
+        std::move(matching_registrations_[key]));
+  }
   registration->AddListener(this);
   matching_registrations_[key] = registration;
   ReturnRegistrationForReadyIfNeeded();
@@ -608,12 +615,18 @@ void ServiceWorkerProviderHost::RemoveMatchingRegistration(
     ServiceWorkerRegistration* registration) {
   DCHECK_NE(controller_registration_, registration);
 #if DCHECK_IS_ON()
-  DCHECK(IsMatchingRegistration(registration));
+  DCHECK(IsMatchingRegistration(registration) ||
+         IsMatchingUninstalledRegistration(registration));
 #endif  // DCHECK_IS_ON()
 
   registration->RemoveListener(this);
   size_t key = registration->scope().spec().size();
-  matching_registrations_.erase(key);
+  if (registration == matching_registrations_[key]) {
+    matching_registrations_.erase(key);
+    return;
+  }
+  DCHECK(base::Contains(uninstalled_matching_registrations_, key));
+  uninstalled_matching_registrations_.erase(key);
 }
 
 ServiceWorkerRegistration* ServiceWorkerProviderHost::MatchRegistration()
@@ -803,6 +816,15 @@ bool ServiceWorkerProviderHost::IsMatchingRegistration(
     return false;
   return true;
 }
+
+bool ServiceWorkerProviderHost::IsMatchingUninstalledRegistration(
+    ServiceWorkerRegistration* registration) {
+  size_t key = registration->scope().spec().size();
+  if (!base::Contains(uninstalled_matching_registrations_, key)) {
+    return false;
+  }
+  return base::Contains(uninstalled_matching_registrations_[key], registration);
+}
 #endif  // DCHECK_IS_ON()
 
 void ServiceWorkerProviderHost::RemoveAllMatchingRegistrations() {
@@ -812,6 +834,13 @@ void ServiceWorkerProviderHost::RemoveAllMatchingRegistrations() {
     registration->RemoveListener(this);
   }
   matching_registrations_.clear();
+
+  for (const auto& it : uninstalled_matching_registrations_) {
+    for (const auto& registration : it.second) {
+      registration->RemoveListener(this);
+    }
+  }
+  uninstalled_matching_registrations_.clear();
 }
 
 void ServiceWorkerProviderHost::ReturnRegistrationForReadyIfNeeded() {

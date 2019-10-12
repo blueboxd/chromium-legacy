@@ -1285,6 +1285,16 @@ CanCommitStatus ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl(
   if (!url_tuple_or_precursor_tuple.IsInvalid() &&
       !origin_tuple_or_precursor_tuple.IsInvalid() &&
       origin_tuple_or_precursor_tuple != url_tuple_or_precursor_tuple) {
+    // Allow a WebView specific exception for origins that have a data scheme.
+    // WebView converts data: URLs into non-opaque data:// origins which is
+    // different than what all other builds do. This causes the consistency
+    // check to fail because we try to compare a data:// origin with an opaque
+    // origin that contains precursor info.
+    if (url_tuple_or_precursor_tuple.scheme() == url::kDataScheme &&
+        url::AllowNonStandardSchemesForAndroidWebView()) {
+      return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
+    }
+
     return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
   }
 

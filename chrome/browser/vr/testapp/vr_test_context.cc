@@ -720,8 +720,8 @@ void VrTestContext::CycleOrigin() {
        security_state::SecurityLevel::SECURE, &omnibox::kHttpsValidIcon, true,
        false},
       {GURL("https://www.domain.com/path/segment/directory/file.html"),
-       security_state::SecurityLevel::DANGEROUS, &omnibox::kHttpsInvalidIcon,
-       true, false},
+       security_state::SecurityLevel::DANGEROUS,
+       &omnibox::kNotSecureWarningIcon, true, false},
       // Do not show URL
       {GURL(), security_state::SecurityLevel::WARNING, &omnibox::kHttpIcon,
        false, false},

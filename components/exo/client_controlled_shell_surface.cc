@@ -322,6 +322,8 @@ ClientControlledShellSurface::~ClientControlledShellSurface() {
   // operation on a to-be-destroyed window. |widget_| can be nullptr in tests.
   if (GetWidget())
     GetWindowState()->SetDelegate(nullptr);
+  if (client_controlled_state_)
+    client_controlled_state_->ResetDelegate();
   wide_frame_.reset();
   display::Screen::GetScreen()->RemoveObserver(this);
   if (current_pin_ != ash::WindowPinType::kNone)
@@ -1024,7 +1026,7 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
 
   if (wasPip && !window_state->IsMinimized()) {
     // Expanding PIP should end split-view. See crbug.com/941788.
-    ash::Shell::Get()->split_view_controller()->EndSplitView(
+    ash::SplitViewController::Get()->EndSplitView(
         ash::SplitViewController::EndReason::kPipExpanded);
     // As Android doesn't activate PIP tasks after they are expanded, we need
     // to do it here explicitly.
@@ -1063,6 +1065,11 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
                                           ? ui::ZOrderLevel::kFloatingWindow
                                           : ui::ZOrderLevel::kNormal);
 
+}
+
+void ClientControlledShellSurface::OnSurfaceDestroying(Surface* surface) {
+  client_controlled_state_->ResetDelegate();
+  ShellSurfaceBase::OnSurfaceDestroying(surface);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

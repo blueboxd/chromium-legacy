@@ -60,7 +60,6 @@
 #include "ui/surface/transport_dib.h"
 
 namespace blink {
-class WebFrameWidget;
 class WebURLRequest;
 struct PluginAction;
 struct WebWindowFeatures;
@@ -186,20 +185,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // FocusController.
   void SetFocus(bool enable);
 
-  // Attaches a WebFrameWidget that will provide a WebFrameWidget interface to
-  // the WebView. Called as part of initialization or when the main frame
-  // RenderWidget is becoming not undead, to connect it to the new local main
-  // frame.
-  void AttachWebFrameWidget(blink::WebFrameWidget* frame_widget);
-  // Detaches the current WebFrameWidget, disconnecting it from the main frame.
-  // Called when the RenderWidget is becoming undead, because the local main
-  // frame is going away.
-  void DetachWebFrameWidget();
-
-  // Called early before detaching begins for the main frame, and objects begin
-  // tearing down.
-  void PrepareForDetach();
-
   // Starts a timer to send an UpdateState message on behalf of |frame|, if the
   // timer isn't already running. This allows multiple state changing events to
   // be coalesced into one update.
@@ -324,9 +309,12 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // be able to specify |initial_setting| where IPC handlers do not.
   void ApplyPageHidden(bool hidden, bool initial_setting);
 
-  // Instead of creating a new RenderWidget, this revives the undead
-  // RenderWidget for use with a new local main frame.
-  void ReviveUndeadMainFrameRenderWidget(const ScreenInfo& screen_info);
+  // Instead of creating a new RenderWidget, a RenderFrame for a main frame
+  // revives the undead RenderWidget;
+  RenderWidget* ReviveUndeadMainFrameRenderWidget();
+  // Closes the main frame RenderWidget. If not shutting down, this will close
+  // my marking it undead, to be revived later.
+  void CloseMainFrameRenderWidget();
 
  private:
   // For unit tests.

@@ -36,9 +36,6 @@ namespace ash {
 
 namespace {
 
-// Height of suggestion chip container.
-constexpr int kSuggestionChipContainerHeight = 32;
-
 // Suggestion chip container top margin (from the search box view).
 constexpr int kSuggestionChipContainerTopMarginForSmallScreens = 8;
 
@@ -78,32 +75,14 @@ int GetContainerHorizontalPaddingForBounds(const gfx::Rect& bounds) {
 }  // namespace
 
 // static
-gfx::Size AppsContainerView::GetNonAppsGridSize() {
-  gfx::Size size;
-
+int AppsContainerView::GetMinimumGridHorizontalMargin() {
   // If ScalableAppList feature is enabled, there is no extra horizontal margin
   // between grid view and the page switcher.
-  const int min_grid_horizontal_margin =
-      app_list_features::IsScalableAppListEnabled()
-          ? 0
-          : kAppsGridMinimumMargin * 2;
-
-  // Enlarge with the apps grid view horizontal margin.
-  size.Enlarge(min_grid_horizontal_margin, 0);
-
-  // Enlarge with suggestion chips.
-  size.Enlarge(
-      0, AppListConfig::instance().search_box_fullscreen_top_padding() +
-             search_box::kSearchBoxPreferredHeight +
-             AppListConfig::instance().suggestion_chip_container_top_margin() +
-             kSuggestionChipContainerHeight);
-
-  // Enlarge with page switcher.
-  size.Enlarge((kAppsGridPageSwitcherSpacing +
-                PageSwitcher::kPreferredButtonStripWidth) *
-                   2,
-               0);
-  return size;
+  return kAppsGridPageSwitcherSpacing +
+         PageSwitcher::kPreferredButtonStripWidth +
+         (app_list_features::IsScalableAppListEnabled()
+              ? 0
+              : kAppsGridMinimumMargin);
 }
 
 AppsContainerView::AppsContainerView(ContentsView* contents_view,
@@ -292,7 +271,8 @@ void AppsContainerView::Layout() {
       chip_container_rect.set_y(GetExpectedSuggestionChipY(
           contents_view_->app_list_view()->GetAppListTransitionProgress(
               AppListView::kProgressFlagNone)));
-      chip_container_rect.set_height(kSuggestionChipContainerHeight);
+      chip_container_rect.set_height(
+          GetAppListConfig().suggestion_chip_container_height());
       if (app_list_features::IsScalableAppListEnabled()) {
         chip_container_rect.Inset(GetContainerHorizontalPaddingForBounds(rect),
                                   0);
@@ -306,7 +286,7 @@ void AppsContainerView::Layout() {
       rect.set_height(
           rect.height() -
           GetExpectedSuggestionChipY(kAppListFullscreenProgressValue) -
-          kSuggestionChipContainerHeight);
+          chip_container_rect.height());
 
       const int page_switcher_width =
           page_switcher_->GetPreferredSize().width();
@@ -468,7 +448,7 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
     available_height -=
         search_box_size.height() +
         GetAppListConfig().grid_fadeout_zone_height() +
-        kSuggestionChipContainerHeight +
+        GetAppListConfig().suggestion_chip_container_height() +
         GetAppListConfig().suggestion_chip_container_top_margin();
   }
 

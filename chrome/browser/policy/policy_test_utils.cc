@@ -28,13 +28,13 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page_delegate.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
@@ -92,9 +92,9 @@ void PolicyTest::SetScreenshotPolicy(bool enabled) {
 
 void PolicyTest::SetShouldRequireCTForTesting(bool* required) {
   if (content::IsOutOfProcessNetworkService()) {
-    network::mojom::NetworkServiceTestPtr network_service_test;
-    content::GetSystemConnector()->BindInterface(
-        content::mojom::kNetworkServiceName, &network_service_test);
+    mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+    content::GetNetworkService()->BindTestInterface(
+        network_service_test.BindNewPipeAndPassReceiver());
     network::mojom::NetworkServiceTest::ShouldRequireCT required_ct;
     if (!required) {
       required_ct = network::mojom::NetworkServiceTest::ShouldRequireCT::RESET;

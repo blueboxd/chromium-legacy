@@ -131,6 +131,11 @@ void MediaDialogView::OnMediaSessionMetadataChanged() {
     observer.OnMediaSessionMetadataUpdated();
 }
 
+const std::map<const std::string, MediaNotificationContainerImpl*>&
+MediaDialogView::GetNotificationsForTesting() const {
+  return active_sessions_view_->notifications_for_testing();
+}
+
 MediaDialogView::MediaDialogView(views::View* anchor_view,
                                  MediaToolbarButtonController* controller,
                                  service_manager::Connector* connector)

@@ -189,9 +189,9 @@ Polymer({
     /**
      * Object containing current settings of Print Preview, for use by Polymer
      * controls.
-     * Initialize settings that are only available on some printers to
-     * unavailable, and settings that are provided by PDF generation to
-     * available.
+     * Initialize all settings to available so that more settings always stays
+     * in a collapsed state during startup, when document information and
+     * printer capabilities may arrive at slightly different times.
      * @type {!print_preview.Settings}
      */
     settings: {
@@ -243,7 +243,7 @@ Polymer({
             value: true, /* color */
             unavailableValue: false,
             valid: true,
-            available: false,
+            available: true,
             setByPolicy: false,
             setFromUi: false,
             key: 'isColorEnabled',
@@ -256,7 +256,7 @@ Polymer({
               height_microns: 279400,
             },
             valid: true,
-            available: false,
+            available: true,
             setByPolicy: false,
             setFromUi: false,
             key: 'mediaSize',
@@ -286,7 +286,7 @@ Polymer({
             value: {},
             unavailableValue: {},
             valid: true,
-            available: false,
+            available: true,
             setByPolicy: false,
             setFromUi: false,
             key: 'dpi',
@@ -326,7 +326,7 @@ Polymer({
             value: true,
             unavailableValue: false,
             valid: true,
-            available: false,
+            available: true,
             setByPolicy: false,
             setFromUi: false,
             key: 'isDuplexEnabled',
@@ -386,7 +386,7 @@ Polymer({
             value: {},
             unavailableValue: {},
             valid: true,
-            available: false,
+            available: true,
             setByPolicy: false,
             setFromUi: false,
             key: 'vendorOptions',
@@ -441,7 +441,7 @@ Polymer({
             value: false,
             unavailableValue: false,
             valid: true,
-            available: false,
+            available: true,
             setByPolicy: false,
             setFromUi: false,
             key: 'isPinEnabled',
@@ -451,7 +451,7 @@ Polymer({
             value: '',
             unavailableValue: '',
             valid: true,
-            available: false,
+            available: true,
             setByPolicy: false,
             setFromUi: false,
             key: 'pinValue',

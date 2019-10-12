@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "content/public/browser/supported_delegations.h"
 
 class GURL;
 
@@ -33,6 +34,7 @@ class PaymentAppInstaller {
   // |scope| is the registration scope.
   // |use_cache| indicates whether to use cache.
   // |enabled_methods| are the enabled methods of the app.
+  // |supported_delegations| are the supported delegations of the payment app.
   // |callback| to send back registration result.
   static void Install(WebContents* web_contents,
                       const std::string& app_name,
@@ -41,6 +43,7 @@ class PaymentAppInstaller {
                       const GURL& scope,
                       bool use_cache,
                       const std::string& method,
+                      const SupportedDelegations& supported_delegations,
                       InstallPaymentAppCallback callback);
 
  private:

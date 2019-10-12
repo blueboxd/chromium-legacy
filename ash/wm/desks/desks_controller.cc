@@ -236,8 +236,7 @@ class DesksController::DeskActivationAnimation
       Shell::Get()->overview_controller()->EndOverview(
           OverviewSession::EnterExitOverviewType::kImmediateExit);
     }
-    SplitViewController* split_view_controller =
-        Shell::Get()->split_view_controller();
+    SplitViewController* split_view_controller = SplitViewController::Get();
     split_view_controller->EndSplitView(
         SplitViewController::EndReason::kDesksChange);
 
@@ -286,8 +285,7 @@ class DesksController::DeskRemovalAnimation
     // We are removing the active desk, which may have split view active.
     // We will restore the split view state of the newly activated desk at the
     // end of the animation.
-    SplitViewController* split_view_controller =
-        Shell::Get()->split_view_controller();
+    SplitViewController* split_view_controller = SplitViewController::Get();
     split_view_controller->EndSplitView(
         SplitViewController::EndReason::kDesksChange);
 
@@ -550,6 +548,10 @@ void DesksController::OnRootWindowClosing(aura::Window* root_window) {
     desk->OnRootWindowClosing(root_window);
 }
 
+bool DesksController::BelongsToActiveDesk(aura::Window* window) {
+  return desks_util::BelongsToActiveDesk(window);
+}
+
 void DesksController::OnWindowActivating(ActivationReason reason,
                                          aura::Window* gaining_active,
                                          aura::Window* losing_active) {
@@ -714,8 +716,7 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
 
     // Exit split view if active, before activating the new desk. We will
     // restore the split view state of the newly activated desk at the end.
-    SplitViewController* split_view_controller =
-        Shell::Get()->split_view_controller();
+    SplitViewController* split_view_controller = SplitViewController::Get();
     split_view_controller->EndSplitView(
         SplitViewController::EndReason::kDesksChange);
 

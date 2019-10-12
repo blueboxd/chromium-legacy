@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/perf/drag_event_generator.h"
 #include "chrome/test/base/perf/performance_test.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -79,6 +80,16 @@ IN_PROC_BROWSER_TEST_P(LauncherDragTest, Open) {
       std::make_unique<ui_test_utils::InterpolatedProducer>(
           start_point, end_point, base::TimeDelta::FromMilliseconds(1000)));
   generator->Wait();
+
+  const bool is_tablet_mode = GetParam();
+  if (is_tablet_mode && chromeos::switches::ShouldShowShelfHotseat()) {
+    // The first swipe should show the hotseat, a second swipe is required to
+    // show the applist.
+    auto generator = ui_test_utils::DragEventGenerator::CreateForTouch(
+        std::make_unique<ui_test_utils::InterpolatedProducer>(
+            start_point, end_point, base::TimeDelta::FromMilliseconds(1000)));
+    generator->Wait();
+  }
 
   shell_test_api.WaitForLauncherAnimationState(
       ash::AppListViewState::kFullscreenAllApps);

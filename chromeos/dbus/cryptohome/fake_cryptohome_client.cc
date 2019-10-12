@@ -175,7 +175,7 @@ void FakeCryptohomeClient::GetRsuDeviceId(
 
 void FakeCryptohomeClient::TpmIsReady(DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
+      FROM_HERE, base::BindOnce(std::move(callback), tpm_is_ready_));
 }
 
 void FakeCryptohomeClient::TpmIsEnabled(DBusMethodCallback<bool> callback) {
@@ -898,6 +898,14 @@ void FakeCryptohomeClient::NotifyAsyncCallStatusWithData(
     const std::string& data) {
   for (auto& observer : observer_list_)
     observer.AsyncCallStatusWithData(async_id, return_status, data);
+}
+
+void FakeCryptohomeClient::NotifyTpmInitStatusUpdated(
+    bool ready,
+    bool owned,
+    bool was_owned_this_boot) {
+  for (auto& observer : observer_list_)
+    observer.TpmInitStatusUpdated(ready, owned, was_owned_this_boot);
 }
 
 void FakeCryptohomeClient::NotifyDircryptoMigrationProgress(

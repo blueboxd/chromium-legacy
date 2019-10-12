@@ -44,6 +44,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
 
 namespace content {
@@ -141,38 +142,34 @@ void ResourceDispatcher::OnUploadProgress(int request_id,
 
 void ResourceDispatcher::OnReceivedResponse(
     int request_id,
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   TRACE_EVENT0("loading", "ResourceDispatcher::OnReceivedResponse");
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
   DCHECK(!request_info->navigation_response_override);
   request_info->local_response_start = base::TimeTicks::Now();
-  request_info->remote_request_start = response_head.load_timing.request_start;
+  request_info->remote_request_start = response_head->load_timing.request_start;
   // Now that response_start has been set, we can properly set the TimeTicks in
-  // the ResourceResponseHead.
-  network::ResourceResponseHead renderer_response_head;
-  ToResourceResponseHead(*request_info, response_head, &renderer_response_head);
-  request_info->load_timing_info = renderer_response_head.load_timing;
+  // the URLResponseHead.
+  ToLocalURLResponseHead(*request_info, *response_head);
+  request_info->load_timing_info = response_head->load_timing;
   if (delegate_) {
     std::unique_ptr<RequestPeer> new_peer = delegate_->OnReceivedResponse(
-        std::move(request_info->peer), response_head.mime_type,
+        std::move(request_info->peer), response_head->mime_type,
         request_info->url);
     DCHECK(new_peer);
     request_info->peer = std::move(new_peer);
   }
 
-  // Unfortunately, calling OnReceivedResponse on the peer can delete
-  // pending request and/or passed |response_head| reference.
-  // Make a copy of |response_head| for later use.
-  network::ResourceResponseHead response_head_copy = renderer_response_head;
-  request_info->peer->OnReceivedResponse(renderer_response_head);
+  request_info->peer->OnReceivedResponse(
+      network::ResourceResponseHead(response_head));
   if (!GetPendingRequestInfo(request_id))
     return;
 
   NotifyResourceResponseReceived(
       request_info->render_frame_id, request_info->resource_load_info.get(),
-      response_head_copy, request_info->previews_state);
+      std::move(response_head), request_info->previews_state);
 }
 
 void ResourceDispatcher::OnReceivedCachedMetadata(int request_id,
@@ -199,7 +196,7 @@ void ResourceDispatcher::OnStartLoadingResponseBody(
 void ResourceDispatcher::OnReceivedRedirect(
     int request_id,
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   TRACE_EVENT0("loading", "ResourceDispatcher::OnReceivedRedirect");
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
@@ -211,22 +208,22 @@ void ResourceDispatcher::OnReceivedRedirect(
     // URL. Handle this in a posted task, as we don't have the loader
     // pointer yet.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&ResourceDispatcher::OnReceivedRedirect,
-                                  weak_factory_.GetWeakPtr(), request_id,
-                                  redirect_info, response_head, task_runner));
+        FROM_HERE,
+        base::BindOnce(&ResourceDispatcher::OnReceivedRedirect,
+                       weak_factory_.GetWeakPtr(), request_id, redirect_info,
+                       std::move(response_head), task_runner));
     return;
   }
 
   request_info->local_response_start = base::TimeTicks::Now();
-  request_info->remote_request_start = response_head.load_timing.request_start;
+  request_info->remote_request_start = response_head->load_timing.request_start;
   request_info->redirect_requires_loader_restart =
       RedirectRequiresLoaderRestart(request_info->response_url,
                                     redirect_info.new_url);
 
-  network::ResourceResponseHead renderer_response_head;
-  ToResourceResponseHead(*request_info, response_head, &renderer_response_head);
-  if (request_info->peer->OnReceivedRedirect(redirect_info,
-                                             renderer_response_head)) {
+  ToLocalURLResponseHead(*request_info, *response_head);
+  if (request_info->peer->OnReceivedRedirect(
+          redirect_info, network::ResourceResponseHead(response_head))) {
     // Double-check if the request is still around. The call above could
     // potentially remove it.
     request_info = GetPendingRequestInfo(request_id);
@@ -236,7 +233,7 @@ void ResourceDispatcher::OnReceivedRedirect(
     request_info->has_pending_redirect = true;
     NotifyResourceRedirectReceived(request_info->render_frame_id,
                                    request_info->resource_load_info.get(),
-                                   redirect_info, response_head);
+                                   redirect_info, std::move(response_head));
     if (!request_info->is_deferred)
       FollowPendingRedirect(request_info);
   } else {
@@ -571,26 +568,24 @@ int ResourceDispatcher::StartAsync(
   return request_id;
 }
 
-void ResourceDispatcher::ToResourceResponseHead(
+void ResourceDispatcher::ToLocalURLResponseHead(
     const PendingRequestInfo& request_info,
-    const network::ResourceResponseHead& browser_info,
-    network::ResourceResponseHead* renderer_info) const {
-  *renderer_info = browser_info;
+    network::mojom::URLResponseHead& response_head) const {
   if (base::TimeTicks::IsConsistentAcrossProcesses() ||
       request_info.local_request_start.is_null() ||
       request_info.local_response_start.is_null() ||
-      browser_info.request_start.is_null() ||
-      browser_info.response_start.is_null() ||
-      browser_info.load_timing.request_start.is_null()) {
+      response_head.request_start.is_null() ||
+      response_head.response_start.is_null() ||
+      response_head.load_timing.request_start.is_null()) {
     return;
   }
   InterProcessTimeTicksConverter converter(
       LocalTimeTicks::FromTimeTicks(request_info.local_request_start),
       LocalTimeTicks::FromTimeTicks(request_info.local_response_start),
-      RemoteTimeTicks::FromTimeTicks(browser_info.request_start),
-      RemoteTimeTicks::FromTimeTicks(browser_info.response_start));
+      RemoteTimeTicks::FromTimeTicks(response_head.request_start),
+      RemoteTimeTicks::FromTimeTicks(response_head.response_start));
 
-  net::LoadTimingInfo* load_timing = &renderer_info->load_timing;
+  net::LoadTimingInfo* load_timing = &response_head.load_timing;
   RemoteToLocalTimeTicks(converter, &load_timing->request_start);
   RemoteToLocalTimeTicks(converter, &load_timing->proxy_resolve_start);
   RemoteToLocalTimeTicks(converter, &load_timing->proxy_resolve_end);
@@ -606,8 +601,8 @@ void ResourceDispatcher::ToResourceResponseHead(
   RemoteToLocalTimeTicks(converter, &load_timing->receive_headers_end);
   RemoteToLocalTimeTicks(converter, &load_timing->push_start);
   RemoteToLocalTimeTicks(converter, &load_timing->push_end);
-  RemoteToLocalTimeTicks(converter, &renderer_info->service_worker_start_time);
-  RemoteToLocalTimeTicks(converter, &renderer_info->service_worker_ready_time);
+  RemoteToLocalTimeTicks(converter, &response_head.service_worker_start_time);
+  RemoteToLocalTimeTicks(converter, &response_head.service_worker_ready_time);
 }
 
 // TODO(dgozman): this is not used for navigation anymore, only for worker
@@ -626,7 +621,7 @@ void ResourceDispatcher::ContinueForNavigation(int request_id) {
   request_info->should_follow_redirect = false;
 
   URLLoaderClientImpl* client_ptr = request_info->url_loader_client.get();
-  // During navigations, the ResourceResponse has already been received on the
+  // During navigations, the Response has already been received on the
   // browser side, and has been passed down to the renderer. Replay the
   // redirects that happened during navigation.
   DCHECK_EQ(response_override->redirect_responses.size(),

@@ -306,10 +306,9 @@ by a child template that "extends" this file.
                 <data android:scheme="content" />
                 <data android:mimeType="*/*" />
                 <data android:host="*" />
-                <data android:pathPattern="/.*\\.wbn" />
-                <data android:pathPattern="/.*\\..*\\.wbn" />
-                <data android:pathPattern="/.*\\..*\\..*\\.wbn" />
-                <data android:pathPattern="/.*\\..*\\..*\\..*\\.wbn" />
+                {% for i in range(10) %}
+                <data android:pathPattern="/.*{{ '\\\\..*' * i }}\\.wbn" />
+                {% endfor %}
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

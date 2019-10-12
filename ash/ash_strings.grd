@@ -416,7 +416,31 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_ACCESSIBILITY_FEATURE_SHORTCUT_DISABLED_MSG"
                desc="The message used to indicate that, the corresponding shortcut for that accessibility feature has been disabled.">
-        Administrator has deactivated <ph name="FEATURE_NAME">$1<ex>Fullscreen magnifier</ex></ph>.
+        <ph name="ORGANIZATION_NAME">$1<ex>google.com</ex></ph> has <ph name="FEATURE_STATE">$2<ex>activated</ex></ph> <ph name="FEATURE_NAME">$3<ex>Fullscreen magnifier</ex></ph>.
+      </message>
+      <message name="IDS_ASH_HIGH_CONTRAST_SHORTCUT_DISABLED"
+               desc="The label used in the notification used to indicate that, the shortcut for high contrast feature has been disabled.">
+        high-contrast mode
+      </message>
+      <message name="IDS_ASH_DOCKED_MAGNIFIER_SHORTCUT_DISABLED"
+               desc="The label used in the notification used to indicate that, the shortcut for docked magnifier feature has been disabled.">
+        the docked magnifier
+      </message>
+      <message name="IDS_ASH_FULLSCREEN_MAGNIFIER_SHORTCUT_DISABLED"
+               desc="The label used in the notification used to indicate that, the shortcut for fullscreen magnifier feature has been disabled.">
+        the full-screen magnifier
+      </message>
+      <message name="IDS_ASH_SPOKEN_FEEDBACK_SHORTCUT_DISABLED"
+               desc="The label used in the notification used to indicate that, the shortcut for spoken feedback feature has been disabled.">
+        ChromeVox (spoken feedback)
+      </message>
+      <message name="IDS_ASH_ACCESSIBILITY_FEATURE_ACTIVATED"
+               desc="The label used in the notification used to indicate that, the accessibility feature is being set as forced enabled.">
+        activated
+      </message>
+      <message name="IDS_ASH_ACCESSIBILITY_FEATURE_DEACTIVATED"
+               desc="The label used in the notification used to indicate that, the accessibility feature is being set as forced disabled.">
+        deactivated
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_IME_SHORT" desc="The short label used for IME button in system tray bubble.">

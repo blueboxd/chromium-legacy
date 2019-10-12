@@ -14,8 +14,16 @@
  * @enum {string}
  */
 const ContentSettingProvider = {
+  POLICY: 'policy',
+  SUPERVISED_USER: 'supervised_user',
   EXTENSION: 'extension',
+  INSTALLED_WEBAPP_PROVIDER: 'installed_webapp_provider',
+  NOTIFICATION_ANDROID: 'notification_android',
+  EPHEMERAL: 'ephemeral',
   PREFERENCE: 'preference',
+  DEFAULT: 'default',
+  TESTS: 'tests',
+  TESTS_OTHER: 'tests_other'
 };
 
 /**

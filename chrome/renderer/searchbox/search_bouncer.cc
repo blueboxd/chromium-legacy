@@ -40,10 +40,6 @@ void SearchBouncer::RegisterMojoInterfaces(
       &SearchBouncer::BindSearchBouncerReceiver, base::Unretained(this)));
 }
 
-bool SearchBouncer::ShouldFork(const GURL& url) const {
-  return IsNewTabPage(url);
-}
-
 bool SearchBouncer::IsNewTabPage(const GURL& url) const {
   GURL url_no_query_or_ref = RemoveQueryAndRef(url);
   return url_no_query_or_ref.is_valid() &&

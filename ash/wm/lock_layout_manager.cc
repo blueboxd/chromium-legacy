@@ -5,7 +5,6 @@
 #include "ash/wm/lock_layout_manager.h"
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
-#include "ash/shell.h"
 #include "ash/wm/lock_window_state.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
@@ -19,7 +18,6 @@ LockLayoutManager::LockLayoutManager(aura::Window* window, Shelf* shelf)
     : WmDefaultLayoutManager(),
       window_(window),
       root_window_(window->GetRootWindow()) {
-  Shell::Get()->AddShellObserver(this);
   root_window_->AddObserver(this);
   keyboard::KeyboardUIController::Get()->AddObserver(this);
   shelf_observer_.Add(shelf);
@@ -34,7 +32,6 @@ LockLayoutManager::~LockLayoutManager() {
   for (aura::Window* child : window_->children())
     child->RemoveObserver(this);
 
-  Shell::Get()->RemoveShellObserver(this);
 }
 
 void LockLayoutManager::OnWindowResized() {

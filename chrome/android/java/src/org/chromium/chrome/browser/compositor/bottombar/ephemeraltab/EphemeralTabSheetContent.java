@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.bottombar.ephemeraltab;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +25,7 @@ import org.chromium.chrome.browser.ui.widget.FadingShadow;
 import org.chromium.chrome.browser.ui.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.components.embedder_support.view.ContentView;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -32,6 +34,8 @@ import org.chromium.ui.base.ActivityWindowAndroid;
  * Represents ephemeral tab content and the toolbar, which can be included inside the bottom sheet.
  */
 public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent {
+    private static final float PEEK_TOOLBAR_HEIGHT_MULTIPLE = 2.f;
+
     private final Context mContext;
     private final Runnable mOpenNewTabCallback;
     private final Runnable mToolbarClickCallback;
@@ -87,7 +91,7 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
         mSheetContentView.addView(mThinWebView.getView());
 
         int topPadding =
-                mContext.getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
+                mContext.getResources().getDimensionPixelSize(R.dimen.preview_tab_toolbar_height);
         mSheetContentView.setPadding(0, topPadding, 0, 0);
     }
 
@@ -127,9 +131,21 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
     }
 
     /** Sets the ephemeral tab title text. */
-    public void setTitleText(String text) {
+    public void updateTitle(String title) {
         TextView toolbarText = mToolbarView.findViewById(R.id.ephemeral_tab_text);
-        toolbarText.setText(text);
+        toolbarText.setText(title);
+    }
+
+    /** Sets the ephemeral tab URL. */
+    public void updateURL(String url) {
+        TextView caption = mToolbarView.findViewById(R.id.ephemeral_tab_caption);
+        caption.setText(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(url));
+    }
+
+    /** Sets the security icon. */
+    public void setSecurityIcon(@DrawableRes int resId) {
+        ImageView securityIcon = mToolbarView.findViewById(R.id.security_icon);
+        securityIcon.setImageResource(resId);
     }
 
     /** Sets the progress percentage on the progress bar. */
@@ -178,8 +194,10 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
     }
 
     @Override
-    public boolean isPeekStateEnabled() {
-        return true;
+    public int getPeekHeight() {
+        int toolbarHeight =
+                mContext.getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
+        return (int) (toolbarHeight * PEEK_TOOLBAR_HEIGHT_MULTIPLE);
     }
 
     @Override
@@ -197,24 +215,23 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
         return 0.9f;
     }
 
-    // TODO(shaktisahu): Provide correct strings for the following methods.
     @Override
     public int getSheetContentDescriptionStringId() {
-        return R.string.send_tab_to_self_content_description;
+        return R.string.ephemeral_tab_sheet_description;
     }
 
     @Override
     public int getSheetHalfHeightAccessibilityStringId() {
-        return R.string.send_tab_to_self_sheet_half_height;
+        return R.string.ephemeral_tab_sheet_opened_half;
     }
 
     @Override
     public int getSheetFullHeightAccessibilityStringId() {
-        return R.string.send_tab_to_self_sheet_full_height;
+        return R.string.ephemeral_tab_sheet_opened_full;
     }
 
     @Override
     public int getSheetClosedAccessibilityStringId() {
-        return R.string.send_tab_to_self_sheet_closed;
+        return R.string.ephemeral_tab_sheet_closed;
     }
 }

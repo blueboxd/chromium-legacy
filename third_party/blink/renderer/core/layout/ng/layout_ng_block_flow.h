@@ -24,9 +24,6 @@ class CORE_EXPORT LayoutNGBlockFlow
 
  protected:
   bool IsOfType(LayoutObjectType) const override;
-
- private:
-  void UpdateMargins(const NGConstraintSpace&);
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGBlockFlow, IsLayoutNGBlockFlow());

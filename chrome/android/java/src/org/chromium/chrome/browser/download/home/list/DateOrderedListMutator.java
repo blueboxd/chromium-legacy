@@ -47,16 +47,8 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
     private final Map<Date, DateGroup> mDateGroups =
             new TreeMap<>((lhs, rhs) -> { return rhs.compareTo(lhs); });
 
-    // Whether we should hide the section headers and only show the ones that show a new date. Title
-    // and menu button are not present.
-    private final boolean mHideSectionHeaders;
-
     // Whether we shouldn't have any headers. Meant to be used for prefetch tab.
     private boolean mHideAllHeaders;
-
-    // Meant to be used when a non-all chip is selected. Shouldn't have titles, only have dates. Can
-    // have menu button.
-    private boolean mHideTitleFromSectionHeaders;
 
     /**
      * Creates an DateOrderedList instance that will reflect {@code source}.
@@ -70,7 +62,6 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
         mModel = model;
         mConfig = config;
         mJustNowProvider = justNowProvider;
-        mHideSectionHeaders = !mConfig.showSectionHeaders;
         source.addObserver(this);
         onItemsAdded(source.getItems());
     }
@@ -81,7 +72,6 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
      */
     public void onFilterTypeSelected(@Filters.FilterType int filter) {
         mHideAllHeaders = filter == Filters.FilterType.PREFETCHED;
-        mHideTitleFromSectionHeaders = filter != Filters.FilterType.NONE;
     }
 
     // OfflineItemFilterObserver implementation.
@@ -124,19 +114,14 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
         } else {
             addOrUpdateItemToDateGroups(item);
 
-            int sectionHeaderIndex = -1;
             for (int i = 0; i < mModel.size(); i++) {
                 ListItem listItem = mModel.get(i);
-                if (listItem instanceof SectionHeaderListItem) sectionHeaderIndex = i;
                 if (!(listItem instanceof OfflineItemListItem)) continue;
 
                 OfflineItemListItem existingItem = (OfflineItemListItem) listItem;
                 if (item.id.equals(existingItem.item.id)) {
                     existingItem.item = item;
                     mModel.update(i, existingItem);
-                    if (oldItem.state != item.state) {
-                        updateSectionHeader(sectionHeaderIndex, i);
-                    }
                     break;
                 }
             }
@@ -155,16 +140,6 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
         dateGroup.addOrUpdateItem(item);
     }
 
-    private void updateSectionHeader(int sectionHeaderIndex, int offlineItemIndex) {
-        if (sectionHeaderIndex < 0 || mHideSectionHeaders) return;
-
-        SectionHeaderListItem sectionHeader =
-                (SectionHeaderListItem) mModel.get(sectionHeaderIndex);
-        OfflineItem offlineItem = ((OfflineItemListItem) mModel.get(offlineItemIndex)).item;
-        sectionHeader.items.set(offlineItemIndex - sectionHeaderIndex - 1, offlineItem);
-        mModel.update(sectionHeaderIndex, sectionHeader);
-    }
-
     // Flattens out the hierarchical data and adds items to the model in the order they should be
     // displayed. Date headers and section headers are added wherever necessary. The existing items
     // in the model are replaced by the new set of items computed.
@@ -180,16 +155,10 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
                 Section section = dateGroup.sections.get(filter);
 
                 // Add a section header.
-                if (!mHideAllHeaders && (!mHideSectionHeaders || sectionIndex == 0)) {
-                    SectionHeaderListItem sectionHeaderItem = new SectionHeaderListItem(filter,
-                            date.getTime(), sectionIndex == 0 /* showDate */,
-                            date.equals(JUST_NOW_DATE) /* isJustNow */,
+                if (!mHideAllHeaders && sectionIndex == 0) {
+                    SectionHeaderListItem sectionHeaderItem = new SectionHeaderListItem(
+                            date.getTime(), date.equals(JUST_NOW_DATE) /* isJustNow */,
                             sectionIndex == 0 && dateIndex > 0 /* showDivider */);
-                    if (!mHideSectionHeaders) {
-                        sectionHeaderItem.showTitle = !mHideTitleFromSectionHeaders;
-                        sectionHeaderItem.showMenu = filter == OfflineItemFilter.IMAGE;
-                        sectionHeaderItem.items = new ArrayList<>(section.items);
-                    }
                     listItems.add(sectionHeaderItem);
                 }
 

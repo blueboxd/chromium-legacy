@@ -87,8 +87,7 @@ void DragWindowFromShelfController::EndDrag(
 
   drag_started_ = false;
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   const bool in_overview = overview_controller->InOverviewSession();
   const bool in_splitview = split_view_controller->InSplitViewMode();
 
@@ -152,8 +151,7 @@ void DragWindowFromShelfController::OnDragStarted(
 
   // If the dragged window is one of the snapped window in splitview, it needs
   // to be detached from splitview before start dragging.
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   split_view_controller->OnWindowDragStarted(window_);
   // Note SplitViewController::OnWindowDragStarted() may open overview.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
@@ -177,12 +175,11 @@ void DragWindowFromShelfController::OnDragEnded(
         should_drop_window_in_overview,
         /*snap=*/snap_position != SplitViewController::NONE);
   }
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   if (split_view_controller->InSplitViewMode() ||
       snap_position != SplitViewController::NONE) {
-    Shell::Get()->split_view_controller()->OnWindowDragEnded(
-        window_, snap_position, location_in_screen);
+    split_view_controller->OnWindowDragEnded(window_, snap_position,
+                                             location_in_screen);
   }
   Shell::Get()->home_screen_controller()->OnWindowDragEnded();
 
@@ -286,7 +283,7 @@ bool DragWindowFromShelfController::ShouldGoToHomeScreen(
     base::Optional<float> velocity_y) const {
   return velocity_y.has_value() && *velocity_y < 0 &&
          std::abs(*velocity_y) >= kVelocityToHomeScreenThreshold &&
-         !Shell::Get()->split_view_controller()->InSplitViewMode();
+         !SplitViewController::Get()->InSplitViewMode();
 }
 
 SplitViewController::SnapPosition
@@ -310,8 +307,7 @@ bool DragWindowFromShelfController::ShouldDropWindowInOverview(
   if (ShouldGoToHomeScreen(velocity_y))
     return false;
 
-  const bool in_splitview =
-      Shell::Get()->split_view_controller()->InSplitViewMode();
+  const bool in_splitview = SplitViewController::Get()->InSplitViewMode();
   if (!in_splitview && ShouldRestoreToOriginalBounds(location_in_screen)) {
     return false;
   }

@@ -3908,7 +3908,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
 
     ElementId current_native_scrolling_element =
         scroll_state->data()->current_native_scrolling_element();
-    if (current_native_scrolling_element.GetInternalValue() != 0) {
+    if (current_native_scrolling_element.GetStableId() != 0) {
       auto& scroll_tree = active_tree_->property_trees()->scroll_tree;
       scrolling_node =
           scroll_tree.FindNodeFromElementId(current_native_scrolling_element);

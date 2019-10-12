@@ -36,6 +36,7 @@ class XR;
 class XRAnchor;
 class XRAnchorSet;
 class XRCanvasInputProvider;
+class XRHitTestOptions;
 class XRHitTestOptionsInit;
 class XRHitTestSource;
 class XRPlane;
@@ -243,6 +244,12 @@ class XRSession final
       const device::mojom::blink::XRFrameDataPtr& frame_data,
       bool emulated_position);
 
+  // Notifies immersive session that the environment integration provider has
+  // been created by the session's XR instance, |xr_|. Gives a session an
+  // opportunity to register its own error handlers on environment integration
+  // provider endpoint.
+  void OnEnvironmentProviderCreated();
+
  private:
   class XRSessionResizeObserverDelegate;
 
@@ -272,6 +279,12 @@ class XRSession final
       base::Optional<WTF::Vector<device::mojom::blink::XRHitResultPtr>>
           results);
 
+  void OnSubscribeToHitTestResult(
+      ScriptPromiseResolver* resolver,
+      XRHitTestOptions* options,
+      device::mojom::SubscribeToHitTestResult result,
+      uint32_t subscription_id);
+
   void OnCreateAnchorResult(ScriptPromiseResolver* resolver,
                             device::mojom::CreateAnchorResult result,
                             uint32_t id);
@@ -282,6 +295,12 @@ class XRSession final
   void ProcessAnchorsData(
       const device::mojom::blink::XRAnchorsDataPtr& tracked_anchors_data,
       double timestamp);
+
+  void CleanUpUnusedHitTestSources();
+
+  void ProcessHitTestData(
+      const device::mojom::blink::XRHitTestSubscriptionResultsDataPtr&
+          hit_test_data);
 
   const Member<XR> xr_;
   const SessionMode mode_;

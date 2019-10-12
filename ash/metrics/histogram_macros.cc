@@ -16,8 +16,7 @@ bool InTabletMode() {
 }
 
 bool IsInSplitView() {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   return split_view_controller && split_view_controller->InSplitViewMode();
 }
 

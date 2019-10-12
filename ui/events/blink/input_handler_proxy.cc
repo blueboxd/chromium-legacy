@@ -396,7 +396,7 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
   // provided element_id.
   if (type == WebInputEvent::Type::kGestureScrollBegin)
     synthetic_gesture_event->data.scroll_begin.scrollable_area_element_id =
-        pointer_result.target_scroller.GetInternalValue();
+        pointer_result.target_scroller.GetStableId();
 
   WebScopedInputEvent web_scoped_gesture_event(
       synthetic_gesture_event.release());

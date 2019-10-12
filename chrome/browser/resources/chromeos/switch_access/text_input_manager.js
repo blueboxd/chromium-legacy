@@ -17,7 +17,7 @@ class TextInputManager {
   }
 
   /**
-   * Enters the keyboard and draws the text input focus ring.
+   * Enters the keyboard.
    * @param {!chrome.automation.AutomationNode} node
    */
   enterKeyboard(node) {
@@ -25,17 +25,13 @@ class TextInputManager {
       return false;
 
     this.node_ = node;
-    this.navigationManager_.focusRingManager.setRing(
-        SAConstants.Focus.ID.TEXT, [this.node_.location]);
     return true;
   }
 
-  /** Resets the focus ring and the focus in |navigationManager_|. */
+  /** Resets the focus in |navigationManager_|. */
   returnToTextFocus() {
     if (!this.node_)
       return;
-    this.navigationManager_.focusRingManager.clearRing(
-        SAConstants.Focus.ID.TEXT);
     this.navigationManager_.exitCurrentScope(this.node_);
     this.node_ = null;
   }

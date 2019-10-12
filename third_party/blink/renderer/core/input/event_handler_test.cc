@@ -1292,7 +1292,7 @@ TEST_F(EventHandlerSimTest, MAYBE_GestureTapWithScrollSnaps) {
   gsb.data.scroll_begin.delta_x_hint = -gsb_data.delta.width;
   gsb.data.scroll_begin.delta_y_hint = -gsb_data.delta.height;
   gsb.data.scroll_begin.scrollable_area_element_id =
-      gsb_data.scrollable_area_element_id.GetInternalValue();
+      gsb_data.scrollable_area_element_id.GetStableId();
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(gsb);
   WebGestureEvent gsu{WebInputEvent::kGestureScrollUpdate,
                       WebInputEvent::kNoModifiers,
@@ -1655,8 +1655,8 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterMainThreadScrollAtBeginFrame) {
   LocalFrameView* frame_view = GetDocument().View();
   constexpr float delta_y = 500;
   InjectScrollFromGestureEvents(
-      frame_view->LayoutViewport()->GetCompositorElementId().GetInternalValue(),
-      0, delta_y);
+      frame_view->LayoutViewport()->GetCompositorElementId().GetStableId(), 0,
+      delta_y);
   ASSERT_EQ(500, frame_view->LayoutViewport()->GetScrollOffset().Height());
   EXPECT_EQ("currently hovered", element1.InnerHTML().Utf8());
   EXPECT_EQ("hover over me", element2.InnerHTML().Utf8());
@@ -1730,7 +1730,7 @@ TEST_F(EventHandlerSimTest,
   // and mark hover state dirty in ScrollManager.
   constexpr float delta_y = 1000;
   InjectScrollFromGestureEvents(
-      iframe_scrollable_area->GetCompositorElementId().GetInternalValue(), 0,
+      iframe_scrollable_area->GetCompositorElementId().GetStableId(), 0,
       delta_y);
   LocalFrameView* frame_view = GetDocument().View();
   ASSERT_EQ(0, frame_view->LayoutViewport()->GetScrollOffset().Height());
@@ -1862,7 +1862,7 @@ TEST_F(EventHandlerSimTest,
       scroller->GetLayoutBox()->GetScrollableArea();
   constexpr float delta_y = 300;
   InjectScrollFromGestureEvents(
-      scrollable_area->GetCompositorElementId().GetInternalValue(), 0, delta_y);
+      scrollable_area->GetCompositorElementId().GetStableId(), 0, delta_y);
   ASSERT_EQ(300, scrollable_area->GetScrollOffset().Height());
   EXPECT_TRUE(target1->IsHovered());
   EXPECT_FALSE(target2->IsHovered());
@@ -2351,7 +2351,7 @@ TEST_F(EventHandlerSimTest, ElementTargetedGestureScroll) {
   ScrollableArea* scrollable_area =
       scroller->GetLayoutBox()->GetScrollableArea();
   gesture_scroll_begin.data.scroll_begin.scrollable_area_element_id =
-      scrollable_area->GetCompositorElementId().GetInternalValue();
+      scrollable_area->GetCompositorElementId().GetStableId();
 
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       gesture_scroll_begin);
@@ -2411,7 +2411,7 @@ TEST_F(EventHandlerSimTest, ElementTargetedGestureScrollIFrame) {
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0;
   gesture_scroll_begin.data.scroll_begin.delta_y_hint = -delta_y;
   gesture_scroll_begin.data.scroll_begin.scrollable_area_element_id =
-      scrollable_area->GetCompositorElementId().GetInternalValue();
+      scrollable_area->GetCompositorElementId().GetStableId();
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       gesture_scroll_begin);
 
@@ -2462,7 +2462,7 @@ TEST_F(EventHandlerSimTest, ElementTargetedGestureScrollViewport) {
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0;
   gesture_scroll_begin.data.scroll_begin.delta_y_hint = -delta_y;
   gesture_scroll_begin.data.scroll_begin.scrollable_area_element_id =
-      visual_viewport.GetCompositorElementId().GetInternalValue();
+      visual_viewport.GetCompositorElementId().GetStableId();
 
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       gesture_scroll_begin);

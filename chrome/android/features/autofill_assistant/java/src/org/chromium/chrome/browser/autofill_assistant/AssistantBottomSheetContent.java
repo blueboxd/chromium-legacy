@@ -85,11 +85,6 @@ class AssistantBottomSheetContent implements BottomSheet.BottomSheetContent {
     }
 
     @Override
-    public boolean isPeekStateEnabled() {
-        return true;
-    }
-
-    @Override
     public boolean wrapContentEnabled() {
         return true;
     }

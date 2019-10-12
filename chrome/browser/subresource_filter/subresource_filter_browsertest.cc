@@ -724,11 +724,20 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
       tester, true /* expect_performance_measurements */);
 }
 
-IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+class SubresourceFilterBrowserTestWithoutAdTagging
+    : public SubresourceFilterBrowserTest {
+ public:
+  SubresourceFilterBrowserTestWithoutAdTagging() {
+    feature_list_.InitAndDisableFeature(kAdTagging);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// This test only makes sense when AdTagging is disabled.
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTestWithoutAdTagging,
                        ExpectHistogramsNotRecordedWhenFilteringNotActivated) {
-  // This test only makes sense when AdTagging is disabled.
-  base::test::ScopedFeatureList scoped_tagging;
-  scoped_tagging.InitAndDisableFeature(kAdTagging);
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
       "suffix-that-does-not-match-anything"));
   ResetConfigurationToEnableOnPhishingSites(true /* measure_performance */);

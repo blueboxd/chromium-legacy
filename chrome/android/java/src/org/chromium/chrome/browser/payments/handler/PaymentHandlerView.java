@@ -52,8 +52,8 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetCon
     }
 
     @Override
-    public boolean isPeekStateEnabled() {
-        return false;
+    public int getPeekHeight() {
+        return BottomSheet.HeightMode.DISABLED;
     }
 
     @Override

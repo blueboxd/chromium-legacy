@@ -19,6 +19,11 @@ class WebThemeEngineImplDefaultBrowserTest : public ContentBrowserTest {
 
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(WebThemeEngineImplDefaultBrowserTest, GetSystemColor) {
+  // The test non-deterministically fails on Windows Server 2008 builders due to
+  // a difference in the default theme. As a result, only run the test on
+  // Windows version 7 and above.
+  if (base::win::GetVersion() < base::win::Version::WIN7)
+    return;
   GURL url(
       "data:text/html,"
       "<!doctype html><html>"

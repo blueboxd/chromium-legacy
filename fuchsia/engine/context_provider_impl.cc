@@ -33,6 +33,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "content/public/common/content_switches.h"
 #include "fuchsia/engine/common/web_engine_content_client.h"
@@ -101,6 +102,20 @@ bool SetContentDirectoriesInCommandLine(
                                   base::JoinString(directory_pairs, ","));
 
   return true;
+}
+
+// Returns true if DRM is supported in current configuration. Currently we
+// assume that it is supported on ARM64, but not on x64.
+//
+// TODO(crbug.com/1013412): Detect support for all features required for
+// FuchsiaCdm. Specifically we need to verify that protected memory is supported
+// and that mediacodec API provides hardware video decoders.
+bool IsFuchsiaCdmSupported() {
+#if defined(ARCH_CPU_ARM64)
+  return true;
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -212,7 +227,17 @@ void ContextProviderImpl::Create(
   bool enable_widevine =
       (features & fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM) ==
       fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM;
+  if (enable_widevine && !IsFuchsiaCdmSupported()) {
+    LOG(WARNING) << "Widevine is not supported on this device.";
+    enable_widevine = false;
+  }
+
   bool enable_playready = params.has_playready_key_system();
+  if (enable_playready && !IsFuchsiaCdmSupported()) {
+    LOG(WARNING) << "PlayReady is not supported on this device.";
+    enable_playready = false;
+  }
+
   bool enable_protected_graphics = enable_widevine || enable_playready;
 
   if (enable_protected_graphics && !enable_vulkan) {

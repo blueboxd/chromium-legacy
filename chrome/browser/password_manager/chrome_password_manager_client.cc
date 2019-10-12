@@ -611,8 +611,8 @@ ChromePasswordManagerClient::GetOrCreatePasswordAccessory() {
 TouchToFillController*
 ChromePasswordManagerClient::GetOrCreateTouchToFillController() {
   if (!touch_to_fill_controller_) {
-    touch_to_fill_controller_ =
-        std::make_unique<TouchToFillController>(web_contents());
+    touch_to_fill_controller_ = std::make_unique<TouchToFillController>(
+        web_contents(), GetFaviconService());
   }
 
   return touch_to_fill_controller_.get();

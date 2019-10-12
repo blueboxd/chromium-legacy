@@ -26,12 +26,6 @@ class FocusRingManager {
     this.colorPattern_ = /^#[0-9A-F]{3,8}$/i;
 
     /**
-     * Keeps track of the scope node currently being focused.
-     * @private {chrome.automation.AutomationNode}
-     */
-    this.currentScope_;
-
-    /**
      * A reference to the Switch Access object.
      * @private {!SwitchAccessInterface}
      */
@@ -58,8 +52,8 @@ class FocusRingManager {
       color: color,
       secondaryColor: SAConstants.Focus.SECONDARY_COLOR
     });
-    this.rings_.set(SAConstants.Focus.ID.SCOPE, {
-      id: SAConstants.Focus.ID.SCOPE,
+    this.rings_.set(SAConstants.Focus.ID.NEXT, {
+      id: SAConstants.Focus.ID.NEXT,
       rects: [],
       type: chrome.accessibilityPrivate.FocusType.DASHED,
       color: color,
@@ -88,50 +82,58 @@ class FocusRingManager {
   }
 
   /**
-   * Sets the primary and scope focus rings to be around the given nodes.
-   * Saves the scope for future comparison.
+   * Sets the primary and next focus rings based on the current primary and
+   *     group nodes used for navigation.
    * @param {!chrome.automation.AutomationNode} primary
-   * @param {!chrome.automation.AutomationNode} scope
+   * @param {!chrome.automation.AutomationNode} group
    */
-  setFocusNodes(primary, scope) {
+  setFocusNodes(primary, group) {
     if (this.rings_.size === 0) return;
 
-    const focusRect = primary.location;
-
-    // If the scope element has not changed, we want to use the previously
-    // calculated rect as the current scope rect.
-    let scopeRect = scope.location;
-    const currentScopeRects = this.rings_.get(SAConstants.Focus.ID.SCOPE).rects;
-    if (currentScopeRects.length && scope === this.currentScope_)
-      scopeRect = currentScopeRects[0];
-    this.currentScope_ = scope;
-
     if (primary === this.backButtonManager_.backButtonNode()) {
-      this.backButtonManager_.show(scopeRect);
+      this.backButtonManager_.show(group.location);
 
       this.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [];
-      this.rings_.get(SAConstants.Focus.ID.SCOPE).rects = [scopeRect];
+      // Clear the dashed ring between transitions, as the animation is
+      // distracting.
+      this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [];
+      this.updateFocusRings_();
+
+      this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [group.location];
       this.updateFocusRings_();
       return;
     }
     this.backButtonManager_.hide();
 
-    // If the current element is not the back button, the scope rect should
-    // expand to contain the focus rect.
-    scopeRect = RectHelper.expandToFitWithPadding(
-        SAConstants.Focus.SCOPE_BUFFER, scopeRect, focusRect);
+    // If the primary node is a group, show its first child as the "next" focus.
+    if (SwitchAccessPredicate.isGroup(primary, group)) {
+      const firstChild = new AutomationTreeWalker(
+                             primary, constants.Dir.FORWARD,
+                             SwitchAccessPredicate.restrictions(primary))
+                             .next()
+                             .node;
 
-    this.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [focusRect];
-    this.rings_.get(SAConstants.Focus.ID.SCOPE).rects = [scopeRect];
-    this.updateFocusRings_();
-  }
+      // Clear the dashed ring between transitions, as the animation is
+      // distracting.
+      this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [];
+      this.updateFocusRings_();
 
-  /**
-   * Clears the focus ring with the given ID.
-   * @param {!SAConstants.Focus.ID} id
-   */
-  clearRing(id) {
-    this.rings_.get(id).rects = [];
+      let focusRect = primary.location;
+      if (firstChild && firstChild.location) {
+        // If the current element is not the back button, the focus rect should
+        // expand to contain the child rect.
+        focusRect = RectHelper.expandToFitWithPadding(
+            SAConstants.Focus.GROUP_BUFFER, focusRect, firstChild.location);
+        this.rings_.get(SAConstants.Focus.ID.NEXT).rects =
+            [firstChild.location];
+      }
+      this.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [focusRect];
+      this.updateFocusRings_();
+      return;
+    }
+
+    this.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [primary.location];
+    this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [];
     this.updateFocusRings_();
   }
 
@@ -140,18 +142,6 @@ class FocusRingManager {
    */
   clearAll() {
     this.rings_.forEach((ring) => ring.rects = []);
-    this.updateFocusRings_();
-  }
-
-  /**
-   * Sets the indicated focus ring to highlight the given rects.
-   * @param {!SAConstants.Focus.ID} id
-   * @param {!Array<chrome.accessibilityPrivate.ScreenRect>} rects
-   */
-  setRing(id, rects) {
-    if (this.rings_.size === 0) return;
-
-    this.rings_.get(id).rects = rects;
     this.updateFocusRings_();
   }
 

@@ -401,6 +401,8 @@ blink_core_sources("layout") {
     "ng/layout_ng_flexible_box.h",
     "ng/layout_ng_mixin.cc",
     "ng/layout_ng_mixin.h",
+    "ng/layout_ng_progress.cc",
+    "ng/layout_ng_progress.h",
     "ng/layout_ng_table_caption.cc",
     "ng/layout_ng_table_caption.h",
     "ng/layout_ng_table_cell.cc",

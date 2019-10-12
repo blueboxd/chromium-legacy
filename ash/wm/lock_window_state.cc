@@ -189,10 +189,13 @@ gfx::Rect LockWindowState::GetWindowBounds(aura::Window* window) {
           ? keyboard_controller->GetKeyboardLockScreenOffsetBounds().height()
           : 0;
   gfx::Rect bounds = screen_util::GetDisplayBoundsWithShelf(window);
-  bounds.Inset(0,
-               WorkAreaInsets::ForWindow(window->GetRootWindow())
-                   ->accessibility_panel_height(),
-               0, keyboard_height);
+  gfx::Insets insets(WorkAreaInsets::ForWindow(window->GetRootWindow())
+                         ->GetAccessibilityInsets());
+
+  if (keyboard_height > 0)
+    insets.set_bottom(keyboard_height);
+
+  bounds.Inset(insets);
   return bounds;
 }
 

@@ -26,7 +26,7 @@ void ElementId::AddToTracedValue(base::trace_event::TracedValue* res) const {
   res->EndDictionary();
 }
 
-ElementIdType ElementId::GetInternalValue() const {
+ElementIdType ElementId::GetStableId() const {
   return id_;
 }
 

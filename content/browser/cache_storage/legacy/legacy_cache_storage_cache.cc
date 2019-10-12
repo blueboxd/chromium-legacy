@@ -356,7 +356,8 @@ blink::mojom::FetchAPIResponsePtr CreateResponse(
       std::vector<std::string>(
           metadata.response().cors_exposed_header_names().begin(),
           metadata.response().cors_exposed_header_names().end()),
-      nullptr /* side_data_blob */, nullptr /* content_security_policy */);
+      nullptr /* side_data_blob */, nullptr /* side_data_blob_for_cache_put */,
+      nullptr /* content_security_policy */);
 }
 
 // The size of opaque (non-cors) resource responses are padded in order
@@ -642,9 +643,10 @@ void LegacyCacheStorageCache::BatchOperation(
   for (const auto& operation : operations) {
     if (operation->operation_type == blink::mojom::OperationType::kPut) {
       safe_space_required += CalculateRequiredSafeSpaceForPut(operation);
-      safe_side_data_size += (operation->response->side_data_blob
-                                  ? operation->response->side_data_blob->size
-                                  : 0);
+      safe_side_data_size +=
+          (operation->response->side_data_blob_for_cache_put
+               ? operation->response->side_data_blob_for_cache_put->size
+               : 0);
     }
   }
   if (!safe_space_required.IsValid() || !safe_side_data_size.IsValid()) {
@@ -755,7 +757,7 @@ void LegacyCacheStorageCache::BatchDidGetUsageAndQuota(
     switch (operation->operation_type) {
       case blink::mojom::OperationType::kPut:
         if (skip_side_data) {
-          operation->response->side_data_blob = nullptr;
+          operation->response->side_data_blob_for_cache_put = nullptr;
           Put(std::move(operation), trace_id, completion_callback);
         } else {
           Put(std::move(operation), trace_id, completion_callback);

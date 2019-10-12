@@ -32,6 +32,8 @@ def main():
   logging.basicConfig(format='[%(asctime)s:%(levelname)s] %(message)s',
     level=logging.DEBUG, datefmt='%I:%M:%S')
 
+  test_runner.defaults_delete('com.apple.CoreSimulator',
+                              'FramebufferServerRendererPolicy')
   args, test_args = parse_args()
 
   summary = {}
@@ -142,6 +144,8 @@ def main():
     if tr:
       with open(os.path.join(args.out_dir, 'full_results.json'), 'w') as f:
         json.dump(tr.test_results, f)
+    test_runner.defaults_delete('com.apple.CoreSimulator',
+                                'FramebufferServerRendererPolicy')
 
 
 def parse_args():

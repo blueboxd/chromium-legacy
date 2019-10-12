@@ -2039,6 +2039,12 @@ config("no_optimize") {
       "/Ob0",  # Disable all inlining (on by default).
       "/GF",  # Enable string pooling (off by default).
     ]
+
+    if (target_cpu == "arm64") {
+      # Disable omitting frame pointers for no_optimize build because stack
+      # trace on Windows ARM64 relies on it.
+      cflags += [ "/Oy-" ]
+    }
   } else if (is_android && !android_full_debug) {
     # On Android we kind of optimize some things that don't affect debugging
     # much even when optimization is disabled to get the binary size down.

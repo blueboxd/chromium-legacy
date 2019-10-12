@@ -184,12 +184,11 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // feature usage.
   void CanFreezeHeuristicsChecks(DecisionDetails* decision_details) const;
 
-  // Runs the discarding heuristics checks on this tab and store the decision
-  // details in |decision_details|. If |intervention_type| indicates that
-  // this is a proactive intervention then more heuristics will be
-  // applied. This doesn't check for potential background feature usage.
-  void CanDiscardHeuristicsChecks(DecisionDetails* decision_details,
-                                  LifecycleUnitDiscardReason reason) const;
+  // Runs the proactive discarding heuristics checks on this tab and store the
+  // decision details in |decision_details|. This doesn't check for potential
+  // background feature usage.
+  void CanProactivelyDiscardHeuristicsChecks(
+      DecisionDetails* decision_details) const;
 
   // List of observers to notify when the discarded state or the auto-
   // discardable state of this tab changes.

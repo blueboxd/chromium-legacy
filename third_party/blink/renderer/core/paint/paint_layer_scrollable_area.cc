@@ -126,6 +126,7 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       needs_relayout_(false),
       had_horizontal_scrollbar_before_relayout_(false),
       had_vertical_scrollbar_before_relayout_(false),
+      had_resizer_before_relayout_(false),
       scroll_origin_changed_(false),
       scrollbar_manager_(*this),
       scroll_corner_(nullptr),
@@ -891,6 +892,10 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
 
   UpdateScrollDimensions();
 
+  bool has_resizer = GetLayoutBox()->CanResize();
+  bool resizer_will_change = had_resizer_before_relayout_ != has_resizer;
+  had_resizer_before_relayout_ = has_resizer;
+
   bool had_horizontal_scrollbar = HasHorizontalScrollbar();
   bool had_vertical_scrollbar = HasVerticalScrollbar();
 
@@ -990,6 +995,8 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
         }
       }
     }
+  } else if (!HasScrollbar() && resizer_will_change) {
+    Layer()->DirtyStackingContextZOrderLists();
   }
 
   {
@@ -1643,6 +1650,15 @@ bool PaintLayerScrollableArea::HasOverflowControls() const {
   // are scrollbars, see: |ScrollCornerRect| and |UpdateScrollCornerStyle|.
   DCHECK(!ScrollCorner() || HasScrollbar());
   return HasScrollbar() || GetLayoutBox()->CanResize();
+}
+
+bool PaintLayerScrollableArea::HasOverlayOverflowControls() const {
+  return HasOverlayScrollbars() ||
+         (!HasScrollbar() && GetLayoutBox()->CanResize());
+}
+
+bool PaintLayerScrollableArea::HasNonOverlayOverflowControls() const {
+  return HasScrollbar() && !HasOverlayScrollbars();
 }
 
 void PaintLayerScrollableArea::PositionOverflowControls() {

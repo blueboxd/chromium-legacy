@@ -34,8 +34,8 @@ promise_test(() => {
   return new Promise((resolve, reject) => {
     prepareTest().then(() => {
       assert_equals(outermost.renderSubtree, "");
-      assert_equals(outer.renderSubtree, "invisible activatable");
-      assert_equals(inner.renderSubtree, "invisible activatable");
+      assert_equals(outer.renderSubtree, INVISIBLE_ACTIVATABLE);
+      assert_equals(inner.renderSubtree, INVISIBLE_ACTIVATABLE);
       assert_equals(innermost.renderSubtree, "");
 
       let innerPromise = new Promise((resolve, reject) => {

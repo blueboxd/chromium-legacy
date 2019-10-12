@@ -18,8 +18,6 @@ using ::testing::SetArgPointee;
 namespace gpu {
 namespace gles2 {
 
-using namespace cmds;
-
 class GLES2DecoderDrawOOMTest : public GLES2DecoderManualInitTest {
  protected:
   void Init(bool has_robustness) {
@@ -46,7 +44,7 @@ class GLES2DecoderDrawOOMTest : public GLES2DecoderManualInitTest {
     EXPECT_CALL(*mock_decoder_, MarkContextLost(expected_other_reason))
         .Times(1)
         .RetiresOnSaturation();
-    DrawArrays cmd;
+    cmds::DrawArrays cmd;
     cmd.Init(GL_TRIANGLES, 0, kFakeLargeCount);
     EXPECT_EQ(error::kLostContext, ExecuteCmd(cmd));
   }
@@ -115,7 +113,7 @@ class GLES2DecoderLostContextTest : public GLES2DecoderManualInitTest {
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_, GetGraphicsResetStatusARB())
         .WillOnce(Return(reset_status));
-    GetError cmd;
+    cmds::GetError cmd;
     cmd.Init(shared_memory_id_, shared_memory_offset_);
     EXPECT_EQ(error::kLostContext, ExecuteCmd(cmd));
     EXPECT_EQ(static_cast<GLuint>(GL_NO_ERROR), *GetSharedMemoryAs<GLenum*>());
@@ -126,7 +124,7 @@ class GLES2DecoderLostContextTest : public GLES2DecoderManualInitTest {
     EXPECT_CALL(*gl_, GetError())
         .WillOnce(Return(GL_CONTEXT_LOST_KHR))
         .RetiresOnSaturation();
-    GetError cmd;
+    cmds::GetError cmd;
     cmd.Init(shared_memory_id_, shared_memory_offset_);
     EXPECT_EQ(error::kLostContext, ExecuteCmd(cmd));
   }
@@ -173,7 +171,7 @@ TEST_P(GLES2DecoderLostContextTest, TextureDestroyAfterLostFromMakeCurrent) {
   EXPECT_CALL(*gl_, GenTextures(_, _))
       .WillOnce(SetArgPointee<1>(kServiceTextureId))
       .RetiresOnSaturation();
-  GenHelper<GenTexturesImmediate>(kClientTextureId);
+  GenHelper<cmds::GenTexturesImmediate>(kClientTextureId);
   DoBindTexture(GL_TEXTURE_2D, kClientTextureId, kServiceTextureId);
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 5, 6, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                shared_memory_id_, kSharedMemoryOffset);
@@ -212,9 +210,9 @@ TEST_P(GLES2DecoderLostContextTest, QueryDestroyAfterLostFromMakeCurrent) {
   InitDecoder(init);
 
   const GLsync kGlSync = reinterpret_cast<GLsync>(0xdeadbeef);
-  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
+  GenHelper<cmds::GenQueriesEXTImmediate>(kNewClientId);
 
-  BeginQueryEXT begin_cmd;
+  cmds::BeginQueryEXT begin_cmd;
   begin_cmd.Init(GL_COMMANDS_COMPLETED_CHROMIUM, kNewClientId,
                  shared_memory_id_, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
@@ -236,7 +234,7 @@ TEST_P(GLES2DecoderLostContextTest, QueryDestroyAfterLostFromMakeCurrent) {
       .RetiresOnSaturation();
 #endif
 
-  EndQueryEXT end_cmd;
+  cmds::EndQueryEXT end_cmd;
   end_cmd.Init(GL_COMMANDS_COMPLETED_CHROMIUM, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());

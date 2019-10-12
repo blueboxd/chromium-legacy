@@ -197,6 +197,11 @@ public class OverlayPanelContent {
             }
 
             @Override
+            public void visibleSSLStateChanged() {
+                mContentDelegate.onSSLStateUpdated();
+            }
+
+            @Override
             public void enterFullscreenModeForTab(boolean prefersNavigationBar) {
                 mIsFullscreen = true;
             }

@@ -3,7 +3,6 @@ Tests property access on a cached DOMWindow after the associated frame is no lon
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS childWindow.TrustedTypes.defaultPolicy is null
 PASS childWindow.closed is true
 PASS childWindow.defaultStatus is ''
 PASS childWindow.defaultstatus is ''
@@ -179,6 +178,7 @@ PASS childWindow.status is ''
 PASS childWindow.statusbar.visible is false
 PASS childWindow.styleMedia.type is ''
 PASS childWindow.toolbar.visible is false
+PASS childWindow.trustedTypes.defaultPolicy is null
 PASS childWindow.visualViewport.height is 0
 PASS childWindow.visualViewport.offsetLeft is 0
 PASS childWindow.visualViewport.offsetTop is 0

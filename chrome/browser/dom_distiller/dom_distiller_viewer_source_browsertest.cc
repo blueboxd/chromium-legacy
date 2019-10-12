@@ -28,7 +28,6 @@
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
-#include "components/dom_distiller/core/dom_distiller_store.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/fake_distiller.h"
 #include "components/dom_distiller/core/fake_distiller_page.h"
@@ -84,17 +83,6 @@ const char kTestDistillerObject[] =
     "window.domAutomationController.send("
     "typeof distiller == 'object')";
 
-ArticleEntry CreateEntry(const std::string& entry_id,
-                         const std::string& page_url) {
-  ArticleEntry entry;
-  entry.set_entry_id(entry_id);
-  if (!page_url.empty()) {
-    ArticleEntryPage* page = entry.add_pages();
-    page->set_url(page_url);
-  }
-  return entry;
-}
-
 void ExpectBodyHasThemeAndFont(content::WebContents* contents,
                                const std::string& expected_theme,
                                const std::string& expected_font) {
@@ -128,7 +116,6 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
     auto distiller_page_factory = std::make_unique<MockDistillerPageFactory>();
     auto* distiller_page_factory_raw = distiller_page_factory.get();
     auto service = std::make_unique<DomDistillerContextKeyedService>(
-        std::make_unique<DomDistillerStore>(store_model_),
         std::move(distiller_factory), std::move(distiller_page_factory),
         std::make_unique<DistilledPagePrefs>(
             Profile::FromBrowserContext(context)->GetPrefs()));
@@ -153,25 +140,10 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
   void PrefTest(bool is_error_page);
 
   // Database entries.
-  std::vector<ArticleEntry> store_model_;
   bool expect_distillation_ = false;
   bool expect_distiller_page_ = false;
   MockDistillerFactory* distiller_factory_ = nullptr;
 };
-
-// The DomDistillerViewerSource renders untrusted content, so ensure no bindings
-// are enabled when the article exists in the database.
-IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
-                       NoWebUIBindingsArticleExists) {
-  // Ensure there is one item in the database, which will trigger distillation.
-  const ArticleEntry entry = CreateEntry("DISTILLED", "http://example.com/1");
-  store_model_.push_back(entry);
-  expect_distillation_ = true;
-  expect_distiller_page_ = true;
-  const GURL url = url_utils::GetDistillerViewUrlFromEntryId(
-      kDomDistillerScheme, entry.entry_id());
-  ViewSingleDistilledPage(url, "text/html");
-}
 
 // The DomDistillerViewerSource renders untrusted content, so ensure no bindings
 // are enabled when the article is not found.

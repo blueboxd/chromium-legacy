@@ -343,13 +343,13 @@ TEST_F(ScreenOrientationControllerTest, SplitViewPreventsLock) {
   Lock(child_window2.get(), OrientationLockType::kPortrait);
   ASSERT_TRUE(RotationLocked());
 
-  Shell::Get()->split_view_controller()->SnapWindow(focus_window1.get(),
-                                                    SplitViewController::LEFT);
-  Shell::Get()->split_view_controller()->SnapWindow(focus_window1.get(),
-                                                    SplitViewController::RIGHT);
+  SplitViewController::Get()->SnapWindow(focus_window1.get(),
+                                         SplitViewController::LEFT);
+  SplitViewController::Get()->SnapWindow(focus_window1.get(),
+                                         SplitViewController::RIGHT);
   EXPECT_FALSE(RotationLocked());
 
-  Shell::Get()->split_view_controller()->EndSplitView();
+  SplitViewController::Get()->EndSplitView();
   EXPECT_TRUE(RotationLocked());
 }
 

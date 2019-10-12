@@ -23,8 +23,7 @@ WmShadowControllerDelegate::~WmShadowControllerDelegate() = default;
 bool WmShadowControllerDelegate::ShouldShowShadowForWindow(
     const aura::Window* window) {
   // Hide the shadow if it is one of the splitscreen snapped windows.
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   if (split_view_controller &&
       split_view_controller->IsWindowInSplitView(window)) {
     return false;

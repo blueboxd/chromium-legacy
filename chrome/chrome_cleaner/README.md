@@ -69,4 +69,4 @@ that builds and runs the binaries, and remove the artificial dependency.
 
 ## Contact
 
-joenotcharles@google.com
+joenotcharles@chromium.org

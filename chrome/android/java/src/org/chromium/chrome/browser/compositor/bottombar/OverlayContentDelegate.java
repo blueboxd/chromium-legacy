@@ -60,6 +60,12 @@ public class OverlayContentDelegate {
     public void onVisibilityChanged(boolean isVisible) {}
 
     /**
+     * Called when the SSL state changes.
+     */
+
+    public void onSSLStateUpdated() {}
+
+    /**
      * Called once the WebContents has been seen.
      */
     public void onContentViewSeen() {}

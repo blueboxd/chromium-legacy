@@ -3866,10 +3866,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute console
 [Worker]     attribute globalThis
 [Worker]     attribute internals
-[Worker]     getter TrustedTypesWorkers
 [Worker]     getter name
 [Worker]     getter onmessage
 [Worker]     getter onmessageerror
+[Worker]     getter trustedTypes
 [Worker]     method cancelAnimationFrame
 [Worker]     method close
 [Worker]     method gc

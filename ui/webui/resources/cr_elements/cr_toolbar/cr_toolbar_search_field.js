@@ -138,6 +138,7 @@ Polymer({
   clearSearch_: function(e) {
     this.setValue('');
     this.focus_();
+    this.spinnerActive = false;
   },
 
   /**

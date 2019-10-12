@@ -4,15 +4,37 @@
 
 #include "chrome/browser/lookalikes/safety_tips/safety_tip_test_utils.h"
 
+#include <algorithm>
+#include <memory>
+#include <utility>
+
 #include "chrome/browser/lookalikes/safety_tips/safety_tips_config.h"
+
+namespace {
+
+// Retrieve existing config proto if set, or create a new one otherwise.
+std::unique_ptr<chrome_browser_safety_tips::SafetyTipsConfig> GetConfig() {
+  auto* old = safety_tips::GetRemoteConfigProto();
+  if (old) {
+    return std::make_unique<chrome_browser_safety_tips::SafetyTipsConfig>(*old);
+  }
+
+  auto conf = std::make_unique<chrome_browser_safety_tips::SafetyTipsConfig>();
+  // Any version ID will do.
+  conf->set_version_id(4);
+  return conf;
+}
+
+}  // namespace
+
+void InitializeSafetyTipConfig() {
+  safety_tips::SetRemoteConfigProto(GetConfig());
+}
 
 void SetSafetyTipPatternsWithFlagType(
     std::vector<std::string> patterns,
     chrome_browser_safety_tips::FlaggedPage::FlagType type) {
-  std::unique_ptr<chrome_browser_safety_tips::SafetyTipsConfig> config_proto =
-      std::make_unique<chrome_browser_safety_tips::SafetyTipsConfig>();
-  // Any version ID will do.
-  config_proto->set_version_id(4);
+  auto config_proto = GetConfig();
   std::sort(patterns.begin(), patterns.end());
   for (const auto& pattern : patterns) {
     chrome_browser_safety_tips::FlaggedPage* page =
@@ -27,4 +49,15 @@ void SetSafetyTipPatternsWithFlagType(
 void SetSafetyTipBadRepPatterns(std::vector<std::string> patterns) {
   SetSafetyTipPatternsWithFlagType(
       patterns, chrome_browser_safety_tips::FlaggedPage::BAD_REP);
+}
+
+void SetSafetyTipAllowlistPatterns(std::vector<std::string> patterns) {
+  auto config_proto = GetConfig();
+  std::sort(patterns.begin(), patterns.end());
+  for (const auto& pattern : patterns) {
+    chrome_browser_safety_tips::UrlPattern* page =
+        config_proto->add_allowed_pattern();
+    page->set_pattern(pattern);
+  }
+  safety_tips::SetRemoteConfigProto(std::move(config_proto));
 }

@@ -90,6 +90,31 @@ std::string GetHistogramSuffixForSafetyTipStatus(
   return std::string();
 }
 
+// Returns whether to set the security level based on the safety tip status.
+// Sets |level| to the right value if status should be set.
+bool ShouldSetSecurityLevelFromSafetyTip(security_state::SafetyTipStatus status,
+                                         SecurityLevel* level) {
+  if (!base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
+    return false;
+  }
+
+  switch (status) {
+    case security_state::SafetyTipStatus::kBadReputation:
+      *level = security_state::NONE;
+      return true;
+    case security_state::SafetyTipStatus::kLookalike:
+      // PageInfo doesn't differ for lookalikes, so don't degrade the indicator.
+    case security_state::SafetyTipStatus::kBadKeyword:
+      // TODO(crbug/1012982): Decide whether to degrade the indicator once the
+      // UI lands.
+    case security_state::SafetyTipStatus::kUnknown:
+    case security_state::SafetyTipStatus::kNone:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace
 
 SecurityLevel GetSecurityLevel(
@@ -161,6 +186,13 @@ SecurityLevel GetSecurityLevel(
       visible_security_state.connection_used_legacy_tls &&
       !visible_security_state.should_suppress_legacy_tls_warning) {
     return WARNING;
+  }
+
+  // Downgrade the security level for pages that trigger a Safety Tip.
+  SecurityLevel safety_tip_level;
+  if (ShouldSetSecurityLevelFromSafetyTip(
+          visible_security_state.safety_tip_status, &safety_tip_level)) {
+    return safety_tip_level;
   }
 
   // In most cases, SHA1 use is treated as a certificate error, in which case

@@ -657,6 +657,7 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
     const std::string& sw_scope,
     bool sw_use_cache,
     const std::string& method,
+    const SupportedDelegations& supported_delegations,
     RegistrationIdCallback registration_id_callback,
     InvokePaymentAppCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -687,7 +688,7 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
 
   PaymentAppInstaller::Install(
       web_contents, app_name, string_encoded_icon, url, scope, sw_use_cache,
-      method,
+      method, supported_delegations,
       base::BindOnce(&OnInstallPaymentApp, url::Origin::Create(scope),
                      std::move(event_data), std::move(registration_id_callback),
                      std::move(callback)));

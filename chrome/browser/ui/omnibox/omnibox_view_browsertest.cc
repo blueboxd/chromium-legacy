@@ -1609,12 +1609,19 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Paste) {
   // TODO(msw): Test that AltGr+V does not paste.
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EditSearchEngines) {
+class OmniboxViewTestWithoutSplitSettings : public OmniboxViewTest {
+ public:
+  OmniboxViewTestWithoutSplitSettings() {
 #if defined(OS_CHROMEOS)
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(chromeos::features::kSplitSettings);
+    feature_list_.InitAndDisableFeature(chromeos::features::kSplitSettings);
 #endif
+  }
 
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTestWithoutSplitSettings, EditSearchEngines) {
   OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 #if defined(OS_CHROMEOS)

@@ -1863,6 +1863,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.DownloadManager.List.Selection.Menu.Images.Action">
+  <obsolete>
+    Deprecated October 2019. Feature dropped during implementation review.
+  </obsolete>
   <owner>dtrainor@chromium.org</owner>
   <description>
     User triggered a menu action on the images section header of download home.

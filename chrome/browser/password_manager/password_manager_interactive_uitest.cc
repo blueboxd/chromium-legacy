@@ -179,8 +179,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
   prompt_observer.WaitForManagementState();
 }
 
+// Flaky. https://crbug.com/1013743
 IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
-                       PromptForXHRWithoutOnSubmit) {
+                       DISABLED_PromptForXHRWithoutOnSubmit) {
   NavigateToFile("/password/password_xhr_submit.html");
 
   // Verify that if XHR navigation occurs and the form is properly filled out,
@@ -226,8 +227,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
+// Flaky. https://crbug.com/1013743
 IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
-                       PromptForFetchWithNewPasswordsWithoutOnSubmit) {
+                       DISABLED_PromptForFetchWithNewPasswordsWithoutOnSubmit) {
   NavigateToFile("/password/password_fetch_submit.html");
 
   // Verify that if Fetch navigation occurs and the form is properly filled out,

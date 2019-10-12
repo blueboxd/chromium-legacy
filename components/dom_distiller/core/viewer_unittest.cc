@@ -41,21 +41,12 @@ class TestDomDistillerService : public DomDistillerServiceInterface {
   TestDomDistillerService() {}
   ~TestDomDistillerService() override {}
 
-  MOCK_METHOD1(HasEntry, bool(const std::string&));
-  MOCK_METHOD1(GetUrlForEntry, std::string(const std::string&));
   MOCK_METHOD0(ViewUrlImpl, ViewerHandle*());
   std::unique_ptr<ViewerHandle> ViewUrl(
       ViewRequestDelegate*,
       std::unique_ptr<DistillerPage> distiller_page,
       const GURL&) override {
     return std::unique_ptr<ViewerHandle>(ViewUrlImpl());
-  }
-  MOCK_METHOD0(ViewEntryImpl, ViewerHandle*());
-  std::unique_ptr<ViewerHandle> ViewEntry(
-      ViewRequestDelegate*,
-      std::unique_ptr<DistillerPage> distiller_page,
-      const std::string&) override {
-    return std::unique_ptr<ViewerHandle>(ViewEntryImpl());
   }
   std::unique_ptr<DistillerPage> CreateDefaultDistillerPage(
       const gfx::Size& render_view_size) override {
@@ -89,26 +80,13 @@ TEST_F(DomDistillerViewerTest, TestCreatingViewUrlRequest) {
   ViewerHandle* viewer_handle(new ViewerHandle(ViewerHandle::CancelCallback()));
   EXPECT_CALL(*service_, ViewUrlImpl())
       .WillOnce(testing::Return(viewer_handle));
-  EXPECT_CALL(*service_, ViewEntryImpl()).Times(0);
   CreateViewRequest(GetDistillerViewUrlFromUrl("http://www.example.com/"),
-                    view_request_delegate.get());
-}
-
-TEST_F(DomDistillerViewerTest, TestCreatingViewEntryRequest) {
-  std::unique_ptr<FakeViewRequestDelegate> view_request_delegate(
-      new FakeViewRequestDelegate());
-  ViewerHandle* viewer_handle(new ViewerHandle(ViewerHandle::CancelCallback()));
-  EXPECT_CALL(*service_, ViewEntryImpl())
-      .WillOnce(testing::Return(viewer_handle));
-  EXPECT_CALL(*service_, ViewUrlImpl()).Times(0);
-  CreateViewRequest(GetDistillerViewUrlFromEntryId("abc-def"),
                     view_request_delegate.get());
 }
 
 TEST_F(DomDistillerViewerTest, TestCreatingInvalidViewRequest) {
   std::unique_ptr<FakeViewRequestDelegate> view_request_delegate(
       new FakeViewRequestDelegate());
-  EXPECT_CALL(*service_, ViewEntryImpl()).Times(0);
   EXPECT_CALL(*service_, ViewUrlImpl()).Times(0);
   // Specify none of the required query parameters.
   CreateViewRequest(GURL(std::string(kDomDistillerScheme) + "://host?foo=bar"),

@@ -31,9 +31,10 @@ class StubArImageTransport : public ArImageTransport {
       std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge)
       : ArImageTransport(std::move(mailbox_bridge)) {}
 
-  // TODO(lincolnfrog): verify this gets called on GL thread.
-  // TODO(lincolnfrog): test what happens if this returns false.
-  bool Initialize(vr::WebXrPresentationState*) override { return true; }
+  void Initialize(vr::WebXrPresentationState*,
+                  base::OnceClosure callback) override {
+    std::move(callback).Run();
+  }
 
   // TODO(lincolnfrog): test verify this somehow.
   GLuint GetCameraTextureId() override { return CAMERA_TEXTURE_ID; }
@@ -42,6 +43,7 @@ class StubArImageTransport : public ArImageTransport {
   // by GetCameraTextureId() is at the time it is called and returns
   // a gpu::MailboxHolder with that texture copied to a shared buffer.
   gpu::MailboxHolder TransferFrame(
+      vr::WebXrPresentationState*,
       const gfx::Size& frame_size,
       const gfx::Transform& uv_transform) override {
     return gpu::MailboxHolder();
@@ -65,13 +67,9 @@ class StubMailboxToSurfaceBridge : public vr::MailboxToSurfaceBridge {
  public:
   StubMailboxToSurfaceBridge() = default;
 
-  MOCK_METHOD1(DoCreateUnboundContextProvider,
-               void(base::OnceClosure callback));
-  void CreateUnboundContextProvider(base::OnceClosure callback) override {
+  void CreateAndBindContextProvider(base::OnceClosure callback) override {
     callback_ = std::move(callback);
   }
-
-  void BindContextProviderToCurrentThread() override {}
 
   bool IsConnected() override { return true; }
 
@@ -178,7 +176,6 @@ class ArCoreDeviceTest : public testing::Test {
 
     run_loop = std::make_unique<base::RunLoop>();
     quit_closure = run_loop->QuitClosure();
-    bridge->CallCallback();
     run_loop->Run();
 
     EXPECT_TRUE(environment_provider);

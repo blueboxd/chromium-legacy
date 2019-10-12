@@ -15,6 +15,7 @@ class Connector;
 }  // namespace service_manager
 
 class MediaDialogViewObserver;
+class MediaNotificationContainerImpl;
 class MediaNotificationListView;
 class MediaToolbarButtonController;
 
@@ -48,6 +49,9 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   void RemoveObserver(MediaDialogViewObserver* observer);
 
   void OnMediaSessionMetadataChanged();
+
+  const std::map<const std::string, MediaNotificationContainerImpl*>&
+  GetNotificationsForTesting() const;
 
  private:
   explicit MediaDialogView(views::View* anchor_view,

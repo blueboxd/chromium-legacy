@@ -40,8 +40,7 @@ TEST(UIDevToolsServerTest, MAYBE_ConnectionToViewsServer) {
   network::mojom::NetworkServiceRequest network_service_request =
       mojo::MakeRequest(&network_service_ptr);
   auto network_service =
-      network::NetworkService::Create(std::move(network_service_request),
-                                      /*netlog=*/nullptr);
+      network::NetworkService::Create(std::move(network_service_request));
   mojo::Remote<network::mojom::NetworkContext> network_context_remote;
   network_service_ptr->CreateNetworkContext(
       network_context_remote.BindNewPipeAndPassReceiver(),

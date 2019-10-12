@@ -1003,8 +1003,7 @@ TEST_F(ClientControlledShellSurfaceTest, ShellSurfaceInSystemModalHitTest) {
 // Test the snap functionalities in splitscreen in tablet mode.
 TEST_F(ClientControlledShellSurfaceTest, SnapWindowInSplitViewModeTest) {
   UpdateDisplay("807x607");
-  ash::Shell* shell = ash::Shell::Get();
-  shell->tablet_mode_controller()->SetEnabledForTest(true);
+  ash::Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   const gfx::Size buffer_size(800, 600);
   std::unique_ptr<Buffer> buffer1(
@@ -1026,7 +1025,7 @@ TEST_F(ClientControlledShellSurfaceTest, SnapWindowInSplitViewModeTest) {
 
   // Snap window to left.
   ash::SplitViewController* split_view_controller =
-      shell->split_view_controller();
+      ash::SplitViewController::Get();
   split_view_controller->SnapWindow(window1, ash::SplitViewController::LEFT);
   state1->set_bounds_locally(true);
   window1->SetBounds(split_view_controller->GetSnappedWindowBoundsInScreen(
@@ -2017,7 +2016,7 @@ TEST_F(ClientControlledShellSurfaceTest,
        ExpandingPipInTabletModeEndsSplitView) {
   EnableTabletMode(true);
 
-  auto* split_view_controller = ash::Shell::Get()->split_view_controller();
+  auto* split_view_controller = ash::SplitViewController::Get();
   EXPECT_FALSE(split_view_controller->InSplitViewMode());
 
   // Create a PIP window:
@@ -2053,7 +2052,7 @@ TEST_F(ClientControlledShellSurfaceTest,
        DismissingPipInTabletModeDoesNotEndSplitView) {
   EnableTabletMode(true);
 
-  auto* split_view_controller = ash::Shell::Get()->split_view_controller();
+  auto* split_view_controller = ash::SplitViewController::Get();
   EXPECT_FALSE(split_view_controller->InSplitViewMode());
 
   // Create a PIP window:

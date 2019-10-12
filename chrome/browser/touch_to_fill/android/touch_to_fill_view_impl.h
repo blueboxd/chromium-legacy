@@ -9,6 +9,10 @@
 #include "base/callback.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_view.h"
 
+namespace gfx {
+class Image;
+}
+
 class TouchToFillController;
 
 // This class provides an implementation of the TouchToFillView interface and
@@ -28,6 +32,10 @@ class TouchToFillViewImpl : public TouchToFillView {
   void OnDismiss() override;
 
   // Called from Java via JNI:
+  void FetchFavicon(JNIEnv* env,
+                    const base::android::JavaParamRef<jstring>& j_origin,
+                    jint desized_size_in_pixel,
+                    const base::android::JavaParamRef<jobject>& j_callback);
   void OnCredentialSelected(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& credential);

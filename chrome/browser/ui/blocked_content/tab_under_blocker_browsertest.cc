@@ -44,6 +44,9 @@
 class TabUnderBlockerBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   TabUnderBlockerBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        TabUnderNavigationThrottle::kBlockTabUnders);
+
     EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
         .WillRepeatedly(testing::Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
@@ -53,8 +56,6 @@ class TabUnderBlockerBrowserTest : public extensions::ExtensionBrowserTest {
 
   void SetUpOnMainThread() override {
     extensions::ExtensionBrowserTest::SetUpOnMainThread();
-    scoped_feature_list_.InitAndEnableFeature(
-        TabUnderNavigationThrottle::kBlockTabUnders);
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
   }

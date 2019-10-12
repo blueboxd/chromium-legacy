@@ -68,7 +68,7 @@ class InterceptingPrefFilter : public PrefFilter {
 
   // PrefFilter implementation:
   void FilterOnLoad(
-      const PostFilterOnLoadCallback& post_filter_on_load_callback,
+      PostFilterOnLoadCallback post_filter_on_load_callback,
       std::unique_ptr<base::DictionaryValue> pref_store_contents) override;
   void FilterUpdate(const std::string& path) override {}
   OnWriteCallbackPair FilterSerializeData(
@@ -101,16 +101,16 @@ InterceptingPrefFilter::InterceptingPrefFilter(
 InterceptingPrefFilter::~InterceptingPrefFilter() {}
 
 void InterceptingPrefFilter::FilterOnLoad(
-    const PostFilterOnLoadCallback& post_filter_on_load_callback,
+    PostFilterOnLoadCallback post_filter_on_load_callback,
     std::unique_ptr<base::DictionaryValue> pref_store_contents) {
-  post_filter_on_load_callback_ = post_filter_on_load_callback;
+  post_filter_on_load_callback_ = std::move(post_filter_on_load_callback);
   intercepted_prefs_ = std::move(pref_store_contents);
 }
 
 void InterceptingPrefFilter::ReleasePrefs() {
   EXPECT_FALSE(post_filter_on_load_callback_.is_null());
-  post_filter_on_load_callback_.Run(std::move(intercepted_prefs_), false);
-  post_filter_on_load_callback_.Reset();
+  std::move(post_filter_on_load_callback_)
+      .Run(std::move(intercepted_prefs_), false);
 }
 
 class MockPrefStoreObserver : public PrefStore::Observer {

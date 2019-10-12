@@ -4324,6 +4324,7 @@ interface Navigator
     getter vendorSub
     getter webkitPersistentStorage
     getter webkitTemporaryStorage
+    getter xr
     method constructor
     method getBattery
     method getGamepads
@@ -7953,6 +7954,7 @@ interface WebGL2RenderingContext
     method isVertexArray
     method lineWidth
     method linkProgram
+    method makeXRCompatible
     method pauseTransformFeedback
     method pixelStorei
     method polygonOffset
@@ -8449,6 +8451,7 @@ interface WebGLRenderingContext
     method isTexture
     method lineWidth
     method linkProgram
+    method makeXRCompatible
     method pixelStorei
     method polygonOffset
     method readPixels
@@ -8750,6 +8753,139 @@ interface XPathResult
     method constructor
     method iterateNext
     method snapshotItem
+interface XR : EventTarget
+    attribute @@toStringTag
+    getter ondevicechange
+    method constructor
+    method isSessionSupported
+    method requestSession
+    method supportsSession
+    setter ondevicechange
+interface XRBoundedReferenceSpace : XRReferenceSpace
+    attribute @@toStringTag
+    getter boundsGeometry
+    method constructor
+interface XRFrame
+    attribute @@toStringTag
+    getter session
+    method constructor
+    method getPose
+    method getViewerPose
+interface XRInputSource
+    attribute @@toStringTag
+    getter gripSpace
+    getter handedness
+    getter profiles
+    getter targetRayMode
+    getter targetRaySpace
+    method constructor
+interface XRInputSourceArray
+    attribute @@toStringTag
+    getter length
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method keys
+    method values
+interface XRInputSourceEvent : Event
+    attribute @@toStringTag
+    getter frame
+    getter inputSource
+    method constructor
+interface XRInputSourcesChangeEvent : Event
+    attribute @@toStringTag
+    getter added
+    getter removed
+    getter session
+    method constructor
+interface XRPose
+    attribute @@toStringTag
+    getter emulatedPosition
+    getter transform
+    method constructor
+interface XRReferenceSpace : XRSpace
+    attribute @@toStringTag
+    getter onreset
+    method constructor
+    method getOffsetReferenceSpace
+    setter onreset
+interface XRReferenceSpaceEvent : Event
+    attribute @@toStringTag
+    getter referenceSpace
+    getter transform
+    method constructor
+interface XRRenderState
+    attribute @@toStringTag
+    getter baseLayer
+    getter depthFar
+    getter depthNear
+    getter inlineVerticalFieldOfView
+    method constructor
+interface XRRigidTransform
+    attribute @@toStringTag
+    getter inverse
+    getter matrix
+    getter orientation
+    getter position
+    method constructor
+interface XRSession : EventTarget
+    attribute @@toStringTag
+    getter inputSources
+    getter onend
+    getter oninputsourceschange
+    getter onselect
+    getter onselectend
+    getter onselectstart
+    getter onvisibilitychange
+    getter renderState
+    getter visibilityState
+    method cancelAnimationFrame
+    method constructor
+    method end
+    method requestAnimationFrame
+    method requestReferenceSpace
+    method updateRenderState
+    setter onend
+    setter oninputsourceschange
+    setter onselect
+    setter onselectend
+    setter onselectstart
+    setter onvisibilitychange
+interface XRSessionEvent : Event
+    attribute @@toStringTag
+    getter session
+    method constructor
+interface XRSpace : EventTarget
+    attribute @@toStringTag
+    method constructor
+interface XRView
+    attribute @@toStringTag
+    getter eye
+    getter projectionMatrix
+    getter transform
+    method constructor
+interface XRViewerPose : XRPose
+    attribute @@toStringTag
+    getter views
+    method constructor
+interface XRViewport
+    attribute @@toStringTag
+    getter height
+    getter width
+    getter x
+    getter y
+    method constructor
+interface XRWebGLLayer
+    static method getNativeFramebufferScaleFactor
+    attribute @@toStringTag
+    getter antialias
+    getter framebuffer
+    getter framebufferHeight
+    getter framebufferWidth
+    getter ignoreDepthValues
+    method constructor
+    method getViewport
 interface XSLTProcessor
     attribute @@toStringTag
     method clearParameters

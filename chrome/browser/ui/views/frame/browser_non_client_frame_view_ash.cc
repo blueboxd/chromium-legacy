@@ -22,6 +22,7 @@
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
@@ -649,6 +651,15 @@ int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
 }
 
 bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  // Normal windows that have a WebUI-based tab strip do not need a browser
+  // frame as no tab strip is drawn on top of the browser frame.
+  if (base::FeatureList::IsEnabled(features::kWebUITabStrip) &&
+      browser_view()->IsBrowserTypeNormal()) {
+    return false;
+  }
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+
   // We need to paint when the top-of-window views are revealed in immersive
   // fullscreen.
   ImmersiveModeController* immersive_mode_controller =

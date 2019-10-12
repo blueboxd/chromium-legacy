@@ -9,6 +9,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_menu_constants.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/tablet_mode.h"
@@ -23,6 +24,9 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -30,6 +34,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -351,12 +356,13 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
   }
 
   // Select an item and flush mojo calls to allow async callbacks to run.
-  void SelectItemAndFlushMojoCallsForAppService(
+  ash::ShelfAction SelectItemAndFlushMojoCallsForAppService(
       const ash::ShelfID& id,
       ui::EventType event_type = ui::ET_MOUSE_PRESSED,
       int64_t display_id = display::kInvalidDisplayId) {
-    SelectItem(id, event_type, display_id);
+    const ash::ShelfAction action = SelectItem(id, event_type, display_id);
     FlushMojoCallsForAppService();
+    return action;
   }
 
   ChromeLauncherController* controller_ = nullptr;
@@ -2057,4 +2063,57 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest,
   event_generator.GestureTapAt(button_1->GetBoundsInScreen().CenterPoint());
   EXPECT_EQ(ash::HotseatState::kHidden,
             controller->shelf()->shelf_layout_manager()->hotseat_state());
+}
+
+namespace {
+
+class ShelfAppBrowserTestWithDesks : public ShelfAppBrowserTest {
+ public:
+  ShelfAppBrowserTestWithDesks() = default;
+  ~ShelfAppBrowserTestWithDesks() override = default;
+
+  // ShelfAppBrowserTest:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(ash::features::kVirtualDesks);
+    ShelfAppBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShelfAppBrowserTestWithDesks);
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithDesks, MultipleDesks) {
+  auto* desks_controller = ash::DesksController::Get();
+  desks_controller->NewDesk(ash::DesksCreationRemovalSource::kButton);
+
+  // Tests starts with an existing browser on desk_1.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  // Activate desk_2 and click on the browser's icon on the shelf while being on
+  // that desk. This should not switch back to desk_1, but rather create a new
+  // browser window.
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  auto* desk_2 = desks_controller->desks()[1].get();
+  ash::ActivateDesk(desk_2);
+
+  const int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
+  ash::ShelfID browser_id = shelf_model()->items()[browser_index].id;
+
+  SelectItemAndFlushMojoCallsForAppService(browser_id);
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+  EXPECT_FALSE(desks_controller->AreDesksBeingModified());
+  EXPECT_TRUE(desk_2->is_active());
+
+  // The shelf context menu should show 2 items for both browsers. No new items
+  // should be created and existing window should not be minimized.
+  EXPECT_EQ(ash::ShelfAction::SHELF_ACTION_NONE,
+            SelectItemAndFlushMojoCallsForAppService(browser_id));
+  EXPECT_EQ(
+      2u, controller_
+              ->GetAppMenuItemsForTesting(shelf_model()->items()[browser_index])
+              .size());
 }

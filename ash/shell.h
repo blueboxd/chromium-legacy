@@ -173,7 +173,6 @@ class ShellState;
 class ShutdownControllerImpl;
 class SmsObserver;
 class SnapController;
-class SplitViewController;
 class StickyKeysController;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
@@ -456,9 +455,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   ShellState* shell_state() { return shell_state_.get(); }
   ShutdownControllerImpl* shutdown_controller() {
     return shutdown_controller_.get();
-  }
-  SplitViewController* split_view_controller() {
-    return split_view_controller_.get();
   }
   StickyKeysController* sticky_keys_controller() {
     return sticky_keys_controller_.get();
@@ -766,9 +762,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<HighlighterController> highlighter_controller_;
 
   std::unique_ptr<DockedMagnifierControllerImpl> docked_magnifier_controller_;
-
-  // The split view controller for Chrome OS.
-  std::unique_ptr<SplitViewController> split_view_controller_;
 
   std::unique_ptr<SnapController> snap_controller_;
 

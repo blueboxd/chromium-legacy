@@ -22,11 +22,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/crash/core/common/crash_keys.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "printing/backend/print_backend.h"
 #include "printing/print_job_constants.h"
 #include "printing/printed_document.h"
 #include "printing/printing_utils.h"
@@ -39,6 +41,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/threading/thread_restrictions.h"
 #include "printing/printed_page_win.h"
 #endif
 
@@ -203,6 +206,21 @@ void PrintJobWorker::SetSettingsFromPOD(
 void PrintJobWorker::UpdatePrintSettings(base::Value new_settings,
                                          SettingsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  std::unique_ptr<crash_keys::ScopedPrinterInfo> crash_key;
+  if (new_settings.FindIntKey(kSettingPrinterType).value() == kLocalPrinter) {
+#if defined(OS_WIN)
+    // Blocking is needed here because Windows printer drivers are oftentimes
+    // not thread-safe and have to be accessed on the UI thread.
+    base::ScopedAllowBlocking allow_blocking;
+#endif
+    scoped_refptr<PrintBackend> print_backend =
+        PrintBackend::CreateInstance(nullptr);
+    std::string printer_name = *new_settings.FindStringKey(kSettingDeviceName);
+    crash_key = std::make_unique<crash_keys::ScopedPrinterInfo>(
+        print_backend->GetPrinterDriverInfo(printer_name));
+  }
+
   PrintingContext::Result result =
       printing_context_->UpdatePrintSettings(std::move(new_settings));
   GetSettingsDone(std::move(callback), result);

@@ -244,7 +244,9 @@ class LegacyTracingSession
                 parent_scenario_->GetWeakPtr(), std::move(on_success))),
             true /* compress_with_background_priority */);
 
-    TracingControllerImpl::GetInstance()->StopTracing(trace_data_endpoint);
+    TracingControllerImpl::GetInstance()->StopTracing(
+        trace_data_endpoint, "",
+        parent_scenario_->GetConfig()->requires_anonymized_data());
   }
 
   void AbortScenario(const base::RepeatingClosure& on_abort_callback) override {

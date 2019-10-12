@@ -196,6 +196,10 @@ mojom::VRPosePtr FakeArCore::Update(bool* camera_updated) {
   return pose;
 }
 
+float FakeArCore::GetEstimatedFloorHeight() {
+  return 2.0;
+}
+
 bool FakeArCore::RequestHitTest(
     const mojom::XRRayPtr& ray,
     std::vector<mojom::XRHitResultPtr>* hit_results) {
@@ -205,6 +209,23 @@ bool FakeArCore::RequestHitTest(
   hit_results->push_back(std::move(hit));
 
   return true;
+}
+
+base::Optional<uint32_t> FakeArCore::SubscribeToHitTest(
+    mojom::XRNativeOriginInformationPtr nativeOriginInformation,
+    mojom::XRRayPtr ray) {
+  NOTREACHED();
+  return base::nullopt;
+}
+
+mojom::XRHitTestSubscriptionResultsDataPtr
+FakeArCore::GetHitTestSubscriptionResults(
+    const device::mojom::VRPosePtr& pose) {
+  return nullptr;
+}
+
+void FakeArCore::UnsubscribeFromHitTest(uint32_t subscription_id) {
+  NOTREACHED();
 }
 
 mojom::XRPlaneDetectionDataPtr FakeArCore::GetDetectedPlanesData() {

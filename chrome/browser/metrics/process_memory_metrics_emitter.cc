@@ -25,10 +25,10 @@
 #include "content/public/browser/audio_service_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_names.mojom.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/browser_metrics.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "url/gurl.h"
@@ -771,7 +771,8 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
           EmitAudioServiceMemoryMetrics(
               pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
               GetProcessUptime(now, pmd.pid()), emit_metrics_for_all_processes);
-        } else if (pmd.service_name() == content::mojom::kNetworkServiceName) {
+        } else if (pmd.service_name() ==
+                   network::mojom::NetworkService::Name_) {
           EmitNetworkServiceMemoryMetrics(
               pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
               GetProcessUptime(now, pmd.pid()), emit_metrics_for_all_processes);

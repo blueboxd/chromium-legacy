@@ -12,12 +12,29 @@
  *
  * @param {!Array<!Object>} methods: Payment methods data for PaymentRequest
  *     constructor.
+ * @param {boolean} requestShippingContact: Whether or not shipping address and
+ *     payer's contact information are required.
  */
-function testPaymentMethods(methods) {
+function testPaymentMethods(methods, requestShippingContact = false) {
+  const shippingOptions = requestShippingContact
+      ? [{
+          id: 'freeShippingOption',
+          label: 'Free global shipping',
+          amount: {currency: 'USD', value: '0'},
+          selected: true,
+        }]
+      : [];
   try {
     new PaymentRequest(
         methods,
-        {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
+        {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
+            shippingOptions},
+        {
+          requestShipping: requestShippingContact,
+          requestPayerEmail: requestShippingContact,
+          requestPayerName: requestShippingContact,
+          requestPayerPhone: requestShippingContact,
+        })
         .show()
         .then(function(resp) {
           resp.complete('success')
@@ -42,7 +59,7 @@ function testPaymentMethods(methods) {
  * Launches the PaymentRequest UI with Bob Pay and credit cards as payment
  * methods.
  */
-function buy() {  // eslint-disable-line no-unused-vars
+function buy() { // eslint-disable-line no-unused-vars
   testPaymentMethods([
       {supportedMethods: 'https://bobpay.com'},
       {
@@ -56,7 +73,7 @@ function buy() {  // eslint-disable-line no-unused-vars
  * Launches the PaymentRequest UI with kylepay.com and basic-card as payment
  * methods. kylepay.com hosts an installable payment app.
  */
-function testInstallableAppAndCard() {  // eslint-disable-line no-unused-vars
+function testInstallableAppAndCard() { // eslint-disable-line no-unused-vars
   testPaymentMethods([
       {supportedMethods: 'https://kylepay.com/webpay'},
       {supportedMethods: 'basic-card'},

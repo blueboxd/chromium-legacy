@@ -41,42 +41,9 @@
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "url/gurl.h"
 
-using InstantProcessNavigationTest = ChromeRenderViewTest;
 using ChromeContentRendererClientSearchBoxTest = ChromeRenderViewTest;
 
 const char kHtmlWithIframe[] ="<iframe srcdoc=\"Nothing here\"></iframe>";
-
-// Tests that renderer-initiated navigations from an Instant render process get
-// bounced back to the browser to be rebucketed into a non-Instant renderer if
-// necessary.
-TEST_F(InstantProcessNavigationTest, ForkForNavigationsFromInstantProcess) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kInstantProcess);
-  ChromeContentRendererClient* client =
-      static_cast<ChromeContentRendererClient*>(content_renderer_client_.get());
-  EXPECT_TRUE(client->ShouldFork(GetMainFrame(), GURL("http://foo"), "GET",
-                                 false, false));
-}
-
-// Tests that renderer-initiated navigations from a non-Instant render process
-// to potentially Instant URLs get bounced back to the browser to be rebucketed
-// into an Instant renderer if necessary.
-TEST_F(InstantProcessNavigationTest, ForkForNavigationsToNewTabURLs) {
-  ChromeContentRendererClient* client =
-      static_cast<ChromeContentRendererClient*>(content_renderer_client_.get());
-  chrome_render_thread_->set_io_task_runner(
-      base::ThreadTaskRunnerHandle::Get());
-  client->RenderThreadStarted();
-  SearchBouncer::GetInstance()->SetNewTabPageURL(
-      GURL("http://example.com/newtab"));
-  EXPECT_TRUE(client->ShouldFork(
-      GetMainFrame(), GURL("http://example.com/newtab"), "GET", false, false));
-  EXPECT_FALSE(client->ShouldFork(GetMainFrame(),
-                                  GURL("http://example.com/search?q=foo"),
-                                  "GET", false, false));
-  EXPECT_FALSE(client->ShouldFork(GetMainFrame(), GURL("http://example.com/"),
-                                  "GET", false, false));
-}
 
 TEST_F(ChromeContentRendererClientSearchBoxTest, RewriteThumbnailURL) {
   // Instantiate a SearchBox for the main render frame.

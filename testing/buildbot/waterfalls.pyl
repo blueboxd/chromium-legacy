@@ -1776,6 +1776,9 @@
           'gtest_tests': 'ios_code_coverage_gtests',
         }
       },
+      'ios-simulator-cr-recipe': {
+        'test_suites': {}
+      },
       'linux-annotator-rel': {
         'test_suites': {
           'scripts': 'test_traffic_annotation_auditor_script',
@@ -4429,16 +4432,6 @@
           'junit_tests': 'chromium_junit_tests',
         },
         'os_type': 'android',
-      },
-      'android-opus-kitkat-arm-rel': {
-        'mixins': [
-          'kitkat',
-          'hammerhead',
-        ],
-        'os_type': 'android',
-        'test_suites': {
-          'isolated_scripts': 'opus_roll_validation_tests',
-        },
       },
       'android_blink_rel': {
         'mixins': [

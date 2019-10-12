@@ -373,6 +373,11 @@ TEST_F(TabLifecycleUnitTest, UrgentDiscardProtections) {
                        LifecycleUnitDiscardReason::PROACTIVE);
   ExpectCanDiscardFalseTrivial(&tab_lifecycle_unit,
                                LifecycleUnitDiscardReason::URGENT);
+
+  // The tab should be discardable a second time when the memory limit
+  // enterprise policy is set.
+  GetTabLifecycleUnitSource()->SetMemoryLimitEnterprisePolicyFlag(true);
+  ExpectCanDiscardTrue(&tab_lifecycle_unit, LifecycleUnitDiscardReason::URGENT);
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -805,9 +810,17 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardIfEnterpriseOptOutUsed) {
 
   {
     ScopedEnterpriseOptOut enterprise_opt_out;
-    ExpectCanDiscardFalseAllReasons(
-        &tab_lifecycle_unit,
-        DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT);
+    DecisionDetails decision_details;
+    EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(
+        LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
+    EXPECT_EQ(DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT,
+              decision_details.FailureReason());
+    EXPECT_FALSE(decision_details.IsPositive());
+
+    decision_details.Clear();
+    EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
+        LifecycleUnitDiscardReason::URGENT, &decision_details));
+    EXPECT_TRUE(decision_details.IsPositive());
   }
 
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
@@ -986,6 +999,64 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeIfHoldingIndexedDBLock) {
 
   // This tab should still be discardable.
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+
+  tab_lifecycle_unit.SetIsHoldingIndexedDBLock(false);
+}
+
+TEST_F(TabLifecycleUnitTest, TabUnfreezeOnWebLockAcquisition) {
+  TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
+                                      usage_clock_.get(), web_contents_,
+                                      tab_strip_model_.get());
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
+                                                   LoadingState::LOADED);
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+
+  DecisionDetails decision_details;
+  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
+
+  // Freeze the tab.
+  EXPECT_CALL(observer_, OnFrozenStateChange(web_contents_, true));
+  tab_lifecycle_unit.Freeze();
+  ::testing::Mock::VerifyAndClear(&observer_);
+  EXPECT_EQ(LifecycleUnitState::PENDING_FREEZE, tab_lifecycle_unit.GetState());
+
+  // Indicates that the tab has acquired a WebLock, this should unfreeze it.
+  EXPECT_CALL(observer_, OnFrozenStateChange(web_contents_, false));
+  tab_lifecycle_unit.SetIsHoldingWebLock(true);
+  ::testing::Mock::VerifyAndClear(&observer_);
+  EXPECT_EQ(LifecycleUnitState::PENDING_UNFREEZE,
+            tab_lifecycle_unit.GetState());
+
+  tab_lifecycle_unit.SetIsHoldingWebLock(false);
+}
+
+TEST_F(TabLifecycleUnitTest, TabUnfreezeOnIndexedDBLockAcquisition) {
+  TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
+                                      usage_clock_.get(), web_contents_,
+                                      tab_strip_model_.get());
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
+                                                   LoadingState::LOADED);
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+
+  DecisionDetails decision_details;
+  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
+
+  // Freeze the tab.
+  EXPECT_CALL(observer_, OnFrozenStateChange(web_contents_, true));
+  tab_lifecycle_unit.Freeze();
+  ::testing::Mock::VerifyAndClear(&observer_);
+  EXPECT_EQ(LifecycleUnitState::PENDING_FREEZE, tab_lifecycle_unit.GetState());
+
+  // Indicates that the tab has acquired a WebLock, this should unfreeze it.
+  EXPECT_CALL(observer_, OnFrozenStateChange(web_contents_, false));
+  tab_lifecycle_unit.SetIsHoldingIndexedDBLock(true);
+  ::testing::Mock::VerifyAndClear(&observer_);
+  EXPECT_EQ(LifecycleUnitState::PENDING_UNFREEZE,
+            tab_lifecycle_unit.GetState());
 
   tab_lifecycle_unit.SetIsHoldingIndexedDBLock(false);
 }

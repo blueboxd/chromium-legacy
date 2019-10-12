@@ -68,6 +68,7 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   base::WeakPtr<PermissionPromptAndroid> permission_prompt_;
   InfoBarService* infobar_service_;
+  bool details_expanded_;
 
   DISALLOW_COPY_AND_ASSIGN(GroupedPermissionInfoBarDelegate);
 };

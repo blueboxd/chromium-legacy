@@ -8,14 +8,14 @@
 
 namespace chromecast {
 
-WebviewLayoutManager::WebviewLayoutManager(aura::Window* web_contents_window)
-    : web_contents_window_(web_contents_window) {}
+WebviewLayoutManager::WebviewLayoutManager(aura::Window* parent,
+                                           aura::Window* web_contents_window)
+    : parent_(parent), web_contents_window_(web_contents_window) {}
 
 WebviewLayoutManager::~WebviewLayoutManager() {}
 
 void WebviewLayoutManager::OnWindowResized() {
-  web_contents_window_->SetBounds(
-      gfx::Rect(web_contents_window_->parent()->bounds().size()));
+  web_contents_window_->SetBounds(gfx::Rect(parent_->bounds().size()));
 }
 
 void WebviewLayoutManager::OnWindowAddedToLayout(aura::Window* child) {}

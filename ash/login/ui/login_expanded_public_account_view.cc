@@ -549,13 +549,18 @@ class RightPaneView : public NonAccessibleView,
         selected_language_item_ = item;
     }
 
+    LoginMenuView* old_language_menu_view = language_menu_view_;
+
     language_menu_view_ = new LoginMenuView(
         language_items_, language_selection_ /*anchor_view*/,
         language_selection_ /*bubble_opener*/,
         base::BindRepeating(&RightPaneView::OnLanguageSelected,
                             weak_factory_.GetWeakPtr()));
-    login_views_utils::GetTopLevelParentView(this)->AddChildView(
+    login_views_utils::GetBubbleContainer(this)->AddChildView(
         language_menu_view_);
+
+    if (old_language_menu_view)
+      delete old_language_menu_view;
   }
 
   void PopulateKeyboardItems(
@@ -573,13 +578,18 @@ class RightPaneView : public NonAccessibleView,
         selected_keyboard_item_ = item;
     }
 
+    LoginMenuView* old_keyboard_menu_view = keyboard_menu_view_;
+
     keyboard_menu_view_ = new LoginMenuView(
         keyboard_items_, keyboard_selection_ /*anchor_view*/,
         keyboard_selection_ /*bubble_opener*/,
         base::BindRepeating(&RightPaneView::OnKeyboardSelected,
                             weak_factory_.GetWeakPtr()));
-    login_views_utils::GetTopLevelParentView(this)->AddChildView(
+    login_views_utils::GetBubbleContainer(this)->AddChildView(
         keyboard_menu_view_);
+
+    if (old_keyboard_menu_view)
+      delete old_keyboard_menu_view;
   }
 
   LoginBaseBubbleView* GetLanguageMenuView() { return language_menu_view_; }
@@ -590,6 +600,10 @@ class RightPaneView : public NonAccessibleView,
   void Reset() {
     show_advanced_changed_by_user_ = false;
     language_changed_by_user_ = false;
+    if (language_menu_view_ && language_menu_view_->GetVisible())
+      language_menu_view_->Hide();
+    if (keyboard_menu_view_ && keyboard_menu_view_->GetVisible())
+      keyboard_menu_view_->Hide();
   }
 
  private:

@@ -13,7 +13,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/dom_distiller/core/distilled_content_store.h"
-#include "components/dom_distiller/core/dom_distiller_store.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "url/gurl.h"
@@ -35,12 +34,10 @@ ArticleEntry CreateSkeletonEntryForUrl(const GURL& url) {
 }  // namespace
 
 DomDistillerService::DomDistillerService(
-    std::unique_ptr<DomDistillerStoreInterface> store,
     std::unique_ptr<DistillerFactory> distiller_factory,
     std::unique_ptr<DistillerPageFactory> distiller_page_factory,
     std::unique_ptr<DistilledPagePrefs> distilled_page_prefs)
-    : store_(std::move(store)),
-      content_store_(new InMemoryContentStore(kDefaultMaxNumCachedEntries)),
+    : content_store_(new InMemoryContentStore(kDefaultMaxNumCachedEntries)),
       distiller_factory_(std::move(distiller_factory)),
       distiller_page_factory_(std::move(distiller_page_factory)),
       distilled_page_prefs_(std::move(distilled_page_prefs)) {}
@@ -57,40 +54,6 @@ DomDistillerService::CreateDefaultDistillerPageWithHandle(
     std::unique_ptr<SourcePageHandle> handle) {
   return distiller_page_factory_->CreateDistillerPageWithHandle(
       std::move(handle));
-}
-
-bool DomDistillerService::HasEntry(const std::string& entry_id) {
-  return store_ && store_->GetEntryById(entry_id, nullptr);
-}
-
-std::string DomDistillerService::GetUrlForEntry(const std::string& entry_id) {
-  ArticleEntry entry;
-  if (store_ && store_->GetEntryById(entry_id, &entry)) {
-    return entry.pages().Get(0).url();
-  }
-  return "";
-}
-
-std::unique_ptr<ViewerHandle> DomDistillerService::ViewEntry(
-    ViewRequestDelegate* delegate,
-    std::unique_ptr<DistillerPage> distiller_page,
-    const std::string& entry_id) {
-  ArticleEntry entry;
-  if (!store_ || !store_->GetEntryById(entry_id, &entry)) {
-    return std::unique_ptr<ViewerHandle>();
-  }
-
-  TaskTracker* task_tracker = nullptr;
-  bool was_created = GetOrCreateTaskTrackerForEntry(entry, &task_tracker);
-  std::unique_ptr<ViewerHandle> viewer_handle =
-      task_tracker->AddViewer(delegate);
-  if (was_created) {
-    task_tracker->StartDistiller(distiller_factory_.get(),
-                                 std::move(distiller_page));
-    task_tracker->StartBlobFetcher();
-  }
-
-  return viewer_handle;
 }
 
 std::unique_ptr<ViewerHandle> DomDistillerService::ViewUrl(
@@ -118,11 +81,6 @@ std::unique_ptr<ViewerHandle> DomDistillerService::ViewUrl(
 bool DomDistillerService::GetOrCreateTaskTrackerForUrl(
     const GURL& url,
     TaskTracker** task_tracker) {
-  ArticleEntry entry;
-  if (store_ && store_->GetEntryByUrl(url, &entry)) {
-    return GetOrCreateTaskTrackerForEntry(entry, task_tracker);
-  }
-
   *task_tracker = GetTaskTrackerForUrl(url);
   if (*task_tracker) {
     return false;
@@ -140,28 +98,6 @@ TaskTracker* DomDistillerService::GetTaskTrackerForUrl(const GURL& url) const {
     }
   }
   return nullptr;
-}
-
-TaskTracker* DomDistillerService::GetTaskTrackerForEntry(
-    const ArticleEntry& entry) const {
-  const std::string& entry_id = entry.entry_id();
-  for (auto it = tasks_.begin(); it != tasks_.end(); ++it) {
-    if ((*it)->HasEntryId(entry_id)) {
-      return (*it).get();
-    }
-  }
-  return nullptr;
-}
-
-bool DomDistillerService::GetOrCreateTaskTrackerForEntry(
-    const ArticleEntry& entry,
-    TaskTracker** task_tracker) {
-  *task_tracker = GetTaskTrackerForEntry(entry);
-  if (!*task_tracker) {
-    *task_tracker = CreateTaskTracker(entry);
-    return true;
-  }
-  return false;
 }
 
 TaskTracker* DomDistillerService::CreateTaskTracker(const ArticleEntry& entry) {

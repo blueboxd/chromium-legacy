@@ -55,6 +55,7 @@ class Document;
 class GraphicsLayer;
 class LayoutBox;
 class LayoutObject;
+class LocalFrame;
 class PaintLayer;
 class ProgrammaticScrollAnimator;
 class ScrollAnchor;
@@ -77,7 +78,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
  public:
   using ScrollCallback = base::OnceClosure;
 
-  static int PixelsPerLineStep(ChromeClient*);
+  static int PixelsPerLineStep(LocalFrame*);
   static float MinFractionToStepWhenPaging();
   int MaxOverlapBetweenPages() const;
 

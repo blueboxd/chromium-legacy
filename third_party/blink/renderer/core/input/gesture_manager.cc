@@ -140,6 +140,10 @@ WebInputEventResult GestureManager::HandleGestureEventInFrame(
   return WebInputEventResult::kNotHandled;
 }
 
+bool GestureManager::LongTapShouldInvokeContextMenu() const {
+  return long_tap_should_invoke_context_menu_;
+}
+
 WebInputEventResult GestureManager::HandleGestureTapDown(
     const GestureEventWithHitTestResults& targeted_event) {
   suppress_mouse_events_from_gestures_ =
@@ -372,12 +376,10 @@ WebInputEventResult GestureManager::HandleGestureLongPress(
 
 WebInputEventResult GestureManager::HandleGestureLongTap(
     const GestureEventWithHitTestResults& targeted_event) {
-#if !defined(OS_ANDROID)
-  if (long_tap_should_invoke_context_menu_) {
+  if (LongTapShouldInvokeContextMenu()) {
     long_tap_should_invoke_context_menu_ = false;
     return SendContextMenuEventForGesture(targeted_event);
   }
-#endif
   return WebInputEventResult::kNotHandled;
 }
 

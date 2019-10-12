@@ -109,7 +109,9 @@ void WakeLockController::DidReceivePermissionResponse(
   // abort early.
   if (type == WakeLockType::kScreen &&
       !(GetPage() && GetPage()->IsPageVisible())) {
-    ReleaseWakeLock(type, resolver);
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotAllowedError,
+        "The requesting page is not visible"));
     return;
   }
   // 6.2. Let success be the result of awaiting acquire a wake lock with promise

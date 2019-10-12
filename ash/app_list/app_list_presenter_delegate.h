@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "ash/app_list/app_list_presenter_export.h"
+#include "ash/app_list/app_list_export.h"
 
 namespace aura {
 class Window;
@@ -22,7 +22,7 @@ class AppListViewDelegate;
 // Delegate of the app list presenter which allows customizing its behavior.
 // The design of this interface was heavily influenced by the needs of Ash's
 // app list implementation (see ash::AppListPresenterDelegateImpl).
-class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegate {
+class APP_LIST_EXPORT AppListPresenterDelegate {
  public:
   virtual ~AppListPresenterDelegate() {}
 

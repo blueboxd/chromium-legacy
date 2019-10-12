@@ -49,7 +49,9 @@ void AllDownloadEventNotifier::OnDownloadsInitialized(
                                     active_downloads_only);
 }
 
-void AllDownloadEventNotifier::OnManagerGoingDown() {
+void AllDownloadEventNotifier::OnManagerGoingDown(
+    SimpleDownloadManagerCoordinator* manager) {
+  DCHECK_EQ(manager, simple_download_manager_coordinator_);
   for (auto& observer : observers_)
     observer.OnManagerGoingDown(simple_download_manager_coordinator_);
   simple_download_manager_coordinator_->RemoveObserver(this);

@@ -183,11 +183,11 @@ public class WebXrVrTransitionTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags.Remove({"enable-webvr"})
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testWebXrDisabledWithoutFlagSet() {
-        // TODO(bsheedy): Remove this test once WebXR is on by default without
-        // requiring an origin trial.
+    @CommandLineFlags
+            .Add({"disable-features=WebXR"})
+            @CommandLineFlags.Remove({"enable-webvr"})
+            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+            public void testWebXrDisabledWithoutFlagSet() {
         apiDisabledWithoutFlagSetImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile(
                                               "test_webxr_disabled_without_flag_set"),
                 mWebXrVrTestFramework);

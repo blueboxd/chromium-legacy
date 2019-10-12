@@ -205,6 +205,7 @@ class ScopedIPCSupport;
 }
 }
 namespace printing {
+class PrintJobWorker;
 class PrinterQuery;
 }
 namespace rlz_lib {
@@ -352,6 +353,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class memory_instrumentation::OSMetrics;
   friend class module_installer::ScopedAllowModulePakLoad;
   friend class mojo::CoreLibraryInitializer;
+  friend class printing::PrintJobWorker;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class ui::MaterialDesignController;
   friend class web::WebSubThread;

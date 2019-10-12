@@ -113,7 +113,6 @@ class YoutubePinchZoom2018Page(ToughPinchZoomPage):
   BASE_NAME = 'youtube_pinch'
   YEAR = '2018'
   URL = 'http://www.youtube.com'
-  TAGS = ToughPinchZoomPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
   def RunNavigateSteps(self, action_runner):
     super(YoutubePinchZoom2018Page, self).RunNavigateSteps(action_runner)
@@ -170,7 +169,6 @@ class TwitterPinchZoom2018Page(ToughPinchZoomPage):
   BASE_NAME = 'twitter_pinch'
   YEAR = '2018'
   URL = 'https://twitter.com/katyperry'
-  TAGS = ToughPinchZoomPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
   def RunNavigateSteps(self, action_runner):
@@ -229,7 +227,6 @@ class AmazonPinchZoom2018Page(ToughPinchZoomPage):
   BASE_NAME = 'amazon_pinch'
   YEAR = '2018'
   URL = 'http://www.amazon.com'
-  TAGS = ToughPinchZoomPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 class EBayPinchZoom2018Page(ToughPinchZoomPage):

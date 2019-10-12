@@ -157,6 +157,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   // that the device-log isn't spammed.
   mutable base::flat_map<std::string, std::unique_ptr<ObservedDeviceData>>
       observed_devices_;
+  // noted_obsolete_eids_ remembers QR-code EIDs that have been logged as
+  // valid-but-expired in order to avoid spamming the device-log.
+  mutable base::flat_set<CableEidArray> noted_obsolete_eids_;
 
   base::WeakPtrFactory<FidoCableDiscovery> weak_factory_{this};
 

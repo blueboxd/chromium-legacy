@@ -5,8 +5,6 @@
 #include <fuchsia/net/oldhttp/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 
-#include "base/fuchsia/scoped_service_binding.h"
-#include "base/fuchsia/service_directory.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"

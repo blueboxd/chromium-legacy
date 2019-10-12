@@ -859,20 +859,6 @@ base::Optional<PhysicalRect> NGPaintFragment::LocalVisualRectFor(
   return visual_rect;
 }
 
-void NGPaintFragment::AddSelfOutlineRects(
-    Vector<PhysicalRect>* outline_rects,
-    const PhysicalOffset& additional_offset,
-    NGOutlineType outline_type) const {
-  DCHECK(outline_rects);
-  const NGPhysicalFragment& fragment = PhysicalFragment();
-  if (auto* box_fragment = DynamicTo<NGPhysicalBoxFragment>(fragment)) {
-    if (NGOutlineUtils::IsInlineOutlineNonpaintingFragment(PhysicalFragment()))
-      return;
-    box_fragment->AddSelfOutlineRects(outline_rects, additional_offset,
-                                      outline_type);
-  }
-}
-
 const NGPaintFragment* NGPaintFragment::ContainerLineBox() const {
   DCHECK(PhysicalFragment().IsInline());
   for (const NGPaintFragment* fragment :

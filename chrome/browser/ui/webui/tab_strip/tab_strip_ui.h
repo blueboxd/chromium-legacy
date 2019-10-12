@@ -45,7 +45,8 @@ class TabStripUI : public content::WebUIController {
   void Initialize(Browser* browser, Embedder* embedder);
 
  private:
-  void HandleThumbnailUpdate(int extension_tab_id, gfx::ImageSkia image);
+  void HandleThumbnailUpdate(int extension_tab_id,
+                             ThumbnailTracker::CompressedThumbnailData image);
 
   DISALLOW_COPY_AND_ASSIGN(TabStripUI);
 };

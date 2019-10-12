@@ -8523,7 +8523,8 @@ void Document::ProcessDisplayLockActivationObservation(
     if (entry->isIntersecting()) {
       auto* context = entry->target()->GetDisplayLockContext();
       DCHECK(context);
-      DCHECK(context->ShouldCommitForActivation());
+      DCHECK(context->ShouldCommitForActivation(
+          DisplayLockActivationReason::kViewport));
       context->CommitForActivationWithSignal(entry->target());
     }
   }

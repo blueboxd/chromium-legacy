@@ -116,10 +116,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void ResumeReadingBodyFromNet() override;
 
   int StartBlobReading(mojo::ScopedDataPipeConsumerHandle* body_pipe);
-  void OnBlobSideDataReadingComplete(
-      mojo::ScopedDataPipeConsumerHandle data_pipe,
-      base::Optional<mojo_base::BigBuffer> metadata);
-  void OnBlobReadingComplete(int net_error);
+  void OnSideDataReadingComplete(mojo::ScopedDataPipeConsumerHandle data_pipe,
+                                 base::Optional<mojo_base::BigBuffer> metadata);
+  void OnBodyReadingComplete(int net_error);
 
   // Calls url_loader_client_->OnReceiveResponse() with |response_head_|.
   void CommitResponseHeaders();
@@ -157,6 +156,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // The blob needs to be held while it's read to keep it alive.
   mojo::Remote<blink::mojom::Blob> body_as_blob_;
   uint64_t body_as_blob_size_;
+  // The blob needs to be held while it's read to keep it alive.
+  mojo::Remote<blink::mojom::Blob> side_data_as_blob_;
 
   scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;
 
@@ -167,7 +168,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
                  ControllerServiceWorkerConnector::Observer>
       controller_connector_observer_{this};
   bool fetch_request_restarted_;
-  bool blob_reading_complete_;
+  bool body_reading_complete_;
   bool side_data_reading_complete_;
 
   // These are given by the constructor (as the params for

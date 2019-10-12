@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/read_only_buffer.mojom";
+import "third_party/blink/public/mojom/blob/blob.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_response.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 import "mojo/public/mojom/base/string16.mojom";
@@ -76,11 +77,20 @@ union OpenResult {
   pending_associated_remote<CacheStorageCache> cache;
 };
 
+// EagerResponse: A blob response where the source has eagerly started reading
+// the body into a DataPipe.
+struct EagerResponse {
+  blink.mojom.FetchAPIResponse response;
+  handle<data_pipe_consumer> pipe;
+  pending_receiver<BlobReaderClient> client_receiver;
+};
+
 // Result of Match for both interfaces CacheStorage and CacheStorageCache
 // method. |status| is only set if there is a failure.
 union MatchResult {
   CacheStorageError status;
   blink.mojom.FetchAPIResponse response;
+  EagerResponse eager_response;
 };
 
 // Result of MatchAll method |status| is only set if there is a failure.
@@ -100,8 +110,11 @@ union CacheKeysResult {
 // defined on spec: https://w3c.github.io/ServiceWorker/#cache-interface
 interface CacheStorageCache {
   // Returns the first cached response that matches |request| according to
-  // options specified on |query_options|.
-  Match(blink.mojom.FetchAPIRequest request, CacheQueryOptions query_options, int64 trace_id)
+  // options specified on |query_options|.  |in_related_fetch_event| will be
+  // true if the operation was initiated within a FetchEvent handler with
+  // a matching request URL.
+  Match(blink.mojom.FetchAPIRequest request, CacheQueryOptions query_options,
+        bool in_related_fetch_event, int64 trace_id)
       => (MatchResult result);
 
   // Returns all cached responses that match |request| according to options
@@ -133,8 +146,10 @@ interface CacheStorage {
 
   // Returns the first cached response that matches |request| and
   // |match_options|. It can search on all caches if |cache_name| isn't provided
-  // on |match_options|.
-  Match(blink.mojom.FetchAPIRequest request, MultiCacheQueryOptions match_options, int64 trace_id)
+  // on |match_options|.  |in_related_fetch_event| will be true if the operation
+  // was initiated within a FetchEvent handler with a matching request URL.
+  Match(blink.mojom.FetchAPIRequest request, MultiCacheQueryOptions match_options,
+        bool in_related_fetch_event, int64 trace_id)
       => (MatchResult result);
 
   // Opens and returns a mojo interface to a cache, it creates if doesn't exist.

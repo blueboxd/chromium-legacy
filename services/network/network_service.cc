@@ -25,7 +25,6 @@
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/os_crypt/os_crypt.h"
 #include "mojo/core/embedder/embedder.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_posix.h"
@@ -209,28 +208,20 @@ void HandleBadMessage(const std::string& error) {
 NetworkService::NetworkService(
     std::unique_ptr<service_manager::BinderRegistry> registry,
     mojom::NetworkServiceRequest request,
-    service_manager::mojom::ServiceRequest service_request,
     bool delay_initialization_until_set_client)
     : net_log_(GetNetLog()), registry_(std::move(registry)), binding_(this) {
   DCHECK(!g_network_service);
   g_network_service = this;
-
-  // In testing environments, |service_request| may not be provided.
-  if (service_request.is_pending())
-    service_binding_.Bind(std::move(service_request));
 
   // |registry_| is nullptr when an in-process NetworkService is
   // created directly, like in most unit tests.
   if (registry_) {
     mojo::core::SetDefaultProcessErrorCallback(
         base::BindRepeating(&HandleBadMessage));
-
-    DCHECK(!request.is_pending());
-    registry_->AddInterface<mojom::NetworkService>(
-        base::BindRepeating(&NetworkService::Bind, base::Unretained(this)));
-  } else if (request.is_pending()) {
-    Bind(std::move(request));
   }
+
+  if (request.is_pending())
+    Bind(std::move(request));
 
   if (!delay_initialization_until_set_client)
     Initialize(mojom::NetworkServiceParams::New());
@@ -328,21 +319,13 @@ void NetworkService::set_os_crypt_is_configured() {
 }
 
 std::unique_ptr<NetworkService> NetworkService::Create(
-    mojom::NetworkServiceRequest request,
-    service_manager::mojom::ServiceRequest service_request) {
-  return std::make_unique<NetworkService>(nullptr, std::move(request),
-                                          std::move(service_request));
+    mojom::NetworkServiceRequest request) {
+  return std::make_unique<NetworkService>(nullptr, std::move(request));
 }
 
 std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
-  return CreateForTesting(nullptr);
-}
-
-std::unique_ptr<NetworkService> NetworkService::CreateForTesting(
-    service_manager::mojom::ServiceRequest service_request) {
   return std::make_unique<NetworkService>(
-      std::make_unique<service_manager::BinderRegistry>(),
-      nullptr /* request */, std::move(service_request));
+      std::make_unique<service_manager::BinderRegistry>());
 }
 
 void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
@@ -680,6 +663,14 @@ void NetworkService::DumpWithoutCrashing(base::Time dump_request_time) {
 }
 #endif
 
+void NetworkService::BindTestInterface(
+    mojo::PendingReceiver<mojom::NetworkServiceTest> receiver) {
+  if (registry_) {
+    auto pipe = receiver.PassPipe();
+    registry_->TryBindInterface(mojom::NetworkServiceTest::Name_, &pipe);
+  }
+}
+
 std::unique_ptr<net::HttpAuthHandlerFactory>
 NetworkService::CreateHttpAuthHandlerFactory(NetworkContext* network_context) {
   if (!http_auth_static_params_) {
@@ -707,13 +698,6 @@ NetworkService::CreateHttpAuthHandlerFactory(NetworkContext* network_context) {
 
 void NetworkService::OnBeforeURLRequest() {
   MaybeStartUpdateLoadInfoTimer();
-}
-
-void NetworkService::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
 void NetworkService::DestroyNetworkContexts() {

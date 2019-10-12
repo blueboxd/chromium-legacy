@@ -201,8 +201,11 @@ class WebAppUiManagerMigrationBrowserTest
 
 // Tests that the Settings app migrates the launcher and app list details from
 // the Settings internal app.
+//
+// TODO(https://crbug.com/1012967): Find a way to implement this that does not
+// depend on unsupported behavior of the FeatureList API.
 IN_PROC_BROWSER_TEST_F(WebAppUiManagerMigrationBrowserTest,
-                       SettingsSystemWebAppMigration) {
+                       DISABLED_SettingsSystemWebAppMigration) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kSystemWebApps);
 

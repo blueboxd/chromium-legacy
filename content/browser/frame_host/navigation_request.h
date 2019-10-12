@@ -842,10 +842,13 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   // modified during redirects.
   // Note: |commit_params_| is not const because was_discarded will
   // be set in CreatedNavigationRequest.
+  // Note: |browser_initiated_| and |common_params_| may be mutated by
+  // ContentBrowserClient::OverrideNavigationParams at StartNavigation time
+  // (i.e. before we actually kick off the navigation).
   mojom::CommonNavigationParamsPtr common_params_;
   mojom::BeginNavigationParamsPtr begin_params_;
   mojom::CommitNavigationParamsPtr commit_params_;
-  const bool browser_initiated_;
+  bool browser_initiated_;
 
   // Stores the NavigationUIData for this navigation until the NavigationHandle
   // is created. This can be null if the embedded did not provide a

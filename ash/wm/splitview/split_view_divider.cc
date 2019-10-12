@@ -75,7 +75,7 @@ class AlwaysOnTopWindowTargeter : public aura::WindowTargeter {
 class DividerView : public views::View, public views::ViewTargeterDelegate {
  public:
   explicit DividerView(SplitViewDivider* divider)
-      : controller_(Shell::Get()->split_view_controller()), divider_(divider) {
+      : controller_(SplitViewController::Get()), divider_(divider) {
     divider_view_ = new views::View();
     divider_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     divider_view_->layer()->SetColor(kSplitviewDividerColor);
@@ -364,6 +364,9 @@ void SplitViewDivider::OnWindowBoundsChanged(aura::Window* window,
                                              const gfx::Rect& old_bounds,
                                              const gfx::Rect& new_bounds,
                                              ui::PropertyChangeReason reason) {
+  if (!controller_->InSplitViewMode())
+    return;
+
   // We only care about the bounds change of windows in
   // |transient_windows_observer_|.
   if (!transient_windows_observer_.IsObserving(window))

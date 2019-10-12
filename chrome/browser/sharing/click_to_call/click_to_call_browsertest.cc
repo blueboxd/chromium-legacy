@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
@@ -35,11 +36,11 @@ const char kTestPageURL[] = "/sharing/tel.html";
 }  // namespace
 
 // Browser tests for the Click To Call feature.
-class ClickToCallBrowserTest : public SharingBrowserTest {
+class ClickToCallBrowserTestBase : public SharingBrowserTest {
  public:
-  ClickToCallBrowserTest() {}
+  ClickToCallBrowserTestBase() {}
 
-  ~ClickToCallBrowserTest() override {}
+  ~ClickToCallBrowserTestBase() override {}
 
   std::string GetTestPageURL() const override {
     return std::string(kTestPageURL);
@@ -59,16 +60,26 @@ class ClickToCallBrowserTest : public SharingBrowserTest {
               sharing_message.click_to_call_message().phone_number());
   }
 
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(ClickToCallBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(ClickToCallBrowserTestBase);
+};
+
+class ClickToCallBrowserTest : public ClickToCallBrowserTestBase {
+ public:
+  ClickToCallBrowserTest() {
+    feature_list_.InitWithFeatures({kSharingDeviceRegistration, kClickToCallUI,
+                                    kClickToCallContextMenuForSelectedText},
+                                   {});
+  }
 };
 
 // TODO(himanshujaju): Add UI checks.
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
                        ContextMenu_TelLink_SingleDeviceAvailable) {
-  Init({kSharingDeviceRegistration, kClickToCallUI,
-        kClickToCallContextMenuForSelectedText},
-       {});
+  Init();
   SetUpDevices(/*count=*/1);
 
   auto devices = sharing_service()->GetDeviceCandidates(
@@ -93,9 +104,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_NoDevicesAvailable) {
-  Init({kSharingDeviceRegistration, kClickToCallUI,
-        kClickToCallContextMenuForSelectedText},
-       {});
+  Init();
   AwaitQuiescence();
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
@@ -109,9 +118,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_NoDevicesAvailable) {
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
                        ContextMenu_DevicesAvailable_SyncTurnedOff) {
-  Init({kSharingDeviceRegistration, kClickToCallUI,
-        kClickToCallContextMenuForSelectedText},
-       {});
+  Init();
   SetUpDevices(/*count=*/1);
   // Disable syncing preferences which is necessary for Sharing.
   GetSyncService(0)->GetUserSettings()->SetSelectedTypes(false, {});
@@ -128,9 +135,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
                        ContextMenu_TelLink_MultipleDevicesAvailable) {
-  Init({kSharingDeviceRegistration, kClickToCallUI,
-        kClickToCallContextMenuForSelectedText},
-       {});
+  Init();
   SetUpDevices(/*count=*/2);
 
   auto devices = sharing_service()->GetDeviceCandidates(
@@ -166,9 +171,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
                        ContextMenu_HighlightedText_MultipleDevicesAvailable) {
-  Init({kSharingDeviceRegistration, kClickToCallUI,
-        kClickToCallContextMenuForSelectedText},
-       {});
+  Init();
   SetUpDevices(/*count=*/2);
 
   auto devices = sharing_service()->GetDeviceCandidates(
@@ -205,11 +208,19 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   }
 }
 
+class ClickToCallBrowserTestWithContextMenuDisabled
+    : public ClickToCallBrowserTestBase {
+ public:
+  ClickToCallBrowserTestWithContextMenuDisabled() {
+    feature_list_.InitWithFeatures({kSharingDeviceRegistration, kClickToCallUI},
+                                   {kClickToCallContextMenuForSelectedText});
+  }
+};
+
 IN_PROC_BROWSER_TEST_F(
-    ClickToCallBrowserTest,
+    ClickToCallBrowserTestWithContextMenuDisabled,
     ContextMenu_HighlightedText_DevicesAvailable_FeatureFlagOff) {
-  Init({kSharingDeviceRegistration, kClickToCallUI},
-       {kClickToCallContextMenuForSelectedText});
+  Init();
   SetUpDevices(/*count=*/2);
 
   auto devices = sharing_service()->GetDeviceCandidates(
@@ -228,9 +239,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_UKM) {
-  Init({kSharingDeviceRegistration, kClickToCallUI,
-        kClickToCallContextMenuForSelectedText},
-       {});
+  Init();
   SetUpDevices(/*count=*/1);
 
   ukm::TestAutoSetUkmRecorder ukm_recorder;
@@ -279,8 +288,17 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_UKM) {
   // TODO(knollr): mock apps and verify |has_apps| here too.
 }
 
+class ClickToCallBrowserTestWithContextMenuFeatureDefault
+    : public ClickToCallBrowserTestBase {
+ public:
+  ClickToCallBrowserTestWithContextMenuFeatureDefault() {
+    feature_list_.InitWithFeatures({kSharingDeviceRegistration, kClickToCallUI},
+                                   {});
+  }
+};
+
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, CloseTabWithBubble) {
-  Init({kSharingDeviceRegistration, kClickToCallUI}, {});
+  Init();
   SetUpDevices(/*count=*/1);
 
   base::RunLoop run_loop;

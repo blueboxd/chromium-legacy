@@ -12,6 +12,9 @@ component("app_list") {
     "app_list_export.h",
     "app_list_metrics.cc",
     "app_list_metrics.h",
+    "app_list_presenter_delegate.h",
+    "app_list_presenter_impl.cc",
+    "app_list_presenter_impl.h",
     "app_list_util.cc",
     "app_list_util.h",
     "app_list_view_delegate.h",
@@ -145,34 +148,15 @@ component("app_list") {
     "//ash/app_list/model:app_list_model",
     "//ash/app_list/model:search_model",
     "//ash/public/cpp",
-    "//services/content/public/mojom",
-  ]
-}
-
-component("presenter") {
-  sources = [
-    "app_list_presenter_delegate.h",
-    "app_list_presenter_export.h",
-    "app_list_presenter_impl.cc",
-    "app_list_presenter_impl.h",
-  ]
-
-  defines = [ "APP_LIST_PRESENTER_IMPLEMENTATION" ]
-
-  public_deps = [
-    "//ash/app_list",
     "//base",
     "//mojo/public/cpp/bindings",
+    "//services/content/public/mojom",
     "//ui/aura",
     "//ui/compositor",
     "//ui/gfx/geometry",
     "//ui/views",
     "//ui/wm",
     "//ui/wm/public",
-
-    # Temporary dependency to fix compile flake in http://crbug.com/611898.
-    # TODO(tapted): Remove once http://crbug.com/612382 is fixed.
-    "//ui/accessibility:ax_enums_mojo",
   ]
 }
 

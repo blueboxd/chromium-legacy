@@ -23,6 +23,7 @@
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -540,6 +541,12 @@ int32_t Surface::GetClientSurfaceId() const {
   return window_->GetProperty(kClientSurfaceIdKey);
 }
 
+void Surface::SetEmbeddedSurfaceId(
+    base::RepeatingCallback<viz::SurfaceId()> surface_id_callback) {
+  get_current_surface_id_ = std::move(surface_id_callback);
+  first_embedded_surface_id_ = viz::SurfaceId();
+}
+
 void Surface::SetAcquireFence(std::unique_ptr<gfx::GpuFence> gpu_fence) {
   TRACE_EVENT1("exo", "Surface::SetAcquireFence", "fence_fd",
                gpu_fence ? gpu_fence->GetGpuFenceHandle().native_fd.fd : -1);
@@ -1013,14 +1020,33 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
       buffer_transform_.TransformRectReverse(&uv_crop);
     }
 
-    // Texture quad is only needed if buffer is not fully transparent.
-    if (state_.alpha) {
+    SkColor background_color = SK_ColorTRANSPARENT;
+    if (current_resource_has_alpha_ && are_contents_opaque)
+      background_color = SK_ColorBLACK;  // Avoid writing alpha < 1
+
+    // If this surface is being replaced by a SurfaceId emit a SurfaceDrawQuad.
+    if (get_current_surface_id_) {
+      auto current_surface_id = get_current_surface_id_.Run();
+      if (current_surface_id.is_valid()) {
+        if (!first_embedded_surface_id_.is_valid())
+          first_embedded_surface_id_ = current_surface_id;
+        viz::SurfaceDrawQuad* surface_quad =
+            render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
+        surface_quad->SetNew(
+            quad_state, quad_rect, quad_rect,
+            viz::SurfaceRange(first_embedded_surface_id_, current_surface_id),
+            background_color,
+            /*stretch_content_to_fill_bounds=*/true,
+            /*ignores_input_event=*/false);
+      } else {
+        // If there is no valid surface, reset the start of the range.
+        first_embedded_surface_id_ = viz::SurfaceId();
+      }
+    } else if (state_.alpha) {
+      // Texture quad is only needed if buffer is not fully transparent.
       viz::TextureDrawQuad* texture_quad =
           render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
       float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
-      SkColor background_color = SK_ColorTRANSPARENT;
-      if (current_resource_has_alpha_ && are_contents_opaque)
-        background_color = SK_ColorBLACK;  // Avoid writing alpha < 1
       texture_quad->SetNew(
           quad_state, quad_rect, quad_rect,
           /* needs_blending=*/!are_contents_opaque, current_resource_.id,

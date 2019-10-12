@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator
 import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator.DeleteController;
 import org.chromium.chrome.browser.download.home.metrics.OfflineItemStartupLogger;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
-import org.chromium.chrome.browser.download.home.metrics.UmaUtils.ImagesMenuAction;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils.ViewAction;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.browser.widget.ThumbnailProvider.ThumbnailRequest;
@@ -195,15 +194,11 @@ class DateOrderedListMediator {
         mModel.getProperties().set(ListProperties.CALLBACK_RESUME, this ::onResumeItem);
         mModel.getProperties().set(ListProperties.CALLBACK_CANCEL, this ::onCancelItem);
         mModel.getProperties().set(ListProperties.CALLBACK_SHARE, this ::onShareItem);
-        mModel.getProperties().set(ListProperties.CALLBACK_SHARE_ALL, this ::onShareItems);
         mModel.getProperties().set(ListProperties.CALLBACK_REMOVE, this ::onDeleteItem);
-        mModel.getProperties().set(ListProperties.CALLBACK_REMOVE_ALL, this ::onDeleteItems);
         mModel.getProperties().set(ListProperties.PROVIDER_VISUALS, this ::getVisuals);
         mModel.getProperties().set(ListProperties.CALLBACK_SELECTION, this ::onSelection);
         mModel.getProperties().set(ListProperties.CALLBACK_RENAME,
                 mUiConfig.isRenameEnabled ? this::onRenameItem : null);
-        mModel.getProperties().set(
-                ListProperties.CALLBACK_START_SELECTION, this ::onStartSelection);
     }
 
     /** Tears down this mediator. */
@@ -285,14 +280,6 @@ class DateOrderedListMediator {
         mSelectionDelegate.toggleSelectionForItem(item);
     }
 
-    private void onStartSelection() {
-        // We are hard coding that this is coming from the Photos section, as that is the only
-        // one that supports a section menu.  If that changes we need to support a wider array
-        // of metrics.
-        UmaUtils.recordImagesMenuAction(ImagesMenuAction.MENU_START_SELECTING);
-        mSelectionDelegate.setSelectionModeEnabledForZeroItems(true);
-    }
-
     private void onOpenItem(OfflineItem item) {
         UmaUtils.recordItemAction(ViewAction.OPEN);
         mProvider.openItem(item);
@@ -321,22 +308,6 @@ class DateOrderedListMediator {
     private void onShareItem(OfflineItem item) {
         UmaUtils.recordItemAction(ViewAction.MENU_SHARE);
         shareItemsInternal(CollectionUtil.newHashSet(item));
-    }
-
-    private void onShareItems(List<OfflineItem> items) {
-        // We are hard coding that this is coming from the Photos section, as that is the only
-        // one that supports a section menu.  If that changes we need to support a wider array
-        // of metrics.
-        UmaUtils.recordImagesMenuAction(ImagesMenuAction.MENU_SHARE_ALL);
-        shareItemsInternal(items);
-    }
-
-    private void onDeleteItems(List<OfflineItem> items) {
-        // We are hard coding that this is coming from the Photos section, as that is the only
-        // one that supports a section menu.  If that changes we need to support a wider array
-        // of metrics.
-        UmaUtils.recordImagesMenuAction(ImagesMenuAction.MENU_DELETE_ALL);
-        deleteItemsInternal(items);
     }
 
     private void onRenameItem(OfflineItem item) {

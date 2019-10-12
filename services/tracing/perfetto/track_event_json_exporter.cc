@@ -630,12 +630,14 @@ void TrackEventJSONExporter::HandleStreamingProfilePacket(
 
   auto event_builder = AddTraceEvent(
       "StackCpuSampling", TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
-      TRACE_EVENT_PHASE_INSTANT, current_state_->time_us, current_state_->pid,
-      current_state_->tid);
+      TRACE_EVENT_PHASE_NESTABLE_ASYNC_INSTANT, current_state_->time_us,
+      current_state_->pid, current_state_->tid);
   // Add a dummy thread timestamp to this event to match the format of instant
   // events. Useful in the UI to view args of a selected group of samples.
   event_builder.AddThreadTimestamp(1);
-  event_builder.AddFlags(TRACE_EVENT_SCOPE_THREAD, base::nullopt, "");
+  static int g_id_counter = 0;
+  event_builder.AddFlags(TRACE_EVENT_SCOPE_THREAD | TRACE_EVENT_FLAG_HAS_ID,
+                         ++g_id_counter, "");
   auto args_builder = event_builder.BuildArgs();
   auto* add_arg = args_builder->MaybeAddArg("frames");
   if (add_arg) {

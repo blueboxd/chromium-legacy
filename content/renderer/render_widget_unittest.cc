@@ -169,18 +169,19 @@ class MockWebWidget : public blink::WebWidget {
 class InteractiveRenderWidget : public RenderWidget {
  public:
   InteractiveRenderWidget(CompositorDependencies* compositor_deps,
-                          PageProperties* page_properties)
+                          PageProperties* page_properties,
+                          const ScreenInfo& screen_info)
       : RenderWidget(++next_routing_id_,
                      compositor_deps,
                      page_properties,
                      blink::mojom::DisplayMode::kUndefined,
-                     false,
-                     false,
-                     false,
+                     /*is_undead=*/false,
+                     /*is_hidden=*/false,
+                     /*never_visible=*/false,
                      mojo::NullReceiver()),
         always_overscroll_(false) {
-    Init(base::NullCallback(), &mock_webwidget_,
-         &page_properties->GetScreenInfo());
+    UnconditionalInit(base::NullCallback());
+    LivingInit(&mock_webwidget_, screen_info);
 
     mock_input_handler_host_ = std::make_unique<MockWidgetInputHandlerHost>();
 
@@ -257,8 +258,8 @@ class RenderWidgetUnittest : public testing::Test {
   RenderWidgetUnittest() : page_properties_(&compositor_deps_) {}
 
   void SetUp() override {
-    widget_ = std::make_unique<InteractiveRenderWidget>(&compositor_deps_,
-                                                        &page_properties_);
+    widget_ = std::make_unique<InteractiveRenderWidget>(
+        &compositor_deps_, &page_properties_, ScreenInfo());
   }
 
   void TearDown() override {

@@ -216,10 +216,10 @@ void PaintLayerStackingNode::CollectLayers(PaintLayer& paint_layer,
     return;
 
   base::Optional<HighestLayers> subtree_highest_layers;
-  bool has_overlay_scrollbars =
+  bool has_overlay_overflow_controls =
       paint_layer.GetScrollableArea() &&
-      paint_layer.GetScrollableArea()->HasOverlayScrollbars();
-  if (has_overlay_scrollbars)
+      paint_layer.GetScrollableArea()->HasOverlayOverflowControls();
+  if (has_overlay_overflow_controls)
     subtree_highest_layers.emplace();
 
   for (PaintLayer* child = paint_layer.FirstChild(); child;
@@ -228,7 +228,7 @@ void PaintLayerStackingNode::CollectLayers(PaintLayer& paint_layer,
                                                  : highest_layers);
   }
 
-  if (has_overlay_scrollbars) {
+  if (has_overlay_overflow_controls) {
     const PaintLayer* layer_to_paint_overlay_scrollbars_after =
         subtree_highest_layers->highest_in_flow_stacked;
     if (object.CanContainFixedPositionObjects()) {

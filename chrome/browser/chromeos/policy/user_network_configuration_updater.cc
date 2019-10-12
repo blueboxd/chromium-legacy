@@ -77,7 +77,7 @@ UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
   // responsible for creating it. This requires |GetNSSCertDatabaseForProfile|
   // call, which is not safe before the profile initialization is finalized.
   // Thus, listen for PROFILE_ADDED notification, on which |cert_importer_|
-  // creation should start.
+  // creation should start. https://crbug.com/171406
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
                  content::Source<Profile>(profile));
 

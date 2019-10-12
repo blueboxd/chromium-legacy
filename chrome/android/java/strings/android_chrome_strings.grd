@@ -170,9 +170,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_DELETE" desc="Label for a delete button. Used in multiple contexts. [CHAR-LIMIT=20]">
         Delete
       </message>
-      <message name="IDS_DELETE_GROUP" desc="Label for button that deletes a group of items. [CHAR-LIMIT=20]">
-        Delete group
-      </message>
       <message name="IDS_REMOVE" desc="Label for a button to remove an item (e.g. a bookmark) from a list. [CHAR-LIMIT=20]">
         Remove
       </message>
@@ -229,9 +226,6 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_SHARE" desc="Content description for a button to share item(s). [CHAR-LIMIT=20]">
         Share
-      </message>
-      <message name="IDS_SHARE_GROUP" desc="Content description for a button to share a group item(s). [CHAR-LIMIT=20]">
-        Share group
       </message>
       <message name="IDS_SEARCH" desc="The label for a search button.">
         Search
@@ -3361,6 +3355,20 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_OVERSCROLL_NAVIGATION_SHEET_CLOSED" desc="Accessibility string read when the navigation bottom sheet is closed.">
         Navigation history is closed
+      </message>
+
+      <!-- Ephemeral Tab -->
+      <message name="IDS_EPHEMERAL_TAB_SHEET_DESCRIPTION" desc="The content description of the preview tab bottom sheet.">
+        Preview tab
+      </message>
+      <message name="IDS_EPHEMERAL_TAB_SHEET_OPENED_HALF" desc="Accessibility string read when the preview tab bottom sheet is opened at half height. The sheet will occupy up to half the screen.">
+        Preview tab is half-opened
+      </message>
+      <message name="IDS_EPHEMERAL_TAB_SHEET_OPENED_FULL" desc="Accessibility string read when the preview tab bottom sheet is opened at full height. The sheet will occupy up to the full screen.">
+        Preview tab is opened
+      </message>
+      <message name="IDS_EPHEMERAL_TAB_SHEET_CLOSED" desc="Accessibility string read when the preview tab bottom sheet is closed.">
+        Preview tab is closed
       </message>
 
       <!-- Storage Preference UI strings for clearing storage. -->

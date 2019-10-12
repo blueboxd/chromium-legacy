@@ -78,5 +78,5 @@ void WebApksHandler::OnWebApkInfoRetrieved(const WebApkInfo& webapk_info) {
                    webapk_info.is_backing_browser
                        ? webapk_info.update_status
                        : "Current browser doesn't own this WebAPK.");
-  CallJavascriptFunction("returnWebApkInfo", result);
+  FireWebUIListener("web-apk-info", result);
 }

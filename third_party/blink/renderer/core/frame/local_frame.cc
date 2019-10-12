@@ -1787,4 +1787,13 @@ void LocalFrame::EvictFromBackForwardCache() {
   Client()->EvictFromBackForwardCache();
 }
 
+void LocalFrame::DidChangeVisibleToHitTesting() {
+  // LayoutEmbeddedContent does not propagate style updates to descendants.
+  // Need to update the field manually.
+  for (Frame* child = Tree().FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    child->UpdateVisibleToHitTesting();
+  }
+}
+
 }  // namespace blink

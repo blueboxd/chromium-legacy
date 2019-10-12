@@ -15,6 +15,7 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.HeightMode;
 
 /** Microtransaction UI. */
 /* package */ class MicrotransactionView implements BottomSheetContent {
@@ -113,8 +114,8 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetCon
     }
 
     @Override
-    public boolean isPeekStateEnabled() {
-        return mIsPeekStateEnabled;
+    public int getPeekHeight() {
+        return mIsPeekStateEnabled ? HeightMode.DEFAULT : HeightMode.DISABLED;
     }
 
     @Override

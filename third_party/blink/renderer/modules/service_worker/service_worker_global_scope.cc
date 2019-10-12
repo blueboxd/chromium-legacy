@@ -762,6 +762,12 @@ void ServiceWorkerGlobalScope::Trace(blink::Visitor* visitor) {
   WorkerGlobalScope::Trace(visitor);
 }
 
+bool ServiceWorkerGlobalScope::HasRelatedFetchEvent(
+    const KURL& request_url) const {
+  auto it = unresponded_fetch_event_counts_.find(request_url);
+  return it != unresponded_fetch_event_counts_.end();
+}
+
 void ServiceWorkerGlobalScope::importScripts(
     const HeapVector<StringOrTrustedScriptURL>& urls,
     ExceptionState& exception_state) {
@@ -932,6 +938,7 @@ void ServiceWorkerGlobalScope::DidHandleExtendableMessageEvent(
 
 void ServiceWorkerGlobalScope::RespondToFetchEventWithNoResponse(
     int fetch_event_id,
+    const KURL& request_url,
     base::TimeTicks event_dispatch_time,
     base::TimeTicks respond_with_settled_time) {
   DCHECK(IsContextThread());
@@ -949,11 +956,14 @@ void ServiceWorkerGlobalScope::RespondToFetchEventWithNoResponse(
   timing->dispatch_event_time = event_dispatch_time;
   timing->respond_with_settled_time = respond_with_settled_time;
 
+  NoteRespondedToFetchEvent(request_url);
+
   response_callback->OnFallback(std::move(timing));
 }
 
 void ServiceWorkerGlobalScope::RespondToFetchEvent(
     int fetch_event_id,
+    const KURL& request_url,
     mojom::blink::FetchAPIResponsePtr response,
     base::TimeTicks event_dispatch_time,
     base::TimeTicks respond_with_settled_time) {
@@ -972,11 +982,14 @@ void ServiceWorkerGlobalScope::RespondToFetchEvent(
   timing->dispatch_event_time = event_dispatch_time;
   timing->respond_with_settled_time = respond_with_settled_time;
 
+  NoteRespondedToFetchEvent(request_url);
+
   response_callback->OnResponse(std::move(response), std::move(timing));
 }
 
 void ServiceWorkerGlobalScope::RespondToFetchEventWithResponseStream(
     int fetch_event_id,
+    const KURL& request_url,
     mojom::blink::FetchAPIResponsePtr response,
     mojom::blink::ServiceWorkerStreamHandlePtr body_as_stream,
     base::TimeTicks event_dispatch_time,
@@ -995,6 +1008,8 @@ void ServiceWorkerGlobalScope::RespondToFetchEventWithResponseStream(
   auto timing = mojom::blink::ServiceWorkerFetchEventTiming::New();
   timing->dispatch_event_time = event_dispatch_time;
   timing->respond_with_settled_time = respond_with_settled_time;
+
+  NoteRespondedToFetchEvent(request_url);
 
   response_callback->OnResponseStream(
       std::move(response), std::move(body_as_stream), std::move(timing));
@@ -1390,6 +1405,8 @@ void ServiceWorkerGlobalScope::DispatchFetchEventInternal(
     // onNavigationPreloadError() will be called.
     pending_preload_fetch_events_.insert(event_id, fetch_event);
   }
+
+  NoteNewFetchEvent(request->url());
 
   DispatchExtendableEventWithRespondWith(fetch_event, wait_until_observer,
                                          respond_with_observer);
@@ -2012,6 +2029,24 @@ void ServiceWorkerGlobalScope::AddMessageToConsole(
       mojom::ConsoleMessageSource::kOther, level, message,
       SourceLocation::Capture(/* url= */ "", /* line_number= */ 0,
                               /* column_number= */ 0)));
+}
+
+void ServiceWorkerGlobalScope::NoteNewFetchEvent(const KURL& request_url) {
+  auto it = unresponded_fetch_event_counts_.find(request_url);
+  if (it == unresponded_fetch_event_counts_.end()) {
+    unresponded_fetch_event_counts_.insert(request_url, 1);
+  } else {
+    it->value += 1;
+  }
+}
+
+void ServiceWorkerGlobalScope::NoteRespondedToFetchEvent(
+    const KURL& request_url) {
+  auto it = unresponded_fetch_event_counts_.find(request_url);
+  DCHECK_GE(it->value, 1);
+  it->value -= 1;
+  if (it->value == 0)
+    unresponded_fetch_event_counts_.erase(it);
 }
 
 }  // namespace blink

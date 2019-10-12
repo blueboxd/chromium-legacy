@@ -195,7 +195,7 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return vector_icons::kBusinessIcon;
     case security_state::DANGEROUS:
-      return omnibox::kHttpsInvalidIcon;
+      return omnibox::kNotSecureWarningIcon;
     case security_state::SECURITY_LEVEL_COUNT:
       NOTREACHED();
       return omnibox::kHttpIcon;

@@ -1,11 +1,11 @@
 diff --git a/src/main/java/com/android/tools/r8/utils/InternalOptions.java b/src/main/java/com/android/tools/r8/utils/InternalOptions.java
-index c9407a85f..800d6e760 100644
+index 89aeb2da4..8ff4f835e 100644
 --- a/src/main/java/com/android/tools/r8/utils/InternalOptions.java
 +++ b/src/main/java/com/android/tools/r8/utils/InternalOptions.java
-@@ -186,8 +186,8 @@ public class InternalOptions {
-   // Optimization-related flags. These should conform to -dontoptimize and disableAllOptimizations.
+@@ -189,8 +189,8 @@ public class InternalOptions {
    public boolean enableDynamicTypeOptimization = true;
-   public boolean enableFieldBitAccessAnalysis = false;
+   public boolean enableFieldBitAccessAnalysis =
+       System.getProperty("com.android.tools.r8.fieldBitAccessAnalysis") != null;
 -  public boolean enableHorizontalClassMerging = true;
 -  public boolean enableVerticalClassMerging = true;
 +  public boolean enableHorizontalClassMerging = false;
@@ -13,7 +13,7 @@ index c9407a85f..800d6e760 100644
    public boolean enableArgumentRemoval = true;
    public boolean enableUnusedArgumentRemoval = true;
    public boolean enableUnusedInterfaceRemoval = true;
-@@ -902,7 +902,7 @@ public class InternalOptions {
+@@ -910,7 +910,7 @@ public class InternalOptions {
      public static final String CLASS_NAME = "com.android.tools.r8.GeneratedOutlineSupport";
      public static final String METHOD_PREFIX = "outline";
  

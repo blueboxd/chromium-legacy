@@ -116,6 +116,8 @@ base::Value CreationFlagsToList(int creation_flags) {
     flags_value.Append("WAS_INSTALLED_BY_OEM");
   if (creation_flags & extensions::Extension::MAY_BE_UNTRUSTED)
     flags_value.Append("MAY_BE_UNTRUSTED");
+  if (creation_flags & extensions::Extension::WITHHOLD_PERMISSIONS)
+    flags_value.Append("WITHHOLD_PERMISSIONS");
   return flags_value;
 }
 

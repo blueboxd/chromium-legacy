@@ -1766,8 +1766,8 @@
   },
   {
     "name": "enable-surfaces-for-videos",
-    "owners": [ "enne", "lethalantidote", "mlamouri" ],
-    "expiry_milestone": 76
+    "owners": [ "ericrk", "khushalsagar", "mlamouri" ],
+    "expiry_milestone": 85
   },
   {
     "name": "enable-sxg-prefetch-cache-for-navigations",
@@ -1973,7 +1973,7 @@
   {
     "name": "enable-webgl2-compute-context",
     "owners": [ "webgl-team@google.com" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 81
   },
   {
     "name": "enable-webnfc",
@@ -2257,11 +2257,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "grid-layout-for-ntp-shortcuts",
-    "owners": [ "kristipark", "ramyan" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "handwriting-gesture",
     "owners": [ "essential-inputs-team@google.com" ],
     "expiry_milestone": 80
@@ -2269,7 +2264,7 @@
   {
     "name": "happiness-tracking-surveys-for-desktop",
     "owners": [ "//chrome/browser/ui/hats/OWNERS" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 80
   },
   {
     "name": "happiness-tracking-surveys-for-desktop-demo",
@@ -2277,7 +2272,7 @@
     // A debugging and demo flag to allow UI/dev/testing team to always show the UI
     // components for the survey without being limited by the triggering mechanism.
     // This flag should expire along with the above feature flag.
-    "expiry_milestone": 78
+    "expiry_milestone": 80
   },
   {
     "name": "hardware-media-key-handling",
@@ -2928,9 +2923,9 @@
     "expiry_milestone": 85
   },
   {
-    "name": "proactive-tab-freeze-and-discard",
+    "name": "proactive-tab-freeze",
     "owners": [ "fdoray" ],
-    "expiry_milestone": 75
+    "expiry_milestone": 80
   },
   {
     "name": "profile-menu-revamp",

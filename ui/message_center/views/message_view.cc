@@ -359,21 +359,21 @@ void MessageView::OnDidChangeFocus(views::View* before, views::View* now) {
   }
 }
 
-SlideOutController::SlideMode MessageView::CalculateSlideMode() const {
+views::SlideOutController::SlideMode MessageView::CalculateSlideMode() const {
   if (disable_slide_)
-    return SlideOutController::SlideMode::NO_SLIDE;
+    return views::SlideOutController::SlideMode::kNone;
 
   switch (GetMode()) {
     case Mode::SETTING:
-      return SlideOutController::SlideMode::NO_SLIDE;
+      return views::SlideOutController::SlideMode::kNone;
     case Mode::PINNED:
-      return SlideOutController::SlideMode::PARTIALLY;
+      return views::SlideOutController::SlideMode::kPartial;
     case Mode::NORMAL:
-      return SlideOutController::SlideMode::FULL;
+      return views::SlideOutController::SlideMode::kFull;
   }
 
   NOTREACHED();
-  return SlideOutController::SlideMode::FULL;
+  return views::SlideOutController::SlideMode::kFull;
 }
 
 MessageView::Mode MessageView::GetMode() const {

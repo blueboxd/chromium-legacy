@@ -211,6 +211,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // TODO(https://crbug.com/963653): SmsReceiver is not yet supported on
     // WebView.
     features.DisableIfNotSet(::features::kSmsReceiver);
+
+    features.DisableIfNotSet(::features::kWebXr);
   }
 
   android_webview::RegisterPathProvider();

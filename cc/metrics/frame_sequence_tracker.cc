@@ -38,7 +38,7 @@ constexpr int kMinFramesForThroughputMetric = 4;
 enum class ThreadType {
   kMain,
   kCompositor,
-  kSlowerThread,
+  kSlower,
 };
 
 constexpr int kBuiltinSequenceNum =
@@ -125,16 +125,15 @@ void FrameSequenceTrackerCollection::ClearAll() {
 
 void FrameSequenceTrackerCollection::NotifyBeginImplFrame(
     const viz::BeginFrameArgs& args) {
-  for (auto& tracker : frame_trackers_) {
+  RecreateTrackers(args);
+  for (auto& tracker : frame_trackers_)
     tracker.second->ReportBeginImplFrame(args);
-  }
 }
 
 void FrameSequenceTrackerCollection::NotifyBeginMainFrame(
     const viz::BeginFrameArgs& args) {
-  for (auto& tracker : frame_trackers_) {
+  for (auto& tracker : frame_trackers_)
     tracker.second->ReportBeginMainFrame(args);
-  }
 }
 
 void FrameSequenceTrackerCollection::NotifyImplFrameCausedNoDamage(
@@ -183,6 +182,24 @@ void FrameSequenceTrackerCollection::NotifyFramePresented(
         return tracker->termination_status() ==
                FrameSequenceTracker::TerminationStatus::kReadyForTermination;
       });
+}
+
+void FrameSequenceTrackerCollection::RecreateTrackers(
+    const viz::BeginFrameArgs& args) {
+  std::vector<FrameSequenceTrackerType> recreate_trackers;
+  for (const auto& tracker : frame_trackers_) {
+    if (tracker.second->ShouldReportMetricsNow(args))
+      recreate_trackers.push_back(tracker.first);
+  }
+
+  for (const auto& tracker_type : recreate_trackers) {
+    // StopSequence put the tracker in the |removal_trackers_|, which will
+    // report its throughput data when its frame is presented.
+    StopSequence(tracker_type);
+    // The frame sequence is still active, so create a new tracker to keep
+    // tracking this sequence.
+    StartSequence(tracker_type);
+  }
 }
 
 FrameSequenceTracker* FrameSequenceTrackerCollection::GetTrackerForTesting(
@@ -237,8 +254,7 @@ void FrameSequenceTracker::ReportMetrics() {
   }
   if (slower_throughput.has_value()) {
     ThroughputData::ReportHistogram(
-        type_, "SlowerThread",
-        GetIndexForMetric(ThreadType::kSlowerThread, type_),
+        type_, "SlowerThread", GetIndexForMetric(ThreadType::kSlower, type_),
         slower_throughput.value());
   }
 
@@ -268,6 +284,9 @@ void FrameSequenceTracker::ReportBeginImplFrame(
                          args.sequence_number);
   impl_throughput_.frames_expected +=
       begin_impl_frame_data_.previous_sequence_delta;
+
+  if (first_frame_timestamp_.is_null())
+    first_frame_timestamp_ = args.frame_time;
 }
 
 void FrameSequenceTracker::ReportBeginMainFrame(
@@ -485,6 +504,14 @@ FrameSequenceTracker::ThroughputData::ToTracedValue(
   dict->SetInteger("main-frames-produced", main.frames_produced);
   dict->SetInteger("main-frames-expected", main.frames_expected);
   return dict;
+}
+
+bool FrameSequenceTracker::ShouldReportMetricsNow(
+    const viz::BeginFrameArgs& args) const {
+  if (!first_frame_timestamp_.is_null() &&
+      args.frame_time - first_frame_timestamp_ >= time_delta_to_report_)
+    return true;
+  return false;
 }
 
 base::Optional<int> FrameSequenceTracker::ThroughputData::ReportHistogram(

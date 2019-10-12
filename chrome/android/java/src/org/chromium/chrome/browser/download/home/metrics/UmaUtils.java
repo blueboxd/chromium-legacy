@@ -56,18 +56,6 @@ public class UmaUtils {
     }
 
     // Please treat this list as append only and keep it in sync with
-    // Android.DownloadManager.List.Section.Menu.Actions in enums.xml.
-    @IntDef({ImagesMenuAction.MENU_START_SELECTING, ImagesMenuAction.MENU_SHARE_ALL,
-            ImagesMenuAction.MENU_DELETE_ALL})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ImagesMenuAction {
-        int MENU_START_SELECTING = 0;
-        int MENU_SHARE_ALL = 1;
-        int MENU_DELETE_ALL = 2;
-        int NUM_ENTRIES = 3;
-    }
-
-    // Please treat this list as append only and keep it in sync with
     // Android.Download.Rename.Dialog.Action in enums.xml.
     @IntDef({RenameDialogAction.RENAME_DIALOG_CONFIRM, RenameDialogAction.RENAME_DIALOG_CANCEL,
             RenameDialogAction.RENAME_DIALOG_OTHER,
@@ -83,34 +71,6 @@ public class UmaUtils {
         int RENAME_EXTENSION_DIALOG_CANCEL = 4;
         int RENAME_EXTENSION_DIALOG_OTHER = 5;
         int NUM_ENTRIES = 6;
-    }
-
-    /**
-     * Called to record metrics for the given images section menu action.
-     * @param action The given menu action.
-     */
-    public static void recordImagesMenuAction(@ImagesMenuAction int action) {
-        String userActionSuffix;
-        switch (action) {
-            case ImagesMenuAction.MENU_START_SELECTING:
-                userActionSuffix = "StartSelecting";
-                break;
-            case ImagesMenuAction.MENU_SHARE_ALL:
-                userActionSuffix = "ShareAll";
-                break;
-            case ImagesMenuAction.MENU_DELETE_ALL:
-                userActionSuffix = "DeleteAll";
-                break;
-            default:
-                assert false : "Unexpected action " + action + " passed to recordImagesMenuAction.";
-                return;
-        }
-
-        RecordHistogram.recordEnumeratedHistogram(
-                "Android.DownloadManager.List.Section.Menu.Images.Action", action,
-                ImagesMenuAction.NUM_ENTRIES);
-        RecordUserAction.record(
-                "Android.DownloadManager.List.Selection.Menu.Images.Action." + userActionSuffix);
     }
 
     /**

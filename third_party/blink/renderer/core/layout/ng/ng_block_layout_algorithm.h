@@ -221,6 +221,21 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // whether fits within the fragmentainer or not.
   bool IsFragmentainerOutOfSpace(LayoutUnit block_offset) const;
 
+  // Return the block-offset from the start of the fragmentainer, to this node.
+  LayoutUnit OffsetFromFragmentainerStart() const;
+
+  // Return the block-size of the portion that intersects with the
+  // fragmentainer. The block-offset is relative to this node.
+  LayoutUnit PortionIntersectingWithFragmentainer(LayoutUnit block_offset,
+                                                  LayoutUnit block_size) const;
+
+  // Propagate the block-size of unbreakable content. This is used to inflate
+  // the initial minimal column block-size when balancing columns. Unbreakable
+  // content will actually fragment if the columns aren't large enough, and we
+  // want to prevent that, if possible.
+  void PropagateUnbreakableBlockSize(LayoutUnit block_offset,
+                                     LayoutUnit block_size);
+
   // Final adjustments before fragment creation. We need to prevent the fragment
   // from crossing fragmentainer boundaries, and rather create a break token if
   // we're out of space. As part of finalizing we may also discover that we need

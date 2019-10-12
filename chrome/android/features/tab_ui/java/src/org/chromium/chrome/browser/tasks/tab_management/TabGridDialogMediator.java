@@ -9,6 +9,8 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabSwitcherMediat
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.support.v7.content.res.AppCompatResources;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -32,6 +34,7 @@ import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
@@ -89,18 +92,22 @@ public class TabGridDialogMediator {
     private final DialogController mDialogController;
     private final TabSwitcherMediator.ResetHandler mTabSwitcherResetHandler;
     private final AnimationParamsProvider mAnimationParamsProvider;
+    private final TabGroupTitleEditor mTabGroupTitleEditor;
     private final DialogHandler mTabGridDialogHandler;
     private final TabSelectionEditorCoordinator
             .TabSelectionEditorController mTabSelectionEditorController;
     private final String mComponentName;
+    private KeyboardVisibilityDelegate.KeyboardVisibilityListener mKeyboardVisibilityListener;
     private int mCurrentTabId = Tab.INVALID_TAB_ID;
+    private boolean mIsUpdatingTitle;
+    private String mCurrentGroupModifiedTitle;
 
     TabGridDialogMediator(Context context, DialogController dialogController, PropertyModel model,
             TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
             TabSwitcherMediator.ResetHandler tabSwitcherResetHandler,
             AnimationParamsProvider animationParamsProvider,
             TabSelectionEditorCoordinator.TabSelectionEditorController tabSelectionEditorController,
-            String componentName) {
+            TabGroupTitleEditor tabGroupTitleEditor, String componentName) {
         mContext = context;
         mModel = model;
         mTabModelSelector = tabModelSelector;
@@ -108,6 +115,7 @@ public class TabGridDialogMediator {
         mDialogController = dialogController;
         mTabSwitcherResetHandler = tabSwitcherResetHandler;
         mAnimationParamsProvider = animationParamsProvider;
+        mTabGroupTitleEditor = tabGroupTitleEditor;
         mTabGridDialogHandler = new DialogHandler();
         mTabSelectionEditorController = tabSelectionEditorController;
         mComponentName = componentName;
@@ -188,11 +196,14 @@ public class TabGridDialogMediator {
         assert mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
                         instanceof TabGroupModelFilter;
 
-        // Setup toolbar property model.
+        // Setup toolbar button click listeners.
         setupToolbarClickHandlers();
 
         // Setup dialog selection editor.
         setupDialogSelectionEditor();
+
+        // Setup toolbar edit text.
+        setupToolbarEditText();
 
         // Setup ScrimView observer.
         setupScrimViewObserver();
@@ -208,6 +219,7 @@ public class TabGridDialogMediator {
             }
         }
         mTabSelectionEditorController.hide();
+        saveCurrentGroupModifiedTitle();
         mDialogController.resetWithListOfTabs(null);
     }
 
@@ -243,6 +255,8 @@ public class TabGridDialogMediator {
                     mTabModelObserver);
         }
         mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+        KeyboardVisibilityDelegate.getInstance().removeKeyboardVisibilityListener(
+                mKeyboardVisibilityListener);
     }
 
     boolean isVisible() {
@@ -261,6 +275,13 @@ public class TabGridDialogMediator {
         int tabsCount = relatedTabs.size();
         if (tabsCount == 0) {
             hideDialog(true);
+            return;
+        }
+        assert mTabGroupTitleEditor != null;
+        Tab currentTab = mTabModelSelector.getTabById(mCurrentTabId);
+        String storedTitle = mTabGroupTitleEditor.getTabGroupTitle(currentTab.getRootId());
+        if (storedTitle != null && relatedTabs.size() > 1) {
+            mModel.set(TabGridPanelProperties.HEADER_TITLE, storedTitle);
             return;
         }
         mModel.set(TabGridPanelProperties.HEADER_TITLE,
@@ -296,6 +317,36 @@ public class TabGridDialogMediator {
         String actionButtonText =
                 mContext.getString(R.string.tab_grid_dialog_selection_mode_remove);
         mTabSelectionEditorController.configureToolbar(actionButtonText, actionProvider, 1, null);
+    }
+
+    private void setupToolbarEditText() {
+        mKeyboardVisibilityListener = isShowing -> {
+            mModel.set(TabGridPanelProperties.TITLE_CURSOR_VISIBILITY, isShowing);
+            if (!isShowing) {
+                saveCurrentGroupModifiedTitle();
+            }
+        };
+        KeyboardVisibilityDelegate.getInstance().addKeyboardVisibilityListener(
+                mKeyboardVisibilityListener);
+
+        TextWatcher textWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!mIsUpdatingTitle) return;
+                mCurrentGroupModifiedTitle = s.toString();
+            }
+        };
+        mModel.set(TabGridPanelProperties.TITLE_TEXT_WATCHER, textWatcher);
+
+        View.OnFocusChangeListener onFocusChangeListener =
+                (v, hasFocus) -> mIsUpdatingTitle = hasFocus;
+        mModel.set(TabGridPanelProperties.TITLE_TEXT_ON_FOCUS_LISTENER, onFocusChangeListener);
     }
 
     private void setupScrimViewObserver() {
@@ -357,6 +408,18 @@ public class TabGridDialogMediator {
                 .getRelatedTabList(tabId);
     }
 
+    private void saveCurrentGroupModifiedTitle() {
+        if (mCurrentGroupModifiedTitle == null) return;
+        assert mTabGroupTitleEditor != null;
+        assert mCurrentTabId != Tab.INVALID_TAB_ID;
+
+        Tab currentTab = mTabModelSelector.getTabById(mCurrentTabId);
+        mTabGroupTitleEditor.storeTabGroupTitle(currentTab.getRootId(), mCurrentGroupModifiedTitle);
+        mTabGroupTitleEditor.updateTabGroupTitle(currentTab, mCurrentGroupModifiedTitle);
+        mModel.set(TabGridPanelProperties.HEADER_TITLE, mCurrentGroupModifiedTitle);
+        mCurrentGroupModifiedTitle = null;
+    }
+
     TabListMediator.TabGridDialogHandler getTabGridDialogHandler() {
         return mTabGridDialogHandler;
     }
@@ -386,5 +449,21 @@ public class TabGridDialogMediator {
     @VisibleForTesting
     void setCurrentTabIdForTest(int tabId) {
         mCurrentTabId = tabId;
+    }
+
+    @VisibleForTesting
+    KeyboardVisibilityDelegate.KeyboardVisibilityListener
+    getKeyboardVisibilityListenerForTesting() {
+        return mKeyboardVisibilityListener;
+    }
+
+    @VisibleForTesting
+    boolean getIsUpdatingTitleForTesting() {
+        return mIsUpdatingTitle;
+    }
+
+    @VisibleForTesting
+    String getCurrentGroupModifiedTitleForTesting() {
+        return mCurrentGroupModifiedTitle;
     }
 }

@@ -25,8 +25,8 @@ class DisplayLockUtilitiesTest : public RenderingTest,
                    bool update_lifecycle = true) {
     StringBuilder value;
     value.Append("invisible");
-    if (activatable)
-      value.Append(" activatable");
+    if (!activatable)
+      value.Append(" skip-activation");
     element.setAttribute(html_names::kRendersubtreeAttr,
                          value.ToAtomicString());
     if (update_lifecycle)
@@ -73,27 +73,32 @@ TEST_F(DisplayLockUtilitiesTest, ActivatableLockedInclusiveAncestors) {
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
   // Querying from every element gives |outer|.
   HeapVector<Member<Element>> result_for_outer =
-      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(outer);
+      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+          outer, DisplayLockActivationReason::kAny);
   EXPECT_EQ(result_for_outer.size(), 1u);
   EXPECT_EQ(result_for_outer.at(0), outer);
 
   HeapVector<Member<Element>> result_for_inner_a =
-      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(inner_a);
+      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+          inner_a, DisplayLockActivationReason::kAny);
   EXPECT_EQ(result_for_inner_a.size(), 1u);
   EXPECT_EQ(result_for_inner_a.at(0), outer);
 
   HeapVector<Member<Element>> result_for_innermost =
-      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(innermost);
+      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+          innermost, DisplayLockActivationReason::kAny);
   EXPECT_EQ(result_for_innermost.size(), 1u);
   EXPECT_EQ(result_for_innermost.at(0), outer);
 
   HeapVector<Member<Element>> result_for_inner_b =
-      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(inner_b);
+      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+          inner_b, DisplayLockActivationReason::kAny);
   EXPECT_EQ(result_for_inner_b.size(), 1u);
   EXPECT_EQ(result_for_inner_b.at(0), outer);
 
   HeapVector<Member<Element>> result_for_shadow_div =
-      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(shadow_div);
+      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+          shadow_div, DisplayLockActivationReason::kAny);
   EXPECT_EQ(result_for_shadow_div.size(), 1u);
   EXPECT_EQ(result_for_shadow_div.at(0), outer);
 
@@ -102,29 +107,33 @@ TEST_F(DisplayLockUtilitiesTest, ActivatableLockedInclusiveAncestors) {
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
 
-  result_for_outer =
-      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(outer);
+  result_for_outer = DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+      outer, DisplayLockActivationReason::kAny);
   EXPECT_EQ(result_for_outer.size(), 1u);
   EXPECT_EQ(result_for_outer.at(0), outer);
 
   result_for_inner_a =
-      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(inner_a);
+      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+          inner_a, DisplayLockActivationReason::kAny);
   EXPECT_EQ(result_for_inner_a.size(), 1u);
   EXPECT_EQ(result_for_inner_a.at(0), outer);
 
   result_for_innermost =
-      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(innermost);
+      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+          innermost, DisplayLockActivationReason::kAny);
   EXPECT_EQ(result_for_innermost.size(), 2u);
   EXPECT_EQ(result_for_innermost.at(0), innermost);
   EXPECT_EQ(result_for_innermost.at(1), outer);
 
   result_for_inner_b =
-      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(inner_b);
+      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+          inner_b, DisplayLockActivationReason::kAny);
   EXPECT_EQ(result_for_inner_b.size(), 1u);
   EXPECT_EQ(result_for_inner_b.at(0), outer);
 
   result_for_shadow_div =
-      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(shadow_div);
+      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+          shadow_div, DisplayLockActivationReason::kAny);
   EXPECT_EQ(result_for_shadow_div.size(), 1u);
   EXPECT_EQ(result_for_shadow_div.at(0), outer);
 
@@ -134,22 +143,26 @@ TEST_F(DisplayLockUtilitiesTest, ActivatableLockedInclusiveAncestors) {
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
 
-  EXPECT_EQ(
-      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(outer).size(),
-      0u);
-  EXPECT_EQ(
-      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(inner_a).size(),
-      0u);
-  EXPECT_EQ(DisplayLockUtilities::ActivatableLockedInclusiveAncestors(innermost)
+  EXPECT_EQ(DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+                outer, DisplayLockActivationReason::kAny)
                 .size(),
             0u);
-  EXPECT_EQ(
-      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(inner_b).size(),
-      0u);
-  EXPECT_EQ(
-      DisplayLockUtilities::ActivatableLockedInclusiveAncestors(shadow_div)
-          .size(),
-      0u);
+  EXPECT_EQ(DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+                inner_a, DisplayLockActivationReason::kAny)
+                .size(),
+            0u);
+  EXPECT_EQ(DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+                innermost, DisplayLockActivationReason::kAny)
+                .size(),
+            0u);
+  EXPECT_EQ(DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+                inner_b, DisplayLockActivationReason::kAny)
+                .size(),
+            0u);
+  EXPECT_EQ(DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+                shadow_div, DisplayLockActivationReason::kAny)
+                .size(),
+            0u);
 }
 
 TEST_F(DisplayLockUtilitiesTest, LockedSubtreeCrossingFrames) {

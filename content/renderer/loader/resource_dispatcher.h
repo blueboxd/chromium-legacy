@@ -31,6 +31,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -46,7 +47,6 @@ struct RedirectInfo;
 
 namespace network {
 struct ResourceRequest;
-struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
 namespace mojom {
 class URLLoaderFactory;
@@ -221,22 +221,21 @@ class CONTENT_EXPORT ResourceDispatcher {
 
   // Message response handlers, called by the message handler for this process.
   void OnUploadProgress(int request_id, int64_t position, int64_t size);
-  void OnReceivedResponse(int request_id, const network::ResourceResponseHead&);
+  void OnReceivedResponse(int request_id, network::mojom::URLResponseHeadPtr);
   void OnReceivedCachedMetadata(int request_id, mojo_base::BigBuffer data);
   void OnReceivedRedirect(
       int request_id,
       const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   void OnStartLoadingResponseBody(int request_id,
                                   mojo::ScopedDataPipeConsumerHandle body);
   void OnRequestComplete(int request_id,
                          const network::URLLoaderCompletionStatus& status);
 
-  void ToResourceResponseHead(
+  void ToLocalURLResponseHead(
       const PendingRequestInfo& request_info,
-      const network::ResourceResponseHead& browser_info,
-      network::ResourceResponseHead* renderer_info) const;
+      network::mojom::URLResponseHead& response_head) const;
 
   void ContinueForNavigation(int request_id);
 

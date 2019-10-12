@@ -15,19 +15,20 @@
 
 class ApplicationLaunchBrowserTest : public InProcessBrowserTest {
  public:
-  ApplicationLaunchBrowserTest() = default;
+  ApplicationLaunchBrowserTest() {
+    feature_list_.InitAndEnableFeature(features::kFocusMode);
+  }
 
   content::WebContents* GetWebContentsForTab(Browser* browser, int index) {
     return browser->tab_strip_model()->GetWebContentsAt(index);
   }
 
- protected:
-  base::test::ScopedFeatureList feature_list;
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(ApplicationLaunchBrowserTest,
                        ReparentWebContentsForFocusModeSingleTab) {
-  feature_list.InitAndEnableFeature(features::kFocusMode);
   const GURL url("http://aaa.com/empty.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -51,7 +52,6 @@ IN_PROC_BROWSER_TEST_F(ApplicationLaunchBrowserTest,
 IN_PROC_BROWSER_TEST_F(ApplicationLaunchBrowserTest,
                        ReparentWebContentsForFocusModeMultipleTabs) {
   const GURL url("http://aaa.com/empty.html");
-  feature_list.InitAndEnableFeature(features::kFocusMode);
   chrome::AddTabAt(browser(), url, -1, true);
   chrome::AddTabAt(browser(), GURL(), -1, true);
   EXPECT_FALSE(browser()->is_focus_mode());

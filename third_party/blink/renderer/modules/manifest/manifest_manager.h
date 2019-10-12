@@ -35,6 +35,7 @@ class MODULES_EXPORT ManifestManager : public GarbageCollected<ManifestManager>,
                                        public mojom::blink::ManifestManager,
                                        public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ManifestManager);
+  USING_PRE_FINALIZER(ManifestManager, Prefinalize);
 
  public:
   static const char kSupplementName[];
@@ -84,7 +85,7 @@ class MODULES_EXPORT ManifestManager : public GarbageCollected<ManifestManager>,
   void BindReceiver(
       mojo::PendingReceiver<mojom::blink::ManifestManager> receiver);
 
-  void Dispose();
+  void Prefinalize();
 
   friend class ManifestManagerTest;
 

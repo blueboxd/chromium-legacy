@@ -183,8 +183,7 @@ class NetworkConnectionTrackerTest : public testing::Test {
     network::mojom::NetworkServiceRequest network_service_request =
         mojo::MakeRequest(&network_service_ptr);
     network_service_ =
-        NetworkService::Create(std::move(network_service_request),
-                               /*netlog=*/nullptr);
+        NetworkService::Create(std::move(network_service_request));
     tracker_ = std::make_unique<NetworkConnectionTracker>(base::BindRepeating(
         &NetworkConnectionTrackerTest::BindReceiver, base::Unretained(this)));
     observer_ = std::make_unique<TestNetworkConnectionObserver>(tracker_.get());

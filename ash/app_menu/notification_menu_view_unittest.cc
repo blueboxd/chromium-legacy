@@ -28,9 +28,8 @@ namespace {
 // The app id used in tests.
 constexpr char kTestAppId[] = "test-app-id";
 
-class MockNotificationMenuController
-    : public message_center::SlideOutController::Delegate,
-      public NotificationMenuView::Delegate {
+class MockNotificationMenuController : public views::SlideOutControllerDelegate,
+                                       public NotificationMenuView::Delegate {
  public:
   MockNotificationMenuController() = default;
   ~MockNotificationMenuController() override = default;

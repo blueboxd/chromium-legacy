@@ -525,7 +525,8 @@ void DownloadProtectionService::OnDangerousDownloadOpened(
   extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
       ->OnDangerousDownloadOpened(
           item->GetURL(), item->GetTargetFilePath().AsUTF8Unsafe(),
-          base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()));
+          base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
+          item->GetMimeType(), item->GetTotalBytes());
 }
 
 bool DownloadProtectionService::MaybeBeginFeedbackForDownload(

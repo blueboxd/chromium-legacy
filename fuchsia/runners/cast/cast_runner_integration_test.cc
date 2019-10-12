@@ -167,16 +167,13 @@ class CastRunnerIntegrationTest : public testing::Test {
       : run_timeout_(
             TestTimeouts::action_timeout(),
             base::MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out.")) {
-    // Create the CastRunner, published into |test_services_|.
+    // Create the CastRunner, published into |outgoing_directory_|.
     constexpr fuchsia::web::ContextFeatureFlags kFeatures = {};
-
     fuchsia::web::CreateContextParams create_context_params =
         WebContentRunner::BuildCreateContextParams(
             fidl::InterfaceHandle<fuchsia::io::Directory>(), kFeatures);
-
     const uint16_t kRemoteDebuggingAnyPort = 0;
     create_context_params.set_remote_debugging_port(kRemoteDebuggingAnyPort);
-
     cast_runner_ = std::make_unique<CastRunner>(
         &outgoing_directory_,
         WebContentRunner::CreateWebContext(std::move(create_context_params)));
@@ -210,7 +207,7 @@ class CastRunnerIntegrationTest : public testing::Test {
       base::StringPiece component_url) {
     DCHECK(!component_state_);
 
-    // Create an OutgoingDirectory and publish the ComponentContext into it.
+    // Create a FakeComponentContext and publish it into component_services_.
     component_context_ = std::make_unique<cr_fuchsia::FakeComponentContext>(
         base::BindRepeating(&CastRunnerIntegrationTest::OnComponentConnect,
                             base::Unretained(this)),

@@ -2517,8 +2517,15 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ExpectEvictedIsEmpty(FROM_HERE);
 }
 
+#if defined(OS_LINUX) || defined(OS_WIN)
+// Flaky. https://crbug.com/1013802
+#define MAYBE_DisableBackForwardCacheIframe \
+  DISABLED_DisableBackForwardCacheIframe
+#else
+#define MAYBE_DisableBackForwardCacheIframe DisableBackForwardCacheIframe
+#endif
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DisableBackForwardCacheIframe) {
+                       MAYBE_DisableBackForwardCacheIframe) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));

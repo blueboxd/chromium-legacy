@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_item.h"
+#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
@@ -43,8 +44,7 @@ void InternalAppShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
     AddContextMenuOption(menu_model, ash::MENU_CLOSE,
                          IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
 
-    if (internal_app->internal_app_name ==
-            app_list::InternalAppName::kPluginVm &&
+    if (internal_app->internal_app_name == apps::BuiltInAppName::kPluginVm &&
         plugin_vm::IsPluginVmRunning(controller()->profile())) {
       AddContextMenuOption(menu_model, ash::STOP_APP,
                            IDS_PLUGIN_VM_SHUT_DOWN_MENU_ITEM);
@@ -59,8 +59,7 @@ void InternalAppShelfContextMenu::ExecuteCommand(int command_id,
 
   const auto* internal_app = app_list::FindInternalApp(item().id.app_id);
   DCHECK(internal_app);
-  DCHECK_EQ(internal_app->internal_app_name,
-            app_list::InternalAppName::kPluginVm);
+  DCHECK_EQ(internal_app->internal_app_name, apps::BuiltInAppName::kPluginVm);
   if (command_id == ash::STOP_APP) {
     plugin_vm::PluginVmManager::GetForProfile(controller()->profile())
         ->StopPluginVm();

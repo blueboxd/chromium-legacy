@@ -110,9 +110,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
  public:
   virtual ~ChromeClient() = default;
 
-  // Converts the scalar value from the window coordinates to the viewport
-  // scale. TODO(darin): Convert all callers over to the LocalFrame version.
-  virtual float WindowToViewportScalar(const float) const = 0;
+  // Converts the scalar value from window coordinates to viewport scale.
   virtual float WindowToViewportScalar(LocalFrame*,
                                        const float value) const = 0;
 

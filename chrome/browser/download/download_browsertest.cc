@@ -95,6 +95,7 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing/safe_browsing_service_interface.h"
+#include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/services/quarantine/test_support.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -3886,9 +3887,11 @@ class DownloadTestWithOptionalSafetyTipsFeature
  public:
   DownloadTestWithOptionalSafetyTipsFeature() {
     if (GetParam())
-      feature_list_.InitAndEnableFeature(features::kSafetyTipUI);
+      feature_list_.InitAndEnableFeature(
+          security_state::features::kSafetyTipUI);
     else
-      feature_list_.InitAndDisableFeature(features::kSafetyTipUI);
+      feature_list_.InitAndDisableFeature(
+          security_state::features::kSafetyTipUI);
   }
 
  private:

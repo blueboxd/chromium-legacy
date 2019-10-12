@@ -75,9 +75,9 @@ struct CreateViewParams {
   // Whether or not the frame has previously committed a real load.
   bool has_committed_real_load;
 
-  // Initial state for the RenderWidget and RenderView.
-  // TODO(danakj): The RenderView properties should be sent separately when
-  // there is not main_frame_routing_id, and this field should not be included.
+  // Initial state for the main frame RenderWidget.
+  // TODO(danakj): This should be optional and not included when there is no
+  // main_frame_widget_routing_id.
   VisualProperties visual_properties;
 
   // Whether lookup of frames in the created RenderView (e.g. lookup via

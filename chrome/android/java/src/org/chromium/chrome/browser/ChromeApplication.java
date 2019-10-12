@@ -41,7 +41,7 @@ import org.chromium.chrome.browser.dependency_injection.DaggerChromeAppComponent
 import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
@@ -149,8 +149,7 @@ public class ChromeApplication extends Application {
     }
 
     private static Boolean shouldUseDebugFlags() {
-        return ChromePreferenceManager.getInstance().readBoolean(
-                ChromePreferenceManager.COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY, false);
+        return FeatureUtilities.isCommandLineOnNonRootedEnabled();
     }
 
     private static boolean isBrowserProcess() {

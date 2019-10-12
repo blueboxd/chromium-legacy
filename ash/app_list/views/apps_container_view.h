@@ -30,9 +30,8 @@ class SuggestionChipContainerView;
 // active folder.
 class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
  public:
-  // Returns the expected container size with apps grid bounds excluded.
-  // In other words: apps container view size - apps grid size.
-  static gfx::Size GetNonAppsGridSize();
+  // Returns the minimum horizontal margins that apps grid has to respect.
+  static int GetMinimumGridHorizontalMargin();
 
   AppsContainerView(ContentsView* contents_view, AppListModel* model);
   ~AppsContainerView() override;

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/vr/arcore_device/type_converters.h"
 
+#include "ui/gfx/transform_util.h"
+
 namespace mojo {
 
 device::mojom::XRPlaneOrientation
@@ -16,6 +18,22 @@ TypeConverter<device::mojom::XRPlaneOrientation, ArPlaneType>::Convert(
     case ArPlaneType::AR_PLANE_VERTICAL:
       return device::mojom::XRPlaneOrientation::VERTICAL;
   }
+}
+
+gfx::Transform TypeConverter<gfx::Transform, device::mojom::VRPosePtr>::Convert(
+    const device::mojom::VRPosePtr& pose) {
+  gfx::DecomposedTransform decomposed;
+  if (pose->orientation) {
+    decomposed.quaternion = *pose->orientation;
+  }
+
+  if (pose->position) {
+    decomposed.translate[0] = pose->position->x();
+    decomposed.translate[1] = pose->position->y();
+    decomposed.translate[2] = pose->position->z();
+  }
+
+  return gfx::ComposeTransform(decomposed);
 }
 
 }  // namespace mojo

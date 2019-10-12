@@ -42,8 +42,7 @@ class BaseRequestsServerTest : public testing::Test {
     network::mojom::NetworkServiceRequest network_service_request =
         mojo::MakeRequest(&network_service_ptr);
     network_service_ =
-        network::NetworkService::Create(std::move(network_service_request),
-                                        /*netlog=*/nullptr);
+        network::NetworkService::Create(std::move(network_service_request));
     network::mojom::NetworkContextParamsPtr context_params =
         network::mojom::NetworkContextParams::New();
     network_service_ptr->CreateNetworkContext(

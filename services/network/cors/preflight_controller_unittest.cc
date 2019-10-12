@@ -226,8 +226,8 @@ class PreflightControllerTest : public testing::Test {
     mojom::NetworkServicePtr network_service_ptr;
     mojom::NetworkServiceRequest network_service_request =
         mojo::MakeRequest(&network_service_ptr);
-    network_service_ = NetworkService::Create(
-        std::move(network_service_request), nullptr /* net_log */);
+    network_service_ =
+        NetworkService::Create(std::move(network_service_request));
 
     network_service_ptr->CreateNetworkContext(
         network_context_remote_.BindNewPipeAndPassReceiver(),

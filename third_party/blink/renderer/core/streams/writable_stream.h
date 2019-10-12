@@ -32,6 +32,10 @@ class CORE_EXPORT WritableStream : public ScriptWrappable {
                                 ScriptValue underlying_sink,
                                 ScriptValue strategy,
                                 ExceptionState&);
+
+  // Creates a WritableStream from C++. If |high_water_mark| is set to 0 then
+  // piping to this writable stream will not work, because there will always be
+  // backpressure. Usually 1 is the right choice.
   static WritableStream* CreateWithCountQueueingStrategy(
       ScriptState*,
       UnderlyingSinkBase*,

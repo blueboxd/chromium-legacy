@@ -384,6 +384,33 @@ class AppListViewTest : public views::ViewsTestBase,
   DISALLOW_COPY_AND_ASSIGN(AppListViewTest);
 };
 
+// Tests app list view layout for different screen sizes with ScalableAppList
+// feature enabled.
+class AppListViewScalableLayoutTest : public AppListViewTest {
+ public:
+  AppListViewScalableLayoutTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {app_list_features::kScalableAppList,
+         ash::features::kEnableBackgroundBlur},
+        {});
+  }
+  ~AppListViewScalableLayoutTest() override = default;
+
+  void SetUp() override {
+    // Clear configs created in previous tests.
+    AppListConfigProvider::Get().ResetForTesting();
+    AppListViewTest::SetUp();
+  }
+
+  void TearDown() override {
+    AppListViewTest::TearDown();
+    AppListConfigProvider::Get().ResetForTesting();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 class AppListViewFocusTest : public views::ViewsTestBase,
                              public testing::WithParamInterface<bool> {
  public:
@@ -2767,12 +2794,8 @@ TEST_F(AppListViewTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
 
 // Tests fullscreen apps grid sizing and layout for small screens (width < 960)
 // in landscape layout.
-TEST_F(AppListViewTest, AppListViewLayoutForSmallLandscapeScreen) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
-                                        ash::features::kEnableBackgroundBlur},
-                                       {});
-
+TEST_F(AppListViewScalableLayoutTest,
+       AppListViewLayoutForSmallLandscapeScreen) {
   const gfx::Size window_size = gfx::Size(800, 600);
   gfx::NativeView parent = GetContext();
   parent->SetBounds(gfx::Rect(window_size));
@@ -2792,12 +2815,7 @@ TEST_F(AppListViewTest, AppListViewLayoutForSmallLandscapeScreen) {
 
 // Tests fullscreen apps grid sizing and layout for small screens (width < 600)
 // in portrait layout.
-TEST_F(AppListViewTest, AppListViewLayoutForSmallPortraitScreen) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
-                                        ash::features::kEnableBackgroundBlur},
-                                       {});
-
+TEST_F(AppListViewScalableLayoutTest, AppListViewLayoutForSmallPortraitScreen) {
   const gfx::Size window_size = gfx::Size(500, 800);
   gfx::NativeView parent = GetContext();
   parent->SetBounds(gfx::Rect(window_size));
@@ -2817,12 +2835,8 @@ TEST_F(AppListViewTest, AppListViewLayoutForSmallPortraitScreen) {
 
 // Tests fullscreen apps grid sizing and layout for medium sized screens
 // (width < 1200) in lanscape layout.
-TEST_F(AppListViewTest, AppListViewLayoutForMediumLandscapeScreen) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
-                                        ash::features::kEnableBackgroundBlur},
-                                       {});
-
+TEST_F(AppListViewScalableLayoutTest,
+       AppListViewLayoutForMediumLandscapeScreen) {
   const gfx::Size window_size = gfx::Size(960, 800);
   gfx::NativeView parent = GetContext();
   parent->SetBounds(gfx::Rect(window_size));
@@ -2845,12 +2859,8 @@ TEST_F(AppListViewTest, AppListViewLayoutForMediumLandscapeScreen) {
 
 // Tests fullscreen apps grid sizing and layout for medium sized screens
 // (width < 768) in portrait layout.
-TEST_F(AppListViewTest, AppListViewLayoutForMediumPortraitScreen) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
-                                        ash::features::kEnableBackgroundBlur},
-                                       {});
-
+TEST_F(AppListViewScalableLayoutTest,
+       AppListViewLayoutForMediumPortraitScreen) {
   const gfx::Size window_size = gfx::Size(700, 800);
   gfx::NativeView parent = GetContext();
   parent->SetBounds(gfx::Rect(window_size));
@@ -2870,12 +2880,8 @@ TEST_F(AppListViewTest, AppListViewLayoutForMediumPortraitScreen) {
 
 // Tests fullscreen apps grid sizing and layout for large screens
 // (width >= 1200) in landscape layout.
-TEST_F(AppListViewTest, AppListViewLayoutForLargeLandscapeScreen) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
-                                        ash::features::kEnableBackgroundBlur},
-                                       {});
-
+TEST_F(AppListViewScalableLayoutTest,
+       AppListViewLayoutForLargeLandscapeScreen) {
   const gfx::Size window_size = gfx::Size(1200, 960);
   gfx::NativeView parent = GetContext();
   parent->SetBounds(gfx::Rect(window_size));
@@ -2898,12 +2904,7 @@ TEST_F(AppListViewTest, AppListViewLayoutForLargeLandscapeScreen) {
 
 // Tests fullscreen apps grid sizing and layout for large screens (width >= 768)
 // in portrait layout.
-TEST_F(AppListViewTest, AppListViewLayoutForLargePortraitScreen) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
-                                        ash::features::kEnableBackgroundBlur},
-                                       {});
-
+TEST_F(AppListViewScalableLayoutTest, AppListViewLayoutForLargePortraitScreen) {
   const gfx::Size window_size = gfx::Size(800, 1200);
   gfx::NativeView parent = GetContext();
   parent->SetBounds(gfx::Rect(window_size));
@@ -2923,12 +2924,7 @@ TEST_F(AppListViewTest, AppListViewLayoutForLargePortraitScreen) {
 
 // Tests that apps grid horizontal margin have minimum that ensures the page
 // switcher view can fit next to the apps grid.
-TEST_F(AppListViewTest, EnsurePageSwitcherFitsAppsGridMargin) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
-                                        ash::features::kEnableBackgroundBlur},
-                                       {});
-
+TEST_F(AppListViewScalableLayoutTest, EnsurePageSwitcherFitsAppsGridMargin) {
   const gfx::Size window_size = gfx::Size(400, 800);
   gfx::NativeView parent = GetContext();
   parent->SetBounds(gfx::Rect(window_size));
@@ -2952,12 +2948,7 @@ TEST_F(AppListViewTest, EnsurePageSwitcherFitsAppsGridMargin) {
 // Verifies that the vertical spacing between items in apps grid has an upper
 // limit, and that the apps grid is centered in the available space if item
 // spacing hits that limit.
-TEST_F(AppListViewTest, VerticalAppsGridItemSpacingIsBounded) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
-                                        ash::features::kEnableBackgroundBlur},
-                                       {});
-
+TEST_F(AppListViewScalableLayoutTest, VerticalAppsGridItemSpacingIsBounded) {
   const gfx::Size window_size = gfx::Size(960, 1600);
   gfx::NativeView parent = GetContext();
   parent->SetBounds(gfx::Rect(window_size));
@@ -2983,12 +2974,8 @@ TEST_F(AppListViewTest, VerticalAppsGridItemSpacingIsBounded) {
 
 // Verifies that the vertical apps container margin is big enough to fit the
 // apps grid fadeout area.
-TEST_F(AppListViewTest, VerticalAppsContainerMarginFitFadeoutArea) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
-                                        ash::features::kEnableBackgroundBlur},
-                                       {});
-
+TEST_F(AppListViewScalableLayoutTest,
+       VerticalAppsContainerMarginFitFadeoutArea) {
   const gfx::Size window_size = gfx::Size(650, 500);
   gfx::NativeView parent = GetContext();
   parent->SetBounds(gfx::Rect(window_size));

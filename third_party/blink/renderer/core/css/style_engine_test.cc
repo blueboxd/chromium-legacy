@@ -2277,4 +2277,24 @@ TEST_F(StyleEngineTest, ForceReattachLayoutTreeStyleRecalcRoot) {
   EXPECT_EQ(outer, GetStyleRecalcRoot());
 }
 
+TEST_F(StyleEngineTest, RecalcPropagatedWritingMode) {
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyID::kWritingMode,
+                                               "vertical-lr");
+
+  UpdateAllLifecyclePhases();
+
+  // Make sure that recalculating style for the root element does not trigger a
+  // visual diff that requires layout. That is, we take the body -> root
+  // propagation of writing-mode into account before setting ComputedStyle on
+  // the root LayoutObject.
+  GetDocument().documentElement()->SetInlineStyleProperty(
+      CSSPropertyID::kWritingMode, "horizontal-tb");
+
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetDocument().GetStyleEngine().RecalcStyle();
+
+  EXPECT_FALSE(GetStyleEngine().NeedsLayoutTreeRebuild());
+  EXPECT_FALSE(GetDocument().View()->NeedsLayout());
+}
+
 }  // namespace blink

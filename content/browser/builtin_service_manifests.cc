@@ -14,7 +14,6 @@
 #include "content/public/app/content_utility_manifest.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_names.mojom.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/services/cdm_manifest.h"
@@ -24,7 +23,6 @@
 #include "services/device/public/cpp/manifest.h"
 #include "services/media_session/public/cpp/manifest.h"
 #include "services/metrics/public/cpp/manifest.h"
-#include "services/network/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/tracing/manifest.h"
 
@@ -67,11 +65,6 @@ const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
           device::GetManifest(),
           media_session::GetManifest(),
           metrics::GetManifest(),
-          network::GetManifest(
-              IsInProcessNetworkService()
-                  ? service_manager::Manifest::ExecutionMode::kInProcessBuiltin
-                  : service_manager::Manifest::ExecutionMode::
-                        kOutOfProcessBuiltin),
           tracing::GetManifest(),
       }};
   return *manifests;

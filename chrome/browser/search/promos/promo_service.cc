@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/pref_names.h"
@@ -25,6 +26,9 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 
 namespace {
+
+// The number of days until a blocklist entry expires.
+const int kDaysThatBlocklistExpiresIn = 28;
 
 const char kNewTabPromosApiPath[] = "/async/newtab_promos";
 
@@ -187,7 +191,7 @@ void PromoService::OnJsonParsed(base::Value value) {
   PromoService::Status status;
 
   if (JsonToPromoData(value, &result)) {
-    bool is_blocked = IsBlocked(result->promo_id);
+    bool is_blocked = IsBlockedAfterClearingExpired(result->promo_id);
     if (is_blocked)
       result = PromoData();
     status = is_blocked ? Status::OK_BUT_BLOCKED : Status::OK_WITH_PROMO;
@@ -213,7 +217,7 @@ void PromoService::Shutdown() {
 
 // static
 void PromoService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(prefs::kNtpPromoBlocklist);
+  registry->RegisterDictionaryPref(prefs::kNtpPromoBlocklist);
 }
 
 void PromoService::AddObserver(PromoServiceObserver* observer) {
@@ -225,11 +229,14 @@ void PromoService::RemoveObserver(PromoServiceObserver* observer) {
 }
 
 void PromoService::BlocklistPromo(const std::string& promo_id) {
-  if (!CanBlockPromos() || promo_id.empty() || IsBlocked(promo_id))
+  if (!CanBlockPromos() || promo_id.empty() ||
+      IsBlockedAfterClearingExpired(promo_id)) {
     return;
+  }
 
-  ListPrefUpdate update(pref_service_, prefs::kNtpPromoBlocklist);
-  update->Append(promo_id);
+  DictionaryPrefUpdate update(pref_service_, prefs::kNtpPromoBlocklist);
+  double now = base::Time::Now().ToDeltaSinceWindowsEpoch().InSecondsF();
+  update->SetDoubleKey(promo_id, now);
 
   if (promo_data_ && promo_data_->promo_id == promo_id) {
     promo_data_ = PromoData();
@@ -256,16 +263,34 @@ void PromoService::NotifyObservers() {
   }
 }
 
-bool PromoService::IsBlocked(const std::string& promo_id) const {
+bool PromoService::IsBlockedAfterClearingExpired(
+    const std::string& promo_id) const {
   if (promo_id.empty() || !CanBlockPromos())
     return false;
 
-  const auto* blocklist = pref_service_->GetList(prefs::kNtpPromoBlocklist);
-  for (const auto& blocked : blocklist->GetList()) {
-    if (blocked.GetString() == promo_id)
-      return true;
+  auto expired_delta = base::TimeDelta::FromDays(kDaysThatBlocklistExpiresIn);
+  auto expired_time = base::Time::Now() - expired_delta;
+  double expired = expired_time.ToDeltaSinceWindowsEpoch().InSecondsF();
+
+  bool found = false;
+
+  std::vector<std::string> expired_ids;
+
+  for (const auto& blocked :
+       pref_service_->GetDictionary(prefs::kNtpPromoBlocklist)->DictItems()) {
+    if (!blocked.second.is_double() || blocked.second.GetDouble() < expired)
+      expired_ids.emplace_back(blocked.first);
+    else if (!found && blocked.first == promo_id)
+      found = true;  // Don't break; keep clearing expired prefs.
   }
-  return false;
+
+  if (!expired_ids.empty()) {
+    DictionaryPrefUpdate update(pref_service_, prefs::kNtpPromoBlocklist);
+    for (const std::string& key : expired_ids)
+      update->RemoveKey(key);
+  }
+
+  return found;
 }
 
 GURL PromoService::GetLoadURLForTesting() const {

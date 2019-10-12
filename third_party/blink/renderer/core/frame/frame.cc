@@ -261,6 +261,27 @@ void Frame::UpdateInheritedEffectiveTouchActionIfPossible() {
   }
 }
 
+void Frame::UpdateVisibleToHitTesting() {
+  bool parent_visible_to_hit_testing = true;
+  if (auto* parent = Tree().Parent())
+    parent_visible_to_hit_testing = parent->GetVisibleToHitTesting();
+
+  bool self_visible_to_hit_testing = true;
+  if (auto* local_owner = DynamicTo<HTMLFrameOwnerElement>(owner_.Get())) {
+    self_visible_to_hit_testing =
+        local_owner->GetLayoutObject()
+            ? local_owner->GetLayoutObject()->Style()->VisibleToHitTesting()
+            : true;
+  }
+
+  bool visible_to_hit_testing =
+      parent_visible_to_hit_testing && self_visible_to_hit_testing;
+  bool changed = visible_to_hit_testing_ != visible_to_hit_testing;
+  visible_to_hit_testing_ = visible_to_hit_testing;
+  if (changed)
+    DidChangeVisibleToHitTesting();
+}
+
 const std::string& Frame::ToTraceValue() {
   // token's ToString() is latin1.
   if (!trace_value_)

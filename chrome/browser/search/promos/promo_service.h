@@ -85,8 +85,9 @@ class PromoService : public KeyedService {
 
   void NotifyObservers();
 
-  // Whether or not |promo_id| has been blocked by the user.
-  bool IsBlocked(const std::string& promo_id) const;
+  // Clears any expired blocklist entries and determines whether |promo_id| has
+  // been blocked by the user.
+  bool IsBlockedAfterClearingExpired(const std::string& promo_id) const;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;

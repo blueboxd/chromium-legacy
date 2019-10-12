@@ -915,12 +915,22 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       blink::mojom::WebFeature::kHeavyAdIntervention, 1);
 }
 
+class AdsPageLoadMetricsObserverResourceBrowserTestWithoutHeavyAdIntervention
+    : public AdsPageLoadMetricsObserverResourceBrowserTest {
+ public:
+  AdsPageLoadMetricsObserverResourceBrowserTestWithoutHeavyAdIntervention() {
+    feature_list_.InitAndDisableFeature(features::kHeavyAdIntervention);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Check that when the heavy ad feature is disabled we don't navigate
 // the frame.
-IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
-                       HeavyAdInterventionDisabled_ErrorPageNotLoaded) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kHeavyAdIntervention);
+IN_PROC_BROWSER_TEST_F(
+    AdsPageLoadMetricsObserverResourceBrowserTestWithoutHeavyAdIntervention,
+    ErrorPageNotLoaded) {
   base::HistogramTester histogram_tester;
   auto incomplete_resource_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(

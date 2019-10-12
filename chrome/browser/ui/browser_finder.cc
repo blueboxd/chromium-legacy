@@ -18,14 +18,6 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
-#if defined(OS_WIN)
-#include <shobjidl.h>
-#include <wrl/client.h>
-#include "base/win/windows_version.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -38,58 +30,16 @@ using content::WebContents;
 namespace {
 
 // Type used to indicate to match anything.
-const int kMatchAny = 0;
+const uint32_t kMatchAny = 0;
 
 // See BrowserMatches for details.
-const int kMatchOriginalProfile = 1 << 0;
-const int kMatchCanSupportWindowFeature = 1 << 1;
-const int kMatchNormal = 1 << 2;
-const int kMatchDisplayId = 1 << 3;
-#if defined(OS_WIN)
-const int kMatchCurrentWorkspace = 1 << 4;
+const uint32_t kMatchOriginalProfile = 1 << 0;
+const uint32_t kMatchCanSupportWindowFeature = 1 << 1;
+const uint32_t kMatchNormal = 1 << 2;
+const uint32_t kMatchDisplayId = 1 << 3;
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+const uint32_t kMatchCurrentWorkspace = 1 << 4;
 #endif
-
-#if defined(OS_WIN)
-// Returns true if the browser window is on another virtual desktop, false if
-// we can't tell, or it's on the current virtual desktop.
-// Must not be called while application is dispatching an input synchronous
-// call like SendMessage, because IsWindowOnCurrentVirtualDesktop will return
-// an error.
-bool IsOnOtherVirtualDesktop(Browser* browser) {
-  if (base::win::GetVersion() < base::win::Version::WIN10)
-    return false;
-
-  Microsoft::WRL::ComPtr<IVirtualDesktopManager> virtual_desktop_manager;
-  if (!SUCCEEDED(::CoCreateInstance(__uuidof(VirtualDesktopManager), nullptr,
-                                    CLSCTX_ALL,
-                                    IID_PPV_ARGS(&virtual_desktop_manager)))) {
-    return false;
-  }
-  BrowserWindow* window = browser->window();
-  // In tests, |window| can be null.
-  if (!window)
-    return false;
-
-  BOOL on_current_desktop;
-  aura::Window* native_win = window->GetNativeWindow();
-  if (!native_win ||
-      FAILED(virtual_desktop_manager->IsWindowOnCurrentVirtualDesktop(
-          native_win->GetHost()->GetAcceleratedWidget(),
-          &on_current_desktop)) ||
-      on_current_desktop) {
-    return false;
-  }
-
-  // IsWindowOnCurrentVirtualDesktop() is flaky for newly opened windows,
-  // which causes test flakiness. Occasionally, it incorrectly says a window
-  // is not on the current virtual desktop when it is. In this situation,
-  // it also returns GUID_NULL for the desktop id.
-  GUID workspace_guid;
-  return SUCCEEDED(virtual_desktop_manager->GetWindowDesktopId(
-             native_win->GetHost()->GetAcceleratedWidget(), &workspace_guid)) &&
-         workspace_guid != GUID_NULL;
-}
-#endif  // OS_WIN
 
 // Returns true if the specified |browser| matches the specified arguments.
 // |match_types| is a bitmask dictating what parameters to match:
@@ -148,9 +98,10 @@ bool BrowserMatches(Browser* browser,
   if ((match_types & kMatchNormal) && !browser->is_type_normal())
     return false;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+  // Note that |browser->window()| might be nullptr in tests.
   if ((match_types & kMatchCurrentWorkspace) &&
-      IsOnOtherVirtualDesktop(browser)) {
+      (!browser->window() || !browser->window()->IsOnCurrentWorkspace())) {
     return false;
   }
 #endif  // OS_WIN
@@ -197,7 +148,7 @@ Browser* FindBrowserWithTabbedOrAnyType(
     match_types |= kMatchOriginalProfile;
   if (display_id != display::kInvalidDisplayId)
     match_types |= kMatchDisplayId;
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   if (match_current_workspace)
     match_types |= kMatchCurrentWorkspace;
 #endif

@@ -130,7 +130,7 @@ OverviewWindowDragController::OverviewWindowDragController(
     OverviewItem* item,
     bool is_touch_dragging)
     : overview_session_(overview_session),
-      split_view_controller_(Shell::Get()->split_view_controller()),
+      split_view_controller_(SplitViewController::Get()),
       item_(item),
       on_desks_bar_item_size_(GetItemSizeWhenOnDesksBar(item)),
       display_count_(Shell::GetAllRootWindows().size()),
@@ -138,7 +138,7 @@ OverviewWindowDragController::OverviewWindowDragController(
       should_allow_split_view_(ShouldAllowSplitView()),
       virtual_desks_bar_enabled_(GetVirtualDesksBarEnabled(item)) {
   DCHECK(!Shell::Get()->overview_controller()->IsInStartAnimation());
-  DCHECK(!Shell::Get()->split_view_controller()->IsDividerAnimating());
+  DCHECK(!SplitViewController::Get()->IsDividerAnimating());
 }
 
 OverviewWindowDragController::~OverviewWindowDragController() = default;
@@ -684,7 +684,7 @@ void OverviewWindowDragController::SnapWindow(
   DCHECK_NE(snap_position, SplitViewController::NONE);
 
   // |item_| will be deleted after SplitViewController::SnapWindow().
-  DCHECK(!Shell::Get()->split_view_controller()->IsDividerAnimating());
+  DCHECK(!SplitViewController::Get()->IsDividerAnimating());
   aura::Window* window = item_->GetWindow();
   split_view_controller_->SnapWindow(window, snap_position,
                                      /*use_divider_spawn_animation=*/true);

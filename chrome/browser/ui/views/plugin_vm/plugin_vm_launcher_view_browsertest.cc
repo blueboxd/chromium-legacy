@@ -127,7 +127,6 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
   }
 
   void AllowPluginVm() {
-    EnablePluginVmFeature();
     EnterpriseEnrollDevice();
     SetUserWithAffiliation();
     SetPluginVmDevicePolicies();
@@ -175,7 +174,6 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
 
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   PluginVmLauncherViewForTesting* view_;
@@ -184,10 +182,6 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
   chromeos::FakeConciergeClient* fake_concierge_client_;
 
  private:
-  void EnablePluginVmFeature() {
-    scoped_feature_list_.InitAndEnableFeature(features::kPluginVm);
-  }
-
   void EnterpriseEnrollDevice() {
     scoped_stub_install_attributes_.Get()->SetCloudManaged("example.com",
                                                            "device_id");
@@ -215,12 +209,23 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PluginVmLauncherViewBrowserTest);
 };
 
+class PluginVmLauncherViewBrowserTestWithFeatureEnabled
+    : public PluginVmLauncherViewBrowserTest {
+ public:
+  PluginVmLauncherViewBrowserTestWithFeatureEnabled() {
+    feature_list_.InitAndEnableFeature(features::kPluginVm);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Test the dialog is actually can be launched.
 IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest, InvokeUi_default) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTestWithFeatureEnabled,
                        SetupShouldFinishSuccessfully) {
   AllowPluginVm();
   plugin_vm::SetupConciergeForSuccessfulDiskImageImport(fake_concierge_client_);
@@ -237,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
       plugin_vm::PluginVmSetupResult::kSuccess, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTestWithFeatureEnabled,
                        SetupShouldFailAsHashesDoNotMatch) {
   AllowPluginVm();
   // Reset PluginVmImage hash to non-matching.
@@ -256,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
       plugin_vm::PluginVmSetupResult::kErrorDownloadingPluginVmImage, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTestWithFeatureEnabled,
                        SetupShouldFailAsImportingFails) {
   AllowPluginVm();
   SetPluginVmImagePref(embedded_test_server()->GetURL(kJpgFile).spec(),
@@ -274,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
       plugin_vm::PluginVmSetupResult::kErrorImportingPluginVmImage, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTestWithFeatureEnabled,
                        CouldRetryAfterFailedSetup) {
   AllowPluginVm();
   // Reset PluginVmImage hash to non-matching.

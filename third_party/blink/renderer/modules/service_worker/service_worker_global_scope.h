@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -214,10 +215,12 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // native fetch.
   void RespondToFetchEventWithNoResponse(
       int fetch_event_id,
+      const KURL& request_url,
       base::TimeTicks event_dispatch_time,
       base::TimeTicks respond_with_settled_time);
   // Responds to the fetch event with |response|.
   void RespondToFetchEvent(int fetch_event_id,
+                           const KURL& request_url,
                            mojom::blink::FetchAPIResponsePtr,
                            base::TimeTicks event_dispatch_time,
                            base::TimeTicks respond_with_settled_time);
@@ -225,6 +228,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // |body_as_stream|.
   void RespondToFetchEventWithResponseStream(
       int fetch_event_id,
+      const KURL& request_url,
       mojom::blink::FetchAPIResponsePtr,
       mojom::blink::ServiceWorkerStreamHandlePtr,
       base::TimeTicks event_dispatch_time,
@@ -282,6 +286,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
 
   void Trace(blink::Visitor*) override;
+
+  // Returns true if a FetchEvent exists with the given request URL and
+  // is still waiting for a Response.
+  bool HasRelatedFetchEvent(const KURL& request_url) const;
 
  protected:
   // EventTarget
@@ -450,6 +458,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   void AddMessageToConsole(mojom::blink::ConsoleMessageLevel,
                            const String& message) override;
 
+  void NoteNewFetchEvent(const KURL& request_url);
+  void NoteRespondedToFetchEvent(const KURL& request_url);
+
   Member<ServiceWorkerClients> clients_;
   Member<ServiceWorkerRegistration> registration_;
   Member<::blink::ServiceWorker> service_worker_;
@@ -536,6 +547,13 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       fetch_response_callbacks_;
 
   HeapHashMap<int, Member<FetchEvent>> pending_preload_fetch_events_;
+
+  // Track outstanding FetchEvent objects still waiting for a response by
+  // request URL.  This information can be used as a hint that cache_storage
+  // or fetch requests to the same URL is likely to be used to satisfy a
+  // FetchEvent.  This in turn can allow us to use more aggressive
+  // optimizations in these cases.
+  HashMap<KURL, int> unresponded_fetch_event_counts_;
 
   // Timer triggered when the service worker considers it should be stopped or
   // an event should be aborted.

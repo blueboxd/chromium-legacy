@@ -210,7 +210,7 @@ void PrefHashFilter::OnStoreDeletionFromDisk() {
 }
 
 void PrefHashFilter::FinalizeFilterOnLoad(
-    const PostFilterOnLoadCallback& post_filter_on_load_callback,
+    PostFilterOnLoadCallback post_filter_on_load_callback,
     std::unique_ptr<base::DictionaryValue> pref_store_contents,
     bool prefs_altered) {
   DCHECK(pref_store_contents);
@@ -259,8 +259,8 @@ void PrefHashFilter::FinalizeFilterOnLoad(
   UMA_HISTOGRAM_TIMES("Settings.FilterOnLoadTime",
                       base::TimeTicks::Now() - checkpoint);
 
-  post_filter_on_load_callback.Run(std::move(pref_store_contents),
-                                   prefs_altered);
+  std::move(post_filter_on_load_callback)
+      .Run(std::move(pref_store_contents), prefs_altered);
 }
 
 // static

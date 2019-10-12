@@ -1147,6 +1147,13 @@ void WebURLLoaderImpl::PopulateURLResponse(
   }
 }
 
+void WebURLLoaderImpl::PopulateURLResponse(
+    const WebURL& url,
+    const network::ResourceResponseHead& head,
+    WebURLResponse* response,
+    bool report_security_info,
+    int request_id) {}
+
 // static
 WebURLError WebURLLoaderImpl::PopulateURLError(
     const network::URLLoaderCompletionStatus& status,

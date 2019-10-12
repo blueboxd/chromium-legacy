@@ -22,8 +22,8 @@ namespace {
 
 // Returns true if the specified video format can be decoded on hardware.
 bool IsSupportedHardwareVideoCodec(const media::VideoType& type) {
-  // TODO(fxb/36000): Replace these hardcoded checks with a query to the
-  // fuchsia.mediacodec FIDL service.
+  // TODO(crbug.com/1013412): Replace these hardcoded checks with a query to the
+  // fuchsia.mediacodec FIDL service when fxb/36000 is resolved.
   if (type.codec == media::kCodecH264 && type.level <= 41)
     return true;
 
@@ -32,6 +32,76 @@ bool IsSupportedHardwareVideoCodec(const media::VideoType& type) {
 
   return false;
 }
+
+class PlayreadyKeySystemProperties : public ::media::KeySystemProperties {
+ public:
+  PlayreadyKeySystemProperties(const std::string& key_system_name,
+                               media::SupportedCodecs supported_codecs,
+                               bool persistent_license_support)
+      : key_system_name_(key_system_name),
+        supported_codecs_(supported_codecs),
+        persistent_license_support_(persistent_license_support) {}
+
+  std::string GetKeySystemName() const override { return key_system_name_; }
+
+  bool IsSupportedInitDataType(
+      media::EmeInitDataType init_data_type) const override {
+    return init_data_type == media::EmeInitDataType::CENC;
+  }
+
+  media::SupportedCodecs GetSupportedCodecs() const override {
+    return supported_codecs_;
+  }
+
+  media::SupportedCodecs GetSupportedHwSecureCodecs() const override {
+    return supported_codecs_;
+  }
+
+  media::EmeConfigRule GetRobustnessConfigRule(
+      media::EmeMediaType media_type,
+      const std::string& requested_robustness) const override {
+    // Only empty robustness string is currently supported.
+    if (requested_robustness.empty()) {
+      return media::EmeConfigRule::HW_SECURE_CODECS_REQUIRED;
+    }
+
+    return media::EmeConfigRule::NOT_SUPPORTED;
+  }
+
+  media::EmeSessionTypeSupport GetPersistentLicenseSessionSupport()
+      const override {
+    return persistent_license_support_
+               ? media::EmeSessionTypeSupport::SUPPORTED
+               : media::EmeSessionTypeSupport::NOT_SUPPORTED;
+  }
+
+  media::EmeSessionTypeSupport GetPersistentUsageRecordSessionSupport()
+      const override {
+    return media::EmeSessionTypeSupport::NOT_SUPPORTED;
+  }
+
+  media::EmeFeatureSupport GetPersistentStateSupport() const override {
+    return media::EmeFeatureSupport::ALWAYS_ENABLED;
+  }
+
+  media::EmeFeatureSupport GetDistinctiveIdentifierSupport() const override {
+    return media::EmeFeatureSupport::ALWAYS_ENABLED;
+  }
+
+  media::EmeConfigRule GetEncryptionSchemeConfigRule(
+      media::EncryptionMode encryption_mode) const override {
+    if (encryption_mode == ::media::EncryptionMode::kCenc) {
+      return media::EmeConfigRule::SUPPORTED;
+    }
+
+    return media::EmeConfigRule::NOT_SUPPORTED;
+  }
+
+ private:
+  const std::string key_system_name_;
+  const media::SupportedCodecs supported_codecs_;
+  const bool persistent_license_support_;
+};
 
 }  // namespace
 
@@ -82,33 +152,33 @@ WebEngineContentRendererClient::CreateURLLoaderThrottleProvider(
 
 void WebEngineContentRendererClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) {
+  media::SupportedCodecs supported_video_codecs = 0;
+  constexpr uint8_t kUnknownCodecLevel = 0;
+  if (IsSupportedHardwareVideoCodec(media::VideoType{
+          media::kCodecVP9, media::VP9PROFILE_PROFILE0, kUnknownCodecLevel,
+          media::VideoColorSpace::REC709()})) {
+    supported_video_codecs |= media::EME_CODEC_VP9_PROFILE0;
+  }
+
+  if (IsSupportedHardwareVideoCodec(media::VideoType{
+          media::kCodecVP9, media::VP9PROFILE_PROFILE2, kUnknownCodecLevel,
+          media::VideoColorSpace::REC709()})) {
+    supported_video_codecs |= media::EME_CODEC_VP9_PROFILE2;
+  }
+
+  if (IsSupportedHardwareVideoCodec(media::VideoType{
+          media::kCodecH264, media::H264PROFILE_MAIN, kUnknownCodecLevel,
+          media::VideoColorSpace::REC709()})) {
+    supported_video_codecs |= media::EME_CODEC_AVC1;
+  }
+
+  media::SupportedCodecs supported_audio_codecs = media::EME_CODEC_AUDIO_ALL;
+
+  media::SupportedCodecs supported_codecs =
+      supported_video_codecs | supported_audio_codecs;
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableWidevine)) {
-    media::SupportedCodecs supported_video_codecs = 0;
-    constexpr uint8_t kUnknownCodecLevel = 0;
-    if (IsSupportedHardwareVideoCodec(media::VideoType{
-            media::kCodecVP9, media::VP9PROFILE_PROFILE0, kUnknownCodecLevel,
-            media::VideoColorSpace::REC709()})) {
-      supported_video_codecs |= media::EME_CODEC_VP9_PROFILE0;
-    }
-
-    if (IsSupportedHardwareVideoCodec(media::VideoType{
-            media::kCodecVP9, media::VP9PROFILE_PROFILE2, kUnknownCodecLevel,
-            media::VideoColorSpace::REC709()})) {
-      supported_video_codecs |= media::EME_CODEC_VP9_PROFILE2;
-    }
-
-    if (IsSupportedHardwareVideoCodec(media::VideoType{
-            media::kCodecH264, media::H264PROFILE_MAIN, kUnknownCodecLevel,
-            media::VideoColorSpace::REC709()})) {
-      supported_video_codecs |= media::EME_CODEC_AVC1;
-    }
-
-    media::SupportedCodecs supported_audio_codecs = media::EME_CODEC_AUDIO_ALL;
-
-    media::SupportedCodecs supported_codecs =
-        supported_video_codecs | supported_audio_codecs;
-
     base::flat_set<media::EncryptionMode> encryption_schemes{
         media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs};
 
@@ -128,6 +198,15 @@ void WebEngineContentRendererClient::AddSupportedKeySystems(
         media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent usage record
         media::EmeFeatureSupport::ALWAYS_ENABLED,     // persistent state
         media::EmeFeatureSupport::ALWAYS_ENABLED));   // distinctive identifier
+  }
+
+  std::string playready_key_system =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kPlayreadyKeySystem);
+  if (!playready_key_system.empty()) {
+    key_systems->emplace_back(
+        new PlayreadyKeySystemProperties(playready_key_system, supported_codecs,
+                                         /*persistent_license_support=*/false));
   }
 }
 

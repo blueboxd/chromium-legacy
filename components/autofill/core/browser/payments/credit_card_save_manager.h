@@ -144,10 +144,11 @@ class CreditCardSaveManager {
   friend class SaveCardBubbleViewsFullFormBrowserTest;
   friend class SaveCardInfobarEGTestHelper;
   friend class ::SaveCardOfferObserver;
+  FRIEND_TEST_ALL_PREFIXES(
+      SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+      StrikeDatabase_Upload_FullFlowTest);
   FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTest,
                            StrikeDatabase_Local_FullFlowTest);
-  FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTest,
-                           StrikeDatabase_Upload_FullFlowTest);
   FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
                            Feedback_CardSavingAnimation);
 

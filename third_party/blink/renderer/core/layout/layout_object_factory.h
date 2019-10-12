@@ -15,6 +15,7 @@ class ComputedStyle;
 class LayoutBlock;
 class LayoutBlockFlow;
 enum class LegacyLayout;
+class LayoutProgress;
 class LayoutTableCaption;
 class LayoutTableCell;
 class LayoutText;
@@ -55,6 +56,9 @@ class LayoutObjectFactory {
                                                 int start_offset,
                                                 int length,
                                                 LegacyLayout);
+  static LayoutProgress* CreateLayoutProgress(Node* node,
+                                              const ComputedStyle& style,
+                                              LegacyLayout legacy);
 };
 
 }  // namespace blink

@@ -1427,6 +1427,10 @@ void EventHandler::ResetMousePositionForPointerUnlock() {
   pointer_event_manager_->RemoveLastMousePosition();
 }
 
+bool EventHandler::LongTapShouldInvokeContextMenu() {
+  return gesture_manager_->LongTapShouldInvokeContextMenu();
+}
+
 WebInputEventResult EventHandler::DispatchMousePointerEvent(
     const WebInputEvent::Type event_type,
     Element* target_element,

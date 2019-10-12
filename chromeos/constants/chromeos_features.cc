@@ -187,6 +187,10 @@ const base::Feature kSessionManagerLongKillTimeout{
 const base::Feature kShelfScrollable{"ShelfScrollable",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables the shelf hotseat.
+const base::Feature kShelfHotseat{"ShelfHotseat",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables a toggle to enable Bluetooth debug logs.
 const base::Feature kShowBluetoothDebugLogToggle{
     "ShowBluetoothDebugLogToggle", base::FEATURE_DISABLED_BY_DEFAULT};

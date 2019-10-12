@@ -124,7 +124,7 @@ void SplitViewDividerHandlerView::Refresh() {
   spawning_animation_.reset();
   SetVisible(true);
   selection_animation_->UpdateWhiteHandlerBounds();
-  if (Shell::Get()->split_view_controller()->is_resizing())
+  if (SplitViewController::Get()->is_resizing())
     selection_animation_->Show();
   else
     selection_animation_->Hide();

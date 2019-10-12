@@ -15,6 +15,7 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/web_preferences.h"
@@ -69,6 +70,11 @@ WebviewController::WebviewController(content::BrowserContext* browser_context,
 
 WebviewController::~WebviewController() {
   cast_web_contents_->RemoveObserver(this);
+
+  if (surface_) {
+    surface_->RemoveSurfaceObserver(this);
+    surface_->SetEmbeddedSurfaceId(base::RepeatingCallback<viz::SurfaceId()>());
+  }
 }
 
 std::unique_ptr<content::NavigationThrottle>
@@ -212,13 +218,42 @@ void WebviewController::ClosePage() {
   cast_web_contents_->ClosePage();
 }
 
+viz::SurfaceId WebviewController::GetSurfaceId() {
+  auto* rwhv = contents_->GetRenderWidgetHostView();
+  if (!rwhv)
+    return viz::SurfaceId();
+  auto frame_sink_id = rwhv->GetRenderWidgetHost()->GetFrameSinkId();
+  auto local_surface_id =
+      rwhv->GetNativeView()->GetLocalSurfaceIdAllocation().local_surface_id();
+  return viz::SurfaceId(frame_sink_id, local_surface_id);
+}
+
 void WebviewController::AttachTo(aura::Window* window, int window_id) {
   auto* contents_window = contents_->GetNativeView();
-  window->SetLayoutManager(new WebviewLayoutManager(contents_window));
+  window->SetLayoutManager(new WebviewLayoutManager(window, contents_window));
   contents_window->set_id(window_id);
   contents_window->SetBounds(gfx::Rect(window->bounds().size()));
-  contents_window->Show();
-  window->AddChild(contents_->GetNativeView());
+  // The aura window is hidden to avoid being shown via the usual layer method,
+  // instead it is shows via a SurfaceDrawQuad by exo.
+  contents_window->Hide();
+  window->AddChild(contents_window);
+
+  exo::Surface* surface = exo::Surface::AsSurface(window);
+  CHECK(surface) << "Attaching Webview to non-EXO surface window";
+  CHECK(!surface_) << "Attaching already attached WebView";
+
+  surface_ = surface;
+  surface_->AddSurfaceObserver(this);
+
+  // Unretained is safe because we unset this in the destructor.
+  surface_->SetEmbeddedSurfaceId(
+      base::Bind(&WebviewController::GetSurfaceId, base::Unretained(this)));
+}
+
+void WebviewController::OnSurfaceDestroying(exo::Surface* surface) {
+  DCHECK_EQ(surface, surface_);
+  surface->RemoveSurfaceObserver(this);
+  surface_ = nullptr;
 }
 
 void WebviewController::ProcessInputEvent(const webview::InputEvent& ev) {

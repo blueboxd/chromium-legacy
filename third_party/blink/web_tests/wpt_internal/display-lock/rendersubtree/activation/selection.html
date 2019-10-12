@@ -30,7 +30,7 @@ promise_test(() => {
       window.getSelection().selectAllChildren(container);
       assert_equals(window.getSelection().toString(), "foo\nbar");
       assert_equals(container.renderSubtree, "");
-      assert_equals(nonActivatable.renderSubtree, "invisible");
+      assert_equals(nonActivatable.renderSubtree, INVISIBLE_NOT_ACTIVATABLE);
       assert_equals(nested.renderSubtree, "");
       resolve();
     });

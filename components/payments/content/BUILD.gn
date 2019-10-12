@@ -68,6 +68,7 @@ jumbo_static_library("content_common") {
   ]
 
   deps = [
+    "//content/public/browser",
     "//skia",
   ]
 }

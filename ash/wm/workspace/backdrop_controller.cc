@@ -81,8 +81,7 @@ aura::Window* GetBottomMostSnappedWindowForDeskContainer(
 
   // For the active desk, only use the windows snapped in SplitViewController if
   // SplitView mode is active.
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   if (desks_util::IsActiveDeskContainer(desk_container) &&
       split_view_controller->InSplitViewMode()) {
     aura::Window* left_window = split_view_controller->left_window();
@@ -113,7 +112,7 @@ BackdropController::BackdropController(aura::Window* container)
     : container_(container) {
   DCHECK(container_);
   auto* shell = Shell::Get();
-  shell->split_view_controller()->AddObserver(this);
+  SplitViewController::Get()->AddObserver(this);
   shell->overview_controller()->AddObserver(this);
   shell->accessibility_controller()->AddObserver(this);
   shell->wallpaper_controller()->AddObserver(this);
@@ -129,7 +128,7 @@ BackdropController::~BackdropController() {
   shell->wallpaper_controller()->RemoveObserver(this);
   if (shell->overview_controller())
     shell->overview_controller()->RemoveObserver(this);
-  shell->split_view_controller()->RemoveObserver(this);
+  SplitViewController::Get()->RemoveObserver(this);
   // TODO(oshima): animations won't work right with mus:
   // http://crbug.com/548396.
   Hide(/*destroy=*/true);
@@ -428,8 +427,7 @@ bool BackdropController::BackdropShouldFullscreen() {
   // TODO(afakhry): Define the correct behavior and revise this in a follow-up
   // CL.
   aura::Window* window = GetTopmostWindowWithBackdrop();
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   SplitViewController::State state = split_view_controller->state();
   if ((state == SplitViewController::State::kLeftSnapped &&
        window == split_view_controller->left_window()) ||
@@ -444,8 +442,7 @@ bool BackdropController::BackdropShouldFullscreen() {
 gfx::Rect BackdropController::GetBackdropBounds() {
   DCHECK(!BackdropShouldFullscreen());
 
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   SplitViewController::State state = split_view_controller->state();
   DCHECK(state == SplitViewController::State::kLeftSnapped ||
          state == SplitViewController::State::kRightSnapped);

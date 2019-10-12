@@ -27,7 +27,6 @@ class ASH_EXPORT ShelfContainerView : public views::View {
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
-  void Layout() override;
   const char* GetClassName() const override;
 
  protected:

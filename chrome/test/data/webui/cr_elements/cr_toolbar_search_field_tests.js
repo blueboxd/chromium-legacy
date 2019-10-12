@@ -90,6 +90,7 @@ suite('cr-toolbar-search-field', function() {
     assertEquals('', field.getValue());
     assertEquals(field.$.searchInput, field.root.activeElement);
     assertFalse(field.hasSearchText);
+    assertFalse(field.spinnerActive);
   });
 
   test('notifies on new searches', function() {

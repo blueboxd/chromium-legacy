@@ -303,8 +303,7 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewOneSnappedWindow) {
   // Snap one window and leave overview mode open with the other window.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   ASSERT_TRUE(overview_controller->InOverviewSession());
   ASSERT_TRUE(split_view_controller->InSplitViewMode());
@@ -350,8 +349,7 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewTwoSnappedWindows) {
   auto window2 = CreateWindowForTesting();
 
   // Snap two windows to start.
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   ASSERT_TRUE(split_view_controller->InSplitViewMode());
@@ -464,8 +462,7 @@ TEST_F(HomeLauncherGestureHandlerTest, DraggedActiveWindow) {
   // Test in splitview, depends on the drag position, the active dragged window
   // might be different.
   auto window2 = CreateWindowForTesting();
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
@@ -514,8 +511,7 @@ TEST_F(HomeLauncherGestureHandlerTest, HideWindowDuringWindowDragging) {
   EXPECT_TRUE(window3->IsVisible());
 
   // In splitview mode, the snapped windows will stay visible during dragging.
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
@@ -579,8 +575,7 @@ TEST_F(HomeLauncherGestureHandlerTest, NoOpInOverview) {
 
   // In splitview + overview case, drag from shelf in the overview side of the
   // screen also does nothing.
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   overview_controller->StartOverview();
@@ -649,8 +644,7 @@ TEST_F(HomeLauncherGestureHandlerTest, MayOrMayNotReShowHiddenWindows) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 200), base::nullopt);
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window1.get()));
   EXPECT_FALSE(window2->IsVisible());
@@ -755,8 +749,7 @@ TEST_F(HomeLauncherGestureHandlerTest, RestoreWindowToOriginalBounds) {
 
   // The same thing should happen if splitview mode is active.
   auto window2 = CreateWindowForTesting();
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
@@ -816,8 +809,7 @@ TEST_F(HomeLauncherGestureHandlerTest, DragOrFlingInSplitView) {
 
   auto window1 = CreateWindowForTesting();
   auto window2 = CreateWindowForTesting();
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);

@@ -463,6 +463,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool SupportsDarkColorScheme();
 
   void ViewportDefiningElementDidChange();
+  void PropagateWritingModeAndDirectionToHTMLRoot();
 
   Member<Document> document_;
   bool is_master_;

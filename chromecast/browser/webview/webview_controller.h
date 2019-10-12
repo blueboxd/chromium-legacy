@@ -11,6 +11,8 @@
 #include "base/supports_user_data.h"
 #include "chromecast/browser/cast_web_contents.h"
 #include "chromecast/browser/webview/proto/webview.pb.h"
+#include "components/exo/surface.h"
+#include "components/exo/surface_observer.h"
 #include "ui/events/gestures/gesture_recognizer_impl.h"
 #include "url/gurl.h"
 
@@ -36,7 +38,8 @@ class WebviewNavigationThrottle;
 // This owns a WebContents and CastWebContents and processes proto commands
 // to allow the web contents to be controlled and embedded.
 class WebviewController : public CastWebContents::Delegate,
-                          public CastWebContents::Observer {
+                          public CastWebContents::Observer,
+                          public exo::SurfaceObserver {
  public:
   class Client {
    public:
@@ -90,6 +93,7 @@ class WebviewController : public CastWebContents::Delegate,
   void HandleUpdateSettings(const webview::UpdateSettingsRequest& request);
   void HandleSetAutoMediaPlaybackPolicy(
       const webview::SetAutoMediaPlaybackPolicyRequest& request);
+  viz::SurfaceId GetSurfaceId();
 
   bool Check(bool condition, const char* error);
 
@@ -101,6 +105,9 @@ class WebviewController : public CastWebContents::Delegate,
   // CastWebContents::Observer
   void ResourceLoadFailed(CastWebContents* cast_web_contents) override;
 
+  // exo::SurfaceObserver
+  void OnSurfaceDestroying(exo::Surface* surface) override;
+
   Client* client_;  // Not owned.
   std::unique_ptr<content::WebContents> contents_;
   std::unique_ptr<CastWebContents> cast_web_contents_;
@@ -109,6 +116,8 @@ class WebviewController : public CastWebContents::Delegate,
   bool has_navigation_delegate_ = false;
 
   ui::GestureRecognizerImpl gesture_recognizer_;
+
+  exo::Surface* surface_ = nullptr;
 
   // The navigation throttle for the current navigation event, if any.
   // Is set only:

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/macros.h"
@@ -17,6 +18,8 @@
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
+#include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
@@ -40,6 +43,15 @@ CredentialPair ConvertJavaCredential(JNIEnv* env,
           env, Java_Credential_getOriginUrl(env, credential))),
       CredentialPair::IsPublicSuffixMatch(
           Java_Credential_isPublicSuffixMatch(env, credential)));
+}
+
+void OnFaviconFetched(
+    const base::android::ScopedJavaGlobalRef<jobject>& j_callback,
+    const gfx::Image& image) {
+  base::android::ScopedJavaLocalRef<jobject> bitmap;
+  if (!image.IsEmpty())
+    bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
+  base::android::RunObjectCallbackAndroid(j_callback, bitmap);
 }
 
 }  // namespace
@@ -87,6 +99,17 @@ void TouchToFillViewImpl::OnCredentialSelected(
 
 void TouchToFillViewImpl::OnDismiss() {
   controller_->OnDismiss();
+}
+
+void TouchToFillViewImpl::FetchFavicon(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& j_origin,
+    jint desized_size_in_pixel,
+    const JavaParamRef<jobject>& j_callback) {
+  controller_->FetchFavicon(
+      ConvertJavaStringToUTF8(env, j_origin), desized_size_in_pixel,
+      base::BindOnce(&OnFaviconFetched,
+                     base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
 }
 
 void TouchToFillViewImpl::OnCredentialSelected(

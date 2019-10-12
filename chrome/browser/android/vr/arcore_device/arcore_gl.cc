@@ -44,6 +44,8 @@ namespace {
 constexpr std::array<float, 6> kDisplayCoordinatesForTransform = {
     0.f, 0.f, 1.f, 0.f, 0.f, 1.f};
 
+constexpr uint32_t kInputSourceId = 1;
+
 gfx::Transform ConvertUvsToTransformMatrix(const std::vector<float>& uvs) {
   // We're creating a matrix that transforms viewport UV coordinates (for a
   // screen-filling quad, origin at bottom left, u=1 at right, v=1 at top) to
@@ -78,11 +80,6 @@ gfx::Transform ConvertUvsToTransformMatrix(const std::vector<float>& uvs) {
   return result;
 }
 
-gfx::Transform WebXRImageTransformMatrix() {
-  gfx::Transform result;
-  return result;
-}
-
 const gfx::Size kDefaultFrameSize = {1, 1};
 const display::Display::Rotation kDefaultRotation = display::Display::ROTATE_0;
 
@@ -106,12 +103,12 @@ ArCoreGl::ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport)
       webxr_(std::make_unique<vr::WebXrPresentationState>()),
       environment_binding_(this) {
   DVLOG(1) << __func__;
-  webxr_transform_ = WebXRImageTransformMatrix();
 }
 
 ArCoreGl::~ArCoreGl() {
   DVLOG(1) << __func__;
   DCHECK(IsOnGlThread());
+  ar_image_transport_->DestroySharedBuffers(webxr_.get());
   ar_image_transport_.reset();
   CloseBindingsIfOpen();
 }
@@ -153,13 +150,24 @@ void ArCoreGl::Initialize(vr::ArCoreSessionUtils* session_utils,
     return;
   }
 
-  // Set the texture on ArCore to render the camera.
+  DVLOG(3) << "ar_image_transport_->Initialize()...";
+  ar_image_transport_->Initialize(
+      webxr_.get(),
+      base::BindOnce(&ArCoreGl::OnArImageTransportReady,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
+  // Set the texture on ArCore to render the camera. Must be after
+  // ar_image_transport_->Initialize().
   arcore_->SetCameraTexture(ar_image_transport_->GetCameraTextureId());
   // Set the Geometry to ensure consistent behaviour.
   arcore_->SetDisplayGeometry(kDefaultFrameSize, kDefaultRotation);
+}
 
+void ArCoreGl::OnArImageTransportReady(
+    base::OnceCallback<void(bool)> callback) {
+  DVLOG(3) << __func__;
   is_initialized_ = true;
-
+  webxr_->NotifyMailboxBridgeReady();
   std::move(callback).Run(true);
 }
 
@@ -235,12 +243,6 @@ bool ArCoreGl::InitializeGl(gfx::AcceleratedWidget drawing_widget) {
   }
   if (!context->MakeCurrent(surface.get())) {
     DLOG(ERROR) << "gl::GLContext::MakeCurrent() failed";
-    return false;
-  }
-
-  DVLOG(3) << "ar_image_transport_->Initialize()...";
-  if (!ar_image_transport_->Initialize(webxr_.get())) {
-    DLOG(ERROR) << "ARImageTransport failed to initialize";
     return false;
   }
 
@@ -367,15 +369,17 @@ void ArCoreGl::GetFrameData(
   have_camera_image_ = true;
   mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
 
-  // Check if floor height estimate has changed. The estimate might eventually
-  // be provided by |arcore_| - for now, use hard-coded value.
-  if (floor_height_estimate_changed_) {
+  // Check if floor height estimate has changed.
+  float new_floor_height_estimate = arcore_->GetEstimatedFloorHeight();
+  if (!floor_height_estimate_ ||
+      *floor_height_estimate_ != new_floor_height_estimate) {
+    floor_height_estimate_ = new_floor_height_estimate;
+
     frame_data->stage_parameters_updated = true;
     frame_data->stage_parameters = mojom::VRStageParameters::New();
     frame_data->stage_parameters->standing_transform = gfx::Transform();
     frame_data->stage_parameters->standing_transform.Translate3d(
-        0, floor_height_estimate_, 0);
-    floor_height_estimate_changed_ = false;
+        0, *floor_height_estimate_, 0);
   }
 
   frame_data->frame_id = webxr_->StartFrameAnimating();
@@ -387,8 +391,8 @@ void ArCoreGl::GetFrameData(
   }
   // Set up a shared buffer for the renderer to draw into, it'll be sent
   // alongside the frame pose.
-  gpu::MailboxHolder buffer_holder =
-      ar_image_transport_->TransferFrame(transfer_size_, uv_transform_);
+  gpu::MailboxHolder buffer_holder = ar_image_transport_->TransferFrame(
+      webxr_.get(), transfer_size_, uv_transform_);
 
   // Create the frame data to return to the renderer.
   frame_data->pose = std::move(pose);
@@ -439,15 +443,23 @@ bool ArCoreGl::IsSubmitFrameExpected(int16_t frame_index) {
 }
 
 void ArCoreGl::CopyCameraImageToFramebuffer() {
+  DVLOG(2) << __func__;
+
   // Draw the current camera texture to the output default framebuffer now, if
   // available.
-  if (!have_camera_image_)
-    return;
+  if (have_camera_image_) {
+    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
+    ar_image_transport_->CopyCameraImageToFramebuffer(camera_image_size_,
+                                                      uv_transform_);
+    have_camera_image_ = false;
+  }
 
-  glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
-  ar_image_transport_->CopyCameraImageToFramebuffer(camera_image_size_,
-                                                    uv_transform_);
-  have_camera_image_ = false;
+  // We're done with the camera image for this frame, start the next ARCore
+  // update if we had deferred it. This will get the next frame's camera image
+  // and pose in parallel while we're waiting for this frame's rendered image.
+  if (pending_getframedata_) {
+    std::move(pending_getframedata_).Run();
+  }
 }
 
 void ArCoreGl::SubmitFrameMissing(int16_t frame_index,
@@ -461,13 +473,6 @@ void ArCoreGl::SubmitFrameMissing(int16_t frame_index,
   ar_image_transport_->WaitSyncToken(sync_token);
 
   CopyCameraImageToFramebuffer();
-
-  // We're done with the camera image for this frame, start the next ARCore
-  // update if we had deferred it. This will get the next frame's camera image
-  // and pose in parallel while we're waiting for this frame's rendered image.
-  if (pending_getframedata_) {
-    std::move(pending_getframedata_).Run();
-  }
 
   surface_->SwapBuffers(base::DoNothing());
   DVLOG(3) << __func__ << ": frame=" << frame_index << " SwapBuffers";
@@ -492,18 +497,19 @@ void ArCoreGl::SubmitFrameDrawnIntoTexture(int16_t frame_index,
   if (!IsSubmitFrameExpected(frame_index))
     return;
 
-  webxr_->TransitionFrameAnimatingToProcessing();
+  // Start processing the frame now if possible. If there's already a current
+  // processing frame, defer it until that frame calls TryDeferredProcessing.
+  webxr_->ProcessOrDefer(base::BindOnce(&ArCoreGl::ProcessFrameDrawnIntoTexture,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        frame_index, sync_token));
+}
 
+void ArCoreGl::ProcessFrameDrawnIntoTexture(int16_t frame_index,
+                                            const gpu::SyncToken& sync_token) {
   TRACE_EVENT0("gpu", "ArCore SubmitFrame");
 
+  DCHECK(webxr_->HaveProcessingFrame());
   CopyCameraImageToFramebuffer();
-
-  // We're done with the camera image for this frame, start the next ARCore
-  // update if we had deferred it. This will get the next frame's camera image
-  // and pose in parallel while we're waiting for this frame's rendered image.
-  if (pending_getframedata_) {
-    std::move(pending_getframedata_).Run();
-  }
 
   ar_image_transport_->CreateGpuFenceForSyncToken(
       sync_token, base::BindOnce(&ArCoreGl::OnWebXrTokenSignaled, GetWeakPtr(),
@@ -514,11 +520,12 @@ void ArCoreGl::OnWebXrTokenSignaled(int16_t frame_index,
                                     std::unique_ptr<gfx::GpuFence> gpu_fence) {
   DVLOG(3) << __func__ << ": frame=" << frame_index;
 
+  DCHECK(webxr_->HaveProcessingFrame());
   webxr_->TransitionFrameProcessingToRendering();
 
   glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
-  ar_image_transport_->CopyDrawnImageToFramebuffer(camera_image_size_,
-                                                   webxr_transform_);
+  ar_image_transport_->CopyDrawnImageToFramebuffer(
+      webxr_.get(), camera_image_size_, shared_buffer_transform_);
   surface_->SwapBuffers(base::DoNothing());
   DVLOG(3) << __func__ << ": frame=" << frame_index << " SwapBuffers";
 
@@ -531,6 +538,8 @@ void ArCoreGl::OnWebXrTokenSignaled(int16_t frame_index,
     submit_client_->OnSubmitFrameGpuFence(
         gfx::CloneHandleForIPC(gpu_fence2->GetGpuFenceHandle()));
   }
+  // We finished processing a frame, unblock a potentially waiting next frame.
+  webxr_->TryDeferredProcessing();
 }
 
 void ArCoreGl::UpdateLayerBounds(int16_t frame_index,
@@ -581,6 +590,46 @@ void ArCoreGl::RequestHitTest(
   request->ray = std::move(ray);
   request->callback = std::move(callback);
   hit_test_requests_.push_back(std::move(request));
+}
+
+void ArCoreGl::SubscribeToHitTest(
+    mojom::XRNativeOriginInformationPtr native_origin_information,
+    mojom::XRRayPtr ray,
+    mojom::XREnvironmentIntegrationProvider::SubscribeToHitTestCallback
+        callback) {
+  DVLOG(2) << __func__ << ": ray origin=" << ray->origin.ToString()
+           << ", ray direction=" << ray->direction.ToString();
+
+  // Input source state information is known to ArCoreGl and not to ArCore -
+  // check if we recognize the input source id.
+
+  if (native_origin_information->is_input_source_id()) {
+    if (native_origin_information->get_input_source_id() != kInputSourceId) {
+      DVLOG(1) << __func__ << ": incorrect input source ID passed";
+      std::move(callback).Run(
+          device::mojom::SubscribeToHitTestResult::FAILURE_GENERIC, 0);
+      return;
+    }
+  }
+
+  base::Optional<uint32_t> maybe_subscription_id = arcore_->SubscribeToHitTest(
+      std::move(native_origin_information), std::move(ray));
+
+  if (maybe_subscription_id) {
+    DVLOG(2) << __func__ << ": subscription_id=" << *maybe_subscription_id;
+    std::move(callback).Run(device::mojom::SubscribeToHitTestResult::SUCCESS,
+                            *maybe_subscription_id);
+  } else {
+    DVLOG(1) << __func__ << ": subscription failed";
+    std::move(callback).Run(
+        device::mojom::SubscribeToHitTestResult::FAILURE_GENERIC, 0);
+  }
+}
+
+void ArCoreGl::UnsubscribeFromHitTest(uint32_t subscription_id) {
+  DVLOG(2) << __func__;
+
+  arcore_->UnsubscribeFromHitTest(subscription_id);
 }
 
 void ArCoreGl::CreateAnchor(mojom::VRPosePtr anchor_pose,
@@ -646,6 +695,10 @@ void ArCoreGl::ProcessFrame(
       input_states_.push_back(std::move(input_state));
       frame_data->pose->input_state = std::move(input_states_);
     }
+
+    // Get results for hit test subscriptions.
+    frame_data->hit_test_subscription_results =
+        arcore_->GetHitTestSubscriptionResults(frame_data->pose);
   }
 
   // The timing requirements for hit-test are documented here:
@@ -699,7 +752,7 @@ mojom::XRInputSourceStatePtr ArCoreGl::GetInputSourceState() {
       device::mojom::XRInputSourceState::New();
 
   // Only one controller is supported, so the source id can be static.
-  state->source_id = 1;
+  state->source_id = kInputSourceId;
 
   state->primary_input_pressed = screen_touch_active_;
   if (!screen_touch_active_ && screen_touch_pending_) {

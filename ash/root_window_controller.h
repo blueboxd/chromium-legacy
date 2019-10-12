@@ -46,6 +46,7 @@ enum class LoginStatus;
 class RootWindowLayoutManager;
 class Shelf;
 class ShelfLayoutManager;
+class SplitViewController;
 class StackingController;
 class StatusAreaWidget;
 class SystemModalContainerLayoutManager;
@@ -99,6 +100,10 @@ class ASH_EXPORT RootWindowController {
   const aura::WindowTreeHost* GetHost() const;
   aura::Window* GetRootWindow();
   const aura::Window* GetRootWindow() const;
+
+  SplitViewController* split_view_controller() const {
+    return split_view_controller_.get();
+  }
 
   Shelf* shelf() const { return shelf_.get(); }
 
@@ -283,6 +288,8 @@ class ASH_EXPORT RootWindowController {
   std::unique_ptr<AppMenuModelAdapter> root_window_menu_model_adapter_;
 
   std::unique_ptr<StackingController> stacking_controller_;
+
+  std::unique_ptr<SplitViewController> split_view_controller_;
 
   // The shelf controller for this root window. Exists for the entire lifetime
   // of the RootWindowController so that it is safe for observers to be added

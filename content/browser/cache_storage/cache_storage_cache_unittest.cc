@@ -527,7 +527,9 @@ class CacheStorageCacheTest : public testing::Test {
         nullptr /* blob */, blink::mojom::ServiceWorkerResponseError::kUnknown,
         response_time_, std::string() /* cache_storage_cache_name */,
         std::vector<std::string>() /* cors_exposed_header_names */,
-        nullptr /* side_data_blob */, nullptr /* content_security_policy */);
+        nullptr /* side_data_blob */,
+        nullptr /* side_data_blob_for_cache_put */,
+        nullptr /* content_security_policy */);
   }
 
   std::unique_ptr<storage::BlobDataHandle> BuildBlobHandle(
@@ -541,12 +543,16 @@ class CacheStorageCacheTest : public testing::Test {
 
   void CopySideDataToResponse(storage::BlobDataHandle* side_data_blob_handle,
                               blink::mojom::FetchAPIResponse* response) {
-    response->side_data_blob = blink::mojom::SerializedBlob::New();
-    response->side_data_blob->uuid = side_data_blob_handle->uuid();
-    response->side_data_blob->size = side_data_blob_handle->size();
+    response->side_data_blob_for_cache_put =
+        blink::mojom::SerializedBlob::New();
+    response->side_data_blob_for_cache_put->uuid =
+        side_data_blob_handle->uuid();
+    response->side_data_blob_for_cache_put->size =
+        side_data_blob_handle->size();
     storage::BlobImpl::Create(
         std::make_unique<storage::BlobDataHandle>(*side_data_blob_handle),
-        response->side_data_blob->blob.InitWithNewPipeAndPassReceiver());
+        response->side_data_blob_for_cache_put->blob
+            .InitWithNewPipeAndPassReceiver());
   }
 
   blink::mojom::FetchAPIRequestPtr CopyFetchRequest(
@@ -1741,7 +1747,7 @@ TEST_P(CacheStorageCacheTestP, PutWithSideData_BadMessage) {
   operation->operation_type = blink::mojom::OperationType::kPut;
   operation->request = BackgroundFetchSettledFetch::CloneRequest(body_request_);
   operation->response = std::move(response);
-  operation->response->side_data_blob->size =
+  operation->response->side_data_blob_for_cache_put->size =
       std::numeric_limits<uint64_t>::max();
 
   std::vector<blink::mojom::BatchOperationPtr> operations;

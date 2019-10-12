@@ -500,38 +500,6 @@ class FakeDevToolsClient : public content::DevToolsAgentHostClient {
   void AgentHostClosed(DevToolsAgentHost* agent_host) override {}
 };
 
-// A ContentBrowserClient that cancels all prerenderers when a new navigation
-// starts.
-class TestContentBrowserClient : public ChromeContentBrowserClient {
- public:
-  TestContentBrowserClient() {}
-  ~TestContentBrowserClient() override {}
-
-  // ChromeContentBrowserClient:
-  void OverrideNavigationParams(
-      content::SiteInstance* site_instance,
-      ui::PageTransition* transition,
-      bool* is_renderer_initiated,
-      content::Referrer* referrer,
-      base::Optional<url::Origin>* initiator_origin) override {
-    DCHECK(!already_called_);
-    already_called_ = true;
-
-    PrerenderManagerFactory::GetForBrowserContext(
-        site_instance->GetBrowserContext())
-        ->CancelAllPrerenders();
-    ChromeContentBrowserClient::OverrideNavigationParams(
-        site_instance, transition, is_renderer_initiated, referrer,
-        initiator_origin);
-  }
-
- private:
-  // Whether the OverrideNavigationParams override above was already called.
-  bool already_called_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestContentBrowserClient);
-};
-
 base::FilePath GetTestPath(const std::string& file_name) {
   return ui_test_utils::GetTestFilePath(
       base::FilePath(FILE_PATH_LITERAL("prerender")),
@@ -1356,22 +1324,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoSSLReferrer) {
   NavigateToDestURL();
 }
 
-// Checks that the referrer is set when prerendering is cancelled.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelReferrer) {
-  std::unique_ptr<TestContentBrowserClient> test_content_browser_client(
-      new TestContentBrowserClient);
-  content::ContentBrowserClient* original_browser_client =
-      content::SetBrowserClientForTesting(test_content_browser_client.get());
-
-  PrerenderTestURL("/prerender/prerender_referrer.html", FINAL_STATUS_CANCELLED,
-                   1);
-  OpenDestURLViaClick();
-
-  EXPECT_TRUE(DidDisplayPass(GetActiveWebContents()));
-
-  content::SetBrowserClientForTesting(original_browser_client);
-}
-
 // Checks that popups on a prerendered page cause cancellation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
   PrerenderTestURL("/prerender/prerender_popup.html",
@@ -1931,30 +1883,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   PrerenderTestURL("/prerender/prerender_referrer_policy.html",
                    FINAL_STATUS_USED, 1);
   NavigateToDestURL();
-}
-
-// Checks that the referrer policy is used when prerendering is cancelled.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelReferrerPolicy) {
-  std::unique_ptr<TestContentBrowserClient> test_content_browser_client(
-      new TestContentBrowserClient);
-  content::ContentBrowserClient* original_browser_client =
-      content::SetBrowserClientForTesting(test_content_browser_client.get());
-
-  set_loader_path("/prerender/prerender_loader_with_referrer_policy.html");
-  PrerenderTestURL("/prerender/prerender_referrer_policy.html",
-                   FINAL_STATUS_CANCELLED, 1);
-  OpenDestURLViaClick();
-
-  bool display_test_result = false;
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      web_contents,
-      "window.domAutomationController.send(DidDisplayPass())",
-      &display_test_result));
-  EXPECT_TRUE(display_test_result);
-
-  content::SetBrowserClientForTesting(original_browser_client);
 }
 
 // Test interaction of the webNavigation and tabs API with prerender.

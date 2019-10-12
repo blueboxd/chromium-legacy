@@ -166,7 +166,7 @@ int32_t PPB_VideoDecoder_Impl::Decode(
   // but only after PPB_Buffer_Impl is updated to deal with that.
   media::BitstreamBuffer decode_buffer(bitstream_buffer->id,
                                        buffer->shared_memory().Duplicate(),
-                                       buffer->shared_memory().GetSize());
+                                       bitstream_buffer->size);
   if (!SetBitstreamBufferCallback(bitstream_buffer->id, callback))
     return PP_ERROR_BADARGUMENT;
 

@@ -43,8 +43,32 @@
     height: var(--favicon-size);
     margin-inline-end: 8px;
     margin-inline-start: 12px;
+    max-width: var(--favicon-size);
+    overflow: hidden;
     position: relative;
+    /* When transitioning to the default visible state, the margin and max-width
+     * transitions should finish first, then the opacity should be set to 1.
+     * This prevents the favicon and loading spinners from looking cropped
+     * while the element transitions. */
+    transition: margin var(--tabstrip-tab-transition-duration),
+                max-width var(--tabstrip-tab-transition-duration),
+                opacity 0ms linear var(--tabstrip-tab-transition-duration);
     width: var(--favicon-size);
+  }
+
+  :host([hide-icon_]) #faviconContainer {
+    margin-inline-end: 0;
+    max-width: 0;
+    opacity: 0;
+    /* When transitioning to the hidden state, set opacity immediately to 0
+     * while transitioning the other values normally. */
+    transition: margin var(--tabstrip-tab-transition-duration),
+                max-width var(--tabstrip-tab-transition-duration),
+                opacity 0ms;
+  }
+
+  :host([pinned_]) #faviconContainer {
+    margin: 0;
   }
 
   #progressSpinner,
@@ -92,33 +116,33 @@
     width: 6px;
   }
 
-  :host([waiting]) #progressSpinner,
-  :host([loading]) #progressSpinner {
+  :host([waiting_]) #progressSpinner,
+  :host([loading_]) #progressSpinner {
     display: block;
   }
 
-  :host([loading]) #favicon {
+  :host([loading_]) #favicon {
     border-radius: 50%;
     height: calc(var(--favicon-size) - 6px);
     overflow: hidden;
     width: calc(var(--favicon-size) - 6px);
   }
 
-  :host([waiting]) #progressSpinner {
+  :host([waiting_]) #progressSpinner {
     background-color: var(--tabstrip-tab-waiting-spinning-color);
     transform: /* Center first, then flip horizontally. */
               translate(-50%, -50%) scaleX(-1);
   }
 
-  :host([waiting]) #favicon {
+  :host([waiting_]) #favicon {
     display: none;
   }
 
-  :host([loading]) #progressSpinner {
+  :host([loading_]) #progressSpinner {
     background-color: var(--tabstrip-tab-loading-spinning-color);
   }
 
-  :host([crashed]) #favicon {
+  :host([crashed_]) #favicon {
     opacity: 0;
     transform: translate(-50%, 100%);
     transition:
@@ -126,7 +150,7 @@
         transform var(--tabstrip-tab-transition-duration);
   }
 
-  :host([crashed]) #crashedIcon {
+  :host([crashed_]) #crashedIcon {
     opacity: 1;
     transform: translate(-50%, -50%);
     transition:
@@ -136,7 +160,7 @@
     transition-delay: var(--tabstrip-tab-transition-duration);
   }
 
-  :host([blocked]) #blocked {
+  :host([blocked_]) #blocked {
     display: block;
   }
 
@@ -197,23 +221,23 @@
   }
 
   /* Pinned tab styles */
-  :host([pinned]) {
+  :host([pinned_]) {
     height: var(--tabstrip-pinned-tab-size);
     width: var(--tabstrip-pinned-tab-size);
   }
 
-  :host([pinned]) #title {
+  :host([pinned_]) #title {
     border-block-end: 0;
     height: 100%;
   }
 
-  :host([pinned]) #titleText,
-  :host([pinned]) #close,
-  :host([pinned]) #thumbnail {
+  :host([pinned_]) #titleText,
+  :host([pinned_]) #close,
+  :host([pinned_]) #thumbnail {
     display: none;
   }
 
-  :host([dragging]) #dragPlaceholder {
+  :host([dragging_]) #dragPlaceholder {
     background: var(--tabstrip-tab-background-color);
     border-radius: var(--tabstrip-tab-border-radius);
     height: 100%;
@@ -223,7 +247,7 @@
 
   /* When being dragged, the contents of the drag image needs to be off-screen
    * with nothing else on top or below obscuring it. */
-  :host([dragging]) #dragImage {
+  :host([dragging_]) #dragImage {
     box-shadow: none;
     position: absolute;
     top: -999px;

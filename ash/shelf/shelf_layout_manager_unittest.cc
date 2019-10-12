@@ -2694,32 +2694,43 @@ TEST_P(ShelfLayoutManagerTest, HomeLauncherGestureHandlerAutoHideShelf) {
   TestHomeLauncherGestureHandler(/*autohide_shelf=*/true);
 }
 
-TEST_F(ShelfLayoutManagerTest, PressHomeButtonOnAutoHideShelf) {
+// Tests that tapping the home button is successful on the autohidden shelf.
+TEST_P(ShelfLayoutManagerTest, PressHomeButtonOnAutoHideShelf) {
   TabletModeControllerTestApi().EnterTabletMode();
-
-  // Create a widget to hide the shelf in auto-hide mode.
-  views::Widget* widget = CreateTestWidget();
   Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   const display::Display display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
 
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
-  layout_manager->LayoutShelf();
+  // Create a window to hide the shelf in auto-hide mode.
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+  GetAppListTestHelper()->CheckVisibility(false);
 
   SwipeUpOnShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  GetAppListTestHelper()->CheckVisibility(false);
 
   // Press the home button with touch.
   views::View* home_button = GetPrimaryShelf()->shelf_widget()->GetHomeButton();
+  // Wait for the back button to finish animating from behind the home button.
+  ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting())
+      .RunMessageLoopUntilAnimationsDone(
+          GetPrimaryShelf()
+              ->GetShelfViewForTesting()
+              ->shelf_widget()
+              ->navigation_widget()
+              ->get_bounds_animator_for_testing());
+
   GetEventGenerator()->GestureTapAt(
       home_button->GetBoundsInScreen().CenterPoint());
 
   // The app list should now be visible, and the window we created should hide.
   GetAppListTestHelper()->CheckVisibility(true);
-  aura::Window* window = widget->GetNativeWindow();
   EXPECT_FALSE(window->IsVisible());
 }
 

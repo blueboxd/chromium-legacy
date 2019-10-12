@@ -162,7 +162,8 @@ bool IsPortraitOrientation(OrientationLockType type) {
 OrientationLockType GetCurrentScreenOrientation() {
   // ScreenOrientationController might be nullptr during shutdown.
   // TODO(xdai|sammiequon): See if we can reorder so that users of the function
-  // (split_view_controller) get shutddown before screen orientation controller.
+  // |SplitViewController::Get| get shutdown before screen orientation
+  // controller.
   if (!Shell::Get()->screen_orientation_controller())
     return OrientationLockType::kAny;
   return Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
@@ -217,11 +218,11 @@ ScreenOrientationController::ScreenOrientationController()
       user_rotation_(display::Display::ROTATE_0),
       current_rotation_(display::Display::ROTATE_0) {
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
-  Shell::Get()->split_view_controller()->AddObserver(this);
+  SplitViewController::Get()->AddObserver(this);
 }
 
 ScreenOrientationController::~ScreenOrientationController() {
-  Shell::Get()->split_view_controller()->RemoveObserver(this);
+  SplitViewController::Get()->RemoveObserver(this);
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   AccelerometerReader::GetInstance()->RemoveObserver(this);
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
@@ -598,16 +599,14 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
   if (!ScreenOrientationProviderSupported())
     return;
 
-  Shell* shell = Shell::Get();
-
-  if (shell->split_view_controller()->InTabletSplitViewMode()) {
+  if (SplitViewController::Get()->InTabletSplitViewMode()) {
     // While split view is enabled, ignore rotation lock set by windows.
     LockRotationToOrientation(user_locked_orientation_);
     return;
   }
 
   MruWindowTracker::WindowList mru_windows(
-      shell->mru_window_tracker()->BuildMruWindowList(kActiveDesk));
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk));
 
   for (auto* window : mru_windows) {
     if (!window->TargetVisibility())

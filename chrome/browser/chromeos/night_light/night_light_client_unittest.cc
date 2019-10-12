@@ -111,7 +111,7 @@ class FakeNightLightClient : public NightLightClient,
 };
 
 // Base test fixture.
-class NightLightClientTest : public testing::Test {
+class NightLightClientTest : public testing::TestWithParam<ScheduleType> {
  public:
   NightLightClientTest() = default;
   ~NightLightClientTest() override = default;
@@ -134,12 +134,14 @@ class NightLightClientTest : public testing::Test {
 };
 
 // Test that the client is retrieving geoposition periodically only when the
-// schedule type is "sunset to sunrise".
-TEST_F(NightLightClientTest, TestClientRunningOnlyWhenSunsetToSunriseSchedule) {
+// schedule type is "sunset to sunrise" or "custom".
+TEST_F(NightLightClientTest,
+       TestClientRunningWhenSunsetToSunriseOrCustomSchedule) {
   EXPECT_FALSE(client_.using_geoposition());
   controller_.NotifyScheduleTypeChanged(ScheduleType::kNone);
   EXPECT_FALSE(client_.using_geoposition());
   controller_.NotifyScheduleTypeChanged(ScheduleType::kCustom);
+  EXPECT_TRUE(client_.using_geoposition());
   controller_.NotifyScheduleTypeChanged(ScheduleType::kSunsetToSunrise);
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(client_.using_geoposition());
@@ -215,14 +217,14 @@ TEST_F(NightLightClientTest, TestRepeatedScheduleTypeChanges) {
   EXPECT_EQ(expected_delay, client_.timer().GetCurrentDelay());
 }
 
-// Tests that timezone changes result in new geoposition requests only if the
-// schedule type is sunset to sunrise.
-TEST_F(NightLightClientTest, TestTimezoneChanges) {
+// Tests that timezone changes result in new geoposition requests if the
+// schedule type is sunset to sunrise or custom.
+TEST_P(NightLightClientTest, TestTimezoneChanges) {
   EXPECT_EQ(0, controller_.position_pushes_num());
   client_.SetCurrentTimezoneIdForTesting(
       base::ASCIIToUTF16("America/Los_Angeles"));
 
-  // When schedule type is not sunset to sunrise, timezone changes do not result
+  // When schedule type is none, timezone changes do not result
   // in geoposition requests.
   controller_.NotifyScheduleTypeChanged(ScheduleType::kNone);
   task_environment_.RunUntilIdle();
@@ -243,9 +245,9 @@ TEST_F(NightLightClientTest, TestTimezoneChanges) {
   position.timestamp = base::Time::Now();
   client_.set_position_to_send(position);
 
-  // Change the schedule type to sunset to sunrise, and expect the geoposition
-  // will be pushed.
-  controller_.NotifyScheduleTypeChanged(ScheduleType::kSunsetToSunrise);
+  // Change the schedule type to sunset to sunrise or custom, and expect the
+  // geoposition will be pushed.
+  controller_.NotifyScheduleTypeChanged(GetParam());
   task_environment_.RunUntilIdle();
   EXPECT_EQ(1, controller_.position_pushes_num());
   EXPECT_EQ(1, client_.geoposition_requests_num());
@@ -267,4 +269,8 @@ TEST_F(NightLightClientTest, TestTimezoneChanges) {
   EXPECT_EQ(GetTimezoneId(*timezone), client_.current_timezone_id());
 }
 
+INSTANTIATE_TEST_SUITE_P(,
+                         NightLightClientTest,
+                         ::testing::Values(ScheduleType::kSunsetToSunrise,
+                                           ScheduleType::kCustom));
 }  // namespace

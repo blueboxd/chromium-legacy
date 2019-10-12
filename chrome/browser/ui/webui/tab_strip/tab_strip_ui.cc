@@ -11,8 +11,10 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -45,8 +47,6 @@ namespace {
 
 // Writes bytes to a std::vector that can be fetched. This is used to record the
 // output of skia image encoding.
-//
-// TODO(crbug.com/991393): remove this when we no longer transcode images here.
 class BufferWStream : public SkWStream {
  public:
   BufferWStream() = default;
@@ -68,26 +68,23 @@ class BufferWStream : public SkWStream {
   std::vector<unsigned char> result_;
 };
 
-std::string EncodeImage(gfx::ImageSkia image,
-                        SkEncodedImageFormat format,
-                        float scale_factor) {
+std::string MakeDataURIForImage(base::span<const uint8_t> image_data,
+                                base::StringPiece mime_subtype) {
+  std::string result = "data:image/";
+  result.append(mime_subtype.begin(), mime_subtype.end());
+  result += ";base64,";
+  result += base::Base64Encode(image_data);
+  return result;
+}
+
+std::string EncodePNGAndMakeDataURI(gfx::ImageSkia image, float scale_factor) {
   const SkBitmap& bitmap = image.GetRepresentation(scale_factor).GetBitmap();
   BufferWStream stream;
-  const bool encoding_succeeded = SkEncodeImage(&stream, bitmap, format, 100);
+  const bool encoding_succeeded =
+      SkEncodeImage(&stream, bitmap, SkEncodedImageFormat::kPNG, 100);
   DCHECK(encoding_succeeded);
-  const std::vector<unsigned char> image_data = stream.GetBuffer();
-
-  std::string mime_subtype;
-  if (format == SkEncodedImageFormat::kJPEG) {
-    mime_subtype = "jpeg";
-  } else if (format == SkEncodedImageFormat::kPNG) {
-    mime_subtype = "png";
-  } else {
-    NOTREACHED();
-  }
-
-  return "data:image/" + mime_subtype + ";base64," +
-         base::Base64Encode(base::as_bytes(base::make_span(image_data)));
+  return MakeDataURIForImage(
+      base::as_bytes(base::make_span(stream.GetBuffer())), "png");
 }
 
 class WebUITabContextMenu : public ui::SimpleMenuModel::Delegate,
@@ -224,16 +221,21 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     tab_data.SetString("url", tab_renderer_data.visible_url.GetContent());
 
     if (!tab_renderer_data.favicon.isNull()) {
-      tab_data.SetString(
-          "favIconUrl",
-          EncodeImage(tab_renderer_data.favicon, SkEncodedImageFormat::kPNG,
-                      web_ui()->GetDeviceScaleFactor()));
+      tab_data.SetString("favIconUrl", EncodePNGAndMakeDataURI(
+                                           tab_renderer_data.favicon,
+                                           web_ui()->GetDeviceScaleFactor()));
+      tab_data.SetBoolean("isDefaultFavicon",
+                          tab_renderer_data.favicon.BackedBySameObjectAs(
+                              favicon::GetDefaultFavicon().AsImageSkia()));
+    } else {
+      tab_data.SetBoolean("isDefaultFavicon", true);
     }
-
+    tab_data.SetBoolean("showIcon", tab_renderer_data.show_icon);
     tab_data.SetInteger("networkState",
                         static_cast<int>(tab_renderer_data.network_state));
     tab_data.SetBoolean("shouldHideThrobber",
                         tab_renderer_data.should_hide_throbber);
+    tab_data.SetBoolean("crashed", tab_renderer_data.IsCrashed());
     // TODO(johntlee): Add the rest of TabRendererData
 
     return tab_data;
@@ -349,24 +351,15 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
 
   // Callback passed to |thumbnail_tracker_|. Called when a tab's thumbnail
   // changes, or when we start watching the tab.
-  void HandleThumbnailUpdate(content::WebContents* tab, gfx::ImageSkia image) {
+  void HandleThumbnailUpdate(content::WebContents* tab,
+                             ThumbnailTracker::CompressedThumbnailData image) {
     // Send base-64 encoded image to JS side.
-    //
-    // TODO(crbug.com/991393): streamline the process from tab capture to
-    // sending the image. Currently, a frame is captured, sent to
-    // ThumbnailImage, encoded to JPEG (w/ a copy), decoded to a raw bitmap
-    // (another copy), and sent to observers. Here, we then re-encode the image
-    // to a JPEG (another copy), encode to base64 (another copy), append the
-    // base64 header (another copy), and send it (another copy). This is 6
-    // copies of essentially the same image, and it is de-encoded and re-encoded
-    // to the same format. We can reduce the number of copies and avoid the
-    // redundant encoding.
-    std::string encoded_image = EncodeImage(image, SkEncodedImageFormat::kJPEG,
-                                            web_ui()->GetDeviceScaleFactor());
+    std::string data_uri =
+        MakeDataURIForImage(base::make_span(image->data), "jpeg");
 
     const int tab_id = extensions::ExtensionTabUtil::GetTabId(tab);
     FireWebUIListener("tab-thumbnail-updated", base::Value(tab_id),
-                      base::Value(encoded_image));
+                      base::Value(data_uri));
   }
 
   Browser* const browser_;

@@ -11,13 +11,19 @@
 
 #include "base/containers/span.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_view.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_view_factory.h"
+#include "components/favicon_base/favicon_types.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
 class WebContents;
 }  // namespace content
+
+namespace favicon {
+class FaviconService;
+}  // namespace favicon
 
 namespace password_manager {
 class PasswordManagerDriver;
@@ -26,7 +32,8 @@ struct CredentialPair;
 
 class TouchToFillController {
  public:
-  explicit TouchToFillController(content::WebContents* web_contents);
+  TouchToFillController(content::WebContents* web_contents,
+                        favicon::FaviconService* favicon_service);
   TouchToFillController(const TouchToFillController&) = delete;
   TouchToFillController& operator=(const TouchToFillController&) = delete;
   ~TouchToFillController();
@@ -47,6 +54,12 @@ class TouchToFillController {
   // The web page view containing the focused field.
   gfx::NativeView GetNativeView();
 
+  // Obtains a favicon for the origin and invokes the callback with a favicon
+  // image or with an empty image if a favicon could not be retrieved.
+  void FetchFavicon(const std::string& credential_origin,
+                    int desired_size_in_pixel,
+                    base::OnceCallback<void(const gfx::Image&)> callback);
+
 #if defined(UNIT_TEST)
   void set_view(std::unique_ptr<TouchToFillView> view) {
     view_ = std::move(view);
@@ -62,6 +75,12 @@ class TouchToFillController {
   // Driver passed to the latest invocation of Show(). Gets cleared when
   // OnCredentialSelected() or OnDismissed() gets called.
   base::WeakPtr<password_manager::PasswordManagerDriver> driver_;
+
+  // The favicon service used to retrieve icons for a given origin.
+  favicon::FaviconService* favicon_service_ = nullptr;
+
+  // Used to track requested favicons. On destruction, requests are cancelled.
+  base::CancelableTaskTracker favicon_tracker_;
 
   // View used to communicate with the Android frontend. Lazily instantiated so
   // that it can be injected by tests.

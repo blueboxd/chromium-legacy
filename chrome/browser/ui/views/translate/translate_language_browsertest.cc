@@ -279,10 +279,19 @@ IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTest, TranslateAndRevert) {
   EXPECT_EQ("fr", GetLanguageState().current_language());
 }
 
-IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTest, RecentTargetLanguage) {
-  base::test::ScopedFeatureList enable_feature;
-  enable_feature.InitAndEnableFeature(kTranslateRecentTarget);
+class TranslateLanguageBrowserTestWithTranslateRecentTarget
+    : public TranslateLanguageBrowserTest {
+ public:
+  TranslateLanguageBrowserTestWithTranslateRecentTarget() {
+    feature_list_.InitAndEnableFeature(kTranslateRecentTarget);
+  }
 
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTestWithTranslateRecentTarget,
+                       RecentTargetLanguage) {
   InitInIncognitoMode(false);
 
   // Before browsing: set auto translate from French to Chinese.

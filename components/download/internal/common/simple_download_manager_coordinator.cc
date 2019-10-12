@@ -31,7 +31,7 @@ SimpleDownloadManagerCoordinator::~SimpleDownloadManagerCoordinator() {
   if (simple_download_manager_)
     simple_download_manager_->RemoveObserver(this);
   for (auto& observer : observers_)
-    observer.OnManagerGoingDown();
+    observer.OnManagerGoingDown(this);
 }
 
 void SimpleDownloadManagerCoordinator::SetSimpleDownloadManager(

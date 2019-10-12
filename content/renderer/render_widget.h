@@ -250,6 +250,11 @@ class CONTENT_EXPORT RenderWidget
                         blink::WebFrameWidget* web_frame_widget,
                         const ScreenInfo* screen_info);
 
+  // Initialize (or re-initialize) a main frame RenderWidget that has been
+  // revived from undead state.
+  void InitForRevivedMainFrame(blink::WebFrameWidget* web_frame_widget,
+                               const ScreenInfo& screen_info);
+
   // Initialize a new RenderWidget that will be attached to a RenderFrame (via
   // the WebFrameWidget), for a frame that is a local root, but not the main
   // frame.
@@ -308,8 +313,7 @@ class CONTENT_EXPORT RenderWidget
   // otherwise act as if it is dead. Only whitelisted new IPC messages will be
   // sent, and it does no compositing. The process is free to exit when there
   // are no other non-undead RenderWidgets.
-  void SetIsUndead();
-  void SetIsRevivedFromUndead(const ScreenInfo& screen_info);
+  void SetIsUndead(bool is_undead);
 
   // A main frame RenderWidget is made undead instead of being deleted. Then
   // when a provisional frame is created, the RenderWidget is recycled and
@@ -650,10 +654,6 @@ class CONTENT_EXPORT RenderWidget
                        int relative_cursor_pos);
   void OnImeFinishComposingText(bool keep_selection);
 
-  // This does the actual focus change, but is called in more situations than
-  // just as an IPC message.
-  void SetFocus(bool enable);
-
   // Called by the browser process to update text input state.
   void OnRequestTextInputStateUpdate();
 
@@ -694,12 +694,6 @@ class CONTENT_EXPORT RenderWidget
 
   base::WeakPtr<RenderWidget> AsWeakPtr();
 
-  // TODO(https://crbug.com/995981): Eventually, the lifetime of RenderWidget
-  // should be tied to the lifetime of the WebWidget. In the short term, for
-  // main frames, the RenderView has to explicitly set/unset the WebWidget on
-  // attach/detach.
-  void SetWebWidgetInternal(blink::WebWidget* webwidget);
-
  protected:
   // Notify subclasses that we initiated the paint operation.
   virtual void DidInitiatePaint() {}
@@ -725,14 +719,16 @@ class CONTENT_EXPORT RenderWidget
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetPopupUnittest, EmulatingPopupRect);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, EmulatingPopupRect);
 
-  // Called by Create() functions and subclasses to finish initialization.
-  // |show_callback| will be invoked once WebWidgetClient::Show() occurs, and
-  // should be null if Show() won't be triggered for this widget. The WebWidget
-  // and ScreenInfo are both null or both not.
-  void Init(ShowCallback show_callback,
-            blink::WebWidget* web_widget,
-            const ScreenInfo* screen_info);
+  // Called by InitFor*() methods on a new RenderWidget. This contains
+  // initialization that occurs whether the RenderWidget is created as undead or
+  // not.
+  void UnconditionalInit(ShowCallback show_callback);
 
+  // Called by InitFor*() methods when a new RenderWidget is created that is not
+  // undead, or when it is being revived from undead.
+  void LivingInit(blink::WebWidget* web_widget, const ScreenInfo& screen_info);
+  // Initializes the compositor and dependent systems, as part of the
+  // LivingInit() process.
   void InitCompositing(const ScreenInfo& screen_info);
 
   // If appropriate, initiates the compositor to set up IPC channels and begin
@@ -878,13 +874,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Used to force the size of a window when running web tests.
   void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
-
-  // A variant of Send but is fatal if it fails. The browser may
-  // be waiting for this IPC Message and if the send fails the browser will
-  // be left in a state waiting for something that never comes. And if it
-  // never comes then it may later determine this is a hung renderer; so
-  // instead fail right away.
-  void SendOrCrash(IPC::Message* msg);
 
   // Determines whether or not RenderWidget should process IME events from the
   // browser. It always returns true unless there is no WebFrameWidget to
@@ -1078,6 +1067,10 @@ class CONTENT_EXPORT RenderWidget
   int pending_window_rect_count_ = 0;
   gfx::Rect pending_window_rect_;
 
+  // Properties of the screen hosting the RenderWidget. Rects in this structure
+  // do not include any scaling by device scale factor, so are logical pixels
+  // not physical device pixels.
+  ScreenInfo screen_info_;
   // The screen rects of the view and the window that contains it. These do not
   // include any scaling by device scale factor, so are logical pixels not
   // physical device pixels.

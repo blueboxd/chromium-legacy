@@ -47,13 +47,21 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS,
                                ui::PageTransition::PAGE_TRANSITION_TYPED);
 }
 
+class BrowserNavigatorTestChromeOSWithSplitSettings
+    : public BrowserNavigatorTestChromeOS {
+ public:
+  BrowserNavigatorTestChromeOSWithSplitSettings() {
+    feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettings);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Verifies that the OS settings page opens in a standalone surface when
 // accessed via link or url.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, NavigateToOSSettings) {
-  // Enable SplitSettings feature.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(chromeos::features::kSplitSettings);
-
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOSWithSplitSettings,
+                       NavigateToOSSettings) {
   // Install the Settings App.
   web_app::WebAppProvider::Get(browser()->profile())
       ->system_web_app_manager()

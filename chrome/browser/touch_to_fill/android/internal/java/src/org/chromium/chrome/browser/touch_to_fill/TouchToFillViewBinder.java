@@ -11,13 +11,16 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VI
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 import static org.chromium.chrome.browser.util.UrlUtilities.stripScheme;
 
+import android.content.Context;
 import android.text.method.PasswordTransformationMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
+import org.chromium.ui.modelutil.ModelListAdapter;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -30,31 +33,43 @@ class TouchToFillViewBinder {
      * Factory used to create a new View inside the ListView inside the TouchToFillView.
      * @param parent The parent {@link ViewGroup} of the new item.
      */
-    static View createCredentialView(ViewGroup parent) {
-        return LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.touch_to_fill_credential_item, parent, false);
+    static View createCredentialView(Context context) {
+        return LayoutInflater.from(context).inflate(
+                R.layout.touch_to_fill_credential_item, null, false);
     }
 
     /**
      * Called whenever a credential is bound to this view holder. Please note that this method
      * might be called on the same list entry repeatedly, so make sure to always set a default for
      * unused fields.
-     * @param view The view to be bound.
-     * @param credential The {@link Credential} whose data needs to be displayed.
+     * @param model The model containing the data for the view
+     * @param view The view to be bound
+     * @param propertyKey The key of the property to be bound
      */
-    static void bindCredentialView(View view, Credential credential) {
-        TextView pslOriginText = view.findViewById(R.id.credential_origin);
-        String formattedOrigin = stripScheme(credential.getOriginUrl());
-        formattedOrigin = formattedOrigin.replaceFirst("/$", ""); // Strip possibly trailing slash.
-        pslOriginText.setText(formattedOrigin);
-        pslOriginText.setVisibility(credential.isPublicSuffixMatch() ? View.VISIBLE : View.GONE);
+    static void bindCredentialView(PropertyModel model, View view, PropertyKey propertyKey) {
+        if (propertyKey == CredentialProperties.FAVICON) {
+            ImageView imageView = view.findViewById(R.id.favicon);
+            imageView.setImageBitmap(model.get(CredentialProperties.FAVICON));
+        } else if (propertyKey == CredentialProperties.CREDENTIAL) {
+            Credential credential = model.get(CredentialProperties.CREDENTIAL);
 
-        TextView usernameText = view.findViewById(R.id.username);
-        usernameText.setText(credential.getFormattedUsername());
+            TextView pslOriginText = view.findViewById(R.id.credential_origin);
+            String formattedOrigin = stripScheme(credential.getOriginUrl());
+            formattedOrigin =
+                    formattedOrigin.replaceFirst("/$", ""); // Strip possibly trailing slash.
+            pslOriginText.setText(formattedOrigin);
+            pslOriginText.setVisibility(
+                    credential.isPublicSuffixMatch() ? View.VISIBLE : View.GONE);
 
-        TextView passwordText = view.findViewById(R.id.password);
-        passwordText.setText(credential.getPassword());
-        passwordText.setTransformationMethod(new PasswordTransformationMethod());
+            TextView usernameText = view.findViewById(R.id.username);
+            usernameText.setText(credential.getFormattedUsername());
+
+            TextView passwordText = view.findViewById(R.id.password);
+            passwordText.setText(credential.getPassword());
+            passwordText.setTransformationMethod(new PasswordTransformationMethod());
+        } else {
+            assert false : "Every possible property update needs to be handled!";
+        }
     }
 
     /**
@@ -63,7 +78,8 @@ class TouchToFillViewBinder {
      * @param view The {@link TouchToFillView} to update.
      * @param propertyKey The {@link PropertyKey} which changed.
      */
-    static void bind(PropertyModel model, TouchToFillView view, PropertyKey propertyKey) {
+    static void bindTouchToFillView(
+            PropertyModel model, TouchToFillView view, PropertyKey propertyKey) {
         if (propertyKey == VIEW_EVENT_LISTENER) {
             view.setEventListener(model.get(VIEW_EVENT_LISTENER));
         } else if (propertyKey == VISIBLE) {
@@ -75,7 +91,11 @@ class TouchToFillViewBinder {
                 view.setNonSecureSubtitle(model.get(FORMATTED_URL));
             }
         } else if (propertyKey == CREDENTIAL_LIST) {
-            // No binding required. Single items are bound via bindCredentialView.
+            ModelListAdapter adapter = new ModelListAdapter(model.get(CREDENTIAL_LIST));
+            adapter.registerType(CredentialProperties.DEFAULT_ITEM_TYPE,
+                    () -> TouchToFillViewBinder.createCredentialView(view.getContext()),
+                    TouchToFillViewBinder::bindCredentialView);
+            view.setCredentialListAdapter(adapter);
         } else {
             assert false : "Every possible property update needs to be handled!";
         }

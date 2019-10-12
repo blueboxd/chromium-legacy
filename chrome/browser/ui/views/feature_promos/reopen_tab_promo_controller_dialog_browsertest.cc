@@ -18,14 +18,15 @@
 
 class ReopenTabPromoControllerDialogBrowserTest : public DialogBrowserTest {
  public:
-  ReopenTabPromoControllerDialogBrowserTest() = default;
+  ReopenTabPromoControllerDialogBrowserTest() {
+    feature_list_.InitAndEnableFeature(
+        feature_engagement::kIPHReopenTabFeature);
+  }
 
   void SetUpOnMainThread() override {
     promo_controller_ = std::make_unique<ReopenTabPromoController>(
         BrowserView::GetBrowserViewForBrowser(browser()));
     promo_controller_->disable_bubble_timeout_for_test();
-    feature_list_.InitAndEnableFeature(
-        feature_engagement::kIPHReopenTabFeature);
   }
 
   void ShowUi(const std::string& name) override {

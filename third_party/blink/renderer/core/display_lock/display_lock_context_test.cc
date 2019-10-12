@@ -131,8 +131,8 @@ class DisplayLockContextTest : public testing::Test,
                    bool update_lifecycle = true) {
     StringBuilder value;
     value.Append("invisible");
-    if (activatable)
-      value.Append(" activatable");
+    if (!activatable)
+      value.Append(" skip-activation");
     element.setAttribute(html_names::kRendersubtreeAttr,
                          value.ToAtomicString());
     if (update_lifecycle)
@@ -706,8 +706,10 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
   auto* host = GetDocument().getElementById("shadowHost");
   auto* slotted = GetDocument().getElementById("slotted");
 
-  ASSERT_FALSE(host->DisplayLockPreventsActivation());
-  ASSERT_FALSE(slotted->DisplayLockPreventsActivation());
+  ASSERT_FALSE(
+      host->DisplayLockPreventsActivation(DisplayLockActivationReason::kAny));
+  ASSERT_FALSE(slotted->DisplayLockPreventsActivation(
+      DisplayLockActivationReason::kAny));
 
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
@@ -717,17 +719,23 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
   UpdateAllLifecyclePhasesForTest();
 
   auto* container = shadow_root.getElementById("container");
-  EXPECT_FALSE(host->DisplayLockPreventsActivation());
-  EXPECT_FALSE(container->DisplayLockPreventsActivation());
-  EXPECT_FALSE(slotted->DisplayLockPreventsActivation());
+  EXPECT_FALSE(
+      host->DisplayLockPreventsActivation(DisplayLockActivationReason::kAny));
+  EXPECT_FALSE(container->DisplayLockPreventsActivation(
+      DisplayLockActivationReason::kAny));
+  EXPECT_FALSE(slotted->DisplayLockPreventsActivation(
+      DisplayLockActivationReason::kAny));
 
   LockElement(*container, false, false);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
-  EXPECT_FALSE(host->DisplayLockPreventsActivation());
-  EXPECT_TRUE(container->DisplayLockPreventsActivation());
-  EXPECT_TRUE(slotted->DisplayLockPreventsActivation());
+  EXPECT_FALSE(
+      host->DisplayLockPreventsActivation(DisplayLockActivationReason::kAny));
+  EXPECT_TRUE(container->DisplayLockPreventsActivation(
+      DisplayLockActivationReason::kAny));
+  EXPECT_TRUE(slotted->DisplayLockPreventsActivation(
+      DisplayLockActivationReason::kAny));
 
   // Ensure that we resolve the acquire callback, thus finishing the acquire
   // step.
@@ -737,17 +745,23 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-  EXPECT_FALSE(host->DisplayLockPreventsActivation());
-  EXPECT_FALSE(container->DisplayLockPreventsActivation());
-  EXPECT_FALSE(slotted->DisplayLockPreventsActivation());
+  EXPECT_FALSE(
+      host->DisplayLockPreventsActivation(DisplayLockActivationReason::kAny));
+  EXPECT_FALSE(container->DisplayLockPreventsActivation(
+      DisplayLockActivationReason::kAny));
+  EXPECT_FALSE(slotted->DisplayLockPreventsActivation(
+      DisplayLockActivationReason::kAny));
 
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-  EXPECT_FALSE(host->DisplayLockPreventsActivation());
-  EXPECT_FALSE(container->DisplayLockPreventsActivation());
-  EXPECT_FALSE(slotted->DisplayLockPreventsActivation());
+  EXPECT_FALSE(
+      host->DisplayLockPreventsActivation(DisplayLockActivationReason::kAny));
+  EXPECT_FALSE(container->DisplayLockPreventsActivation(
+      DisplayLockActivationReason::kAny));
+  EXPECT_FALSE(slotted->DisplayLockPreventsActivation(
+      DisplayLockActivationReason::kAny));
 }
 
 TEST_F(DisplayLockContextTest,
@@ -884,35 +898,41 @@ TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable());
+  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable(
+      DisplayLockActivationReason::kAny));
 
   LockElement(*non_activatable, false);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
-  EXPECT_FALSE(non_activatable->GetDisplayLockContext()->IsActivatable());
+  EXPECT_FALSE(non_activatable->GetDisplayLockContext()->IsActivatable(
+      DisplayLockActivationReason::kAny));
 
   // Now commit the lock for |non_ctivatable|.
   CommitElement(*non_activatable);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable());
-  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable());
+  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable(
+      DisplayLockActivationReason::kAny));
+  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable(
+      DisplayLockActivationReason::kAny));
 
   // Re-acquire the lock for |activatable|, but without the activatable flag.
   LockElement(*activatable, false);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
-  EXPECT_FALSE(activatable->GetDisplayLockContext()->IsActivatable());
+  EXPECT_FALSE(activatable->GetDisplayLockContext()->IsActivatable(
+      DisplayLockActivationReason::kAny));
 
   // Re-acquire the lock for |activatable| again with the activatable flag.
   LockElement(*activatable, true);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable());
+  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable(
+      DisplayLockActivationReason::kAny));
 }
 
 TEST_F(DisplayLockContextTest, ElementInTemplate) {

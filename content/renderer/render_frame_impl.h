@@ -413,7 +413,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const base::string16& text,
       const std::vector<blink::WebImeTextSpan>& ime_text_spans,
       const gfx::Range& replacement_range);
-  void SimulateImeFinishComposingText(bool keep_selection);
 
   // TODO(jam): remove these once the IPC handler moves from RenderView to
   // RenderFrame.

@@ -17,16 +17,14 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/network_change_notifier.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 
@@ -93,9 +91,9 @@ class NetworkConnectionTrackerBrowserTest : public InProcessBrowserTest {
   // Simulates a network connection change.
   void SimulateNetworkChange(network::mojom::ConnectionType type) {
     if (!content::IsInProcessNetworkService()) {
-      network::mojom::NetworkServiceTestPtr network_service_test;
-      content::GetSystemConnector()->BindInterface(
-          content::mojom::kNetworkServiceName, &network_service_test);
+      mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+      content::GetNetworkService()->BindTestInterface(
+          network_service_test.BindNewPipeAndPassReceiver());
       base::RunLoop run_loop;
       network_service_test->SimulateNetworkChange(
           type, base::Bind([](base::RunLoop* run_loop) { run_loop->Quit(); },

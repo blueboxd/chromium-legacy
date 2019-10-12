@@ -532,7 +532,7 @@ class CheckOpResult {
   // |message| must be non-null if and only if the check failed.
   constexpr CheckOpResult(std::string* message) : message_(message) {}
   // Returns true if the check succeeded.
-  operator bool() const { return !message_; }
+  constexpr operator bool() const { return !message_; }
   // Returns the message.
   std::string* message() { return message_; }
 
@@ -687,20 +687,21 @@ std::string* MakeCheckOpString<std::string, std::string>(
 // The checked condition is wrapped with ANALYZER_ASSUME_TRUE, which under
 // static analysis builds, blocks analysis of the current path if the
 // condition is false.
-#define DEFINE_CHECK_OP_IMPL(name, op)                                       \
-  template <class t1, class t2>                                              \
-  inline std::string* Check##name##Impl(const t1& v1, const t2& v2,          \
-                                        const char* names) {                 \
-    if (ANALYZER_ASSUME_TRUE(v1 op v2))                                      \
-      return NULL;                                                           \
-    else                                                                     \
-      return ::logging::MakeCheckOpString(v1, v2, names);                    \
-  }                                                                          \
-  inline std::string* Check##name##Impl(int v1, int v2, const char* names) { \
-    if (ANALYZER_ASSUME_TRUE(v1 op v2))                                      \
-      return NULL;                                                           \
-    else                                                                     \
-      return ::logging::MakeCheckOpString(v1, v2, names);                    \
+#define DEFINE_CHECK_OP_IMPL(name, op)                                 \
+  template <class t1, class t2>                                        \
+  constexpr std::string* Check##name##Impl(const t1& v1, const t2& v2, \
+                                           const char* names) {        \
+    if (ANALYZER_ASSUME_TRUE(v1 op v2))                                \
+      return nullptr;                                                  \
+    else                                                               \
+      return ::logging::MakeCheckOpString(v1, v2, names);              \
+  }                                                                    \
+  constexpr std::string* Check##name##Impl(int v1, int v2,             \
+                                           const char* names) {        \
+    if (ANALYZER_ASSUME_TRUE(v1 op v2))                                \
+      return nullptr;                                                  \
+    else                                                               \
+      return ::logging::MakeCheckOpString(v1, v2, names);              \
   }
 DEFINE_CHECK_OP_IMPL(EQ, ==)
 DEFINE_CHECK_OP_IMPL(NE, !=)

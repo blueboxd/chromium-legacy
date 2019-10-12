@@ -255,10 +255,6 @@ void ManifestManager::BindReceiver(
 }
 
 void ManifestManager::ContextDestroyed(ExecutionContext*) {
-  Dispose();
-}
-
-void ManifestManager::Dispose() {
   if (fetcher_)
     fetcher_->Cancel();
 
@@ -267,6 +263,10 @@ void ManifestManager::Dispose() {
   // in the renderer process should be correctly notified.
   ResolveCallbacks(ResolveStateFailure);
 
+  receivers_.Clear();
+}
+
+void ManifestManager::Prefinalize() {
   receivers_.Clear();
 }
 

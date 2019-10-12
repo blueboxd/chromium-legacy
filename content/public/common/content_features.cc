@@ -102,6 +102,12 @@ const base::Feature kCacheInlineScriptCode{"CacheInlineScriptCode",
 const base::Feature kCacheStorageParallelOps{"CacheStorageParallelOps",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables eagerly reading the response body in cache.match() when the
+// operation was started from a FetchEvent handler with a matching request
+// URL.
+const base::Feature kCacheStorageEagerReading{
+    "CacheStorageEagerReading", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If Canvas2D Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kCanvas2DImageChromium {
@@ -693,7 +699,7 @@ const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
 const base::Feature kWebUsb{"WebUSB", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the WebXR Device API is enabled.
-const base::Feature kWebXr{"WebXR", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kWebXr{"WebXR", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables access to AR features via the WebXR API.
 const base::Feature kWebXrArModule{"WebXRARModule",
@@ -702,6 +708,10 @@ const base::Feature kWebXrArModule{"WebXRARModule",
 // Enables access to anchors via WebXR API.
 const base::Feature kWebXrAnchors{"WebXRAnchors",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables access to the WebXR Device API gamepad module.
+const base::Feature kWebXrGamepadModule{"WebXrGamepadModule",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables access to raycasting against estimated XR scene geometry.
 const base::Feature kWebXrHitTest{"WebXRHitTest",

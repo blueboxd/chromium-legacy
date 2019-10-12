@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial_params.h"
 #include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
@@ -17,15 +18,16 @@
 #include "chrome/browser/lookalikes/safety_tips/safety_tips_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/security_state/core/features.h"
 #include "url/url_constants.h"
 
 namespace {
 
 using chrome_browser_safety_tips::FlaggedPage;
+using chrome_browser_safety_tips::UrlPattern;
 using lookalikes::DomainInfo;
 using lookalikes::LookalikeUrlNavigationThrottle;
 using lookalikes::LookalikeUrlService;
@@ -34,9 +36,10 @@ using safe_browsing::V4ProtocolManagerUtil;
 using safety_tips::ReputationService;
 
 const base::FeatureParam<bool> kEnableLookalikeEditDistance{
-    &features::kSafetyTipUI, "editdistance", false};
+    &security_state::features::kSafetyTipUI, "editdistance", false};
 const base::FeatureParam<bool> kEnableLookalikeEditDistanceSiteEngagement{
-    &features::kSafetyTipUI, "editdistance_siteengagement", false};
+    &security_state::features::kSafetyTipUI, "editdistance_siteengagement",
+    false};
 
 bool ShouldTriggerSafetyTipFromLookalike(
     const GURL& url,
@@ -162,6 +165,43 @@ security_state::SafetyTipStatus FlagTypeToSafetyTipStatus(
   return security_state::SafetyTipStatus::kNone;
 }
 
+// Returns whether or not the Safety Tip should be suppressed for the given URL.
+// Checks SafeBrowsing-style permutations of |url| against the component updater
+// allowlist and returns whether the URL is explicitly allowed. Fails closed, so
+// that warnings are suppressed if the component is unavailable.
+bool ShouldSuppressWarning(const GURL& url) {
+  std::vector<std::string> patterns;
+  UrlToPatterns(url, &patterns);
+
+  auto* proto = safety_tips::GetRemoteConfigProto();
+  if (!proto) {
+    // This happens when the component hasn't downloaded yet. This should only
+    // happen for a short time after initial upgrade to M79.
+    //
+    // Disable all Safety Tips during that time. Otherwise, we would continue to
+    // flag on any known false positives until the client received the update.
+    return true;
+  }
+
+  auto allowed_pages = proto->allowed_pattern();
+  for (const auto& pattern : patterns) {
+    UrlPattern search_target;
+    search_target.set_pattern(pattern);
+
+    auto lower = std::lower_bound(
+        allowed_pages.begin(), allowed_pages.end(), search_target,
+        [](const UrlPattern& a, const UrlPattern& b) -> bool {
+          return a.pattern() < b.pattern();
+        });
+
+    if (lower != allowed_pages.end() && pattern == lower->pattern()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }  // namespace
 
 namespace safety_tips {
@@ -218,6 +258,15 @@ void ReputationService::GetReputationStatusWithEngagedSites(
     const GURL& url,
     const std::vector<DomainInfo>& engaged_sites) {
   const DomainInfo navigated_domain = lookalikes::GetDomainInfo(url);
+
+  // 0. Server-side warning suppression.
+  // If the URL is on the allowlist list, do nothing else. This is only used to
+  // mitigate false positives, so no further processing should be done.
+  if (ShouldSuppressWarning(url)) {
+    std::move(callback).Run(security_state::SafetyTipStatus::kNone,
+                            IsIgnored(url), url, GURL());
+    return;
+  }
 
   // 1. Engagement check
   // Ensure that this URL is not already engaged. We can't use the synchronous

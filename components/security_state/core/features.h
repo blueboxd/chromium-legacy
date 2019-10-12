@@ -33,6 +33,9 @@ extern const char kMarkHttpAsParameterDangerWarning[];
 // TLS version (TLS 1.0 or 1.1).
 extern const base::Feature kLegacyTLSWarnings;
 
+// This feature enables Safety Tip warnings on possibly-risky sites.
+extern const base::Feature kSafetyTipUI;
+
 }  // namespace features
 }  // namespace security_state
 

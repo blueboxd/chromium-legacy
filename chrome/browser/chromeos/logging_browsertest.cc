@@ -19,9 +19,9 @@
 #include "components/account_id/account_id.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/session_manager_types.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_names.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,9 +49,9 @@ std::string GetLogFileContents(const base::ScopedTempDir& dir) {
 }
 
 void LogToNetworkService(std::string message) {
-  network::mojom::NetworkServiceTestPtr network_service_test;
-  content::GetSystemConnector()->BindInterface(
-      content::mojom::kNetworkServiceName, &network_service_test);
+  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+  content::GetNetworkService()->BindTestInterface(
+      network_service_test.BindNewPipeAndPassReceiver());
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;
   network_service_test->Log(message);
 }

@@ -34,18 +34,14 @@ bool DomDistillerServiceAndroid::HasEntry(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_entry_id) {
-  const std::string entry_id =
-      base::android::ConvertJavaStringToUTF8(env, j_entry_id);
-  return service_->HasEntry(entry_id);
+  return false;
 }
 
 ScopedJavaLocalRef<jstring> DomDistillerServiceAndroid::GetUrlForEntry(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_entry_id) {
-  const std::string entry_id =
-      base::android::ConvertJavaStringToUTF8(env, j_entry_id);
-  return ConvertUTF8ToJavaString(env, service_->GetUrlForEntry(entry_id));
+  return ConvertUTF8ToJavaString(env, std::string());
 }
 
 jlong DomDistillerServiceAndroid::GetDistilledPagePrefsPtr(JNIEnv* env) {

@@ -4303,10 +4303,19 @@ void RenderFrameHostImpl::CreateNewWindow(
   main_frame->BindBrowserInterfaceBrokerReceiver(
       browser_interface_broker.InitWithNewPipeAndPassReceiver());
 
+  // TODO(danakj): The main frame's RenderWidgetHost has no RenderWidgetHostView
+  // yet here. It seems like it should though? In the meantime we send some
+  // nonsense with a semi-valid but incorrect ScreenInfo (it needs a
+  // RenderWidgetHostView to be correct). An updates VisualProperties will get
+  // to the RenderWidget eventually.
+  VisualProperties visual_properties;
+  main_frame->GetLocalRenderWidgetHost()->GetScreenInfo(
+      &visual_properties.screen_info);
+
   mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New(
       main_frame->GetRenderViewHost()->GetRoutingID(),
       main_frame->GetRoutingID(),
-      main_frame->GetRenderViewHost()->GetWidget()->GetRoutingID(),
+      main_frame->GetLocalRenderWidgetHost()->GetRoutingID(), visual_properties,
       mojom::DocumentScopedInterfaceBundle::New(
           std::move(main_frame_interface_provider_info),
           std::move(document_interface_broker_content),

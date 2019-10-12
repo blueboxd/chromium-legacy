@@ -123,10 +123,8 @@ static void ImeCommitTextOnMainThread(
     const gfx::Range& range,
     int32_t relative_cursor_position,
     WidgetInputHandlerImpl::ImeCommitTextCallback callback) {
-  if (render_widget) {
-    render_widget->OnImeCommitText(text, ime_text_spans, range,
-                                   relative_cursor_position);
-  }
+  render_widget->OnImeCommitText(text, ime_text_spans, range,
+                                 relative_cursor_position);
   callback_task_runner->PostTask(FROM_HERE, std::move(callback));
 }
 

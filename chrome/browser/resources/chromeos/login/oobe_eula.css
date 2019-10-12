@@ -19,6 +19,7 @@ a {
 #installationSettings,
 #logging {
   font-size: 13px;
+  min-height: unset;
 }
 
 #crosEulaFrame {

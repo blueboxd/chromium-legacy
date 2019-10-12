@@ -289,6 +289,31 @@ struct XRPresentationTransportOptions {
   bool wait_for_gpu_fence;
 };
 
+// Native origins that are reference spaces are identified by their category.
+// Currently, the device needs to know about 3 reference space categories.
+enum XRReferenceSpaceCategory {
+  LOCAL,
+  LOCAL_FLOOR,
+  VIEWER,
+  BOUNDED_FLOOR,
+  UNBOUNDED
+};
+
+// Native origin represents a reference space that is known to the device and
+// whose position can be tracked over time. There are multiple different types
+// of native origins (planes, anchors, reference spaces, input sources), each of
+// them roughly corresponds to something that either is an XRSpace (for example
+// XRReferenceSpaceType, XRBoundedReferenceSpace) or returns an XRSpace (for
+// example XRAnchor, XRPlane, XRInputSource). Native origin can be identified,
+// depending on its type, by the id of the entity (this is the case for planes,
+// anchors and input sources), or by reference space category.
+union XRNativeOriginInformation {
+  uint32 input_source_id;
+  uint32 plane_id;
+  uint32 anchor_id;
+  XRReferenceSpaceCategory reference_space_category;
+};
+
 enum XRPlaneOrientation {
   UNKNOWN = 0,
   HORIZONTAL = 1,
@@ -359,6 +384,18 @@ struct XRAnchorsData {
   array<XRAnchorData> updated_anchors_data;
 };
 
+// Information about results for a single subscription for the current frame.
+struct XRHitTestSubscriptionResultData {
+  uint32 subscription_id;
+  array<XRHitResult> hit_test_results;
+};
+
+// Struct containing data about results of all hit test subscriptions for the
+// current frame.
+struct XRHitTestSubscriptionResultsData {
+  array<XRHitTestSubscriptionResultData> results;
+};
+
 // The data needed for each animation frame of an XRSession.
 struct XRFrameData {
   // General XRSession value
@@ -408,6 +445,10 @@ struct XRFrameData {
 
   // Tracked anchors information.
   XRAnchorsData? anchors_data;
+
+  // Hit test subscription results. Only present if the session supports
+  // environment integration.
+  XRHitTestSubscriptionResultsData? hit_test_subscription_results;
 };
 
 enum VRDisplayEventReason {
@@ -478,6 +519,11 @@ enum CreateAnchorResult {
   FAILURE = 1,
 };
 
+enum SubscribeToHitTestResult {
+  SUCCESS = 0,
+  FAILURE_GENERIC = 1,
+};
+
 // Provides functionality for integrating environment information into an
 // XRSession. For example, some AR sessions would implement hit test to allow
 // developers to get the information about the world that its sensors supply.
@@ -492,6 +538,24 @@ interface XREnvironmentIntegrationProvider {
   // An empty result list means there were no hits. If a nullopt is returned,
   // there was an error.
   RequestHitTest(XRRay ray) => (array<XRHitResult>? results);
+
+  // Establishes a hit test subscription on the device. The subscription results
+  // will be computed taking into account latest state of the native origin
+  // identified by passed in |native_origin_information|. I.e., in each frame,
+  // the ray used to subscribe to hit test will be transformed to device
+  // coordinate system using the device's current knowledge of the state of the
+  // native origin. The returned |subscription_id| uniquely identifies the
+  // subscription within an immersive session. Lifetime of the subscription is
+  // tied to the lifetime of the immersive session.
+  SubscribeToHitTest(
+    XRNativeOriginInformation native_origin_information, XRRay ray) =>
+    (SubscribeToHitTestResult result, uint32 subscription_id);
+
+  // Notifies the device that subscription with the passed in |subscription_id|
+  // is no longer needed and should be removed. The |subscription_id| must be a
+  // valid id of a subscription returned by one of the SubscribeToHitTest calls,
+  // otherwise the call will be ignored.
+  UnsubscribeFromHitTest(uint32 subscription_id);
 
   // Issues a request to create an anchor attached to a session.
   // |result| will contain status code of the request. |anchor_id| will be valid

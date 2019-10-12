@@ -5,7 +5,8 @@
 /** @fileoverview Define accessibility tests for the EDIT_DICTIONARY route.  */
 
 // Disable since the EDIT_DICTIONARY route does not exist on Mac.
-GEN('#if !defined(OS_MACOSX)');
+// TODO(crbug.com/1012370) flaky on Linux b/c assertTrue(!!languagesPage);
+GEN('#if !defined(OS_MACOSX) && !defined(OS_LINUX)');
 
 // SettingsAccessibilityTest fixture.
 GEN_INCLUDE([
@@ -103,4 +104,4 @@ AccessibilityTest.define('EditDictionaryA11yTest', {
   },
 });
 
-GEN('#endif  // !defined(OS_MACOSX)');
+GEN('#endif  // !defined(OS_MACOSX) && !defined(OS_LINUX)');

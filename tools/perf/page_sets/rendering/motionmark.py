@@ -122,7 +122,6 @@ class MotionmarkHTMLCSSBouncingGradientCircles250(MotionMarkPage):
 class MotionmarkHTMLCSSBouncingBlendCircles25(MotionMarkPage):
   BASE_NAME = 'motionmark_html_css_bouncing_blend_circles_25'
   URL = MotionMarkPage.GetUrl('HTML suite', 'CSS bouncing blend circles', 25)
-  TAGS = MotionMarkPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 # Why: MotionMark HTML case """

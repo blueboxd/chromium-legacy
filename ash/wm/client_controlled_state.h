@@ -53,6 +53,9 @@ class ASH_EXPORT ClientControlledState : public BaseState {
   explicit ClientControlledState(std::unique_ptr<Delegate> delegate);
   ~ClientControlledState() override;
 
+  // Resets |delegate_|.
+  void ResetDelegate();
+
   // A flag used to update the window's bounds directly, instead of
   // delegating to |Delegate|. The Delegate should use this to
   // apply the bounds change to the window.

@@ -87,7 +87,9 @@ HttpNetworkSession::Params::Params()
       enable_websocket_over_http2(false),
       enable_quic(false),
       enable_quic_proxies_for_https_urls(false),
-      disable_idle_sockets_close_on_memory_pressure(false) {
+      disable_idle_sockets_close_on_memory_pressure(false),
+      allow_default_credentials(HttpAuthPreferences::DefaultCredentials::
+                                    DISALLOW_DEFAULT_CREDENTIALS) {
   enable_early_data =
       base::FeatureList::IsEnabled(features::kEnableTLS13EarlyData);
 }

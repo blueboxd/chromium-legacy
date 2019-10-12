@@ -6,49 +6,11 @@ aXe violations: []
 
 Running: testBottomUpView
 Tests accessibility in performance BottomUp view using the axe-core linter
-aXe violations: [
-  {
-    "ruleDescription": "Ensures every ARIA input field has an accessible name",
-    "helpUrl": "https://dequeuniversity.com/rules/axe/3.3/aria-input-field-name?application=axeAPI",
-    "ruleId": "aria-input-field-name",
-    "impact": "serious",
-    "failedNodes": [
-      {
-        "target": [
-          [
-            ".widget.vbox[slot=\"insertion-point-main\"] > .toolbar",
-            ".toolbar-input-prompt"
-          ]
-        ],
-        "html": "<div class=\"toolbar-input-prompt text-prompt\" role=\"textbox\" contenteditable=\"plaintext-only\" data-placeholder=\"Filter\" aria-placeholder=\"Filter bottom-up\"></div>",
-        "failureSummary": "Fix any of the following:\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute or the title attribute is empty"
-      }
-    ]
-  }
-]
+aXe violations: []
 
 
 Running: testCallTreeView
 Tests accessibility in performance CallTree view using the axe-core linter
-aXe violations: [
-  {
-    "ruleDescription": "Ensures every ARIA input field has an accessible name",
-    "helpUrl": "https://dequeuniversity.com/rules/axe/3.3/aria-input-field-name?application=axeAPI",
-    "ruleId": "aria-input-field-name",
-    "impact": "serious",
-    "failedNodes": [
-      {
-        "target": [
-          [
-            ".widget.vbox[slot=\"insertion-point-main\"] > .toolbar",
-            "div[aria-placeholder=\"Filter\\ call\\ tree\"]"
-          ]
-        ],
-        "html": "<div class=\"toolbar-input-prompt text-prompt\" role=\"textbox\" contenteditable=\"plaintext-only\" data-placeholder=\"Filter\" aria-placeholder=\"Filter call tree\"></div>",
-        "failureSummary": "Fix any of the following:\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute or the title attribute is empty"
-      }
-    ]
-  }
-]
+aXe violations: []
 
 

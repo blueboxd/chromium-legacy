@@ -51,6 +51,8 @@
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
+#include "ash/system/model/enterprise_domain_model.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/palette/palette_utils.h"
 #include "ash/system/power/power_button_controller.h"
@@ -1007,12 +1009,22 @@ void CreateAndShowStickyNotification(
 
 void NotifyAccessibilityFeatureDisabledByAdmin(
     int feature_name_id,
+    bool feature_state,
     const std::string& notification_id) {
+  const base::string16 organization_name =
+      base::UTF8ToUTF16(Shell::Get()
+                            ->system_tray_model()
+                            ->enterprise_domain()
+                            ->enterprise_display_domain());
   CreateAndShowStickyNotification(
       l10n_util::GetStringUTF16(
           IDS_ASH_ACCESSIBILITY_FEATURE_SHORTCUT_DISABLED_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_ASH_ACCESSIBILITY_FEATURE_SHORTCUT_DISABLED_MSG,
+          organization_name,
+          l10n_util::GetStringUTF16(
+              feature_state ? IDS_ASH_ACCESSIBILITY_FEATURE_ACTIVATED
+                            : IDS_ASH_ACCESSIBILITY_FEATURE_DEACTIVATED),
           l10n_util::GetStringUTF16(feature_name_id)),
       notification_id, kLoginScreenEnterpriseIcon);
 }
@@ -1035,7 +1047,7 @@ void SetDockedMagnifierEnabled(bool enabled) {
                                     kDockedMagnifierToggleAccelNotificationId);
   } else if (enabled != actual_enabled) {
     NotifyAccessibilityFeatureDisabledByAdmin(
-        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DOCKED_MAGNIFIER,
+        IDS_ASH_DOCKED_MAGNIFIER_SHORTCUT_DISABLED, actual_enabled,
         kDockedMagnifierToggleAccelNotificationId);
   }
 }
@@ -1083,7 +1095,7 @@ void SetFullscreenMagnifierEnabled(bool enabled) {
         kFullscreenMagnifierToggleAccelNotificationId);
   } else if (enabled != actual_enabled) {
     NotifyAccessibilityFeatureDisabledByAdmin(
-        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SCREEN_MAGNIFIER,
+        IDS_ASH_FULLSCREEN_MAGNIFIER_SHORTCUT_DISABLED, actual_enabled,
         kFullscreenMagnifierToggleAccelNotificationId);
   }
 }
@@ -1102,7 +1114,7 @@ void SetHighContrastEnabled(bool enabled) {
                                     kHighContrastToggleAccelNotificationId);
   } else if (enabled != actual_enabled) {
     NotifyAccessibilityFeatureDisabledByAdmin(
-        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGH_CONTRAST_MODE,
+        IDS_ASH_HIGH_CONTRAST_SHORTCUT_DISABLED, actual_enabled,
         kHighContrastToggleAccelNotificationId);
   }
 }
@@ -1167,7 +1179,8 @@ void HandleToggleSpokenFeedback() {
   RemoveStickyNotitification(kSpokenFeedbackToggleAccelNotificationId);
   if (!controller->spoken_feedback_enabled() && !old_value) {
     NotifyAccessibilityFeatureDisabledByAdmin(
-        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SPOKEN_FEEDBACK,
+        IDS_ASH_SPOKEN_FEEDBACK_SHORTCUT_DISABLED,
+        controller->spoken_feedback_enabled(),
         kSpokenFeedbackToggleAccelNotificationId);
   }
 }

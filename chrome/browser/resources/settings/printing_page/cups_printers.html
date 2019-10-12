@@ -16,6 +16,7 @@
 <link rel="import" href="cups_add_printer_dialog.html">
 <link rel="import" href="cups_edit_printer_dialog.html">
 <link rel="import" href="cups_printer_shared_css.html">
+<link rel="import" href="cups_printers_entry_manager.html">
 <link rel="import" href="cups_printers_list.html">
 <link rel="import" href="cups_saved_printers.html">
 <link rel="import" href="cups_nearby_printers.html">
@@ -142,7 +143,6 @@
 
           <settings-cups-saved-printers id="savedPrinters"
               active-printer="{{activePrinter}}"
-              saved-printers="[[savedPrinters_]]"
               search-term="[[searchTerm]]">
           </settings-cups-saved-printers>
         </div>
@@ -197,7 +197,7 @@
       </settings-cups-edit-printer-dialog>
     </template>
 
-    <cr-toast id="errorToast" duration="3000">
+    <cr-toast id="errorToast" duration="3000" role="alert">
       <div class="error-message" id="addPrinterDoneMessage">
         [[addPrinterResultText_]]
       </div>

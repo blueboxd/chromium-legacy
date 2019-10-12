@@ -152,6 +152,33 @@ interface MyIFaceWrongRecordKeyType {
 };
 
 /** TREE
+ *Interface(IFaceAllowedKeywords)
+ *  Attribute(async)
+ *    Type()
+ *      PrimitiveType(long)
+ *  Operation(includes)
+ *    Arguments()
+ *      Argument(async)
+ *        Type()
+ *          PrimitiveType(long)
+ *      Argument(constructor)
+ *        Type()
+ *          PrimitiveType(long)
+ *    Type()
+ *      PrimitiveType(void)
+ *  Attribute(constructor)
+ *    Type()
+ *      PrimitiveType(long)
+ *  Error(Unexpected constructor.)
+ */
+interface IFaceAllowedKeywords {
+  attribute long async;
+  void includes(long async, long constructor);
+  attribute long _constructor;
+  attribute long constructor;
+};
+
+/** TREE
  *Interface(MyIfaceDefalutValue)
  *  Operation(foo)
  *    Arguments()
@@ -667,19 +694,3 @@ interface MyIFaceArgumentWithAnnotatedType2 {
  *  REFERENCE: Bar
  */
 Foo includes Bar;
-
-/** TREE
- *Interface(IFaceWithKeyword)
- *  Operation(includes)
- *    Arguments()
- *      Argument(val)
- *        Type()
- *          StringType(DOMString)
- *    Type()
- *      PrimitiveType(void)
- */
-interface IFaceWithKeyword {
-  // '_' prefix needs to be removed in tokenization.
-  // https://heycam.github.io/webidl/#idl-names
-  void _includes(DOMString val);
-};

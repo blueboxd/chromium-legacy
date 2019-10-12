@@ -136,8 +136,9 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
       navigation_handle()->GetInitiatorOrigin().value();
 
   // Navigations from chrome://, devtools:// or chrome-search:// pages need to
-  // be allowed, even if the target |url| is not web-accessible.  See
-  // https://crbug.com/662602.
+  // be allowed, even if the target |url| is not web-accessible.  See also:
+  // - https://crbug.com/662602
+  // - similar checks in extensions::ResourceRequestPolicy::CanRequestResource
   if (initiator_origin.scheme() == content::kChromeUIScheme ||
       initiator_origin.scheme() == content::kChromeDevToolsScheme ||
       ExtensionsBrowserClient::Get()->ShouldSchemeBypassNavigationChecks(

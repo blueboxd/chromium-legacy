@@ -99,8 +99,8 @@ class ScriptingPermissionsModifier {
   void RemoveAllGrantedHostPermissions();
 
   // Takes in a set of permissions and withholds any permissions that should not
-  // be granted for the given |extension|, populating |granted_permissions_out|
-  // with the set of all permissions that can be granted.
+  // be granted for the given |extension|, returning a permission set with all
+  // of the permissions that can be granted.
   // Note: we pass in |permissions| explicitly here, as this is used during
   // permission initialization, where the active permissions on the extension
   // may not be the permissions to compare against.

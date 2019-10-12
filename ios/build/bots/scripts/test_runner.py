@@ -175,13 +175,37 @@ def is_iOS13_or_higher_device(udid):
           distutils.version.LooseVersion('13.0'))
 
 
-def terminate_process(proc):
+def defaults_write(d, key, value):
+  """Run 'defaults write d key value' command.
+
+  Args:
+    d: (str) A dictionary.
+    key: (str) A key.
+    value: (str) A value.
+  """
+  LOGGER.info('Run \'defaults write %s %s %s\'' % (d, key, value))
+  subprocess.call(['defaults', 'write', d, key, value])
+
+
+def defaults_delete(d, key):
+  """Run 'defaults delete d key' command.
+
+  Args:
+    d: (str) A dictionary.
+    key: (str) Key to delete.
+  """
+  LOGGER.info('Run \'defaults delete %s %s\'' % (d, key))
+  subprocess.call(['defaults', 'delete', d, key])
+
+
+def terminate_process(proc, proc_name):
   """Terminates the process.
 
   If an error occurs ignore it, just print out a message.
 
   Args:
     proc: A subprocess to terminate.
+    proc_name: A name of process.
   """
   try:
     LOGGER.info('Killing hung process %s' % proc.pid)
@@ -192,20 +216,21 @@ def terminate_process(proc):
       # Check whether proc.pid process is still alive.
       if ps.is_running():
         LOGGER.info(
-            'Process iossim is still alive! Xcodebuild process might block it.')
-        xcodebuild_processes = [
+            'Process %s is still alive! %s process might block it.',
+            proc.name, proc_name)
+        running_processes = [
             p for p in psutil.process_iter()
             # Use as_dict() to avoid API changes across versions of psutil.
-            if 'xcodebuild' == p.as_dict(attrs=['name'])['name']]
-        if not xcodebuild_processes:
-          LOGGER.debug('There are no running xcodebuild processes.')
+            if proc_name == p.as_dict(attrs=['name'])['name']]
+        if not running_processes:
+          LOGGER.debug('There are no running %s processes.', proc_name)
           break
-        LOGGER.debug('List of running xcodebuild processes: %s'
-                     % xcodebuild_processes)
-        # Killing xcodebuild processes
-        for p in xcodebuild_processes:
+        LOGGER.debug('List of running %s processes: %s'
+                     % (proc_name, running_processes))
+        # Killing running processes with proc_name
+        for p in running_processes:
           p.send_signal(signal.SIGKILL)
-        psutil.wait_procs(xcodebuild_processes)
+        psutil.wait_procs(running_processes)
       else:
         LOGGER.info('Process was killed!')
         break
@@ -213,7 +238,10 @@ def terminate_process(proc):
     LOGGER.info('Error while killing a process: %s' % ex)
 
 
-def print_process_output(proc, parser, timeout=READLINE_TIMEOUT):
+def print_process_output(proc,
+                         proc_name=None,
+                         parser=None,
+                         timeout=READLINE_TIMEOUT):
   """Logs process messages in console and waits until process is done.
 
   Method waits until no output message and if no message for timeout seconds,
@@ -221,10 +249,17 @@ def print_process_output(proc, parser, timeout=READLINE_TIMEOUT):
 
   Args:
     proc: A running process.
+    proc_name: (str) A process name that has to be killed
+      if no output occurs in specified timeout. Sometimes proc generates
+      child process that may block its parent and for such cases
+      proc_name refers to the name of child process.
+      If proc_name is not specified, proc.name will be used to kill process.
     Parser: A parser.
-    timeout: Timeout(in seconds) to subprocess.stdout.readline method.
+    timeout: A timeout(in seconds) to subprocess.stdout.readline method.
   """
   out = []
+  if not proc_name:
+    proc_name = psutil.Process(proc.pid).name()
   while True:
     # subprocess.stdout.readline() might be stuck from time to time
     # and tests fail because of TIMEOUT.
@@ -232,7 +267,7 @@ def print_process_output(proc, parser, timeout=READLINE_TIMEOUT):
     # that will kill `frozen` running process if no new line is read
     # and will finish test attempt.
     # If new line appears in timeout, just cancel timer.
-    timer = threading.Timer(timeout, terminate_process, [proc])
+    timer = threading.Timer(timeout, terminate_process, [proc, proc_name])
     timer.start()
     line = proc.stdout.readline()
     timer.cancel()
@@ -240,7 +275,8 @@ def print_process_output(proc, parser, timeout=READLINE_TIMEOUT):
       break
     line = line.rstrip()
     out.append(line)
-    parser.ProcessLine(line)
+    if parser:
+      parser.ProcessLine(line)
     LOGGER.info(line)
     sys.stdout.flush()
   LOGGER.debug('Finished print_process_output.')
@@ -544,6 +580,19 @@ class TestRunner(object):
     """
     return os.environ.copy()
 
+  def start_proc(self, cmd):
+    """Starts a process with cmd command and os.environ.
+
+    Returns:
+      An instance of process.
+    """
+    return subprocess.Popen(
+        cmd,
+        env=self.get_launch_env(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+
   def shutdown_and_restart(self):
     """Restart a device or relaunch a simulator."""
     pass
@@ -575,6 +624,7 @@ class TestRunner(object):
       os.mkdir(os.path.join(self.out_dir, 'DerivedData'))
       derived_data = os.path.join(self.out_dir, 'DerivedData')
       for directory in os.listdir(DERIVED_DATA):
+        LOGGER.info('Copying %s directory', directory)
         shutil.move(os.path.join(DERIVED_DATA, directory), derived_data)
 
   def wipe_derived_data(self):
@@ -657,15 +707,10 @@ class TestRunner(object):
     else:
       # TODO(crbug.com/812705): Implement test sharding for unit tests.
       # TODO(crbug.com/812712): Use thread pool for DeviceTestRunner as well.
-      proc = subprocess.Popen(
-          cmd,
-          env=self.get_launch_env(),
-          stdout=subprocess.PIPE,
-          stderr=subprocess.STDOUT,
-      )
+      proc = self.start_proc(cmd)
       old_handler = self.set_sigterm_handler(
           lambda _signum, _frame: self.handle_sigterm(proc))
-      print_process_output(proc, parser)
+      print_process_output(proc, 'xcodebuild', parser)
 
       LOGGER.info('Waiting for test process to terminate.')
       proc.wait()
@@ -1005,14 +1050,9 @@ class SimulatorTestRunner(TestRunner):
     if self.xctest_path:
       cmd.append(self.xctest_path)
 
-    proc = subprocess.Popen(
-        cmd,
-        env=self.get_launch_env(),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-    )
-
-    out = print_process_output(proc, xctest_utils.XCTestLogParser())
+    proc = self.start_proc(cmd)
+    out = print_process_output(proc, 'xcodebuild',
+                               xctest_utils.XCTestLogParser())
     self.deleteSimulator(udid)
     return (out, udid, proc.returncode)
 
@@ -1283,12 +1323,7 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     if self.xctest_path:
       recipe_cmd.append(self.xctest_path)
 
-    proc = subprocess.Popen(
-        recipe_cmd,
-        env=self.get_launch_env(),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-    )
+    proc = self.start_proc(recipe_cmd)
     old_handler = self.set_sigterm_handler(
       lambda _signum, _frame: self.handle_sigterm(proc))
 
@@ -1297,7 +1332,7 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     else:
       parser = gtest_utils.GTestLogParser()
 
-    print_process_output(proc, parser)
+    print_process_output(proc, 'xcodebuild', parser)
 
     proc.wait()
     self.set_sigterm_handler(old_handler)
@@ -1603,15 +1638,23 @@ class DeviceTestRunner(TestRunner):
 
   def uninstall_apps(self):
     """Uninstalls all apps found on the device."""
-    for app in subprocess.check_output(
-      ['idevicefs', '--udid', self.udid, 'ls', '@']).splitlines():
-      subprocess.check_call(
-        ['ideviceinstaller', '--udid', self.udid, '--uninstall', app])
+    for app in self.get_installed_packages():
+      cmd = ['ideviceinstaller', '--udid', self.udid, '--uninstall', app]
+      print_process_output(self.start_proc(cmd))
 
   def install_app(self):
     """Installs the app."""
-    subprocess.check_call(
-      ['ideviceinstaller', '--udid', self.udid, '--install', self.app_path])
+    cmd = ['ideviceinstaller', '--udid', self.udid, '--install', self.app_path]
+    print_process_output(self.start_proc(cmd))
+
+  def get_installed_packages(self):
+    """Gets a list of installed packages on a device.
+
+    Returns:
+      A list of installed packages on a device.
+    """
+    cmd = ['idevicefs', '--udid', self.udid, 'ls', '@']
+    return print_process_output(self.start_proc(cmd))
 
   def set_up(self):
     """Performs setup actions which must occur prior to every test launch."""
@@ -1621,14 +1664,15 @@ class DeviceTestRunner(TestRunner):
 
   def extract_test_data(self):
     """Extracts data emitted by the test."""
-    try:
-      subprocess.check_call([
+    cmd = [
         'idevicefs',
         '--udid', self.udid,
         'pull',
         '@%s/Documents' % self.cfbundleid,
         os.path.join(self.out_dir, 'Documents'),
-      ])
+    ]
+    try:
+      print_process_output(self.start_proc(cmd))
     except subprocess.CalledProcessError:
       raise TestDataExtractionError()
 
@@ -1650,13 +1694,14 @@ class DeviceTestRunner(TestRunner):
     """Retrieves crash reports produced by the test."""
     logs_dir = os.path.join(self.out_dir, 'Logs')
     os.mkdir(logs_dir)
-    try:
-      subprocess.check_call([
+    cmd = [
         'idevicecrashreport',
         '--extract',
         '--udid', self.udid,
         logs_dir,
-      ])
+    ]
+    try:
+      print_process_output(self.start_proc(cmd))
     except subprocess.CalledProcessError:
       # TODO(crbug.com/828951): Raise the exception when the bug is fixed.
       LOGGER.warning('Failed to retrieve crash reports from device.')

@@ -276,6 +276,7 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
     RenderWidget::ShowCallback show_callback,
     CompositorDependencies* compositor_deps,
     PageProperties* page_properties,
+    const ScreenInfo& screen_info,
     PepperPluginInstanceImpl* plugin,
     const blink::WebURL& local_main_frame_url,
     mojo::PendingReceiver<mojom::Widget> widget_receiver) {
@@ -286,7 +287,7 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
       std::move(widget_receiver));
   widget->InitForPepperFullscreen(
       std::move(show_callback), new PepperWidget(widget, local_main_frame_url),
-      page_properties->GetScreenInfo());
+      screen_info);
   return widget;
 }
 

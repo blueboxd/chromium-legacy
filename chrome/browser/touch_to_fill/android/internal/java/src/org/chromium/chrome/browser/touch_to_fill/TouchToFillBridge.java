@@ -4,6 +4,11 @@
 
 package org.chromium.chrome.browser.touch_to_fill;
 
+import android.graphics.Bitmap;
+
+import androidx.annotation.Px;
+
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -68,9 +73,17 @@ class TouchToFillBridge implements TouchToFillComponent.Delegate {
         TouchToFillBridgeJni.get().onCredentialSelected(mNativeView, credential);
     }
 
+    @Override
+    public void fetchFavicon(String origin, @Px int desiredSize, Callback<Bitmap> callback) {
+        assert mNativeView != 0 : "Favicon was requested after the bridge was destroyed!";
+        TouchToFillBridgeJni.get().fetchFavicon(mNativeView, origin, desiredSize, callback);
+    }
+
     @NativeMethods
     interface Natives {
         void onCredentialSelected(long nativeTouchToFillViewImpl, Credential credential);
         void onDismiss(long nativeTouchToFillViewImpl);
+        void fetchFavicon(long nativeTouchToFillViewImpl, String origin, int desiredSizeInPx,
+                Callback<Bitmap> callback);
     }
 }

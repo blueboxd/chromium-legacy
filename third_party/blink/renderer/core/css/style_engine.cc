@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
@@ -1753,6 +1754,7 @@ void StyleEngine::RecalcStyle() {
     ancestor->ClearChildNeedsStyleRecalc();
   }
   style_recalc_root_.Clear();
+  PropagateWritingModeAndDirectionToHTMLRoot();
 }
 
 void StyleEngine::RebuildLayoutTree() {
@@ -1980,6 +1982,12 @@ void StyleEngine::UpdateViewportStyle() {
 bool StyleEngine::NeedsFullStyleUpdate() const {
   return NeedsActiveStyleUpdate() || NeedsWhitespaceReattachment() ||
          IsViewportStyleDirty();
+}
+
+void StyleEngine::PropagateWritingModeAndDirectionToHTMLRoot() {
+  if (HTMLHtmlElement* root_element =
+          DynamicTo<HTMLHtmlElement>(GetDocument().documentElement()))
+    root_element->PropagateWritingModeAndDirectionFromBody();
 }
 
 void StyleEngine::Trace(blink::Visitor* visitor) {

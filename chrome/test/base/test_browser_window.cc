@@ -73,6 +73,10 @@ gfx::NativeWindow TestBrowserWindow::GetNativeWindow() const {
   return NULL;
 }
 
+bool TestBrowserWindow::IsOnCurrentWorkspace() const {
+  return true;
+}
+
 void TestBrowserWindow::SetTopControlsShownRatio(
     content::WebContents* web_contents,
     float ratio) {}

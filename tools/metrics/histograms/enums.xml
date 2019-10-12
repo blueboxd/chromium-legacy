@@ -1241,6 +1241,10 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="Android.DownloadManager.List.Section.Menu.Actions">
+  <obsolete>
+    Deprecated 10/2019. Section menu button was removed during Download Home V2
+    implementation review.
+  </obsolete>
   <int value="0" label="START_SELECTING"/>
   <int value="1" label="SHARE_ALL"/>
   <int value="2" label="DELETE_ALL"/>
@@ -8054,6 +8058,12 @@ histogram as enum -->
   <int value="505" label="Change Wallpaper"/>
 <!-- Please put in checks to ensure Command IDs are stable before adding them to this enum. -->
 
+</enum>
+
+<enum name="ChromeOSUsbEventTiming">
+  <int value="0" label="kLoggedOut"/>
+  <int value="1" label="kLoggedIn"/>
+  <int value="2" label="kLocked"/>
 </enum>
 
 <enum name="ChromeOSUserImageId">
@@ -59371,6 +59381,7 @@ would be helpful to identify which type is being sent.
   <int value="10"
       label="[Deprecated in M79] Sharing notification dismiss button"/>
   <int value="11" label="Sharing error notification try again button"/>
+  <int value="12" label="Settings button for notifications."/>
 </enum>
 
 <enum name="SystemNotificationType">

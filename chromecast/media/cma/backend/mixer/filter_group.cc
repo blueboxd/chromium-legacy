@@ -144,7 +144,7 @@ float FilterGroup::MixAndFilter(
     }
   }
 
-  mixed_->ToInterleaved<::media::FloatSampleTypeTraits<float>>(
+  mixed_->ToInterleaved<::media::FloatSampleTypeTraitsNoClip<float>>(
       input_frames_per_write_, interleaved_.data());
 
   // Mix FilterGroups

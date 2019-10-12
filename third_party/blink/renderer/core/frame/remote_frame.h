@@ -64,8 +64,9 @@ class CORE_EXPORT RemoteFrame final : public Frame {
 
   RemoteFrameClient* Client() const;
 
-  void PointerEventsChanged();
   bool IsIgnoredForHitTest() const;
+
+  void DidChangeVisibleToHitTesting() override;
 
  private:
   // Frame protected overrides:

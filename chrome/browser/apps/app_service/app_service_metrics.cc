@@ -15,21 +15,6 @@
 
 namespace {
 
-// The built-in app's histogram name. This is used for logging so do not change
-// the order of this enum.
-// This is the copy from
-// src/chrome/browser/ui/app_list/internal_app/internal_app_metadata.h
-enum class BuiltInAppName {
-  kKeyboardShortcutViewer = 0,
-  kSettings = 1,
-  kContinueReading = 2,
-  kCamera = 3,
-  kDiscover = 4,
-  kPluginVm = 5,
-  kReleaseNotes = 6,
-  kMaxValue = kReleaseNotes,
-};
-
 // The default Essential app's histogram name. This is used for logging so do
 // not change the order of this enum.
 // https://docs.google.com/document/d/1WJ-BjlVOM87ygIsdDBCyXxdKw3iS5EtNGm1fWiWhfIs
@@ -85,7 +70,7 @@ void RecordDefaultAppLaunch(DefaultAppName default_app_name,
   }
 }
 
-void RecordBuiltInAppLaunch(BuiltInAppName built_in_app_name,
+void RecordBuiltInAppLaunch(apps::BuiltInAppName built_in_app_name,
                             apps::mojom::LaunchSource launch_source) {
   switch (launch_source) {
     case apps::mojom::LaunchSource::kUnknown:

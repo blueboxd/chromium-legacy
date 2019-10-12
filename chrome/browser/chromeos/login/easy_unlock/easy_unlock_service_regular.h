@@ -123,10 +123,6 @@ class EasyUnlockServiceRegular
       override;
   void OnFocusedUserChanged(const AccountId& account_id) override;
 
-  // Refreshes the ChromeOS cryptohome keys if the user has reauthed recently.
-  // Otherwise, hardlock the device.
-  void RefreshCryptohomeKeysIfPossible();
-
   multidevice::RemoteDeviceRefList GetUnlockKeys();
 
   // The timestamp for the most recent time when the lock screen was shown. The

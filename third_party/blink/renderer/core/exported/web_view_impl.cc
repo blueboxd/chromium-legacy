@@ -564,6 +564,13 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
       if (!MainFrameImpl() || !MainFrameImpl()->GetFrameView())
         break;
 
+      if (event.GetType() == WebInputEvent::kGestureLongTap &&
+          !MainFrameImpl()
+               ->GetFrame()
+               ->GetEventHandler()
+               .LongTapShouldInvokeContextMenu())
+        break;
+
       AsView().page->GetContextMenuController().ClearContextMenu();
       {
         ContextMenuAllowedScope scope;

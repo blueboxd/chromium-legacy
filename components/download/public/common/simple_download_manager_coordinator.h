@@ -36,7 +36,8 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
     Observer() = default;
     virtual ~Observer() = default;
 
-    virtual void OnManagerGoingDown() {}
+    virtual void OnManagerGoingDown(
+        SimpleDownloadManagerCoordinator* coordinator) {}
     virtual void OnDownloadsInitialized(bool active_downloads_only) {}
     virtual void OnDownloadCreated(DownloadItem* item) {}
 

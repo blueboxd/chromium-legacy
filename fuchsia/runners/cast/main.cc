@@ -39,6 +39,9 @@ int main(int argc, char** argv) {
       WebContentRunner::BuildCreateContextParams(
           fidl::InterfaceHandle<fuchsia::io::Directory>(), features);
 
+  const char kCastPlayreadyKeySystem[] = "com.chromecast.playready";
+  create_context_params.set_playready_key_system(kCastPlayreadyKeySystem);
+
   // TODO(b/141956135): Use CrKey version provided by the Agent.
   create_context_params.set_user_agent_product("CrKey");
   create_context_params.set_user_agent_version("0");

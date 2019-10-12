@@ -17,14 +17,13 @@ android_library("java") {
   ]
 
   java_files = [
+    "java/src/org/chromium/chrome/browser/touch_to_fill/CredentialProperties.java",
     "java/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillBridge.java",
     "java/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillCoordinator.java",
     "java/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillMediator.java",
     "java/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillProperties.java",
     "java/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillView.java",
     "java/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillViewBinder.java",
-    "java/src/org/chromium/chrome/browser/touch_to_fill/helper/ListViewAdapter.java",
-    "java/src/org/chromium/chrome/browser/touch_to_fill/helper/SimpleListViewMcp.java",
   ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]

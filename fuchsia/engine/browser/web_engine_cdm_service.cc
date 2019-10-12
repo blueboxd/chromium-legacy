@@ -112,6 +112,26 @@ class WidevineHandler : public media::FuchsiaCdmManager::KeySystemHandler {
   }
 };
 
+class PlayreadyHandler : public media::FuchsiaCdmManager::KeySystemHandler {
+ public:
+  PlayreadyHandler() = default;
+  ~PlayreadyHandler() override = default;
+
+  void CreateCdm(
+      fidl::InterfaceRequest<fuchsia::media::drm::ContentDecryptionModule>
+          request) override {
+    auto playready = base::fuchsia::ComponentContextForCurrentProcess()
+                         ->svc()
+                         ->Connect<fuchsia::media::drm::PlayReady>();
+    playready->CreateContentDecryptionModule(std::move(request));
+  }
+
+  fuchsia::media::drm::ProvisionerPtr CreateProvisioner() override {
+    // Provisioning is not required for PlayReady.
+    return fuchsia::media::drm::ProvisionerPtr();
+  }
+};
+
 // Supported key systems:
 std::unique_ptr<media::FuchsiaCdmManager> CreateCdmManager() {
   media::FuchsiaCdmManager::KeySystemHandlerMap handlers;
@@ -119,6 +139,14 @@ std::unique_ptr<media::FuchsiaCdmManager> CreateCdmManager() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableWidevine)) {
     handlers.emplace(kWidevineKeySystem, std::make_unique<WidevineHandler>());
+  }
+
+  std::string playready_key_system =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kPlayreadyKeySystem);
+  if (!playready_key_system.empty()) {
+    handlers.emplace(playready_key_system,
+                     std::make_unique<PlayreadyHandler>());
   }
 
   return std::make_unique<media::FuchsiaCdmManager>(std::move(handlers));

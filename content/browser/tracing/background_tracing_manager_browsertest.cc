@@ -1589,7 +1589,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest, RunStartupTracing) {
 
   EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
       std::move(config), trace_receiver_helper.get_receive_callback(),
-      BackgroundTracingManager::NO_DATA_FILTERING));
+      BackgroundTracingManager::ANONYMIZE_DATA));
 
   tracelog_helper.WaitForStartTracing();
   background_tracing_helper.WaitForTracingEnabled();
@@ -1598,9 +1598,6 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest, RunStartupTracing) {
                   ->GetActiveScenarioForTesting()
                   ->GetConfig()
                   ->requires_anonymized_data());
-  EXPECT_TRUE(base::trace_event::TraceLog::GetInstance()
-                  ->GetCurrentTraceConfig()
-                  .IsArgumentFilterEnabled());
 
   // Since we specified a delay in the scenario, we should still be tracing
   // at this point.

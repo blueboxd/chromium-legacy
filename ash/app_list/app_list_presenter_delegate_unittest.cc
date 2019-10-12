@@ -3075,8 +3075,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, HomeButtonEndSplitViewMode) {
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
 

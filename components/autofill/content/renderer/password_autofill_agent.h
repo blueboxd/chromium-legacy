@@ -179,6 +179,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // no check request were sent from this frame load.
   void MaybeCheckSafeBrowsingReputation(const blink::WebInputElement& element);
 
+  // Returns whether the soft keyboard should be suppressed.
+  bool ShouldSuppressKeyboard();
+
   // Asks the agent to show the touch to fill UI for |control_element|. Returns
   // whether the agent was able to do so.
   bool TryToShowTouchToFill(
@@ -245,6 +248,16 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   enum ProvisionallySaveRestriction {
     RESTRICTION_NONE,
     RESTRICTION_NON_EMPTY_PASSWORD
+  };
+
+  // Enumeration representing possible Touch To Fill states. This is used to
+  // make sure that Touch To Fill will only be shown in response to the first
+  // password form focus during a frame's life time and to suppress the soft
+  // keyboard when Touch To Fill is shown.
+  enum class TouchToFillState {
+    kShouldShow,
+    kIsShowing,
+    kWasShown,
   };
 
   struct PasswordInfo {
@@ -537,10 +550,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // Contains renderer id of the form of the last updated input element.
   uint32_t last_updated_form_renderer_id_ = FormData::kNotSetFormRendererId;
 
-  // Flag that determines whether we instruct the browser to show the Touch To
-  // Fill sheet if applicable. This is set to false when TouchToFillDismissed()
-  // is invoked and gets reset during CleanupOnDocumentShutdown.
-  bool should_show_touch_to_fill_ = true;
+  // Current state of Touch To Fill. This is reset during
+  // CleanupOnDocumentShutdown.
+  TouchToFillState touch_to_fill_state_ = TouchToFillState::kShouldShow;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };

@@ -265,9 +265,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestPermissionAPI) {
   EXPECT_EQ("denied", QueryPermissionStatus(browser()));
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationsTest, TestPermissionEmbargo) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  EnablePermissionsEmbargo(&scoped_feature_list);
+IN_PROC_BROWSER_TEST_F(NotificationsTestWithPermissionsEmbargo,
+                       TestPermissionEmbargo) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());

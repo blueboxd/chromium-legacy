@@ -1,212 +1,196 @@
 {
   "win": {
-    "css_value_type_shadow": {
-      "avg": 51.69078,
-      "ci_095": 8.021214076
+    "balls_css_transition_2_properties": {
+      "avg": 107.983,
+      "ci_095": 100
     },
-    "yahoo_sports_2018": {
-      "avg": 17.91754,
-      "ci_095": 1.7831799
+    "many_planets_deep": {
+      "avg": 25.015,
+        "ci_095": 100
     },
-    "mix_10k": {
-      "avg": 29.339723,
-      "ci_095": 3.462980077
+    "web_animation_value_type_transform_complex": {
+      "avg": 42.981,
+        "ci_095": 100
     },
-    "microsoft_fish_ie_tank": {
-      "avg": 17.15968,
-      "ci_095": 2.448468729
+    "nvidia_vertex_buffer_object": {
+      "avg": 25.166,
+        "ci_095": 100
     },
-    "css_animations_staggered_infinite_iterations": {
-      "avg": 17.53428,
-      "ci_095": 1.15466265
+    "runway": {
+      "avg": 74.211,
+        "ci_095": 100
     },
-    "pinterest_2018": {
-      "avg": 17.17876,
-      "ci_095": 1.990684136
+    "css_animations_simultaneous_inline_style": {
+      "avg": 25.100,
+        "ci_095": 100
     },
-    "background_color_animation_with_gradient": {
-      "avg": 18.91196,
-      "ci_095": 5.3955209
+    "aquarium_20k": {
+      "avg": 113.156,
+        "ci_095": 100
     },
-    "motion_mark_canvas_fill_shapes": {
-      "avg": 35.30084,
-      "ci_095": 3.092656437
+    "canvas_to_blob": {
+      "avg": 39.239,
+        "ci_095": 100
     },
-    "particles": {
-      "avg": 16.683,
-      "ci_095": 0.4367177926
+    "cc_poster_circle": {
+      "avg": 25.111,
+        "ci_095": 100
     },
-    "second_batch_js_light": {
-      "avg": 19.81702,
-      "ci_095": 10.392606
+    "js_poster_circle": {
+      "avg": 25.016,
+        "ci_095": 100
     },
-    "microsoft_video_city": {
-      "avg": 17.49898,
-      "ci_095": 1.506935193
-    },
-    "infinite_scroll_root_fixed_n_layers_99": {
-      "avg": 16.80068,
-      "ci_095": 0.9999470106
-    },
-    "css_value_type_length_complex": {
-      "avg": 36.60576,
-      "ci_095": 3.783401913
-    },
-    "css_opacity_plus_n_layers_99": {
-      "avg": 16.681,
-      "ci_095": 0.49490275
-    },
-    "canvas_90000_pixels_per_second": {
-      "avg": 16.68387,
-      "ci_095": 2.985124255
-    },
-    "google_web_search_2018": {
-      "avg": 16.95106,
-      "ci_095": 1.387013433
+    "web_animations_staggered_triggering_page": {
+      "avg": 25.033,
+        "ci_095": 100
     },
     "aquarium": {
-      "avg": 17.68626,
-      "ci_095": 1.080606843
+      "avg": 25.014,
+        "ci_095": 100
+    },
+    "css_value_type_shadow": {
+      "avg": 31.638,
+        "ci_095": 100
+    },
+    "filter_terrain_svg": {
+      "avg": 41.496,
+        "ci_095": 100
+    },
+    "css_transitions_inline_style": {
+      "avg": 25.312,
+        "ci_095": 100
     }
   },
   "mac": {
-    "yuv_decoding": {
-      "avg": 92.465,
-      "ci_095": 36.599
+    "mix_blend_mode_animation_screen": {
+      "avg": 148.760,
+      "ci_095": 100
     },
-    "canvas_animation_no_clear": {
-      "avg": 18.323,
-      "ci_095": 1.239
+    "twitch_2018": {
+      "avg": 28.110,
+      "ci_095": 100
     },
-    "compositor_heavy_animation": {
-      "avg": 36.002,
-      "ci_095": 3.635
+    "balls_javascript_canvas": {
+      "avg": 40.563,
+      "ci_095": 100
     },
-    "web_animation_value_type_length_3d": {
-      "avg": 40.999,
-      "ci_095": 1.897
+    "transform_transitions_js_block": {
+      "avg": 25.090,
+      "ci_095": 100
     },
-    "stroke_shapes": {
-      "avg": 60.378,
-      "ci_095": 2.860
-    },
-    "wordpress_2018": {
-      "avg": 16.980,
-      "ci_095": 0.477
-    },
-    "web_animation_value_type_path": {
-      "avg": 33.060,
-      "ci_095": 2.225
-    },
-    "web_animations_many_keyframes": {
-      "avg": 20.543,
-      "ci_095": 1.602
-    },
-    "twitter_pinch_2018": {
-      "avg": 20.395,
-      "ci_095": 5.386
-    },
-    "web_animation_value_type_length_complex": {
-      "avg": 39.018,
-      "ci_095": 2.856
-    },
-    "smash_cat": {
-      "avg": 16.748,
-      "ci_095": 0.772
-    },
-    "cc_poster_circle": {
-      "avg": 16.697,
-      "ci_095": 0.166
-    },
-    "infinite_scroll_root_fixed_n_layers_99": {
-      "avg": 16.760,
-      "ci_095": 1.100
-    },
-    "amazon_pinch_2018": {
-      "avg": 21.250,
-      "ci_095": 7.103
-    },
-    "youtube_pinch_2018": {
-      "avg": 21.467,
-      "ci_095": 7.431
-    },
-    "earth": {
-      "avg": 16.687,
-      "ci_095": 0.284
-    },
-    "css_value_type_shadow": {
-      "avg": 76.775,
-      "ci_095": 16.809
-    },
-    "js_opacity_plus_n_layers_99": {
-      "avg": 16.725,
-      "ci_095": 0.200
+    "web_animations_staggered_infinite_iterations": {
+      "avg": 25.006,
+      "ci_095": 100
     },
     "fill_shapes": {
-      "avg": 43.377,
-      "ci_095": 3.220
+      "avg": 41.667,
+      "ci_095": 100
     },
-    "raf": {
-      "avg": 16.692,
-      "ci_095": 0.218
+    "css_value_type_shadow": {
+      "avg": 69.304,
+      "ci_095": 100
     },
-    "canvas_lines": {
-      "avg": 25.519,
-      "ci_095": 0.866
+    "animometer_webgl_attrib_arrays": {
+      "avg": 27.124,
+      "ci_095": 100
     },
-    "megi_dish": {
-      "avg": 114.515,
-      "ci_095": 41.168
+    "web_animation_value_type_transform_simple": {
+      "avg": 55.002,
+      "ci_095": 100
+    },
+    "canvas_05000_pixels_per_second": {
+      "avg": 24.997,
+      "ci_095": 100
+    },
+    "bouncing_clipped_rectangles": {
+      "avg": 592.146,
+      "ci_095": 100
+    },
+    "ie_chalkboard": {
+      "avg": 68.514,
+      "ci_095": 100
+    },
+    "new_tilings": {
+      "avg": 31.733,
+      "ci_095": 100
+    },
+    "chip_tune": {
+      "avg": 25.006,
+      "ci_095": 100
+    },
+    "extra_large_texture_uploads": {
+      "avg": 77.757,
+      "ci_095": 100
+    },
+    "css_value_type_filter": {
+      "avg": 92.894,
+      "ci_095": 100
     }
   },
   "android": {
-    "motionmark_html_css_bouncing_blend_circles_25": {
-      "avg": 48.35483,
-      "ci_095": 3.21386
+    "mix_blend_mode_animation_screen": {
+      "avg": 400.414,
+      "ci_095": 100
     },
-    "yahoo_news_desktop_gpu_raster_2018": {
-      "avg": 66.0,
-      "ci_095": 7.0
+    "twitch_2018": {
+      "avg": 34.498,
+      "ci_095": 100
     },
-    "microsoft_performance": {
-      "avg": 30.8767,
-      "ci_095": 3.40595
+    "balls_javascript_canvas": {
+      "avg": 276.974,
+      "ci_095": 100
     },
-    "geo_apis": {
-      "avg": 17,
-      "ci_095": 0.5
+    "transform_transitions_js_block": {
+      "avg": 25.179,
+      "ci_095": 100
     },
-    "kevs_3d": {
-      "avg": 46.79165,
-      "ci_095": 40.90851
+    "web_animations_staggered_infinite_iterations": {
+      "avg": 48.752,
+      "ci_095": 100
     },
-    "ie_pirate_mark": {
-      "avg": 27.96598,
-      "ci_095": 6.35233
+    "text_10000_pixels_per_second": {
+      "avg": 25.470,
+      "ci_095": 100
     },
-    "linkedin_mobile_pinch": {
-      "avg": 23.64056,
-      "ci_095": 10.45832
+    "motion_mark_canvas_fill_shapes": {
+      "avg": 243.536,
+      "ci_095": 100
     },
-    "text_constant_full_page_raster_10000_pixels_per_second": {
-      "avg": 16.68138,
-      "ci_095": 0.52503
+    "css_value_type_shadow": {
+      "avg": 591.356,
+      "ci_095": 100
     },
-    "canvas_10000_pixels_per_second": {
-      "avg": 16.76975,
-      "ci_095": 0.68845
+    "animometer_webgl_attrib_arrays": {
+      "avg": 337.719,
+      "ci_095": 300
     },
-    "canvas_20000_pixels_per_second": {
-      "avg": 16.77075,
-      "ci_095": 0.63189
+    "canvas_05000_pixels_per_second": {
+      "avg": 25.322,
+      "ci_095": 100
     },
-    "canvas_40000_pixels_per_second": {
-      "avg": 16.86242,
-      "ci_095": 0.73009
+    "bouncing_clipped_rectangles": {
+      "avg": 481.911,
+      "ci_095": 100
     },
-    "canvas_75000_pixels_per_second": {
-      "avg": 16.98984,
-      "ci_095": 0.88247
+    "ie_chalkboard": {
+      "avg": 217.131,
+      "ci_095": 100
+    },
+    "new_tilings": {
+      "avg": 25.052,
+      "ci_095": 100
+    },
+    "extra_large_texture_uploads": {
+      "avg": 452.959,
+      "ci_095": 100
+    },
+    "web_animation_value_type_transform_simple": {
+      "avg": 331.928,
+      "ci_095": 100
+    },
+    "css_value_type_filter": {
+      "avg": 909.449,
+      "ci_095": 100
     }
   }
 }

@@ -1488,7 +1488,8 @@ TEST_P(ArcAppModelBuilderTest, AppLifeCycleEventsOnPackageListRefresh) {
 }
 
 // Validate that arc model contains expected elements on restart.
-TEST_P(ArcAppModelBuilderRecreate, AppModelRestart) {
+// Flaky. https://crbug.com/1013813
+TEST_P(ArcAppModelBuilderRecreate, DISABLED_AppModelRestart) {
   // No apps on initial start.
   ValidateHaveApps(std::vector<arc::mojom::AppInfo>());
 
@@ -1515,7 +1516,9 @@ TEST_P(ArcAppModelBuilderRecreate, AppModelRestart) {
 
 // Verifies that no OnAppRegistered/OnAppRemoved is called in case ARC++ started
 // next time disabled.
-TEST_P(ArcAppModelBuilderRecreate, AppsNotReportedNextSessionDisabled) {
+// Flaky. https://crbug.com/1013813
+TEST_P(ArcAppModelBuilderRecreate,
+       DISABLED_AppsNotReportedNextSessionDisabled) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_TRUE(prefs);
 

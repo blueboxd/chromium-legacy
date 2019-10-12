@@ -22,6 +22,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -30,6 +31,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/media/webrtc/media_authorization_wrapper_mac.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/media_switches.h"
@@ -167,6 +169,10 @@ void RequestSystemMediaCapturePermission(NSString* media_type,
 // See https://crbug.com/993692#c3.
 bool IsScreenCaptureAllowed() {
   if (@available(macOS 10.15, *)) {
+    if (!base::FeatureList::IsEnabled(
+            features::kMacSystemScreenCapturePermissionCheck)) {
+      return true;
+    }
     base::ScopedCFTypeRef<CFArrayRef> window_list(CGWindowListCopyWindowInfo(
         kCGWindowListOptionOnScreenOnly, kCGNullWindowID));
     NSUInteger num_windows = CFArrayGetCount(window_list);

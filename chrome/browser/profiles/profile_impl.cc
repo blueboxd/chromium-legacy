@@ -766,7 +766,7 @@ void ProfileImpl::DoFinalInit() {
   }
 
   // Ensure that the SharingService is initialized now that io_data_ is
-  // initialized.
+  // initialized. https://crbug.com/171406
   SharingServiceFactory::GetForBrowserContext(this);
 
   content::NotificationService::current()->Notify(

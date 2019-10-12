@@ -140,10 +140,10 @@ void ScrollableAreaPainter::PaintOverflowControls(
       box.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  // Overlay scrollbars are painted in the dedicated paint phase, and normal
-  // scrollbars are painted in the background paint phase.
-  if (GetScrollableArea().HasOverlayScrollbars()) {
-    if (paint_info.phase != PaintPhase::kOverlayScrollbars)
+  // Overlay overflow controls are painted in the dedicated paint phase, and
+  // normal overflow controls are painted in the background paint phase.
+  if (GetScrollableArea().HasOverlayOverflowControls()) {
+    if (paint_info.phase != PaintPhase::kOverlayOverflowControls)
       return;
   } else if (!ShouldPaintSelfBlockBackground(paint_info.phase)) {
     return;

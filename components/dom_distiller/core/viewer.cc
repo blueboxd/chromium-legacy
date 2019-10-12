@@ -270,10 +270,7 @@ std::unique_ptr<ViewerHandle> CreateViewRequest(
   }
 
   if (has_valid_entry_id) {
-    return dom_distiller_service->ViewEntry(
-        view_request_delegate,
-        dom_distiller_service->CreateDefaultDistillerPage(render_view_size),
-        entry_id);
+    return nullptr;
   }
   if (has_valid_url) {
     return dom_distiller_service->ViewUrl(

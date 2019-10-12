@@ -54,6 +54,9 @@ const char SafeBrowsingPrivateEventRouter::kKeyClickedThrough[] =
 const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRules[] =
     "triggeredRules";
 const char SafeBrowsingPrivateEventRouter::kKeyThreatType[] = "threatType";
+const char SafeBrowsingPrivateEventRouter::kKeyContentType[] = "contentType";
+const char SafeBrowsingPrivateEventRouter::kKeyContentSize[] = "contentSize";
+const char SafeBrowsingPrivateEventRouter::kKeyTrigger[] = "trigger";
 
 const char SafeBrowsingPrivateEventRouter::kKeyPasswordReuseEvent[] =
     "passwordReuseEvent";
@@ -67,6 +70,12 @@ const char SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent[] =
     "sensitiveDataEvent";
 const char SafeBrowsingPrivateEventRouter::kKeyLargeUnscannedFileEvent[] =
     "largeUnscannedFileEvent";
+
+const char SafeBrowsingPrivateEventRouter::kTriggerFileDownload[] =
+    "FILE_DOWNLOAD";
+const char SafeBrowsingPrivateEventRouter::kTriggerFileUpload[] = "FILE_UPLOAD";
+const char SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload[] =
+    "WEB_CONTENT_UPLOAD";
 
 SafeBrowsingPrivateEventRouter::SafeBrowsingPrivateEventRouter(
     content::BrowserContext* context)
@@ -148,7 +157,9 @@ void SafeBrowsingPrivateEventRouter::OnPolicySpecifiedPasswordChanged(
 void SafeBrowsingPrivateEventRouter::OnDangerousDownloadOpened(
     const GURL& url,
     const std::string& file_name,
-    const std::string& download_digest_sha256) {
+    const std::string& download_digest_sha256,
+    const std::string& mime_type,
+    const int64_t content_size) {
   api::safe_browsing_private::DangerousDownloadInfo params;
   params.url = url.spec();
   params.file_name = file_name;
@@ -174,6 +185,12 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadOpened(
     event.SetStringKey(kKeyFileName, params.file_name);
     event.SetStringKey(kKeyDownloadDigestSha256, params.download_digest_sha256);
     event.SetStringKey(kKeyProfileUserName, params.user_name);
+    event.SetStringKey(kKeyContentType, mime_type);
+    // |content_size| can be set to -1 to indicate an unknown size, in which
+    // case the field is not set.
+    if (content_size >= 0)
+      event.SetIntKey(kKeyContentSize, content_size);
+    event.SetStringKey(kKeyTrigger, kTriggerFileDownload);
     ReportRealtimeEvent(kKeyDangerousDownloadEvent, std::move(event));
   }
 }
@@ -256,7 +273,10 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDeepScanningResult(
     const GURL& url,
     const std::string& file_name,
     const std::string& download_digest_sha256,
-    const std::string& threat_type) {
+    const std::string& threat_type,
+    const std::string& mime_type,
+    const std::string& trigger,
+    const int64_t content_size) {
   if (IsRealtimeReportingEnabled()) {
     // Create a real-time event dictionary from the arguments and report it.
     base::Value event(base::Value::Type::DICTIONARY);
@@ -265,6 +285,12 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDeepScanningResult(
     event.SetStringKey(kKeyDownloadDigestSha256, download_digest_sha256);
     event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
     event.SetStringKey(kKeyThreatType, threat_type);
+    event.SetStringKey(kKeyContentType, mime_type);
+    // |content_size| can be set to -1 to indicate an unknown size, in which
+    // case the field is not set.
+    if (content_size >= 0)
+      event.SetIntKey(kKeyContentSize, content_size);
+    event.SetStringKey(kKeyTrigger, trigger);
     ReportRealtimeEvent(kKeyDangerousDownloadEvent, std::move(event));
   }
 }
@@ -273,7 +299,10 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
     const safe_browsing::DlpDeepScanningVerdict& verdict,
     const GURL& url,
     const std::string& file_name,
-    const std::string& download_digest_sha256) {
+    const std::string& download_digest_sha256,
+    const std::string& mime_type,
+    const std::string& trigger,
+    const int64_t content_size) {
   if (IsRealtimeReportingEnabled()) {
     // Create a real-time event dictionary from the arguments and report it.
     base::Value event(base::Value::Type::DICTIONARY);
@@ -281,6 +310,12 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
     event.SetStringKey(kKeyFileName, file_name);
     event.SetStringKey(kKeyDownloadDigestSha256, download_digest_sha256);
     event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
+    event.SetStringKey(kKeyContentType, mime_type);
+    // |content_size| can be set to -1 to indicate an unknown size, in which
+    // case the field is not set.
+    if (content_size >= 0)
+      event.SetIntKey(kKeyContentSize, content_size);
+    event.SetStringKey(kKeyTrigger, trigger);
 
     base::ListValue triggered_rules;
     for (auto rule : verdict.triggered_rules()) {
@@ -294,7 +329,10 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
 void SafeBrowsingPrivateEventRouter::OnLargeUnscannedFileEvent(
     const GURL& url,
     const std::string& file_name,
-    const std::string& download_digest_sha256) {
+    const std::string& download_digest_sha256,
+    const std::string& mime_type,
+    const std::string& trigger,
+    const int64_t content_size) {
   if (IsRealtimeReportingEnabled()) {
     // Create a real-time event dictionary from the arguments and report it.
     base::Value event(base::Value::Type::DICTIONARY);
@@ -302,6 +340,12 @@ void SafeBrowsingPrivateEventRouter::OnLargeUnscannedFileEvent(
     event.SetStringKey(kKeyFileName, file_name);
     event.SetStringKey(kKeyDownloadDigestSha256, download_digest_sha256);
     event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
+    event.SetStringKey(kKeyContentType, mime_type);
+    // |content_size| can be set to -1 to indicate an unknown size, in which
+    // case the field is not set.
+    if (content_size >= 0)
+      event.SetIntKey(kKeyContentSize, content_size);
+    event.SetStringKey(kKeyTrigger, trigger);
     ReportRealtimeEvent(kKeyLargeUnscannedFileEvent, std::move(event));
   }
 }
@@ -310,7 +354,9 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadWarning(
     const GURL& url,
     const std::string& file_name,
     const std::string& download_digest_sha256,
-    const std::string& threat_type) {
+    const std::string& threat_type,
+    const std::string& mime_type,
+    const int64_t content_size) {
   if (!IsRealtimeReportingEnabled())
     return;
 
@@ -322,6 +368,12 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadWarning(
   event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
   event.SetStringKey(kKeyThreatType, threat_type);
   event.SetBoolKey(kKeyClickedThrough, false);
+  event.SetStringKey(kKeyContentType, mime_type);
+  // |content_size| can be set to -1 to indicate an unknown size, in which case
+  // the field is not set.
+  if (content_size >= 0)
+    event.SetIntKey(kKeyContentSize, content_size);
+  event.SetStringKey(kKeyTrigger, kTriggerFileDownload);
   ReportRealtimeEvent(kKeyDangerousDownloadEvent, std::move(event));
 }
 
@@ -329,7 +381,9 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadWarningBypassed(
     const GURL& url,
     const std::string& file_name,
     const std::string& download_digest_sha256,
-    const std::string& threat_type) {
+    const std::string& threat_type,
+    const std::string& mime_type,
+    const int64_t content_size) {
   if (!IsRealtimeReportingEnabled())
     return;
 
@@ -341,6 +395,12 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadWarningBypassed(
   event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
   event.SetStringKey(kKeyThreatType, threat_type);
   event.SetBoolKey(kKeyClickedThrough, true);
+  event.SetStringKey(kKeyContentType, mime_type);
+  // |content_size| can be set to -1 to indicate an unknown size, in which case
+  // the field is not set.
+  if (content_size >= 0)
+    event.SetIntKey(kKeyContentSize, content_size);
+  event.SetStringKey(kKeyTrigger, kTriggerFileDownload);
   ReportRealtimeEvent(kKeyDangerousDownloadEvent, std::move(event));
 }
 

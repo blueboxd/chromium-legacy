@@ -580,6 +580,19 @@ class NSSInitSingleton {
     }
   }
 
+  void SetSystemKeySlotWithoutInitializingTPMForTesting(ScopedPK11Slot slot) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
+    // Ensure that a previous value of test_system_slot_ is not overwritten.
+    // Unsetting, i.e. setting a nullptr, however is allowed.
+    DCHECK(!slot || !test_system_slot_);
+    if (tpm_slot_ && tpm_slot_ == test_system_slot_) {
+      // Unset |tpm_slot_| if it was initialized from |test_system_slot_|.
+      tpm_slot_.reset();
+    }
+    test_system_slot_ = std::move(slot);
+  }
+
   void SetPrivateSoftwareSlotForChromeOSUserForTesting(ScopedPK11Slot slot) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -632,11 +645,7 @@ class NSSInitSingleton {
  private:
   friend struct base::LazyInstanceTraitsBase<NSSInitSingleton>;
 
-  NSSInitSingleton()
-      : tpm_token_enabled_for_nss_(false),
-        initializing_tpm_token_(false),
-        chaps_module_(nullptr),
-        root_(nullptr) {
+  NSSInitSingleton() {
     // Initializing NSS causes us to do blocking IO.
     // Temporarily allow it until we fix
     //   http://code.google.com/p/chromium/issues/detail?id=59847
@@ -755,14 +764,14 @@ class NSSInitSingleton {
     return module;
   }
 
-  bool tpm_token_enabled_for_nss_;
-  bool initializing_tpm_token_;
-  typedef std::vector<base::OnceClosure> TPMReadyCallbackList;
-  TPMReadyCallbackList tpm_ready_callback_list_;
-  SECMODModule* chaps_module_;
-  crypto::ScopedPK11Slot tpm_slot_;
-  SECMODModule* root_;
+  SECMODModule* root_ = nullptr;
 #if defined(OS_CHROMEOS)
+  bool tpm_token_enabled_for_nss_ = false;
+  bool initializing_tpm_token_ = false;
+  using TPMReadyCallbackList = std::vector<base::OnceClosure>;
+  TPMReadyCallbackList tpm_ready_callback_list_;
+  SECMODModule* chaps_module_ = nullptr;
+  crypto::ScopedPK11Slot tpm_slot_;
   std::map<std::string, std::unique_ptr<ChromeOSUserData>> chromeos_user_map_;
   ScopedPK11Slot test_system_slot_;
   ScopedPK11Slot prepared_test_private_slot_;
@@ -821,6 +830,11 @@ ScopedPK11Slot GetSystemNSSKeySlot(
 
 void SetSystemKeySlotForTesting(ScopedPK11Slot slot) {
   g_nss_singleton.Get().SetSystemKeySlotForTesting(std::move(slot));
+}
+
+void SetSystemKeySlotWithoutInitializingTPMForTesting(ScopedPK11Slot slot) {
+  g_nss_singleton.Get().SetSystemKeySlotWithoutInitializingTPMForTesting(
+      std::move(slot));
 }
 
 void EnableTPMTokenForNSS() {

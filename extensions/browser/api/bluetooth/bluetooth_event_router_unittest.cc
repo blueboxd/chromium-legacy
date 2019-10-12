@@ -101,11 +101,12 @@ TEST_F(BluetoothEventRouterTest, UnloadExtension) {
 // This test check that calling SetDiscoveryFilter before StartDiscoverySession
 // for given extension will start session with proper filter.
 TEST_F(BluetoothEventRouterTest, SetDiscoveryFilter) {
-  std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter(
-      new device::BluetoothDiscoveryFilter(device::BLUETOOTH_TRANSPORT_LE));
-
+  auto discovery_filter = std::make_unique<device::BluetoothDiscoveryFilter>(
+      device::BLUETOOTH_TRANSPORT_LE);
   discovery_filter->SetRSSI(-80);
-  discovery_filter->AddUUID(device::BluetoothUUID("1000"));
+  device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter;
+  device_filter.uuids.insert(device::BluetoothUUID("1000"));
+  discovery_filter->AddDeviceFilter(std::move(device_filter));
 
   device::BluetoothDiscoveryFilter df(device::BLUETOOTH_TRANSPORT_LE);
   df.CopyFrom(*discovery_filter);

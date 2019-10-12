@@ -226,12 +226,12 @@ TEST_F(OverviewGridTest, DISABLED_SnappedWindow) {
   wm::ActivateWindow(window1.get());
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  Shell::Get()->split_view_controller()->SnapWindow(window1.get(),
-                                                    SplitViewController::LEFT);
+  SplitViewController::Get()->SnapWindow(window1.get(),
+                                         SplitViewController::LEFT);
 
   // Snap |window2| and check that |window3| is maximized.
-  Shell::Get()->split_view_controller()->SnapWindow(window2.get(),
-                                                    SplitViewController::RIGHT);
+  SplitViewController::Get()->SnapWindow(window2.get(),
+                                         SplitViewController::RIGHT);
   EXPECT_TRUE(WindowState::Get(window3.get())->IsMaximized());
 
   // Tests that |window3| is not animated even though its bounds are larger than

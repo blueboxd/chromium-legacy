@@ -259,11 +259,6 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
   }
 
   // InProcessBrowserTest:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kWebUITabStrip);
-    InProcessBrowserTest::SetUp();
-  }
-
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
 
@@ -451,8 +446,6 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
     test_controller_ = controller.get();
     return std::move(controller);
   }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   TestController* test_controller_ = nullptr;  // Not owned.
 
@@ -1208,5 +1201,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestToggleChromeVox) {
   ScrollAndExpectTopChromeToBe(ScrollDirection::kDown,
                                TopChromeShownState::kFullyHidden);
 }
+
+// TODO(crbug.com/989131): Add test coverage that covers using WebUITabStrip.
 
 }  // namespace

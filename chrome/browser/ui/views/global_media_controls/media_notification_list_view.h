@@ -25,6 +25,11 @@ class MediaNotificationListView : public views::ScrollView {
   void HideNotification(const std::string& id);
   bool empty() { return notifications_.empty(); }
 
+  const std::map<const std::string, MediaNotificationContainerImpl*>&
+  notifications_for_testing() const {
+    return notifications_;
+  }
+
  private:
   std::map<const std::string, MediaNotificationContainerImpl*> notifications_;
 

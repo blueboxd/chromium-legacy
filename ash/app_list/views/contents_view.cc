@@ -550,6 +550,8 @@ gfx::Size ContentsView::GetSearchBoxSize(ash::AppListState state) const {
   if (ShouldShowDenseLayout(GetContentsBounds().height(), target_view_state_)) {
     preferred_size.set_height(
         AppListConfig::instance().search_box_height_for_dense_layout());
+  } else {
+    preferred_size.set_height(AppListConfig::instance().search_box_height());
   }
 
   return AdjustSearchBoxSizeToFitMargins(preferred_size);

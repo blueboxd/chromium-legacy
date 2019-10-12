@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -16,7 +17,7 @@ namespace ash {
 
 // This class is responsible for creating, painting, and positioning the back
 // gesture affordance.
-class BackGestureAffordance : public gfx::AnimationDelegate {
+class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
  public:
   explicit BackGestureAffordance(const gfx::Point& location);
   ~BackGestureAffordance() override;
@@ -32,6 +33,10 @@ class BackGestureAffordance : public gfx::AnimationDelegate {
 
   // Completes the affordance and fading it out.
   void Complete();
+
+  gfx::Rect affordance_widget_bounds_for_testing() {
+    return affordance_widget_->GetWindowBoundsInScreen();
+  }
 
  private:
   enum class State { DRAGGING, ABORTING, COMPLETING };

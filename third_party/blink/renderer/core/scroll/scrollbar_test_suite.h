@@ -28,7 +28,9 @@ class MockPlatformChromeClient : public EmptyChromeClient {
 
   void SetIsPopup(bool is_popup) { is_popup_ = is_popup; }
 
-  float WindowToViewportScalar(const float) const override { return 0; }
+  float WindowToViewportScalar(LocalFrame*, const float) const override {
+    return 0;
+  }
 
  private:
   bool is_popup_;

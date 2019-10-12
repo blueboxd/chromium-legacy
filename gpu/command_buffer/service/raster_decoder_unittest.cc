@@ -32,8 +32,6 @@ using ::testing::_;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 
-using namespace gpu::raster::cmds;
-
 namespace gpu {
 namespace raster {
 
@@ -61,9 +59,9 @@ INSTANTIATE_TEST_SUITE_P(Service,
 const GLsync kGlSync = reinterpret_cast<GLsync>(0xdeadbeef);
 
 TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
-  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
+  GenHelper<cmds::GenQueriesEXTImmediate>(kNewClientId);
 
-  BeginQueryEXT begin_cmd;
+  cmds::BeginQueryEXT begin_cmd;
   begin_cmd.Init(GL_COMMANDS_COMPLETED_CHROMIUM, kNewClientId,
                  shared_memory_id_, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
@@ -86,7 +84,7 @@ TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
       .RetiresOnSaturation();
 #endif
 
-  EndQueryEXT end_cmd;
+  cmds::EndQueryEXT end_cmd;
   end_cmd.Init(GL_COMMANDS_COMPLETED_CHROMIUM, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -127,9 +125,9 @@ TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
 }
 
 TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
-  BeginQueryEXT begin_cmd;
+  cmds::BeginQueryEXT begin_cmd;
 
-  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
+  GenHelper<cmds::GenQueriesEXTImmediate>(kNewClientId);
 
   // Test valid parameters work.
   begin_cmd.Init(GL_COMMANDS_ISSUED_CHROMIUM, kNewClientId, shared_memory_id_,
@@ -145,7 +143,7 @@ TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
   EXPECT_TRUE(query->IsActive());
 
   // Test end succeeds.
-  EndQueryEXT end_cmd;
+  cmds::EndQueryEXT end_cmd;
   end_cmd.Init(GL_COMMANDS_ISSUED_CHROMIUM, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -154,9 +152,9 @@ TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
 }
 
 TEST_P(RasterDecoderTest, QueryCounterEXTCommandsIssuedTimestampCHROMIUM) {
-  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
+  GenHelper<cmds::GenQueriesEXTImmediate>(kNewClientId);
 
-  QueryCounterEXT query_counter_cmd;
+  cmds::QueryCounterEXT query_counter_cmd;
   query_counter_cmd.Init(kNewClientId, GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM,
                          shared_memory_id_, kSharedMemoryOffset, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(query_counter_cmd));
@@ -188,7 +186,7 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DSizeMismatch) {
   {
     // This will initialize the bottom right corner of destination.
     SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
-    auto& cmd = *GetImmediateAs<CopySubTextureINTERNALImmediate>();
+    auto& cmd = *GetImmediateAs<cmds::CopySubTextureINTERNALImmediate>();
     cmd.Init(1, 1, 0, 0, 1, 1, mailboxes);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -198,7 +196,7 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DSizeMismatch) {
 
   {
     // Dest rect outside of dest bounds
-    auto& cmd = *GetImmediateAs<CopySubTextureINTERNALImmediate>();
+    auto& cmd = *GetImmediateAs<cmds::CopySubTextureINTERNALImmediate>();
     cmd.Init(2, 2, 0, 0, 1, 1, mailboxes);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
     EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
@@ -208,7 +206,7 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DSizeMismatch) {
 
   {
     // Source rect outside of source bounds
-    auto& cmd = *GetImmediateAs<CopySubTextureINTERNALImmediate>();
+    auto& cmd = *GetImmediateAs<cmds::CopySubTextureINTERNALImmediate>();
     cmd.Init(0, 0, 0, 0, 2, 2, mailboxes);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
     EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
@@ -235,7 +233,7 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
                                   GL_TEXTURE_2D, GL_TEXTURE_2D, 0, GL_RGBA,
                                   GL_UNSIGNED_BYTE, 0, 0, 2, 2, 0);
     SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
-    auto& cmd = *GetImmediateAs<CopySubTextureINTERNALImmediate>();
+    auto& cmd = *GetImmediateAs<cmds::CopySubTextureINTERNALImmediate>();
     cmd.Init(0, 0, 0, 0, 2, 1, mailboxes);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
   }
@@ -248,7 +246,7 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
                                   GL_TEXTURE_2D, GL_TEXTURE_2D, 0, GL_RGBA,
                                   GL_UNSIGNED_BYTE, 0, 1, 2, 1, 0);
     SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
-    auto& cmd = *GetImmediateAs<CopySubTextureINTERNALImmediate>();
+    auto& cmd = *GetImmediateAs<cmds::CopySubTextureINTERNALImmediate>();
     cmd.Init(1, 1, 0, 0, 1, 1, mailboxes);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
   }
@@ -270,7 +268,7 @@ TEST_P(RasterDecoderManualInitTest, CopyTexSubImage2DValidateColorFormat) {
       CreateFakeTexture(kNewServiceId, viz::ResourceFormat::RED_8,
                         /*width=*/2, /*height=*/2, /*cleared=*/true);
 
-  auto& copy_cmd = *GetImmediateAs<CopySubTextureINTERNALImmediate>();
+  auto& copy_cmd = *GetImmediateAs<cmds::CopySubTextureINTERNALImmediate>();
   GLbyte mailboxes[sizeof(gpu::Mailbox) * 2];
   CopyMailboxes(mailboxes, client_texture_mailbox_, dest_texture_mailbox);
   copy_cmd.Init(0, 0, 0, 0, 2, 1, mailboxes);

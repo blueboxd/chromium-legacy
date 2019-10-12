@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_flexible_box.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_progress.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_table_caption.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
@@ -144,6 +145,13 @@ LayoutTextFragment* LayoutObjectFactory::CreateTextFragment(
   if (force_legacy)
     layout_text_fragment->SetForceLegacyLayout();
   return layout_text_fragment;
+}
+
+LayoutProgress* LayoutObjectFactory::CreateLayoutProgress(
+    Node* node,
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
+  return CreateObject<LayoutProgress, LayoutNGProgress>(*node, style, legacy);
 }
 
 }  // namespace blink

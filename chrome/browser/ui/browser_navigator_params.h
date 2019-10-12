@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_NAVIGATOR_PARAMS_H_
 #define CHROME_BROWSER_UI_BROWSER_NAVIGATOR_PARAMS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 

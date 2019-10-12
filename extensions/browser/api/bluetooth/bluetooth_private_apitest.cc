@@ -259,9 +259,13 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, DiscoveryFilter) {
       device::BLUETOOTH_TRANSPORT_DUAL);
   BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
   discovery_filter.SetPathloss(50);
-  discovery_filter.AddUUID(BluetoothUUID("cafe"));
-  discovery_filter.AddUUID(
+  device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter;
+  device_filter.uuids.insert(BluetoothUUID("cafe"));
+  device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter2;
+  device_filter2.uuids.insert(
       BluetoothUUID("0000bebe-0000-1000-8000-00805f9b34fb"));
+  discovery_filter.AddDeviceFilter(std::move(device_filter));
+  discovery_filter.AddDeviceFilter(std::move(device_filter2));
 
   EXPECT_CALL(*mock_adapter_, StartScanWithFilter_(
                                   IsFilterEqual(&discovery_filter), testing::_))

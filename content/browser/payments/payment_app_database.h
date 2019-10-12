@@ -89,6 +89,7 @@ class CONTENT_EXPORT PaymentAppDatabase {
       const std::string& name,
       const std::string& icon,
       const std::string& method,
+      const SupportedDelegations& supported_delegations,
       SetPaymentAppInfoCallback callback);
 
  private:
@@ -233,6 +234,7 @@ class CONTENT_EXPORT PaymentAppDatabase {
       const std::string& name,
       const std::string& icon,
       const std::string& method,
+      const SupportedDelegations& supported_delegations,
       SetPaymentAppInfoCallback callback,
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);

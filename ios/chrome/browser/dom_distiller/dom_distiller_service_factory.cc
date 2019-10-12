@@ -12,7 +12,6 @@
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
-#include "components/dom_distiller/core/dom_distiller_store.h"
 #include "components/dom_distiller/ios/distiller_page_factory_ios.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -31,13 +30,11 @@ class DomDistillerKeyedService : public KeyedService,
                                  public dom_distiller::DomDistillerService {
  public:
   DomDistillerKeyedService(
-      std::unique_ptr<dom_distiller::DomDistillerStoreInterface> store,
       std::unique_ptr<dom_distiller::DistillerFactory> distiller_factory,
       std::unique_ptr<dom_distiller::DistillerPageFactory>
           distiller_page_factory,
       std::unique_ptr<dom_distiller::DistilledPagePrefs> distilled_page_prefs)
-      : DomDistillerService(std::move(store),
-                            std::move(distiller_factory),
+      : DomDistillerService(std::move(distiller_factory),
                             std::move(distiller_page_factory),
                             std::move(distilled_page_prefs)) {}
 
@@ -90,7 +87,7 @@ DomDistillerServiceFactory::BuildServiceInstanceFor(
           ios::ChromeBrowserState::FromBrowserState(context)->GetPrefs());
 
   return std::make_unique<DomDistillerKeyedService>(
-      nullptr, std::move(distiller_factory), std::move(distiller_page_factory),
+      std::move(distiller_factory), std::move(distiller_page_factory),
       std::move(distilled_page_prefs));
 }
 

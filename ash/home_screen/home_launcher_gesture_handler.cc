@@ -156,8 +156,7 @@ aura::Window* GetBackdropWindow(aura::Window* window) {
 // Returns the window of the widget of the split view divider. May be nullptr if
 // split view is not active.
 aura::Window* GetDividerWindow() {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   if (!split_view_controller->InSplitViewMode())
     return nullptr;
   return split_view_controller->split_view_divider()
@@ -181,8 +180,7 @@ aura::Window* GetWindowForDragToHomeOrOverview(
     return nullptr;
 
   aura::Window* window = nullptr;
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   const bool is_in_splitview = split_view_controller->InSplitViewMode();
   const bool is_in_overview =
       Shell::Get()->overview_controller()->InOverviewSession();
@@ -536,9 +534,9 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   }
 
   // Explicitly exit split view if two windows are snapped.
-  if (is_final_state_show && Shell::Get()->split_view_controller()->state() ==
+  if (is_final_state_show && SplitViewController::Get()->state() ==
                                  SplitViewController::State::kBothSnapped) {
-    Shell::Get()->split_view_controller()->EndSplitView();
+    SplitViewController::Get()->EndSplitView();
   }
 
   if (is_final_state_show) {
@@ -795,8 +793,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(
     Mode mode,
     aura::Window* window,
     base::Optional<gfx::Point> location_in_screen) {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   overview_active_on_gesture_start_ =
       Shell::Get()->overview_controller()->InOverviewSession();
   const bool split_view_active = split_view_controller->InSplitViewMode();

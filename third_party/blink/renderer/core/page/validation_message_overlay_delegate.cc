@@ -48,10 +48,6 @@ class ValidationMessageChromeClient : public EmptyChromeClient {
     main_chrome_client_->ScheduleAnimation(anchor_view_, delay);
   }
 
-  float WindowToViewportScalar(const float scalar_value) const override {
-    return main_chrome_client_->WindowToViewportScalar(scalar_value);
-  }
-
   float WindowToViewportScalar(LocalFrame* local_frame,
                                const float scalar_value) const override {
     return main_chrome_client_->WindowToViewportScalar(local_frame,

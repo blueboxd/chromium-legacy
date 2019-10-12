@@ -27,6 +27,8 @@ namespace {
 
 const size_t kMaximumNumberOfItems = 100U;
 const size_t kMaximumNumberOfSupportedOrigins = 100000;
+const size_t kMaximumNumberOfSupportedDelegations = 4U;
+const size_t kMaximumPrintedStringLength = 100U;
 
 const char* const kDefaultApplications = "default_applications";
 const char* const kFingerprints = "fingerprints";
@@ -34,6 +36,7 @@ const char* const kHttpPrefix = "http://";
 const char* const kHttpsPrefix = "https://";
 const char* const kId = "id";
 const char* const kMinVersion = "min_version";
+const char* const kPayment = "payment";
 const char* const kPlatform = "platform";
 const char* const kPlay = "play";
 const char* const kPreferRelatedApplications = "prefer_related_applications";
@@ -42,12 +45,28 @@ const char* const kServiceWorkerScope = "scope";
 const char* const kServiceWorker = "serviceworker";
 const char* const kServiceWorkerSrc = "src";
 const char* const kServiceWorkerUseCache = "use_cache";
+const char* const kSupportedDelegations = "supported_delegations";
 const char* const kSupportedOrigins = "supported_origins";
 const char* const kWebAppIcons = "icons";
 const char* const kWebAppIconSizes = "sizes";
 const char* const kWebAppIconSrc = "src";
 const char* const kWebAppIconType = "type";
 const char* const kWebAppName = "name";
+
+// Truncates a std::string to 100 chars. This returns an empty string when the
+// input should be ASCII but it's not.
+const std::string ValidateAndTruncateIfNeeded(const std::string& input,
+                                              bool* out_is_ASCII) {
+  if (out_is_ASCII) {
+    *out_is_ASCII = base::IsStringASCII(input);
+    if (!*out_is_ASCII)
+      return "";
+  }
+
+  return input.size() > kMaximumPrintedStringLength
+             ? (input.substr(0, kMaximumPrintedStringLength) + "...")
+             : input;
+}
 
 // Parses the "default_applications": ["https://some/url"] from |dict| into
 // |web_app_manifest_urls|. Returns 'false' for invalid data.
@@ -87,10 +106,13 @@ bool ParseDefaultApplications(base::DictionaryValue* dict,
 
     GURL url(item);
     if (!UrlUtil::IsValidManifestUrl(url)) {
-      log.Error(base::StringPrintf(
-          "\"%s\" entry in \"%s\" is not a valid URL with HTTPS scheme and is "
-          "not a valid localhost URL with HTTP scheme.",
-          item.c_str(), kDefaultApplications));
+      const std::string item_to_print =
+          ValidateAndTruncateIfNeeded(item, nullptr);
+      log.Error(
+          base::StringPrintf("\"%s\" entry in \"%s\" is not a valid URL with "
+                             "HTTPS scheme and is "
+                             "not a valid localhost URL with HTTP scheme.",
+                             item_to_print.c_str(), kDefaultApplications));
       web_app_manifest_urls->clear();
       return false;
     }
@@ -163,10 +185,13 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
     GURL url(item);
     if (!UrlUtil::IsValidSupportedOrigin(url)) {
       supported_origins->clear();
+      const std::string item_to_print =
+          ValidateAndTruncateIfNeeded(item, nullptr);
       log.Error(base::StringPrintf(
-          "\"%s\" entry in \"%s\" is not a valid origin with HTTPS scheme and "
+          "\"%s\" entry in \"%s\" is not a valid origin with HTTPS scheme "
+          "and "
           "is not a valid localhost origin with HTTP scheme.",
-          item.c_str(), kSupportedOrigins));
+          item_to_print.c_str(), kSupportedOrigins));
       return false;
     }
 
@@ -633,6 +658,53 @@ bool PaymentManifestParser::ParseWebAppInstallationInfoIntoStructs(
   ParseIcons(*dict, log, icons);
   ParsePreferredRelatedApplicationIdentifiers(
       *dict, log, &installation_info->preferred_app_ids);
+
+  base::DictionaryValue* payment_dict = nullptr;
+  if (dict->GetDictionary(kPayment, &payment_dict)) {
+    const base::ListValue* delegation_list = nullptr;
+    if (payment_dict->GetList(kSupportedDelegations, &delegation_list)) {
+      if (delegation_list->empty() ||
+          delegation_list->GetSize() > kMaximumNumberOfSupportedDelegations) {
+        log.Error(base::StringPrintf(
+            "\"%s.%s\" must be a non-empty list of at most %zu entries.",
+            kPayment, kSupportedDelegations,
+            kMaximumNumberOfSupportedDelegations));
+        return false;
+      }
+      for (const auto& delegation_item : *delegation_list) {
+        std::string delegation_name = delegation_item.GetString();
+        if (delegation_name == "shippingAddress") {
+          installation_info->supported_delegations.shipping_address = true;
+        } else if (delegation_name == "payerName") {
+          installation_info->supported_delegations.payer_name = true;
+        } else if (delegation_name == "payerEmail") {
+          installation_info->supported_delegations.payer_email = true;
+        } else if (delegation_name == "payerPhone") {
+          installation_info->supported_delegations.payer_phone = true;
+        } else {  // delegation_name is not valid
+          bool is_ASCII;
+          const std::string delegation_name_to_print =
+              ValidateAndTruncateIfNeeded(delegation_name, &is_ASCII);
+          if (!is_ASCII) {
+            log.Error("Entries in delegation list must be ASCII strings.");
+          } else {  // ASCII string.
+            log.Error(base::StringPrintf(
+                "\"%s\" is not a valid value in \"%s\" array.",
+                delegation_name_to_print.c_str(), kSupportedDelegations));
+          }
+          return false;
+        }
+      }
+    } else {  // !payment_dict->GetList(kSupportedDelegations, &delegation_list)
+      log.Error(base::StringPrintf("\"%s\" member must have \"%s\" list",
+                                   kPayment, kSupportedDelegations));
+      return false;
+    }
+  } else if (dict->HasKey(kPayment)) {
+    log.Error(
+        base::StringPrintf("\"%s\" member must be a dictionary", kPayment));
+    return false;
+  }
 
   return true;
 }

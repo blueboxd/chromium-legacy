@@ -355,17 +355,20 @@ void Database::Preload() {
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(&scoped_blocking_call);
 
-  // The constructor and set_page_size() ensure that page_size_ is never zero.
-  const int page_size = page_size_;
-  DCHECK(page_size);
-
-  // Use local settings if provided, otherwise use documented defaults.  The
-  // actual results could be fetching via PRAGMA calls.
-  sqlite3_int64 preload_size = page_size * (cache_size_ ? cache_size_ : 2000);
-  if (preload_size < 1)
-    return;
-
-  base::PreReadFile(DbPath(), /*is_executable=*/false, preload_size);
+  // Maximum number of bytes that will be prefetched from the database.
+  //
+  // This limit is very aggressive. Here are the trade-offs involved.
+  // 1) Accessing bytes that weren't preread is very expensive on
+  //    performance-critical databases, so the limit must exceed the expected
+  //    sizes of feature databases.
+  // 2) On some platforms (Windows 7 and, currently, macOS), base::PreReadFile()
+  //    falls back to a synchronous read, and blocks until the entire file is
+  //    read into memory. So, there's a tangible cost to reading data that would
+  //    get evicted before base::PreReadFile() completes. This cost needs to be
+  //    balanced with the benefit reading the entire database at once, and
+  //    avoiding seeks on spinning disks.
+  constexpr int kPreReadSize = 128 * 1024 * 1024;  // 128 MB
+  base::PreReadFile(DbPath(), /*is_executable=*/false, kPreReadSize);
 }
 
 // SQLite keeps unused pages associated with a database in a cache.  It asks

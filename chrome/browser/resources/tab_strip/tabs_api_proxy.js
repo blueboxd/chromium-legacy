@@ -19,12 +19,15 @@ export const TabNetworkState = {
 /**
  * @typedef {{
  *    active: boolean,
- *    favIconUrl: string,
+ *    crashed: boolean,
+ *    favIconUrl: (string|undefined),
  *    id: number,
  *    index: number,
+ *    isDefaultFavicon: boolean,
  *    networkState: !TabNetworkState,
  *    pinned: boolean,
  *    shouldHideThrobber: boolean,
+ *    showIcon: boolean,
  *    title: string,
  *    url: string,
  * }}

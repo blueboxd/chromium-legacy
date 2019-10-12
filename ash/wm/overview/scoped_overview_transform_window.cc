@@ -137,7 +137,7 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
   // activated.
   // TODO(sammiequon): This does not handle the case if either the snapped
   // window or this window is an always on top window.
-  auto* split_view_controller = Shell::Get()->split_view_controller();
+  auto* split_view_controller = SplitViewController::Get();
   if (ShouldUseTabletModeGridLayout() &&
       split_view_controller->InSplitViewMode()) {
     aura::Window* snapped_window =

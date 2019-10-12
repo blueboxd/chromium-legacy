@@ -125,7 +125,8 @@ void Supervisor::RequestTraceWithHeapDump(TraceFinishedCallback callback,
   }
 
   auto finished_dump_callback = base::BindOnce(
-      [](TraceFinishedCallback callback, bool success, uint64_t dump_guid) {
+      [](TraceFinishedCallback callback, bool anonymize, bool success,
+         uint64_t dump_guid) {
         // Once the trace has stopped, run |callback| on the UI thread.
         auto finish_sink_callback = base::BindOnce(
             [](TraceFinishedCallback callback,
@@ -137,13 +138,15 @@ void Supervisor::RequestTraceWithHeapDump(TraceFinishedCallback callback,
                              base::BindOnce(std::move(callback), true,
                                             std::move(result)));
             },
-            base::Passed(std::move(callback)));
+            std::move(callback));
         scoped_refptr<content::TracingController::TraceDataEndpoint> sink =
             content::TracingController::CreateStringEndpoint(
                 std::move(finish_sink_callback));
-        content::TracingController::GetInstance()->StopTracing(sink);
+        content::TracingController::GetInstance()->StopTracing(
+            sink,
+            /*agent_label=*/"", anonymize);
       },
-      std::move(callback));
+      std::move(callback), anonymize);
 
   auto trigger_memory_dump_callback = base::BindOnce(
       [](base::OnceCallback<void(bool success, uint64_t dump_guid)>

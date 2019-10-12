@@ -605,8 +605,8 @@ class PrefHashFilterTest : public testing::TestWithParam<EnforcementLevel>,
   // |pref_hash_filter_|.
   void DoFilterOnLoad(bool expect_prefs_modifications) {
     pref_hash_filter_->FilterOnLoad(
-        base::Bind(&PrefHashFilterTest::GetPrefsBack, base::Unretained(this),
-                   expect_prefs_modifications),
+        base::BindOnce(&PrefHashFilterTest::GetPrefsBack,
+                       base::Unretained(this), expect_prefs_modifications),
         std::move(pref_store_contents_));
   }
 

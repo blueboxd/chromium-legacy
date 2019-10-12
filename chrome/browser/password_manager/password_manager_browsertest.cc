@@ -2457,7 +2457,21 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ChangePwd1AccountStored) {
   CheckThatCredentialsStored("temp", "new_pw");
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+// This fixture disable autofill. If a password is autofilled, then all the
+// Javascript changes are discarded and test below would not be able to feed a
+// new password to the form.
+class PasswordManagerBrowserTestWithAutofillDisabled
+    : public PasswordManagerBrowserTest {
+ public:
+  PasswordManagerBrowserTestWithAutofillDisabled() {
+    feature_list_.InitAndEnableFeature(features::kFillOnAccountSelect);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWithAutofillDisabled,
                        PasswordOverridenUpdateBubbleShown) {
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
@@ -2470,12 +2484,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   signin_form.username_value = base::ASCIIToUTF16("temp");
   signin_form.password_value = base::ASCIIToUTF16("pw");
   password_store->AddLogin(signin_form);
-
-  // Disable autofill. If a password is autofilled then all the Javacript
-  // changes are discarded. The test would not be able to feed the new password
-  // below.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kFillOnAccountSelect);
 
   // Check that password update bubble is shown.
   NavigateToFile("/password/password_form.html");

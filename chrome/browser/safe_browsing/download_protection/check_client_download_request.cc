@@ -90,16 +90,19 @@ void DeepScanningClientResponseToDownloadCheckResult(
 
 }  // namespace
 
-void MaybeReportDownloadDeepScanningVerdict(
-    Profile* profile,
-    const GURL& url,
-    const std::string& file_name,
-    const std::string& download_digest_sha256,
-    BinaryUploadService::Result result,
-    DeepScanningClientResponse response) {
+void MaybeReportDeepScanningVerdict(Profile* profile,
+                                    const GURL& url,
+                                    const std::string& file_name,
+                                    const std::string& download_digest_sha256,
+                                    const std::string& mime_type,
+                                    const std::string& trigger,
+                                    const int64_t content_size,
+                                    BinaryUploadService::Result result,
+                                    DeepScanningClientResponse response) {
   if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnLargeUnscannedFileEvent(url, file_name, download_digest_sha256);
+        ->OnLargeUnscannedFileEvent(url, file_name, download_digest_sha256,
+                                    mime_type, trigger, content_size);
   }
 
   if (result != BinaryUploadService::Result::SUCCESS)
@@ -113,14 +116,16 @@ void MaybeReportDownloadDeepScanningVerdict(
         ->OnDangerousDeepScanningResult(
             url, file_name, download_digest_sha256,
             MalwareVerdictToThreatType(
-                response.malware_scan_verdict().verdict()));
+                response.malware_scan_verdict().verdict()),
+            mime_type, trigger, content_size);
   }
 
   if (response.dlp_scan_verdict().status() == DlpDeepScanningVerdict::SUCCESS) {
     if (!response.dlp_scan_verdict().triggered_rules().empty()) {
       extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
           ->OnSensitiveDataEvent(response.dlp_scan_verdict(), url, file_name,
-                                 download_digest_sha256);
+                                 download_digest_sha256, mime_type, trigger,
+                                 content_size);
     }
   }
 }
@@ -409,10 +414,12 @@ void CheckClientDownloadRequest::OnDeepScanningComplete(
   Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
   if (profile) {
     std::string raw_digest_sha256 = item_->GetHash();
-    MaybeReportDownloadDeepScanningVerdict(
+    MaybeReportDeepScanningVerdict(
         profile, item_->GetURL(), item_->GetTargetFilePath().AsUTF8Unsafe(),
         base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
-        result, response);
+        item_->GetMimeType(),
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+        item_->GetTotalBytes(), result, response);
   }
 
   if (!ShouldDelayVerdicts())

@@ -91,6 +91,18 @@ using ScopedArCoreObject = base::ScopedGeneric<T, ScopedGenericArObject<T>>;
 
 using PlaneId = util::IdTypeU32<class PlaneTag>;
 using AnchorId = util::IdTypeU32<class AnchorTag>;
+using HitTestSubscriptionId = util::IdTypeU32<class HitTestSubscriptionTag>;
+
+struct HitTestSubscriptionData {
+  mojom::XRNativeOriginInformationPtr native_origin_information;
+  mojom::XRRayPtr ray;
+
+  HitTestSubscriptionData(
+      mojom::XRNativeOriginInformationPtr native_origin_information,
+      mojom::XRRayPtr ray);
+  HitTestSubscriptionData(HitTestSubscriptionData&& other);
+  ~HitTestSubscriptionData();
+};
 
 // This class should be created and accessed entirely on a Gl thread.
 class ArCoreImpl : public ArCore {
@@ -115,8 +127,24 @@ class ArCoreImpl : public ArCore {
   void Pause() override;
   void Resume() override;
 
+  float GetEstimatedFloorHeight() override;
+
   bool RequestHitTest(const mojom::XRRayPtr& ray,
                       std::vector<mojom::XRHitResultPtr>* hit_results) override;
+
+  // Helper.
+  bool RequestHitTest(const gfx::Point3F& origin,
+                      const gfx::Vector3dF& direction,
+                      std::vector<mojom::XRHitResultPtr>* hit_results);
+
+  base::Optional<uint32_t> SubscribeToHitTest(
+      mojom::XRNativeOriginInformationPtr nativeOriginInformation,
+      mojom::XRRayPtr ray) override;
+
+  mojom::XRHitTestSubscriptionResultsDataPtr GetHitTestSubscriptionResults(
+      const device::mojom::VRPosePtr& pose) override;
+
+  void UnsubscribeFromHitTest(uint32_t subscription_id) override;
 
   base::Optional<uint32_t> CreateAnchor(
       const device::mojom::VRPosePtr& pose) override;
@@ -184,6 +212,9 @@ class ArCoreImpl : public ArCore {
   std::map<AnchorId, device::internal::ScopedArCoreObject<ArAnchor*>>
       anchor_id_to_anchor_object_;
 
+  std::map<HitTestSubscriptionId, HitTestSubscriptionData>
+      hit_test_subscription_id_to_data_;
+
   // Returns tuple containing plane id and a boolean signifying that the plane
   // was created. The result will be a nullopt in case the ID should be assigned
   // but next ID would result in an integer overflow.
@@ -191,6 +222,23 @@ class ArCoreImpl : public ArCore {
       void* plane_address);
   base::Optional<std::pair<AnchorId, bool>> CreateOrGetAnchorId(
       void* anchor_address);
+
+  base::Optional<HitTestSubscriptionId> CreateHitTestSubscriptionId();
+
+  // Returns hit test subscription results for a single subscription given
+  // current XRSpace transformation.
+  device::mojom::XRHitTestSubscriptionResultDataPtr
+  GetHitTestSubscriptionResult(HitTestSubscriptionId id,
+                               const mojom::XRRay& ray,
+                               const gfx::Transform& ray_transformation);
+
+  base::Optional<gfx::Transform> GetMojoFromNativeOrigin(
+      const mojom::XRNativeOriginInformationPtr& native_origin_information,
+      const device::mojom::VRPosePtr& pose);
+
+  base::Optional<gfx::Transform> GetMojoFromReferenceSpace(
+      device::mojom::XRReferenceSpaceCategory category,
+      const device::mojom::VRPosePtr& pose);
 
   // Executes |fn| for each still tracked, non-subsumed plane present in
   // |arcore_planes_|.

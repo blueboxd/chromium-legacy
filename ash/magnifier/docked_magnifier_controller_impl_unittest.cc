@@ -410,7 +410,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
       CreateTestWindowInShell(SK_ColorWHITE, 100, gfx::Rect(0, 0, 200, 200)));
   WindowState::Get(window.get())->Maximize();
 
-  auto* split_view_controller = Shell::Get()->split_view_controller();
+  auto* split_view_controller = SplitViewController::Get();
   EXPECT_EQ(split_view_controller->state(),
             SplitViewController::State::kNoSnap);
   EXPECT_EQ(split_view_controller->InSplitViewMode(), false);
@@ -460,7 +460,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
-  auto* split_view_controller = Shell::Get()->split_view_controller();
+  auto* split_view_controller = SplitViewController::Get();
   EXPECT_EQ(split_view_controller->InSplitViewMode(), false);
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);

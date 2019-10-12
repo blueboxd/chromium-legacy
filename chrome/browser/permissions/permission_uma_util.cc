@@ -350,6 +350,11 @@ void PermissionUmaUtil::RecordWithBatteryBucket(const std::string& histogram) {
 }
 #endif
 
+void PermissionUmaUtil::RecordInfobarDetailsExpanded(bool expanded) {
+  base::UmaHistogramBoolean("Permissions.Prompt.Infobar.DetailsExpanded",
+                            expanded);
+}
+
 void PermissionUmaUtil::RecordPermissionAction(
     ContentSettingsType permission,
     PermissionAction action,

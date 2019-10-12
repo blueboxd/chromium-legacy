@@ -585,7 +585,7 @@ TEST_F(NightLightTest, TestSunsetSunriseGeoposition) {
   //       now        sunset            sunrise
   //
   NightLightControllerImpl* controller = GetController();
-  delegate()->SetFakeNow(TimeOfDay(16 * 60));  // 4:00 PM.
+  delegate()->SetFakeNow(TimeOfDay(16 * 60));  // 4:00PM.
   controller->SetCurrentGeoposition(NightLightController::SimpleGeoposition{
       kFakePosition1_Latitude, kFakePosition1_Longitude});
 
@@ -639,6 +639,86 @@ TEST_F(NightLightTest, TestSunsetSunriseGeoposition) {
   // Timer is running scheduling the start at the next sunset.
   EXPECT_TRUE(controller->timer()->IsRunning());
   EXPECT_EQ(base::TimeDelta::FromHours(14),
+            controller->timer()->GetCurrentDelay());
+}
+
+// Tests the behavior when the client sets the geoposition while in custom
+// schedule setting. Current time is simulated to be updated accordingly. The
+// current time change should bring the controller into or take it out of the
+// night light mode accordingly if necessary, based on the settings.
+TEST_F(NightLightTest, TestCustomScheduleGeopositionChanges) {
+  constexpr int kCustom_Start = 19 * 60;
+  constexpr int kCustom_End = 2 * 60;
+
+  // Returns the positive difference in minutes given t1 and t2 in minutes
+  auto time_diff = [](int t1, int t2) {
+    int t = t2 - t1;
+    return t < 0 ? 24 * 60 + t : t;
+  };
+
+  NightLightControllerImpl* controller = GetController();
+  controller->SetCustomStartTime(TimeOfDay(kCustom_Start));
+  controller->SetCustomEndTime(TimeOfDay(kCustom_End));
+
+  // Position 1 current time and custom start and end time.
+  //
+  //      16:00       19:00             2:00
+  // <----- + --------- + --------------- + ------------->
+  //        |           |                 |
+  //       now     custom start      custom end
+  //
+
+  int fake_now = 16 * 60;
+  delegate()->SetFakeNow(TimeOfDay(fake_now));
+  controller->SetCurrentGeoposition(NightLightController::SimpleGeoposition{
+      kFakePosition1_Latitude, kFakePosition1_Longitude});
+
+  // Expect that timer is running and is scheduled at next custom start time.
+  controller->SetScheduleType(NightLightController::ScheduleType::kCustom);
+  EXPECT_FALSE(controller->GetEnabled());
+  TestCompositorsTemperature(0.0f);
+  EXPECT_TRUE(controller->timer()->IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(time_diff(fake_now, kCustom_Start)),
+            controller->timer()->GetCurrentDelay());
+
+  // Simulate a timezone change by changing geoposition.
+  // Current time updates to 9PM.
+  //      19:00       21:00       2:00
+  // <----- + --------- + -------- + --------------------->
+  //        |           |          |
+  //   custom start    now      custom end
+  //
+  fake_now = 21 * 60;
+  delegate()->SetFakeNow(TimeOfDay(fake_now));
+  controller->timer()->FireNow();
+  controller->SetCurrentGeoposition(NightLightController::SimpleGeoposition{
+      kFakePosition2_Latitude, kFakePosition2_Longitude});
+
+  // Expect the controller to enter night light mode and  the scheduled end
+  // delay has been updated.
+  EXPECT_TRUE(controller->GetEnabled());
+  TestCompositorsTemperature(controller->GetColorTemperature());
+  EXPECT_EQ(NightLightControllerImpl::AnimationDuration::kShort,
+            controller->last_animation_duration());
+  EXPECT_TRUE(controller->timer()->IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(time_diff(fake_now, kCustom_End)),
+            controller->timer()->GetCurrentDelay());
+
+  // Simulate user changing position back to location 1 and current time goes
+  // back to 4PM.
+  fake_now = 16 * 60;
+  delegate()->SetFakeNow(TimeOfDay(fake_now));
+  controller->timer()->FireNow();
+
+  controller->SetCurrentGeoposition(NightLightController::SimpleGeoposition{
+      kFakePosition1_Latitude, kFakePosition1_Longitude});
+  EXPECT_FALSE(controller->GetEnabled());
+  TestCompositorsTemperature(0.0f);
+  EXPECT_EQ(NightLightControllerImpl::AnimationDuration::kShort,
+            controller->last_animation_duration());
+  // Timer is running and is scheduled at next custom start time.
+  EXPECT_TRUE(controller->timer()->IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(time_diff(fake_now, kCustom_Start)),
             controller->timer()->GetCurrentDelay());
 }
 

@@ -118,7 +118,9 @@ void DisplayLockContext::UpdateActivationObservationIfNeeded() {
     return;
   }
 
-  bool should_observe = IsLocked() && IsActivatable() && ConnectedToView();
+  bool should_observe = IsLocked() &&
+                        IsActivatable(DisplayLockActivationReason::kViewport) &&
+                        ConnectedToView();
   if (should_observe && !is_observed_) {
     document_->RegisterDisplayLockActivationObservation(element_);
   } else if (!should_observe && is_observed_) {
@@ -127,14 +129,16 @@ void DisplayLockContext::UpdateActivationObservationIfNeeded() {
   is_observed_ = should_observe;
 }
 
-void DisplayLockContext::SetActivatable(bool activatable) {
+void DisplayLockContext::SetActivatable(unsigned char activatable_mask) {
   if (IsLocked()) {
-    // If we're locked, the activatable flag might change the activation
+    // If we're locked, the activatable mask might change the activation
     // blocking lock count. If we're not locked, the activation blocking lock
     // count will be updated when we changed the state.
-    state_.UpdateActivationBlockingCount(activatable_, activatable);
+    // Note that we record this only if we're blocking all activation. That is,
+    // the lock is considered activatable if any bit is set.
+    state_.UpdateActivationBlockingCount(activatable_mask_, activatable_mask);
   }
-  activatable_ = activatable;
+  activatable_mask_ = activatable_mask;
   UpdateActivationObservationIfNeeded();
 }
 
@@ -367,8 +371,10 @@ void DisplayLockContext::DidPaint(DisplayLockLifecycleTarget) {
   // This is here for symmetry, but could be removed if necessary.
 }
 
-bool DisplayLockContext::IsActivatable() const {
-  return activatable_ || !IsLocked();
+bool DisplayLockContext::IsActivatable(
+    DisplayLockActivationReason reason) const {
+  return !IsLocked() ||
+         (activatable_mask_ & static_cast<unsigned char>(reason));
 }
 
 void DisplayLockContext::CommitForActivationWithSignal(
@@ -384,7 +390,7 @@ void DisplayLockContext::CommitForActivationWithSignal(
 
   DCHECK(element_);
   DCHECK(ConnectedToView());
-  DCHECK(ShouldCommitForActivation());
+  DCHECK(ShouldCommitForActivation(DisplayLockActivationReason::kAny));
   StartCommit();
   // Since setting the attribute might trigger a commit if we are still locked,
   // we set it after we start the commit.
@@ -392,8 +398,9 @@ void DisplayLockContext::CommitForActivationWithSignal(
     element_->setAttribute(html_names::kRendersubtreeAttr, "");
 }
 
-bool DisplayLockContext::ShouldCommitForActivation() const {
-  return IsActivatable() && IsLocked();
+bool DisplayLockContext::ShouldCommitForActivation(
+    DisplayLockActivationReason reason) const {
+  return IsActivatable(reason) && IsLocked();
 }
 
 void DisplayLockContext::DidAttachLayoutTree() {
@@ -655,7 +662,7 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
       document_->View()->RegisterForLifecycleNotifications(this);
   }
 
-  if (!IsActivatable()) {
+  if (!IsActivatable(DisplayLockActivationReason::kAny)) {
     old_document.RemoveActivationBlockingDisplayLock();
     document_->AddActivationBlockingDisplayLock();
   }
@@ -859,7 +866,8 @@ operator=(State new_state) {
         "LockedDisplayLock", this);
   }
 
-  bool was_activatable = context_->IsActivatable();
+  bool was_activatable =
+      context_->IsActivatable(DisplayLockActivationReason::kAny);
   bool was_locked = context_->IsLocked();
 
   state_ = new_state;
@@ -872,7 +880,9 @@ operator=(State new_state) {
   if (!context_->document_)
     return *this;
 
-  UpdateActivationBlockingCount(was_activatable, context_->IsActivatable());
+  UpdateActivationBlockingCount(
+      was_activatable,
+      context_->IsActivatable(DisplayLockActivationReason::kAny));
 
   // Adjust the total number of locked display locks.
   auto& document = *context_->document_;

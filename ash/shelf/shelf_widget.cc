@@ -209,6 +209,10 @@ void ShelfWidget::DelegateView::UpdateBackgroundBlur() {
 }
 
 void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
+  // Shell could be destroying.
+  if (!Shell::Get()->tablet_mode_controller())
+    return;
+
   gfx::Rect opaque_background_bounds = GetLocalBounds();
 
   const Shelf* shelf = shelf_widget_->shelf();

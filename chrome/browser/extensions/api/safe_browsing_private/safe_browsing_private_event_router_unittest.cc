@@ -4,6 +4,7 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 
 #include "base/bind.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
 #include "base/values.h"
@@ -94,7 +95,7 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
     SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->OnDangerousDownloadOpened(GURL("https://evil.com/malware.exe"),
                                     "/path/to/malware.exe",
-                                    "sha256_or_malware_exe");
+                                    "sha256_of_malware_exe", "exe", 1234);
   }
 
   void TriggerOnSecurityInterstitialShownEvent() {
@@ -107,6 +108,20 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
     SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->OnSecurityInterstitialProceeded(GURL("https://phishing.com/"),
                                           "PHISHING", -201);
+  }
+
+  void TriggerOnDangerousDownloadWarningEvent() {
+    SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
+        ->OnDangerousDownloadWarning(
+            GURL("https://maybevil.com/warning.exe"), "/path/to/warning.exe",
+            "sha256_of_warning_exe", "POTENTIALLY_UNWANTED", "exe", 567);
+  }
+
+  void TriggerOnDangerousDownloadWarningEventBypass() {
+    SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
+        ->OnDangerousDownloadWarning(
+            GURL("https://bypassevil.com/bypass.exe"), "/path/to/bypass.exe",
+            "sha256_of_bypass_exe", "BYPASSED_WARNING", "exe", 890);
   }
 
   void SetReportingPolicy(bool enabled) {
@@ -235,7 +250,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnDangerousDownloadOpened) {
   EXPECT_EQ("/path/to/malware.exe",
             captured_args.FindKey("fileName")->GetString());
   EXPECT_EQ("", captured_args.FindKey("userName")->GetString());
-  EXPECT_EQ("sha256_or_malware_exe",
+  EXPECT_EQ("sha256_of_malware_exe",
             captured_args.FindKey("downloadDigestSha256")->GetString());
 
   Mock::VerifyAndClearExpectations(client_);
@@ -254,6 +269,12 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnDangerousDownloadOpened) {
   EXPECT_EQ(
       "/path/to/malware.exe",
       *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyFileName));
+  EXPECT_EQ("exe", *event->FindStringKey(
+                       SafeBrowsingPrivateEventRouter::kKeyContentType));
+  EXPECT_EQ(1234, *event->FindIntKey(
+                      SafeBrowsingPrivateEventRouter::kKeyContentSize));
+  EXPECT_EQ(SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+            *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyTrigger));
 }
 
 TEST_F(SafeBrowsingPrivateEventRouterTest,
@@ -335,6 +356,83 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSecurityInterstitialShown) {
       0, *event->FindIntKey(SafeBrowsingPrivateEventRouter::kKeyNetErrorCode));
   EXPECT_FALSE(
       *event->FindBoolKey(SafeBrowsingPrivateEventRouter::kKeyClickedThrough));
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnDangerousDownloadWarning) {
+  SetUpRouters();
+  SafeBrowsingEventObserver event_observer(
+      api::safe_browsing_private::OnDangerousDownloadOpened::kEventName);
+  event_router_->AddEventObserver(&event_observer);
+
+  base::Value report;
+  EXPECT_CALL(*client_, UploadRealtimeReport(_, _))
+      .WillOnce(CaptureArg(&report));
+
+  TriggerOnDangerousDownloadWarningEvent();
+  base::RunLoop().RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(client_);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
+  base::Value* event_list =
+      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
+  ASSERT_NE(nullptr, event_list);
+  EXPECT_EQ(base::Value::Type::LIST, event_list->type());
+  base::Value::ListStorage& mutable_list = event_list->GetList();
+  ASSERT_EQ(1, (int)mutable_list.size());
+  base::Value wrapper = std::move(mutable_list[0]);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
+  base::Value* event = wrapper.FindKey(
+      SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent);
+  EXPECT_NE(nullptr, event);
+  EXPECT_EQ(
+      "/path/to/warning.exe",
+      *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyFileName));
+  EXPECT_EQ("exe", *event->FindStringKey(
+                       SafeBrowsingPrivateEventRouter::kKeyContentType));
+  EXPECT_EQ(
+      567, *event->FindIntKey(SafeBrowsingPrivateEventRouter::kKeyContentSize));
+  EXPECT_EQ(
+      "POTENTIALLY_UNWANTED",
+      *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyThreatType));
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest,
+       TestOnDangerousDownloadWarningBypass) {
+  SetUpRouters();
+  SafeBrowsingEventObserver event_observer(
+      api::safe_browsing_private::OnDangerousDownloadOpened::kEventName);
+  event_router_->AddEventObserver(&event_observer);
+
+  base::Value report;
+  EXPECT_CALL(*client_, UploadRealtimeReport(_, _))
+      .WillOnce(CaptureArg(&report));
+
+  TriggerOnDangerousDownloadWarningEventBypass();
+  base::RunLoop().RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(client_);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
+  base::Value* event_list =
+      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
+  ASSERT_NE(nullptr, event_list);
+  EXPECT_EQ(base::Value::Type::LIST, event_list->type());
+  base::Value::ListStorage& mutable_list = event_list->GetList();
+  ASSERT_EQ(1, (int)mutable_list.size());
+  base::Value wrapper = std::move(mutable_list[0]);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
+  base::Value* event = wrapper.FindKey(
+      SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent);
+  EXPECT_NE(nullptr, event);
+  EXPECT_EQ(
+      "/path/to/bypass.exe",
+      *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyFileName));
+  EXPECT_EQ("exe", *event->FindStringKey(
+                       SafeBrowsingPrivateEventRouter::kKeyContentType));
+  EXPECT_EQ(
+      890, *event->FindIntKey(SafeBrowsingPrivateEventRouter::kKeyContentSize));
+  EXPECT_EQ(
+      "BYPASSED_WARNING",
+      *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyThreatType));
 }
 
 TEST_F(SafeBrowsingPrivateEventRouterTest, PolicyControlOnToOffIsDynamic) {

@@ -114,12 +114,11 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     /**
      * Construct a new NavigationSheet.
      */
-    NavigationSheetCoordinator(
-            View parent, Supplier<BottomSheetController> bottomSheetController, Delegate delegate) {
+    NavigationSheetCoordinator(View parent, Context context,
+            Supplier<BottomSheetController> bottomSheetController, Delegate delegate) {
         mParentView = parent;
         mBottomSheetController = bottomSheetController;
         mDelegate = delegate;
-        Context context = parent.getContext();
         mLayoutInflater = LayoutInflater.from(context);
         mToolbarView = mLayoutInflater.inflate(R.layout.navigation_sheet_toolbar, null);
         mMediator = new NavigationSheetMediator(context, mModelList, (position, index) -> {
@@ -293,11 +292,13 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     }
 
     @Override
-    public boolean isPeekStateEnabled() {
+    public int getPeekHeight() {
         // Makes peek state as 'not present' when bottom sheet is in expanded state (i.e. animating
         // from expanded to close state). It avoids the sheet animating in two distinct steps, which
         // looks awkward.
-        return !mBottomSheetController.get().getBottomSheet().isSheetOpen();
+        return !mBottomSheetController.get().getBottomSheet().isSheetOpen()
+                ? getSizePx(mParentView.getContext(), R.dimen.navigation_sheet_peek_height)
+                : BottomSheet.HeightMode.DISABLED;
     }
 
     @Override

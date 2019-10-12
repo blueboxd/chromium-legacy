@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/shadow/progress_shadow_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_progress.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -55,7 +56,7 @@ LayoutObject* HTMLProgressElement::CreateLayoutObject(
   }
   UseCounter::Count(GetDocument(),
                     WebFeature::kProgressElementWithProgressBarAppearance);
-  return new LayoutProgress(this);
+  return LayoutObjectFactory::CreateLayoutProgress(this, style, legacy);
 }
 
 LayoutProgress* HTMLProgressElement::GetLayoutProgress() const {

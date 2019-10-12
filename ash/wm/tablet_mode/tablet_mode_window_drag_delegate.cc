@@ -95,7 +95,7 @@ gfx::Rect GetBoundsOfSelectedDropTarget(aura::Window* dragged_window) {
 }  // namespace
 
 TabletModeWindowDragDelegate::TabletModeWindowDragDelegate()
-    : split_view_controller_(Shell::Get()->split_view_controller()),
+    : split_view_controller_(SplitViewController::Get()),
       split_view_drag_indicators_(std::make_unique<SplitViewDragIndicators>()) {
 }
 

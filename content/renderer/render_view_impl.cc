@@ -482,8 +482,6 @@ void RenderViewImpl::Initialize(
   bool has_show_callback = !!show_callback;
 #endif
 
-  page_properties()->SetScreenInfo(params->visual_properties.screen_info);
-
   WebFrame* opener_frame =
       RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
 
@@ -1394,9 +1392,6 @@ WebView* RenderViewImpl::CreateView(
   // TODO(vangelis): Can we tell if the new view will be a background page?
   bool never_visible = false;
 
-  VisualProperties visual_properties = VisualProperties();
-  visual_properties.screen_info = page_properties()->GetScreenInfo();
-
   // The initial hidden state for the RenderViewImpl here has to match what the
   // browser will eventually decide for the given disposition. Since we have to
   // return from this call synchronously, we just have to make our best guess
@@ -1433,7 +1428,7 @@ WebView* RenderViewImpl::CreateView(
   view_params->devtools_main_frame_token = reply->devtools_main_frame_token;
   view_params->hidden = is_background_tab;
   view_params->never_visible = never_visible;
-  view_params->visual_properties = visual_properties;
+  view_params->visual_properties = reply->visual_properties;
 
   // Unretained() is safe here because our calling function will also call
   // show().
@@ -1534,46 +1529,6 @@ void RenderViewImpl::PrintPage(WebLocalFrame* frame) {
 
   render_frame->ScriptedPrint(
       render_widget->input_handler().handling_input_event());
-}
-
-void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
-  // The previous WebFrameWidget must already be detached by
-  // DetachWebFrameWidget().
-  DCHECK(!render_widget_->GetWebWidget());
-  render_widget_->SetWebWidgetInternal(frame_widget);
-
-  // Note that when a main frame RenderWidget is created with a main frame, then
-  // this method is not used, so other initialization should not be done here.
-}
-
-void RenderViewImpl::DetachWebFrameWidget() {
-  // There is a WebFrameWidget previously attached by AttachWebFrameWidget().
-  DCHECK(render_widget_->GetWebWidget());
-
-  if (destroying_) {
-    // We are inside RenderViewImpl::Destroy() and the main frame is being
-    // detached as part of shutdown. So we can destroy the RenderWidget.
-
-    // We pass ownership of |render_widget_| to itself. Grab a raw pointer to
-    // call the Close() method on so we don't have to be a C++ expert to know
-    // whether we will end up with a nullptr where we didn't intend due to order
-    // of execution.
-    RenderWidget* closing_widget = render_widget_.get();
-    closing_widget->CloseForFrame(std::move(render_widget_));
-  } else {
-    // We are not inside RenderViewImpl::Destroy(), the main frame is being
-    // detached and replaced with a remote frame proxy. We can't close the
-    // RenderWidget, and it is marked undead instead, but we do need to close
-    // the WebFrameWidget and remove it from the RenderWidget.
-    render_widget_->SetIsUndead();
-    // The WebWidget needs to be closed even though the RenderWidget won't be
-    // closed here (since it is marked undead instead).
-    render_widget_->GetWebWidget()->Close();
-    // This just clears the webwidget_internal_ member from RenderWidget.
-    render_widget_->SetWebWidgetInternal(nullptr);
-
-    undead_render_widget_ = std::move(render_widget_);
-  }
 }
 
 bool RenderViewImpl::SetZoomLevel(double zoom_level) {
@@ -1916,10 +1871,34 @@ void RenderViewImpl::ApplyPageHidden(bool hidden, bool initial_setting) {
   // does not change when tests override the visibility of the Page.
 }
 
-void RenderViewImpl::ReviveUndeadMainFrameRenderWidget(
-    const ScreenInfo& screen_info) {
+RenderWidget* RenderViewImpl::ReviveUndeadMainFrameRenderWidget() {
   render_widget_ = std::move(undead_render_widget_);
-  render_widget_->SetIsRevivedFromUndead(screen_info);
+  render_widget_->SetIsUndead(false);
+  return render_widget_.get();
+}
+
+void RenderViewImpl::CloseMainFrameRenderWidget() {
+  // There is a WebFrameWidget previously attached by AttachWebFrameWidget().
+  DCHECK(render_widget_->GetWebWidget());
+
+  if (destroying_) {
+    // We are inside RenderViewImpl::Destroy() and the main frame is being
+    // detached as part of shutdown. So we can destroy the RenderWidget.
+
+    // We pass ownership of |render_widget_| to itself. Grab a raw pointer to
+    // call the Close() method on so we don't have to be a C++ expert to know
+    // whether we will end up with a nullptr where we didn't intend due to order
+    // of execution.
+    RenderWidget* closing_widget = render_widget_.get();
+    closing_widget->CloseForFrame(std::move(render_widget_));
+  } else {
+    // We are not inside RenderViewImpl::Destroy(), the main frame is being
+    // detached and replaced with a remote frame proxy. We can't close the
+    // RenderWidget, and it is marked undead instead.
+    render_widget_->SetIsUndead(true);
+
+    undead_render_widget_ = std::move(render_widget_);
+  }
 }
 
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {

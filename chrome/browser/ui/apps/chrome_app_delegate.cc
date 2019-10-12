@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -69,10 +70,12 @@ bool disable_external_open_for_testing_ = false;
 content::WebContents* OpenURLFromTabInternal(
     content::BrowserContext* context,
     const content::OpenURLParams& params) {
+  NavigateParams new_tab_params(static_cast<Browser*>(nullptr), params.url,
+                                params.transition);
+  new_tab_params.FillNavigateParamsFromOpenURLParams(params);
+
   // Force all links to open in a new tab, even if they were trying to open a
   // window.
-  NavigateParams new_tab_params(static_cast<Browser*>(NULL), params.url,
-                                params.transition);
   if (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
     new_tab_params.disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
   } else {
@@ -143,6 +146,7 @@ class ChromeAppDelegate::NewWindowContentsDelegate
 
  private:
   std::vector<std::unique_ptr<content::WebContents>> owned_contents_;
+
   DISALLOW_COPY_AND_ASSIGN(NewWindowContentsDelegate);
 };
 

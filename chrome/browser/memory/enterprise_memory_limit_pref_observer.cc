@@ -7,7 +7,13 @@
 #include "base/bind.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/util/memory_pressure/multi_source_memory_pressure_monitor.h"
+#include "build/build_config.h"
+#include "chrome/browser/resource_coordinator/utils.h"
 #include "chrome/common/pref_names.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
+#endif
 
 namespace memory {
 
@@ -35,8 +41,20 @@ EnterpriseMemoryLimitPrefObserver::EnterpriseMemoryLimitPrefObserver(
 
 EnterpriseMemoryLimitPrefObserver::~EnterpriseMemoryLimitPrefObserver() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (evaluator_->IsRunning())
+  if (evaluator_->IsRunning()) {
+#if !defined(OS_ANDROID)
+    resource_coordinator::GetTabLifecycleUnitSource()
+        ->SetMemoryLimitEnterprisePolicyFlag(false);
+#endif
     evaluator_->Stop();
+  }
+}
+
+bool EnterpriseMemoryLimitPrefObserver::PlatformIsSupported() {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  return true;
+#endif
+  return false;
 }
 
 // static
@@ -59,6 +77,11 @@ void EnterpriseMemoryLimitPrefObserver::GetPref() {
   } else if (evaluator_->IsRunning()) {
     evaluator_->Stop();
   }
+
+#if !defined(OS_ANDROID)
+  resource_coordinator::GetTabLifecycleUnitSource()
+      ->SetMemoryLimitEnterprisePolicyFlag(pref->IsManaged());
+#endif
 }
 
 }  // namespace memory

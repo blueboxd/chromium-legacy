@@ -104,7 +104,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-features=BackForwardCache",
+          "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction",
           "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.android_browsertests.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
@@ -151,7 +151,7 @@
       },
       {
         "args": [
-          "--enable-features=BackForwardCache",
+          "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction",
           "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.chrome_public_test_apk.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
@@ -199,7 +199,7 @@
       },
       {
         "args": [
-          "--enable-features=BackForwardCache",
+          "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction",
           "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_browsertests.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
@@ -247,7 +247,7 @@
       },
       {
         "args": [
-          "--enable-features=BackForwardCache",
+          "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction",
           "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_shell_test_apk.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
@@ -295,7 +295,7 @@
       },
       {
         "args": [
-          "--enable-features=BackForwardCache",
+          "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction",
           "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_unittests.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
@@ -343,7 +343,7 @@
       },
       {
         "args": [
-          "--enable-features=BackForwardCache",
+          "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction",
           "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.unit_tests.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"

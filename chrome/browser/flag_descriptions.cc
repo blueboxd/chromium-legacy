@@ -2870,12 +2870,6 @@ const char kDialMediaRouteProviderDescription[] =
     "Enables the native DIAL Media Route Provider implementation to be used "
     "instead of the implementation in the Media Router component extension.";
 
-const char kGridLayoutForNtpShortcutsName[] =
-    "Enable grid layout for NTP shortcuts";
-const char kGridLayoutForNtpShortcutsDescription[] =
-    "Enables better animations for the shortcuts, including improved "
-    "drag-and-drop.";
-
 const char kNtpCustomizationMenuV2Name[] = "NTP customization menu version 2";
 const char kNtpCustomizationMenuV2Description[] =
     "Use the second version of the NTP customization menu.";
@@ -2995,11 +2989,10 @@ const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[] =
     "Put each tab switch suggestion in a separate suggestion, immediately "
     "following the original suggestion.";
 
-const char kProactiveTabFreezeAndDiscardName[] =
-    "Proactive Tab Freeze and Discard";
-const char kProactiveTabFreezeAndDiscardDescription[] =
-    "Enables proactive tab freezing and discarding. This requires "
-    "#enable-page-almost-idle.";
+const char kTabFreezeName[] = "Tab Freeze";
+const char kTabFreezeDescription[] =
+    "Enables freezing eligible tabs when they have been backgrounded for 5 "
+    "minutes.";
 
 const char kWebUIA11yEnhancementsName[] =
     "Enable accessibility enahncements in WebUI";

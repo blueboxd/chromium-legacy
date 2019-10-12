@@ -939,9 +939,13 @@ std::vector<base::Optional<TabGroupId>> GetTabGroups(
 // to do a command reset when quitting and restoring.
 class SessionRestoreTabGroupsTest : public SessionRestoreTest,
                                     public testing::WithParamInterface<bool> {
+ public:
+  SessionRestoreTabGroupsTest() {
+    feature_override_.InitAndEnableFeature(features::kTabGroups);
+  }
+
  protected:
   void SetUpOnMainThread() override {
-    feature_override_.InitAndEnableFeature(features::kTabGroups);
     SessionRestoreTest::SetUpOnMainThread();
   }
 
@@ -1031,8 +1035,11 @@ INSTANTIATE_TEST_SUITE_P(WithAndWithoutReset,
 
 // Ensure tab groups aren't restored if |features::kTabGroups| is disabled.
 // Regression test for crbug.com/983962.
+//
+// TODO(https://crbug.com/1012605): Find a way to cover this regression without
+// relying on dynamic FeatureList overrides mid-test.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
-                       GroupsNotRestoredWhenFeatureDisabled) {
+                       DISABLED_GroupsNotRestoredWhenFeatureDisabled) {
   auto feature_override = std::make_unique<base::test::ScopedFeatureList>();
   feature_override->InitAndEnableFeature(features::kTabGroups);
 
@@ -1866,7 +1873,12 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreWithURLInCommandLineTest,
 class SecFetchSiteSessionRestoreTest : public SessionRestoreTest {
  public:
   SecFetchSiteSessionRestoreTest()
-      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    feature_list_.InitWithFeatures(
+        {network::features::kFetchMetadata,
+         network::features::kFetchMetadataDestination},
+        {});
+  }
 
   void SetUpOnMainThread() override {
     SessionRestoreTest::SetUpOnMainThread();
@@ -1877,11 +1889,6 @@ class SecFetchSiteSessionRestoreTest : public SessionRestoreTest {
     https_test_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
     ASSERT_TRUE(https_test_server_.Start());
     ASSERT_TRUE(embedded_test_server()->Start());
-
-    feature_list_.InitWithFeatures(
-        {network::features::kFetchMetadata,
-         network::features::kFetchMetadataDestination},
-        {});
   }
 
   content::WebContents* GetTab(Browser* browser, int tab_index) {

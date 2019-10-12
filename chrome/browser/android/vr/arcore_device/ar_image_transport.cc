@@ -26,34 +26,37 @@ namespace device {
 ArImageTransport::ArImageTransport(
     std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge)
     : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      mailbox_bridge_(std::move(mailbox_bridge)) {}
+      mailbox_bridge_(std::move(mailbox_bridge)) {
+  DVLOG(2) << __func__;
+}
 
-ArImageTransport::~ArImageTransport() {
+ArImageTransport::~ArImageTransport() = default;
+
+void ArImageTransport::DestroySharedBuffers(vr::WebXrPresentationState* webxr) {
+  DVLOG(2) << __func__;
   DCHECK(IsOnGlThread());
 
-  if (webxr_) {
-    std::vector<std::unique_ptr<vr::WebXrSharedBuffer>> buffers =
-        webxr_->TakeSharedBuffers();
-    for (auto& buffer : buffers) {
-      if (!buffer->mailbox_holder.mailbox.IsZero()) {
-        DCHECK(mailbox_bridge_);
-        DVLOG(2) << ": DestroySharedImage, mailbox="
-                 << buffer->mailbox_holder.mailbox.ToDebugString();
-        // Note: the sync token in mailbox_holder may not be accurate. See
-        // comment in TransferFrame below.
-        mailbox_bridge_->DestroySharedImage(buffer->mailbox_holder);
-      }
+  if (!webxr)
+    return;
+
+  std::vector<std::unique_ptr<vr::WebXrSharedBuffer>> buffers =
+      webxr->TakeSharedBuffers();
+  for (auto& buffer : buffers) {
+    if (!buffer->mailbox_holder.mailbox.IsZero()) {
+      DCHECK(mailbox_bridge_);
+      DVLOG(2) << ": DestroySharedImage, mailbox="
+               << buffer->mailbox_holder.mailbox.ToDebugString();
+      // Note: the sync token in mailbox_holder may not be accurate. See
+      // comment in TransferFrame below.
+      mailbox_bridge_->DestroySharedImage(buffer->mailbox_holder);
     }
   }
 }
 
-bool ArImageTransport::Initialize(vr::WebXrPresentationState* webxr) {
-  DVLOG(1) << __func__;
+void ArImageTransport::Initialize(vr::WebXrPresentationState* webxr,
+                                  base::OnceClosure callback) {
   DCHECK(IsOnGlThread());
-
-  webxr_ = webxr;
-
-  mailbox_bridge_->BindContextProviderToCurrentThread();
+  DVLOG(2) << __func__;
 
   glDisable(GL_DEPTH_TEST);
   glDepthMask(GL_FALSE);
@@ -62,14 +65,26 @@ bool ArImageTransport::Initialize(vr::WebXrPresentationState* webxr) {
 
   glGenFramebuffersEXT(1, &camera_fbo_);
 
-  return true;
+  mailbox_bridge_->CreateAndBindContextProvider(
+      base::BindOnce(&ArImageTransport::OnMailboxBridgeReady,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ArImageTransport::OnMailboxBridgeReady(base::OnceClosure callback) {
+  DVLOG(2) << __func__;
+  DCHECK(IsOnGlThread());
+
+  DCHECK(mailbox_bridge_->IsConnected());
+
+  std::move(callback).Run();
 }
 
 GLuint ArImageTransport::GetCameraTextureId() {
   return camera_texture_id_arcore_;
 }
 
-void ArImageTransport::ResizeSharedBuffer(const gfx::Size& size,
+void ArImageTransport::ResizeSharedBuffer(vr::WebXrPresentationState* webxr,
+                                          const gfx::Size& size,
                                           vr::WebXrSharedBuffer* buffer) {
   DCHECK(IsOnGlThread());
 
@@ -94,7 +109,7 @@ void ArImageTransport::ResizeSharedBuffer(const gfx::Size& size,
   static constexpr gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
   static constexpr gfx::BufferUsage usage = gfx::BufferUsage::SCANOUT;
 
-  gfx::GpuMemoryBufferId kBufferId(webxr_->next_memory_buffer_id++);
+  gfx::GpuMemoryBufferId kBufferId(webxr->next_memory_buffer_id++);
   buffer->gmb = gpu::GpuMemoryBufferImplAndroidHardwareBuffer::Create(
       kBufferId, size, format, usage,
       gpu::GpuMemoryBufferImpl::DestructionCallback());
@@ -135,16 +150,17 @@ std::unique_ptr<vr::WebXrSharedBuffer> ArImageTransport::CreateBuffer() {
 }
 
 gpu::MailboxHolder ArImageTransport::TransferFrame(
+    vr::WebXrPresentationState* webxr,
     const gfx::Size& frame_size,
     const gfx::Transform& uv_transform) {
   DCHECK(IsOnGlThread());
 
-  if (!webxr_->GetAnimatingFrame()->shared_buffer) {
-    webxr_->GetAnimatingFrame()->shared_buffer = CreateBuffer();
+  if (!webxr->GetAnimatingFrame()->shared_buffer) {
+    webxr->GetAnimatingFrame()->shared_buffer = CreateBuffer();
   }
   vr::WebXrSharedBuffer* shared_buffer =
-      webxr_->GetAnimatingFrame()->shared_buffer.get();
-  ResizeSharedBuffer(frame_size, shared_buffer);
+      webxr->GetAnimatingFrame()->shared_buffer.get();
+  ResizeSharedBuffer(webxr, frame_size, shared_buffer);
 
   mailbox_bridge_->GenSyncToken(&shared_buffer->mailbox_holder.sync_token);
   return shared_buffer->mailbox_holder;
@@ -169,12 +185,13 @@ void ArImageTransport::CopyCameraImageToFramebuffer(
 }
 
 void ArImageTransport::CopyDrawnImageToFramebuffer(
+    vr::WebXrPresentationState* webxr,
     const gfx::Size& frame_size,
     const gfx::Transform& uv_transform) {
   DVLOG(2) << __func__;
 
   vr::WebXrSharedBuffer* shared_buffer =
-      webxr_->GetRenderingFrame()->shared_buffer.get();
+      webxr->GetRenderingFrame()->shared_buffer.get();
 
   // Set the blend mode for combining the drawn image (source) with the camera
   // image (destination). WebXR assumes that the canvas has premultiplied alpha,

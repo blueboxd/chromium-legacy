@@ -32,6 +32,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -159,18 +160,19 @@ class SafetyTipPageInfoBubbleViewBrowserTest
   void SetUp() override {
     switch (ui_status()) {
       case UIStatus::kDisabled:
-        feature_list_.InitAndDisableFeature(features::kSafetyTipUI);
+        feature_list_.InitAndDisableFeature(
+            security_state::features::kSafetyTipUI);
         break;
       case UIStatus::kEnabled:
         feature_list_.InitWithFeaturesAndParameters(
-            {{features::kSafetyTipUI, {}},
+            {{security_state::features::kSafetyTipUI, {}},
              {features::kLookalikeUrlNavigationSuggestionsUI,
               {{"topsites", "true"}}}},
             {});
         break;
       case UIStatus::kEnabledWithEditDistance:
         feature_list_.InitWithFeaturesAndParameters(
-            {{features::kSafetyTipUI,
+            {{security_state::features::kSafetyTipUI,
               {{"editdistance", "true"},
                {"editdistance_siteengagement", "true"}}},
              {features::kLookalikeUrlNavigationSuggestionsUI,
@@ -178,6 +180,7 @@ class SafetyTipPageInfoBubbleViewBrowserTest
             {});
     }
 
+    InitializeSafetyTipConfig();
     InProcessBrowserTest::SetUp();
   }
 
@@ -290,6 +293,25 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest, ShowOnBlock) {
   EXPECT_TRUE(IsUIShowingIfEnabled());
 
   ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(browser()));
+}
+
+// Ensure explicitly-allowed sites don't get blocked when the site is otherwise
+// blocked server-side.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       NoShowOnAllowlist) {
+  auto kNavigatedUrl = GetURL("site1.com");
+
+  // Ensure a Safety Tip is triggered initially...
+  SetSafetyTipBadRepPatterns({"site1.com/"});
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_TRUE(IsUIShowingIfEnabled());
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(browser()));
+
+  // ...but suppressed by the allowlist.
+  SetSafetyTipAllowlistPatterns({"site1.com/"});
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_FALSE(IsUIShowing());
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
 }
 
 // After the user clicks 'leave site', the user should end up on a safe domain.
@@ -433,6 +455,25 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(IsUIShowingIfEnabled());
   ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
+}
+
+// Tests that Safety Tips don't trigger on lookalike domains that are explicitly
+// allowed by the allowlist.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       NoTriggersOnLookalikeAllowlist) {
+  // This domain is a lookalike of a top domain not in the top 500.
+  const GURL kNavigatedUrl = GetURL("googlé.sk");
+
+  // Ensure a Safety Tip is triggered initially...
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_TRUE(IsUIShowingIfEnabled());
+
+  // ...but suppressed by the allowlist.
+  SetSafetyTipAllowlistPatterns({"xn--googl-fsa.sk/"});
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_FALSE(IsUIShowing());
 }
 
 // Tests that Safety Tips trigger (or not) on lookalike domains with edit

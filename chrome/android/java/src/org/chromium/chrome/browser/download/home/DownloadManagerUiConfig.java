@@ -54,9 +54,6 @@ public class DownloadManagerUiConfig {
     /** Whether or not rename feature should be shown in UI. */
     public final boolean isRenameEnabled;
 
-    /** Whether or not section headers should be shown in UI. */
-    public final boolean showSectionHeaders;
-
     /** Constructor. */
     private DownloadManagerUiConfig(Builder builder) {
         isOffTheRecord = builder.mIsOffTheRecord;
@@ -69,7 +66,6 @@ public class DownloadManagerUiConfig {
         maxThumbnailScaleFactor = builder.mMaxThumbnailScaleFactor;
         justNowThresholdSeconds = builder.mJustNowThresholdSeconds;
         isRenameEnabled = builder.mIsRenameEnabled;
-        showSectionHeaders = builder.mShowSectionHeaders;
     }
 
     /** Helper class for building a {@link DownloadManagerUiConfig}. */
@@ -89,7 +85,6 @@ public class DownloadManagerUiConfig {
         private float mMaxThumbnailScaleFactor = 1.5f; /* hdpi scale factor. */
         private long mJustNowThresholdSeconds;
         private boolean mIsRenameEnabled;
-        private boolean mShowSectionHeaders;
 
         public Builder() {
             readParamsFromFinch();
@@ -137,11 +132,6 @@ public class DownloadManagerUiConfig {
 
         public Builder setMaxThumbnailScaleFactor(float maxThumbnailScaleFactor) {
             mMaxThumbnailScaleFactor = maxThumbnailScaleFactor;
-            return this;
-        }
-
-        public Builder setShowSectionHeaders(boolean showSectionHeaders) {
-            mShowSectionHeaders = showSectionHeaders;
             return this;
         }
 

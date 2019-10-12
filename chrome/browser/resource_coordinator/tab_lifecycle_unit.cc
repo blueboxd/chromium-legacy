@@ -425,11 +425,18 @@ void TabLifecycleUnitSource::TabLifecycleUnit::UpdateOriginTrialFreezePolicy(
 
 void TabLifecycleUnitSource::TabLifecycleUnit::SetIsHoldingWebLock(
     bool is_holding_weblock) {
+  // Unfreeze the tab if it receive a lock while being frozen.
+  if (is_holding_weblock && IsFrozenOrPendingFreeze(GetState()))
+    Unfreeze();
+
   is_holding_weblock_ = is_holding_weblock;
 }
 
 void TabLifecycleUnitSource::TabLifecycleUnit::SetIsHoldingIndexedDBLock(
     bool is_holding_indexeddb_lock) {
+  // Unfreeze the tab if it receive a lock while being frozen.
+  if (is_holding_indexeddb_lock && IsFrozenOrPendingFreeze(GetState()))
+    Unfreeze();
   is_holding_indexeddb_lock_ = is_holding_indexeddb_lock;
 }
 
@@ -602,12 +609,16 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
 // NOTE: These do not currently provide DecisionDetails!
 #if !defined(OS_CHROMEOS)
   if (reason == LifecycleUnitDiscardReason::URGENT) {
-    // Limit urgent discarding to once only.
-    if (GetDiscardCount() > 0)
+    // Limit urgent discarding to once only, unless discarding for the
+    // enterprise memory limit feature.
+    if (GetDiscardCount() > 0 &&
+        !GetTabSource()->memory_limit_enterprise_policy())
       return false;
     // Protect non-visible tabs from urgent discarding for a period of time.
     if (web_contents()->GetVisibility() != content::Visibility::VISIBLE) {
       base::TimeDelta time_in_bg = NowTicks() - GetWallTimeWhenHidden();
+      // TODO(sebmarchand): Check if this should be lowered when the enterprise
+      // memory limit feature is set.
       if (time_in_bg < kBackgroundUrgentProtectionTime)
         return false;
     }
@@ -621,8 +632,8 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
   bool check_heuristics = !GetStaticProactiveTabFreezeAndDiscardParams()
                                .disable_heuristics_protections;
 
-  if (check_heuristics)
-    CanDiscardHeuristicsChecks(decision_details, reason);
+  if (reason == LifecycleUnitDiscardReason::PROACTIVE && check_heuristics)
+    CanProactivelyDiscardHeuristicsChecks(decision_details);
 
 #if defined(OS_CHROMEOS)
   if (web_contents()->GetVisibility() == content::Visibility::VISIBLE)
@@ -1049,9 +1060,9 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CanFreezeHeuristicsChecks(
   }
 }
 
-void TabLifecycleUnitSource::TabLifecycleUnit::CanDiscardHeuristicsChecks(
-    DecisionDetails* decision_details,
-    LifecycleUnitDiscardReason reason) const {
+void TabLifecycleUnitSource::TabLifecycleUnit::
+    CanProactivelyDiscardHeuristicsChecks(
+        DecisionDetails* decision_details) const {
   // We deliberately run through all of the logic without early termination.
   // This ensures that the decision details lists all possible reasons that
   // the transition can be denied.
@@ -1060,21 +1071,19 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CanDiscardHeuristicsChecks(
         DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT);
   }
 
-  if (reason == LifecycleUnitDiscardReason::PROACTIVE) {
-    auto intervention_policy =
-        GetTabSource()->intervention_policy_database()->GetDiscardingPolicy(
-            url::Origin::Create(web_contents()->GetLastCommittedURL()));
+  auto intervention_policy =
+      GetTabSource()->intervention_policy_database()->GetDiscardingPolicy(
+          url::Origin::Create(web_contents()->GetLastCommittedURL()));
 
-    switch (intervention_policy) {
-      case OriginInterventions::OPT_IN:
-        decision_details->AddReason(DecisionSuccessReason::GLOBAL_WHITELIST);
-        break;
-      case OriginInterventions::OPT_OUT:
-        decision_details->AddReason(DecisionFailureReason::GLOBAL_BLACKLIST);
-        break;
-      case OriginInterventions::DEFAULT:
-        break;
-    }
+  switch (intervention_policy) {
+    case OriginInterventions::OPT_IN:
+      decision_details->AddReason(DecisionSuccessReason::GLOBAL_WHITELIST);
+      break;
+    case OriginInterventions::OPT_OUT:
+      decision_details->AddReason(DecisionFailureReason::GLOBAL_BLACKLIST);
+      break;
+    case OriginInterventions::DEFAULT:
+      break;
   }
 }
 

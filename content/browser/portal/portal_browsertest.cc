@@ -12,12 +12,13 @@
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/portal/portal.h"
+#include "content/browser/portal/portal_created_observer.h"
+#include "content/browser/portal/portal_interceptor_for_testing.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/frame.mojom-test-utils.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -33,210 +34,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/portal/portal.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom.h"
 #include "url/url_constants.h"
 
 using testing::_;
 
 namespace content {
-
-// The PortalInterceptorForTesting can be used in tests to inspect Portal IPCs.
-class PortalInterceptorForTesting final
-    : public blink::mojom::PortalInterceptorForTesting {
- public:
-  static PortalInterceptorForTesting* Create(
-      RenderFrameHostImpl* render_frame_host_impl,
-      mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
-      mojo::AssociatedRemote<blink::mojom::PortalClient> client);
-  static PortalInterceptorForTesting* Create(
-      RenderFrameHostImpl* render_frame_host_impl,
-      content::Portal* portal);
-  static PortalInterceptorForTesting* From(content::Portal* portal);
-
-  void Activate(blink::TransferableMessage data,
-                ActivateCallback callback) override {
-    portal_activated_ = true;
-
-    if (run_loop_) {
-      run_loop_->Quit();
-      run_loop_ = nullptr;
-    }
-
-    // |this| can be destroyed after Activate() is called.
-    portal_->Activate(std::move(data), std::move(callback));
-  }
-
-  void Navigate(const GURL& url,
-                blink::mojom::ReferrerPtr referrer,
-                NavigateCallback callback) override {
-    if (navigate_callback_) {
-      navigate_callback_.Run(url, std::move(referrer), std::move(callback));
-      return;
-    }
-
-    portal_->Navigate(url, std::move(referrer), std::move(callback));
-  }
-
-  void WaitForActivate() {
-    if (portal_activated_)
-      return;
-
-    base::RunLoop run_loop;
-    run_loop_ = &run_loop;
-    run_loop.Run();
-  }
-
-  // Test getters.
-  content::Portal* GetPortal() { return portal_.get(); }
-  WebContents* GetPortalContents() { return portal_->GetPortalContents(); }
-
-  // IPC callbacks
-  base::RepeatingCallback<
-      void(const GURL&, blink::mojom::ReferrerPtr, NavigateCallback)>
-      navigate_callback_;
-
- private:
-  explicit PortalInterceptorForTesting(
-      RenderFrameHostImpl* render_frame_host_impl)
-      : portal_(content::Portal::CreateForTesting(render_frame_host_impl)) {}
-  PortalInterceptorForTesting(RenderFrameHostImpl* render_frame_host_impl,
-                              std::unique_ptr<content::Portal> portal)
-      : portal_(std::move(portal)) {}
-
-  blink::mojom::Portal* GetForwardingInterface() override {
-    return portal_.get();
-  }
-
-  std::unique_ptr<content::Portal> portal_;
-  bool portal_activated_ = false;
-  base::RunLoop* run_loop_ = nullptr;
-};
-
-// static
-PortalInterceptorForTesting* PortalInterceptorForTesting::Create(
-    RenderFrameHostImpl* render_frame_host_impl,
-    mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
-    mojo::AssociatedRemote<blink::mojom::PortalClient> client) {
-  auto test_portal_ptr =
-      base::WrapUnique(new PortalInterceptorForTesting(render_frame_host_impl));
-  PortalInterceptorForTesting* test_portal = test_portal_ptr.get();
-  test_portal->GetPortal()->SetBindingForTesting(
-      mojo::MakeStrongAssociatedBinding<blink::mojom::Portal>(
-          std::move(test_portal_ptr), std::move(receiver)));
-  test_portal->GetPortal()->SetClientForTesting(std::move(client));
-  return test_portal;
-}
-
-PortalInterceptorForTesting* PortalInterceptorForTesting::Create(
-    RenderFrameHostImpl* render_frame_host_impl,
-    content::Portal* portal) {
-  // Take ownership of the portal.
-  std::unique_ptr<blink::mojom::Portal> mojom_portal_ptr =
-      portal->GetBindingForTesting()->SwapImplForTesting(nullptr);
-  std::unique_ptr<content::Portal> portal_ptr = base::WrapUnique(
-      static_cast<content::Portal*>(mojom_portal_ptr.release()));
-
-  // Create PortalInterceptorForTesting.
-  auto test_portal_ptr = base::WrapUnique(new PortalInterceptorForTesting(
-      render_frame_host_impl, std::move(portal_ptr)));
-  PortalInterceptorForTesting* test_portal = test_portal_ptr.get();
-
-  // Set the binding for the PortalInterceptorForTesting.
-  portal->GetBindingForTesting()->SwapImplForTesting(
-      std::move(test_portal_ptr));
-
-  return test_portal;
-}
-
-// static
-PortalInterceptorForTesting* PortalInterceptorForTesting::From(
-    content::Portal* portal) {
-  blink::mojom::Portal* impl = portal->GetBindingForTesting()->impl();
-  auto* interceptor = static_cast<PortalInterceptorForTesting*>(impl);
-  CHECK_NE(static_cast<blink::mojom::Portal*>(portal), impl);
-  CHECK_EQ(interceptor->GetPortal(), portal);
-  return interceptor;
-}
-
-// The PortalCreatedObserver observes portal creations on
-// |render_frame_host_impl|. This observer can be used to monitor for multiple
-// Portal creations on the same RenderFrameHost, by repeatedly calling
-// WaitUntilPortalCreated().
-class PortalCreatedObserver : public mojom::FrameHostInterceptorForTesting {
- public:
-  explicit PortalCreatedObserver(RenderFrameHostImpl* render_frame_host_impl)
-      : render_frame_host_impl_(render_frame_host_impl) {
-    old_impl_ = render_frame_host_impl_->frame_host_receiver_for_testing()
-                    .SwapImplForTesting(this);
-  }
-
-  ~PortalCreatedObserver() override {
-    render_frame_host_impl_->frame_host_receiver_for_testing()
-        .SwapImplForTesting(old_impl_);
-  }
-
-  FrameHost* GetForwardingInterface() override {
-    return render_frame_host_impl_;
-  }
-
-  void CreatePortal(
-      mojo::PendingAssociatedReceiver<blink::mojom::Portal> portal,
-      mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
-      CreatePortalCallback callback) override {
-    PortalInterceptorForTesting* portal_interceptor =
-        PortalInterceptorForTesting::Create(
-            render_frame_host_impl_, std::move(portal),
-            mojo::AssociatedRemote<blink::mojom::PortalClient>(
-                std::move(client)));
-    portal_ = portal_interceptor->GetPortal();
-    RenderFrameProxyHost* proxy_host = portal_->CreateProxyAndAttachPortal();
-    std::move(callback).Run(proxy_host->GetRoutingID(), portal_->portal_token(),
-                            portal_->GetDevToolsFrameToken());
-
-    if (run_loop_)
-      run_loop_->Quit();
-  }
-
-  void AdoptPortal(const base::UnguessableToken& portal_token,
-                   AdoptPortalCallback callback) override {
-    Portal* portal = Portal::FromToken(portal_token);
-    PortalInterceptorForTesting* portal_interceptor =
-        PortalInterceptorForTesting::Create(render_frame_host_impl_, portal);
-    portal_ = portal_interceptor->GetPortal();
-    RenderFrameProxyHost* proxy_host = portal_->CreateProxyAndAttachPortal();
-    std::move(callback).Run(
-        proxy_host->GetRoutingID(),
-        proxy_host->frame_tree_node()->current_replication_state(),
-        portal->GetDevToolsFrameToken());
-
-    if (run_loop_)
-      run_loop_->Quit();
-  }
-
-  Portal* WaitUntilPortalCreated() {
-    Portal* portal = portal_;
-    if (portal) {
-      portal_ = nullptr;
-      return portal;
-    }
-
-    base::RunLoop run_loop;
-    run_loop_ = &run_loop;
-    run_loop.Run();
-    run_loop_ = nullptr;
-
-    portal = portal_;
-    portal_ = nullptr;
-    return portal;
-  }
-
- private:
-  RenderFrameHostImpl* render_frame_host_impl_;
-  mojom::FrameHost* old_impl_;
-  base::RunLoop* run_loop_ = nullptr;
-  Portal* portal_ = nullptr;
-};
 
 class PortalBrowserTest : public ContentBrowserTest {
  protected:
@@ -760,13 +563,13 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigateToChrome) {
       PortalInterceptorForTesting::From(portal);
 
   // Try to navigate to chrome://settings and wait for the process to die.
-  portal_interceptor->navigate_callback_ = base::BindRepeating(
+  portal_interceptor->SetNavigateCallback(base::BindRepeating(
       [](Portal* portal, const GURL& url, blink::mojom::ReferrerPtr referrer,
          blink::mojom::Portal::NavigateCallback callback) {
         GURL chrome_url("chrome://settings");
         portal->Navigate(chrome_url, std::move(referrer), std::move(callback));
       },
-      portal);
+      portal));
   RenderProcessHostKillWaiter kill_waiter(main_frame->GetProcess());
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   ignore_result(ExecJs(main_frame, JsReplace("portal.src = $1;", a_url)));
@@ -1190,11 +993,10 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchInputTransferAcrossActivation) {
 }
 #endif
 
-// TODO(crbug.com/1010675): Test fails flakily.
 // Touch input transfer is only implemented in the content layer for Aura.
 #if defined(USE_AURA)
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
-                       DISABLED_TouchInputTransferAcrossReactivation) {
+                       TouchInputTransferAcrossReactivation) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(
                    "portal.test",

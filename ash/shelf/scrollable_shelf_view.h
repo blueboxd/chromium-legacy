@@ -86,6 +86,8 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
     default_last_focusable_child_ = default_last_focusable_child;
   }
 
+  const gfx::Rect& visible_space() const { return visible_space_; }
+
   // Size of the arrow button.
   static int GetArrowButtonSize();
 
@@ -257,6 +259,17 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // the correct UI.
   int CalculateAdjustedOffset() const;
 
+  void UpdateVisibleSpace();
+
+  // Calculates the padding insets which help to show the edging app icon's
+  // ripple ring correctly.
+  gfx::Insets CalculateRipplePaddingInsets() const;
+
+  // Calculates the rounded corners for |shelf_container_view_|. It contributes
+  // to cut off the child view out of the scrollable shelf's bounds, such as
+  // ripple ring.
+  gfx::RoundedCornersF CalculateShelfContainerRoundedCorners() const;
+
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 
   // Child views Owned by views hierarchy.
@@ -264,8 +277,13 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   ScrollArrowView* right_arrow_ = nullptr;
   ShelfContainerView* shelf_container_view_ = nullptr;
 
-  // Available space to accommodate shelf icons.
+  // Available space to accommodate child views.
   gfx::Rect available_space_;
+
+  // Visible space of |shelf_container_view| in ScrollableShelfView's local
+  // coordinates. Different from |available_space_|, |visible_space_| only
+  // contains app icons and is mirrored for horizontal shelf under RTL.
+  gfx::Rect visible_space_;
 
   ShelfView* shelf_view_ = nullptr;
 

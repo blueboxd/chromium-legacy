@@ -436,7 +436,7 @@ void IconLabelBubbleView::AnimateIn(base::Optional<int> string_id) {
   if (!label()->GetVisible()) {
     // Start animation from the current width, otherwise the icon will also be
     // included if visible.
-    grow_animation_starting_width_ = width();
+    grow_animation_starting_width_ = GetVisible() ? width() : 0;
     if (string_id) {
       base::string16 label = l10n_util::GetStringUTF16(string_id.value());
       SetLabel(label);

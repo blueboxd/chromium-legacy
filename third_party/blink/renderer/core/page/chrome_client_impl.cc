@@ -472,14 +472,6 @@ IntRect ChromeClientImpl::ViewportToScreen(
   return screen_rect;
 }
 
-float ChromeClientImpl::WindowToViewportScalar(const float scalar_value) const {
-  // TODO(darin): Change callers to pass a LocalFrame.
-  if (!web_view_->MainFrameImpl())
-    return scalar_value;
-  return WindowToViewportScalar(web_view_->MainFrameImpl()->GetFrame(),
-                                scalar_value);
-}
-
 float ChromeClientImpl::WindowToViewportScalar(LocalFrame* frame,
                                                const float scalar_value) const {
 

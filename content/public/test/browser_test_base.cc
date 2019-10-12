@@ -34,6 +34,7 @@
 #include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/network_service_instance_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/startup_data_impl.h"
@@ -44,12 +45,10 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_launcher.h"
@@ -57,13 +56,13 @@
 #include "content/test/content_browser_sanity_checker.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_switches.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/embedder/switches.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"
@@ -476,6 +475,7 @@ void BrowserTestBase::SetUp() {
   {
     base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait;
     // Shutting these down will block the thread.
+    ShutDownNetworkService();
     service_manager_env.reset();
     discardable_shared_memory_manager.reset();
     spawned_test_server_.reset();
@@ -513,12 +513,12 @@ bool BrowserTestBase::AllowFileAccessFromFiles() {
 void BrowserTestBase::SimulateNetworkServiceCrash() {
   CHECK(!IsInProcessNetworkService())
       << "Can't crash the network service if it's running in-process!";
-  network::mojom::NetworkServiceTestPtr network_service_test;
-  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
-                                      &network_service_test);
+  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+  content::GetNetworkService()->BindTestInterface(
+      network_service_test.BindNewPipeAndPassReceiver());
 
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-  network_service_test.set_connection_error_handler(run_loop.QuitClosure());
+  network_service_test.set_disconnect_handler(run_loop.QuitClosure());
 
   network_service_test->SimulateCrash();
   run_loop.Run();
@@ -776,9 +776,9 @@ void BrowserTestBase::InitializeNetworkProcess() {
   if (mojo_rules.empty())
     return;
 
-  network::mojom::NetworkServiceTestPtr network_service_test;
-  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
-                                      &network_service_test);
+  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+  content::GetNetworkService()->BindTestInterface(
+      network_service_test.BindNewPipeAndPassReceiver());
 
   // Send the DNS rules to network service process. Android needs the RunLoop
   // to dispatch a Java callback that makes network process to enter native

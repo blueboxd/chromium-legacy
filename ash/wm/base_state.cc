@@ -187,7 +187,7 @@ gfx::Rect BaseState::GetSnappedWindowBoundsInParent(
   gfx::Rect bounds_in_parent;
   if (ShouldAllowSplitView()) {
     bounds_in_parent =
-        Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInParent(
+        SplitViewController::Get()->GetSnappedWindowBoundsInParent(
             window, (state_type == WindowStateType::kLeftSnapped)
                         ? SplitViewController::LEFT
                         : SplitViewController::RIGHT);

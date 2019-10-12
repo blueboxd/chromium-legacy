@@ -4,7 +4,6 @@
 
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
-import("//tools/grit/grit_rule.gni")
 
 declare_args() {
   # Controls the product part of the user agent calculated in sync_util.cc.
@@ -134,23 +133,6 @@ jumbo_static_library("driver") {
   defines = [ "SYNC_USER_AGENT_PRODUCT=$sync_user_agent_product" ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
-}
-
-grit("resources") {
-  source = "resources.grd"
-
-  # The .grd contains references to generated files.
-  source_is_generated = true
-  outputs = [
-    "grit/sync_driver_resources.h",
-    "sync_driver_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/components"
-  depfile_dir = target_gen_dir
-  grit_flags = [
-    "-E",
-    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-  ]
 }
 
 static_library("test_support") {

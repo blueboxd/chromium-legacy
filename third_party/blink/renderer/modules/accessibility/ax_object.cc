@@ -3208,8 +3208,10 @@ bool AXObject::OnNativeScrollToMakeVisibleAction() const {
   if (!node)
     return false;
   if (Element* locked_ancestor =
-          DisplayLockUtilities::NearestLockedInclusiveAncestor(*node))
-    locked_ancestor->ActivateDisplayLockIfNeeded();
+          DisplayLockUtilities::NearestLockedInclusiveAncestor(*node)) {
+    locked_ancestor->ActivateDisplayLockIfNeeded(
+        DisplayLockActivationReason::kUser);
+  }
   LayoutObject* layout_object = node->GetLayoutObject();
   if (!layout_object || !node->isConnected())
     return false;

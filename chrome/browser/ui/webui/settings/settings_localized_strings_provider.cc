@@ -1707,8 +1707,9 @@ void AddOnStartupStrings(content::WebUIDataSource* html_source) {
                           base::size(kLocalizedStrings));
 }
 
-bool isUserFIDOVerifiable(autofill::PersonalDataManager* personal_data,
-                          content::WebContents* web_contents) {
+bool IsFidoAuthenticationAvailable(autofill::PersonalDataManager* personal_data,
+                                   content::WebContents* web_contents) {
+  // Don't show toggle switch if user is unable to downstream cards.
   if (personal_data->GetSyncSigninState() !=
           autofill::AutofillSyncSigninState::
               kSignedInAndWalletSyncTransportEnabled &&
@@ -1717,6 +1718,7 @@ bool isUserFIDOVerifiable(autofill::PersonalDataManager* personal_data,
     return false;
   }
 
+  // If |autofill_manager| is not available, then don't show toggle switch.
   autofill::ContentAutofillDriverFactory* autofill_driver_factory =
       autofill::ContentAutofillDriverFactory::FromWebContents(web_contents);
   if (!autofill_driver_factory)
@@ -1730,9 +1732,11 @@ bool isUserFIDOVerifiable(autofill::PersonalDataManager* personal_data,
   if (!autofill_manager)
     return false;
 
-  return autofill_manager->credit_card_access_manager()
-      ->GetOrCreateFIDOAuthenticator()
-      ->IsUserVerifiable();
+  // Show the toggle switch only if the flag is enabled. Once returned, this
+  // decision may be overridden (from true to false) by the caller in the
+  // payments section if no platform authenticator is found.
+  return base::FeatureList::IsEnabled(
+      autofill::features::kAutofillCreditCardAuthentication);
 }
 
 void AddAutofillStrings(content::WebUIDataSource* html_source,
@@ -1869,8 +1873,9 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                             ProfileSyncServiceFactory::GetForProfile(profile),
                             /*is_test_mode=*/false,
                             /*log_manager=*/nullptr));
-  html_source->AddBoolean("userIsFIDOVerifiable",
-                          isUserFIDOVerifiable(personal_data, web_contents));
+  html_source->AddBoolean(
+      "fidoAuthenticationAvailableForAutofill",
+      IsFidoAuthenticationAvailable(personal_data, web_contents));
 
   html_source->AddBoolean(
       "passwordsLeakDetectionEnabled",

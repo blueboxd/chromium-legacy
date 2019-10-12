@@ -196,6 +196,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableWebXRARModule(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRARDOMOverlay(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRAnchors(bool);
+  BLINK_PLATFORM_EXPORT static void EnableWebXrGamepadModule(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRHitTest(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRPlaneDetection(bool);
   BLINK_PLATFORM_EXPORT static void EnableXSLT(bool);

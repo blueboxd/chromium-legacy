@@ -17,14 +17,24 @@ namespace ash {
 
 namespace {
 
-// The height reduced from the tile when min scale is not sufficient to make the
-// apps grid fit the available size - This would essentially remove the vertical
-// padding for the unclipped folder icon.
-constexpr int kMinYScaleHeightAdjustment = 16;
-
 // Scales |value| using the smaller one of |scale_1| and |scale_2|.
 int MinScale(int value, float scale_1, float scale_2) {
   return std::round(value * std::min(scale_1, scale_2));
+}
+
+// The height reduced from the tile when min scale is not sufficient to make the
+// apps grid fit the available size - This would essentially remove the vertical
+// padding for the unclipped folder icon.
+int MinYScaleHeightAdjustmentForType(ash::AppListConfigType type) {
+  switch (type) {
+    case ash::AppListConfigType::kShared:
+    case ash::AppListConfigType::kLarge:
+      return 16;
+    case ash::AppListConfigType::kMedium:
+      return 8;
+    case ash::AppListConfigType::kSmall:
+      return 4;
+  }
 }
 
 int GridTileWidthForType(ash::AppListConfigType type) {
@@ -38,9 +48,6 @@ int GridTileWidthForType(ash::AppListConfigType type) {
     case ash::AppListConfigType::kSmall:
       return 80;
   }
-
-  NOTREACHED();
-  return GridTileWidthForType(ash::AppListConfigType::kShared);
 }
 
 int GridTileHeightForType(ash::AppListConfigType type) {
@@ -53,9 +60,6 @@ int GridTileHeightForType(ash::AppListConfigType type) {
     case ash::AppListConfigType::kSmall:
       return 80;
   }
-
-  NOTREACHED();
-  return GridTileHeightForType(ash::AppListConfigType::kShared);
 }
 
 int GridIconDimensionForType(ash::AppListConfigType type) {
@@ -68,9 +72,6 @@ int GridIconDimensionForType(ash::AppListConfigType type) {
     case ash::AppListConfigType::kSmall:
       return 40;
   }
-
-  NOTREACHED();
-  return GridIconDimensionForType(ash::AppListConfigType::kShared);
 }
 
 int GridTitleTopPaddingForType(ash::AppListConfigType type) {
@@ -83,9 +84,6 @@ int GridTitleTopPaddingForType(ash::AppListConfigType type) {
     case ash::AppListConfigType::kSmall:
       return 56;
   }
-
-  NOTREACHED();
-  return GridTitleTopPaddingForType(ash::AppListConfigType::kShared);
 }
 
 int GridTitleBottomPaddingForType(ash::AppListConfigType type) {
@@ -97,9 +95,6 @@ int GridTitleBottomPaddingForType(ash::AppListConfigType type) {
     case ash::AppListConfigType::kSmall:
       return 6;
   }
-
-  NOTREACHED();
-  return GridTitleBottomPaddingForType(ash::AppListConfigType::kShared);
 }
 
 int GridTitleHorizontalPaddingForType(ash::AppListConfigType type) {
@@ -112,9 +107,6 @@ int GridTitleHorizontalPaddingForType(ash::AppListConfigType type) {
     case ash::AppListConfigType::kSmall:
       return 0;
   }
-
-  NOTREACHED();
-  return GridTitleHorizontalPaddingForType(ash::AppListConfigType::kShared);
 }
 
 int GridFocusDimensionForType(ash::AppListConfigType type) {
@@ -127,9 +119,6 @@ int GridFocusDimensionForType(ash::AppListConfigType type) {
     case ash::AppListConfigType::kSmall:
       return 56;
   }
-
-  NOTREACHED();
-  return GridFocusDimensionForType(ash::AppListConfigType::kShared);
 }
 
 int GridFocusCornerRadiusForType(ash::AppListConfigType type) {
@@ -141,9 +130,6 @@ int GridFocusCornerRadiusForType(ash::AppListConfigType type) {
     case ash::AppListConfigType::kSmall:
       return 8;
   }
-
-  NOTREACHED();
-  return GridFocusCornerRadiusForType(ash::AppListConfigType::kShared);
 }
 
 int GridFadeoutMaskHeightForType(ash::AppListConfigType type) {
@@ -161,9 +147,6 @@ int GridFadeoutMaskHeightForType(ash::AppListConfigType type) {
     case ash::AppListConfigType::kSmall:
       return 16;
   }
-
-  NOTREACHED();
-  return GridFadeoutMaskHeightForType(ash::AppListConfigType::kShared);
 }
 
 int AppTitleMaxLineHeightForType(ash::AppListConfigType type) {
@@ -175,9 +158,6 @@ int AppTitleMaxLineHeightForType(ash::AppListConfigType type) {
     case ash::AppListConfigType::kSmall:
       return 18;
   }
-
-  NOTREACHED();
-  return AppTitleMaxLineHeightForType(ash::AppListConfigType::kShared);
 }
 
 gfx::FontList AppTitleFontForType(ash::AppListConfigType type) {
@@ -189,9 +169,6 @@ gfx::FontList AppTitleFontForType(ash::AppListConfigType type) {
     case ash::AppListConfigType::kSmall:
       return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(0);
   }
-
-  NOTREACHED();
-  return AppTitleFontForType(ash::AppListConfigType::kShared);
 }
 
 int FolderUnclippedIconDimensionForType(ash::AppListConfigType type) {
@@ -204,9 +181,6 @@ int FolderUnclippedIconDimensionForType(ash::AppListConfigType type) {
     case ash::AppListConfigType::kSmall:
       return 56;
   }
-
-  NOTREACHED();
-  return FolderUnclippedIconDimensionForType(ash::AppListConfigType::kShared);
 }
 
 int FolderClippedIconDimensionForType(ash::AppListConfigType type) {
@@ -219,9 +193,6 @@ int FolderClippedIconDimensionForType(ash::AppListConfigType type) {
     case ash::AppListConfigType::kSmall:
       return 48;
   }
-
-  NOTREACHED();
-  return FolderClippedIconDimensionForType(ash::AppListConfigType::kShared);
 }
 
 int ItemIconInFolderIconDimensionForType(ash::AppListConfigType type) {
@@ -234,9 +205,6 @@ int ItemIconInFolderIconDimensionForType(ash::AppListConfigType type) {
     case ash::AppListConfigType::kSmall:
       return 24;
   }
-
-  NOTREACHED();
-  return ItemIconInFolderIconDimensionForType(ash::AppListConfigType::kShared);
 }
 
 int ItemIconInFolderIconMarginForType(ash::AppListConfigType type) {
@@ -248,9 +216,6 @@ int ItemIconInFolderIconMarginForType(ash::AppListConfigType type) {
     case ash::AppListConfigType::kSmall:
       return 2;
   }
-
-  NOTREACHED();
-  return ItemIconInFolderIconMarginForType(ash::AppListConfigType::kShared);
 }
 
 int SuggestionChipIconDimension() {
@@ -299,12 +264,14 @@ AppListConfig::AppListConfig(ash::AppListConfigType type)
       suggestion_chip_icon_dimension_(SuggestionChipIconDimension()),
       suggestion_chip_container_top_margin_(
           SuggestionChipContainerTopMarginForType(type)),
+      suggestion_chip_container_height_(32),
       app_title_max_line_height_(AppTitleMaxLineHeightForType(type)),
       app_title_font_(AppTitleFontForType(type)),
       peeking_app_list_height_(284),
       search_box_closed_top_padding_(0),
       search_box_peeking_top_padding_(84),
       search_box_fullscreen_top_padding_(24),
+      search_box_height_(48),
       search_box_height_for_dense_layout_(40),
       preferred_cols_(5),
       preferred_rows_(4),
@@ -355,25 +322,25 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
       scale_x_(scale_x),
       scale_y_(scale_y),
       grid_tile_width_(MinScale(base_config.grid_tile_width_, scale_x, 1)),
-      grid_tile_height_(
-          MinScale(base_config.grid_tile_height_ -
-                       (min_y_scale ? kMinYScaleHeightAdjustment : 0),
-                   scale_y,
-                   1)),
+      grid_tile_height_(MinScale(
+          base_config.grid_tile_height_ -
+              (min_y_scale ? MinYScaleHeightAdjustmentForType(type_) : 0),
+          scale_y,
+          1)),
       grid_tile_spacing_(base_config.grid_tile_spacing_),
       grid_icon_dimension_(MinScale(base_config.grid_icon_dimension_,
                                     scale_x,
                                     inner_tile_scale_y)),
-      grid_icon_bottom_padding_(
-          MinScale(base_config.grid_icon_bottom_padding_ +
-                       (min_y_scale ? kMinYScaleHeightAdjustment : 0),
-                   inner_tile_scale_y,
-                   1)),
-      grid_title_top_padding_(
-          MinScale(base_config.grid_title_top_padding_ -
-                       (min_y_scale ? kMinYScaleHeightAdjustment : 0),
-                   inner_tile_scale_y,
-                   1)),
+      grid_icon_bottom_padding_(MinScale(
+          base_config.grid_icon_bottom_padding_ +
+              (min_y_scale ? MinYScaleHeightAdjustmentForType(type_) : 0),
+          inner_tile_scale_y,
+          1)),
+      grid_title_top_padding_(MinScale(
+          base_config.grid_title_top_padding_ -
+              (min_y_scale ? MinYScaleHeightAdjustmentForType(type_) : 0),
+          inner_tile_scale_y,
+          1)),
       grid_title_bottom_padding_(
           MinScale(base_config.grid_title_bottom_padding_,
                    inner_tile_scale_y,
@@ -410,6 +377,8 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
           base_config.suggestion_chip_icon_dimension_),
       suggestion_chip_container_top_margin_(
           base_config.suggestion_chip_container_top_margin_),
+      suggestion_chip_container_height_(
+          base_config.suggestion_chip_container_height_),
       app_title_max_line_height_(base_config.app_title_max_line_height_),
       app_title_font_(base_config.app_title_font_.DeriveWithSizeDelta(
           min_y_scale ? -2 : (scale_y < 0.66 ? -1 : 0))),
@@ -420,6 +389,7 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
           base_config.search_box_peeking_top_padding_),
       search_box_fullscreen_top_padding_(
           base_config.search_box_fullscreen_top_padding_),
+      search_box_height_(base_config.search_box_height_),
       search_box_height_for_dense_layout_(
           base_config.search_box_height_for_dense_layout_),
       preferred_cols_(base_config.preferred_cols_),
@@ -483,9 +453,7 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
       all_apps_opacity_end_px_(base_config.all_apps_opacity_end_px_),
       search_result_title_font_style_(
           base_config.search_result_title_font_style_),
-      search_tile_height_(base_config.search_tile_height_) {
-  DCHECK_EQ(type_, ash::AppListConfigType::kShared);
-}
+      search_tile_height_(base_config.search_tile_height_) {}
 
 AppListConfig::~AppListConfig() = default;
 
@@ -508,10 +476,8 @@ int AppListConfig::GetPreferredIconDimension(
     case ash::SearchResultDisplayType::kCard:
       return 0;
     case ash::SearchResultDisplayType::kLast:
-      break;
+      return 0;
   }
-  NOTREACHED();
-  return 0;
 }
 
 int AppListConfig::GetMaxNumOfItemsPerPage(int /* page */) const {

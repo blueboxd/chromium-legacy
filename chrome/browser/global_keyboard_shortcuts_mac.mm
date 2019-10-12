@@ -59,7 +59,7 @@ NSMenuItem* FindMenuItem(NSEvent* key, NSMenu* menu) {
   return result;
 }
 
-int MenuCommandForKeyEvent(NSEvent* event) {
+int MenuCommandForKeyEvent(NSEvent* event, SEL* action) {
   if ([event type] != NSKeyDown)
     return -1;
 
@@ -78,8 +78,10 @@ int MenuCommandForKeyEvent(NSEvent* event) {
   if (!item)
     return -1;
 
-  if ([item action] == @selector(commandDispatch:) && [item tag] > 0)
+  if ([item action] == @selector(commandDispatch:) && [item tag] > 0) {
+    *action = [item action];
     return [item tag];
+  }
 
   // "Close window" doesn't use the |commandDispatch:| mechanism. Menu items
   // that do not correspond to IDC_ constants need no special treatment however,
@@ -118,15 +120,15 @@ GetDelayedShortcutsNotPresentInMainMenu() {
 }
 
 CommandForKeyEventResult NoCommand() {
-  return {-1, /*from_main_menu=*/false};
+  return {-1, nil, /*from_main_menu=*/false};
 }
 
-CommandForKeyEventResult MainMenuCommand(int cmd) {
-  return {cmd, /*from_main_menu=*/true};
+CommandForKeyEventResult MainMenuCommand(int cmd, SEL action) {
+  return {cmd, action, /*from_main_menu=*/true};
 }
 
 CommandForKeyEventResult ShortcutCommand(int cmd) {
-  return {cmd, /*from_main_menu=*/false};
+  return {cmd, nil, /*from_main_menu=*/false};
 }
 
 }  // namespace
@@ -166,6 +168,9 @@ const std::vector<KeyboardShortcutData>& GetShortcutsNotPresentInMainMenu() {
     {true, false, false, true,  kVK_ANSI_L,             IDC_SHOW_DOWNLOADS},
     {true,  true,  false, false, kVK_ANSI_C,            IDC_DEV_TOOLS_INSPECT},
     {true,  false,  false, true, kVK_ANSI_C,            IDC_DEV_TOOLS_INSPECT},
+
+    {true, false, false, true, kVK_UpArrow,             IDC_FOCUS_NEXT_PANE},
+    {true, true, false, true,  kVK_UpArrow,             IDC_FOCUS_PREVIOUS_PANE},
   });
   // clang-format on
   return *keys;
@@ -200,9 +205,10 @@ CommandForKeyEventResult CommandForKeyEvent(NSEvent* event) {
   if ([event type] != NSKeyDown)
     return NoCommand();
 
-  int cmdNum = MenuCommandForKeyEvent(event);
+  SEL action;
+  int cmdNum = MenuCommandForKeyEvent(event, &action);
   if (cmdNum != -1)
-    return MainMenuCommand(cmdNum);
+    return MainMenuCommand(cmdNum, action);
 
   // Scan through keycodes and see if it corresponds to one of the non-menu
   // shortcuts.

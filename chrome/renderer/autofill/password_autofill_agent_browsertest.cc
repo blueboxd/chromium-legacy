@@ -1709,6 +1709,7 @@ TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFillUsername) {
   EXPECT_FALSE(
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
   EXPECT_FALSE(password_autofill_agent_->TryToShowTouchToFill(random_element));
+  EXPECT_FALSE(password_autofill_agent_->ShouldSuppressKeyboard());
 
   // This changes once fill data is simulated. |random_element| continue  to
   // have no fill data, though.
@@ -1717,6 +1718,7 @@ TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFillUsername) {
   EXPECT_CALL(fake_driver_, ShowTouchToFill);
   EXPECT_TRUE(
       password_autofill_agent_->TryToShowTouchToFill(username_element_));
+  EXPECT_TRUE(password_autofill_agent_->ShouldSuppressKeyboard());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -1726,6 +1728,7 @@ TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFillPassword) {
   EXPECT_CALL(fake_driver_, ShowTouchToFill);
   EXPECT_TRUE(
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
+  EXPECT_TRUE(password_autofill_agent_->ShouldSuppressKeyboard());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -1734,18 +1737,16 @@ TEST_F(PasswordAutofillAgentTest, TouchToFillDismissed) {
 
   // Touch to fill will be shown multiple times until TouchToFillDismissed()
   // gets called.
-  EXPECT_CALL(fake_driver_, ShowTouchToFill).Times(2);
-  EXPECT_TRUE(
-      password_autofill_agent_->TryToShowTouchToFill(username_element_));
+  EXPECT_CALL(fake_driver_, ShowTouchToFill);
   EXPECT_TRUE(
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
+  EXPECT_TRUE(password_autofill_agent_->ShouldSuppressKeyboard());
   base::RunLoop().RunUntilIdle();
 
   password_autofill_agent_->TouchToFillDismissed();
   EXPECT_FALSE(
-      password_autofill_agent_->TryToShowTouchToFill(username_element_));
-  EXPECT_FALSE(
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
+  EXPECT_FALSE(password_autofill_agent_->ShouldSuppressKeyboard());
   base::RunLoop().RunUntilIdle();
 
   // Reload the page and simulate fill.
@@ -1758,6 +1759,7 @@ TEST_F(PasswordAutofillAgentTest, TouchToFillDismissed) {
   EXPECT_CALL(fake_driver_, ShowTouchToFill);
   EXPECT_TRUE(
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
+  EXPECT_TRUE(password_autofill_agent_->ShouldSuppressKeyboard());
   base::RunLoop().RunUntilIdle();
 }
 

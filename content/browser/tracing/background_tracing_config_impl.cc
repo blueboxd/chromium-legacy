@@ -276,10 +276,6 @@ TraceConfig BackgroundTracingConfigImpl::GetTraceConfig() const {
     chrome_config.SetProcessFilterConfig(process_config);
   }
 
-  if (requires_anonymized_data_) {
-    chrome_config.EnableArgumentFilter();
-  }
-
   chrome_config.SetTraceBufferSizeInKb(GetMaximumTraceBufferSizeKb());
 
 #if defined(OS_ANDROID)

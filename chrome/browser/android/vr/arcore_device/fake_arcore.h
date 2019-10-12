@@ -31,11 +31,23 @@ class FakeArCore : public ArCore {
       const base::span<const float> uvs) override;
   gfx::Transform GetProjectionMatrix(float near, float far) override;
   mojom::VRPosePtr Update(bool* camera_updated) override;
+
   void Pause() override;
   void Resume() override;
 
+  float GetEstimatedFloorHeight() override;
+
   bool RequestHitTest(const mojom::XRRayPtr& ray,
                       std::vector<mojom::XRHitResultPtr>* hit_results) override;
+
+  base::Optional<uint32_t> SubscribeToHitTest(
+      mojom::XRNativeOriginInformationPtr nativeOriginInformation,
+      mojom::XRRayPtr ray) override;
+
+  mojom::XRHitTestSubscriptionResultsDataPtr GetHitTestSubscriptionResults(
+      const device::mojom::VRPosePtr& pose) override;
+
+  void UnsubscribeFromHitTest(uint32_t subscription_id) override;
 
   mojom::XRPlaneDetectionDataPtr GetDetectedPlanesData() override;
   mojom::XRAnchorsDataPtr GetAnchorsData() override;

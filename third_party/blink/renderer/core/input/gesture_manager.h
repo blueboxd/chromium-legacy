@@ -38,6 +38,7 @@ class CORE_EXPORT GestureManager final
       WebInputEvent::Type);
   WebInputEventResult HandleGestureEventInFrame(
       const GestureEventWithHitTestResults&);
+  bool LongTapShouldInvokeContextMenu() const;
 
  private:
   WebInputEventResult HandleGestureShowPress();

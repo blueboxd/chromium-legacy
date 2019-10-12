@@ -25,23 +25,9 @@ class CONTENT_EXPORT PageProperties {
   explicit PageProperties(CompositorDependencies* compositor_deps);
   ~PageProperties();
 
-  const ScreenInfo& GetScreenInfo() const { return screen_info_; }
-  void SetScreenInfo(const ScreenInfo& screen_info) {
-    screen_info_ = screen_info;
-  }
-
-  // Convenience method for reading the device scale factor from
-  // ScreenInfo. This is probably the most commonly used field in ScreenInfo
-  // so having the added accessor clarifies information coupling and
-  // reduces boilerplate code.
-  float GetDeviceScaleFactor() { return screen_info_.device_scale_factor; }
-
   CompositorDependencies* GetCompositorDependencies();
 
  private:
-  // Properties of the screen hosting the page.
-  ScreenInfo screen_info_;
-
   CompositorDependencies* compositor_deps_ = nullptr;
 };
 

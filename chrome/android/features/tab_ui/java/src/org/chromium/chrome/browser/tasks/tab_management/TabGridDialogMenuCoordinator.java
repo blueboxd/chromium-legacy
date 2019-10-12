@@ -99,7 +99,7 @@ public class TabGridDialogMenuCoordinator {
             mMenuWindow.dismiss();
         });
 
-        View decorView = ((Activity) mContext).getWindow().getDecorView();
+        View decorView = ((Activity) contentView.getContext()).getWindow().getDecorView();
         ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
         Rect rect = new Rect();
         decorView.getWindowVisibleDisplayFrame(rect);

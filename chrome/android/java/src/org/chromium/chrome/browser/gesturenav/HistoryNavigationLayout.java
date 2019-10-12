@@ -71,7 +71,7 @@ public class HistoryNavigationLayout extends FrameLayout {
             if (mNavigationHandler == null) {
                 mDetector = new GestureDetector(getContext(), new SideNavGestureListener());
                 mNavigationHandler = new NavigationHandler(
-                        this, mDelegate, NavigationGlowFactory.forJavaLayer(this));
+                        this, getContext(), mDelegate, NavigationGlowFactory.forJavaLayer(this));
             }
         } else {
             mDetector = null;

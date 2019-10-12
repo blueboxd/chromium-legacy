@@ -81,22 +81,15 @@ namespace {
 
 class HatsServiceProbabilityZero : public HatsServiceBrowserTestBase {
  protected:
-  HatsServiceProbabilityZero() = default;
-  ~HatsServiceProbabilityZero() override = default;
-
- private:
-  void SetUpOnMainThread() override {
-    HatsServiceBrowserTestBase::SetUpOnMainThread();
-
-    // The HatsService must not be created so that feature parameters can be
-    // injected below.
-    ASSERT_FALSE(
-        HatsServiceFactory::GetForProfile(browser()->profile(), false));
+  HatsServiceProbabilityZero() {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kHappinessTrackingSurveysForDesktop,
         {{"probability", "0.000"}});
   }
 
+  ~HatsServiceProbabilityZero() override = default;
+
+ private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsServiceProbabilityZero);
@@ -113,17 +106,7 @@ namespace {
 
 class HatsServiceProbabilityOne : public HatsServiceBrowserTestBase {
  protected:
-  HatsServiceProbabilityOne() = default;
-  ~HatsServiceProbabilityOne() override = default;
-
- private:
-  void SetUpOnMainThread() override {
-    HatsServiceBrowserTestBase::SetUpOnMainThread();
-
-    // The HatsService must not be created so that feature parameters can be
-    // injected below.
-    ASSERT_FALSE(
-        HatsServiceFactory::GetForProfile(browser()->profile(), false));
+  HatsServiceProbabilityOne() {
     // TODO(weili): refactor to use constants from hats_service.cc for these
     // parameters.
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
@@ -131,6 +114,14 @@ class HatsServiceProbabilityOne : public HatsServiceBrowserTestBase {
         {{"probability", "1.000"},
          {"survey", "satisfaction"},
          {"en_site_id", "test_site_id"}});
+  }
+
+  ~HatsServiceProbabilityOne() override = default;
+
+ private:
+  void SetUpOnMainThread() override {
+    HatsServiceBrowserTestBase::SetUpOnMainThread();
+
     // Set the profile creation time to be old enough to ensure triggering.
     browser()->profile()->SetCreationTimeForTesting(
         base::Time::Now() - base::TimeDelta::FromDays(45));

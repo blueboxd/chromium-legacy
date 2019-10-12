@@ -77,6 +77,20 @@ public class CustomTabNightModeStateControllerTest {
     }
 
     @Test
+    public void triggersAppCompatDelegate_WhenInitialSchemeIsLight() {
+        setSystemNightMode(false);
+        initializeWithColorScheme(COLOR_SCHEME_SYSTEM);
+        verify(mAppCompatDelegate).setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+    }
+
+    @Test
+    public void triggersAppCompatDelegate_WhenInitialSchemeIsDark() {
+        setSystemNightMode(true);
+        initializeWithColorScheme(COLOR_SCHEME_SYSTEM);
+        verify(mAppCompatDelegate).setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+    }
+
+    @Test
     public void nightModeIfOff_WhenSchemeForced() {
         initializeWithColorScheme(COLOR_SCHEME_LIGHT);
         assertFalse(mNightModeController.isInNightMode());

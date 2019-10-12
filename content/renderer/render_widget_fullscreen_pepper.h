@@ -38,6 +38,7 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
       RenderWidget::ShowCallback show_callback,
       CompositorDependencies* compositor_deps,
       PageProperties* page_properties,
+      const ScreenInfo& screen_info,
       PepperPluginInstanceImpl* plugin,
       const blink::WebURL& local_main_frame_url,
       mojo::PendingReceiver<mojom::Widget> widget_receiver);

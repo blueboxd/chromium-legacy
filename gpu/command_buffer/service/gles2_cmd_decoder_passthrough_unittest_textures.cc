@@ -90,8 +90,6 @@ class TestSharedImageBackingPassthrough : public SharedImageBacking {
 
 }  // namespace
 
-using namespace cmds;
-
 TEST_F(GLES2DecoderPassthroughTest, CreateAndTexStorage2DSharedImageCHROMIUM) {
   MemoryTypeTracker memory_tracker(nullptr);
   Mailbox mailbox = Mailbox::GenerateForSharedImage();
@@ -102,8 +100,8 @@ TEST_F(GLES2DecoderPassthroughTest, CreateAndTexStorage2DSharedImageCHROMIUM) {
               gfx::ColorSpace(), 0, kNewServiceId),
           &memory_tracker);
 
-  CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
-      *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
+  auto& cmd = *GetImmediateAs<
+      cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate>();
   cmd.Init(kNewClientId, GL_NONE, mailbox.name);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -137,8 +135,8 @@ TEST_F(GLES2DecoderPassthroughTest,
        CreateAndTexStorage2DSharedImageCHROMIUMInvalidMailbox) {
   // Attempt to use an invalid mailbox.
   Mailbox mailbox;
-  CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
-      *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
+  auto& cmd = *GetImmediateAs<
+      cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate>();
   cmd.Init(kNewClientId, GL_NONE, mailbox.name);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
 
@@ -166,8 +164,8 @@ TEST_F(GLES2DecoderPassthroughTest,
           &memory_tracker);
 
   {
-    CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
-        *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
+    auto& cmd = *GetImmediateAs<
+        cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate>();
     cmd.Init(kNewClientId, GL_NONE, mailbox.name);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -176,8 +174,8 @@ TEST_F(GLES2DecoderPassthroughTest,
   // Try to import the SharedImage a second time at the same client ID. We
   // should get a GL failure.
   {
-    CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
-        *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
+    auto& cmd = *GetImmediateAs<
+        cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate>();
     cmd.Init(kNewClientId, GL_NONE, mailbox.name);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
     EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
@@ -201,37 +199,37 @@ TEST_F(GLES2DecoderPassthroughTest, BeginEndSharedImageAccessCRHOMIUM) {
             &memory_tracker);
     shared_images.emplace_back(std::move(shared_image));
 
-    CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
-        *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
+    auto& cmd = *GetImmediateAs<
+        cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate>();
     auto client_id = kNewClientId + i;
     cmd.Init(client_id, GL_NONE, mailbox.name);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
     // Begin/end read access for the created image.
-    BeginSharedImageAccessDirectCHROMIUM read_access_cmd;
+    cmds::BeginSharedImageAccessDirectCHROMIUM read_access_cmd;
     read_access_cmd.Init(client_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
     EXPECT_EQ(error::kNoError, ExecuteCmd(read_access_cmd));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
-    EndSharedImageAccessDirectCHROMIUM read_end_cmd;
+    cmds::EndSharedImageAccessDirectCHROMIUM read_end_cmd;
     read_end_cmd.Init(client_id);
     EXPECT_EQ(error::kNoError, ExecuteCmd(read_end_cmd));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
     // Begin/end read/write access for the created image.
-    BeginSharedImageAccessDirectCHROMIUM readwrite_access_cmd;
+    cmds::BeginSharedImageAccessDirectCHROMIUM readwrite_access_cmd;
     readwrite_access_cmd.Init(client_id,
                               GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
     EXPECT_EQ(error::kNoError, ExecuteCmd(readwrite_access_cmd));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
-    EndSharedImageAccessDirectCHROMIUM readwrite_end_cmd;
+    cmds::EndSharedImageAccessDirectCHROMIUM readwrite_end_cmd;
     readwrite_end_cmd.Init(client_id);
     // EXPECT_EQ(error::kNoError, ExecuteCmd(readwrite_end_cmd));
     // EXPECT_EQ(GL_NO_ERROR, GetGLError());
   }
 
   for (int i = 20; i > 10; --i) {
-    EndSharedImageAccessDirectCHROMIUM readwrite_end_cmd;
+    cmds::EndSharedImageAccessDirectCHROMIUM readwrite_end_cmd;
     readwrite_end_cmd.Init(kNewClientId + i);
     EXPECT_EQ(error::kNoError, ExecuteCmd(readwrite_end_cmd));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -246,7 +244,7 @@ TEST_F(GLES2DecoderPassthroughTest, BeginEndSharedImageAccessCRHOMIUM) {
 TEST_F(GLES2DecoderPassthroughTest,
        BeginSharedImageAccessDirectCHROMIUMInvalidMode) {
   // Try to begin access with an invalid mode.
-  BeginSharedImageAccessDirectCHROMIUM bad_mode_access_cmd;
+  cmds::BeginSharedImageAccessDirectCHROMIUM bad_mode_access_cmd;
   bad_mode_access_cmd.Init(kClientTextureId, 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(bad_mode_access_cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
@@ -255,7 +253,7 @@ TEST_F(GLES2DecoderPassthroughTest,
 TEST_F(GLES2DecoderPassthroughTest,
        BeginSharedImageAccessDirectCHROMIUMNotSharedImage) {
   // Try to begin access with a texture that is not a shared image.
-  BeginSharedImageAccessDirectCHROMIUM not_shared_image_access_cmd;
+  cmds::BeginSharedImageAccessDirectCHROMIUM not_shared_image_access_cmd;
   not_shared_image_access_cmd.Init(
       kClientTextureId, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   EXPECT_EQ(error::kNoError, ExecuteCmd(not_shared_image_access_cmd));
@@ -274,8 +272,8 @@ TEST_F(GLES2DecoderPassthroughTest,
               gfx::ColorSpace(), 0, kNewServiceId),
           &memory_tracker);
 
-  CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
-      *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
+  auto& cmd = *GetImmediateAs<
+      cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate>();
   cmd.Init(kNewClientId, GL_NONE, mailbox.name);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -290,7 +288,7 @@ TEST_F(GLES2DecoderPassthroughTest,
                   TestSharedImageRepresentationPassthrough*>(
       found->second.representation())
       ->set_can_access(false);
-  BeginSharedImageAccessDirectCHROMIUM read_access_cmd;
+  cmds::BeginSharedImageAccessDirectCHROMIUM read_access_cmd;
   read_access_cmd.Init(kNewClientId, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
   EXPECT_EQ(error::kNoError, ExecuteCmd(read_access_cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
@@ -303,7 +301,7 @@ TEST_F(GLES2DecoderPassthroughTest,
 TEST_F(GLES2DecoderPassthroughTest,
        EndSharedImageAccessDirectCHROMIUMNotSharedImage) {
   // Try to end access with a texture that is not a shared image.
-  EndSharedImageAccessDirectCHROMIUM not_shared_image_end_cmd;
+  cmds::EndSharedImageAccessDirectCHROMIUM not_shared_image_end_cmd;
   not_shared_image_end_cmd.Init(kClientTextureId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(not_shared_image_end_cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());

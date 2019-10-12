@@ -58,6 +58,7 @@
 #include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/overlay_layout_manager.h"
 #include "ash/wm/root_window_layout_manager.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
@@ -782,6 +783,15 @@ RootWindowController::RootWindowController(
 
 void RootWindowController::Init(RootWindowType root_window_type) {
   aura::Window* root_window = GetRootWindow();
+  // Create |split_view_controller_| for the primary display only.
+  // TODO(crbug.com/970013): If the
+  // |ash::features::kMultiDisplayOverviewAndSplitView| feature flag is enabled,
+  // create |split_view_controller_| for every display.
+  display::Screen* screen = display::Screen::GetScreen();
+  if (screen->GetDisplayNearestWindow(root_window).id() ==
+      screen->GetPrimaryDisplay().id()) {
+    split_view_controller_ = std::make_unique<SplitViewController>();
+  }
   Shell* shell = Shell::Get();
   shell->InitRootWindow(root_window);
   auto old_targeter =

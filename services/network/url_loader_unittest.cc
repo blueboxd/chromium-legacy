@@ -119,9 +119,12 @@ static ResourceRequest CreateResourceRequest(const char* method,
   request.method = std::string(method);
   request.url = url;
   request.site_for_cookies = url;  // bypass third-party cookie blocking
-  request.request_initiator =
-      url::Origin::Create(url);  // ensure initiator is set
+  url::Origin origin = url::Origin::Create(url);
+  request.request_initiator = origin;  // ensure initiator is set
   request.is_main_frame = true;
+  request.trusted_params = network::ResourceRequest::TrustedParams();
+  request.trusted_params->network_isolation_key =
+      net::NetworkIsolationKey(origin, origin);
   return request;
 }
 
@@ -468,6 +471,9 @@ class URLLoaderTest : public testing::Test {
     static mojom::URLLoaderFactoryParams params;
     params.process_id = mojom::kBrowserProcessId;
     params.is_corb_enabled = false;
+    url::Origin origin = url::Origin::Create(url);
+    params.network_isolation_key = net::NetworkIsolationKey(origin, origin);
+    params.is_trusted = true;
     url_loader = std::make_unique<URLLoader>(
         context(), nullptr /* network_service_client */,
         network_context_client.get(),

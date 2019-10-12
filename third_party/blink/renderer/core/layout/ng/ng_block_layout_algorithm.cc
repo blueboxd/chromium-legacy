@@ -1984,6 +1984,33 @@ bool NGBlockLayoutAlgorithm::IsFragmentainerOutOfSpace(
   return block_offset >= FragmentainerSpaceAvailable();
 }
 
+LayoutUnit NGBlockLayoutAlgorithm::OffsetFromFragmentainerStart() const {
+  DCHECK(container_builder_.BfcBlockOffset());
+  return ConstraintSpace().FragmentainerOffsetAtBfc() +
+         *container_builder_.BfcBlockOffset();
+}
+
+LayoutUnit NGBlockLayoutAlgorithm::PortionIntersectingWithFragmentainer(
+    LayoutUnit block_offset,
+    LayoutUnit block_size) const {
+  LayoutUnit offset_from_fragmentainer_start =
+      OffsetFromFragmentainerStart() + block_offset;
+  // Whatever is before the block-start of the fragmentainer isn't considered to
+  // intersect with the fragmentainer, so subtract it (by adding the negative
+  // offset).
+  if (offset_from_fragmentainer_start < LayoutUnit())
+    block_size += offset_from_fragmentainer_start;
+  return block_size;
+}
+
+void NGBlockLayoutAlgorithm::PropagateUnbreakableBlockSize(
+    LayoutUnit block_offset,
+    LayoutUnit block_size) {
+  DCHECK(ConstraintSpace().IsInitialColumnBalancingPass());
+  block_size = PortionIntersectingWithFragmentainer(block_offset, block_size);
+  container_builder_.PropagateTallestUnbreakableBlockSize(block_size);
+}
+
 bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   if (Node().ChildrenInline() && !early_break_) {
     if (container_builder_.DidBreak() || first_overflowing_line_) {
@@ -2105,8 +2132,7 @@ NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
         // If this is the initial column balancing pass, attempt to make the
         // column block-size at least as large as the tallest piece of
         // monolithic content and/or block with break-inside:avoid.
-        container_builder_.PropagateTallestUnbreakableBlockSize(
-            fragment.BlockSize());
+        PropagateUnbreakableBlockSize(block_offset, fragment.BlockSize());
       }
     }
     // We only care about soft breaks if we have a fragmentainer block-size.

@@ -50,7 +50,8 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenLoader
   // The global instance will immediately start observing |LoginState|.
   static void Initialize();
 
-  // Sets the global. stubbed out, instance. To be used in tests.
+  // Sets the global, stubbed out with the already initialized token, instance.
+  // To be used in tests.
   static void InitializeForTest();
 
   // Destroys the global instance.
@@ -81,8 +82,13 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenLoader
 
   std::string tpm_user_pin() const { return tpm_user_pin_; }
 
+  // Allows tests to enable the TPM token loading logic in this class.
+  void enable_tpm_loading_for_testing(bool enable) {
+    enable_tpm_loading_for_testing_ = enable;
+  }
+
  private:
-  explicit TPMTokenLoader(bool for_test);
+  explicit TPMTokenLoader(bool initialized_for_test);
   ~TPMTokenLoader() override;
 
   bool IsTPMLoadingEnabled() const;
@@ -103,6 +109,8 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenLoader
 
   // LoginState::Observer
   void LoggedInStateChanged() override;
+
+  bool enable_tpm_loading_for_testing_ = false;
 
   bool initialized_for_test_;
 

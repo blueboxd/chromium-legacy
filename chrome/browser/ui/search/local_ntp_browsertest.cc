@@ -48,6 +48,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_navigation_throttle_inserter.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -1166,21 +1167,27 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
       a.click();
   )";
   content::TestNavigationObserver nav_observer(ntp_tab);
+  content::NavigationHandleObserver handle_observer(ntp_tab, echo_all_url);
   ASSERT_TRUE(content::ExecuteScript(
       ntp_tab, content::JsReplace(kNavScriptTemplate, echo_all_url)));
   nav_observer.Wait();
   ASSERT_TRUE(nav_observer.last_navigation_succeeded());
+  ASSERT_FALSE(handle_observer.is_error());
   ASSERT_FALSE(search::IsInstantNTP(ntp_tab));
 
-  // Extract request headers reported via /echoall test page.
+  // Extract and verify request headers reported via /echoall test page.
   const char* kHeadersExtractionScript =
       "document.getElementsByTagName('pre')[1].innerText;";
   std::string request_headers =
       content::EvalJs(ntp_tab, kHeadersExtractionScript).ExtractString();
-
-  // Verify request headers.
   EXPECT_THAT(request_headers, ::testing::HasSubstr("Sec-Fetch-Site: none"));
   EXPECT_THAT(request_headers, ::testing::HasSubstr("same-site-cookie=1"));
+
+  // Verify other navigation properties.
+  EXPECT_FALSE(nav_observer.last_initiator_origin().has_value());
+  EXPECT_FALSE(handle_observer.is_renderer_initiated());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+                                           handle_observer.page_transition()));
 }
 
 // Verifies that Chrome won't spawn a separate renderer process for

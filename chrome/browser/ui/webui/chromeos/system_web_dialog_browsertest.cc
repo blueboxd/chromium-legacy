@@ -99,13 +99,20 @@ IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, InstanceTest) {
   // https://crbug.com/855344.
 }
 
-IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, FontSize) {
+class SystemWebDialogTestWithSplitSettings : public SystemWebDialogTest {
+ public:
+  SystemWebDialogTestWithSplitSettings() {
+    feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettings);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(SystemWebDialogTestWithSplitSettings, FontSize) {
   const content::WebPreferences kDefaultPrefs;
   const int kDefaultFontSize = kDefaultPrefs.default_font_size;
   const int kDefaultFixedFontSize = kDefaultPrefs.default_fixed_font_size;
-
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(features::kSplitSettings);
 
   // Set the browser font sizes to non-default values.
   PrefService* profile_prefs = browser()->profile()->GetPrefs();
@@ -127,10 +134,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, FontSize) {
   EXPECT_EQ(kDefaultFixedFontSize, dialog_prefs.default_fixed_font_size);
 }
 
-IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, PageZoom) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(features::kSplitSettings);
-
+IN_PROC_BROWSER_TEST_F(SystemWebDialogTestWithSplitSettings, PageZoom) {
   // Set the default browser page zoom to 150%.
   double level = blink::PageZoomFactorToZoomLevel(1.5);
   browser()->profile()->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(level);

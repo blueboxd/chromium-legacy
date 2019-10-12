@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/identity.h"
@@ -54,7 +53,6 @@ class CONTENT_EXPORT ServiceManagerContext {
   scoped_refptr<base::SingleThreadTaskRunner>
       service_manager_thread_task_runner_;
   scoped_refptr<InProcessServiceManagerContext> in_process_context_;
-  base::Thread network_service_thread_{"NetworkService"};
   base::WeakPtrFactory<ServiceManagerContext> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceManagerContext);

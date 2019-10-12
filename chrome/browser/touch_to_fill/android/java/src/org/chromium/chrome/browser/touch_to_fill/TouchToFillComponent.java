@@ -5,7 +5,11 @@
 package org.chromium.chrome.browser.touch_to_fill;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 
+import androidx.annotation.Px;
+
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
@@ -31,6 +35,11 @@ public interface TouchToFillComponent {
          * selected.
          */
         void onDismissed();
+
+        /**
+         * Called to fetch a favicon for one origin to display it in the UI.
+         */
+        void fetchFavicon(String origin, @Px int desiredSize, Callback<Bitmap> callback);
     }
 
     /**

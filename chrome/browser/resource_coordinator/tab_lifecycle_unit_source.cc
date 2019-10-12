@@ -222,6 +222,10 @@ void TabLifecycleUnitSource::SetFocusedTabStripModelForTesting(
   UpdateFocusedTab();
 }
 
+void TabLifecycleUnitSource::SetMemoryLimitEnterprisePolicyFlag(bool enabled) {
+  memory_limit_enterprise_policy_ = enabled;
+}
+
 void TabLifecycleUnitSource::OnFirstLifecycleUnitCreated() {
   // In production builds monitor the policy override of the lifecycles feature.
   // This class owns the monitor so it is okay to use base::Unretained. Note

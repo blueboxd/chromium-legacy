@@ -265,6 +265,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   gfx::Point GetSurfaceOrigin() const override;
   bool OnPreWidgetCommit() override;
   void OnPostWidgetCommit() override;
+  void OnSurfaceDestroying(Surface* surface) override;
 
   // Update frame status. This may create (or destroy) a wide frame
   // that spans the full work area width if the surface didn't cover

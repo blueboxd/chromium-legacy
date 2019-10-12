@@ -88,9 +88,9 @@ public class TabGroupUiCoordinator
             // and the dialog here.
             mTabGridSheetCoordinator = null;
 
-            mTabGridDialogCoordinator =
-                    new TabGridDialogCoordinator(mContext, tabModelSelector, tabContentManager,
-                            activity, activity.getCompositorViewHolder(), null, null, null);
+            mTabGridDialogCoordinator = new TabGridDialogCoordinator(mContext, tabModelSelector,
+                    tabContentManager, activity, activity.getCompositorViewHolder(), null, null,
+                    null, mTabStripCoordinator.getTabGroupTitleEditor());
         } else {
             mTabGridSheetCoordinator =
                     new TabGridSheetCoordinator(mContext, activity.getBottomSheetController(),

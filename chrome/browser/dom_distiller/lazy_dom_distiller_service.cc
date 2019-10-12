@@ -32,22 +32,6 @@ LazyDomDistillerService* LazyDomDistillerService::Create(Profile* profile) {
 
 LazyDomDistillerService::~LazyDomDistillerService() = default;
 
-bool LazyDomDistillerService::HasEntry(const std::string& entry_id) {
-  return GetImpl()->HasEntry(entry_id);
-}
-
-std::string LazyDomDistillerService::GetUrlForEntry(
-    const std::string& entry_id) {
-  return GetImpl()->GetUrlForEntry(entry_id);
-}
-
-std::unique_ptr<ViewerHandle> LazyDomDistillerService::ViewEntry(
-    ViewRequestDelegate* delegate,
-    std::unique_ptr<DistillerPage> distiller_page,
-    const std::string& entry_id) {
-  return GetImpl()->ViewEntry(delegate, std::move(distiller_page), entry_id);
-}
-
 std::unique_ptr<ViewerHandle> LazyDomDistillerService::ViewUrl(
     ViewRequestDelegate* delegate,
     std::unique_ptr<DistillerPage> distiller_page,

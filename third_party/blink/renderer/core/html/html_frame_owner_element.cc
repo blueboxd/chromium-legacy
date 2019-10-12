@@ -308,11 +308,6 @@ void HTMLFrameOwnerElement::UpdateContainerPolicy(Vector<String>* messages) {
   }
 }
 
-void HTMLFrameOwnerElement::PointerEventsChanged() {
-  if (auto* remote_frame = DynamicTo<RemoteFrame>(ContentFrame()))
-    remote_frame->PointerEventsChanged();
-}
-
 void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet; or if we are in the middle of

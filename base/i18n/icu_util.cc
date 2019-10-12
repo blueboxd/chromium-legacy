@@ -37,10 +37,6 @@
 #include "base/mac/foundation_util.h"
 #endif
 
-#if defined(OS_FUCHSIA)
-#include "base/base_paths_fuchsia.h"
-#endif
-
 namespace base {
 namespace i18n {
 

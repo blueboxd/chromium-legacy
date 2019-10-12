@@ -850,8 +850,10 @@ void AutofillAgent::DidReceiveLeftMouseDownOrGestureTapInNode(
   DCHECK(!node.IsNull());
   focused_node_was_last_clicked_ = node.Focused();
 
-  if (IsKeyboardAccessoryEnabled() || !focus_requires_scroll_)
+  if (IsTouchToFillEnabled() || IsKeyboardAccessoryEnabled() ||
+      !focus_requires_scroll_) {
     HandleFocusChangeComplete();
+  }
 }
 
 void AutofillAgent::SelectControlDidChange(
@@ -881,12 +883,9 @@ void AutofillAgent::SelectFieldOptionsChanged(
 
 bool AutofillAgent::ShouldSuppressKeyboard(
     const WebFormControlElement& element) {
-  // The keyboard should be suppressed if we can show the Touch To Fill UI.
-  //
   // Note: This is currently only implemented for passwords. Consider supporting
   // other autofill types in the future as well.
-  return IsTouchToFillEnabled() &&
-         password_autofill_agent_->TryToShowTouchToFill(element);
+  return password_autofill_agent_->ShouldSuppressKeyboard();
 }
 
 void AutofillAgent::SelectWasUpdated(
@@ -912,6 +911,9 @@ void AutofillAgent::FormControlElementClicked(
   const WebInputElement* input_element = ToWebInputElement(&element);
   if (!input_element && !form_util::IsTextAreaElement(element))
     return;
+
+  if (IsTouchToFillEnabled())
+    password_autofill_agent_->TryToShowTouchToFill(element);
 
   ShowSuggestionsOptions options;
   options.autofill_on_empty_values = true;

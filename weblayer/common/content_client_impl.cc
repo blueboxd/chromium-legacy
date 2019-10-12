@@ -16,6 +16,16 @@ ContentClientImpl::ContentClientImpl() {}
 
 ContentClientImpl::~ContentClientImpl() {}
 
+base::string16 ContentClientImpl::GetLocalizedString(int message_id) {
+  return l10n_util::GetStringUTF16(message_id);
+}
+
+base::string16 ContentClientImpl::GetLocalizedString(
+    int message_id,
+    const base::string16& replacement) {
+  return l10n_util::GetStringFUTF16(message_id, replacement);
+}
+
 base::StringPiece ContentClientImpl::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) {

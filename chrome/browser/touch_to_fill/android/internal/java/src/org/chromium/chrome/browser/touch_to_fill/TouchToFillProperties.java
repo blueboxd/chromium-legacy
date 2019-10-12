@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.touch_to_fill;
 
-import org.chromium.chrome.browser.touch_to_fill.data.Credential;
-import org.chromium.ui.modelutil.ListModel;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -18,7 +17,7 @@ class TouchToFillProperties {
             new PropertyModel.WritableObjectPropertyKey<>("formatted_url");
     static final PropertyModel.WritableBooleanPropertyKey ORIGIN_SECURE =
             new PropertyModel.WritableBooleanPropertyKey("origin_secure");
-    static final PropertyModel.ReadableObjectPropertyKey<ListModel<Credential>> CREDENTIAL_LIST =
+    static final PropertyModel.ReadableObjectPropertyKey<ModelList> CREDENTIAL_LIST =
             new PropertyModel.ReadableObjectPropertyKey<>("credential_list");
     static final PropertyModel.ReadableObjectPropertyKey<ViewEventListener> VIEW_EVENT_LISTENER =
             new PropertyModel.ReadableObjectPropertyKey<>("view_event_listener");
@@ -29,7 +28,7 @@ class TouchToFillProperties {
                         VISIBLE, FORMATTED_URL, ORIGIN_SECURE, CREDENTIAL_LIST, VIEW_EVENT_LISTENER)
                 .with(VISIBLE, false)
                 .with(ORIGIN_SECURE, false)
-                .with(CREDENTIAL_LIST, new ListModel<>())
+                .with(CREDENTIAL_LIST, new ModelList())
                 .with(VIEW_EVENT_LISTENER, listener)
                 .build();
     }

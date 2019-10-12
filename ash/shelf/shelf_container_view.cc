@@ -31,29 +31,6 @@ void ShelfContainerView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-void ShelfContainerView::Layout() {
-  // Should not use ShelfView::GetPreferredSize in replace of
-  // CalculateIdealSize. Because ShelfView::CalculatePreferredSize relies on the
-  // bounds of app icon. Meanwhile, the icon's bounds may be updated by
-  // animation.
-  const gfx::Rect ideal_bounds = gfx::Rect(CalculateIdealSize());
-
-  const gfx::Rect local_bounds = GetLocalBounds();
-  gfx::Rect shelf_view_bounds =
-      local_bounds.Contains(ideal_bounds) ? local_bounds : ideal_bounds;
-
-  // Offsets |shelf_view_bounds| to ensure the sufficient space for the ripple
-  // ring of the first shelf item.
-  if (shelf_view_->shelf()->IsHorizontalAlignment())
-    shelf_view_bounds.Offset(
-        ShelfConfig::Get()->scrollable_shelf_ripple_padding(), 0);
-  else
-    shelf_view_bounds.Offset(
-        0, ShelfConfig::Get()->scrollable_shelf_ripple_padding());
-
-  shelf_view_->SetBoundsRect(shelf_view_bounds);
-}
-
 const char* ShelfContainerView::GetClassName() const {
   return "ShelfContainerView";
 }

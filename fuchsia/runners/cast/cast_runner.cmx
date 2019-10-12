@@ -10,6 +10,7 @@
       "fuchsia.fonts.Provider",
       "fuchsia.logger.LogSink",
       "fuchsia.media.Audio",
+      "fuchsia.media.drm.PlayReady",
       "fuchsia.media.drm.Widevine",
       "fuchsia.mediacodec.CodecFactory",
       "fuchsia.net.NameLookup",

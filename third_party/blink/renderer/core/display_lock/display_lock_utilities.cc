@@ -28,6 +28,33 @@ const Node* GetFrameOwnerNode(const Node* child) {
   return child->GetDocument().GetFrame()->OwnerLayoutObject()->GetNode();
 }
 
+bool UpdateStyleAndLayoutForRangeIfNeeded(const EphemeralRangeInFlatTree& range,
+                                          DisplayLockActivationReason reason) {
+  if (range.IsNull() || range.IsCollapsed())
+    return false;
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(&range.GetDocument()) ||
+      range.GetDocument().LockedDisplayLockCount() ==
+          range.GetDocument().ActivationBlockingDisplayLockCount())
+    return false;
+  Vector<DisplayLockContext::ScopedForcedUpdate> scoped_forced_update_list_;
+  for (Node& node : range.Nodes()) {
+    for (Element* locked_activatable_ancestor :
+         DisplayLockUtilities::ActivatableLockedInclusiveAncestors(node,
+                                                                   reason)) {
+      DCHECK(locked_activatable_ancestor->GetDisplayLockContext());
+      DCHECK(locked_activatable_ancestor->GetDisplayLockContext()->IsLocked());
+      if (locked_activatable_ancestor->GetDisplayLockContext()->UpdateForced())
+        break;
+      scoped_forced_update_list_.push_back(
+          locked_activatable_ancestor->GetDisplayLockContext()
+              ->GetScopedForcedUpdate());
+    }
+  }
+  if (!scoped_forced_update_list_.IsEmpty())
+    range.GetDocument().UpdateStyleAndLayout();
+  return !scoped_forced_update_list_.IsEmpty();
+}
+
 }  // namespace
 
 bool DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
@@ -49,7 +76,8 @@ bool DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
   DCHECK(enclosing_block);
   DCHECK_EQ(enclosing_block,
             EnclosingBlock(range.EndPosition(), kCannotCrossEditingBoundary));
-  return enclosing_block->ActivateDisplayLockIfNeeded();
+  return enclosing_block->ActivateDisplayLockIfNeeded(
+      DisplayLockActivationReason::kUser);
 }
 
 bool DisplayLockUtilities::ActivateSelectionRangeIfNeeded(
@@ -60,7 +88,8 @@ bool DisplayLockUtilities::ActivateSelectionRangeIfNeeded(
       range.GetDocument().LockedDisplayLockCount() ==
           range.GetDocument().ActivationBlockingDisplayLockCount())
     return false;
-  UpdateStyleAndLayoutForRangeIfNeeded(range);
+  UpdateStyleAndLayoutForRangeIfNeeded(range,
+                                       DisplayLockActivationReason::kUser);
   HeapHashSet<Member<Element>> elements_to_activate;
   for (Node& node : range.Nodes()) {
     DCHECK(!node.GetDocument().NeedsLayoutTreeUpdateForNode(node));
@@ -70,39 +99,16 @@ bool DisplayLockUtilities::ActivateSelectionRangeIfNeeded(
     if (auto* nearest_locked_ancestor = NearestLockedExclusiveAncestor(node))
       elements_to_activate.insert(nearest_locked_ancestor);
   }
-  for (Element* element : elements_to_activate)
-    element->ActivateDisplayLockIfNeeded();
+  for (Element* element : elements_to_activate) {
+    element->ActivateDisplayLockIfNeeded(DisplayLockActivationReason::kUser);
+  }
   return !elements_to_activate.IsEmpty();
 }
 
-bool DisplayLockUtilities::UpdateStyleAndLayoutForRangeIfNeeded(
-    const EphemeralRangeInFlatTree& range) {
-  if (range.IsNull() || range.IsCollapsed())
-    return false;
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(&range.GetDocument()) ||
-      range.GetDocument().LockedDisplayLockCount() ==
-          range.GetDocument().ActivationBlockingDisplayLockCount())
-    return false;
-  Vector<DisplayLockContext::ScopedForcedUpdate> scoped_forced_update_list_;
-  for (Node& node : range.Nodes()) {
-    for (Element* locked_activatable_ancestor :
-         ActivatableLockedInclusiveAncestors(node)) {
-      DCHECK(locked_activatable_ancestor->GetDisplayLockContext());
-      DCHECK(locked_activatable_ancestor->GetDisplayLockContext()->IsLocked());
-      if (locked_activatable_ancestor->GetDisplayLockContext()->UpdateForced())
-        break;
-      scoped_forced_update_list_.push_back(
-          locked_activatable_ancestor->GetDisplayLockContext()
-              ->GetScopedForcedUpdate());
-    }
-  }
-  if (!scoped_forced_update_list_.IsEmpty())
-    range.GetDocument().UpdateStyleAndLayout();
-  return !scoped_forced_update_list_.IsEmpty();
-}
-
 const HeapVector<Member<Element>>
-DisplayLockUtilities::ActivatableLockedInclusiveAncestors(const Node& node) {
+DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
+    const Node& node,
+    DisplayLockActivationReason reason) {
   HeapVector<Member<Element>> elements_to_activate;
   const_cast<Node*>(&node)->UpdateDistributionForFlatTreeTraversal();
   if (!RuntimeEnabledFeatures::DisplayLockingEnabled(
@@ -118,7 +124,7 @@ DisplayLockUtilities::ActivatableLockedInclusiveAncestors(const Node& node) {
     if (auto* context = ancestor_element->GetDisplayLockContext()) {
       if (!context->IsLocked())
         continue;
-      if (!context->IsActivatable()) {
+      if (!context->IsActivatable(reason)) {
         // If we find a non-activatable locked ancestor, then we shouldn't
         // activate anything.
         elements_to_activate.clear();
@@ -300,8 +306,10 @@ bool DisplayLockUtilities::IsInNonActivatableLockedSubtree(const Node& node) {
 
   for (auto* element = NearestLockedExclusiveAncestor(node); element;
        element = NearestLockedExclusiveAncestor(*element)) {
-    if (!element->GetDisplayLockContext()->IsActivatable())
+    if (!element->GetDisplayLockContext()->IsActivatable(
+            DisplayLockActivationReason::kAny)) {
       return true;
+    }
   }
   return false;
 }

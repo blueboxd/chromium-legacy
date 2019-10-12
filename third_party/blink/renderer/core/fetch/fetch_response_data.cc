@@ -256,6 +256,7 @@ FetchResponseData::PopulateFetchAPIResponse() {
   response->cache_storage_cache_name = cache_storage_cache_name_;
   response->cors_exposed_header_names =
       HeaderSetToVector(cors_exposed_header_names_);
+  response->side_data_blob = side_data_blob_;
   for (const auto& header : HeaderList()->List())
     response->headers.insert(header.first, header.second);
 

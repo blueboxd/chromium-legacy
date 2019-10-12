@@ -4,7 +4,7 @@
 
 import 'chrome://tab-strip/tab.js';
 
-import {getFavicon, getFaviconForPageURL} from 'chrome://resources/js/icon.m.js';
+import {getFavicon} from 'chrome://resources/js/icon.m.js';
 import {TabNetworkState, TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
 
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
@@ -58,29 +58,45 @@ suite('Tab', function() {
     assertFalse(tabElement.hasAttribute('active'));
   });
 
+  test(
+      'toggles a [hide-icon] attribute when the icon container should be shown',
+      () => {
+        tabElement.tab = Object.assign({}, tab, {showIcon: true});
+        assertFalse(tabElement.hasAttribute('hide-icon_'));
+        tabElement.tab = Object.assign({}, tab, {showIcon: false});
+        assertTrue(tabElement.hasAttribute('hide-icon_'));
+      });
+
   test('toggles a [pinned] attribute when pinned', () => {
     tabElement.tab = Object.assign({}, tab, {pinned: true});
-    assertTrue(tabElement.hasAttribute('pinned'));
+    assertTrue(tabElement.hasAttribute('pinned_'));
     tabElement.tab = Object.assign({}, tab, {pinned: false});
-    assertFalse(tabElement.hasAttribute('pinned'));
+    assertFalse(tabElement.hasAttribute('pinned_'));
   });
 
   test('toggles a [loading] attribute when loading', () => {
     tabElement.tab =
         Object.assign({}, tab, {networkState: TabNetworkState.LOADING});
-    assertTrue(tabElement.hasAttribute('loading'));
+    assertTrue(tabElement.hasAttribute('loading_'));
     tabElement.tab =
         Object.assign({}, tab, {networkState: TabNetworkState.NONE});
-    assertFalse(tabElement.hasAttribute('loading'));
+    assertFalse(tabElement.hasAttribute('loading_'));
   });
 
   test('toggles a [waiting] attribute when waiting', () => {
     tabElement.tab =
         Object.assign({}, tab, {networkState: TabNetworkState.WAITING});
-    assertTrue(tabElement.hasAttribute('waiting'));
+    assertTrue(tabElement.hasAttribute('waiting_'));
     tabElement.tab =
         Object.assign({}, tab, {networkState: TabNetworkState.NONE});
-    assertFalse(tabElement.hasAttribute('waiting'));
+    assertFalse(tabElement.hasAttribute('waiting_'));
+  });
+
+  test('toggles a [crashed] attribute when crashed', () => {
+    tabElement.tab = Object.assign({}, tab, {crashed: true});
+    assertTrue(tabElement.hasAttribute('crashed'));
+    tabElement.tab = Object.assign({}, tab, {crashed: false});
+    assertFalse(tabElement.hasAttribute('crashed'));
   });
 
   test('clicking on the element activates the tab', () => {
@@ -115,21 +131,33 @@ suite('Tab', function() {
         faviconElement.style.backgroundImage, `url("${expectedFaviconUrl}")`);
   });
 
-  test('sets the favicon to the page URL if favicon URL does not exist', () => {
-    const expectedPageUrl = 'http://google.com';
-    tabElement.tab = Object.assign({}, tab, {url: expectedPageUrl});
+  test(
+      'sets the favicon to the default favicon URL if there is none provided',
+      () => {
+        const updatedTab = Object.assign({}, tab);
+        delete updatedTab.favIconUrl;
+        tabElement.tab = updatedTab;
+        const faviconElement = tabElement.shadowRoot.querySelector('#favicon');
+        assertEquals(faviconElement.style.backgroundImage, getFavicon(''));
+      });
+
+  test('removes the favicon if the tab is waiting', () => {
+    tabElement.tab = Object.assign({}, tab, {
+      favIconUrl: 'data:mock-favicon',
+      networkState: TabNetworkState.WAITING,
+    });
     const faviconElement = tabElement.shadowRoot.querySelector('#favicon');
-    assertEquals(
-        faviconElement.style.backgroundImage,
-        getFaviconForPageURL(expectedPageUrl, false));
+    assertEquals(faviconElement.style.backgroundImage, 'none');
   });
 
   test(
-      'removes the favicon if the tab is loading and there is no favicon URL',
+      'removes the favicon if the tab is loading with a default favicon',
       () => {
-        delete tab.favIconUrl;
-        tabElement.tab =
-            Object.assign({}, tab, {networkState: TabNetworkState.LOADING});
+        tabElement.tab = Object.assign({}, tab, {
+          favIconUrl: 'data:mock-favicon',
+          hasDefaultFavicon: true,
+          networkState: TabNetworkState.WAITING,
+        });
         const faviconElement = tabElement.shadowRoot.querySelector('#favicon');
         assertEquals(faviconElement.style.backgroundImage, 'none');
       });
@@ -154,9 +182,9 @@ suite('Tab', function() {
 
   test('setting dragging state toggles an attribute', () => {
     tabElement.setDragging(true);
-    assertTrue(tabElement.hasAttribute('dragging'));
+    assertTrue(tabElement.hasAttribute('dragging_'));
     tabElement.setDragging(false);
-    assertFalse(tabElement.hasAttribute('dragging'));
+    assertFalse(tabElement.hasAttribute('dragging_'));
   });
 
   test('getting the drag image grabs the contents', () => {

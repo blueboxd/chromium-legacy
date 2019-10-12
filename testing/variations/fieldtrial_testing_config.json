@@ -766,24 +766,6 @@
             ]
         }
     ],
-    "AutofillEnableToolbarStatusChip": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillCreditCardUploadFeedback",
-                        "AutofillEnableToolbarStatusChip"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillFieldMetadata": [
         {
             "platforms": [
@@ -1974,11 +1956,11 @@
     "DefaultPassthroughCommandDecoder": [
         {
             "platforms": [
-                "windows"
+                "linux"
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_20191004",
                     "enable_features": [
                         "DefaultPassthroughCommandDecoder"
                     ]
@@ -2847,24 +2829,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "GpuWatchdogV2"
-                    ]
-                }
-            ]
-        }
-    ],
-    "GridLayoutForNtpShortcuts": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "GridLayoutForNtpShortcuts"
                     ]
                 }
             ]
@@ -6701,11 +6665,7 @@
     "VizHitTest": [
         {
             "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
+                "chromeos"
             ],
             "experiments": [
                 {
@@ -7230,21 +7190,6 @@
                     },
                     "enable_features": [
                         "WebRtcHybridAgc"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WinOOPSelectFileDialog": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WinOOPSelectFileDialog"
                     ]
                 }
             ]

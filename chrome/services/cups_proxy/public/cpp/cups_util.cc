@@ -81,8 +81,12 @@ base::Optional<IppResponse> BuildGetDestsResponse(
     ippAddString(ret.ipp.get(), IPP_TAG_PRINTER, IPP_TAG_TEXT,
                  "printer-uri-supported", nullptr, printer_uri.c_str());
 
-    // Setting the display name.
+    // Setting the printer uuid.
     ippAddString(ret.ipp.get(), IPP_TAG_PRINTER, IPP_TAG_NAME, "printer-name",
+                 nullptr, printer.id().c_str());
+
+    // Setting the display name.
+    ippAddString(ret.ipp.get(), IPP_TAG_PRINTER, IPP_TAG_TEXT, "printer-info",
                  nullptr, printer.display_name().c_str());
 
     // Optional setting of the make_and_model, if known.

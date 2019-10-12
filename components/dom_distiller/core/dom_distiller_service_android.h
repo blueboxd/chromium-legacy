@@ -24,6 +24,8 @@ class DomDistillerServiceAndroid {
   // Returns native pointer to native DistilledPagePrefs registered with
   // DomDistillerService.
   jlong GetDistilledPagePrefsPtr(JNIEnv* env);
+  // TODO(crbug.com/1007942): Remove HasEntry and GetUrlForEntry, they always
+  // return false / empty string.
   bool HasEntry(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& obj,
                 const base::android::JavaParamRef<jstring>& entry_id);

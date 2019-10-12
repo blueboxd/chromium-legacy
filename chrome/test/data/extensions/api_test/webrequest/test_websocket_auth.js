@@ -69,20 +69,6 @@ chrome.test.getConfig(function(config) {
                     }
                   },
                   {
-                    label: 'onResponseStarted',
-                    event: 'onResponseStarted',
-                    details: {
-                      url: url,
-                      type: 'websocket',
-                      ip: '127.0.0.1',
-                      fromCache: false,
-                      statusCode: 401,
-                      statusLine: 'HTTP/1.0 401 Unauthorized',
-                      responseHeadersExist: true,
-                      initiator: getDomain(initiators.WEB_INITIATED)
-                    }
-                  },
-                  {
                     label: 'onErrorOccurred',
                     event: 'onErrorOccurred',
                     details: {
@@ -98,8 +84,7 @@ chrome.test.getConfig(function(config) {
                 [  // event order
                   [
                     'onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
-                    'onHeadersReceived', 'onAuthRequired', 'onResponseStarted',
-                    'onErrorOccurred'
+                    'onHeadersReceived', 'onAuthRequired', 'onErrorOccurred'
                   ]
                 ],
                 {urls: ['<all_urls>']},  // filter
@@ -169,19 +154,6 @@ chrome.test.getConfig(function(config) {
                     }
                   },
                   {
-                    label: 'onResponseStarted',
-                    event: 'onResponseStarted',
-                    details: {
-                      url: url,
-                      type: 'websocket',
-                      fromCache: false,
-                      ip: '127.0.0.1',
-                      statusCode: 401,
-                      statusLine: 'HTTP/1.0 401 Unauthorized',
-                      initiator: getDomain(initiators.WEB_INITIATED)
-                    }
-                  },
-                  {
                     label: 'onErrorOccurred',
                     event: 'onErrorOccurred',
                     details: {
@@ -197,8 +169,7 @@ chrome.test.getConfig(function(config) {
                 [  // event order
                   [
                     'onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
-                    'onHeadersReceived', 'onAuthRequired', 'onResponseStarted',
-                    'onErrorOccurred'
+                    'onHeadersReceived', 'onAuthRequired', 'onErrorOccurred'
                   ]
                 ],
                 {urls: ['<all_urls>']}, ['blocking']);
@@ -268,19 +239,6 @@ chrome.test.getConfig(function(config) {
                     retval: {cancel: true}
                   },
                   {
-                    label: 'onResponseStarted',
-                    event: 'onResponseStarted',
-                    details: {
-                      url: url,
-                      type: 'websocket',
-                      fromCache: false,
-                      ip: '127.0.0.1',
-                      statusCode: 401,
-                      statusLine: 'HTTP/1.0 401 Unauthorized',
-                      initiator: getDomain(initiators.WEB_INITIATED)
-                    }
-                  },
-                  {
                     label: 'onErrorOccurred',
                     event: 'onErrorOccurred',
                     details: {
@@ -296,8 +254,7 @@ chrome.test.getConfig(function(config) {
                 [  // event order
                   [
                     'onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
-                    'onHeadersReceived', 'onAuthRequired', 'onResponseStarted',
-                    'onErrorOccurred'
+                    'onHeadersReceived', 'onAuthRequired', 'onErrorOccurred'
                   ]
                 ],
                 {urls: ['<all_urls>']}, ['blocking']);

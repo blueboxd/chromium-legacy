@@ -797,7 +797,9 @@ public abstract class ToolbarLayout
      * @return Whether or not the current Tab did go back.
      */
     boolean back() {
-        if (getLocationBar() != null) getLocationBar().setUrlBarFocus(false);
+        if (getLocationBar() != null) {
+            getLocationBar().setUrlBarFocus(false, null, LocationBar.OmniboxFocusReason.UNFOCUS);
+        }
         return mToolbarTabController != null && mToolbarTabController.back() != null;
     }
 
@@ -806,7 +808,9 @@ public abstract class ToolbarLayout
      * @return Whether or not the current Tab did go forward.
      */
     boolean forward() {
-        if (getLocationBar() != null) getLocationBar().setUrlBarFocus(false);
+        if (getLocationBar() != null) {
+            getLocationBar().setUrlBarFocus(false, null, LocationBar.OmniboxFocusReason.UNFOCUS);
+        }
         return mToolbarTabController != null ? mToolbarTabController.forward() : false;
     }
 
@@ -817,7 +821,9 @@ public abstract class ToolbarLayout
      * <p>The buttons of the toolbar will be updated as a result of making this call.
      */
     void stopOrReloadCurrentTab() {
-        if (getLocationBar() != null) getLocationBar().setUrlBarFocus(false);
+        if (getLocationBar() != null) {
+            getLocationBar().setUrlBarFocus(false, null, LocationBar.OmniboxFocusReason.UNFOCUS);
+        }
         if (mToolbarTabController != null) mToolbarTabController.stopOrReloadCurrentTab();
     }
 
@@ -825,7 +831,9 @@ public abstract class ToolbarLayout
      * Opens hompage in the current tab.
      */
     void openHomepage() {
-        if (getLocationBar() != null) getLocationBar().setUrlBarFocus(false);
+        if (getLocationBar() != null) {
+            getLocationBar().setUrlBarFocus(false, null, LocationBar.OmniboxFocusReason.UNFOCUS);
+        }
         if (mToolbarTabController != null) mToolbarTabController.openHomepage();
     }
 

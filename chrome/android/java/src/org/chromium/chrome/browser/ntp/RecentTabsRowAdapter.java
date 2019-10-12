@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
+import android.util.ArrayMap;
 import android.util.LruCache;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -43,13 +44,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Row adapter for presenting recently closed tabs, synced tabs from other devices, the sync or
  * sign in promo, and currently open tabs (only in document mode) in a grouped list view.
  */
 public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
-    private static final int MAX_NUM_FAVICONS_TO_CACHE = 256;
+    private static final int MAX_NUM_FAVICONS_TO_CACHE = 128;
 
     @IntDef({ChildType.NONE, ChildType.DEFAULT_CONTENT, ChildType.PERSONALIZED_SIGNIN_PROMO,
             ChildType.SYNC_PROMO})
@@ -98,6 +100,15 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         int NUM_ENTRIES = 11;
     }
 
+    @IntDef({FaviconLocality.LOCAL, FaviconLocality.FOREIGN})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface FaviconLocality {
+        int LOCAL = 0;
+        int FOREIGN = 1;
+
+        int NUM_ENTRIES = 2;
+    }
+
     private final Activity mActivity;
     private final List<Group> mGroups;
     private final DefaultFaviconHelper mDefaultFaviconHelper;
@@ -105,7 +116,8 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     private final RecentlyClosedTabsGroup mRecentlyClosedTabsGroup = new RecentlyClosedTabsGroup();
     private final SeparatorGroup mVisibleSeparatorGroup = new SeparatorGroup(true);
     private final SeparatorGroup mInvisibleSeparatorGroup = new SeparatorGroup(false);
-    private final FaviconCache mFaviconCache;
+    private final Map<Integer, FaviconCache> mFaviconCaches =
+            new ArrayMap<>(FaviconLocality.NUM_ENTRIES);
     private final int mFaviconSize;
     private boolean mHasForeignDataRecorded;
     private RoundedIconGenerator mIconGenerator;
@@ -640,29 +652,18 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     }
 
     private static class FaviconCache {
-        private static final String FOREIGN_FAVICON_PREFIX = "Foreign";
-        private static final String LOCAL_FAVICON_PREFIX = "Local";
-
         private final LruCache<String, Drawable> mMemoryCache;
 
         public FaviconCache(int size) {
-            mMemoryCache = new LruCache<String, Drawable>(size);
+            mMemoryCache = new LruCache<>(size);
         }
 
-        public Drawable getForeignFaviconImage(String url) {
-            return mMemoryCache.get(FOREIGN_FAVICON_PREFIX + url);
+        Drawable getFaviconImage(String url) {
+            return mMemoryCache.get(url);
         }
 
-        public void putForeignFaviconImage(String url, Drawable image) {
-            mMemoryCache.put(FOREIGN_FAVICON_PREFIX + url, image);
-        }
-
-        public Drawable getLocalFaviconImage(String url) {
-            return mMemoryCache.get(LOCAL_FAVICON_PREFIX + url);
-        }
-
-        public void putLocalFaviconImage(String url, Drawable image) {
-            mMemoryCache.put(LOCAL_FAVICON_PREFIX + url, image);
+        public void putFaviconImage(String url, Drawable image) {
+            mMemoryCache.put(url, image);
         }
     }
 
@@ -677,7 +678,8 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         mActivity = activity;
         mRecentTabsManager = recentTabsManager;
         mGroups = new ArrayList<>();
-        mFaviconCache = new FaviconCache(MAX_NUM_FAVICONS_TO_CACHE);
+        mFaviconCaches.put(FaviconLocality.LOCAL, new FaviconCache(MAX_NUM_FAVICONS_TO_CACHE));
+        mFaviconCaches.put(FaviconLocality.FOREIGN, new FaviconCache(MAX_NUM_FAVICONS_TO_CACHE));
 
         Resources resources = activity.getResources();
         mDefaultFaviconHelper = new DefaultFaviconHelper();
@@ -702,13 +704,6 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         public FaviconImageCallback imageCallback;
     }
 
-    @IntDef({FaviconLocality.LOCAL, FaviconLocality.FOREIGN})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface FaviconLocality {
-        int LOCAL = 0;
-        int FOREIGN = 1;
-    }
-
     private void loadFavicon(
             final ViewHolder viewHolder, final String url, @FaviconLocality int locality) {
         Drawable image;
@@ -717,7 +712,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
             image = mDefaultFaviconHelper.getDefaultFaviconDrawable(
                     mActivity.getResources(), url, true);
         } else {
-            image = mFaviconCache.getLocalFaviconImage(url);
+            image = mFaviconCaches.get(locality).getFaviconImage(url);
             if (image == null) {
                 FaviconImageCallback imageCallback = new FaviconImageCallback() {
                     @Override
@@ -726,7 +721,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                         Drawable faviconDrawable = FaviconUtils.getIconDrawableWithFilter(bitmap,
                                 url, mIconGenerator, mDefaultFaviconHelper,
                                 mActivity.getResources(), mFaviconSize);
-                        mFaviconCache.putLocalFaviconImage(url, faviconDrawable);
+                        mFaviconCaches.get(locality).putFaviconImage(url, faviconDrawable);
                         viewHolder.imageView.setImageDrawable(faviconDrawable);
                     }
                 };

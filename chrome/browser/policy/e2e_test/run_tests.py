@@ -31,6 +31,16 @@ def ParseArgs():
       default='*',
       help='Fully qualified names of TestCases to run (supports my.package.*)')
   parser.add_argument(
+      '--include',
+      metavar='<categoryA;...>',
+      default=None,
+      help='Categories of tests to include')
+  parser.add_argument(
+      '--exclude',
+      metavar='<categoryA;...>',
+      default=None,
+      help='Categories of tests to exclude')
+  parser.add_argument(
       '--noprogress',
       dest='show_progress',
       default=True,
@@ -105,6 +115,10 @@ if __name__ == '__main__':
 
   tests = ArgsParser.ParseTestsArg(args.tests)
   logging.debug('Found tests: %s', tests)
+
+  if args.include or args.exclude:
+    tests = ArgsParser.ProcessTestFilterArg(tests, args.include, args.exclude)
+    logging.debug('Got filtered tests: %s', tests)
 
   hostFiles = ArgsParser.ParseHostsArg(args.hosts)
   logging.debug('Found hosts: %s', hostFiles)

@@ -76,6 +76,14 @@ Polymer({
   },
 
   /**
+   * Scroll to the bottom of footer container.
+   */
+  scrollToBottom: function() {
+    var el = this.$$('#footer-container');
+    el.scrollTop = el.scrollHeight;
+  },
+
+  /**
    * This is called from oobe_welcome when this dialog is shown.
    */
   show: function() {

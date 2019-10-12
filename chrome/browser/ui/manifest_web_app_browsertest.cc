@@ -34,10 +34,19 @@ class ManifestWebAppTest : public InProcessBrowserTest {
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
+class ManifestWebAppTestWithFocusModeEnabled : public ManifestWebAppTest {
+ public:
+  ManifestWebAppTestWithFocusModeEnabled() {
+    feature_list_.InitAndEnableFeature(features::kFocusMode);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Opens a basic example site in focus mode window.
-IN_PROC_BROWSER_TEST_F(ManifestWebAppTest, OpenExampleSite) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kFocusMode);
+IN_PROC_BROWSER_TEST_F(ManifestWebAppTestWithFocusModeEnabled,
+                       OpenExampleSite) {
   const GURL url("http://example.org/");
   ui_test_utils::NavigateToURL(browser(), url);
   Browser* app_browser = web_app::ReparentWebContentsForFocusMode(
@@ -55,9 +64,7 @@ IN_PROC_BROWSER_TEST_F(ManifestWebAppTest, OpenExampleSite) {
   EXPECT_EQ(controller->GetThemeColor(), SK_ColorWHITE);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestWebAppTest, MetricsTest) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kFocusMode);
+IN_PROC_BROWSER_TEST_F(ManifestWebAppTestWithFocusModeEnabled, MetricsTest) {
   Browser* app_browser = web_app::ReparentWebContentsForFocusMode(
       browser()->tab_strip_model()->GetWebContentsAt(0));
 

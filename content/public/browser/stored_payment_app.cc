@@ -16,10 +16,6 @@ StoredCapabilities::StoredCapabilities(const StoredCapabilities&) = default;
 
 StoredCapabilities::~StoredCapabilities() = default;
 
-StoredSupportedDelegations::StoredSupportedDelegations() = default;
-
-StoredSupportedDelegations::~StoredSupportedDelegations() = default;
-
 StoredPaymentApp::StoredPaymentApp() = default;
 
 StoredPaymentApp::~StoredPaymentApp() = default;

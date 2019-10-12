@@ -65,6 +65,7 @@ class CONTENT_EXPORT PaymentAppProvider {
       const std::string& sw_scope,
       bool sw_use_cache,
       const std::string& method,
+      const SupportedDelegations& supported_delegations,
       RegistrationIdCallback registration_id_callback,
       InvokePaymentAppCallback callback) = 0;
   virtual void CanMakePayment(

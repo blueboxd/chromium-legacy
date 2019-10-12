@@ -1351,7 +1351,7 @@ component("ash") {
     "//ui/wm",
   ]
   deps = [
-    "//ash/app_list:presenter",
+    "//ash/app_list",
     "//ash/app_menu",
     "//ash/assistant/model",
     "//ash/assistant/ui",
@@ -1533,7 +1533,7 @@ static_library("ash_shell_lib") {
   deps = [
     ":ash",
     ":test_support",
-    "//ash/app_list:presenter",
+    "//ash/app_list",
     "//ash/public/cpp",
     "//base",
     "//base:i18n",
@@ -1896,12 +1896,11 @@ test("ash_unittests") {
     "window_user_data_unittest.cc",
     "wm/always_on_top_controller_unittest.cc",
     "wm/ash_focus_rules_unittest.cc",
+    "wm/back_gesture_affordance_unittest.cc",
     "wm/client_controlled_state_unittest.cc",
     "wm/collision_detection/collision_detection_utils_unittest.cc",
     "wm/container_finder_unittest.cc",
     "wm/default_window_resizer_unittest.cc",
-    "wm/desks/desks_test_util.cc",
-    "wm/desks/desks_test_util.h",
     "wm/desks/desks_unittests.cc",
     "wm/drag_window_resizer_unittest.cc",
     "wm/fullscreen_window_finder_unittest.cc",
@@ -1972,7 +1971,7 @@ test("ash_unittests") {
   deps = [
     ":ash",
     ":test_support",
-    "//ash/app_list:presenter",
+    "//ash/app_list",
     "//ash/app_list:test_support",
     "//ash/app_menu",
     "//ash/assistant/model",
@@ -2281,6 +2280,8 @@ static_library("test_support") {
     "wallpaper/wallpaper_controller_test_api.h",
     "wm/cursor_manager_test_api.cc",
     "wm/cursor_manager_test_api.h",
+    "wm/desks/desks_test_util.cc",
+    "wm/desks/desks_test_util.h",
     "wm/lock_state_controller_test_api.cc",
     "wm/lock_state_controller_test_api.h",
     "wm/splitview/multi_display_overview_and_split_view_test.cc",
@@ -2318,7 +2319,7 @@ static_library("test_support") {
   ]
   deps = [
     "//ash",
-    "//ash/app_list:presenter",
+    "//ash/app_list",
     "//ash/app_list:test_support",
     "//ash/app_menu",
     "//ash/assistant/model:model",

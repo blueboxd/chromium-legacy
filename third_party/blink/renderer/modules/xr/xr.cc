@@ -939,6 +939,9 @@ void XR::OnRequestSessionReturned(
                                           TaskType::kMiscPlatformAPI)));
       environment_provider_.set_connection_error_handler(WTF::Bind(
           &XR::OnEnvironmentProviderDisconnect, WrapWeakPersistent(this)));
+
+      session->OnEnvironmentProviderCreated();
+
       LocalFrame* frame = GetFrame();
       DCHECK(frame);
 

@@ -105,13 +105,6 @@ public class ChromePreferenceManager {
             "contextual_search_previous_interaction_timestamp";
 
     /**
-     * Key to cache whether
-     * {@link ChromeFeatureList#SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT} is enabled.
-     */
-    public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
-            "swap_pixel_format_to_fix_convert_from_translucent";
-
-    /**
      * Whether the promotion for data reduction has been skipped on first invocation.
      * Default value is false.
      */
@@ -192,43 +185,6 @@ public class ChromePreferenceManager {
             "inflate_toolbar_on_background_thread";
 
     /**
-     * Whether or not the bottom toolbar is enabled.
-     * Default value is false.
-     */
-    public static final String BOTTOM_TOOLBAR_ENABLED_KEY = "bottom_toolbar_enabled";
-
-    /**
-     * Whether or not the adaptive toolbar is enabled.
-     * Default value is true.
-     */
-    public static final String ADAPTIVE_TOOLBAR_ENABLED_KEY = "adaptive_toolbar_enabled";
-
-    /**
-     * Whether or not the labeled bottom toolbar is enabled.
-     * Default value is false.
-     */
-    public static final String LABELED_BOTTOM_TOOLBAR_ENABLED_KEY =
-            "labeled_bottom_toolbar_enabled";
-
-    /**
-     * Whether or not night mode is available.
-     * Default value is false.
-     */
-    public static final String NIGHT_MODE_AVAILABLE_KEY = "night_mode_available";
-
-    /**
-     * Whether or not night mode should set "light" as the default option.
-     * Default value is false.
-     */
-    public static final String NIGHT_MODE_DEFAULT_TO_LIGHT = "night_mode_default_to_light";
-
-    /**
-     * Whether or not night mode is available for custom tabs.
-     * Default value is false.
-     */
-    public static final String NIGHT_MODE_CCT_AVAILABLE_KEY = "night_mode_cct_available";
-
-    /**
      * The current theme setting in the user settings.
      * Default value is -1. Use NightModeUtils#getThemeSetting() to retrieve current setting or
      * default theme.
@@ -240,13 +196,6 @@ public class ChromePreferenceManager {
      * Default value is false.
      */
     public static final String DARKEN_WEBSITES_ENABLED_KEY = "darken_websites_enabled";
-
-    /**
-     * Whether or not the download auto-resumption is enabled in native.
-     * Default value is true.
-     */
-    public static final String DOWNLOAD_AUTO_RESUMPTION_IN_NATIVE_KEY =
-            "download_auto_resumption_in_native";
 
     /**
      * Marks that the content suggestions surface has been shown.
@@ -278,13 +227,6 @@ public class ChromePreferenceManager {
      */
     @Deprecated
     public static final String SOLE_INTEGRATION_ENABLED_KEY = "sole_integration_enabled";
-
-    /**
-     * Whether or not command line on non-rooted devices is enabled.
-     * Default value is false.
-     */
-    public static final String COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY =
-            "command_line_on_non_rooted_enabled";
 
     private static final String VERIFIED_DIGITAL_ASSET_LINKS =
             "verified_digital_asset_links";
@@ -329,48 +271,12 @@ public class ChromePreferenceManager {
     /** Key for deferred recording of list of uninstalled WebAPK packages. */
     public static final String WEBAPK_UNINSTALLED_PACKAGES = "webapk_uninstalled_packages";
 
-    public static final String INTEREST_FEED_CONTENT_SUGGESTIONS_KEY =
-            "interest_feed_content_suggestions";
-
-    /**
-     * Whether or not the start surface is enabled.
-     * Default value is false.
-     */
-    public static final String START_SURFACE_ENABLED_KEY = "start_surface_enabled";
-
-    /**
-     * Whether or not the grid tab switcher is enabled.
-     * Default value is false.
-     */
-    public static final String GRID_TAB_SWITCHER_ENABLED_KEY = "grid_tab_switcher_enabled";
-
-    /**
-     * Whether or not the tab group is enabled.
-     * Default value is false.
-     */
-    public static final String TAB_GROUPS_ANDROID_ENABLED_KEY = "tab_group_android_enabled";
-
     /**
      * Whether or not the tab group UI improvement is enabled.
      * Default value is false.
      */
     public static final String TAB_GROUPS_UI_IMPROVEMENTS_ANDROID_ENABLED_KEY =
             "tab_group_ui_improvements_android_enabled";
-
-    /**
-     * Key for whether PrefetchBackgroundTask should load native in service manager only mode.
-     * Default value is false.
-     */
-    public static final String SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH_KEY =
-            "service_manager_for_background_prefetch";
-
-    /**
-     * Key for whether DownloadResumptionBackgroundTask should load native in service manager only
-     * mode.
-     * Default value is false.
-     */
-    public static final String SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION_KEY =
-            "service_manager_for_download_resumption";
 
     /**
      * Key for whether it allows to start in service manager only mode.
@@ -389,35 +295,10 @@ public class ChromePreferenceManager {
     public static final String CHROME_HOME_SHARED_PREFERENCES_KEY = "chrome_home_enabled_date";
 
     /**
-     * Whether or not bootstrap tasks should be prioritized (i.e. bootstrap task prioritization
-     * experiment is enabled). Default value is true.
-     */
-    public static final String PRIORITIZE_BOOTSTRAP_TASKS_KEY = "prioritize_bootstrap_tasks";
-
-    /**
-     * Whether warming up network service is enabled.
-     * Default value is false.
-     */
-    public static final String NETWORK_SERVICE_WARM_UP_ENABLED_KEY =
-            "network_service_warm_up_enabled";
-
-    /**
      * Contains a trial group that was used to determine whether the reached code profiler should be
      * enabled.
      */
     public static final String REACHED_CODE_PROFILER_GROUP_KEY = "reached_code_profiler_group";
-
-    /**
-     * Whether or not we should directly open the dialer when a click to call notification is
-     * received. Default value is false.
-     */
-    public static final String CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY =
-            "click_to_call_open_dialer_directly";
-
-    /**
-     * Key to cache whether immersive ui mode is enabled.
-     */
-    public static final String IMMERSIVE_UI_MODE_ENABLED = "immersive_ui_mode_enabled";
 
     /**
      * Key to cache whether offline indicator v2 (persistent offline indicator) is enabled.

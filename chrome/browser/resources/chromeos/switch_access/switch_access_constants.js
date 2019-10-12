@@ -48,20 +48,20 @@ SAConstants.Focus.CLASS = 'focus';
  * @enum {string}
  */
 SAConstants.Focus.ID = {
-  // The ID for the user's current focus.
+  // The ID for the ring showing the user's current focus.
   PRIMARY: 'primary',
-  // The ID for the group containing the user's focus.
-  SCOPE: 'scope',
+  // The ID for the ring showing the next focus.
+  NEXT: 'next',
   // The ID for the area where text is being input.
   TEXT: 'text'
 };
 
 /**
- * The buffer (in dip) between the primary focus ring and the scope focus ring.
+ * The buffer (in dip) between a child's focus ring and its parent's focus ring.
  * @type {number}
  * @const
  */
-SAConstants.Focus.SCOPE_BUFFER = 2;
+SAConstants.Focus.GROUP_BUFFER = 2;
 
 /**
  * The inner color of the focus rings.
@@ -155,7 +155,7 @@ SAConstants.MenuAction = {
   SCROLL_RIGHT: chrome.automation.ActionType.SCROLL_RIGHT,
   // Scroll the current element (or its ancestor) up.
   SCROLL_UP: chrome.automation.ActionType.SCROLL_UP,
-  // Either perform the default action or enter a new scope, as applicable.
+  // Either perform the default action or enter a new group, as applicable.
   SELECT: 'select',
   // Open and jump to the Switch Access settings.
   SETTINGS: 'settings',

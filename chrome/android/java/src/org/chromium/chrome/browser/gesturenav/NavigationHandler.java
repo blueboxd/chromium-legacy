@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.gesturenav;
 
+import android.content.Context;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -44,6 +45,7 @@ public class NavigationHandler {
     }
 
     private final ViewGroup mParentView;
+    private final Context mContext;
     private final Supplier<NavigationGlow> mGlowEffectSupplier;
 
     private final HistoryNavigationDelegate mDelegate;
@@ -88,9 +90,10 @@ public class NavigationHandler {
         boolean willBackExitApp();
     }
 
-    public NavigationHandler(ViewGroup parentView, HistoryNavigationDelegate delegate,
-            Supplier<NavigationGlow> glowEffectSupplier) {
+    public NavigationHandler(ViewGroup parentView, Context context,
+            HistoryNavigationDelegate delegate, Supplier<NavigationGlow> glowEffectSupplier) {
         mParentView = parentView;
+        mContext = context;
         mDelegate = delegate;
         mActionDelegate = delegate.createActionDelegate();
         mGlowEffectSupplier = glowEffectSupplier;
@@ -98,7 +101,7 @@ public class NavigationHandler {
     }
 
     private void createLayout() {
-        mSideSlideLayout = new SideSlideLayout(mParentView.getContext());
+        mSideSlideLayout = new SideSlideLayout(mContext);
         mSideSlideLayout.setLayoutParams(
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mSideSlideLayout.setOnNavigationListener((forward) -> {
@@ -117,8 +120,8 @@ public class NavigationHandler {
         });
 
         mNavigationSheet = NavigationSheet.isEnabled()
-                ? NavigationSheet.create(mParentView, mDelegate.getBottomSheetController(),
-                        mDelegate.createSheetDelegate())
+                ? NavigationSheet.create(mParentView, mContext,
+                        mDelegate.getBottomSheetController(), mDelegate.createSheetDelegate())
                 : NavigationSheet.DUMMY;
     }
 

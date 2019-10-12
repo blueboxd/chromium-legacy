@@ -23,6 +23,24 @@ using ::testing::Pointwise;
 
 namespace base {
 
+namespace {
+
+// constexpr implementation of std::equal's 4 argument overload.
+template <class InputIterator1, class InputIterator2>
+constexpr bool constexpr_equal(InputIterator1 first1,
+                               InputIterator1 last1,
+                               InputIterator2 first2,
+                               InputIterator2 last2) {
+  for (; first1 != last1 && first2 != last2; ++first1, ++first2) {
+    if (*first1 != *first2)
+      return false;
+  }
+
+  return first1 == last1 && first2 == last2;
+}
+
+}  // namespace
+
 TEST(SpanTest, DefaultConstructor) {
   span<int> dynamic_span;
   EXPECT_EQ(nullptr, dynamic_span.data());
@@ -960,6 +978,21 @@ TEST(SpanTest, Iterator) {
   for (int i : span)
     results.emplace_back(i);
   EXPECT_THAT(results, ElementsAre(1, 6, 1, 8, 0));
+}
+
+TEST(SpanTest, ConstexprIterator) {
+  static constexpr int kArray[] = {1, 6, 1, 8, 0};
+  constexpr span<const int> span(kArray);
+
+  static_assert(constexpr_equal(std::begin(kArray), std::end(kArray),
+                                span.begin(), span.end()),
+                "");
+  static_assert(1 == span.begin()[0], "");
+  static_assert(1 == *(span.begin() += 0), "");
+  static_assert(6 == *(span.begin() += 1), "");
+
+  static_assert(1 == *((span.begin() + 1) -= 1), "");
+  static_assert(6 == *((span.begin() + 1) -= 0), "");
 }
 
 TEST(SpanTest, ReverseIterator) {

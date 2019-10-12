@@ -10,13 +10,6 @@
 #include <list>
 #include <memory>
 
-#include "build/build_config.h"
-
-// TODO(zhongyi): Temporary while investigating http://crbug.com/901501.
-#ifndef OS_NACL
-#define TEMP_INSTRUMENTATION_901501
-#include "base/debug/stack_trace.h"
-#endif
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -103,14 +96,6 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   NetLogSource source_dependency() const override;
 
  private:
-#ifdef TEMP_INSTRUMENTATION_901501
-  // TODO(zhongyi): Temporary while investigating http://crbug.com/901501.
-  enum Liveness {
-    ALIVE = 0xCA11AB13,
-    DEAD = 0xDEADBEEF,
-  };
-#endif
-
   // Helper function used to initialize private members and to set delegate on
   // stream when stream is created.
   void InitializeStreamHelper();
@@ -150,9 +135,6 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   void ScheduleBufferedReadCallback();
   void DoBufferedReadCallback();
   bool ShouldWaitForMoreBufferedData() const;
-
-  // TODO(zhongyi): Temporary while investigating http://crbug.com/901501.
-  void CrashIfInvalid() const;
 
   const base::WeakPtr<SpdySession> spdy_session_;
 
@@ -226,12 +208,6 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   bool more_read_data_pending_;
 
   bool was_alpn_negotiated_;
-
-#ifdef TEMP_INSTRUMENTATION_901501
-  // TODO(zhongyi): Temporary while investigating http://crbug.com/901501.
-  Liveness liveness_ = ALIVE;
-  base::debug::StackTrace stack_trace_;
-#endif
 
   base::WeakPtrFactory<SpdyHttpStream> weak_factory_{this};
 

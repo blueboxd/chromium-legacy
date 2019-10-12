@@ -154,13 +154,9 @@ IN_PROC_BROWSER_TEST_F(WakeLockBrowserTest, RequestPermissionScreen) {
 
   PermissionRequestObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents());
-  std::string response;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "WakeLock.requestPermission('screen').then(status => "
-      "    domAutomationController.send(status));",
-      &response));
-  EXPECT_EQ(response, "granted");
+  EXPECT_EQ("granted", content::EvalJs(
+                           browser()->tab_strip_model()->GetActiveWebContents(),
+                           "WakeLock.requestPermission('screen')"));
   EXPECT_EQ(observer.request_shown(), false);
 }
 
@@ -172,13 +168,11 @@ IN_PROC_BROWSER_TEST_F(WakeLockBrowserTest,
 
   PermissionRequestObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents());
-  std::string response;
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "WakeLock.requestPermission('screen').then(status => "
-      "    domAutomationController.send(status));",
-      &response));
-  EXPECT_EQ(response, "granted");
+  EXPECT_EQ(
+      "granted",
+      content::EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                      "WakeLock.requestPermission('screen')",
+                      content::EvalJsOptions::EXECUTE_SCRIPT_NO_USER_GESTURE));
   EXPECT_EQ(observer.request_shown(), false);
 }
 
@@ -189,13 +183,9 @@ IN_PROC_BROWSER_TEST_F(WakeLockBrowserTest, RequestPermissionSystem) {
 
   PermissionRequestObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents());
-  std::string response;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "WakeLock.requestPermission('system').then(status => "
-      "    domAutomationController.send(status));",
-      &response));
-  EXPECT_EQ(response, "denied");
+  EXPECT_EQ("denied", content::EvalJs(
+                          browser()->tab_strip_model()->GetActiveWebContents(),
+                          "WakeLock.requestPermission('system')"));
   EXPECT_EQ(observer.request_shown(), false);
 }
 
@@ -207,12 +197,10 @@ IN_PROC_BROWSER_TEST_F(WakeLockBrowserTest,
 
   PermissionRequestObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents());
-  std::string response;
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "WakeLock.requestPermission('system').then(status => "
-      "    domAutomationController.send(status));",
-      &response));
-  EXPECT_EQ(response, "denied");
+  EXPECT_EQ(
+      "denied",
+      content::EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                      "WakeLock.requestPermission('system')",
+                      content::EvalJsOptions::EXECUTE_SCRIPT_NO_USER_GESTURE));
   EXPECT_EQ(observer.request_shown(), false);
 }

@@ -891,10 +891,17 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, GetRestoreTabType) {
   EXPECT_EQ(sessions::TabRestoreService::TAB, service->entries().front()->type);
 }
 
-IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreGroupedTab) {
-  base::test::ScopedFeatureList feature_override;
-  feature_override.InitAndEnableFeature(features::kTabGroups);
+class TabRestoreTestWithTabGroupsEnabled : public TabRestoreTest {
+ public:
+  TabRestoreTestWithTabGroupsEnabled() {
+    feature_list_.InitAndEnableFeature(features::kTabGroups);
+  }
 
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled, RestoreGroupedTab) {
   const int tab_count = AddSomeTabs(browser(), 1);
   ASSERT_LE(2, tab_count);
 
@@ -914,10 +921,8 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreGroupedTab) {
             browser()->tab_strip_model()->GetTabGroupForTab(grouped_tab_index));
 }
 
-IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowWithGroupedTabs) {
-  base::test::ScopedFeatureList feature_override;
-  feature_override.InitAndEnableFeature(features::kTabGroups);
-
+IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
+                       RestoreWindowWithGroupedTabs) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL),
       WindowOpenDisposition::NEW_WINDOW,
@@ -962,7 +967,12 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowWithGroupedTabs) {
 
 // Ensure tab groups aren't restored if |features::kTabGroups| is disabled.
 // Regression test for crbug.com/983962.
-IN_PROC_BROWSER_TEST_F(TabRestoreTest, GroupsNotRestoredWhenFeatureDisabled) {
+//
+// NOTE: This test is currently disabled because it fundamentally relies on
+// manipulating the FeatureList state mid-test, which is NOT safe and not
+// allowed by the FeatureList API.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest,
+                       DISABLED_GroupsNotRestoredWhenFeatureDisabled) {
   auto feature_override = std::make_unique<base::test::ScopedFeatureList>();
   feature_override->InitAndEnableFeature(features::kTabGroups);
 

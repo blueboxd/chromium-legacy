@@ -87,9 +87,9 @@ PaymentInstrumentPtr ToPaymentInstrumentForMojo(const std::string& input) {
   return instrument;
 }
 
-StoredSupportedDelegations ToStoredSupportedDelegations(
+SupportedDelegations ToSupportedDelegations(
     const content::SupportedDelegationsProto& supported_delegations_proto) {
-  StoredSupportedDelegations supported_delegations;
+  SupportedDelegations supported_delegations;
   if (supported_delegations_proto.has_shipping_address()) {
     supported_delegations.shipping_address =
         supported_delegations_proto.shipping_address();
@@ -126,7 +126,7 @@ std::unique_ptr<StoredPaymentApp> ToStoredPaymentApp(const std::string& input) {
   }
   app->user_hint = app_proto.user_hint();
   app->supported_delegations =
-      ToStoredSupportedDelegations(app_proto.supported_delegations());
+      ToSupportedDelegations(app_proto.supported_delegations());
 
   if (!app_proto.icon().empty()) {
     std::string icon_raw_data;
@@ -541,6 +541,7 @@ void PaymentAppDatabase::SetPaymentAppInfoForRegisteredServiceWorker(
     const std::string& name,
     const std::string& icon,
     const std::string& method,
+    const SupportedDelegations& supported_delegations,
     SetPaymentAppInfoCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
@@ -548,7 +549,7 @@ void PaymentAppDatabase::SetPaymentAppInfoForRegisteredServiceWorker(
       registration_id,
       base::BindOnce(&PaymentAppDatabase::DidFindRegistrationToSetPaymentApp,
                      weak_ptr_factory_.GetWeakPtr(), instrument_key, name, icon,
-                     method, std::move(callback)));
+                     method, supported_delegations, std::move(callback)));
 }
 
 void PaymentAppDatabase::DidFindRegistrationToSetPaymentApp(
@@ -556,6 +557,7 @@ void PaymentAppDatabase::DidFindRegistrationToSetPaymentApp(
     const std::string& name,
     const std::string& icon,
     const std::string& method,
+    const SupportedDelegations& supported_delegations,
     SetPaymentAppInfoCallback callback,
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
@@ -571,6 +573,19 @@ void PaymentAppDatabase::DidFindRegistrationToSetPaymentApp(
   payment_app_proto.set_scope(registration->scope().spec());
   payment_app_proto.set_name(name);
   payment_app_proto.set_icon(icon);
+
+  // Set supported delegations.
+  auto supported_delegations_proto =
+      std::make_unique<SupportedDelegationsProto>();
+  supported_delegations_proto->set_shipping_address(
+      supported_delegations.shipping_address);
+  supported_delegations_proto->set_payer_name(supported_delegations.payer_name);
+  supported_delegations_proto->set_payer_phone(
+      supported_delegations.payer_phone);
+  supported_delegations_proto->set_payer_email(
+      supported_delegations.payer_email);
+  payment_app_proto.set_allocated_supported_delegations(
+      supported_delegations_proto.release());
 
   std::string serialized_payment_app;
   bool success = payment_app_proto.SerializeToString(&serialized_payment_app);

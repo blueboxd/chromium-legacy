@@ -28,12 +28,6 @@ class LazyDomDistillerService : public DomDistillerServiceInterface,
   ~LazyDomDistillerService() override;
 
   // DomDistillerServiceInterface implementation:
-  bool HasEntry(const std::string& entry_id) override;
-  std::string GetUrlForEntry(const std::string& entry_id) override;
-  std::unique_ptr<ViewerHandle> ViewEntry(
-      ViewRequestDelegate* delegate,
-      std::unique_ptr<DistillerPage> distiller_page,
-      const std::string& entry_id) override;
   std::unique_ptr<ViewerHandle> ViewUrl(
       ViewRequestDelegate* delegate,
       std::unique_ptr<DistillerPage> distiller_page,

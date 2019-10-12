@@ -1610,11 +1610,19 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_EQ(0u, GetNotificationCount());
 }
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
-                       PushEventIgnoresScheduledNotificationsForEnforcement) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kNotificationTriggers);
+class PushMessagingBrowserTestWithNotificationTriggersEnabled
+    : public PushMessagingBrowserTest {
+ public:
+  PushMessagingBrowserTestWithNotificationTriggersEnabled() {
+    feature_list_.InitAndEnableFeature(features::kNotificationTriggers);
+  }
 
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTestWithNotificationTriggersEnabled,
+                       PushEventIgnoresScheduledNotificationsForEnforcement) {
   std::string script_result;
 
   ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully());

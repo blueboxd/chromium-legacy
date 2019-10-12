@@ -216,7 +216,7 @@ void FetchRespondWithObserver::OnResponseRejected(
   response->status_text = "";
   response->error = error;
   To<ServiceWorkerGlobalScope>(GetExecutionContext())
-      ->RespondToFetchEvent(event_id_, std::move(response),
+      ->RespondToFetchEvent(event_id_, request_url_, std::move(response),
                             event_dispatch_time_, base::TimeTicks::Now());
 }
 
@@ -323,8 +323,8 @@ void FetchRespondWithObserver::OnResponseFulfilled(
       // Handle the blob response body.
       fetch_api_response->blob = blob_data_handle;
       service_worker_global_scope->RespondToFetchEvent(
-          event_id_, std::move(fetch_api_response), event_dispatch_time_,
-          base::TimeTicks::Now());
+          event_id_, request_url_, std::move(fetch_api_response),
+          event_dispatch_time_, base::TimeTicks::Now());
       return;
     }
 
@@ -349,19 +349,20 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     }
 
     service_worker_global_scope->RespondToFetchEventWithResponseStream(
-        event_id_, std::move(fetch_api_response), std::move(stream_handle),
-        event_dispatch_time_, base::TimeTicks::Now());
+        event_id_, request_url_, std::move(fetch_api_response),
+        std::move(stream_handle), event_dispatch_time_, base::TimeTicks::Now());
     return;
   }
   service_worker_global_scope->RespondToFetchEvent(
-      event_id_, std::move(fetch_api_response), event_dispatch_time_,
-      base::TimeTicks::Now());
+      event_id_, request_url_, std::move(fetch_api_response),
+      event_dispatch_time_, base::TimeTicks::Now());
 }
 
 void FetchRespondWithObserver::OnNoResponse() {
   DCHECK(GetExecutionContext());
   To<ServiceWorkerGlobalScope>(GetExecutionContext())
-      ->RespondToFetchEventWithNoResponse(event_id_, event_dispatch_time_,
+      ->RespondToFetchEventWithNoResponse(event_id_, request_url_,
+                                          event_dispatch_time_,
                                           base::TimeTicks::Now());
 }
 

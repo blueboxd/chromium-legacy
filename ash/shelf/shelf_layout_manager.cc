@@ -312,12 +312,12 @@ ShelfLayoutManager::~ShelfLayoutManager() {
     Shell::Get()->app_list_controller()->RemoveObserver(this);
   if (Shell::Get()->overview_controller())
     Shell::Get()->overview_controller()->RemoveObserver(this);
-  Shell::Get()->split_view_controller()->RemoveObserver(this);
+  SplitViewController::Get()->RemoveObserver(this);
 }
 
 void ShelfLayoutManager::InitObservers() {
   Shell::Get()->AddShellObserver(this);
-  Shell::Get()->split_view_controller()->AddObserver(this);
+  SplitViewController::Get()->AddObserver(this);
   Shell::Get()->overview_controller()->AddObserver(this);
   Shell::Get()->app_list_controller()->AddObserver(this);
   Shell::Get()
@@ -610,9 +610,8 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
     return SHELF_BACKGROUND_LOGIN;
   }
 
-  const bool in_split_view_mode =
-      Shell::Get()->split_view_controller() &&
-      Shell::Get()->split_view_controller()->InSplitViewMode();
+  const bool in_split_view_mode = SplitViewController::Get() &&
+                                  SplitViewController::Get()->InSplitViewMode();
   const bool maximized =
       in_split_view_mode ||
       state_.window_state == WorkspaceWindowState::kFullscreen ||

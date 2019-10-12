@@ -234,6 +234,9 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
     return *window_agent_factory_;
   }
 
+  bool GetVisibleToHitTesting() const { return visible_to_hit_testing_; }
+  void UpdateVisibleToHitTesting();
+
  protected:
   // |inheriting_agent_factory| should basically be set to the parent frame or
   // opener's WindowAgentFactory. Pass nullptr if the frame is isolated from
@@ -260,6 +263,8 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
     return lifecycle_.GetState() == FrameLifecycle::kDetached;
   }
 
+  virtual void DidChangeVisibleToHitTesting() = 0;
+
   mutable FrameTree tree_node_;
 
   Member<Page> page_;
@@ -278,6 +283,8 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   bool is_inert_ = false;
 
   TouchAction inherited_effective_touch_action_ = TouchAction::kTouchActionAuto;
+
+  bool visible_to_hit_testing_ = true;
 
  private:
   Member<FrameClient> client_;

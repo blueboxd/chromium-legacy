@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
+#include "components/security_state/core/features.h"
 #include "content/public/browser/navigation_entry.h"
 
 namespace {
@@ -159,10 +159,14 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
   // triggered when a committed navigation finishes.
   last_safety_tip_navigation_entry_id_ =
       web_contents()->GetController().GetLastCommittedEntry()->GetUniqueID();
+  // Update the visible security state, since we downgrade indicator when a
+  // safety tip is triggered. This has to happen after
+  // last_safety_tip_navigation_entry_id_ is updated.
+  web_contents()->DidChangeVisibleSecurityState();
 
   MaybeCallReputationCheckCallback();
 
-  if (!base::FeatureList::IsEnabled(features::kSafetyTipUI)) {
+  if (!base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
     return;
   }
   ShowSafetyTipDialog(

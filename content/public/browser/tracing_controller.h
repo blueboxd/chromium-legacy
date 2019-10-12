@@ -114,7 +114,8 @@ class TracingController {
       const scoped_refptr<TraceDataEndpoint>& trace_data_endpoint) = 0;
   virtual bool StopTracing(
       const scoped_refptr<TraceDataEndpoint>& trace_data_endpoint,
-      const std::string& agent_label) = 0;
+      const std::string& agent_label,
+      bool privacy_filtering_enabled = false) = 0;
 
   // Get the maximum across processes of trace buffer percent full state.
   // When the TraceBufferUsage value is determined, the callback is

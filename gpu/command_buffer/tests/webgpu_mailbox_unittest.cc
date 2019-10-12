@@ -11,8 +11,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_space.h"
 
-using namespace testing;
-
 namespace gpu {
 namespace {
 
@@ -25,7 +23,7 @@ class MockBufferMapReadCallback {
                     void* userdata));
 };
 
-std::unique_ptr<StrictMock<MockBufferMapReadCallback>>
+std::unique_ptr<testing::StrictMock<MockBufferMapReadCallback>>
     mock_buffer_map_read_callback;
 void ToMockBufferMapReadCallback(DawnBufferMapAsyncStatus status,
                                  const void* ptr,
@@ -42,7 +40,7 @@ class MockUncapturedErrorCallback {
                void(DawnErrorType type, const char* message, void* userdata));
 };
 
-std::unique_ptr<StrictMock<MockUncapturedErrorCallback>>
+std::unique_ptr<testing::StrictMock<MockUncapturedErrorCallback>>
     mock_device_error_callback;
 void ToMockUncapturedErrorCallback(DawnErrorType type,
                                    const char* message,
@@ -58,9 +56,9 @@ class WebGPUMailboxTest : public WebGPUTest {
     WebGPUTest::SetUp();
     Initialize(WebGPUTest::Options());
     mock_buffer_map_read_callback =
-        std::make_unique<StrictMock<MockBufferMapReadCallback>>();
+        std::make_unique<testing::StrictMock<MockBufferMapReadCallback>>();
     mock_device_error_callback =
-        std::make_unique<StrictMock<MockUncapturedErrorCallback>>();
+        std::make_unique<testing::StrictMock<MockUncapturedErrorCallback>>();
   }
 
   void TearDown() override {
@@ -182,7 +180,8 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
     uint32_t buffer_contents = 0xFF00FF00;
     EXPECT_CALL(*mock_buffer_map_read_callback,
                 Call(DAWN_BUFFER_MAP_ASYNC_STATUS_SUCCESS,
-                     Pointee(Eq(buffer_contents)), sizeof(uint32_t), 0))
+                     testing::Pointee(testing::Eq(buffer_contents)),
+                     sizeof(uint32_t), 0))
         .Times(1);
 
     WaitForCompletion(device);
@@ -225,7 +224,7 @@ TEST_F(WebGPUMailboxTest, ErrorWhenUsingTextureAfterDissociate) {
   // Try using the texture, it should produce a validation error.
   dawn::TextureView view = texture.CreateView();
   EXPECT_CALL(*mock_device_error_callback,
-              Call(DAWN_ERROR_TYPE_VALIDATION, _, _))
+              Call(DAWN_ERROR_TYPE_VALIDATION, testing::_, testing::_))
       .Times(1);
   WaitForCompletion(device);
 }

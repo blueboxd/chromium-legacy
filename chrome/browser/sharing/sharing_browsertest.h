@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/sharing/sharing_service.h"
@@ -28,8 +27,7 @@ class SharingBrowserTest : public SyncTest {
 
   void SetUpOnMainThread() override;
 
-  void Init(const std::vector<base::Feature>& enabled_features,
-            const std::vector<base::Feature>& disabled_features);
+  void Init();
 
   virtual std::string GetTestPageURL() const = 0;
 
@@ -52,7 +50,6 @@ class SharingBrowserTest : public SyncTest {
  private:
   gcm::GCMProfileServiceFactory::ScopedTestingFactoryInstaller
       scoped_testing_factory_installer_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   gcm::FakeGCMProfileService* gcm_service_;
   content::WebContents* web_contents_;
   syncer::FakeDeviceInfoTracker fake_device_info_tracker_;

@@ -286,8 +286,11 @@ class Generator(generator.Generator):
       "is_any_handle_or_interface_kind": mojom.IsAnyHandleOrInterfaceKind,
       "is_array_kind": mojom.IsArrayKind,
       "is_associated_interface_kind": mojom.IsAssociatedInterfaceKind,
+      "is_pending_associated_remote_kind": mojom.IsPendingAssociatedRemoteKind,
       "is_associated_interface_request_kind":
           mojom.IsAssociatedInterfaceRequestKind,
+      "is_pending_associated_receiver_kind":
+          mojom.IsPendingAssociatedReceiverKind,
       "is_bool_kind": mojom.IsBoolKind,
       "is_enum_kind": mojom.IsEnumKind,
       "is_any_handle_kind": mojom.IsAnyHandleKind,
@@ -447,7 +450,9 @@ class Generator(generator.Generator):
           self._LiteClosureTypeWithNullability(kind.value_kind))
 
     if (mojom.IsAssociatedKind(kind) or mojom.IsInterfaceRequestKind(kind) or
-        mojom.IsPendingRemoteKind(kind) or mojom.IsPendingReceiverKind(kind)):
+        mojom.IsPendingRemoteKind(kind) or mojom.IsPendingReceiverKind(kind) or
+        mojom.IsPendingAssociatedRemoteKind(kind) or
+        mojom.IsPendingAssociatedReceiverKind(kind)):
       named_kind = kind.kind
     else:
       named_kind = kind
@@ -546,7 +551,9 @@ class Generator(generator.Generator):
           "true" if mojom.IsNullableKind(kind.value_kind) else "false")
 
     if (mojom.IsAssociatedKind(kind) or mojom.IsInterfaceRequestKind(kind) or
-        mojom.IsPendingRemoteKind(kind) or mojom.IsPendingReceiverKind(kind)):
+        mojom.IsPendingRemoteKind(kind) or mojom.IsPendingReceiverKind(kind) or
+        mojom.IsPendingAssociatedRemoteKind(kind) or
+        mojom.IsPendingAssociatedReceiverKind(kind)):
       named_kind = kind.kind
     else:
       named_kind = kind

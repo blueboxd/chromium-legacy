@@ -274,14 +274,20 @@ class IDLParser(object):
                            | ATTRIBUTE
                            | CALLBACK
                            | CONST
+                           | CONSTRUCTOR
                            | DELETER
                            | DICTIONARY
                            | ENUM
                            | GETTER
                            | INCLUDES
                            | INHERIT
+                           | INTERFACE
+                           | ITERABLE
+                           | MAPLIKE
                            | NAMESPACE
                            | PARTIAL
+                           | REQUIRED
+                           | SETLIKE
                            | SETTER
                            | STATIC
                            | STRINGIFIER
@@ -555,12 +561,21 @@ class IDLParser(object):
     p[0] = self.BuildNamed('Operation', p, 1, arguments)
 
   def p_OptionalOperationName(self, p):
-    """OptionalOperationName : identifier
+    """OptionalOperationName : OperationName
                              |"""
     if len(p) > 1:
       p[0] = p[1]
     else:
       p[0] = ''
+
+  def p_OperationName(self, p):
+    """OperationName : OperationNameKeyword
+                     | identifier"""
+    p[0] = p[1]
+
+  def p_OperationNameKeyword(self, p):
+    """OperationNameKeyword : INCLUDES"""
+    p[0] = p[1]
 
   def p_ArgumentList(self, p):
     """ArgumentList : Argument Arguments

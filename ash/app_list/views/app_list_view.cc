@@ -809,12 +809,6 @@ SkColor AppListView::GetAppListBackgroundShieldColorForTest() {
 }
 
 void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
-  const gfx::Size non_apps_grid_size = AppsContainerView::GetNonAppsGridSize();
-  gfx::Size available_apps_grid_size = parent_window->bounds().size();
-  available_apps_grid_size.Enlarge(
-      -non_apps_grid_size.width(),
-      -non_apps_grid_size.height() - delegate_->GetShelfHeight());
-
   // Create the app list configuration override if it's needed for the current
   // display bounds and the available apps grid size.
   std::unique_ptr<AppListConfig> new_config =
@@ -823,7 +817,8 @@ void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
               ->GetDisplayNearestView(parent_window)
               .work_area()
               .size(),
-          available_apps_grid_size, app_list_config_.get());
+          AppsContainerView::GetMinimumGridHorizontalMargin(),
+          delegate_->GetShelfHeight(), app_list_config_.get());
 
   if (!new_config)
     return;
@@ -1574,9 +1569,6 @@ void AppListView::StartAnimationForState(ash::AppListViewState target_state) {
 
 void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
                                        base::TimeDelta duration_ms) {
-  // Reset animation metrics reporter when animation is started.
-  ResetTransitionMetricsReporter();
-
   ui::ImplicitAnimationObserver* animation_observer =
       delegate_->GetAnimationObserver(target_state);
 
@@ -1587,19 +1579,6 @@ void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
     if (animation_observer)
       animation_observer->OnImplicitAnimationsCompleted();
     return;
-  }
-
-  if (is_tablet_mode_ && target_state != ash::AppListViewState::kClosed) {
-    DCHECK(target_state == ash::AppListViewState::kFullscreenAllApps ||
-           target_state == ash::AppListViewState::kFullscreenSearch);
-    TabletModeAnimationTransition transition_type =
-        target_state == ash::AppListViewState::kFullscreenAllApps
-            ? TabletModeAnimationTransition::kEnterFullscreenAllApps
-            : TabletModeAnimationTransition::kEnterFullscreenSearch;
-    state_animation_metrics_reporter_->SetTabletModeAnimationTransition(
-        transition_type);
-  } else {
-    state_animation_metrics_reporter_->SetTargetState(target_state);
   }
 
   gfx::Rect target_bounds = GetPreferredWidgetBoundsForState(target_state);
@@ -1636,6 +1615,22 @@ void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
   transform.Translate(0, y_offset);
   layer->SetTransform(transform);
   animation_end_timestamp_ = base::TimeTicks::Now() + duration_ms;
+
+  // Reset animation metrics reporter when animation is started.
+  ResetTransitionMetricsReporter();
+
+  if (is_tablet_mode_ && target_state != ash::AppListViewState::kClosed) {
+    DCHECK(target_state == ash::AppListViewState::kFullscreenAllApps ||
+           target_state == ash::AppListViewState::kFullscreenSearch);
+    TabletModeAnimationTransition transition_type =
+        target_state == ash::AppListViewState::kFullscreenAllApps
+            ? TabletModeAnimationTransition::kEnterFullscreenAllApps
+            : TabletModeAnimationTransition::kEnterFullscreenSearch;
+    state_animation_metrics_reporter_->SetTabletModeAnimationTransition(
+        transition_type);
+  } else {
+    state_animation_metrics_reporter_->SetTargetState(target_state);
+  }
 
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   animation.SetPreemptionStrategy(

@@ -12,6 +12,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "content/public/browser/tracing_controller.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
+#include "testing/perf/luci_test_result.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_switches.h"
 
@@ -25,9 +26,9 @@
 #include "ui/gfx/image/image_skia.h"
 #endif  // OS_CHROMEOS
 
-static const char kTraceDir[] = "trace-dir";
-
 namespace {
+
+constexpr char kTraceDir[] = "trace-dir";
 
 #if defined(OS_CHROMEOS)
 // Watches if the wallpaper has been changed and runs a passed callback if so.
@@ -73,6 +74,18 @@ void CreateAndSetWallpaper() {
 }
 #endif  // OS_CHROMEOS
 
+perf_test::LuciTestResult CreateTestResult(
+    const base::FilePath& trace_file,
+    const std::vector<std::string>& tbm_metrics) {
+  perf_test::LuciTestResult result =
+      perf_test::LuciTestResult::CreateForGTest();
+  result.AddOutputArtifactFile("trace/1", trace_file, "application/json");
+  for (auto& metric : tbm_metrics)
+    result.AddTag("tbmv2", metric);
+
+  return result;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -100,6 +113,10 @@ const std::string PerformanceTest::GetTracingCategories() const {
   return std::string();
 }
 
+std::vector<std::string> PerformanceTest::GetTimelineBasedMetrics() const {
+  return {};
+}
+
 void PerformanceTest::SetUpOnMainThread() {
   setup_called_ = true;
   InProcessBrowserTest::SetUpOnMainThread();
@@ -119,14 +136,15 @@ void PerformanceTest::SetUpOnMainThread() {
 }
 
 void PerformanceTest::TearDownOnMainThread() {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+
   if (should_start_trace_) {
     auto* controller = content::TracingController::GetInstance();
     ASSERT_TRUE(controller->IsTracing())
         << "Did you forget to call PerformanceTest::SetUpOnMainThread?";
 
     base::RunLoop runloop;
-    base::FilePath dir =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(kTraceDir);
+    base::FilePath dir = command_line->GetSwitchValuePath(kTraceDir);
     base::FilePath trace_file;
     CHECK(base::CreateTemporaryFileInDir(dir, &trace_file));
     LOG(INFO) << "Created the trace file: " << trace_file;
@@ -136,9 +154,13 @@ void PerformanceTest::TearDownOnMainThread() {
     bool result = controller->StopTracing(trace_data_endpoint);
     runloop.Run();
     CHECK(result);
+
+    base::FilePath report_file =
+        trace_file.AddExtension(FILE_PATH_LITERAL("test_result.json"));
+    CreateTestResult(trace_file, GetTimelineBasedMetrics())
+        .WriteToFile(report_file);
   }
-  bool print = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kPerfTestPrintUmaMeans);
+  bool print = command_line->HasSwitch(switches::kPerfTestPrintUmaMeans);
   LOG_IF(INFO, print) << "=== Histogram Means ===";
   for (auto name : GetUMAHistogramNames()) {
     EXPECT_TRUE(HasHistogram(name)) << "missing histogram:" << name;
@@ -176,4 +198,8 @@ void UIPerformanceTest::SetUpOnMainThread() {
 
 const std::string UIPerformanceTest::GetTracingCategories() const {
   return "benchmark,cc,viz,input,latency,gpu,rail,toplevel,ui,views,viz";
+}
+
+std::vector<std::string> UIPerformanceTest::GetTimelineBasedMetrics() const {
+  return {"renderingMetric", "umaMetric"};
 }

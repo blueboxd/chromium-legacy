@@ -35,10 +35,10 @@ bool CanWithholdFromExtension(const Extension& extension) {
                                                       extension.location());
 }
 
-// Iterates over |requested_permissions| and adds any permissions that should
-// be granted to |granted_permissions_out|. These include any non-host
+// Iterates over |requested_permissions| and returns a permission set of any
+// permissions that should be  granted. These include any non-host
 // permissions or host permissions that are present in
-// |runtime_granted_permissions|. |granted_permissions_out| may contain new
+// |runtime_granted_permissions|. The returned permission set may contain new
 // patterns not found in either |requested_permissions| or
 // |runtime_granted_permissions| in the case of overlapping host permissions
 // (such as *://*.google.com/* and https://*/*, which would intersect with
@@ -363,7 +363,16 @@ ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
   if (ShouldConsiderExtension(extension)) {
     base::Optional<bool> pref_value =
         extension_prefs.GetShouldWithholdPermissions(extension.id());
-    should_withhold = pref_value.has_value() && pref_value.value() == true;
+    if (pref_value.has_value()) {
+      should_withhold = pref_value.value();
+    } else {
+      should_withhold =
+          extension.creation_flags() & Extension::WITHHOLD_PERMISSIONS;
+    }
+  } else {
+    // The withhold creation flag should never have been set in cases where
+    // withholding isn't allowed.
+    DCHECK(!(extension.creation_flags() & Extension::WITHHOLD_PERMISSIONS));
   }
 
   should_withhold &= !permissions.effective_hosts().is_empty();
@@ -376,6 +385,11 @@ ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
   // permissions API.
   std::unique_ptr<const PermissionSet> runtime_granted_permissions =
       GetRuntimePermissionsFromPrefs(extension, extension_prefs);
+  // If there were no runtime granted permissions found in the prefs, default to
+  // a new empty set.
+  if (!runtime_granted_permissions) {
+    runtime_granted_permissions = std::make_unique<PermissionSet>();
+  }
   return PartitionHostPermissions(permissions, *runtime_granted_permissions);
 }
 

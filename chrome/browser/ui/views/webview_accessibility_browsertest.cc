@@ -74,7 +74,8 @@ class WebViewBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WebViewBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WebViewBrowserTest, ResizeWebView) {
+// Flaky. https://crbug.com/1013805
+IN_PROC_BROWSER_TEST_F(WebViewBrowserTest, DISABLED_ResizeWebView) {
   ui_test_utils::NavigateToURL(
       browser(), https_server_.GetURL("/fixed_size_document.html"));
 

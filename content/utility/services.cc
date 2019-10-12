@@ -9,7 +9,10 @@
 #include "base/no_destructor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/utility/content_utility_client.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/service_factory.h"
+#include "services/network/network_service.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 #include "services/video_capture/video_capture_service_impl.h"
 
@@ -17,10 +20,25 @@ namespace content {
 
 namespace {
 
+auto RunNetworkService(
+    mojo::PendingReceiver<network::mojom::NetworkService> receiver) {
+  auto binders = std::make_unique<service_manager::BinderRegistry>();
+  GetContentClient()->utility()->RegisterNetworkBinders(binders.get());
+  return std::make_unique<network::NetworkService>(std::move(binders),
+                                                   std::move(receiver));
+}
+
 auto RunVideoCapture(
     mojo::PendingReceiver<video_capture::mojom::VideoCaptureService> receiver) {
   return std::make_unique<video_capture::VideoCaptureServiceImpl>(
       std::move(receiver), base::ThreadTaskRunnerHandle::Get());
+}
+
+mojo::ServiceFactory& GetIOThreadServiceFactory() {
+  static base::NoDestructor<mojo::ServiceFactory> factory{
+      RunNetworkService,
+  };
+  return *factory;
 }
 
 mojo::ServiceFactory& GetMainThreadServiceFactory() {
@@ -35,6 +53,9 @@ mojo::ServiceFactory& GetMainThreadServiceFactory() {
 void HandleServiceRequestOnIOThread(
     mojo::GenericPendingReceiver receiver,
     base::SequencedTaskRunner* main_thread_task_runner) {
+  if (GetIOThreadServiceFactory().MaybeRunService(&receiver))
+    return;
+
   // If the request was handled already, we should not reach this point.
   DCHECK(receiver.is_valid());
   auto* embedder_factory =

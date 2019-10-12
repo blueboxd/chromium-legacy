@@ -18,7 +18,7 @@
 namespace base {
 namespace fuchsia {
 
-// ServiceDirectory that uses the supplied ServiceDirectoryClient to satisfy
+// ServiceDirectory that uses the supplied sys::ServiceDirectory to satisfy
 // requests for only a restricted set of services.
 class BASE_EXPORT FilteredServiceDirectory {
  public:

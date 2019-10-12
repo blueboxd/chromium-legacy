@@ -10,7 +10,6 @@
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_observer.h"
-#include "ash/shell_observer.h"
 #include "ash/wm/wm_default_layout_manager.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -35,7 +34,6 @@ class WMEvent;
 // with LockWindowState.
 class ASH_EXPORT LockLayoutManager : public WmDefaultLayoutManager,
                                      public aura::WindowObserver,
-                                     public ShellObserver,
                                      public ShelfObserver,
                                      public KeyboardControllerObserver {
  public:

@@ -2103,11 +2103,6 @@
     "label": "//ios/testing:ocmock_support_unittests",
     "type": "raw",
   },
-  "opus_decoder_unittests": {
-    "args": [],
-    "label": "//third_party/opus:test_opus_decode",
-    "type": "raw",
-  },
   "origin_policy_parser_fuzzer": {
     "label": "//content/test/fuzzer:origin_policy_parser_fuzzer",
     "type": "fuzzer",

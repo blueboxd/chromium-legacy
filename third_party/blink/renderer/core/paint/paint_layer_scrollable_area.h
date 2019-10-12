@@ -384,6 +384,10 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // specific pseudo styles but there can still be a scroll corner control or
   // resize control without these custom styled scrollbar parts.
   bool HasOverflowControls() const;
+
+  bool HasOverlayOverflowControls() const;
+  bool HasNonOverlayOverflowControls() const;
+
   bool HasOverflow() const {
     return HasHorizontalOverflow() || HasVerticalOverflow();
   }
@@ -651,6 +655,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   unsigned needs_relayout_ : 1;
   unsigned had_horizontal_scrollbar_before_relayout_ : 1;
   unsigned had_vertical_scrollbar_before_relayout_ : 1;
+  unsigned had_resizer_before_relayout_ : 1;
   unsigned scroll_origin_changed_ : 1;
 
   // There are 6 possible combinations of writing mode and direction. Scroll

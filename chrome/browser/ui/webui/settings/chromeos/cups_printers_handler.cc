@@ -966,6 +966,7 @@ void CupsPrintersHandler::VerifyPpdContents(const base::FilePath& path,
 
 void CupsPrintersHandler::HandleStartDiscovery(const base::ListValue* args) {
   PRINTER_LOG(DEBUG) << "Start printer discovery";
+  AllowJavascript();
   discovery_active_ = true;
   OnPrintersChanged(PrinterClass::kAutomatic,
                     printers_manager_->GetPrinters(PrinterClass::kAutomatic));

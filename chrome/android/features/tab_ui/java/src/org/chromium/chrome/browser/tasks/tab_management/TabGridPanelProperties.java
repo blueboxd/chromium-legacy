@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.res.ColorStateList;
+import android.text.TextWatcher;
+import android.view.View;
 import android.view.View.OnClickListener;
 
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -60,10 +62,18 @@ class TabGridPanelProperties {
     public static final PropertyModel
             .WritableObjectPropertyKey<OnClickListener> MENU_CLICK_LISTENER =
             new PropertyModel.WritableObjectPropertyKey<>();
+    public static final PropertyModel.WritableObjectPropertyKey<TextWatcher> TITLE_TEXT_WATCHER =
+            new PropertyModel.WritableObjectPropertyKey<>();
+    public static final PropertyModel
+            .WritableObjectPropertyKey<View.OnFocusChangeListener> TITLE_TEXT_ON_FOCUS_LISTENER =
+            new PropertyModel.WritableObjectPropertyKey<>();
+    public static final PropertyModel.WritableBooleanPropertyKey TITLE_CURSOR_VISIBILITY =
+            new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {COLLAPSE_CLICK_LISTENER,
             ADD_CLICK_LISTENER, HEADER_TITLE, CONTENT_TOP_MARGIN, PRIMARY_COLOR, TINT,
             IS_DIALOG_VISIBLE, SCRIMVIEW_OBSERVER, ANIMATION_PARAMS, UNGROUP_BAR_STATUS,
             DIALOG_BACKGROUND_RESOUCE_ID, DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID,
             DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID, DIALOG_UNGROUP_BAR_TEXT_APPEARANCE,
-            INITIAL_SCROLL_INDEX, IS_MAIN_CONTENT_VISIBLE, MENU_CLICK_LISTENER};
+            INITIAL_SCROLL_INDEX, IS_MAIN_CONTENT_VISIBLE, MENU_CLICK_LISTENER, TITLE_TEXT_WATCHER,
+            TITLE_TEXT_ON_FOCUS_LISTENER, TITLE_CURSOR_VISIBILITY};
 }

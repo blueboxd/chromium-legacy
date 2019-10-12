@@ -125,11 +125,11 @@ TEST_F(ScrollableShelfViewTest, CorrectUIAfterDisplayRotationShortToLong) {
   const views::View* last_visible_icon =
       view_model->view_at(scrollable_shelf_view_->last_tappable_app_index());
   const gfx::Rect icon_bounds = last_visible_icon->GetBoundsInScreen();
-  const gfx::Rect shelf_container_bounds =
-      scrollable_shelf_view_->shelf_container_view()->GetBoundsInScreen();
+  gfx::Rect visible_space = scrollable_shelf_view_->visible_space();
+  views::View::ConvertRectToScreen(scrollable_shelf_view_, &visible_space);
   EXPECT_EQ(icon_bounds.right() +
                 ShelfConfig::Get()->scrollable_shelf_ripple_padding(),
-            shelf_container_bounds.right());
+            visible_space.right());
   EXPECT_FALSE(scrollable_shelf_view_->ShouldAdjustForTest());
 }
 

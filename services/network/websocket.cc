@@ -118,6 +118,8 @@ class WebSocket::WebSocketEventHandler final
  private:
   WebSocket* const impl_;
 
+  mojom::WebSocketHandshakeResponsePtr response_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(WebSocketEventHandler);
 };
 
@@ -182,7 +184,7 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
   impl_->handshake_client_->OnConnectionEstablished(
       impl_->receiver_.BindNewPipeAndPassRemote(),
       impl_->client_.BindNewPipeAndPassReceiver(), selected_protocol,
-      extensions, std::move(readable));
+      extensions, std::move(response_), std::move(readable));
   impl_->receiver_.set_disconnect_handler(base::BindOnce(
       &WebSocket::OnConnectionError, base::Unretained(impl_), FROM_HERE));
   impl_->handshake_client_.reset();
@@ -310,7 +312,7 @@ void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
   headers_text.append("\r\n");
   response_to_pass->headers_text = headers_text;
 
-  impl_->handshake_client_->OnResponseReceived(std::move(response_to_pass));
+  response_ = std::move(response_to_pass);
 }
 
 void WebSocket::WebSocketEventHandler::OnSSLCertificateError(

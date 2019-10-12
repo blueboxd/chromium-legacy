@@ -32,11 +32,7 @@ void SharingBrowserTest::SetUpOnMainThread() {
   host_resolver()->AddRule("mock.http", "127.0.0.1");
 }
 
-void SharingBrowserTest::Init(
-    const std::vector<base::Feature>& enabled_features,
-    const std::vector<base::Feature>& disabled_features) {
-  scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
-
+void SharingBrowserTest::Init() {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(embedded_test_server()->Start());

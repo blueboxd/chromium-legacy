@@ -266,8 +266,18 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             // WebView needs to make sure to always use the wrapped application context.
             ContextUtils.initApplicationContext(ResourcesContextWrapperFactory.get(ctx));
 
+            // Find the package ID for the package that WebView's resources come from.
+            // This will be the donor package if there is one, not our main package.
+            String resourcePackage = packageInfo.packageName;
+            if (packageInfo.applicationInfo.metaData != null) {
+                resourcePackage = packageInfo.applicationInfo.metaData.getString(
+                        "com.android.webview.WebViewDonorPackage", resourcePackage);
+            }
+            int packageId = webViewDelegate.getPackageId(
+                    ContextUtils.getApplicationContext().getResources(), resourcePackage);
+
             mAwInit.setUpResourcesOnBackgroundThread(
-                    packageInfo, ContextUtils.getApplicationContext());
+                    packageId, ContextUtils.getApplicationContext());
 
             try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
                          "WebViewChromiumFactoryProvider.initCommandLine")) {

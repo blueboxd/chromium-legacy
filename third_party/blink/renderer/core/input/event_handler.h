@@ -298,6 +298,8 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   // restart from the lock position.
   void ResetMousePositionForPointerUnlock();
 
+  bool LongTapShouldInvokeContextMenu();
+
  private:
   enum NoCursorChangeType { kNoCursorChange };
 
@@ -459,8 +461,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   Member<FallbackCursorEventManager> fallback_cursor_event_manager_;
 
   double max_mouse_moved_duration_;
-
-  bool long_tap_should_invoke_context_menu_;
 
   TaskRunnerTimer<EventHandler> active_interval_timer_;
 

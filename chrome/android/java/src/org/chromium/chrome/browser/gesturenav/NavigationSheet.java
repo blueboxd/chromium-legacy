@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.gesturenav;
 
+import android.content.Context;
 import android.view.View;
 
 import org.chromium.base.Supplier;
@@ -44,14 +45,15 @@ public interface NavigationSheet {
     /**
      * Create {@link NavigationSheet} object.
      * @param rootView Root view whose dimension is used for the sheet.
+     * @param context {@link Context} used to retrieve resources.
      * @param bottomSheetController {@link BottomSheetController} object.
      * @param delegate Delegate used by navigation sheet to perform actions.
      * @return NavigationSheet object.
      */
-    public static NavigationSheet create(View rootView,
+    public static NavigationSheet create(View rootView, Context context,
             Supplier<BottomSheetController> bottomSheetController,
             NavigationSheet.Delegate delegate) {
-        return new NavigationSheetCoordinator(rootView, bottomSheetController, delegate);
+        return new NavigationSheetCoordinator(rootView, context, bottomSheetController, delegate);
     }
 
     /**

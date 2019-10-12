@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
+#include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/unload_controller.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -1007,6 +1008,10 @@ class Browser : public TabStripModelObserver,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace);
 
+  // Callback for RecentlyAudibleHelper.
+  void OnTabAudibilityChanged(content::WebContents* contents,
+                              bool recently_audible);
+
   // Data members /////////////////////////////////////////////////////////////
 
   std::vector<InterstitialObserver*> interstitial_observers_;
@@ -1147,6 +1152,13 @@ class Browser : public TabStripModelObserver,
   std::unique_ptr<extensions::ExtensionBrowserWindowHelper>
       extension_browser_window_helper_;
 #endif
+
+  // These subscriptions are returned by RecentlyAudibleHelper when registering
+  // a callback. They de-register the callback when destroyed and safely handle
+  // destruction of the associated RecentlyAudibleHelper.
+  std::map<content::WebContents*,
+           std::unique_ptr<RecentlyAudibleHelper::Subscription>>
+      audibility_subscriptions_;
 
   // The following factory is used for chrome update coalescing.
   base::WeakPtrFactory<Browser> chrome_updater_factory_{this};

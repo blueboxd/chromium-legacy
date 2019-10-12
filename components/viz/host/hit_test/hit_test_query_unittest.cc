@@ -27,14 +27,17 @@ class HitTestQueryTest : public testing::TestWithParam<bool> {
  protected:
   HitTestQuery& hit_test_query() { return hit_test_query_; }
   void SetUp() override {
-    if (!GetParam()) {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(
+          features::kEnableVizHitTestSurfaceLayer);
+    }
+
+    if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
       // kHitTestIgnore has different meanings in v1 and v2. Some tests set
       // kHitTestIgnore for certain regions which works for v1 but fails v2.
       test_flags_ |= HitTestRegionFlags::kHitTestIgnore;
       return;
     }
-
-    feature_list_.InitAndEnableFeature(features::kEnableVizHitTestSurfaceLayer);
   }
 
   base::test::ScopedFeatureList feature_list_;

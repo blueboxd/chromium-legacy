@@ -2490,7 +2490,7 @@ test("base_unittests") {
     "android/unguessable_token_android_unittest.cc",
     "at_exit_unittest.cc",
     "atomicops_unittest.cc",
-    "auto_reset_unittests.cc",
+    "auto_reset_unittest.cc",
     "barrier_closure_unittest.cc",
     "base64_unittest.cc",
     "base64url_unittest.cc",

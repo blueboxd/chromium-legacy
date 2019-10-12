@@ -20,6 +20,9 @@ class EnterpriseMemoryLimitPrefObserver {
   explicit EnterpriseMemoryLimitPrefObserver(PrefService* pref_service);
   ~EnterpriseMemoryLimitPrefObserver();
 
+  // Returns true if the current platform is supported, false otherwise.
+  static bool PlatformIsSupported();
+
   // Registers the TotalMemoryLimitMb pref with the provided PrefRegistry.
   // Should only be called by RegisterLocalState() in
   // chrome/browser/prefs/browser_prefs.cc.

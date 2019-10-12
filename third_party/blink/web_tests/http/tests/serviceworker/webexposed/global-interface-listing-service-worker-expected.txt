@@ -3765,7 +3765,6 @@ interface WritableStreamDefaultWriter
     attribute console
     attribute globalThis
     attribute internals
-    getter TrustedTypesWorkers
     getter clients
     getter cookieStore
     getter onabortpayment
@@ -3789,6 +3788,7 @@ interface WritableStreamDefaultWriter
     getter onsync
     getter registration
     getter serviceWorker
+    getter trustedTypes
     method gc
     method skipWaiting
     setter cookieStore

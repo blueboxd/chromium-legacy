@@ -19,14 +19,15 @@
 // Test overview scroll performance when the new overview layout is active.
 class OverviewScrollTest : public UIPerformanceTest {
  public:
-  OverviewScrollTest() = default;
+  OverviewScrollTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        ash::features::kNewOverviewLayout);
+  }
+
   ~OverviewScrollTest() override = default;
 
   // UIPerformanceTest:
   void SetUpOnMainThread() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        ash::features::kNewOverviewLayout);
-
     UIPerformanceTest::SetUpOnMainThread();
 
     // Create twelve windows total, scrolling is only needed when six or more

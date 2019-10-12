@@ -299,11 +299,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public String findFirstWebApkPackageName(List<ResolveInfo> infos) {
-        return WebApkValidator.findFirstWebApkPackage(mApplicationContext, infos);
-    }
-
-    @Override
     public void startActivity(Intent intent, boolean proxy) {
         try {
             forcePdfViewerAsIntentHandlerIfNeeded(intent);
@@ -643,5 +638,10 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public boolean isIntentForTrustedCallingApp(Intent intent) {
         return false;
+    }
+
+    @Override
+    public boolean isValidWebApk(String packageName) {
+        return WebApkValidator.isValidWebApk(ContextUtils.getApplicationContext(), packageName);
     }
 }

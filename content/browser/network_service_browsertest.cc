@@ -11,7 +11,6 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -20,7 +19,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -40,7 +38,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
@@ -344,9 +341,9 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
   if (IsInProcessNetworkService())
     return;
 
-  network::mojom::NetworkServiceTestPtr network_service_test;
-  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
-                                      &network_service_test);
+  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+  GetNetworkService()->BindTestInterface(
+      network_service_test.BindNewPipeAndPassReceiver());
   // TODO(crbug.com/901026): Make sure the network process is started to avoid a
   // deadlock on Android.
   network_service_test.FlushForTesting();
@@ -373,20 +370,19 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncXHROnCrash) {
   if (IsInProcessNetworkService())
     return;
 
-  network::mojom::NetworkServiceTestPtr network_service_test;
-  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
-                                      &network_service_test);
-  network::mojom::NetworkServiceTestPtrInfo network_service_test_info =
-      network_service_test.PassInterface();
+  mojo::PendingRemote<network::mojom::NetworkServiceTest>
+      pending_network_service_test;
+  GetNetworkService()->BindTestInterface(
+      pending_network_service_test.InitWithNewPipeAndPassReceiver());
 
   net::EmbeddedTestServer http_server;
   http_server.AddDefaultHandlers(GetTestDataFilePath());
   http_server.RegisterRequestMonitor(base::BindLambdaForTesting(
       [&](const net::test_server::HttpRequest& request) {
         if (request.relative_url == "/hung") {
-          network::mojom::NetworkServiceTestPtr network_service_test2(
-              std::move(network_service_test_info));
-          network_service_test2->SimulateCrash();
+          mojo::Remote<network::mojom::NetworkServiceTest> network_service_test(
+              std::move(pending_network_service_test));
+          network_service_test->SimulateCrash();
         }
       }));
   EXPECT_TRUE(http_server.Start());
@@ -402,9 +398,9 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncCookieGetOnCrash) {
   if (IsInProcessNetworkService())
     return;
 
-  network::mojom::NetworkServiceTestPtr network_service_test;
-  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
-                                      &network_service_test);
+  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+  GetNetworkService()->BindTestInterface(
+      network_service_test.BindNewPipeAndPassReceiver());
   network_service_test->CrashOnGetCookieList();
 
   EXPECT_TRUE(

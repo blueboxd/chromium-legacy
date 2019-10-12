@@ -143,6 +143,20 @@ std::string BlobToString(blink::mojom::Blob* actual_blob) {
   return output;
 }
 
+size_t BlobSideDataLength(blink::mojom::Blob* actual_blob) {
+  size_t result = 0;
+  base::RunLoop run_loop;
+  actual_blob->ReadSideData(base::BindOnce(
+      [](size_t* result, base::OnceClosure continuation,
+         const base::Optional<mojo_base::BigBuffer> data) {
+        *result = data ? data->size() : 0;
+        std::move(continuation).Run();
+      },
+      &result, run_loop.QuitClosure()));
+  run_loop.Run();
+  return result;
+}
+
 struct FetchResult {
   blink::ServiceWorkerStatusCode status;
   ServiceWorkerFetchDispatcher::FetchEventResult result;
@@ -3327,9 +3341,9 @@ class CacheStorageSideDataSizeChecker
     }
 
     ASSERT_EQ(CacheStorageError::kSuccess, error);
-    ASSERT_TRUE(response->blob);
+    ASSERT_TRUE(response->side_data_blob);
     auto blob_handle = base::MakeRefCounted<storage::BlobHandle>(
-        std::move(response->blob->blob));
+        std::move(response->side_data_blob->blob));
     blob_handle->get()->ReadSideData(base::BindOnce(
         [](scoped_refptr<storage::BlobHandle> blob_handle, int* result,
            base::OnceClosure continuation,
@@ -3763,6 +3777,120 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
                    "document.body.textContent"));
 
   SetBrowserClientForTesting(old_content_browser_client);
+}
+
+class CacheStorageEagerReadingTestBase
+    : public ServiceWorkerVersionBrowserTest {
+ public:
+  explicit CacheStorageEagerReadingTestBase(bool enabled) {
+    if (enabled)
+      feature_list.InitAndEnableFeature(features::kCacheStorageEagerReading);
+    else
+      feature_list.InitAndDisableFeature(features::kCacheStorageEagerReading);
+  }
+
+  void SetupServiceWorkerAndDoFetch(
+      std::string fetch_url,
+      blink::mojom::FetchAPIResponsePtr* response_out) {
+    StartServerAndNavigateToSetup();
+    InstallTestHelper("/service_worker/cached_fetch_event.js",
+                      blink::ServiceWorkerStatusCode::kOk);
+    ActivateTestHelper(blink::ServiceWorkerStatusCode::kOk);
+
+    ServiceWorkerFetchDispatcher::FetchEventResult result;
+    FetchOnRegisteredWorker(fetch_url, &result, response_out);
+  }
+
+  void ExpectNormalCacheResponse(blink::mojom::FetchAPIResponsePtr response) {
+    EXPECT_EQ(network::mojom::FetchResponseSource::kCacheStorage,
+              response->response_source);
+
+    // A normal cache_storage response should have a blob for the body.
+    mojo::Remote<blink::mojom::Blob> blob(std::move(response->blob->blob));
+
+    // The blob should contain the expected body content.
+    EXPECT_EQ(BlobToString(blob.get()).length(), 1075u);
+
+    // Since this js response was stored in the install event it should have
+    // code cache stored in the blob side data.
+    EXPECT_GT(BlobSideDataLength(blob.get()),
+              static_cast<size_t>(kV8CacheTimeStampDataSize));
+  }
+
+  void ExpectEagerlyReadCacheResponse(
+      blink::mojom::FetchAPIResponsePtr response) {
+    EXPECT_EQ(network::mojom::FetchResponseSource::kCacheStorage,
+              response->response_source);
+
+    // An eagerly read cache_storage response should not have a blob.  Instead
+    // the body is provided out-of-band in a mojo DataPipe.  The pipe is not
+    // surfaced here in this test.
+    EXPECT_FALSE(response->blob);
+
+    // An eagerly read response should still have a side_data_blob, though.
+    // This is provided so that js resources can still load code cache.
+    mojo::Remote<blink::mojom::Blob> side_data_blob(
+        std::move(response->side_data_blob->blob));
+
+    // Since this js response was stored in the install event it should have
+    // code cache stored in the blob side data.
+    EXPECT_GT(BlobSideDataLength(side_data_blob.get()),
+              static_cast<size_t>(kV8CacheTimeStampDataSize));
+  }
+
+  // The service worker script always matches against this URL.
+  static constexpr const char* kCacheMatchURL =
+      "/service_worker/v8_cache_test.js";
+
+  // A URL that will be different from the cache.match() executed in
+  // the service worker fetch handler.
+  static constexpr const char* kOtherURL =
+      "/service_worker/non-matching-url.js";
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+class CacheStorageEagerReadingEnabledTest
+    : public CacheStorageEagerReadingTestBase {
+ public:
+  CacheStorageEagerReadingEnabledTest()
+      : CacheStorageEagerReadingTestBase(true) {}
+};
+
+class CacheStorageEagerReadingDisabledTest
+    : public CacheStorageEagerReadingTestBase {
+ public:
+  CacheStorageEagerReadingDisabledTest()
+      : CacheStorageEagerReadingTestBase(false) {}
+};
+
+IN_PROC_BROWSER_TEST_F(CacheStorageEagerReadingDisabledTest,
+                       CacheMatchInRelatedFetchEvent) {
+  blink::mojom::FetchAPIResponsePtr response;
+  SetupServiceWorkerAndDoFetch(kCacheMatchURL, &response);
+  ExpectNormalCacheResponse(std::move(response));
+}
+
+IN_PROC_BROWSER_TEST_F(CacheStorageEagerReadingDisabledTest,
+                       CacheMatchInUnrelatedFetchEvent) {
+  blink::mojom::FetchAPIResponsePtr response;
+  SetupServiceWorkerAndDoFetch(kOtherURL, &response);
+  ExpectNormalCacheResponse(std::move(response));
+}
+
+IN_PROC_BROWSER_TEST_F(CacheStorageEagerReadingEnabledTest,
+                       CacheMatchInRelatedFetchEvent) {
+  blink::mojom::FetchAPIResponsePtr response;
+  SetupServiceWorkerAndDoFetch(kCacheMatchURL, &response);
+  ExpectEagerlyReadCacheResponse(std::move(response));
+}
+
+IN_PROC_BROWSER_TEST_F(CacheStorageEagerReadingEnabledTest,
+                       CacheMatchInUnrelatedFetchEvent) {
+  blink::mojom::FetchAPIResponsePtr response;
+  SetupServiceWorkerAndDoFetch(kOtherURL, &response);
+  ExpectNormalCacheResponse(std::move(response));
 }
 
 }  // namespace content

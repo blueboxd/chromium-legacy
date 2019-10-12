@@ -141,12 +141,12 @@ Polymer({
      * Set to true if user can be verified through FIDO authentication.
      * @private
      */
-    userIsFIDOVerifiable_: {
+    userIsFidoVerifiable_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('userIsFIDOVerifiable');
+        return loadTimeData.getBoolean(
+            'fidoAuthenticationAvailableForAutofill');
       },
-      readOnly: true,
     },
 
     /**
@@ -207,6 +207,15 @@ Polymer({
     const setCreditCardsListener = cardList => {
       this.creditCards = cardList;
     };
+
+    // Update |userIsFidoVerifiable_| based on the availability of a platform
+    // authenticator.
+    if (window.PublicKeyCredential) {
+      window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+          .then(r => {
+            this.userIsFidoVerifiable_ = this.userIsFidoVerifiable_ && r;
+          });
+    }
 
     /**
      * @type {function(!Array<!AutofillManager.AddressEntry>,
@@ -352,8 +361,8 @@ Polymer({
    *     authentication.
    * @private
    */
-  isUserFIDOVerifiable_: function(creditCardEnabled) {
-    return creditCardEnabled && this.userIsFIDOVerifiable_;
+  shouldShowFidoToggle_: function(creditCardEnabled, userIsFidoVerifiable) {
+    return creditCardEnabled && userIsFidoVerifiable;
   },
 
   /**

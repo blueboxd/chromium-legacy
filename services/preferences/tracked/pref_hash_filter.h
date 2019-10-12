@@ -97,7 +97,7 @@ class PrefHashFilter : public InterceptablePrefFilter {
  private:
   // InterceptablePrefFilter implementation.
   void FinalizeFilterOnLoad(
-      const PostFilterOnLoadCallback& post_filter_on_load_callback,
+      PostFilterOnLoadCallback post_filter_on_load_callback,
       std::unique_ptr<base::DictionaryValue> pref_store_contents,
       bool prefs_altered) override;
 

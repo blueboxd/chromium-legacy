@@ -137,8 +137,8 @@ class ServiceWorkerSubresourceLoader::StreamWaiter
   }
 
   // mojom::ServiceWorkerStreamCallback implementations:
-  void OnCompleted() override { owner_->CommitCompleted(net::OK); }
-  void OnAborted() override { owner_->CommitCompleted(net::ERR_ABORTED); }
+  void OnCompleted() override { owner_->OnBodyReadingComplete(net::OK); }
+  void OnAborted() override { owner_->OnBodyReadingComplete(net::ERR_ABORTED); }
 
  private:
   ServiceWorkerSubresourceLoader* owner_;
@@ -166,7 +166,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       body_as_blob_size_(blink::BlobUtils::kUnknownSize),
       controller_connector_(std::move(controller_connector)),
       fetch_request_restarted_(false),
-      blob_reading_complete_(false),
+      body_reading_complete_(false),
       side_data_reading_complete_(false),
       routing_id_(routing_id),
       request_id_(request_id),
@@ -477,14 +477,26 @@ void ServiceWorkerSubresourceLoader::StartResponse(
   // We have a non-redirect response. Send the headers to the client.
   CommitResponseHeaders();
 
+  bool body_stream_is_valid =
+      !body_as_stream.is_null() && body_as_stream->stream.is_valid();
+
+  // Handle the case where there is no body content.
+  if (!body_stream_is_valid && !response->blob) {
+    CommitEmptyResponseAndComplete();
+    return;
+  }
+
+  mojo::ScopedDataPipeConsumerHandle data_pipe;
+
   // Handle a stream response body.
-  if (!body_as_stream.is_null() && body_as_stream->stream.is_valid()) {
+  if (body_stream_is_valid) {
     DCHECK(!response->blob);
+    if (response->side_data_blob)
+      DCHECK(base::FeatureList::IsEnabled(features::kCacheStorageEagerReading));
     DCHECK(url_loader_client_.is_bound());
     stream_waiter_ = std::make_unique<StreamWaiter>(
         this, std::move(body_as_stream->callback_receiver));
-    CommitResponseBody(std::move(body_as_stream->stream));
-    return;
+    data_pipe = std::move(body_as_stream->stream);
   }
 
   // Handle a blob response body.
@@ -497,31 +509,33 @@ void ServiceWorkerSubresourceLoader::StartResponse(
 
     // Start reading the body blob immediately. This will allow the body to
     // start buffering in the pipe while the side data is read.
-    mojo::ScopedDataPipeConsumerHandle data_pipe;
     int error = StartBlobReading(&data_pipe);
     if (error != net::OK) {
       CommitCompleted(error);
       return;
     }
+  }
 
-    // Read side data if necessary.
-    auto resource_type =
-        static_cast<content::ResourceType>(resource_request_.resource_type);
-    if (resource_type == content::ResourceType::kScript) {
-      body_as_blob_->ReadSideData(base::BindOnce(
-          &ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete,
-          weak_factory_.GetWeakPtr(), std::move(data_pipe)));
-    } else {
-      // Bypass reading side data when the request isn't for script. Currently
-      // side data only exists for scripts (as cached metadata).
-      OnBlobSideDataReadingComplete(std::move(data_pipe),
-                                    base::Optional<mojo_base::BigBuffer>());
-    }
+  DCHECK(data_pipe.is_valid());
 
+  // Read side data if necessary.  We only do this if both the
+  // |side_data_blob| is available to read and the request is destined
+  // for a script.
+  auto resource_type =
+      static_cast<content::ResourceType>(resource_request_.resource_type);
+  if (response->side_data_blob &&
+      resource_type == content::ResourceType::kScript) {
+    side_data_as_blob_.Bind(std::move(response->side_data_blob->blob));
+    side_data_as_blob_->ReadSideData(base::BindOnce(
+        &ServiceWorkerSubresourceLoader::OnSideDataReadingComplete,
+        weak_factory_.GetWeakPtr(), std::move(data_pipe)));
     return;
   }
 
-  CommitEmptyResponseAndComplete();
+  // Otherwise we can immediately complete side data reading so that the
+  // entire resource completes when the main body is read.
+  OnSideDataReadingComplete(std::move(data_pipe),
+                            base::Optional<mojo_base::BigBuffer>());
 }
 
 void ServiceWorkerSubresourceLoader::CommitResponseHeaders() {
@@ -701,35 +715,32 @@ int ServiceWorkerSubresourceLoader::StartBlobReading(
                           TRACE_ID_LOCAL(request_id_)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(body_pipe);
-  DCHECK(!blob_reading_complete_);
+  DCHECK(!body_reading_complete_);
 
   return ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
       &body_as_blob_, body_as_blob_size_,
-      base::BindOnce(&ServiceWorkerSubresourceLoader::OnBlobReadingComplete,
+      base::BindOnce(&ServiceWorkerSubresourceLoader::OnBodyReadingComplete,
                      weak_factory_.GetWeakPtr()),
       body_pipe);
 }
 
-void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
+void ServiceWorkerSubresourceLoader::OnSideDataReadingComplete(
     mojo::ScopedDataPipeConsumerHandle data_pipe,
     base::Optional<mojo_base::BigBuffer> metadata) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
-      "ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete",
+      "ServiceWorkerSubresourceLoader::OnSideDataReadingComplete",
       TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
                           TRACE_ID_LOCAL(request_id_)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "metadata size",
       (metadata ? metadata->size() : 0));
   DCHECK(url_loader_client_);
-  DCHECK(body_as_blob_);
   DCHECK(!side_data_reading_complete_);
   side_data_reading_complete_ = true;
 
   if (metadata.has_value())
     url_loader_client_->OnReceiveCachedMetadata(std::move(metadata.value()));
 
-  // We should have started reading the body in parallel before trying to load
-  // side data.
   DCHECK(data_pipe.is_valid());
 
   base::TimeDelta delay =
@@ -742,24 +753,23 @@ void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
 
   // If the blob reading completed before the side data reading, then we
   // must manually finalize the blob reading now.
-  if (blob_reading_complete_) {
-    OnBlobReadingComplete(net::OK);
+  if (body_reading_complete_) {
+    OnBodyReadingComplete(net::OK);
   }
 
   // Otherwise we asyncly continue in OnBlobReadingComplete().
 }
 
-void ServiceWorkerSubresourceLoader::OnBlobReadingComplete(int net_error) {
+void ServiceWorkerSubresourceLoader::OnBodyReadingComplete(int net_error) {
   TRACE_EVENT_WITH_FLOW0(
-      "ServiceWorker", "ServiceWorkerSubresourceLoader::OnBlobReadingComplete",
+      "ServiceWorker", "ServiceWorkerSubresourceLoader::OnBodyReadingComplete",
       TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
                           TRACE_ID_LOCAL(request_id_)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  DCHECK(body_as_blob_);
-  blob_reading_complete_ = true;
+  body_reading_complete_ = true;
   // If the side data has not completed reading yet, then we need to delay
   // calling CommitCompleted.  This method will be called again from
-  // OnBlobSideDataReadingComplete().  Only delay for successful reads, though.
+  // OnSideDataReadingComplete().  Only delay for successful reads, though.
   // Abort immediately on error.
   if (!side_data_reading_complete_ && net_error == net::OK)
     return;

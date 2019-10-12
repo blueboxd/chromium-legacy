@@ -255,6 +255,9 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   // unavailable. Expects service not to be available when called.
   void ReportServiceIsNotAvailable();
 
+  // Changes the behavior of TpmIsReady().
+  void set_tpm_is_ready(bool value) { tpm_is_ready_ = value; }
+
   // Changes the behavior of TpmIsEnabled().
   void set_tpm_is_enabled(bool value) { tpm_is_enabled_ = value; }
 
@@ -343,6 +346,11 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
 
   void SetTpmAttestationDeviceKeyPayload(const std::string& key_name,
                                          const std::string& payload);
+
+  // Calls TpmInitStatusUpdated() on Observer instances.
+  void NotifyTpmInitStatusUpdated(bool ready,
+                                  bool owned,
+                                  bool was_owned_this_boot);
 
   // Calls DircryptoMigrationProgress() on Observer instances.
   void NotifyDircryptoMigrationProgress(
@@ -476,6 +484,7 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   bool supports_low_entropy_credentials_ = false;
   // Controls if CheckKeyEx actually checks the key.
   bool enable_auth_check_ = false;
+  bool tpm_is_ready_ = true;
   bool tpm_is_enabled_ = true;
 
   // Reply to GetRsuDeviceId().

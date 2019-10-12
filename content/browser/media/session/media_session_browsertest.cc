@@ -75,11 +75,11 @@ class MediaImageGetterHelper {
 // Integration tests for content::MediaSession that do not take into
 // consideration the implementation details contrary to
 // MediaSessionImplBrowserTest.
-class MediaSessionBrowserTest : public ContentBrowserTest {
+class MediaSessionBrowserTestBase : public ContentBrowserTest {
  public:
-  MediaSessionBrowserTest() {
+  MediaSessionBrowserTestBase() {
     embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
-        &MediaSessionBrowserTest::OnServerRequest, base::Unretained(this)));
+        &MediaSessionBrowserTestBase::OnServerRequest, base::Unretained(this)));
   }
 
   void SetUp() override {
@@ -91,14 +91,6 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
     command_line->AppendSwitchASCII(
         switches::kAutoplayPolicy,
         switches::autoplay::kNoUserGestureRequiredPolicy);
-
-    scoped_feature_list_.InitAndEnableFeature(media::kInternalMediaSession);
-  }
-
-  void DisableInternalMediaSession() {
-    disabled_feature_list_.InitWithFeatures(
-        {}, {media::kInternalMediaSession,
-             media_session::features::kMediaSessionService});
   }
 
   void StartPlaybackAndWait(Shell* shell, const std::string& id) {
@@ -173,10 +165,6 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
     return embedded_test_server()->GetURL(kMediaSessionTestImagePath);
   }
 
- protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  base::test::ScopedFeatureList disabled_feature_list_;
-
  private:
   void OnServerRequest(const net::test_server::HttpRequest& request) {
     // Note this method is called on the EmbeddedTestServer's background thread.
@@ -190,31 +178,57 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
   base::Lock visited_urls_lock_;
   std::set<GURL> visited_urls_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaSessionBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(MediaSessionBrowserTestBase);
+};
+
+class MediaSessionBrowserTest : public MediaSessionBrowserTestBase {
+ public:
+  MediaSessionBrowserTest() {
+    feature_list_.InitAndEnableFeature(media::kInternalMediaSession);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+class MediaSessionBrowserTestWithoutInternalMediaSession
+    : public MediaSessionBrowserTestBase {
+ public:
+  MediaSessionBrowserTestWithoutInternalMediaSession() {
+    disabled_feature_list_.InitWithFeatures(
+        {}, {media::kInternalMediaSession,
+             media_session::features::kMediaSessionService});
+  }
+
+ private:
+  base::test::ScopedFeatureList disabled_feature_list_;
 };
 
 // A MediaSessionBrowserTest with BackForwardCache enabled.
 class MediaSessionBrowserTestWithBackForwardCache
-    : public MediaSessionBrowserTest {
-  void SetUpOnMainThread() override {
-    host_resolver()->AddRule("*", "127.0.0.1");
-    MediaSessionBrowserTest::SetUpOnMainThread();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    scoped_feature_list_.InitWithFeaturesAndParameters(
+    : public MediaSessionBrowserTestBase {
+ public:
+  MediaSessionBrowserTestWithBackForwardCache() {
+    feature_list_.InitWithFeaturesAndParameters(
         {{features::kBackForwardCache,
           {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}},
          {media::kInternalMediaSession, {}}},
         /*disabled_features=*/{});
   }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    MediaSessionBrowserTestBase::SetUpOnMainThread();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 }  // anonymous namespace
 
-IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MediaSessionNoOpWhenDisabled) {
-  DisableInternalMediaSession();
-
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTestWithoutInternalMediaSession,
+                       MediaSessionNoOpWhenDisabled) {
   EXPECT_TRUE(NavigateToURL(shell(),
                             GetTestUrl("media/session", "media-session.html")));
 

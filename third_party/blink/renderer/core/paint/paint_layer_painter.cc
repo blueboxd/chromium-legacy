@@ -523,11 +523,11 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     }
 
     if (paint_layer_.GetScrollableArea() &&
-        paint_layer_.GetScrollableArea()->HasOverlayScrollbars()) {
+        paint_layer_.GetScrollableArea()->HasOverlayOverflowControls()) {
       if (is_painting_overlay_scrollbars ||
           !paint_layer_.NeedsReorderOverlayScrollbars()) {
-        PaintOverlayScrollbarsForFragments(layer_fragments, context,
-                                           local_painting_info, paint_flags);
+        PaintOverlayOverflowControlsForFragments(
+            layer_fragments, context, local_painting_info, paint_flags);
       }
     }
 
@@ -676,23 +676,24 @@ PaintResult PaintLayerPainter::PaintChildren(
   return result;
 }
 
-void PaintLayerPainter::PaintOverlayScrollbarsForFragments(
+void PaintLayerPainter::PaintOverlayOverflowControlsForFragments(
     const PaintLayerFragments& layer_fragments,
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info,
     PaintLayerFlags paint_flags) {
   DCHECK(paint_layer_.GetScrollableArea() &&
-         paint_layer_.GetScrollableArea()->HasOverlayScrollbars());
+         paint_layer_.GetScrollableArea()->HasOverlayOverflowControls());
 
-  // We don't need to paint composited scrollbars.
+  // We don't need to paint composited overflow controls.
   if (paint_layer_.GetScrollableArea()->HasLayerForHorizontalScrollbar() ||
-      paint_layer_.GetScrollableArea()->HasLayerForVerticalScrollbar())
+      paint_layer_.GetScrollableArea()->HasLayerForVerticalScrollbar() ||
+      paint_layer_.GetScrollableArea()->HasLayerForScrollCorner())
     return;
 
   ForAllFragments(
       context, layer_fragments, [&](const PaintLayerFragment& fragment) {
         if (!fragment.background_rect.IsEmpty()) {
-          PaintFragmentWithPhase(PaintPhase::kOverlayScrollbars, fragment,
+          PaintFragmentWithPhase(PaintPhase::kOverlayOverflowControls, fragment,
                                  context, fragment.background_rect,
                                  painting_info, paint_flags);
         }

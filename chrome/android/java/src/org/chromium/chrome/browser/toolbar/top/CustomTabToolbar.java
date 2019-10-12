@@ -609,6 +609,9 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         }
 
         @Override
+        public void gestureDetected(boolean isLongPress) {}
+
+        @Override
         public void setShowTitle(boolean showTitle) {
             if (showTitle) {
                 mState = STATE_DOMAIN_AND_TITLE;
@@ -803,7 +806,8 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         }
 
         @Override
-        public void setUrlBarFocus(boolean shouldBeFocused) {}
+        public void setUrlBarFocus(boolean shouldBeFocused, @Nullable String pastedText,
+                @LocationBar.OmniboxFocusReason int reason) {}
 
         @Override
         public void showUrlBarCursorWithoutFocusAnimations() {}

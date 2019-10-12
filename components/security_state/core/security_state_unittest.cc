@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/insecure_input_event_data.h"
+#include "components/security_state/core/security_state.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -59,7 +60,8 @@ class TestSecurityStateHelper {
         malicious_content_status_(MALICIOUS_CONTENT_STATUS_NONE),
         is_error_page_(false),
         is_view_source_(false),
-        has_policy_certificate_(false) {}
+        has_policy_certificate_(false),
+        safety_tip_status_(security_state::SafetyTipStatus::kUnknown) {}
   virtual ~TestSecurityStateHelper() {}
 
   void SetCertificate(scoped_refptr<net::X509Certificate> cert) {
@@ -105,6 +107,11 @@ class TestSecurityStateHelper {
   }
   void SetUrl(const GURL& url) { url_ = url; }
 
+  void set_safety_tip_status(
+      security_state::SafetyTipStatus safety_tip_status) {
+    safety_tip_status_ = safety_tip_status;
+  }
+
   std::unique_ptr<VisibleSecurityState> GetVisibleSecurityState() const {
     auto state = std::make_unique<VisibleSecurityState>();
     state->connection_info_initialized = true;
@@ -119,6 +126,7 @@ class TestSecurityStateHelper {
     state->is_error_page = is_error_page_;
     state->is_view_source = is_view_source_;
     state->insecure_input_events = insecure_input_events_;
+    state->safety_tip_status = safety_tip_status_;
     return state;
   }
 
@@ -145,6 +153,7 @@ class TestSecurityStateHelper {
   bool is_view_source_;
   bool has_policy_certificate_;
   InsecureInputEventData insecure_input_events_;
+  security_state::SafetyTipStatus safety_tip_status_;
 };
 
 }  // namespace
@@ -353,6 +362,36 @@ TEST(SecurityStateTest, AlwaysDangerousWhenFeatureMarksAllAsDangerous) {
 
   helper.set_insecure_field_edit(true);
   EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
+}
+
+// Tests that |safety_tip_status| effects security level appropriately.
+TEST(SecurityStateTest, SafetyTipSometimesRemovesSecure) {
+  using security_state::SafetyTipStatus;
+
+  struct SafetyTipCase {
+    SafetyTipStatus safety_tip_status;
+    security_state::SecurityLevel expected_level;
+  };
+
+  const SafetyTipCase kTestCases[] = {
+      {SafetyTipStatus::kUnknown, SECURE},
+      {SafetyTipStatus::kNone, SECURE},
+      {SafetyTipStatus::kBadReputation, NONE},
+      {SafetyTipStatus::kLookalike, SECURE},
+      {SafetyTipStatus::kBadKeyword, SECURE},
+  };
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      security_state::features::kSafetyTipUI);
+
+  for (auto testcase : kTestCases) {
+    TestSecurityStateHelper helper;
+    helper.set_cert_status(0);
+    EXPECT_EQ(SECURE, helper.GetSecurityLevel());
+    helper.set_safety_tip_status(testcase.safety_tip_status);
+    EXPECT_EQ(testcase.expected_level, helper.GetSecurityLevel());
+  }
 }
 
 // Tests IsSchemeCryptographic function.

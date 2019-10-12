@@ -231,6 +231,7 @@ void ServiceWorkerPaymentInstrument::InvokePaymentApp(Delegate* delegate) {
         installable_web_app_info_->sw_js_url,
         installable_web_app_info_->sw_scope,
         installable_web_app_info_->sw_use_cache, installable_enabled_method_,
+        installable_web_app_info_->supported_delegations,
         base::BindOnce(
             &IdentityObserver::SetInvokedServiceWorkerIdentity,
             identity_observer_,
@@ -523,36 +524,36 @@ bool ServiceWorkerPaymentInstrument::HandlesShippingAddress() const {
   if (!spec_->request_shipping())
     return false;
 
-  return stored_payment_app_info_
-             ? stored_payment_app_info_->supported_delegations.shipping_address
-             : false;
+  return needs_installation_
+             ? installable_web_app_info_->supported_delegations.shipping_address
+             : stored_payment_app_info_->supported_delegations.shipping_address;
 }
 
 bool ServiceWorkerPaymentInstrument::HandlesPayerName() const {
   if (!spec_->request_payer_name())
     return false;
 
-  return stored_payment_app_info_
-             ? stored_payment_app_info_->supported_delegations.payer_name
-             : false;
+  return needs_installation_
+             ? installable_web_app_info_->supported_delegations.payer_name
+             : stored_payment_app_info_->supported_delegations.payer_name;
 }
 
 bool ServiceWorkerPaymentInstrument::HandlesPayerEmail() const {
   if (!spec_->request_payer_email())
     return false;
 
-  return stored_payment_app_info_
-             ? stored_payment_app_info_->supported_delegations.payer_email
-             : false;
+  return needs_installation_
+             ? installable_web_app_info_->supported_delegations.payer_email
+             : stored_payment_app_info_->supported_delegations.payer_email;
 }
 
 bool ServiceWorkerPaymentInstrument::HandlesPayerPhone() const {
   if (!spec_->request_payer_phone())
     return false;
 
-  return stored_payment_app_info_
-             ? stored_payment_app_info_->supported_delegations.payer_phone
-             : false;
+  return needs_installation_
+             ? installable_web_app_info_->supported_delegations.payer_phone
+             : stored_payment_app_info_->supported_delegations.payer_phone;
 }
 
 }  // namespace payments

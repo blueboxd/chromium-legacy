@@ -39,9 +39,6 @@
 #include "services/network/public/mojom/network_quality_estimator_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace net {
 class FileNetLogObserver;
@@ -61,13 +58,11 @@ class NetworkContext;
 class NetworkUsageAccumulator;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
-    : public service_manager::Service,
-      public mojom::NetworkService {
+    : public mojom::NetworkService {
  public:
   NetworkService(
       std::unique_ptr<service_manager::BinderRegistry> registry,
       mojom::NetworkServiceRequest request = nullptr,
-      service_manager::mojom::ServiceRequest service_request = nullptr,
       bool delay_initialization_until_set_client = false);
 
   ~NetworkService() override;
@@ -89,19 +84,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // the passed-in NetLog. Does not take ownership of |net_log|. Must be
   // destroyed before |net_log|.
   static std::unique_ptr<NetworkService> Create(
-      mojom::NetworkServiceRequest request,
-      service_manager::mojom::ServiceRequest service_request = nullptr);
+      mojom::NetworkServiceRequest request);
 
   // Creates a testing instance of NetworkService not bound to an actual
   // Service pipe. This instance must be driven by direct calls onto the
   // NetworkService object.
   static std::unique_ptr<NetworkService> CreateForTesting();
-
-  // Creates a testing instance of NetworkService similar to above, but the
-  // instance is bound to |request|. Test code may use an appropriate Connector
-  // to bind interface requests within this service instance.
-  static std::unique_ptr<NetworkService> CreateForTesting(
-      service_manager::mojom::ServiceRequest service_request);
 
   // These are called by NetworkContexts as they are being created and
   // destroyed.
@@ -181,6 +169,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #if defined(OS_ANDROID)
   void DumpWithoutCrashing(base::Time dump_request_time) override;
 #endif
+  void BindTestInterface(
+      mojo::PendingReceiver<mojom::NetworkServiceTest> receiver) override;
 
   // Returns an HttpAuthHandlerFactory for the given NetworkContext.
   std::unique_ptr<net::HttpAuthHandlerFactory> CreateHttpAuthHandlerFactory(
@@ -229,11 +219,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   static NetworkService* GetNetworkServiceForTesting();
 
  private:
-  // service_manager::Service implementation.
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
-
   void DestroyNetworkContexts();
 
   // Called by a NetworkContext when its mojo pipe is closed. Deletes the
@@ -252,8 +237,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // Invoked once the browser has acknowledged receiving the previous LoadInfo.
   // Starts timer call UpdateLoadInfo() again, if needed.
   void AckUpdateLoadInfo();
-
-  service_manager::ServiceBinding service_binding_{this};
 
   bool initialized_ = false;
 

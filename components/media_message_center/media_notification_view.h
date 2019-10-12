@@ -90,6 +90,10 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
       const std::set<media_session::mojom::MediaSessionAction>& actions);
   void UpdateWithMediaArtwork(const gfx::ImageSkia& image);
 
+  const views::Label* title_label_for_testing() const { return title_label_; }
+
+  const views::Label* artist_label_for_testing() const { return artist_label_; }
+
  private:
   friend class MediaNotificationViewTest;
 

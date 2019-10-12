@@ -225,11 +225,20 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   EXPECT_TRUE(save_button->GetEnabled());
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
-  // Masked cards are from Google Pay.
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(features::kReturnGooglePayInBasicCard);
+class PaymentRequestCreditCardEditorTestWithGooglePayEnabled
+    : public PaymentRequestCreditCardEditorTest {
+ public:
+  PaymentRequestCreditCardEditorTestWithGooglePayEnabled() {
+    // Masked cards are from Google Pay.
+    feature_list_.InitAndEnableFeature(features::kReturnGooglePayInBasicCard);
+  }
 
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTestWithGooglePayEnabled,
+                       EditingMaskedCard) {
   NavigateTo("/payment_request_no_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);
@@ -309,12 +318,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
   EXPECT_EQ(additional_profile.guid(), selected->billing_address_id());
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
+IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTestWithGooglePayEnabled,
                        EditingMaskedCard_ClickOnPaymentsLink) {
-  // Masked cards are from Google Pay.
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(features::kReturnGooglePayInBasicCard);
-
   NavigateTo("/payment_request_no_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);

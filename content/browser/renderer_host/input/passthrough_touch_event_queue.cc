@@ -207,6 +207,9 @@ bool PassthroughTouchEventQueue::Empty() const {
 }
 
 void PassthroughTouchEventQueue::FlushQueue() {
+  // Don't allow acks to be processed in AckCompletedEvents as that can
+  // interfere with gesture event dispatch ordering.
+  base::AutoReset<bool> process_acks(&processing_acks_, true);
   drop_remaining_touches_in_sequence_ = true;
   client_->FlushDeferredGestureQueue();
   while (!outstanding_touches_.empty()) {

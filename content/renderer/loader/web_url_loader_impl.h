@@ -20,6 +20,10 @@
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 
+namespace network {
+struct ResourceResponseHead;
+}
+
 namespace content {
 
 class ResourceDispatcher;
@@ -56,6 +60,11 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
       mojo::PendingRemote<mojom::KeepAliveHandle> keep_alive_handle);
   ~WebURLLoaderImpl() override;
 
+  static void PopulateURLResponse(const blink::WebURL& url,
+                                  const network::ResourceResponseHead& head,
+                                  blink::WebURLResponse* response,
+                                  bool report_security_info,
+                                  int request_id);
   static void PopulateURLResponse(const blink::WebURL& url,
                                   const network::mojom::URLResponseHead& head,
                                   blink::WebURLResponse* response,

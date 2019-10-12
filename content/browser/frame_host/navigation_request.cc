@@ -1200,8 +1200,19 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
   // starting SiteInstance.
   starting_site_instance_ =
       frame_tree_node->current_frame_host()->GetSiteInstance();
-
   site_url_ = GetSiteForCommonParamsURL();
+
+  // Let the NTP override the navigation params and pretend that this is a
+  // browser-initiated, bookmark-like navigation.
+  bool is_renderer_initiated = !browser_initiated_;
+  Referrer referrer(*common_params_->referrer);
+  GetContentClient()->browser()->OverrideNavigationParams(
+      starting_site_instance_.get(), &common_params_->transition,
+      &is_renderer_initiated, &referrer, &common_params_->initiator_origin);
+  common_params_->referrer =
+      blink::mojom::Referrer::New(referrer.url, referrer.policy);
+  browser_initiated_ = !is_renderer_initiated;
+  commit_params_->is_browser_initiated = browser_initiated_;
 
   // Compute the redirect chain.
   // TODO(clamy): Try to simplify this and have the redirects be part of
@@ -1841,7 +1852,7 @@ void NavigationRequest::OnRequestFailedInternal(
   // anymore from now while the error page is being loaded.
   loader_.reset();
 
-  common_params_->previews_state = content::PREVIEWS_OFF;
+  common_params_->previews_state = PREVIEWS_OFF;
   if (status.ssl_info.has_value())
     ssl_info_ = status.ssl_info;
 
@@ -2795,7 +2806,7 @@ int NavigationRequest::EstimateHistoryOffset() {
 
 void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck(
     NavigationDownloadPolicy download_policy) {
-  content::RenderFrameHost* rfh = frame_tree_node_->current_frame_host();
+  RenderFrameHost* rfh = frame_tree_node_->current_frame_host();
   GetContentClient()->browser()->LogWebFeatureForCurrentPage(
       rfh, blink::mojom::WebFeature::kDownloadPrePolicyCheck);
 
@@ -2845,7 +2856,7 @@ void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck(
 
 void NavigationRequest::RecordDownloadUseCountersPostPolicyCheck() {
   DCHECK(is_download_);
-  content::RenderFrameHost* rfh = frame_tree_node_->current_frame_host();
+  RenderFrameHost* rfh = frame_tree_node_->current_frame_host();
   GetContentClient()->browser()->LogWebFeatureForCurrentPage(
       rfh, blink::mojom::WebFeature::kDownloadPostPolicyCheck);
 }

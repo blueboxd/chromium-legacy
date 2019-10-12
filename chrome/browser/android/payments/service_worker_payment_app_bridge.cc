@@ -491,11 +491,13 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
   host->set_sw_origin_for_logs(url::Origin::Create(GURL(sw_scope)));
   host->set_payment_request_id_for_logs(event_data->payment_request_id);
 
+  // Todo(sahel): SupportedDelegations should be properly populated after
+  // implementing delegation on Android. https://crbug.com/984694
   content::PaymentAppProvider::GetInstance()->InstallAndInvokePaymentApp(
       web_contents, std::move(event_data),
       ConvertJavaStringToUTF8(env, japp_name), icon_bitmap,
       ConvertJavaStringToUTF8(env, jsw_js_url), sw_scope, juse_cache,
-      ConvertJavaStringToUTF8(env, jmethod),
+      ConvertJavaStringToUTF8(env, jmethod), content::SupportedDelegations(),
       base::BindOnce(
           &payments::PaymentHandlerHost::set_registration_id_for_logs,
           host->AsWeakPtr()),

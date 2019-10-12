@@ -18,7 +18,6 @@
 #include "components/prefs/pref_value_store.h"
 #include "components/sync_preferences/pref_model_associator.h"
 #include "components/sync_preferences/synced_pref_observer.h"
-#include "components/sync_preferences/unknown_user_pref_accessor.h"
 
 namespace syncer {
 class SyncableService;
@@ -106,7 +105,6 @@ class PrefServiceSyncable : public PrefService {
   // "forked" PrefService.
   bool pref_service_forked_;
 
-  UnknownUserPrefAccessor unknown_pref_accessor_;
   PrefModelAssociator pref_sync_associator_;
   PrefModelAssociator priority_pref_sync_associator_;
   const scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;

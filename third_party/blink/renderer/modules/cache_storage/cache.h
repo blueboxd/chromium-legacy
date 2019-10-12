@@ -40,6 +40,7 @@ struct TypeConverter<CacheQueryOptionsPtr, const blink::CacheQueryOptions*> {
 
 namespace blink {
 
+class CacheStorageBlobClientList;
 class ExceptionState;
 class Response;
 class Request;
@@ -116,6 +117,7 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
                          const CacheQueryOptions*);
 
   Member<GlobalFetch::ScopedFetcher> scoped_fetcher_;
+  Member<CacheStorageBlobClientList> blob_client_list_;
 
   mojo::AssociatedRemote<mojom::blink::CacheStorageCache> cache_remote_;
 

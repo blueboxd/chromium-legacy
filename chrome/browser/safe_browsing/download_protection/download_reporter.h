@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_DOWNLOAD_REPORTER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_DOWNLOAD_REPORTER_H_
 
+#include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "content/public/browser/notification_observer.h"
@@ -28,6 +30,8 @@ class DownloadReporter
                const content::NotificationDetails& details) override;
 
   // SimpleDownloadManagerCoordinator::Observer implementation:
+  void OnManagerGoingDown(
+      download::SimpleDownloadManagerCoordinator* coordinator) override;
   void OnDownloadCreated(download::DownloadItem* download) override;
 
   // DownloadItem::Observer implementation:
@@ -38,8 +42,13 @@ class DownloadReporter
   content::NotificationRegistrar profiles_registrar_;
   base::flat_map<download::DownloadItem*, download::DownloadDangerType>
       danger_types_;
-  std::set<download::SimpleDownloadManagerCoordinator*> observed_coordinators_;
-  std::set<download::DownloadItem*> observed_downloads_;
+  ScopedObserver<download::SimpleDownloadManagerCoordinator,
+                 download::SimpleDownloadManagerCoordinator::Observer>
+      observed_coordinators_{this};
+  ScopedObserver<download::DownloadItem, download::DownloadItem::Observer>
+      observed_downloads_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadReporter);
 };
 
 }  // namespace safe_browsing

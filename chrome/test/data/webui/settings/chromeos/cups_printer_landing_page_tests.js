@@ -544,10 +544,6 @@ suite('CupsNearbyPrintersTests', function() {
       nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
       assertTrue(!!nearbyPrintersElement);
 
-      // Assert that no printers have been detected.
-      let nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
-      assertEquals(0, nearbyPrinterEntries.length);
-
       // Simuluate finding nearby printers.
       cr.webUIListenerCallback(
           'on-nearby-printers-changed', automaticPrinterList,
@@ -569,10 +565,6 @@ suite('CupsNearbyPrintersTests', function() {
         .then(() => {
           nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
           assertTrue(!!nearbyPrintersElement);
-
-          // Assert that no printers are detected.
-          let nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
-          assertEquals(0, nearbyPrinterEntries.length);
 
           // Simuluate finding nearby printers.
           cr.webUIListenerCallback(
@@ -612,10 +604,6 @@ suite('CupsNearbyPrintersTests', function() {
         .then(() => {
           nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
           assertTrue(!!nearbyPrintersElement);
-
-          // Assert that there are initially no detected printers.
-          let nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
-          assertEquals(0, nearbyPrinterEntries.length);
 
           // Simuluate finding nearby printers.
           cr.webUIListenerCallback(

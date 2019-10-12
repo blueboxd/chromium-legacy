@@ -153,8 +153,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   if (base::FeatureList::IsEnabled(features::kPeriodicBackgroundSync))
     WebRuntimeFeatures::EnablePeriodicBackgroundSync(true);
 
-  if (base::FeatureList::IsEnabled(features::kWebXr))
-    WebRuntimeFeatures::EnableWebXR(true);
+  WebRuntimeFeatures::EnableWebXR(
+      base::FeatureList::IsEnabled(features::kWebXr));
 
   if (base::FeatureList::IsEnabled(features::kWebXrArDOMOverlay))
     WebRuntimeFeatures::EnableWebXRARDOMOverlay(true);
@@ -170,6 +170,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
 
   if (base::FeatureList::IsEnabled(features::kWebXrPlaneDetection))
     WebRuntimeFeatures::EnableWebXRPlaneDetection(true);
+
+  if (base::FeatureList::IsEnabled(features::kWebXrGamepadModule))
+    WebRuntimeFeatures::EnableWebXrGamepadModule(true);
 
   WebRuntimeFeatures::EnableFetchMetadata(
       base::FeatureList::IsEnabled(network::features::kFetchMetadata));

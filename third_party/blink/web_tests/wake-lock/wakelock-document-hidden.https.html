@@ -20,7 +20,7 @@ promise_test(t => {
   const screenLock = WakeLock.request('screen');
   window.testRunner.setPageVisibility('hidden');
   assert_true(document.hidden);
-  return promise_rejects(t, "AbortError", screenLock);
+  return promise_rejects(t, "NotAllowedError", screenLock);
 }, "WakeLock.request('screen') aborts when the page is hidden");
 
 promise_test(async t => {
@@ -30,7 +30,7 @@ promise_test(async t => {
   const screenLock = WakeLock.request('screen', { signal: controller.signal });
   window.testRunner.setPageVisibility('hidden');
   assert_true(document.hidden);
-  await promise_rejects(t, "AbortError", screenLock);
+  await promise_rejects(t, "NotAllowedError", screenLock);
   controller.abort();
 }, "Aborting a rejected wake lock does not crash");
 </script>

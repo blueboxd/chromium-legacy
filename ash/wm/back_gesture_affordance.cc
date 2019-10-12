@@ -21,8 +21,10 @@ namespace ash {
 
 namespace {
 
-// Distance of the arrow that above the drag start position.
-constexpr int kArrowAboveStartPosition = 64;
+// Distance from the arrow to the drag touch point. The arrow is usually
+// above the touch point but will be put below the touch point if the affordance
+// is outside of the display.
+constexpr int kDistanceFromArrowToTouchPoint = 64;
 
 constexpr int kArrowSize = 20;
 
@@ -129,9 +131,14 @@ gfx::Rect GetWidgetBounds(const gfx::Point& location) {
   gfx::Rect widget_bounds(
       gfx::Rect(2 * kRippleBurstRadius, 2 * kRippleBurstRadius));
   gfx::Point origin;
-  // TODO(crbug.com/1002733): Handle the case while origin y is outside display.
-  origin.set_y(location.y() - kArrowAboveStartPosition - kRippleBurstRadius);
   origin.set_x(-kRippleBurstRadius - kBackgroundRadius);
+  int origin_y =
+      location.y() - kDistanceFromArrowToTouchPoint - kRippleBurstRadius;
+  if (origin_y < 0) {
+    origin_y =
+        location.y() + kDistanceFromArrowToTouchPoint - kRippleBurstRadius;
+  }
+  origin.set_y(origin_y);
   widget_bounds.set_origin(origin);
   return widget_bounds;
 }

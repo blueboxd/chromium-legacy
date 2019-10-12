@@ -530,6 +530,7 @@ std::string HttpCache::GenerateCacheKey(const HttpRequestInfo* request) {
     // double-keyed (and makes it an invalid url so that it doesn't get
     // confused with a single-keyed entry). Separate the origin and url
     // with invalid whitespace character |kDoubleKeySeparator|.
+    DCHECK(request->network_isolation_key.IsFullyPopulated());
     isolation_key = base::StrCat({kDoubleKeyPrefix,
                                   request->network_isolation_key.ToString(),
                                   kDoubleKeySeparator});

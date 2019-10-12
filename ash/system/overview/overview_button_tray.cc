@@ -108,8 +108,7 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
       // default side. The window which was dragged to either side to begin
       // splitview will remain untouched. Skip that window if it appears in the
       // mru list.
-      SplitViewController* split_view_controller =
-          Shell::Get()->split_view_controller();
+      SplitViewController* split_view_controller = SplitViewController::Get();
       if (split_view_controller->InSplitViewMode() &&
           mru_window_list.size() > 2u) {
         if (mru_window_list[0] ==

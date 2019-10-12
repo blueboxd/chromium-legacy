@@ -92,7 +92,7 @@ enum class PaintPhase {
   kDescendantOutlinesOnly,
 
   // The below are auxiliary phases which are used to paint special effects.
-  kOverlayScrollbars,
+  kOverlayOverflowControls,
   kSelection,
   kTextClip,
   kMask,

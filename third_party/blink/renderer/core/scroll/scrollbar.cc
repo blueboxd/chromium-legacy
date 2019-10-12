@@ -32,7 +32,7 @@
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
@@ -81,8 +81,10 @@ Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
   // sizing).
   int thickness = theme_.ScrollbarThickness(control_size);
   theme_scrollbar_thickness_ = thickness;
-  if (chrome_client_)
-    thickness = chrome_client_->WindowToViewportScalar(thickness);
+  if (chrome_client_) {
+    thickness = chrome_client_->WindowToViewportScalar(
+        scrollable_area_->GetLayoutBox()->GetFrame(), thickness);
+  }
   frame_rect_ = IntRect(0, 0, thickness, thickness);
 
   current_pos_ = ScrollableAreaCurrentPos();
@@ -669,7 +671,8 @@ int Scrollbar::ScrollbarThickness() const {
   int thickness = Orientation() == kHorizontalScrollbar ? Height() : Width();
   if (!thickness || !chrome_client_)
     return thickness;
-  return chrome_client_->WindowToViewportScalar(theme_scrollbar_thickness_);
+  return chrome_client_->WindowToViewportScalar(
+      scrollable_area_->GetLayoutBox()->GetFrame(), theme_scrollbar_thickness_);
 }
 
 bool Scrollbar::IsOverlayScrollbar() const {

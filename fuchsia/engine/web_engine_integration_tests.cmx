@@ -1,8 +1,8 @@
 {
   "sandbox": {
     "features": [
-      "deprecated-shell",
       "deprecated-ambient-replace-as-executable",
+      "hub",
       "isolated-persistent-storage",
       "isolated-temp"
     ],

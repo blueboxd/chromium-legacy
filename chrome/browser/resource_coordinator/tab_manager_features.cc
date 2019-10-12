@@ -84,6 +84,8 @@ const char kProactiveTabFreezeAndDiscardFeatureName[] =
     "ProactiveTabFreezeAndDiscard";
 const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam[] =
     "ShouldProactivelyDiscard";
+const char kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam[] =
+    "ShouldPeriodicallyUnfreeze";
 const char kProactiveTabFreezeAndDiscard_DisableHeuristicsParam[] =
     "DisableHeuristicsProtections";
 

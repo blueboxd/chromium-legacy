@@ -29,9 +29,9 @@ namespace base {
 
 namespace {
 
-// The value returned by ::GetThreadPriority() after background thread mode is
-// enabled on Windows 8+.
-constexpr int kWin8AboveBackgroundThreadModePriority = -4;
+// The most common value returned by ::GetThreadPriority() after background
+// thread mode is enabled on Windows 7.
+constexpr int kWin7BackgroundThreadModePriority = 4;
 
 // The information on how to set the thread name comes from
 // a MSDN article: http://msdn2.microsoft.com/en-us/library/xcb2z8hs.aspx
@@ -401,17 +401,45 @@ void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
 
 // static
 ThreadPriority PlatformThread::GetCurrentThreadPriority() {
+  static_assert(
+      THREAD_PRIORITY_IDLE < 0,
+      "THREAD_PRIORITY_IDLE is >= 0 and will incorrectly cause errors.");
+  static_assert(
+      THREAD_PRIORITY_LOWEST < 0,
+      "THREAD_PRIORITY_LOWEST is >= 0 and will incorrectly cause errors.");
+  static_assert(THREAD_PRIORITY_BELOW_NORMAL < 0,
+                "THREAD_PRIORITY_BELOW_NORMAL is >= 0 and will incorrectly "
+                "cause errors.");
+  static_assert(
+      THREAD_PRIORITY_NORMAL == 0,
+      "The logic below assumes that THREAD_PRIORITY_NORMAL is zero. If it is "
+      "not, ThreadPriority::BACKGROUND may be incorrectly detected.");
+  static_assert(THREAD_PRIORITY_ABOVE_NORMAL >= 0,
+                "THREAD_PRIORITY_ABOVE_NORMAL is < 0 and will incorrectly be "
+                "translated to ThreadPriority::BACKGROUND.");
+  static_assert(THREAD_PRIORITY_HIGHEST >= 0,
+                "THREAD_PRIORITY_HIGHEST is < 0 and will incorrectly be "
+                "translated to ThreadPriority::BACKGROUND.");
+  static_assert(THREAD_PRIORITY_TIME_CRITICAL >= 0,
+                "THREAD_PRIORITY_TIME_CRITICAL is < 0 and will incorrectly be "
+                "translated to ThreadPriority::BACKGROUND.");
+  static_assert(THREAD_PRIORITY_ERROR_RETURN >= 0,
+                "THREAD_PRIORITY_ERROR_RETURN is < 0 and will incorrectly be "
+                "translated to ThreadPriority::BACKGROUND.");
+
   const int priority =
       ::GetThreadPriority(PlatformThread::CurrentHandle().platform_handle());
 
+  // Negative values represent a background priority. We have observed -3, -4,
+  // -6 when THREAD_MODE_BACKGROUND_* is used. THREAD_PRIORITY_IDLE,
+  // THREAD_PRIORITY_LOWEST and THREAD_PRIORITY_BELOW_NORMAL are other possible
+  // negative values.
+  if (priority < THREAD_PRIORITY_NORMAL)
+    return ThreadPriority::BACKGROUND;
+
   switch (priority) {
-    case THREAD_PRIORITY_IDLE:
-    case internal::kWin7BackgroundThreadModePriority:
+    case kWin7BackgroundThreadModePriority:
       DCHECK_EQ(win::GetVersion(), win::Version::WIN7);
-      FALLTHROUGH;
-    case kWin8AboveBackgroundThreadModePriority:
-    case THREAD_PRIORITY_LOWEST:
-    case THREAD_PRIORITY_BELOW_NORMAL:
       return ThreadPriority::BACKGROUND;
     case THREAD_PRIORITY_NORMAL:
       return ThreadPriority::NORMAL;
@@ -421,10 +449,10 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
     case THREAD_PRIORITY_TIME_CRITICAL:
       return ThreadPriority::REALTIME_AUDIO;
     case THREAD_PRIORITY_ERROR_RETURN:
-      DPCHECK(false) << "GetThreadPriority error";
+      DPCHECK(false) << "::GetThreadPriority error";
   }
 
-  NOTREACHED() << "GetCurrentThreadPriority returned " << priority << ".";
+  NOTREACHED() << "::GetThreadPriority returned " << priority << ".";
   return ThreadPriority::NORMAL;
 }
 

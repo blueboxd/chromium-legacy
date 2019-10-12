@@ -7,14 +7,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:paddingBottom="30dp"
     android:layout_width="match_parent"
-    android:layout_height="86dp">
+    android:layout_height="@dimen/preview_tab_toolbar_height">
 
     <LinearLayout
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/toolbar_height_no_shadow"
+        android:layout_height="@dimen/preview_tab_toolbar_height"
         android:orientation="vertical">
 
         <View
@@ -23,16 +22,16 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="62dp"
             android:orientation="horizontal">
 
             <org.chromium.ui.widget.ChromeImageView
                 android:id="@+id/favicon"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_centerVertical="true"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
+                android:layout_marginTop="12dp"
                 android:padding="12dp"
                 android:src="@drawable/ic_chrome"
                 app:tint="@color/default_icon_color_blue"
@@ -57,19 +56,41 @@
                 android:layout_centerVertical="true"
                 android:padding="12dp"
                 android:src="@drawable/open_in_new_tab"
-                app:tint="@color/default_icon_color"
-                tools:ignore="ContentDescription" />
+                android:contentDescription="@string/contextmenu_open_in_new_tab"
+                app:tint="@color/default_icon_color" />
 
             <TextView
                 android:id="@+id/ephemeral_tab_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="16dp"
                 android:layout_toStartOf="@id/open_in_new_tab"
                 android:layout_toEndOf="@id/favicon"
                 android:ellipsize="end"
                 android:singleLine="true"
-                android:textAppearance="@style/TextAppearance.BlackTitle1" />
+                android:textAppearance="@style/TextAppearance.BlackBodyDefault" />
+
+            <org.chromium.ui.widget.ChromeImageView
+                android:id="@+id/security_icon"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_below="@id/ephemeral_tab_text"
+                android:layout_toEndOf="@id/favicon"
+                android:layout_marginTop="4dp"
+                app:tint="@color/default_icon_color" />
+
+            <TextView
+                android:id="@+id/ephemeral_tab_caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/open_in_new_tab"
+                android:layout_toEndOf="@id/security_icon"
+                android:layout_below="@id/ephemeral_tab_text"
+                android:layout_marginLeft="4dp"
+                android:ellipsize="start"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.BlackHint2" />
+
         </RelativeLayout>
 
         <View
@@ -90,6 +111,6 @@
         android:id="@+id/shadow"
         android:layout_width="match_parent"
         android:layout_height="@dimen/action_bar_shadow_height"
-        android:layout_marginTop="@dimen/toolbar_height_no_shadow"/>
+        android:layout_marginTop="@dimen/preview_tab_toolbar_height"/>
 
 </FrameLayout>

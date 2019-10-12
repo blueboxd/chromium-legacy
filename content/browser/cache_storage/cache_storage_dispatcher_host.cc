@@ -5,6 +5,7 @@
 #include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,10 +19,12 @@
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/cache_storage_trace_utils.h"
 #include "content/common/background_fetch/background_fetch_types.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/referrer_type_converters.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -64,6 +67,43 @@ bool ValidBatchOperations(
   return true;
 }
 
+blink::mojom::MatchResultPtr EagerlyReadResponseBody(
+    blink::mojom::FetchAPIResponsePtr response) {
+  if (!response->blob ||
+      !base::FeatureList::IsEnabled(features::kCacheStorageEagerReading)) {
+    return blink::mojom::MatchResult::NewResponse(std::move(response));
+  }
+
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes =
+      blink::BlobUtils::GetDataPipeCapacity(response->blob->size);
+
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  MojoResult rv = CreateDataPipe(&options, &producer_handle, &consumer_handle);
+  if (rv != MOJO_RESULT_OK)
+    return blink::mojom::MatchResult::NewResponse(std::move(response));
+
+  mojo::PendingRemote<blink::mojom::BlobReaderClient> reader_client;
+  auto pending_receiver = reader_client.InitWithNewPipeAndPassReceiver();
+
+  mojo::Remote<blink::mojom::Blob> blob(std::move(response->blob->blob));
+  blob->ReadAll(std::move(producer_handle), std::move(reader_client));
+
+  // Clear the main body blob entry.  There should still be a |side_data_blob|
+  // value for reading code cache, however.
+  response->blob = nullptr;
+  DCHECK(response->side_data_blob);
+
+  return blink::mojom::MatchResult::NewEagerResponse(
+      blink::mojom::EagerResponse::New(std::move(response),
+                                       std::move(consumer_handle),
+                                       std::move(pending_receiver)));
+}
+
 }  // namespace
 
 // Implements the mojom interface CacheStorageCache. It's owned by
@@ -80,6 +120,7 @@ class CacheStorageDispatcherHost::CacheImpl
   // blink::mojom::CacheStorageCache implementation:
   void Match(blink::mojom::FetchAPIRequestPtr request,
              blink::mojom::CacheQueryOptionsPtr match_options,
+             bool in_related_fetch_event,
              int64_t trace_id,
              MatchCallback callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -98,7 +139,8 @@ class CacheStorageDispatcherHost::CacheImpl
 
     auto cb = base::BindOnce(
         [](base::TimeTicks start_time, bool ignore_search,
-           bool cache_initialized, int64_t trace_id,
+           bool in_related_fetch_event, bool cache_initialized,
+           int64_t trace_id,
            blink::mojom::CacheStorageCache::MatchCallback callback,
            blink::mojom::CacheStorageError error,
            blink::mojom::FetchAPIResponsePtr response) {
@@ -136,11 +178,19 @@ class CacheStorageDispatcherHost::CacheImpl
               TRACE_ID_GLOBAL(trace_id),
               TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "response",
               CacheStorageTracedValue(response));
-          std::move(callback).Run(
-              blink::mojom::MatchResult::NewResponse(std::move(response)));
+
+          blink::mojom::MatchResultPtr result;
+          if (in_related_fetch_event) {
+            result = EagerlyReadResponseBody(std::move(response));
+          } else {
+            result =
+                blink::mojom::MatchResult::NewResponse(std::move(response));
+          }
+          std::move(callback).Run(std::move(result));
         },
-        base::TimeTicks::Now(), match_options->ignore_search, cache_initialized,
-        trace_id, std::move(callback));
+        base::TimeTicks::Now(), match_options->ignore_search,
+        in_related_fetch_event, cache_initialized, trace_id,
+        std::move(callback));
 
     if (!cache) {
       std::move(cb).Run(CacheStorageError::kErrorNotFound, nullptr);
@@ -471,6 +521,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
 
   void Match(blink::mojom::FetchAPIRequestPtr request,
              blink::mojom::MultiCacheQueryOptionsPtr match_options,
+             bool in_related_fetch_event,
              int64_t trace_id,
              blink::mojom::CacheStorage::MatchCallback callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -482,7 +533,8 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
                            "options", CacheStorageTracedValue(match_options));
 
     auto cb = BindOnce(
-        [](base::TimeTicks start_time, bool match_all_caches, int64_t trace_id,
+        [](base::TimeTicks start_time, bool match_all_caches,
+           bool in_related_fetch_event, int64_t trace_id,
            blink::mojom::CacheStorage::MatchCallback callback,
            CacheStorageError error,
            blink::mojom::FetchAPIResponsePtr response) {
@@ -513,11 +565,18 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
               TRACE_ID_GLOBAL(trace_id),
               TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "response",
               CacheStorageTracedValue(response));
-          std::move(callback).Run(
-              blink::mojom::MatchResult::NewResponse(std::move(response)));
+
+          blink::mojom::MatchResultPtr result;
+          if (in_related_fetch_event) {
+            result = EagerlyReadResponseBody(std::move(response));
+          } else {
+            result =
+                blink::mojom::MatchResult::NewResponse(std::move(response));
+          }
+          std::move(callback).Run(std::move(result));
         },
-        base::TimeTicks::Now(), !match_options->cache_name, trace_id,
-        std::move(callback));
+        base::TimeTicks::Now(), !match_options->cache_name,
+        in_related_fetch_event, trace_id, std::move(callback));
 
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
     if (!cache_storage) {

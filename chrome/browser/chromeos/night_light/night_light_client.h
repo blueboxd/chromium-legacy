@@ -35,7 +35,7 @@ class NightLightClient : public ash::NightLightController::Observer,
 
   // Starts watching changes in the Night Light schedule type in order to begin
   // periodically pushing user's IP-based geoposition to NightLightController as
-  // long as the type is set to "sunset to sunrise".
+  // long as the type is set to "sunset to sunrise" or "custom".
   void Start();
 
   // ash::NightLightController::Observer:
@@ -103,8 +103,9 @@ class NightLightClient : public ash::NightLightController::Observer,
   // The ID of the current timezone in the fromat similar to "America/Chicago".
   base::string16 current_timezone_id_;
 
-  // True as long as the schedule type is set to "sunset to sunrise", which
-  // means this client will be retrieving the IP-based geoposition once per day.
+  // True as long as the schedule type is set to "sunset to sunrise" or
+  // "custom", which means this client will be retrieving the IP-based
+  // geoposition once per day.
   bool using_geoposition_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NightLightClient);

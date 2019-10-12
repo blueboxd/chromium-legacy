@@ -53,22 +53,29 @@ class ASH_PUBLIC_EXPORT AppListConfigProvider {
   // based on the app list display, and available size for the apps grid.
   // Returns nullptr if the new app list config is the same as |current_config|.
   // |work_area_size|: The work area size of the display showing the app list.
-  // |available_grid_size|: The size of the bounds available for the apps grid.
+  // |min_horizontal_margin|: The minimum horizontal margins that the apps grid
+  //     has to respect (the apps grid width should fit into the space
+  //     restricted by these margins).
+  // |shelf_height|: The current shelf height.
   // |current_config|: If not null, the app list config currently used by the
-  // app list.
+  //     app list.
   // TODO(crbug.com/976947): Once ScalableAppList feature is removed (and
   // enabled by default), this should return a reference or a pointer to an
   // AppListConfig owned by |this|, as then the number of possible different
   // configs will be restricted to the number of supported config types.
   std::unique_ptr<AppListConfig> CreateForAppListWidget(
       const gfx::Size& display_work_area_size,
-      const gfx::Size& available_grid_size,
+      int min_horizontal_margin,
+      int shelf_height,
       const AppListConfig* current_config);
 
   // Clears the set of configs owned by the provider.
   void ResetForTesting();
 
  private:
+  const AppListConfig& GetBaseConfigForDisplaySize(
+      const gfx::Size& display_work_area_size);
+
   std::map<ash::AppListConfigType, std::unique_ptr<AppListConfig>> configs_;
 
   base::ObserverList<Observer>::Unchecked observers_;

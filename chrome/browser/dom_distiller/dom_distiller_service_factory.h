@@ -24,7 +24,6 @@ class DomDistillerContextKeyedService : public KeyedService,
                                         public DomDistillerService {
  public:
   DomDistillerContextKeyedService(
-      std::unique_ptr<DomDistillerStoreInterface> store,
       std::unique_ptr<DistillerFactory> distiller_factory,
       std::unique_ptr<DistillerPageFactory> distiller_page_factory,
       std::unique_ptr<DistilledPagePrefs> distilled_page_prefs);

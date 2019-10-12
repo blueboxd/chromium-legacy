@@ -126,7 +126,7 @@ bool IsManifestSupported(int manifest_version,
 
 }  // namespace
 
-const int Extension::kInitFromValueFlagBits = 14;
+const int Extension::kInitFromValueFlagBits = 15;
 
 const char Extension::kMimeType[] = "application/x-chrome-extension";
 

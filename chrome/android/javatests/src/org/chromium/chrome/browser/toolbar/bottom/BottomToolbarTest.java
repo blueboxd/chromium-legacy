@@ -42,13 +42,13 @@ public class BottomToolbarTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        FeatureUtilities.setIsBottomToolbarEnabledForTests(true);
+        FeatureUtilities.setIsBottomToolbarEnabledForTesting(true);
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     @After
     public void tearDown() {
-        FeatureUtilities.setIsBottomToolbarEnabledForTests(null);
+        FeatureUtilities.setIsBottomToolbarEnabledForTesting(null);
     }
 
     @Test

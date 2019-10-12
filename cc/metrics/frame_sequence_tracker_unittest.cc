@@ -37,9 +37,10 @@ class FrameSequenceTrackerTest : public testing::Test {
         FrameSequenceTrackerType::kTouchScroll);
   }
 
-  viz::BeginFrameArgs CreateBeginFrameArgs(uint64_t source_id,
-                                           uint64_t sequence_number) {
-    auto now = base::TimeTicks::Now();
+  viz::BeginFrameArgs CreateBeginFrameArgs(
+      uint64_t source_id,
+      uint64_t sequence_number,
+      base::TimeTicks now = base::TimeTicks::Now()) {
     auto interval = base::TimeDelta::FromMilliseconds(16);
     auto deadline = now + interval;
     return viz::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, source_id,
@@ -162,6 +163,17 @@ class FrameSequenceTrackerTest : public testing::Test {
         "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 2u);
     histogram_tester.ExpectTotalCount(
         "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 3u);
+  }
+
+  base::TimeDelta TimeDeltaToReort() const {
+    return tracker_->time_delta_to_report_;
+  }
+
+  unsigned NumberOfTrackers() const {
+    return collection_.frame_trackers_.size();
+  }
+  unsigned NumberOfRemovalTrackers() const {
+    return collection_.removal_trackers_.size();
   }
 
  protected:
@@ -329,6 +341,28 @@ TEST_F(FrameSequenceTrackerTest, MultipleCheckerboardingFrames) {
 
 TEST_F(FrameSequenceTrackerTest, ReportMetrics) {
   ReportMetrics();
+}
+
+TEST_F(FrameSequenceTrackerTest, ReportMetricsAtFixedInterval) {
+  const uint64_t source = 1;
+  uint64_t sequence = 0;
+  base::TimeDelta first_time_delta = base::TimeDelta::FromSeconds(1);
+  auto args = CreateBeginFrameArgs(source, ++sequence,
+                                   base::TimeTicks::Now() + first_time_delta);
+
+  // args.frame_time is less than 5s of the tracker creation time, so won't
+  // schedule this tracker to report its throughput.
+  collection_.NotifyBeginImplFrame(args);
+  EXPECT_EQ(NumberOfTrackers(), 1u);
+  EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
+
+  // Now args.frame_time is 5s since the tracker creation time, so this tracker
+  // should be scheduled to report its throughput.
+  args = CreateBeginFrameArgs(source, ++sequence,
+                              args.frame_time + TimeDeltaToReort());
+  collection_.NotifyBeginImplFrame(args);
+  EXPECT_EQ(NumberOfTrackers(), 1u);
+  EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
 }
 
 }  // namespace cc

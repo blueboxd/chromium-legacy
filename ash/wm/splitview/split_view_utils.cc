@@ -241,8 +241,7 @@ void MaybeRestoreSplitView(bool refresh_snapped_windows) {
   // could snap windows that were not in split view. Also, a window may have
   // become full screen, and if so, then it would be better not to reactivate
   // split view. See https://crbug.com/944134.
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
 
   if (refresh_snapped_windows) {
     const MruWindowTracker::WindowList windows =

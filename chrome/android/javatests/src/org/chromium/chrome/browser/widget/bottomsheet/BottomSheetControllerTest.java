@@ -85,9 +85,9 @@ public class BottomSheetControllerTest {
             mHighPriorityContent = new TestBottomSheetContent(
                     mActivityTestRule.getActivity(), ContentPriority.HIGH, false);
 
-            mPeekableContent = new TestBottomSheetContent(mActivityTestRule.getActivity(), true);
-            mNonPeekableContent =
-                    new TestBottomSheetContent(mActivityTestRule.getActivity(), false);
+            mPeekableContent = new TestBottomSheetContent(mActivityTestRule.getActivity());
+            mNonPeekableContent = new TestBottomSheetContent(mActivityTestRule.getActivity());
+            mNonPeekableContent.setPeekHeight(BottomSheet.HeightMode.DISABLED);
         });
     }
 

@@ -222,47 +222,6 @@ class TwoClientPreferencesSyncTestWithSelfNotifications : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientPreferencesSyncTestWithSelfNotifications);
 };
 
-// Tests that late registered prefs are kept in sync with other clients.
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTestWithSelfNotifications,
-                       E2E_ENABLED(LateRegisteredPrefsShouldSync)) {
-  ResetSyncForPrimaryAccount();
-  // client0 has the pref registered before sync and is modifying a pref before
-  // that pref got registered with client1 (but after client1 started syncing).
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-
-  constexpr char pref_name[] = "testing.my-test-preference";
-  GetRegistry(GetProfile(0))
-      ->RegisterBooleanPref(pref_name, false,
-                            user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  GetRegistry(GetProfile(1))
-      ->WhitelistLateRegistrationPrefForSync("testing.my-test-preference");
-
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  ASSERT_THAT(GetPrefs(0)->GetBoolean(pref_name), Eq(false));
-  ChangeBooleanPref(0, pref_name);
-  ASSERT_THAT(GetPrefs(0)->GetBoolean(pref_name), Eq(true));
-  GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));
-
-  // Now register the pref and verify it's up-to-date.
-  GetRegistry(GetProfile(1))
-      ->RegisterBooleanPref(pref_name, false,
-                            user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  EXPECT_THAT(GetPrefs(1)->GetBoolean(pref_name), Eq(true));
-
-  // Make sure that subsequent changes are synced.
-  ChangeBooleanPref(0, pref_name);
-  ASSERT_THAT(GetPrefs(0)->GetBoolean(pref_name), Eq(false));
-  EXPECT_TRUE(BooleanPrefMatchChecker(pref_name).Wait());
-  EXPECT_THAT(GetPrefs(1)->GetBoolean(pref_name), Eq(false));
-
-  // Make sure that subsequent changes are synced.
-  ChangeBooleanPref(1, pref_name);
-  ASSERT_THAT(GetPrefs(1)->GetBoolean(pref_name), Eq(true));
-  EXPECT_TRUE(BooleanPrefMatchChecker(pref_name).Wait());
-  EXPECT_THAT(GetPrefs(0)->GetBoolean(pref_name), Eq(true));
-}
-
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTestWithSelfNotifications,
                        E2E_ENABLED(ShouldKeepLocalDataOnTypeMismatch)) {
   ResetSyncForPrimaryAccount();
@@ -276,8 +235,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTestWithSelfNotifications,
   GetRegistry(GetProfile(0))
       ->RegisterBooleanPref(pref_name, false,
                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  GetRegistry(GetProfile(1))
-      ->WhitelistLateRegistrationPrefForSync("testing.my-test-preference");
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ChangeBooleanPref(0, pref_name);

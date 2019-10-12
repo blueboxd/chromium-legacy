@@ -33,13 +33,13 @@ static TPMTokenLoader* g_tpm_token_loader = NULL;
 // static
 void TPMTokenLoader::Initialize() {
   CHECK(!g_tpm_token_loader);
-  g_tpm_token_loader = new TPMTokenLoader(false /*for_test*/);
+  g_tpm_token_loader = new TPMTokenLoader(/*initialized_for_test=*/false);
 }
 
 // static
 void TPMTokenLoader::InitializeForTest() {
   CHECK(!g_tpm_token_loader);
-  g_tpm_token_loader = new TPMTokenLoader(true /*for_test*/);
+  g_tpm_token_loader = new TPMTokenLoader(/*initialized_for_test=*/true);
 }
 
 // static
@@ -61,8 +61,8 @@ bool TPMTokenLoader::IsInitialized() {
   return g_tpm_token_loader;
 }
 
-TPMTokenLoader::TPMTokenLoader(bool for_test)
-    : initialized_for_test_(for_test),
+TPMTokenLoader::TPMTokenLoader(bool initialized_for_test)
+    : initialized_for_test_(initialized_for_test),
       tpm_token_state_(TPM_STATE_UNKNOWN),
       tpm_token_info_getter_(TPMTokenInfoGetter::CreateForSystemToken(
           CryptohomeClient::Get(),
@@ -112,8 +112,9 @@ bool TPMTokenLoader::IsTPMLoadingEnabled() const {
   // TPM loading is enabled on non-ChromeOS environments, e.g. when running
   // tests on Linux.
   // Treat TPM as disabled for guest users since they do not store certs.
-  return initialized_for_test_ || (base::SysInfo::IsRunningOnChromeOS() &&
-                                   !LoginState::Get()->IsGuestSessionUser());
+  return initialized_for_test_ || enable_tpm_loading_for_testing_ ||
+         (base::SysInfo::IsRunningOnChromeOS() &&
+          !LoginState::Get()->IsGuestSessionUser());
 }
 
 void TPMTokenLoader::MaybeStartTokenInitialization() {

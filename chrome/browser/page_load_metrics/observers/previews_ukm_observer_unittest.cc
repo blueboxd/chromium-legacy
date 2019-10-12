@@ -950,7 +950,13 @@ TEST_F(PreviewsUKMObserverTest, CheckReportingForFlushMetrics) {
               base::nullopt /* hint_source */);
 }
 
-TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+// Flaky. https://crbug.com/1002223
+#define MAYBE_TestPageEndReasonUMA DISABLED_TestPageEndReasonUMA
+#else
+#define MAYBE_TestPageEndReasonUMA TestPageEndReasonUMA
+#endif
+TEST_F(PreviewsUKMObserverTest, MAYBE_TestPageEndReasonUMA) {
   std::unique_ptr<base::StatisticsRecorder> recorder(
       base::StatisticsRecorder::CreateTemporaryForTesting());
   base::HistogramTester histogram_tester;

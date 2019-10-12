@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
@@ -68,21 +69,21 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
             /*recommendable=*/false,
             /*searchable=*/true,
             /*show_in_launcher=*/false,
-            InternalAppName::kKeyboardShortcutViewer,
+            apps::BuiltInAppName::kKeyboardShortcutViewer,
             IDS_LAUNCHER_SEARCHABLE_KEYBOARD_SHORTCUT_VIEWER},
 
            {ash::kInternalAppIdContinueReading,
             IDS_INTERNAL_APP_CONTINUOUS_READING, IDR_PRODUCT_LOGO_256,
             /*recommendable=*/true,
             /*searchable=*/false,
-            /*show_in_launcher=*/false, InternalAppName::kContinueReading,
+            /*show_in_launcher=*/false, apps::BuiltInAppName::kContinueReading,
             /*searchable_string_resource_id=*/0},
 
            {ash::kReleaseNotesAppId, IDS_RELEASE_NOTES_NOTIFICATION_TITLE,
             IDR_RELEASE_NOTES_APP_192,
             /*recommendable=*/true,
             /*searchable=*/false,
-            /*show_in_launcher=*/false, InternalAppName::kReleaseNotes,
+            /*show_in_launcher=*/false, apps::BuiltInAppName::kReleaseNotes,
             /*searchable_string_resource_id=*/0}});
 
   static base::NoDestructor<std::vector<InternalApp>> internal_app_list;
@@ -98,7 +99,7 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
                                   /*recommendable=*/true,
                                   /*searchable=*/true,
                                   /*show_in_launcher=*/true,
-                                  InternalAppName::kCamera,
+                                  apps::BuiltInAppName::kCamera,
                                   /*searchable_string_resource_id=*/0});
   }
 
@@ -111,7 +112,7 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
          IDR_DISCOVER_APP_192,
          /*recommendable=*/false,
          /*searchable=*/true,
-         /*show_in_launcher=*/true, InternalAppName::kDiscover,
+         /*show_in_launcher=*/true, apps::BuiltInAppName::kDiscover,
          /*searchable_string_resource_id=*/IDS_INTERNAL_APP_DISCOVER});
   }
 
@@ -124,7 +125,7 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
          IDR_SETTINGS_LOGO_192,
          /*recommendable=*/true,
          /*searchable=*/true,
-         /*show_in_launcher=*/true, InternalAppName::kSettings,
+         /*show_in_launcher=*/true, apps::BuiltInAppName::kSettings,
          /*searchable_string_resource_id=*/0});
   }
 
@@ -134,7 +135,7 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
          IDR_LOGO_PLUGIN_VM_DEFAULT_192,
          /*recommendable=*/true,
          /*searchable=*/true,
-         /*show_in_launcher=*/true, InternalAppName::kPluginVm,
+         /*show_in_launcher=*/true, apps::BuiltInAppName::kPluginVm,
          /*searchable_string_resource_id=*/0});
   }
   return *internal_app_list;
@@ -313,8 +314,7 @@ bool HasRecommendableForeignTab(
   return has_recommendation;
 }
 
-InternalAppName GetInternalAppNameByAppId(
-    const std::string& app_id) {
+apps::BuiltInAppName GetInternalAppNameByAppId(const std::string& app_id) {
   const auto* app = FindInternalApp(app_id);
   DCHECK(app);
   return app->internal_app_name;

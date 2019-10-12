@@ -373,9 +373,17 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // This is subtle: it doesn't keep all registrations (e.g., from storage) in
   // memory, but just the ones that are possibly the longest-matching one. The
   // best match from storage is added at load time. That match can't uninstall
-  // while this host is a controllee, so all the other stored registrations can
-  // be ignored. Only a newly installed registration can claim it, and new
-  // installing registrations are added as matches.
+  // while this host is a controllee, but it can be unregistered and newly
+  // installed registations can override the entry if they have the same scope
+  // as an existing match. Since it is possible that multiple service workers
+  // for the same scope exist at any given time, e.g. when a worker is
+  // registered while an unregistered worker for the same scope is controlling
+  // clients, it's the callers responsibility to remove the matching
+  // registration when they no longer need it.
+  //
+  // Note: Chrome's implementation of .ready differs from the spec s.t. the
+  // ready promise is only resolved once it has been accessed by the user.
+  // https://github.com/w3c/ServiceWorker/issues/1477
   void AddMatchingRegistration(ServiceWorkerRegistration* registration);
   void RemoveMatchingRegistration(ServiceWorkerRegistration* registration);
 
@@ -515,6 +523,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
 #if DCHECK_IS_ON()
   bool IsMatchingRegistration(ServiceWorkerRegistration* registration) const;
+  bool IsMatchingUninstalledRegistration(
+      ServiceWorkerRegistration* registration);
 #endif  // DCHECK_IS_ON()
 
   // Discards all references to matching registrations.
@@ -673,6 +683,14 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // IsContextSecureForServiceWorker() is false. See also
   // AddMatchingRegistration().
   ServiceWorkerRegistrationMap matching_registrations_;
+
+  // Similar to ServiceWorkerRegistrationMap, but with multiple registrations.
+  using ServiceWorkerRegistrationMultiSet =
+      std::map<size_t, std::set<scoped_refptr<ServiceWorkerRegistration>>>;
+  // Contains registrations that have been uninstalled, e.g., by
+  // |registration.unregister()|, but are still alive, e.g., because they are
+  // controlling clients.
+  ServiceWorkerRegistrationMultiSet uninstalled_matching_registrations_;
 
   // Contains all ServiceWorkerRegistrationObjectHost instances corresponding to
   // the service worker registration JavaScript objects for the hosted execution

@@ -64,20 +64,6 @@ class HasEnrolledInstrumentTest : public PlatformBrowserTest {
     PlatformBrowserTest::SetUpOnMainThread();
   }
 
-  std::unique_ptr<base::test::ScopedFeatureList>
-  EnableStrictHasEnrolledAutofillInstrument() {
-    auto features = std::make_unique<base::test::ScopedFeatureList>();
-    features->InitWithFeatures(
-        /*enabled_features=*/{features::kStrictHasEnrolledAutofillInstrument},
-        /*disabled_features=*/{
-          features::kPaymentRequestSkipToGPay,
-#if defined(OS_ANDROID)
-              ::chrome::android::kNoCreditCardAbort,
-#endif  // OS_ANDROID
-        });
-    return features;
-  }
-
   content::WebContents* GetActiveWebContents() {
     return chrome_test_utils::GetActiveWebContents(this);
   }
@@ -94,6 +80,24 @@ class HasEnrolledInstrumentTest : public PlatformBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(HasEnrolledInstrumentTest);
 };
 
+class HasEnrolledInstrumentTestWithStrictHasEnrolledAutofillInstrument
+    : public HasEnrolledInstrumentTest {
+ public:
+  HasEnrolledInstrumentTestWithStrictHasEnrolledAutofillInstrument() {
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kStrictHasEnrolledAutofillInstrument},
+        /*disabled_features=*/{
+          features::kPaymentRequestSkipToGPay,
+#if defined(OS_ANDROID)
+              ::chrome::android::kNoCreditCardAbort,
+#endif
+        });
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest, NoCard) {
   EXPECT_EQ(false,
             content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
@@ -103,28 +107,28 @@ IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest, NoCard) {
   EXPECT_EQ(false,
             content::EvalJs(GetActiveWebContents(),
                             "hasEnrolledInstrument({requestPayerEmail:true})"));
+}
 
-  {
-    auto features = EnableStrictHasEnrolledAutofillInstrument();
+IN_PROC_BROWSER_TEST_F(
+    HasEnrolledInstrumentTestWithStrictHasEnrolledAutofillInstrument,
+    NoCard) {
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestShipping:true})"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestPayerEmail:true})"));
 
-    EXPECT_EQ(false, content::EvalJs(GetActiveWebContents(),
-                                     "hasEnrolledInstrument()"));
-    EXPECT_EQ(false,
-              content::EvalJs(GetActiveWebContents(),
-                              "hasEnrolledInstrument({requestShipping:true})"));
-    EXPECT_EQ(false, content::EvalJs(
-                         GetActiveWebContents(),
-                         "hasEnrolledInstrument({requestPayerEmail:true})"));
-
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(), "show()"));
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestShipping:true})"));
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestPayerEmail:true})"));
-  }
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(), "show()"));
+  EXPECT_EQ(
+      not_supported_message(),
+      content::EvalJs(GetActiveWebContents(), "show({requestShipping:true})"));
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(),
+                            "show({requestPayerEmail:true})"));
 }
 
 IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest, NoBillingAddress) {
@@ -139,28 +143,31 @@ IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest, NoBillingAddress) {
   EXPECT_EQ(true,
             content::EvalJs(GetActiveWebContents(),
                             "hasEnrolledInstrument({requestPayerEmail:true})"));
+}
 
-  {
-    auto features = EnableStrictHasEnrolledAutofillInstrument();
+IN_PROC_BROWSER_TEST_F(
+    HasEnrolledInstrumentTestWithStrictHasEnrolledAutofillInstrument,
+    NoBillingAddress) {
+  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(),
+                      autofill::test::GetCreditCard());
 
-    EXPECT_EQ(false, content::EvalJs(GetActiveWebContents(),
-                                     "hasEnrolledInstrument()"));
-    EXPECT_EQ(false,
-              content::EvalJs(GetActiveWebContents(),
-                              "hasEnrolledInstrument({requestShipping:true})"));
-    EXPECT_EQ(false, content::EvalJs(
-                         GetActiveWebContents(),
-                         "hasEnrolledInstrument({requestPayerEmail:true})"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestShipping:true})"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestPayerEmail:true})"));
 
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(), "show()"));
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestShipping:true})"));
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestPayerEmail:true})"));
-  }
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(), "show()"));
+  EXPECT_EQ(
+      not_supported_message(),
+      content::EvalJs(GetActiveWebContents(), "show({requestShipping:true})"));
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(),
+                            "show({requestPayerEmail:true})"));
 }
 
 IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest,
@@ -178,28 +185,33 @@ IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest,
   EXPECT_EQ(true,
             content::EvalJs(GetActiveWebContents(),
                             "hasEnrolledInstrument({requestPayerEmail:true})"));
+}
 
-  {
-    auto features = EnableStrictHasEnrolledAutofillInstrument();
+IN_PROC_BROWSER_TEST_F(
+    HasEnrolledInstrumentTestWithStrictHasEnrolledAutofillInstrument,
+    HaveShippingNoBillingAddress) {
+  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
+                           autofill::test::GetFullProfile());
+  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(),
+                      autofill::test::GetCreditCard());
 
-    EXPECT_EQ(false, content::EvalJs(GetActiveWebContents(),
-                                     "hasEnrolledInstrument()"));
-    EXPECT_EQ(false,
-              content::EvalJs(GetActiveWebContents(),
-                              "hasEnrolledInstrument({requestShipping:true})"));
-    EXPECT_EQ(false, content::EvalJs(
-                         GetActiveWebContents(),
-                         "hasEnrolledInstrument({requestPayerEmail:true})"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestShipping:true})"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestPayerEmail:true})"));
 
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(), "show()"));
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestShipping:true})"));
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestPayerEmail:true})"));
-  }
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(), "show()"));
+  EXPECT_EQ(
+      not_supported_message(),
+      content::EvalJs(GetActiveWebContents(), "show({requestShipping:true})"));
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(),
+                            "show({requestPayerEmail:true})"));
 }
 
 IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest,
@@ -218,19 +230,25 @@ IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest,
   EXPECT_EQ(true,
             content::EvalJs(GetActiveWebContents(),
                             "hasEnrolledInstrument({requestPayerEmail:true})"));
+}
 
-  {
-    auto features = EnableStrictHasEnrolledAutofillInstrument();
+IN_PROC_BROWSER_TEST_F(
+    HasEnrolledInstrumentTestWithStrictHasEnrolledAutofillInstrument,
+    HaveShippingAndBillingAddress) {
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
+                           address);
+  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(),
+                      GetCardWithBillingAddress(address));
 
-    EXPECT_EQ(true, content::EvalJs(GetActiveWebContents(),
-                                    "hasEnrolledInstrument()"));
-    EXPECT_EQ(true,
-              content::EvalJs(GetActiveWebContents(),
-                              "hasEnrolledInstrument({requestShipping:true})"));
-    EXPECT_EQ(true, content::EvalJs(
-                        GetActiveWebContents(),
-                        "hasEnrolledInstrument({requestPayerEmail:true})"));
-  }
+  EXPECT_EQ(true,
+            content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
+  EXPECT_EQ(true,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestShipping:true})"));
+  EXPECT_EQ(true,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestPayerEmail:true})"));
 }
 
 IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest, InvalidCardNumber) {
@@ -250,28 +268,36 @@ IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest, InvalidCardNumber) {
   EXPECT_EQ(false,
             content::EvalJs(GetActiveWebContents(),
                             "hasEnrolledInstrument({requestPayerEmail:true})"));
+}
 
-  {
-    auto features = EnableStrictHasEnrolledAutofillInstrument();
+IN_PROC_BROWSER_TEST_F(
+    HasEnrolledInstrumentTestWithStrictHasEnrolledAutofillInstrument,
+    InvalidCardNumber) {
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
+                           address);
+  autofill::CreditCard card = GetCardWithBillingAddress(address);
+  card.SetRawInfo(autofill::ServerFieldType::CREDIT_CARD_NUMBER,
+                  base::ASCIIToUTF16("1111111111111111"));
+  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(), card);
 
-    EXPECT_EQ(false, content::EvalJs(GetActiveWebContents(),
-                                     "hasEnrolledInstrument()"));
-    EXPECT_EQ(false,
-              content::EvalJs(GetActiveWebContents(),
-                              "hasEnrolledInstrument({requestShipping:true})"));
-    EXPECT_EQ(false, content::EvalJs(
-                         GetActiveWebContents(),
-                         "hasEnrolledInstrument({requestPayerEmail:true})"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestShipping:true})"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestPayerEmail:true})"));
 
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(), "show()"));
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestShipping:true})"));
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestPayerEmail:true})"));
-  }
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(), "show()"));
+  EXPECT_EQ(
+      not_supported_message(),
+      content::EvalJs(GetActiveWebContents(), "show({requestShipping:true})"));
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(),
+                            "show({requestPayerEmail:true})"));
 }
 
 IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest, ExpiredCard) {
@@ -290,28 +316,35 @@ IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest, ExpiredCard) {
   EXPECT_EQ(true,
             content::EvalJs(GetActiveWebContents(),
                             "hasEnrolledInstrument({requestPayerEmail:true})"));
+}
 
-  {
-    auto features = EnableStrictHasEnrolledAutofillInstrument();
+IN_PROC_BROWSER_TEST_F(
+    HasEnrolledInstrumentTestWithStrictHasEnrolledAutofillInstrument,
+    ExpiredCard) {
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
+                           address);
+  autofill::CreditCard card = GetCardWithBillingAddress(address);
+  card.SetExpirationYear(2000);
+  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(), card);
 
-    EXPECT_EQ(false, content::EvalJs(GetActiveWebContents(),
-                                     "hasEnrolledInstrument()"));
-    EXPECT_EQ(false,
-              content::EvalJs(GetActiveWebContents(),
-                              "hasEnrolledInstrument({requestShipping:true})"));
-    EXPECT_EQ(false, content::EvalJs(
-                         GetActiveWebContents(),
-                         "hasEnrolledInstrument({requestPayerEmail:true})"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestShipping:true})"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestPayerEmail:true})"));
 
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(), "show()"));
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestShipping:true})"));
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestPayerEmail:true})"));
-  }
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(), "show()"));
+  EXPECT_EQ(
+      not_supported_message(),
+      content::EvalJs(GetActiveWebContents(), "show({requestShipping:true})"));
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(),
+                            "show({requestPayerEmail:true})"));
 }
 
 // TODO(https://crbug.com/994799): Unify autofill data validation and returned
@@ -337,41 +370,50 @@ IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest,
   EXPECT_EQ(true,
             content::EvalJs(GetActiveWebContents(),
                             "hasEnrolledInstrument({requestPayerEmail:true})"));
+}
 
-  {
-    auto features = EnableStrictHasEnrolledAutofillInstrument();
+IN_PROC_BROWSER_TEST_F(
+    HasEnrolledInstrumentTestWithStrictHasEnrolledAutofillInstrument,
+    HaveNoNameShippingAndBillingAddress) {
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+
+  address.SetRawInfo(autofill::ServerFieldType::NAME_FIRST, base::string16());
+  address.SetRawInfo(autofill::ServerFieldType::NAME_MIDDLE, base::string16());
+  address.SetRawInfo(autofill::ServerFieldType::NAME_LAST, base::string16());
+
+  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
+                           address);
+  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(),
+                      GetCardWithBillingAddress(address));
 
 // TODO(https://crbug.com/994799): Unify autofill data requirements between
 // desktop and Android.
 #if defined(OS_ANDROID)
-    // Android requires the billing address to have a name.
-    bool is_no_name_billing_address_valid = false;
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(), "show()"));
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestPayerEmail:true})"));
+  // Android requires the billing address to have a name.
+  bool is_no_name_billing_address_valid = false;
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(), "show()"));
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(),
+                            "show({requestPayerEmail:true})"));
 #else
-    // Desktop does not require the billing address to have a name.
-    bool is_no_name_billing_address_valid = true;
+  // Desktop does not require the billing address to have a name.
+  bool is_no_name_billing_address_valid = true;
 #endif  // OS_ANDROID
 
-    EXPECT_EQ(
-        is_no_name_billing_address_valid,
-        content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
-    EXPECT_EQ(
-        is_no_name_billing_address_valid,
-        content::EvalJs(GetActiveWebContents(),
-                        "hasEnrolledInstrument({requestPayerEmail:true})"));
+  EXPECT_EQ(is_no_name_billing_address_valid,
+            content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
+  EXPECT_EQ(is_no_name_billing_address_valid,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestPayerEmail:true})"));
 
-    // Shipping address requires recipient name on all platforms.
-    EXPECT_EQ(false,
-              content::EvalJs(GetActiveWebContents(),
-                              "hasEnrolledInstrument({requestShipping:true})"));
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestShipping:true})"));
-  }
+  // Shipping address requires recipient name on all platforms.
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestShipping:true})"));
+  EXPECT_EQ(
+      not_supported_message(),
+      content::EvalJs(GetActiveWebContents(), "show({requestShipping:true})"));
 }
 
 IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest,
@@ -392,29 +434,37 @@ IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest,
   EXPECT_EQ(true,
             content::EvalJs(GetActiveWebContents(),
                             "hasEnrolledInstrument({requestPayerEmail:true})"));
+}
 
-  {
-    auto features = EnableStrictHasEnrolledAutofillInstrument();
+IN_PROC_BROWSER_TEST_F(
+    HasEnrolledInstrumentTestWithStrictHasEnrolledAutofillInstrument,
+    HaveNoStreetShippingAndBillingAddress) {
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  address.SetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS,
+                     base::string16());
+  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
+                           address);
+  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(),
+                      GetCardWithBillingAddress(address));
 
-    EXPECT_EQ(false, content::EvalJs(GetActiveWebContents(),
-                                     "hasEnrolledInstrument()"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
 
-    EXPECT_EQ(false,
-              content::EvalJs(GetActiveWebContents(),
-                              "hasEnrolledInstrument({requestShipping:true})"));
-    EXPECT_EQ(false, content::EvalJs(
-                         GetActiveWebContents(),
-                         "hasEnrolledInstrument({requestPayerEmail:true})"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestShipping:true})"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestPayerEmail:true})"));
 
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(), "show()"));
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestShipping:true})"));
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestPayerEmail:true})"));
-  }
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(), "show()"));
+  EXPECT_EQ(
+      not_supported_message(),
+      content::EvalJs(GetActiveWebContents(), "show({requestShipping:true})"));
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(),
+                            "show({requestPayerEmail:true})"));
 }
 
 IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest, NoEmailAddress) {
@@ -434,23 +484,31 @@ IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest, NoEmailAddress) {
   EXPECT_EQ(true,
             content::EvalJs(GetActiveWebContents(),
                             "hasEnrolledInstrument({requestPayerEmail:true})"));
+}
 
-  {
-    auto features = EnableStrictHasEnrolledAutofillInstrument();
+IN_PROC_BROWSER_TEST_F(
+    HasEnrolledInstrumentTestWithStrictHasEnrolledAutofillInstrument,
+    NoEmailAddress) {
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  address.SetRawInfo(autofill::ServerFieldType::EMAIL_ADDRESS,
+                     base::string16());
+  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
+                           address);
+  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(),
+                      GetCardWithBillingAddress(address));
 
-    EXPECT_EQ(true, content::EvalJs(GetActiveWebContents(),
-                                    "hasEnrolledInstrument()"));
-    EXPECT_EQ(true,
-              content::EvalJs(GetActiveWebContents(),
-                              "hasEnrolledInstrument({requestShipping:true})"));
-    EXPECT_EQ(false, content::EvalJs(
-                         GetActiveWebContents(),
-                         "hasEnrolledInstrument({requestPayerEmail:true})"));
+  EXPECT_EQ(true,
+            content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
+  EXPECT_EQ(true,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestShipping:true})"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestPayerEmail:true})"));
 
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestPayerEmail:true})"));
-  }
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(),
+                            "show({requestPayerEmail:true})"));
 }
 
 IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest, InvalidEmailAddress) {
@@ -470,23 +528,31 @@ IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest, InvalidEmailAddress) {
   EXPECT_EQ(true,
             content::EvalJs(GetActiveWebContents(),
                             "hasEnrolledInstrument({requestPayerEmail:true})"));
+}
 
-  {
-    auto features = EnableStrictHasEnrolledAutofillInstrument();
+IN_PROC_BROWSER_TEST_F(
+    HasEnrolledInstrumentTestWithStrictHasEnrolledAutofillInstrument,
+    InvalidEmailAddress) {
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  address.SetRawInfo(autofill::ServerFieldType::EMAIL_ADDRESS,
+                     base::ASCIIToUTF16("this-is-not-a-valid-email-address"));
+  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
+                           address);
+  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(),
+                      GetCardWithBillingAddress(address));
 
-    EXPECT_EQ(true, content::EvalJs(GetActiveWebContents(),
-                                    "hasEnrolledInstrument()"));
-    EXPECT_EQ(true,
-              content::EvalJs(GetActiveWebContents(),
-                              "hasEnrolledInstrument({requestShipping:true})"));
-    EXPECT_EQ(false, content::EvalJs(
-                         GetActiveWebContents(),
-                         "hasEnrolledInstrument({requestPayerEmail:true})"));
+  EXPECT_EQ(true,
+            content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
+  EXPECT_EQ(true,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestShipping:true})"));
+  EXPECT_EQ(false,
+            content::EvalJs(GetActiveWebContents(),
+                            "hasEnrolledInstrument({requestPayerEmail:true})"));
 
-    EXPECT_EQ(not_supported_message(),
-              content::EvalJs(GetActiveWebContents(),
-                              "show({requestPayerEmail:true})"));
-  }
+  EXPECT_EQ(not_supported_message(),
+            content::EvalJs(GetActiveWebContents(),
+                            "show({requestPayerEmail:true})"));
 }
 
 }  // namespace

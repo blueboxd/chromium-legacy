@@ -13,6 +13,7 @@
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
@@ -20,6 +21,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequence_local_storage_slot.h"
+#include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/network_service_client.h"
@@ -27,16 +29,17 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/service_process_host.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/service_names.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/log/net_log_util.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/network/public/mojom/network_service_test.mojom.h"
 
 namespace content {
 
@@ -66,6 +69,55 @@ std::unique_ptr<network::NetworkService>& GetLocalNetworkService() {
       base::SequenceLocalStorageSlot<std::unique_ptr<network::NetworkService>>>
       service;
   return service->GetOrCreateValue();
+}
+
+// If this feature is enabled, the Network Service will run on its own thread
+// when running in-process; otherwise it will run on the IO thread.
+//
+// On Chrome OS, the Network Service must run on the IO thread because
+// ProfileIOData and NetworkContext both try to set up NSS, which has to be
+// called from the IO thread.
+const base::Feature kNetworkServiceDedicatedThread {
+  "NetworkServiceDedicatedThread",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
+
+base::Thread& GetNetworkServiceDedicatedThread() {
+  static base::NoDestructor<base::Thread> thread{"NetworkService"};
+  DCHECK(base::FeatureList::IsEnabled(kNetworkServiceDedicatedThread));
+  return *thread;
+}
+
+void CreateInProcessNetworkServiceOnThread(
+    mojo::PendingReceiver<network::mojom::NetworkService> receiver) {
+  // The test interface doesn't need to be implemented in the in-process case.
+  auto registry = std::make_unique<service_manager::BinderRegistry>();
+  registry->AddInterface(base::BindRepeating(
+      [](mojo::PendingReceiver<network::mojom::NetworkServiceTest>) {}));
+
+  static base::NoDestructor<network::NetworkService> service(
+      std::move(registry), std::move(receiver));
+}
+
+void CreateInProcessNetworkService(
+    mojo::PendingReceiver<network::mojom::NetworkService> receiver) {
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner;
+  if (base::FeatureList::IsEnabled(kNetworkServiceDedicatedThread)) {
+    base::Thread::Options options(base::MessagePumpType::IO, 0);
+    GetNetworkServiceDedicatedThread().StartWithOptions(options);
+    task_runner = GetNetworkServiceDedicatedThread().task_runner();
+  } else {
+    task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+  }
+
+  GetNetworkTaskRunner()->StartWithTaskRunner(task_runner);
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(&CreateInProcessNetworkServiceOnThread,
+                                       std::move(receiver)));
 }
 
 network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
@@ -166,6 +218,13 @@ net::NetLogCaptureMode GetNetCaptureModeFromCommandLine(
   return net::NetLogCaptureMode::kDefault;
 }
 
+scoped_refptr<base::DeferredSequencedTaskRunner>&
+GetNetworkTaskRunnerStorage() {
+  static base::NoDestructor<scoped_refptr<base::DeferredSequencedTaskRunner>>
+      storage;
+  return *storage;
+}
+
 }  // namespace
 
 network::mojom::NetworkService* GetNetworkService() {
@@ -183,12 +242,21 @@ network::mojom::NetworkService* GetNetworkService() {
       auto request = mojo::MakeRequest(g_network_service_ptr);
       auto leaked_pipe = request.PassMessagePipe().release();
     } else {
-      if (GetSystemConnector() &&  // null in unit tests.
-          !g_force_create_network_service_directly) {
-        GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
-                                            g_network_service_ptr);
+      if (!g_force_create_network_service_directly) {
+        mojo::PendingReceiver<network::mojom::NetworkService> receiver =
+            mojo::MakeRequest(g_network_service_ptr);
         g_network_service_ptr->set_connection_error_handler(
             base::BindOnce(&OnNetworkServiceCrash));
+        if (IsInProcessNetworkService()) {
+          CreateInProcessNetworkService(std::move(receiver));
+        } else {
+          ServiceProcessHost::Launch(
+              std::move(receiver),
+              ServiceProcessHost::Options()
+                  .WithSandboxType(service_manager::SANDBOX_TYPE_NETWORK)
+                  .WithDisplayName(base::UTF8ToUTF16("Network Service"))
+                  .Pass());
+        }
       } else {
         // This should only be reached in unit tests.
         if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
@@ -368,9 +436,10 @@ void SetNetworkConnectionTrackerForTesting(
 
 scoped_refptr<base::DeferredSequencedTaskRunner> GetNetworkTaskRunner() {
   DCHECK(IsInProcessNetworkService());
-  static base::NoDestructor<scoped_refptr<base::DeferredSequencedTaskRunner>>
-      instance(new base::DeferredSequencedTaskRunner());
-  return instance->get();
+  auto& storage = GetNetworkTaskRunnerStorage();
+  if (!storage)
+    storage = base::MakeRefCounted<base::DeferredSequencedTaskRunner>();
+  return storage;
 }
 
 void ForceCreateNetworkServiceDirectlyForTesting() {
@@ -378,8 +447,13 @@ void ForceCreateNetworkServiceDirectlyForTesting() {
 }
 
 void ResetNetworkServiceForTesting() {
+  ShutDownNetworkService();
+}
+
+void ShutDownNetworkService() {
   delete g_network_service_ptr;
   g_network_service_ptr = nullptr;
+  GetNetworkTaskRunnerStorage().reset();
 }
 
 NetworkServiceAvailability GetNetworkServiceAvailability() {

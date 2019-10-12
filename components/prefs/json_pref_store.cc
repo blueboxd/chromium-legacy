@@ -446,11 +446,10 @@ void JsonPrefStore::OnFileRead(std::unique_ptr<ReadResult> read_result) {
 
   if (pref_filter_) {
     filtering_in_progress_ = true;
-    const PrefFilter::PostFilterOnLoadCallback post_filter_on_load_callback(
-        base::Bind(
-            &JsonPrefStore::FinalizeFileRead, AsWeakPtr(),
-            initialization_successful));
-    pref_filter_->FilterOnLoad(post_filter_on_load_callback,
+    PrefFilter::PostFilterOnLoadCallback post_filter_on_load_callback(
+        base::BindOnce(&JsonPrefStore::FinalizeFileRead, AsWeakPtr(),
+                       initialization_successful));
+    pref_filter_->FilterOnLoad(std::move(post_filter_on_load_callback),
                                std::move(unfiltered_prefs));
   } else {
     FinalizeFileRead(initialization_successful, std::move(unfiltered_prefs),
@@ -483,12 +482,11 @@ bool JsonPrefStore::SerializeData(std::string* output) {
   const bool success = serializer.Serialize(*prefs_);
   if (!success) {
     // Failed to serialize prefs file. Backup the existing prefs file and
-    // reset our existing prefs.
+    // crash.
     BackupPrefsFile(path_);
     CHECK(false) << "Failed to serialize preferences : " << path_
                  << "\nBacked up under "
                  << path_.ReplaceExtension(kBadExtension);
-    prefs_.reset(new base::DictionaryValue());
   }
   return success;
 }

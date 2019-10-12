@@ -131,8 +131,8 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
     // may have transforms and so we have to go through LocalToAncestorRects?
     if (descendant_box->HasLayer()) {
       Vector<PhysicalRect> layer_outline_rects;
-      descendant_box->AddSelfOutlineRects(&layer_outline_rects,
-                                          PhysicalOffset(), outline_type);
+      descendant_box->AddSelfOutlineRects(PhysicalOffset(), outline_type,
+                                          &layer_outline_rects);
 
       // Don't pass additional_offset because LocalToAncestorRects will itself
       // apply it.
@@ -145,7 +145,7 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
 
     if (descendant_layout_object->IsBox()) {
       descendant_box->AddSelfOutlineRects(
-          outline_rects, additional_offset + descendant.Offset(), outline_type);
+          additional_offset + descendant.Offset(), outline_type, outline_rects);
       return;
     }
 
@@ -158,7 +158,7 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
     // for its line box which cover the line boxes of this LayoutInline. So
     // the LayoutInline needs to add rects for children and continuations
     // only.
-    if (!NGOutlineUtils::IsInlineOutlineNonpaintingFragment(*descendant)) {
+    if (NGOutlineUtils::ShouldPaintOutline(*descendant_box)) {
       descendant_layout_inline->AddOutlineRectsForChildrenAndContinuations(
           *outline_rects, additional_offset, outline_type);
     }

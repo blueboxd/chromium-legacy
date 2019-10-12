@@ -625,7 +625,7 @@ void DockedMagnifierControllerImpl::OnEnabledPrefChanged() {
   Shell* shell = Shell::Get();
   auto* overview_controller = shell->overview_controller();
   if (overview_controller->InOverviewSession()) {
-    auto* split_view_controller = shell->split_view_controller();
+    auto* split_view_controller = SplitViewController::Get();
     if (split_view_controller->InSplitViewMode()) {
       // In this case, we're in a single-split-view mode, i.e. a window is
       // snapped to one side of the split view, while the other side has

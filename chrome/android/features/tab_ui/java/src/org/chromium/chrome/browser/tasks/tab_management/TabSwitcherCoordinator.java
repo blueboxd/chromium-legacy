@@ -95,19 +95,6 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
         mMediator = new TabSwitcherMediator(this, containerViewModel, tabModelSelector,
                 fullscreenManager, container, mTabSelectionEditorCoordinator.getController(), mode);
 
-        if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
-            mTabGridDialogCoordinator = new TabGridDialogCoordinator(context, tabModelSelector,
-                    tabContentManager, tabCreatorManager, container, this, mMediator,
-                    this::getTabGridDialogAnimationParams);
-
-            mUndoGroupSnackbarController =
-                    new UndoGroupSnackbarController(context, tabModelSelector, snackbarManageable);
-
-            mMediator.setTabGridDialogController(mTabGridDialogCoordinator.getDialogController());
-        } else {
-            mTabGridDialogCoordinator = null;
-            mUndoGroupSnackbarController = null;
-        }
         mMultiThumbnailCardProvider =
                 new MultiThumbnailCardProvider(context, tabContentManager, tabModelSelector);
 
@@ -128,6 +115,21 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
                         dynamicResourceLoader, true, COMPONENT_NAME);
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabListCoordinator.getContainerView(), TabListContainerViewBinder::bind);
+
+        if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
+            mTabGridDialogCoordinator = new TabGridDialogCoordinator(context, tabModelSelector,
+                    tabContentManager, tabCreatorManager, container, this, mMediator,
+                    this::getTabGridDialogAnimationParams,
+                    mTabListCoordinator.getTabGroupTitleEditor());
+
+            mUndoGroupSnackbarController =
+                    new UndoGroupSnackbarController(context, tabModelSelector, snackbarManageable);
+
+            mMediator.setTabGridDialogController(mTabGridDialogCoordinator.getDialogController());
+        } else {
+            mTabGridDialogCoordinator = null;
+            mUndoGroupSnackbarController = null;
+        }
 
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
                 && mode == TabListCoordinator.TabListMode.GRID

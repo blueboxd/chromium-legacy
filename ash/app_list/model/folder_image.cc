@@ -10,6 +10,7 @@
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_item_list.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_config_provider.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -189,7 +190,8 @@ std::vector<gfx::Rect> FolderImage::GetTopIconsBounds(
   const AppListConfig& base_config =
       app_list_config.type() == ash::AppListConfigType::kShared
           ? AppListConfig::instance()
-          : app_list_config;
+          : *AppListConfigProvider::Get().GetConfigForType(
+                app_list_config.type(), true /*can_create*/);
 
   // The folder icons are generated as unclipped icons for default app list
   // config, and then scaled down to the required unclipped folder size as

@@ -754,6 +754,19 @@ TEST_F(WKBasedNavigationManagerTest, HideInternalRedirectUrl) {
   EXPECT_EQ(url, item->GetURL());
 }
 
+// Tests that the virtual URL of a placeholder item is updated to the original
+// URL.
+TEST_F(WKBasedNavigationManagerTest, HideInternalPlaceholderUrl) {
+  GURL original_url = GURL("http://www.1.com?query=special%26chars");
+  GURL url = wk_navigation_util::CreatePlaceholderUrlForUrl(original_url);
+  NSString* url_spec = base::SysUTF8ToNSString(url.spec());
+  [mock_wk_list_ setCurrentURL:url_spec];
+  NavigationItem* item = manager_->GetItemAtIndex(0);
+  ASSERT_TRUE(item);
+  EXPECT_EQ(original_url, item->GetVirtualURL());
+  EXPECT_EQ(url, item->GetURL());
+}
+
 // Tests that all NavigationManager APIs return reasonable values in the Empty
 // Window Open Navigation edge case. See comments in header file for details.
 TEST_F(WKBasedNavigationManagerTest, EmptyWindowOpenNavigation) {

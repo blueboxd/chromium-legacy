@@ -95,6 +95,8 @@ component("cpp") {
     "default_frame_header.h",
     "default_scale_factor_retriever.cc",
     "default_scale_factor_retriever.h",
+    "desks_helper.cc",
+    "desks_helper.h",
     "fps_counter.cc",
     "fps_counter.h",
     "frame_header.cc",

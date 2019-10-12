@@ -60,11 +60,13 @@ class ChromeContentBrowserClientOverrideWebAppScope
 // conflict with "AutoplayBrowserTest" in extensions code.
 class UnifiedAutoplayBrowserTest : public InProcessBrowserTest {
  public:
+  UnifiedAutoplayBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(media::kUnifiedAutoplay);
+  }
+
   ~UnifiedAutoplayBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    scoped_feature_list_.InitAndEnableFeature(media::kUnifiedAutoplay);
-
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -417,13 +419,16 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest,
 
 class UnifiedAutoplaySettingBrowserTest : public UnifiedAutoplayBrowserTest {
  public:
+  UnifiedAutoplaySettingBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {media::kAutoplayDisableSettings, media::kAutoplayWhitelistSettings},
+        {});
+  }
+
   ~UnifiedAutoplaySettingBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
     UnifiedAutoplayBrowserTest::SetUpOnMainThread();
-    scoped_feature_list_.InitWithFeatures(
-        {media::kAutoplayDisableSettings, media::kAutoplayWhitelistSettings},
-        {});
   }
 
   bool AutoplayAllowed(const content::ToRenderFrameHost& adapter) {

@@ -22,7 +22,7 @@ namespace ash {
 
 NotificationMenuView::NotificationMenuView(
     Delegate* notification_item_view_delegate,
-    message_center::SlideOutController::Delegate* slide_out_controller_delegate,
+    views::SlideOutControllerDelegate* slide_out_controller_delegate,
     const std::string& app_id)
     : app_id_(app_id),
       notification_item_view_delegate_(notification_item_view_delegate),

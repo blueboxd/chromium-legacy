@@ -9,19 +9,20 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_image.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace content {
 class WebContents;
 }
 
-class ThumbnailImage;
-
 // Tracks the thumbnails of a set of WebContentses. This set is dynamically
 // managed, and WebContents closure is handled gracefully. The user is notified
 // of any thumbnail change via a callback specified on construction.
 class ThumbnailTracker {
  public:
+  using CompressedThumbnailData = ThumbnailImage::CompressedThumbnailData;
+
   // Should return the ThumbnailImage instance for a WebContents.
   using GetThumbnailCallback =
       base::RepeatingCallback<scoped_refptr<ThumbnailImage>(
@@ -29,7 +30,8 @@ class ThumbnailTracker {
 
   // Handles a thumbnail update for a tab.
   using ThumbnailUpdatedCallback =
-      base::RepeatingCallback<void(content::WebContents*, gfx::ImageSkia)>;
+      base::RepeatingCallback<void(content::WebContents*,
+                                   CompressedThumbnailData)>;
 
   explicit ThumbnailTracker(ThumbnailUpdatedCallback callback);
   // Specifies how to get a ThumbnailImage for a WebContents. This is intended
@@ -44,7 +46,8 @@ class ThumbnailTracker {
   void WatchTab(content::WebContents* contents);
 
  private:
-  void ThumbnailUpdated(content::WebContents* contents, gfx::ImageSkia image);
+  void ThumbnailUpdated(content::WebContents* contents,
+                        CompressedThumbnailData image);
   void ContentsClosed(content::WebContents* contents);
 
   // The default |GetThumbnailCallback| implementation.

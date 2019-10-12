@@ -69,12 +69,14 @@ Polymer({
     // |filteredPrinters_| is just |printers|.
     const updatedPrinters = this.searchTerm ?
         this.printers.filter(
-            item =>this.matchesSearchTerm_(item.printerInfo,this.searchTerm)) :
+            item =>
+                this.matchesSearchTerm_(item.printerInfo, this.searchTerm)) :
         this.printers.slice();
 
     updatedPrinters.sort(this.sortPrinters_);
 
-    this.updateList('filteredPrinters_', printer => printer.printerInfo,
+    this.updateList(
+        'filteredPrinters_', printer => printer.printerInfo.printerId,
         updatedPrinters);
 
     this.showNoSearchResultsMessage_ =

@@ -31,8 +31,8 @@ ASH_EXPORT bool HasFocusInAnyChildView(views::View* view);
 // Creates a standard text label for use in the login bubbles.
 views::Label* CreateBubbleLabel(const base::string16& message, SkColor color);
 
-// Get the topmost level parent view for |view|.
-views::View* GetTopLevelParentView(views::View* view);
+// Get the bubble container for |view| to place a LoginBaseBubbleView.
+views::View* GetBubbleContainer(views::View* view);
 
 }  // namespace login_views_utils
 

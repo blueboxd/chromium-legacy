@@ -842,9 +842,9 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DropValidUrlFromOutside) {
   EXPECT_EQ(initial_history_count + 1, controller.GetEntryCount());
 }
 
-#if defined(OS_WIN) || defined(THREAD_SANITIZER)
-// Flaky: https://crbug.com/988938
-// Race condition: crbug.com/1005095
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(THREAD_SANITIZER)
+// Win/Linux Flaky: https://crbug.com/988938
+// TSAN Race condition: crbug.com/1005095
 #define MAYBE_DropForbiddenUrlFromOutside DISABLED_DropForbiddenUrlFromOutside
 #else
 #define MAYBE_DropForbiddenUrlFromOutside DropForbiddenUrlFromOutside

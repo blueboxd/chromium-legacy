@@ -4,7 +4,6 @@
 
 #include "ash/public/cpp/split_view_test_api.h"
 
-#include "ash/shell.h"
 #include "ash/wm/splitview/split_view_controller.h"
 
 namespace ash {
@@ -28,11 +27,11 @@ void SplitViewTestApi::SnapWindow(
       position = SplitViewController::RIGHT;
       break;
   }
-  Shell::Get()->split_view_controller()->SnapWindow(window, position);
+  SplitViewController::Get()->SnapWindow(window, position);
 }
 
 void SplitViewTestApi::SwapWindows() {
-  Shell::Get()->split_view_controller()->SwapWindows();
+  SplitViewController::Get()->SwapWindows();
 }
 
 }  // namespace ash

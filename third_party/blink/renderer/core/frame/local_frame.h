@@ -447,6 +447,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void SetIsCapturingMediaCallback(IsCapturingMediaCallback callback);
   bool IsCapturingMedia() const;
 
+  void DidChangeVisibleToHitTesting() override;
+
  private:
   friend class FrameNavigationDisabler;
 

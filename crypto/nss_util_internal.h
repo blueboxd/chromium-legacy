@@ -63,6 +63,14 @@ CRYPTO_EXPORT ScopedPK11Slot GetSystemNSSKeySlot(
 // |slot| is nullptr, the test system slot is unset.
 CRYPTO_EXPORT void SetSystemKeySlotForTesting(ScopedPK11Slot slot);
 
+// Injects the given |slot| as a system slot set by the future
+// |InitializeTPMTokenAndSystemSlot| call.
+// This must must not be called consecutively with a |slot| != nullptr. If
+// |slot| is nullptr and the system slot is already initialized to the
+// previously passed test value, the system slot is unset.
+CRYPTO_EXPORT void SetSystemKeySlotWithoutInitializingTPMForTesting(
+    ScopedPK11Slot slot);
+
 // Prepare per-user NSS slot mapping. It is safe to call this function multiple
 // times. Returns true if the user was added, or false if it already existed.
 CRYPTO_EXPORT bool InitializeNSSForChromeOSUser(

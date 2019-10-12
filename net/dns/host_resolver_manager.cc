@@ -1474,6 +1474,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
         num_occupied_job_slots_(0),
         dispatcher_(nullptr),
         dns_task_error_(OK),
+        is_secure_dns_task_error_(false),
         tick_clock_(tick_clock),
         start_time_(base::TimeTicks()),
         net_log_(
@@ -1631,6 +1632,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       if (has_proc_fallback) {
         KillDnsTask();
         dns_task_error_ = OK;
+        is_secure_dns_task_error_ = false;
         RunNextTask();
       } else if (!fallback_only) {
         CompleteRequestsWithError(error);
@@ -1863,6 +1865,15 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     DCHECK(proc_task_);
 
     if (dns_task_error_ != OK) {
+      // If a secure DNS task previously failed and fell back to a ProcTask
+      // without issuing an insecure DNS task in between, record what happened
+      // to the fallback ProcTask.
+      if (is_secure_dns_task_error_) {
+        base::UmaHistogramSparse(
+            "Net.DNS.SecureDnsTaskFailure.FallbackProcTask.Error",
+            std::abs(net_error));
+      }
+
       // This ProcTask was a fallback resolution after a failed insecure
       // DnsTask.
       if (net_error == OK) {
@@ -1981,6 +1992,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     completion_results_.push_back({failure_results, ttl, secure});
 
     dns_task_error_ = failure_results.error();
+    is_secure_dns_task_error_ = secure;
     KillDnsTask();
     RunNextTask();
   }
@@ -1991,6 +2003,14 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
                          const HostCache::Entry& results,
                          bool secure) override {
     DCHECK(dns_task_);
+
+    // If a secure DNS task previously failed, record what happened to the
+    // fallback insecure DNS task.
+    if (dns_task_error_ != OK && is_secure_dns_task_error_) {
+      base::UmaHistogramSparse(
+          "Net.DNS.SecureDnsTaskFailure.FallbackDnsTask.Error",
+          std::abs(results.error()));
+    }
 
     base::TimeDelta duration = tick_clock_->NowTicks() - start_time;
     if (results.error() != OK) {
@@ -2345,6 +2365,10 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
   // Result of DnsTask.
   int dns_task_error_;
+
+  // Whether the error in |dns_task_error_| corresponds to an insecure or
+  // secure DnsTask.
+  bool is_secure_dns_task_error_;
 
   const base::TickClock* tick_clock_;
   base::TimeTicks start_time_;

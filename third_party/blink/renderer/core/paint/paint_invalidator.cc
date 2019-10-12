@@ -182,9 +182,10 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
     context.painting_layer->SetNeedsPaintPhaseDescendantOutlines();
 
   if (object.HasBoxDecorationBackground()
-      // We also paint overflow controls in background phase.
-      || (object.HasOverflowClip() &&
-          ToLayoutBox(object).GetScrollableArea()->HasOverflowControls())) {
+      // We also paint non-overlay overflow controls in background phase.
+      || (object.HasOverflowClip() && ToLayoutBox(object)
+                                          .GetScrollableArea()
+                                          ->HasNonOverlayOverflowControls())) {
     context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();
   } else {
     // Hit testing rects for touch action paint in the background phase.

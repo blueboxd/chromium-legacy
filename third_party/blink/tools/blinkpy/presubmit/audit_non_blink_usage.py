@@ -250,6 +250,7 @@ _CONFIG = [
             # cc::Layers.
             'cc::Layer',
             'cc::PictureLayer',
+            'cc::SurfaceLayer',
 
             # cc::Layer helper data structs.
             'cc::ElementId',

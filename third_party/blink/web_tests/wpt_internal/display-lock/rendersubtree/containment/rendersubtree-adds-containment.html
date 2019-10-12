@@ -9,7 +9,7 @@
 
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
-<script src="resources/utils.js"></script>
+<script src="../resources/utils.js"></script>
 
 <script>
 function setUp() {
@@ -20,15 +20,15 @@ function setUp() {
 
 test(() => {
   setUp();
-  container.setAttribute("rendersubtree", "invisible");
+  container.setAttribute("rendersubtree", INVISIBLE_NOT_ACTIVATABLE);
   assert_equals(getComputedStyle(container).contain, "size layout style");
-}, "rendersubtree=invisible adds contain: size layout style;");
+}, "rendersubtree='invisible skip-activation' adds contain: size layout style;");
 
 test(() => {
   setUp();
-  container.setAttribute("rendersubtree", "invisible activatable");
+  container.setAttribute("rendersubtree", INVISIBLE_ACTIVATABLE);
   assert_equals(getComputedStyle(container).contain, "size layout style");
-}, "rendersubtree='invisible activatable' adds contain: size layout style;");
+}, "rendersubtree='invisible' adds contain: size layout style;");
 
 test(() => {
   setUp();
@@ -48,7 +48,7 @@ test(() => {
 
 test(() => {
   setUp();
-  container.setAttribute("rendersubtree", "invisible");
+  container.setAttribute("rendersubtree", INVISIBLE_ACTIVATABLE);
   container.style = "contain: style;";
   assert_equals(getComputedStyle(container).contain, "size layout style");
   container.style = "contain: style layout;";
@@ -59,7 +59,7 @@ test(() => {
 
 test(() => {
   setUp();
-  container.setAttribute("rendersubtree", "invisible");
+  container.setAttribute("rendersubtree", INVISIBLE_ACTIVATABLE);
   container.style = "contain: paint;";
   assert_equals(getComputedStyle(container).contain, "size layout style paint");
   container.style = "contain: strict;";

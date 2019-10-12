@@ -108,6 +108,7 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_hidden_state.h"
@@ -2775,6 +2776,10 @@ TEST_F(WebViewTest, LongPressImage) {
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(event)));
+  EXPECT_TRUE(
+      web_view->AsView()
+          .page->GetContextMenuController()
+          .ContextMenuNodeForFrame(web_view->MainFrameImpl()->GetFrame()));
 }
 
 TEST_F(WebViewTest, LongPressVideo) {
@@ -5779,6 +5784,46 @@ TEST_F(WebViewTest, ForceDarkModeInvalidatesPaint) {
   ASSERT_TRUE(document);
   web_view->GetSettings()->SetForceDarkModeEnabled(true);
   EXPECT_TRUE(document->GetLayoutView()->ShouldDoFullPaintInvalidation());
+}
+
+// Regression test for https://crbug.com/1012068
+TEST_F(WebViewTest, LongPressImageAndThenLongTapImage) {
+  RegisterMockedHttpURLLoad("long_press_image.html");
+
+  WebViewImpl* web_view =
+      web_view_helper_.InitializeAndLoad(base_url_ + "long_press_image.html");
+  web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
+  UpdateAllLifecyclePhases();
+  RunPendingTasks();
+
+  WebGestureEvent event(WebInputEvent::kGestureLongPress,
+                        WebInputEvent::kNoModifiers,
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        WebGestureDevice::kTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(10, 10));
+
+  EXPECT_EQ(WebInputEventResult::kHandledSystem,
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(event)));
+  EXPECT_TRUE(
+      web_view->AsView()
+          .page->GetContextMenuController()
+          .ContextMenuNodeForFrame(web_view->MainFrameImpl()->GetFrame()));
+
+  WebGestureEvent tap_event(WebInputEvent::kGestureLongTap,
+                            WebInputEvent::kNoModifiers,
+                            WebInputEvent::GetStaticTimeStampForTests(),
+                            WebGestureDevice::kTouchscreen);
+  tap_event.SetPositionInWidget(WebFloatPoint(10, 10));
+
+  EXPECT_EQ(WebInputEventResult::kNotHandled,
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(tap_event)));
+  EXPECT_TRUE(
+      web_view->AsView()
+          .page->GetContextMenuController()
+          .ContextMenuNodeForFrame(web_view->MainFrameImpl()->GetFrame()));
 }
 
 }  // namespace blink

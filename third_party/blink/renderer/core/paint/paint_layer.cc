@@ -2945,7 +2945,7 @@ bool PaintLayer::ChildBackgroundIsKnownToBeOpaqueInRect(
 
 bool PaintLayer::ShouldBeSelfPaintingLayer() const {
   return GetLayoutObject().LayerTypeRequired() == kNormalPaintLayer ||
-         (scrollable_area_ && scrollable_area_->HasOverlayScrollbars()) ||
+         (scrollable_area_ && scrollable_area_->HasOverlayOverflowControls()) ||
          ScrollsOverflow();
 }
 

@@ -56,7 +56,7 @@ class COMPONENTS_DOWNLOAD_EXPORT AllDownloadEventNotifier
  private:
   // SimpleDownloadManagerCoordinator::Observer
   void OnDownloadsInitialized(bool active_downloads_only) override;
-  void OnManagerGoingDown() override;
+  void OnManagerGoingDown(SimpleDownloadManagerCoordinator* manager) override;
   void OnDownloadCreated(DownloadItem* item) override;
 
   // DownloadItem::Observer

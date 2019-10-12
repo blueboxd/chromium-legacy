@@ -294,9 +294,9 @@ class CacheStorageCacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
       blob = std::move(response->blob->blob);
       blob_size = response->blob->size;
     }
-    if (response->side_data_blob) {
-      side_data_blob = std::move(response->side_data_blob->blob);
-      side_data_blob_size = response->side_data_blob->size;
+    if (response->side_data_blob_for_cache_put) {
+      side_data_blob = std::move(response->side_data_blob_for_cache_put->blob);
+      side_data_blob_size = response->side_data_blob_for_cache_put->size;
     }
 
     return std::make_unique<PutContext>(
@@ -307,9 +307,20 @@ class CacheStorageCacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
   void PopulateResponseBody(scoped_refptr<DiskCacheBlobEntry> blob_entry,
                             blink::mojom::FetchAPIResponse* response) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    // First create the blob and store it in the field for the main body
+    // loading.
     response->blob = CreateBlobWithSideData(
         std::move(blob_entry), CacheStorageCache::INDEX_RESPONSE_BODY,
         CacheStorageCache::INDEX_SIDE_DATA);
+
+    // Then clone the blob to the |side_data_blob| field for loading code_cache.
+    mojo::Remote<blink::mojom::Blob> blob_remote(
+        std::move(response->blob->blob));
+    blob_remote->Clone(response->blob->blob.InitWithNewPipeAndPassReceiver());
+    response->side_data_blob = blink::mojom::SerializedBlob::New(
+        response->blob->uuid, response->blob->content_type,
+        response->blob->size, blob_remote.Unbind());
   }
 
   void PopulateRequestBody(scoped_refptr<DiskCacheBlobEntry> blob_entry,

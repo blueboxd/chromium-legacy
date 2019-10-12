@@ -58,11 +58,25 @@ bool SiteIsolationPolicy::IsEnterprisePolicyApplicable() {
 
 // static
 bool SiteIsolationPolicy::ShouldDisableSiteIsolationDueToMemoryThreshold() {
-  // Using 1077 rather than 1024 because 1) it helps ensure that devices with
-  // exactly 1GB of RAM won't get included because of inaccuracies or off-by-one
-  // errors and 2) this is the bucket boundary in Memory.Stats.Win.TotalPhys2.
-  // See also https://crbug.com/844118.
+  // The memory threshold behavior differs for desktop and Android:
+  // - Android uses a 1900MB default threshold, which is the threshold used by
+  //   password-triggered site isolation - see docs in
+  //   https://crbug.com/849815.  This can be overridden via a param defined in
+  //   a kSitePerProcessOnlyForHighMemoryClients field trial.
+  // - Desktop does not enforce a default memory threshold, but for now we
+  //   still support a threshold defined via a
+  //   kSitePerProcessOnlyForHighMemoryClients field trial.  The trial
+  //   typically carries the threshold in a param; if it doesn't, use a default
+  //   that's slightly higher than 1GB (see https://crbug.com/844118).
+  //
+  // TODO(alexmos): currently, this threshold applies to all site isolation
+  // modes.  Eventually, we may need separate thresholds for different modes,
+  // such as full site isolation vs. password-triggered site isolation.
+#if defined(OS_ANDROID)
+  constexpr int kDefaultMemoryThresholdMb = 1900;
+#else
   constexpr int kDefaultMemoryThresholdMb = 1077;
+#endif
 
   // TODO(acolwell): Rename feature since it now affects more than just the
   // site-per-process case.

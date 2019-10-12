@@ -53,7 +53,7 @@ void NightLightClient::Start() {
 
 void NightLightClient::OnScheduleTypeChanged(
     ash::NightLightController::ScheduleType new_type) {
-  if (new_type != ash::NightLightController::ScheduleType::kSunsetToSunrise) {
+  if (new_type == ash::NightLightController::ScheduleType::kNone) {
     using_geoposition_ = false;
     timer_->Stop();
     return;
@@ -117,7 +117,7 @@ void NightLightClient::OnGeoposition(const chromeos::Geoposition& position,
                                      const base::TimeDelta elapsed) {
   if (!using_geoposition_) {
     // A response might arrive after the schedule type is no longer "sunset to
-    // sunrise", which means we should not push any positions to the
+    // sunrise" or "custom", which means we should not push any positions to the
     // NightLightController.
     return;
   }

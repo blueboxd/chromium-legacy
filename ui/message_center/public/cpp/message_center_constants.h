@@ -141,10 +141,6 @@ constexpr int kMarginBetweenPopups = 10;
 // The corners are only rounded in Chrome OS.
 constexpr int kNotificationCornerRadius = 2;
 
-// Close if notification is slided more than this amount in addition to the
-// width of the buttons and their margins.
-constexpr int kSwipeCloseMargin = 64;
-
 }  // namespace message_center
 
 #endif  // UI_MESSAGE_CENTER_PUBLIC_CPP_MESSAGE_CENTER_CONSTANTS_H_

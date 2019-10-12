@@ -25,8 +25,7 @@ class MapsPage(rendering_story.RenderingStory):
 """
   BASE_NAME = 'maps_perf_test'
   URL = 'file://performance.html'
-  TAGS = [story_tags.REQUIRED_WEBGL, story_tags.MAPS,
-    story_tags.REPRESENTATIVE_MOBILE]
+  TAGS = [story_tags.REQUIRED_WEBGL, story_tags.MAPS]
 
   def __init__(self,
                page_set,

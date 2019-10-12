@@ -10,6 +10,7 @@
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_item.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
@@ -108,16 +109,14 @@ void BuiltInChromeOsApps::Connect(
       // moved here, it might mean calling sync_sessions::SessionSyncService's
       // SubscribeToForeignSessionsChanged. See also app_search_provider.cc's
       // InternalDataSource.
-      if (internal_app.internal_app_name ==
-          app_list::InternalAppName::kContinueReading) {
+      if (internal_app.internal_app_name == BuiltInAppName::kContinueReading) {
         continue;
       }
 
       apps::mojom::AppPtr app = Convert(internal_app);
       if (!app.is_null()) {
         if (hide_settings_app_for_testing_ &&
-            (internal_app.internal_app_name ==
-             app_list::InternalAppName::kSettings)) {
+            (internal_app.internal_app_name == BuiltInAppName::kSettings)) {
           app->show_in_search = apps::mojom::OptionalBool::kFalse;
         }
         apps.push_back(std::move(app));

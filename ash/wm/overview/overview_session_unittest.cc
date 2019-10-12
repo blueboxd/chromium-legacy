@@ -1502,8 +1502,8 @@ TEST_P(OverviewSessionTest, ExitOverviewWithKey) {
   EnterTabletMode();
   ToggleOverview();
   ASSERT_TRUE(overview_controller()->InOverviewSession());
-  Shell::Get()->split_view_controller()->SnapWindow(window.get(),
-                                                    SplitViewController::LEFT);
+  SplitViewController::Get()->SnapWindow(window.get(),
+                                         SplitViewController::LEFT);
   ASSERT_TRUE(overview_controller()->InOverviewSession());
   SendKey(ui::VKEY_ESCAPE);
   EXPECT_TRUE(overview_controller()->InOverviewSession());
@@ -1636,7 +1636,7 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
 
   // Tests that when snapping a window to the left in splitview, the no windows
   // indicator shows up in the middle of the right side of the screen.
-  auto* split_view_controller = Shell::Get()->split_view_controller();
+  auto* split_view_controller = SplitViewController::Get();
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
   no_windows_widget = overview_session()->no_windows_widget_for_testing();
   ASSERT_TRUE(no_windows_widget);
@@ -1663,7 +1663,7 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorAddItem) {
   std::unique_ptr<aura::Window> window(CreateTestWindow());
 
   ToggleOverview();
-  auto* split_view_controller = Shell::Get()->split_view_controller();
+  auto* split_view_controller = SplitViewController::Get();
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
   EXPECT_TRUE(overview_session()->no_windows_widget_for_testing());
 
@@ -2800,7 +2800,7 @@ class OverviewSessionNewLayoutTest : public OverviewSessionTest {
   }
 
   SplitViewController* split_view_controller() {
-    return Shell::Get()->split_view_controller();
+    return SplitViewController::Get();
   }
 
  protected:
@@ -3191,7 +3191,7 @@ class SplitViewOverviewSessionTest : public OverviewSessionTest {
   }
 
   SplitViewController* split_view_controller() {
-    return Shell::Get()->split_view_controller();
+    return SplitViewController::Get();
   }
 
   bool IsDividerAnimating() {
@@ -3770,7 +3770,7 @@ TEST_P(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
   EXPECT_TRUE(overview_controller()->InOverviewSession());
 
   EndSplitView();
-  EXPECT_FALSE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  EXPECT_FALSE(SplitViewController::Get()->InSplitViewMode());
   EXPECT_TRUE(overview_controller()->InOverviewSession());
 
   // Test that ToggleOverview() can end overview if we're not in split view
@@ -3783,10 +3783,10 @@ TEST_P(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
   ToggleOverview();
   overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
-  EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(SplitViewController::Get()->InSplitViewMode());
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
-  EXPECT_FALSE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  EXPECT_FALSE(SplitViewController::Get()->InSplitViewMode());
   EXPECT_FALSE(overview_controller()->InOverviewSession());
 
   // Test that closing all windows in overview can end overview if we're not in
@@ -4392,8 +4392,8 @@ TEST_P(SplitViewOverviewSessionTest,
   ToggleOverview();
   // Snap a window to the left and test dragging the divider towards the right
   // edge of the screen.
-  Shell::Get()->split_view_controller()->SnapWindow(window1.get(),
-                                                    SplitViewController::LEFT);
+  SplitViewController::Get()->SnapWindow(window1.get(),
+                                         SplitViewController::LEFT);
   OverviewGrid* grid = overview_session()->grid_list()[0].get();
   ASSERT_TRUE(grid);
 
@@ -4417,8 +4417,8 @@ TEST_P(SplitViewOverviewSessionTest,
   ToggleOverview();
   // Snap a window to the right and test dragging the divider towards the left
   // edge of the screen.
-  Shell::Get()->split_view_controller()->SnapWindow(window1.get(),
-                                                    SplitViewController::RIGHT);
+  SplitViewController::Get()->SnapWindow(window1.get(),
+                                         SplitViewController::RIGHT);
   grid = overview_session()->grid_list()[0].get();
   ASSERT_TRUE(grid);
 

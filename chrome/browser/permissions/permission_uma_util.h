@@ -110,6 +110,8 @@ class PermissionUmaUtil {
 
   static void RecordWithBatteryBucket(const std::string& histogram);
 
+  static void RecordInfobarDetailsExpanded(bool expanded);
+
  private:
   friend class PermissionUmaUtilTest;
 

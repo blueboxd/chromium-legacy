@@ -105,9 +105,9 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
     }
 
     @Override
-    public boolean isPeekStateEnabled() {
+    public int getPeekHeight() {
         // Return false to ensure that the entire bottom sheet is shown.
-        return false;
+        return BottomSheet.HeightMode.DISABLED;
     }
 
     @Override

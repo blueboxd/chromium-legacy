@@ -141,6 +141,7 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
 
   void Match(mojom::blink::FetchAPIRequestPtr fetch_api_request,
              mojom::blink::CacheQueryOptionsPtr query_options,
+             bool in_related_fetch_event,
              int64_t trace_id,
              MatchCallback callback) override {
     last_error_web_cache_method_called_ = "dispatchMatch";
@@ -537,6 +538,7 @@ class MatchTestCache : public NotImplementedErrorCache {
   // From WebServiceWorkerCache:
   void Match(mojom::blink::FetchAPIRequestPtr fetch_api_request,
              mojom::blink::CacheQueryOptionsPtr query_options,
+             bool in_related_fetch_event,
              int64_t trace_id,
              MatchCallback callback) override {
     mojom::blink::MatchResultPtr result = mojom::blink::MatchResult::New();

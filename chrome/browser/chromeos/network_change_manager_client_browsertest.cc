@@ -7,8 +7,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/system_connector.h"
-#include "content/public/common/service_names.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/network_change_notifier.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
@@ -152,9 +151,9 @@ IN_PROC_BROWSER_TEST_F(NetworkChangeManagerClientBrowserTest,
   // Manually call SimulateCrash instead of
   // BrowserTestBase::SimulateNetworkServiceCrash to avoid the cleanup and
   // reconnection work it does for you.
-  network::mojom::NetworkServiceTestPtr network_service_test;
-  content::GetSystemConnector()->BindInterface(
-      content::mojom::kNetworkServiceName, &network_service_test);
+  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+  content::GetNetworkService()->BindTestInterface(
+      network_service_test.BindNewPipeAndPassReceiver());
   network_service_test->SimulateCrash();
 
   service_client()->AddService("wifi", "wifi", "wifi", shill::kTypeWifi,

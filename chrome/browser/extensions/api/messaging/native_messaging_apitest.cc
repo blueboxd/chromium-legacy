@@ -64,15 +64,23 @@ class TestProcessManagerObserver : public ProcessManagerObserver {
   DISALLOW_COPY_AND_ASSIGN(TestProcessManagerObserver);
 };
 
+class NativeMessagingApiTest : public ExtensionApiTest {
+ public:
+  NativeMessagingApiTest() {
+    feature_list_.InitAndEnableFeature(features::kOnConnectNative);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Disabled on Windows due to timeouts; see https://crbug.com/984897.
 #if defined(OS_WIN)
 #define MAYBE_NativeMessagingLaunch DISABLED_NativeMessagingLaunch
 #else
 #define MAYBE_NativeMessagingLaunch NativeMessagingLaunch
 #endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_NativeMessagingLaunch) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(features::kOnConnectNative);
+IN_PROC_BROWSER_TEST_F(NativeMessagingApiTest, MAYBE_NativeMessagingLaunch) {
   ProcessManager::SetEventPageIdleTimeForTesting(1);
   ProcessManager::SetEventPageSuspendingTimeForTesting(1);
   extensions::ScopedTestNativeMessagingHost test_host;
@@ -113,10 +121,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_NativeMessagingLaunch) {
 // natively-initiated connections is not allowed. The test extension expects the
 // channel to be immediately closed with an error.
 IN_PROC_BROWSER_TEST_F(
-    ExtensionApiTest,
+    NativeMessagingApiTest,
     NativeMessagingLaunch_LaunchFromNativeUnsupportedByNativeHost) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(features::kOnConnectNative);
   ProcessManager::SetEventPageIdleTimeForTesting(1);
   ProcessManager::SetEventPageSuspendingTimeForTesting(1);
   extensions::ScopedTestNativeMessagingHost test_host;

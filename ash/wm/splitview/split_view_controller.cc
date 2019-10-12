@@ -12,6 +12,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
@@ -272,6 +273,12 @@ class SplitViewController::DividerSnapAnimation
   int ending_position_;
 };
 
+// static
+SplitViewController* SplitViewController::Get() {
+  DCHECK(Shell::GetPrimaryRootWindowController());
+  return Shell::GetPrimaryRootWindowController()->split_view_controller();
+}
+
 SplitViewController::SplitViewController() {
   Shell::Get()->accessibility_controller()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
@@ -284,7 +291,11 @@ SplitViewController::SplitViewController() {
 }
 
 SplitViewController::~SplitViewController() {
+  if (Shell::Get()->tablet_mode_controller())
+    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
+  if (Shell::Get()->accessibility_controller())
+    Shell::Get()->accessibility_controller()->RemoveObserver(this);
   EndSplitView();
 }
 
@@ -692,7 +703,6 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
 
   StopObserving(LEFT);
   StopObserving(RIGHT);
-  split_view_divider_.reset();
   black_scrim_layer_.reset();
   default_snap_position_ = NONE;
   divider_position_ = -1;
@@ -700,6 +710,10 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
   snapping_window_transformed_bounds_map_.clear();
 
   UpdateStateAndNotifyObservers();
+  // Close splitview divider widget after updating state so that
+  // OnDisplayMetricsChanged triggered by the widget closing correctly
+  // finds out !InSplitViewMode().
+  split_view_divider_.reset();
   base::RecordAction(base::UserMetricsAction("SplitView_EndSplitView"));
   UMA_HISTOGRAM_LONG_TIMES("Ash.SplitView.TimeInSplitView",
                            base::Time::Now() - splitview_start_time_);

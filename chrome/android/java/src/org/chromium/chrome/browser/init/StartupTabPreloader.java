@@ -12,6 +12,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -194,10 +195,14 @@ public class StartupTabPreloader implements ProfileManager.Observer, Destroyable
     }
 
     private static String getUrlFromIntent(Intent intent) {
-        if (Intent.ACTION_VIEW.equals(intent.getAction())
-                || Intent.ACTION_MAIN.equals(intent.getAction())) {
+        String action = intent.getAction();
+        if (Intent.ACTION_VIEW.equals(action) || Intent.ACTION_MAIN.equals(action)
+                || (action == null
+                        && ChromeTabbedActivity.MAIN_LAUNCHER_ACTIVITY_NAME.equals(
+                                intent.getComponent().getClassName()))) {
             // TODO(alexclarke): For ACTION_MAIN maybe refactor TabPersistentStore so we can
-            // instantiate (a subset of that) here to extract the URL.
+            // instantiate (a subset of that) here to extract the URL if it's not set in the
+            // intent.
             return IntentHandler.getUrlFromIntent(intent);
         } else {
             return null;

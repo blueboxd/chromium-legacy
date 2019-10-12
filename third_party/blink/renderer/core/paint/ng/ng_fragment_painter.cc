@@ -21,23 +21,22 @@ void NGFragmentPainter::PaintOutline(const PaintInfo& paint_info,
   if (!NGOutlineUtils::HasPaintedOutline(fragment.Style(), fragment.GetNode()))
     return;
 
-  // TODO(kojii): Eliminate paint_fragment_ if this is used for block-children
-  if (!paint_fragment_)
-    return;
-
   Vector<PhysicalRect> outline_rects;
-  paint_fragment_->AddSelfOutlineRects(
-      &outline_rects, paint_offset,
+  fragment.AddSelfOutlineRects(
+      paint_offset,
       fragment.GetLayoutObject()
-          ->OutlineRectsShouldIncludeBlockVisualOverflow());
+          ->OutlineRectsShouldIncludeBlockVisualOverflow(),
+      &outline_rects);
+
   if (outline_rects.IsEmpty())
     return;
 
+  const DisplayItemClient& display_item_client = GetDisplayItemClient();
   if (DrawingRecorder::UseCachedDrawingIfPossible(
-          paint_info.context, *paint_fragment_, paint_info.phase))
+          paint_info.context, display_item_client, paint_info.phase))
     return;
 
-  DrawingRecorder recorder(paint_info.context, *paint_fragment_,
+  DrawingRecorder recorder(paint_info.context, display_item_client,
                            paint_info.phase);
   PaintOutlineRects(paint_info, outline_rects, fragment.Style());
 }

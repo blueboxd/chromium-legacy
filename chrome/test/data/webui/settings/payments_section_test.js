@@ -66,6 +66,20 @@ cr.define('settings_payments_section', function() {
       return section;
     }
 
+    // Fakes the existence of a platform authenticator.
+    function addFakePlatformAuthenticator() {
+      if (!window.PublicKeyCredential) {
+        window.PublicKeyCredential = {};
+      }
+      window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable =
+          function() {
+        return new Promise(callback => {
+          callback(true);
+        });
+      };
+    }
+
+
     /**
      * Returns an array containing the local and server credit card items.
      * @return {!Array<!chrome.autofillPrivate.CreditCardEntry>}
@@ -450,8 +464,10 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyFIDOAuthToggleShownIfUserIsVerifiable', function() {
-      // Set |userIsFIDOVerifiable| to true.
-      loadTimeData.overrideValues({userIsFIDOVerifiable: true});
+      // Set |fidoAuthenticationAvailableForAutofill| to true.
+      loadTimeData.overrideValues(
+          {fidoAuthenticationAvailableForAutofill: true});
+      addFakePlatformAuthenticator();
       const section =
           createPaymentsSection([], {credit_card_enabled: {value: true}});
 
@@ -459,8 +475,9 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyFIDOAuthToggleNotShownIfUserIsNotVerifiable', function() {
-      // Set |userIsFIDOVerifiable| to false.
-      loadTimeData.overrideValues({userIsFIDOVerifiable: false});
+      // Set |fidoAuthenticationAvailableForAutofill| to false.
+      loadTimeData.overrideValues(
+          {fidoAuthenticationAvailableForAutofill: false});
       const section =
           createPaymentsSection([], {credit_card_enabled: {value: true}});
       assertFalse(!!section.$$('#autofillCreditCardFIDOAuthToggle'));
@@ -468,7 +485,9 @@ cr.define('settings_payments_section', function() {
 
     test('verifyFIDOAuthToggleCheckedIfOptedIn', function() {
       // Set FIDO auth pref value to true.
-      loadTimeData.overrideValues({userIsFIDOVerifiable: true});
+      loadTimeData.overrideValues(
+          {fidoAuthenticationAvailableForAutofill: true});
+      addFakePlatformAuthenticator();
       const section = createPaymentsSection([], {
         credit_card_enabled: {value: true},
         credit_card_fido_auth_enabled: {value: true}
@@ -478,7 +497,9 @@ cr.define('settings_payments_section', function() {
 
     test('verifyFIDOAuthToggleUncheckedIfOptedOut', function() {
       // Set FIDO auth pref value to false.
-      loadTimeData.overrideValues({userIsFIDOVerifiable: true});
+      loadTimeData.overrideValues(
+          {fidoAuthenticationAvailableForAutofill: true});
+      addFakePlatformAuthenticator();
       const section = createPaymentsSection([], {
         credit_card_enabled: {value: true},
         credit_card_fido_auth_enabled: {value: false}

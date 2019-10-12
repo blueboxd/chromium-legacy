@@ -174,6 +174,7 @@ public class TabGridDialogParent
         mScrimView = new ScrimView(context, null, mTabGridDialogParentView);
         mPopupWindow = new PopupWindow(mTabGridDialogParentView,
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        mPopupWindow.setFocusable(true);
         updateDialogWithOrientation(context, context.getResources().getConfiguration().orientation);
     }
 

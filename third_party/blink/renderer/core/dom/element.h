@@ -95,6 +95,7 @@ class V0CustomElementDefinition;
 
 enum class CSSPropertyID;
 enum class CSSValueID;
+enum class DisplayLockActivationReason;
 enum class DisplayLockLifecycleTarget;
 
 using ScrollOffset = FloatSize;
@@ -935,9 +936,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   bool StyleRecalcBlockedByDisplayLock(DisplayLockLifecycleTarget) const;
 
-  // Activates all activatable locked ancestors for this element. Return true if
-  // we activated at least one previously locked element.
-  bool ActivateDisplayLockIfNeeded();
+  // Activates all activatable (for a given reason) locked ancestors for this
+  // element. Return true if we activated at least one previously locked
+  // element.
+  bool ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason);
 
   virtual void SetActive(bool active);
   virtual void SetHovered(bool hovered);
@@ -1149,7 +1151,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void DetachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
   void DetachAttrNodeAtIndex(Attr*, wtf_size_t index);
 
-  bool DisplayLockPreventsActivation() const;
+  bool DisplayLockPreventsActivation(DisplayLockActivationReason reason) const;
   FRIEND_TEST_ALL_PREFIXES(DisplayLockContextTest,
                            DisplayLockPreventsActivation);
 

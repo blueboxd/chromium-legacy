@@ -6,6 +6,8 @@
 #define ASH_SHELL_CONTENT_TEST_ASH_CONTENT_TEST_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "content/public/test/content_browser_test.h"
@@ -29,6 +31,13 @@ class AshContentTest : public content::ContentBrowserTest {
   aura::Window* CreateTestWindow();
 
   virtual std::vector<std::string> GetUMAHistogramNames() const;
+
+  // Returns the names of timeline based metrics (TBM) to be extracted from
+  // the generated trace. The metrics must be defined in telemetry
+  //   third_party/catapult/tracing/tracing/metrics/
+  // so that third_party/catapult/tracing/bin/run_metric could handle them.
+  // Default is "renderingMetric", "umaMetric".
+  virtual std::vector<std::string> GetTimelineBasedMetrics() const;
 
  private:
   class Tracer;

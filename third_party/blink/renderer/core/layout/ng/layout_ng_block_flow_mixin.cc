@@ -9,6 +9,8 @@
 
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
+#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
@@ -187,8 +189,9 @@ void LayoutNGBlockFlowMixin<Base>::AddOutlineRects(
     const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
   if (PaintFragment()) {
-    PaintFragment()->AddSelfOutlineRects(&rects, additional_offset,
-                                         include_block_overflows);
+    To<NGPhysicalBoxFragment>(PaintFragment()->PhysicalFragment())
+        .AddSelfOutlineRects(additional_offset, include_block_overflows,
+                             &rects);
   } else {
     Base::AddOutlineRects(rects, additional_offset, include_block_overflows);
   }
@@ -357,8 +360,55 @@ void LayoutNGBlockFlowMixin<Base>::DirtyLinesFromChangedChild(
     NGPaintFragment::DirtyLinesFromChangedChild(child);
 }
 
+template <typename Base>
+void LayoutNGBlockFlowMixin<Base>::UpdateNGBlockLayout() {
+  LayoutAnalyzer::BlockScope analyzer(*this);
+
+  if (Base::IsOutOfFlowPositioned()) {
+    this->UpdateOutOfFlowBlockLayout();
+    return;
+  }
+
+  NGConstraintSpace constraint_space =
+      NGConstraintSpace::CreateFromLayoutObject(
+          *this, !Base::View()->GetLayoutState()->Next() /* is_layout_root */);
+
+  scoped_refptr<const NGLayoutResult> result =
+      NGBlockNode(this).Layout(constraint_space);
+
+  for (const auto& descendant :
+       result->PhysicalFragment().OutOfFlowPositionedDescendants())
+    descendant.node.UseLegacyOutOfFlowPositioning();
+  this->UpdateMargins(constraint_space);
+}
+
+template <typename Base>
+void LayoutNGBlockFlowMixin<Base>::UpdateMargins(
+    const NGConstraintSpace& space) {
+  const LayoutBlock* containing_block = Base::ContainingBlock();
+  if (!containing_block || !containing_block->IsLayoutBlockFlow())
+    return;
+
+  // In the legacy engine, for regular block container layout, children
+  // calculate and store margins on themselves, while in NG that's done by the
+  // container. Since this object is a LayoutNG entry-point, we'll have to do it
+  // on ourselves, since that's what the legacy container expects.
+  const ComputedStyle& style = Base::StyleRef();
+  const ComputedStyle& cb_style = containing_block->StyleRef();
+  const auto writing_mode = cb_style.GetWritingMode();
+  const auto direction = cb_style.Direction();
+  LayoutUnit percentage_resolution_size =
+      space.PercentageResolutionInlineSizeForParentWritingMode();
+  NGBoxStrut margins = ComputePhysicalMargins(style, percentage_resolution_size)
+                           .ConvertToLogical(writing_mode, direction);
+  ResolveInlineMargins(style, cb_style, space.AvailableSize().inline_size,
+                       Base::LogicalWidth(), &margins);
+  this->SetMargin(margins.ConvertToPhysical(writing_mode, direction));
+}
+
+template class CORE_TEMPLATE_EXPORT LayoutNGBlockFlowMixin<LayoutBlockFlow>;
+template class CORE_TEMPLATE_EXPORT LayoutNGBlockFlowMixin<LayoutProgress>;
 template class CORE_TEMPLATE_EXPORT LayoutNGBlockFlowMixin<LayoutTableCaption>;
 template class CORE_TEMPLATE_EXPORT LayoutNGBlockFlowMixin<LayoutTableCell>;
-template class CORE_TEMPLATE_EXPORT LayoutNGBlockFlowMixin<LayoutBlockFlow>;
 
 }  // namespace blink

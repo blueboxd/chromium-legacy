@@ -16121,7 +16121,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 2
+          "shards": 5
         },
         "test": "mojo_unittests"
       },

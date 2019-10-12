@@ -57,7 +57,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/features.h"
-#include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -781,121 +780,6 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
   EXPECT_EQ(redirect_to_blank_url,
             controller.GetLastCommittedEntry()->GetVirtualURL());
 }
-
-class NavigationDisableWebSecurityTest : public NavigationBrowserTest {
- public:
-  NavigationDisableWebSecurityTest() {
-    // To get around DataUrlNavigationThrottle. Other attempts at getting around
-    // it don't work, i.e.:
-    // -if the request is made in a child frame then the frame is torn down
-    // immediately on process killing so the navigation doesn't complete
-    // -if it's classified as same document, then a DCHECK in
-    // NavigationRequest::CreateRendererInitiated fires
-    feature_list_.InitAndEnableFeature(
-        features::kAllowContentInitiatedDataUrlNavigations);
-  }
-
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Simulate a compromised renderer, otherwise the cross-origin request to
-    // file: is blocked.
-    command_line->AppendSwitch(switches::kDisableWebSecurity);
-    NavigationBrowserTest::SetUpCommandLine(command_line);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Test to verify that an exploited renderer process trying to specify a
-// non-empty URL for base_url_for_data_url on navigation is correctly
-// terminated.
-// TODO(nasko): Move this test to security_exploit_browsertest.cc.
-IN_PROC_BROWSER_TEST_P(NavigationDisableWebSecurityTest,
-                       ValidateBaseUrlForDataUrl) {
-  GURL start_url(embedded_test_server()->GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), start_url));
-
-  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
-      shell()->web_contents()->GetMainFrame());
-
-  GURL data_url("data:text/html,foo");
-  base::FilePath file_path = GetTestFilePath("", "simple_page.html");
-  GURL file_url = net::FilePathToFileURL(file_path);
-
-  // Setup a BeginNavigate IPC with non-empty base_url_for_data_url.
-  mojom::CommonNavigationParamsPtr common_params =
-      mojom::CommonNavigationParams::New(
-          data_url, url::Origin::Create(data_url),
-          blink::mojom::Referrer::New(), ui::PAGE_TRANSITION_LINK,
-          mojom::NavigationType::DIFFERENT_DOCUMENT, NavigationDownloadPolicy(),
-          false /* should_replace_current_entry */,
-          file_url, /* base_url_for_data_url */
-          GURL() /* history_url_for_data_url */, PREVIEWS_UNSPECIFIED,
-          base::TimeTicks::Now() /* navigation_start */, "GET",
-          nullptr /* post_data */, base::Optional<SourceLocation>(),
-          false /* started_from_context_menu */, false /* has_user_gesture */,
-          InitiatorCSPInfo(),
-          std::vector<int>() /* initiator_origin_trial_features */,
-          std::string() /* href_translate */,
-          false /* is_history_navigation_in_new_child_frame */,
-          base::TimeTicks());
-  mojom::BeginNavigationParamsPtr begin_params =
-      mojom::BeginNavigationParams::New(
-          std::string() /* headers */, net::LOAD_NORMAL,
-          false /* skip_service_worker */,
-          blink::mojom::RequestContextType::LOCATION,
-          blink::WebMixedContentContextType::kBlockable,
-          false /* is_form_submission */,
-          false /* was_initiated_by_link_click */,
-          GURL() /* searchable_form_url */,
-          std::string() /* searchable_form_encoding */,
-          GURL() /* client_side_redirect_url */,
-          base::nullopt /* devtools_initiator_info */);
-
-  // Receiving the invalid IPC message should lead to renderer process
-  // termination.
-  RenderProcessHostKillWaiter process_kill_waiter(rfh->GetProcess());
-
-  mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client;
-  if (IsPerNavigationMojoInterfaceEnabled()) {
-    auto navigation_client_receiver =
-        navigation_client.InitWithNewEndpointAndPassReceiver();
-    rfh->frame_host_receiver_for_testing().impl()->BeginNavigation(
-        std::move(common_params), std::move(begin_params), mojo::NullRemote(),
-        std::move(navigation_client), mojo::NullRemote());
-  } else {
-    rfh->frame_host_receiver_for_testing().impl()->BeginNavigation(
-        std::move(common_params), std::move(begin_params), mojo::NullRemote(),
-        mojo::NullAssociatedRemote(), mojo::NullRemote());
-  }
-  EXPECT_EQ(bad_message::RFH_BASE_URL_FOR_DATA_URL_SPECIFIED,
-            process_kill_waiter.Wait());
-
-  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      rfh->GetProcess()->GetID(), file_path));
-
-  // Reload the page to create another renderer process.
-  TestNavigationObserver tab_observer(shell()->web_contents(), 1);
-  shell()->web_contents()->GetController().Reload(ReloadType::NORMAL, false);
-  tab_observer.Wait();
-
-  // Make an XHR request to check if the page has access.
-  std::string script = base::StringPrintf(
-      "var xhr = new XMLHttpRequest()\n"
-      "xhr.open('GET', '%s', false);\n"
-      "try { xhr.send(); } catch (e) {}\n"
-      "window.domAutomationController.send(xhr.responseText);",
-      file_url.spec().c_str());
-  std::string result;
-  EXPECT_TRUE(
-      ExecuteScriptAndExtractString(shell()->web_contents(), script, &result));
-  EXPECT_TRUE(result.empty());
-}
-
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         NavigationDisableWebSecurityTest,
-                         ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BackFollowedByReload) {
   // First, make two history entries.

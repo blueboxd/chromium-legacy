@@ -11,6 +11,9 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
+import static org.chromium.chrome.browser.touch_to_fill.CredentialProperties.CREDENTIAL;
+import static org.chromium.chrome.browser.touch_to_fill.CredentialProperties.DEFAULT_ITEM_TYPE;
+import static org.chromium.chrome.browser.touch_to_fill.CredentialProperties.FAVICON;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CREDENTIAL_LIST;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ORIGIN_SECURE;
@@ -41,9 +44,8 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
+import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
-
-import java.util.Arrays;
 
 /**
  * View tests for the Touch To Fill component ensure that model changes are reflected in the sheet.
@@ -116,11 +118,12 @@ public class TouchToFillViewTest {
     public void testCredentialsChangedByModel() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTouchToFillView.setVisible(true);
-            mModel.get(CREDENTIAL_LIST)
-                    .addAll(Arrays.asList(new Credential("Ana", "S3cr3t", "Ana", "", false),
-                            new Credential("", "***", "No Username", "http://m.example.xyz/", true),
-                            new Credential(
-                                    "Bob", "***", "Bob", "http://mobile.example.xyz", true)));
+            MVCListAdapter.ModelList credentialList = mModel.get(CREDENTIAL_LIST);
+            credentialList.add(buildCredentialItem("Ana", "S3cr3t", "Ana", "", false));
+            credentialList.add(
+                    buildCredentialItem("", "***", "No Username", "http://m.example.xyz/", true));
+            credentialList.add(
+                    buildCredentialItem("Bob", "***", "Bob", "http://mobile.example.xyz", true));
         });
 
         pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
@@ -149,8 +152,9 @@ public class TouchToFillViewTest {
     public void testCredentialsAreClickable() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.get(CREDENTIAL_LIST)
-                    .addAll(Arrays.asList(new Credential("Carl", "G3h3!m", "Carl", "", false),
-                            new Credential("Bob", "***", "Bob", "m.example.xyz", true)));
+                    .add(buildCredentialItem("Carl", "G3h3!m", "Carl", "", false));
+            mModel.get(CREDENTIAL_LIST)
+                    .add(buildCredentialItem("Bob", "***", "Bob", "m.example.xyz", true));
             mModel.set(VISIBLE, true);
         });
         pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
@@ -204,5 +208,17 @@ public class TouchToFillViewTest {
     TouchToFillProperties.ViewEventListener waitForEvent() {
         return verify(mMockListener,
                 timeout(ScalableTimeout.scaleTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL)));
+    }
+
+    private static MVCListAdapter.ListItem buildCredentialItem(String username, String password,
+            String formattedUsername, String originUrl, boolean isPublicSuffixMatch) {
+        PropertyModel propertyModel =
+                new PropertyModel.Builder(FAVICON, CREDENTIAL)
+                        .with(FAVICON, null)
+                        .with(CREDENTIAL,
+                                new Credential(username, password, formattedUsername, originUrl,
+                                        isPublicSuffixMatch))
+                        .build();
+        return new MVCListAdapter.ListItem(DEFAULT_ITEM_TYPE, propertyModel);
     }
 }

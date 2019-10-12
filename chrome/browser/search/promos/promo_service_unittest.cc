@@ -61,7 +61,7 @@ class PromoServiceTest : public testing::Test {
   }
 
   PromoService* service() { return service_.get(); }
-  PrefService* pref_service() { return &pref_service_; }
+  PrefService* prefs() { return &pref_service_; }
 
  private:
   // Required to run tests from UI and threads.
@@ -208,8 +208,9 @@ TEST_F(PromoServiceTest, GoodPromoWithBlockedID) {
   feature_list.InitAndEnableFeature(features::kDismissNtpPromos);
 
   {
-    ListPrefUpdate update(pref_service(), prefs::kNtpPromoBlocklist);
-    update->Append("42");
+    DictionaryPrefUpdate update(prefs(), prefs::kNtpPromoBlocklist);
+    base::Time recent = base::Time::Now() - base::TimeDelta::FromHours(2);
+    update->SetDoubleKey("42", recent.ToDeltaSinceWindowsEpoch().InSecondsF());
   }
 
   std::string response_string =
@@ -248,14 +249,73 @@ TEST_F(PromoServiceTest, BlocklistPromo) {
   EXPECT_EQ(service()->promo_data(), promo);
   EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITH_PROMO);
 
-  ASSERT_EQ(0u, pref_service()->GetList(prefs::kNtpPromoBlocklist)->GetSize());
+  ASSERT_EQ(0u, prefs()->GetDictionary(prefs::kNtpPromoBlocklist)->size());
 
   service()->BlocklistPromo("42");
 
   EXPECT_EQ(service()->promo_data(), PromoData());
   EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_BUT_BLOCKED);
 
-  const auto* blocklist = pref_service()->GetList(prefs::kNtpPromoBlocklist);
-  ASSERT_EQ(1u, blocklist->GetSize());
-  EXPECT_EQ("42", blocklist->GetList()[0].GetString());
+  const auto* blocklist = prefs()->GetDictionary(prefs::kNtpPromoBlocklist);
+  ASSERT_EQ(1u, blocklist->size());
+  ASSERT_TRUE(blocklist->HasKey("42"));
+}
+
+TEST_F(PromoServiceTest, BlocklistExpiration) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDismissNtpPromos);
+
+  {
+    DictionaryPrefUpdate update(prefs(), prefs::kNtpPromoBlocklist);
+    ASSERT_EQ(0u, update->size());
+    base::Time past = base::Time::Now() - base::TimeDelta::FromDays(365);
+    update->SetDoubleKey("42", past.ToDeltaSinceWindowsEpoch().InSecondsF());
+  }
+
+  ASSERT_EQ(1u, prefs()->GetDictionary(prefs::kNtpPromoBlocklist)->size());
+
+  std::string response_string =
+      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
+      "script></div>\", \"log_url\":\"/log_url?id=42\", \"id\": \"42\"}}}";
+  SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
+
+  service()->Refresh();
+  base::RunLoop().RunUntilIdle();
+
+  // The year-old entry of {promo_id: "42", time: <1y ago>} should be gone.
+  ASSERT_EQ(0u, prefs()->GetDictionary(prefs::kNtpPromoBlocklist)->size());
+
+  // The promo should've still been shown, as expiration should take precedence.
+  PromoData promo;
+  promo.promo_html = "<style></style><div><script></script></div>";
+  promo.promo_log_url = GURL("https://www.google.com/log_url?id=42");
+  promo.promo_id = "42";
+
+  EXPECT_EQ(service()->promo_data(), promo);
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITH_PROMO);
+}
+
+TEST_F(PromoServiceTest, BlocklistWrongExpiryType) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDismissNtpPromos);
+
+  {
+    DictionaryPrefUpdate update(prefs(), prefs::kNtpPromoBlocklist);
+    ASSERT_EQ(0u, update->size());
+    update->SetDoubleKey("42", 5);
+    update->SetStringKey("84", "wrong type");
+  }
+
+  ASSERT_GT(prefs()->GetDictionary(prefs::kNtpPromoBlocklist)->size(), 0u);
+
+  std::string response_string =
+      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
+      "script></div>\", \"log_url\":\"/log_url?id=42\", \"id\": \"42\"}}}";
+  SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
+
+  service()->Refresh();
+  base::RunLoop().RunUntilIdle();
+
+  // All the invalid formats should've been removed from the pref.
+  ASSERT_EQ(0u, prefs()->GetDictionary(prefs::kNtpPromoBlocklist)->size());
 }

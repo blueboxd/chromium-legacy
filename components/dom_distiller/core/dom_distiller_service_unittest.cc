@@ -13,8 +13,6 @@
 #include "base/test/task_environment.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
-#include "components/dom_distiller/core/dom_distiller_model.h"
-#include "components/dom_distiller/core/dom_distiller_store.h"
 #include "components/dom_distiller/core/fake_distiller.h"
 #include "components/dom_distiller/core/fake_distiller_page.h"
 #include "components/dom_distiller/core/task_tracker.h"
@@ -22,15 +20,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
-using testing::Invoke;
 using testing::Return;
 
 namespace dom_distiller {
 namespace test {
 
 namespace {
-
-const char kTestEntryId[] = "id0";
 
 class FakeViewRequestDelegate : public ViewRequestDelegate {
  public:
@@ -68,15 +63,9 @@ std::unique_ptr<DistilledArticleProto> CreateDefaultArticle() {
 class DomDistillerServiceTest : public testing::Test {
  public:
   void SetUp() override {
-    // Create a test entry in the DB.
-    ArticleEntry entry;
-    entry.set_entry_id(kTestEntryId);
-    entry.add_pages()->set_url("http://www.example.com/p1");
-    store_ = new DomDistillerStore({entry});
     distiller_factory_ = new MockDistillerFactory();
     distiller_page_factory_ = new MockDistillerPageFactory();
     service_.reset(new DomDistillerService(
-        std::unique_ptr<DomDistillerStoreInterface>(store_),
         std::unique_ptr<DistillerFactory>(distiller_factory_),
         std::unique_ptr<DistillerPageFactory>(distiller_page_factory_),
         std::unique_ptr<DistilledPagePrefs>()));
@@ -84,37 +73,16 @@ class DomDistillerServiceTest : public testing::Test {
 
   void TearDown() override {
     base::RunLoop().RunUntilIdle();
-    store_ = nullptr;
     distiller_factory_ = nullptr;
     service_.reset();
   }
 
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
-  // store is owned by service_.
-  DomDistillerStoreInterface* store_;
   MockDistillerFactory* distiller_factory_;
   MockDistillerPageFactory* distiller_page_factory_;
   std::unique_ptr<DomDistillerService> service_;
 };
-
-TEST_F(DomDistillerServiceTest, TestViewEntry) {
-  FakeDistiller* distiller = new FakeDistiller(false);
-  EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
-      .WillOnce(Return(distiller));
-
-  FakeViewRequestDelegate viewer_delegate;
-  std::unique_ptr<ViewerHandle> handle = service_->ViewEntry(
-      &viewer_delegate, service_->CreateDefaultDistillerPage(gfx::Size()),
-      kTestEntryId);
-
-  ASSERT_FALSE(distiller->GetArticleCallback().is_null());
-
-  std::unique_ptr<DistilledArticleProto> proto = CreateDefaultArticle();
-  EXPECT_CALL(viewer_delegate, OnArticleReady(proto.get()));
-
-  RunDistillerCallback(distiller, std::move(proto));
-}
 
 TEST_F(DomDistillerServiceTest, TestViewUrl) {
   FakeDistiller* distiller = new FakeDistiller(false);

@@ -47,14 +47,4 @@ scoped_refptr<PrefRegistrySyncable> PrefRegistrySyncable::ForkForIncognito() {
   return registry;
 }
 
-void PrefRegistrySyncable::WhitelistLateRegistrationPrefForSync(
-    const std::string& pref_name) {
-  sync_unknown_prefs_whitelist_.insert(pref_name);
-}
-
-bool PrefRegistrySyncable::IsWhitelistedLateRegistrationPref(
-    const std::string& path) const {
-  return sync_unknown_prefs_whitelist_.count(path) != 0;
-}
-
 }  // namespace user_prefs

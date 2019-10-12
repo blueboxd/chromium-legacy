@@ -242,16 +242,3 @@ source_set("tests") {
     ":buildflags",
   ]
 }
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//services/network/public/mojom",
-    "//services/service_manager/public/cpp",
-  ]
-}

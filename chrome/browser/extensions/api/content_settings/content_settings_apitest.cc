@@ -400,17 +400,38 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest,
       "ContentSettings.ExtensionNonEmbeddedSettingSet", 2);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, EmbeddedSettings) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kPermissionDelegation);
+class ExtensionContentSettingsApiTestWithPermissionDelegationDisabled
+    : public ExtensionContentSettingsApiTest {
+ public:
+  ExtensionContentSettingsApiTestWithPermissionDelegationDisabled() {
+    feature_list_.InitAndDisableFeature(features::kPermissionDelegation);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+class ExtensionContentSettingsApiTestWithPermissionDelegationEnabled
+    : public ExtensionContentSettingsApiTest {
+ public:
+  ExtensionContentSettingsApiTestWithPermissionDelegationEnabled() {
+    feature_list_.InitAndEnableFeature(features::kPermissionDelegation);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    ExtensionContentSettingsApiTestWithPermissionDelegationDisabled,
+    EmbeddedSettings) {
   const char kExtensionPath[] = "content_settings/embeddedsettings";
   EXPECT_TRUE(RunExtensionSubtest(kExtensionPath, "test.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest,
-                       EmbeddedSettingsPermissionDelegation) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPermissionDelegation);
+IN_PROC_BROWSER_TEST_F(
+    ExtensionContentSettingsApiTestWithPermissionDelegationEnabled,
+    EmbeddedSettings) {
   const char kExtensionPath[] = "content_settings/embeddedsettings";
   EXPECT_TRUE(
       RunExtensionSubtest(kExtensionPath, "test.html?permission_delegation"))

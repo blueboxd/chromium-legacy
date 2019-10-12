@@ -194,14 +194,24 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW);
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
-                       StartNewRequest) {
+class PaymentRequestJourneyLoggerMultipleShowTestWithPaymentHandlersEnabled
+    : public PaymentRequestJourneyLoggerMultipleShowTest {
+ public:
+  PaymentRequestJourneyLoggerMultipleShowTestWithPaymentHandlersEnabled() {
+    // Enable payment handlers, also known as service worker payment apps. The
+    // rest of the test is identical to
+    // "StartNewRequestWithoutPaymentAppsFeature" testcase above.
+    feature_list_.InitAndEnableFeature(features::kServiceWorkerPaymentApps);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    PaymentRequestJourneyLoggerMultipleShowTestWithPaymentHandlersEnabled,
+    StartNewRequest) {
   NavigateTo("/payment_request_multiple_show_test.html");
-  // Enable payment handlers, also known as service worker payment apps. The
-  // rest of the test is identical to "StartNewRequestWithoutPaymentAppsFeature"
-  // testcase above.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kServiceWorkerPaymentApps);
 
   base::HistogramTester histogram_tester;
 
@@ -300,14 +310,23 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
   EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_COULD_NOT_SHOW);
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
-                       StartNewRequestWithoutPaymentAppsFeature) {
+class PaymentRequestJourneyLoggerMultipleShowTestWithPaymentHandlersDisabled
+    : public PaymentRequestJourneyLoggerMultipleShowTest {
+ public:
+  PaymentRequestJourneyLoggerMultipleShowTestWithPaymentHandlersDisabled() {
+    // Disable payment handlers, also known as service worker payment apps. The
+    // rest of the test is identical to "StartNewRequest" testcase above.
+    feature_list_.InitAndDisableFeature(features::kServiceWorkerPaymentApps);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    PaymentRequestJourneyLoggerMultipleShowTestWithPaymentHandlersDisabled,
+    StartNewRequestWithoutPaymentAppsFeature) {
   NavigateTo("/payment_request_multiple_show_test.html");
-  // Disable payment handlers, also known as service worker payment apps. The
-  // rest of the test is identical to "StartNewRequest" testcase above.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kServiceWorkerPaymentApps);
 
   base::HistogramTester histogram_tester;
 

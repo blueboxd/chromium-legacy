@@ -20,6 +20,9 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelPrope
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.PRIMARY_COLOR;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.SCRIMVIEW_OBSERVER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TINT;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TITLE_CURSOR_VISIBILITY;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TITLE_TEXT_ON_FOCUS_LISTENER;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TITLE_TEXT_WATCHER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.UNGROUP_BAR_STATUS;
 
 import android.support.v7.widget.LinearLayoutManager;
@@ -117,6 +120,13 @@ class TabGridPanelViewBinder {
             viewHolder.contentView.setVisibility(View.VISIBLE);
         } else if (MENU_CLICK_LISTENER == propertyKey) {
             viewHolder.toolbarView.setMenuButtonOnClickListener(model.get(MENU_CLICK_LISTENER));
+        } else if (TITLE_TEXT_WATCHER == propertyKey) {
+            viewHolder.toolbarView.setTitleTextOnChangedListener(model.get(TITLE_TEXT_WATCHER));
+        } else if (TITLE_TEXT_ON_FOCUS_LISTENER == propertyKey) {
+            viewHolder.toolbarView.setTitleTextOnFocusChangeListener(
+                    model.get(TITLE_TEXT_ON_FOCUS_LISTENER));
+        } else if (TITLE_CURSOR_VISIBILITY == propertyKey) {
+            viewHolder.toolbarView.setTitleCursorVisibility(model.get(TITLE_CURSOR_VISIBILITY));
         }
     }
 }

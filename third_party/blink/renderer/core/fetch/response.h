@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_RESPONSE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_RESPONSE_H_
 
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -53,6 +54,15 @@ class CORE_EXPORT Response final : public Body {
                             const String& url,
                             uint16_t status,
                             ExceptionState&);
+
+  static FetchResponseData* CreateUnfilteredFetchResponseDataWithoutBody(
+      ScriptState*,
+      mojom::blink::FetchAPIResponse&);
+
+  static FetchResponseData* FilterResponseData(
+      network::mojom::FetchResponseType response_type,
+      FetchResponseData* response,
+      WTF::Vector<WTF::String>& headers);
 
   explicit Response(ExecutionContext*);
   Response(ExecutionContext*, FetchResponseData*);

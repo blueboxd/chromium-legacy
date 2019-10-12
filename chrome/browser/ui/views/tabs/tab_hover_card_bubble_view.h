@@ -57,6 +57,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
   ax::mojom::Role GetAccessibleWindowRole() override;
   int GetDialogButtons() const override;
+  std::unique_ptr<views::View> CreateFootnoteView() override;
 
   void set_last_mouse_exit_timestamp(
       base::TimeTicks last_mouse_exit_timestamp) {
@@ -109,7 +110,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
 
   views::Widget* widget_ = nullptr;
   views::Label* title_label_ = nullptr;
-  views::Label* alert_state_label_ = nullptr;
+  TabAlertState alert_state_ = TabAlertState::NONE;
   views::Label* domain_label_ = nullptr;
   views::ImageView* preview_image_ = nullptr;
 

@@ -52,11 +52,6 @@ class ArCoreDevice : public VRDeviceBase {
   }
 
  private:
-  // VRDeviceBase implementation
-  void OnMailboxBridgeReady();
-  void OnArCoreGlThreadInitialized();
-  void OnRequestCameraPermissionComplete(bool success);
-
   void OnDrawingSurfaceReady(gfx::AcceleratedWidget window,
                              display::Display::Rotation rotation,
                              const gfx::Size& frame_size);
@@ -84,13 +79,22 @@ class ArCoreDevice : public VRDeviceBase {
 
   bool IsOnMainThread();
 
-  void RequestSessionAfterInitialization(int render_process_id,
-                                         int render_frame_id,
-                                         bool use_overlay);
+  // Called once the GL thread is started. At this point, it doesn't
+  // have a valid GL context yet.
+  void OnGlThreadReady(int render_process_id,
+                       int render_frame_id,
+                       bool use_overlay);
+
+  // Replies to the pending mojo RequestSession request.
   void CallDeferredRequestSessionCallback(bool success);
+
+  // Tells the GL thread to initialize a GL context and other resources,
+  // using the supplied window as a drawing surface.
   void RequestArCoreGlInitialization(gfx::AcceleratedWidget window,
                                      int rotation,
                                      const gfx::Size& size);
+
+  // Called when the GL thread's GL context initialization completes.
   void OnArCoreGlInitializationComplete(bool success);
 
   void OnCreateSessionCallback(
@@ -112,7 +116,6 @@ class ArCoreDevice : public VRDeviceBase {
     ~SessionState();
 
     std::unique_ptr<ArCoreGlThread> arcore_gl_thread_;
-    bool is_arcore_gl_thread_initialized_ = false;
     bool is_arcore_gl_initialized_ = false;
 
     base::OnceClosure start_immersive_activity_callback_;
@@ -121,8 +124,6 @@ class ArCoreDevice : public VRDeviceBase {
     // the callback for replying once that initialization completes. Only one
     // concurrent session is supported, other requests are rejected.
     mojom::XRRuntime::RequestSessionCallback pending_request_session_callback_;
-
-    base::OnceClosure pending_request_session_after_gl_thread_initialized_;
   };
 
   // This object is reset to initial values when ending a session. This helps

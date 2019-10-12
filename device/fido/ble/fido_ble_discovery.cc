@@ -48,12 +48,14 @@ void FidoBleDiscovery::OnSetPowered() {
     }
   }
 
-  auto filter = std::make_unique<BluetoothDiscoveryFilter>(
+  auto discovery_filter = std::make_unique<BluetoothDiscoveryFilter>(
       BluetoothTransport::BLUETOOTH_TRANSPORT_LE);
-  filter->AddUUID(FidoServiceUUID());
+  device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter;
+  device_filter.uuids.insert(FidoServiceUUID());
+  discovery_filter->AddDeviceFilter(device_filter);
 
   adapter()->StartDiscoverySessionWithFilter(
-      std::move(filter),
+      std::move(discovery_filter),
       base::AdaptCallbackForRepeating(
           base::BindOnce(&FidoBleDiscovery::OnStartDiscoverySessionWithFilter,
                          weak_factory_.GetWeakPtr())),

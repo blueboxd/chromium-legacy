@@ -6,6 +6,7 @@
 <org.chromium.chrome.browser.tasks.tab_management.TabGroupUiToolbarView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/tab_group_toolbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -15,23 +16,27 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_sheet_peek_height"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:clickable="true">
+        android:gravity="center_vertical">
         <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/toolbar_left_button"
             style="@style/BottomToolbarButton"
             android:src="@drawable/ic_expand_more_black_24dp"
             app:tint="@color/standard_mode_tint"
             android:contentDescription="@string/accessibility_bottom_tab_grid_close_tab_sheet" />
-         <TextView
-             android:id="@+id/title"
-             android:layout_height="wrap_content"
-             android:layout_width="0dp"
-             android:layout_weight="1"
-             android:singleLine="true"
-             android:ellipsize="end"
-             android:textAppearance="@style/TextAppearance.BlackTitle1"
-             android:gravity="center"/>
+        <EditText
+            tools:ignore="LabelFor"
+            android:id="@+id/title"
+            android:cursorVisible="false"
+            android:background="@android:color/transparent"
+            android:layout_height="@dimen/bottom_sheet_peek_height"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textAppearance="@style/TextAppearance.BlackTitle1"
+            android:inputType="text|textNoSuggestions"
+            android:imeOptions="actionDone"
+            android:gravity="center"/>
         <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/toolbar_right_button"
             style="@style/BottomToolbarButton"

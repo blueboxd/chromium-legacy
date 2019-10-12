@@ -462,4 +462,89 @@ public class LoadUrlTest {
             webServer.shutdown();
         }
     }
+
+    // Test loadDataSync() with a page containing an iframe that has a data:
+    // URL for its source. WebView handles conversion from data: URLs to origins
+    // in  a different way than normal desktop and Android builds so we want to
+    // make sure commit time checks properly pass on WebView.
+    // See http://crbug.com/1013171 for details.
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testLoadDataWithDataUrlIframe() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
+
+        final String iframeLoadedMessage = "iframe loaded";
+        final String iframeHtml = "<html><body><script>"
+                + "console.log('" + iframeLoadedMessage + "')"
+                + ";</script></body></html>";
+        final String pageHtml = "<html><body>"
+                + "<iframe src=\"data:text/html," + iframeHtml + "\"></iframe>"
+                + "</body></html>";
+
+        CallbackHelper onPageFinishedHelper = contentsClient.getOnPageFinishedHelper();
+        int onPageFinishedCallCount = onPageFinishedHelper.getCallCount();
+
+        TestAwContentsClient.AddMessageToConsoleHelper addMessageToConsoleHelper =
+                contentsClient.getAddMessageToConsoleHelper();
+        int logCallCount = addMessageToConsoleHelper.getCallCount();
+
+        // Test load with an anonymous opaque origin.
+        mActivityTestRule.loadDataSync(
+                awContents, contentsClient.getOnPageFinishedHelper(), pageHtml, "text/html", false);
+        onPageFinishedHelper.waitForCallback(onPageFinishedCallCount);
+
+        addMessageToConsoleHelper.waitForCallback(logCallCount);
+        Assert.assertEquals(iframeLoadedMessage, addMessageToConsoleHelper.getMessage());
+    }
+
+    // Test loadUrlSync() with a page containing an iframe that has a data: URL
+    // for its source. WebView handles conversion from data: URLs to origins in
+    // a different way than normal desktop and Android builds so we want to make
+    // sure commit time checks properly pass on WebView.
+    // See http://crbug.com/1013171 for details.
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testLoadUrlWithDataUrlIframe() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
+
+        final String iframeLoadedMessage = "iframe loaded";
+        final String iframeHtml = "<html><body><script>"
+                + "console.log('" + iframeLoadedMessage + "')"
+                + ";</script></body></html>";
+        final String pageHtml = "<html><body>"
+                + "<iframe src=\"data:text/html," + iframeHtml + "\"></iframe>"
+                + "</body></html>";
+
+        CallbackHelper onPageFinishedHelper = contentsClient.getOnPageFinishedHelper();
+        int onPageFinishedCallCount = onPageFinishedHelper.getCallCount();
+
+        TestAwContentsClient.AddMessageToConsoleHelper addMessageToConsoleHelper =
+                contentsClient.getAddMessageToConsoleHelper();
+        int logCallCount = addMessageToConsoleHelper.getCallCount();
+
+        // Test load with an opaque origin that contains precursor info.
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            final String url = webServer.setResponse("/page.html", pageHtml, null);
+
+            mActivityTestRule.loadUrlSync(
+                    awContents, contentsClient.getOnPageFinishedHelper(), url);
+            onPageFinishedHelper.waitForCallback(onPageFinishedCallCount);
+
+            addMessageToConsoleHelper.waitForCallback(logCallCount);
+            Assert.assertEquals(iframeLoadedMessage, addMessageToConsoleHelper.getMessage());
+        } finally {
+            webServer.shutdown();
+        }
+    }
 }

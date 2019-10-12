@@ -25,7 +25,11 @@ void SetIsHoldingWebLock(int render_process_id,
 }  // namespace
 
 PerformanceManagerLockObserver::PerformanceManagerLockObserver() = default;
-PerformanceManagerLockObserver::~PerformanceManagerLockObserver() = default;
+
+PerformanceManagerLockObserver::~PerformanceManagerLockObserver() {
+  // TODO(https://crbug.com/1013760): DCHECK that this happens after ThreadPool
+  // shutdown.
+}
 
 void PerformanceManagerLockObserver::OnFrameStartsHoldingWebLocks(
     int render_process_id,

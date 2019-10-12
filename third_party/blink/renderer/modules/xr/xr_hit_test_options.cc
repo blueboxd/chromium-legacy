@@ -12,7 +12,6 @@ namespace blink {
 
 XRHitTestOptions::XRHitTestOptions(XRHitTestOptionsInit* options_init) {
   DCHECK(options_init);
-  DCHECK(options_init->hasSpace());  // Is it enforced by generated bindings?
 
   space_ = options_init->space();
 

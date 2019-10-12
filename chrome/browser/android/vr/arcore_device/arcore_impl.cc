@@ -67,9 +67,21 @@ device::internal::ScopedArCoreObject<ArPose*> GetArPoseFromMojomPose(
   return result;
 }
 
+constexpr float kDefaultFloorHeightEstimation = 1.2;
+
 }  // namespace
 
 namespace device {
+
+HitTestSubscriptionData::HitTestSubscriptionData(
+    mojom::XRNativeOriginInformationPtr native_origin_information,
+    mojom::XRRayPtr ray)
+    : native_origin_information(std::move(native_origin_information)),
+      ray(std::move(ray)) {}
+
+HitTestSubscriptionData::HitTestSubscriptionData(
+    HitTestSubscriptionData&& other) = default;
+HitTestSubscriptionData::~HitTestSubscriptionData() = default;
 
 ArCoreImpl::ArCoreImpl()
     : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
@@ -589,16 +601,238 @@ gfx::Transform ArCoreImpl::GetProjectionMatrix(float near, float far) {
   return result;
 }
 
+float ArCoreImpl::GetEstimatedFloorHeight() {
+  return kDefaultFloorHeightEstimation;
+}
+
+base::Optional<uint32_t> ArCoreImpl::SubscribeToHitTest(
+    mojom::XRNativeOriginInformationPtr native_origin_information,
+    mojom::XRRayPtr ray) {
+  // First, check if we recognize the type of the native origin.
+
+  if (native_origin_information->is_reference_space_category()) {
+    // Reference spaces are implicitly recognized and don't carry an ID.
+  } else if (native_origin_information->is_input_source_id()) {
+    // Input source IDs are verified in the higher layer as ArCoreImpl does
+    // not carry input source state.
+  } else if (native_origin_information->is_plane_id()) {
+    // Validate that we know which plane's space the hit test is interested in
+    // tracking.
+    if (plane_id_to_plane_object_.count(
+            PlaneId(native_origin_information->get_plane_id())) == 0) {
+      return base::nullopt;
+    }
+  } else if (native_origin_information->is_anchor_id()) {
+    // Validate that we know which anchor's space the hit test is interested
+    // in tracking.
+    if (anchor_id_to_anchor_object_.count(
+            AnchorId(native_origin_information->get_anchor_id())) == 0) {
+      return base::nullopt;
+    }
+  } else {
+    NOTREACHED();
+    return base::nullopt;
+  }
+
+  auto maybe_subscription_id = CreateHitTestSubscriptionId();
+  if (!maybe_subscription_id) {
+    return base::nullopt;
+  }
+
+  hit_test_subscription_id_to_data_.emplace(
+      *maybe_subscription_id,
+      HitTestSubscriptionData{std::move(native_origin_information),
+                              std::move(ray)});
+
+  return maybe_subscription_id->GetUnsafeValue();
+}
+
+mojom::XRHitTestSubscriptionResultsDataPtr
+ArCoreImpl::GetHitTestSubscriptionResults(
+    const device::mojom::VRPosePtr& pose) {
+  mojom::XRHitTestSubscriptionResultsDataPtr result =
+      mojom::XRHitTestSubscriptionResultsData::New();
+
+  for (auto& subscription_id_and_data : hit_test_subscription_id_to_data_) {
+    // First, check if we can find the current transformation for a ray. If not,
+    // skip processing this subscription.
+    auto maybe_mojo_from_native_origin = GetMojoFromNativeOrigin(
+        subscription_id_and_data.second.native_origin_information, pose);
+
+    if (!maybe_mojo_from_native_origin) {
+      continue;
+    }
+
+    // Since we have a transform, let's use it to obtain hit test results.
+    result->results.push_back(GetHitTestSubscriptionResult(
+        HitTestSubscriptionId(subscription_id_and_data.first),
+        *subscription_id_and_data.second.ray, *maybe_mojo_from_native_origin));
+  }
+
+  return result;
+}
+
+device::mojom::XRHitTestSubscriptionResultDataPtr
+ArCoreImpl::GetHitTestSubscriptionResult(
+    HitTestSubscriptionId id,
+    const mojom::XRRay& native_origin_ray,
+    const gfx::Transform& mojo_from_native_origin) {
+  // Transform the ray according to the latest transform based on the XRSpace
+  // used in hit test subscription.
+
+  gfx::Point3F origin = native_origin_ray.origin;
+  mojo_from_native_origin.TransformPoint(&origin);
+
+  gfx::Vector3dF direction = native_origin_ray.direction;
+  mojo_from_native_origin.TransformVector(&direction);
+
+  std::vector<mojom::XRHitResultPtr> hit_results;
+  RequestHitTest(origin, direction, &hit_results);
+
+  return mojom::XRHitTestSubscriptionResultData::New(id.GetUnsafeValue(),
+                                                     std::move(hit_results));
+}
+
+base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromReferenceSpace(
+    device::mojom::XRReferenceSpaceCategory category,
+    const device::mojom::VRPosePtr& mojo_from_viewer) {
+  switch (category) {
+    case device::mojom::XRReferenceSpaceCategory::LOCAL:
+      return gfx::Transform{};
+    case device::mojom::XRReferenceSpaceCategory::LOCAL_FLOOR: {
+      auto result = gfx::Transform{};
+      result.Translate3d(0, -GetEstimatedFloorHeight(), 0);
+      return result;
+    }
+    case device::mojom::XRReferenceSpaceCategory::VIEWER:
+      return mojo::ConvertTo<gfx::Transform>(mojo_from_viewer);
+    case device::mojom::XRReferenceSpaceCategory::BOUNDED_FLOOR:
+      return base::nullopt;
+    case device::mojom::XRReferenceSpaceCategory::UNBOUNDED:
+      return base::nullopt;
+  }
+}
+
+base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromNativeOrigin(
+    const mojom::XRNativeOriginInformationPtr& native_origin_information,
+    const device::mojom::VRPosePtr& mojo_from_viewer) {
+  if (native_origin_information->is_input_source_id()) {
+    if (!mojo_from_viewer->input_state) {
+      return base::nullopt;
+    }
+
+    // Linear search should be fine for ARCore device as it only has one input
+    // source (for now).
+    for (auto& input_source_state : *mojo_from_viewer->input_state) {
+      if (input_source_state->source_id ==
+          native_origin_information->get_input_source_id()) {
+        if (!input_source_state->description->pointer_offset) {
+          return base::nullopt;
+        }
+
+        auto view_from_pointer =
+            *input_source_state->description->pointer_offset;
+
+        auto mojo_from_view = mojo::ConvertTo<gfx::Transform>(mojo_from_viewer);
+
+        return mojo_from_view * view_from_pointer;
+      }
+    }
+
+    return base::nullopt;
+  } else if (native_origin_information->is_reference_space_category()) {
+    return GetMojoFromReferenceSpace(
+        native_origin_information->get_reference_space_category(),
+        mojo_from_viewer);
+  } else if (native_origin_information->is_plane_id()) {
+    auto plane_it = plane_id_to_plane_object_.find(
+        PlaneId(native_origin_information->get_plane_id()));
+    if (plane_it == plane_id_to_plane_object_.end()) {
+      return base::nullopt;
+    }
+
+    // Naked pointer is fine as we don't own the object and ArAsPlane does not
+    // increase the refcount.
+    ArPlane* plane = ArAsPlane(plane_it->second.get());
+
+    internal::ScopedArCoreObject<ArPose*> ar_pose;
+    ArPose_create(
+        arcore_session_.get(), nullptr,
+        internal::ScopedArCoreObject<ArPose*>::Receiver(ar_pose).get());
+    ArPlane_getCenterPose(arcore_session_.get(), plane, ar_pose.get());
+    mojom::VRPosePtr mojo_pose =
+        GetMojomPoseFromArPose(arcore_session_.get(), std::move(ar_pose));
+
+    return mojo::ConvertTo<gfx::Transform>(mojo_pose);
+  } else if (native_origin_information->is_anchor_id()) {
+    auto anchor_it = anchor_id_to_anchor_object_.find(
+        AnchorId(native_origin_information->get_anchor_id()));
+    if (anchor_it == anchor_id_to_anchor_object_.end()) {
+      return base::nullopt;
+    }
+
+    internal::ScopedArCoreObject<ArPose*> ar_pose;
+    ArPose_create(
+        arcore_session_.get(), nullptr,
+        internal::ScopedArCoreObject<ArPose*>::Receiver(ar_pose).get());
+
+    ArAnchor_getPose(arcore_session_.get(), anchor_it->second.get(),
+                     ar_pose.get());
+    mojom::VRPosePtr mojo_pose =
+        GetMojomPoseFromArPose(arcore_session_.get(), std::move(ar_pose));
+
+    return mojo::ConvertTo<gfx::Transform>(mojo_pose);
+  } else {
+    NOTREACHED();
+    return base::nullopt;
+  }
+}  // namespace device
+
+void ArCoreImpl::UnsubscribeFromHitTest(uint32_t subscription_id) {
+  auto it = hit_test_subscription_id_to_data_.find(
+      HitTestSubscriptionId(subscription_id));
+  if (it == hit_test_subscription_id_to_data_.end()) {
+    return;
+  }
+
+  hit_test_subscription_id_to_data_.erase(it);
+}
+
+base::Optional<HitTestSubscriptionId>
+ArCoreImpl::CreateHitTestSubscriptionId() {
+  if (next_id_ == std::numeric_limits<uint32_t>::max()) {
+    return base::nullopt;
+  }
+
+  uint32_t current_id = next_id_++;
+
+  return HitTestSubscriptionId(current_id);
+}
+
 bool ArCoreImpl::RequestHitTest(
     const mojom::XRRayPtr& ray,
     std::vector<mojom::XRHitResultPtr>* hit_results) {
-  DVLOG(2) << __func__ << ": ray origin=" << ray->origin.ToString()
-           << ", direction=" << ray->direction.ToString();
+  DCHECK(ray);
+  return RequestHitTest(ray->origin, ray->direction, hit_results);
+}
+
+bool ArCoreImpl::RequestHitTest(
+    const gfx::Point3F& origin,
+    const gfx::Vector3dF& direction,
+    std::vector<mojom::XRHitResultPtr>* hit_results) {
+  DVLOG(2) << __func__ << ": origin=" << origin.ToString()
+           << ", direction=" << direction.ToString();
 
   DCHECK(hit_results);
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
   DCHECK(arcore_frame_.is_valid());
+
+  // ArCore returns hit-results in sorted order, thus providing the guarantee
+  // of sorted results promised by the WebXR spec for requestHitTest().
+  std::array<float, 3> origin_array = {origin.x(), origin.y(), origin.z()};
+  std::array<float, 3> direction_array = {direction.x(), direction.y(),
+                                          direction.z()};
 
   internal::ScopedArCoreObject<ArHitResultList*> arcore_hit_result_list;
   ArHitResultList_create(
@@ -611,14 +845,9 @@ bool ArCoreImpl::RequestHitTest(
     return false;
   }
 
-  // ArCore returns hit-results in sorted order, thus providing the guarantee
-  // of sorted results promised by the WebXR spec for requestHitTest().
-  float origin[3] = {ray->origin.x(), ray->origin.y(), ray->origin.z()};
-  float direction[3] = {ray->direction.x(), ray->direction.y(),
-                        ray->direction.z()};
-
-  ArFrame_hitTestRay(arcore_session_.get(), arcore_frame_.get(), origin,
-                     direction, arcore_hit_result_list.get());
+  ArFrame_hitTestRay(arcore_session_.get(), arcore_frame_.get(),
+                     origin_array.data(), direction_array.data(),
+                     arcore_hit_result_list.get());
 
   int arcore_hit_result_list_size = 0;
   ArHitResultList_getSize(arcore_session_.get(), arcore_hit_result_list.get(),

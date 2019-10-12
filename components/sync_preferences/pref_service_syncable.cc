@@ -42,18 +42,17 @@ PrefServiceSyncable::PrefServiceSyncable(
     bool async)
     : PrefService(std::move(pref_notifier),
                   std::move(pref_value_store),
-                  std::move(user_prefs),
+                  user_prefs,
                   pref_registry,
                   std::move(read_error_callback),
                   async),
       pref_service_forked_(false),
-      unknown_pref_accessor_(this, pref_registry.get(), user_pref_store_.get()),
       pref_sync_associator_(pref_model_associator_client,
                             syncer::PREFERENCES,
-                            &unknown_pref_accessor_),
+                            user_prefs.get()),
       priority_pref_sync_associator_(pref_model_associator_client,
                                      syncer::PRIORITY_PREFERENCES,
-                                     &unknown_pref_accessor_),
+                                     user_prefs.get()),
       pref_registry_(std::move(pref_registry)) {
   pref_sync_associator_.SetPrefService(this);
   priority_pref_sync_associator_.SetPrefService(this);
@@ -180,12 +179,8 @@ void PrefServiceSyncable::AddRegisteredSyncablePreference(
     uint32_t flags) {
   DCHECK(FindPreference(path));
   if (flags & user_prefs::PrefRegistrySyncable::SYNCABLE_PREF) {
-    DCHECK(!pref_sync_associator_.models_associated() ||
-           pref_registry_->IsWhitelistedLateRegistrationPref(path));
     pref_sync_associator_.RegisterPref(path);
   } else if (flags & user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF) {
-    DCHECK(!priority_pref_sync_associator_.models_associated() ||
-           pref_registry_->IsWhitelistedLateRegistrationPref(path));
     priority_pref_sync_associator_.RegisterPref(path);
   }
 }

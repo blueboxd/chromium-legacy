@@ -22,7 +22,6 @@ namespace dom_distiller {
 class DistilledContentStore;
 class DistillerFactory;
 class DistillerPageFactory;
-class DomDistillerStoreInterface;
 class TaskTracker;
 class ViewerHandle;
 class ViewRequestDelegate;
@@ -34,27 +33,6 @@ class DomDistillerServiceInterface {
  public:
   typedef base::Callback<void(bool)> ArticleAvailableCallback;
   virtual ~DomDistillerServiceInterface() {}
-
-  // Returns whether an article stored has the given entry id.
-  virtual bool HasEntry(const std::string& entry_id) = 0;
-
-  // Returns the source URL given an entry ID. If the entry ID article has
-  // multiple pages, this will return the URL of the first page. Returns an
-  // empty string if there is no entry associated with the given entry ID.
-  virtual std::string GetUrlForEntry(const std::string& entry_id) = 0;
-
-  // Request to view an article by entry id. Returns a null pointer if no entry
-  // with |entry_id| exists. The ViewerHandle should be destroyed before the
-  // ViewRequestDelegate. The request will be cancelled when the handle is
-  // destroyed (or when this service is destroyed), which also ensures that
-  // the |delegate| is not called after that.
-  // Use CreateDefaultDistillerPage() to create a default |distiller_page|.
-  // The provided |distiller_page| is only used if there is not already a
-  // distillation task in progress for the given |entry_id|.
-  virtual std::unique_ptr<ViewerHandle> ViewEntry(
-      ViewRequestDelegate* delegate,
-      std::unique_ptr<DistillerPage> distiller_page,
-      const std::string& entry_id) = 0;
 
   // Request to view an article by url.
   // Use CreateDefaultDistillerPage() to create a default |distiller_page|.
@@ -86,19 +64,12 @@ class DomDistillerServiceInterface {
 class DomDistillerService : public DomDistillerServiceInterface {
  public:
   DomDistillerService(
-      std::unique_ptr<DomDistillerStoreInterface> store,
       std::unique_ptr<DistillerFactory> distiller_factory,
       std::unique_ptr<DistillerPageFactory> distiller_page_factory,
       std::unique_ptr<DistilledPagePrefs> distilled_page_prefs);
   ~DomDistillerService() override;
 
   // DomDistillerServiceInterface implementation.
-  bool HasEntry(const std::string& entry_id) override;
-  std::string GetUrlForEntry(const std::string& entry_id) override;
-  std::unique_ptr<ViewerHandle> ViewEntry(
-      ViewRequestDelegate* delegate,
-      std::unique_ptr<DistillerPage> distiller_page,
-      const std::string& entry_id) override;
   std::unique_ptr<ViewerHandle> ViewUrl(
       ViewRequestDelegate* delegate,
       std::unique_ptr<DistillerPage> distiller_page,
@@ -114,20 +85,15 @@ class DomDistillerService : public DomDistillerServiceInterface {
 
   TaskTracker* CreateTaskTracker(const ArticleEntry& entry);
 
-  TaskTracker* GetTaskTrackerForEntry(const ArticleEntry& entry) const;
   TaskTracker* GetTaskTrackerForUrl(const GURL& url) const;
 
-  // Gets the task tracker for the given |url| or |entry|. If no appropriate
+  // Gets the task tracker for the given |url|. If no appropriate
   // tracker exists, this will create one and put it in the |TaskTracker|
   // parameter passed into this function, initialize it, and add it to
-  // |tasks_|. If a |TaskTracker| needed to be created, these functions will
-  // return true.
+  // |tasks_|. Return whether a |TaskTracker| needed to be created.
   bool GetOrCreateTaskTrackerForUrl(const GURL& url,
                                     TaskTracker** task_tracker);
-  bool GetOrCreateTaskTrackerForEntry(const ArticleEntry& entry,
-                                      TaskTracker** task_tracker);
 
-  std::unique_ptr<DomDistillerStoreInterface> store_;
   std::unique_ptr<DistilledContentStore> content_store_;
   std::unique_ptr<DistillerFactory> distiller_factory_;
   std::unique_ptr<DistillerPageFactory> distiller_page_factory_;

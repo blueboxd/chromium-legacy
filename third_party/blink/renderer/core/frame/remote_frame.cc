@@ -46,6 +46,7 @@ RemoteFrame::RemoteFrame(RemoteFrameClient* client,
   dom_window_ = MakeGarbageCollected<RemoteDOMWindow>(*this);
   UpdateInertIfPossible();
   UpdateInheritedEffectiveTouchActionIfPossible();
+  UpdateVisibleToHitTesting();
 
   Initialize();
 }
@@ -214,7 +215,7 @@ RemoteFrameClient* RemoteFrame::Client() const {
   return static_cast<RemoteFrameClient*>(Frame::Client());
 }
 
-void RemoteFrame::PointerEventsChanged() {
+void RemoteFrame::DidChangeVisibleToHitTesting() {
   if (!cc_layer_ || !is_surface_layer_)
     return;
 
@@ -226,9 +227,9 @@ bool RemoteFrame::IsIgnoredForHitTest() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   if (!owner || !owner->GetLayoutObject())
     return false;
+
   return owner->OwnerType() == FrameOwnerElementType::kPortal ||
-         (owner->GetLayoutObject()->Style()->PointerEvents() ==
-          EPointerEvents::kNone);
+         !visible_to_hit_testing_;
 }
 
 void RemoteFrame::SetCcLayer(cc::Layer* cc_layer,
@@ -243,7 +244,10 @@ void RemoteFrame::SetCcLayer(cc::Layer* cc_layer,
   is_surface_layer_ = is_surface_layer;
   if (cc_layer_) {
     GraphicsLayer::RegisterContentsLayer(cc_layer_);
-    PointerEventsChanged();
+    if (is_surface_layer) {
+      static_cast<cc::SurfaceLayer*>(cc_layer_)->SetHasPointerEventsNone(
+          IsIgnoredForHitTest());
+    }
   }
 
   To<HTMLFrameOwnerElement>(Owner())->SetNeedsCompositingUpdate();

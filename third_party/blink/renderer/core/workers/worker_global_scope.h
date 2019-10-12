@@ -203,9 +203,7 @@ class CORE_EXPORT WorkerGlobalScope
   void queueMicrotask(V8VoidFunction*);
 
   TrustedTypePolicyFactory* GetTrustedTypes() const override;
-  TrustedTypePolicyFactory* trustedTypesWorkers() const {
-    return GetTrustedTypes();
-  }
+  TrustedTypePolicyFactory* trustedTypes() const { return GetTrustedTypes(); }
 
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,

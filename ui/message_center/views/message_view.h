@@ -18,8 +18,9 @@
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
-#include "ui/message_center/views/slide_out_controller.h"
 #include "ui/views/animation/ink_drop_host_view.h"
+#include "ui/views/animation/slide_out_controller.h"
+#include "ui/views/animation/slide_out_controller_delegate.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
@@ -43,9 +44,10 @@ class NotificationControlButtonsView;
 // NotificationViewMD subclass needs ink drop functionality.  Rework ink drops
 // to not need to be the base class of views which use them, and move the
 // functionality to the subclass that uses these.
-class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
-                                          public SlideOutController::Delegate,
-                                          public views::FocusChangeListener {
+class MESSAGE_CENTER_EXPORT MessageView
+    : public views::InkDropHostView,
+      public views::SlideOutControllerDelegate,
+      public views::FocusChangeListener {
  public:
   static const char kViewClassName[];
 
@@ -126,7 +128,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   void AddedToWidget() override;
   const char* GetClassName() const final;
 
-  // message_center::SlideOutController::Delegate:
+  // views::SlideOutControllerDelegate:
   ui::Layer* GetSlideOutLayer() override;
   void OnSlideStarted() override;
   void OnSlideChanged(bool in_progress) override;
@@ -179,7 +181,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   friend class test::MessagePopupCollectionTest;
 
   // Returns the ideal slide mode by calculating the current status.
-  SlideOutController::SlideMode CalculateSlideMode() const;
+  views::SlideOutController::SlideMode CalculateSlideMode() const;
 
   // Returns if the control buttons should be shown.
   bool ShouldShowControlButtons() const;
@@ -196,7 +198,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   // "fixed" mode flag. See the comment in MessageView::Mode for detail.
   bool setting_mode_ = false;
 
-  SlideOutController slide_out_controller_;
+  views::SlideOutController slide_out_controller_;
   base::ObserverList<SlideObserver>::Unchecked slide_observers_;
 
   // True if |this| is embedded in another view. Equivalent to |!top_level| in

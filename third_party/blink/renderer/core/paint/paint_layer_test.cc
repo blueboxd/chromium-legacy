@@ -436,13 +436,64 @@ static const Vector<PaintLayer*>* LayersPaintingOverlayScrollbarsAfter(
       .LayersPaintingOverlayScrollbarsAfter(layer);
 }
 
-TEST_P(PaintLayerTest, ReorderOverlayScrollbars_StackedWithInFlowDescendant) {
+// We need new enum and class to test the overlay overflow controls reordering,
+// but we don't move the tests related to the new class to the bottom, which is
+// behind all tests of the PaintLayerTest. Because it will make the git history
+// hard to track.
+enum OverlayType { kOverlayResizer, kOverlayScrollbars };
+
+class ReorderOverlayOverflowControlsTest
+    : public testing::WithParamInterface<std::tuple<unsigned, OverlayType>>,
+      private ScopedCompositeAfterPaintForTest,
+      public RenderingTest {
+ public:
+  ReorderOverlayOverflowControlsTest()
+      : ScopedCompositeAfterPaintForTest(std::get<0>(GetParam()) &
+                                         kCompositeAfterPaint),
+        RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
+  ~ReorderOverlayOverflowControlsTest() {
+    // Must destruct all objects before toggling back feature flags.
+    WebHeap::CollectAllGarbageForTesting();
+  }
+
+  OverlayType GetOverlayType() const { return std::get<1>(GetParam()); }
+
+  void InitOverflowStyle(const char* id) {
+    GetDocument().getElementById(id)->setAttribute(
+        html_names::kStyleAttr, GetOverlayType() == kOverlayScrollbars
+                                    ? "overflow : auto"
+                                    : "overflow: hidden; resize: both");
+    UpdateAllLifecyclePhasesForTest();
+  }
+
+  void SetUp() override {
+    EnableCompositing();
+    RenderingTest::SetUp();
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ReorderOverlayOverflowControlsTest,
+    ::testing::Combine(::testing::Values(0, kCompositeAfterPaint),
+                       ::testing::Values(kOverlayScrollbars, kOverlayResizer)));
+
+TEST_P(ReorderOverlayOverflowControlsTest, StackedWithInFlowDescendant) {
   SetBodyInnerHTML(R"HTML(
-    <div id='parent' style='overflow: auto; position: relative;
-                            width: 100px; height: 100px'>
+    <style>
+      #parent {
+        position: relative;
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <div id='parent'>
       <div id='child' style='position: relative; height: 200px'></div>
     </div>
   )HTML");
+
+  InitOverflowStyle("parent");
+
   auto* parent = GetPaintLayerByElementId("parent");
   auto* child = GetPaintLayerByElementId("child");
   EXPECT_TRUE(parent->NeedsReorderOverlayScrollbars());
@@ -453,8 +504,15 @@ TEST_P(PaintLayerTest, ReorderOverlayScrollbars_StackedWithInFlowDescendant) {
   GetDocument().getElementById("child")->setAttribute(
       html_names::kStyleAttr, "position: relative; height: 80px");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(parent->NeedsReorderOverlayScrollbars());
-  EXPECT_FALSE(LayersPaintingOverlayScrollbarsAfter(child));
+  if (GetOverlayType() == kOverlayScrollbars) {
+    EXPECT_FALSE(parent->NeedsReorderOverlayScrollbars());
+    EXPECT_FALSE(LayersPaintingOverlayScrollbarsAfter(child));
+  } else {
+    EXPECT_TRUE(parent->NeedsReorderOverlayScrollbars());
+    EXPECT_FALSE(child->NeedsReorderOverlayScrollbars());
+    EXPECT_THAT(LayersPaintingOverlayScrollbarsAfter(child),
+                Pointee(ElementsAre(parent)));
+  }
 
   GetDocument().getElementById("child")->setAttribute(
       html_names::kStyleAttr, "position: relative; width: 200px; height: 80px");
@@ -477,14 +535,25 @@ TEST_P(PaintLayerTest, ReorderOverlayScrollbars_StackedWithInFlowDescendant) {
               Pointee(ElementsAre(parent)));
 }
 
-TEST_P(PaintLayerTest,
-       ReorderOverlayScrollbars_StackedWithOutOfFlowDescendant) {
+TEST_P(ReorderOverlayOverflowControlsTest, StackedWithOutOfFlowDescendant) {
   SetBodyInnerHTML(R"HTML(
-    <style>#child { width: 200px; height: 200px; }</style>
-    <div id='parent' style='overflow: auto; position: relative; height: 100px'>
+    <style>
+      #child {
+        width: 200px;
+        height: 200px;
+      }
+      #parent {
+        position: relative;
+        height: 100px;
+      }
+    </style>
+    <div id='parent'>
       <div id='child' style='position: absolute'></div>
     </div>
   )HTML");
+
+  InitOverflowStyle("parent");
+
   auto* parent = GetPaintLayerByElementId("parent");
   auto* child = GetPaintLayerByElementId("child");
   EXPECT_TRUE(parent->NeedsReorderOverlayScrollbars());
@@ -506,14 +575,26 @@ TEST_P(PaintLayerTest,
               Pointee(ElementsAre(parent)));
 }
 
-TEST_P(PaintLayerTest, ReorderOverlayScrollbars_StackedWithZIndexDescendant) {
+TEST_P(ReorderOverlayOverflowControlsTest, StackedWithZIndexDescendant) {
   SetBodyInnerHTML(R"HTML(
-    <style>#child { position: absolute; width: 200px; height: 200px; }</style>
-    <div id='parent' style='overflow: auto; position: relative; height: 100px'>
-      <div id='child' style='position: absolute; z-index: 1;
-                             width: 200px; height: 200px'></div>
+    <style>
+      #parent {
+        position: relative;
+        height: 100px;
+      }
+      #child {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+      }
+    </style>
+    <div id='parent'>
+      <div id='child' style='z-index: 1'></div>
     </div>
   )HTML");
+
+  InitOverflowStyle("parent");
+
   auto* parent = GetPaintLayerByElementId("parent");
   auto* child = GetPaintLayerByElementId("child");
   EXPECT_TRUE(parent->NeedsReorderOverlayScrollbars());
@@ -535,16 +616,32 @@ TEST_P(PaintLayerTest, ReorderOverlayScrollbars_StackedWithZIndexDescendant) {
               Pointee(ElementsAre(parent)));
 }
 
-TEST_P(PaintLayerTest,
-       ReorderOverlayScrollbars_NestedStackedWithInFlowStackedChild) {
+TEST_P(ReorderOverlayOverflowControlsTest,
+       NestedStackedWithInFlowStackedChild) {
   SetBodyInnerHTML(R"HTML(
-    <div id='ancestor'
-         style='overflow: auto; position: relative; height: 100px'>
-      <div id='parent' style='overflow: auto; height: 200px'>
-        <div id="child" style='position: relative; height: 300px'></div>
+    <style>
+      #ancestor {
+        position: relative;
+        height: 100px;
+      }
+      #parent {
+        height: 200px;
+      }
+      #child {
+        position: relative;
+        height: 300px;
+      }
+    </style>
+    <div id='ancestor'>
+      <div id='parent'>
+        <div id="child"></div>
       </div>
     </div>
   )HTML");
+
+  InitOverflowStyle("ancestor");
+  InitOverflowStyle("parent");
+
   auto* ancestor = GetPaintLayerByElementId("ancestor");
   auto* parent = GetPaintLayerByElementId("parent");
   auto* child = GetPaintLayerByElementId("child");
@@ -555,18 +652,36 @@ TEST_P(PaintLayerTest,
               Pointee(ElementsAre(parent, ancestor)));
 }
 
-TEST_P(PaintLayerTest,
-       ReorderOverlayScrollbars_NestedStackedWithOutOfFlowStackedChild) {
+TEST_P(ReorderOverlayOverflowControlsTest,
+       NestedStackedWithOutOfFlowStackedChild) {
   SetBodyInnerHTML(R"HTML(
-    <div id='ancestor'
-         style='overflow: auto; position: relative; height: 100px'>
-      <div id='parent' style='overflow: auto; position: absolute;
-                             width: 200px; height: 200px'>
-        <div id="child" style='position: absolute; width: 300px; height: 300px'>
+    <style>
+      #ancestor {
+        position: relative;
+        height: 100px;
+      }
+      #parent {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+      }
+      #child {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+      }
+    </style>
+    <div id='ancestor'>
+      <div id='parent'>
+        <div id="child">
         </div>
       </div>
     </div>
   )HTML");
+
+  InitOverflowStyle("ancestor");
+  InitOverflowStyle("parent");
+
   auto* ancestor = GetPaintLayerByElementId("ancestor");
   auto* parent = GetPaintLayerByElementId("parent");
   auto* child = GetPaintLayerByElementId("child");
@@ -577,18 +692,38 @@ TEST_P(PaintLayerTest,
               Pointee(ElementsAre(parent, ancestor)));
 }
 
-TEST_P(PaintLayerTest, ReorderOverlayScrollbars_MultipleChildren) {
+TEST_P(ReorderOverlayOverflowControlsTest, MultipleChildren) {
   SetBodyInnerHTML(R"HTML(
     <style>
-      div { width: 200px; height: 200px; }
-      #parent { overflow: auto; width: 100px; height: 100px; }
+      div {
+        width: 200px;
+        height: 200px;
+      }
+      #parent {
+        width: 100px;
+        height: 100px;
+      }
+      #low-child {
+        position: absolute;
+        z-index: 1;
+      }
+      #middle-child {
+        position: relative;
+        z-index: 2;
+      }
+      #high-child {
+        position: absolute;
+        z-index: 3;
+      }
     </style>
     <div id='parent'>
-      <div id="low-child" style='position: absolute; z-index: 1'></div>
-      <div id="middle-child" style='position: relative; z-index: 2'></div>
-      <div id="high-child" style='position: absolute; z-index: 3'></div>
+      <div id="low-child"></div>
+      <div id="middle-child"></div>
+      <div id="high-child"></div>
     </div>
   )HTML");
+
+  InitOverflowStyle("parent");
 
   auto* parent = GetPaintLayerByElementId("parent");
   auto* low_child = GetPaintLayerByElementId("low-child");
@@ -602,16 +737,21 @@ TEST_P(PaintLayerTest, ReorderOverlayScrollbars_MultipleChildren) {
               Pointee(ElementsAre(parent)));
   EXPECT_FALSE(LayersPaintingOverlayScrollbarsAfter(high_child));
 
-  GetDocument().getElementById("parent")->setAttribute(
-      html_names::kStyleAttr, "position: absolute; z-index: 1");
+  std::string extra_style = GetOverlayType() == kOverlayScrollbars
+                                ? "overflow: auto;"
+                                : "overflow: hidden; resize: both;";
+  std::string new_style = extra_style + "position: absolute; z-index: 1";
+  GetDocument().getElementById("parent")->setAttribute(html_names::kStyleAttr,
+                                                       new_style.c_str());
   UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(parent->NeedsReorderOverlayScrollbars());
   EXPECT_FALSE(LayersPaintingOverlayScrollbarsAfter(low_child));
   EXPECT_FALSE(LayersPaintingOverlayScrollbarsAfter(middle_child));
   EXPECT_FALSE(LayersPaintingOverlayScrollbarsAfter(high_child));
 
+  new_style = extra_style + "position: absolute;";
   GetDocument().getElementById("parent")->setAttribute(html_names::kStyleAttr,
-                                                       "position: absolute");
+                                                       new_style.c_str());
   UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(parent->NeedsReorderOverlayScrollbars());
   EXPECT_FALSE(LayersPaintingOverlayScrollbarsAfter(low_child));
@@ -620,13 +760,21 @@ TEST_P(PaintLayerTest, ReorderOverlayScrollbars_MultipleChildren) {
               Pointee(ElementsAre(parent)));
 }
 
-TEST_P(PaintLayerTest,
-       ReorderOverlayScrollbars_NonStackedWithInFlowDescendant) {
+TEST_P(ReorderOverlayOverflowControlsTest, NonStackedWithInFlowDescendant) {
   SetBodyInnerHTML(R"HTML(
-    <div id='parent' style='overflow: auto; width: 100px; height: 100px'>
+    <style>
+      #parent {
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <div id='parent'>
       <div id='child' style='position: relative; height: 200px'></div>
     </div>
   )HTML");
+
+  InitOverflowStyle("parent");
+
   auto* parent = GetPaintLayerByElementId("parent");
   auto* child = GetPaintLayerByElementId("child");
   EXPECT_TRUE(parent->NeedsReorderOverlayScrollbars());
@@ -637,8 +785,14 @@ TEST_P(PaintLayerTest,
   GetDocument().getElementById("child")->setAttribute(
       html_names::kStyleAttr, "position: relative; height: 80px");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(parent->NeedsReorderOverlayScrollbars());
-  EXPECT_FALSE(LayersPaintingOverlayScrollbarsAfter(child));
+  if (GetOverlayType() == kOverlayResizer) {
+    EXPECT_TRUE(parent->NeedsReorderOverlayScrollbars());
+    EXPECT_THAT(LayersPaintingOverlayScrollbarsAfter(child),
+                Pointee(ElementsAre(parent)));
+  } else {
+    EXPECT_FALSE(parent->NeedsReorderOverlayScrollbars());
+    EXPECT_FALSE(LayersPaintingOverlayScrollbarsAfter(child));
+  }
 
   GetDocument().getElementById("child")->setAttribute(
       html_names::kStyleAttr, "position: relative; width: 200px; height: 80px");
@@ -661,15 +815,25 @@ TEST_P(PaintLayerTest,
               Pointee(ElementsAre(parent)));
 }
 
-TEST_P(PaintLayerTest,
-       ReorderOverlayScrollbars_NonStackedWithZIndexInFlowDescendant) {
+TEST_P(ReorderOverlayOverflowControlsTest,
+       NonStackedWithZIndexInFlowDescendant) {
   SetBodyInnerHTML(R"HTML(
-    <style>#child { position: relative; height: 200px; }</style>
-    <div id='parent' style='overflow: auto; height: 100px'>
-      <div id='child' style='z-index: 1'>
-      </div>
+    <style>
+      #parent {
+        height: 100px;
+      }
+      #child {
+        position: relative;
+        height: 200px;
+      }
+    </style>
+    <div id='parent'>
+      <div id='child' style='z-index: 1'></div>
     </div>
   )HTML");
+
+  InitOverflowStyle("parent");
+
   auto* parent = GetPaintLayerByElementId("parent");
   auto* child = GetPaintLayerByElementId("child");
   EXPECT_TRUE(parent->NeedsReorderOverlayScrollbars());
@@ -691,14 +855,25 @@ TEST_P(PaintLayerTest,
               Pointee(ElementsAre(parent)));
 }
 
-TEST_P(PaintLayerTest,
-       ReorderOverlayScrollbars_NonStackedWithOutOfFlowDescendant) {
+TEST_P(ReorderOverlayOverflowControlsTest, NonStackedWithOutOfFlowDescendant) {
   SetBodyInnerHTML(R"HTML(
-    <div id='parent' style='overflow: auto; height: 100px'>
-      <div id='child' style='position: absolute;
-                             width: 200px; height: 200px'></div>
+    <style>
+      #parent {
+        height: 100px;
+      }
+      #child {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+      }
+    </style>
+    <div id='parent'>
+      <div id='child'></div>
     </div>
   )HTML");
+
+  InitOverflowStyle("parent");
+
   auto* parent = GetPaintLayerByElementId("parent");
   auto* child = GetPaintLayerByElementId("child");
   EXPECT_FALSE(parent->NeedsReorderOverlayScrollbars());
@@ -706,29 +881,49 @@ TEST_P(PaintLayerTest,
   EXPECT_FALSE(LayersPaintingOverlayScrollbarsAfter(child));
 }
 
-TEST_P(PaintLayerTest,
-       ReorderOverlayScrollbars_NonStackedWithNonStackedDescendant) {
+TEST_P(ReorderOverlayOverflowControlsTest, NonStackedWithNonStackedDescendant) {
   SetBodyInnerHTML(R"HTML(
-    <div id='parent' style='overflow: auto'>
-      <div id='child' style='overflow: auto'></div>
+    <div id='parent'>
+      <div id='child'></div>
     </div>
   )HTML");
+
+  InitOverflowStyle("parent");
+  InitOverflowStyle("child");
+
   auto* parent = GetPaintLayerByElementId("parent");
   auto* child = GetPaintLayerByElementId("child");
+
   EXPECT_FALSE(parent->NeedsReorderOverlayScrollbars());
   EXPECT_FALSE(child->NeedsReorderOverlayScrollbars());
   EXPECT_FALSE(LayersPaintingOverlayScrollbarsAfter(child));
 }
 
-TEST_P(PaintLayerTest,
-       ReorderOverlayScrollbars_NestedNonStackedWithInFlowStackedChild) {
+TEST_P(ReorderOverlayOverflowControlsTest,
+       NestedNonStackedWithInFlowStackedChild) {
   SetBodyInnerHTML(R"HTML(
-    <div id='ancestor' style='overflow: auto; height: 100px'>
-      <div id='parent' style='overflow: auto; height: 200px'>
-        <div id="child" style='position: relative; height: 300px'></div>
+    <style>
+      #ancestor {
+        height: 100px;
+      }
+      #parent {
+        height: 200px;
+      }
+      #child {
+        position: relative;
+        height: 300px;
+      }
+    </style>
+    <div id='ancestor'>
+      <div id='parent'>
+        <div id='child'></div>
       </div>
     </div>
   )HTML");
+
+  InitOverflowStyle("ancestor");
+  InitOverflowStyle("parent");
+
   auto* ancestor = GetPaintLayerByElementId("ancestor");
   auto* parent = GetPaintLayerByElementId("parent");
   auto* child = GetPaintLayerByElementId("child");
@@ -739,16 +934,33 @@ TEST_P(PaintLayerTest,
               Pointee(ElementsAre(parent, ancestor)));
 }
 
-TEST_P(PaintLayerTest,
-       ReorderOverlayScrollbars_NestedNonStackedWithOutOfFlowStackedChild) {
+TEST_P(ReorderOverlayOverflowControlsTest,
+       NestedNonStackedWithOutOfFlowStackedChild) {
   SetBodyInnerHTML(R"HTML(
-    <div id='ancestor' style='overflow: auto; height: 100px'>
-      <div id='parent' style='overflow: auto; height: 200px'>
-        <div id="child" style='position: absolute; width: 300px; height: 300px'>
+    <style>
+      #ancestor {
+        height: 100px;
+      }
+      #parent {
+        height: 200px;
+      }
+      #child {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+      }
+    </style>
+    <div id='ancestor'>
+      <div id='parent'>
+        <div id='child'>
         </div>
       </div>
     </div>
   )HTML");
+
+  InitOverflowStyle("ancestor");
+  InitOverflowStyle("parent");
+
   auto* ancestor = GetPaintLayerByElementId("ancestor");
   auto* parent = GetPaintLayerByElementId("parent");
   auto* child = GetPaintLayerByElementId("child");

@@ -15,8 +15,8 @@ namespace ash {
 
 namespace {
 
-// The minimum scale that can be used when scaling down the app list view UI.
-constexpr float kMinimumConfigScale = 48. / 120.;
+// The minimum allowed app list grid item heightafter scaling a config down.
+constexpr float kMinimumTileHeightAfterConfigScale = 48.;
 
 // Determines the app list config that should be used for a display work area
 // size. It should not be used if ScalableAppList feature is disabled.
@@ -89,22 +89,18 @@ AppListConfig* AppListConfigProvider::GetConfigForType(
 
 std::unique_ptr<AppListConfig> AppListConfigProvider::CreateForAppListWidget(
     const gfx::Size& display_work_area_size,
-    const gfx::Size& available_grid_size,
+    int min_horizontal_margin,
+    int shelf_height,
     const AppListConfig* current_config) {
-  if (app_list_features::IsScalableAppListEnabled()) {
-    ash::AppListConfigType type =
-        GetConfigTypeForDisplaySize(display_work_area_size);
-    if (current_config && current_config->type() == type)
-      return nullptr;
-    // Ensure that the app list config provider has a config with the same
-    // type as the created config - the app list model will use the config owned
-    // by the AppListConfigProvider instance to generate folder icons needed by
-    // app list UI.
-    GetConfigForType(type, true /*can_create*/);
-    return std::make_unique<AppListConfig>(type);
-  }
+  const AppListConfig& base_config =
+      GetBaseConfigForDisplaySize(display_work_area_size);
 
-  AppListConfig& base_config = AppListConfig::instance();
+  float scale_x = 1;
+  float scale_y = 1;
+  float inner_tile_scale_y = 1;
+
+  const float min_config_scale =
+      kMinimumTileHeightAfterConfigScale / base_config.grid_tile_height();
 
   const int min_grid_height =
       (display_work_area_size.width() < display_work_area_size.height()
@@ -117,14 +113,28 @@ std::unique_ptr<AppListConfig> AppListConfigProvider::CreateForAppListWidget(
            : base_config.preferred_cols()) *
       base_config.grid_tile_width();
 
-  float scale_x = 1;
-  float scale_y = 1;
-  float inner_tile_scale_y = 1;
+  int non_grid_height = base_config.suggestion_chip_container_top_margin() +
+                        base_config.suggestion_chip_container_height();
+  // Add search box height.
+  non_grid_height += display_work_area_size.height() - shelf_height >= 600
+                         ? base_config.search_box_height()
+                         : base_config.search_box_height_for_dense_layout();
 
-  if (available_grid_size.height() < min_grid_height) {
+  // Add minimum top margin (which matches the grid fadeout zone when scalable
+  // app list is enabled).
+  if (app_list_features::IsScalableAppListEnabled()) {
+    non_grid_height += base_config.grid_fadeout_zone_height();
+  } else {
+    non_grid_height += base_config.search_box_fullscreen_top_padding();
+  }
+
+  const int available_grid_height =
+      display_work_area_size.height() - shelf_height - non_grid_height;
+
+  if (available_grid_height < min_grid_height) {
     scale_y = std::max(
-        kMinimumConfigScale,
-        static_cast<float>(available_grid_size.height() -
+        min_config_scale,
+        static_cast<float>(available_grid_height -
                            2 * base_config.grid_fadeout_zone_height()) /
             min_grid_height);
     // Adjust scale to reflect the fact the app list item title height does not
@@ -142,24 +152,42 @@ std::unique_ptr<AppListConfig> AppListConfigProvider::CreateForAppListWidget(
         total_title_padding;
   }
 
-  if (available_grid_size.width() < min_grid_width) {
-    scale_x = std::max(
-        kMinimumConfigScale,
-        static_cast<float>(available_grid_size.width()) / min_grid_width);
+  const int available_grid_width =
+      display_work_area_size.width() - 2 * min_horizontal_margin;
+
+  if (available_grid_width < min_grid_width) {
+    scale_x =
+        std::max(min_config_scale,
+                 static_cast<float>(available_grid_width) / min_grid_width);
   }
 
-  if (current_config && current_config->scale_x() == scale_x &&
+  if (current_config && current_config->type() == base_config.type() &&
+      current_config->scale_x() == scale_x &&
       current_config->scale_y() == scale_y) {
     return nullptr;
   }
 
   return std::make_unique<AppListConfig>(base_config, scale_x, scale_y,
                                          inner_tile_scale_y,
-                                         scale_y == kMinimumConfigScale);
+                                         scale_y == min_config_scale);
 }
 
 void AppListConfigProvider::ResetForTesting() {
   configs_.clear();
+}
+
+const AppListConfig& AppListConfigProvider::GetBaseConfigForDisplaySize(
+    const gfx::Size& display_work_area_size) {
+  if (!app_list_features::IsScalableAppListEnabled())
+    return AppListConfig::instance();
+
+  ash::AppListConfigType type =
+      GetConfigTypeForDisplaySize(display_work_area_size);
+  // Ensures that the app list config provider has a config with the same
+  // type as the created config - the app list model will use the config owned
+  // by the AppListConfigProvider instance to generate folder icons needed by
+  // app list UI.
+  return *GetConfigForType(type, true /*can_create*/);
 }
 
 }  // namespace ash

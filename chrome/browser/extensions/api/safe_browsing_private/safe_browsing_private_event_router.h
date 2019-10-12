@@ -59,6 +59,9 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   static const char kKeyClickedThrough[];
   static const char kKeyTriggeredRules[];
   static const char kKeyThreatType[];
+  static const char kKeyContentType[];
+  static const char kKeyContentSize[];
+  static const char kKeyTrigger[];
 
   static const char kKeyPasswordReuseEvent[];
   static const char kKeyPasswordChangedEvent[];
@@ -66,6 +69,11 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   static const char kKeyInterstitialEvent[];
   static const char kKeySensitiveDataEvent[];
   static const char kKeyLargeUnscannedFileEvent[];
+
+  // String constants for the "trigger" event field.
+  static const char kTriggerFileDownload[];
+  static const char kTriggerFileUpload[];
+  static const char kTriggerWebContentUpload[];
 
   explicit SafeBrowsingPrivateEventRouter(content::BrowserContext* context);
 
@@ -83,7 +91,9 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   // Notifies listeners that the user just opened a dangerous download.
   void OnDangerousDownloadOpened(const GURL& url,
                                  const std::string& file_name,
-                                 const std::string& download_digest_sha256);
+                                 const std::string& download_digest_sha256,
+                                 const std::string& mime_type,
+                                 const int64_t content_size);
 
   // Notifies listeners that the user saw a security interstitial.
   void OnSecurityInterstitialShown(const GURL& url,
@@ -99,19 +109,28 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   void OnDangerousDeepScanningResult(const GURL& url,
                                      const std::string& file_name,
                                      const std::string& download_digest_sha256,
-                                     const std::string& threat_type);
+                                     const std::string& threat_type,
+                                     const std::string& mime_type,
+                                     const std::string& trigger,
+                                     const int64_t content_size);
 
   // Notifies listeners that scanning for sensitive data detected a violation.
   void OnSensitiveDataEvent(
       const safe_browsing::DlpDeepScanningVerdict& verdict,
       const GURL& url,
       const std::string& file_name,
-      const std::string& download_digest_sha256);
+      const std::string& download_digest_sha256,
+      const std::string& mime_type,
+      const std::string& trigger,
+      const int64_t content_size);
 
   // Notifies listeners that deep scanning failed, since the file was too large.
   void OnLargeUnscannedFileEvent(const GURL& url,
                                  const std::string& file_name,
-                                 const std::string& download_digest_sha256);
+                                 const std::string& download_digest_sha256,
+                                 const std::string& mime_type,
+                                 const std::string& trigger,
+                                 const int64_t content_size);
 
   // Notifies listeners that the user saw a download warning.
   // - |url| is the download URL
@@ -121,7 +140,9 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   void OnDangerousDownloadWarning(const GURL& url,
                                   const std::string& file_name,
                                   const std::string& download_digest_sha256,
-                                  const std::string& threat_type);
+                                  const std::string& threat_type,
+                                  const std::string& mime_type,
+                                  const int64_t content_size);
 
   // Notifies listeners that the user bypassed a download warning.
   // - |url| is the download URL
@@ -132,7 +153,9 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
       const GURL& url,
       const std::string& file_name,
       const std::string& download_digest_sha256,
-      const std::string& threat_type);
+      const std::string& threat_type,
+      const std::string& mime_type,
+      const int64_t content_size);
 
   void SetCloudPolicyClientForTesting(
       std::unique_ptr<policy::CloudPolicyClient> client);

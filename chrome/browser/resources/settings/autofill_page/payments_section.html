@@ -42,8 +42,9 @@
         pref="{{prefs.autofill.credit_card_enabled}}">
     </settings-toggle-button>
     <template is="dom-if"
-        if="[[isUserFIDOVerifiable_(
-            prefs.autofill.credit_card_enabled.value)]]">
+        if="[[shouldShowFidoToggle_(
+            prefs.autofill.credit_card_enabled.value,
+            userIsFidoVerifiable_)]]">
       <settings-toggle-button
           class="settings-box first"
           id="autofillCreditCardFIDOAuthToggle"

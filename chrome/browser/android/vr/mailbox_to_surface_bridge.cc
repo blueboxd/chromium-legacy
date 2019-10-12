@@ -144,8 +144,7 @@ GLuint ConsumeTexture(gpu::gles2::GLES2Interface* gl,
 
 namespace vr {
 
-MailboxToSurfaceBridge::MailboxToSurfaceBridge()
-    : constructor_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+MailboxToSurfaceBridge::MailboxToSurfaceBridge() {
   DVLOG(1) << __FUNCTION__;
 }
 
@@ -177,20 +176,12 @@ void MailboxToSurfaceBridge::OnContextAvailableOnUiThread(
   // destruction.
   context_provider_ = std::move(provider);
 
-  if (on_context_provider_ready_) {
-    // We have a custom callback from CreateUnboundContextProvider. Run that.
-    // The client is responsible for running BindContextProviderToCurrentThread
-    // before use.
-    constructor_thread_task_runner_->PostTask(
-        FROM_HERE, std::move(on_context_provider_ready_));
-  } else {
-    DCHECK(on_context_bound_);
-    constructor_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &MailboxToSurfaceBridge::BindContextProviderToCurrentThread,
-            base::Unretained(this)));
-  }
+  DCHECK(on_context_bound_);
+  gl_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &MailboxToSurfaceBridge::BindContextProviderToCurrentThread,
+          base::Unretained(this)));
 }
 
 void MailboxToSurfaceBridge::BindContextProviderToCurrentThread() {
@@ -234,21 +225,11 @@ void MailboxToSurfaceBridge::CreateSurface(
   ANativeWindow_release(window);
 }
 
-void MailboxToSurfaceBridge::CreateUnboundContextProvider(
-    base::OnceClosure callback) {
-  on_context_provider_ready_ = std::move(callback);
-  DCHECK(!on_context_bound_);
-  CreateContextProviderInternal();
-}
-
 void MailboxToSurfaceBridge::CreateAndBindContextProvider(
     base::OnceClosure on_bound_callback) {
+  gl_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   on_context_bound_ = std::move(on_bound_callback);
-  DCHECK(!on_context_provider_ready_);
-  CreateContextProviderInternal();
-}
 
-void MailboxToSurfaceBridge::CreateContextProviderInternal() {
   // The callback to run in this thread. It is necessary to keep |surface| alive
   // until the context becomes available. So pass it on to the callback, so that
   // it stays alive, and is destroyed on the same thread once done.
@@ -292,17 +273,19 @@ void MailboxToSurfaceBridge::CreateContextProviderInternal() {
 }
 
 void MailboxToSurfaceBridge::ResizeSurface(int width, int height) {
+  surface_width_ = width;
+  surface_height_ = height;
+
   if (!IsConnected()) {
     // We're not initialized yet, save the requested size for later.
     needs_resize_ = true;
-    resize_width_ = width;
-    resize_height_ = height;
     return;
   }
-  DVLOG(1) << __FUNCTION__ << ": resize Surface to " << width << "x" << height;
-  gl_->ResizeCHROMIUM(width, height, 1.f, GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM,
-                      false);
-  gl_->Viewport(0, 0, width, height);
+  DVLOG(1) << __FUNCTION__ << ": resize Surface to " << surface_width_ << "x"
+           << surface_height_;
+  gl_->ResizeCHROMIUM(surface_width_, surface_height_, 1.f,
+                      GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM, false);
+  gl_->Viewport(0, 0, surface_width_, surface_height_);
 }
 
 bool MailboxToSurfaceBridge::CopyMailboxToSurfaceAndSwap(
@@ -315,12 +298,19 @@ bool MailboxToSurfaceBridge::CopyMailboxToSurfaceAndSwap(
   }
 
   TRACE_EVENT0("gpu", __FUNCTION__);
+
   if (needs_resize_) {
-    ResizeSurface(resize_width_, resize_height_);
+    ResizeSurface(surface_width_, surface_height_);
     needs_resize_ = false;
   }
 
   DCHECK(mailbox.mailbox.IsSharedImage());
+
+  // While it's not an error to use a zero-sized Surface, it's not going to
+  // produce any visible output. Show a debug mode warning in that case to avoid
+  // another annoying debugging session.
+  DLOG_IF(WARNING, !surface_width_ || !surface_height_)
+      << "Surface is zero-sized. Missing call to ResizeSurface?";
 
   GLuint sourceTexture = ConsumeTexture(gl_, mailbox);
   gl_->BeginSharedImageAccessDirectCHROMIUM(

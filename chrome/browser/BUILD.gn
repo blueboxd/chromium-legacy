@@ -765,6 +765,8 @@ jumbo_split_static_library("browser") {
     "media/webrtc/window_icon_util_chromeos.cc",
     "media/webrtc/window_icon_util_mac.mm",
     "media/webrtc/window_icon_util_win.cc",
+    "memory/chrome_browser_main_extra_parts_memory.cc",
+    "memory/chrome_browser_main_extra_parts_memory.h",
     "memory/enterprise_memory_limit_evaluator.cc",
     "memory/enterprise_memory_limit_evaluator.h",
     "memory/enterprise_memory_limit_pref_observer.cc",

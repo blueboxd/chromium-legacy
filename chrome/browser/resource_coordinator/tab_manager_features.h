@@ -32,6 +32,11 @@ extern const char kProactiveTabFreezeAndDiscardFeatureName[];
 // ProactiveTabFreezeAndDiscard feature.
 extern const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam[];
 
+// The name of the |ShouldPeriodicallyUnfreeze| parameter of the
+// ProactiveTabFreezeAndDiscard feature.
+extern const char
+    kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam[];
+
 // The name of the |DisableHeuristicsProtections| parameter of the
 // ProactiveTabFreezeAndDiscard feature.
 extern const char kProactiveTabFreezeAndDiscard_DisableHeuristicsParam[];
@@ -83,8 +88,8 @@ struct ProactiveTabFreezeAndDiscardParams {
       &features::kProactiveTabFreezeAndDiscard,
       kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam, false};
   static constexpr base::FeatureParam<bool> kShouldPeriodicallyUnfreeze{
-      &features::kProactiveTabFreezeAndDiscard, "ShouldPeriodicallyUnfreeze",
-      false};
+      &features::kProactiveTabFreezeAndDiscard,
+      kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam, false};
   static constexpr base::FeatureParam<bool>
       kShouldProtectTabsSharingBrowsingInstance{
           &features::kProactiveTabFreezeAndDiscard,
@@ -120,13 +125,12 @@ struct ProactiveTabFreezeAndDiscardParams {
       10 * base::Time::kSecondsPerMinute};
   static constexpr base::FeatureParam<int> kFreezeTimeout{
       &features::kProactiveTabFreezeAndDiscard, "FreezeTimeout",
-      10 * base::Time::kSecondsPerMinute};
+      5 * base::Time::kSecondsPerMinute};
   static constexpr base::FeatureParam<int> kUnfreezeTimeout{
       &features::kProactiveTabFreezeAndDiscard, "UnfreezeTimeout",
       15 * base::Time::kSecondsPerMinute};
   static constexpr base::FeatureParam<int> kRefreezeTimeout{
-      &features::kProactiveTabFreezeAndDiscard, "RefreezeTimeout",
-      10 * base::Time::kSecondsPerMinute};
+      &features::kProactiveTabFreezeAndDiscard, "RefreezeTimeout", 10};
 
   static constexpr base::FeatureParam<bool> kDisableHeuristicsProtections{
       &features::kProactiveTabFreezeAndDiscard,

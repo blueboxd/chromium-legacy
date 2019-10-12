@@ -7,13 +7,14 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.support.v4.widget.TextViewCompat;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.tab_ui.R;
@@ -28,7 +29,7 @@ public class TabGroupUiToolbarView extends FrameLayout {
     private ChromeImageView mLeftButton;
     private ChromeImageView mMenuButton;
     private ViewGroup mContainerView;
-    private TextView mTitleTextView;
+    private EditText mTitleTextView;
     private LinearLayout mMainContent;
 
     public TabGroupUiToolbarView(Context context, AttributeSet attrs) {
@@ -43,7 +44,7 @@ public class TabGroupUiToolbarView extends FrameLayout {
         mRightButton = findViewById(R.id.toolbar_right_button);
         mMenuButton = findViewById(R.id.toolbar_menu_button);
         mContainerView = (ViewGroup) findViewById(R.id.toolbar_container_view);
-        mTitleTextView = (TextView) findViewById(R.id.title);
+        mTitleTextView = (EditText) findViewById(R.id.title);
         mMainContent = findViewById(R.id.main_content);
     }
 
@@ -57,6 +58,18 @@ public class TabGroupUiToolbarView extends FrameLayout {
 
     void setMenuButtonOnClickListener(OnClickListener listener) {
         mMenuButton.setOnClickListener(listener);
+    }
+
+    void setTitleTextOnChangedListener(TextWatcher textWatcher) {
+        mTitleTextView.addTextChangedListener(textWatcher);
+    }
+
+    void setTitleTextOnFocusChangeListener(OnFocusChangeListener listener) {
+        mTitleTextView.setOnFocusChangeListener(listener);
+    }
+
+    void setTitleCursorVisibility(boolean isVisible) {
+        mTitleTextView.setCursorVisible(isVisible);
     }
 
     ViewGroup getViewContainer() {
@@ -100,6 +113,8 @@ public class TabGroupUiToolbarView extends FrameLayout {
         if (!isDialog) {
             // We don't support toolbar menu for TabGridSheet.
             mMainContent.removeView(mMenuButton);
+            // We don't support tab group naming for TabGridSheet.
+            mTitleTextView.setFocusable(false);
             return;
         }
         Context context = getContext();
@@ -108,7 +123,7 @@ public class TabGroupUiToolbarView extends FrameLayout {
                 (int) context.getResources().getDimension(R.dimen.tab_group_toolbar_topic_margin);
         MarginLayoutParams params = (MarginLayoutParams) mTitleTextView.getLayoutParams();
         params.setMarginStart(topicMargin);
-        mTitleTextView.setGravity(Gravity.START);
+        mTitleTextView.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
         TextViewCompat.setTextAppearance(
                 mTitleTextView, org.chromium.chrome.R.style.TextAppearance_BlackHeadline);
     }

@@ -86,6 +86,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int suggestion_chip_container_top_margin() const {
     return suggestion_chip_container_top_margin_;
   }
+  int suggestion_chip_container_height() const {
+    return suggestion_chip_container_height_;
+  }
   int app_title_max_line_height() const { return app_title_max_line_height_; }
   const gfx::FontList& app_title_font() const { return app_title_font_; }
   int peeking_app_list_height() const { return peeking_app_list_height_; }
@@ -98,6 +101,7 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int search_box_fullscreen_top_padding() const {
     return search_box_fullscreen_top_padding_;
   }
+  int search_box_height() const { return search_box_height_; }
   int search_box_height_for_dense_layout() const {
     return search_box_height_for_dense_layout_;
   }
@@ -292,6 +296,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // The suggestion chip container top margin.
   const int suggestion_chip_container_top_margin_;
 
+  // The suggestion chip container height.
+  const int suggestion_chip_container_height_;
+
   // The maximum line height for app title in app list.
   const int app_title_max_line_height_;
 
@@ -310,9 +317,11 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // The top padding of search box in fullscreen state.
   const int search_box_fullscreen_top_padding_;
 
+  // The preferred search box height.
+  const int search_box_height_;
+
   // The preferred search box height when the vertical app list contents space
-  // is condensed - normally the default search box preferred height would be
-  // used.
+  // is condensed - normally |search_box_height_| would be used.
   const int search_box_height_for_dense_layout_;
 
   // Preferred number of columns and rows in apps grid.

@@ -94,6 +94,13 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
     kBothSnapped,
   };
 
+  // For now, there is only one |SplitViewController|, regardless of whether the
+  // |ash::features::kMultiDisplayOverviewAndSplitView| feature flag is enabled.
+  // TODO(crbug.com/970013): When the feature flag is enabled, there shall be a
+  // |SplitViewController| for each root window. Instead of Get, this function
+  // shall be ForWindow, similar to |RootWindowController::ForWindow|.
+  static SplitViewController* Get();
+
   SplitViewController();
   ~SplitViewController() override;
 

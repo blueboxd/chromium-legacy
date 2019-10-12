@@ -28,7 +28,6 @@
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
-#include "components/dom_distiller/core/dom_distiller_store.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
 #include "components/dom_distiller/core/task_tracker.h"
@@ -131,8 +130,6 @@ std::unique_ptr<DomDistillerService> CreateDomDistillerService(
   // Setting up PrefService for DistilledPagePrefs.
   DistilledPagePrefs::RegisterProfilePrefs(pref_service->registry());
 
-  auto dom_distiller_store = std::make_unique<DomDistillerStore>();
-
   auto distiller_page_factory =
       std::make_unique<DistillerPageWebContentsFactory>(context);
   auto distiller_url_fetcher_factory =
@@ -166,8 +163,7 @@ std::unique_ptr<DomDistillerService> CreateDomDistillerService(
       std::move(distiller_url_fetcher_factory), options, file_to_url_map);
 
   return std::make_unique<DomDistillerService>(
-      std::move(dom_distiller_store), std::move(distiller_factory),
-      std::move(distiller_page_factory),
+      std::move(distiller_factory), std::move(distiller_page_factory),
       std::make_unique<DistilledPagePrefs>(pref_service));
 }
 

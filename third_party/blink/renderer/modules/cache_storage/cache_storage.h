@@ -23,6 +23,8 @@
 
 namespace blink {
 
+class CacheStorageBlobClientList;
+
 class CacheStorage final : public ScriptWrappable,
                            public ActiveScriptWrappable<CacheStorage>,
                            public ContextLifecycleObserver {
@@ -54,6 +56,7 @@ class CacheStorage final : public ScriptWrappable,
   bool IsAllowed(ScriptState*);
 
   Member<GlobalFetch::ScopedFetcher> scoped_fetcher_;
+  Member<CacheStorageBlobClientList> blob_client_list_;
 
   mojo::Remote<mojom::blink::CacheStorage> cache_storage_remote_;
   base::Optional<bool> allowed_;

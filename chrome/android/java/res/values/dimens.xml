@@ -136,6 +136,9 @@
     <!-- Overlay panel dimensions -->
     <dimen name="overlay_panel_bar_height_legacy">56dp</dimen>
     <dimen name="overlay_panel_bar_height">70dp</dimen>
+
+    <!-- Preview tab dimensions -->
+    <dimen name="preview_tab_toolbar_height">70dp</dimen>
     <dimen name="preview_tab_favicon_size">24dp</dimen>
 
     <!-- Autofill keyboard accessory dimensions -->
@@ -673,10 +676,10 @@
     <dimen name="navigation_bubble_text_bottom_padding">5dp</dimen>
     <dimen name="navigation_bubble_text_start_padding">2dp</dimen>
     <dimen name="navigation_bubble_text_end_padding">8dp</dimen>
-    <dimen name="navigation_sheet_toolbar_bottom_padding">44dp</dimen>
     <dimen name="navigation_sheet_content_top_padding">18dp</dimen>
     <dimen name="navigation_sheet_content_bottom_padding">4dp</dimen>
     <dimen name="navigation_sheet_content_wrap_padding">12dp</dimen>
+    <dimen name="navigation_sheet_peek_height">64dp</dimen>
 
     <!-- ChromeTextInputLayout dimensions -->
     <dimen name="text_input_layout_padding_start">3dp</dimen>

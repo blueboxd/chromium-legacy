@@ -177,12 +177,13 @@ class LoginPromptBrowserTest : public InProcessBrowserTest {
     auth_map_["foo"] = AuthInfo("testuser", "foopassword");
     auth_map_["bar"] = AuthInfo("testuser", "barpassword");
     auth_map_["testrealm"] = AuthInfo(username_basic_, password_);
+
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kHTTPAuthCommittedInterstitials);
   }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-    scoped_feature_list.InitAndEnableFeature(
-        features::kHTTPAuthCommittedInterstitials);
   }
 
  protected:
@@ -207,7 +208,9 @@ class LoginPromptBrowserTest : public InProcessBrowserTest {
   std::string password_;
   std::string username_basic_;
   std::string username_digest_;
-  base::test::ScopedFeatureList scoped_feature_list;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 void LoginPromptBrowserTest::SetAuthFor(LoginHandler* handler) {
@@ -1811,6 +1814,18 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, FtpAuthWithCache) {
   EXPECT_EQ(0u, observer.handlers().size());
 }
 
+class ProxyBrowserTestWithHttpAuthCommittedInterstitials
+    : public ProxyBrowserTest {
+ public:
+  ProxyBrowserTestWithHttpAuthCommittedInterstitials() {
+    feature_list_.InitAndEnableFeature(
+        features::kHTTPAuthCommittedInterstitials);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests that basic proxy auth works as expected, for HTTPS pages.
 #if defined(OS_MACOSX)
 // TODO(https://crbug.com/1000446): Re-enable this test.
@@ -1818,10 +1833,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, FtpAuthWithCache) {
 #else
 #define MAYBE_ProxyAuthHTTPS ProxyAuthHTTPS
 #endif
-IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_ProxyAuthHTTPS) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kHTTPAuthCommittedInterstitials);
+IN_PROC_BROWSER_TEST_F(ProxyBrowserTestWithHttpAuthCommittedInterstitials,
+                       MAYBE_ProxyAuthHTTPS) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
@@ -1830,10 +1843,8 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_ProxyAuthHTTPS) {
 }
 
 // Tests that basic proxy auth works as expected, for HTTP pages.
-IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, ProxyAuthHTTP) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kHTTPAuthCommittedInterstitials);
+IN_PROC_BROWSER_TEST_F(ProxyBrowserTestWithHttpAuthCommittedInterstitials,
+                       ProxyAuthHTTP) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(
       TestProxyAuth(browser(), embedded_test_server()->GetURL("/simple.html")));

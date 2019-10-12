@@ -10,11 +10,13 @@
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view_observer.h"
+#include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl.h"
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/media_message_center/media_notification_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/media_start_stop_observer.h"
 #include "media/base/media_switches.h"
@@ -116,24 +118,21 @@ class MediaToolbarButtonWatcher : public MediaToolbarButtonObserver,
     run_loop_->Run();
   }
 
+  // Checks the title and artist of each notification in the dialog to see if
+  // |text| is contained anywhere in the dialog.
   bool DialogContainsText(const base::string16& text) {
-    return ViewContainsText(MediaDialogView::GetDialogViewForTesting(), text);
-  }
-
-  // Recursively tries to find a views::Label containing |text| within |view|
-  // and its children.
-  bool ViewContainsText(const views::View* view, const base::string16& text) {
-    if (view->GetClassName() == views::Label::kViewClassName) {
-      const views::Label* label = static_cast<const views::Label*>(view);
-      if (label->GetText().find(text) != std::string::npos)
+    for (const auto notification_pair :
+         MediaDialogView::GetDialogViewForTesting()
+             ->GetNotificationsForTesting()) {
+      const media_message_center::MediaNotificationView* view =
+          notification_pair.second->view_for_testing();
+      if (view->title_label_for_testing()->GetText().find(text) !=
+              std::string::npos ||
+          view->artist_label_for_testing()->GetText().find(text) !=
+              std::string::npos) {
         return true;
+      }
     }
-
-    for (const views::View* child : view->children()) {
-      if (ViewContainsText(child, text))
-        return true;
-    }
-
     return false;
   }
 

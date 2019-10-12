@@ -34,6 +34,3 @@ const string kRendererServiceName = "content_renderer";
 // The default service name used to identify utility processes when connecting
 // them to the Service Manager.
 const string kUtilityServiceName = "content_utility";
-
-// The name for the network service running in the utility process.
-const string kNetworkServiceName = "network";

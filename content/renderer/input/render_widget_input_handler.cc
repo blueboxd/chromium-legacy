@@ -589,7 +589,7 @@ void RenderWidgetInputHandler::InjectGestureScrollEvent(
                                           granularity);
     if (injected_type == WebInputEvent::Type::kGestureScrollBegin) {
       gesture_event->data.scroll_begin.scrollable_area_element_id =
-          scrollable_area_element_id.GetInternalValue();
+          scrollable_area_element_id.GetStableId();
     }
 
     ui::LatencyInfo latency_info;
@@ -668,7 +668,7 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
             params.scroll_delta, params.granularity);
     if (params.type == WebInputEvent::Type::kGestureScrollBegin) {
       gesture_event->data.scroll_begin.scrollable_area_element_id =
-          params.scrollable_area_element_id.GetInternalValue();
+          params.scrollable_area_element_id.GetStableId();
       last_injected_gesture_was_begin_ = true;
     } else {
       last_injected_gesture_was_begin_ = false;

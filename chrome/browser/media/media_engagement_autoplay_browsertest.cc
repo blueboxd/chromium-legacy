@@ -68,6 +68,13 @@ class MediaEngagementAutoplayBrowserTest
     http_server_.ServeFilesFromSourceDirectory(kMediaEngagementTestDataPath);
     http_server_origin2_.ServeFilesFromSourceDirectory(
         kMediaEngagementTestDataPath);
+
+    // Enable or disable MEI based on the test parameter.
+    if (GetParam()) {
+      scoped_feature_list_.InitWithFeatures(kFeatures, {});
+    } else {
+      scoped_feature_list_.InitWithFeatures({}, kFeatures);
+    }
   }
 
   ~MediaEngagementAutoplayBrowserTest() override = default;
@@ -81,13 +88,6 @@ class MediaEngagementAutoplayBrowserTest
   void SetUp() override {
     ASSERT_TRUE(http_server_.Start());
     ASSERT_TRUE(http_server_origin2_.Start());
-
-    // Enable or disable MEI based on the test parameter.
-    if (GetParam()) {
-      scoped_feature_list_.InitWithFeatures(kFeatures, {});
-    } else {
-      scoped_feature_list_.InitWithFeatures({}, kFeatures);
-    }
 
     InProcessBrowserTest::SetUp();
 
@@ -367,11 +367,19 @@ IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest, TopFrameNavigation) {
   ExpectAutoplayAllowedIfEnabled();
 }
 
-IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
-                       BypassAutoplayHighEngagement_HTTPSOnly) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(media::kMediaEngagementHTTPSOnly);
+class MediaEngagementAutoplayBrowserTestHttpsOnly
+    : public MediaEngagementAutoplayBrowserTest {
+ public:
+  MediaEngagementAutoplayBrowserTestHttpsOnly() {
+    feature_list_.InitAndEnableFeature(media::kMediaEngagementHTTPSOnly);
+  }
 
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTestHttpsOnly,
+                       BypassAutoplayHighEngagement) {
   SetScores(PrimaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_test.html");
   ExpectAutoplayDenied();
@@ -379,4 +387,8 @@ IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          MediaEngagementAutoplayBrowserTest,
+                         testing::Bool());
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         MediaEngagementAutoplayBrowserTestHttpsOnly,
                          testing::Bool());

@@ -188,11 +188,26 @@ IN_PROC_BROWSER_TEST_F(TouchLocationBarViewBrowserTest,
 // and use specified certificate validation results. This allows tests to mock
 // Extended Validation (EV) certificate connections.
 const char kMockSecureHostname[] = "example-secure.test";
-const GURL kMockSecureURL = GURL("https://example-secure.test");
 
-class SecurityIndicatorTest : public InProcessBrowserTest {
+struct SecurityIndicatorTestParams {
+  bool is_enabled;
+  bool use_secure_url;
+  net::CertStatus cert_status;
+  security_state::SecurityLevel security_level;
+  bool should_show_text;
+  base::string16 indicator_text;
+};
+
+class SecurityIndicatorTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface<SecurityIndicatorTestParams> {
  public:
-  SecurityIndicatorTest() : InProcessBrowserTest(), cert_(nullptr) {}
+  SecurityIndicatorTest() : InProcessBrowserTest(), cert_(nullptr) {
+    if (GetParam().is_enabled)
+      feature_list_.InitAndEnableFeature(omnibox::kSimplifyHttpsIndicator);
+    else
+      feature_list_.InitAndDisableFeature(omnibox::kSimplifyHttpsIndicator);
+  }
 
   void SetUpInProcessBrowserTestFixture() override {
     cert_ =
@@ -238,6 +253,8 @@ class SecurityIndicatorTest : public InProcessBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
+
   scoped_refptr<net::X509Certificate> cert_;
 
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
@@ -247,30 +264,10 @@ class SecurityIndicatorTest : public InProcessBrowserTest {
 
 // Check that the security indicator text is correctly set for the various
 // variations of the Security UI Study (https://crbug.com/803501).
-IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
+IN_PROC_BROWSER_TEST_P(SecurityIndicatorTest, CheckIndicatorText) {
+  const GURL kMockSecureURL = GURL("https://example-secure.test");
   const GURL kMockNonsecureURL =
       embedded_test_server()->GetURL("example.test", "/");
-  const base::string16 kEvString = base::ASCIIToUTF16("Test CA [US]");
-  const base::string16 kEmptyString = base::string16();
-
-  const struct {
-    bool is_enabled;
-    GURL url;
-    net::CertStatus cert_status;
-    security_state::SecurityLevel security_level;
-    bool should_show_text;
-    base::string16 indicator_text;
-  } cases[]{
-      // Disabled (show EV UI in omnibox)
-      {false, kMockSecureURL, net::CERT_STATUS_IS_EV, security_state::EV_SECURE,
-       true, kEvString},
-      {false, kMockSecureURL, 0, security_state::SECURE, false, kEmptyString},
-      {false, kMockNonsecureURL, 0, security_state::NONE, false, kEmptyString},
-      // Default (lock-only in omnibox)
-      {true, kMockSecureURL, net::CERT_STATUS_IS_EV, security_state::EV_SECURE,
-       false, kEmptyString},
-      {true, kMockSecureURL, 0, security_state::SECURE, false, kEmptyString},
-      {true, kMockNonsecureURL, 0, security_state::NONE, false, kEmptyString}};
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -279,22 +276,36 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
   ASSERT_TRUE(helper);
   LocationBarView* location_bar_view = GetLocationBarView();
 
-  for (const auto& c : cases) {
-    base::test::ScopedFeatureList scoped_feature_list;
-    if (c.is_enabled) {
-      scoped_feature_list.InitAndEnableFeature(
-          omnibox::kSimplifyHttpsIndicator);
-    } else {
-      scoped_feature_list.InitAndDisableFeature(
-          omnibox::kSimplifyHttpsIndicator);
-    }
-    SetUpInterceptor(c.cert_status);
-    ui_test_utils::NavigateToURL(browser(), c.url);
-    EXPECT_EQ(c.security_level, helper->GetSecurityLevel());
-    EXPECT_EQ(c.should_show_text,
-              location_bar_view->location_icon_view()->ShouldShowLabel());
-    EXPECT_EQ(c.indicator_text,
-              location_bar_view->location_icon_view()->GetText());
-    ResetInterceptor();
-  }
+  auto c = GetParam();
+  SetUpInterceptor(c.cert_status);
+  ui_test_utils::NavigateToURL(
+      browser(), c.use_secure_url ? kMockSecureURL : kMockNonsecureURL);
+  EXPECT_EQ(c.security_level, helper->GetSecurityLevel());
+  EXPECT_EQ(c.should_show_text,
+            location_bar_view->location_icon_view()->ShouldShowLabel());
+  EXPECT_EQ(c.indicator_text,
+            location_bar_view->location_icon_view()->GetText());
+  ResetInterceptor();
 }
+
+const base::string16 kEvString = base::ASCIIToUTF16("Test CA [US]");
+const base::string16 kEmptyString = base::string16();
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    SecurityIndicatorTest,
+    ::testing::Values(
+        // Disabled (show EV UI in omnibox)
+        SecurityIndicatorTestParams{false, true, net::CERT_STATUS_IS_EV,
+                                    security_state::EV_SECURE, true, kEvString},
+        SecurityIndicatorTestParams{false, true, 0, security_state::SECURE,
+                                    false, kEmptyString},
+        SecurityIndicatorTestParams{false, false, 0, security_state::NONE,
+                                    false, kEmptyString},
+        // Default (lock-only in omnibox)
+        SecurityIndicatorTestParams{true, true, net::CERT_STATUS_IS_EV,
+                                    security_state::EV_SECURE, false,
+                                    kEmptyString},
+        SecurityIndicatorTestParams{true, true, 0, security_state::SECURE,
+                                    false, kEmptyString},
+        SecurityIndicatorTestParams{true, false, 0, security_state::NONE, false,
+                                    kEmptyString}));

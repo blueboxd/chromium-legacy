@@ -233,7 +233,7 @@ void SplitViewHighlightView::OnIndicatorTypeChanged(
         SplitViewDragIndicators::IsPreviewAreaOnLeftTopOfScreen(
             previous_indicator_state);
     DoSplitviewOpacityAnimation(
-        layer(), Shell::Get()->split_view_controller()->InSplitViewMode()
+        layer(), SplitViewController::Get()->InSplitViewMode()
                      ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT
                      : (was_this_the_preview
                             ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN
@@ -244,10 +244,10 @@ void SplitViewHighlightView::OnIndicatorTypeChanged(
   SetColor(SplitViewDragIndicators::IsCannotSnapState(indicator_state)
                ? SK_ColorBLACK
                : SK_ColorWHITE);
-  DoSplitviewOpacityAnimation(
-      layer(), Shell::Get()->split_view_controller()->InSplitViewMode()
-                   ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT
-                   : SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN);
+  DoSplitviewOpacityAnimation(layer(),
+                              SplitViewController::Get()->InSplitViewMode()
+                                  ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT
+                                  : SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN);
 }
 
 }  // namespace ash

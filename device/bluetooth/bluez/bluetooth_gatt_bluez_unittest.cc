@@ -84,6 +84,13 @@ bool ValuesEqual(const std::vector<uint8_t>& value0,
   return true;
 }
 
+void AddDeviceFilterWithUUID(BluetoothDiscoveryFilter* filter,
+                             BluetoothUUID uuid) {
+  device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter;
+  device_filter.uuids.insert(uuid);
+  filter->AddDeviceFilter(device_filter);
+}
+
 }  // namespace
 
 class BluetoothGattBlueZTest : public testing::Test {
@@ -324,7 +331,7 @@ TEST_F(BluetoothGattBlueZTest,
   AddDualDevice();
 
   BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
-  discovery_filter.AddUUID(kBatteryServiceUUID);
+  AddDeviceFilterWithUUID(&discovery_filter, kBatteryServiceUUID);
 
   DeviceToUUIDs result =
       adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
@@ -340,7 +347,9 @@ TEST_F(
   BluetoothDevice* dual = AddDualDevice();
 
   BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
-  discovery_filter.AddUUID(kGenericAccessServiceUUID);
+  device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter;
+  device_filter.uuids.insert(kGenericAccessServiceUUID);
+  discovery_filter.AddDeviceFilter(device_filter);
 
   DeviceToUUIDs result =
       adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
@@ -357,7 +366,7 @@ TEST_F(
   BluetoothDevice* dual = AddDualDevice();
 
   BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
-  discovery_filter.AddUUID(kHeartRateServiceUUID);
+  AddDeviceFilterWithUUID(&discovery_filter, kHeartRateServiceUUID);
 
   DeviceToUUIDs result =
       adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
@@ -374,8 +383,8 @@ TEST_F(BluetoothGattBlueZTest,
   BluetoothDevice* dual = AddDualDevice();
 
   BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
-  discovery_filter.AddUUID(kGenericAccessServiceUUID);
-  discovery_filter.AddUUID(kHeartRateServiceUUID);
+  AddDeviceFilterWithUUID(&discovery_filter, kGenericAccessServiceUUID);
+  AddDeviceFilterWithUUID(&discovery_filter, kHeartRateServiceUUID);
 
   DeviceToUUIDs result =
       adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
@@ -393,8 +402,12 @@ TEST_F(
   AddLeDevice();
   BluetoothDevice* dual = AddDualDevice();
   BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
-  discovery_filter.AddUUID(kGenericAccessServiceUUID);
-  discovery_filter.AddUUID(kBatteryServiceUUID);
+  device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter;
+  device_filter.uuids.insert(kGenericAccessServiceUUID);
+  device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter2;
+  device_filter2.uuids.insert(kBatteryServiceUUID);
+  discovery_filter.AddDeviceFilter(device_filter);
+  discovery_filter.AddDeviceFilter(device_filter2);
 
   DeviceToUUIDs result =
       adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(

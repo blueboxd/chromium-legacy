@@ -39,13 +39,6 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
             mEventListener.onDismissed();
             mBottomSheetController.getBottomSheet().removeObserver(mBottomSheetObserver);
         }
-
-        @Override
-        public void onSheetFullyPeeked() {
-            super.onSheetFullyPeeked();
-            // Since isPeekStateEnabled doesn't seem to skip the Peek state, force-expand the sheet.
-            mBottomSheetController.expandSheet();
-        }
     };
 
     /**
@@ -107,6 +100,10 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
         mCredentialListView.setAdapter(adapter);
     }
 
+    Context getContext() {
+        return mContext;
+    }
+
     private void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         assert adapterView == mCredentialListView : "Use this click handler only for credentials!";
         assert mEventListener != null;
@@ -150,8 +147,8 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
     }
 
     @Override
-    public boolean isPeekStateEnabled() {
-        return true; // For some reason, false isn't working properly. Extend it explicitly!
+    public int getPeekHeight() {
+        return BottomSheet.HeightMode.DISABLED;
     }
 
     @Override

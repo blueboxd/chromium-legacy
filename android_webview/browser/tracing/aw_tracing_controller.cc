@@ -43,7 +43,7 @@ class AwTraceDataEndpoint
 
   void ReceivedTraceFinalContents() override {
     base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(std::move(completed_callback_)));
+                   std::move(completed_callback_));
   }
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
@@ -88,20 +88,21 @@ bool AwTracingController::Start(JNIEnv* env,
       base::android::ConvertJavaStringToUTF8(env, jcategories);
   base::trace_event::TraceConfig trace_config(
       categories, static_cast<base::trace_event::TraceRecordMode>(jmode));
-  // Required for filtering out potential PII.
-  trace_config.EnableArgumentFilter();
   return content::TracingController::GetInstance()->StartTracing(
       trace_config, content::TracingController::StartTracingDoneCallback());
 }
 
 bool AwTracingController::StopAndFlush(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj) {
+  // privacy_filtering_enabled=true is required for filtering out potential PII.
   return content::TracingController::GetInstance()->StopTracing(
       AwTraceDataEndpoint::Create(
           base::BindRepeating(&AwTracingController::OnTraceDataReceived,
                               weak_factory_.GetWeakPtr()),
           base::BindOnce(&AwTracingController::OnTraceDataComplete,
-                         weak_factory_.GetWeakPtr())));
+                         weak_factory_.GetWeakPtr())),
+      /*agent_label=*/"",
+      /*privacy_filtering_enabled=*/true);
 }
 
 void AwTracingController::OnTraceDataComplete() {

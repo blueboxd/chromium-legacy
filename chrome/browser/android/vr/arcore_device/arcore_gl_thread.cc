@@ -34,7 +34,6 @@ void ArCoreGlThread::Init() {
 
   arcore_gl_ = std::make_unique<ArCoreGl>(
       ar_image_transport_factory_->Create(std::move(mailbox_bridge_)));
-
   std::move(initialized_callback_).Run();
 }
 

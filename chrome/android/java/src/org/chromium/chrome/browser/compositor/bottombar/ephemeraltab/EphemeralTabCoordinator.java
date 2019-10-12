@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.compositor.bottombar.ephemeraltab;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.support.annotation.DrawableRes;
+import android.text.TextUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
@@ -17,17 +19,18 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconUtils;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.embedder_support.view.ContentView;
+import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.PageTransition;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * Central class for ephemeral tab, responsible for spinning off other classes necessary to display
@@ -42,6 +45,7 @@ public class EphemeralTabCoordinator {
     private final BottomSheetController mBottomSheetController;
     private final FaviconLoader mFaviconLoader;
     private OverlayPanelContent mPanelContent;
+    private WebContentsObserver mWebContentsObserver;
     private EphemeralTabSheetContent mSheetContent;
     private boolean mIsIncognito;
     private String mUrl;
@@ -81,9 +85,10 @@ public class EphemeralTabCoordinator {
 
         getContent().loadUrl(url, true);
         getContent().updateBrowserControlsState(true);
+        if (mWebContentsObserver == null) mWebContentsObserver = createWebContentsObserver();
         mSheetContent.attachWebContents(
                 getContent().getWebContents(), (ContentView) getContent().getContainerView());
-        mSheetContent.setTitleText(title);
+        mSheetContent.updateTitle(title);
         mBottomSheetController.requestShowContent(mSheetContent, true);
 
         // TODO(donnd): Collect UMA with OverlayPanel.StateChangeReason.CLICK.
@@ -108,6 +113,11 @@ public class EphemeralTabCoordinator {
         if (mPanelContent != null) {
             mPanelContent.destroy();
             mPanelContent = null;
+        }
+
+        if (mWebContentsObserver != null) {
+            mWebContentsObserver.destroy();
+            mWebContentsObserver = null;
         }
     }
 
@@ -136,6 +146,40 @@ public class EphemeralTabCoordinator {
         mSheetContent.startFaviconAnimation(drawable);
     }
 
+    private WebContentsObserver createWebContentsObserver() {
+        return new WebContentsObserver(mPanelContent.getWebContents()) {
+            @Override
+            public void titleWasSet(String title) {
+                mSheetContent.updateTitle(title);
+            }
+
+            @Override
+            public void didFinishNavigation(NavigationHandle navigation) {
+                if (navigation.hasCommitted() && navigation.isInMainFrame()) {
+                    mSheetContent.updateURL(mPanelContent.getWebContents().getVisibleUrl());
+                }
+            }
+        };
+    }
+
+    @DrawableRes
+    private static int getSecurityIconResource(@ConnectionSecurityLevel int securityLevel) {
+        switch (securityLevel) {
+            case ConnectionSecurityLevel.NONE:
+            case ConnectionSecurityLevel.WARNING:
+                return R.drawable.omnibox_info;
+            case ConnectionSecurityLevel.DANGEROUS:
+                return R.drawable.omnibox_https_invalid;
+            case ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT:
+            case ConnectionSecurityLevel.SECURE:
+            case ConnectionSecurityLevel.EV_SECURE:
+                return R.drawable.omnibox_https_valid;
+            default:
+                assert false;
+        }
+        return 0;
+    }
+
     /**
      * Observes the ephemeral tab web contents and loads the associated favicon.
      */
@@ -144,16 +188,18 @@ public class EphemeralTabCoordinator {
 
         @Override
         public void onMainFrameLoadStarted(String url, boolean isExternalUrl) {
-            try {
-                String newHost = new URL(url).getHost();
-                String curHost = mCurrentUrl == null ? null : new URL(mCurrentUrl).getHost();
-                if (!newHost.equals(curHost)) {
-                    mCurrentUrl = url;
-                    mFaviconLoader.loadFavicon(url, (drawable) -> onFaviconAvailable(drawable));
-                }
-            } catch (MalformedURLException e) {
-                assert false : "Malformed URL should not be passed.";
-            }
+            if (TextUtils.equals(mCurrentUrl, url)) return;
+
+            mCurrentUrl = url;
+            mFaviconLoader.loadFavicon(url, (drawable) -> onFaviconAvailable(drawable));
+        }
+
+        @Override
+        public void onSSLStateUpdated() {
+            int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(
+                    mPanelContent.getWebContents());
+            mSheetContent.setSecurityIcon(getSecurityIconResource(securityLevel));
+            mSheetContent.updateURL(mPanelContent.getWebContents().getVisibleUrl());
         }
     }
 

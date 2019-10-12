@@ -778,7 +778,7 @@ void PageInfo::ComputeUIInputs(
           security_state::SafetyTipStatus::kNone &&
       visible_security_state.safety_tip_status !=
           security_state::SafetyTipStatus::kUnknown &&
-      base::FeatureList::IsEnabled(features::kSafetyTipUI)) {
+      base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
     site_details_message_ = l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
   }
@@ -998,7 +998,7 @@ void PageInfo::PresentSiteIdentity() {
   info.connection_status_description = UTF16ToUTF8(site_connection_details_);
   info.identity_status = site_identity_status_;
   info.safe_browsing_status = safe_browsing_status_;
-  if (base::FeatureList::IsEnabled(features::kSafetyTipUI)) {
+  if (base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
     info.safety_tip_status = safety_tip_status_;
   }
   info.identity_status_description = UTF16ToUTF8(site_details_message_);

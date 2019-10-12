@@ -9,25 +9,27 @@
 Polymer({
   is: 'settings-cups-nearby-printers',
 
-  behaviors: [WebUIListenerBehavior],
+  // ListPropertyUpdateBehavior is used in CupsPrintersEntryListBehavior.
+  behaviors: [
+      CupsPrintersEntryListBehavior,
+      ListPropertyUpdateBehavior,
+      WebUIListenerBehavior,
+  ],
 
   properties: {
     /**
-     * @type {!Array<!PrinterListEntry>}
-     * @private
-     */
-    nearbyPrinters_: {
-      type: Array,
-      value: () => [],
-    },
-
-    /**
-     * Search term for filtering |nearbyPrinters_|.
+     * Search term for filtering |nearbyPrinters|.
      * @type {string}
      */
     searchTerm: {
       type: String,
       value: '',
+    },
+
+    /** @type {?CupsPrinterInfo} */
+    activePrinter: {
+      type: Object,
+      notify: true,
     },
 
     /**
@@ -38,49 +40,10 @@ Polymer({
       type: Number,
       value: -1,
     },
-
-    /** @type {?CupsPrinterInfo} */
-    activePrinter: {
-      type: Object,
-      notify: true,
-    },
   },
 
   listeners: {
     'add-automatic-printer': 'onAddAutomaticPrinter_',
-  },
-
-  /** @override */
-  attached: function() {
-    settings.CupsPrintersBrowserProxyImpl.getInstance()
-        .startDiscoveringPrinters();
-    this.addWebUIListener(
-        'on-nearby-printers-changed', this.onNearbyPrintersChanged_.bind(this));
-  },
-
-  /**
-   * @param {!Array<!CupsPrinterInfo>} automaticPrinters
-   * @param {!Array<!CupsPrinterInfo>} discoveredPrinters
-   * @private
-   */
-  onNearbyPrintersChanged_: function(automaticPrinters, discoveredPrinters) {
-    if (!automaticPrinters && !discoveredPrinters) {
-      return;
-    }
-
-    const printers = /** @type{!Array<!PrinterListEntry>} */ ([]);
-
-    for (const printer of automaticPrinters) {
-      printers.push({printerInfo: printer,
-                     printerType: PrinterType.AUTOMATIC});
-    }
-
-    for (const printer of discoveredPrinters) {
-      printers.push({printerInfo: printer,
-                     printerType: PrinterType.DISCOVERED});
-    }
-
-    this.nearbyPrinters_ = printers;
   },
 
   /**
@@ -106,12 +69,11 @@ Polymer({
    * @private
    */
   setActivePrinter_: function(item) {
-    this.activePrinterListEntryIndex_ =
-        this.nearbyPrinters_.findIndex(
-            printer => printer.printerInfo == item.printerInfo);
+    this.activePrinterListEntryIndex_ = this.nearbyPrinters.findIndex(
+        printer => printer.printerInfo.printerId == item.printerInfo.printerId);
 
     this.activePrinter =
-        this.get(['nearbyPrinters_', this.activePrinterListEntryIndex_])
+        this.get(['nearbyPrinters', this.activePrinterListEntryIndex_])
         .printerInfo;
   },
 

@@ -21,6 +21,25 @@ class Element;
 class DisplayLockScopedLogger;
 
 enum class DisplayLockLifecycleTarget { kSelf, kChildren };
+enum class DisplayLockActivationReason {
+  // This represents activations triggered by intersection observer when the
+  // element intersects the viewport.
+  kViewport = 1 << 0,
+  // This represents activations triggered by script or user actions, such as
+  // find-in-page or scrollIntoView().
+  kUser = 1 << 1,
+  // This represents any activation, and should be result of all other flags
+  // combined.
+  kAny =
+      static_cast<unsigned char>(kViewport) | static_cast<unsigned char>(kUser)
+};
+
+// Instead of specifying an underlying type, which would propagate throughout
+// forward declarations, we static assert that the activation reasons enum is
+// small.
+static_assert(static_cast<int>(DisplayLockActivationReason::kAny) <
+                  std::numeric_limits<unsigned char>::max(),
+              "DisplayLockActivationReason is too large");
 
 class CORE_EXPORT DisplayLockContext final
     : public GarbageCollected<DisplayLockContext>,
@@ -93,7 +112,8 @@ class CORE_EXPORT DisplayLockContext final
   // ContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
 
-  void SetActivatable(bool activatable);
+  // Set which reasons activate, as a mask of DisplayLockActivationReason enums.
+  void SetActivatable(unsigned char activatable_mask);
 
   // Acquire the lock, should only be called when unlocked.
   void StartAcquire();
@@ -119,8 +139,10 @@ class CORE_EXPORT DisplayLockContext final
   }
 
   // Returns true if the contents of the associated element should be visible
-  // from and activatable by find-in-page, tab order, anchor links, etc.
-  bool IsActivatable() const;
+  // from and activatable by a specified reason. Note that passing
+  // kAny will return true if the lock is activatable for any
+  // reason.
+  bool IsActivatable(DisplayLockActivationReason reason) const;
 
   // Trigger commit because of activation from tab order, url fragment,
   // find-in-page, scrolling, etc.
@@ -128,7 +150,7 @@ class CORE_EXPORT DisplayLockContext final
   // activated element.
   void CommitForActivationWithSignal(Element* activated_element);
 
-  bool ShouldCommitForActivation() const;
+  bool ShouldCommitForActivation(DisplayLockActivationReason reason) const;
 
   // Returns true if this lock is locked. Note from the outside perspective, the
   // lock is locked any time the state is not kUnlocked or kCommitting.
@@ -304,7 +326,6 @@ class CORE_EXPORT DisplayLockContext final
   StateChangeHelper state_;
 
   bool update_forced_ = false;
-  bool activatable_ = false;
 
   StyleType blocked_style_traversal_type_ = kStyleUpdateNotRequired;
   // Signifies whether we've blocked a layout tree reattachment on |element_|'s
@@ -325,6 +346,9 @@ class CORE_EXPORT DisplayLockContext final
   // Tracks whether the element associated with this lock is being tracked by a
   // document level intersection observer.
   bool is_observed_ = false;
+
+  unsigned char activatable_mask_ =
+      static_cast<unsigned char>(DisplayLockActivationReason::kAny);
 };
 
 }  // namespace blink

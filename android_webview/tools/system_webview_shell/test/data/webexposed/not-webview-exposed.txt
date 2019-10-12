@@ -55,13 +55,14 @@ interface HTMLMediaElement : HTMLElement
 
 # permissions API (crbug.com/490120), presentation API (crbug.com/521319),
 # share API (crbug.com/765923), custom scheme handlers (crbug.com/589502),
-# media session API (crbug.com/925997), and sms API (crbug.com/963653)
-# are not supported in webview.
+# media session API (crbug.com/925997), sms API (crbug.com/963653), and WebXr
+# API (crbug.com/1012899) are not supported in webview.
 interface Navigator
     getter mediaSession                # crbug.com/925997
     getter permissions                 # crbug.com/490120
     getter presentation                # crbug.com/521319
     getter sms                         # crbug.com/963653
+    getter xr                          # crbug.com/1012899
     method registerProtocolHandler     # crbug.com/589502
     method unregisterProtocolHandler   # crbug.com/589502
     method share                       # crbug.com/765923
@@ -128,6 +129,31 @@ interface OffscreenCanvasRenderingContext2D
 interface OffscreenCanvas : EventTarget
 interface HTMLCanvasElement : HTMLElement
     method transferControlToOffscreen
+
+# WebXR dependent interfaces are not supported on WebView crbug.com/1012899
+interface XRView
+interface XRViewport
+interface XR : EventTarget
+interface XRFrame
+interface XRRigidTransform
+interface XRSpace : EventTarget
+interface XRInputSourcesChangeEvent : Event
+interface XRInputSource
+interface XRWebGLLayer
+interface XRInputSourceEvent : Event
+interface XRViewerPose : XRPose
+interface XRInputSourceArray
+interface XRRenderState
+interface XRPose
+interface XRSession : EventTarget
+interface XRReferenceSpaceEvent : Event
+interface XRBoundedReferenceSpace : XRReferenceSpace
+interface XRSessionEvent : Event
+interface XRReferenceSpace : XRSpace
+interface WebGLRenderingContext
+    method makeXRCompatible
+interface WebGL2RenderingContext
+    method makeXRCompatible
 
 [GLOBAL OBJECT]
     method openDatabase

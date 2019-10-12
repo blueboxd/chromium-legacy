@@ -768,29 +768,19 @@ void ActivityLog::CheckActive(bool use_cached) {
       // we want to ensure the activity log is inactive unless the switch
       // or the app (covered by active_consumers_) is present.
       (has_listeners_ && has_switch);
-  const bool needs_db = has_consumer || has_switch;
-  const bool should_be_active = needs_db || has_consumer;
+  const bool should_be_active = has_consumer || has_switch;
 
   if (should_be_active == is_active_)
     return;
 
   bool has_db = db_enabled_ && database_policy_;
-  bool old_is_active = is_active_;
+  db_enabled_ = should_be_active;
 
-  if (should_be_active) {
-    if (needs_db && !has_db) {
-      db_enabled_ = true;
-      ChooseDatabasePolicy();
-    }
+  if (should_be_active && !has_db)
+    ChooseDatabasePolicy();
 
-    is_active_ = true;
-  } else {
-    if (has_db && !needs_db)
-      db_enabled_ = false;
-    is_active_ = false;
-  }
+  is_active_ = should_be_active;
 
-  DCHECK_NE(is_active_, old_is_active);
   for (content::RenderProcessHost::iterator iter(
            content::RenderProcessHost::AllHostsIterator());
        !iter.IsAtEnd(); iter.Advance()) {

@@ -154,7 +154,7 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
   // in the overview grid for the display where the overview button was long
   // pressed, and the first window in that overview grid is snappable.
 
-  auto* split_view_controller = Shell::Get()->split_view_controller();
+  auto* split_view_controller = SplitViewController::Get();
   // Exit split view mode if we are already in it.
   if (split_view_controller->InSplitViewMode()) {
     // In some cases the window returned by window_util::GetActiveWindow will be
@@ -460,7 +460,7 @@ void OverviewController::ToggleOverview(
     // in case of |SplitViewController::State::kBothSnapped|, that function will
     // insert one of the two snapped windows to overview.
     const SplitViewController::State split_view_state =
-        Shell::Get()->split_view_controller()->state();
+        SplitViewController::Get()->state();
     should_focus_overview_ =
         split_view_state == SplitViewController::State::kNoSnap ||
         split_view_state == SplitViewController::State::kBothSnapped;
@@ -504,7 +504,7 @@ void OverviewController::ToggleOverview(
 
 bool OverviewController::CanEnterOverview() {
   // Prevent toggling overview during the split view divider snap animation.
-  if (Shell::Get()->split_view_controller()->IsDividerAnimating())
+  if (SplitViewController::Get()->IsDividerAnimating())
     return false;
 
   // Don't allow a window overview if the user session is not active (e.g.
@@ -521,8 +521,7 @@ bool OverviewController::CanEnterOverview() {
 
 bool OverviewController::CanEndOverview(
     OverviewSession::EnterExitOverviewType type) {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+  SplitViewController* split_view_controller = SplitViewController::Get();
   // Prevent toggling overview during the split view divider snap animation.
   if (split_view_controller->IsDividerAnimating())
     return false;

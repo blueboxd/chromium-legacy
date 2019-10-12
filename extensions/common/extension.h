@@ -140,6 +140,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // instead of the usual |TYPE_EXTENSION|.
     FOR_LOGIN_SCREEN = 1 << 13,
 
+    // |WITHHOLD_PERMISSIONS| indicates that on installation the user indicated
+    // for permissions to be withheld from the extension by default.
+    WITHHOLD_PERMISSIONS = 1 << 14,
+
     // When adding new flags, make sure to update kInitFromValueFlagBits.
   };
 

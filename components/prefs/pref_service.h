@@ -428,8 +428,7 @@ class COMPONENTS_PREFS_EXPORT PrefService {
 
   // Sets the value for this pref path in the user pref store and informs the
   // PrefNotifier of the change.
-  void SetUserPrefValue(const std::string& path,
-                        std::unique_ptr<base::Value> new_value);
+  void SetUserPrefValue(const std::string& path, base::Value new_value);
 
   // Load preferences from storage, attempting to diagnose and handle errors.
   // This should only be called from the constructor.

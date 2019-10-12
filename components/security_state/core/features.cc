@@ -18,5 +18,8 @@ const char kMarkHttpAsParameterDangerWarning[] = "danger-warning";
 const base::Feature kLegacyTLSWarnings{"LegacyTLSWarnings",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSafetyTipUI{"SafetyTip",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace security_state

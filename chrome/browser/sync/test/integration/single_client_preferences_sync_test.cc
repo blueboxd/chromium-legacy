@@ -46,29 +46,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientPreferencesSyncTest, Sanity) {
   EXPECT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 }
 
-// This test simply verifies that preferences registered after sync started
-// get properly synced.
-IN_PROC_BROWSER_TEST_F(SingleClientPreferencesSyncTest, LateRegistration) {
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-  PrefRegistrySyncable* registry = GetRegistry(GetProfile(0));
-  const std::string pref_name = "testing.my-test-preference";
-  registry->WhitelistLateRegistrationPrefForSync(pref_name);
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  registry->RegisterBooleanPref(
-      pref_name, true, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  // Verify the default is properly used.
-  EXPECT_TRUE(GetProfile(0)->GetPrefs()->GetBoolean(pref_name));
-  // Now make a change and verify it gets uploaded.
-  GetProfile(0)->GetPrefs()->SetBoolean(pref_name, false);
-  ASSERT_FALSE(GetProfile(0)->GetPrefs()->GetBoolean(pref_name));
-  EXPECT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
-
-  GetRegistry(verifier())
-      ->RegisterBooleanPref(pref_name, true,
-                            user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  EXPECT_FALSE(BooleanPrefMatches(pref_name.c_str()));
-}
-
 // Flaky on Windows. https://crbug.com/930482
 #if defined(OS_WIN)
 #define MAYBE_ShouldRemoveBadDataWhenRegistering \

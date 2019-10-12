@@ -312,6 +312,9 @@ extern const base::Feature kMacMaterialDesignDownloadShelf;
 #if defined(OS_MACOSX)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kMacSystemMediaPermissionsInfoUi;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kMacSystemScreenCapturePermissionCheck;
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -389,9 +392,6 @@ extern const base::Feature kQuietNotificationPrompts;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kRemoveSupervisedUsersOnStartup;
 #endif
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kSafetyTipUI;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSecurityKeyAttestationPrompt;

@@ -887,11 +887,19 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, BeforeUnloadVsBeforeReload) {
   alert->native_dialog()->AcceptAppModalDialog();
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserTest, NewTabFromLinkOpensInGroup) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+class BrowserTestWithTabGroupsEnabled : public BrowserTest {
+ public:
+  BrowserTestWithTabGroupsEnabled() {
+    feature_list_.InitAndEnableFeature(features::kTabGroups);
+  }
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kTabGroups);
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(BrowserTestWithTabGroupsEnabled,
+                       NewTabFromLinkOpensInGroup) {
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Add a grouped tab.
   TabStripModel* const model = browser()->tab_strip_model();

@@ -81,11 +81,16 @@ Polymer({
   /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   networkConfig_: null,
 
+  /** @private {settings.printing.CupsPrintersEntryManager} */
+  entryManager_: null,
+
   /** @override */
   created: function() {
     this.networkConfig_ =
         network_config.MojoInterfaceProviderImpl.getInstance()
             .getMojoServiceRemote();
+    this.entryManager_ =
+        settings.printing.CupsPrintersEntryManager.getInstance();
   },
 
   /** @override */
@@ -110,7 +115,6 @@ Polymer({
     this.updateCupsPrintersList_();
   },
 
-
   /**
    * settings.RouteObserverBehavior
    * @param {!settings.Route} route
@@ -119,10 +123,14 @@ Polymer({
   currentRouteChanged: function(route) {
     if (route != settings.routes.CUPS_PRINTERS) {
       cr.removeWebUIListener('on-printers-changed');
+      this.entryManager_.removeWebUIListeners();
       return;
     }
+
+    this.entryManager_.addWebUIListeners();
     cr.addWebUIListener(
         'on-printers-changed', this.onPrintersChanged_.bind(this));
+    this.updateCupsPrintersList_();
   },
 
   /**
@@ -152,13 +160,11 @@ Polymer({
     const printerName = event.detail.printerName;
     switch (event.detail.resultCode) {
       case PrinterSetupResult.SUCCESS:
-        this.updateCupsPrintersList_();
         this.addPrinterResultText_ =
             loadTimeData.getStringF('printerAddedSuccessfulMessage',
                                     printerName);
         break;
       case PrinterSetupResult.EDIT_SUCCESS:
-        this.updateCupsPrintersList_();
         this.addPrinterResultText_ =
             loadTimeData.getStringF('printerEditedSuccessfulMessage',
                                     printerName);
@@ -203,6 +209,7 @@ Polymer({
           printer => /** @type {!PrinterListEntry} */({
               printerInfo: printer,
               printerType: PrinterType.SAVED}));
+      this.entryManager_.setSavedPrintersList(this.savedPrinters_);
     } else {
       this.printers = cupsPrintersList.printerList;
     }

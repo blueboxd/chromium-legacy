@@ -176,7 +176,6 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
                            const LocalFrameView*) const override {
     return r;
   }
-  float WindowToViewportScalar(const float s) const override { return s; }
   float WindowToViewportScalar(LocalFrame*, const float s) const override {
     return s;
   }

@@ -99,11 +99,9 @@ TEST_F(ThumbnailTrackerTest, WatchTabGetsCurrentThumbnail) {
   // Verify that WatchTab() gets the current image, waiting for the decoding to
   // happen.
   EXPECT_CALL(thumbnail_updated_callback_, Run(contents.get(), _)).Times(1);
-  base::RunLoop notify_loop;
   thumbnail->set_async_operation_finished_callback_for_testing(
-      notify_loop.QuitClosure());
+      base::RepeatingClosure());
   thumbnail_tracker_.WatchTab(contents.get());
-  notify_loop.Run();
 }
 
 TEST_F(ThumbnailTrackerTest, PropagatesThumbnailUpdate) {

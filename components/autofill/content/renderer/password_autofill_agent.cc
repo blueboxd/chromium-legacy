@@ -774,8 +774,16 @@ void PasswordAutofillAgent::MaybeCheckSafeBrowsingReputation(
 #endif
 }
 
+bool PasswordAutofillAgent::ShouldSuppressKeyboard() {
+  // The keyboard should be suppressed if we are showing the Touch To Fill UI.
+  return touch_to_fill_state_ == TouchToFillState::kIsShowing;
+}
+
 bool PasswordAutofillAgent::TryToShowTouchToFill(
     const WebFormControlElement& control_element) {
+  if (touch_to_fill_state_ != TouchToFillState::kShouldShow)
+    return false;
+
   const WebInputElement* element = ToWebInputElement(&control_element);
   WebInputElement username_element;
   WebInputElement password_element;
@@ -786,10 +794,8 @@ bool PasswordAutofillAgent::TryToShowTouchToFill(
     return false;
   }
 
-  if (!should_show_touch_to_fill_)
-    return false;
-
   GetPasswordManagerDriver()->ShowTouchToFill();
+  touch_to_fill_state_ = TouchToFillState::kIsShowing;
   return true;
 }
 
@@ -1197,7 +1203,7 @@ void PasswordAutofillAgent::SetLoggingState(bool active) {
 }
 
 void PasswordAutofillAgent::TouchToFillDismissed() {
-  should_show_touch_to_fill_ = false;
+  touch_to_fill_state_ = TouchToFillState::kWasShown;
 }
 
 void PasswordAutofillAgent::AnnotateFieldsWithParsingResult(
@@ -1358,7 +1364,7 @@ void PasswordAutofillAgent::CleanupOnDocumentShutdown() {
   autofilled_elements_cache_.clear();
   last_updated_field_renderer_id_ = FormData::kNotSetFormRendererId;
   last_updated_form_renderer_id_ = FormData::kNotSetFormRendererId;
-  should_show_touch_to_fill_ = true;
+  touch_to_fill_state_ = TouchToFillState::kShouldShow;
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   page_passwords_analyser_.Reset();
 #endif

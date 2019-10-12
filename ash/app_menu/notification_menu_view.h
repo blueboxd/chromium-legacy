@@ -9,7 +9,6 @@
 #include <string>
 
 #include "ash/app_menu/app_menu_export.h"
-#include "ui/message_center/views/slide_out_controller.h"
 #include "ui/views/view.h"
 
 namespace message_center {
@@ -18,6 +17,7 @@ class Notification;
 
 namespace views {
 class MenuSeparator;
+class SlideOutControllerDelegate;
 }
 
 namespace ash {
@@ -43,10 +43,10 @@ class APP_MENU_EXPORT NotificationMenuView : public views::View {
     virtual void OnOverflowAddedOrRemoved() = 0;
   };
 
-  NotificationMenuView(Delegate* notification_item_view_delegate,
-                       message_center::SlideOutController::Delegate*
-                           slide_out_controller_delegate,
-                       const std::string& app_id);
+  NotificationMenuView(
+      Delegate* notification_item_view_delegate,
+      views::SlideOutControllerDelegate* slide_out_controller_delegate,
+      const std::string& app_id);
   ~NotificationMenuView() override;
 
   // views::View:
@@ -103,8 +103,7 @@ class APP_MENU_EXPORT NotificationMenuView : public views::View {
   NotificationMenuView::Delegate* const notification_item_view_delegate_;
 
   // Owned by AppMenuModelAdapter.
-  message_center::SlideOutController::Delegate* const
-      slide_out_controller_delegate_;
+  views::SlideOutControllerDelegate* const slide_out_controller_delegate_;
 
   // The deque of NotificationItemViews. The front item in the deque is the view
   // which is shown.

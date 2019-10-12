@@ -58,7 +58,6 @@
 #include "services/network/test/test_network_context_client.h"
 #include "services/network/test/test_network_service_client.h"
 #include "services/network/test/test_url_loader_client.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -69,8 +68,6 @@
 namespace network {
 
 namespace {
-
-const char kNetworkServiceName[] = "network";
 
 const base::FilePath::CharType kServicesTestData[] =
     FILE_PATH_LITERAL("services/test/data");
@@ -728,10 +725,8 @@ class NetworkServiceTestWithService : public testing::Test {
   void SetUp() override {
     test_server_.AddDefaultHandlers(base::FilePath(kServicesTestData));
     ASSERT_TRUE(test_server_.Start());
-    service_ = NetworkService::CreateForTesting(
-        test_connector_factory_.RegisterInstance(kNetworkServiceName));
-    test_connector_factory_.GetDefaultConnector()->BindInterface(
-        kNetworkServiceName, &network_service_);
+    service_ = NetworkService::CreateForTesting();
+    service_->Bind(mojo::MakeRequest(&network_service_));
   }
 
   void CreateNetworkContext() {
@@ -779,7 +774,6 @@ class NetworkServiceTestWithService : public testing::Test {
 
  protected:
   base::test::TaskEnvironment task_environment_;
-  service_manager::TestConnectorFactory test_connector_factory_;
   std::unique_ptr<NetworkService> service_;
 
   net::EmbeddedTestServer test_server_;
@@ -1400,10 +1394,8 @@ class NetworkServiceNetworkChangeTest : public testing::Test {
   NetworkServiceNetworkChangeTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
-        service_(NetworkService::CreateForTesting(
-            test_connector_factory_.RegisterInstance(kNetworkServiceName))) {
-    test_connector_factory_.GetDefaultConnector()->BindInterface(
-        kNetworkServiceName, &network_service_);
+        service_(NetworkService::CreateForTesting()) {
+    service_->Bind(mojo::MakeRequest(&network_service_));
   }
 
   ~NetworkServiceNetworkChangeTest() override {}
@@ -1412,11 +1404,9 @@ class NetworkServiceNetworkChangeTest : public testing::Test {
 
  private:
   base::test::TaskEnvironment task_environment_;
-  service_manager::TestConnectorFactory test_connector_factory_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  std::unique_ptr<NetworkService> service_;
-
   mojom::NetworkServicePtr network_service_;
+  std::unique_ptr<NetworkService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkChangeTest);
 };

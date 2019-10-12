@@ -135,7 +135,6 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
-#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/system_gesture_event_filter.h"
 #include "ash/wm/system_modal_container_event_filter.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
@@ -775,10 +774,6 @@ Shell::~Shell() {
   // destruction of its owned RootWindowControllers relies on the value.
   window_tree_host_manager_->Shutdown();
 
-  // Destroy |SplitViewController| and |RootWindowController| at about the same
-  // time, as we plan for |RootWindowController| to own a |SplitViewController|.
-  // TODO(crbug.com/970013): Actually carry out that plan.
-  split_view_controller_.reset();
   // Depends on |focus_controller_|, so must be destroyed before.
   window_tree_host_manager_.reset();
 
@@ -1107,10 +1102,6 @@ void Shell::Init(
   system_notification_controller_ =
       std::make_unique<SystemNotificationController>();
 
-  // Create |SplitViewController| and |RootWindowController| at about the same
-  // time, as we plan for |RootWindowController| to own a |SplitViewController|.
-  // TODO(crbug.com/970013): Actually carry out that plan.
-  split_view_controller_ = std::make_unique<SplitViewController>();
   window_tree_host_manager_->InitHosts();
 
   // Create virtual keyboard after WindowTreeHostManager::InitHosts() since

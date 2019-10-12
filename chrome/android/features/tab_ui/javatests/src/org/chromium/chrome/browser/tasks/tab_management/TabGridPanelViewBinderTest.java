@@ -10,15 +10,17 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.MediumTest;
+import android.support.test.filters.SmallTest;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -51,7 +53,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     private TabGridDialogParent mTabGridDialogParent;
     private ChromeImageView mRightButton;
     private ChromeImageView mLeftButton;
-    private TextView mTitleTextView;
+    private EditText mTitleTextView;
     private View mMainContent;
     private ViewGroup mTabGridDialogParentView;
 
@@ -81,7 +83,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @UiThreadTest
     public void testSetCollapseClickListener() {
         AtomicBoolean leftButtonClicked = new AtomicBoolean();
@@ -97,7 +99,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @UiThreadTest
     public void testSetAddClickListener() {
         AtomicBoolean rightButtonClicked = new AtomicBoolean();
@@ -113,7 +115,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @UiThreadTest
     public void testSetHeaderTitle() {
         String title = "1024 tabs";
@@ -121,11 +123,11 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
 
         mModel.set(TabGridPanelProperties.HEADER_TITLE, title);
 
-        Assert.assertEquals(title, mTitleTextView.getText());
+        Assert.assertEquals(title, mTitleTextView.getText().toString());
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @UiThreadTest
     public void testContentTopMargin() {
         // Since setting content top margin is only used in sheet, we can assume that the parent is
@@ -143,7 +145,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @UiThreadTest
     public void testSetPrimaryColor() {
         int color = ContextCompat.getColor(getActivity(), R.color.modern_blue_300);
@@ -157,7 +159,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @UiThreadTest
     public void testSetTint() {
         ColorStateList tint = ColorUtils.getThemedToolbarIconTint(getActivity(), true);
@@ -177,7 +179,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @UiThreadTest
     public void testSetScrimViewObserver() {
         AtomicBoolean scrimViewClicked = new AtomicBoolean();
@@ -204,7 +206,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     public void testSetDialogVisibility() {
         Assert.assertFalse(mTabGridDialogParent.getPopupWindowForTesting().isShowing());
         Assert.assertNull(mTabGridDialogParent.getCurrentDialogAnimatorForTesting());
@@ -237,7 +239,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @UiThreadTest
     public void testSetAnimationParams() {
         // Initially, the show animation set is empty.
@@ -269,7 +271,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @UiThreadTest
     public void testSetUngroupbarStatus() {
         // Default status for ungroup bar is hidden.
@@ -288,7 +290,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @UiThreadTest
     public void testSetDialogBackgroundResource() {
         int normalResourceId = R.drawable.tab_grid_dialog_background;
@@ -304,7 +306,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @UiThreadTest
     public void testSetUngroupbarBackgroundColor() {
         int normalColorId = R.color.tab_grid_dialog_background_color;
@@ -320,7 +322,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @UiThreadTest
     public void testSetUngroupbarHoveredBackgroundColor() {
         int normalColorId = R.color.tab_grid_card_selected_color;
@@ -337,7 +339,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @UiThreadTest
     public void testSetUngroupbarTextAppearance() {
         int normalStyleId = R.style.TextAppearance_BlueTitle2;
@@ -353,7 +355,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @UiThreadTest
     public void testSetMainContentVisibility() {
         mContentView.setVisibility(View.INVISIBLE);
@@ -362,6 +364,59 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
         mModel.set(TabGridPanelProperties.IS_MAIN_CONTENT_VISIBLE, true);
 
         Assert.assertEquals(View.VISIBLE, mContentView.getVisibility());
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void testSetTitleTextWatcher() {
+        String title = "cool tabs";
+        AtomicBoolean titleTextUpdated = new AtomicBoolean();
+        titleTextUpdated.set(false);
+
+        TextWatcher textWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                titleTextUpdated.set(true);
+            }
+        };
+        mModel.set(TabGridPanelProperties.TITLE_TEXT_WATCHER, textWatcher);
+
+        mTitleTextView.setText(title);
+        Assert.assertTrue(titleTextUpdated.get());
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void testSetTitleTextOnFocusListener() {
+        AtomicBoolean textFocusChanged = new AtomicBoolean();
+        textFocusChanged.set(false);
+        Assert.assertFalse(mTitleTextView.isFocused());
+
+        View.OnFocusChangeListener listener = (view, b) -> textFocusChanged.set(true);
+        mModel.set(TabGridPanelProperties.TITLE_TEXT_ON_FOCUS_LISTENER, listener);
+        mTitleTextView.requestFocus();
+
+        Assert.assertTrue(mTitleTextView.isFocused());
+        Assert.assertTrue(textFocusChanged.get());
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void testSetCursorVisibility() {
+        mTitleTextView.setCursorVisible(false);
+
+        mModel.set(TabGridPanelProperties.TITLE_CURSOR_VISIBILITY, true);
+
+        Assert.assertTrue(mTitleTextView.isCursorVisible());
     }
 
     @Override

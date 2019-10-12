@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/performance_manager/graph/graph_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/performance_manager_lock_observer.h"
 #include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/performance_manager/render_process_user_data.h"
 #include "components/performance_manager/shared_worker_watcher.h"
@@ -38,10 +39,29 @@
 #endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // defined(OS_LINUX)
 
+namespace {
+ChromeBrowserMainExtraPartsPerformanceManager* g_instance = nullptr;
+}
+
 ChromeBrowserMainExtraPartsPerformanceManager::
-    ChromeBrowserMainExtraPartsPerformanceManager() = default;
+    ChromeBrowserMainExtraPartsPerformanceManager()
+    : lock_observer_(std::make_unique<
+                     performance_manager::PerformanceManagerLockObserver>()) {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
+
 ChromeBrowserMainExtraPartsPerformanceManager::
-    ~ChromeBrowserMainExtraPartsPerformanceManager() = default;
+    ~ChromeBrowserMainExtraPartsPerformanceManager() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
+
+// static
+ChromeBrowserMainExtraPartsPerformanceManager*
+ChromeBrowserMainExtraPartsPerformanceManager::GetInstance() {
+  return g_instance;
+}
 
 // static
 void ChromeBrowserMainExtraPartsPerformanceManager::
@@ -72,6 +92,11 @@ void ChromeBrowserMainExtraPartsPerformanceManager::
   }
 #endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // defined(OS_LINUX)
+}
+
+content::LockObserver*
+ChromeBrowserMainExtraPartsPerformanceManager::GetLockObserver() {
+  return lock_observer_.get();
 }
 
 void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {

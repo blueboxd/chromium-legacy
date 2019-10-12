@@ -515,7 +515,7 @@ void UtilityProcessHost::OnProcessCrashed(int exit_code) {
 
 base::Optional<std::string> UtilityProcessHost::GetServiceName() {
   if (!service_identity_)
-    return base::nullopt;
+    return metrics_name_;
   return service_identity_->name();
 }
 

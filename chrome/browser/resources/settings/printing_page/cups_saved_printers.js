@@ -9,16 +9,14 @@
 Polymer({
   is: 'settings-cups-saved-printers',
 
+  // ListPropertyUpdateBehavior is used in CupsPrintersEntryListBehavior.
   behaviors: [
-      WebUIListenerBehavior,
+    CupsPrintersEntryListBehavior,
+    ListPropertyUpdateBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
-    /** @type {!Array<!PrinterListEntry>} */
-    savedPrinters: {
-      type: Array,
-    },
-
     /**
      * Search term for filtering |savedPrinters|.
      * @type {string}
@@ -28,6 +26,12 @@ Polymer({
       value: '',
     },
 
+    /** @type {?CupsPrinterInfo} */
+    activePrinter: {
+      type: Object,
+      notify: true,
+    },
+
     /**
      * @type {number}
      * @private
@@ -35,12 +39,6 @@ Polymer({
     activePrinterListEntryIndex_: {
       type: Number,
       value: -1,
-    },
-
-    /** @type {?CupsPrinterInfo} */
-    activePrinter: {
-      type: Object,
-      notify: true,
     },
   },
 
@@ -62,9 +60,8 @@ Polymer({
    */
   onOpenActionMenu_: function(e) {
     const item = /** @type {!PrinterListEntry} */(e.detail.item);
-    this.activePrinterListEntryIndex_ =
-        this.savedPrinters.findIndex(
-            printer => printer.printerInfo == item.printerInfo);
+    this.activePrinterListEntryIndex_ = this.savedPrinters.findIndex(
+        printer => printer.printerInfo.printerId == item.printerInfo.printerId);
     this.activePrinter =
         this.get(['savedPrinters', this.activePrinterListEntryIndex_])
         .printerInfo;
@@ -92,5 +89,6 @@ Polymer({
   /** @private */
   closeActionMenu_: function() {
     this.$$('cr-action-menu').close();
-  }
+  },
+
 });

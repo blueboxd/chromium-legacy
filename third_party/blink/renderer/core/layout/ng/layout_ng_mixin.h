@@ -9,6 +9,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_progress.h"
 #include "third_party/blink/renderer/core/layout/layout_table_caption.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 
@@ -37,6 +38,7 @@ class LayoutNGMixin : public Base {
 extern template class CORE_EXTERN_TEMPLATE_EXPORT LayoutNGMixin<LayoutBlock>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     LayoutNGMixin<LayoutBlockFlow>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT LayoutNGMixin<LayoutProgress>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     LayoutNGMixin<LayoutTableCaption>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

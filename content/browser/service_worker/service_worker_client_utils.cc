@@ -259,10 +259,6 @@ void OpenWindowOnUI(
   params.open_app_window_if_possible = type == WindowType::NEW_TAB_WINDOW;
   params.initiator_origin = url::Origin::Create(script_url.GetOrigin());
 
-  GetContentClient()->browser()->OverrideNavigationParams(
-      site_instance, &params.transition, &params.is_renderer_initiated,
-      &params.referrer, &params.initiator_origin);
-
   // End of RequestOpenURL copy.
 
   GetContentClient()->browser()->OpenURL(

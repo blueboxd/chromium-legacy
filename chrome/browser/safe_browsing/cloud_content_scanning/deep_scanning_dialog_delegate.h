@@ -95,6 +95,19 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
     std::vector<bool> paths_results;
   };
 
+  // File information used as an input to event report functions.
+  struct FileInfo {
+    FileInfo();
+    FileInfo(FileInfo&& other);
+    ~FileInfo();
+
+    // SHA256 hash for the given file.
+    std::string sha256;
+
+    // File size in bytes. -1 represents an unknown size.
+    uint64_t size;
+  };
+
   // Callback used with ShowForWebContents() that informs caller of verdict
   // of deep scans.
   using CompletionCallback =
@@ -204,18 +217,20 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
   // |callback_| is cleared after being run.
   void RunCallback();
 
-  // Sets the SHA256 hash for the given file.
-  void SetSha256ForFile(const base::FilePath& path, std::string sha256);
+  // Sets the FileInfo the given file.
+  void SetFileInfo(const base::FilePath& path,
+                   std::string sha256,
+                   int64_t size);
 
   // The web contents that is attempting to access the data.
   content::WebContents* web_contents_ = nullptr;
 
   // Description of the data being scanned and the results of the scan.
-  // The elements of the vector |sha256_| hold the SHA256 hash of the file at
-  // same index in |data_.paths|.
+  // The elements of the vector |file_info_| hold the FileInfo of the file at
+  // the same index in |data_.paths|.
   const Data data_;
   Result result_;
-  std::vector<std::string> sha256_;
+  std::vector<FileInfo> file_info_;
 
   // Set to true once the scan of text has completed.  If the scan request has
   // no text requiring deep scanning, this is set to true immediately.

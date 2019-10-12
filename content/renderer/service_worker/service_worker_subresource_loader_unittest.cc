@@ -53,8 +53,8 @@ class FakeBlob final : public blink::mojom::Blob {
 
  private:
   // Implements blink::mojom::Blob.
-  void Clone(mojo::PendingReceiver<blink::mojom::Blob>) override {
-    NOTREACHED();
+  void Clone(mojo::PendingReceiver<blink::mojom::Blob> receiver) override {
+    receivers_.Add(this, std::move(receiver));
   }
   void AsDataPipeGetter(
       mojo::PendingReceiver<network::mojom::DataPipeGetter>) override {
@@ -85,6 +85,7 @@ class FakeBlob final : public blink::mojom::Blob {
     NOTREACHED();
   }
 
+  mojo::ReceiverSet<blink::mojom::Blob> receivers_;
   base::Optional<std::vector<uint8_t>> side_data_;
   std::string body_;
 };
@@ -107,6 +108,14 @@ class FakeControllerServiceWorker
     if (response->blob) {
       response->headers.emplace("Content-Length",
                                 base::NumberToString(response->blob->size));
+
+      // Clone the blob into the side_data_blob to match cache_storage behavior.
+      mojo::Remote<blink::mojom::Blob> blob_remote(
+          std::move(response->blob->blob));
+      blob_remote->Clone(response->blob->blob.InitWithNewPipeAndPassReceiver());
+      response->side_data_blob = blink::mojom::SerializedBlob::New(
+          response->blob->uuid, response->blob->content_type,
+          response->blob->size, blob_remote.Unbind());
     }
     return response;
   }

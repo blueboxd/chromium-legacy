@@ -422,4 +422,7 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCssUrlFilter,
                                   "sanity/renderer-css-url-filter.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCanvas, "sanity/renderer-canvas.js")
 
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererOpacityAnimation,
+                                  "sanity/renderer-opacity-animation.js")
+
 }  // namespace headless

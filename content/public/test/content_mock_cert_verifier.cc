@@ -5,16 +5,14 @@
 #include "content/public/test/content_mock_cert_verifier.h"
 
 #include "base/command_line.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/network_service_test_helper.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/features.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -68,9 +66,10 @@ void ContentMockCertVerifier::CertVerifier::AddResultForCertAndHost(
 
 void ContentMockCertVerifier::CertVerifier::
     EnsureNetworkServiceTestInitialized() {
-  if (!network_service_test_ || network_service_test_.encountered_error()) {
-    GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
-                                        &network_service_test_);
+  if (!network_service_test_ || !network_service_test_.is_connected()) {
+    network_service_test_.reset();
+    GetNetworkService()->BindTestInterface(
+        network_service_test_.BindNewPipeAndPassReceiver());
   }
   // TODO(crbug.com/901026): Make sure the network process is started to avoid a
   // deadlock on Android.

@@ -243,7 +243,8 @@ public class SwipeRefreshHandler extends TabWebContentsUserData
         if (mNavigationDelegate.isNavigationEnabled(mContainerView)) {
             if (mNavigationHandler == null) {
                 mActionDelegate = mNavigationDelegate.createActionDelegate();
-                mNavigationHandler = new NavigationHandler(mContainerView, mNavigationDelegate,
+                mNavigationHandler = new NavigationHandler(mContainerView, mTab.getContext(),
+                        mNavigationDelegate,
                         NavigationGlowFactory.forRenderedPage(
                                 mContainerView, mTab.getWebContents()));
             }

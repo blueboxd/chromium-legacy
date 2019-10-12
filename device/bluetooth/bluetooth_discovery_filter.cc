@@ -23,6 +23,23 @@ BluetoothDiscoveryFilter::BluetoothDiscoveryFilter(
 
 BluetoothDiscoveryFilter::~BluetoothDiscoveryFilter() = default;
 
+BluetoothDiscoveryFilter::DeviceInfoFilter::DeviceInfoFilter() = default;
+BluetoothDiscoveryFilter::DeviceInfoFilter::DeviceInfoFilter(
+    const DeviceInfoFilter& other) = default;
+BluetoothDiscoveryFilter::DeviceInfoFilter::~DeviceInfoFilter() = default;
+bool BluetoothDiscoveryFilter::DeviceInfoFilter::operator==(
+    const BluetoothDiscoveryFilter::DeviceInfoFilter& other) const {
+  return uuids == other.uuids && name == other.name;
+}
+
+bool BluetoothDiscoveryFilter::DeviceInfoFilter::operator<(
+    const BluetoothDiscoveryFilter::DeviceInfoFilter& other) const {
+  if (name == other.name)
+    return uuids < other.uuids;
+
+  return name < other.name;
+}
+
 bool BluetoothDiscoveryFilter::GetRSSI(int16_t* out_rssi) const {
   DCHECK(out_rssi);
   if (!rssi_)
@@ -61,30 +78,25 @@ void BluetoothDiscoveryFilter::SetTransport(BluetoothTransport transport) {
 void BluetoothDiscoveryFilter::GetUUIDs(
     std::set<device::BluetoothUUID>& out_uuids) const {
   out_uuids.clear();
-
-  for (const auto& uuid : uuids_)
-    out_uuids.insert(*uuid);
+  for (const auto& device_filter : device_filters_) {
+    for (const auto& uuid : device_filter.uuids) {
+      out_uuids.insert(uuid);
+    }
+  }
 }
 
-void BluetoothDiscoveryFilter::AddUUID(const device::BluetoothUUID& uuid) {
-  DCHECK(uuid.IsValid());
-  for (const auto& uuid_it : uuids_) {
-    if (*uuid_it == uuid)
-      return;
-  }
-
-  uuids_.push_back(std::make_unique<device::BluetoothUUID>(uuid));
+void BluetoothDiscoveryFilter::AddDeviceFilter(
+    const BluetoothDiscoveryFilter::DeviceInfoFilter& device_filter) {
+  device_filters_.insert(device_filter);
 }
 
 void BluetoothDiscoveryFilter::CopyFrom(
     const BluetoothDiscoveryFilter& filter) {
   transport_ = filter.transport_;
 
-  uuids_.clear();
-  if (filter.uuids_.size()) {
-    for (const auto& uuid : filter.uuids_)
-      AddUUID(*uuid);
-  }
+  device_filters_.clear();
+  for (const auto& device_filter : filter.device_filters_)
+    AddDeviceFilter(device_filter);
 
   rssi_ = filter.rssi_;
   pathloss_ = filter.pathloss_;
@@ -113,15 +125,13 @@ BluetoothDiscoveryFilter::Merge(
 
   // if both filters have uuids, them merge them. Otherwise uuids filter should
   // be left empty
-  if (filter_a->uuids_.size() && filter_b->uuids_.size()) {
-    std::set<device::BluetoothUUID> uuids;
-    filter_a->GetUUIDs(uuids);
-    for (auto& uuid : uuids)
-      result->AddUUID(uuid);
+  if (!filter_a->device_filters_.empty() &&
+      !filter_b->device_filters_.empty()) {
+    for (const auto& device_filter : filter_a->device_filters_)
+      result->AddDeviceFilter(device_filter);
 
-    filter_b->GetUUIDs(uuids);
-    for (auto& uuid : uuids)
-      result->AddUUID(uuid);
+    for (const auto& device_filter : filter_b->device_filters_)
+      result->AddDeviceFilter(device_filter);
   }
 
   if ((filter_a->rssi_ && filter_b->pathloss_) ||
@@ -155,17 +165,14 @@ bool BluetoothDiscoveryFilter::Equals(
   if (transport_ != other.transport_)
     return false;
 
-  std::set<device::BluetoothUUID> uuids_a, uuids_b;
-  GetUUIDs(uuids_a);
-  other.GetUUIDs(uuids_b);
-  if (uuids_a != uuids_b)
+  if (device_filters_ != other.device_filters_)
     return false;
 
   return true;
 }
 
 bool BluetoothDiscoveryFilter::IsDefault() const {
-  return !(rssi_ || pathloss_ || uuids_.size() ||
+  return !(rssi_ || pathloss_ || !device_filters_.empty() ||
            transport_ != BLUETOOTH_TRANSPORT_DUAL);
 }
 

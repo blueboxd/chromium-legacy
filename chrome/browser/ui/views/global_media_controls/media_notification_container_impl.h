@@ -49,6 +49,10 @@ class MediaNotificationContainerImpl
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  media_message_center::MediaNotificationView* view_for_testing() {
+    return view_.get();
+  }
+
  private:
   class DismissButton;
 

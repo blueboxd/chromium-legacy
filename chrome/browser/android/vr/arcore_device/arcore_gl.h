@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
+
 #include "base/cancelable_callback.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
@@ -110,6 +111,14 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
       mojom::XRRayPtr,
       mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback) override;
 
+  void SubscribeToHitTest(
+      mojom::XRNativeOriginInformationPtr native_origin_information,
+      mojom::XRRayPtr ray,
+      mojom::XREnvironmentIntegrationProvider::SubscribeToHitTestCallback
+          callback) override;
+
+  void UnsubscribeFromHitTest(uint32_t subscription_id) override;
+
   void CreateAnchor(mojom::VRPosePtr anchor_pose,
                     CreateAnchorCallback callback) override;
   void CreatePlaneAnchor(mojom::VRPosePtr anchor_pose,
@@ -121,6 +130,8 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   // mojom::XRSessionController
   void SetFrameDataRestricted(bool restricted) override;
 
+  void ProcessFrameDrawnIntoTexture(int16_t frame_index,
+                                    const gpu::SyncToken& sync_token);
   void OnWebXrTokenSignaled(int16_t frame_index,
                             std::unique_ptr<gfx::GpuFence> gpu_fence);
 
@@ -138,6 +149,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
                     mojom::XRFrameDataProvider::GetFrameDataCallback callback);
 
   bool InitializeGl(gfx::AcceleratedWidget drawing_widget);
+  void OnArImageTransportReady(base::OnceCallback<void(bool)> callback);
   bool IsOnGlThread() const;
   void CopyCameraImageToFramebuffer();
 
@@ -183,8 +195,14 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   display::Display::Rotation display_rotation_ = display::Display::ROTATE_0;
   bool should_update_display_geometry_ = true;
 
+  // UV transform for drawing the camera texture, this is supplied by ARCore
+  // and can include 90 degree rotations or other nontrivial transforms.
   gfx::Transform uv_transform_;
-  gfx::Transform webxr_transform_;
+
+  // UV transform for drawing received WebGL content from a shared buffer's
+  // texture, this is simply an identity.
+  gfx::Transform shared_buffer_transform_;
+
   gfx::Transform projection_;
   gfx::Transform inverse_projection_;
   // The first run of ProduceFrame should set uv_transform_ and projection_
@@ -218,11 +236,8 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   mojom::VRDisplayInfoPtr display_info_;
   bool display_info_changed_ = false;
 
-  // True if floor height estimate should be passed to blink via XRFrameData
-  // returned by subsequent call to |GetFrameData()|.
-  bool floor_height_estimate_changed_ = true;
   // Currently estimated floor height.
-  float floor_height_estimate_ = 1.2;
+  base::Optional<float> floor_height_estimate_;
 
   std::vector<device::mojom::XRInputSourceStatePtr> input_states_;
   gfx::PointF screen_last_touch_;

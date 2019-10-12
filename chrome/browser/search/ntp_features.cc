@@ -23,7 +23,7 @@ const base::Feature kChromeColorsCustomColorPicker{
 // If enabled, the NTP shortcut layout will be replaced with a grid layout that
 // enables better animations.
 const base::Feature kGridLayoutForNtpShortcuts{
-    "GridLayoutForNtpShortcuts", base::FEATURE_DISABLED_BY_DEFAULT};
+    "GridLayoutForNtpShortcuts", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, the user will see the second version of the customization picker.
 const base::Feature kNtpCustomizationMenuV2{"NtpCustomizationMenuV2",

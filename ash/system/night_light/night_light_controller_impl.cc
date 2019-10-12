@@ -481,10 +481,10 @@ void NightLightControllerImpl::SetCurrentGeoposition(
   StoreCachedGeoposition(position);
   delegate_->SetGeoposition(position);
 
-  // If the schedule type is sunset to sunrise, then a potential change in the
-  // geoposition might mean a change in the start and end times. In this case,
-  // we must trigger a refresh.
-  if (GetScheduleType() == ScheduleType::kSunsetToSunrise)
+  // If the schedule type is sunset to sunrise or custom, a potential change in
+  // the geoposition might mean timezone change as well as a change in the start
+  // and end times. In these cases, we must trigger a refresh.
+  if (GetScheduleType() != ScheduleType::kNone)
     Refresh(true /* did_schedule_change */);
 }
 

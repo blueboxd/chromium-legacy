@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -1599,6 +1600,14 @@ public class ExternalNavigationHandlerTest {
         return ri;
     }
 
+    private static ResolveInfo newSpecializedResolveInfo(
+            String packageName, IntentActivity activity) {
+        ResolveInfo info = newResolveInfo(packageName);
+        info.filter = new IntentFilter(Intent.ACTION_VIEW);
+        info.filter.addDataAuthority(activity.mUrlPrefix, null);
+        return info;
+    }
+
     private static WebappInfo newWebappInfoFromScope(String scope) {
         Intent webappIntent = WebappTestHelper.createMinimalWebappIntent("" /* id */, "" /* url */);
         webappIntent.putExtra(ShortcutHelper.EXTRA_SCOPE, scope);
@@ -1660,7 +1669,8 @@ public class ExternalNavigationHandlerTest {
             }
             for (IntentActivity intentActivity : mIntentActivities) {
                 if (dataString.startsWith(intentActivity.urlPrefix())) {
-                    list.add(newResolveInfo(intentActivity.packageName()));
+                    list.add(newSpecializedResolveInfo(
+                            intentActivity.packageName(), intentActivity));
                 }
             }
             if (!list.isEmpty()) return list;
@@ -1714,17 +1724,6 @@ public class ExternalNavigationHandlerTest {
                 }
             }
             return count;
-        }
-
-        @Override
-        public String findFirstWebApkPackageName(List<ResolveInfo> infos) {
-            List<IntentActivity> matchingIntentActivities = findMatchingIntentActivities(infos);
-            for (IntentActivity intentActivity : matchingIntentActivities) {
-                if (intentActivity.isWebApk()) {
-                    return intentActivity.packageName();
-                }
-            }
-            return null;
         }
 
         private ArrayList<IntentActivity> findMatchingIntentActivities(List<ResolveInfo> infos) {
@@ -1821,6 +1820,16 @@ public class ExternalNavigationHandlerTest {
         @Override
         public boolean isIntentForTrustedCallingApp(Intent intent) {
             return mIsCallingAppTrusted;
+        }
+
+        @Override
+        public boolean isValidWebApk(String packageName) {
+            for (IntentActivity activity : mIntentActivities) {
+                if (activity.packageName().equals(packageName)) {
+                    return activity.isWebApk();
+                }
+            }
+            return false;
         }
 
         public void reset() {

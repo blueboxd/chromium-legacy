@@ -275,7 +275,7 @@ void EasyUnlockServiceRegular::SetStoredRemoteDevices(
   else
     pairing_update->SetKey(kKeyDevices, devices.Clone());
 
-  RefreshCryptohomeKeysIfPossible();
+  CheckCryptohomeKeysAndMaybeHardlock();
 }
 
 proximity_auth::ProximityAuthPrefManager*
@@ -339,7 +339,7 @@ void EasyUnlockServiceRegular::InitializeInternal() {
   registrar_.Init(profile()->GetPrefs());
   registrar_.Add(
       proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
-      base::Bind(&EasyUnlockServiceRegular::RefreshCryptohomeKeysIfPossible,
+      base::Bind(&EasyUnlockServiceRegular::CheckCryptohomeKeysAndMaybeHardlock,
                  weak_ptr_factory_.GetWeakPtr()));
 
   // If |device_sync_client_| is not ready yet, wait for it to call back on
@@ -473,16 +473,16 @@ void EasyUnlockServiceRegular::ShowNotificationIfNewDevicePresent(
   // if EasyUnlock was enabled through the setup app.
   if (!public_keys_after_sync.empty()) {
     if (public_keys_before_sync.empty()) {
-        multidevice_setup::MultiDeviceSetupDialog* multidevice_setup_dialog =
-            multidevice_setup::MultiDeviceSetupDialog::Get();
-        if (multidevice_setup_dialog) {
-          // Delay showing the "Chromebook added" notification until the
-          // MultiDeviceSetupDialog is closed.
-          multidevice_setup_dialog->AddOnCloseCallback(base::BindOnce(
-              &EasyUnlockServiceRegular::ShowChromebookAddedNotification,
-              weak_ptr_factory_.GetWeakPtr()));
-          return;
-        }
+      multidevice_setup::MultiDeviceSetupDialog* multidevice_setup_dialog =
+          multidevice_setup::MultiDeviceSetupDialog::Get();
+      if (multidevice_setup_dialog) {
+        // Delay showing the "Chromebook added" notification until the
+        // MultiDeviceSetupDialog is closed.
+        multidevice_setup_dialog->AddOnCloseCallback(base::BindOnce(
+            &EasyUnlockServiceRegular::ShowChromebookAddedNotification,
+            weak_ptr_factory_.GetWeakPtr()));
+        return;
+      }
 
       notification_controller_->ShowChromebookAddedNotification();
     } else {
@@ -555,10 +555,6 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
 void EasyUnlockServiceRegular::OnFocusedUserChanged(
     const AccountId& account_id) {
   // Nothing to do.
-}
-
-void EasyUnlockServiceRegular::RefreshCryptohomeKeysIfPossible() {
-  CheckCryptohomeKeysAndMaybeHardlock();
 }
 
 multidevice::RemoteDeviceRefList EasyUnlockServiceRegular::GetUnlockKeys() {

@@ -290,7 +290,7 @@ void PropertyTreeManager::SetupRootEffectNode() {
   static UniqueObjectId unique_id = NewUniqueObjectId();
 
   effect_node.stable_id =
-      CompositorElementIdFromUniqueObjectId(unique_id).GetInternalValue();
+      CompositorElementIdFromUniqueObjectId(unique_id).GetStableId();
   effect_node.transform_id = kRealRootNodeId;
   effect_node.clip_id = kSecondaryRootNodeId;
   effect_node.render_surface_reason = cc::RenderSurfaceReason::kRoot;
@@ -598,14 +598,14 @@ void PropertyTreeManager::EmitClipMaskLayer() {
   DCHECK_EQ(static_cast<uint64_t>(cc::EffectNode::INVALID_STABLE_ID),
             mask_isolation.stable_id);
 
-  mask_isolation.stable_id = mask_isolation_id.GetInternalValue();
+  mask_isolation.stable_id = mask_isolation_id.GetStableId();
 
   if (!needs_layer)
     return;
 
   cc::EffectNode& mask_effect = *GetEffectTree().Node(
       GetEffectTree().Insert(cc::EffectNode(), current_.effect_id));
-  mask_effect.stable_id = mask_effect_id.GetInternalValue();
+  mask_effect.stable_id = mask_effect_id.GetStableId();
   mask_effect.clip_id = clip_id;
   mask_effect.blend_mode = SkBlendMode::kDstIn;
 
@@ -906,7 +906,7 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     } else {
       synthetic_effect.stable_id =
           CompositorElementIdFromUniqueObjectId(NewUniqueObjectId())
-              .GetInternalValue();
+              .GetStableId();
       // The clip of the synthetic effect is the parent of the clip, so that
       // the clip itself will be applied in the render surface.
       DCHECK(pending_clip.clip->Parent());
@@ -1048,7 +1048,7 @@ void PropertyTreeManager::PopulateCcEffectNode(
     const EffectPaintPropertyNode& effect,
     int output_clip_id,
     SkBlendMode blend_mode) {
-  effect_node.stable_id = effect.GetCompositorElementId().GetInternalValue();
+  effect_node.stable_id = effect.GetCompositorElementId().GetStableId();
   effect_node.clip_id = output_clip_id;
 
   // An effect with filters or backdrop filters needs a render surface.

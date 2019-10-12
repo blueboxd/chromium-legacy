@@ -96,6 +96,8 @@ class CC_EXPORT FrameSequenceTrackerCollection {
  private:
   friend class FrameSequenceTrackerTest;
 
+  void RecreateTrackers(const viz::BeginFrameArgs& args);
+
   const bool is_single_threaded_;
   // The callsite can use the type to manipulate the tracker.
   base::flat_map<FrameSequenceTrackerType,
@@ -166,6 +168,9 @@ class CC_EXPORT FrameSequenceTracker {
   void PauseFrameProduction();
 
   TerminationStatus termination_status() const { return termination_status_; }
+
+  // Returns true if we should ask this tracker to report its throughput data.
+  bool ShouldReportMetricsNow(const viz::BeginFrameArgs& args) const;
 
  private:
   friend class FrameSequenceTrackerCollection;
@@ -272,6 +277,13 @@ class CC_EXPORT FrameSequenceTracker {
   // Keeps track of the last sequence-number that produced a frame from the
   // main-thread.
   uint64_t last_submitted_main_sequence_ = 0;
+
+  // The time when this tracker is created, or the time when it was previously
+  // scheduled to report histogram.
+  base::TimeTicks first_frame_timestamp_;
+
+  // Report the throughput metrics every 5 seconds.
+  const base::TimeDelta time_delta_to_report_ = base::TimeDelta::FromSeconds(5);
 };
 
 }  // namespace cc

@@ -74,6 +74,13 @@ class TabLifecycleUnitSource : public BrowserListObserver,
     return tab_lifecycles_enterprise_policy_;
   }
 
+  // Returns the state of the MemoryLimitMbEnabled enterprise policy.
+  bool memory_limit_enterprise_policy() const {
+    return memory_limit_enterprise_policy_;
+  }
+
+  void SetMemoryLimitEnterprisePolicyFlag(bool enabled);
+
  protected:
   class TabLifecycleUnitHolder;
 
@@ -186,6 +193,9 @@ class TabLifecycleUnitSource : public BrowserListObserver,
 
   // The enterprise policy for overriding the tab lifecycles feature.
   bool tab_lifecycles_enterprise_policy_ = true;
+
+  // The enterprise policy for setting a limit on total physical memory usage.
+  bool memory_limit_enterprise_policy_ = false;
 
   // In official production builds this monitors policy settings and reflects
   // them in |tab_lifecycles_enterprise_policy_|.

@@ -127,6 +127,14 @@ class BrowserWindow : public ui::BaseWindow {
   //////////////////////////////////////////////////////////////////////////////
   // Browser specific methods:
 
+  // Returns true if the browser window is on the current workspace (a.k.a.
+  // virtual desktop) or if we can't tell. False otherwise.
+  //
+  // On Windows, it must not be called while application is dispatching an input
+  // synchronous call like SendMessage, because IsWindowOnCurrentVirtualDesktop
+  // will return an error.
+  virtual bool IsOnCurrentWorkspace() const = 0;
+
   // Sets the shown |ratio| of the browser's top controls (a.k.a. top-chrome) as
   // a result of gesture scrolling in |web_contents|.
   virtual void SetTopControlsShownRatio(content::WebContents* web_contents,

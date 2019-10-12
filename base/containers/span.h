@@ -405,8 +405,10 @@ class span : public internal::ExtentStorage<Extent> {
   constexpr T* data() const noexcept { return data_; }
 
   // [span.iter], span iterator support
-  iterator begin() const noexcept { return iterator(data_, data_ + size()); }
-  iterator end() const noexcept {
+  constexpr iterator begin() const noexcept {
+    return iterator(data_, data_ + size());
+  }
+  constexpr iterator end() const noexcept {
     return iterator(data_, data_ + size(), data_ + size());
   }
 

@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.view.View;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
 import org.chromium.base.ApplicationStatus;
@@ -149,6 +150,7 @@ public class TabGroupUtils {
      * @param title       The tab group title to store.
      */
     public static void storeTabGroupTitle(int tabRootId, String title) {
+        assert tabRootId != Tab.INVALID_TAB_ID;
         getSharedPreferences().edit().putString(String.valueOf(tabRootId), title).apply();
     }
 
@@ -157,6 +159,7 @@ public class TabGroupUtils {
      * @param tabRootId  The tab root ID whose related tab group title will be deleted.
      */
     public static void deleteTabGroupTitle(int tabRootId) {
+        assert tabRootId != Tab.INVALID_TAB_ID;
         getSharedPreferences().edit().remove(String.valueOf(tabRootId)).apply();
     }
 
@@ -165,7 +168,9 @@ public class TabGroupUtils {
      * @param tabRootId  The tab root ID whose related tab group title will be fetched.
      * @return The stored title of the target tab group, default value is null.
      */
+    @Nullable
     public static String getTabGroupTitle(int tabRootId) {
+        assert tabRootId != Tab.INVALID_TAB_ID;
         return getSharedPreferences().getString(String.valueOf(tabRootId), null);
     }
 

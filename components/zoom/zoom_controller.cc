@@ -46,8 +46,9 @@ ZoomController::ZoomController(content::WebContents* web_contents)
   host_zoom_map_ = content::HostZoomMap::GetForWebContents(web_contents);
   zoom_level_ = host_zoom_map_->GetDefaultZoomLevel();
 
-  zoom_subscription_ = host_zoom_map_->AddZoomLevelChangedCallback(
-      base::Bind(&ZoomController::OnZoomLevelChanged, base::Unretained(this)));
+  zoom_subscription_ =
+      host_zoom_map_->AddZoomLevelChangedCallback(base::BindRepeating(
+          &ZoomController::OnZoomLevelChanged, base::Unretained(this)));
 
   UpdateState(std::string());
 }
@@ -335,8 +336,9 @@ void ZoomController::RenderFrameHostChanged(
     return;
 
   host_zoom_map_ = new_host_zoom_map;
-  zoom_subscription_ = host_zoom_map_->AddZoomLevelChangedCallback(
-      base::Bind(&ZoomController::OnZoomLevelChanged, base::Unretained(this)));
+  zoom_subscription_ =
+      host_zoom_map_->AddZoomLevelChangedCallback(base::BindRepeating(
+          &ZoomController::OnZoomLevelChanged, base::Unretained(this)));
 }
 
 void ZoomController::OnZoomLevelChanged(

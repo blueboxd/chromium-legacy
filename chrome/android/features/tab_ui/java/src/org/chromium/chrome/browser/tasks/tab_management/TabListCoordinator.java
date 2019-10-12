@@ -235,6 +235,13 @@ public class TabListCoordinator implements Destroyable {
     }
 
     /**
+     * @return The editor {@link TabGroupTitleEditor} that is used to update tab group title.
+     */
+    TabGroupTitleEditor getTabGroupTitleEditor() {
+        return mMediator.getTabGroupTitleEditor();
+    }
+
+    /**
      * @see TabListMediator#resetWithListOfTabs(List, boolean, boolean)
      */
     boolean resetWithListOfTabs(@Nullable List<Tab> tabs, boolean quickMode, boolean mruMode) {

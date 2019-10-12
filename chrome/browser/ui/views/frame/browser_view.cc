@@ -177,6 +177,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/accelerators.h"
+#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/desks_helper.h"
 #include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller_chromeos.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -197,6 +199,8 @@
 #endif
 
 #if defined(OS_WIN)
+#include <shobjidl.h>
+#include <wrl/client.h>
 #include "base/win/windows_version.h"
 #include "chrome/browser/taskbar/taskbar_decorator_win.h"
 #include "chrome/browser/win/jumplist.h"
@@ -649,6 +653,50 @@ gfx::NativeWindow BrowserView::GetNativeWindow() const {
   // While the browser destruction is going on, the widget can already be gone,
   // but utility functions like FindBrowserWithWindow will still call this.
   return GetWidget() ? GetWidget()->GetNativeWindow() : nullptr;
+}
+
+bool BrowserView::IsOnCurrentWorkspace() const {
+  // In tests, the native window can be nullptr.
+  gfx::NativeWindow native_win = GetNativeWindow();
+  if (!native_win)
+    return true;
+
+#if defined(OS_CHROMEOS)
+  if (!ash::features::IsVirtualDesksEnabled())
+    return true;
+
+  return ash::DesksHelper::Get()->BelongsToActiveDesk(native_win);
+#elif defined(OS_WIN)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
+    return true;
+
+  Microsoft::WRL::ComPtr<IVirtualDesktopManager> virtual_desktop_manager;
+  if (!SUCCEEDED(::CoCreateInstance(__uuidof(VirtualDesktopManager), nullptr,
+                                    CLSCTX_ALL,
+                                    IID_PPV_ARGS(&virtual_desktop_manager)))) {
+    return true;
+  }
+
+  BOOL on_current_desktop;
+  if (!native_win ||
+      FAILED(virtual_desktop_manager->IsWindowOnCurrentVirtualDesktop(
+          native_win->GetHost()->GetAcceleratedWidget(),
+          &on_current_desktop)) ||
+      on_current_desktop) {
+    return true;
+  }
+
+  // IsWindowOnCurrentVirtualDesktop() is flaky for newly opened windows,
+  // which causes test flakiness. Occasionally, it incorrectly says a window
+  // is not on the current virtual desktop when it is. In this situation,
+  // it also returns GUID_NULL for the desktop id.
+  GUID workspace_guid;
+  return SUCCEEDED(virtual_desktop_manager->GetWindowDesktopId(
+             native_win->GetHost()->GetAcceleratedWidget(), &workspace_guid)) &&
+         workspace_guid != GUID_NULL;
+#else
+  return true;
+#endif  // defined(OS_CHROMEOS)
 }
 
 void BrowserView::SetTopControlsShownRatio(content::WebContents* web_contents,

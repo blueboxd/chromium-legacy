@@ -125,8 +125,11 @@ Pointer::~Pointer() {
     pinch_delegate_->OnPointerDestroying(this);
   if (relative_pointer_delegate_)
     relative_pointer_delegate_->OnPointerDestroying(this);
-  if (pointer_constraint_delegate_)
+  if (pointer_constraint_delegate_) {
+    pointer_constraint_delegate_->GetConstrainedSurface()
+        ->RemoveSurfaceObserver(this);
     pointer_constraint_delegate_->OnConstraintBroken();
+  }
   WMHelper* helper = WMHelper::GetInstance();
   helper->RemovePreTargetHandler(this);
   // TODO(sky): CursorClient does not exist in mash
@@ -309,6 +312,9 @@ bool Pointer::EnablePointerCapture(Surface* capture_surface) {
   if (!base::FeatureList::IsEnabled(kPointerCapture))
     return false;
 
+  if (!capture_surface->HasSurfaceObserver(this))
+    capture_surface->AddSurfaceObserver(this);
+
   capture_window_ = capture_surface->window();
 
   auto* capture_client = WMHelper::GetInstance()->GetCaptureClient();
@@ -342,6 +348,12 @@ void Pointer::OnSurfaceCommit() {
 // SurfaceObserver overrides:
 
 void Pointer::OnSurfaceDestroying(Surface* surface) {
+  if (surface && pointer_constraint_delegate_ &&
+      surface == pointer_constraint_delegate_->GetConstrainedSurface()) {
+    surface->RemoveSurfaceObserver(this);
+    pointer_constraint_delegate_->OnConstraintBroken();
+    UnconstrainPointer();
+  }
   if (surface == focus_surface_) {
     SetFocus(nullptr, gfx::PointF(), 0);
     return;

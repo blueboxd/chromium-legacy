@@ -3361,6 +3361,14 @@ void AXPlatformNodeAuraLinux::OnDescriptionChanged() {
 }
 
 void AXPlatformNodeAuraLinux::OnValueChanged() {
+  // If this is a non-web-content text entry, then we need to trigger text
+  // change signals when the value changes. This is handled by browser
+  // accessibility for web content.
+  if (IsPlainTextField() || !GetDelegate()->IsWebContent()) {
+    UpdateHypertext();
+    return;
+  }
+
   if (!IsRangeValueSupported(GetData()))
     return;
 

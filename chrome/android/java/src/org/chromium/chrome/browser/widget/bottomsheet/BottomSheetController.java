@@ -142,10 +142,7 @@ public class BottomSheetController implements Destroyable {
             public void onScrimClick() {
                 if (!mBottomSheet.isSheetOpen()) return;
                 mBottomSheet.setSheetState(
-                        mBottomSheet.getCurrentSheetContent().isPeekStateEnabled()
-                                ? BottomSheet.SheetState.PEEK
-                                : BottomSheet.SheetState.HIDDEN,
-                        true, StateChangeReason.TAP_SCRIM);
+                        mBottomSheet.getMinSwipableSheetState(), true, StateChangeReason.TAP_SCRIM);
             }
 
             @Override
@@ -223,7 +220,7 @@ public class BottomSheetController implements Destroyable {
         mIsSuppressed = false;
 
         if (mBottomSheet.getCurrentSheetContent() != null) {
-            mBottomSheet.setSheetState(BottomSheet.SheetState.PEEK, true);
+            mBottomSheet.setSheetState(mBottomSheet.getOpeningState(), true);
         } else {
             // In the event the previous content was hidden, try to show the next one.
             showNextContent(true);
@@ -322,7 +319,7 @@ public class BottomSheetController implements Destroyable {
 
         BottomSheetContent nextContent = mContentQueue.poll();
         mBottomSheet.showContent(nextContent);
-        mBottomSheet.setSheetState(BottomSheet.SheetState.PEEK, animate);
+        mBottomSheet.setSheetState(mBottomSheet.getOpeningState(), animate);
     }
 
     /**

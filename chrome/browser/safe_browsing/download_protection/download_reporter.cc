@@ -63,7 +63,8 @@ void ReportDangerousDownloadWarning(download::DownloadItem* download) {
         ->OnDangerousDownloadWarning(
             download->GetURL(), download->GetTargetFilePath().AsUTF8Unsafe(),
             base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
-            DangerTypeToThreatType(download->GetDangerType()));
+            DangerTypeToThreatType(download->GetDangerType()),
+            download->GetMimeType(), download->GetTotalBytes());
   }
 }
 
@@ -79,7 +80,8 @@ void ReportDangerousDownloadWarningBypassed(
         ->OnDangerousDownloadWarningBypassed(
             download->GetURL(), download->GetTargetFilePath().AsUTF8Unsafe(),
             base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
-            DangerTypeToThreatType(original_danger_type));
+            DangerTypeToThreatType(original_danger_type),
+            download->GetMimeType(), download->GetTotalBytes());
   }
 }
 
@@ -88,62 +90,34 @@ void ReportDangerousDownloadWarningBypassed(
 DownloadReporter::DownloadReporter() {
   profiles_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                           content::NotificationService::AllSources());
-  profiles_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                          content::NotificationService::AllSources());
 }
 
-DownloadReporter::~DownloadReporter() {
-  profiles_registrar_.RemoveAll();
-
-  for (download::SimpleDownloadManagerCoordinator* coordinator :
-       observed_coordinators_) {
-    coordinator->RemoveObserver(this);
-  }
-
-  for (download::DownloadItem* download_item : observed_downloads_) {
-    download_item->RemoveObserver(this);
-  }
-}
+DownloadReporter::~DownloadReporter() = default;
 
 void DownloadReporter::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PROFILE_CREATED: {
-      DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-      Profile* profile = content::Source<Profile>(source).ptr();
-      download::SimpleDownloadManagerCoordinator* coordinator =
-          SimpleDownloadManagerCoordinatorFactory::GetForKey(
-              profile->GetProfileKey());
-      coordinator->AddObserver(this);
-      observed_coordinators_.insert(coordinator);
-      break;
-    }
-    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-      Profile* profile = content::Source<Profile>(source).ptr();
-      download::SimpleDownloadManagerCoordinator* coordinator =
-          SimpleDownloadManagerCoordinatorFactory::GetForKey(
-              profile->GetProfileKey());
-      coordinator->RemoveObserver(this);
-      observed_coordinators_.erase(coordinator);
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_CREATED);
+  Profile* profile = content::Source<Profile>(source).ptr();
+  download::SimpleDownloadManagerCoordinator* coordinator =
+      SimpleDownloadManagerCoordinatorFactory::GetForKey(
+          profile->GetProfileKey());
+  observed_coordinators_.Add(coordinator);
+}
+
+void DownloadReporter::OnManagerGoingDown(
+    download::SimpleDownloadManagerCoordinator* coordinator) {
+  observed_coordinators_.Remove(coordinator);
 }
 
 void DownloadReporter::OnDownloadCreated(download::DownloadItem* download) {
   danger_types_[download] = download->GetDangerType();
-  download->AddObserver(this);
-  observed_downloads_.insert(download);
+  observed_downloads_.Add(download);
 }
 
 void DownloadReporter::OnDownloadDestroyed(download::DownloadItem* download) {
-  download->RemoveObserver(this);
+  observed_downloads_.Remove(download);
   danger_types_.erase(download);
-  observed_downloads_.erase(download);
 }
 
 void DownloadReporter::OnDownloadUpdated(download::DownloadItem* download) {

@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
@@ -254,20 +255,28 @@ void LayoutEmbeddedContent::StyleDidChange(StyleDifference diff,
                                            const ComputedStyle* old_style) {
   LayoutReplaced::StyleDidChange(diff, old_style);
 
-  if (!old_style || Style()->PointerEvents() != old_style->PointerEvents()) {
-    if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(GetNode()))
-      frame_owner->PointerEventsChanged();
+  if (EmbeddedContentView* embedded_content_view = GetEmbeddedContentView()) {
+    if (StyleRef().Visibility() != EVisibility::kVisible) {
+      embedded_content_view->Hide();
+    } else {
+      embedded_content_view->Show();
+    }
   }
 
-  EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
-  if (!embedded_content_view)
+  if (old_style &&
+      StyleRef().VisibleToHitTesting() == old_style->VisibleToHitTesting()) {
+    return;
+  }
+
+  auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(GetNode());
+  if (!frame_owner)
     return;
 
-  if (StyleRef().Visibility() != EVisibility::kVisible) {
-    embedded_content_view->Hide();
-  } else {
-    embedded_content_view->Show();
-  }
+  auto* frame = frame_owner->ContentFrame();
+  if (!frame)
+    return;
+
+  frame->UpdateVisibleToHitTesting();
 }
 
 void LayoutEmbeddedContent::UpdateLayout() {

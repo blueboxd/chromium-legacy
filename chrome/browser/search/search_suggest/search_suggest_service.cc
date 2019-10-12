@@ -15,6 +15,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/search_suggest/search_suggest_loader.h"
 #include "chrome/common/pref_names.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
@@ -97,10 +98,16 @@ class SearchSuggestService::SigninObserver
 
 // static
 bool SearchSuggestService::IsEnabled() {
-  // Search suggestions should be disabled when on-focus zero-prefix suggestions
-  // are displaying in the NTP.
   return !base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP) &&
-         !base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTPRealbox);
+         !base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTPRealbox) &&
+         !(base::FeatureList::IsEnabled(omnibox::kOnFocusSuggestions) &&
+           (!OmniboxFieldTrial::GetZeroSuggestVariants(
+                 metrics::OmniboxEventProto::NTP_REALBOX)
+                 .empty() ||
+            !OmniboxFieldTrial::GetZeroSuggestVariants(
+                 metrics::OmniboxEventProto::
+                     INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS)
+                 .empty()));
 }
 
 SearchSuggestService::SearchSuggestService(

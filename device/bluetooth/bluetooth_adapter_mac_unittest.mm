@@ -306,7 +306,9 @@ TEST_F(BluetoothAdapterMacTest, AddSecondDiscoverySessionWithLowEnergyFilter) {
       new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE));
   // Adding uuid to first discovery session so that there is a change to be made
   // when starting the second session.
-  discovery_filter->AddUUID(device::BluetoothUUID("1000"));
+  BluetoothDiscoveryFilter::DeviceInfoFilter device_filter;
+  device_filter.uuids.insert(device::BluetoothUUID("1000"));
+  discovery_filter->AddDeviceFilter(device_filter);
   adapter_mac_->StartDiscoverySessionWithFilter(
       std::move(discovery_filter),
       base::BindRepeating(

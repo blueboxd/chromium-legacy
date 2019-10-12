@@ -76,11 +76,28 @@ class GooglePasswordManagerNavigationThrottleTest : public SyncTest {
                   return true;
                 }))) {}
 
-  std::unique_ptr<ProfileSyncServiceHarness> EnableGooglePasswordManagerAndSync(
-      Profile* profile) {
+ protected:
+  void TearDownOnMainThread() override {
+    interceptor_.reset();
+    SyncTest::TearDownOnMainThread();
+  }
+
+ private:
+  // Instantiate a content::URLLoaderInterceptor that will fail all requests
+  // with net::ERR_FAILED. This is done, because we are interested in being
+  // redirected when a navigation fails.
+  std::unique_ptr<content::URLLoaderInterceptor> interceptor_;
+};
+
+class GooglePasswordManagerNavigationThrottleTestWithPasswordManager
+    : public GooglePasswordManagerNavigationThrottleTest {
+ public:
+  GooglePasswordManagerNavigationThrottleTestWithPasswordManager() {
     feature_list_.InitAndEnableFeature(
         password_manager::features::kGooglePasswordManager);
+  }
 
+  std::unique_ptr<ProfileSyncServiceHarness> EnableSync(Profile* profile) {
     ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile)
         ->OverrideNetworkResourcesForTest(
             std::make_unique<fake_server::FakeServerNetworkResources>(
@@ -105,18 +122,6 @@ class GooglePasswordManagerNavigationThrottleTest : public SyncTest {
     EXPECT_TRUE(harness->SetupSync());
     return harness;
   }
-
- protected:
-  void TearDownOnMainThread() override {
-    interceptor_.reset();
-    SyncTest::TearDownOnMainThread();
-  }
-
- private:
-  // Instantiate a content::URLLoaderInterceptor that will fail all requests
-  // with net::ERR_FAILED. This is done, because we are interested in being
-  // redirected when a navigation fails.
-  std::unique_ptr<content::URLLoaderInterceptor> interceptor_;
 };
 
 // No navigation should be redirected in case the Google Password Manager and
@@ -140,29 +145,32 @@ IN_PROC_BROWSER_TEST_F(GooglePasswordManagerNavigationThrottleTest,
 // Settings Subpage when trying to access the Google Password Manager when the
 // user's profile should be considered and the user clicked a link to get to the
 // Google Password Manager page.
-IN_PROC_BROWSER_TEST_F(GooglePasswordManagerNavigationThrottleTest,
-                       ExampleWithGPMAndSync) {
+IN_PROC_BROWSER_TEST_F(
+    GooglePasswordManagerNavigationThrottleTestWithPasswordManager,
+    ExampleWithGPMAndSync) {
   std::unique_ptr<ProfileSyncServiceHarness> harness =
-      EnableGooglePasswordManagerAndSync(browser()->profile());
+      EnableSync(browser()->profile());
   EXPECT_EQ(GetExampleURL(),
             NavigateToURL(browser(), GetExampleURL(),
                           ui::PageTransition::PAGE_TRANSITION_LINK));
 }
 
-IN_PROC_BROWSER_TEST_F(GooglePasswordManagerNavigationThrottleTest,
-                       PasswordsWithGPMAndSyncUserTyped) {
+IN_PROC_BROWSER_TEST_F(
+    GooglePasswordManagerNavigationThrottleTestWithPasswordManager,
+    PasswordsWithGPMAndSyncUserTyped) {
   std::unique_ptr<ProfileSyncServiceHarness> harness =
-      EnableGooglePasswordManagerAndSync(browser()->profile());
+      EnableSync(browser()->profile());
   EXPECT_EQ(GetGooglePasswordManagerURL(),
             NavigateToURL(browser(), GetGooglePasswordManagerURL(),
                           ui::PageTransition::PAGE_TRANSITION_TYPED));
 }
 
-IN_PROC_BROWSER_TEST_F(GooglePasswordManagerNavigationThrottleTest,
-                       PasswordsWithGPMAndSyncUserClickedLink) {
+IN_PROC_BROWSER_TEST_F(
+    GooglePasswordManagerNavigationThrottleTestWithPasswordManager,
+    PasswordsWithGPMAndSyncUserClickedLink) {
   base::HistogramTester tester;
   std::unique_ptr<ProfileSyncServiceHarness> harness =
-      EnableGooglePasswordManagerAndSync(browser()->profile());
+      EnableSync(browser()->profile());
 
 #if defined(OS_CHROMEOS)
   // Install the Settings App.

@@ -3,18 +3,19 @@
 <title>Tests rendersubtree attribute values</title>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+<script src="../resources/utils.js"></script>
 
 <script>
 test(() => {
   const element = document.createElement("div");
 
-  element.setAttribute("rendersubtree", "invisible");
-  assert_equals(element.getAttribute("rendersubtree"), "invisible");
-  assert_equals(element.renderSubtree, "invisible");
+  element.setAttribute("rendersubtree", INVISIBLE_ACTIVATABLE);
+  assert_equals(element.getAttribute("rendersubtree"), INVISIBLE_ACTIVATABLE);
+  assert_equals(element.renderSubtree, INVISIBLE_ACTIVATABLE);
 
-  element.setAttribute("rendersubtree", "invisible activatable");
-  assert_equals(element.getAttribute("rendersubtree"), "invisible activatable");
-  assert_equals(element.renderSubtree, "invisible activatable");
+  element.setAttribute("rendersubtree", INVISIBLE_NOT_ACTIVATABLE);
+  assert_equals(element.getAttribute("rendersubtree"), INVISIBLE_NOT_ACTIVATABLE);
+  assert_equals(element.renderSubtree, INVISIBLE_NOT_ACTIVATABLE);
 
   element.setAttribute("rendersubtree", "not-visible");
   assert_equals(element.getAttribute("rendersubtree"), "not-visible");

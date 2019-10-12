@@ -1107,6 +1107,16 @@ WKBasedNavigationManagerImpl::WKWebViewCache::GetNavigationItemImplAtIndex(
     }
   }
 
+  // TODO(crbug.com/1003680) This seems to happen if a restored navigation fails
+  // provisionally before the NavigationContext associates with the original
+  // navigation. Rather than expose the internal placeholder to the UI and to
+  // URL-sensing components outside of //ios/web layer, set virtual URL to the
+  // placeholder original URL here.
+  if (wk_navigation_util::IsPlaceholderUrl(url)) {
+    new_item->SetVirtualURL(
+        wk_navigation_util::ExtractUrlFromPlaceholderUrl(url));
+  }
+
   SetNavigationItemInWKItem(wk_item, std::move(new_item));
   return GetNavigationItemFromWKItem(wk_item);
 }

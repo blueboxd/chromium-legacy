@@ -33,6 +33,7 @@ def _ParseArgs(args):
                            'Can be specified multiple times.')
   parser.add_argument(
       '--native-libs',
+      action='append',
       help='GN-list of paths to native libraries relative to '
       'output directory. Can be repeated.')
   parser.add_argument(

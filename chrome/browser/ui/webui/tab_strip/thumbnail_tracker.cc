@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/thumbnails/thumbnail_image.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -28,7 +27,7 @@ class ThumbnailTracker::ContentsData : public content::WebContentsObserver,
 
   void RequestThumbnail() {
     if (thumbnail_)
-      thumbnail_->RequestThumbnailImage();
+      thumbnail_->RequestCompressedThumbnailData();
   }
 
   // content::WebContents:
@@ -45,7 +44,8 @@ class ThumbnailTracker::ContentsData : public content::WebContentsObserver,
   }
 
   // ThumbnailImage::Observer:
-  void OnThumbnailImageAvailable(gfx::ImageSkia thumbnail_image) override {
+  void OnCompressedThumbnailDataAvailable(
+      CompressedThumbnailData thumbnail_image) override {
     parent_->ThumbnailUpdated(web_contents(), thumbnail_image);
   }
 
@@ -79,7 +79,7 @@ void ThumbnailTracker::WatchTab(content::WebContents* contents) {
 }
 
 void ThumbnailTracker::ThumbnailUpdated(content::WebContents* contents,
-                                        gfx::ImageSkia image) {
+                                        CompressedThumbnailData image) {
   callback_.Run(contents, image);
 }
 

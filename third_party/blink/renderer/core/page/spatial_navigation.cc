@@ -254,8 +254,8 @@ bool ScrollInDirection(Node* container, SpatialNavigationDirection direction) {
 
   int dx = 0;
   int dy = 0;
-  int pixels_per_line_step = ScrollableArea::PixelsPerLineStep(
-      container->GetDocument().GetFrame()->View()->GetChromeClient());
+  int pixels_per_line_step =
+      ScrollableArea::PixelsPerLineStep(container->GetDocument().GetFrame());
   switch (direction) {
     case SpatialNavigationDirection::kLeft:
       dx = -pixels_per_line_step;

@@ -102,13 +102,15 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
 
 // Helper function to examine a DeepScanningClientResponse and report the
 // appropriate events to the enterprise admin.
-void MaybeReportDownloadDeepScanningVerdict(
-    Profile* profile,
-    const GURL& url,
-    const std::string& file_name,
-    const std::string& download_digest_sha256,
-    BinaryUploadService::Result result,
-    DeepScanningClientResponse response);
+void MaybeReportDeepScanningVerdict(Profile* profile,
+                                    const GURL& url,
+                                    const std::string& file_name,
+                                    const std::string& download_digest_sha256,
+                                    const std::string& mime_type,
+                                    const std::string& trigger,
+                                    const int64_t content_size,
+                                    BinaryUploadService::Result result,
+                                    DeepScanningClientResponse response);
 
 }  // namespace safe_browsing
 

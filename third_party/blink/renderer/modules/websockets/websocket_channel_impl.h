@@ -114,14 +114,13 @@ class MODULES_EXPORT WebSocketChannelImpl final
   // network::mojom::blink::WebSocketHandshakeClient methods:
   void OnOpeningHandshakeStarted(
       network::mojom::blink::WebSocketHandshakeRequestPtr) override;
-  void OnResponseReceived(
-      network::mojom::blink::WebSocketHandshakeResponsePtr) override;
   void OnConnectionEstablished(
       mojo::PendingRemote<network::mojom::blink::WebSocket> websocket,
       mojo::PendingReceiver<network::mojom::blink::WebSocketClient>
           client_receiver,
       const String& selected_protocol,
       const String& extensions,
+      network::mojom::blink::WebSocketHandshakeResponsePtr,
       mojo::ScopedDataPipeConsumerHandle readable) override;
 
   // network::mojom::blink::WebSocketClient methods:

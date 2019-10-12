@@ -105,10 +105,6 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     return rect_in_screen;
   }
 
-  float WindowToViewportScalar(const float scalar_value) const override {
-    return WindowToViewportScalar(nullptr, scalar_value);
-  }
-
   float WindowToViewportScalar(LocalFrame*,
                                const float scalar_value) const override {
     WebFloatRect viewport_rect(0, 0, scalar_value, 0);

@@ -61,7 +61,7 @@ struct CC_PAINT_EXPORT ElementId {
   void AddToTracedValue(base::trace_event::TracedValue* res) const;
   std::unique_ptr<base::Value> AsValue() const;
 
-  ElementIdType GetInternalValue() const;
+  ElementIdType GetStableId() const;
 
   std::string ToString() const;
 

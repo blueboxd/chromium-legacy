@@ -184,13 +184,26 @@ message JavascriptChannelMessage {
   string message = 2;
 }
 
+// Associate a cast application with a platform view
+message AssociateCastAppWindowRequest {
+  // This identifies the surface that the cast app will display into.
+  // It should be unique from all other platform views.
+  // This is the same platform id that is set in webview_id in
+  // WebviewCreateRequest
+  int32 platform_view_id = 1;
+  // This is the id of a cast application.
+  int32 app_window_id = 2;
+}
+
+message AssociateCastAppWindowResponse {}
+
 message WebviewRequest {
   // Unique identifier for the request. For requests that will have a response,
   // the response id will match the request id.
   // Valid ID values must be greater than 0.
   int64 id = 18;
   oneof type {
-    // This must be the first message.
+    // This must be the first message for CreateWebview.
     WebviewCreateRequest create = 1;
     // No response.
     InputEvent input = 2;
@@ -226,6 +239,8 @@ message WebviewRequest {
     SetAutoMediaPlaybackPolicyRequest set_auto_media_playback_policy = 17;
     // Response to a navigation request.
     NavigationDecision navigation_decision = 19;
+    // This must be the first request for CreateCastAppWindowLink
+    AssociateCastAppWindowRequest associate = 20;
   }
 }
 
@@ -247,10 +262,20 @@ message WebviewResponse {
     // Events sents from JS inside of Webviews to the embedder who added JS
     // channels via AddJavascriptChannelsRequest.
     JavascriptChannelMessage javascript_channel_message = 10;
+    AssociateCastAppWindowResponse associate = 20;
   }
 }
 
+// TODO(sagallea): Deprecate this after moving to new service.
 service WebviewService {
   // Creates a webview. See the comment at the top of the file.
   rpc CreateWebview(stream WebviewRequest) returns (stream WebviewResponse);
+}
+
+service PlatformViewsService {
+  // Creates a webview. See the comment at the top of the file.
+  rpc CreateWebview(stream WebviewRequest) returns (stream WebviewResponse);
+  // Only AssociateRequest and InputEvent requests are valid.
+  rpc CreateCastAppWindowLink(stream WebviewRequest)
+      returns (stream WebviewResponse);
 }

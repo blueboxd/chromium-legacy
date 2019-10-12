@@ -453,11 +453,17 @@ void WebSocketChannelImpl::OnOpeningHandshakeStarted(
   handshake_request_ = std::move(request);
 }
 
-void WebSocketChannelImpl::OnResponseReceived(
-    network::mojom::blink::WebSocketHandshakeResponsePtr response) {
+void WebSocketChannelImpl::OnConnectionEstablished(
+    mojo::PendingRemote<network::mojom::blink::WebSocket> websocket,
+    mojo::PendingReceiver<network::mojom::blink::WebSocketClient>
+        client_receiver,
+    const String& protocol,
+    const String& extensions,
+    network::mojom::blink::WebSocketHandshakeResponsePtr response,
+    mojo::ScopedDataPipeConsumerHandle readable) {
   DCHECK_EQ(GetState(), State::kConnecting);
-  NETWORK_DVLOG(1) << this << " OnResponseReceived("
-                   << response->url.GetString() << ")";
+  NETWORK_DVLOG(1) << this << " OnConnectionEstablished(" << protocol << ", "
+                   << extensions << ")";
   TRACE_EVENT_INSTANT1(
       "devtools.timeline", "WebSocketReceiveHandshakeResponse",
       TRACE_EVENT_SCOPE_THREAD, "data",
@@ -466,18 +472,7 @@ void WebSocketChannelImpl::OnResponseReceived(
                                               handshake_request_.get(),
                                               response.get());
   handshake_request_ = nullptr;
-}
 
-void WebSocketChannelImpl::OnConnectionEstablished(
-    mojo::PendingRemote<network::mojom::blink::WebSocket> websocket,
-    mojo::PendingReceiver<network::mojom::blink::WebSocketClient>
-        client_receiver,
-    const String& protocol,
-    const String& extensions,
-    mojo::ScopedDataPipeConsumerHandle readable) {
-  DCHECK_EQ(GetState(), State::kConnecting);
-  NETWORK_DVLOG(1) << this << " OnConnectionEstablished(" << protocol << ", "
-                   << extensions << ")";
   // From now on, we will detect mojo errors via |client_receiver_|.
   handshake_client_receiver_.reset();
   client_receiver_.Bind(

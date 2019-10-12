@@ -976,7 +976,7 @@ TEST_P(PaintArtifactCompositorTest, EffectTreeConversionWithAlias) {
   const cc::EffectNode& converted_effect1 = *effect_tree.Node(2);
   EXPECT_EQ(converted_root_effect.id, converted_effect1.parent_id);
   EXPECT_FLOAT_EQ(0.5, converted_effect1.opacity);
-  EXPECT_EQ(real_effect1->GetCompositorElementId().GetInternalValue(),
+  EXPECT_EQ(real_effect1->GetCompositorElementId().GetStableId(),
             converted_effect1.stable_id);
 
   const cc::EffectNode& converted_effect2 = *effect_tree.Node(3);

@@ -476,7 +476,6 @@ ScriptPromise XRSession::CreateAnchor(ScriptState* script_state,
            << ", pose_ptr->position = [" << pose_ptr->position->x << ", "
            << pose_ptr->position->y << ", " << pose_ptr->position->z << "]";
 
-  EnsureEnvironmentErrorHandler();
   if (plane) {
     xr_->xrEnvironmentProviderPtr()->CreatePlaneAnchor(
         std::move(pose_ptr), plane->id(),
@@ -563,7 +562,6 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  EnsureEnvironmentErrorHandler();
   xr_->xrEnvironmentProviderPtr()->RequestHitTest(
       std::move(ray_mojo),
       WTF::Bind(&XRSession::OnHitTestResults, WrapPersistent(this),
@@ -625,11 +623,16 @@ ScriptPromise XRSession::requestHitTestSource(
   auto direction = origin_from_ray.MapPoint({0, 0, -1});
   ray_mojo->direction = {direction.X(), direction.Y(), direction.Z()};
 
-  // TODO(https://crbug.com/997369): Actually issue a call to the device once
-  // mojo interfaces land.
-  exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
-                                    kHitTestSubscriptionFailed);
-  return {};
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  xr_->xrEnvironmentProviderPtr()->SubscribeToHitTest(
+      maybe_native_origin->ToMojo(), std::move(ray_mojo),
+      WTF::Bind(&XRSession::OnSubscribeToHitTestResult, WrapPersistent(this),
+                WrapPersistent(resolver), WrapPersistent(options)));
+  request_hit_test_source_promises_.insert(resolver);
+
+  return promise;
 }
 
 void XRSession::OnHitTestResults(
@@ -652,6 +655,32 @@ void XRSession::OnHitTestResults(
   resolver->Resolve(hit_results);
 }
 
+void XRSession::OnSubscribeToHitTestResult(
+    ScriptPromiseResolver* resolver,
+    XRHitTestOptions* options,
+    device::mojom::SubscribeToHitTestResult result,
+    uint32_t subscription_id) {
+  DVLOG(2) << __func__ << ": result=" << result
+           << ", subscription_id=" << subscription_id;
+
+  DCHECK(request_hit_test_source_promises_.Contains(resolver));
+  request_hit_test_source_promises_.erase(resolver);
+
+  if (result != device::mojom::SubscribeToHitTestResult::SUCCESS) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kOperationError, kHitTestSubscriptionFailed));
+    return;
+  }
+
+  XRHitTestSource* hit_test_source =
+      MakeGarbageCollected<XRHitTestSource>(subscription_id, options);
+
+  hit_test_source_ids_to_hit_test_sources_.insert(subscription_id,
+                                                  hit_test_source);
+
+  resolver->Resolve(hit_test_source);
+}
+
 void XRSession::OnCreateAnchorResult(ScriptPromiseResolver* resolver,
                                      device::mojom::CreateAnchorResult result,
                                      uint32_t id) {
@@ -663,6 +692,10 @@ void XRSession::OnCreateAnchorResult(ScriptPromiseResolver* resolver,
   anchor_ids_to_anchors_.insert(id, anchor);
 
   resolver->Resolve(anchor);
+}
+
+void XRSession::OnEnvironmentProviderCreated() {
+  EnsureEnvironmentErrorHandler();
 }
 
 void XRSession::EnsureEnvironmentErrorHandler() {
@@ -756,6 +789,55 @@ void XRSession::ProcessAnchorsData(
   }
 
   anchor_ids_to_anchors_.swap(updated_anchors);
+}
+
+void XRSession::CleanUpUnusedHitTestSources() {
+  // Gather all IDs of unused hit test sources.
+  HashSet<uint32_t> unused_hit_test_source_ids;
+  for (auto& subscription_id_and_hit_test_source :
+       hit_test_source_ids_to_hit_test_sources_) {
+    if (!subscription_id_and_hit_test_source.value) {
+      unused_hit_test_source_ids.insert(
+          subscription_id_and_hit_test_source.key);
+    }
+  }
+
+  // Remove all of the unused hit test sources.
+  hit_test_source_ids_to_hit_test_sources_.RemoveAll(
+      unused_hit_test_source_ids);
+
+  DVLOG(3) << __func__ << ": removed unused hit test sources, amount: "
+           << unused_hit_test_source_ids.size();
+}
+
+void XRSession::ProcessHitTestData(
+    const device::mojom::blink::XRHitTestSubscriptionResultsDataPtr&
+        hit_test_subscriptions_data) {
+  DVLOG(2) << __func__;
+
+  CleanUpUnusedHitTestSources();
+
+  if (hit_test_subscriptions_data) {
+    // We have received hit test results for hit test subscriptions - process
+    // each result and notify its corresponding hit test source about new
+    // results for the current frame.
+    for (auto& hit_test_subscription_data :
+         hit_test_subscriptions_data->results) {
+      auto it = hit_test_source_ids_to_hit_test_sources_.find(
+          hit_test_subscription_data->subscription_id);
+      if (it != hit_test_source_ids_to_hit_test_sources_.end()) {
+        it->value->Update(hit_test_subscription_data->hit_test_results);
+      }
+    }
+  } else {
+    // We have not received hit test results for any of the hit test
+    // subscriptions in the current frame - clean up the results on all hit test
+    // source objects.
+    for (auto& subscription_id_and_hit_test_source :
+         hit_test_source_ids_to_hit_test_sources_) {
+      subscription_id_and_hit_test_source.value->Update({});
+    }
+  }
 }
 
 ScriptPromise XRSession::end(ScriptState* script_state,
@@ -1033,15 +1115,11 @@ void XRSession::UpdatePresentationFrameState(
     world_information_->ProcessPlaneInformation(
         frame_data->detected_planes_data, timestamp);
     ProcessAnchorsData(frame_data->anchors_data, timestamp);
-    // TODO(https://crbug.com/997369): Implement processing hit test data once
-    // mojo change lands.
-    // ProcessHitTestData(frame_data->hit_test_subscription_results);
+    ProcessHitTestData(frame_data->hit_test_subscription_results);
   } else {
     world_information_->ProcessPlaneInformation(nullptr, timestamp);
     ProcessAnchorsData(nullptr, timestamp);
-    // TODO(https://crbug.com/997369): Implement processing hit test data once
-    // mojo change lands.
-    // ProcessHitTestData(nullptr);
+    ProcessHitTestData(nullptr);
   }
 }
 

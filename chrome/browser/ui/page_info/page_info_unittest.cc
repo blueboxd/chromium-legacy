@@ -1162,7 +1162,8 @@ TEST_F(PageInfoTest, TimeOpenMetrics) {
 // various Safety Tip statuses.
 TEST_F(PageInfoTest, SafetyTipMetrics) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kSafetyTipUI);
+  scoped_feature_list.InitAndEnableFeature(
+      security_state::features::kSafetyTipUI);
   struct TestCase {
     const security_state::SafetyTipStatus safety_tip_status;
     const std::string histogram_name;

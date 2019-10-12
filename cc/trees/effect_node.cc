@@ -138,7 +138,7 @@ const char* RenderSurfaceReasonToString(RenderSurfaceReason reason) {
 
 void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("backdrop_mask_element_id",
-                    backdrop_mask_element_id.GetInternalValue());
+                    backdrop_mask_element_id.GetStableId());
   value->SetInteger("id", id);
   value->SetInteger("parent_id", parent_id);
   value->SetInteger("stable_id", stable_id);

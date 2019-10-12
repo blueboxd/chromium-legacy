@@ -17,7 +17,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "components/performance_manager/graph/graph_impl.h"
-#include "components/performance_manager/performance_manager_lock_observer.h"
 #include "components/performance_manager/public/graph/worker_node.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/render_process_host_proxy.h"
@@ -117,8 +116,6 @@ class PerformanceManagerImpl : public PerformanceManager {
   // TODO(chrisha): Hide this after the last consumer stops using it!
   static scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
 
-  content::LockObserver* lock_observer() { return &lock_observer_; }
-
   // Indicates whether or not the caller is currently running on the PM task
   // runner.
   bool OnPMTaskRunnerForTesting() const {
@@ -148,9 +145,6 @@ class PerformanceManagerImpl : public PerformanceManager {
       base::OnceCallback<TaskReturnType(GraphImpl*)> task);
 
   GraphImpl graph_;
-
-  // The LockObserver registered with //content to track lock acquisitions.
-  PerformanceManagerLockObserver lock_observer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -18,12 +18,11 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
 #include "components/user_manager/user_names.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_names.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 
@@ -39,9 +38,9 @@ void AssertNetworkServiceEnvEquals(const std::string& name,
                                    const std::string& expected_value) {
   std::string value;
   if (content::IsOutOfProcessNetworkService()) {
-    network::mojom::NetworkServiceTestPtr network_service_test;
-    content::GetSystemConnector()->BindInterface(
-        content::mojom::kNetworkServiceName, &network_service_test);
+    mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+    content::GetNetworkService()->BindTestInterface(
+        network_service_test.BindNewPipeAndPassReceiver());
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
     network_service_test->GetEnvironmentVariableValue(name, &value);
   } else {

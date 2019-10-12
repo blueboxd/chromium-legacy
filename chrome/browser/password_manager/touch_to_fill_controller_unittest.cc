@@ -68,7 +68,7 @@ class TouchToFillControllerTest : public testing::Test {
  private:
   MockTouchToFillView* mock_view_ = nullptr;
   MockPasswordManagerDriver driver_;
-  TouchToFillController touch_to_fill_controller_{nullptr};
+  TouchToFillController touch_to_fill_controller_{nullptr, nullptr};
 };
 
 TEST_F(TouchToFillControllerTest, Show_And_Fill) {

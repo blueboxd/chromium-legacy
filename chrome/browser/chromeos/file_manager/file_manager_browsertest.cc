@@ -679,16 +679,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DISABLED_CopyBetweenWindows, /* copy_between_windows.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("copyBetweenWindowsDriveToUsb")));
-
-WRAPPED_INSTANTIATE_TEST_SUITE_P(
-    CopyBetweenWindows, /* copy_between_windows.js */
-    FilesAppBrowserTest,
     ::testing::Values(TestCase("copyBetweenWindowsLocalToDrive"),
                       TestCase("copyBetweenWindowsLocalToUsb"),
                       TestCase("copyBetweenWindowsUsbToDrive"),
                       TestCase("copyBetweenWindowsDriveToLocal"),
-//                      TestCase("copyBetweenWindowsDriveToUsb"),
+                      TestCase("copyBetweenWindowsDriveToUsb"),
                       TestCase("copyBetweenWindowsUsbToLocal")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

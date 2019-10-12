@@ -52,15 +52,17 @@ const char kPermissionsKillSwitchTestGroup[] = "TestGroup";
 
 class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
  public:
-  PermissionRequestManagerBrowserTest() = default;
+  PermissionRequestManagerBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kBlockRepeatedNotificationPermissionPrompts);
+  }
+
   ~PermissionRequestManagerBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
     PermissionRequestManager* manager = GetPermissionRequestManager();
     mock_permission_prompt_factory_.reset(
         new MockPermissionPromptFactory(manager));
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kBlockRepeatedNotificationPermissionPrompts);
 
     host_resolver()->AddRule("*", "127.0.0.1");
   }

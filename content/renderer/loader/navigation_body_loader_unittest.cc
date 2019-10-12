@@ -49,7 +49,7 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     auto commit_params = CreateCommitNavigationParams();
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
         std::move(common_params), std::move(commit_params), 1 /* request_id */,
-        network::ResourceResponseHead(),
+        network::mojom::URLResponseHead::New(),
         mojo::ScopedDataPipeConsumerHandle() /* response_body */,
         std::move(endpoints),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
@@ -294,8 +294,8 @@ TEST_F(NavigationBodyLoaderTest, SetDefersLoadingFromCloseThenOnComplete) {
 // Tests that FillNavigationParamsResponseAndBodyLoader populates security
 // details on the response when they are present.
 TEST_F(NavigationBodyLoaderTest, FillResponseWithSecurityDetails) {
-  network::ResourceResponseHead response;
-  response.ssl_info = net::SSLInfo();
+  auto response = network::mojom::URLResponseHead::New();
+  response->ssl_info = net::SSLInfo();
   net::CertificateList certs;
   ASSERT_TRUE(net::LoadCertificateFiles(
       {"subjectAltName_sanity_check.pem", "root_ca_cert.pem"}, &certs));
@@ -306,10 +306,10 @@ TEST_F(NavigationBodyLoaderTest, FillResponseWithSecurityDetails) {
   base::StringPiece cert1_der =
       net::x509_util::CryptoBufferAsStringPiece(certs[1]->cert_buffer());
 
-  response.ssl_info->cert =
+  response->ssl_info->cert =
       net::X509Certificate::CreateFromDERCertChain({cert0_der, cert1_der});
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
-                                     &response.ssl_info->connection_status);
+                                     &response->ssl_info->connection_status);
 
   auto common_params = CreateCommonNavigationParams();
   common_params->url = GURL("https://example.test");
@@ -319,7 +319,8 @@ TEST_F(NavigationBodyLoaderTest, FillResponseWithSecurityDetails) {
   auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
   NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
       std::move(common_params), std::move(commit_params), 1 /* request_id */,
-      response, mojo::ScopedDataPipeConsumerHandle() /* response_body */,
+      std::move(response),
+      mojo::ScopedDataPipeConsumerHandle() /* response_body */,
       std::move(endpoints),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       2 /* render_frame_id */, true /* is_main_frame */, &navigation_params);

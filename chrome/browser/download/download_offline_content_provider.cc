@@ -422,7 +422,8 @@ void DownloadOfflineContentProvider::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void DownloadOfflineContentProvider::OnManagerGoingDown() {
+void DownloadOfflineContentProvider::OnManagerGoingDown(
+    SimpleDownloadManagerCoordinator* manager) {
   std::vector<DownloadItem*> all_items;
   GetAllDownloads(&all_items);
 

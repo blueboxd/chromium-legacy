@@ -59,6 +59,10 @@ CONTENT_EXPORT void PingNetworkService(base::OnceClosure closure);
 CONTENT_EXPORT void AddNetworkServiceDebugEvent(const std::string& event);
 CONTENT_EXPORT std::string GetNetworkServiceDebugEventsString();
 
+// Shuts down the in-process network service or disconnects from the out-of-
+// process one, allowing it to shut down.
+CONTENT_EXPORT void ShutDownNetworkService();
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_NETWORK_SERVICE_INSTANCE_IMPL_H_

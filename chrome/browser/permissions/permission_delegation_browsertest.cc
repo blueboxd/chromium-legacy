@@ -21,11 +21,13 @@ class PermissionDelegationBrowserTest : public InProcessBrowserTest {
  public:
   PermissionDelegationBrowserTest()
       : geolocation_overrider_(
-            std::make_unique<device::ScopedGeolocationOverrider>(0, 0)) {}
+            std::make_unique<device::ScopedGeolocationOverrider>(0, 0)) {
+    scoped_feature_list_.InitAndEnableFeature(features::kPermissionDelegation);
+  }
+
   ~PermissionDelegationBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kPermissionDelegation);
     PermissionRequestManager* manager =
         PermissionRequestManager::FromWebContents(GetWebContents());
     mock_permission_prompt_factory_.reset(

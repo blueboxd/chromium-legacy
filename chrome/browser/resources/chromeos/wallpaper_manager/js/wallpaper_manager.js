@@ -57,6 +57,9 @@ function WallpaperManager(dialogDom) {
 // TODO(bshe): Get rid of anonymous namespace.
 (function() {
 
+// Default wallpaper url
+var OEM_DEFAULT_WALLPAPER_URL = 'OemDefaultWallpaper';
+
 /**
  * The following values should be kept in sync with the style sheet.
  */
@@ -461,7 +464,8 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
       currentWallpaperInfo => {
         // Initialize the "more options" buttons.
         var isOnlineWallpaper = !!currentWallpaperInfo;
-        var isDefaultWallpaper = !this.currentWallpaper_;
+        var isDefaultWallpaper = !this.currentWallpaper_ ||
+            this.currentWallpaper_ == OEM_DEFAULT_WALLPAPER_URL;
         var visibleItemList = [];
         $('refresh').hidden = !isOnlineWallpaper || !this.dailyRefreshInfo_ ||
             !this.dailyRefreshInfo_.enabled;
@@ -1288,7 +1292,7 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
     if (loadTimeData.getBoolean('isOEMDefaultWallpaper')) {
       var defaultWallpaperInfo = {
         wallpaperId: null,
-        baseURL: 'OemDefaultWallpaper',
+        baseURL: OEM_DEFAULT_WALLPAPER_URL,
         layout: Constants.WallpaperThumbnailDefaultLayout,
         source: Constants.WallpaperSourceEnum.OEM,
         ariaLabel: loadTimeData.getString('defaultWallpaperLabel'),
@@ -1704,5 +1708,4 @@ WallpaperManager.prototype.disableDailyRefresh_ = function() {
   this.updateDailyRefreshItemStates_(this.dailyRefreshInfo_);
   this.decorateCurrentWallpaperInfoBar_();
 };
-
 })();

@@ -277,8 +277,7 @@ void OverviewItem::RestoreWindow(bool reset_transform) {
   // target state in |SplitViewController::OnOverviewModeEnding|.
   // Unify the mechanism to control it and remove ifs.
   if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
-      !Shell::Get()->split_view_controller()->InSplitViewMode() &&
-      reset_transform) {
+      !SplitViewController::Get()->InSplitViewMode() && reset_transform) {
     MaximizeIfSnapped(GetWindow());
   }
 
@@ -552,7 +551,7 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
     visible = false;
   } else {
     const SplitViewController::State state =
-        Shell::Get()->split_view_controller()->state();
+        SplitViewController::Get()->state();
     visible = state == SplitViewController::State::kLeftSnapped ||
               state == SplitViewController::State::kRightSnapped;
   }
@@ -659,9 +658,9 @@ void OverviewItem::OnDragAnimationCompleted() {
   aura::Window* dragged_window = GetWindow();
   aura::Window* dragged_widget_window = item_widget_->GetNativeWindow();
   aura::Window* parent_window = dragged_widget_window->parent();
-  if (Shell::Get()->split_view_controller()->InSplitViewMode()) {
+  if (SplitViewController::Get()->InSplitViewMode()) {
     aura::Window* snapped_window =
-        Shell::Get()->split_view_controller()->GetDefaultSnappedWindow();
+        SplitViewController::Get()->GetDefaultSnappedWindow();
     if (snapped_window->parent() == parent_window &&
         dragged_window->parent() == parent_window) {
       parent_window->StackChildBelow(dragged_window, snapped_window);

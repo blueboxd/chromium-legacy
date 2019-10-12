@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/element_fragment_anchor.h"
 
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -72,7 +73,7 @@ ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
   }
 
   if (target) {
-    target->ActivateDisplayLockIfNeeded();
+    target->ActivateDisplayLockIfNeeded(DisplayLockActivationReason::kUser);
     target->DispatchActivateInvisibleEventIfNeeded();
   }
 

@@ -16,7 +16,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/web/web_presentation_receiver_flags.h"
+#include "third_party/blink/public/common/presentation/presentation_receiver_flags.h"
 #include "ui/views/widget/widget.h"
 
 using content::WebContents;

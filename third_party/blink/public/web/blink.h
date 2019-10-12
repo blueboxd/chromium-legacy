@@ -68,10 +68,6 @@ BLINK_EXPORT v8::Isolate* MainThreadIsolate();
 BLINK_EXPORT void SetWebTestMode(bool);
 BLINK_EXPORT bool WebTestMode();
 
-// Enables or disables the use of the mock theme for web tests. This function
-// must be called only if SetWebTestMode(true).
-BLINK_EXPORT void SetMockThemeEnabledForTest(bool);
-
 // Alters the rendering of fonts for web tests.
 BLINK_EXPORT void SetFontAntialiasingEnabledForTest(bool);
 BLINK_EXPORT bool FontAntialiasingEnabledForTest();

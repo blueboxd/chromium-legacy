@@ -14,7 +14,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "mojo/public/cpp/system/wait.h"
@@ -45,13 +45,13 @@ class TCPBoundSocketTest : public testing::Test {
   SocketFactory* factory() { return &factory_; }
 
   int BindSocket(const net::IPEndPoint& ip_endpoint_in,
-                 mojom::TCPBoundSocketPtr* bound_socket,
+                 mojo::Remote<mojom::TCPBoundSocket>* bound_socket,
                  net::IPEndPoint* ip_endpoint_out) {
     base::RunLoop run_loop;
     int bind_result = net::ERR_IO_PENDING;
     factory()->CreateTCPBoundSocket(
         ip_endpoint_in, TRAFFIC_ANNOTATION_FOR_TESTS,
-        mojo::MakeRequest(bound_socket),
+        bound_socket->BindNewPipeAndPassReceiver(),
         base::BindLambdaForTesting(
             [&](int net_error,
                 const base::Optional<net::IPEndPoint>& local_addr) {
@@ -66,19 +66,18 @@ class TCPBoundSocketTest : public testing::Test {
     run_loop.Run();
 
     // On error, |bound_socket| should be closed.
-    if (bind_result != net::OK && !bound_socket->encountered_error()) {
+    if (bind_result != net::OK && bound_socket->is_connected()) {
       base::RunLoop close_pipe_run_loop;
-      bound_socket->set_connection_error_handler(
-          close_pipe_run_loop.QuitClosure());
+      bound_socket->set_disconnect_handler(close_pipe_run_loop.QuitClosure());
       close_pipe_run_loop.Run();
     }
     return bind_result;
   }
 
-  int Listen(mojom::TCPBoundSocketPtr bound_socket,
+  int Listen(mojo::Remote<mojom::TCPBoundSocket> bound_socket,
              mojom::TCPServerSocketPtr* server_socket) {
     base::RunLoop bound_socket_destroyed_run_loop;
-    bound_socket.set_connection_error_handler(
+    bound_socket.set_disconnect_handler(
         bound_socket_destroyed_run_loop.QuitClosure());
 
     base::RunLoop run_loop;
@@ -104,7 +103,7 @@ class TCPBoundSocketTest : public testing::Test {
     return listen_result;
   }
 
-  int Connect(mojom::TCPBoundSocketPtr bound_socket,
+  int Connect(mojo::Remote<mojom::TCPBoundSocket> bound_socket,
               const net::IPEndPoint& expected_local_addr,
               const net::IPEndPoint& connect_to_addr,
               mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
@@ -113,7 +112,7 @@ class TCPBoundSocketTest : public testing::Test {
               mojo::ScopedDataPipeConsumerHandle* client_socket_receive_handle,
               mojo::ScopedDataPipeProducerHandle* client_socket_send_handle) {
     base::RunLoop bound_socket_destroyed_run_loop;
-    bound_socket.set_connection_error_handler(
+    bound_socket.set_disconnect_handler(
         bound_socket_destroyed_run_loop.QuitClosure());
 
     int connect_result = net::ERR_IO_PENDING;
@@ -202,7 +201,7 @@ class TCPBoundSocketTest : public testing::Test {
 // fail.
 TEST_F(TCPBoundSocketTest, BindError) {
   // Set up a listening socket.
-  mojom::TCPBoundSocketPtr bound_socket1;
+  mojo::Remote<mojom::TCPBoundSocket> bound_socket1;
   net::IPEndPoint bound_address1;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket1,
                                 &bound_address1));
@@ -210,7 +209,7 @@ TEST_F(TCPBoundSocketTest, BindError) {
   ASSERT_EQ(net::OK, Listen(std::move(bound_socket1), &server_socket));
 
   // Try to bind another socket to the listening socket's address.
-  mojom::TCPBoundSocketPtr bound_socket2;
+  mojo::Remote<mojom::TCPBoundSocket> bound_socket2;
   net::IPEndPoint bound_address2;
   int result = BindSocket(bound_address1, &bound_socket2, &bound_address2);
   // Depending on platform, can get different errors. Some platforms can return
@@ -227,14 +226,14 @@ TEST_F(TCPBoundSocketTest, BindError) {
 // on OSX (after 25+ seconds) instead of connection refused.
 #if !defined(OS_MACOSX) && !defined(OS_IOS)
 TEST_F(TCPBoundSocketTest, ConnectError) {
-  mojom::TCPBoundSocketPtr bound_socket1;
+  mojo::Remote<mojom::TCPBoundSocket> bound_socket1;
   net::IPEndPoint bound_address1;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket1,
                                 &bound_address1));
 
   // Trying to bind to an address currently being used for listening should
   // fail.
-  mojom::TCPBoundSocketPtr bound_socket2;
+  mojo::Remote<mojom::TCPBoundSocket> bound_socket2;
   net::IPEndPoint bound_address2;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket2,
                                 &bound_address2));
@@ -260,14 +259,14 @@ TEST_F(TCPBoundSocketTest, ConnectError) {
 #if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_IOS)
 TEST_F(TCPBoundSocketTest, ListenError) {
   // Bind a socket.
-  mojom::TCPBoundSocketPtr bound_socket1;
+  mojo::Remote<mojom::TCPBoundSocket> bound_socket1;
   net::IPEndPoint bound_address1;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket1,
                                 &bound_address1));
 
   // Bind another socket to the same address, which should succeed, due to
   // SO_REUSEADDR.
-  mojom::TCPBoundSocketPtr bound_socket2;
+  mojo::Remote<mojom::TCPBoundSocket> bound_socket2;
   net::IPEndPoint bound_address2;
   ASSERT_EQ(net::OK,
             BindSocket(bound_address1, &bound_socket2, &bound_address2));
@@ -289,7 +288,7 @@ TEST_F(TCPBoundSocketTest, ListenError) {
 // Test the case bind succeeds, and transfer some data.
 TEST_F(TCPBoundSocketTest, ReadWrite) {
   // Set up a listening socket.
-  mojom::TCPBoundSocketPtr bound_socket1;
+  mojo::Remote<mojom::TCPBoundSocket> bound_socket1;
   net::IPEndPoint server_address;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket1,
                                 &server_address));
@@ -297,7 +296,7 @@ TEST_F(TCPBoundSocketTest, ReadWrite) {
   ASSERT_EQ(net::OK, Listen(std::move(bound_socket1), &server_socket));
 
   // Connect to the socket with another socket.
-  mojom::TCPBoundSocketPtr bound_socket2;
+  mojo::Remote<mojom::TCPBoundSocket> bound_socket2;
   net::IPEndPoint client_address;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket2,
                                 &client_address));
@@ -368,7 +367,7 @@ TEST_F(TCPBoundSocketTest, ReadWrite) {
 // that the options are actually set, since there's no API for that.
 TEST_F(TCPBoundSocketTest, ConnectWithOptions) {
   // Set up a listening socket.
-  network::mojom::TCPBoundSocketPtr bound_socket1;
+  mojo::Remote<mojom::TCPBoundSocket> bound_socket1;
   net::IPEndPoint server_address;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket1,
                                 &server_address));
@@ -376,7 +375,7 @@ TEST_F(TCPBoundSocketTest, ConnectWithOptions) {
   ASSERT_EQ(net::OK, Listen(std::move(bound_socket1), &server_socket));
 
   // Connect to the socket with another socket.
-  network::mojom::TCPBoundSocketPtr bound_socket2;
+  mojo::Remote<mojom::TCPBoundSocket> bound_socket2;
   net::IPEndPoint client_address;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket2,
                                 &client_address));
@@ -439,7 +438,7 @@ TEST_F(TCPBoundSocketTest, UpgradeToTLS) {
       }));
   ASSERT_TRUE(test_server.Start());
 
-  network::mojom::TCPBoundSocketPtr bound_socket;
+  mojo::Remote<mojom::TCPBoundSocket> bound_socket;
   net::IPEndPoint client_address;
   ASSERT_EQ(net::OK,
             BindSocket(LocalHostWithAnyPort(), &bound_socket, &client_address));

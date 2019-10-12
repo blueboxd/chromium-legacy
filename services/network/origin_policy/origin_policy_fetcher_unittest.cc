@@ -52,7 +52,7 @@ class OriginPolicyFetcherTest : public testing::Test {
     params->process_id = mojom::kBrowserProcessId;
     params->is_corb_enabled = false;
     network_context_->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_), std::move(params));
+        url_loader_factory_.BindNewPipeAndPassReceiver(), std::move(params));
 
     manager_ = std::make_unique<OriginPolicyManager>(network_context_.get());
 
@@ -134,7 +134,7 @@ class OriginPolicyFetcherTest : public testing::Test {
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
   mojo::Remote<mojom::NetworkContext> network_context_remote_;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
 
   net::test_server::EmbeddedTestServer test_server_;
   url::Origin test_server_origin_;

@@ -263,7 +263,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetTabKeyCyclesThroughElements(bool tab_key_cycles_through_elements);
   void SetTextDirection(const std::string& direction_name);
   void SetTextSubpixelPositioning(bool value);
-  void SetUseMockTheme(bool use);
   void SetViewSourceForFrame(const std::string& name, bool enabled);
   void SetWillSendRequestClearHeader(const std::string& header);
   void SetWindowIsKey(bool value);
@@ -586,7 +585,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetTextSubpixelPositioning)
       .SetMethod("setUseDashboardCompatibilityMode",
                  &TestRunnerBindings::NotImplemented)
-      .SetMethod("setUseMockTheme", &TestRunnerBindings::SetUseMockTheme)
       .SetMethod("setViewSourceForFrame",
                  &TestRunnerBindings::SetViewSourceForFrame)
       .SetMethod("setWillSendRequestClearHeader",
@@ -1118,11 +1116,6 @@ void TestRunnerBindings::SetWillSendRequestClearHeader(
     runner_->SetWillSendRequestClearHeader(header);
 }
 
-void TestRunnerBindings::SetUseMockTheme(bool use) {
-  if (runner_)
-    runner_->SetUseMockTheme(use);
-}
-
 void TestRunnerBindings::WaitUntilExternalURLLoad() {
   if (runner_)
     runner_->WaitUntilExternalURLLoad();
@@ -1554,8 +1547,6 @@ void TestRunner::Reset() {
   platform_name_ = "chromium";
   tooltip_text_ = std::string();
   web_history_item_count_ = 0;
-
-  SetUseMockTheme(true);
 
   weak_factory_.InvalidateWeakPtrs();
   work_queue_.Reset();
@@ -2418,11 +2409,6 @@ void TestRunner::SetShouldStayOnPageAfterHandlingBeforeUnload(bool value) {
 void TestRunner::SetWillSendRequestClearHeader(const std::string& header) {
   if (!header.empty())
     http_headers_to_clear_.insert(header);
-}
-
-void TestRunner::SetUseMockTheme(bool use) {
-  use_mock_theme_ = use;
-  blink::SetMockThemeEnabledForTest(use);
 }
 
 void TestRunner::WaitUntilExternalURLLoad() {

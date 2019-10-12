@@ -209,15 +209,15 @@ std::unique_ptr<TestURLLoaderClient> FetchRequest(
     NetworkContext* network_context,
     int url_loader_options = mojom::kURLLoadOptionNone,
     int process_id = mojom::kBrowserProcessId) {
-  mojom::URLLoaderFactoryPtr loader_factory;
+  mojo::Remote<mojom::URLLoaderFactory> loader_factory;
   auto params = mojom::URLLoaderFactoryParams::New();
   params->process_id = process_id;
   params->is_corb_enabled = false;
   params->network_isolation_key =
       net::NetworkIsolationKey(url::Origin::Create(GURL("https://abc.com")),
                                url::Origin::Create(GURL("https://xyz.com")));
-  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          std::move(params));
+  network_context->CreateURLLoaderFactory(
+      loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
   auto client = std::make_unique<TestURLLoaderClient>();
   mojom::URLLoaderPtr loader;
@@ -236,12 +236,12 @@ std::unique_ptr<TestURLLoaderClient> FetchRedirectedRequest(
     size_t redirect_counts,
     const ResourceRequest& request,
     NetworkContext* network_context) {
-  mojom::URLLoaderFactoryPtr loader_factory;
+  mojo::Remote<mojom::URLLoaderFactory> loader_factory;
   auto params = mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
-  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          std::move(params));
+  network_context->CreateURLLoaderFactory(
+      loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
   auto client = std::make_unique<TestURLLoaderClient>();
   mojom::URLLoaderPtr loader;
@@ -474,13 +474,13 @@ TEST_F(NetworkContextTest, DestroyContextWithLiveRequest) {
   ResourceRequest request;
   request.url = test_server.GetURL("/hung-after-headers");
 
-  mojom::URLLoaderFactoryPtr loader_factory;
+  mojo::Remote<mojom::URLLoaderFactory> loader_factory;
   mojom::URLLoaderFactoryParamsPtr params =
       mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
-  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          std::move(params));
+  network_context->CreateURLLoaderFactory(
+      loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
   mojom::URLLoaderPtr loader;
   TestURLLoaderClient client;
@@ -1136,13 +1136,13 @@ TEST_F(NetworkContextTest, CertReporting) {
     ResourceRequest request;
     request.url = pkp_test_server.GetURL(kPreloadedPKPHost, "/");
 
-    mojom::URLLoaderFactoryPtr loader_factory;
+    mojo::Remote<mojom::URLLoaderFactory> loader_factory;
     mojom::URLLoaderFactoryParamsPtr params =
         mojom::URLLoaderFactoryParams::New();
     params->process_id = mojom::kBrowserProcessId;
     params->is_corb_enabled = false;
-    network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                            std::move(params));
+    network_context->CreateURLLoaderFactory(
+        loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
     mojom::URLLoaderPtr loader;
     TestURLLoaderClient client;
@@ -1196,12 +1196,12 @@ TEST_F(NetworkContextTest, Referrers) {
       std::unique_ptr<NetworkContext> network_context =
           CreateContextWithParams(std::move(context_params));
 
-      mojom::URLLoaderFactoryPtr loader_factory;
+      mojo::Remote<mojom::URLLoaderFactory> loader_factory;
       mojom::URLLoaderFactoryParamsPtr params =
           mojom::URLLoaderFactoryParams::New();
       params->process_id = 0;
       network_context->CreateURLLoaderFactory(
-          mojo::MakeRequest(&loader_factory), std::move(params));
+          loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
       ResourceRequest request;
       request.url = test_server.GetURL("/echoheader?Referer");
@@ -3756,7 +3756,7 @@ TEST_F(NetworkContextTest, TrustedParams) {
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(CreateContextParams());
 
-    mojom::URLLoaderFactoryPtr loader_factory;
+    mojo::Remote<mojom::URLLoaderFactory> loader_factory;
     mojom::URLLoaderFactoryParamsPtr params =
         mojom::URLLoaderFactoryParams::New();
     params->process_id = mojom::kBrowserProcessId;
@@ -3764,8 +3764,8 @@ TEST_F(NetworkContextTest, TrustedParams) {
     // URLLoaderFactories should not be trusted by default.
     EXPECT_FALSE(params->is_trusted);
     params->is_trusted = trusted_factory;
-    network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                            std::move(params));
+    network_context->CreateURLLoaderFactory(
+        loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
     ResourceRequest request;
     request.url = test_server.GetURL("/echo");
@@ -4203,12 +4203,12 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfProxyConnection) {
   ResourceRequest request;
   request.url = GURL("http://example.test");
 
-  mojom::URLLoaderFactoryPtr loader_factory;
+  mojo::Remote<mojom::URLLoaderFactory> loader_factory;
   mojom::URLLoaderFactoryParamsPtr loader_params =
       mojom::URLLoaderFactoryParams::New();
   loader_params->process_id = mojom::kBrowserProcessId;
-  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          std::move(loader_params));
+  network_context->CreateURLLoaderFactory(
+      loader_factory.BindNewPipeAndPassReceiver(), std::move(loader_params));
 
   mojom::URLLoaderPtr loader;
   TestURLLoaderClient client;
@@ -4259,12 +4259,12 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotNotifiedOfUnreachableError) {
   ResourceRequest request;
   request.url = GURL("http://server.bad.dns/fail");
 
-  mojom::URLLoaderFactoryPtr loader_factory;
+  mojo::Remote<mojom::URLLoaderFactory> loader_factory;
   mojom::URLLoaderFactoryParamsPtr loader_params =
       mojom::URLLoaderFactoryParams::New();
   loader_params->process_id = mojom::kBrowserProcessId;
-  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          std::move(loader_params));
+  network_context->CreateURLLoaderFactory(
+      loader_factory.BindNewPipeAndPassReceiver(), std::move(loader_params));
 
   mojom::URLLoaderPtr loader;
   TestURLLoaderClient client;
@@ -4399,12 +4399,12 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfPacError) {
   ResourceRequest request;
   request.url = GURL("http://server.bad.dns");
 
-  mojom::URLLoaderFactoryPtr loader_factory;
+  mojo::Remote<mojom::URLLoaderFactory> loader_factory;
   mojom::URLLoaderFactoryParamsPtr loader_params =
       mojom::URLLoaderFactoryParams::New();
   loader_params->process_id = mojom::kBrowserProcessId;
-  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          std::move(loader_params));
+  network_context->CreateURLLoaderFactory(
+      loader_factory.BindNewPipeAndPassReceiver(), std::move(loader_params));
 
   mojom::URLLoaderPtr loader;
   TestURLLoaderClient client;
@@ -4477,12 +4477,12 @@ TEST_F(NetworkContextTest, EnsureProperProxyServerIsUsed) {
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(context_params));
 
-    mojom::URLLoaderFactoryPtr loader_factory;
+    mojo::Remote<mojom::URLLoaderFactory> loader_factory;
     mojom::URLLoaderFactoryParamsPtr params =
         mojom::URLLoaderFactoryParams::New();
     params->process_id = 0;
-    network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                            std::move(params));
+    network_context->CreateURLLoaderFactory(
+        loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
     ResourceRequest request;
     request.url = proxy_data.url;
@@ -4585,15 +4585,15 @@ TEST_F(NetworkContextTest, HeaderClientModifiesHeaders) {
   ResourceRequest request;
   request.url = test_server.GetURL("/echoheader?foo");
 
-  mojom::URLLoaderFactoryPtr loader_factory;
+  mojo::Remote<mojom::URLLoaderFactory> loader_factory;
   mojom::URLLoaderFactoryParamsPtr params =
       mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   TestURLLoaderHeaderClient header_client(
       params->header_client.InitWithNewPipeAndPassReceiver());
-  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          std::move(params));
+  network_context->CreateURLLoaderFactory(
+      loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
   // First, do a request with kURLLoadOptionUseHeaderClient set.
   {
@@ -4652,15 +4652,15 @@ TEST_F(NetworkContextTest, HeaderClientFailsRequest) {
   ResourceRequest request;
   request.url = test_server.GetURL("/echo");
 
-  mojom::URLLoaderFactoryPtr loader_factory;
+  mojo::Remote<mojom::URLLoaderFactory> loader_factory;
   mojom::URLLoaderFactoryParamsPtr params =
       mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   TestURLLoaderHeaderClient header_client(
       params->header_client.InitWithNewPipeAndPassReceiver());
-  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          std::move(params));
+  network_context->CreateURLLoaderFactory(
+      loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
   // First, fail request on OnBeforeSendHeaders.
   {
@@ -4800,15 +4800,15 @@ TEST_F(NetworkContextTest, HangingHeaderClientModifiesHeadersAsynchronously) {
   ResourceRequest request;
   request.url = test_server.GetURL("/echoheader?foo");
 
-  mojom::URLLoaderFactoryPtr loader_factory;
+  mojo::Remote<mojom::URLLoaderFactory> loader_factory;
   mojom::URLLoaderFactoryParamsPtr params =
       mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   HangingTestURLLoaderHeaderClient header_client(
       params->header_client.InitWithNewPipeAndPassReceiver());
-  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          std::move(params));
+  network_context->CreateURLLoaderFactory(
+      loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
   mojom::URLLoaderPtr loader;
   TestURLLoaderClient client;
@@ -4851,15 +4851,15 @@ TEST_F(NetworkContextTest, HangingHeaderClientAbortDuringOnBeforeSendHeaders) {
   ResourceRequest request;
   request.url = test_server.GetURL("/echoheader?foo");
 
-  mojom::URLLoaderFactoryPtr loader_factory;
+  mojo::Remote<mojom::URLLoaderFactory> loader_factory;
   mojom::URLLoaderFactoryParamsPtr params =
       mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   HangingTestURLLoaderHeaderClient header_client(
       params->header_client.InitWithNewPipeAndPassReceiver());
-  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          std::move(params));
+  network_context->CreateURLLoaderFactory(
+      loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
   mojom::URLLoaderPtr loader;
   TestURLLoaderClient client;
@@ -4901,15 +4901,15 @@ TEST_F(NetworkContextTest, HangingHeaderClientAbortDuringOnHeadersReceived) {
   ResourceRequest request;
   request.url = test_server.GetURL("/echoheader?foo");
 
-  mojom::URLLoaderFactoryPtr loader_factory;
+  mojo::Remote<mojom::URLLoaderFactory> loader_factory;
   mojom::URLLoaderFactoryParamsPtr params =
       mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   HangingTestURLLoaderHeaderClient header_client(
       params->header_client.InitWithNewPipeAndPassReceiver());
-  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          std::move(params));
+  network_context->CreateURLLoaderFactory(
+      loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
   mojom::URLLoaderPtr loader;
   TestURLLoaderClient client;
@@ -5478,13 +5478,13 @@ TEST_F(NetworkContextTest, MaximumCount) {
       CreateContextWithParams(CreateContextParams());
   network_context->set_max_loaders_per_process_for_testing(2);
 
-  mojom::URLLoaderFactoryPtr loader_factory;
+  mojo::Remote<mojom::URLLoaderFactory> loader_factory;
   mojom::URLLoaderFactoryParamsPtr params =
       mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
-  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          std::move(params));
+  network_context->CreateURLLoaderFactory(
+      loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
   ResourceRequest request;
   request.url = test_server.GetURL(kPath1);
@@ -5896,7 +5896,7 @@ class NetworkContextSplitCacheTest : public NetworkContextTest {
     ResourceRequest request = CreateResourceRequest("GET", url);
     request.load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
 
-    mojom::URLLoaderFactoryPtr loader_factory;
+    mojo::Remote<mojom::URLLoaderFactory> loader_factory;
     auto params = mojom::URLLoaderFactoryParams::New();
     params->process_id = mojom::kBrowserProcessId;
     params->is_corb_enabled = false;
@@ -5913,8 +5913,8 @@ class NetworkContextSplitCacheTest : public NetworkContextTest {
                 update_network_isolation_key_on_redirect);
       params->network_isolation_key = key;
     }
-    network_context_->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                             std::move(params));
+    network_context_->CreateURLLoaderFactory(
+        loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
     auto client = std::make_unique<TestURLLoaderClient>();
     mojom::URLLoaderPtr loader;
     loader_factory->CreateLoaderAndStart(

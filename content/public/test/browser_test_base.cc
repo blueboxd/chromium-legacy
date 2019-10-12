@@ -427,6 +427,12 @@ void BrowserTestBase::SetUp() {
     InitializeBrowserMemoryInstrumentationClient();
   }
 
+  // All FeatureList overrides should have been registered prior to browser test
+  // SetUp().
+  base::FeatureList::ScopedDisallowOverrides disallow_feature_overrides(
+      "FeatureList overrides must happen in the test constructor, before "
+      "BrowserTestBase::SetUp() has run.");
+
   auto discardable_shared_memory_manager =
       std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
   auto service_manager_env = std::make_unique<ServiceManagerEnvironment>(
@@ -581,6 +587,14 @@ std::string GetDefaultTraceFilaneme() {
 }  // namespace
 
 void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
+#if !defined(OS_ANDROID)
+  // All FeatureList overrides should have been registered prior to browser test
+  // SetUp(). Note that on Android, this scoper lives in SetUp() above.
+  base::FeatureList::ScopedDisallowOverrides disallow_feature_overrides(
+      "FeatureList overrides must happen in the test constructor, before "
+      "BrowserTestBase::SetUp() has run.");
+#endif
+
   // Install a RunLoop timeout if none is present but do not override tests that
   // set a ScopedRunTimeoutForTest from their fixture's constructor (which
   // happens as part of setting up the test factory in gtest while

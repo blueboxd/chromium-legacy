@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/origin_policy/origin_policy_constants.h"
 #include "services/network/origin_policy/origin_policy_header_values.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
@@ -108,7 +109,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyManager
       origin_policy_fetchers_;
 
   // Used for fetching requests
-  mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<mojom::URLLoaderFactory> url_loader_factory_;
 
   // This object's set of receivers.
   // This MUST be below origin_policy_fetchers_ to ensure it is destroyed before

@@ -128,7 +128,7 @@ interface XRTestHook {
 // It is always hosted in the XRDevice process, but only has effects while
 // running in browser tests with mock implementations of runtimes.
 interface XRServiceTestHook {
-  [Sync] SetTestHook(XRTestHook? hook) => ();
+  [Sync] SetTestHook(pending_remote<XRTestHook>? hook) => ();
 
   // Called by tests to trigger a termination of the Device Service Process
   // To test that the product can properly handle the service either crashing

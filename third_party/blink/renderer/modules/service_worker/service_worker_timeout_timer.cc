@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {

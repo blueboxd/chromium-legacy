@@ -6,7 +6,8 @@
 #define SERVICES_NETWORK_SSL_CONFIG_SERVICE_MOJO_H_
 
 #include "base/component_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/cert/cert_verifier.h"
 #include "net/ssl/ssl_config_service.h"
 #include "services/network/crl_set_distributor.h"
@@ -21,12 +22,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SSLConfigServiceMojo
       public net::SSLConfigService,
       public CRLSetDistributor::Observer {
  public:
-  // If |ssl_config_client_request| is not provided, just sticks with the
+  // If |ssl_config_client_receiver| is not provided, just sticks with the
   // initial configuration.
   // Note: |crl_set_distributor| must outlive this object.
-  SSLConfigServiceMojo(mojom::SSLConfigPtr initial_config,
-                       mojom::SSLConfigClientRequest ssl_config_client_request,
-                       CRLSetDistributor* crl_set_distributor);
+  SSLConfigServiceMojo(
+      mojom::SSLConfigPtr initial_config,
+      mojo::PendingReceiver<mojom::SSLConfigClient> ssl_config_client_receiver,
+      CRLSetDistributor* crl_set_distributor);
   ~SSLConfigServiceMojo() override;
 
   // Sets |cert_verifier| to be configured by certificate-related settings
@@ -47,7 +49,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SSLConfigServiceMojo
   void OnNewCRLSet(scoped_refptr<net::CRLSet> crl_set) override;
 
  private:
-  mojo::Binding<mojom::SSLConfigClient> binding_;
+  mojo::Receiver<mojom::SSLConfigClient> receiver_{this};
 
   net::SSLContextConfig ssl_context_config_;
   net::CertVerifier::Config cert_verifier_config_;

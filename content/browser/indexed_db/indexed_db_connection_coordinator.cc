@@ -123,15 +123,14 @@ class IndexedDBConnectionCoordinator::OpenRequest
               IndexedDBDatabase* db,
               std::unique_ptr<IndexedDBPendingConnection> pending_connection,
               IndexedDBConnectionCoordinator* connection_coordinator,
-
               TasksAvailableCallback tasks_available_callback)
       : ConnectionRequest(std::move(origin_state_handle),
                           db,
                           connection_coordinator,
-
                           std::move(tasks_available_callback)),
         pending_(std::move(pending_connection)) {
     db_->metadata_.was_cold_open = pending_->was_cold_open;
+    DCHECK(!pending_->execution_context_connection_handle.is_null());
   }
 
   // Note: the |tasks_available_callback_| is NOT called here because the state
@@ -171,9 +170,9 @@ class IndexedDBConnectionCoordinator::OpenRequest
       // DEFAULT_VERSION throws exception.)
       DCHECK(is_new_database);
       pending_->callbacks->OnSuccess(
-          db_->CreateConnection(std::move(origin_state_handle_),
-                                pending_->database_callbacks,
-                                pending_->execution_context),
+          db_->CreateConnection(
+              std::move(origin_state_handle_), pending_->database_callbacks,
+              std::move(pending_->execution_context_connection_handle)),
           db_->metadata_);
       state_ = RequestState::kDone;
       return;
@@ -183,9 +182,9 @@ class IndexedDBConnectionCoordinator::OpenRequest
         (new_version == old_version ||
          new_version == IndexedDBDatabaseMetadata::NO_VERSION)) {
       pending_->callbacks->OnSuccess(
-          db_->CreateConnection(std::move(origin_state_handle_),
-                                pending_->database_callbacks,
-                                pending_->execution_context),
+          db_->CreateConnection(
+              std::move(origin_state_handle_), pending_->database_callbacks,
+              std::move(pending_->execution_context_connection_handle)),
           db_->metadata_);
       state_ = RequestState::kDone;
       return;
@@ -278,9 +277,9 @@ class IndexedDBConnectionCoordinator::OpenRequest
     DCHECK(state_ == RequestState::kPendingLocks);
 
     DCHECK(!lock_receiver_.locks.empty());
-    connection_ = db_->CreateConnection(std::move(origin_state_handle_),
-                                        pending_->database_callbacks,
-                                        pending_->execution_context);
+    connection_ = db_->CreateConnection(
+        std::move(origin_state_handle_), pending_->database_callbacks,
+        std::move(pending_->execution_context_connection_handle));
     DCHECK(!connection_ptr_for_close_comparision_);
     connection_ptr_for_close_comparision_ = connection_.get();
     DCHECK_EQ(db_->connections().count(connection_.get()), 1UL);

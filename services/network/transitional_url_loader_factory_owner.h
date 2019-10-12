@@ -56,7 +56,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TransitionalURLLoaderFactoryOwner {
 
   std::unique_ptr<Core> core_;  // deleted cross-thread
   mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_;
   SEQUENCE_CHECKER(sequence_checker_);

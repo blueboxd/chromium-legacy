@@ -119,7 +119,6 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   base::OnceClosure quit_closure_for_on_connection_error_;
   base::OnceClosure quit_closure_for_on_transfer_size_updated_;
 
-  mojom::URLLoaderFactoryPtr url_loader_factory_;
   int64_t body_transfer_size_ = 0;
   int64_t current_upload_position_ = 0;
   int64_t total_upload_size_ = 0;

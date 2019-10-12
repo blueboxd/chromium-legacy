@@ -100,6 +100,21 @@ class BASE_EXPORT FeatureList {
   FeatureList();
   ~FeatureList();
 
+  // Used by common test fixture classes to prevent abuse of ScopedFeatureList
+  // after multiple threads have started.
+  class BASE_EXPORT ScopedDisallowOverrides {
+   public:
+    explicit ScopedDisallowOverrides(const char* reason);
+    ~ScopedDisallowOverrides();
+
+   private:
+#if DCHECK_IS_ON()
+    const char* const previous_reason_;
+#endif
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedDisallowOverrides);
+  };
+
   // Specifies whether a feature override enables or disables the feature.
   enum OverrideState {
     OVERRIDE_USE_DEFAULT,

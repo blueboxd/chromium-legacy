@@ -452,10 +452,6 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // are visible in tablet overview mode.
   float scroll_offset_min_ = 0;
 
-  // Sum of the deltas passed by |UpdateScrollOffset|, this is so we can ignore
-  // deltas that are too small for performance reasons.
-  float scroll_current_delta_ = 0.f;
-
   // Cached values of the item bounds so that they do not have to be calculated
   // on each scroll update.
   std::vector<gfx::RectF> items_scrolling_bounds_;

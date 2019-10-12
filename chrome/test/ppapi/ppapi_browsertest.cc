@@ -706,10 +706,10 @@ class MockTCPBoundSocket : public network::mojom::TCPBoundSocket {
  public:
   MockTCPBoundSocket(
       TCPFailureType tcp_failure_type,
-      network::mojom::TCPBoundSocketRequest request,
+      mojo::PendingReceiver<network::mojom::TCPBoundSocket> receiver,
       network::mojom::NetworkContext::CreateTCPBoundSocketCallback callback)
-      : tcp_failure_type_(tcp_failure_type), binding_(this) {
-    binding_.Bind(std::move(request));
+      : tcp_failure_type_(tcp_failure_type),
+        receiver_(this, std::move(receiver)) {
     if (tcp_failure_type_ == TCPFailureType::kBindError) {
       std::move(callback).Run(net::ERR_FAILED, base::nullopt /* local_addr */);
       return;
@@ -731,7 +731,7 @@ class MockTCPBoundSocket : public network::mojom::TCPBoundSocket {
     // alive. The callback invocation will have no effect, since it uses the
     // TCPBoundSocket's pipe, which was just closed.
     if (tcp_failure_type_ == TCPFailureType::kCreateTCPServerSocketClosePipe)
-      binding_.Close();
+      receiver_.reset();
     server_socket_ = std::make_unique<MockTCPServerSocket>(
         tcp_failure_type_, std::move(request), std::move(callback));
   }
@@ -743,7 +743,7 @@ class MockTCPBoundSocket : public network::mojom::TCPBoundSocket {
       network::mojom::SocketObserverPtr observer,
       ConnectCallback callback) override {
     if (tcp_failure_type_ == TCPFailureType::kConnectClosePipe)
-      binding_.Close();
+      receiver_.reset();
     connected_socket_ = std::make_unique<MockTCPConnectedSocket>(
         tcp_failure_type_, std::move(request), std::move(observer),
         std::move(callback));
@@ -752,15 +752,15 @@ class MockTCPBoundSocket : public network::mojom::TCPBoundSocket {
  private:
   const TCPFailureType tcp_failure_type_;
 
-  // Needs to be destroyed after |binding_|, as it may be holding onto a
-  // callback bound to the Binding.
+  // Needs to be destroyed after |receiver_|, as it may be holding onto a
+  // callback bound to the Receiver.
   std::unique_ptr<MockTCPServerSocket> server_socket_;
   std::unique_ptr<MockTCPConnectedSocket> connected_socket_;
 
   // Callback held onto when simulating a hang.
   network::mojom::NetworkContext::CreateTCPBoundSocketCallback callback_;
 
-  mojo::Binding<network::mojom::TCPBoundSocket> binding_;
+  mojo::Receiver<network::mojom::TCPBoundSocket> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTCPBoundSocket);
 };
@@ -810,13 +810,13 @@ class MockNetworkContext : public network::TestNetworkContext {
   void CreateTCPBoundSocket(
       const net::IPEndPoint& local_addr,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      network::mojom::TCPBoundSocketRequest request,
+      mojo::PendingReceiver<network::mojom::TCPBoundSocket> receiver,
       CreateTCPBoundSocketCallback callback) override {
     if (tcp_failure_type_ == TCPFailureType::kBindClosePipe)
       receiver_.reset();
     // These tests only create at most one object of a given type at a time.
     bound_sockets_.emplace_back(std::make_unique<MockTCPBoundSocket>(
-        tcp_failure_type_, std::move(request), std::move(callback)));
+        tcp_failure_type_, std::move(receiver), std::move(callback)));
   }
 
   void ResolveHost(

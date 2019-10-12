@@ -25,7 +25,7 @@
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
-#include "content/browser/indexed_db/indexed_db_execution_context.h"
+#include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
@@ -49,8 +49,6 @@ namespace {
 
 void CreateAndBindTransactionPlaceholder(
     base::WeakPtr<IndexedDBTransaction> transaction) {}
-
-constexpr IndexedDBExecutionContext kTestExecutionContext(4, 2);
 
 }  // namespace
 
@@ -125,8 +123,10 @@ TEST_F(IndexedDBDatabaseTest, ConnectionLifecycle) {
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   std::unique_ptr<IndexedDBPendingConnection> connection1(
       std::make_unique<IndexedDBPendingConnection>(
-          request1, callbacks1, kTestExecutionContext, transaction_id1,
-          IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+          request1, callbacks1,
+          IndexedDBExecutionContextConnectionTracker::Handle::
+              CreateForTesting(),
+          transaction_id1, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
           std::move(create_transaction_callback1)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection1));
@@ -140,8 +140,10 @@ TEST_F(IndexedDBDatabaseTest, ConnectionLifecycle) {
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   std::unique_ptr<IndexedDBPendingConnection> connection2(
       std::make_unique<IndexedDBPendingConnection>(
-          request2, callbacks2, kTestExecutionContext, transaction_id2,
-          IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+          request2, callbacks2,
+          IndexedDBExecutionContextConnectionTracker::Handle::
+              CreateForTesting(),
+          transaction_id2, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
           std::move(create_transaction_callback2)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection2));
@@ -169,8 +171,10 @@ TEST_F(IndexedDBDatabaseTest, ForcedClose) {
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   std::unique_ptr<IndexedDBPendingConnection> connection(
       std::make_unique<IndexedDBPendingConnection>(
-          request, callbacks, kTestExecutionContext, upgrade_transaction_id,
-          IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+          request, callbacks,
+          IndexedDBExecutionContextConnectionTracker::Handle::
+              CreateForTesting(),
+          upgrade_transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
           std::move(create_transaction_callback)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection));
@@ -230,8 +234,10 @@ TEST_F(IndexedDBDatabaseTest, PendingDelete) {
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   std::unique_ptr<IndexedDBPendingConnection> connection(
       std::make_unique<IndexedDBPendingConnection>(
-          request1, callbacks1, kTestExecutionContext, transaction_id1,
-          IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+          request1, callbacks1,
+          IndexedDBExecutionContextConnectionTracker::Handle::
+              CreateForTesting(),
+          transaction_id1, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
           std::move(create_transaction_callback1)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection));
@@ -279,8 +285,11 @@ TEST_F(IndexedDBDatabaseTest, OpenDeleteClear) {
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   std::unique_ptr<IndexedDBPendingConnection> connection1(
       std::make_unique<IndexedDBPendingConnection>(
-          request1, callbacks1, kTestExecutionContext, transaction_id1,
-          kDatabaseVersion, std::move(create_transaction_callback1)));
+          request1, callbacks1,
+          IndexedDBExecutionContextConnectionTracker::Handle::
+              CreateForTesting(),
+          transaction_id1, kDatabaseVersion,
+          std::move(create_transaction_callback1)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection1));
   RunPostedTasks();
@@ -298,8 +307,11 @@ TEST_F(IndexedDBDatabaseTest, OpenDeleteClear) {
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   std::unique_ptr<IndexedDBPendingConnection> connection2(
       std::make_unique<IndexedDBPendingConnection>(
-          request2, callbacks2, kTestExecutionContext, transaction_id2,
-          kDatabaseVersion, std::move(create_transaction_callback2)));
+          request2, callbacks2,
+          IndexedDBExecutionContextConnectionTracker::Handle::
+              CreateForTesting(),
+          transaction_id2, kDatabaseVersion,
+          std::move(create_transaction_callback2)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection2));
   RunPostedTasks();
@@ -317,8 +329,11 @@ TEST_F(IndexedDBDatabaseTest, OpenDeleteClear) {
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   std::unique_ptr<IndexedDBPendingConnection> connection3(
       std::make_unique<IndexedDBPendingConnection>(
-          request3, callbacks3, kTestExecutionContext, transaction_id3,
-          kDatabaseVersion, std::move(create_transaction_callback3)));
+          request3, callbacks3,
+          IndexedDBExecutionContextConnectionTracker::Handle::
+              CreateForTesting(),
+          transaction_id3, kDatabaseVersion,
+          std::move(create_transaction_callback3)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection3));
   RunPostedTasks();
@@ -350,8 +365,10 @@ TEST_F(IndexedDBDatabaseTest, ForceDelete) {
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   std::unique_ptr<IndexedDBPendingConnection> connection(
       std::make_unique<IndexedDBPendingConnection>(
-          request1, callbacks1, kTestExecutionContext, transaction_id1,
-          IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+          request1, callbacks1,
+          IndexedDBExecutionContextConnectionTracker::Handle::
+              CreateForTesting(),
+          transaction_id1, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
           std::move(create_transaction_callback1)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection));
@@ -387,8 +404,10 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenPending) {
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   std::unique_ptr<IndexedDBPendingConnection> connection(
       std::make_unique<IndexedDBPendingConnection>(
-          request1, callbacks1, kTestExecutionContext, transaction_id1,
-          IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+          request1, callbacks1,
+          IndexedDBExecutionContextConnectionTracker::Handle::
+              CreateForTesting(),
+          transaction_id1, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
           std::move(create_transaction_callback1)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection));
@@ -407,8 +426,10 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenPending) {
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   std::unique_ptr<IndexedDBPendingConnection> connection2(
       std::make_unique<IndexedDBPendingConnection>(
-          request1, callbacks1, kTestExecutionContext, transaction_id2, 3,
-          std::move(create_transaction_callback2)));
+          request1, callbacks1,
+          IndexedDBExecutionContextConnectionTracker::Handle::
+              CreateForTesting(),
+          transaction_id2, 3, std::move(create_transaction_callback2)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection2));
   RunPostedTasks();
@@ -430,11 +451,12 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenAndDeletePending) {
   const int64_t transaction_id1 = 1;
   auto create_transaction_callback1 =
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
-  std::unique_ptr<IndexedDBPendingConnection> connection =
-      std::make_unique<IndexedDBPendingConnection>(
-          request1, callbacks1, kTestExecutionContext, transaction_id1,
-          IndexedDBDatabaseMetadata::DEFAULT_VERSION,
-          std::move(create_transaction_callback1));
+  std::unique_ptr<IndexedDBPendingConnection> connection = std::make_unique<
+      IndexedDBPendingConnection>(
+      request1, callbacks1,
+      IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+      transaction_id1, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+      std::move(create_transaction_callback1));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection));
   RunPostedTasks();
@@ -450,8 +472,10 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenAndDeletePending) {
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   std::unique_ptr<IndexedDBPendingConnection> connection2(
       std::make_unique<IndexedDBPendingConnection>(
-          request1, callbacks1, kTestExecutionContext, transaction_id2, 3,
-          std::move(create_transaction_callback2)));
+          request1, callbacks1,
+          IndexedDBExecutionContextConnectionTracker::Handle::
+              CreateForTesting(),
+          transaction_id2, 3, std::move(create_transaction_callback2)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection2));
   RunPostedTasks();
@@ -507,8 +531,10 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
         base::BindOnce(&CreateAndBindTransactionPlaceholder);
     std::unique_ptr<IndexedDBPendingConnection> connection(
         std::make_unique<IndexedDBPendingConnection>(
-            request_, callbacks_, kTestExecutionContext, transaction_id,
-            IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+            request_, callbacks_,
+            IndexedDBExecutionContextConnectionTracker::Handle::
+                CreateForTesting(),
+            transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
             std::move(create_transaction_callback1)));
     db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                                 std::move(connection));

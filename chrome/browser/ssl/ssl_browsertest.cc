@@ -136,6 +136,7 @@
 #include "crypto/sha2.h"
 #include "extensions/common/extension.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/base/escape.h"
@@ -469,8 +470,7 @@ class SSLUITestBase : public InProcessBrowserTest,
                             net::GetWebSocketTestDataDirectory()),
         wss_server_mismatched_(net::SpawnedTestServer::TYPE_WSS,
                                SSLOptions(SSLOptions::CERT_MISMATCHED_NAME),
-                               net::GetWebSocketTestDataDirectory()),
-        binding_(this) {
+                               net::GetWebSocketTestDataDirectory()) {
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
     https_server_expired_.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
@@ -516,10 +516,10 @@ class SSLUITestBase : public InProcessBrowserTest,
     network::mojom::NetworkContextParamsPtr context_params =
         CreateDefaultNetworkContextParams();
     last_ssl_config_ = *context_params->initial_ssl_config;
-    binding_.Bind(std::move(context_params->ssl_config_client_request));
+    receiver_.Bind(std::move(context_params->ssl_config_client_receiver));
   }
 
-  void TearDownOnMainThread() override { binding_.Close(); }
+  void TearDownOnMainThread() override { receiver_.reset(); }
 
   void CheckAuthenticatedState(WebContents* tab,
                                int expected_authentication_state) {
@@ -881,7 +881,7 @@ class SSLUITestBase : public InProcessBrowserTest,
 
   base::RepeatingClosure ssl_config_updated_callback_;
   network::mojom::SSLConfig last_ssl_config_;
-  mojo::Binding<network::mojom::SSLConfigClient> binding_;
+  mojo::Receiver<network::mojom::SSLConfigClient> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SSLUITestBase);
 };

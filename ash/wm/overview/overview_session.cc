@@ -746,6 +746,8 @@ void OverviewSession::OnDisplayRemoved(const display::Display& display) {
 
 void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
                                               uint32_t metrics) {
+  if (window_drag_controller_)
+    ResetDraggedWindowGesture();
   GetGridWithRootWindow(Shell::GetRootWindowForDisplayId(display.id()))
       ->OnDisplayMetricsChanged();
 

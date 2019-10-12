@@ -275,16 +275,21 @@ void SMILTimeContainer::SetElapsed(SMILTime elapsed) {
   if (!IsPaused())
     SynchronizeToDocumentTimeline();
 
-  {
+  // If we are rewinding the timeline, we need to start from 0 and then move
+  // forward to the new presentation time. If we're moving forward we can just
+  // perform the update in the normal fashion.
+  if (elapsed < latest_update_time_) {
     base::AutoReset<bool> updating_intervals_scope(&is_updating_intervals_,
                                                    true);
     ScheduledAnimationsMutationsForbidden scope(this);
     for (auto& sandwich : scheduled_animations_.Values())
       sandwich->Reset();
-  }
 
+    latest_update_time_ = SMILTime();
+  }
+  // We need to set this to make sure we update the active state of the timed
+  // elements.
   intervals_dirty_ = true;
-  latest_update_time_ = SMILTime();
   UpdateAnimationsAndScheduleFrameIfNeeded(elapsed);
 }
 

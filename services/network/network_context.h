@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
@@ -263,7 +264,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void CreateTCPBoundSocket(
       const net::IPEndPoint& local_addr,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      mojom::TCPBoundSocketRequest request,
+      mojo::PendingReceiver<mojom::TCPBoundSocket> receiver,
       CreateTCPBoundSocketCallback callback) override;
   void CreateProxyResolvingSocketFactory(
       mojom::ProxyResolvingSocketFactoryRequest request) override;
@@ -410,7 +411,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // Creates a new url loader factory bound to this network context. For use
   // inside the network service.
-  mojom::URLLoaderFactoryPtr CreateUrlLoaderFactoryForNetworkService();
+  mojo::PendingRemote<mojom::URLLoaderFactory>
+  CreateUrlLoaderFactoryForNetworkService();
 
   mojom::OriginPolicyManager* origin_policy_manager() const {
     return origin_policy_manager_.get();

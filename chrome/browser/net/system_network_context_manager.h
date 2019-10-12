@@ -15,6 +15,7 @@
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/host_resolver.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -100,11 +101,12 @@ class SystemNetworkContextManager {
   // NetworkService, and for those using the network service (if enabled).
   void DisableQuic();
 
-  // Returns an SSLConfigClientRequest that can be passed as a
+  // Returns an mojo::PendingReceiver<SSLConfigClient> that can be passed as a
   // NetorkContextParam.
-  network::mojom::SSLConfigClientRequest GetSSLConfigClientRequest();
+  mojo::PendingReceiver<network::mojom::SSLConfigClient>
+  GetSSLConfigClientReceiver();
 
-  // Populates |initial_ssl_config| and |ssl_config_client_request| members of
+  // Populates |initial_ssl_config| and |ssl_config_client_receiver| members of
   // |network_context_params|. As long as the SystemNetworkContextManager
   // exists, any NetworkContext created with the params will continue to get
   // SSL configuration updates.

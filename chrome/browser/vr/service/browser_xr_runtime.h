@@ -14,7 +14,7 @@
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -129,7 +129,8 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   VRServiceImpl* listening_for_activation_service_ = nullptr;
   VRServiceImpl* presenting_service_ = nullptr;
 
-  mojo::AssociatedBinding<device::mojom::XRRuntimeEventListener> binding_;
+  mojo::AssociatedReceiver<device::mojom::XRRuntimeEventListener> receiver_{
+      this};
   std::vector<device::mojom::VRService::GetImmersiveVRDisplayInfoCallback>
       pending_initialization_callbacks_;
 

@@ -750,13 +750,13 @@ class NetworkServiceTestWithService : public testing::Test {
                        uint32_t process_id,
                        int options = mojom::kURLLoadOptionNone) {
     client_.reset(new TestURLLoaderClient());
-    mojom::URLLoaderFactoryPtr loader_factory;
+    mojo::Remote<mojom::URLLoaderFactory> loader_factory;
     mojom::URLLoaderFactoryParamsPtr params =
         mojom::URLLoaderFactoryParams::New();
     params->process_id = process_id;
     params->is_corb_enabled = false;
-    network_context_->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                             std::move(params));
+    network_context_->CreateURLLoaderFactory(
+        loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader_), 1, 1, options, request,
@@ -1451,13 +1451,13 @@ class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
                        uint32_t process_id,
                        int options = mojom::kURLLoadOptionNone) {
     client_.reset(new TestURLLoaderClient());
-    mojom::URLLoaderFactoryPtr loader_factory;
+    mojo::Remote<mojom::URLLoaderFactory> loader_factory;
     mojom::URLLoaderFactoryParamsPtr params =
         mojom::URLLoaderFactoryParams::New();
     params->process_id = process_id;
     params->is_corb_enabled = false;
-    network_context_->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                             std::move(params));
+    network_context_->CreateURLLoaderFactory(
+        loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader_), 1, 1, options, request,

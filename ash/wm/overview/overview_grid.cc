@@ -77,9 +77,6 @@ constexpr int kTabletLayoutRow = 2;
 
 constexpr int kMinimumItemsForNewLayout = 6;
 
-// The minimum distance that is needed to process a scroll event.
-constexpr float kMinimumScrollDistanceDp = 5.f;
-
 // Wait a while before unpausing the occlusion tracker after a scroll has
 // completed as the user may start another scroll.
 constexpr base::TimeDelta kOcclusionUnpauseDurationForScroll =
@@ -1448,7 +1445,6 @@ void OverviewGrid::StartScroll() {
   // |scroll_offset_| is added to adjust for that.
   rightmost_window_right -= scroll_offset_;
   scroll_offset_min_ = total_bounds.right() - rightmost_window_right;
-  scroll_current_delta_ = 0.f;
 
   presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
       const_cast<ui::Compositor*>(root_window()->layer()->GetCompositor()),
@@ -1456,9 +1452,8 @@ void OverviewGrid::StartScroll() {
 }
 
 bool OverviewGrid::UpdateScrollOffset(float delta) {
-  scroll_current_delta_ += delta;
   float new_scroll_offset = scroll_offset_;
-  new_scroll_offset += scroll_current_delta_;
+  new_scroll_offset += delta;
   new_scroll_offset =
       base::ClampToRange(new_scroll_offset, scroll_offset_min_, 0.f);
 
@@ -1468,13 +1463,6 @@ bool OverviewGrid::UpdateScrollOffset(float delta) {
       new_scroll_offset < 0.f && new_scroll_offset > scroll_offset_min_;
   if (new_scroll_offset == scroll_offset_)
     return in_range;
-
-  // Do not process scrolls that haven't moved much, unless we are at the
-  // edges.
-  if (std::abs(scroll_offset_ - new_scroll_offset) < kMinimumScrollDistanceDp &&
-      in_range) {
-    return true;
-  }
 
   // Update the bounds of the items which are currently visible on screen.
   DCHECK_EQ(items_scrolling_bounds_.size(), window_list_.size());
@@ -1488,7 +1476,6 @@ bool OverviewGrid::UpdateScrollOffset(float delta) {
     }
   }
 
-  scroll_current_delta_ = 0.f;
   scroll_offset_ = new_scroll_offset;
 
   DCHECK(presentation_time_recorder_);

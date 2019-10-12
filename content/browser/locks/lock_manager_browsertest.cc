@@ -53,6 +53,10 @@ class MockObserver : public LockObserver {
                void(int render_process_id, int render_frame_id));
   MOCK_METHOD2(OnFrameStopsHoldingWebLocks,
                void(int render_process_id, int render_frame_id));
+  MOCK_METHOD2(OnFrameStartsHoldingIndexedDBConnections,
+               void(int render_process_id, int render_frame_id));
+  MOCK_METHOD2(OnFrameStopsHoldingIndexedDBConnections,
+               void(int render_process_id, int render_frame_id));
 };
 
 void RunLoopWithTimeout() {
@@ -71,6 +75,8 @@ class LockManagerBrowserTest : public ContentBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
+    // This is required to allow navigation to test https:// URLs. Service
+    // workers are not exposed to http:// URLs.
     cert_verifier_.SetUpCommandLine(command_line);
   }
 

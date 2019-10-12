@@ -64,7 +64,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
   void CreateTCPBoundSocket(
       const net::IPEndPoint& local_addr,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      mojom::TCPBoundSocketRequest request,
+      mojo::PendingReceiver<mojom::TCPBoundSocket> receiver,
       mojom::NetworkContext::CreateTCPBoundSocketCallback callback);
 
   // Destroys the specified BoundSocket object.
@@ -101,7 +101,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
   mojo::StrongBindingSet<mojom::TCPServerSocket> tcp_server_socket_bindings_;
   mojo::StrongBindingSet<mojom::TCPConnectedSocket>
       tcp_connected_socket_bindings_;
-  mojo::StrongBindingSet<mojom::TCPBoundSocket> tcp_bound_socket_bindings_;
+  mojo::UniqueReceiverSet<mojom::TCPBoundSocket> tcp_bound_socket_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketFactory);
 };

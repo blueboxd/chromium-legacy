@@ -17,14 +17,23 @@ class LockObserver {
   LockObserver() = default;
   virtual ~LockObserver() = default;
 
-  // Invokes when a frame starts or stops holding Web Locks, i.e. when the
-  // number of Web Locks held switches between zero and non-zero. There is no
-  // guarantee that the frame identified by |render_process_id| and
-  // |render_frame_id| still exists when this is called.
+  // Invoked when the number of Web Locks held by a frame switches between zero
+  // and non-zero. There is no guarantee that the frame identified by
+  // |render_process_id| and |render_frame_id| still exists when this is called.
   virtual void OnFrameStartsHoldingWebLocks(int render_process_id,
                                             int render_frame_id) = 0;
   virtual void OnFrameStopsHoldingWebLocks(int render_process_id,
                                            int render_frame_id) = 0;
+
+  // Invoked when the number of IndexedDB connections (pending or active) in a
+  // frame switches between zero and non-zero. There is no guarantee that the
+  // frame identified by |render_process_id| and |render_frame_id| still exists
+  // when this is called.
+  virtual void OnFrameStartsHoldingIndexedDBConnections(
+      int render_process_id,
+      int render_frame_id) = 0;
+  virtual void OnFrameStopsHoldingIndexedDBConnections(int render_process_id,
+                                                       int render_frame_id) = 0;
 
   LockObserver(const LockObserver&) = delete;
   LockObserver& operator=(const LockObserver&) = delete;

@@ -224,15 +224,11 @@ BrowserXRRuntime::BrowserXRRuntime(device::mojom::XRDeviceId id,
                                    device::mojom::VRDisplayInfoPtr display_info)
     : id_(id),
       runtime_(std::move(runtime)),
-      display_info_(ValidateVRDisplayInfo(display_info.get(), id)),
-      binding_(this) {
-  device::mojom::XRRuntimeEventListenerAssociatedPtr listener;
-  binding_.Bind(mojo::MakeRequest(&listener));
-
+      display_info_(ValidateVRDisplayInfo(display_info.get(), id)) {
   // Unretained is safe because we are calling through an InterfacePtr we own,
   // so we won't be called after runtime_ is destroyed.
   runtime_->ListenToDeviceChanges(
-      listener.PassInterface(),
+      receiver_.BindNewEndpointAndPassRemote(),
       base::BindOnce(&BrowserXRRuntime::OnDisplayInfoChanged,
                      base::Unretained(this)));
 }

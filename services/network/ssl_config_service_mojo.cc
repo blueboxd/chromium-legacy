@@ -32,10 +32,9 @@ bool IsSubdomain(const base::StringPiece hostname,
 
 SSLConfigServiceMojo::SSLConfigServiceMojo(
     mojom::SSLConfigPtr initial_config,
-    mojom::SSLConfigClientRequest ssl_config_client_request,
+    mojo::PendingReceiver<mojom::SSLConfigClient> ssl_config_client_receiver,
     CRLSetDistributor* crl_set_distributor)
-    : binding_(this),
-      crl_set_distributor_(crl_set_distributor),
+    : crl_set_distributor_(crl_set_distributor),
       client_cert_pooling_policy_(
           initial_config ? initial_config->client_cert_pooling_policy
                          : std::vector<std::string>()) {
@@ -44,8 +43,8 @@ SSLConfigServiceMojo::SSLConfigServiceMojo(
     ssl_context_config_ = MojoSSLConfigToSSLContextConfig(initial_config);
   }
 
-  if (ssl_config_client_request)
-    binding_.Bind(std::move(ssl_config_client_request));
+  if (ssl_config_client_receiver)
+    receiver_.Bind(std::move(ssl_config_client_receiver));
 
   crl_set_distributor_->AddObserver(this);
   cert_verifier_config_.crl_set = crl_set_distributor_->crl_set();

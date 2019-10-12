@@ -262,9 +262,9 @@ struct NetworkContextParams {
 
   // SSL configuration. |initial_proxy_config| is the initial SSL configuration
   // to use. If nullptr, uses the default configuration. Updated SSL
-  // configurations can be passed in via |ssl_config_client_request|.
+  // configurations can be passed in via |ssl_config_client_receiver|.
   SSLConfig? initial_ssl_config;
-  SSLConfigClient&? ssl_config_client_request;
+  pending_receiver<SSLConfigClient>? ssl_config_client_receiver;
 
   // Proxy configuration. If |initial_proxy_config| is set, it's the initial
   // proxy configuration. Updated proxy configuration can be passed in via
@@ -1000,7 +1000,7 @@ interface NetworkContext {
   // consumers can mimic Berkeley sockets semantics.
   CreateTCPBoundSocket(IPEndPoint local_addr,
                        MutableNetworkTrafficAnnotationTag traffic_annotation,
-                       TCPBoundSocket& socket)
+                       pending_receiver<TCPBoundSocket> socket)
       => (int32 result, IPEndPoint? local_addr);
 
   // Creates a ProxyResolvingSocketFactory that shares some configuration params

@@ -238,7 +238,8 @@ class PreflightControllerTest : public testing::Test {
     params->process_id = mojom::kBrowserProcessId;
     params->is_corb_enabled = false;
     network_context_remote_->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_ptr_), std::move(params));
+        url_loader_factory_remote_.BindNewPipeAndPassReceiver(),
+        std::move(params));
   }
 
  protected:
@@ -259,7 +260,7 @@ class PreflightControllerTest : public testing::Test {
         base::BindOnce(&PreflightControllerTest::HandleRequestCompletion,
                        base::Unretained(this)),
         request, tainted, TRAFFIC_ANNOTATION_FOR_TESTS,
-        url_loader_factory_ptr_.get());
+        url_loader_factory_remote_.get());
     run_loop_->Run();
   }
 
@@ -314,7 +315,7 @@ class PreflightControllerTest : public testing::Test {
 
   std::unique_ptr<mojom::NetworkService> network_service_;
   mojo::Remote<mojom::NetworkContext> network_context_remote_;
-  mojom::URLLoaderFactoryPtr url_loader_factory_ptr_;
+  mojo::Remote<mojom::URLLoaderFactory> url_loader_factory_remote_;
 
   net::test_server::EmbeddedTestServer test_server_;
   size_t access_count_ = 0;

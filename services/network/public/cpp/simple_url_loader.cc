@@ -29,6 +29,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/net_errors.h"
@@ -351,7 +352,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   const net::NetworkTrafficAnnotationTag annotation_tag_;
   // Cloned from the input URLLoaderFactory if it may be needed to follow
   // redirects.
-  mojom::URLLoaderFactoryPtr url_loader_factory_ptr_;
+  mojo::Remote<mojom::URLLoaderFactory> url_loader_factory_remote_;
   std::unique_ptr<BodyHandler> body_handler_;
 
   mojo::Binding<mojom::URLLoaderClient> client_binding_;
@@ -1484,7 +1485,8 @@ void SimpleURLLoaderImpl::Start(mojom::URLLoaderFactory* url_loader_factory) {
     // Clone the URLLoaderFactory, to avoid any dependencies on its lifetime.
     // Results in an easier to use API, with no shutdown ordering requirements,
     // at the cost of some resources.
-    url_loader_factory->Clone(mojo::MakeRequest(&url_loader_factory_ptr_));
+    url_loader_factory->Clone(
+        url_loader_factory_remote_.BindNewPipeAndPassReceiver());
   }
 
   StartRequest(url_loader_factory);
@@ -1526,13 +1528,13 @@ void SimpleURLLoaderImpl::StartRequest(
   // If no more retries left, can clean up a little.
   if (remaining_retries_ == 0) {
     resource_request_.reset();
-    url_loader_factory_ptr_.reset();
+    url_loader_factory_remote_.reset();
   }
 }
 
 void SimpleURLLoaderImpl::Retry() {
   DCHECK(resource_request_);
-  DCHECK(url_loader_factory_ptr_);
+  DCHECK(url_loader_factory_remote_);
   DCHECK_GT(remaining_retries_, 0);
   --remaining_retries_;
 
@@ -1542,7 +1544,7 @@ void SimpleURLLoaderImpl::Retry() {
   request_state_ = std::make_unique<RequestState>();
   body_handler_->PrepareToRetry(base::BindOnce(
       &SimpleURLLoaderImpl::StartRequest, weak_ptr_factory_.GetWeakPtr(),
-      url_loader_factory_ptr_.get()));
+      url_loader_factory_remote_.get()));
 }
 
 void SimpleURLLoaderImpl::OnReceiveResponse(

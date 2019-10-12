@@ -8,7 +8,7 @@
 #include "base/containers/flat_map.h"
 #include "device/vr/public/mojom/browser_test_interfaces.mojom.h"
 #include "device/vr/test/test_hook.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 class MockXRDeviceHookBase : public device_test::mojom::XRTestHook {
@@ -63,7 +63,7 @@ class MockXRDeviceHookBase : public device_test::mojom::XRTestHook {
       controller_data_map_;
 
  private:
-  mojo::Binding<device_test::mojom::XRTestHook> binding_;
+  mojo::Receiver<device_test::mojom::XRTestHook> receiver_{this};
   mojo::Remote<device_test::mojom::XRServiceTestHook> service_test_hook_;
 };
 

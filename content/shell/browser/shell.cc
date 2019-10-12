@@ -45,8 +45,8 @@
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
+#include "third_party/blink/public/common/presentation/presentation_receiver_flags.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
-#include "third_party/blink/public/web/web_presentation_receiver_flags.h"
 
 namespace content {
 

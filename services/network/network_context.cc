@@ -1036,12 +1036,12 @@ void NetworkContext::CreateTCPConnectedSocket(
 void NetworkContext::CreateTCPBoundSocket(
     const net::IPEndPoint& local_addr,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::TCPBoundSocketRequest request,
+    mojo::PendingReceiver<mojom::TCPBoundSocket> receiver,
     CreateTCPBoundSocketCallback callback) {
   socket_factory_->CreateTCPBoundSocket(
       local_addr,
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      std::move(request), std::move(callback));
+      std::move(receiver), std::move(callback));
 }
 
 void NetworkContext::CreateProxyResolvingSocketFactory(
@@ -1700,7 +1700,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   std::unique_ptr<SSLConfigServiceMojo> ssl_config_service =
       std::make_unique<SSLConfigServiceMojo>(
           std::move(params_->initial_ssl_config),
-          std::move(params_->ssl_config_client_request),
+          std::move(params_->ssl_config_client_receiver),
           network_service_->crl_set_distributor());
   SSLConfigServiceMojo* ssl_config_service_raw = ssl_config_service.get();
   builder.set_ssl_config_service(std::move(ssl_config_service));
@@ -2171,12 +2171,12 @@ void NetworkContext::GetOriginPolicyManager(
   origin_policy_manager_->AddReceiver(std::move(receiver));
 }
 
-mojom::URLLoaderFactoryPtr
+mojo::PendingRemote<mojom::URLLoaderFactory>
 NetworkContext::CreateUrlLoaderFactoryForNetworkService() {
   auto url_loader_factory_params = mojom::URLLoaderFactoryParams::New();
   url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
-  mojom::URLLoaderFactoryPtr url_loader_factory;
-  CreateURLLoaderFactory(mojo::MakeRequest(&url_loader_factory),
+  mojo::PendingRemote<mojom::URLLoaderFactory> url_loader_factory;
+  CreateURLLoaderFactory(url_loader_factory.InitWithNewPipeAndPassReceiver(),
                          std::move(url_loader_factory_params));
   return url_loader_factory;
 }

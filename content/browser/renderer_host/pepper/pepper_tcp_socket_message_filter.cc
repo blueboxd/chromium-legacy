@@ -363,7 +363,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgBind(
   network_context->CreateTCPBoundSocket(
       net::IPEndPoint(net::IPAddress(address), port),
       pepper_socket_utils::PepperTCPNetworkAnnotationTag(),
-      mojo::MakeRequest(&bound_socket_),
+      bound_socket_.BindNewPipeAndPassReceiver(),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&PepperTCPSocketMessageFilter::OnBindCompleted,
                          weak_ptr_factory_.GetWeakPtr(),

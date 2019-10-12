@@ -24,7 +24,8 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/cert/cert_verifier.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_config_service.h"
@@ -159,7 +160,7 @@ class SSLConfigServiceManagerPref : public SSLConfigServiceManager {
   // The cached list of disabled SSL cipher suites.
   std::vector<uint16_t> disabled_cipher_suites_;
 
-  mojo::InterfacePtrSet<network::mojom::SSLConfigClient> ssl_config_client_set_;
+  mojo::RemoteSet<network::mojom::SSLConfigClient> ssl_config_client_set_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLConfigServiceManagerPref);
 };
@@ -221,10 +222,10 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
 void SSLConfigServiceManagerPref::AddToNetworkContextParams(
     network::mojom::NetworkContextParams* network_context_params) {
   network_context_params->initial_ssl_config = GetSSLConfigFromPrefs();
-  network::mojom::SSLConfigClientPtr ssl_config_client;
-  network_context_params->ssl_config_client_request =
-      mojo::MakeRequest(&ssl_config_client);
-  ssl_config_client_set_.AddPtr(std::move(ssl_config_client));
+  mojo::Remote<network::mojom::SSLConfigClient> ssl_config_client;
+  network_context_params->ssl_config_client_receiver =
+      ssl_config_client.BindNewPipeAndPassReceiver();
+  ssl_config_client_set_.Add(std::move(ssl_config_client));
 }
 
 void SSLConfigServiceManagerPref::FlushForTesting() {
@@ -241,12 +242,11 @@ void SSLConfigServiceManagerPref::OnPreferenceChanged(
   network::mojom::SSLConfigPtr new_config = GetSSLConfigFromPrefs();
   network::mojom::SSLConfig* raw_config = new_config.get();
 
-  ssl_config_client_set_.ForAllPtrs(
-      [raw_config](network::mojom::SSLConfigClient* client) {
-        // Mojo calls consume all InterfacePtrs passed to them, so have to
-        // clone the config for each call.
-        client->OnSSLConfigUpdated(raw_config->Clone());
-      });
+  for (const auto& client : ssl_config_client_set_) {
+    // Mojo calls consume all InterfacePtrs passed to them, so have to
+    // clone the config for each call.
+    client->OnSSLConfigUpdated(raw_config->Clone());
+  }
 }
 
 network::mojom::SSLConfigPtr

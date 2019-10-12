@@ -130,9 +130,6 @@ class SMILTime {
   bool operator<=(SMILTime other) const { return time_ <= other.time_; }
 
  private:
-  friend bool operator!=(const SMILInterval& a, const SMILInterval& b);
-  friend struct SMILTimeHash;
-
   constexpr SMILTime(base::TimeDelta time) : time_(time) {}
 
   base::TimeDelta time_;
@@ -177,9 +174,12 @@ inline bool operator<(const SMILTimeWithOrigin& a,
 // (https://www.w3.org/TR/SMIL3/smil-timing.html#q101)
 struct SMILInterval {
   DISALLOW_NEW();
-  SMILInterval() = default;
-  SMILInterval(const SMILTime& begin, const SMILTime& end)
+  constexpr SMILInterval(const SMILTime& begin, const SMILTime& end)
       : begin(begin), end(end) {}
+
+  static constexpr SMILInterval Unresolved() {
+    return {SMILTime::Unresolved(), SMILTime::Unresolved()};
+  }
 
   bool IsResolved() const { return begin.IsFinite(); }
   bool BeginsAfter(SMILTime time) const { return time < begin; }

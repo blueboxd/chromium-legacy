@@ -346,11 +346,12 @@ class CorsURLLoaderTest : public testing::Test {
         base::MakeRefCounted<ResourceSchedulerClient>(
             process_id, kRouteId, &resource_scheduler_,
             url_request_context_->network_quality_estimator());
+    cors_url_loader_factory_remote_.reset();
     cors_url_loader_factory_ = std::make_unique<CorsURLLoaderFactory>(
         network_context_.get(), std::move(factory_params),
         resource_scheduler_client,
-        mojo::MakeRequest(&cors_url_loader_factory_ptr_), &origin_access_list_,
-        std::move(factory));
+        cors_url_loader_factory_remote_.BindNewPipeAndPassReceiver(),
+        &origin_access_list_, std::move(factory));
   }
 
   NetworkContext* network_context() { return network_context_.get(); }
@@ -369,7 +370,7 @@ class CorsURLLoaderTest : public testing::Test {
 
   // CorsURLLoaderFactory instance under tests.
   std::unique_ptr<mojom::URLLoaderFactory> cors_url_loader_factory_;
-  mojom::URLLoaderFactoryPtr cors_url_loader_factory_ptr_;
+  mojo::Remote<mojom::URLLoaderFactory> cors_url_loader_factory_remote_;
 
   // Factory bound origin access list for testing.
   std::vector<mojom::CorsOriginPatternPtr> factory_bound_allow_patterns_;

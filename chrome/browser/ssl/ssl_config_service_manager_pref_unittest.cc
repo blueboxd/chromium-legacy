@@ -17,7 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/cert/cert_verifier.h"
 #include "net/ssl/ssl_config.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -29,7 +29,7 @@ using base::ListValue;
 class SSLConfigServiceManagerPrefTest : public testing::Test,
                                         public network::mojom::SSLConfigClient {
  public:
-  SSLConfigServiceManagerPrefTest() : binding_(this) {}
+  SSLConfigServiceManagerPrefTest() = default;
 
   ~SSLConfigServiceManagerPrefTest() override {
     EXPECT_EQ(updates_waited_for_, observed_configs_.size());
@@ -49,9 +49,10 @@ class SSLConfigServiceManagerPrefTest : public testing::Test,
     config_manager->AddToNetworkContextParams(network_context_params.get());
     EXPECT_TRUE(network_context_params->initial_ssl_config);
     initial_config_ = std::move(network_context_params->initial_ssl_config);
-    EXPECT_TRUE(network_context_params->ssl_config_client_request);
-    // It's safe to destroy the SSLConfigServiceManager before |binding_|.
-    binding_.Bind(std::move(network_context_params->ssl_config_client_request));
+    EXPECT_TRUE(network_context_params->ssl_config_client_receiver);
+    // It's safe to destroy the SSLConfigServiceManager before |receiver_|.
+    receiver_.Bind(
+        std::move(network_context_params->ssl_config_client_receiver));
     return config_manager;
   }
 
@@ -70,7 +71,7 @@ class SSLConfigServiceManagerPrefTest : public testing::Test,
 
     // Not going to have much luck waiting for an update if this isn't bound to
     // anything.
-    ASSERT_TRUE(binding_.is_bound());
+    ASSERT_TRUE(receiver_.is_bound());
 
     run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
@@ -91,7 +92,7 @@ class SSLConfigServiceManagerPrefTest : public testing::Test,
 
   TestingPrefServiceSimple local_state_;
 
-  mojo::Binding<network::mojom::SSLConfigClient> binding_;
+  mojo::Receiver<network::mojom::SSLConfigClient> receiver_{this};
   network::mojom::SSLConfigPtr initial_config_;
   std::vector<network::mojom::SSLConfigPtr> observed_configs_;
   size_t updates_waited_for_ = 0;

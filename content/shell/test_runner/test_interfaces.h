@@ -57,6 +57,7 @@ class TestInterfaces {
   std::vector<WebViewTestProxy*> window_list_;
   blink::WebView* main_view_;
 
+  bool use_mock_theme_ = false;
   std::unique_ptr<MockWebThemeEngine> theme_engine_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInterfaces);

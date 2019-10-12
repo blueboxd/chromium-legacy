@@ -17,7 +17,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/web/web_presentation_receiver_flags.h"
+#include "third_party/blink/public/common/presentation/presentation_receiver_flags.h"
 
 #if defined(USE_AURA)
 #include "base/threading/thread_task_runner_handle.h"

@@ -72,8 +72,8 @@ class CorsURLLoaderFactoryTest : public testing::Test {
     cors_url_loader_factory_ = std::make_unique<CorsURLLoaderFactory>(
         network_context_.get(), std::move(factory_params),
         resource_scheduler_client,
-        mojo::MakeRequest(&cors_url_loader_factory_ptr_), &origin_access_list_,
-        nullptr);
+        cors_url_loader_factory_remote_.BindNewPipeAndPassReceiver(),
+        &origin_access_list_, nullptr);
   }
 
   void CreateLoaderAndStart(const ResourceRequest& request) {
@@ -100,7 +100,7 @@ class CorsURLLoaderFactoryTest : public testing::Test {
 
   // CorsURLLoaderFactory instance under tests.
   std::unique_ptr<mojom::URLLoaderFactory> cors_url_loader_factory_;
-  mojom::URLLoaderFactoryPtr cors_url_loader_factory_ptr_;
+  mojo::Remote<mojom::URLLoaderFactory> cors_url_loader_factory_remote_;
 
   // Holds URLLoaderPtr that CreateLoaderAndStart() creates.
   mojom::URLLoaderPtr url_loader_;

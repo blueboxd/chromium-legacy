@@ -837,14 +837,8 @@ crbug.com/591099 [ Mac ] paint/invalidation/flexbox/remove-inline-block-descenda
 crbug.com/591099 [ Mac ] fast/replaced/input-radio-height-inside-auto-container.html [ Failure ]
 crbug.com/591099 [ Mac ] images/feature-policy-oversized-images-resize.html [ Failure ]
 crbug.com/974717 [ Linux ] images/feature-policy-oversized-images-resize.html [ Failure Pass ]
-# crbug.com/591099 [ Mac10.11 ] media/track/track-cue-rendering-position-auto-rtl.html [ Failure ]
 crbug.com/591099 [ Mac10.11 ] virtual/audio-service/media/track/track-cue-rendering-position-auto-rtl.html [ Failure ]
-crbug.com/591099 [ Mac10.11 ] virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/dynamic/outerHTML-doc.html [ Failure ]
-#crbug.com/591099 [ Mac ] fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
-crbug.com/591099 [ Mac10.13 ] virtual/audio-service/media/video-empty-source.html [ Failure ]
-
-#crbug.com/974725 [ Win7 ] fast/events/before-unload-return-value-from-listener.html [ Pass Crash ]
 
 # A few other lines for this test are commented out above to avoid conflicting expectations.
 # If they are not also fixed, reinstate them when removing these lines.
@@ -1809,8 +1803,6 @@ crbug.com/498539 crbug.com/794869 crbug.com/798548 [ Linux ] http/tests/devtools
 
 crbug.com/889952 fast/selectors/selection-window-inactive.html [ Pass Failure ]
 
-crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
-
 crbug.com/731731 inspector-protocol/layers/paint-profiler-load-empty.js [ Failure Pass ]
 
 # Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
@@ -2412,7 +2404,6 @@ crbug.com/453002 [ Win ] fast/text/international/vertical-text-glyph-test.html [
 crbug.com/453002 [ Win ] fast/text/justify-ideograph-vertical.html [ Failure Pass ]
 crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
 
-crbug.com/611658 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/611658 [ Win ] fast/text/emphasis-combined-text.html [ Failure ]
 
 crbug.com/611658 [ Win7 ] fast/writing-mode/english-lr-text.html [ Failure ]
@@ -4447,7 +4438,6 @@ crbug.com/694855 virtual/audio-service/media/video-src-suspend-after-have-metada
 ###crbug.com/849979 media/video-layer-crash.html [ Pass Timeout ]
 
 crbug.com/770232 [ Win10 ] fast/text/hyphenate-character.html [ Failure ]
-crbug.com/770232 [ Win10 ] fast/text/unicode-fallback-font.html [ Failure ]
 
 # Editing commands incorrectly assume no plain text length change after formatting text.
 crbug.com/764489 editing/execCommand/format-block-multiple-paragraphs.html [ Failure ]
@@ -4794,26 +4784,7 @@ crbug.com/851090 [ Win ] virtual/mouseevent_fractional/fast/events/middleClickAu
 crbug.com/851090 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click-hyperlink.html [ Pass Failure ]
 
 # Sheriff 2018-06-11
-crbug.com/853360 [ Mac ] fast/css/input-search-padding.html [ Failure ]
-crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ Failure ]
-crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-minimum-date.html [ Failure ]
-crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-required-ar.html [ Failure ]
-crbug.com/853360 [ Mac ] fast/forms/calendar-picker/month-picker-appearance-step.html [ Failure ]
-crbug.com/853360 [ Mac ] fast/forms/calendar-picker/week-picker-appearance.html [ Failure ]
 crbug.com/853360 [ Mac ] http/tests/misc/slow-loading-image-in-pattern.html [ Pass Timeout Failure ]
-crbug.com/853360 [ Mac ] tables/mozilla/bugs/bug30692.html [ Failure ]
-crbug.com/853360 [ Mac ] virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Failure ]
-crbug.com/853360 [ Mac ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure ]
-crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-ru.html [ Failure ]
-crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-coarse.html [ Failure ]
-crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-step.html [ Failure ]
-crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-zoom200.html [ Failure ]
-crbug.com/853360 [ Mac ] fast/forms/select/listbox-with-display-none-option.html [ Failure ]
-crbug.com/853360 [ Mac ] fast/forms/text/input-table.html [ Failure ]
-crbug.com/853360 [ Mac ] fast/text/drawBidiText.html [ Failure ]
-crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance.html [ Failure ]
-crbug.com/853360 [ Mac ] fast/forms/calendar-picker/month-picker-appearance.html [ Failure ]
-crbug.com/853360 [ Mac ] fast/forms/select/menulist-appearance-rtl.html [ Failure ]
 
 # Origin Policy: Skip tests that rely on --feature-enabled=OriginPolicy, so
 #   they can be run via virtual/origin-policy instead.
@@ -4935,9 +4906,6 @@ crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-featu
 crbug.com/869492 external/wpt/feature-policy/experimental-features/lazyload/loading-frame-default-eager-disabled-tentative.sub.html [ Failure ]
 crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/loading-frame-default-eager-disabled-tentative.sub.html [ Failure ]
 crbug.com/869492 virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/lazyload/loading-frame-default-eager-disabled-tentative.sub.html [ Failure ]
-
-# New rebaselines because LayoutNG is more correct
-crbug.com/902591 [ Linux ] svg/zoom/page/zoom-svg-float-border-padding.xml [ Failure ]
 
 # Sheriff 2018-09-18
 crbug.com/884445 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-nested-header-policy-disallowed-for-all.https.sub.html [ Pass Timeout ]
@@ -5161,10 +5129,6 @@ crbug.com/740501 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection
 
 crbug.com/910979 http/tests/html/validation-bubble-oopif-clip.html [ Failure Pass ]
 
-# Sheriff 2019-01-22
-# Likely needs a rebaseline
-crbug.com/921242 [ Mac ] fast/overflow/clip-rects-fixed-ancestor.html [ Failure ]
-
 # Sheriff 2019-01-24
 crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-radius.html [ Pass Failure ]
 
@@ -5327,7 +5291,6 @@ crbug.com/947690 [ Debug ] http/tests/history/back-during-beforeunload.html [ Pa
 # Sheriff 2019-04-03
 crbug.com/949167 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener.html [ Pass Timeout ]
 crbug.com/949207 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener_base.html [ Pass Timeout ]
-crbug.com/949445 [ Mac ] fast/forms/text/input-text-scroll-left-on-blur.html [ Failure ]
 
 # Sheriff 2019-04-09
 crbug.com/946335 [ Linux Mac ] fast/filesystem/file-writer-abort-depth.html [ Pass Crash ]

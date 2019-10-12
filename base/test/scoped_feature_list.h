@@ -26,13 +26,19 @@ namespace test {
 // list and initialize it anew, destroy an existing scoped list and init
 // a new one.
 //
+// If multiple instances of this class are used in a nested fashion, they
+// should be destroyed in the opposite order of their Init*() methods being
+// called.
+//
 // ScopedFeatureList needs to be initialized (via one of Init*() methods)
 // before running code that inspects the state of features, such as in the
 // constructor of the test harness.
 //
-// If multiple instances of this class are used in a nested fashion, they
-// should be destroyed in the opposite order of their Init*() methods being
-// called.
+// WARNING: To be clear, in multithreaded test environments (such as browser
+// tests) there may background threads using FeatureList before the test body is
+// even entered. In these cases it is imperative that ScopedFeatureList be
+// initialized BEFORE those threads are started, hence the recommendation to do
+// initialization in the test harness's constructor.
 class ScopedFeatureList final {
  public:
   ScopedFeatureList();

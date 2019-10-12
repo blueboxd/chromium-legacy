@@ -604,7 +604,7 @@ class SimpleURLLoaderTestBase {
     params->network_isolation_key = net::NetworkIsolationKey(origin, origin);
     params->is_trusted = true;
     network_context_->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_), std::move(params));
+        url_loader_factory_.BindNewPipeAndPassReceiver(), std::move(params));
 
     test_server_.AddDefaultHandlers(base::FilePath(FILE_PATH_LITERAL("")));
     test_server_.RegisterRequestHandler(
@@ -646,7 +646,7 @@ class SimpleURLLoaderTestBase {
   std::unique_ptr<network::mojom::NetworkServiceClient> network_service_client_;
   std::unique_ptr<network::mojom::NetworkContextClient> network_context_client_;
   mojo::Remote<network::mojom::NetworkContext> network_context_;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
 
   net::test_server::EmbeddedTestServer test_server_;
 

@@ -141,12 +141,6 @@ ControlPart AutoAppearanceFor(const Element& element) {
 
 }  // namespace
 
-// Wrapper function defined in WebKit.h
-void SetMockThemeEnabledForTest(bool value) {
-  WebTestSupport::SetMockThemeEnabledForTest(value);
-  LayoutTheme::GetTheme().DidChangeThemeEngine();
-}
-
 LayoutTheme& LayoutTheme::GetTheme() {
   if (RuntimeEnabledFeatures::MobileLayoutThemeEnabled()) {
     DEFINE_STATIC_REF(LayoutTheme, layout_theme_mobile,

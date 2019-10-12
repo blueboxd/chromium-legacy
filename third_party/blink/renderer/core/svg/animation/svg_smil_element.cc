@@ -186,8 +186,8 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
       has_end_event_conditions_(false),
       is_waiting_for_first_interval_(true),
       is_scheduled_(false),
-      interval_{SMILTime::Unresolved(), SMILTime::Unresolved()},
-      previous_interval_{SMILTime::Unresolved(), SMILTime::Unresolved()},
+      interval_(SMILInterval::Unresolved()),
+      previous_interval_(SMILInterval::Unresolved()),
       next_interval_time_(SMILTime::Earliest()),
       active_state_(kInactive),
       restart_(kRestartAlways),
@@ -255,8 +255,8 @@ static inline void RemoveInstanceTimesWithOrigin(
 void SVGSMILElement::Reset() {
   active_state_ = kInactive;
   is_waiting_for_first_interval_ = true;
-  interval_ = {SMILTime::Unresolved(), SMILTime::Unresolved()};
-  previous_interval_ = {SMILTime::Unresolved(), SMILTime::Unresolved()};
+  interval_ = SMILInterval::Unresolved();
+  previous_interval_ = SMILInterval::Unresolved();
   next_interval_time_ = SMILTime::Earliest();
   last_progress_ = {0.0f, 0};
 }
@@ -759,8 +759,13 @@ SMILTime SVGSMILElement::RepeatingDuration() const {
   return repeat_dur;
 }
 
-SMILTime SVGSMILElement::ResolveActiveEnd(SMILTime resolved_begin,
-                                          SMILTime resolved_end) const {
+SMILTime SVGSMILElement::ResolveActiveEnd(SMILTime resolved_begin) const {
+  SMILTime resolved_end = FindInstanceTime(kEnd, resolved_begin, false);
+  if (resolved_end.IsUnresolved()) {
+    // If we have no pending end conditions, don't generate a new interval.
+    if (!end_times_.IsEmpty() && !has_end_event_conditions_)
+      return SMILTime::Unresolved();
+  }
   // Computing the active duration
   // http://www.w3.org/TR/SMIL2/smil-timing.html#Timing-ComputingActiveDur
   SMILTime preliminary_active_duration;
@@ -793,15 +798,10 @@ SMILInterval SVGSMILElement::ResolveInterval(SMILTime begin_after,
     SMILTime temp_begin = FindInstanceTime(kBegin, begin_after, true);
     if (temp_begin.IsUnresolved())
       break;
-    SMILTime temp_end = FindInstanceTime(kEnd, temp_begin, false);
-    if (temp_end.IsUnresolved()) {
-      // If we have no pending end conditions, don't generate a new interval.
-      if (!end_times_.IsEmpty() && !has_end_event_conditions_)
-        break;
-    }
-    temp_end = ResolveActiveEnd(temp_begin, temp_end);
-    // If this is the first interval being resolved, don't allow it to end
-    // before the origin of the timeline.
+    SMILTime temp_end = ResolveActiveEnd(temp_begin);
+    if (temp_end.IsUnresolved())
+      break;
+    // Don't allow the interval to end in the past.
     if (temp_end > end_after) {
       DCHECK(!temp_begin.IsIndefinite());
       return SMILInterval(temp_begin, temp_end);
@@ -809,7 +809,7 @@ SMILInterval SVGSMILElement::ResolveInterval(SMILTime begin_after,
 
     begin_after = temp_end;
   }
-  return SMILInterval(SMILTime::Unresolved(), SMILTime::Unresolved());
+  return SMILInterval::Unresolved();
 }
 
 void SVGSMILElement::SetNewInterval(const SMILInterval& interval,
@@ -875,16 +875,19 @@ void SVGSMILElement::DiscardOrRevalidateCurrentInterval(
     return;
   // If the current interval has not yet started, discard it and re-resolve.
   if (interval_.BeginsAfter(presentation_time)) {
-    interval_ = {SMILTime::Unresolved(), SMILTime::Unresolved()};
+    interval_ = SMILInterval::Unresolved();
     return;
   }
 
   // If we have a current interval but it has not yet ended, re-resolve the
   // end time.
   if (interval_.EndsAfter(presentation_time)) {
-    SMILTime new_end = FindInstanceTime(kEnd, interval_.begin, false);
-    DCHECK(!new_end.IsUnresolved());
-    new_end = ResolveActiveEnd(interval_.begin, new_end);
+    SMILTime new_end = ResolveActiveEnd(interval_.begin);
+    if (new_end.IsUnresolved()) {
+      // No active duration, discard the current interval.
+      interval_ = SMILInterval::Unresolved();
+      return;
+    }
     if (new_end != interval_.end)
       SetNewIntervalEnd(new_end, presentation_time);
   }

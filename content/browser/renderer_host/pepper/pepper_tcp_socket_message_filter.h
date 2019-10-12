@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
@@ -323,7 +324,7 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
 
   // Holds socket if Bind() is called. Will be used to create a connected or
   // server socket, depending on the next call.
-  network::mojom::TCPBoundSocketPtr bound_socket_;
+  mojo::Remote<network::mojom::TCPBoundSocket> bound_socket_;
   // Holds socket if Connect() is called.
   network::mojom::TCPConnectedSocketPtr connected_socket_;
   // Holds socket if socket was upgraded to SSL.

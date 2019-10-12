@@ -165,13 +165,11 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime BeginTimeForPrioritization(SMILTime presentation_time) const;
 
   SMILInterval ResolveInterval(SMILTime begin_after, SMILTime end_after) const;
-  bool ResolveFirstInterval(SMILTime presentation_time);
   // Check if the current interval is still current, and apply restart
   // semantics. Returns true if a new interval should be resolved.
   bool HandleIntervalRestart(SMILTime presentation_time);
   void DiscardOrRevalidateCurrentInterval(SMILTime presentation_time);
-  SMILTime ResolveActiveEnd(SMILTime resolved_begin,
-                            SMILTime resolved_end) const;
+  SMILTime ResolveActiveEnd(SMILTime resolved_begin) const;
   SMILTime RepeatingDuration() const;
   const SMILInterval& GetActiveInterval(SMILTime elapsed) const;
   void SetNewInterval(const SMILInterval&, SMILTime presentation_time);

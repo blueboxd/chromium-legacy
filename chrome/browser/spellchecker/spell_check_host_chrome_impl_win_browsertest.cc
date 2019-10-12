@@ -20,12 +20,13 @@
 
 class SpellCheckHostChromeImplWinBrowserTest : public InProcessBrowserTest {
  public:
+  SpellCheckHostChromeImplWinBrowserTest() {
+    feature_list_.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
+  }
+
   void SetUpOnMainThread() override {
     content::BrowserContext* context = browser()->profile();
     renderer_.reset(new content::MockRenderProcessHost(context));
-
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
 
     SpellCheckHostChromeImpl::Create(
         renderer_->GetID(), spell_check_host_.BindNewPipeAndPassReceiver());
@@ -58,6 +59,7 @@ class SpellCheckHostChromeImplWinBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
+  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<content::MockRenderProcessHost> renderer_;
   mojo::Remote<spellcheck::mojom::SpellCheckHost> spell_check_host_;
 
@@ -71,9 +73,6 @@ IN_PROC_BROWSER_TEST_F(SpellCheckHostChromeImplWinBrowserTest,
                        SpellCheckReturnMessage) {
   if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
 
   spellcheck_platform::SetLanguage(
       "en-US", base::BindOnce(&SpellCheckHostChromeImplWinBrowserTest::

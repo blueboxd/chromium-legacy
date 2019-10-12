@@ -16,6 +16,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -136,8 +137,8 @@ class CrossThreadSharedURLLoaderFactoryInfoTest : public ::testing::Test {
   }
 
   void TestClone(scoped_refptr<SharedURLLoaderFactory> factory) {
-    mojom::URLLoaderFactoryPtr factory_client;
-    factory->Clone(mojo::MakeRequest(&factory_client));
+    mojo::PendingRemote<mojom::URLLoaderFactory> factory_client;
+    factory->Clone(factory_client.InitWithNewPipeAndPassReceiver());
   }
 
   void TestLoadOnMainThread(scoped_refptr<SharedURLLoaderFactory> factory) {

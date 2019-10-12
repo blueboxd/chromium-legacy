@@ -86,8 +86,6 @@ class TestRunner : public WebTestRunner {
   // the middle of blink call stacks that have inconsistent state.
   void FinishTestIfReady();
 
-  bool UseMockTheme() const { return use_mock_theme_; }
-
   // WebTestRunner implementation.
   bool ShouldGeneratePixelResults() override;
   bool ShouldDumpAsAudio() const override;
@@ -412,9 +410,6 @@ class TestRunner : public WebTestRunner {
 
   // Causes WillSendRequest to clear certain headers.
   void SetWillSendRequestClearHeader(const std::string& header);
-
-  // Sets a flag to enable the mock theme.
-  void SetUseMockTheme(bool use);
 
   // Sets a flag that causes the test to be marked as completed when the
   // WebLocalFrameClient receives a LoadURLExternally() call.

@@ -45,12 +45,11 @@ void UnsetTestHook(std::unique_ptr<device::XRTestHookWrapper> wrapper) {
 namespace device {
 
 void XRServiceTestHook::SetTestHook(
-    device_test::mojom::XRTestHookPtr hook,
+    mojo::PendingRemote<device_test::mojom::XRTestHook> hook,
     device_test::mojom::XRServiceTestHook::SetTestHookCallback callback) {
   // Create a new wrapper (or use null)
   std::unique_ptr<XRTestHookWrapper> wrapper =
-      hook ? std::make_unique<XRTestHookWrapper>(hook.PassInterface())
-           : nullptr;
+      hook ? std::make_unique<XRTestHookWrapper>(std::move(hook)) : nullptr;
 
   // Register the wrapper testhook with the VR runtimes
 #if BUILDFLAG(ENABLE_OPENVR)

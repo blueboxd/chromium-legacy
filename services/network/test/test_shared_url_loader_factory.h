@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace net {
@@ -50,7 +51,7 @@ class TestSharedURLLoaderFactory : public SharedURLLoaderFactory {
 
   std::unique_ptr<net::TestURLRequestContext> url_request_context_;
   std::unique_ptr<NetworkContext> network_context_;
-  mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<mojom::URLLoaderFactory> url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSharedURLLoaderFactory);
 };

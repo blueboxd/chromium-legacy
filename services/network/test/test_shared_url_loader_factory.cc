@@ -24,7 +24,7 @@ TestSharedURLLoaderFactory::TestSharedURLLoaderFactory(
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   network_context_->CreateURLLoaderFactory(
-      mojo::MakeRequest(&url_loader_factory_), std::move(params));
+      url_loader_factory_.BindNewPipeAndPassReceiver(), std::move(params));
 }
 
 TestSharedURLLoaderFactory::~TestSharedURLLoaderFactory() {}

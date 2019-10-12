@@ -50,20 +50,16 @@ device_test::mojom::ControllerFrameDataPtr DeviceToMojoControllerFrameData(
 }
 
 MockXRDeviceHookBase::MockXRDeviceHookBase()
-    : tracked_classes_{device_test::mojom::TrackedDeviceClass::
-                           kTrackedDeviceInvalid},
-      binding_(this) {
+    : tracked_classes_{
+          device_test::mojom::TrackedDeviceClass::kTrackedDeviceInvalid} {
   vr::GetXRDeviceService()->BindTestHook(
       service_test_hook_.BindNewPipeAndPassReceiver());
-
-  device_test::mojom::XRTestHookPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
 
   mojo::ScopedAllowSyncCallForTesting scoped_allow_sync;
   // For now, always have the HMD connected.
   tracked_classes_[0] =
       device_test::mojom::TrackedDeviceClass::kTrackedDeviceHmd;
-  service_test_hook_->SetTestHook(std::move(client));
+  service_test_hook_->SetTestHook(receiver_.BindNewPipeAndPassRemote());
 }
 
 MockXRDeviceHookBase::~MockXRDeviceHookBase() {
@@ -71,10 +67,10 @@ MockXRDeviceHookBase::~MockXRDeviceHookBase() {
 }
 
 void MockXRDeviceHookBase::StopHooking() {
-  // We don't call service_test_hook_->SetTestHook(nullptr), since that
-  // will potentially deadlock with reentrant or crossing synchronous mojo
+  // We don't call service_test_hook_->SetTestHook(mojo::NullRemote()), since
+  // that will potentially deadlock with reentrant or crossing synchronous mojo
   // calls.
-  binding_.Close();
+  receiver_.reset();
   service_test_hook_.reset();
 }
 

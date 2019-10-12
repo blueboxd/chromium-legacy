@@ -18,6 +18,7 @@
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -141,9 +142,9 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   // State for each client held in |receivers_|.
   struct ReceiverState {
     url::Origin origin;
-    // The frame identifier, or MSG_ROUTING_NONE if this describes a worker
-    // (this means that dedicated/shared/service workers are not distinguished).
-    int render_frame_id;
+
+    // Tracks connections for this receiver.
+    IndexedDBExecutionContextConnectionTracker connection_tracker;
   };
 
   mojo::ReceiverSet<blink::mojom::IDBFactory, ReceiverState> receivers_;

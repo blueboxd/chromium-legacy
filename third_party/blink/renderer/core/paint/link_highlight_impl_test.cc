@@ -41,11 +41,11 @@
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
-#include "third_party/blink/renderer/core/frame/link_highlights.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/page/link_highlight.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -112,6 +112,21 @@ class LinkHighlightImplTest : public testing::Test,
         WebWidget::LifecycleUpdateReason::kTest);
   }
 
+  LinkHighlight& GetLinkHighlight() {
+    return web_view_helper_.GetWebView()->GetPage()->GetLinkHighlight();
+  }
+
+  LinkHighlightImpl* GetLinkHighlightImpl() {
+    return GetLinkHighlight().impl_.get();
+  }
+
+  cc::AnimationHost* GetAnimationHost() {
+    EXPECT_EQ(
+        GetLinkHighlight().timeline_->GetAnimationTimeline()->animation_host(),
+        GetLinkHighlight().animation_host_);
+    return GetLinkHighlight().animation_host_;
+  }
+
   frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
@@ -142,32 +157,28 @@ TEST_P(LinkHighlightImplTest, verifyWebViewImplIntegration) {
   // Shouldn't crash.
   web_view_impl->EnableTapHighlightAtPoint(GetTargetedEvent(touch_event));
 
-  const auto& highlights =
-      web_view_impl->GetPage()->GetLinkHighlights().link_highlights_;
-  EXPECT_TRUE(highlights.at(0));
-  EXPECT_EQ(1u, highlights.at(0)->FragmentCountForTesting());
-  EXPECT_TRUE(highlights.at(0)->LayerForTesting(0));
+  const auto* highlight = GetLinkHighlightImpl();
+  EXPECT_TRUE(highlight);
+  EXPECT_EQ(1u, highlight->FragmentCountForTesting());
+  EXPECT_TRUE(highlight->LayerForTesting(0));
 
   // Find a target inside a scrollable div
   touch_event.SetPositionInWidget(WebFloatPoint(20, 100));
   web_view_impl->EnableTapHighlightAtPoint(GetTargetedEvent(touch_event));
-  ASSERT_TRUE(highlights.at(0));
+  ASSERT_TRUE(highlight);
 
   // Enesure the timeline was added to a host.
-  EXPECT_TRUE(!!web_view_impl->GetPage()
-                    ->GetLinkHighlights()
-                    .timeline_->GetAnimationTimeline()
-                    ->animation_host());
+  EXPECT_TRUE(GetAnimationHost());
 
   // Don't highlight if no "hand cursor"
   touch_event.SetPositionInWidget(
       WebFloatPoint(20, 220));  // An A-link with cross-hair cursor.
   web_view_impl->EnableTapHighlightAtPoint(GetTargetedEvent(touch_event));
-  ASSERT_EQ(0U, highlights.size());
+  EXPECT_FALSE(GetLinkHighlightImpl());
 
   touch_event.SetPositionInWidget(WebFloatPoint(20, 260));  // A text input box.
   web_view_impl->EnableTapHighlightAtPoint(GetTargetedEvent(touch_event));
-  ASSERT_EQ(0U, highlights.size());
+  EXPECT_FALSE(GetLinkHighlightImpl());
 }
 
 TEST_P(LinkHighlightImplTest, resetDuringNodeRemoval) {
@@ -189,17 +200,16 @@ TEST_P(LinkHighlightImplTest, resetDuringNodeRemoval) {
   ASSERT_TRUE(touch_node);
 
   web_view_impl->EnableTapHighlightAtPoint(targeted_event);
-  const auto& highlights = web_view_impl->GetPage()->GetLinkHighlights();
-  ASSERT_EQ(1u, highlights.link_highlights_.size());
-  ASSERT_TRUE(highlights.link_highlights_.at(0));
-  EXPECT_EQ(touch_node, highlights.link_highlights_.at(0)->GetNode());
+  const auto* highlight = GetLinkHighlightImpl();
+  ASSERT_TRUE(highlight);
+  EXPECT_EQ(touch_node, highlight->GetNode());
 
   touch_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
   UpdateAllLifecyclePhases();
 
-  ASSERT_EQ(1u, highlights.link_highlights_.size());
-  ASSERT_TRUE(highlights.link_highlights_.at(0));
-  EXPECT_FALSE(highlights.link_highlights_.at(0)->GetNode());
+  ASSERT_EQ(highlight, GetLinkHighlightImpl());
+  ASSERT_TRUE(highlight);
+  EXPECT_FALSE(highlight->GetNode());
 }
 
 // A lifetime test: delete LayerTreeView while running LinkHighlights.
@@ -222,9 +232,7 @@ TEST_P(LinkHighlightImplTest, resetLayerTreeView) {
   ASSERT_TRUE(touch_node);
 
   web_view_impl->EnableTapHighlightAtPoint(targeted_event);
-  const auto& highlights =
-      web_view_impl->GetPage()->GetLinkHighlights().link_highlights_;
-  ASSERT_TRUE(highlights.at(0));
+  ASSERT_TRUE(GetLinkHighlightImpl());
 }
 
 TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
@@ -253,8 +261,7 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
   // The highlight should create one additional layer.
   EXPECT_EQ(layer_count_before_highlight + 1, ContentLayerCount());
 
-  auto& highlights = web_view_impl->GetPage()->GetLinkHighlights();
-  auto* highlight = highlights.link_highlights_.at(0).get();
+  const auto* highlight = GetLinkHighlightImpl();
   ASSERT_TRUE(highlight);
 
   // Check that the link highlight cc layer has a cc effect property tree node.
@@ -281,7 +288,7 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
   // After starting the highlight animation the effect node's opacity should
   // be 0.f as it will be overridden bt the animation but may become visible
   // before the animation is destructed. See https://crbug.com/974160
-  highlights.StartHighlightAnimationIfNeeded();
+  GetLinkHighlight().StartHighlightAnimationIfNeeded();
   EXPECT_EQ(0.f, highlight->Effect().Opacity());
   EXPECT_TRUE(highlight->Effect().HasActiveOpacityAnimation());
 
@@ -317,10 +324,7 @@ TEST_P(LinkHighlightImplTest, MultiColumn) {
 
   web_view_impl->EnableTapHighlightAtPoint(targeted_event);
 
-  const auto& highlights =
-      web_view_impl->GetPage()->GetLinkHighlights().link_highlights_;
-  EXPECT_EQ(1u, highlights.size());
-  const auto* highlight = highlights.at(0).get();
+  const auto* highlight = GetLinkHighlightImpl();
   ASSERT_TRUE(highlight);
 
   // The link highlight cc effect node should correspond to the blink effect

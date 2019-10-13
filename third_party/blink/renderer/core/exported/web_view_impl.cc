@@ -96,7 +96,6 @@
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/fullscreen_controller.h"
-#include "third_party/blink/renderer/core/frame/link_highlights.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -134,6 +133,7 @@
 #include "third_party/blink/renderer/core/page/context_menu_provider.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
+#include "third_party/blink/renderer/core/page/link_highlight.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
@@ -532,7 +532,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
     case WebInputEvent::kGestureTapCancel:
     case WebInputEvent::kGestureTap:
     case WebInputEvent::kGestureLongPress:
-      GetPage()->GetLinkHighlights().StartHighlightAnimationIfNeeded();
+      GetPage()->GetLinkHighlight().StartHighlightAnimationIfNeeded();
       break;
     default:
       break;
@@ -1012,16 +1012,7 @@ Node* WebViewImpl::BestTapNode(
 void WebViewImpl::EnableTapHighlightAtPoint(
     const GestureEventWithHitTestResults& targeted_tap_event) {
   Node* touch_node = BestTapNode(targeted_tap_event);
-
-  HeapVector<Member<Node>> highlight_nodes;
-  highlight_nodes.push_back(touch_node);
-
-  EnableTapHighlights(highlight_nodes);
-}
-
-void WebViewImpl::EnableTapHighlights(
-    HeapVector<Member<Node>>& highlight_nodes) {
-  GetPage()->GetLinkHighlights().SetTapHighlights(highlight_nodes);
+  GetPage()->GetLinkHighlight().SetTapHighlight(touch_node);
   UpdateLifecycle(WebWidget::LifecycleUpdate::kAll,
                   WebWidget::LifecycleUpdateReason::kOther);
 }

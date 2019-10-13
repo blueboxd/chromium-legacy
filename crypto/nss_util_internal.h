@@ -30,12 +30,6 @@ namespace crypto {
 CRYPTO_EXPORT ScopedPK11Slot OpenSoftwareNSSDB(const base::FilePath& path,
                                                const std::string& description);
 
-#if !defined(OS_CHROMEOS)
-// Returns a reference to the default NSS key slot for storing persistent data.
-// Caller must release returned reference with PK11_FreeSlot.
-CRYPTO_EXPORT PK11SlotInfo* GetPersistentNSSKeySlot() WARN_UNUSED_RESULT;
-#endif
-
 // A helper class that acquires the SECMOD list read lock while the
 // AutoSECMODListReadLock is in scope.
 class CRYPTO_EXPORT AutoSECMODListReadLock {

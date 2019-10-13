@@ -56,7 +56,6 @@
 #include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/frame_overlay.h"
 #include "third_party/blink/renderer/core/frame/frame_view_auto_size_info.h"
-#include "third_party/blink/renderer/core/frame/link_highlights.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
@@ -102,6 +101,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
+#include "third_party/blink/renderer/core/page/link_highlight.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/print_context.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
@@ -2427,7 +2427,7 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
 
     // This is before WalkTree because it may SetNeedsPaintPropertyUpdate() on
     // layout objects.
-    GetPage()->GetLinkHighlights().UpdatePrePaint();
+    GetPage()->GetLinkHighlight().UpdatePrePaint();
 
     PrePaintTreeWalk().WalkTree(*this);
   }
@@ -2651,7 +2651,7 @@ void LocalFrameView::PaintTree() {
       PaintInternal(graphics_context, kGlobalPaintNormalPhase,
                     CullRect::Infinite());
 
-      GetPage()->GetLinkHighlights().Paint(graphics_context);
+      GetPage()->GetLinkHighlight().Paint(graphics_context);
 
       GetPage()->GetValidationMessageClient().PaintOverlay(graphics_context);
       ForAllNonThrottledLocalFrameViews(
@@ -2784,7 +2784,7 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
     CollectDrawableLayersForLayerListRecursively(context, root);
 
     // Link highlights paint after all other layers.
-    page->GetLinkHighlights().Paint(context);
+    page->GetLinkHighlight().Paint(context);
 
     paint_controller_->CommitNewDisplayItems();
   }

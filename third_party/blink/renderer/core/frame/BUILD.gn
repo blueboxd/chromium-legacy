@@ -88,8 +88,6 @@ blink_core_sources("frame") {
     "intervention_report_body.h",
     "layout_subtree_root_list.cc",
     "layout_subtree_root_list.h",
-    "link_highlights.cc",
-    "link_highlights.h",
     "local_dom_window.cc",
     "local_dom_window.h",
     "local_frame.cc",

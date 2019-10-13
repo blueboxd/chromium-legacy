@@ -601,21 +601,7 @@ class NSSInitSingleton {
     DCHECK(!slot || !prepared_test_private_slot_);
     prepared_test_private_slot_ = std::move(slot);
   }
-#endif  // defined(OS_CHROMEOS)
 
-#if !defined(OS_CHROMEOS)
-  PK11SlotInfo* GetPersistentNSSKeySlot() {
-    // TODO(mattm): Change to DCHECK when callers have been fixed.
-    if (!thread_checker_.CalledOnValidThread()) {
-      DVLOG(1) << "Called on wrong thread.\n"
-               << base::debug::StackTrace().ToString();
-    }
-
-    return PK11_GetInternalKeySlot();
-  }
-#endif
-
-#if defined(OS_CHROMEOS)
   void GetSystemNSSKeySlotCallback(
       base::OnceCallback<void(ScopedPK11Slot)> callback) {
     std::move(callback).Run(
@@ -710,7 +696,11 @@ class NSSInitSingleton {
       PK11_FreeSlot(slot);
     }
 
-    root_ = InitDefaultRootCerts();
+    // Load nss's built-in root certs.
+    //
+    // TODO(mattm): DCHECK this succeeded when crbug.com/310972 is fixed.
+    // Failing to load root certs will it hard to talk to anybody via https.
+    LoadModule("Root Certs", "libnssckbi.so", nullptr);
 
     // Disable MD5 certificate signatures. (They are disabled by default in
     // NSS 3.14.)
@@ -723,18 +713,6 @@ class NSSInitSingleton {
   // to prevent non-joinable threads from using NSS after it's already been
   // shut down.
   ~NSSInitSingleton() = delete;
-
-  // Load nss's built-in root certs.
-  SECMODModule* InitDefaultRootCerts() {
-    SECMODModule* root = LoadModule("Root Certs", "libnssckbi.so", nullptr);
-    if (root)
-      return root;
-
-    // Aw, snap.  Can't find/load root cert shared library.
-    // This will make it hard to talk to anybody via https.
-    // TODO(mattm): Re-add the NOTREACHED here when crbug.com/310972 is fixed.
-    return nullptr;
-  }
 
   // Load the given module for this NSS session.
   static SECMODModule* LoadModule(const char* name,
@@ -764,7 +742,6 @@ class NSSInitSingleton {
     return module;
   }
 
-  SECMODModule* root_ = nullptr;
 #if defined(OS_CHROMEOS)
   bool tpm_token_enabled_for_nss_ = false;
   bool initializing_tpm_token_ = false;
@@ -911,11 +888,5 @@ base::Time PRTimeToBaseTime(PRTime prtime) {
 PRTime BaseTimeToPRTime(base::Time time) {
   return time.ToInternalValue() - base::Time::UnixEpoch().ToInternalValue();
 }
-
-#if !defined(OS_CHROMEOS)
-PK11SlotInfo* GetPersistentNSSKeySlot() {
-  return g_nss_singleton.Get().GetPersistentNSSKeySlot();
-}
-#endif
 
 }  // namespace crypto

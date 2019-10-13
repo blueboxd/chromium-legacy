@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -24,11 +23,8 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
-#include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc/webrtc_set_description_observer.h"
 #include "content/renderer/render_thread_impl.h"
@@ -37,6 +33,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink.h"
 #include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink_proxy_util.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_rtc_answer_options.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
@@ -1026,8 +1023,7 @@ bool RTCPeerConnectionHandler::Initialize(
   // Choose between RTC smoothness algorithm and prerenderer smoothing.
   // Prerenderer smoothing is turned on if RTC smoothness is turned off.
   configuration_.set_prerenderer_smoothing(
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableRTCSmoothnessAlgorithm));
+      !blink::Platform::Current()->RTCSmoothnessAlgorithmEnabled());
 
   configuration_.set_experiment_cpu_load_estimator(
       base::FeatureList::IsEnabled(media::kNewEncodeCpuLoadEstimator));
@@ -1035,11 +1031,9 @@ bool RTCPeerConnectionHandler::Initialize(
   // Configure optional SRTP configurations enabled via the command line.
   configuration_.crypto_options = webrtc::CryptoOptions{};
   configuration_.crypto_options->srtp.enable_gcm_crypto_suites =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebRtcSrtpAesGcm);
+      blink::Platform::Current()->IsWebRtcSrtpAesGcmEnabled();
   configuration_.crypto_options->srtp.enable_encrypted_rtp_header_extensions =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebRtcSrtpEncryptedHeaders);
+      blink::Platform::Current()->IsWebRtcSrtpEncryptedHeadersEnabled();
 
   // Copy all the relevant constraints into |config|.
   CopyConstraintsIntoRtcConfiguration(options, &configuration_);

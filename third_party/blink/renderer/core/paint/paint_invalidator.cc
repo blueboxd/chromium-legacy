@@ -6,7 +6,6 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
-#include "third_party/blink/renderer/core/frame/link_highlights.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -17,6 +16,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/page/link_highlight.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/find_paint_offset_and_visual_rect_needing_update.h"
@@ -337,7 +337,7 @@ bool PaintInvalidator::InvalidatePaint(
     return false;
 
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      object.GetFrame()->GetPage()->GetLinkHighlights().NeedsHighlightEffect(
+      object.GetFrame()->GetPage()->GetLinkHighlight().NeedsHighlightEffect(
           object)) {
     // We need to recollect the foreign layers for link highlight when the
     // geometry of the highlights may change. CompositeAfterPaint doesn't

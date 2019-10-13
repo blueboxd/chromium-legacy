@@ -1343,6 +1343,11 @@ crbug.com/457718 external/wpt/css/css-pseudo/marker-and-other-pseudo-elements.ht
 crbug.com/457718 external/wpt/css/css-pseudo/marker-color.html [ WontFix ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-font-properties.html [ WontFix ]
 
+# 'writing-mode: sideways-lr' and 'sideways-rl' are not implemented.
+# Note other tests for these properties are skipped in W3CImportExpectations.
+external/wpt/css/css-writing-modes/slr-alongside-vlr-floats.html [ WontFix ]
+external/wpt/css/css-writing-modes/srl-alongside-vrl-floats.html [ WontFix ]
+
 # Requires --use-fake-ui-for-media-stream to run.
 external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ WontFix ]
 virtual/audio-service/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ WontFix ]

@@ -332,7 +332,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   Node* BestTapNode(const GestureEventWithHitTestResults& targeted_tap_event);
   void EnableTapHighlightAtPoint(
       const GestureEventWithHitTestResults& targeted_tap_event);
-  void EnableTapHighlights(HeapVector<Member<Node>>&);
 
   void EnableFakePageScaleAnimationForTesting(bool);
   bool FakeDoubleTapAnimationPendingForTesting() const {

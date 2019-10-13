@@ -32,6 +32,8 @@ blink_core_sources("page") {
     "focus_controller.h",
     "frame_tree.cc",
     "frame_tree.h",
+    "link_highlight.cc",
+    "link_highlight.h",
     "page.cc",
     "page.h",
     "page_animator.cc",

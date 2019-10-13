@@ -10,7 +10,6 @@
 #include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
-#include "third_party/blink/renderer/core/frame/link_highlights.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -28,6 +27,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/page/link_highlight.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
@@ -1149,7 +1149,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
 
 static bool NeedsLinkHighlightEffect(const LayoutObject& object) {
   auto* page = object.GetFrame()->GetPage();
-  return page->GetLinkHighlights().NeedsHighlightEffect(object);
+  return page->GetLinkHighlight().NeedsHighlightEffect(object);
 }
 
 // TODO(crbug.com/900241): Remove this function and let the caller use

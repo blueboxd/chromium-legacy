@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
-#include "third_party/blink/renderer/core/frame/link_highlights.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -60,6 +59,7 @@
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/drag_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/page/link_highlight.h"
 #include "third_party/blink/renderer/core/page/page_hidden_state.h"
 #include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/core/page/plugins_changed_observer.h"
@@ -191,7 +191,7 @@ Page::Page(PageClients& page_clients)
       overscroll_controller_(
           MakeGarbageCollected<OverscrollController>(GetVisualViewport(),
                                                      GetChromeClient())),
-      link_highlights_(MakeGarbageCollected<LinkHighlights>(*this)),
+      link_highlight_(MakeGarbageCollected<LinkHighlight>(*this)),
       plugin_data_(nullptr),
       // TODO(pdr): Initialize |validation_message_client_| lazily.
       validation_message_client_(
@@ -290,8 +290,8 @@ const OverscrollController& Page::GetOverscrollController() const {
   return *overscroll_controller_;
 }
 
-LinkHighlights& Page::GetLinkHighlights() {
-  return *link_highlights_;
+LinkHighlight& Page::GetLinkHighlight() {
+  return *link_highlight_;
 }
 
 void Page::SetMainFrame(Frame* main_frame) {
@@ -782,7 +782,7 @@ void Page::DidCommitLoad(LocalFrame* frame) {
     // Update |has_related_pages_| as features are reset after navigation.
     UpdateHasRelatedPages();
   }
-  GetLinkHighlights().ResetForPageNavigation();
+  GetLinkHighlight().ResetForPageNavigation();
 }
 
 void Page::AcceptLanguagesChanged() {
@@ -816,7 +816,7 @@ void Page::Trace(blink::Visitor* visitor) {
   visitor->Trace(global_root_scroller_controller_);
   visitor->Trace(visual_viewport_);
   visitor->Trace(overscroll_controller_);
-  visitor->Trace(link_highlights_);
+  visitor->Trace(link_highlight_);
   visitor->Trace(spatial_navigation_controller_);
   visitor->Trace(main_frame_);
   visitor->Trace(plugin_data_);
@@ -834,13 +834,13 @@ void Page::AnimationHostInitialized(cc::AnimationHost& animation_host,
   if (GetScrollingCoordinator()) {
     GetScrollingCoordinator()->AnimationHostInitialized(animation_host, view);
   }
-  GetLinkHighlights().AnimationHostInitialized(animation_host);
+  GetLinkHighlight().AnimationHostInitialized(animation_host);
 }
 
 void Page::WillCloseAnimationHost(LocalFrameView* view) {
   if (scrolling_coordinator_)
     scrolling_coordinator_->WillCloseAnimationHost(view);
-  GetLinkHighlights().WillCloseAnimationHost();
+  GetLinkHighlight().WillCloseAnimationHost();
 }
 
 void Page::WillBeDestroyed() {

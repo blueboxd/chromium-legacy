@@ -215,7 +215,7 @@ class CORE_EXPORT LocalFrameView final
   void ForceUpdateViewportIntersections();
 
   void SetPaintArtifactCompositorNeedsUpdate();
-  void GraphicsLayersDidChange();
+  void SetForeignLayerListNeedsUpdate();
 
   // Marks this frame, and ancestor frames, as needing a mandatory compositing
   // update. This overrides throttling for one frame, up to kCompositingClean.
@@ -946,9 +946,9 @@ class CORE_EXPORT LocalFrameView final
   std::unique_ptr<Vector<ObjectPaintInvalidation>>
       tracked_object_paint_invalidations_;
 
-  // Currently used in PushPaintArtifactToCompositor() to collect GraphicsLayers
-  // as foreign layers. It's transient, but may live across frame updates until
-  // GraphicsLayersDidChange() is called.
+  // Currently used in PushPaintArtifactToCompositor() to collect composited
+  // layers as foreign layers. It's transient, but may live across frame updates
+  // until SetForeignLayerListNeedsUpdate() is called.
   // For CompositeAfterPaint, we use it in PaintTree() for all paintings of the
   // frame tree in PaintTree(). It caches display items and subsequences across
   // frame updates and repaints.

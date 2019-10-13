@@ -1078,6 +1078,26 @@ void FillNavigationParamsOriginPolicy(
 
 }  // namespace
 
+class RenderFrameImpl::AssertNavigationCommits {
+ public:
+  explicit AssertNavigationCommits(RenderFrameImpl* frame)
+      : frame_(frame->weak_factory_.GetWeakPtr()) {
+    CHECK_EQ(NavigationCommitState::kNone, frame->navigation_commit_state_);
+    frame->navigation_commit_state_ = NavigationCommitState::kWillCommitFromIPC;
+  }
+  ~AssertNavigationCommits() {
+    // Frame might have been synchronously detached when dispatching JS events.
+    if (frame_) {
+      CHECK_EQ(NavigationCommitState::kDidCommitFromIPC,
+               frame_->navigation_commit_state_);
+      frame_->navigation_commit_state_ = NavigationCommitState::kNone;
+    }
+  }
+
+ private:
+  const base::WeakPtr<RenderFrameImpl> frame_;
+};
+
 // This class uses existing WebNavigationBodyLoader to read the whole response
 // body into in-memory buffer, and then creates another body loader with static
 // data so that we can parse mhtml archive synchronously. This is a workaround
@@ -1089,17 +1109,45 @@ class RenderFrameImpl::MHTMLBodyLoaderClient
   // Once the body is read, fills |navigation_params| with the new body loader
   // and calls |done_callbcak|.
   MHTMLBodyLoaderClient(
+      RenderFrameImpl* frame,
       std::unique_ptr<blink::WebNavigationParams> navigation_params,
       base::OnceCallback<void(std::unique_ptr<blink::WebNavigationParams>)>
           done_callback)
-      : navigation_params_(std::move(navigation_params)),
+      : frame_(frame),
+        navigation_params_(std::move(navigation_params)),
+        body_loader_(std::move(navigation_params_->body_loader)),
         done_callback_(std::move(done_callback)) {
-    body_loader_ = std::move(navigation_params_->body_loader);
     body_loader_->StartLoadingBody(this, false /* use_isolated_code_cache */);
   }
 
-  ~MHTMLBodyLoaderClient() override {}
+  ~MHTMLBodyLoaderClient() override {
+    // MHTMLBodyLoaderClient is reset in several different places. Either:
+    CHECK(
+        // - the body load finished and the result is being committed, so
+        //   |BodyLoadingFinished| (see below) should still be on the stack, or
+        committing_ ||
+        // - MHTMLBodyLoaderClient is abandoned, either because:
+        //   - the browser requested a different navigation be committed in this
+        //     frame, i.e. the navigation commit state should be
+        //     kWillCommitFromIPC, or
+        NavigationCommitState::kWillCommitFromIPC ==
+            frame_->navigation_commit_state_ ||
+        //   - a new renderer-initiated navigation began, which explicitly
+        //     detaches any existing MHTMLBodyLoaderClient
+        //   - this renderer began the navigation and cancelled it with
+        //     |AbortClientNavigation|, e.g. JS called windows.stop(), which
+        //     explicitly detaches any existing MHTMLBodyLoaderClient
+        //   - the frame is detached and self-deleted, which also explicitly
+        //     detaches any existing MHTMLBodyLoaderClient
+        !frame_);
+  }
 
+  void Detach() {
+    CHECK(frame_->in_frame_tree_);
+    frame_ = nullptr;
+  }
+
+  // blink::WebNavigationBodyLoader::Client overrides:
   void BodyCodeCacheReceived(mojo_base::BigBuffer data) override {}
 
   void BodyDataReceived(base::span<const char> data) override {
@@ -1112,6 +1160,8 @@ class RenderFrameImpl::MHTMLBodyLoaderClient
                            int64_t total_decoded_body_length,
                            bool should_report_corb_blocking,
                            const base::Optional<WebURLError>& error) override {
+    committing_ = true;
+    AssertNavigationCommits assert_navigation_commits(frame_);
     if (!error.has_value()) {
       WebNavigationParams::FillBodyLoader(navigation_params_.get(), data_);
       // Clear |is_static_data| flag to avoid the special behavior it triggers,
@@ -1123,6 +1173,9 @@ class RenderFrameImpl::MHTMLBodyLoaderClient
   }
 
  private:
+  // |RenderFrameImpl| owns |this|, so |frame_| is guaranteed to be valid.
+  RenderFrameImpl* frame_;
+  bool committing_ = false;
   WebData data_;
   std::unique_ptr<blink::WebNavigationParams> navigation_params_;
   std::unique_ptr<blink::WebNavigationBodyLoader> body_loader_;
@@ -3384,6 +3437,8 @@ void RenderFrameImpl::CommitNavigationInternal(
     return;
   }
 
+  AssertNavigationCommits assert_navigation_commits(this);
+
   bool was_initiated_in_this_frame = false;
   if (IsPerNavigationMojoInterfaceEnabled()) {
     was_initiated_in_this_frame =
@@ -3484,7 +3539,31 @@ void RenderFrameImpl::CommitNavigationInternal(
     // We need this to retrieve the document mime type prior to committing.
     mhtml_body_loader_client_ =
         std::make_unique<RenderFrameImpl::MHTMLBodyLoaderClient>(
-            std::move(navigation_params), std::move(commit_with_params));
+            this, std::move(navigation_params), std::move(commit_with_params));
+    // The navigation didn't really commit, but lie about it anyway. Why? MHTML
+    // is a bit special: the renderer process is responsible for parsing the
+    // archive, but at this point, the response body isn't fully loaded yet.
+    // Instead, MHTMLBodyLoaderClient will read the entire response body and
+    // parse the archive to extract the main resource to be committed.
+    //
+    // There are two possibilities from this point:
+    // - MHTMLBodyLoaderClient::BodyLoadingFinished() is called. At that point,
+    //   the main resource can be extracted, and the navigation should be
+    //   synchronously committed. If this is a provisional frame, it will be
+    //   swapped in and committed. AssertNavigationCommits is used to ensure
+    //   that this always happens. ✔️
+    // - Alternatively, the pending archive load may be cancelled. This can only
+    //   happen if the renderer initiates a new navigation, or if the browser
+    //   requests that this frame commit a different navigation.
+    //   - If |this| is already swapped in, the reason for cancelling the
+    //     pending archive load does not matter. There will be no state skew
+    //     between the browser and the renderer, since |this| has already
+    //     committed a navigation. ✔️
+    //   - If |this| is provisional, the pending archive load may only be
+    //     cancelled by the browser requesting |this| to commit a different
+    //     navigation. AssertNavigationCommits ensures the new request ends up
+    //     committing and swapping in |this|, so this is OK. ✔️
+    navigation_commit_state_ = NavigationCommitState::kDidCommitFromIPC;
     return;
   }
 
@@ -3501,6 +3580,14 @@ bool RenderFrameImpl::ShouldIgnoreCommitNavigation(
       !browser_side_navigation_pending_url_.is_empty() &&
       browser_side_navigation_pending_url_ == commit_params.original_url &&
       commit_params.nav_entry_id == 0) {
+    // If a navigation has been cancelled in the renderer, the renderer must
+    // have already committed and swapped this frame into the frame tree:
+    // - a provisional frame cannot run JS, so it cannot self-cancel its own
+    //   navigation.
+    // - a provisional frame is only partially linked into the frame tree, so
+    //   other frames should not be able to reach into it to cancel the
+    //   navigation either.
+    CHECK(in_frame_tree_);
     return true;
   }
   return false;
@@ -3680,6 +3767,9 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::CommitFailedNavigation", "id", routing_id_);
   DCHECK(!NavigationTypeUtils::IsSameDocument(common_params->navigation_type));
+
+  AssertNavigationCommits assert_navigation_commits(this);
+
   RenderFrameImpl::PrepareRenderViewForNavigation(common_params->url,
                                                   *commit_params);
   sync_navigation_callback_.Cancel();
@@ -3721,6 +3811,16 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
     Send(new FrameHostMsg_DidStopLoading(routing_id_));
     browser_side_navigation_pending_ = false;
     browser_side_navigation_pending_url_ = GURL();
+
+    // Disarm AssertNavigationCommits and pretend that the commit actually
+    // happened. Signalling that the load stopped /should/ signal the browser to
+    // tear down the speculative RFH associated with |this|...
+    // TODO(dcheng): This is potentially buggy. This means that the browser
+    // asked the renderer to commit a failed navigation, but it declined. In the
+    // future, when speculative RFH management is refactored, this will likely
+    // have to self-discard if |this| is provisional.
+    navigation_commit_state_ = NavigationCommitState::kDidCommitFromIPC;
+
     return;
   }
 
@@ -3769,6 +3869,14 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
     }
     browser_side_navigation_pending_ = false;
     browser_side_navigation_pending_url_ = GURL();
+
+    // Disarm AssertNavigationCommits and pretend that the commit actually
+    // happened. Hopefully, either:
+    // - the browser process is signalled to stop loading, which /should/ signal
+    //   the browser to tear down the speculative RFH associated with |this| or
+    // - fallback content is triggered, which /should/ eventually discard |this|
+    //   as well.
+    navigation_commit_state_ = NavigationCommitState::kDidCommitFromIPC;
     return;
   }
 
@@ -4451,6 +4559,11 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
     proxy->set_provisional_frame_routing_id(MSG_ROUTING_NONE);
   }
 
+  if (mhtml_body_loader_client_) {
+    mhtml_body_loader_client_->Detach();
+    mhtml_body_loader_client_.reset();
+  }
+
   delete this;
   // Object is invalid after this point.
 }
@@ -4640,6 +4753,9 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   TRACE_EVENT2("navigation,rail", "RenderFrameImpl::didCommitProvisionalLoad",
                "id", routing_id_,
                "url", GetLoadingUrl().possibly_invalid_spec());
+
+  if (navigation_commit_state_ == NavigationCommitState::kWillCommitFromIPC)
+    navigation_commit_state_ = NavigationCommitState::kDidCommitFromIPC;
 
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentLoader(
@@ -5080,9 +5196,13 @@ void RenderFrameImpl::RenderFallbackContentInParentProcess() {
 }
 
 void RenderFrameImpl::AbortClientNavigation() {
+  CHECK(in_frame_tree_);
   browser_side_navigation_pending_ = false;
   sync_navigation_callback_.Cancel();
-  mhtml_body_loader_client_.reset();
+  if (mhtml_body_loader_client_) {
+    mhtml_body_loader_client_->Detach();
+    mhtml_body_loader_client_.reset();
+  }
   NotifyObserversOfFailedProvisionalLoad();
   if (!IsPerNavigationMojoInterfaceEnabled()) {
     Send(new FrameHostMsg_AbortNavigation(routing_id_));
@@ -6199,6 +6319,11 @@ void RenderFrameImpl::OnReportContentSecurityPolicyViolation(
 
 void RenderFrameImpl::BeginNavigation(
     std::unique_ptr<blink::WebNavigationInfo> info) {
+  // A provisional frame should never make a renderer-initiated navigation: no
+  // JS should be running in |this|, and no other frame should have a reference
+  // to |this|.
+  CHECK(in_frame_tree_);
+
   // This method is only called for renderer initiated navigations, which
   // may have originated from a link-click, script, drag-n-drop operation, etc.
 
@@ -6342,7 +6467,10 @@ void RenderFrameImpl::BeginNavigation(
     }
 
     sync_navigation_callback_.Cancel();
-    mhtml_body_loader_client_.reset();
+    if (mhtml_body_loader_client_) {
+      mhtml_body_loader_client_->Detach();
+      mhtml_body_loader_client_.reset();
+    }
 
     // First navigation in a frame to an empty document must be handled
     // synchronously.

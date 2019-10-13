@@ -49,7 +49,6 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
-#include "third_party/blink/renderer/platform/graphics/link_highlight.h"
 #include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -98,9 +97,6 @@ GraphicsLayer::~GraphicsLayer() {
   CcLayer()->ClearClient();
   CcLayer()->SetLayerClient(nullptr);
   SetContentsLayer(nullptr);
-  for (size_t i = 0; i < link_highlights_.size(); ++i)
-    link_highlights_[i]->ClearCurrentGraphicsLayer();
-  link_highlights_.clear();
 
 #if DCHECK_IS_ON()
   client_.VerifyNotPainting();
@@ -374,11 +370,8 @@ void GraphicsLayer::UpdateLayerIsDrawable() {
   if (cc::Layer* contents_layer = ContentsLayerIfRegistered())
     contents_layer->SetIsDrawable(contents_visible_);
 
-  if (draws_content_) {
+  if (draws_content_)
     CcLayer()->SetNeedsDisplay();
-    for (size_t i = 0; i < link_highlights_.size(); ++i)
-      link_highlights_[i]->Invalidate();
-  }
 }
 
 void GraphicsLayer::UpdateContentsRect() {
@@ -547,13 +540,6 @@ String GraphicsLayer::DebugName(const cc::Layer* layer) const {
   if (layer->id() == contents_layer_id_)
     return "ContentsLayer for " + client_.DebugName(this);
 
-  for (size_t i = 0; i < link_highlights_.size(); ++i) {
-    if (layer == link_highlights_[i]->Layer()) {
-      return "LinkHighlight[" + String::Number(i) + "] for " +
-             client_.DebugName(this);
-    }
-  }
-
   if (layer == layer_.get())
     return client_.DebugName(this);
 
@@ -671,8 +657,6 @@ void GraphicsLayer::SetNeedsDisplay() {
     return;
 
   CcLayer()->SetNeedsDisplay();
-  for (size_t i = 0; i < link_highlights_.size(); ++i)
-    link_highlights_[i]->Invalidate();
 
   // Invalidate the paint controller if it exists, but don't bother creating one
   // if not.
@@ -695,10 +679,7 @@ void GraphicsLayer::SetNeedsDisplayRecursively() {
 
 void GraphicsLayer::SetNeedsDisplayInRect(const IntRect& rect) {
   DCHECK(PaintsContentOrHitTest());
-
   CcLayer()->SetNeedsDisplayRect(rect);
-  for (auto* link_highlight : link_highlights_)
-    link_highlight->Invalidate();
 }
 
 void GraphicsLayer::SetContentsRect(const IntRect& rect) {
@@ -776,18 +757,6 @@ void GraphicsLayer::SetPaintingPhase(GraphicsLayerPaintingPhase phase) {
     return;
   painting_phase_ = phase;
   SetNeedsDisplay();
-}
-
-void GraphicsLayer::AddLinkHighlight(LinkHighlight* link_highlight) {
-  DCHECK(link_highlight && !link_highlights_.Contains(link_highlight));
-  link_highlights_.push_back(link_highlight);
-  link_highlight->Layer()->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
-  UpdateChildList();
-}
-
-void GraphicsLayer::RemoveLinkHighlight(LinkHighlight* link_highlight) {
-  link_highlights_.EraseAt(link_highlights_.Find(link_highlight));
-  UpdateChildList();
 }
 
 std::unique_ptr<base::trace_event::TracedValue> GraphicsLayer::TakeDebugInfo(

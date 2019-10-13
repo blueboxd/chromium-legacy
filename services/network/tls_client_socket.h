@@ -9,6 +9,8 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/address_family.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/address_family.mojom.h"
@@ -31,7 +33,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TLSClientSocket
       public SocketDataPump::Delegate {
  public:
   TLSClientSocket(mojom::TLSClientSocketRequest request,
-                  mojom::SocketObserverPtr observer,
+                  mojo::PendingRemote<mojom::SocketObserver> observer,
                   const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~TLSClientSocket() override;
 
@@ -51,7 +53,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TLSClientSocket
   void OnNetworkWriteError(int net_error) override;
   void OnShutdown() override;
 
-  const mojom::SocketObserverPtr observer_;
+  const mojo::Remote<mojom::SocketObserver> observer_;
   std::unique_ptr<SocketDataPump> socket_data_pump_;
   std::unique_ptr<net::SSLClientSocket> socket_;
   mojom::TCPConnectedSocket::UpgradeToTLSCallback connect_callback_;

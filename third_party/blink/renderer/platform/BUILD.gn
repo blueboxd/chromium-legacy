@@ -1008,7 +1008,6 @@ jumbo_component("platform") {
     "graphics/interpolation_space.cc",
     "graphics/interpolation_space.h",
     "graphics/lab_color_space.h",
-    "graphics/link_highlight.h",
     "graphics/logging_canvas.cc",
     "graphics/logging_canvas.h",
     "graphics/mailbox_texture_holder.cc",

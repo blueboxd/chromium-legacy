@@ -18,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_address.h"
 #include "net/log/net_log_source.h"
@@ -232,7 +233,7 @@ void GCMSocketStreamTest::OpenConnection() {
   mojo_socket_factory_ptr_->CreateProxyResolvingSocket(
       kDestination, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-      mojo::MakeRequest(&mojo_socket_ptr_), nullptr /* observer */,
+      mojo::MakeRequest(&mojo_socket_ptr_), mojo::NullRemote() /* observer */,
       base::BindLambdaForTesting(
           [&](int result, const base::Optional<net::IPEndPoint>& local_addr,
               const base::Optional<net::IPEndPoint>& peer_addr,

@@ -92,7 +92,7 @@ void TCPBoundSocket::Connect(
     const net::AddressList& remote_addr_list,
     mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
     mojom::TCPConnectedSocketRequest request,
-    mojom::SocketObserverPtr observer,
+    mojo::PendingRemote<mojom::SocketObserver> observer,
     ConnectCallback callback) {
   DCHECK(socket_->IsValid());
 

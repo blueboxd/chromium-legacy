@@ -23,7 +23,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/socket_permission_request.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/address_family.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
@@ -75,7 +75,6 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       render_process_id_(0),
       render_frame_id_(0),
       binding_(this),
-      socket_observer_binding_(this),
       state_(TCPSocketState::INITIAL),
       bind_input_addr_(NetAddressPrivateImpl::kInvalidNetAddress),
       socket_options_(SOCKET_OPTION_NODELAY),
@@ -103,7 +102,8 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
 
 void PepperTCPSocketMessageFilter::SetConnectedSocket(
     network::mojom::TCPConnectedSocketPtrInfo connected_socket,
-    network::mojom::SocketObserverRequest socket_observer_request,
+    mojo::PendingReceiver<network::mojom::SocketObserver>
+        socket_observer_receiver,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -116,7 +116,7 @@ void PepperTCPSocketMessageFilter::SetConnectedSocket(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &PepperTCPSocketMessageFilter::SetConnectedSocketOnUIThread, this,
-          std::move(connected_socket), std::move(socket_observer_request),
+          std::move(connected_socket), std::move(socket_observer_receiver),
           std::move(receive_stream), std::move(send_stream)));
 }
 
@@ -136,7 +136,8 @@ PepperTCPSocketMessageFilter::~PepperTCPSocketMessageFilter() {
 
 void PepperTCPSocketMessageFilter::SetConnectedSocketOnUIThread(
     network::mojom::TCPConnectedSocketPtrInfo connected_socket,
-    network::mojom::SocketObserverRequest socket_observer_request,
+    mojo::PendingReceiver<network::mojom::SocketObserver>
+        socket_observer_receiver,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -144,8 +145,8 @@ void PepperTCPSocketMessageFilter::SetConnectedSocketOnUIThread(
 
   state_ = TCPSocketState(TCPSocketState::CONNECTED);
   connected_socket_.Bind(std::move(connected_socket));
-  socket_observer_binding_.Bind(std::move(socket_observer_request));
-  socket_observer_binding_.set_connection_error_handler(
+  socket_observer_receiver_.Bind(std::move(socket_observer_receiver));
+  socket_observer_receiver_.set_disconnect_handler(
       base::BindOnce(&PepperTCPSocketMessageFilter::OnSocketObserverError,
                      base::Unretained(this)));
 
@@ -306,7 +307,7 @@ void PepperTCPSocketMessageFilter::OnWriteError(int net_error) {
 
 void PepperTCPSocketMessageFilter::OnSocketObserverError() {
   // Note that this method may be called while a connection is still being made.
-  socket_observer_binding_.Close();
+  socket_observer_receiver_.reset();
 
   // Treat this as a read and write error. If read and write errors have already
   // been received, these calls will do nothing.
@@ -484,13 +485,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgSSLHandshake(
   read_watcher_.reset();
   send_stream_.reset();
   write_watcher_.reset();
-  socket_observer_binding_.Close();
-
-  network::mojom::SocketObserverPtr socket_observer;
-  socket_observer_binding_.Bind(mojo::MakeRequest(&socket_observer));
-  socket_observer_binding_.set_connection_error_handler(
-      base::BindOnce(&PepperTCPSocketMessageFilter::OnSocketObserverError,
-                     base::Unretained(this)));
+  socket_observer_receiver_.reset();
 
   state_.SetPendingTransition(TCPSocketState::SSL_CONNECT);
 
@@ -501,13 +496,18 @@ int32_t PepperTCPSocketMessageFilter::OnMsgSSLHandshake(
   connected_socket_->UpgradeToTLS(
       host_port_pair, std::move(tls_client_socket_options),
       pepper_socket_utils::PepperTCPNetworkAnnotationTag(),
-      mojo::MakeRequest(&tls_client_socket_), std::move(socket_observer),
+      mojo::MakeRequest(&tls_client_socket_),
+      socket_observer_receiver_.BindNewPipeAndPassRemote(),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&PepperTCPSocketMessageFilter::OnSSLHandshakeCompleted,
                          base::Unretained(this),
                          context->MakeReplyMessageContext()),
           net::ERR_FAILED, mojo::ScopedDataPipeConsumerHandle(),
           mojo::ScopedDataPipeProducerHandle(), base::nullopt /* ssl_info */));
+
+  socket_observer_receiver_.set_disconnect_handler(
+      base::BindOnce(&PepperTCPSocketMessageFilter::OnSocketObserverError,
+                     base::Unretained(this)));
 
   return PP_OK_COMPLETIONPENDING;
 }
@@ -615,16 +615,16 @@ int32_t PepperTCPSocketMessageFilter::OnMsgAccept(
 
   pending_accept_ = true;
 
-  network::mojom::SocketObserverPtr socket_observer;
-  network::mojom::SocketObserverRequest socket_observer_request =
-      mojo::MakeRequest(&socket_observer);
+  mojo::PendingRemote<network::mojom::SocketObserver> socket_observer;
+  auto socket_observer_receiver =
+      socket_observer.InitWithNewPipeAndPassReceiver();
   server_socket_->Accept(
       std::move(socket_observer),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&PepperTCPSocketMessageFilter::OnAcceptCompleted,
                          base::Unretained(this),
                          context->MakeReplyMessageContext(),
-                         std::move(socket_observer_request)),
+                         std::move(socket_observer_receiver)),
           net::ERR_FAILED, base::nullopt /* remote_addr */,
           network::mojom::TCPConnectedSocketPtr(),
           mojo::ScopedDataPipeConsumerHandle(),
@@ -757,7 +757,7 @@ void PepperTCPSocketMessageFilter::TryRead() {
       // If no read error has been received yet, wait to receive one through
       // the SocketObserver interface.
       if (pending_read_pp_error_ == PP_OK_COMPLETIONPENDING) {
-        DCHECK(socket_observer_binding_.is_bound());
+        DCHECK(socket_observer_receiver_.is_bound());
         break;
       }
 
@@ -817,7 +817,7 @@ void PepperTCPSocketMessageFilter::TryWrite() {
   while (true) {
     if (!send_stream_.is_valid()) {
       if (pending_write_pp_error_ == PP_OK_COMPLETIONPENDING) {
-        DCHECK(socket_observer_binding_.is_bound());
+        DCHECK(socket_observer_receiver_.is_bound());
         break;
       }
       SendWriteReply(pending_write_pp_error_);
@@ -868,10 +868,8 @@ void PepperTCPSocketMessageFilter::StartConnect(
   DCHECK(state_.IsPending(TCPSocketState::CONNECT));
   DCHECK(!address_list.empty());
 
-  network::mojom::SocketObserverPtr socket_observer;
-  socket_observer_binding_.Bind(mojo::MakeRequest(&socket_observer));
-
-  socket_observer_binding_.set_connection_error_handler(
+  auto socket_observer = socket_observer_receiver_.BindNewPipeAndPassRemote();
+  socket_observer_receiver_.set_disconnect_handler(
       base::BindOnce(&PepperTCPSocketMessageFilter::OnSocketObserverError,
                      base::Unretained(this)));
 
@@ -960,7 +958,7 @@ void PepperTCPSocketMessageFilter::OnConnectCompleted(
   // Handle errors.
 
   // This can happen even when the network service is behaving correctly, as
-  // we may see the |socket_observer_binding_| closed before receiving an
+  // we may see the |socket_observer_receiver_| closed before receiving an
   // error.
   pending_read_pp_error_ = PP_OK_COMPLETIONPENDING;
   pending_write_pp_error_ = PP_OK_COMPLETIONPENDING;
@@ -1076,7 +1074,8 @@ void PepperTCPSocketMessageFilter::OnListenCompleted(
 
 void PepperTCPSocketMessageFilter::OnAcceptCompleted(
     const ppapi::host::ReplyMessageContext& context,
-    network::mojom::SocketObserverRequest socket_observer_request,
+    mojo::PendingReceiver<network::mojom::SocketObserver>
+        socket_observer_receiver,
     int net_result,
     const base::Optional<net::IPEndPoint>& remote_addr,
     network::mojom::TCPConnectedSocketPtr connected_socket,
@@ -1096,7 +1095,7 @@ void PepperTCPSocketMessageFilter::OnAcceptCompleted(
     return;
   }
 
-  DCHECK(socket_observer_request.is_pending());
+  DCHECK(socket_observer_receiver.is_valid());
 
   PP_NetAddress_Private pp_remote_addr =
       NetAddressPrivateImpl::kInvalidNetAddress;
@@ -1121,7 +1120,7 @@ void PepperTCPSocketMessageFilter::OnAcceptCompleted(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PepperTCPSocketMessageFilter::OnAcceptCompletedOnIOThread,
                      this, context, connected_socket.PassInterface(),
-                     std::move(socket_observer_request),
+                     std::move(socket_observer_receiver),
                      std::move(receive_stream), std::move(send_stream),
                      bound_address, pp_remote_addr));
 }
@@ -1129,7 +1128,8 @@ void PepperTCPSocketMessageFilter::OnAcceptCompleted(
 void PepperTCPSocketMessageFilter::OnAcceptCompletedOnIOThread(
     const ppapi::host::ReplyMessageContext& context,
     network::mojom::TCPConnectedSocketPtrInfo connected_socket,
-    network::mojom::SocketObserverRequest socket_observer_request,
+    mojo::PendingReceiver<network::mojom::SocketObserver>
+        socket_observer_receiver,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream,
     PP_NetAddress_Private pp_local_addr,
@@ -1144,7 +1144,7 @@ void PepperTCPSocketMessageFilter::OnAcceptCompletedOnIOThread(
   std::unique_ptr<ppapi::host::ResourceHost> host =
       factory_->CreateAcceptedTCPSocket(
           instance_, version_, std::move(connected_socket),
-          std::move(socket_observer_request), std::move(receive_stream),
+          std::move(socket_observer_receiver), std::move(receive_stream),
           std::move(send_stream));
   if (!host) {
     SendAcceptError(context, PP_ERROR_NOSPACE);
@@ -1359,7 +1359,7 @@ void PepperTCPSocketMessageFilter::Close() {
   tls_client_socket_.reset();
   server_socket_.reset();
   binding_.Close();
-  socket_observer_binding_.Close();
+  socket_observer_receiver_.reset();
 
   read_watcher_.reset();
   receive_stream_.reset();

@@ -30,7 +30,7 @@ namespace network {
 // pipe. Specifically, it (1) reads from the network socket and writes to a mojo
 // producer pipe, and (2) reads from a mojo consumer pipe and writes to the
 // network socket. On network read/write errors, it (3) also notifies the
-// mojom::SocketObserverPtr appropriately.
+// mojo::Remote<mojom::SocketObserver> appropriately.
 class COMPONENT_EXPORT(NETWORK_SERVICE) SocketDataPump {
  public:
   // Interface to notify a consumer that about network errors and whether both

@@ -114,7 +114,15 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
 
   void ScheduleGpuTaskForTesting(
       base::OnceClosure callback,
-      std::vector<gpu::SyncToken> sync_tokesn) override;
+      std::vector<gpu::SyncToken> sync_tokens) override;
+
+  void SendOverlayPromotionNotification(
+      std::vector<gpu::SyncToken> sync_tokens,
+      base::flat_set<gpu::Mailbox> promotion_denied,
+      base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) override;
+  void RenderToOverlay(gpu::SyncToken sync_token,
+                       gpu::Mailbox overlay_candidate_mailbox,
+                       const gfx::Rect& bounds) override;
 
  private:
   explicit FakeSkiaOutputSurface(

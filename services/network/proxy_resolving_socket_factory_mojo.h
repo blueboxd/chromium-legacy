@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/proxy_resolving_client_socket_factory.h"
@@ -34,7 +35,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingSocketFactoryMojo
       mojom::ProxyResolvingSocketOptionsPtr options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::ProxyResolvingSocketRequest request,
-      mojom::SocketObserverPtr observer,
+      mojo::PendingRemote<mojom::SocketObserver> observer,
       CreateProxyResolvingSocketCallback callback) override;
 
  private:

@@ -259,7 +259,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::TCPConnectedSocketRequest request,
-      mojom::SocketObserverPtr observer,
+      mojo::PendingRemote<mojom::SocketObserver> observer,
       CreateTCPConnectedSocketCallback callback) override;
   void CreateTCPBoundSocket(
       const net::IPEndPoint& local_addr,

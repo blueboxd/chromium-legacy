@@ -886,9 +886,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return has_self_painting_layer_descendant_;
   }
 
-  // See PaintLayerStackingNode::layer_to_overlay_scrollbars_painting_after_.
-  bool NeedsReorderOverlayScrollbars() const {
-    return needs_reorder_overlay_scrollbars_;
+  // See
+  // PaintLayerStackingNode::layer_to_overlay_overflow_controls_painting_after_.
+  bool NeedsReorderOverlayOverflowControls() const {
+    return needs_reorder_overlay_overflow_controls_;
   }
 
   // Returns true if there is a descendant with blend-mode that is
@@ -1283,8 +1284,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // PaintLayerPaintOrderIterator.
   PaintLayerStackingNode* StackingNode() const { return stacking_node_.get(); }
 
-  void SetNeedsReorderOverlayScrollbars(bool b) {
-    needs_reorder_overlay_scrollbars_ = b;
+  void SetNeedsReorderOverlayOverflowControls(bool b) {
+    needs_reorder_overlay_overflow_controls_ = b;
   }
 
   // Self-painting layer is an optimization where we avoid the heavy Layer
@@ -1366,7 +1367,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   unsigned has_self_painting_layer_descendant_ : 1;
 
-  unsigned needs_reorder_overlay_scrollbars_ : 1;
+  unsigned needs_reorder_overlay_overflow_controls_ : 1;
 
 #if DCHECK_IS_ON()
   mutable unsigned layer_list_mutation_allowed_ : 1;

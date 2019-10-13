@@ -10,6 +10,8 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/proxy_resolving_client_socket.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
@@ -28,7 +30,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingSocketMojo
   ProxyResolvingSocketMojo(
       std::unique_ptr<net::StreamSocket> socket,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      mojom::SocketObserverPtr observer,
+      mojo::PendingRemote<mojom::SocketObserver> observer,
       TLSSocketFactory* tls_socket_factory);
   ~ProxyResolvingSocketMojo() override;
   void Connect(
@@ -40,7 +42,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingSocketMojo
       const net::HostPortPair& host_port_pair,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::TLSClientSocketRequest request,
-      mojom::SocketObserverPtr observer,
+      mojo::PendingRemote<mojom::SocketObserver> observer,
       mojom::ProxyResolvingSocket::UpgradeToTLSCallback callback) override;
 
  private:
@@ -55,7 +57,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingSocketMojo
   const net::StreamSocket* BorrowSocket() override;
   std::unique_ptr<net::StreamSocket> TakeSocket() override;
 
-  mojom::SocketObserverPtr observer_;
+  mojo::Remote<mojom::SocketObserver> observer_;
   TLSSocketFactory* tls_socket_factory_;
   std::unique_ptr<net::StreamSocket> socket_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;

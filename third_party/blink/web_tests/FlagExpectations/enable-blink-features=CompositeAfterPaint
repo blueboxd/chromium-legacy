@@ -118,6 +118,7 @@ Bug(none) fragmentation/outline-crossing-columns.html [ Crash ]
 Bug(none) fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
 Bug(none) http/tests/devtools/layers/layers-3d-view-after-update.js [ Failure ]
 Bug(none) http/tests/input/discard-events-to-unstable-iframe.html [ Failure ]
+Bug(none) http/tests/misc/destroy-middle-click-locked-target-crash.html [ Timeout ]
 Bug(none) http/tests/misc/synthetic-gesture-initiated-in-cross-origin-frame.html [ Failure ]
 Bug(none) paint/pagination/pagination-change-clip-crash.html [ Failure ]
 Bug(none) printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
@@ -130,6 +131,7 @@ Bug(none) virtual/forced-colors/fast/css/forced-colors-mode/forced-colors-mode-2
 Bug(none) virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
 Bug(none) virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
 Bug(none) virtual/threaded/fast/scrolling/middle-click-autoscroll-latching-clicked-node.html [ Failure ]
+Bug(none) virtual/threaded/fast/scrolling/scrollbar-mousedown-move-mouseup.html [ Failure ]
 Bug(none) wpt_internal/display-lock/rendersubtree/paint/locked-iframe-doesnt-paint-contents.html [ Failure ]
 
 # Loading an image in a subframe.

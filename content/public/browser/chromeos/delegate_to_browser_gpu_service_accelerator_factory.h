@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_CHROMEOS_DELEGATE_TO_BROWSER_GPU_SERVICE_ACCELERATOR_FACTORY_H_
 
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 
 namespace content {
@@ -17,8 +18,8 @@ class CONTENT_EXPORT DelegateToBrowserGpuServiceAcceleratorFactory
     : public video_capture::mojom::AcceleratorFactory {
  public:
   void CreateJpegDecodeAccelerator(
-      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request)
-      override;
+      mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
+          jda_receiver) override;
 };
 
 }  // namespace content

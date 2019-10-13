@@ -687,6 +687,22 @@ void SkiaRenderer::FinishDrawingFrame() {
   if (use_swap_with_bounds_)
     swap_content_bounds_ = current_frame()->root_content_bounds;
 
+#if defined(OS_ANDROID)
+  if (!current_frame()->overlay_list.empty()) {
+    DCHECK_EQ(current_frame()->overlay_list.size(), 1u);
+    overlay_resource_locks_.emplace_back(
+        DisplayResourceProvider::ScopedReadLockSharedImage(
+            resource_provider_,
+            current_frame()->overlay_list.front().resource_id));
+    skia_output_surface_->RenderToOverlay(
+        overlay_resource_locks_.back()->sync_token(),
+        overlay_resource_locks_.back()->mailbox(),
+        ToNearestRect(current_frame()->overlay_list.front().display_rect));
+  } else {
+    overlay_resource_locks_.emplace_back(base::nullopt);
+  }
+#endif
+
   // TODO(weiliangc): Remove this once OverlayProcessor schedules overlays.
   if (current_frame()->output_surface_plane) {
     skia_output_surface_->ScheduleOutputSurfaceAsOverlay(
@@ -710,6 +726,11 @@ void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
     output_frame.sub_buffer_rect = swap_buffer_rect_;
   } else if (swap_buffer_rect_.IsEmpty() && allow_empty_swap_) {
     output_frame.sub_buffer_rect = swap_buffer_rect_;
+  }
+
+  // Unlock the overlay resource that was swapped last frame.
+  if (overlay_resource_locks_.size() > 1) {
+    overlay_resource_locks_.pop_front();
   }
 
   switch (draw_mode_) {

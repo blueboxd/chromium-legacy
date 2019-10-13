@@ -179,7 +179,8 @@ void DisplayLockContext::StartAcquire() {
   // we might use the cached result instead. In order to ensure we skip the
   // newly locked layers, we need to set |need_graphics_layer_collection_|
   // before marking the layer for repaint.
-  needs_graphics_layer_collection_ = true;
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    needs_graphics_layer_collection_ = true;
   MarkPaintLayerNeedsRepaint();
 }
 
@@ -606,8 +607,9 @@ bool DisplayLockContext::MarkPaintLayerNeedsRepaint() {
   DCHECK(ConnectedToView());
   if (auto* layout_object = element_->GetLayoutObject()) {
     layout_object->PaintingLayer()->SetNeedsRepaint();
-    if (needs_graphics_layer_collection_) {
-      document_->View()->GraphicsLayersDidChange();
+    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+        needs_graphics_layer_collection_) {
+      document_->View()->SetForeignLayerListNeedsUpdate();
       needs_graphics_layer_collection_ = false;
     }
     return true;

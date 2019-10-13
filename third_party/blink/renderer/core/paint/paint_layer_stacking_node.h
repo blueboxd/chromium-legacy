@@ -115,15 +115,16 @@ class CORE_EXPORT PaintLayerStackingNode {
     return neg_z_order_list_;
   }
 
-  const PaintLayers* LayersPaintingOverlayScrollbarsAfter(
+  const PaintLayers* LayersPaintingOverlayOverflowControlsAfter(
       const PaintLayer* layer) const {
     DCHECK(!z_order_lists_dirty_);
-    auto it = layer_to_overlay_scrollbars_painting_after_.find(layer);
-    return it == layer_to_overlay_scrollbars_painting_after_.end() ? nullptr
-                                                                   : &it->value;
+    auto it = layer_to_overlay_overflow_controls_painting_after_.find(layer);
+    return it == layer_to_overlay_overflow_controls_painting_after_.end()
+               ? nullptr
+               : &it->value;
   }
 
-  void ClearNeedsReorderOverlayScrollbars();
+  void ClearNeedsReorderOverlayOverflowControls();
 
  private:
   void RebuildZOrderLists();
@@ -186,7 +187,7 @@ class CORE_EXPORT PaintLayerStackingNode {
   // more than one scroller in the same stacking context with overlay
   // scrollbars.
   HashMap<const PaintLayer*, PaintLayers>
-      layer_to_overlay_scrollbars_painting_after_;
+      layer_to_overlay_overflow_controls_painting_after_;
 
   // Indicates whether the z-order lists above are dirty.
   bool z_order_lists_dirty_ : 1;

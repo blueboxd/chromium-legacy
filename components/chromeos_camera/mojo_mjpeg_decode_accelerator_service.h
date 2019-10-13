@@ -17,6 +17,7 @@
 #include "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom.h"
 #include "components/chromeos_camera/gpu_mjpeg_decode_accelerator_factory.h"
 #include "components/chromeos_camera/mjpeg_decode_accelerator.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace chromeos_camera {
 
@@ -27,7 +28,8 @@ class MojoMjpegDecodeAcceleratorService
       public MjpegDecodeAccelerator::Client {
  public:
   static void Create(
-      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest request);
+      mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
+          receiver);
 
   ~MojoMjpegDecodeAcceleratorService() override;
 

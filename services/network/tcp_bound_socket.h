@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_endpoint.h"
 #include "net/socket/tcp_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -56,7 +56,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPBoundSocket
   void Connect(const net::AddressList& remote_addr,
                mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
                mojom::TCPConnectedSocketRequest request,
-               mojom::SocketObserverPtr observer,
+               mojo::PendingRemote<mojom::SocketObserver> observer,
                ConnectCallback callback) override;
 
  private:

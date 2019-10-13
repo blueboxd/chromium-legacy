@@ -253,7 +253,8 @@ ContentBrowserPepperHostFactory::CreateAcceptedTCPSocket(
     PP_Instance instance,
     ppapi::TCPSocketVersion version,
     network::mojom::TCPConnectedSocketPtrInfo connected_socket,
-    network::mojom::SocketObserverRequest socket_observer_request,
+    mojo::PendingReceiver<network::mojom::SocketObserver>
+        socket_observer_receiver,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream) {
   if (!CanCreateSocket())
@@ -262,7 +263,7 @@ ContentBrowserPepperHostFactory::CreateAcceptedTCPSocket(
       base::MakeRefCounted<PepperTCPSocketMessageFilter>(
           nullptr /* factory */, host_, instance, version));
   tcp_socket->SetConnectedSocket(
-      std::move(connected_socket), std::move(socket_observer_request),
+      std::move(connected_socket), std::move(socket_observer_receiver),
       std::move(receive_stream), std::move(send_stream));
   return std::unique_ptr<ppapi::host::ResourceHost>(
       new ppapi::host::MessageFilterHost(host_->GetPpapiHost(), instance, 0,

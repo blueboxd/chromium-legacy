@@ -50,7 +50,7 @@ interface TCPBoundSocket {
       AddressList remote_addr_list,
       TCPConnectedSocketOptions? tcp_connected_socket_options,
       TCPConnectedSocket& socket,
-      SocketObserver? observer)
+      pending_remote<SocketObserver>? observer)
       => (int32 net_error,
           IPEndPoint? local_addr,
           IPEndPoint? peer_addr,
@@ -78,7 +78,7 @@ interface TCPConnectedSocket {
                TLSClientSocketOptions? options,
                MutableNetworkTrafficAnnotationTag traffic_annotation,
                TLSClientSocket& request,
-               SocketObserver? observer)
+               pending_remote<SocketObserver>? observer)
       => (int32 net_error,
           handle<data_pipe_consumer>? receive_stream,
           handle<data_pipe_producer>? send_stream,
@@ -142,7 +142,7 @@ interface TCPServerSocket {
   //
   // Accepted sockets may not be upgraded to TLS by invoking UpgradeToTLS, as
   // UpgradeToTLS only supports the client part of the TLS handshake.
-  Accept(SocketObserver? observer)
+  Accept(pending_remote<SocketObserver>? observer)
       => (int32 net_error,
           IPEndPoint? remote_addr,
           TCPConnectedSocket? connected_socket,

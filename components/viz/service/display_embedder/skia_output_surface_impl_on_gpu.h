@@ -182,6 +182,13 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
   GpuVSyncCallback GetGpuVSyncCallback() override;
 
+  void SendOverlayPromotionNotification(
+      base::flat_set<gpu::Mailbox> promotion_denied,
+      base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions);
+
+  void RenderToOverlay(gpu::Mailbox overlay_candidate_mailbox,
+                       const gfx::Rect& bounds);
+
  private:
   class ScopedPromiseImageAccess;
 

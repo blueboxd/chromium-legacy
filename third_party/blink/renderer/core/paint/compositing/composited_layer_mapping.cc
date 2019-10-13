@@ -1863,7 +1863,7 @@ PhysicalRect CompositedLayerMapping::ContentsBox() const {
 }
 
 bool CompositedLayerMapping::NeedsToReparentOverflowControls() const {
-  return owning_layer_.NeedsReorderOverlayScrollbars();
+  return owning_layer_.NeedsReorderOverlayOverflowControls();
 }
 
 GraphicsLayer* CompositedLayerMapping::DetachLayerForOverflowControls() {
@@ -2413,7 +2413,7 @@ void CompositedLayerMapping::SetOverlayScrollbarsHidden(bool hidden) {
 void CompositedLayerMapping::GraphicsLayersDidChange() {
   LocalFrameView* frame_view = GetLayoutObject().GetFrameView();
   DCHECK(frame_view);
-  frame_view->GraphicsLayersDidChange();
+  frame_view->SetForeignLayerListNeedsUpdate();
 }
 
 bool CompositedLayerMapping::PaintBlockedByDisplayLockIncludingAncestors(

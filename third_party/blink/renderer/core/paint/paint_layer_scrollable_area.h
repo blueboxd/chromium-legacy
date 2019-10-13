@@ -107,14 +107,14 @@ struct CORE_EXPORT PaintLayerScrollableAreaRareData {
 // This only happens if the associated PaintLayer is itself composited.
 //
 //
-// ***** OVERLAY SCROLLBARS *****
-// Overlay scrollbars are painted on top of the box's content. As such they
-// don't use any space in the box. Software overlay scrollbars are painted by
-// PaintLayerPainter::paintOverlayScrollbars after all content as part of a
-// separate tree traversal. The reason for this 2nd traversal is that they need
-// to be painted on top of everything. Hardware accelerated overlay scrollbars
-// are painted by their associated GraphicsLayer that sets the paint flag
-// PaintLayerPaintingOverlayScrollbars.
+// ***** OVERLAY OVERFLOW CONTROLS *****
+// Overlay overflow controls are painted on top of the box's content. As such
+// they don't use any space in the box. Software overlay overflow controls are
+// painted by PaintLayerPainter::PaintOverlayOverflowControlsForFragments after
+// all content as part of a separate tree traversal. The reason for this 2nd
+// traversal is that they need to be painted on top of everything. Hardware
+// accelerated overlay overflow controls are painted into their associated
+// GraphicsLayers by CompositedLayerMapping::PaintScrollableArea.
 class CORE_EXPORT PaintLayerScrollableArea final
     : public GarbageCollected<PaintLayerScrollableArea>,
       public ScrollableArea {

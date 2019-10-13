@@ -76,7 +76,7 @@ void TLSSocketFactory::UpgradeToTLS(
     mojom::TLSClientSocketOptionsPtr socket_options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::TLSClientSocketRequest request,
-    mojom::SocketObserverPtr observer,
+    mojo::PendingRemote<mojom::SocketObserver> observer,
     UpgradeToTLSCallback callback) {
   const net::StreamSocket* socket = socket_delegate->BorrowSocket();
   if (!socket || !socket->IsConnected()) {
@@ -97,7 +97,7 @@ void TLSSocketFactory::CreateTLSClientSocket(
     mojom::TLSClientSocketOptionsPtr socket_options,
     mojom::TLSClientSocketRequest request,
     std::unique_ptr<net::StreamSocket> underlying_socket,
-    mojom::SocketObserverPtr observer,
+    mojo::PendingRemote<mojom::SocketObserver> observer,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     mojom::TCPConnectedSocket::UpgradeToTLSCallback callback) {
   auto socket = std::make_unique<TLSClientSocket>(

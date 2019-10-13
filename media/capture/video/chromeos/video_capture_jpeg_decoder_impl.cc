@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/chromeos_camera/mojo_mjpeg_decode_accelerator.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace media {
 
@@ -204,12 +205,13 @@ void VideoCaptureJpegDecoderImpl::FinishInitialization() {
   TRACE_EVENT0("gpu", "VideoCaptureJpegDecoderImpl::FinishInitialization");
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
 
-  chromeos_camera::mojom::MjpegDecodeAcceleratorPtr remote_decoder;
-  jpeg_decoder_factory_.Run(mojo::MakeRequest(&remote_decoder));
+  mojo::PendingRemote<chromeos_camera::mojom::MjpegDecodeAccelerator>
+      remote_decoder;
+  jpeg_decoder_factory_.Run(remote_decoder.InitWithNewPipeAndPassReceiver());
 
   base::AutoLock lock(lock_);
   decoder_ = std::make_unique<chromeos_camera::MojoMjpegDecodeAccelerator>(
-      decoder_task_runner_, remote_decoder.PassInterface());
+      decoder_task_runner_, std::move(remote_decoder));
 
   decoder_->InitializeAsync(
       this,

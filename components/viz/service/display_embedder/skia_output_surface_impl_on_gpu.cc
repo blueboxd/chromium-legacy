@@ -1438,4 +1438,40 @@ void SkiaOutputSurfaceImplOnGpu::BufferPresented(
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
+void SkiaOutputSurfaceImplOnGpu::SendOverlayPromotionNotification(
+    base::flat_set<gpu::Mailbox> promotion_denied,
+    base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) {
+#if defined(OS_ANDROID)
+  for (auto& denied : promotion_denied) {
+    auto shared_image_overlay =
+        shared_image_representation_factory_->ProduceOverlay(denied);
+    shared_image_overlay->NotifyOverlayPromotion(false, gfx::Rect());
+  }
+  for (auto& possible : possible_promotions) {
+    auto shared_image_overlay =
+        shared_image_representation_factory_->ProduceOverlay(possible.first);
+    shared_image_overlay->NotifyOverlayPromotion(true, possible.second);
+  }
+#endif
+}
+
+void SkiaOutputSurfaceImplOnGpu::RenderToOverlay(
+    gpu::Mailbox overlay_candidate_mailbox,
+    const gfx::Rect& bounds) {
+#if defined(OS_ANDROID)
+  auto shared_image_overlay =
+      shared_image_representation_factory_->ProduceOverlay(
+          overlay_candidate_mailbox);
+  // In current implementation, the BeginReadAccess will ends up calling
+  // CodecImage::RenderToOverlay. Currently this code path is only used for
+  // Android Classic video overlay, where update of the overlay plane is within
+  // media code. Since we are not actually passing an overlay plane to the
+  // display controller here, we are able to call EndReadAccess directly after
+  // BeginReadAccess.
+  shared_image_overlay->NotifyOverlayPromotion(true, bounds);
+  shared_image_overlay->BeginReadAccess();
+  shared_image_overlay->EndReadAccess();
+#endif
+}
+
 }  // namespace viz

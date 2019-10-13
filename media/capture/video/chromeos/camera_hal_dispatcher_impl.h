@@ -19,7 +19,7 @@
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "media/capture/video/video_capture_device_factory.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/platform/platform_channel_server_endpoint.h"
 
 namespace base {
@@ -67,7 +67,8 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   void RegisterServer(cros::mojom::CameraHalServerPtr server) final;
   void RegisterClient(cros::mojom::CameraHalClientPtr client) final;
   void GetJpegDecodeAccelerator(
-      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request) final;
+      mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
+          jda_receiver) final;
   void GetJpegEncodeAccelerator(
       chromeos_camera::mojom::JpegEncodeAcceleratorRequest jea_request) final;
 

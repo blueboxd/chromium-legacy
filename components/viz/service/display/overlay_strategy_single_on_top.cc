@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 
+#include "components/viz/service/display/overlay_candidate_list.h"
 #include "components/viz/service/display/overlay_candidate_validator.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"

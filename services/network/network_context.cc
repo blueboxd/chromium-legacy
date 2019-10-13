@@ -1025,7 +1025,7 @@ void NetworkContext::CreateTCPConnectedSocket(
     mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::TCPConnectedSocketRequest request,
-    mojom::SocketObserverPtr observer,
+    mojo::PendingRemote<mojom::SocketObserver> observer,
     CreateTCPConnectedSocketCallback callback) {
   socket_factory_->CreateTCPConnectedSocket(
       local_addr, remote_addr_list, std::move(tcp_connected_socket_options),

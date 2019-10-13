@@ -980,7 +980,7 @@ interface NetworkContext {
       TCPConnectedSocketOptions? tcp_connected_socket_options,
       MutableNetworkTrafficAnnotationTag traffic_annotation,
       TCPConnectedSocket& socket,
-      SocketObserver? observer)
+      pending_remote<SocketObserver>? observer)
       => (int32 result,
           IPEndPoint? local_addr,
           IPEndPoint? peer_addr,

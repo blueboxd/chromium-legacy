@@ -13,7 +13,8 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "jingle/glue/fake_ssl_client_socket.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -108,7 +109,7 @@ class ProxyResolvingSocketTestBase {
 
   int CreateSocketSync(
       mojom::ProxyResolvingSocketRequest request,
-      mojom::SocketObserverPtr socket_observer,
+      mojo::PendingRemote<mojom::SocketObserver> socket_observer,
       net::IPEndPoint* peer_addr_out,
       const GURL& url,
       mojo::ScopedDataPipeConsumerHandle* receive_pipe_handle_out,
@@ -214,7 +215,7 @@ TEST_P(ProxyResolvingSocketTest, ConnectToProxy) {
     mojo::ScopedDataPipeProducerHandle client_socket_send_handle;
     net::IPEndPoint actual_remote_addr;
     EXPECT_EQ(net::OK, CreateSocketSync(mojo::MakeRequest(&socket),
-                                        nullptr /* socket_observer*/,
+                                        mojo::NullRemote() /* socket_observer*/,
                                         &actual_remote_addr, kDestination,
                                         &client_socket_receive_handle,
                                         &client_socket_send_handle));
@@ -260,7 +261,7 @@ TEST_P(ProxyResolvingSocketTest, ConnectError) {
     mojo::ScopedDataPipeConsumerHandle client_socket_receive_handle;
     mojo::ScopedDataPipeProducerHandle client_socket_send_handle;
     int status = CreateSocketSync(
-        mojo::MakeRequest(&socket), nullptr /* socket_observer*/,
+        mojo::MakeRequest(&socket), mojo::NullRemote() /* socket_observer*/,
         nullptr /* peer_addr_out */, kDestination,
         &client_socket_receive_handle, &client_socket_send_handle);
     if (test.is_direct) {
@@ -305,7 +306,7 @@ TEST_P(ProxyResolvingSocketTest, BasicReadWrite) {
   mojo::ScopedDataPipeProducerHandle client_socket_send_handle;
   const GURL kDestination("http://example.com");
   EXPECT_EQ(net::OK, CreateSocketSync(mojo::MakeRequest(&socket),
-                                      nullptr /* socket_observer */,
+                                      mojo::NullRemote() /* socket_observer */,
                                       nullptr /* peer_addr_out */, kDestination,
                                       &client_socket_receive_handle,
                                       &client_socket_send_handle));
@@ -369,11 +370,11 @@ TEST_F(ProxyResolvingSocketMojoTest, ConnectWithFakeTLSHandshake) {
   mojo::ScopedDataPipeConsumerHandle client_socket_receive_handle;
   mojo::ScopedDataPipeProducerHandle client_socket_send_handle;
   net::IPEndPoint actual_remote_addr;
-  EXPECT_EQ(net::OK,
-            CreateSocketSync(mojo::MakeRequest(&socket),
-                             nullptr /* socket_observer*/, &actual_remote_addr,
-                             kDestination, &client_socket_receive_handle,
-                             &client_socket_send_handle));
+  EXPECT_EQ(net::OK, CreateSocketSync(mojo::MakeRequest(&socket),
+                                      mojo::NullRemote() /* socket_observer*/,
+                                      &actual_remote_addr, kDestination,
+                                      &client_socket_receive_handle,
+                                      &client_socket_send_handle));
 
   EXPECT_EQ(kTestMsg, Read(&client_socket_receive_handle, kMsgSize));
   EXPECT_TRUE(data_provider.AllReadDataConsumed());
@@ -398,7 +399,7 @@ TEST_F(ProxyResolvingSocketMojoTest, SocketDestroyedBeforeConnectCompletes) {
   factory()->CreateProxyResolvingSocket(
       kDestination, nullptr,
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-      mojo::MakeRequest(&socket), nullptr /* observer */,
+      mojo::MakeRequest(&socket), mojo::NullRemote() /* observer */,
       base::BindLambdaForTesting(
           [&](int result, const base::Optional<net::IPEndPoint>& local_addr,
               const base::Optional<net::IPEndPoint>& peer_addr,
@@ -435,7 +436,7 @@ TEST_F(ProxyResolvingSocketMojoTest, SocketObserver) {
   TestSocketObserver test_observer;
 
   int status = CreateSocketSync(
-      mojo::MakeRequest(&socket), test_observer.GetObserverPtr(),
+      mojo::MakeRequest(&socket), test_observer.GetObserverRemote(),
       nullptr /* peer_addr_out */, kDestination, &client_socket_receive_handle,
       &client_socket_send_handle);
   EXPECT_EQ(net::OK, status);

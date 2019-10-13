@@ -14,6 +14,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -108,7 +109,7 @@ class TCPBoundSocketTest : public testing::Test {
               const net::IPEndPoint& connect_to_addr,
               mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
               mojom::TCPConnectedSocketPtr* connected_socket,
-              mojom::SocketObserverPtr socket_observer,
+              mojo::PendingRemote<mojom::SocketObserver> socket_observer,
               mojo::ScopedDataPipeConsumerHandle* client_socket_receive_handle,
               mojo::ScopedDataPipeProducerHandle* client_socket_send_handle) {
     base::RunLoop bound_socket_destroyed_run_loop;
@@ -243,7 +244,7 @@ TEST_F(TCPBoundSocketTest, ConnectError) {
   EXPECT_EQ(net::ERR_CONNECTION_REFUSED,
             Connect(std::move(bound_socket2), bound_address2, bound_address1,
                     nullptr /* tcp_connected_socket_options */,
-                    &connected_socket, mojom::SocketObserverPtr(),
+                    &connected_socket, mojo::NullRemote(),
                     &client_socket_receive_handle, &client_socket_send_handle));
 }
 #endif  // !defined(OS_MACOSX) && !defined(OS_IOS)
@@ -307,7 +308,7 @@ TEST_F(TCPBoundSocketTest, ReadWrite) {
   EXPECT_EQ(net::OK,
             Connect(std::move(bound_socket2), client_address, server_address,
                     nullptr /* tcp_connected_socket_options */, &client_socket,
-                    socket_observer.GetObserverPtr(),
+                    socket_observer.GetObserverRemote(),
                     &client_socket_receive_handle, &client_socket_send_handle));
 
   base::RunLoop run_loop;
@@ -315,7 +316,7 @@ TEST_F(TCPBoundSocketTest, ReadWrite) {
   mojo::ScopedDataPipeConsumerHandle accept_socket_receive_handle;
   mojo::ScopedDataPipeProducerHandle accept_socket_send_handle;
   server_socket->Accept(
-      nullptr /* ovserver */,
+      mojo::NullRemote() /* ovserver */,
       base::BindLambdaForTesting(
           [&](int net_error, const base::Optional<net::IPEndPoint>& remote_addr,
               mojom::TCPConnectedSocketPtr connected_socket,
@@ -392,7 +393,7 @@ TEST_F(TCPBoundSocketTest, ConnectWithOptions) {
   EXPECT_EQ(net::OK,
             Connect(std::move(bound_socket2), client_address, server_address,
                     std::move(tcp_connected_socket_options), &client_socket,
-                    socket_observer.GetObserverPtr(),
+                    socket_observer.GetObserverRemote(),
                     &client_socket_receive_handle, &client_socket_send_handle));
 
   base::RunLoop run_loop;
@@ -400,7 +401,7 @@ TEST_F(TCPBoundSocketTest, ConnectWithOptions) {
   mojo::ScopedDataPipeConsumerHandle accept_socket_receive_handle;
   mojo::ScopedDataPipeProducerHandle accept_socket_send_handle;
   server_socket->Accept(
-      nullptr /* ovserver */,
+      mojo::NullRemote() /* ovserver */,
       base::BindLambdaForTesting(
           [&](int net_error, const base::Optional<net::IPEndPoint>& remote_addr,
               network::mojom::TCPConnectedSocketPtr connected_socket,
@@ -452,7 +453,7 @@ TEST_F(TCPBoundSocketTest, UpgradeToTLS) {
                     net::IPEndPoint(net::IPAddress::IPv4Localhost(),
                                     test_server.host_port_pair().port()),
                     nullptr /* tcp_connected_socket_options */, &client_socket,
-                    socket_observer.GetObserverPtr(),
+                    socket_observer.GetObserverRemote(),
                     &client_socket_receive_handle, &client_socket_send_handle));
 
   // Need to closed these pipes for UpgradeToTLS to complete.
@@ -464,7 +465,7 @@ TEST_F(TCPBoundSocketTest, UpgradeToTLS) {
   client_socket->UpgradeToTLS(
       test_server.host_port_pair(), nullptr /* options */,
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-      mojo::MakeRequest(&tls_client_socket), nullptr /* observer */,
+      mojo::MakeRequest(&tls_client_socket), mojo::NullRemote() /* observer */,
       base::BindLambdaForTesting(
           [&](int net_error,
               mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,

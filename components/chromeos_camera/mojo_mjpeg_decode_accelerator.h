@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom.h"
 #include "components/chromeos_camera/mjpeg_decode_accelerator.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -26,7 +28,8 @@ class MojoMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
  public:
   MojoMjpegDecodeAccelerator(
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-      chromeos_camera::mojom::MjpegDecodeAcceleratorPtrInfo jpeg_decoder);
+      mojo::PendingRemote<chromeos_camera::mojom::MjpegDecodeAccelerator>
+          jpeg_decoder);
   ~MojoMjpegDecodeAccelerator() override;
 
   // MjpegDecodeAccelerator implementation.
@@ -55,13 +58,15 @@ class MojoMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
 
   Client* client_ = nullptr;
 
-  // Used to safely pass the chromeos_camera::mojom::MjpegDecodeAcceleratorPtr
-  // from one thread to another. It is set in the constructor and consumed in
+  // Used to safely pass the
+  // chromeos_mojo::Remote<camera::mojom::MjpegDecodeAccelerator> from one
+  // thread to another. It is set in the constructor and consumed in
   // InitializeAsync().
   // TODO(mcasas): s/jpeg_decoder_/jda_/ https://crbug.com/699255.
-  chromeos_camera::mojom::MjpegDecodeAcceleratorPtrInfo jpeg_decoder_info_;
+  mojo::PendingRemote<chromeos_camera::mojom::MjpegDecodeAccelerator>
+      jpeg_decoder_remote_;
 
-  chromeos_camera::mojom::MjpegDecodeAcceleratorPtr jpeg_decoder_;
+  mojo::Remote<chromeos_camera::mojom::MjpegDecodeAccelerator> jpeg_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoMjpegDecodeAccelerator);
 };

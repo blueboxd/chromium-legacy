@@ -10,6 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/http/http_network_session.h"
 #include "net/socket/ssl_client_socket.h"
@@ -61,7 +62,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TLSSocketFactory {
       mojom::TLSClientSocketOptionsPtr socket_options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::TLSClientSocketRequest request,
-      mojom::SocketObserverPtr observer,
+      mojo::PendingRemote<mojom::SocketObserver> observer,
       UpgradeToTLSCallback callback);
 
  private:
@@ -70,7 +71,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TLSSocketFactory {
       mojom::TLSClientSocketOptionsPtr socket_options,
       mojom::TLSClientSocketRequest request,
       std::unique_ptr<net::StreamSocket> underlying_socket,
-      mojom::SocketObserverPtr observer,
+      mojo::PendingRemote<mojom::SocketObserver> observer,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       mojom::TCPConnectedSocket::UpgradeToTLSCallback callback);
 

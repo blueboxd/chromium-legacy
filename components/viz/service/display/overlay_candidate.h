@@ -13,6 +13,7 @@
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/viz_service_export.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -135,37 +136,6 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   static bool FromVideoHoleQuad(DisplayResourceProvider* resource_provider,
                                 const VideoHoleDrawQuad* quad,
                                 OverlayCandidate* candidate);
-};
-
-class VIZ_SERVICE_EXPORT OverlayCandidateList
-    : public std::vector<OverlayCandidate> {
- public:
-  OverlayCandidateList();
-  OverlayCandidateList(const OverlayCandidateList&);
-  OverlayCandidateList(OverlayCandidateList&&);
-  ~OverlayCandidateList();
-
-  OverlayCandidateList& operator=(const OverlayCandidateList&);
-  OverlayCandidateList& operator=(OverlayCandidateList&&);
-
-  // [id] == candidate's |display_rect| for all promotable resources.
-  using PromotionHintInfoMap = std::map<ResourceId, gfx::RectF>;
-
-  // For android, this provides a set of resources that could be promoted to
-  // overlay, if one backs them with a SurfaceView.
-  PromotionHintInfoMap promotion_hint_info_map_;
-
-  // Set of resources that have requested a promotion hint that also have quads
-  // that use them.
-  ResourceIdSet promotion_hint_requestor_set_;
-
-  // Helper to insert |candidate| into |promotion_hint_info_|.
-  void AddPromotionHint(const OverlayCandidate& candidate);
-
-  // Add |quad| to |promotion_hint_requestors_| if it is requesting a hint.
-  void AddToPromotionHintRequestorSetIfNeeded(
-      const DisplayResourceProvider* resource_provider,
-      const DrawQuad* quad);
 };
 
 }  // namespace viz

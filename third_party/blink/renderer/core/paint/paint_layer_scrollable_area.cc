@@ -1689,8 +1689,7 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
 }
 
 void PaintLayerScrollableArea::UpdateScrollCornerStyle() {
-  bool can_update = HasScrollbar() && !HasOverlayScrollbars();
-  if (!can_update) {
+  if (!HasNonOverlayOverflowControls()) {
     if (scroll_corner_) {
       scroll_corner_->Destroy();
       scroll_corner_ = nullptr;
@@ -2644,7 +2643,7 @@ void PaintLayerScrollableArea::DidAddScrollbar(
 void PaintLayerScrollableArea::WillRemoveScrollbar(
     Scrollbar& scrollbar,
     ScrollbarOrientation orientation) {
-  if (layer_->NeedsReorderOverlayScrollbars()) {
+  if (layer_->NeedsReorderOverlayOverflowControls()) {
     // Z-order of reparented scrollbar is updated along with the z-order lists.
     DCHECK(scrollbar.IsOverlayScrollbar());
     layer_->DirtyStackingContextZOrderLists();
@@ -2689,7 +2688,11 @@ static IntRect InvalidatePaintOfScrollbarIfNeeded(
   bool is_overlay = scrollbar && scrollbar->IsOverlayScrollbar();
 
   IntRect new_visual_rect;
-  if (scrollbar)
+  // Calculate visual rect of the scrollbar, except overlay composited
+  // scrollbars because we invalidate the graphics layer only.
+  // TODO(wangxianzhu): Investigate how non-empty visual rect of composited
+  // scrollbar affects GPU texture memory (http://crbug.com/1011996).
+  if (scrollbar && !(graphics_layer && is_overlay))
     new_visual_rect = scrollbar->FrameRect();
 
   if (needs_paint_invalidation && graphics_layer) {

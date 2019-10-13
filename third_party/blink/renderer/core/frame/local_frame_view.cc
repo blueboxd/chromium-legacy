@@ -138,7 +138,6 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/graphics/link_highlight.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -2415,7 +2414,8 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
       // PrePaintTreeWalk can reach this frame.
       frame_view.SetNeedsPaintPropertyUpdate();
       // We may record more foreign layers under the frame.
-      frame_view.GraphicsLayersDidChange();
+      if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+        frame_view.SetForeignLayerListNeedsUpdate();
       if (auto* owner = frame_view.GetLayoutEmbeddedContent())
         owner->SetShouldCheckForPaintInvalidation();
     }
@@ -2424,6 +2424,10 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
   {
     SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
                              LocalFrameUkmAggregator::kPrePaint);
+
+    // This is before WalkTree because it may SetNeedsPaintPropertyUpdate() on
+    // layout objects.
+    GetPage()->GetLinkHighlights().UpdatePrePaint();
 
     PrePaintTreeWalk().WalkTree(*this);
   }
@@ -2602,24 +2606,6 @@ static void CollectDrawableLayersForLayerListRecursively(
   CollectDrawableLayersForLayerListRecursively(context, layer->MaskLayer());
 }
 
-static void CollectLinkHighlightLayersForLayerListRecursively(
-    GraphicsContext& context,
-    const GraphicsLayer* layer) {
-  if (!layer || layer->Client().ShouldThrottleRendering())
-    return;
-
-  for (auto* highlight : layer->GetLinkHighlights()) {
-    auto property_tree_state = layer->GetPropertyTreeState();
-    property_tree_state.SetEffect(highlight->Effect());
-    RecordForeignLayer(
-        context, DisplayItem::kForeignLayerLinkHighlight, highlight->Layer(),
-        highlight->GetOffsetFromTransformNode(), property_tree_state);
-  }
-
-  for (const auto* child : layer->Children())
-    CollectLinkHighlightLayersForLayerListRecursively(context, child);
-}
-
 static bool PaintGraphicsLayerRecursively(GraphicsLayer* layer) {
   bool painted = layer->PaintRecursively();
 #if DCHECK_IS_ON()
@@ -2665,10 +2651,9 @@ void LocalFrameView::PaintTree() {
       PaintInternal(graphics_context, kGlobalPaintNormalPhase,
                     CullRect::Infinite());
 
-      frame_->GetPage()->GetLinkHighlights().Paint(graphics_context);
+      GetPage()->GetLinkHighlights().Paint(graphics_context);
 
-      frame_->GetPage()->GetValidationMessageClient().PaintOverlay(
-          graphics_context);
+      GetPage()->GetValidationMessageClient().PaintOverlay(graphics_context);
       ForAllNonThrottledLocalFrameViews(
           [&graphics_context](LocalFrameView& view) {
             view.frame_->PaintFrameColorOverlay(graphics_context);
@@ -2696,12 +2681,6 @@ void LocalFrameView::PaintTree() {
           GetScrollingCoordinator()->NotifyGeometryChanged(this);
       }
     }
-
-    // This uses an invalidation approach based on graphics layer raster
-    // invalidation so it must be after paint. This adds/removes link highlight
-    // layers so it must be before
-    // |CollectDrawableLayersForLayerListRecursively|.
-    frame_->GetPage()->GetLinkHighlights().UpdateGeometry();
   }
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
@@ -2784,7 +2763,7 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
     // collect the foreign layers, and this doesn't need caching. This shouldn't
     // affect caching status of DisplayItemClients because FinishCycle() is
     // not synchronized with other PaintControllers. This may live across frame
-    // updates until GraphicsLayersDidChange() is called.
+    // updates until SetForeignLayerListNeedsUpdate() is called.
     paint_controller_ =
         std::make_unique<PaintController>(PaintController::kTransient);
 
@@ -2803,9 +2782,9 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
     // so we do not need to collect scrollbars separately.
     auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer();
     CollectDrawableLayersForLayerListRecursively(context, root);
+
     // Link highlights paint after all other layers.
-    if (!frame_->GetPage()->GetLinkHighlights().IsEmpty())
-      CollectLinkHighlightLayersForLayerListRecursively(context, root);
+    page->GetLinkHighlights().Paint(context);
 
     paint_controller_->CommitNewDisplayItems();
   }
@@ -3982,7 +3961,8 @@ void LocalFrameView::RenderThrottlingStatusChanged() {
   DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->InStyleRecalc());
 
   // We may record more/less foreign layers under the frame.
-  GraphicsLayersDidChange();
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    SetForeignLayerListNeedsUpdate();
 
   if (!CanThrottleRendering())
     InvalidateForThrottlingChange();
@@ -4043,10 +4023,11 @@ void LocalFrameView::SetPaintArtifactCompositorNeedsUpdate() {
     root->paint_artifact_compositor_->SetNeedsUpdate();
 }
 
-void LocalFrameView::GraphicsLayersDidChange() {
+void LocalFrameView::SetForeignLayerListNeedsUpdate() {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   LocalFrameView* root = GetFrame().LocalFrameRoot().View();
   if (root) {
-    // We will re-collect GraphicsLayers in PushPaintArtifactsToCompositor().
+    // We will re-collect foreign layers in PushPaintArtifactsToCompositor().
     root->paint_controller_ = nullptr;
     if (root->paint_artifact_compositor_)
       root->paint_artifact_compositor_->SetNeedsUpdate();

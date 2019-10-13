@@ -194,26 +194,12 @@ TEST_P(LinkHighlightImplTest, resetDuringNodeRemoval) {
   ASSERT_TRUE(highlights.link_highlights_.at(0));
   EXPECT_EQ(touch_node, highlights.link_highlights_.at(0)->GetNode());
 
-  GraphicsLayer* highlight_layer;
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    highlight_layer =
-        highlights.link_highlights_.at(0)->CurrentGraphicsLayerForTesting();
-    ASSERT_TRUE(highlight_layer);
-    EXPECT_TRUE(highlight_layer->GetLinkHighlights().at(0));
-  }
-
   touch_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
   UpdateAllLifecyclePhases();
 
   ASSERT_EQ(1u, highlights.link_highlights_.size());
   ASSERT_TRUE(highlights.link_highlights_.at(0));
   EXPECT_FALSE(highlights.link_highlights_.at(0)->GetNode());
-
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(0U, highlight_layer->GetLinkHighlights().size());
-    EXPECT_FALSE(
-        highlights.link_highlights_.at(0)->CurrentGraphicsLayerForTesting());
-  }
 }
 
 // A lifetime test: delete LayerTreeView while running LinkHighlights.
@@ -239,53 +225,6 @@ TEST_P(LinkHighlightImplTest, resetLayerTreeView) {
   const auto& highlights =
       web_view_impl->GetPage()->GetLinkHighlights().link_highlights_;
   ASSERT_TRUE(highlights.at(0));
-
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    GraphicsLayer* highlight_layer =
-        highlights.at(0)->CurrentGraphicsLayerForTesting();
-    ASSERT_TRUE(highlight_layer);
-    EXPECT_TRUE(highlight_layer->GetLinkHighlights().at(0));
-  }
-}
-
-TEST_P(LinkHighlightImplTest, HighlightInvalidation) {
-  // This test requires GraphicsLayers which are not used in
-  // CompositeAfterPaint.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
-  WebViewImpl* web_view_impl = web_view_helper_.GetWebView();
-  web_view_impl->MainFrameWidget()->Resize(WebSize(640, 480));
-  UpdateAllLifecyclePhases();
-
-  WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
-                              WebInputEvent::kNoModifiers,
-                              WebInputEvent::GetStaticTimeStampForTests(),
-                              WebGestureDevice::kTouchscreen);
-  touch_event.SetPositionInWidget(WebFloatPoint(20, 20));
-  GestureEventWithHitTestResults targeted_event = GetTargetedEvent(touch_event);
-  auto* touch_element = To<Element>(web_view_impl->BestTapNode(targeted_event));
-  web_view_impl->EnableTapHighlightAtPoint(targeted_event);
-
-  web_view_helper_.LocalMainFrame()
-      ->GetFrameView()
-      ->SetTracksPaintInvalidations(true);
-
-  // Change the touched element's height to 12px.
-  auto& style = touch_element->getAttribute(html_names::kStyleAttr);
-  StringBuilder new_style;
-  new_style.Append(style.GetString());
-  new_style.Append("height: 12px;");
-  touch_element->setAttribute(html_names::kStyleAttr,
-                              new_style.ToAtomicString());
-  UpdateAllLifecyclePhases();
-
-  const auto& highlights =
-      web_view_impl->GetPage()->GetLinkHighlights().link_highlights_;
-  auto* highlight_layer = highlights.at(0)->CurrentGraphicsLayerForTesting();
-  const auto* tracking = highlight_layer->GetRasterInvalidationTracking();
-  // The invalidation rect should fully cover the layer.
-  EXPECT_EQ(tracking->Invalidations().back().rect, IntRect(0, 0, 200, 12));
 }
 
 TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
@@ -405,122 +344,16 @@ TEST_P(LinkHighlightImplTest, MultiColumn) {
                                      [highlight->ElementIdForTesting()]);
   };
 
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // The highlight should create 2 additional layer, each for each fragment.
-    EXPECT_EQ(layer_count_before_highlight + 2, ContentLayerCount());
-    EXPECT_EQ(2u, highlight->FragmentCountForTesting());
-    check_layer(highlight->LayerForTesting(0));
-    check_layer(highlight->LayerForTesting(1));
-  } else {
-    // The highlight should create 1 additional layer covering both fragments.
-    EXPECT_EQ(layer_count_before_highlight + 1, ContentLayerCount());
-    EXPECT_EQ(1u, highlight->FragmentCountForTesting());
-    check_layer(highlight->LayerForTesting(0));
-  }
+  // The highlight should create 2 additional layer, each for each fragment.
+  EXPECT_EQ(layer_count_before_highlight + 2, ContentLayerCount());
+  EXPECT_EQ(2u, highlight->FragmentCountForTesting());
+  check_layer(highlight->LayerForTesting(0));
+  check_layer(highlight->LayerForTesting(1));
 
   touch_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
   UpdateAllLifecyclePhases();
   // Removing the highlight layer should drop the cc layers for highlights.
   EXPECT_EQ(layer_count_before_highlight, ContentLayerCount());
-}
-
-class LinkHighlightSquashingImplTest : public testing::Test,
-                                       public PaintTestConfigurations {
- protected:
-  GestureEventWithHitTestResults GetTargetedEvent(
-      WebGestureEvent& touch_event) {
-    WebGestureEvent scaled_event = TransformWebGestureEvent(
-        web_view_helper_.GetWebView()->MainFrameImpl()->GetFrameView(),
-        touch_event);
-    return web_view_helper_.GetWebView()
-        ->GetPage()
-        ->DeprecatedLocalMainFrame()
-        ->GetEventHandler()
-        .TargetGestureEvent(scaled_event, true);
-  }
-
-  void SetUp() override {
-    // TODO(crbug.com/751425): We should use the mock functionality
-    // via |web_view_helper_|.
-    WebURL url = url_test_helpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8("http://www.test.com/"), test::CoreTestDataPath(),
-        WebString::FromUTF8("test_touch_link_highlight_squashing.html"));
-    web_view_helper_.InitializeAndLoad(url.GetString().Utf8());
-  }
-
-  void TearDown() override {
-    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
-
-    // Ensure we fully clean up while scoped settings are enabled. Without this,
-    // garbage collection would occur after Scoped[setting]ForTest is out of
-    // scope, so the settings would not apply in some destructors.
-    web_view_helper_.Reset();
-    ThreadState::Current()->CollectAllGarbageForTesting();
-  }
-
-  size_t ContentLayerCount() {
-    // paint_artifact_compositor()->EnableExtraDataForTesting() should be called
-    // before using this function.
-    DCHECK(paint_artifact_compositor()->GetExtraDataForTesting());
-    return paint_artifact_compositor()
-        ->GetExtraDataForTesting()
-        ->content_layers.size();
-  }
-
-  PaintArtifactCompositor* paint_artifact_compositor() {
-    auto* local_frame_view = web_view_helper_.LocalMainFrame()->GetFrameView();
-    return local_frame_view->GetPaintArtifactCompositor();
-  }
-
-  void UpdateAllLifecyclePhases() {
-    web_view_helper_.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
-  }
-
-  frame_test_helpers::WebViewHelper web_view_helper_;
-};
-
-INSTANTIATE_PAINT_TEST_SUITE_P(LinkHighlightSquashingImplTest);
-
-TEST_P(LinkHighlightSquashingImplTest, SquashingLayer) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
-  bool was_running_web_test = WebTestSupport::IsRunningWebTest();
-  WebTestSupport::SetIsRunningWebTest(false);
-  int page_width = 640;
-  int page_height = 480;
-  WebViewImpl* web_view_impl = web_view_helper_.GetWebView();
-  web_view_impl->MainFrameWidget()->Resize(WebSize(page_width, page_height));
-
-  paint_artifact_compositor()->EnableExtraDataForTesting();
-  UpdateAllLifecyclePhases();
-  size_t layer_count_before_highlight = ContentLayerCount();
-  WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
-                              WebInputEvent::kNoModifiers,
-                              WebInputEvent::GetStaticTimeStampForTests(),
-                              WebGestureDevice::kTouchscreen);
-  touch_event.SetPositionInWidget(WebFloatPoint(100, 100));
-
-  GestureEventWithHitTestResults targeted_event = GetTargetedEvent(touch_event);
-  Node* touch_node = web_view_impl->BestTapNode(targeted_event);
-  ASSERT_TRUE(touch_node);
-
-  web_view_impl->EnableTapHighlightAtPoint(targeted_event);
-  // The highlight should create one additional layer.
-  EXPECT_EQ(layer_count_before_highlight + 1, ContentLayerCount());
-
-  auto& highlights = web_view_impl->GetPage()->GetLinkHighlights();
-  auto* highlight = highlights.link_highlights_.at(0).get();
-  ASSERT_TRUE(highlight);
-
-  // Check that the link highlight cc layer has a cc effect property tree node.
-  EXPECT_EQ(1u, highlight->FragmentCountForTesting());
-  auto* layer = highlight->LayerForTesting(0);
-
-  EXPECT_EQ(gfx::Size(256, 256), layer->bounds());
-
-  WebTestSupport::SetIsRunningWebTest(was_running_web_test);
 }
 
 }  // namespace blink

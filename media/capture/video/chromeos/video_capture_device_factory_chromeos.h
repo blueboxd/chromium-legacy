@@ -12,13 +12,14 @@
 #include "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom.h"
 #include "media/capture/video/chromeos/camera_hal_delegate.h"
 #include "media/capture/video/video_capture_device_factory.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace media {
 
 class CameraAppDeviceBridgeImpl;
 
 using MojoMjpegDecodeAcceleratorFactoryCB = base::RepeatingCallback<void(
-    chromeos_camera::mojom::MjpegDecodeAcceleratorRequest)>;
+    mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>)>;
 
 class CAPTURE_EXPORT VideoCaptureDeviceFactoryChromeOS final
     : public VideoCaptureDeviceFactory {

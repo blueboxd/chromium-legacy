@@ -72,11 +72,6 @@ void LinkHighlights::SetTapHighlights(
   }
 }
 
-void LinkHighlights::UpdateGeometry() {
-  for (auto& highlight : link_highlights_)
-    highlight->UpdateGeometry();
-}
-
 LocalFrame* LinkHighlights::MainFrame() const {
   return GetPage().MainFrame() && GetPage().MainFrame()->IsLocalFrame()
              ? GetPage().DeprecatedLocalMainFrame()
@@ -120,8 +115,12 @@ bool LinkHighlights::NeedsHighlightEffectInternal(
   return false;
 }
 
+void LinkHighlights::UpdatePrePaint() {
+  for (const auto& highlight : link_highlights_)
+    highlight->UpdatePrePaint();
+}
+
 void LinkHighlights::Paint(GraphicsContext& context) const {
-  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   for (const auto& highlight : link_highlights_)
     highlight->Paint(context);
 }

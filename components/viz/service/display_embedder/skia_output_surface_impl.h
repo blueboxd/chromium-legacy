@@ -142,6 +142,19 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       base::OnceClosure callback,
       std::vector<gpu::SyncToken> sync_tokens) override;
 
+  // Wait on the resource sync tokens, and send the promotion hints to
+  // the |SharedImage| instances based on the |Mailbox| instances. This should
+  // exclude the actual overlay candidate.
+  void SendOverlayPromotionNotification(
+      std::vector<gpu::SyncToken> sync_tokens,
+      base::flat_set<gpu::Mailbox> promotion_denied,
+      base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) override;
+
+  // Notify the overlay candidate to render.
+  void RenderToOverlay(gpu::SyncToken sync_token,
+                       gpu::Mailbox overlay_candidate_mailbox,
+                       const gfx::Rect& bounds) override;
+
  private:
   bool Initialize();
   void InitializeOnGpuThread(base::WaitableEvent* event, bool* result);

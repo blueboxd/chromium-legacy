@@ -436,7 +436,7 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
   MockTCPConnectedSocket(
       TCPFailureType tcp_failure_type,
       network::mojom::TCPConnectedSocketRequest request,
-      network::mojom::SocketObserverPtr observer,
+      mojo::PendingRemote<network::mojom::SocketObserver> observer,
       network::mojom::NetworkContext::CreateTCPConnectedSocketCallback callback)
       : tcp_failure_type_(tcp_failure_type),
         observer_(std::move(observer)),
@@ -470,7 +470,7 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
 
   MockTCPConnectedSocket(
       TCPFailureType tcp_failure_type,
-      network::mojom::SocketObserverPtr observer,
+      mojo::PendingRemote<network::mojom::SocketObserver> observer,
       network::mojom::TCPServerSocket::AcceptCallback callback)
       : tcp_failure_type_(tcp_failure_type),
         observer_(std::move(observer)),
@@ -514,12 +514,14 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
       network::mojom::TLSClientSocketOptionsPtr socket_options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       network::mojom::TLSClientSocketRequest request,
-      network::mojom::SocketObserverPtr observer,
+      mojo::PendingRemote<network::mojom::SocketObserver> observer,
       network::mojom::TCPConnectedSocket::UpgradeToTLSCallback callback)
       override {
+    observer_.reset();
+
     // Succeed or fail, keep these pipes open (Their state shouldn't matter when
     // checking for failures).
-    observer_ = std::move(observer);
+    observer_.Bind(std::move(observer));
     tls_client_socket_binding_.Bind(std::move(request));
 
     if (tcp_failure_type_ == TCPFailureType::kUpgradeToTLSClosePipe) {
@@ -620,7 +622,7 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
 
   const TCPFailureType tcp_failure_type_;
 
-  network::mojom::SocketObserverPtr observer_;
+  mojo::Remote<network::mojom::SocketObserver> observer_;
 
   // Callbacks held onto when simulating a hang.
   network::mojom::NetworkContext::CreateTCPConnectedSocketCallback
@@ -678,7 +680,7 @@ class MockTCPServerSocket : public network::mojom::TCPServerSocket {
   ~MockTCPServerSocket() override {}
 
   // TCPServerSocket implementation:
-  void Accept(network::mojom::SocketObserverPtr observer,
+  void Accept(mojo::PendingRemote<network::mojom::SocketObserver> observer,
               AcceptCallback callback) override {
     // This falls through just to keep the observer alive.
     if (tcp_failure_type_ == TCPFailureType::kAcceptDropPipe)
@@ -740,7 +742,7 @@ class MockTCPBoundSocket : public network::mojom::TCPBoundSocket {
       const net::AddressList& remote_addr,
       network::mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
       network::mojom::TCPConnectedSocketRequest request,
-      network::mojom::SocketObserverPtr observer,
+      mojo::PendingRemote<network::mojom::SocketObserver> observer,
       ConnectCallback callback) override {
     if (tcp_failure_type_ == TCPFailureType::kConnectClosePipe)
       receiver_.reset();
@@ -798,7 +800,7 @@ class MockNetworkContext : public network::TestNetworkContext {
       network::mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       network::mojom::TCPConnectedSocketRequest socket,
-      network::mojom::SocketObserverPtr observer,
+      mojo::PendingRemote<network::mojom::SocketObserver> observer,
       CreateTCPConnectedSocketCallback callback) override {
     if (tcp_failure_type_ == TCPFailureType::kConnectClosePipe)
       receiver_.reset();

@@ -15,6 +15,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -145,7 +146,7 @@ class TLSClientSocketTestBase {
         base::nullopt /* local_addr */, remote_addr_list,
         nullptr /* tcp_connected_socket_options */,
         TRAFFIC_ANNOTATION_FOR_TESTS, std::move(request),
-        pre_tls_observer()->GetObserverPtr(),
+        pre_tls_observer()->GetObserverRemote(),
         base::BindLambdaForTesting(
             [&](int result,
                 const base::Optional<net::IPEndPoint>& actual_local_addr,
@@ -169,7 +170,7 @@ class TLSClientSocketTestBase {
     proxy_resolving_factory_->CreateProxyResolvingSocket(
         url, nullptr /* options */,
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-        std::move(request), nullptr /* observer */,
+        std::move(request), mojo::NullRemote() /* observer */,
         base::BindLambdaForTesting(
             [&](int result,
                 const base::Optional<net::IPEndPoint>& actual_local_addr,
@@ -208,7 +209,7 @@ class TLSClientSocketTestBase {
     client_socket->UpgradeToTLS(
         host_port_pair, std::move(options),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-        std::move(request), post_tls_observer()->GetObserverPtr(),
+        std::move(request), post_tls_observer()->GetObserverRemote(),
         base::BindOnce(
             [](net::CompletionOnceCallback cb,
                mojo::ScopedDataPipeConsumerHandle* consumer_handle_out,
@@ -234,7 +235,7 @@ class TLSClientSocketTestBase {
     client_socket->UpgradeToTLS(
         host_port_pair,
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-        std::move(request), post_tls_observer()->GetObserverPtr(),
+        std::move(request), post_tls_observer()->GetObserverRemote(),
         base::BindOnce(
             [](net::CompletionOnceCallback cb,
                mojo::ScopedDataPipeConsumerHandle* consumer_handle,
@@ -441,7 +442,7 @@ TEST_P(TLSClientSocketTest, UpgradeToTLSTwice) {
     client_socket.tcp_socket->UpgradeToTLS(
         host_port_pair, nullptr /* ssl_config_ptr */,
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-        mojo::MakeRequest(&tls_socket2), nullptr /*observer */,
+        mojo::MakeRequest(&tls_socket2), mojo::NullRemote() /*observer */,
         std::move(upgrade2_callback));
   } else {
     auto upgrade2_callback = base::BindLambdaForTesting(
@@ -453,7 +454,7 @@ TEST_P(TLSClientSocketTest, UpgradeToTLSTwice) {
     client_socket.proxy_socket->UpgradeToTLS(
         host_port_pair,
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-        mojo::MakeRequest(&tls_socket2), nullptr /*observer */,
+        mojo::MakeRequest(&tls_socket2), mojo::NullRemote() /*observer */,
         std::move(upgrade2_callback));
   }
   run_loop.Run();
@@ -504,7 +505,7 @@ TEST_P(TLSClientSocketTest, UpgradeToTLSWithCustomSSLConfig) {
   client_socket.tcp_socket->UpgradeToTLS(
       host_port_pair, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-      mojo::MakeRequest(&tls_socket), nullptr /*observer */,
+      mojo::MakeRequest(&tls_socket), mojo::NullRemote() /*observer */,
       std::move(upgrade_callback));
   run_loop.Run();
   ASSERT_EQ(net::OK, net_error);

@@ -1126,7 +1126,7 @@ void VisualViewport::SetOverlayScrollbarsHidden(bool hidden) {
 
 void VisualViewport::GraphicsLayersDidChange() {
   if (MainFrame() && MainFrame()->View())
-    MainFrame()->View()->GraphicsLayersDidChange();
+    MainFrame()->View()->SetForeignLayerListNeedsUpdate();
 }
 
 PaintArtifactCompositor* VisualViewport::GetPaintArtifactCompositor() const {

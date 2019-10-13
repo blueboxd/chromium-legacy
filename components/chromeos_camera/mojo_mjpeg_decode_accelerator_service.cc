@@ -25,7 +25,7 @@
 #include "components/chromeos_camera/dmabuf_utils.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_frame.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -64,9 +64,11 @@ namespace chromeos_camera {
 
 // static
 void MojoMjpegDecodeAcceleratorService::Create(
-    chromeos_camera::mojom::MjpegDecodeAcceleratorRequest request) {
+    mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
+        receiver) {
   auto* jpeg_decoder = new MojoMjpegDecodeAcceleratorService();
-  mojo::MakeStrongBinding(base::WrapUnique(jpeg_decoder), std::move(request));
+  mojo::MakeSelfOwnedReceiver(base::WrapUnique(jpeg_decoder),
+                              std::move(receiver));
 }
 
 MojoMjpegDecodeAcceleratorService::MojoMjpegDecodeAcceleratorService()

@@ -27,8 +27,7 @@ class LayoutObject;
 // (http://crrev.com/c/579263), LinkHighlights no longer needs to manage
 // multiple link highlights. Rename this class to LinkHighlight and move
 // it under core/page, and rename LinkHighlightImpl (core/paint) to
-// LinkHighlightPainter. This will be convenient to do when we remove
-// GraphicsLayer for CompositeAfterPaint.
+// LinkHighlightPainter.
 class CORE_EXPORT LinkHighlights final
     : public GarbageCollected<LinkHighlights> {
  public:
@@ -40,9 +39,6 @@ class CORE_EXPORT LinkHighlights final
   void ResetForPageNavigation();
 
   void SetTapHighlights(HeapVector<Member<Node>>&);
-
-  // Updates geometry on all highlights. See: LinkHighlightImpl::UpdateGeometry.
-  void UpdateGeometry();
 
   void StartHighlightAnimationIfNeeded();
 
@@ -57,7 +53,7 @@ class CORE_EXPORT LinkHighlights final
     return NeedsHighlightEffectInternal(object);
   }
 
-  // For CompositeAfterPaint.
+  void UpdatePrePaint();
   void Paint(GraphicsContext&) const;
 
  private:

@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/host/host_factory.h"
@@ -43,7 +44,8 @@ class ContentBrowserPepperHostFactory : public ppapi::host::HostFactory {
       PP_Instance instance,
       ppapi::TCPSocketVersion version,
       network::mojom::TCPConnectedSocketPtrInfo connected_socket,
-      network::mojom::SocketObserverRequest socket_observer_request,
+      mojo::PendingReceiver<network::mojom::SocketObserver>
+          socket_observer_receiver,
       mojo::ScopedDataPipeConsumerHandle receive_stream,
       mojo::ScopedDataPipeProducerHandle send_stream);
 

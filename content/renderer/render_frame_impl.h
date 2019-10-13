@@ -1752,6 +1752,26 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<blink::WebURLLoaderFactoryForTest>
       web_url_loader_factory_override_for_test_;
 
+  // When the browser asks the renderer to commit a navigation, it should always
+  // result in a committed navigation reported via DidCommitProvisionalLoad().
+  // This is important because DidCommitProvisionalLoad() is responsible for
+  // swapping in the provisional local frame during a cross-process navigation.
+  // Since this involves updating state in both the browser process and the
+  // renderer process, this assert ensures that the state remains synchronized
+  // between the two processes.
+  //
+  // Note: there is one exception that can result in no commit happening.
+  // Committing a navigation runs unload handlers, which can detach |this|. In
+  // that case, it doesn't matter that the navigation never commits, since the
+  // logical node for |this| has been removed from the DOM.
+  enum class NavigationCommitState {
+    kNone,
+    kWillCommitFromIPC,
+    kDidCommitFromIPC,
+  };
+  class AssertNavigationCommits;
+  NavigationCommitState navigation_commit_state_ = NavigationCommitState::kNone;
+
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameImpl);

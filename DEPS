@@ -179,7 +179,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '130fdbcc23edb00f17abe212eb091e62032415c1',
+  'angle_revision': 'a2f89c00048378e6dc04b44839a7807a55149ec2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -887,7 +887,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '88d7869db09169044c1a0b2d1fbb57f11ffaee2a',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '5abb9b7c5d0c0a5f81f4a0da741680df9b9d128c',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
@@ -1532,7 +1532,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@15aa86bf55aa0f9cbaa7261f94c980f213ec45f8',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e74f8be31fac06b66c653a0a26be625b16b3f152',
     'condition': 'checkout_src_internal',
   },
 

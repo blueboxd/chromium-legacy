@@ -59,6 +59,8 @@ viz_component("service") {
     "display/output_surface_frame.h",
     "display/overlay_candidate.cc",
     "display/overlay_candidate.h",
+    "display/overlay_candidate_list.cc",
+    "display/overlay_candidate_list.h",
     "display/overlay_candidate_validator.cc",
     "display/overlay_candidate_validator.h",
     "display/overlay_processor.cc",

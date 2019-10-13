@@ -26,6 +26,7 @@
 #include "components/viz/service/display/bsp_walk_action.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/overlay_candidate_validator.h"
+#include "components/viz/service/display/skia_output_surface.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
@@ -120,6 +121,7 @@ void DirectRenderer::Initialize() {
   // created processor. This would initialize the strategies on the validator as
   // well.
   overlay_processor_ = OverlayProcessor::CreateOverlayProcessor(
+      output_surface_->AsSkiaOutputSurface(),
       output_surface_->GetSurfaceHandle(), output_surface_->capabilities(),
       *settings_);
 
@@ -451,6 +453,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
         output_surface_->UpdateGpuFence();
 
   FinishDrawingFrame();
+
   render_passes_in_draw_order->clear();
   render_pass_filters_.clear();
   render_pass_backdrop_filters_.clear();

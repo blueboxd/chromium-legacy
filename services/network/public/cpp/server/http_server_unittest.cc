@@ -49,7 +49,7 @@ class TestHttpClient {
         base::nullopt /* local address */, addresses,
         nullptr /* tcp_connected_socket_options */,
         TRAFFIC_ANNOTATION_FOR_TESTS, mojo::MakeRequest(&socket_),
-        nullptr /* observer */,
+        mojo::NullRemote() /* observer */,
         base::BindOnce(
             [](base::RunLoop* run_loop, int* result_out,
                mojo::ScopedDataPipeConsumerHandle* receive_pipe_handle_out,

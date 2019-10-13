@@ -44,7 +44,7 @@ interface Gpu {
   // Creates a new JpegDecodeAccelerator and binds it to |jda|.
   [EnableIf=is_chromeos]
   CreateJpegDecodeAccelerator(
-      chromeos_camera.mojom.MjpegDecodeAccelerator& jda);
+      pending_receiver<chromeos_camera.mojom.MjpegDecodeAccelerator> jda);
 
   // Creates a VideoEncodeAcceleratorProvider and binds it to |vea_provider|.
   CreateVideoEncodeAcceleratorProvider(

@@ -21,6 +21,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
@@ -142,13 +144,13 @@ class MockProxyResolvingSocket : public network::mojom::ProxyResolvingSocket {
   MockProxyResolvingSocket() {}
   ~MockProxyResolvingSocket() override {}
 
-  void Connect(network::mojom::SocketObserverPtr observer,
+  void Connect(mojo::PendingRemote<network::mojom::SocketObserver> observer,
                network::mojom::ProxyResolvingSocketFactory::
                    CreateProxyResolvingSocketCallback callback) {
     mojo::DataPipe send_pipe;
     mojo::DataPipe receive_pipe;
 
-    observer_ = std::move(observer);
+    observer_.Bind(std::move(observer));
     receive_pipe_handle_ = std::move(receive_pipe.producer_handle);
     send_pipe_handle_ = std::move(send_pipe.consumer_handle);
 
@@ -164,14 +166,14 @@ class MockProxyResolvingSocket : public network::mojom::ProxyResolvingSocket {
       const net::HostPortPair& host_port_pair,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       network::mojom::TLSClientSocketRequest request,
-      network::mojom::SocketObserverPtr observer,
+      mojo::PendingRemote<network::mojom::SocketObserver> observer,
       network::mojom::ProxyResolvingSocket::UpgradeToTLSCallback callback)
       override {
     NOTREACHED();
   }
 
  private:
-  network::mojom::SocketObserverPtr observer_;
+  mojo::Remote<network::mojom::SocketObserver> observer_;
   mojo::ScopedDataPipeProducerHandle receive_pipe_handle_;
   mojo::ScopedDataPipeConsumerHandle send_pipe_handle_;
 
@@ -190,7 +192,7 @@ class MockProxyResolvingSocketFactory
       network::mojom::ProxyResolvingSocketOptionsPtr options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       network::mojom::ProxyResolvingSocketRequest request,
-      network::mojom::SocketObserverPtr observer,
+      mojo::PendingRemote<network::mojom::SocketObserver> observer,
       CreateProxyResolvingSocketCallback callback) override {
     auto socket = std::make_unique<MockProxyResolvingSocket>();
     socket_raw_ = socket.get();

@@ -18,9 +18,10 @@ namespace chromeos_camera {
 
 MojoMjpegDecodeAccelerator::MojoMjpegDecodeAccelerator(
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-    chromeos_camera::mojom::MjpegDecodeAcceleratorPtrInfo jpeg_decoder)
+    mojo::PendingRemote<chromeos_camera::mojom::MjpegDecodeAccelerator>
+        jpeg_decoder)
     : io_task_runner_(std::move(io_task_runner)),
-      jpeg_decoder_info_(std::move(jpeg_decoder)) {}
+      jpeg_decoder_remote_(std::move(jpeg_decoder)) {}
 
 MojoMjpegDecodeAccelerator::~MojoMjpegDecodeAccelerator() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
@@ -36,10 +37,10 @@ void MojoMjpegDecodeAccelerator::InitializeAsync(Client* client,
                                                  InitCB init_cb) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
-  jpeg_decoder_.Bind(std::move(jpeg_decoder_info_));
+  jpeg_decoder_.Bind(std::move(jpeg_decoder_remote_));
 
   // base::Unretained is safe because |this| owns |jpeg_decoder_|.
-  jpeg_decoder_.set_connection_error_handler(
+  jpeg_decoder_.set_disconnect_handler(
       base::Bind(&MojoMjpegDecodeAccelerator::OnLostConnectionToJpegDecoder,
                  base::Unretained(this)));
   jpeg_decoder_->Initialize(

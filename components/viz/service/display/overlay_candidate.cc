@@ -331,36 +331,4 @@ bool OverlayCandidate::FromStreamVideoQuad(
 #endif
   return true;
 }
-
-OverlayCandidateList::OverlayCandidateList() = default;
-
-OverlayCandidateList::OverlayCandidateList(const OverlayCandidateList& other) =
-    default;
-
-OverlayCandidateList::OverlayCandidateList(OverlayCandidateList&& other) =
-    default;
-
-OverlayCandidateList::~OverlayCandidateList() = default;
-
-OverlayCandidateList& OverlayCandidateList::operator=(
-    const OverlayCandidateList& other) = default;
-
-OverlayCandidateList& OverlayCandidateList::operator=(
-    OverlayCandidateList&& other) = default;
-
-void OverlayCandidateList::AddPromotionHint(const OverlayCandidate& candidate) {
-  promotion_hint_info_map_[candidate.resource_id] = candidate.display_rect;
-}
-
-void OverlayCandidateList::AddToPromotionHintRequestorSetIfNeeded(
-    const DisplayResourceProvider* resource_provider,
-    const DrawQuad* quad) {
-  if (quad->material != DrawQuad::Material::kStreamVideoContent)
-    return;
-  ResourceId id = StreamVideoDrawQuad::MaterialCast(quad)->resource_id();
-  if (!resource_provider->DoesResourceWantPromotionHint(id))
-    return;
-  promotion_hint_requestor_set_.insert(id);
-}
-
 }  // namespace viz

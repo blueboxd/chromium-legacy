@@ -59,7 +59,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
       mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       mojom::TCPConnectedSocketRequest request,
-      mojom::SocketObserverPtr observer,
+      mojo::PendingRemote<mojom::SocketObserver> observer,
       mojom::NetworkContext::CreateTCPConnectedSocketCallback callback);
   void CreateTCPBoundSocket(
       const net::IPEndPoint& local_addr,

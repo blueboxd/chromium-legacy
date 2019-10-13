@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "components/viz/service/display/overlay_candidate_list.h"
 #include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "ui/gfx/geometry/rect_conversions.h"

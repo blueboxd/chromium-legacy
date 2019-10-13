@@ -54,6 +54,7 @@
 #include "media/capture/video/chromeos/public/cros_features.h"
 #include "media/capture/video/chromeos/video_capture_device_chromeos_halv3.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -265,8 +266,8 @@ class VideoCaptureDeviceTest
     if (media::ShouldUseCrosCameraService() &&
         !CameraHalDispatcherImpl::GetInstance()->IsStarted()) {
       CameraHalDispatcherImpl::GetInstance()->Start(
-          base::DoNothing::Repeatedly<
-              chromeos_camera::mojom::MjpegDecodeAcceleratorRequest>(),
+          base::DoNothing::Repeatedly<mojo::PendingReceiver<
+              chromeos_camera::mojom::MjpegDecodeAccelerator>>(),
           base::DoNothing::Repeatedly<
               chromeos_camera::mojom::JpegEncodeAcceleratorRequest>());
     }

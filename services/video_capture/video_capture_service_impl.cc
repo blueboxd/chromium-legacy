@@ -61,11 +61,12 @@ class VideoCaptureServiceImpl::GpuDependenciesContext {
   }
 
   void CreateJpegDecodeAccelerator(
-      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest request) {
+      mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
+          receiver) {
     DCHECK(gpu_io_task_runner_->RunsTasksInCurrentSequence());
     if (!accelerator_factory_)
       return;
-    accelerator_factory_->CreateJpegDecodeAccelerator(std::move(request));
+    accelerator_factory_->CreateJpegDecodeAccelerator(std::move(receiver));
   }
 #endif  // defined(OS_CHROMEOS)
 

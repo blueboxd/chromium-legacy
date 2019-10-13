@@ -177,7 +177,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       needs_compositing_layer_assignment_(false),
       descendant_needs_compositing_layer_assignment_(false),
       has_self_painting_layer_descendant_(false),
-      needs_reorder_overlay_scrollbars_(false),
+      needs_reorder_overlay_overflow_controls_(false),
 #if DCHECK_IS_ON()
       layer_list_mutation_allowed_(true),
 #endif
@@ -227,7 +227,7 @@ PaintLayer::~PaintLayer() {
   // PaintLayerScrollableArea::WillRemoveScrollbar() from dirtying the z-order
   // list of the stacking context. If this layer is removed from the parent,
   // the z-order list should have been invalidated in RemoveChild().
-  needs_reorder_overlay_scrollbars_ = false;
+  needs_reorder_overlay_overflow_controls_ = false;
 
   if (scrollable_area_)
     scrollable_area_->Dispose();

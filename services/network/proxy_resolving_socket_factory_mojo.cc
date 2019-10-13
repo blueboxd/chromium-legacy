@@ -28,7 +28,7 @@ void ProxyResolvingSocketFactoryMojo::CreateProxyResolvingSocket(
     mojom::ProxyResolvingSocketOptionsPtr options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::ProxyResolvingSocketRequest request,
-    mojom::SocketObserverPtr observer,
+    mojo::PendingRemote<mojom::SocketObserver> observer,
     CreateProxyResolvingSocketCallback callback) {
   std::unique_ptr<net::StreamSocket> net_socket =
       factory_impl_.CreateSocket(url, options && options->use_tls);

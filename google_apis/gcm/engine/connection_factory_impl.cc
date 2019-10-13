@@ -15,6 +15,7 @@
 #include "google_apis/gcm/engine/connection_handler_impl.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/proxy_fallback.h"
@@ -359,7 +360,7 @@ void ConnectionFactoryImpl::StartConnection() {
   socket_factory_->CreateProxyResolvingSocket(
       current_endpoint, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation),
-      mojo::MakeRequest(&socket_), nullptr /* observer */,
+      mojo::MakeRequest(&socket_), mojo::NullRemote() /* observer */,
       base::BindOnce(&ConnectionFactoryImpl::OnConnectDone,
                      base::Unretained(this)));
 }

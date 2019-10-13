@@ -14,9 +14,11 @@
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/overlay_candidate_list.h"
 #include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
+#include "components/viz/service/display/skia_output_surface.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
@@ -24,27 +26,44 @@ namespace viz {
 
 namespace {
 
-#if defined(OS_ANDROID)
 // Utility class to make sure that we notify resource that they're promotable
 // before returning from ProcessForOverlays.
 class SendPromotionHintsBeforeReturning {
  public:
   SendPromotionHintsBeforeReturning(DisplayResourceProvider* resource_provider,
-                                    OverlayCandidateList* candidates)
-      : resource_provider_(resource_provider), candidates_(candidates) {}
+                                    OverlayCandidateList* candidates,
+                                    SkiaOutputSurface* skia_output_surface)
+      : resource_provider_(resource_provider),
+        candidates_(candidates),
+        skia_output_surface_(skia_output_surface) {}
   ~SendPromotionHintsBeforeReturning() {
-    resource_provider_->SendPromotionHints(
-        candidates_->promotion_hint_info_map_,
-        candidates_->promotion_hint_requestor_set_);
+    if (skia_output_surface_) {
+      base::flat_set<gpu::Mailbox> promotion_denied;
+      base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions;
+      auto locks = candidates_->ConvertLocalPromotionToMailboxKeyed(
+          resource_provider_, &promotion_denied, &possible_promotions);
+
+      std::vector<gpu::SyncToken> locks_sync_tokens;
+      for (auto& read_lock : locks)
+        locks_sync_tokens.push_back(read_lock.sync_token());
+
+      skia_output_surface_->SendOverlayPromotionNotification(
+          std::move(locks_sync_tokens), std::move(promotion_denied),
+          std::move(possible_promotions));
+    } else {
+      resource_provider_->SendPromotionHints(
+          candidates_->promotion_hint_info_map_,
+          candidates_->promotion_hint_requestor_set_);
+    }
   }
 
  private:
   DisplayResourceProvider* resource_provider_;
   OverlayCandidateList* candidates_;
+  SkiaOutputSurface* skia_output_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(SendPromotionHintsBeforeReturning);
 };
-#endif
 
 }  // namespace
 
@@ -106,21 +125,25 @@ OverlayStrategy OverlayProcessor::Strategy::GetUMAEnum() const {
 }
 
 std::unique_ptr<OverlayProcessor> OverlayProcessor::CreateOverlayProcessor(
+    SkiaOutputSurface* skia_output_surface,
     gpu::SurfaceHandle surface_handle,
     const OutputSurface::Capabilities& capabilities,
     const RendererSettings& renderer_settings) {
   return base::WrapUnique(
-      new OverlayProcessor(OverlayCandidateValidator::Create(
+      new OverlayProcessor(skia_output_surface,
+                           OverlayCandidateValidator::Create(
                                surface_handle, capabilities, renderer_settings),
                            std::make_unique<DCLayerOverlayProcessor>(
                                capabilities, renderer_settings)));
 }
 
 OverlayProcessor::OverlayProcessor(
+    SkiaOutputSurface* skia_output_surface,
     std::unique_ptr<OverlayCandidateValidator> overlay_validator,
     std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor)
     : overlay_validator_(std::move(overlay_validator)),
-      dc_layer_overlay_processor_(std::move(dc_layer_overlay_processor)) {
+      dc_layer_overlay_processor_(std::move(dc_layer_overlay_processor)),
+      skia_output_surface_(skia_output_surface) {
   DCHECK(dc_layer_overlay_processor_);
   if (overlay_validator_)
     overlay_validator_->InitializeStrategies();
@@ -129,7 +152,8 @@ OverlayProcessor::OverlayProcessor(
 // For testing.
 OverlayProcessor::OverlayProcessor(
     std::unique_ptr<OverlayCandidateValidator> overlay_validator)
-    : OverlayProcessor(std::move(overlay_validator),
+    : OverlayProcessor(nullptr,
+                       std::move(overlay_validator),
                        std::make_unique<DCLayerOverlayProcessor>()) {}
 
 OverlayProcessor::~OverlayProcessor() = default;
@@ -194,12 +218,11 @@ void OverlayProcessor::ProcessForOverlays(
     gfx::Rect* damage_rect,
     std::vector<gfx::Rect>* content_bounds) {
   TRACE_EVENT0("viz", "OverlayProcessor::ProcessForOverlays");
-#if defined(OS_ANDROID)
   // Be sure to send out notifications, regardless of whether we get to
   // processing for overlays or not.  If we don't, then we should notify that
   // they are not promotable.
-  SendPromotionHintsBeforeReturning notifier(resource_provider, candidates);
-#endif
+  SendPromotionHintsBeforeReturning notifier(resource_provider, candidates,
+                                             skia_output_surface_);
 
   // Clear to get ready to handle output surface as overlay.
   output_surface_already_handled_ = false;

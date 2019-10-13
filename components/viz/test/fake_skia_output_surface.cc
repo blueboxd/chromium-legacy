@@ -360,7 +360,21 @@ void FakeSkiaOutputSurface::SwapBuffersAck() {
 
 void FakeSkiaOutputSurface::ScheduleGpuTaskForTesting(
     base::OnceClosure callback,
-    std::vector<gpu::SyncToken> sync_tokesn) {
+    std::vector<gpu::SyncToken> sync_tokens) {
+  NOTIMPLEMENTED();
+}
+
+void FakeSkiaOutputSurface::SendOverlayPromotionNotification(
+    std::vector<gpu::SyncToken> sync_tokens,
+    base::flat_set<gpu::Mailbox> promotion_denied,
+    base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) {
+  NOTIMPLEMENTED();
+}
+
+void FakeSkiaOutputSurface::RenderToOverlay(
+    gpu::SyncToken sync_token,
+    gpu::Mailbox overlay_candidate_mailbox,
+    const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
 }
 

@@ -258,6 +258,10 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   bool has_locked_overlay_resources_ = false;
 
+  base::circular_deque<
+      base::Optional<DisplayResourceProvider::ScopedReadLockSharedImage>>
+      overlay_resource_locks_;
+
   // Specific for SkPRecord.
   std::unique_ptr<SkPictureRecorder> root_recorder_;
   sk_sp<SkPicture> root_picture_;

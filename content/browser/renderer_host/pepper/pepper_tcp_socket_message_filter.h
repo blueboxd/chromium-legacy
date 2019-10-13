@@ -21,6 +21,8 @@
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/address_list.h"
@@ -76,7 +78,8 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   // before any messages are received,
   void SetConnectedSocket(
       network::mojom::TCPConnectedSocketPtrInfo connected_socket,
-      network::mojom::SocketObserverRequest socket_observer_request,
+      mojo::PendingReceiver<network::mojom::SocketObserver>
+          socket_observer_receiver,
       mojo::ScopedDataPipeConsumerHandle receive_stream,
       mojo::ScopedDataPipeProducerHandle send_stream);
 
@@ -98,7 +101,8 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
 
   void SetConnectedSocketOnUIThread(
       network::mojom::TCPConnectedSocketPtrInfo connected_socket,
-      network::mojom::SocketObserverRequest socket_observer_request,
+      mojo::PendingReceiver<network::mojom::SocketObserver>
+          socket_observer_receiver,
       mojo::ScopedDataPipeConsumerHandle receive_stream,
       mojo::ScopedDataPipeProducerHandle send_stream);
 
@@ -195,19 +199,20 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
                        int net_result,
                        const base::Optional<net::IPEndPoint>& local_addr);
 
-  void OnAcceptCompleted(
-      const ppapi::host::ReplyMessageContext& context,
-      network::mojom::SocketObserverRequest socket_observer_request,
-      int net_result,
-      const base::Optional<net::IPEndPoint>& remote_addr,
-      network::mojom::TCPConnectedSocketPtr connected_socket,
-      mojo::ScopedDataPipeConsumerHandle receive_stream,
-      mojo::ScopedDataPipeProducerHandle send_stream);
+  void OnAcceptCompleted(const ppapi::host::ReplyMessageContext& context,
+                         mojo::PendingReceiver<network::mojom::SocketObserver>
+                             socket_observer_receiver,
+                         int net_result,
+                         const base::Optional<net::IPEndPoint>& remote_addr,
+                         network::mojom::TCPConnectedSocketPtr connected_socket,
+                         mojo::ScopedDataPipeConsumerHandle receive_stream,
+                         mojo::ScopedDataPipeProducerHandle send_stream);
 
   void OnAcceptCompletedOnIOThread(
       const ppapi::host::ReplyMessageContext& context,
       network::mojom::TCPConnectedSocketPtrInfo connected_socket,
-      network::mojom::SocketObserverRequest socket_observer_request,
+      mojo::PendingReceiver<network::mojom::SocketObserver>
+          socket_observer_receiver,
       mojo::ScopedDataPipeConsumerHandle receive_stream,
       mojo::ScopedDataPipeProducerHandle send_stream,
       PP_NetAddress_Private pp_local_addr,
@@ -296,7 +301,8 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   // A reference to |this| must always be taken while |binding_| is bound to
   // ensure that if the error callback is called the object is alive.
   mojo::Binding<network::mojom::ResolveHostClient> binding_;
-  mojo::Binding<network::mojom::SocketObserver> socket_observer_binding_;
+  mojo::Receiver<network::mojom::SocketObserver> socket_observer_receiver_{
+      this};
 
   ppapi::TCPSocketState state_;
 

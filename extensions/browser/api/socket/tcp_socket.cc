@@ -19,6 +19,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/socket/mojo_data_pump.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -287,7 +288,7 @@ void TCPSocket::Accept(AcceptCompletionCallback callback) {
 
   accept_callback_ = std::move(callback);
   server_socket_->Accept(
-      nullptr /* observer */,
+      mojo::NullRemote() /* observer */,
       base::BindOnce(&TCPSocket::OnAccept, base::Unretained(this)));
 }
 
@@ -342,7 +343,7 @@ void TCPSocket::ConnectOnUIThread(
       base::nullopt, remote_addr_list, nullptr /* options */,
       net::MutableNetworkTrafficAnnotationTag(
           Socket::GetNetworkTrafficAnnotationTag()),
-      std::move(request), nullptr /* observer */,
+      std::move(request), mojo::NullRemote() /* observer */,
       std::move(completion_callback));
 }
 
@@ -556,7 +557,7 @@ void TCPSocket::UpgradeToTLS(api::socket::SecureOptions* options,
       host_port_pair, std::move(mojo_socket_options),
       net::MutableNetworkTrafficAnnotationTag(
           Socket::GetNetworkTrafficAnnotationTag()),
-      std::move(tls_socket_request), nullptr /* observer */,
+      std::move(tls_socket_request), mojo::NullRemote() /* observer */,
       base::BindOnce(&TCPSocket::OnUpgradeToTLSComplete, base::Unretained(this),
                      std::move(callback), std::move(tls_socket),
                      local_addr_.value(), peer_addr_.value()));

@@ -16,6 +16,7 @@
 #include "components/viz/service/display/ca_layer_overlay.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/display_resource_provider.h"
+#include "components/viz/service/display/overlay_candidate_list.h"
 #include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"

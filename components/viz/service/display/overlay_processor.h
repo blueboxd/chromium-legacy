@@ -13,7 +13,6 @@
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/service/display/ca_layer_overlay.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
-#include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 
@@ -23,6 +22,7 @@ class DisplayResourceProvider;
 
 namespace viz {
 class OutputSurface;
+class OverlayCandidateList;
 class OverlayCandidateValidator;
 class RendererSettings;
 
@@ -92,6 +92,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   using StrategyList = std::vector<std::unique_ptr<Strategy>>;
 
   static std::unique_ptr<OverlayProcessor> CreateOverlayProcessor(
+      SkiaOutputSurface* skia_output_surface,
       gpu::SurfaceHandle surface_handle,
       const OutputSurface::Capabilities& capabilities,
       const RendererSettings& renderer_settings);
@@ -159,6 +160,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
 
  private:
   OverlayProcessor(
+      SkiaOutputSurface* skia_output_surface,
       std::unique_ptr<OverlayCandidateValidator> overlay_validator,
       std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor);
 
@@ -185,6 +187,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
 
   std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor_;
 
+  SkiaOutputSurface* skia_output_surface_;
   bool output_surface_already_handled_;
   DISALLOW_COPY_AND_ASSIGN(OverlayProcessor);
 };

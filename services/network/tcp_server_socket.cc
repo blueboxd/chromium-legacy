@@ -55,8 +55,9 @@ int TCPServerSocket::Listen(const net::IPEndPoint& local_addr,
   return net_error;
 }
 
-void TCPServerSocket::Accept(mojom::SocketObserverPtr observer,
-                             AcceptCallback callback) {
+void TCPServerSocket::Accept(
+    mojo::PendingRemote<mojom::SocketObserver> observer,
+    AcceptCallback callback) {
   if (pending_accepts_queue_.size() >= static_cast<size_t>(backlog_)) {
     std::move(callback).Run(net::ERR_INSUFFICIENT_RESOURCES, base::nullopt,
                             nullptr, mojo::ScopedDataPipeConsumerHandle(),
@@ -75,8 +76,9 @@ void TCPServerSocket::SetSocketForTest(
   socket_ = std::move(socket);
 }
 
-TCPServerSocket::PendingAccept::PendingAccept(AcceptCallback callback,
-                                              mojom::SocketObserverPtr observer)
+TCPServerSocket::PendingAccept::PendingAccept(
+    AcceptCallback callback,
+    mojo::PendingRemote<mojom::SocketObserver> observer)
     : callback(std::move(callback)), observer(std::move(observer)) {}
 
 TCPServerSocket::PendingAccept::~PendingAccept() {}

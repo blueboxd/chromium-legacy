@@ -29,7 +29,8 @@ interface CameraHalDispatcher {
 
   // Get JpegDecodeAccelerator from dispatcher.
   [MinVersion=1] GetJpegDecodeAccelerator@2(
-    chromeos_camera.mojom.MjpegDecodeAccelerator& jda_request);
+    pending_receiver<chromeos_camera.mojom.MjpegDecodeAccelerator>
+        jda_receiver);
 
   // Get JpegEncodeAccelerator from dispatcher.
   [MinVersion=2] GetJpegEncodeAccelerator@3(

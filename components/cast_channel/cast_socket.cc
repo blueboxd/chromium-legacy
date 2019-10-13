@@ -34,6 +34,7 @@
 #include "components/cast_channel/proto/cast_channel.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -82,7 +83,7 @@ void ConnectOnUIThread(
       nullptr /* tcp_connected_socket_options */,
       net::MutableNetworkTrafficAnnotationTag(
           CastSocketImpl::GetNetworkTrafficAnnotationTag()),
-      std::move(request), nullptr /* observer */,
+      std::move(request), mojo::NullRemote() /* observer */,
       base::BindOnce(OnConnected, std::move(callback)));
 }
 
@@ -419,7 +420,7 @@ int CastSocketImpl::DoSslConnect() {
   tcp_socket_->UpgradeToTLS(
       host_port_pair, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(GetNetworkTrafficAnnotationTag()),
-      mojo::MakeRequest(&socket_), nullptr /* observer */,
+      mojo::MakeRequest(&socket_), mojo::NullRemote() /* observer */,
       base::BindOnce(&CastSocketImpl::OnUpgradeToTLS,
                      weak_factory_.GetWeakPtr()));
 

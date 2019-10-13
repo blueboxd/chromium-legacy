@@ -1315,7 +1315,7 @@ TEST_F(DisplayLockContextTest,
   auto* container = GetDocument().getElementById("container");
 
   // Ensure that we will gather graphics layer on the next update (after lock).
-  GetDocument().View()->GraphicsLayersDidChange();
+  GetDocument().View()->SetForeignLayerListNeedsUpdate();
 
   LockElement(*container, false /* activatable */);
   EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());

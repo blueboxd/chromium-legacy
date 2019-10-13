@@ -172,10 +172,10 @@ bool DisplayResourceProvider::OnMemoryDump(
   return true;
 }
 
-#if defined(OS_ANDROID)
 void DisplayResourceProvider::SendPromotionHints(
-    const OverlayCandidateList::PromotionHintInfoMap& promotion_hints,
+    const std::map<ResourceId, gfx::RectF>& promotion_hints,
     const ResourceIdSet& requestor_set) {
+#if defined(OS_ANDROID)
   GLES2Interface* gl = ContextGL();
   if (!gl)
     return;
@@ -210,8 +210,10 @@ void DisplayResourceProvider::SendPromotionHints(
     }
     UnlockForRead(id);
   }
+#endif
 }
 
+#if defined(OS_ANDROID)
 bool DisplayResourceProvider::IsBackedBySurfaceTexture(ResourceId id) {
   ChildResource* resource = GetResource(id);
   return resource->transferable.is_backed_by_surface_texture;
@@ -558,7 +560,7 @@ void DisplayResourceProvider::UnlockForRead(ResourceId id) {
 void DisplayResourceProvider::TryReleaseResource(ResourceId id,
                                                  ChildResource* resource) {
   if (resource->marked_for_deletion && !resource->lock_for_read_count &&
-      !resource->locked_for_external_use) {
+      !resource->locked_for_external_use && !resource->lock_for_overlay_count) {
     auto child_it = children_.find(resource->child_id);
     DeleteAndReturnUnusedResourcesToChild(child_it, NORMAL, {id});
   }
@@ -895,6 +897,36 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
 
 DisplayResourceProvider::ScopedReadLockSkImage::~ScopedReadLockSkImage() {
   resource_provider_->UnlockForRead(resource_id_);
+}
+
+DisplayResourceProvider::ScopedReadLockSharedImage::ScopedReadLockSharedImage(
+    DisplayResourceProvider* resource_provider,
+    ResourceId resource_id)
+    : resource_provider_(resource_provider),
+      resource_id_(resource_id),
+      resource_(resource_provider_->GetResource(resource_id_)) {
+  DCHECK(resource_);
+  DCHECK(resource_->is_gpu_resource_type());
+  DCHECK(resource_->transferable.mailbox_holder.mailbox.IsSharedImage());
+
+  resource_->lock_for_overlay_count++;
+}
+
+gpu::Mailbox DisplayResourceProvider::ScopedReadLockSharedImage::mailbox()
+    const {
+  return resource_->transferable.mailbox_holder.mailbox;
+}
+
+gpu::SyncToken DisplayResourceProvider::ScopedReadLockSharedImage::sync_token()
+    const {
+  return resource_->transferable.mailbox_holder.sync_token;
+}
+
+DisplayResourceProvider::ScopedReadLockSharedImage::
+    ~ScopedReadLockSharedImage() {
+  DCHECK(resource_->lock_for_overlay_count);
+  resource_->lock_for_overlay_count--;
+  resource_provider_->TryReleaseResource(resource_id_, resource_);
 }
 
 DisplayResourceProvider::LockSetForExternalUse::LockSetForExternalUse(

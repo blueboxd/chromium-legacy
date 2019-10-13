@@ -58,9 +58,10 @@ class Gpu::GpuPtrIO {
 
 #if defined(OS_CHROMEOS)
   void CreateJpegDecodeAccelerator(
-      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest request) {
+      mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
+          receiver) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    gpu_ptr_->CreateJpegDecodeAccelerator(std::move(request));
+    gpu_ptr_->CreateJpegDecodeAccelerator(std::move(receiver));
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -288,12 +289,13 @@ std::unique_ptr<Gpu> Gpu::Create(
 
 #if defined(OS_CHROMEOS)
 void Gpu::CreateJpegDecodeAccelerator(
-    chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request) {
+    mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
+        jda_receiver) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&GpuPtrIO::CreateJpegDecodeAccelerator,
-                     base::Unretained(gpu_.get()), std::move(jda_request)));
+                     base::Unretained(gpu_.get()), std::move(jda_receiver)));
 }
 #endif  // defined(OS_CHROMEOS)
 

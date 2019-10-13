@@ -25,7 +25,7 @@
 #include "ui/compositor/test/test_context_factories.h"
 
 #if defined(USE_OZONE)
-#include "components/viz/service/display/overlay_candidate.h"
+#include "components/viz/service/display/overlay_candidate_list.h"
 #include "components/viz/service/display_embedder/overlay_candidate_validator_ozone.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #endif  // defined(USE_OZONE)

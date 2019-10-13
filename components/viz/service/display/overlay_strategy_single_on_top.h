@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_STRATEGY_SINGLE_ON_TOP_H_
 
 #include "base/macros.h"
+#include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/service/viz_service_export.h"
 

@@ -65,7 +65,6 @@ class PictureLayer;
 namespace blink {
 
 class Image;
-class LinkHighlight;
 class PaintController;
 class RasterInvalidationTracking;
 class RasterInvalidator;
@@ -213,12 +212,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
                                const IntRect&,
                                PaintInvalidationReason);
 
-  void AddLinkHighlight(LinkHighlight*);
-  void RemoveLinkHighlight(LinkHighlight*);
-  const Vector<LinkHighlight*>& GetLinkHighlights() const {
-    return link_highlights_;
-  }
-
   static void RegisterContentsLayer(cc::Layer*);
   static void UnregisterContentsLayer(cc::Layer*);
 
@@ -354,8 +347,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // know |contents_layer_| is alive and use that for comparisons from that
   // point on.
   int contents_layer_id_;
-
-  Vector<LinkHighlight*> link_highlights_;
 
   SquashingDisallowedReasons squashing_disallowed_reasons_ =
       SquashingDisallowedReason::kNone;

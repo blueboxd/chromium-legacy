@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_GPU_CHROMEOS_VIDEO_CAPTURE_DEPENDENCIES_H_
 
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
 
 namespace content {
@@ -14,7 +15,8 @@ namespace content {
 class CONTENT_EXPORT VideoCaptureDependencies {
  public:
   static void CreateJpegDecodeAccelerator(
-      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest accelerator);
+      mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
+          accelerator);
   static void CreateJpegEncodeAccelerator(
       chromeos_camera::mojom::JpegEncodeAcceleratorRequest accelerator);
 };

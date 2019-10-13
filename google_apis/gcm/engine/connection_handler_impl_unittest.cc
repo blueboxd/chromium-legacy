@@ -25,6 +25,7 @@
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/base/socket_stream.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_address.h"
 #include "net/base/test_completion_callback.h"
@@ -248,7 +249,7 @@ void GCMConnectionHandlerImplTest::BuildSocket(const ReadList& read_list,
   mojo_socket_factory_ptr_->CreateProxyResolvingSocket(
       kDestination, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-      mojo::MakeRequest(&mojo_socket_ptr_), nullptr /* observer */,
+      mojo::MakeRequest(&mojo_socket_ptr_), mojo::NullRemote() /* observer */,
       base::BindLambdaForTesting(
           [&](int result, const base::Optional<net::IPEndPoint>& local_addr,
               const base::Optional<net::IPEndPoint>& peer_addr,

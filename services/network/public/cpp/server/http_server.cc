@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/server/http_connection.h"
 #include "services/network/public/cpp/server/http_server_request_info.h"
@@ -179,7 +180,7 @@ bool HttpServer::SetSendBufferSize(int connection_id, int32_t size) {
 
 void HttpServer::DoAcceptLoop() {
   server_socket_->Accept(
-      nullptr, /* observer */
+      mojo::NullRemote(), /* observer */
       base::BindOnce(&HttpServer::OnAcceptCompleted, base::Unretained(this)));
 }
 

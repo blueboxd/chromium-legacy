@@ -24,13 +24,13 @@
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/service/display/external_use_client.h"
-#include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display/resource_fence.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
@@ -83,7 +83,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-#if defined(OS_ANDROID)
   // Send an overlay promotion hint to all resources that requested it via
   // |requestor_set|.  |promotable_hints| contains all the resources that should
   // be told that they're promotable.  Others will be told that they're not.
@@ -94,9 +93,10 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   // to the requestor; the resource might be overlayable except that nobody
   // tried to do it.
   void SendPromotionHints(
-      const OverlayCandidateList::PromotionHintInfoMap& promotion_hints,
+      const std::map<ResourceId, gfx::RectF>& promotion_hints,
       const ResourceIdSet& requestor_set);
 
+#if defined(OS_ANDROID)
   // Indicates if this resource is backed by an Android SurfaceTexture, and thus
   // can't really be promoted to an overlay.
   bool IsBackedBySurfaceTexture(ResourceId id);
@@ -205,6 +205,23 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   struct ChildResource;
 
  public:
+  // Lock the resource to make sure the shared image is alive when accessing
+  // SharedImage Mailbox.
+  class VIZ_SERVICE_EXPORT ScopedReadLockSharedImage {
+   public:
+    ScopedReadLockSharedImage(DisplayResourceProvider* resource_provider,
+                              ResourceId resource_id);
+    ~ScopedReadLockSharedImage();
+
+    gpu::Mailbox mailbox() const;
+    gpu::SyncToken sync_token() const;
+
+   private:
+    DisplayResourceProvider* const resource_provider_;
+    const ResourceId resource_id_;
+    ChildResource* const resource_;
+  };
+
   // Maintains set of resources locked for external use by SkiaRenderer.
   class VIZ_SERVICE_EXPORT LockSetForExternalUse {
    public:
@@ -402,6 +419,8 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // When true, the resource is currently being used externally. This is a
     // parallel counter to |lock_for_read_count| which can only go to 1.
     bool locked_for_external_use = false;
+    // The number of active users using this resource as overlay content.
+    int lock_for_overlay_count = 0;
 
     // When the resource should be deleted until it is actually reaped.
     bool marked_for_deletion = false;

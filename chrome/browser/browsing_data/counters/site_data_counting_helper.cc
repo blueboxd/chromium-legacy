@@ -18,6 +18,7 @@
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
+#include "media/media_buildflags.h"
 #include "net/cookies/cookie_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"

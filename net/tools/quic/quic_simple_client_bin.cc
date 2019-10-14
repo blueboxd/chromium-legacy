@@ -84,7 +84,7 @@ class QuicSimpleClientFactory : public quic::QuicToyClient::ClientFactory {
     }
 
     quic::QuicServerId server_id(host_for_handshake, port, false);
-    return quic::QuicMakeUnique<net::QuicSimpleClient>(
+    return std::make_unique<net::QuicSimpleClient>(
         quic::QuicSocketAddress(ip_addr, port), server_id, versions,
         std::move(verifier));
   }

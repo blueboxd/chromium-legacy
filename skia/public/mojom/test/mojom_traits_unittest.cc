@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "skia/public/mojom/test/traits_test_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -23,10 +24,10 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   StructTraitsTest() = default;
 
  protected:
-  mojom::TraitsTestServicePtr GetTraitsTestProxy() {
-    mojom::TraitsTestServicePtr proxy;
-    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
-    return proxy;
+  mojo::Remote<mojom::TraitsTestService> GetTraitsTestRemote() {
+    mojo::Remote<mojom::TraitsTestService> remote;
+    traits_test_receivers_.Add(this, remote.BindNewPipeAndPassReceiver());
+    return remote;
   }
 
  private:
@@ -47,7 +48,7 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   }
 
   base::test::TaskEnvironment task_environment_;
-  mojo::BindingSet<TraitsTestService> traits_test_bindings_;
+  mojo::ReceiverSet<TraitsTestService> traits_test_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(StructTraitsTest);
 };
@@ -59,15 +60,15 @@ TEST_F(StructTraitsTest, ImageInfo) {
       34, 56, SkColorType::kGray_8_SkColorType,
       SkAlphaType::kUnpremul_SkAlphaType,
       SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kAdobeRGB));
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   SkImageInfo output;
-  proxy->EchoImageInfo(input, &output);
+  remote->EchoImageInfo(input, &output);
   EXPECT_EQ(input, output);
 
   SkImageInfo another_input_with_null_color_space =
       SkImageInfo::Make(54, 43, SkColorType::kRGBA_8888_SkColorType,
                         SkAlphaType::kPremul_SkAlphaType, nullptr);
-  proxy->EchoImageInfo(another_input_with_null_color_space, &output);
+  remote->EchoImageInfo(another_input_with_null_color_space, &output);
   EXPECT_FALSE(output.colorSpace());
   EXPECT_EQ(another_input_with_null_color_space, output);
 }
@@ -80,9 +81,9 @@ TEST_F(StructTraitsTest, Bitmap) {
                             SkNamedGamut::kRec2020)));
   input.eraseColor(SK_ColorYELLOW);
   input.erase(SK_ColorTRANSPARENT, SkIRect::MakeXYWH(0, 1, 2, 3));
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   SkBitmap output;
-  proxy->EchoBitmap(input, &output);
+  remote->EchoBitmap(input, &output);
   EXPECT_EQ(input.info(), output.info());
   EXPECT_EQ(input.rowBytes(), output.rowBytes());
   EXPECT_TRUE(gfx::BitmapsAreEqual(input, output));
@@ -99,9 +100,9 @@ TEST_F(StructTraitsTest, BitmapWithExtraRowBytes) {
   input.allocPixels(info, info.minRowBytes() + extra);
   input.eraseColor(SK_ColorRED);
   input.erase(SK_ColorTRANSPARENT, SkIRect::MakeXYWH(0, 1, 2, 3));
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   SkBitmap output;
-  proxy->EchoBitmap(input, &output);
+  remote->EchoBitmap(input, &output);
   EXPECT_EQ(input.info(), output.info());
   EXPECT_EQ(input.rowBytes(), output.rowBytes());
   EXPECT_TRUE(gfx::BitmapsAreEqual(input, output));
@@ -109,9 +110,9 @@ TEST_F(StructTraitsTest, BitmapWithExtraRowBytes) {
 
 TEST_F(StructTraitsTest, BlurImageFilterTileMode) {
   SkBlurImageFilter::TileMode input(SkBlurImageFilter::kClamp_TileMode);
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   SkBlurImageFilter::TileMode output;
-  proxy->EchoBlurImageFilterTileMode(input, &output);
+  remote->EchoBlurImageFilterTileMode(input, &output);
   EXPECT_EQ(input, output);
 }
 

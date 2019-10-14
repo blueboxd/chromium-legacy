@@ -43,13 +43,10 @@
 namespace media {
 
 InterfaceFactoryImpl::InterfaceFactoryImpl(
-    service_manager::mojom::InterfaceProviderPtr interfaces,
+    service_manager::mojom::InterfaceProviderPtr host_interfaces,
     std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref,
     MojoMediaClient* mojo_media_client)
-    :
-#if BUILDFLAG(ENABLE_MOJO_CDM)
-      interfaces_(std::move(interfaces)),
-#endif
+    : host_interfaces_(std::move(host_interfaces)),
       keepalive_ref_(std::move(keepalive_ref)),
       mojo_media_client_(mojo_media_client) {
   DVLOG(1) << __func__;
@@ -102,7 +99,7 @@ void InterfaceFactoryImpl::CreateDefaultRenderer(
   DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
   auto renderer = mojo_media_client_->CreateRenderer(
-      interfaces_.get(), base::ThreadTaskRunnerHandle::Get(), &media_log_,
+      host_interfaces_.get(), base::ThreadTaskRunnerHandle::Get(), &media_log_,
       audio_device_id);
   if (!renderer) {
     DLOG(ERROR) << "Renderer creation failed.";
@@ -134,7 +131,7 @@ void InterfaceFactoryImpl::CreateCastRenderer(
   DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
   auto renderer = mojo_media_client_->CreateCastRenderer(
-      interfaces_.get(), base::ThreadTaskRunnerHandle::Get(), &media_log_,
+      host_interfaces_.get(), base::ThreadTaskRunnerHandle::Get(), &media_log_,
       overlay_plane_id);
   if (!renderer) {
     DLOG(ERROR) << "Renderer creation failed.";
@@ -302,7 +299,7 @@ void InterfaceFactoryImpl::OnBindingConnectionError() {
 #if BUILDFLAG(ENABLE_MOJO_CDM)
 CdmFactory* InterfaceFactoryImpl::GetCdmFactory() {
   if (!cdm_factory_) {
-    cdm_factory_ = mojo_media_client_->CreateCdmFactory(interfaces_.get());
+    cdm_factory_ = mojo_media_client_->CreateCdmFactory(host_interfaces_.get());
     LOG_IF(ERROR, !cdm_factory_) << "CdmFactory not available.";
   }
   return cdm_factory_.get();

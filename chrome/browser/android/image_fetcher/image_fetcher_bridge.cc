@@ -17,6 +17,7 @@
 #include "chrome/browser/image_fetcher/jni_headers/ImageFetcherBridge_jni.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_metrics_reporter.h"

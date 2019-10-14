@@ -21,6 +21,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace signin {
 

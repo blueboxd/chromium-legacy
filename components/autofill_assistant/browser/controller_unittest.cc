@@ -9,6 +9,7 @@
 
 #include "base/guid.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -126,7 +127,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
         .WillByDefault(RunOnceCallback<4>(true, ""));
 
     ON_CALL(*mock_web_controller_, OnElementCheck(_, _))
-        .WillByDefault(RunOnceCallback<1>(false));
+        .WillByDefault(RunOnceCallback<1>(ClientStatus()));
 
     ON_CALL(mock_observer_, OnStateChanged(_))
         .WillByDefault(Invoke([this](AutofillAssistantState state) {
@@ -761,7 +762,7 @@ TEST_F(ControllerTest, KeepCheckingForElement) {
   }
 
   EXPECT_CALL(*mock_web_controller_, OnElementCheck(_, _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
   task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
@@ -1594,6 +1595,33 @@ TEST_F(ControllerTest, SetShippingAddress) {
   EXPECT_THAT(
       controller_->GetUserData()->shipping_address->Compare(*shipping_address),
       Eq(0));
+}
+
+TEST_F(ControllerTest, SetAdditionalValues) {
+  auto options = std::make_unique<MockCollectUserDataOptions>();
+  auto user_data = std::make_unique<UserData>();
+
+  user_data->additional_values_to_store["key1"] = "123456789";
+  user_data->additional_values_to_store["key2"] = "";
+  user_data->additional_values_to_store["key3"] = "";
+
+  testing::InSequence seq;
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
+                                  Property(&UserAction::enabled, Eq(true)))))
+      .Times(1);
+  controller_->SetCollectUserDataOptions(std::move(options),
+                                         std::move(user_data));
+
+  EXPECT_CALL(mock_observer_, OnUserDataChanged(Not(nullptr))).Times(2);
+  controller_->SetAdditionalValue("key2", "value2");
+  controller_->SetAdditionalValue("key3", "value3");
+  EXPECT_EQ(controller_->GetUserData()->additional_values_to_store.at("key1"),
+            "123456789");
+  EXPECT_EQ(controller_->GetUserData()->additional_values_to_store.at("key2"),
+            "value2");
+  EXPECT_EQ(controller_->GetUserData()->additional_values_to_store.at("key3"),
+            "value3");
+  EXPECT_DCHECK_DEATH(controller_->SetAdditionalValue("key4", "someValue"));
 }
 
 TEST_F(ControllerTest, SetOverlayColors) {

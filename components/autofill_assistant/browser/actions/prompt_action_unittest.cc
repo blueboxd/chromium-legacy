@@ -37,9 +37,9 @@ class PromptActionTest : public testing::Test {
 
   void SetUp() override {
     ON_CALL(mock_web_controller_, OnElementCheck(_, _))
-        .WillByDefault(RunOnceCallback<1>(false));
+        .WillByDefault(RunOnceCallback<1>(ClientStatus()));
     ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
-        .WillByDefault(RunOnceCallback<1>(false, ""));
+        .WillByDefault(RunOnceCallback<1>(ClientStatus(), ""));
 
     ON_CALL(mock_action_delegate_, RunElementChecks)
         .WillByDefault(Invoke([this](BatchElementChecker* checker) {
@@ -146,13 +146,13 @@ TEST_F(PromptActionTest, ShowOnlyIfElementExists) {
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   ASSERT_THAT(user_actions_, Pointee(SizeIs(1)));
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<1>(false));
+      .WillRepeatedly(RunOnceCallback<1>(ClientStatus()));
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   ASSERT_THAT(user_actions_, Pointee(IsEmpty()));
 }
@@ -170,14 +170,14 @@ TEST_F(PromptActionTest, DisabledUnlessElementExists) {
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   ASSERT_THAT(user_actions_, Pointee(SizeIs(1)));
   EXPECT_TRUE((*user_actions_)[0].enabled());
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<1>(false));
+      .WillRepeatedly(RunOnceCallback<1>(ClientStatus()));
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   ASSERT_THAT(user_actions_, Pointee(SizeIs(1)));
   EXPECT_FALSE((*user_actions_)[0].enabled());
@@ -196,7 +196,7 @@ TEST_F(PromptActionTest, AutoSelect) {
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
 
   EXPECT_CALL(mock_action_delegate_, CancelPrompt());
   EXPECT_CALL(
@@ -226,7 +226,7 @@ TEST_F(PromptActionTest, AutoSelectWithButton) {
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
   EXPECT_CALL(
       callback_,
       Run(Pointee(AllOf(Property(&ProcessedActionProto::status, ACTION_APPLIED),

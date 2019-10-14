@@ -533,9 +533,9 @@ class BidirectionalStreamQuicImplTest
         true /* owns_writer */, quic::Perspective::IS_CLIENT,
         quic::test::SupportedVersions(version_));
     if (connection_->version().KnowsWhichDecrypterToUse()) {
-      connection_->InstallDecrypter(quic::ENCRYPTION_FORWARD_SECURE,
-                                    quic::QuicMakeUnique<quic::NullDecrypter>(
-                                        quic::Perspective::IS_CLIENT));
+      connection_->InstallDecrypter(
+          quic::ENCRYPTION_FORWARD_SECURE,
+          std::make_unique<quic::NullDecrypter>(quic::Perspective::IS_CLIENT));
     }
     base::TimeTicks dns_end = base::TimeTicks::Now();
     base::TimeTicks dns_start = dns_end - base::TimeDelta::FromMilliseconds(1);
@@ -877,7 +877,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   AddWrite(ConstructRequestHeadersPacketInner(
       GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
@@ -936,7 +936,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   spdy::SpdyHeaderBlock trailers;
   size_t spdy_trailers_frame_length;
   trailers["foo"] = "bar";
-  if (!quic::VersionUsesQpack(version_.transport_version)) {
+  if (!quic::VersionUsesHttp3(version_.transport_version)) {
     trailers[quic::kFinalOffsetHeaderKey] =
         base::NumberToString(strlen(kResponseBody));
   }
@@ -980,7 +980,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
 TEST_P(BidirectionalStreamQuicImplTest, LoadTimingTwoRequests) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   AddWrite(ConstructRequestHeadersPacketInner(
       GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
@@ -1055,7 +1055,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   const char kBody1[] = "here are some data";
@@ -1162,7 +1162,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   size_t spdy_trailers_frame_length;
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
-  if (!quic::VersionUsesQpack(version_.transport_version)) {
+  if (!quic::VersionUsesHttp3(version_.transport_version)) {
     trailers[quic::kFinalOffsetHeaderKey] =
         base::NumberToString(strlen(kResponseBody));
   }
@@ -1197,7 +1197,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   const char kBody1[] = "here are some data";
@@ -1281,7 +1281,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   size_t spdy_trailers_frame_length;
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
-  if (!quic::VersionUsesQpack(version_.transport_version)) {
+  if (!quic::VersionUsesHttp3(version_.transport_version)) {
     trailers[quic::kFinalOffsetHeaderKey] =
         base::NumberToString(strlen(kResponseBody));
   }
@@ -1314,7 +1314,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   const char kBody1[] = "here are some data";
@@ -1415,7 +1415,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   size_t spdy_trailers_frame_length;
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
-  if (!quic::VersionUsesQpack(version_.transport_version)) {
+  if (!quic::VersionUsesHttp3(version_.transport_version)) {
     trailers[quic::kFinalOffsetHeaderKey] =
         base::NumberToString(strlen(kResponseBody));
   }
@@ -1448,7 +1448,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
 TEST_P(BidirectionalStreamQuicImplTest,
        SendDataWriteErrorCoalesceDataBufferAndHeaderFrame) {
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   AddWriteError(SYNCHRONOUS, ERR_CONNECTION_REFUSED);
 
@@ -1485,7 +1485,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
 TEST_P(BidirectionalStreamQuicImplTest,
        SendvDataWriteErrorCoalesceDataBufferAndHeaderFrame) {
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   AddWriteError(SYNCHRONOUS, ERR_CONNECTION_REFUSED);
 
@@ -1525,7 +1525,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructRequestHeadersPacketInner(
@@ -1592,7 +1592,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   size_t spdy_trailers_frame_length;
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
-  if (!quic::VersionUsesQpack(version_.transport_version)) {
+  if (!quic::VersionUsesHttp3(version_.transport_version)) {
     trailers[quic::kFinalOffsetHeaderKey] =
         base::NumberToString(strlen(kResponseBody));
   }
@@ -1621,7 +1621,7 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
   SetRequest("PUT", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructRequestHeadersPacketInner(
@@ -1689,7 +1689,7 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
   size_t spdy_trailers_frame_length;
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
-  if (!quic::VersionUsesQpack(version_.transport_version)) {
+  if (!quic::VersionUsesHttp3(version_.transport_version)) {
     trailers[quic::kFinalOffsetHeaderKey] =
         base::NumberToString(strlen(kResponseBody));
   }
@@ -1718,7 +1718,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructRequestHeadersPacketInner(
@@ -1782,7 +1782,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   std::string header2 = ConstructDataHeader(strlen(kResponseBody));
   // Server sends a data packet
   int server_ack = 1;
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     server_ack++;
   ProcessPacket(ConstructAckAndDataPacket(3, !kIncludeVersion, server_ack++, 1,
                                           1, !kFin, header2 + kResponseBody,
@@ -1826,7 +1826,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterHeaders) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   AddWrite(ConstructRequestHeadersPacketInner(
       GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
@@ -1872,7 +1872,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   AddWrite(ConstructRequestHeadersPacketInner(
       GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
@@ -1936,7 +1936,7 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructRequestHeadersPacketInner(
@@ -2047,7 +2047,7 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeStartNotConfirmed) {
 TEST_P(BidirectionalStreamQuicImplTest, SessionCloseDuringOnStreamReady) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   AddWriteError(SYNCHRONOUS, ERR_CONNECTION_REFUSED);
 
@@ -2076,7 +2076,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnStreamReady) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructRequestHeadersPacketInner(
@@ -2110,7 +2110,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamAfterReadData) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructRequestHeadersPacketInner(
@@ -2168,7 +2168,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnHeadersReceived) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructRequestHeadersPacketInner(
@@ -2218,7 +2218,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructRequestHeadersPacketInner(
@@ -2280,7 +2280,7 @@ TEST_P(BidirectionalStreamQuicImplTest, AsyncFinRead) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructRequestHeadersPacketInner(
@@ -2358,7 +2358,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   AddWrite(ConstructRequestHeadersPacket(kFin, DEFAULT_PRIORITY,
                                          &spdy_request_headers_frame_length));
@@ -2413,7 +2413,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   size_t spdy_trailers_frame_length;
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
-  if (!quic::VersionUsesQpack(version_.transport_version)) {
+  if (!quic::VersionUsesHttp3(version_.transport_version)) {
     trailers[quic::kFinalOffsetHeaderKey] =
         base::NumberToString(strlen(kResponseBody));
   }

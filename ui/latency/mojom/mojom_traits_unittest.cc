@@ -5,7 +5,8 @@
 #include <utility>
 
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/latency/mojom/latency_info_mojom_traits.h"
 #include "ui/latency/mojom/traits_test_service.mojom.h"
@@ -19,10 +20,10 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   StructTraitsTest() {}
 
  protected:
-  mojom::TraitsTestServicePtr GetTraitsTestProxy() {
-    mojom::TraitsTestServicePtr proxy;
-    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
-    return proxy;
+  mojo::Remote<mojom::TraitsTestService> GetTraitsTestRemote() {
+    mojo::Remote<mojom::TraitsTestService> remote;
+    traits_test_receivers_.Add(this, remote.BindNewPipeAndPassReceiver());
+    return remote;
   }
 
  private:
@@ -33,7 +34,7 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   }
 
   base::test::TaskEnvironment task_environment_;
-  mojo::BindingSet<TraitsTestService> traits_test_bindings_;
+  mojo::ReceiverSet<TraitsTestService> traits_test_receivers_;
   DISALLOW_COPY_AND_ASSIGN(StructTraitsTest);
 };
 
@@ -54,9 +55,9 @@ TEST_F(StructTraitsTest, LatencyInfo) {
 
   latency.set_source_event_type(ui::SourceEventType::TOUCH);
 
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   LatencyInfo output;
-  proxy->EchoLatencyInfo(latency, &output);
+  remote->EchoLatencyInfo(latency, &output);
 
   EXPECT_EQ(latency.trace_id(), output.trace_id());
   EXPECT_EQ(latency.ukm_source_id(), output.ukm_source_id());

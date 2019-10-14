@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.graphics.Typeface;
 import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
 import android.widget.TextView;
@@ -28,6 +29,9 @@ public class AssistantTextUtils {
     /** Bold tags of the form <b>...</b>. */
     private static final SpanApplier.SpanInfo BOLD_SPAN_INFO =
             new SpanApplier.SpanInfo("<b>", "</b>", new StyleSpan(android.graphics.Typeface.BOLD));
+    /** Italic tags of the form <i>...</i>. */
+    private static final SpanApplier.SpanInfo ITALIC_SPAN_INFO =
+            new SpanApplier.SpanInfo("<i>", "</i>", new StyleSpan(Typeface.ITALIC));
     /** Links of the form <link0>...</link0>. */
     private static final Pattern LINK_PATTERN = Pattern.compile("<link(\\d+)>");
 
@@ -43,6 +47,9 @@ public class AssistantTextUtils {
         List<SpanApplier.SpanInfo> spans = new ArrayList<>();
         if (text.contains("<b>")) {
             spans.add(BOLD_SPAN_INFO);
+        }
+        if (text.contains("<i>")) {
+            spans.add(ITALIC_SPAN_INFO);
         }
 
         // We first collect the link IDs into a set to allow multiple links with same ID.

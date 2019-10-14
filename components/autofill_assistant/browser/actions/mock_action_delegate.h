@@ -28,31 +28,33 @@ class MockActionDelegate : public ActionDelegate {
 
   MOCK_METHOD1(RunElementChecks, void(BatchElementChecker*));
 
-  void ShortWaitForElement(const Selector& selector,
-                           base::OnceCallback<void(bool)> callback) override {
+  void ShortWaitForElement(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) override {
     OnShortWaitForElement(selector, callback);
   }
 
   MOCK_METHOD2(OnShortWaitForElement,
-               void(const Selector& selector, base::OnceCallback<void(bool)>&));
+               void(const Selector& selector,
+                    base::OnceCallback<void(const ClientStatus&)>&));
 
   void WaitForDom(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
-      base::RepeatingCallback<void(BatchElementChecker*,
-                                   base::OnceCallback<void(bool)>)>
-          check_elements,
-      base::OnceCallback<void(ProcessedActionStatusProto)> callback) override {
+      base::RepeatingCallback<
+          void(BatchElementChecker*,
+               base::OnceCallback<void(const ClientStatus&)>)> check_elements,
+      base::OnceCallback<void(const ClientStatus&)> callback) override {
     OnWaitForDom(max_wait_time, allow_interrupt, check_elements, callback);
   }
 
-  MOCK_METHOD4(
-      OnWaitForDom,
-      void(base::TimeDelta,
-           bool,
-           base::RepeatingCallback<void(BatchElementChecker*,
-                                        base::OnceCallback<void(bool)>)>&,
-           base::OnceCallback<void(ProcessedActionStatusProto)>&));
+  MOCK_METHOD4(OnWaitForDom,
+               void(base::TimeDelta,
+                    bool,
+                    base::RepeatingCallback<
+                        void(BatchElementChecker*,
+                             base::OnceCallback<void(const ClientStatus&)>)>&,
+                    base::OnceCallback<void(const ClientStatus&)>&));
 
   MOCK_METHOD1(SetStatusMessage, void(const std::string& message));
   MOCK_METHOD0(GetStatusMessage, std::string());
@@ -131,16 +133,16 @@ class MockActionDelegate : public ActionDelegate {
     OnGetFullCard(transformed_callback);
   }
 
-  void GetFieldValue(
-      const Selector& selector,
-      base::OnceCallback<void(bool, const std::string&)> callback) {
+  void GetFieldValue(const Selector& selector,
+                     base::OnceCallback<void(const ClientStatus&,
+                                             const std::string&)> callback) {
     OnGetFieldValue(selector, callback);
   }
 
-  MOCK_METHOD2(
-      OnGetFieldValue,
-      void(const Selector& selector,
-           base::OnceCallback<void(bool, const std::string&)>& callback));
+  MOCK_METHOD2(OnGetFieldValue,
+               void(const Selector& selector,
+                    base::OnceCallback<void(const ClientStatus&,
+                                            const std::string&)>& callback));
 
   void SetFieldValue(const Selector& selector,
                      const std::string& value,

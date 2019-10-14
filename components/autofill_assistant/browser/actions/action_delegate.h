@@ -74,8 +74,9 @@ class ActionDelegate {
   //
   // TODO(crbug.com/806868): Consider embedding that wait right into
   // WebController and eliminate double-lookup.
-  virtual void ShortWaitForElement(const Selector& selector,
-                                   base::OnceCallback<void(bool)> callback) = 0;
+  virtual void ShortWaitForElement(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Wait for up to |max_wait_time| for element conditions to match on the page,
   // then call |callback| with a successful status if at least an element
@@ -85,10 +86,10 @@ class ActionDelegate {
   virtual void WaitForDom(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
-      base::RepeatingCallback<void(BatchElementChecker*,
-                                   base::OnceCallback<void(bool)>)>
-          check_elements,
-      base::OnceCallback<void(ProcessedActionStatusProto)> callback) = 0;
+      base::RepeatingCallback<
+          void(BatchElementChecker*,
+               base::OnceCallback<void(const ClientStatus&)>)> check_elements,
+      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Click or tap the element given by |selector| on the web page.
   virtual void ClickOrTapElement(
@@ -167,7 +168,8 @@ class ActionDelegate {
   // empty string in case of error or empty value.
   virtual void GetFieldValue(
       const Selector& selector,
-      base::OnceCallback<void(bool, const std::string&)> callback) = 0;
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback) = 0;
 
   // Set the |value| of field |selector| and return the result through
   // |callback|. If |simulate_key_presses| is true, the value will be set by

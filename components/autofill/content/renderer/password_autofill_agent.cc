@@ -794,6 +794,10 @@ bool PasswordAutofillAgent::TryToShowTouchToFill(
     return false;
   }
 
+  DCHECK(!password_element.IsNull());
+  if (!IsElementEditable(password_element))
+    return false;
+
   GetPasswordManagerDriver()->ShowTouchToFill();
   touch_to_fill_state_ = TouchToFillState::kIsShowing;
   return true;

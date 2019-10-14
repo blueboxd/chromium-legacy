@@ -23,6 +23,7 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/download/content/factory/download_service_factory_helper.h"

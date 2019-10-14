@@ -47,6 +47,7 @@
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/previews/resource_loading_hints/resource_loading_hints_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
 #include "chrome/browser/safe_browsing/trigger_creator.h"

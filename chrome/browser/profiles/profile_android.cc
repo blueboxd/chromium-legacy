@@ -9,6 +9,7 @@
 #include "chrome/android/public/profiles/jni_headers/Profile_jni.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_key_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/web_contents.h"

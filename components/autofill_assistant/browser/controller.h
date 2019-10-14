@@ -163,13 +163,14 @@ class Controller : public ScriptExecutorDelegate,
                              int hour,
                              int minute,
                              int second) override;
-
   void SetDateTimeRangeEnd(int year,
                            int month,
                            int day,
                            int hour,
                            int minute,
                            int second) override;
+  void SetAdditionalValue(const std::string& client_memory_key,
+                          const std::string& value) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
   void GetRestrictedArea(std::vector<RectF>* area) const override;
   void GetVisualViewport(RectF* visual_viewport) const override;

@@ -34,8 +34,6 @@ jumbo_static_library("browser") {
     "actions/action.cc",
     "actions/action.h",
     "actions/action_delegate.h",
-    "actions/autofill_action.cc",
-    "actions/autofill_action.h",
     "actions/click_action.cc",
     "actions/click_action.h",
     "actions/collect_user_data_action.cc",
@@ -78,6 +76,10 @@ jumbo_static_library("browser") {
     "actions/unsupported_action.h",
     "actions/upload_dom_action.cc",
     "actions/upload_dom_action.h",
+    "actions/use_address_action.cc",
+    "actions/use_address_action.h",
+    "actions/use_credit_card_action.cc",
+    "actions/use_credit_card_action.h",
     "actions/wait_for_document_action.cc",
     "actions/wait_for_document_action.h",
     "actions/wait_for_dom_action.cc",
@@ -185,7 +187,6 @@ jumbo_static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "actions/autofill_action_unittest.cc",
     "actions/collect_user_data_action_unittest.cc",
     "actions/configure_bottom_sheet_action_unittest.cc",
     "actions/mock_action_delegate.cc",
@@ -194,6 +195,8 @@ source_set("unit_tests") {
     "actions/prompt_action_unittest.cc",
     "actions/set_form_field_value_action_unittest.cc",
     "actions/show_details_action_unittest.cc",
+    "actions/use_address_action_unittest.cc",
+    "actions/use_credit_card_action_unittest.cc",
     "actions/wait_for_document_action_unittest.cc",
     "actions/wait_for_dom_action_unittest.cc",
     "batch_element_checker_unittest.cc",

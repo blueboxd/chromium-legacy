@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
 namespace {

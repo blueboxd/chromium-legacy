@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/syslog_logging.h"
 #include "base/trace_event/trace_event.h"

@@ -2326,12 +2326,6 @@ const char kAiaFetchingDescription[] =
     "Enable intermediate certificate fetching when a server does not provide "
     "sufficient certificates to build a chain to a trusted root.";
 
-const char kAllowRemoteContextForNotificationsName[] =
-    "Allow using remote app context for notifications";
-const char kAllowRemoteContextForNotificationsDescription[] =
-    "Allow using Context#createPackageContext to work around issues with status"
-    "bar icons on certain Android M devices.";
-
 const char kAndroidAutofillAccessibilityName[] = "Autofill Accessibility";
 const char kAndroidAutofillAccessibilityDescription[] =
     "Enable accessibility for autofill popup.";
@@ -2577,10 +2571,6 @@ const char kManualPasswordGenerationAndroidName[] =
 const char kManualPasswordGenerationAndroidDescription[] =
     "Whether Chrome should offer users the option to manually request to "
     "generate passwords on Android.";
-
-const char kNewPhotoPickerName[] = "Enable new Photopicker";
-const char kNewPhotoPickerDescription[] =
-    "Activates the new picker for selecting photos.";
 
 const char kNoCreditCardAbort[] = "No Credit Card Abort";
 const char kNoCreditCardAbortDescription[] =

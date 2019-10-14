@@ -355,7 +355,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
 
     MockQuicData socket_data(version_);
     socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-    if (VersionUsesQpack(version_.transport_version))
+    if (VersionUsesHttp3(version_.transport_version))
       socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
     socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -498,7 +498,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
     MockQuicData socket_data2(version_);
     socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
     int packet_num = 1;
-    if (VersionUsesQpack(version_.transport_version)) {
+    if (VersionUsesHttp3(version_.transport_version)) {
       socket_data2.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
     }
@@ -723,7 +723,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
     MockQuicData socket_data(version_);
     socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
     client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-    if (VersionUsesQpack(version_.transport_version))
+    if (VersionUsesHttp3(version_.transport_version))
       socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
     socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -761,7 +761,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
     MockQuicData socket_data2(version_);
     socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
     client_maker_.Reset();
-    if (VersionUsesQpack(version_.transport_version))
+    if (VersionUsesHttp3(version_.transport_version))
       socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
     socket_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -932,7 +932,7 @@ TEST_P(QuicStreamFactoryTest, Create) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -987,7 +987,7 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1018,7 +1018,7 @@ TEST_P(QuicStreamFactoryTest, DefaultInitialRtt) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1047,7 +1047,7 @@ TEST_P(QuicStreamFactoryTest, FactoryDestroyedWhenJobPending) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1079,7 +1079,7 @@ TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1123,7 +1123,7 @@ TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1162,7 +1162,7 @@ TEST_P(QuicStreamFactoryTest, CachedInitialRtt) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1226,7 +1226,7 @@ TEST_P(QuicStreamFactoryTest, CachedInitialRttWithNetworkIsolationKey) {
 
     MockQuicData socket_data(version_);
     socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-    if (VersionUsesQpack(version_.transport_version)) {
+    if (VersionUsesHttp3(version_.transport_version)) {
       socket_data.AddWrite(SYNCHRONOUS,
                            packet_maker.MakeInitialSettingsPacket(1));
     }
@@ -1270,7 +1270,7 @@ TEST_P(QuicStreamFactoryTest, 2gInitialRtt) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1304,7 +1304,7 @@ TEST_P(QuicStreamFactoryTest, 3gInitialRtt) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1333,7 +1333,7 @@ TEST_P(QuicStreamFactoryTest, GoAway) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1366,7 +1366,7 @@ TEST_P(QuicStreamFactoryTest, GoAwayForConnectionMigrationWithPortOnly) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1442,7 +1442,7 @@ TEST_P(QuicStreamFactoryTest, ServerNetworkStatsWithNetworkIsolationKey) {
 
     MockQuicData socket_data(version_);
     socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-    if (VersionUsesQpack(version_.transport_version)) {
+    if (VersionUsesHttp3(version_.transport_version)) {
       socket_data.AddWrite(SYNCHRONOUS,
                            packet_maker.MakeInitialSettingsPacket(1));
     }
@@ -1533,7 +1533,7 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1593,7 +1593,7 @@ TEST_P(QuicStreamFactoryTest, PoolingWithServerMigration) {
 
   MockQuicData socket_data1(version_);
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data1.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data1.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1628,13 +1628,13 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
 
   MockQuicData socket_data1(version_);
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data1.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data1.AddSocketDataToFactory(socket_factory_.get());
   client_maker_.Reset();
   MockQuicData socket_data2(version_);
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1693,7 +1693,7 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1738,7 +1738,7 @@ TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
   Initialize();
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1790,13 +1790,13 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
 
   MockQuicData socket_data1(version_);
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data1.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data1.AddSocketDataToFactory(socket_factory_.get());
   client_maker_.Reset();
   MockQuicData socket_data2(version_);
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1859,13 +1859,13 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
   client_maker_.Reset();
   MockQuicData socket_data2(version_);
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -2054,7 +2054,7 @@ TEST_P(QuicStreamFactoryTest, CancelCreate) {
   Initialize();
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
   {
@@ -2094,7 +2094,7 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -2110,7 +2110,7 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   client_maker_.Reset();
   MockQuicData socket_data2(version_);
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -2194,7 +2194,7 @@ TEST_P(QuicStreamFactoryTest,
   client_maker_.Reset();
   MockQuicData socket_data2(version_);
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -2262,7 +2262,7 @@ TEST_P(QuicStreamFactoryTest, WriteErrorInCryptoConnectWithSyncHostResolution) {
   client_maker_.Reset();
   MockQuicData socket_data2(version_);
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -2303,7 +2303,7 @@ TEST_P(QuicStreamFactoryTest, CloseSessionsOnIPAddressChanged) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -2319,7 +2319,7 @@ TEST_P(QuicStreamFactoryTest, CloseSessionsOnIPAddressChanged) {
   client_maker_.Reset();
   MockQuicData socket_data2(version_);
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -2393,7 +2393,7 @@ TEST_P(QuicStreamFactoryTest, GoAwaySessionsOnIPAddressChanged) {
 
   MockQuicData quic_data1(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data1.AddWrite(SYNCHRONOUS,
                         ConstructInitialSettingsPacket(packet_num++));
   }
@@ -2413,7 +2413,7 @@ TEST_P(QuicStreamFactoryTest, GoAwaySessionsOnIPAddressChanged) {
   client_maker_.Reset();
   MockQuicData quic_data2(version_);
   quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(1));
   quic_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -2499,7 +2499,7 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChangedWithConnectionMigration) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -2575,7 +2575,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnNetworkMadeDefault(
   MockQuicData quic_data1(version_);
   quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging Read.
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data1.AddWrite(SYNCHRONOUS,
                         ConstructInitialSettingsPacket(packet_num++));
   }
@@ -2754,7 +2754,7 @@ TEST_P(QuicStreamFactoryTest, MigratedToBlockedSocketAfterProbing) {
   MockQuicData quic_data1(version_);
   quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging Read.
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data1.AddWrite(SYNCHRONOUS,
                         ConstructInitialSettingsPacket(packet_num++));
   }
@@ -2935,7 +2935,7 @@ TEST_P(QuicStreamFactoryTest, MigrationTimeoutWithNoNewNetwork) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -3020,7 +3020,7 @@ void QuicStreamFactoryTestBase::TestOnNetworkMadeDefaultNonMigratableStream(
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -3119,7 +3119,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultConnectionMigrationDisabled) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -3197,7 +3197,7 @@ void QuicStreamFactoryTestBase::TestOnNetworkDisconnectedNonMigratableStream(
   if (migrate_idle_sessions) {
     failed_socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
     int packet_num = 1;
-    if (VersionUsesQpack(version_.transport_version)) {
+    if (VersionUsesHttp3(version_.transport_version)) {
       failed_socket_data.AddWrite(SYNCHRONOUS,
                                   ConstructInitialSettingsPacket(packet_num++));
     }
@@ -3219,7 +3219,7 @@ void QuicStreamFactoryTestBase::TestOnNetworkDisconnectedNonMigratableStream(
   } else {
     socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
     int packet_num = 1;
-    if (VersionUsesQpack(version_.transport_version))
+    if (VersionUsesHttp3(version_.transport_version))
       socket_data.AddWrite(SYNCHRONOUS,
                            ConstructInitialSettingsPacket(packet_num++));
     socket_data.AddWrite(
@@ -3288,7 +3288,7 @@ TEST_P(QuicStreamFactoryTest,
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -3362,7 +3362,7 @@ void QuicStreamFactoryTestBase::TestOnNetworkMadeDefaultNoOpenStreams(
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -3448,7 +3448,7 @@ void QuicStreamFactoryTestBase::TestOnNetworkDisconnectedNoOpenStreams(
   MockQuicData default_socket_data(version_);
   default_socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     default_socket_data.AddWrite(SYNCHRONOUS,
                                  ConstructInitialSettingsPacket(packet_num++));
   }
@@ -3524,7 +3524,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnNetworkDisconnected(
   int packet_number = 1;
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_number++));
   }
@@ -3650,7 +3650,7 @@ TEST_P(QuicStreamFactoryTest, NewNetworkConnectedAfterNoNetwork) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -3784,7 +3784,7 @@ TEST_P(QuicStreamFactoryTest, MigrateToProbingSocket) {
   int packet_number = 1;
   MockQuicData quic_data1(version_);
   quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging Read.
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data1.AddWrite(SYNCHRONOUS,
                         ConstructInitialSettingsPacket(packet_number++));
   }
@@ -3962,7 +3962,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnPathDegrading(
   int packet_number = 1;
   MockQuicData quic_data1(version_);
   quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging Read.
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data1.AddWrite(SYNCHRONOUS,
                         ConstructInitialSettingsPacket(packet_number++));
   }
@@ -4172,7 +4172,7 @@ void QuicStreamFactoryTestBase::TestSimplePortMigrationOnPathDegrading() {
   int packet_number = 1;
   MockQuicData quic_data1(version_);
   quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging Read.
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data1.AddWrite(SYNCHRONOUS,
                         ConstructInitialSettingsPacket(packet_number++));
   }
@@ -4308,7 +4308,7 @@ TEST_P(QuicStreamFactoryTest, GoawayOnPathDegrading) {
 
   MockQuicData quic_data1(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data1.AddWrite(SYNCHRONOUS,
                         ConstructInitialSettingsPacket(packet_num++));
   }
@@ -4328,7 +4328,7 @@ TEST_P(QuicStreamFactoryTest, GoawayOnPathDegrading) {
   client_maker_.Reset();
   MockQuicData quic_data2(version_);
   quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   quic_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -4425,7 +4425,7 @@ TEST_P(QuicStreamFactoryTest, DoNotMigrateToBadSocketOnPathDegrading) {
 
   MockQuicData quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_num++));
   }
@@ -4547,7 +4547,7 @@ void QuicStreamFactoryTestBase::TestMigrateSessionWithDrainingStream(
 
   int packet_number = 1;
   MockQuicData quic_data1(version_);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data1.AddWrite(SYNCHRONOUS,
                         ConstructInitialSettingsPacket(packet_number++));
   }
@@ -4716,7 +4716,7 @@ TEST_P(QuicStreamFactoryTest, MigrateOnNewNetworkConnectAfterPathDegrading) {
   MockQuicData quic_data1(version_);
   quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging Read.
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data1.AddWrite(SYNCHRONOUS,
                         ConstructInitialSettingsPacket(packet_num++));
   }
@@ -4873,14 +4873,14 @@ TEST_P(QuicStreamFactoryTest,
 
   MockQuicData socket_data1(version_);
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data1.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data1.AddWrite(ASYNC, OK);
   socket_data1.AddSocketDataToFactory(socket_factory_.get());
   client_maker_.Reset();
   MockQuicData socket_data2(version_);
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data2.AddWrite(ASYNC, OK);
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
@@ -5001,7 +5001,7 @@ TEST_P(QuicStreamFactoryTest, MigrateOnPathDegradingWithNoNewNetwork) {
 
   MockQuicData quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_num++));
   }
@@ -5104,7 +5104,7 @@ void QuicStreamFactoryTestBase::TestMigrateSessionEarlyNonMigratableStream(
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -5203,7 +5203,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyConnectionMigrationDisabled) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -5281,7 +5281,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnAysncWriteError) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -5439,7 +5439,7 @@ TEST_P(QuicStreamFactoryTest, MigrateBackToDefaultPostMigrationOnWriteError) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -5746,7 +5746,7 @@ void QuicStreamFactoryTestBase::
   socket_data2.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
   // Change the encryption level after handshake is confirmed.
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(ASYNC, ConstructInitialSettingsPacket(packet_num++));
   socket_data2.AddWrite(
       ASYNC, ConstructGetRequestPacket(
@@ -5909,7 +5909,7 @@ TEST_P(QuicStreamFactoryTest, MigrationOnWriteErrorBeforeHandshakeConfirmed) {
   client_maker_.Reset();
   MockQuicData socket_data2(version_);
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -5970,7 +5970,7 @@ TEST_P(QuicStreamFactoryTest,
   socket_data2.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
   // Change the encryption level after handshake is confirmed.
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(ASYNC, ConstructInitialSettingsPacket(packet_num++));
   socket_data2.AddWrite(
       ASYNC, ConstructGetRequestPacket(
@@ -6053,7 +6053,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteError(
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -6155,7 +6155,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNoNewNetwork(
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddWrite(write_error_mode, ERR_ADDRESS_UNREACHABLE);
   socket_data.AddSocketDataToFactory(socket_factory_.get());
@@ -6267,7 +6267,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorWithMultipleRequests(
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -6405,7 +6405,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMixedStreams(
   MockQuicData socket_data(version_);
 
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_number++));
   }
@@ -6544,7 +6544,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMixedStreams2(
   int packet_number = 1;
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_number++));
   }
@@ -6692,7 +6692,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNonMigratableStream(
   if (migrate_idle_sessions) {
     // The socket data provider for the original socket before migration.
     failed_socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-    if (VersionUsesQpack(version_.transport_version)) {
+    if (VersionUsesHttp3(version_.transport_version)) {
       failed_socket_data.AddWrite(SYNCHRONOUS,
                                   ConstructInitialSettingsPacket(packet_num++));
     }
@@ -6718,7 +6718,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNonMigratableStream(
     socket_data.AddSocketDataToFactory(socket_factory_.get());
   } else {
     socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-    if (VersionUsesQpack(version_.transport_version))
+    if (VersionUsesHttp3(version_.transport_version))
       socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
     socket_data.AddWrite(write_error_mode, ERR_ADDRESS_UNREACHABLE);
     socket_data.AddSocketDataToFactory(socket_factory_.get());
@@ -6807,7 +6807,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMigrationDisabled(
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddWrite(write_error_mode, ERR_ADDRESS_UNREACHABLE);
   socket_data.AddSocketDataToFactory(socket_factory_.get());
@@ -6899,7 +6899,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnMultipleWriteErrors(
   MockQuicData socket_data1(version_);
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data1.AddWrite(SYNCHRONOUS,
                           ConstructInitialSettingsPacket(packet_num++));
   }
@@ -7071,7 +7071,7 @@ void QuicStreamFactoryTestBase::
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -7209,7 +7209,7 @@ void QuicStreamFactoryTestBase::
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -7353,7 +7353,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorPauseBeforeConnected(
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -7486,7 +7486,7 @@ TEST_P(QuicStreamFactoryTest, IgnoreWriteErrorFromOldWriterAfterMigration) {
 
   MockQuicData socket_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -7599,7 +7599,7 @@ TEST_P(QuicStreamFactoryTest, IgnoreReadErrorFromOldReaderAfterMigration) {
 
   MockQuicData socket_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -7718,7 +7718,7 @@ TEST_P(QuicStreamFactoryTest, IgnoreReadErrorOnOldReaderDuringMigration) {
 
   MockQuicData socket_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -7839,7 +7839,7 @@ TEST_P(QuicStreamFactoryTest, DefaultRetransmittableOnWireTimeoutForMigration) {
 
   MockQuicData socket_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -7996,7 +7996,7 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeoutForMigration) {
 
   MockQuicData socket_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -8151,7 +8151,7 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeout) {
 
   MockQuicData socket_data1(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data1.AddWrite(SYNCHRONOUS,
                           ConstructInitialSettingsPacket(packet_num++));
   }
@@ -8283,7 +8283,7 @@ TEST_P(QuicStreamFactoryTest, NoRetransmittableOnWireTimeout) {
 
   MockQuicData socket_data1(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data1.AddWrite(SYNCHRONOUS,
                           ConstructInitialSettingsPacket(packet_num++));
   }
@@ -8416,7 +8416,7 @@ TEST_P(QuicStreamFactoryTest,
 
   MockQuicData socket_data1(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data1.AddWrite(SYNCHRONOUS,
                           ConstructInitialSettingsPacket(packet_num++));
   }
@@ -8550,7 +8550,7 @@ TEST_P(QuicStreamFactoryTest,
 
   MockQuicData socket_data1(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data1.AddWrite(SYNCHRONOUS,
                           ConstructInitialSettingsPacket(packet_num++));
   }
@@ -8676,7 +8676,7 @@ TEST_P(QuicStreamFactoryTest,
 
   MockQuicData socket_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -8826,7 +8826,7 @@ void QuicStreamFactoryTestBase::
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -8974,7 +8974,7 @@ TEST_P(QuicStreamFactoryTest, DefaultIdleMigrationPeriod) {
   MockQuicData default_socket_data(version_);
   default_socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     default_socket_data.AddWrite(SYNCHRONOUS,
                                  ConstructInitialSettingsPacket(packet_num++));
   }
@@ -9102,7 +9102,7 @@ TEST_P(QuicStreamFactoryTest, CustomIdleMigrationPeriod) {
   MockQuicData default_socket_data(version_);
   default_socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     default_socket_data.AddWrite(SYNCHRONOUS,
                                  ConstructInitialSettingsPacket(packet_num++));
   }
@@ -9217,7 +9217,7 @@ TEST_P(QuicStreamFactoryTest, ServerMigration) {
   MockQuicData socket_data1(version_);
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data1.AddWrite(SYNCHRONOUS,
                           ConstructInitialSettingsPacket(packet_num++));
   }
@@ -9372,7 +9372,7 @@ TEST_P(QuicStreamFactoryTest, ServerMigrationIPv4ToIPv6Fails) {
   MockQuicData socket_data1(version_);
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data1.AddWrite(SYNCHRONOUS,
                           ConstructInitialSettingsPacket(packet_num++));
   }
@@ -9433,14 +9433,14 @@ TEST_P(QuicStreamFactoryTest, OnCertDBChanged) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   client_maker_.Reset();
   MockQuicData socket_data2(version_);
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -9586,7 +9586,7 @@ TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -9626,14 +9626,14 @@ TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   client_maker_.Reset();
   MockQuicData socket_data2(version_);
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -10051,7 +10051,7 @@ TEST_P(QuicStreamFactoryTest,
     MockQuicData socket_data(version_);
     socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
     client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-    if (VersionUsesQpack(version_.transport_version))
+    if (VersionUsesHttp3(version_.transport_version))
       socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
     // For the close socket message.
     socket_data.AddWrite(SYNCHRONOUS, ERR_IO_PENDING);
@@ -10096,7 +10096,7 @@ TEST_P(QuicStreamFactoryTest, StartCertVerifyJob) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -10172,7 +10172,7 @@ TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ConstructClientConnectionClosePacket(1));
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddRead(ASYNC, OK);
   socket_data.AddSocketDataToFactory(socket_factory_.get());
@@ -10224,7 +10224,7 @@ TEST_P(QuicStreamFactoryTest, YieldAfterDuration) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ConstructClientConnectionClosePacket(1));
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddRead(ASYNC, OK);
   socket_data.AddSocketDataToFactory(socket_factory_.get());
@@ -10272,7 +10272,7 @@ TEST_P(QuicStreamFactoryTest, ServerPushSessionAffinity) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -10319,7 +10319,7 @@ TEST_P(QuicStreamFactoryTest, ServerPushPrivacyModeMismatch) {
   MockQuicData socket_data1(version_);
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data1.AddWrite(SYNCHRONOUS,
                           ConstructInitialSettingsPacket(packet_num++));
   }
@@ -10333,7 +10333,7 @@ TEST_P(QuicStreamFactoryTest, ServerPushPrivacyModeMismatch) {
   client_maker_.Reset();
   MockQuicData socket_data2(version_);
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -10399,7 +10399,7 @@ TEST_P(QuicStreamFactoryTest, PoolByOrigin) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -10562,7 +10562,7 @@ TEST_P(QuicStreamFactoryWithDestinationTest, SharedCertificate) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -10634,13 +10634,13 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DifferentPrivacyMode) {
 
   MockQuicData socket_data1(version_);
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data1.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data1.AddSocketDataToFactory(socket_factory_.get());
   client_maker_.Reset();
   MockQuicData socket_data2(version_);
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -10722,13 +10722,13 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DisjointCertificate) {
 
   MockQuicData socket_data1(version_);
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data1.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data1.AddSocketDataToFactory(socket_factory_.get());
   client_maker_.Reset();
   MockQuicData socket_data2(version_);
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -10861,7 +10861,7 @@ TEST_P(QuicStreamFactoryTest, HostResolverUsesRequestPriority) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -10890,7 +10890,7 @@ TEST_P(QuicStreamFactoryTest, HostResolverRequestReprioritizedOnSetPriority) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -11206,7 +11206,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceAndHostResolutionSync) {
 
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   quic_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -11242,7 +11242,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceAndHostResolutionAsync) {
 
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   quic_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -11301,7 +11301,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsyncStaleMatch) {
 
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   quic_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -11364,7 +11364,7 @@ TEST_P(QuicStreamFactoryTest,
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   quic_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -11433,7 +11433,7 @@ TEST_P(QuicStreamFactoryTest,
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   quic_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -11496,7 +11496,7 @@ TEST_P(QuicStreamFactoryTest,
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_num++));
   }
@@ -11510,7 +11510,7 @@ TEST_P(QuicStreamFactoryTest,
   client_maker_.Reset();
   MockQuicData quic_data2(version_);
   quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   quic_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -11575,7 +11575,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_num++));
   }
@@ -11590,7 +11590,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
   MockQuicData quic_data2(version_);
   quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   }
   quic_data2.AddSocketDataToFactory(socket_factory_.get());
@@ -11658,7 +11658,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_number = 1;
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_number++));
   quic_data.AddWrite(SYNCHRONOUS,
@@ -11670,7 +11670,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
   client_maker_.Reset();
   MockQuicData quic_data2(version_);
   quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   quic_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -11782,7 +11782,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleSyncHostResolveError) {
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_num++));
   }
@@ -11895,7 +11895,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSNoMatch) {
   client_maker_.Reset();
   MockQuicData quic_data2(version_);
   quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   quic_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -12011,7 +12011,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_number = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_number++));
   }
@@ -12069,7 +12069,7 @@ TEST_P(QuicStreamFactoryTest,
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_number = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_number++));
   }
@@ -12111,7 +12111,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsync) {
 
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   quic_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -12170,7 +12170,7 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedAfterHandshake) {
 
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   quic_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -12178,7 +12178,7 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedAfterHandshake) {
   client_maker_.Reset();
   MockQuicData quic_data2(version_);
   quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   quic_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -12246,14 +12246,14 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedBeforeHandshake) {
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   quic_data.AddSocketDataToFactory(socket_factory_.get());
 
   client_maker_.Reset();
   MockQuicData quic_data2(version_);
   quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   quic_data2.AddSocketDataToFactory(socket_factory_.get());
 
@@ -12316,7 +12316,7 @@ TEST_P(QuicStreamFactoryTest, ConfigInitialRttForHandshake) {
   socket_data.AddWrite(ASYNC, client_maker_.MakeDummyCHLOPacket(1));
   socket_data.AddWrite(ASYNC, client_maker_.MakeDummyCHLOPacket(2));
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(3));
   }
 
@@ -12372,13 +12372,13 @@ TEST_P(QuicStreamFactoryTest, Tag) {
   // Prepare to establish two QUIC sessions.
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
   client_maker_.Reset();
   MockQuicData socket_data2(version_);
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
 

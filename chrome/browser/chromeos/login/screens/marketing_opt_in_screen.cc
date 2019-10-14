@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/screens/marketing_opt_in_screen.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/profiles/profile.h"

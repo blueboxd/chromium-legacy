@@ -14,10 +14,14 @@ window.addEventListener('load', function() {
   cr.addWebUIListener('cookie-controls-changed', checked => {
     $('cookie-controls-toggle').checked = checked;
   });
+  cr.addWebUIListener(
+      'third-party-cookie-blocking-changed', shouldHideCookieControls => {
+        $('cookie-controls').hidden = shouldHideCookieControls;
+      });
   $('cookie-controls-toggle').addEventListener('change', event => {
     chrome.send('cookieControlsToggleChanged', [event.detail]);
   });
-  chrome.send('observeCookieControlsModeChange');
+  chrome.send('observeCookieControlsSettingsChanges');
 });
 
 // Handle the bookmark bar, theme, and font size change requests

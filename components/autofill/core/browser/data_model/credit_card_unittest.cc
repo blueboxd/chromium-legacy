@@ -60,7 +60,7 @@ const char* const kInvalidNumbers[] = {
 // Use this function to generate a year in the future.
 base::string16 GetYearInTheFuture() {
   base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
+  AutofillClock::Now().LocalExplode(&now);
   return base::NumberToString16(now.year + 4);
 }
 
@@ -1023,7 +1023,7 @@ TEST(CreditCardTest,
 TEST(CreditCardTest, IsValidCardNumberAndExpiryDate) {
   CreditCard card;
   // Invalid because expired
-  const base::Time now(base::Time::Now());
+  const base::Time now(AutofillClock::Now());
   base::Time::Exploded now_exploded;
   now.LocalExplode(&now_exploded);
   card.SetRawInfo(CREDIT_CARD_EXP_MONTH,
@@ -1547,7 +1547,7 @@ class ShouldUpdateExpirationTest
 class TestingTimes {
  public:
   TestingTimes() {
-    now_ = base::Time::Now();
+    now_ = AutofillClock::Now();
     (now_ - base::TimeDelta::FromDays(365)).LocalExplode(&last_year_);
     (now_ - base::TimeDelta::FromDays(31)).LocalExplode(&last_month_);
     now_.LocalExplode(&current_);

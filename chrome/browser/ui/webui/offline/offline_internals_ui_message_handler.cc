@@ -25,6 +25,7 @@
 #include "chrome/browser/offline_pages/prefetch/prefetched_pages_notifier.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "components/offline_pages/core/client_namespace_constants.h"

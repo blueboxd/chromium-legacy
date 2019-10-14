@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/screen_info.h"
@@ -211,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
   base::RunLoop run_loop;
   internal::GetFingerprintInternal(
       kObfuscatedGaiaId, window_bounds_, content_bounds_, screen_info,
-      "25.0.0.123", kCharset, kAcceptLanguages, base::Time::Now(), kLocale,
+      "25.0.0.123", kCharset, kAcceptLanguages, AutofillClock::Now(), kLocale,
       kUserAgent,
       base::TimeDelta::FromDays(1),  // Ought to be longer than any test run.
       base::Bind(&AutofillRiskFingerprintTest::GetFingerprintTestCallback,

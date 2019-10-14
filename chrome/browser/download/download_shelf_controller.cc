@@ -12,6 +12,7 @@
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"

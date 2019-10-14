@@ -682,6 +682,74 @@
   };
 
   /**
+   * Tests the creation of new folders from the directory tree from the context
+   * menu. Creates the new folders in random order to ensure directory tree
+   * sorting does not break folder renaming. crbug.com/1004717
+   */
+  testcase.dirCreateMultipleFolders = async () => {
+    const caller = getCaller();
+
+    // Open Files app on local downloads.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+    await remoteCall.focus(appId, ['#directory-tree']);
+
+    const createNewFolder = async (name) => {
+      // Ctrl+E to create a new folder in downloads.
+      await remoteCall.focus(appId, ['#directory-tree']);
+      await remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, [TREEITEM_DOWNLOADS]);
+      await remoteCall.fakeKeyDown(appId, 'body', 'e', true, false, false);
+
+      // Rename folder.
+      const textInput = '#directory-tree .tree-item[renaming] input';
+      await remoteCall.waitForElement(appId, textInput);
+      await remoteCall.callRemoteTestUtil(
+          'inputText', appId, [textInput, name]);
+      await remoteCall.callRemoteTestUtil(
+          'fakeKeyDown', appId, [textInput, 'Enter', false, false, false]);
+
+      // Wait until renaming is complete.
+      const renamingItem = '#directory-tree .tree-item[renaming]';
+      await remoteCall.waitForElementLost(appId, renamingItem);
+    };
+
+    const checkDownloadsSubFolders = async (expectedLabels) => {
+      const directoryItemsQuery =
+          ['#directory-tree [entry-label="Downloads"] > .tree-children .label'];
+      const directoryItems = await remoteCall.callRemoteTestUtil(
+          'queryAllElements', appId, directoryItemsQuery);
+      const directoryItemsLabels = directoryItems.map(child => child.text);
+
+      // Check downloads subfolders are creaated in sorted order.
+      const equalLength = expectedLabels.length === directoryItemsLabels.length;
+      for (let i = 0; i < expectedLabels.length; i++) {
+        if (!equalLength || expectedLabels[i] !== directoryItemsLabels[i]) {
+          return pending(
+              caller,
+              'Waiting for downloads subfolders to be created in sorted order');
+        }
+      }
+    };
+
+    // The folders in sorted order would be 111, aaa. Create these
+    // folders in random order. crbug.com/1004717
+    let names = ['aaa', '111'];
+    while (names.length) {
+      const getRandomIndex = () => {
+        return Math.floor(Math.random() * Math.floor(names.length));
+      };
+      const name = names.splice(getRandomIndex(), 1);
+      await createNewFolder(name);
+    }
+
+    // Check: the new folders should have been created in the right order.
+    await repeatUntil(async () => {
+      return checkDownloadsSubFolders(['111', 'aaa']);
+    });
+  };
+
+  /**
    * Tests context menu for Recent root, currently it doesn't show context menu.
    */
   testcase.dirContextMenuRecent = async () => {

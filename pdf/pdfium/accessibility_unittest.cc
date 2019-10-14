@@ -72,10 +72,9 @@ TEST_F(AccessibilityTest, GetAccessibilityPage) {
   PP_PrivateAccessibilityPageInfo page_info;
   std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
   std::vector<PP_PrivateAccessibilityCharInfo> chars;
-  std::vector<pp::PDF::PrivateAccessibilityLinkInfo> links;
-  std::vector<pp::PDF::PrivateAccessibilityImageInfo> images;
+  pp::PDF::PrivateAccessibilityPageObjects page_objects;
   ASSERT_TRUE(GetAccessibilityInfo(engine.get(), 0, &page_info, &text_runs,
-                                   &chars, &links, &images));
+                                   &chars, &page_objects));
   EXPECT_EQ(0u, page_info.page_index);
   EXPECT_EQ(5, page_info.bounds.point.x);
   EXPECT_EQ(3, page_info.bounds.point.y);
@@ -83,10 +82,6 @@ TEST_F(AccessibilityTest, GetAccessibilityPage) {
   EXPECT_EQ(266, page_info.bounds.size.height);
   EXPECT_EQ(text_runs.size(), page_info.text_run_count);
   EXPECT_EQ(chars.size(), page_info.char_count);
-  // TODO(crbug.com/981448): Test the contents of |links| and |images| when
-  // populated.
-  EXPECT_EQ(links.size(), page_info.link_count);
-  EXPECT_EQ(images.size(), page_info.image_count);
 
   bool is_chromeos = IsRunningOnChromeOS();
 
@@ -131,22 +126,20 @@ TEST_F(AccessibilityTest, GetAccessibilityImageInfo) {
   PP_PrivateAccessibilityPageInfo page_info;
   std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
   std::vector<PP_PrivateAccessibilityCharInfo> chars;
-  std::vector<pp::PDF::PrivateAccessibilityLinkInfo> links;
-  std::vector<pp::PDF::PrivateAccessibilityImageInfo> images;
+  pp::PDF::PrivateAccessibilityPageObjects page_objects;
   ASSERT_TRUE(GetAccessibilityInfo(engine.get(), 0, &page_info, &text_runs,
-                                   &chars, &links, &images));
+                                   &chars, &page_objects));
   EXPECT_EQ(0u, page_info.page_index);
   CompareRect(kExpectedPageRect, page_info.bounds);
   EXPECT_EQ(text_runs.size(), page_info.text_run_count);
   EXPECT_EQ(chars.size(), page_info.char_count);
-  EXPECT_EQ(links.size(), page_info.link_count);
-  EXPECT_EQ(images.size(), page_info.image_count);
-  ASSERT_EQ(images.size(), base::size(kExpectedImageInfo));
+  ASSERT_EQ(page_objects.images.size(), base::size(kExpectedImageInfo));
 
-  for (size_t i = 0; i < page_info.image_count; ++i) {
-    EXPECT_EQ(images[i].alt_text, kExpectedImageInfo[i].alt_text);
-    CompareRect(kExpectedImageInfo[i].bounds, images[i].bounds);
-    EXPECT_EQ(images[i].text_run_index, kExpectedImageInfo[i].text_run_index);
+  for (size_t i = 0; i < page_objects.images.size(); ++i) {
+    EXPECT_EQ(page_objects.images[i].alt_text, kExpectedImageInfo[i].alt_text);
+    CompareRect(kExpectedImageInfo[i].bounds, page_objects.images[i].bounds);
+    EXPECT_EQ(page_objects.images[i].text_run_index,
+              kExpectedImageInfo[i].text_run_index);
   }
 }
 
@@ -442,20 +435,18 @@ TEST_F(AccessibilityTest, GetAccessibilityLinkInfo) {
   PP_PrivateAccessibilityPageInfo page_info;
   std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
   std::vector<PP_PrivateAccessibilityCharInfo> chars;
-  std::vector<pp::PDF::PrivateAccessibilityLinkInfo> links;
-  std::vector<pp::PDF::PrivateAccessibilityImageInfo> images;
+  pp::PDF::PrivateAccessibilityPageObjects page_objects;
   ASSERT_TRUE(GetAccessibilityInfo(engine.get(), 0, &page_info, &text_runs,
-                                   &chars, &links, &images));
+                                   &chars, &page_objects));
   EXPECT_EQ(0u, page_info.page_index);
   CompareRect(kExpectedPageRect, page_info.bounds);
   EXPECT_EQ(text_runs.size(), page_info.text_run_count);
   EXPECT_EQ(chars.size(), page_info.char_count);
-  EXPECT_EQ(links.size(), page_info.link_count);
-  EXPECT_EQ(images.size(), page_info.image_count);
-  ASSERT_EQ(links.size(), base::size(expected_link_info));
+  ASSERT_EQ(page_objects.links.size(), base::size(expected_link_info));
 
-  for (size_t i = 0; i < page_info.link_count; ++i) {
-    const pp::PDF::PrivateAccessibilityLinkInfo& link_info = links[i];
+  for (size_t i = 0; i < page_objects.links.size(); ++i) {
+    const pp::PDF::PrivateAccessibilityLinkInfo& link_info =
+        page_objects.links[i];
     EXPECT_EQ(link_info.url, expected_link_info[i].url);
     EXPECT_EQ(link_info.index_in_page, expected_link_info[i].index_in_page);
     CompareRect(expected_link_info[i].bounds, link_info.bounds);

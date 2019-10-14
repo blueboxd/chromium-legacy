@@ -167,7 +167,7 @@ Background.ISSUE_URL = 'https://code.google.com/p/chromium/issues/entry?' +
     'description=';
 
 /**
- * Map from gesture names (AXGesture defined in ui/accessibility/ax_enums.idl)
+ * Map from gesture names (AXGesture defined in ui/accessibility/ax_enums.mojom)
  *     to commands when in Classic mode.
  * @type {Object<string, string>}
  * @const
@@ -183,7 +183,7 @@ Background.GESTURE_CLASSIC_COMMAND_MAP = {
 };
 
 /**
- * Map from gesture names (AXGesture defined in ui/accessibility/ax_enums.idl)
+ * Map from gesture names (AXGesture defined in ui/accessibility/ax_enums.mojom)
  *     to commands when in Classic mode.
  * @type {Object<string, string>}
  * @const
@@ -1143,7 +1143,7 @@ Background.prototype = {
   /**
    * Handles accessibility gestures from the touch screen.
    * @param {string} gesture The gesture to handle, based on the AXGesture enum
-   *     defined in ui/accessibility/ax_enums.idl
+   *     defined in ui/accessibility/ax_enums.mojom
    * @private
    */
   onAccessibilityGesture_: function(gesture) {
@@ -1164,7 +1164,7 @@ Background.prototype = {
    * Handles accessibility gestures from the touch screen when in CLASSIC
    * mode, by forwarding a command to the content script.
    * @param {string} gesture The gesture to handle, based on the AXGesture enum
-   *     defined in ui/accessibility/ax_enums.idl
+   *     defined in ui/accessibility/ax_enums.mojom
    * @return {boolean} True if this gesture was handled.
    * @private
    */

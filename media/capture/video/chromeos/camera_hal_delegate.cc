@@ -29,8 +29,7 @@ namespace media {
 
 namespace {
 
-const base::TimeDelta kEventWaitTimeoutMs =
-    base::TimeDelta::FromMilliseconds(3000);
+const base::TimeDelta kEventWaitTimeoutSecs = base::TimeDelta::FromSeconds(1);
 
 class LocalCameraClientObserver : public CameraClientObserver {
  public:
@@ -237,13 +236,12 @@ void CameraHalDelegate::GetDeviceDescriptors(
     return;
   }
 
-  if (!external_camera_info_updated_.TimedWait(
-          base::TimeDelta::FromSeconds(1))) {
+  if (!external_camera_info_updated_.TimedWait(kEventWaitTimeoutSecs)) {
     LOG(ERROR) << "Failed to get camera info from all external cameras";
   }
 
   if (IsRunningOnVM() && IsVividLoaded()) {
-    has_camera_connected_.TimedWait(base::TimeDelta::FromSeconds(1));
+    has_camera_connected_.TimedWait(kEventWaitTimeoutSecs);
   }
 
   base::AutoLock info_lock(camera_info_lock_);
@@ -393,7 +391,7 @@ bool CameraHalDelegate::UpdateBuiltInCameraInfo() {
       FROM_HERE,
       base::BindOnce(&CameraHalDelegate::UpdateBuiltInCameraInfoOnIpcThread,
                      this));
-  if (!builtin_camera_info_updated_.TimedWait(kEventWaitTimeoutMs)) {
+  if (!builtin_camera_info_updated_.TimedWait(kEventWaitTimeoutSecs)) {
     LOG(ERROR) << "Timed out getting camera info";
     return false;
   }

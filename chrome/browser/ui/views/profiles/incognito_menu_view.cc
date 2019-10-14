@@ -49,23 +49,40 @@ void IncognitoMenuView::BuildMenu() {
   const SkColor icon_color = provider->GetTypographyProvider().GetColor(
       *this, views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY);
 
-  auto incognito_icon = std::make_unique<views::ImageView>();
-  incognito_icon->SetImage(
-      gfx::CreateVectorIcon(kIncognitoProfileIcon, icon_color));
+  if (!base::FeatureList::IsEnabled(features::kProfileMenuRevamp)) {
+    auto incognito_icon = std::make_unique<views::ImageView>();
+    incognito_icon->SetImage(
+        gfx::CreateVectorIcon(kIncognitoProfileIcon, icon_color));
 
-  AddMenuGroup(false /* add_separator */);
-  CreateAndAddTitleCard(
-      std::move(incognito_icon),
+    AddMenuGroup(false /* add_separator */);
+    CreateAndAddTitleCard(
+        std::move(incognito_icon),
+        l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_TITLE),
+        incognito_window_count > 1
+            ? l10n_util::GetPluralStringFUTF16(
+                  IDS_INCOGNITO_WINDOW_COUNT_MESSAGE, incognito_window_count)
+            : base::string16(),
+        base::RepeatingClosure());
+
+    AddMenuGroup();
+    exit_button_ = CreateAndAddButton(
+        gfx::CreateVectorIcon(kCloseAllIcon, 16, gfx::kChromeIconGrey),
+        l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_CLOSE_BUTTON),
+        base::BindRepeating(&IncognitoMenuView::OnExitButtonClicked,
+                            base::Unretained(this)));
+    return;
+  }
+
+  SetIdentityInfo(
+      ColoredImageForMenu(kIncognitoProfileIcon, icon_color),
+      /*badge=*/gfx::ImageSkia(),
       l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_TITLE),
       incognito_window_count > 1
           ? l10n_util::GetPluralStringFUTF16(IDS_INCOGNITO_WINDOW_COUNT_MESSAGE,
                                              incognito_window_count)
-          : base::string16(),
-      base::RepeatingClosure());
-
-  AddMenuGroup();
-  exit_button_ = CreateAndAddButton(
-      gfx::CreateVectorIcon(kCloseAllIcon, 16, gfx::kChromeIconGrey),
+          : base::string16());
+  AddFeatureButton(
+      ImageForMenu(kCloseAllIcon),
       l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_CLOSE_BUTTON),
       base::BindRepeating(&IncognitoMenuView::OnExitButtonClicked,
                           base::Unretained(this)));
@@ -78,6 +95,7 @@ base::string16 IncognitoMenuView::GetAccessibleWindowTitle() const {
 }
 
 void IncognitoMenuView::OnExitButtonClicked() {
+  RecordClick(ActionableItem::kExitProfileButton);
   // Skipping before-unload trigger to give incognito mode users a chance to
   // quickly close all incognito windows without needing to confirm closing the
   // open forms.

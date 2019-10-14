@@ -98,7 +98,7 @@ void GuestOsEngagementMetrics::OnWindowActivated(
     aura::Window* gained_active,
     aura::Window* lost_active) {
   UpdateEngagementTime();
-  matched_window_active_ = window_matcher_.Run(gained_active);
+  matched_window_active_ = gained_active && window_matcher_.Run(gained_active);
 }
 
 void GuestOsEngagementMetrics::OnSessionStateChanged() {

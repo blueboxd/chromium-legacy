@@ -11,6 +11,7 @@
 #include "components/autofill/core/common/autofill_internals/log_message.h"
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -84,7 +85,7 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
   // the pointer values.
   std::set<FormSignature> new_form_signatures;
   for (const FormData& form : forms) {
-    const auto parse_form_start_time = TimeTicks::Now();
+    const auto parse_form_start_time = AutofillTickClock::NowTicks();
     FormStructure* cached_form_structure = nullptr;
     FormStructure* form_structure = nullptr;
     // Try to find the FormStructure that corresponds to |form| if the form
@@ -104,7 +105,7 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
       continue;
     DCHECK(form_structure);
     new_form_signatures.insert(form_structure->form_signature());
-    AutofillMetrics::LogParseFormTiming(TimeTicks::Now() -
+    AutofillMetrics::LogParseFormTiming(AutofillTickClock::NowTicks() -
                                         parse_form_start_time);
   }
 

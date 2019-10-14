@@ -18,6 +18,8 @@
 #include "chrome/browser/predictors/resolve_host_client_impl.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_isolation_key.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -79,9 +81,9 @@ class MockNetworkContext : public network::TestNetworkContext {
     ResolveHostProxy(host);
   }
 
-  void LookUpProxyForURL(
-      const GURL& url,
-      network::mojom::ProxyLookupClientPtr proxy_lookup_client) override {
+  void LookUpProxyForURL(const GURL& url,
+                         mojo::PendingRemote<network::mojom::ProxyLookupClient>
+                             proxy_lookup_client) override {
     EXPECT_TRUE(
         proxy_lookup_clients_.emplace(url, std::move(proxy_lookup_client))
             .second);
@@ -146,7 +148,8 @@ class MockNetworkContext : public network::TestNetworkContext {
 
   std::map<std::string, network::mojom::ResolveHostClientPtr>
       resolve_host_clients_;
-  std::map<GURL, network::mojom::ProxyLookupClientPtr> proxy_lookup_clients_;
+  std::map<GURL, mojo::Remote<network::mojom::ProxyLookupClient>>
+      proxy_lookup_clients_;
   bool enabled_proxy_testing_ = false;
   std::vector<std::string> hanging_hosts_;
 };

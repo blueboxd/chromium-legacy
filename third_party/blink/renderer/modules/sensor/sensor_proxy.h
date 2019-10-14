@@ -12,6 +12,7 @@
 #include "services/device/public/mojom/sensor_provider.mojom-blink.h"
 #include "third_party/blink/renderer/core/page/focus_changed_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -21,9 +22,9 @@ class SensorProviderProxy;
 
 // This class wraps 'Sensor' mojo interface and used by multiple
 // JS sensor instances of the same type (within a single frame).
-class SensorProxy : public GarbageCollected<SensorProxy>,
-                    public PageVisibilityObserver,
-                    public FocusChangedObserver {
+class MODULES_EXPORT SensorProxy : public GarbageCollected<SensorProxy>,
+                                   public PageVisibilityObserver,
+                                   public FocusChangedObserver {
   USING_GARBAGE_COLLECTED_MIXIN(SensorProxy);
 
  public:

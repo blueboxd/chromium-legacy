@@ -29,7 +29,7 @@ class HighlightElementAction : public Action {
 
   void OnWaitForElement(ProcessActionCallback callback,
                         const Selector& selector,
-                        bool element_found);
+                        const ClientStatus& element_status);
   void OnHighlightElement(ProcessActionCallback callback,
                           const ClientStatus& status);
 

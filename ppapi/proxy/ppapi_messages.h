@@ -287,8 +287,6 @@ IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityPageInfo)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
   IPC_STRUCT_TRAITS_MEMBER(text_run_count)
   IPC_STRUCT_TRAITS_MEMBER(char_count)
-  IPC_STRUCT_TRAITS_MEMBER(link_count)
-  IPC_STRUCT_TRAITS_MEMBER(image_count)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityLinkInfo)
@@ -303,6 +301,11 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityImageInfo)
   IPC_STRUCT_TRAITS_MEMBER(alt_text)
   IPC_STRUCT_TRAITS_MEMBER(text_run_index)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityPageObjects)
+  IPC_STRUCT_TRAITS_MEMBER(links)
+  IPC_STRUCT_TRAITS_MEMBER(images)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PP_URLComponent_Dev)
@@ -2396,13 +2399,12 @@ IPC_MESSAGE_CONTROL1(
     PP_PrivateAccessibilityDocInfo /* doc_info */)
 
 // Send information about one page for accessibility support.
-IPC_MESSAGE_CONTROL5(
+IPC_MESSAGE_CONTROL4(
     PpapiHostMsg_PDF_SetAccessibilityPageInfo,
     PP_PrivateAccessibilityPageInfo /* page_info */,
     std::vector<PP_PrivateAccessibilityTextRunInfo> /* text_runs */,
     std::vector<PP_PrivateAccessibilityCharInfo> /* chars */,
-    std::vector<ppapi::PdfAccessibilityLinkInfo> /* links */,
-    std::vector<ppapi::PdfAccessibilityImageInfo> /* images */)
+    ppapi::PdfAccessibilityPageObjects /* page_objects */)
 
 // Send information about the selection coordinates.
 IPC_MESSAGE_CONTROL4(PpapiHostMsg_PDF_SelectionChanged,

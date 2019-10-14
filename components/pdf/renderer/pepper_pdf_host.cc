@@ -276,13 +276,12 @@ int32_t PepperPDFHost::OnHostMsgSetAccessibilityPageInfo(
     const PP_PrivateAccessibilityPageInfo& page_info,
     const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_run_info,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-    const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
-    const std::vector<ppapi::PdfAccessibilityImageInfo>& images) {
+    const ppapi::PdfAccessibilityPageObjects& page_objects) {
   if (!host_->GetPluginInstance(pp_instance()))
     return PP_ERROR_FAILED;
   CreatePdfAccessibilityTreeIfNeeded();
-  pdf_accessibility_tree_->SetAccessibilityPageInfo(page_info, text_run_info,
-                                                    chars, links, images);
+  pdf_accessibility_tree_->SetAccessibilityPageInfo(
+      page_info, text_run_info, chars, page_objects.links, page_objects.images);
   return PP_OK;
 }
 

@@ -31,6 +31,10 @@ class StartupTimeBomb;
 class ShutdownWatcherHelper;
 class WebUsbDetector;
 
+namespace base {
+class RunLoop;
+}
+
 namespace tracing {
 class TraceEventSystemStatsMonitor;
 }

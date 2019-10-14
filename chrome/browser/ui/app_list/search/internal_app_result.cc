@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_operations.h"
 

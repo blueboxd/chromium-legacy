@@ -61,9 +61,9 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest, AccessIsRevokedOnSecondAccess) {
   factory_->CreateDevice(
       i420_fake_device_info_.descriptor.device_id,
       mojo::MakeRequest(&device_proxy_1),
-      base::Bind(&MockCreateDeviceProxyCallback::Run,
-                 base::Unretained(&create_device_proxy_callback_1)));
-  device_proxy_1.set_connection_error_handler(base::Bind(
+      base::BindOnce(&MockCreateDeviceProxyCallback::Run,
+                     base::Unretained(&create_device_proxy_callback_1)));
+  device_proxy_1.set_connection_error_handler(base::BindOnce(
       [](bool* access_revoked, base::RunLoop* wait_loop_1) {
         *access_revoked = true;
         wait_loop_1->Quit();
@@ -81,11 +81,11 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest, AccessIsRevokedOnSecondAccess) {
   factory_->CreateDevice(
       i420_fake_device_info_.descriptor.device_id,
       mojo::MakeRequest(&device_proxy_2),
-      base::Bind(&MockCreateDeviceProxyCallback::Run,
-                 base::Unretained(&create_device_proxy_callback_2)));
+      base::BindOnce(&MockCreateDeviceProxyCallback::Run,
+                     base::Unretained(&create_device_proxy_callback_2)));
   device_proxy_2.set_connection_error_handler(
-      base::Bind([](bool* access_revoked) { *access_revoked = true; },
-                 &device_access_2_revoked));
+      base::BindOnce([](bool* access_revoked) { *access_revoked = true; },
+                     &device_access_2_revoked));
   wait_loop_1.Run();
   wait_loop_2.Run();
   ASSERT_TRUE(device_access_1_revoked);
@@ -103,7 +103,7 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest, CanUseSecondRequestedProxy) {
   factory_->CreateDevice(
       i420_fake_device_info_.descriptor.device_id,
       mojo::MakeRequest(&device_proxy_2),
-      base::Bind(
+      base::BindOnce(
           [](base::RunLoop* wait_loop,
              mojom::DeviceAccessResultCode result_code) { wait_loop->Quit(); },
           &wait_loop));

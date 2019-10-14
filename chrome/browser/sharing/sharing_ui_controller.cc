@@ -49,124 +49,6 @@ SharingUiController::SharingUiController(content::WebContents* web_contents)
 
 SharingUiController::~SharingUiController() = default;
 
-void SharingUiController::CloseDialog() {
-  if (!dialog_)
-    return;
-
-  dialog_->Hide();
-
-  // SharingDialog::Hide may close the dialog asynchronously, and therefore not
-  // call OnDialogClosed immediately. If that is the case, call OnDialogClosed
-  // now to notify subclasses and clear |dialog_|.
-  if (dialog_)
-    OnDialogClosed(dialog_);
-
-  DCHECK(!dialog_);
-}
-
-SharingDialogData SharingUiController::CreateDialogData(
-    SharingDialogType dialog_type) {
-  SharingDialogData data;
-
-  data.type = dialog_type;
-  data.prefix = GetFeatureMetricsPrefix();
-  data.title = GetTitle(data.type);
-  data.error_text = GetErrorDialogText();
-
-  auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
-  data.help_callback =
-      base::BindOnce(&SharingUiController::OnHelpTextClicked, weak_ptr);
-  data.device_callback =
-      base::BindOnce(&SharingUiController::OnDeviceChosen, weak_ptr);
-  data.app_callback =
-      base::BindOnce(&SharingUiController::OnAppChosen, weak_ptr);
-  data.close_callback =
-      base::BindOnce(&SharingUiController::OnDialogClosed, weak_ptr);
-  return data;
-}
-
-void SharingUiController::ShowNewDialog(SharingDialogData dialog_data) {
-  CloseDialog();
-  BrowserWindow* window = GetWindowFromWebContents(web_contents_);
-  if (!window)
-    return;
-  bool has_devices = !dialog_data.devices.empty();
-  bool has_apps = !dialog_data.apps.empty();
-  dialog_ = window->ShowSharingDialog(web_contents(), std::move(dialog_data));
-  UpdateIcon();
-  OnDialogShown(has_devices, has_apps);
-}
-
-void SharingUiController::UpdateIcon() {
-  BrowserWindow* window = GetWindowFromWebContents(web_contents_);
-  if (!window)
-    return;
-
-  window->UpdatePageActionIcon(GetIconType());
-}
-
-void SharingUiController::OnDialogClosed(SharingDialog* dialog) {
-  // Ignore already replaced dialogs.
-  if (dialog != dialog_)
-    return;
-
-  dialog_ = nullptr;
-  UpdateIcon();
-}
-
-void SharingUiController::MaybeShowErrorDialog() {
-  if (HasSendFailed() && web_contents_ == GetCurrentWebContents(web_contents_))
-    ShowNewDialog(CreateDialogData(SharingDialogType::kErrorDialog));
-}
-
-void SharingUiController::SendMessageToDevice(
-    const syncer::DeviceInfo& device,
-    chrome_browser_sharing::SharingMessage sharing_message) {
-  last_dialog_id_++;
-  is_loading_ = true;
-  send_result_ = SharingSendMessageResult::kSuccessful;
-  target_device_name_ = device.client_name();
-  UpdateIcon();
-
-  sharing_service_->SendMessageToDevice(
-      device.guid(), kSharingMessageTTL, std::move(sharing_message),
-      base::Bind(&SharingUiController::OnMessageSentToDevice,
-                 weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
-}
-
-void SharingUiController::OnMessageSentToDevice(
-    int dialog_id,
-    SharingSendMessageResult result) {
-  if (dialog_id != last_dialog_id_)
-    return;
-
-  is_loading_ = false;
-  send_result_ = result;
-  UpdateIcon();
-}
-
-void SharingUiController::ClearLastDialog() {
-  last_dialog_id_++;
-  is_loading_ = false;
-  send_result_ = SharingSendMessageResult::kSuccessful;
-  CloseDialog();
-}
-
-void SharingUiController::UpdateAndShowDialog() {
-  ClearLastDialog();
-  DoUpdateApps(base::BindOnce(&SharingUiController::OnAppsReceived,
-                              weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
-}
-
-std::vector<std::unique_ptr<syncer::DeviceInfo>>
-SharingUiController::GetDevices() {
-  return sharing_service_->GetDeviceCandidates(GetRequiredFeature());
-}
-
-base::string16 SharingUiController::GetTargetDeviceName() const {
-  return base::UTF8ToUTF16(target_device_name_);
-}
-
 base::string16 SharingUiController::GetTitle(SharingDialogType dialog_type) {
   // We only handle error messages generically.
   DCHECK_EQ(SharingDialogType::kErrorDialog, dialog_type);
@@ -216,6 +98,138 @@ base::string16 SharingUiController::GetErrorDialogText() const {
   }
 }
 
+void SharingUiController::OnDialogClosed(SharingDialog* dialog) {
+  // Ignore already replaced dialogs.
+  if (dialog != dialog_)
+    return;
+
+  dialog_ = nullptr;
+  UpdateIcon();
+}
+
+void SharingUiController::OnHelpTextClicked(SharingDialogType dialog_type) {
+  ShowSingletonTab(chrome::FindBrowserWithWebContents(web_contents()),
+                   GURL(chrome::kSyncLearnMoreURL));
+}
+
+void SharingUiController::OnDialogShown(bool has_devices, bool has_apps) {
+  if (on_dialog_shown_closure_for_testing_)
+    std::move(on_dialog_shown_closure_for_testing_).Run();
+}
+
+void SharingUiController::ClearLastDialog() {
+  last_dialog_id_++;
+  is_loading_ = false;
+  send_result_ = SharingSendMessageResult::kSuccessful;
+  CloseDialog();
+}
+
+void SharingUiController::UpdateAndShowDialog() {
+  ClearLastDialog();
+  DoUpdateApps(base::BindOnce(&SharingUiController::OnAppsReceived,
+                              weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
+}
+
+std::vector<std::unique_ptr<syncer::DeviceInfo>>
+SharingUiController::GetDevices() {
+  return sharing_service_->GetDeviceCandidates(GetRequiredFeature());
+}
+
+bool SharingUiController::HasSendFailed() const {
+  return send_result_ != SharingSendMessageResult::kSuccessful;
+}
+
+void SharingUiController::MaybeShowErrorDialog() {
+  if (HasSendFailed() && web_contents_ == GetCurrentWebContents(web_contents_))
+    ShowNewDialog(CreateDialogData(SharingDialogType::kErrorDialog));
+}
+
+SharingDialogData SharingUiController::CreateDialogData(
+    SharingDialogType dialog_type) {
+  SharingDialogData data;
+
+  data.type = dialog_type;
+  data.prefix = GetFeatureMetricsPrefix();
+  data.title = GetTitle(data.type);
+  data.error_text = GetErrorDialogText();
+
+  auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
+  data.help_callback =
+      base::BindOnce(&SharingUiController::OnHelpTextClicked, weak_ptr);
+  data.device_callback =
+      base::BindOnce(&SharingUiController::OnDeviceChosen, weak_ptr);
+  data.app_callback =
+      base::BindOnce(&SharingUiController::OnAppChosen, weak_ptr);
+  data.close_callback =
+      base::BindOnce(&SharingUiController::OnDialogClosed, weak_ptr);
+  return data;
+}
+
+void SharingUiController::SendMessageToDevice(
+    const syncer::DeviceInfo& device,
+    chrome_browser_sharing::SharingMessage sharing_message) {
+  last_dialog_id_++;
+  is_loading_ = true;
+  send_result_ = SharingSendMessageResult::kSuccessful;
+  target_device_name_ = device.client_name();
+  UpdateIcon();
+
+  sharing_service_->SendMessageToDevice(
+      device.guid(), kSharingMessageTTL, std::move(sharing_message),
+      base::Bind(&SharingUiController::OnMessageSentToDevice,
+                 weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
+}
+
+void SharingUiController::UpdateIcon() {
+  BrowserWindow* window = GetWindowFromWebContents(web_contents_);
+  if (!window)
+    return;
+
+  window->UpdatePageActionIcon(GetIconType());
+}
+
+void SharingUiController::CloseDialog() {
+  if (!dialog_)
+    return;
+
+  dialog_->Hide();
+
+  // SharingDialog::Hide may close the dialog asynchronously, and therefore not
+  // call OnDialogClosed immediately. If that is the case, call OnDialogClosed
+  // now to notify subclasses and clear |dialog_|.
+  if (dialog_)
+    OnDialogClosed(dialog_);
+
+  DCHECK(!dialog_);
+}
+
+void SharingUiController::ShowNewDialog(SharingDialogData dialog_data) {
+  CloseDialog();
+  BrowserWindow* window = GetWindowFromWebContents(web_contents_);
+  if (!window)
+    return;
+  bool has_devices = !dialog_data.devices.empty();
+  bool has_apps = !dialog_data.apps.empty();
+  dialog_ = window->ShowSharingDialog(web_contents(), std::move(dialog_data));
+  UpdateIcon();
+  OnDialogShown(has_devices, has_apps);
+}
+
+base::string16 SharingUiController::GetTargetDeviceName() const {
+  return base::UTF8ToUTF16(target_device_name_);
+}
+
+void SharingUiController::OnMessageSentToDevice(
+    int dialog_id,
+    SharingSendMessageResult result) {
+  if (dialog_id != last_dialog_id_)
+    return;
+
+  is_loading_ = false;
+  send_result_ = result;
+  UpdateIcon();
+}
+
 void SharingUiController::OnAppsReceived(int dialog_id,
                                          std::vector<SharingApp> apps) {
   if (dialog_id != last_dialog_id_)
@@ -229,18 +243,4 @@ void SharingUiController::OnAppsReceived(int dialog_id,
   dialog_data.apps = std::move(apps);
 
   ShowNewDialog(std::move(dialog_data));
-}
-
-bool SharingUiController::HasSendFailed() const {
-  return send_result_ != SharingSendMessageResult::kSuccessful;
-}
-
-void SharingUiController::OnHelpTextClicked(SharingDialogType dialog_type) {
-  ShowSingletonTab(chrome::FindBrowserWithWebContents(web_contents()),
-                   GURL(chrome::kSyncLearnMoreURL));
-}
-
-void SharingUiController::OnDialogShown(bool has_devices, bool has_apps) {
-  if (on_dialog_shown_closure_for_testing_)
-    std::move(on_dialog_shown_closure_for_testing_).Run();
 }

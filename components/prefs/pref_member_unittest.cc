@@ -80,8 +80,8 @@ class PrefMemberTestClass {
   explicit PrefMemberTestClass(PrefService* prefs)
       : observe_cnt_(0), prefs_(prefs) {
     str_.Init(kStringPref, prefs,
-              base::Bind(&PrefMemberTestClass::OnPreferenceChanged,
-                         base::Unretained(this)));
+              base::BindRepeating(&PrefMemberTestClass::OnPreferenceChanged,
+                                  base::Unretained(this)));
   }
 
   void OnPreferenceChanged(const std::string& pref_name) {

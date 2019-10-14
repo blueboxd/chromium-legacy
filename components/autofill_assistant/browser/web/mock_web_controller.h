@@ -47,24 +47,26 @@ class MockWebController : public WebController {
                     const TopPadding& top_padding,
                     base::OnceCallback<void(const ClientStatus&)>& callback));
 
-  void ElementCheck(const Selector& selector,
-                    bool strict,
-                    base::OnceCallback<void(bool)> callback) override {
+  void ElementCheck(
+      const Selector& selector,
+      bool strict,
+      base::OnceCallback<void(const ClientStatus&)> callback) override {
     OnElementCheck(selector, callback);
   }
   MOCK_METHOD2(OnElementCheck,
                void(const Selector& selector,
-                    base::OnceCallback<void(bool)>& callback));
+                    base::OnceCallback<void(const ClientStatus&)>& callback));
 
   void GetFieldValue(
       const Selector& selector,
-      base::OnceCallback<void(bool, const std::string&)> callback) override {
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback) override {
     OnGetFieldValue(selector, callback);
   }
-  MOCK_METHOD2(
-      OnGetFieldValue,
-      void(const Selector& selector,
-           base::OnceCallback<void(bool, const std::string&)>& callback));
+  MOCK_METHOD2(OnGetFieldValue,
+               void(const Selector& selector,
+                    base::OnceCallback<void(const ClientStatus&,
+                                            const std::string&)>& callback));
 
   void GetVisualViewport(
       base::OnceCallback<void(bool, const RectF&)> callback) override {

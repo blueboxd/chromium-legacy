@@ -101,15 +101,16 @@ class ScriptExecutor : public ActionDelegate,
 
   // Override ActionDelegate:
   void RunElementChecks(BatchElementChecker* checker) override;
-  void ShortWaitForElement(const Selector& selector,
-                           base::OnceCallback<void(bool)> callback) override;
+  void ShortWaitForElement(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) override;
   void WaitForDom(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
-      base::RepeatingCallback<void(BatchElementChecker*,
-                                   base::OnceCallback<void(bool)>)>
-          check_elements,
-      base::OnceCallback<void(ProcessedActionStatusProto)> callback) override;
+      base::RepeatingCallback<
+          void(BatchElementChecker*,
+               base::OnceCallback<void(const ClientStatus&)>)> check_elements,
+      base::OnceCallback<void(const ClientStatus&)> callback) override;
   void SetStatusMessage(const std::string& message) override;
   std::string GetStatusMessage() override;
   void SetBubbleMessage(const std::string& message) override;
@@ -148,7 +149,8 @@ class ScriptExecutor : public ActionDelegate,
       const ElementAreaProto& touchable_element_area) override;
   void GetFieldValue(
       const Selector& selector,
-      base::OnceCallback<void(bool, const std::string&)> callback) override;
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback) override;
   void SetFieldValue(
       const Selector& selector,
       const std::string& value,
@@ -219,8 +221,8 @@ class ScriptExecutor : public ActionDelegate,
     //
     // If the given result is non-null, it should be forwarded as the result of
     // the main script.
-    using Callback =
-        base::OnceCallback<void(bool, const ScriptExecutor::Result*)>;
+    using Callback = base::OnceCallback<void(const ClientStatus&,
+                                             const ScriptExecutor::Result*)>;
 
     // |main_script_| must not be null and outlive this instance.
     WaitForDomOperation(
@@ -228,9 +230,9 @@ class ScriptExecutor : public ActionDelegate,
         ScriptExecutorDelegate* delegate,
         base::TimeDelta max_wait_time,
         bool allow_interrupt,
-        base::RepeatingCallback<void(BatchElementChecker*,
-                                     base::OnceCallback<void(bool)>)>
-            check_elements,
+        base::RepeatingCallback<
+            void(BatchElementChecker*,
+                 base::OnceCallback<void(const ClientStatus&)>)> check_elements,
         WaitForDomOperation::Callback callback);
     ~WaitForDomOperation() override;
 
@@ -251,15 +253,17 @@ class ScriptExecutor : public ActionDelegate,
     void OnScriptListChanged(
         std::vector<std::unique_ptr<Script>> scripts) override;
 
-    void RunChecks(base::OnceCallback<void(bool)> report_attempt_result);
+    void RunChecks(
+        base::OnceCallback<void(const ClientStatus&)> report_attempt_result);
     void OnPreconditionCheckDone(const Script* interrupt,
                                  bool precondition_match);
-    void OnElementCheckDone(bool found);
-    void OnAllChecksDone(base::OnceCallback<void(bool)> report_attempt_result);
+    void OnElementCheckDone(const ClientStatus&);
+    void OnAllChecksDone(
+        base::OnceCallback<void(const ClientStatus&)> report_attempt_result);
     void RunInterrupt(const Script* interrupt);
     void OnInterruptDone(const ScriptExecutor::Result& result);
-    void RunCallback(bool found);
-    void RunCallbackWithResult(bool found,
+    void RunCallback(const ClientStatus& element_status);
+    void RunCallbackWithResult(const ClientStatus& element_status,
                                const ScriptExecutor::Result* result);
 
     // Saves the current state and sets save_pre_interrupt_state_.
@@ -277,13 +281,13 @@ class ScriptExecutor : public ActionDelegate,
     const base::TimeDelta max_wait_time_;
     const bool allow_interrupt_;
     base::RepeatingCallback<void(BatchElementChecker*,
-                                 base::OnceCallback<void(bool)>)>
+                                 base::OnceCallback<void(const ClientStatus&)>)>
         check_elements_;
     WaitForDomOperation::Callback callback_;
 
     std::unique_ptr<BatchElementChecker> batch_element_checker_;
     std::set<const Script*> runnable_interrupts_;
-    bool element_check_result_ = false;
+    ClientStatus element_check_result_;
 
     // An empty vector of interrupts that can be passed to interrupt_executor_
     // and outlives it. Interrupts must not run interrupts.
@@ -321,15 +325,17 @@ class ScriptExecutor : public ActionDelegate,
   void GetNextActions();
   void OnProcessedAction(base::TimeTicks start_time,
                          std::unique_ptr<ProcessedActionProto> action);
-  void CheckElementMatches(const Selector& selector,
-                           BatchElementChecker* checker,
-                           base::OnceCallback<void(bool)> callback);
-  void OnShortWaitForElement(base::OnceCallback<void(bool)> callback,
-                             bool element_found,
-                             const Result* interrupt_result);
+  void CheckElementMatches(
+      const Selector& selector,
+      BatchElementChecker* checker,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+  void OnShortWaitForElement(
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& element_status,
+      const Result* interrupt_result);
   void OnWaitForElementVisibleWithInterrupts(
-      base::OnceCallback<void(ProcessedActionStatusProto)> callback,
-      bool element_found,
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& element_status,
       const Result* interrupt_result);
   void OnGetUserData(
       base::OnceCallback<void(std::unique_ptr<UserData>)> callback,

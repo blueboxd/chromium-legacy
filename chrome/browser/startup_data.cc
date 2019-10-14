@@ -30,6 +30,7 @@
 #include "chrome/browser/prefs/in_process_service_factory_factory.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/pref_service_builder_utils.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/supervised_user/supervised_user_pref_store.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"

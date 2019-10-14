@@ -27,7 +27,7 @@ class FocusElementAction : public Action {
   void OnWaitForElement(ProcessActionCallback callback,
                         const Selector& selector,
                         const TopPadding& top_padding,
-                        bool element_found);
+                        const ClientStatus& element_status);
   void OnFocusElement(ProcessActionCallback callback,
                       const ClientStatus& status);
 

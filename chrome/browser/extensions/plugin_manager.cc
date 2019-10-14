@@ -17,6 +17,7 @@
 #include "content/public/common/pepper_plugin_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
+#include "net/base/mime_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 

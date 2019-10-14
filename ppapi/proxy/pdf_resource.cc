@@ -218,8 +218,7 @@ void PDFResource::SetAccessibilityPageInfo(
     const PP_PrivateAccessibilityPageInfo* page_info,
     const PP_PrivateAccessibilityTextRunInfo text_runs[],
     const PP_PrivateAccessibilityCharInfo chars[],
-    const PP_PrivateAccessibilityLinkInfo links[],
-    const PP_PrivateAccessibilityImageInfo images[]) {
+    const PP_PrivateAccessibilityPageObjects* page_objects) {
   std::vector<PP_PrivateAccessibilityTextRunInfo> text_run_vector(
       text_runs, text_runs + page_info->text_run_count);
   std::vector<PP_PrivateAccessibilityCharInfo> char_vector(
@@ -228,18 +227,23 @@ void PDFResource::SetAccessibilityPageInfo(
   // std::string. Convert information for links and images to meet these
   // requirements.
   std::vector<ppapi::PdfAccessibilityLinkInfo> link_vector;
-  link_vector.reserve(page_info->link_count);
-  for (size_t i = 0; i < page_info->link_count; i++) {
-    link_vector.emplace_back(links[i]);
+  link_vector.reserve(page_objects->link_count);
+  for (size_t i = 0; i < page_objects->link_count; i++) {
+    link_vector.emplace_back(page_objects->links[i]);
   }
   std::vector<ppapi::PdfAccessibilityImageInfo> image_vector;
-  image_vector.reserve(page_info->image_count);
-  for (size_t i = 0; i < page_info->image_count; i++) {
-    image_vector.emplace_back(images[i]);
+  image_vector.reserve(page_objects->image_count);
+  for (size_t i = 0; i < page_objects->image_count; i++) {
+    image_vector.emplace_back(page_objects->images[i]);
   }
-  Post(RENDERER, PpapiHostMsg_PDF_SetAccessibilityPageInfo(
-                     *page_info, text_run_vector, char_vector, link_vector,
-                     image_vector));
+
+  ppapi::PdfAccessibilityPageObjects ppapi_page_objects;
+  ppapi_page_objects.links = std::move(link_vector);
+  ppapi_page_objects.images = std::move(image_vector);
+
+  Post(RENDERER,
+       PpapiHostMsg_PDF_SetAccessibilityPageInfo(
+           *page_info, text_run_vector, char_vector, ppapi_page_objects));
 }
 
 void PDFResource::SetCrashData(const char* pdf_url, const char* top_level_url) {

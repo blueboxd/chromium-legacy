@@ -28,8 +28,10 @@ const char* GetRequestDestinationFromContext(
     case mojom::RequestContextType::FONT:
       return "font";
     case mojom::RequestContextType::FRAME:
-    case mojom::RequestContextType::HYPERLINK:
+      return "frame";
     case mojom::RequestContextType::IFRAME:
+      return "iframe";
+    case mojom::RequestContextType::HYPERLINK:
     case mojom::RequestContextType::LOCATION:
     case mojom::RequestContextType::FORM:
       return "document";

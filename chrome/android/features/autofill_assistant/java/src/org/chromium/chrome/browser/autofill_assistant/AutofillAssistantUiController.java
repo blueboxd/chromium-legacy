@@ -202,6 +202,16 @@ class AutofillAssistantUiController {
     }
 
     @CalledByNative
+    private boolean isKeyboardShown() {
+        return mCoordinator.getKeyboardCoordinator().isKeyboardShown();
+    }
+
+    @CalledByNative
+    private void hideKeyboard() {
+        mCoordinator.getKeyboardCoordinator().hideKeyboard();
+    }
+
+    @CalledByNative
     private void showSnackbar(int delayMs, String message) {
         mSnackbarController =
                 AssistantSnackbar.show(mActivity, delayMs, message, this::safeSnackbarResult);
@@ -250,7 +260,8 @@ class AutofillAssistantUiController {
     }
 
     /**
-     * Adds a cancel action button to the chip list, which shows the snackbar and then executes
+     * Adds a cancel action button to the chip list. If the keyboard is currently shown, it
+     * dismisses the keyboard. Otherwise, it shows the snackbar and then executes
      * {@code actionIndex}, or shuts down Autofill Assistant if {@code actionIndex} is {@code -1}.
      */
     @CalledByNative

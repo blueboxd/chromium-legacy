@@ -67,8 +67,8 @@ void DeviceMediaToMojoAdapter::Start(
   DCHECK(thread_checker_.CalledOnValidThread());
   mojo::Remote<mojom::Receiver> receiver(std::move(receiver_pending_remote));
   receiver.set_disconnect_handler(
-      base::Bind(&DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose,
+                     weak_factory_.GetWeakPtr()));
 
   receiver_ = std::make_unique<ReceiverMojoToMediaAdapter>(std::move(receiver));
   auto media_receiver = std::make_unique<media::VideoFrameReceiverOnTaskRunner>(

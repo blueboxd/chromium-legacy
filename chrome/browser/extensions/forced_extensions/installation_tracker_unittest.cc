@@ -64,6 +64,12 @@ class ForcedExtensionsInstallationTrackerTest : public testing::Test {
                            base::Value::ToUniquePtrValue(std::move(dict)));
   }
 
+  void SetupEmptyForceList() {
+    base::Value dict(base::Value::Type::DICTIONARY);
+    prefs_->SetManagedPref(pref_names::kInstallForceList,
+                           base::Value::ToUniquePtrValue(std::move(dict)));
+  }
+
  protected:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
@@ -116,6 +122,21 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   histogram_tester_.ExpectUniqueSample(
       kTotalCountStats,
       prefs_->GetManagedPref(pref_names::kInstallForceList)->DictSize(), 1);
+}
+
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       ExtensionsInstallationCancelled) {
+  SetupForceList();
+  SetupEmptyForceList();
+  // InstallationTracker shuts down timer because there is nothing to do more.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectTotalCount(kLoadTimeStats, 0);
+  histogram_tester_.ExpectTotalCount(kTimedOutStats, 0);
+  histogram_tester_.ExpectTotalCount(kTimedOutNotInstalledStats, 0);
+  histogram_tester_.ExpectTotalCount(kFailureReasons, 0);
+  histogram_tester_.ExpectTotalCount(kInstallationStages, 0);
+  histogram_tester_.ExpectTotalCount(kFailureCrxInstallErrorStats, 0);
+  histogram_tester_.ExpectTotalCount(kTotalCountStats, 0);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest,

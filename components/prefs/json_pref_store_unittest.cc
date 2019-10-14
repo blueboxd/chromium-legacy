@@ -732,8 +732,8 @@ class SuccessfulWriteReplyObserver {
 void SuccessfulWriteReplyObserver::ObserveNextWriteCallback(
     JsonPrefStore* json_pref_store) {
   json_pref_store->RegisterOnNextSuccessfulWriteReply(
-      base::Bind(&SuccessfulWriteReplyObserver::OnSuccessfulWrite,
-                 base::Unretained(this)));
+      base::BindOnce(&SuccessfulWriteReplyObserver::OnSuccessfulWrite,
+                     base::Unretained(this)));
 }
 
 enum WriteCallbackObservationState {
@@ -758,10 +758,10 @@ class WriteCallbacksObserver {
   WriteCallbackObservationState GetAndResetPostWriteObservationState();
 
   JsonPrefStore::OnWriteCallbackPair GetCallbackPair() {
-    return std::make_pair(
-        base::Bind(&WriteCallbacksObserver::OnPreWrite, base::Unretained(this)),
-        base::Bind(&WriteCallbacksObserver::OnPostWrite,
-                   base::Unretained(this)));
+    return std::make_pair(base::BindOnce(&WriteCallbacksObserver::OnPreWrite,
+                                         base::Unretained(this)),
+                          base::BindOnce(&WriteCallbacksObserver::OnPostWrite,
+                                         base::Unretained(this)));
   }
 
   void OnPreWrite() {
@@ -821,10 +821,10 @@ class JsonPrefStoreCallbackTest : public testing::Test {
 
   void TriggerFakeWriteForCallback(JsonPrefStore* pref_store, bool success) {
     JsonPrefStore::PostWriteCallback(
-        base::Bind(&JsonPrefStore::RunOrScheduleNextSuccessfulWriteCallback,
-                   pref_store->AsWeakPtr()),
-        base::Bind(&WriteCallbacksObserver::OnPostWrite,
-                   base::Unretained(&write_callback_observer_)),
+        base::BindOnce(&JsonPrefStore::RunOrScheduleNextSuccessfulWriteCallback,
+                       pref_store->AsWeakPtr()),
+        base::BindOnce(&WriteCallbacksObserver::OnPostWrite,
+                       base::Unretained(&write_callback_observer_)),
         base::SequencedTaskRunnerHandle::Get(), success);
   }
 

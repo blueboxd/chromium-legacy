@@ -12,6 +12,7 @@
 #include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/in_progress_download_manager.h"

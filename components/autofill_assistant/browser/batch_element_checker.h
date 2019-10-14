@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/selector.h"
 
 namespace autofill_assistant {
@@ -30,7 +31,7 @@ class BatchElementChecker {
   // Callback for AddElementCheck. Argument is true if the check passed.
   //
   // An ElementCheckCallback must not delete its calling BatchElementChecker.
-  using ElementCheckCallback = base::OnceCallback<void(bool)>;
+  using ElementCheckCallback = base::OnceCallback<void(const ClientStatus&)>;
 
   // Callback for AddFieldValueCheck. Argument is true is the element exists.
   // The string contains the field value, or an empty string if accessing the
@@ -38,7 +39,7 @@ class BatchElementChecker {
   //
   // An ElementCheckCallback must not delete its calling BatchElementChecker.
   using GetFieldValueCallback =
-      base::OnceCallback<void(bool, const std::string&)>;
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>;
 
   // Checks an element.
   //
@@ -68,9 +69,9 @@ class BatchElementChecker {
 
  private:
   void OnElementChecked(std::vector<ElementCheckCallback>* callbacks,
-                        bool exists);
+                        const ClientStatus& element_status);
   void OnGetFieldValue(std::vector<GetFieldValueCallback>* callbacks,
-                       bool exists,
+                       const ClientStatus& element_status,
                        const std::string& value);
   void CheckDone();
 

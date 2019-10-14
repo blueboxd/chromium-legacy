@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/test_autofill_types.mojom.h"
@@ -91,8 +92,8 @@ void CreateTestPasswordForm(PasswordForm* form) {
   form->new_password_marked_by_site = false;
   form->new_password_element = base::ASCIIToUTF16("confirmation_password");
   form->preferred = false;
-  form->date_created = base::Time::Now();
-  form->date_synced = base::Time::Now();
+  form->date_created = AutofillClock::Now();
+  form->date_synced = AutofillClock::Now();
   form->blacklisted_by_user = false;
   form->type = PasswordForm::Type::kGenerated;
   form->times_used = 999;

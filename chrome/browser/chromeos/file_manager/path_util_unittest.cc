@@ -178,19 +178,7 @@ TEST_F(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
                 "Computers/My Other Computer/bar"));
 
   EXPECT_EQ("Google Drive \u203a My Drive \u203a foo",
-            GetPathDisplayTextForSettings(
-                &profile2, "/special/drive-0123456789abcdef/root/foo"));
-  EXPECT_EQ(
-      "Google Drive \u203a Shared drives \u203a A Team Drive \u203a foo",
-      GetPathDisplayTextForSettings(
-          &profile2,
-          "/special/drive-0123456789abcdef/team_drives/A Team Drive/foo"));
-
-  EXPECT_EQ(
-      "Google Drive \u203a Computers \u203a My Other Computer \u203a bar",
-      GetPathDisplayTextForSettings(
-          &profile2,
-          "/special/drive-0123456789abcdef/Computers/My Other Computer/bar"));
+            GetPathDisplayTextForSettings(&profile2, "${google_drive}/foo"));
 
   TestingProfile guest_profile(base::FilePath("/home/chronos/guest"));
   guest_profile.SetGuestSession(true);

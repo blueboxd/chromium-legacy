@@ -55,6 +55,15 @@ class ClientMemory {
   // The selected login or nullptr if no login was selected.
   const WebsiteLoginFetcher::Login* selected_login() const;
 
+  // The additional value for |key|, or nullptr if it does not exist.
+  const std::string* additional_value(const std::string& key);
+
+  // Returns true if an additional value is stored for |key|.
+  bool has_additional_value(const std::string& key);
+
+  // Sets the additional value for |key|.
+  void set_additional_value(const std::string& key, const std::string& value);
+
   std::string GetAllAddressKeyNames() const;
 
  private:
@@ -64,6 +73,8 @@ class ClientMemory {
   // The address key requested by the autofill action.
   std::map<std::string, std::unique_ptr<autofill::AutofillProfile>>
       selected_addresses_;
+  // Maps keys to additional values.
+  std::map<std::string, std::string> additional_values_;
 };
 
 }  // namespace autofill_assistant

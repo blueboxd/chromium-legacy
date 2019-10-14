@@ -487,6 +487,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirCreateWithContextMenu"),
         TestCase("dirCreateWithKeyboard"),
         TestCase("dirCreateWithoutChangingCurrent"),
+        TestCase("dirCreateMultipleFolders"),
 #if !(defined(ADDRESS_SANITIZER) || !defined(NDEBUG))
         // Zip tests times out too often on ASAN and DEBUG. crbug.com/936429
         // and crbug.com/944697
@@ -679,11 +680,16 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DISABLED_CopyBetweenWindows, /* copy_between_windows.js */
     FilesAppBrowserTest,
+    ::testing::Values(TestCase("copyBetweenWindowsDriveToUsb")));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    CopyBetweenWindows, /* copy_between_windows.js */
+    FilesAppBrowserTest,
     ::testing::Values(TestCase("copyBetweenWindowsLocalToDrive"),
                       TestCase("copyBetweenWindowsLocalToUsb"),
                       TestCase("copyBetweenWindowsUsbToDrive"),
                       TestCase("copyBetweenWindowsDriveToLocal"),
-                      TestCase("copyBetweenWindowsDriveToUsb"),
+//                      TestCase("copyBetweenWindowsDriveToUsb"),
                       TestCase("copyBetweenWindowsUsbToLocal")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

@@ -5120,10 +5120,10 @@ interface NDEFRecord
     attribute @@toStringTag
     getter mediaType
     getter recordType
+    method arrayBuffer
     method constructor
-    method toArrayBuffer
-    method toJSON
-    method toText
+    method json
+    method text
 interface NFCErrorEvent : Event
     attribute @@toStringTag
     getter error

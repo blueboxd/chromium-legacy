@@ -21,15 +21,14 @@ ProxyLookupClientImpl::ProxyLookupClientImpl(
     const GURL& url,
     ProxyLookupCallback callback,
     network::mojom::NetworkContext* network_context)
-    : binding_(this), callback_(std::move(callback)) {
+    : callback_(std::move(callback)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  network::mojom::ProxyLookupClientPtr proxy_lookup_client_ptr;
-  binding_.Bind(
-      mojo::MakeRequest(&proxy_lookup_client_ptr),
-      base::CreateSingleThreadTaskRunner(
-          {content::BrowserThread::UI, content::BrowserTaskType::kPreconnect}));
-  network_context->LookUpProxyForURL(url, std::move(proxy_lookup_client_ptr));
-  binding_.set_connection_error_handler(
+  network_context->LookUpProxyForURL(
+      url,
+      receiver_.BindNewPipeAndPassRemote(base::CreateSingleThreadTaskRunner(
+          {content::BrowserThread::UI,
+           content::BrowserTaskType::kPreconnect})));
+  receiver_.set_disconnect_handler(
       base::BindOnce(&ProxyLookupClientImpl::OnProxyLookupComplete,
                      base::Unretained(this), net::ERR_ABORTED, base::nullopt));
 }

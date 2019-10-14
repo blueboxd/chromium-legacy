@@ -185,7 +185,7 @@ TEST_F(WaitForDocumentActionTest, WaitForDocumentInteractiveTimesOut) {
 TEST_F(WaitForDocumentActionTest, CheckDocumentInFrame) {
   EXPECT_CALL(mock_action_delegate_,
               OnShortWaitForElement(Selector({"#frame"}), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
 
   EXPECT_CALL(mock_action_delegate_,
               OnGetDocumentReadyState(Selector({"#frame"}), _))
@@ -199,7 +199,8 @@ TEST_F(WaitForDocumentActionTest, CheckDocumentInFrame) {
 
 TEST_F(WaitForDocumentActionTest, CheckFrameElementNotFound) {
   EXPECT_CALL(mock_action_delegate_, OnShortWaitForElement(_, _))
-      .WillRepeatedly(RunOnceCallback<1>(false));
+      .WillRepeatedly(
+          RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED)));
 
   proto_.set_timeout_ms(0);
   proto_.mutable_frame()->add_selectors("#frame");

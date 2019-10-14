@@ -23,6 +23,7 @@
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/offline_page_url_loader.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"

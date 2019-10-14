@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/payments/test_strike_database.h"
 
 #include "components/autofill/core/browser/proto/strike_data.pb.h"
+#include "components/autofill/core/common/autofill_clock.h"
 
 namespace autofill {
 
@@ -36,7 +37,7 @@ void TestStrikeDatabase::AddEntryWithNumStrikes(const std::string& key,
   StrikeData strike_data;
   strike_data.set_num_strikes(num_strikes);
   strike_data.set_last_update_timestamp(
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+      AutofillClock::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
   db_[key] = strike_data;
 }
 

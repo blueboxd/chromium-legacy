@@ -42,9 +42,11 @@
 #include "content/public/browser/storage_partition.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
+#include "url/url_util.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;

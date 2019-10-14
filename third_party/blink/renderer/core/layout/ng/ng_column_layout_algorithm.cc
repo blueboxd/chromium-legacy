@@ -117,8 +117,11 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   is_constrained_by_outer_fragmentation_context_ =
       ConstraintSpace().HasKnownFragmentainerBlockSize();
 
-  if (is_constrained_by_outer_fragmentation_context_)
+  if (ConstraintSpace().HasBlockFragmentation()) {
     container_builder_.SetHasBlockFragmentation();
+    if (ConstraintSpace().IsInitialColumnBalancingPass())
+      container_builder_.SetIsInitialColumnBalancingPass();
+  }
 
   container_builder_.SetIsBlockFragmentationContextRoot();
 
@@ -659,6 +662,14 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
     // taken into account) is where we assume the next implicit break.
     wtf_size_t index = content_runs.IndexWithTallestColumns();
     content_runs[index].implicit_breaks_assumed_count++;
+  }
+
+  if (ConstraintSpace().IsInitialColumnBalancingPass()) {
+    // Nested column balancing. Our outer fragmentation context is in its
+    // initial balancing pass, so it also wants to know the largest unbreakable
+    // block-size.
+    container_builder_.PropagateTallestUnbreakableBlockSize(
+        tallest_unbreakable_block_size);
   }
 
   // We now have an estimated minimal block-size for the columns. Roughly

@@ -972,15 +972,15 @@ void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
   PP_PrivateAccessibilityPageInfo page_info;
   std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
   std::vector<PP_PrivateAccessibilityCharInfo> chars;
-  std::vector<pp::PDF::PrivateAccessibilityLinkInfo> links;
-  std::vector<pp::PDF::PrivateAccessibilityImageInfo> images;
+  pp::PDF::PrivateAccessibilityPageObjects page_objects;
+
   if (!GetAccessibilityInfo(engine_.get(), page_index, &page_info, &text_runs,
-                            &chars, &links, &images)) {
+                            &chars, &page_objects)) {
     return;
   }
 
   pp::PDF::SetAccessibilityPageInfo(GetPluginInstance(), &page_info, text_runs,
-                                    chars, links, images);
+                                    chars, page_objects);
 
   // Schedule loading the next page.
   pp::CompletionCallback callback = callback_factory_.NewCallback(

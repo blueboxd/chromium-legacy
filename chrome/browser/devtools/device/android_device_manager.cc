@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/devtools/device/usb/usb_device_manager_helper.h"
 #include "chrome/browser/devtools/device/usb/usb_device_provider.h"

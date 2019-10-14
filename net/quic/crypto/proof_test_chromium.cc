@@ -237,7 +237,7 @@ TEST_P(ProofTest, TlsSignature) {
   string sig;
   bool success;
   std::unique_ptr<TestingSignatureCallback> callback =
-      quic::QuicMakeUnique<TestingSignatureCallback>(&success, &sig);
+      std::make_unique<TestingSignatureCallback>(&success, &sig);
   source->ComputeTlsSignature(server_address, hostname, SSL_SIGN_RSA_PSS_SHA256,
                               to_be_signed, std::move(callback));
   EXPECT_TRUE(success);

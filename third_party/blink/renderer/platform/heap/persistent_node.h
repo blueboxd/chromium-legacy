@@ -293,6 +293,14 @@ inline PersistentNode* CrossThreadPersistentRegion::AllocateNode(
 
 inline void CrossThreadPersistentRegion::FreeNode(PersistentNode* node) {
   PersistentMutexTraits<kCrossThreadPersistentConfiguration>::AssertAcquired();
+  // PersistentBase::UninitializeSafe opportunistically checks for uninitialized
+  // nodes to allow a fast path destruction of unused nodes. This check is
+  // performed without taking the lock that is required for processing a
+  // cross-thread node. After taking the lock the condition needs to checked
+  // again to avoid double-freeing a node because the node may have been
+  // concurrently freed by the garbage collector on another thread.
+  if (!node)
+    return;
   PersistentRegionBase::FreeNode(node);
 }
 

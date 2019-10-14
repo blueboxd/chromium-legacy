@@ -49,14 +49,32 @@ InstallationTracker::InstallationTracker(
 InstallationTracker::~InstallationTracker() = default;
 
 void InstallationTracker::OnForcedExtensionsPrefChanged() {
-  // Load forced extensions list only once.
-  if (!forced_extensions_.empty())
-    return;
-
   const base::DictionaryValue* value =
       pref_service_->GetDictionary(pref_names::kInstallForceList);
-  if (!value || value->empty())
+  if (!value)
     return;
+
+  std::vector<ExtensionId> extensions_to_remove;
+  for (const auto& extension_id : forced_extensions_) {
+    if (value->FindKey(extension_id) == nullptr)
+      extensions_to_remove.push_back(extension_id);
+  }
+
+  for (const auto& extension_id : extensions_to_remove) {
+    forced_extensions_.erase(extension_id);
+    pending_forced_extensions_.erase(extension_id);
+  }
+
+  // Report if all remaining extensions were removed from policy.
+  if (loaded_ && pending_forced_extensions_.empty())
+    ReportResults(true /* succeeded */);
+
+  // Load forced extensions list only once.
+  if (value->empty() || loaded_) {
+    return;
+  }
+
+  loaded_ = true;
 
   for (const auto& entry : *value) {
     forced_extensions_.insert(entry.first);

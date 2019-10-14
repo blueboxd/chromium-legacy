@@ -25,6 +25,7 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_core_service_impl.h"
+#include "chrome/browser/download/download_dir_util.h"
 #include "chrome/browser/download/download_prompt_status.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/trusted_sources_manager.h"
@@ -145,6 +146,9 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
       prefs->SetFilePath(path_pref[i], migrated);
     } else if (file_manager::util::MigrateToDriveFs(profile_, current,
                                                     &migrated)) {
+      prefs->SetFilePath(path_pref[i], migrated);
+    } else if (download_dir_util::ExpandDrivePolicyVariable(profile_, current,
+                                                            &migrated)) {
       prefs->SetFilePath(path_pref[i], migrated);
     }
   }
@@ -465,6 +469,10 @@ base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
   // the path is valid when DriveFS is enabled.
   if (file_manager::util::MigrateToDriveFs(profile_, path,
                                            &migrated_drive_path)) {
+    return SanitizeDownloadTargetPath(migrated_drive_path);
+  }
+  if (download_dir_util::ExpandDrivePolicyVariable(profile_, path,
+                                                   &migrated_drive_path)) {
     return SanitizeDownloadTargetPath(migrated_drive_path);
   }
 

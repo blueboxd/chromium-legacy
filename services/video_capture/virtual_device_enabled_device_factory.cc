@@ -114,9 +114,9 @@ void VirtualDeviceEnabledDeviceFactory::CreateDevice(
     }
     device_entry.EstablishConsumerBinding(
         std::move(device_request),
-        base::Bind(&VirtualDeviceEnabledDeviceFactory::
-                       OnVirtualDeviceConsumerConnectionErrorOrClose,
-                   base::Unretained(this), device_id));
+        base::BindOnce(&VirtualDeviceEnabledDeviceFactory::
+                           OnVirtualDeviceConsumerConnectionErrorOrClose,
+                       base::Unretained(this), device_id));
     std::move(callback).Run(mojom::DeviceAccessResultCode::SUCCESS);
     return;
   }
@@ -139,9 +139,9 @@ void VirtualDeviceEnabledDeviceFactory::AddSharedMemoryVirtualDevice(
   }
 
   producer.set_connection_error_handler(
-      base::Bind(&VirtualDeviceEnabledDeviceFactory::
-                     OnVirtualDeviceProducerConnectionErrorOrClose,
-                 base::Unretained(this), device_id));
+      base::BindOnce(&VirtualDeviceEnabledDeviceFactory::
+                         OnVirtualDeviceProducerConnectionErrorOrClose,
+                     base::Unretained(this), device_id));
   auto device = std::make_unique<SharedMemoryVirtualDeviceMojoAdapter>(
       std::move(producer),
       send_buffer_handles_to_producer_as_raw_file_descriptors);
@@ -149,9 +149,9 @@ void VirtualDeviceEnabledDeviceFactory::AddSharedMemoryVirtualDevice(
       std::make_unique<mojo::Binding<mojom::SharedMemoryVirtualDevice>>(
           device.get(), std::move(virtual_device_request));
   producer_binding->set_connection_error_handler(
-      base::Bind(&VirtualDeviceEnabledDeviceFactory::
-                     OnVirtualDeviceProducerConnectionErrorOrClose,
-                 base::Unretained(this), device_id));
+      base::BindOnce(&VirtualDeviceEnabledDeviceFactory::
+                         OnVirtualDeviceProducerConnectionErrorOrClose,
+                     base::Unretained(this), device_id));
   VirtualDeviceEntry device_entry(device_info, std::move(device),
                                   std::move(producer_binding));
   virtual_devices_by_id_.insert(

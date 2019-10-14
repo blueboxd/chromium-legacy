@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
@@ -37,8 +38,10 @@ class ElementPrecondition {
   bool empty() { return elements_exist_.empty() && form_value_match_.empty(); }
 
  private:
-  void OnCheckElementExists(bool exists);
-  void OnGetFieldValue(int index, bool exists, const std::string& value);
+  void OnCheckElementExists(const ClientStatus& element_status);
+  void OnGetFieldValue(int index,
+                       const ClientStatus& element_status,
+                       const std::string& value);
   void ReportCheckResult(bool success);
 
   std::vector<Selector> elements_exist_;

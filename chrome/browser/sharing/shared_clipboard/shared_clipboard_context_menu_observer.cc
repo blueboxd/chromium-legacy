@@ -127,14 +127,14 @@ bool SharedClipboardContextMenuObserver::IsCommandIdEnabled(int command_id) {
 void SharedClipboardContextMenuObserver::ExecuteCommand(int command_id) {
   if (command_id ==
       IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE) {
-    DCHECK(devices_.size() == 1);
+    DCHECK_EQ(1u, devices_.size());
     SendSharedClipboardMessage(0);
   }
 }
 
 void SharedClipboardContextMenuObserver::SendSharedClipboardMessage(
     int chosen_device_index) {
-  if (chosen_device_index >= static_cast<int>(devices_.size()))
+  if (size_t{chosen_device_index} >= devices_.size())
     return;
   LogSharingSelectedDeviceIndex(controller_->GetFeatureMetricsPrefix(),
                                 nullptr /* No suffix */, chosen_device_index);

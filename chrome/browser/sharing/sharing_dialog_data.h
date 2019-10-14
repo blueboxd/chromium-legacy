@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/sharing/sharing_app.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
@@ -23,6 +22,7 @@ struct SharingDialogData {
   SharingDialogData();
   ~SharingDialogData();
   SharingDialogData(SharingDialogData&& other);
+  SharingDialogData& operator=(SharingDialogData&& other);
 
   SharingDialogType type = SharingDialogType::kErrorDialog;
   SharingFeatureName prefix = SharingFeatureName::kUnknown;
@@ -41,9 +41,6 @@ struct SharingDialogData {
   base::OnceCallback<void(const syncer::DeviceInfo&)> device_callback;
   base::OnceCallback<void(const SharingApp&)> app_callback;
   base::OnceCallback<void(SharingDialog*)> close_callback;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SharingDialogData);
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_DIALOG_DATA_H_

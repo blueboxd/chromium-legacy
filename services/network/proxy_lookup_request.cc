@@ -20,7 +20,7 @@
 namespace network {
 
 ProxyLookupRequest::ProxyLookupRequest(
-    mojom::ProxyLookupClientPtr proxy_lookup_client,
+    mojo::PendingRemote<mojom::ProxyLookupClient> proxy_lookup_client,
     NetworkContext* network_context)
     : network_context_(network_context),
       proxy_lookup_client_(std::move(proxy_lookup_client)) {
@@ -36,7 +36,7 @@ ProxyLookupRequest::~ProxyLookupRequest() {
 }
 
 void ProxyLookupRequest::Start(const GURL& url) {
-  proxy_lookup_client_.set_connection_error_handler(
+  proxy_lookup_client_.set_disconnect_handler(
       base::BindOnce(&ProxyLookupRequest::DestroySelf, base::Unretained(this)));
   // TODO(mmenke): The NetLogWithSource() means nothing is logged. Fix that.
   int result =

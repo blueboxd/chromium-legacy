@@ -1370,9 +1370,6 @@ extern const char kEnableVulkanDescription[];
 extern const char kAiaFetchingName[];
 extern const char kAiaFetchingDescription[];
 
-extern const char kAllowRemoteContextForNotificationsName[];
-extern const char kAllowRemoteContextForNotificationsDescription[];
-
 extern const char kAndroidAutofillAccessibilityName[];
 extern const char kAndroidAutofillAccessibilityDescription[];
 
@@ -1522,9 +1519,6 @@ extern const char kInterestFeedContentSuggestionsDescription[];
 
 extern const char kManualPasswordGenerationAndroidName[];
 extern const char kManualPasswordGenerationAndroidDescription[];
-
-extern const char kNewPhotoPickerName[];
-extern const char kNewPhotoPickerDescription[];
 
 extern const char kNoCreditCardAbort[];
 extern const char kNoCreditCardAbortDescription[];

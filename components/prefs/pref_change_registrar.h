@@ -67,7 +67,7 @@ class COMPONENTS_PREFS_EXPORT PrefChangeRegistrar final : public PrefObserver {
   void OnPreferenceChanged(PrefService* service,
                            const std::string& pref_name) override;
 
-  static void InvokeUnnamedCallback(base::OnceClosure callback,
+  static void InvokeUnnamedCallback(const base::RepeatingClosure& callback,
                                     const std::string& pref_name);
 
   using ObserverMap = std::map<std::string, NamedChangeCallback>;

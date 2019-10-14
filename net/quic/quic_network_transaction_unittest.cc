@@ -971,7 +971,7 @@ class QuicNetworkTransactionTest
     MockQuicData quic_data(version_);
     int packet_number = 1;
     client_maker.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-    if (VersionUsesQpack(version_.transport_version)) {
+    if (VersionUsesHttp3(version_.transport_version)) {
       quic_data.AddWrite(
           SYNCHRONOUS, client_maker.MakeInitialSettingsPacket(packet_number++));
     }
@@ -1088,7 +1088,7 @@ TEST_P(QuicNetworkTransactionTest, WriteErrorHandshakeConfirmed) {
       MockCryptoClientStream::CONFIRM_HANDSHAKE);
 
   MockQuicData mock_quic_data(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     mock_quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(1));
   mock_quic_data.AddWrite(SYNCHRONOUS, ERR_INTERNET_DISCONNECTED);
   mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
@@ -1119,7 +1119,7 @@ TEST_P(QuicNetworkTransactionTest, WriteErrorHandshakeConfirmedAsync) {
       MockCryptoClientStream::CONFIRM_HANDSHAKE);
 
   MockQuicData mock_quic_data(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     mock_quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(1));
   mock_quic_data.AddWrite(ASYNC, ERR_INTERNET_DISCONNECTED);
   mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
@@ -1147,7 +1147,7 @@ TEST_P(QuicNetworkTransactionTest, SocketWatcherEnabled) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -1187,7 +1187,7 @@ TEST_P(QuicNetworkTransactionTest, SocketWatcherDisabled) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -1227,7 +1227,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -1287,7 +1287,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   EXPECT_LT(0, pos);
 
   int log_stream_id = GetIntegerValueFromParams(entries[pos], "stream_id");
-  if (quic::VersionUsesQpack(version_.transport_version)) {
+  if (quic::VersionUsesHttp3(version_.transport_version)) {
     EXPECT_EQ(GetNthClientInitiatedBidirectionalStreamId(0),
               static_cast<quic::QuicStreamId>(log_stream_id));
   } else {
@@ -1302,7 +1302,7 @@ TEST_P(QuicNetworkTransactionTest, LargeResponseHeaders) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -1322,7 +1322,7 @@ TEST_P(QuicNetworkTransactionTest, LargeResponseHeaders) {
   response_headers["key8"] = std::string(30000, 'A');
   quic::QuicStreamId stream_id;
   std::string response_data;
-  if (quic::VersionUsesQpack(version_.transport_version)) {
+  if (quic::VersionUsesHttp3(version_.transport_version)) {
     stream_id = GetNthClientInitiatedBidirectionalStreamId(0);
     std::vector<std::string> encoded = server_maker_.QpackEncodeHeaders(
         stream_id, std::move(response_headers), nullptr);
@@ -1378,7 +1378,7 @@ TEST_P(QuicNetworkTransactionTest, TooLargeResponseHeaders) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -1401,7 +1401,7 @@ TEST_P(QuicNetworkTransactionTest, TooLargeResponseHeaders) {
 
   quic::QuicStreamId stream_id;
   std::string response_data;
-  if (quic::VersionUsesQpack(version_.transport_version)) {
+  if (quic::VersionUsesHttp3(version_.transport_version)) {
     stream_id = GetNthClientInitiatedBidirectionalStreamId(0);
     std::vector<std::string> encoded = server_maker_.QpackEncodeHeaders(
         stream_id, std::move(response_headers), nullptr);
@@ -1462,7 +1462,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicForAll) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -1500,7 +1500,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxy) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -1552,7 +1552,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
   client_maker_.set_hostname(origin_host);
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -1617,7 +1617,7 @@ TEST_P(QuicNetworkTransactionTest, AlternativeServicesDifferentHost) {
   MockQuicData mock_quic_data(version_);
 
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -1715,7 +1715,7 @@ TEST_P(QuicNetworkTransactionTest, DoNotUseQuicForUnsupportedVersion) {
   // by the client has been advertised by the server.
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -1792,7 +1792,7 @@ TEST_P(QuicNetworkTransactionTest, RetryMisdirectedRequest) {
   // dispensing the socket, making it available for the second try.
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -1853,12 +1853,12 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
       HostPortPair::FromString("mail.example.org:443"));
 
   MockQuicData mock_quic_data1(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     mock_quic_data1.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(1));
   mock_quic_data1.AddRead(ASYNC, ERR_SOCKET_NOT_CONNECTED);
   client_maker_.Reset();
   MockQuicData mock_quic_data2(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     mock_quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(1));
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details_);
   mock_quic_data2.AddRead(ASYNC, ERR_SOCKET_NOT_CONNECTED);
@@ -1919,7 +1919,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceForQuic) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -1967,7 +1967,7 @@ TEST_P(QuicNetworkTransactionTest, UseIetfAlternativeServiceForQuic) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -2045,7 +2045,7 @@ TEST_P(QuicNetworkTransactionTest,
   // alternative service infrmation has been received in this context before.
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -2127,7 +2127,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic1) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -2193,7 +2193,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic2) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -2241,7 +2241,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -2377,7 +2377,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -2445,7 +2445,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceAllSupportedVersion) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -2484,7 +2484,7 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
   }
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -2723,7 +2723,7 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
                       client_maker_.MakeDummyCHLOPacket(1));  // CHLO
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(2));
   quic_data2.AddSocketDataToFactory(&socket_factory_);
 
@@ -2861,7 +2861,7 @@ TEST_P(QuicNetworkTransactionTest,
                       client_maker_.MakeDummyCHLOPacket(1));  // CHLO
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(2));
   quic_data2.AddSocketDataToFactory(&socket_factory_);
 
@@ -2981,7 +2981,7 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
   std::string header = ConstructDataHeader(body.length());
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data2.AddWrite(SYNCHRONOUS,
                         ConstructInitialSettingsPacket(packet_num++));
   }
@@ -3071,7 +3071,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
   client_maker_.set_save_packet_frames(true);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_num++));
   }
@@ -3083,7 +3083,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
 
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     // TLP 1
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
                                         1, packet_num++, true));
@@ -3190,7 +3190,7 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
   client_maker_.set_save_packet_frames(true);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_number = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(packet_number++));
   }
@@ -3201,7 +3201,7 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
           true, priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     // TLP 1
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeRetransmissionPacket(1, 3, true));
@@ -3313,7 +3313,7 @@ TEST_P(QuicNetworkTransactionTest,
   client_maker_.set_save_packet_frames(true);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_number = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(packet_number++));
   }
@@ -3325,7 +3325,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
 
-  if (!VersionUsesQpack(version_.transport_version)) {
+  if (!VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeRstPacket(
                            packet_number++, true,
@@ -3494,7 +3494,7 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
   MockQuicData quic_data(version_);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_num++));
   }
@@ -3571,7 +3571,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
   client_maker_.set_save_packet_frames(true);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeInitialSettingsPacket(packet_num++));
   }
@@ -3582,7 +3582,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
           true, priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     // TLP 1
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
                                         1, packet_num++, true));
@@ -3711,7 +3711,7 @@ TEST_P(QuicNetworkTransactionTest,
   MockQuicData quic_data(version_);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_num++));
   }
@@ -3822,7 +3822,7 @@ TEST_P(QuicNetworkTransactionTest,
   MockQuicData quic_data(version_);
   uint64_t packet_number = 1;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_number++));
   }
@@ -3934,7 +3934,7 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_num++));
   }
@@ -4036,7 +4036,7 @@ TEST_P(QuicNetworkTransactionTest, RemoteAltSvcWorkingWhileLocalAltSvcBroken) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -4115,7 +4115,7 @@ TEST_P(QuicNetworkTransactionTest,
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -4265,7 +4265,7 @@ TEST_P(QuicNetworkTransactionTest, UseExistingAlternativeServiceForQuic) {
   // alternative service list.
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -4338,7 +4338,7 @@ TEST_P(QuicNetworkTransactionTest, UseExistingQUICAlternativeProxy) {
   // alternative service list.
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -4424,7 +4424,7 @@ TEST_P(QuicNetworkTransactionTest, PoolByOrigin) {
   MockQuicData mock_quic_data(version_);
 
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -4514,7 +4514,7 @@ TEST_P(QuicNetworkTransactionTest, PoolByDestination) {
   MockQuicData mock_quic_data(version_);
 
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -4655,7 +4655,7 @@ TEST_P(QuicNetworkTransactionTest,
   client_maker_.set_hostname("www.example.org");
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -4767,7 +4767,7 @@ TEST_P(QuicNetworkTransactionTest, ConfirmAlternativeService) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -4845,7 +4845,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -4914,7 +4914,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceForQuicForHttps) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -4954,7 +4954,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithRacing) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -5061,7 +5061,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
   MockQuicData mock_quic_data(version_);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -5103,7 +5103,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   MockQuicData mock_quic_data(version_);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_number = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(packet_number++));
   }
@@ -5175,7 +5175,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -5234,7 +5234,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
   uint64_t packet_number = 1;
   MockQuicData mock_quic_data(version_);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(packet_number++));
   }
@@ -5317,7 +5317,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
   uint64_t packet_number = 1;
   MockQuicData mock_quic_data(version_);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(packet_number++));
   }
@@ -5406,7 +5406,7 @@ TEST_P(QuicNetworkTransactionTest,
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -5463,7 +5463,7 @@ TEST_P(QuicNetworkTransactionTest,
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -5524,7 +5524,7 @@ TEST_P(QuicNetworkTransactionTest, RstStreamErrorHandling) {
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -5595,7 +5595,7 @@ TEST_P(QuicNetworkTransactionTest, RstStreamBeforeHeaders) {
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -5789,7 +5789,7 @@ TEST_P(QuicNetworkTransactionTest, DelayTCPOnStartWithQuicSupportOnSameIP) {
   MockQuicData mock_quic_data(version_);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_number = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_number++));
   }
@@ -5855,7 +5855,7 @@ TEST_P(QuicNetworkTransactionTest,
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -6212,7 +6212,7 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
       test_socket_performance_watcher_factory_.rtt_notification_received());
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -6298,7 +6298,7 @@ TEST_P(QuicNetworkTransactionTest, QuicUpload) {
       HostPortPair::FromString("mail.example.org:443"));
 
   MockQuicData mock_quic_data(version_);
-  if (!VersionUsesQpack(version_.transport_version))
+  if (!VersionUsesHttp3(version_.transport_version))
     mock_quic_data.AddRead(SYNCHRONOUS, OK);
   else
     mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -6345,7 +6345,7 @@ TEST_P(QuicNetworkTransactionTest, QuicUploadWriteError) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -6392,7 +6392,7 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterAsyncNoBufferSpace) {
 
   MockQuicData socket_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -6434,7 +6434,7 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterSynchronousNoBufferSpace) {
 
   MockQuicData socket_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -6477,7 +6477,7 @@ TEST_P(QuicNetworkTransactionTest, MaxRetriesAfterAsyncNoBufferSpace) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(1));
   for (int i = 0; i < 13; ++i) {  // 12 retries then one final failure.
     socket_data.AddWrite(ASYNC, ERR_NO_BUFFER_SPACE);
@@ -6514,7 +6514,7 @@ TEST_P(QuicNetworkTransactionTest, MaxRetriesAfterSynchronousNoBufferSpace) {
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(1));
   for (int i = 0; i < 13; ++i) {  // 12 retries then one final failure.
     socket_data.AddWrite(ASYNC, ERR_NO_BUFFER_SPACE);
@@ -6555,7 +6555,7 @@ TEST_P(QuicNetworkTransactionTest, NoMigrationForMsgTooBig) {
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
@@ -6587,7 +6587,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
 
   MockQuicData mock_quic_data(version_);
   uint64_t client_packet_number = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS, ConstructInitialSettingsPacket(client_packet_number++));
   }
@@ -6604,8 +6604,8 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
   if ((client_headers_include_h2_stream_dependency_ &&
        version_.transport_version >= quic::QUIC_VERSION_43 &&
-       !VersionHasStreamType(version_.transport_version)) ||
-      (VersionHasStreamType(version_.transport_version) &&
+       !VersionUsesHttp3(version_.transport_version)) ||
+      (VersionUsesHttp3(version_.transport_version) &&
        FLAGS_quic_allow_http3_priority)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -6679,7 +6679,7 @@ TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
   MockQuicData mock_quic_data(version_);
   uint64_t client_packet_number = 1;
   // Initial SETTINGS frame.
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS, ConstructInitialSettingsPacket(client_packet_number++));
   }
@@ -6698,8 +6698,8 @@ TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
   if ((client_headers_include_h2_stream_dependency_ &&
        version_.transport_version >= quic::QUIC_VERSION_43 &&
-       !VersionHasStreamType(version_.transport_version)) ||
-      (VersionHasStreamType(version_.transport_version) &&
+       !VersionUsesHttp3(version_.transport_version)) ||
+      (VersionUsesHttp3(version_.transport_version) &&
        FLAGS_quic_allow_http3_priority)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -6771,7 +6771,7 @@ TEST_P(QuicNetworkTransactionTest, QuicForceHolBlocking) {
   MockQuicData mock_quic_data(version_);
 
   int write_packet_index = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS, ConstructInitialSettingsPacket(write_packet_index++));
   }
@@ -6866,7 +6866,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullRequest) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -6885,7 +6885,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullRequest) {
                  GetResponseHeaders("200 OK")));
   quic::QuicStreamOffset expected_raw_header_response_size =
       server_maker_.stream_offset(
-          quic::VersionUsesQpack(version_.transport_version)
+          quic::VersionUsesHttp3(version_.transport_version)
               ? GetNthClientInitiatedBidirectionalStreamId(0)
               : quic::QuicUtils::GetHeadersStreamId(
                     version_.transport_version));
@@ -6938,7 +6938,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
 
   MockQuicData mock_quic_data(version_);
   uint64_t client_packet_number = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS, ConstructInitialSettingsPacket(client_packet_number++));
   }
@@ -6960,7 +6960,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
           GetNthServerInitiatedUnidirectionalStreamId(0), false,
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
   quic::QuicStreamOffset push_promise_offset = 0;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     push_promise_offset = server_maker_.stream_offset(
                               GetNthClientInitiatedBidirectionalStreamId(0)) -
                           initial;
@@ -6968,8 +6968,8 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
 
   if ((client_headers_include_h2_stream_dependency_ &&
        version_.transport_version >= quic::QUIC_VERSION_43 &&
-       !VersionHasStreamType(version_.transport_version)) ||
-      (VersionHasStreamType(version_.transport_version) &&
+       !VersionUsesHttp3(version_.transport_version)) ||
+      (VersionUsesHttp3(version_.transport_version) &&
        (FLAGS_quic_allow_http3_priority))) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -6980,7 +6980,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
   }
 
   const quic::QuicStreamOffset initial_offset = server_maker_.stream_offset(
-      quic::VersionUsesQpack(version_.transport_version)
+      quic::VersionUsesHttp3(version_.transport_version)
           ? GetNthClientInitiatedBidirectionalStreamId(0)
           : quic::QuicUtils::GetHeadersStreamId(version_.transport_version));
   mock_quic_data.AddRead(
@@ -6988,7 +6988,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
   const quic::QuicStreamOffset final_offset = server_maker_.stream_offset(
-      quic::VersionUsesQpack(version_.transport_version)
+      quic::VersionUsesHttp3(version_.transport_version)
           ? GetNthClientInitiatedBidirectionalStreamId(0)
           : quic::QuicUtils::GetHeadersStreamId(version_.transport_version));
   quic::QuicStreamOffset expected_raw_header_response_size =
@@ -7066,7 +7066,7 @@ TEST_P(QuicNetworkTransactionTest, HostInAllowlist) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -7448,7 +7448,7 @@ TEST_P(QuicNetworkTransactionWithDestinationTest, PoolIfCertificateValid) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(
                                              packet_num++, &client_maker));
   }
@@ -7551,7 +7551,7 @@ TEST_P(QuicNetworkTransactionWithDestinationTest,
 
   MockQuicData mock_quic_data1(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data1.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(
                                               packet_num++, &client_maker1));
   }
@@ -7586,7 +7586,7 @@ TEST_P(QuicNetworkTransactionWithDestinationTest,
 
   MockQuicData mock_quic_data2(version_);
   int packet_num2 = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(
                                               packet_num2++, &client_maker2));
   }
@@ -7625,7 +7625,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
 
   MockQuicData mock_quic_data(version_);
   uint64_t client_packet_number = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS, ConstructInitialSettingsPacket(client_packet_number++));
   }
@@ -7643,8 +7643,8 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
 
   if ((client_headers_include_h2_stream_dependency_ &&
        version_.transport_version >= quic::QUIC_VERSION_43 &&
-       !VersionHasStreamType(version_.transport_version)) ||
-      (VersionHasStreamType(version_.transport_version) &&
+       !VersionUsesHttp3(version_.transport_version)) ||
+      (VersionUsesHttp3(version_.transport_version) &&
        FLAGS_quic_allow_http3_priority)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -7755,7 +7755,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushWithEmptyHostname) {
   MockQuicData mock_quic_data(version_);
 
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -7820,7 +7820,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectHttpsServer) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -7915,7 +7915,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -8016,7 +8016,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
 
   MockQuicData mock_quic_data(version_);
   int write_packet_index = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS, ConstructInitialSettingsPacket(write_packet_index++));
   }
@@ -8169,7 +8169,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -8341,7 +8341,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectFailure) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -8393,7 +8393,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyQuicConnectionError) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -8434,7 +8434,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -8560,7 +8560,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyUserAgent) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -8613,7 +8613,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyRequestPriority) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -8654,7 +8654,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyMultipleRequestsError) {
   const RequestPriority kRequestPriority2 = LOWEST;
 
   MockQuicData mock_quic_data(version_);
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(ASYNC, ConstructInitialSettingsPacket(1));
     mock_quic_data.AddWrite(SYNCHRONOUS, ERR_FAILED);
   } else {
@@ -8745,7 +8745,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
     quic::QuicStreamOffset server_data_offset = 0;
 
     int packet_num = 1;
-    if (VersionUsesQpack(version_.transport_version)) {
+    if (VersionUsesHttp3(version_.transport_version)) {
       mock_quic_data.AddWrite(
           SYNCHRONOUS, client_maker->MakeInitialSettingsPacket(packet_num++));
     }
@@ -8896,7 +8896,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
     return;
   }
 
-  if (quic::VersionUsesQpack(version_.transport_version)) {
+  if (quic::VersionUsesHttp3(version_.transport_version)) {
     // HTTP/3 currently doesn't support PRIORITY.
     return;
   }
@@ -8917,7 +8917,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
@@ -9145,7 +9145,7 @@ TEST_P(QuicNetworkTransactionTest, NetworkIsolation) {
           &clock_, kDefaultServerHostName, quic::Perspective::IS_SERVER, false);
 
       int packet_num = 1;
-      if (VersionUsesQpack(version_.transport_version)) {
+      if (VersionUsesHttp3(version_.transport_version)) {
         unpartitioned_mock_quic_data.AddWrite(
             SYNCHRONOUS, client_maker1.MakeInitialSettingsPacket(packet_num++));
       }
@@ -9221,7 +9221,7 @@ TEST_P(QuicNetworkTransactionTest, NetworkIsolation) {
           &clock_, kDefaultServerHostName, quic::Perspective::IS_SERVER, false);
 
       int packet_num2 = 1;
-      if (VersionUsesQpack(version_.transport_version)) {
+      if (VersionUsesHttp3(version_.transport_version)) {
         partitioned_mock_quic_data1.AddWrite(
             SYNCHRONOUS,
             client_maker2.MakeInitialSettingsPacket(packet_num2++));
@@ -9279,7 +9279,7 @@ TEST_P(QuicNetworkTransactionTest, NetworkIsolation) {
           &clock_, kDefaultServerHostName, quic::Perspective::IS_SERVER, false);
 
       int packet_num3 = 1;
-      if (VersionUsesQpack(version_.transport_version)) {
+      if (VersionUsesHttp3(version_.transport_version)) {
         partitioned_mock_quic_data2.AddWrite(
             SYNCHRONOUS,
             client_maker3.MakeInitialSettingsPacket(packet_num3++));
@@ -9403,7 +9403,7 @@ TEST_P(QuicNetworkTransactionTest, NetworkIsolationTunnel) {
         &clock_, kDefaultServerHostName, quic::Perspective::IS_SERVER, false);
 
     int packet_num = 1;
-    if (VersionUsesQpack(version_.transport_version)) {
+    if (VersionUsesHttp3(version_.transport_version)) {
       mock_quic_data[index]->AddWrite(
           SYNCHRONOUS, client_maker.MakeInitialSettingsPacket(packet_num++));
     }

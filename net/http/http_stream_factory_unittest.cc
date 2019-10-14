@@ -2191,7 +2191,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
   int packet_num = 1;
-  if (VersionUsesQpack(version().transport_version)) {
+  if (VersionUsesHttp3(version().transport_version)) {
     mock_quic_data.AddWrite(
         client_packet_maker().MakeInitialSettingsPacket(packet_num++));
   }
@@ -2320,7 +2320,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
   int packet_num = 1;
-  if (VersionUsesQpack(version().transport_version)) {
+  if (VersionUsesHttp3(version().transport_version)) {
     mock_quic_data.AddWrite(
         client_packet_maker().MakeInitialSettingsPacket(packet_num++));
   }
@@ -2575,7 +2575,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
   int packet_num = 1;
-  if (VersionUsesQpack(version().transport_version)) {
+  if (VersionUsesHttp3(version().transport_version)) {
     mock_quic_data.AddWrite(
         client_packet_maker().MakeInitialSettingsPacket(packet_num++));
   }
@@ -2598,7 +2598,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
   client_packet_maker().Reset();
   MockQuicData mock_quic_data2(version());
   packet_num = 1;
-  if (VersionUsesQpack(version().transport_version)) {
+  if (VersionUsesHttp3(version().transport_version)) {
     mock_quic_data2.AddWrite(
         client_packet_maker().MakeInitialSettingsPacket(packet_num++));
   }
@@ -3296,7 +3296,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuic) {
 
   scoped_refptr<HttpResponseHeaders> headers(
       base::MakeRefCounted<HttpResponseHeaders>(""));
-  headers->AddHeader("alt-svc: quic=\":443\"; v=\"99,49,48,47,46,43,39\"");
+  headers->AddHeader("alt-svc: quic=\":443\"; v=\"99,50,49,48,47,46,43,39\"");
 
   session_->http_stream_factory()->ProcessAlternativeServices(
       session_.get(), network_isolation_key, headers.get(), origin);
@@ -3329,7 +3329,8 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
       base::MakeRefCounted<HttpResponseHeaders>(""));
   headers->AddHeader(
       "alt-svc: "
-      "h3-Q099=\":443\",h3-Q049=\":443\",h3-Q048=\":443\",h3-Q047=\":443\",h3-"
+      "h3-Q099=\":443\",h3-Q050=\":443\",h3-Q049=\":443\",h3-Q048=\":443\",h3-"
+      "Q047=\":443\",h3-"
       "Q043=\":443\",h3-"
       "Q039=\":443\"");
 
@@ -3338,6 +3339,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
 
   quic::ParsedQuicVersionVector versions = {
       {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_99},
+      {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_50},
       {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_49},
       {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_48},
       {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_47},

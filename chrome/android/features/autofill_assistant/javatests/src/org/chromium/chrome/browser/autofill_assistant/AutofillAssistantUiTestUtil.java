@@ -12,6 +12,10 @@ import android.graphics.Typeface;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
+import android.support.test.espresso.UiController;
+import android.support.test.espresso.ViewAction;
+import android.text.SpannableString;
+import android.text.style.ClickableSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +26,7 @@ import androidx.annotation.Nullable;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 
 import org.chromium.base.Callback;
@@ -118,6 +123,41 @@ class AutofillAssistantUiTestUtil {
             @Override
             public void describeTo(Description description) {
                 description.appendText("hasTypefaceStyle");
+            }
+        };
+    }
+
+    public static ViewAction openTextLink(String textLink) {
+        return new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return Matchers.instanceOf(TextView.class);
+            }
+
+            @Override
+            public String getDescription() {
+                return "Opens a textlink of a TextView";
+            }
+
+            @Override
+            public void perform(UiController uiController, View view) {
+                TextView textView = (TextView) view;
+                SpannableString spannableString = (SpannableString) textView.getText();
+                ClickableSpan[] spans =
+                        spannableString.getSpans(0, spannableString.length(), ClickableSpan.class);
+                for (ClickableSpan span : spans) {
+                    if (textLink.contentEquals(
+                                spannableString.subSequence(spannableString.getSpanStart(span),
+                                        spannableString.getSpanEnd(span)))) {
+                        span.onClick(view);
+                        return;
+                    }
+                }
+
+                throw new NoMatchingViewException.Builder()
+                        .includeViewHierarchy(true)
+                        .withRootView(textView)
+                        .build();
             }
         };
     }

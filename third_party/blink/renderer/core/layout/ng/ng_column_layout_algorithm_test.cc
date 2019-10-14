@@ -2826,6 +2826,72 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingSingleLine) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingSingleLineInNested) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        line-height: 20px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="columns:2; column-gap:10px;">
+          <br>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x20
+    offset:0,0 size:320x20
+      offset:0,0 size:100x20
+        offset:0,0 size:100x20
+          offset:0,0 size:45x20
+            offset:0,0 size:0x20
+              offset:0,9 size:0x1
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingSingleLineInNestedSpanner) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        line-height: 20px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="columns:2;">
+          <div style="column-span:all;">
+            <br>
+          </div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x20
+    offset:0,0 size:320x20
+      offset:0,0 size:100x20
+        offset:0,0 size:100x20
+          offset:0,0 size:100x20
+            offset:0,0 size:0x20
+              offset:0,9 size:0x1
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingOverflow) {
   SetBodyInnerHTML(R"HTML(
     <style>

@@ -9,3 +9,6 @@ SharingDialogData::SharingDialogData() = default;
 SharingDialogData::~SharingDialogData() = default;
 
 SharingDialogData::SharingDialogData(SharingDialogData&& other) = default;
+
+SharingDialogData& SharingDialogData::operator=(SharingDialogData&& other) =
+    default;

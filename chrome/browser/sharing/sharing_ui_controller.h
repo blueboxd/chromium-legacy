@@ -57,9 +57,18 @@ class SharingUiController {
   virtual base::string16 GetTextForTooltipAndAccessibleName() const = 0;
   // Get the name of the feature to be used as a prefix for the metric name.
   virtual SharingFeatureName GetFeatureMetricsPrefix() const = 0;
+  // Describes the content type of shared data.
+  virtual base::string16 GetContentType() const = 0;
+  // Returns the message to be shown in the body of error dialog based on
+  // |send_result_|.
+  virtual base::string16 GetErrorDialogText() const;
 
   // Called by the SharingDialog when it is being closed.
   virtual void OnDialogClosed(SharingDialog* dialog);
+  // Called by the SharingDialogView when the help text got clicked.
+  virtual void OnHelpTextClicked(SharingDialogType dialog_type);
+  // Called when a new dialog is shown.
+  virtual void OnDialogShown(bool has_devices, bool has_apps);
 
   // Closes the current dialog and resets all state.
   void ClearLastDialog();
@@ -70,12 +79,9 @@ class SharingUiController {
   // Gets the current list of devices that support the required feature.
   std::vector<std::unique_ptr<syncer::DeviceInfo>> GetDevices();
 
-  // Describes the content type of shared data.
-  virtual base::string16 GetContentType() const = 0;
+  bool HasSendFailed() const;
 
-  // Returns the message to be shown in the body of error dialog based on
-  // |send_result_|.
-  virtual base::string16 GetErrorDialogText() const;
+  void MaybeShowErrorDialog();
 
   // Returns the currently open SharingDialog or nullptr if there is no
   // dialog open.
@@ -85,18 +91,7 @@ class SharingUiController {
   void set_send_result_for_testing(SharingSendMessageResult result) {
     send_result_ = result;
   }
-
-  bool HasSendFailed() const;
-
   content::WebContents* web_contents() const { return web_contents_; }
-
-  void MaybeShowErrorDialog();
-
-  // Called by the SharingDialogView when the help text got clicked.
-  virtual void OnHelpTextClicked(SharingDialogType dialog_type);
-
-  // Called when a new dialog is shown.
-  virtual void OnDialogShown(bool has_devices, bool has_apps);
 
   void set_on_dialog_shown_closure_for_testing(base::OnceClosure closure) {
     on_dialog_shown_closure_for_testing_ = std::move(closure);
@@ -104,13 +99,12 @@ class SharingUiController {
 
  protected:
   virtual void DoUpdateApps(UpdateAppsCallback callback) = 0;
+  // Prepares a new dialog data.
+  virtual SharingDialogData CreateDialogData(SharingDialogType dialog_type);
 
   void SendMessageToDevice(
       const syncer::DeviceInfo& device,
       chrome_browser_sharing::SharingMessage sharing_message);
-
-  // Prepares a new dialog data.
-  virtual SharingDialogData CreateDialogData(SharingDialogType dialog_type);
 
  private:
   // Updates the omnibox icon if available.

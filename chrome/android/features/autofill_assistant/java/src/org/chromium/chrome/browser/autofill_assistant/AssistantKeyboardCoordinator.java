@@ -35,6 +35,16 @@ class AssistantKeyboardCoordinator {
         });
     }
 
+    /** Returns whether the keyboard is currently shown. */
+    boolean isKeyboardShown() {
+        return mKeyboardDelegate.isKeyboardShowing(mActivity, mActivity.getCompositorViewHolder());
+    }
+
+    /** Hides the keyboard. */
+    void hideKeyboard() {
+        mKeyboardDelegate.hideKeyboard(mActivity.getCompositorViewHolder());
+    }
+
     /**
      * Enable or disable the soft keyboard.
      */
@@ -60,7 +70,7 @@ class AssistantKeyboardCoordinator {
     // shown. We should improve it and prevent from the showing in the first place.
     private void onKeyboardVisibilityChanged(boolean isShowing) {
         if (isShowing && !mAllowShowingSoftKeyboard) {
-            mKeyboardDelegate.hideKeyboard(mActivity.getCompositorViewHolder());
+            hideKeyboard();
         }
     }
 }

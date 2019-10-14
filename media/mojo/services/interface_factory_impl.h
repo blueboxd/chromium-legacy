@@ -34,7 +34,7 @@ class MojoMediaClient;
 class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
  public:
   InterfaceFactoryImpl(
-      service_manager::mojom::InterfaceProviderPtr interfaces,
+      service_manager::mojom::InterfaceProviderPtr host_interfaces,
       std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref,
       MojoMediaClient* mojo_media_client);
   ~InterfaceFactoryImpl() final;
@@ -102,13 +102,14 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   std::unique_ptr<CdmFactory> cdm_factory_;
-  service_manager::mojom::InterfaceProviderPtr interfaces_;
   mojo::StrongBindingSet<mojom::ContentDecryptionModule> cdm_bindings_;
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   mojo::UniqueReceiverSet<mojom::CdmProxy> cdm_proxy_receivers_;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+  service_manager::mojom::InterfaceProviderPtr host_interfaces_;
 
   mojo::UniqueReceiverSet<mojom::Decryptor> decryptor_receivers_;
 

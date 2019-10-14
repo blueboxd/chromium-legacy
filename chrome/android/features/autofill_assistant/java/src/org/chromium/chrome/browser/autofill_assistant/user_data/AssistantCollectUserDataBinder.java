@@ -10,6 +10,7 @@ import android.view.View;
 
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionContainer;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillPaymentApp;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
@@ -100,6 +101,8 @@ class AssistantCollectUserDataBinder
         private final AssistantShippingAddressSection mShippingAddressSection;
         private final AssistantTermsSection mTermsSection;
         private final AssistantTermsSection mTermsAsCheckboxSection;
+        private final AssistantAdditionalSectionContainer mPrependedSections;
+        private final AssistantAdditionalSectionContainer mAppendedSections;
         private final Object mDividerTag;
         private final Activity mActivity;
         private PersonalDataManager.PersonalDataManagerObserver mPersonalDataManagerObserver;
@@ -112,7 +115,9 @@ class AssistantCollectUserDataBinder
                 AssistantPaymentMethodSection paymentMethodSection,
                 AssistantShippingAddressSection shippingAddressSection,
                 AssistantTermsSection termsSection, AssistantTermsSection termsAsCheckboxSection,
-                Object dividerTag, Activity activity) {
+                AssistantAdditionalSectionContainer prependedSections,
+                AssistantAdditionalSectionContainer appendedSections, Object dividerTag,
+                Activity activity) {
             mRootView = rootView;
             mPaymentRequestExpanderAccordion = accordion;
             mSectionToSectionPadding = sectionPadding;
@@ -124,6 +129,8 @@ class AssistantCollectUserDataBinder
             mShippingAddressSection = shippingAddressSection;
             mTermsSection = termsSection;
             mTermsAsCheckboxSection = termsAsCheckboxSection;
+            mPrependedSections = prependedSections;
+            mAppendedSections = appendedSections;
             mDividerTag = dividerTag;
             mActivity = activity;
         }
@@ -221,6 +228,12 @@ class AssistantCollectUserDataBinder
                             : null);
             view.mDateRangeStartSection.setDelegate(dateStartDelegate);
             view.mDateRangeEndSection.setDelegate(dateEndDelegate);
+            view.mPrependedSections.setDelegate(collectUserDataDelegate != null
+                            ? collectUserDataDelegate::onKeyValueChanged
+                            : null);
+            view.mAppendedSections.setDelegate(collectUserDataDelegate != null
+                            ? collectUserDataDelegate::onKeyValueChanged
+                            : null);
         } else if (propertyKey == AssistantCollectUserDataModel.SUPPORTED_BASIC_CARD_NETWORKS) {
             updateAvailablePaymentMethods(model);
         } else if (propertyKey == AssistantCollectUserDataModel.SUPPORTED_PAYMENT_METHODS) {
@@ -307,6 +320,14 @@ class AssistantCollectUserDataBinder
         } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_END) {
             view.mDateRangeEndSection.setDateChoiceOptions(
                     model.get(AssistantCollectUserDataModel.DATE_RANGE_END));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.PREPENDED_SECTIONS) {
+            view.mPrependedSections.setSections(
+                    model.get(AssistantCollectUserDataModel.PREPENDED_SECTIONS));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.APPENDED_SECTIONS) {
+            view.mAppendedSections.setSections(
+                    model.get(AssistantCollectUserDataModel.APPENDED_SECTIONS));
             return true;
         }
 
@@ -450,13 +471,33 @@ class AssistantCollectUserDataBinder
                 && (propertyKey != AssistantCollectUserDataModel.REQUEST_PAYMENT)
                 && (propertyKey != AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE)
                 && (propertyKey != AssistantCollectUserDataModel.REQUEST_DATE_RANGE)
-                && (propertyKey != AssistantCollectUserDataModel.EXPANDED_SECTION)) {
+                && (propertyKey != AssistantCollectUserDataModel.EXPANDED_SECTION)
+                && (propertyKey != AssistantCollectUserDataModel.PREPENDED_SECTIONS)
+                && (propertyKey != AssistantCollectUserDataModel.APPENDED_SECTIONS)) {
             return false;
         }
 
         // Update section paddings such that the first and last section are flush to the top/bottom,
         // and all other sections have the same amount of padding in-between them.
-        if (model.get(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE)) {
+
+        if (!model.get(AssistantCollectUserDataModel.PREPENDED_SECTIONS).isEmpty()) {
+            view.mPrependedSections.setPaddings(
+                    0, view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mLoginSection.setPaddings(
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mContactDetailsSection.setPaddings(
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mDateRangeStartSection.setPaddings(
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mDateRangeEndSection.setPaddings(
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mPaymentMethodSection.setPaddings(
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mShippingAddressSection.setPaddings(
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mAppendedSections.setPaddings(view.mSectionToSectionPadding,
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+        } else if (model.get(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE)) {
             view.mLoginSection.setPaddings(0, view.mSectionToSectionPadding);
             view.mContactDetailsSection.setPaddings(
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
@@ -468,6 +509,8 @@ class AssistantCollectUserDataBinder
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
             view.mShippingAddressSection.setPaddings(
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mAppendedSections.setPaddings(view.mSectionToSectionPadding,
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
         } else if (shouldShowContactDetails(model)) {
             view.mContactDetailsSection.setPaddings(0, view.mSectionToSectionPadding);
             view.mDateRangeStartSection.setPaddings(
@@ -478,6 +521,8 @@ class AssistantCollectUserDataBinder
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
             view.mShippingAddressSection.setPaddings(
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mAppendedSections.setPaddings(view.mSectionToSectionPadding,
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
         } else if (model.get(AssistantCollectUserDataModel.REQUEST_DATE_RANGE)) {
             view.mDateRangeStartSection.setPaddings(0, view.mSectionToSectionPadding);
             view.mDateRangeEndSection.setPaddings(
@@ -486,12 +531,21 @@ class AssistantCollectUserDataBinder
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
             view.mShippingAddressSection.setPaddings(
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mAppendedSections.setPaddings(view.mSectionToSectionPadding,
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
         } else if (model.get(AssistantCollectUserDataModel.REQUEST_PAYMENT)) {
             view.mPaymentMethodSection.setPaddings(0, view.mSectionToSectionPadding);
             view.mShippingAddressSection.setPaddings(
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mAppendedSections.setPaddings(view.mSectionToSectionPadding,
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
         } else if (model.get(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS)) {
             view.mShippingAddressSection.setPaddings(0, view.mSectionToSectionPadding);
+            view.mAppendedSections.setPaddings(view.mSectionToSectionPadding,
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+        } else if (!model.get(AssistantCollectUserDataModel.APPENDED_SECTIONS).isEmpty()) {
+            view.mAppendedSections.setPaddings(
+                    0, view.mSectionToSectionPadding, view.mSectionToSectionPadding);
         }
         view.mTermsSection.setPaddings(view.mSectionToSectionPadding, 0);
         view.mTermsAsCheckboxSection.setPaddings(view.mSectionToSectionPadding, 0);
@@ -505,6 +559,8 @@ class AssistantCollectUserDataBinder
                         || child.getVisibility() != View.VISIBLE;
             } else if (child.getTag() == view.mDividerTag) {
                 child.setVisibility(prevSectionIsExpandedOrInvisible ? View.GONE : View.VISIBLE);
+            } else {
+                prevSectionIsExpandedOrInvisible = false;
             }
         }
         return true;

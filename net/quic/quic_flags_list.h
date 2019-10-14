@@ -402,3 +402,6 @@ QUIC_FLAG(bool,
 
 // If true, support HTTP/3 priority in v99.
 QUIC_FLAG(bool, FLAGS_quic_allow_http3_priority, false)
+
+// If true, enable QUIC version 50.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_50, false)

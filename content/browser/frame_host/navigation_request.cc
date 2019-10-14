@@ -305,12 +305,18 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
         destination = "embed";
         break;
       case blink::FrameOwnerElementType::kIframe:
+        destination = "iframe";
+        break;
       case blink::FrameOwnerElementType::kFrame:
+        destination = "frame";
+        break;
       case blink::FrameOwnerElementType::kPortal:
         // TODO(mkwst): "Portal"'s destination isn't actually defined at the
         // moment. Let's assume it'll be similar to a frame until we decide
         // otherwise.
-        destination = "nested-document";
+        // https://github.com/w3c/webappsec-fetch-metadata/issues/46
+        destination = "document";
+        break;
     }
 
     if (IsFetchMetadataDestinationEnabled()) {

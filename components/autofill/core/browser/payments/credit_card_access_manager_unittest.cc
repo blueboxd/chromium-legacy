@@ -127,13 +127,13 @@ class TestAccessor : public CreditCardAccessManager::Accessor {
 
 std::string NextYear() {
   base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
+  AutofillClock::Now().LocalExplode(&now);
   return base::NumberToString(now.year + 1);
 }
 
 std::string NextMonth() {
   base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
+  AutofillClock::Now().LocalExplode(&now);
   return base::NumberToString(now.month % 12 + 1);
 }
 

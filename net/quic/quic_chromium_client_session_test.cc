@@ -291,7 +291,7 @@ INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
 
 TEST_P(QuicChromiumClientSessionTest, IsFatalErrorNotSetForNonFatalError) {
   MockQuicData quic_data(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
@@ -315,7 +315,7 @@ TEST_P(QuicChromiumClientSessionTest, IsFatalErrorNotSetForNonFatalError) {
 
 TEST_P(QuicChromiumClientSessionTest, IsFatalErrorSetForFatalError) {
   MockQuicData quic_data(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
@@ -337,7 +337,7 @@ TEST_P(QuicChromiumClientSessionTest, IsFatalErrorSetForFatalError) {
 
 TEST_P(QuicChromiumClientSessionTest, CryptoConnect) {
   MockQuicData quic_data(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
@@ -348,7 +348,7 @@ TEST_P(QuicChromiumClientSessionTest, CryptoConnect) {
 
 TEST_P(QuicChromiumClientSessionTest, Handle) {
   MockQuicData quic_data(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
@@ -431,7 +431,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
 
 TEST_P(QuicChromiumClientSessionTest, StreamRequest) {
   MockQuicData quic_data(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
@@ -456,7 +456,7 @@ TEST_P(QuicChromiumClientSessionTest, StreamRequest) {
 
 TEST_P(QuicChromiumClientSessionTest, ConfirmationRequiredStreamRequest) {
   MockQuicData quic_data(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
@@ -481,7 +481,7 @@ TEST_P(QuicChromiumClientSessionTest, ConfirmationRequiredStreamRequest) {
 
 TEST_P(QuicChromiumClientSessionTest, StreamRequestBeforeConfirmation) {
   MockQuicData quic_data(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
@@ -512,7 +512,7 @@ TEST_P(QuicChromiumClientSessionTest, StreamRequestBeforeConfirmation) {
 TEST_P(QuicChromiumClientSessionTest, CancelStreamRequestBeforeRelease) {
   MockQuicData quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeInitialSettingsPacket(packet_num++));
   }
@@ -755,7 +755,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
 TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeStreamRequest) {
   MockQuicData quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeInitialSettingsPacket(packet_num++));
   }
@@ -956,7 +956,7 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutNoResponse) {
   base::HistogramTester histogram_tester;
   MockQuicData quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(ASYNC,
                        client_maker_.MakeInitialSettingsPacket(packet_num++));
   }
@@ -1010,7 +1010,7 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutWithResponse) {
   base::HistogramTester histogram_tester;
   MockQuicData quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(ASYNC,
                        client_maker_.MakeInitialSettingsPacket(packet_num++));
   }
@@ -1067,12 +1067,12 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutWithResponse) {
 
 // Regression test for crbug.com/968621.
 TEST_P(QuicChromiumClientSessionTest, PendingStreamOnRst) {
-  if (!quic::VersionHasStreamType(version_.transport_version))
+  if (!quic::VersionUsesHttp3(version_.transport_version))
     return;
 
   MockQuicData quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(ASYNC,
                        client_maker_.MakeInitialSettingsPacket(packet_num++));
   }
@@ -1099,12 +1099,12 @@ TEST_P(QuicChromiumClientSessionTest, PendingStreamOnRst) {
 
 // Regression test for crbug.com/971361.
 TEST_P(QuicChromiumClientSessionTest, ClosePendingStream) {
-  if (!quic::VersionHasStreamType(version_.transport_version))
+  if (!quic::VersionUsesHttp3(version_.transport_version))
     return;
 
   MockQuicData quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(ASYNC,
                        client_maker_.MakeInitialSettingsPacket(packet_num++));
   }
@@ -1129,7 +1129,7 @@ TEST_P(QuicChromiumClientSessionTest, ClosePendingStream) {
 TEST_P(QuicChromiumClientSessionTest, CancelPushWhenPendingValidation) {
   MockQuicData quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(ASYNC,
                        client_maker_.MakeInitialSettingsPacket(packet_num++));
   }
@@ -1187,7 +1187,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushBeforeReceivingResponse) {
   base::HistogramTester histogram_tester;
   MockQuicData quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(ASYNC,
                        client_maker_.MakeInitialSettingsPacket(packet_num++));
   }
@@ -1241,7 +1241,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
   base::HistogramTester histogram_tester;
   MockQuicData quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(ASYNC,
                        client_maker_.MakeInitialSettingsPacket(packet_num++));
   }
@@ -1357,7 +1357,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
 
 TEST_P(QuicChromiumClientSessionTest, GoAwayReceived) {
   MockQuicData quic_data(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
@@ -1376,7 +1376,7 @@ TEST_P(QuicChromiumClientSessionTest, GoAwayReceived) {
 
 TEST_P(QuicChromiumClientSessionTest, CanPool) {
   MockQuicData quic_data(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
@@ -1451,7 +1451,7 @@ TEST_P(QuicChromiumClientSessionTest, CanPoolWithNetworkIsolationKey) {
                      SocketTag(), kNetworkIsolationKey1);
 
   MockQuicData quic_data(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
@@ -1509,7 +1509,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
   const char kNoPinsHost[] = "no-pkp.example.org";
 
   MockQuicData quic_data(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
@@ -1540,7 +1540,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
   ScopedTransportSecurityStateSource scoped_security_state_source;
 
   MockQuicData quic_data(version_);
-  if (VersionUsesQpack(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version))
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
@@ -1572,7 +1572,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   MockQuicData quic_data(version_);
   int packet_num = 1;
   socket_data_.reset();
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeInitialSettingsPacket(packet_num++));
   }
@@ -1585,7 +1585,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   char data[] = "ABCD";
   std::unique_ptr<quic::QuicEncryptedPacket> client_ping;
   std::unique_ptr<quic::QuicEncryptedPacket> ack_and_data_out;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     client_ping =
         client_maker_.MakeAckAndPingPacket(packet_num++, false, 1, 1, 1);
   } else {
@@ -1646,7 +1646,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
   MockQuicData quic_data(version_);
   socket_data_.reset();
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeInitialSettingsPacket(packet_num++));
   }
@@ -1707,7 +1707,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
   std::unique_ptr<quic::QuicEncryptedPacket> initial_ping;
   std::vector<MockWrite> old_writes;
   std::vector<MockRead> old_reads;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     settings_packet = client_maker_.MakeInitialSettingsPacket(1);
     old_writes.push_back(MockWrite(ASYNC, settings_packet->data(),
                                    settings_packet->length(), 0));
@@ -1728,7 +1728,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
   Initialize();
   CompleteCryptoHandshake();
 
-  if (!VersionUsesQpack(version_.transport_version))
+  if (!VersionUsesHttp3(version_.transport_version))
     session_->SendPing();
   MockWrite writes[] = {
       MockWrite(SYNCHRONOUS, client_ping->data(), client_ping->length(), 1)};
@@ -1852,7 +1852,7 @@ TEST_P(QuicChromiumClientSessionTest, RetransmittableOnWireTimeout) {
 
   MockQuicData quic_data(version_);
   int packet_num = 1;
-  if (VersionUsesQpack(version_.transport_version)) {
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeInitialSettingsPacket(packet_num++));
   }

@@ -11,6 +11,7 @@
 
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "net/base/host_port_pair.h"
+#include "services/network/public/mojom/host_resolver.mojom.h"
 
 // Instantiate this class only in a test and/or when the DEBUG_DEVTOOLS
 // BUILDFLAG is set.

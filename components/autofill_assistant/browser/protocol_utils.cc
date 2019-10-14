@@ -8,7 +8,6 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "components/autofill_assistant/browser/actions/autofill_action.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/actions/collect_user_data_action.h"
 #include "components/autofill_assistant/browser/actions/configure_bottom_sheet_action.h"
@@ -30,6 +29,8 @@
 #include "components/autofill_assistant/browser/actions/tell_action.h"
 #include "components/autofill_assistant/browser/actions/unsupported_action.h"
 #include "components/autofill_assistant/browser/actions/upload_dom_action.h"
+#include "components/autofill_assistant/browser/actions/use_address_action.h"
+#include "components/autofill_assistant/browser/actions/use_credit_card_action.h"
 #include "components/autofill_assistant/browser/actions/wait_for_document_action.h"
 #include "components/autofill_assistant/browser/actions/wait_for_dom_action.h"
 #include "components/autofill_assistant/browser/actions/wait_for_navigation_action.h"
@@ -209,8 +210,10 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
         break;
       }
       case ActionProto::ActionInfoCase::kUseAddress:
+        client_action = std::make_unique<UseAddressAction>(delegate, action);
+        break;
       case ActionProto::ActionInfoCase::kUseCard: {
-        client_action = std::make_unique<AutofillAction>(delegate, action);
+        client_action = std::make_unique<UseCreditCardAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kWaitForDom: {

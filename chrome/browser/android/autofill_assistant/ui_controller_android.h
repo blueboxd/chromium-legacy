@@ -132,6 +132,7 @@ class UiControllerAndroid : public ControllerObserver {
                                  int hour,
                                  int minute,
                                  int second);
+  void OnKeyValueChanged(const std::string& key, const std::string& value);
 
   // Called by AssistantFormDelegate:
   void OnCounterChanged(int input_index, int counter_index, int value);

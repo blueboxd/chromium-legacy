@@ -40,8 +40,6 @@ class WaylandWindow;
 // sequence.
 class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
  public:
-  using BufferManagerHostPtr = ozone::mojom::WaylandBufferManagerHostPtr;
-
   WaylandBufferManagerGpu();
   ~WaylandBufferManagerGpu() override;
 

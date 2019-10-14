@@ -112,8 +112,7 @@ bool GetAccessibilityInfo(
     PP_PrivateAccessibilityPageInfo* page_info,
     std::vector<PP_PrivateAccessibilityTextRunInfo>* text_runs,
     std::vector<PP_PrivateAccessibilityCharInfo>* chars,
-    std::vector<pp::PDF::PrivateAccessibilityLinkInfo>* links,
-    std::vector<pp::PDF::PrivateAccessibilityImageInfo>* images) {
+    pp::PDF::PrivateAccessibilityPageObjects* page_objects) {
   int page_count = engine->GetNumberOfPages();
   if (page_index < 0 || page_index >= page_count)
     return false;
@@ -187,11 +186,10 @@ bool GetAccessibilityInfo(
   }
 
   page_info->text_run_count = text_runs->size();
-  GetAccessibilityLinkInfo(engine, page_index, *text_runs, links);
-  page_info->link_count = links->size();
+  GetAccessibilityLinkInfo(engine, page_index, *text_runs,
+                           &page_objects->links);
   GetAccessibilityImageInfo(engine, page_index, page_info->text_run_count,
-                            images);
-  page_info->image_count = images->size();
+                            &page_objects->images);
   return true;
 }
 

@@ -35,13 +35,14 @@ class BatchElementCheckerTest : public testing::Test {
 
   void SetUp() override {
     ON_CALL(mock_web_controller_, OnElementCheck(_, _))
-        .WillByDefault(RunOnceCallback<1>(false));
+        .WillByDefault(RunOnceCallback<1>(ClientStatus()));
     ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
-        .WillByDefault(RunOnceCallback<1>(false, ""));
+        .WillByDefault(RunOnceCallback<1>(ClientStatus(), ""));
   }
 
-  void OnElementExistenceCheck(const std::string& name, bool result) {
-    element_exists_results_[name] = result;
+  void OnElementExistenceCheck(const std::string& name,
+                               const ClientStatus& result) {
+    element_exists_results_[name] = result.ok();
   }
 
   BatchElementChecker::ElementCheckCallback ElementExistenceCallback(
@@ -50,8 +51,9 @@ class BatchElementCheckerTest : public testing::Test {
                           base::Unretained(this), name);
   }
 
-  void OnVisibilityRequirementCheck(const std::string& name, bool result) {
-    element_visible_results_[name] = result;
+  void OnVisibilityRequirementCheck(const std::string& name,
+                                    const ClientStatus& result) {
+    element_visible_results_[name] = result.ok();
   }
 
   BatchElementChecker::ElementCheckCallback VisibilityRequirementCallback(
@@ -62,7 +64,7 @@ class BatchElementCheckerTest : public testing::Test {
   }
 
   void OnFieldValueCheck(const std::string& name,
-                         bool exists,
+                         const ClientStatus& result,
                          const std::string& value) {
     get_field_value_results_[name] = value;
   }
@@ -104,7 +106,7 @@ TEST_F(BatchElementCheckerTest, Empty) {
 
 TEST_F(BatchElementCheckerTest, OneElementFound) {
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"exists"})), _))
-      .WillOnce(RunOnceCallback<1>(true));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
   checks_.AddElementCheck(Selector({"exists"}),
                           ElementExistenceCallback("exists"));
   Run("was_run");
@@ -116,7 +118,7 @@ TEST_F(BatchElementCheckerTest, OneElementFound) {
 TEST_F(BatchElementCheckerTest, OneElementNotFound) {
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"does_not_exist"})), _))
-      .WillOnce(RunOnceCallback<1>(false));
+      .WillOnce(RunOnceCallback<1>(ClientStatus()));
   checks_.AddElementCheck(Selector({"does_not_exist"}),
                           ElementExistenceCallback("does_not_exist"));
   Run("was_run");
@@ -127,7 +129,7 @@ TEST_F(BatchElementCheckerTest, OneElementNotFound) {
 
 TEST_F(BatchElementCheckerTest, OneFieldValueFound) {
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"field"})), _))
-      .WillOnce(RunOnceCallback<1>(true, "some value"));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "some value"));
   checks_.AddFieldValueCheck(Selector({"field"}), FieldValueCallback("field"));
   Run("was_run");
 
@@ -137,7 +139,7 @@ TEST_F(BatchElementCheckerTest, OneFieldValueFound) {
 
 TEST_F(BatchElementCheckerTest, OneFieldValueNotFound) {
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"field"})), _))
-      .WillOnce(RunOnceCallback<1>(false, ""));
+      .WillOnce(RunOnceCallback<1>(ClientStatus(), ""));
   checks_.AddFieldValueCheck(Selector({"field"}), FieldValueCallback("field"));
   Run("was_run");
 
@@ -147,7 +149,7 @@ TEST_F(BatchElementCheckerTest, OneFieldValueNotFound) {
 
 TEST_F(BatchElementCheckerTest, OneFieldValueEmpty) {
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"field"})), _))
-      .WillOnce(RunOnceCallback<1>(true, ""));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
   checks_.AddFieldValueCheck(Selector({"field"}), FieldValueCallback("field"));
   Run("was_run");
 
@@ -157,15 +159,15 @@ TEST_F(BatchElementCheckerTest, OneFieldValueEmpty) {
 
 TEST_F(BatchElementCheckerTest, MultipleElements) {
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"1"})), _))
-      .WillOnce(RunOnceCallback<1>(true));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"2"})), _))
-      .WillOnce(RunOnceCallback<1>(true));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"3"})), _))
-      .WillOnce(RunOnceCallback<1>(false));
+      .WillOnce(RunOnceCallback<1>(ClientStatus()));
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"4"})), _))
-      .WillOnce(RunOnceCallback<1>(true, "value"));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "value"));
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"5"})), _))
-      .WillOnce(RunOnceCallback<1>(false, ""));
+      .WillOnce(RunOnceCallback<1>(ClientStatus(), ""));
 
   checks_.AddElementCheck(Selector({"1"}), ElementExistenceCallback("1"));
   checks_.AddElementCheck(Selector({"2"}), ElementExistenceCallback("2"));
@@ -184,9 +186,9 @@ TEST_F(BatchElementCheckerTest, MultipleElements) {
 
 TEST_F(BatchElementCheckerTest, DeduplicateElementExists) {
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"1"})), _))
-      .WillOnce(RunOnceCallback<1>(true));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"2"})), _))
-      .WillOnce(RunOnceCallback<1>(true));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
 
   checks_.AddElementCheck(Selector({"1"}), ElementExistenceCallback("first 1"));
   checks_.AddElementCheck(Selector({"1"}),
@@ -204,10 +206,10 @@ TEST_F(BatchElementCheckerTest, DeduplicateElementExists) {
 TEST_F(BatchElementCheckerTest, DeduplicateElementVisible) {
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"1"}).MustBeVisible()), _))
-      .WillOnce(RunOnceCallback<1>(true));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"2"}).MustBeVisible()), _))
-      .WillOnce(RunOnceCallback<1>(true));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
 
   checks_.AddElementCheck(Selector({"1"}).MustBeVisible(),
                           VisibilityRequirementCallback("first 1"));

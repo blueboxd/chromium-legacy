@@ -22,7 +22,7 @@ class WaitForDocumentAction : public Action {
   // Overrides Action:
   void InternalProcessAction(ProcessActionCallback callback) override;
 
-  void OnShortWaitForElement(bool element_found);
+  void OnShortWaitForElement(const ClientStatus& status);
 
   void OnGetStartState(const ClientStatus& status,
                        DocumentReadyState start_state);

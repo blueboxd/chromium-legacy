@@ -135,6 +135,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   // Set the background color of the bubble border.
   void SetBackgroundColor(SkColor color);
+  SkColor GetBackgroundColor() const;
 
   // Given the size of the contents and the rect to point at, returns the bounds
   // of the bubble window. The bubble's arrow location may change if the bubble

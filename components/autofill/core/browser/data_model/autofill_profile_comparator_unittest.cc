@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/data_model/contact_info.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/country_names.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,6 +42,7 @@ using autofill::PHONE_HOME_WHOLE_NUMBER;
 
 // Classes, Functions, and other Symbols
 using autofill::Address;
+using autofill::AutofillClock;
 using autofill::AutofillProfile;
 using autofill::AutofillType;
 using autofill::CompanyInfo;
@@ -785,15 +787,15 @@ TEST_F(AutofillProfileComparatorTest, MergeCJKNames) {
   // the most recent profile if there is a conflict. The ordering is
   // p1 > p2 > p3 > p4 > p5, with p1 being the most recent.
   AutofillProfile p1 = CreateProfileWithName(name1);
-  p1.set_use_date(base::Time::Now());
+  p1.set_use_date(AutofillClock::Now());
   AutofillProfile p2 = CreateProfileWithName(name2);
-  p2.set_use_date(base::Time::Now() - base::TimeDelta::FromHours(1));
+  p2.set_use_date(AutofillClock::Now() - base::TimeDelta::FromHours(1));
   AutofillProfile p3 = CreateProfileWithName(name3);
-  p3.set_use_date(base::Time::Now() - base::TimeDelta::FromHours(2));
+  p3.set_use_date(AutofillClock::Now() - base::TimeDelta::FromHours(2));
   AutofillProfile p4 = CreateProfileWithName(name4);
-  p4.set_use_date(base::Time::Now() - base::TimeDelta::FromHours(3));
+  p4.set_use_date(AutofillClock::Now() - base::TimeDelta::FromHours(3));
   AutofillProfile p5 = CreateProfileWithName(name5);
-  p5.set_use_date(base::Time::Now() - base::TimeDelta::FromHours(4));
+  p5.set_use_date(AutofillClock::Now() - base::TimeDelta::FromHours(4));
 
   AutofillProfile p6 = CreateProfileWithName(name6);
   AutofillProfile p7 = CreateProfileWithName(name7);
@@ -831,7 +833,7 @@ TEST_F(AutofillProfileComparatorTest, MergeEmailAddresses) {
   EmailInfo email_a;
   email_a.SetRawInfo(EMAIL_ADDRESS, UTF8ToUTF16(kEmailA));
   AutofillProfile profile_a = CreateProfileWithEmail(kEmailA);
-  profile_a.set_use_date(base::Time::Now());
+  profile_a.set_use_date(AutofillClock::Now());
 
   EmailInfo email_b;
   email_b.SetRawInfo(EMAIL_ADDRESS, UTF8ToUTF16(kEmailB));
@@ -859,7 +861,7 @@ TEST_F(AutofillProfileComparatorTest, MergeCompanyNames) {
   CompanyInfo company_a;
   company_a.SetRawInfo(COMPANY_NAME, UTF8ToUTF16(kCompanyA));
   AutofillProfile profile_a = CreateProfileWithCompanyName(kCompanyA);
-  profile_a.set_use_date(base::Time::Now());
+  profile_a.set_use_date(AutofillClock::Now());
 
   // Company Name B is post_normalization identical to Company Name A. The use
   // date will be used to choose between them.
@@ -879,7 +881,7 @@ TEST_F(AutofillProfileComparatorTest, MergeCompanyNames) {
   CompanyInfo company_d;
   company_d.SetRawInfo(COMPANY_NAME, UTF8ToUTF16(kCompanyD));
   AutofillProfile profile_d = CreateProfileWithCompanyName(kCompanyD);
-  profile_a.set_use_date(base::Time::Now());
+  profile_a.set_use_date(AutofillClock::Now());
 
   MergeCompanyNamesAndExpect(profile_a, profile_a, company_a);
   MergeCompanyNamesAndExpect(profile_a, profile_b, company_b);

@@ -40,7 +40,8 @@ class PromptAction : public Action {
   void UpdateUserActions();
   bool HasAutoSelect();
   void CheckAutoSelect();
-  void OnAutoSelectElementExists(int choice_index, bool exists);
+  void OnAutoSelectElementExists(int choice_index,
+                                 const ClientStatus& element_status);
   void OnAutoSelectDone();
   void OnSuggestionChosen(int choice_index);
 

@@ -46,7 +46,7 @@ class COMPONENTS_PREFS_EXPORT PrefMemberBase : public PrefObserver {
  public:
   // Type of callback you can register if you need to know the name of
   // the pref that is changing.
-  typedef base::Callback<void(const std::string&)> NamedChangeCallback;
+  using NamedChangeCallback = base::RepeatingCallback<void(const std::string&)>;
 
   PrefService* prefs() { return prefs_; }
   const PrefService* prefs() const { return prefs_; }
@@ -123,7 +123,7 @@ class COMPONENTS_PREFS_EXPORT PrefMemberBase : public PrefObserver {
   // This method is used to do the actual sync with the preference.
   // Note: it is logically const, because it doesn't modify the state
   // seen by the outside world. It is just doing a lazy load behind the scenes.
-  void UpdateValueFromPref(const base::Closure& callback) const;
+  void UpdateValueFromPref(base::OnceClosure callback) const;
 
   // Verifies the preference name, and lazily loads the preference value if
   // it hasn't been loaded yet.
@@ -133,8 +133,8 @@ class COMPONENTS_PREFS_EXPORT PrefMemberBase : public PrefObserver {
 
   virtual Internal* internal() const = 0;
 
-  // Used to allow registering plain base::Closure callbacks.
-  static void InvokeUnnamedCallback(const base::Closure& callback,
+  // Used to allow registering plain base::RepeatingClosure callbacks.
+  static void InvokeUnnamedCallback(const base::RepeatingClosure& callback,
                                     const std::string& pref_name);
 
  private:
@@ -173,10 +173,10 @@ class PrefMember : public subtle::PrefMemberBase {
   }
   void Init(const std::string& pref_name,
             PrefService* prefs,
-            const base::Closure& observer) {
+            const base::RepeatingClosure& observer) {
     subtle::PrefMemberBase::Init(
         pref_name, prefs,
-        base::Bind(&PrefMemberBase::InvokeUnnamedCallback, observer));
+        base::BindRepeating(&PrefMemberBase::InvokeUnnamedCallback, observer));
   }
   void Init(const std::string& pref_name, PrefService* prefs) {
     subtle::PrefMemberBase::Init(pref_name, prefs);

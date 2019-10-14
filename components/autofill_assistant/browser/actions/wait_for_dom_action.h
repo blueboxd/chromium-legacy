@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/action.h"
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
@@ -42,6 +43,9 @@ class WaitForDomAction : public Action {
     // True if the condition matched.
     bool match = false;
 
+    // Status proto result associated with this condition.
+    ProcessedActionStatusProto status_proto;
+
     // A payload to report to the server when this condition match. Empty
     // payloads are not reported.
     std::string server_payload;
@@ -62,14 +66,16 @@ class WaitForDomAction : public Action {
                     const std::string& server_payload);
 
   // Check all elements using the given BatchElementChecker and reports the
-  // result to |callback|.
+  // result to |callback|. In case of failure, the last failed status is
+  // returned.
   void CheckElements(BatchElementChecker* checker,
-                     base::OnceCallback<void(bool)> callback);
-  void OnSingleElementCheckDone(size_t condition_index, bool result);
-  void OnAllElementChecksDone(base::OnceCallback<void(bool)> callback);
+                     base::OnceCallback<void(const ClientStatus&)> callback);
+  void OnSingleElementCheckDone(size_t condition_index,
+                                const ClientStatus& element_status);
+  void OnAllElementChecksDone(
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
-  void OnCheckDone(ProcessActionCallback callback,
-                   ProcessedActionStatusProto status);
+  void OnCheckDone(ProcessActionCallback callback, const ClientStatus& status);
 
   bool require_all_ = false;
   std::vector<Condition> conditions_;

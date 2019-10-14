@@ -25,7 +25,7 @@ struct AX_EXPORT AXActionData {
   // This is a simple serializable struct. All member variables should be
   // public and copyable.
 
-  // See the ax::mojom::Action enums in ax_enums.idl for explanations of which
+  // See the ax::mojom::Action enums in ax_enums.mojom for explanations of which
   // parameters apply.
 
   // The action to take.

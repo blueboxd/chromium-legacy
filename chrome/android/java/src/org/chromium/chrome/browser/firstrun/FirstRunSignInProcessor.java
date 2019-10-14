@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /**
  * A helper to perform all necessary steps for the automatic FRE sign in.
@@ -68,7 +67,7 @@ public final class FirstRunSignInProcessor {
             return;
         }
         final String accountName = getFirstRunFlowSignInAccountName();
-        if (!FeatureUtilities.canAllowSync() || !signinManager.isSignInAllowed()
+        if (!FirstRunUtils.canAllowSync() || !signinManager.isSignInAllowed()
                 || TextUtils.isEmpty(accountName)) {
             setFirstRunFlowSignInComplete(true);
             return;

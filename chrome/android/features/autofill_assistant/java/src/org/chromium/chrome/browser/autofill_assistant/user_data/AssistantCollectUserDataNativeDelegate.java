@@ -118,6 +118,15 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
         }
     }
 
+    @Override
+    public void onKeyValueChanged(String key, String value) {
+        if (mNativeAssistantCollectUserDataDelegate != 0) {
+            AssistantCollectUserDataNativeDelegateJni.get().onKeyValueChanged(
+                    mNativeAssistantCollectUserDataDelegate,
+                    AssistantCollectUserDataNativeDelegate.this, key, value);
+        }
+    }
+
     @CalledByNative
     private void clearNativePtr() {
         mNativeAssistantCollectUserDataDelegate = 0;
@@ -146,5 +155,7 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
         void onDateTimeRangeEndChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller, int year, int month, int day,
                 int hour, int minute, int second);
+        void onKeyValueChanged(long nativeAssistantCollectUserDataDelegate,
+                AssistantCollectUserDataNativeDelegate caller, String key, String value);
     }
 }

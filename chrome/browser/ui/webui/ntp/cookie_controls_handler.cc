@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/webui/ntp/cookie_controls_handler.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
@@ -22,9 +24,9 @@ void CookieControlsHandler::RegisterMessages() {
           &CookieControlsHandler::HandleCookieControlsToggleChanged,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "observeCookieControlsModeChange",
+      "observeCookieControlsSettingsChanges",
       base::BindRepeating(
-          &CookieControlsHandler::HandleObserveCookieControlsModeChange,
+          &CookieControlsHandler::HandleObserveCookieControlsSettingsChanges,
           base::Unretained(this)));
 }
 
@@ -34,6 +36,10 @@ void CookieControlsHandler::OnJavascriptAllowed() {
   pref_change_registrar_.Add(
       prefs::kCookieControlsMode,
       base::Bind(&CookieControlsHandler::OnCookieControlsChanged,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kBlockThirdPartyCookies,
+      base::Bind(&CookieControlsHandler::OnThirdPartyCookieBlockingChanged,
                  base::Unretained(this)));
 }
 
@@ -53,10 +59,11 @@ void CookieControlsHandler::HandleCookieControlsToggleChanged(
                   : content_settings::CookieControlsMode::kOff));
 }
 
-void CookieControlsHandler::HandleObserveCookieControlsModeChange(
+void CookieControlsHandler::HandleObserveCookieControlsSettingsChanges(
     const base::ListValue* args) {
   AllowJavascript();
   OnCookieControlsChanged();
+  OnThirdPartyCookieBlockingChanged();
 }
 
 void CookieControlsHandler::OnCookieControlsChanged() {
@@ -67,4 +74,18 @@ void CookieControlsHandler::OnCookieControlsChanged() {
           ? false
           : true);
   FireWebUIListener("cookie-controls-changed", checked);
+}
+
+void CookieControlsHandler::OnThirdPartyCookieBlockingChanged() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  FireWebUIListener("third-party-cookie-blocking-changed",
+                    base::Value(ShouldHideCookieControlsUI(profile)));
+}
+
+bool CookieControlsHandler::ShouldHideCookieControlsUI(const Profile* profile) {
+  return !base::FeatureList::IsEnabled(
+             content_settings::kImprovedCookieControls) ||
+         profile->GetPrefs()->IsManagedPreference(
+             prefs::kBlockThirdPartyCookies) ||
+         profile->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies);
 }

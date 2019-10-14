@@ -17,6 +17,7 @@
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/offline_pages/test_offline_page_model_builder.h"
 #include "chrome/browser/offline_pages/test_request_coordinator_builder.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/offline_pages/buildflags/buildflags.h"

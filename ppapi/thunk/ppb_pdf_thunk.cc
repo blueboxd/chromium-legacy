@@ -175,13 +175,12 @@ void SetAccessibilityPageInfo(
     const PP_PrivateAccessibilityPageInfo* page_info,
     const PP_PrivateAccessibilityTextRunInfo text_runs[],
     const PP_PrivateAccessibilityCharInfo chars[],
-    const PP_PrivateAccessibilityLinkInfo links[],
-    const PP_PrivateAccessibilityImageInfo images[]) {
+    const PP_PrivateAccessibilityPageObjects* page_objects) {
   EnterInstanceAPI<PPB_PDF_API> enter(instance);
   if (enter.failed())
     return;
   enter.functions()->SetAccessibilityPageInfo(page_info, text_runs, chars,
-                                              links, images);
+                                              page_objects);
 }
 
 void SetCrashData(PP_Instance instance,

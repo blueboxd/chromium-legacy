@@ -283,7 +283,7 @@ const String& NDEFRecord::mediaType() const {
   return media_type_;
 }
 
-String NDEFRecord::toText() const {
+String NDEFRecord::text() const {
   if (record_type_ == "empty")
     return String();
 
@@ -293,7 +293,7 @@ String NDEFRecord::toText() const {
   return String::FromUTF8WithLatin1Fallback(data_.data(), data_.size());
 }
 
-DOMArrayBuffer* NDEFRecord::toArrayBuffer() const {
+DOMArrayBuffer* NDEFRecord::arrayBuffer() const {
   if (record_type_ == "empty" || record_type_ == "text" ||
       record_type_ == "url") {
     return nullptr;
@@ -304,8 +304,8 @@ DOMArrayBuffer* NDEFRecord::toArrayBuffer() const {
   return DOMArrayBuffer::Create(data_.data(), data_.size());
 }
 
-ScriptValue NDEFRecord::toJSON(ScriptState* script_state,
-                               ExceptionState& exception_state) const {
+ScriptValue NDEFRecord::json(ScriptState* script_state,
+                             ExceptionState& exception_state) const {
   if (record_type_ == "empty" || record_type_ == "text" ||
       record_type_ == "url") {
     return ScriptValue::CreateNull(script_state->GetIsolate());

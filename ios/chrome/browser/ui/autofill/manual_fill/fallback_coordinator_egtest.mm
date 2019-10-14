@@ -161,40 +161,32 @@ UIAccessibilityElement* KeyboardDismissKeyInLayout(UIView* layout) {
   return key;
 }
 
-// Finds the first view containing the keyboard which origin is not zero.
-UIView* KeyboardContainerForLayout(UIView* layout) {
-  CGRect frame = CGRectZero;
-  UIView* keyboardContainer = layout;
-  while (CGPointEqualToPoint(frame.origin, CGPointZero) && keyboardContainer) {
-    keyboardContainer = [keyboardContainer superview];
-    if (keyboardContainer) {
-      frame = keyboardContainer.frame;
-    }
-  }
-  return keyboardContainer;
+// Matcher for the Keyboard Window.
+id<GREYMatcher> KeyboardWindow(UIView* layout) {
+  id<GREYMatcher> classMatcher = grey_kindOfClass([UIWindow class]);
+  UIAccessibilityElement* key = KeyboardDismissKeyInLayout(layout);
+  id<GREYMatcher> parentMatcher =
+      grey_descendant(grey_accessibilityLabel(key.accessibilityLabel));
+  return grey_allOf(classMatcher, parentMatcher, nil);
 }
 
 // Returns YES if the keyboard is docked at the bottom. NO otherwise.
 BOOL IsKeyboardDockedForLayout(UIView* layout) {
-  UIView* keyboardContainer = KeyboardContainerForLayout(layout);
-  CGRect screenBounds = [[UIScreen mainScreen] bounds];
-  CGFloat maxY = CGRectGetMaxY(keyboardContainer.frame);
-  return [@(maxY) isEqualToNumber:@(screenBounds.size.height)];
+  CGRect keyboardFrameInWindow = [layout.window convertRect:layout.bounds
+                                                   fromView:layout];
+  CGRect windowBounds = layout.window.bounds;
+  CGFloat maxY = CGRectGetMaxY(keyboardFrameInWindow);
+
+  return [@(maxY) isEqualToNumber:@(windowBounds.size.height)];
 }
 
 // Undocks and split the keyboard by swiping it up. Does nothing if already
-// undocked.  Only works on iOS 12; it is an error to call this method on
-// iOS 13.  Some devices, like iPhone or iPad Pro, do not allow undocking or
+// undocked. Some devices, like iPhone or iPad Pro, do not allow undocking or
 // splitting, this returns NO if it is the case.
 BOOL UndockAndSplitKeyboard() {
   if (![ChromeEarlGrey isIPadIdiom]) {
     return NO;
   }
-
-  // TODO(crbug.com/985977): Remove this DCHECK once this method is updated to
-  // support iOS 13.
-  DCHECK(!base::ios::IsRunningOnIOS13OrLater())
-      << "Undocking the keyboard via this method does not work on iOS 13";
 
   UITextField* textField = ShowKeyboard();
 
@@ -215,37 +207,33 @@ BOOL UndockAndSplitKeyboard() {
     layout.accessibilityIdentifier = @"CRKBLayout";
   }
 
-  id<GREYMatcher> matcher =
-      grey_accessibilityID(layout.accessibilityIdentifier);
-
   UIAccessibilityElement* key = KeyboardDismissKeyInLayout(layout);
-  CGRect keyFrame = [key accessibilityFrame];
-  CGRect keyboardContainerFrame = KeyboardContainerForLayout(layout).frame;
-  CGPoint pointToKey = {keyFrame.origin.x - keyboardContainerFrame.origin.x,
-                        keyFrame.origin.y - keyboardContainerFrame.origin.y};
-  CGPoint startPoint = CGPointMake((pointToKey.x + keyFrame.size.width / 2.0) /
-                                       keyboardContainerFrame.size.width,
-                                   (pointToKey.y + keyFrame.size.height / 2.0) /
-                                       keyboardContainerFrame.size.height);
+  CGRect keyFrameInScreen = [key accessibilityFrame];
+  CGRect keyFrameInWindow = [UIScreen.mainScreen.coordinateSpace
+            convertRect:keyFrameInScreen
+      toCoordinateSpace:layout.window.coordinateSpace];
+  CGRect windowBounds = layout.window.bounds;
+
+  CGPoint startPoint = CGPointMake(
+      (keyFrameInWindow.origin.x + keyFrameInWindow.size.width / 2.0) /
+          windowBounds.size.width,
+      (keyFrameInWindow.origin.y + keyFrameInWindow.size.height / 2.0) /
+          windowBounds.size.height);
 
   id action = grey_swipeFastInDirectionWithStartPoint(
       kGREYDirectionUp, startPoint.x, startPoint.y);
-  [[EarlGrey selectElementWithMatcher:matcher] performAction:action];
+
+  [[EarlGrey selectElementWithMatcher:KeyboardWindow(layout)]
+      performAction:action];
 
   return !IsKeyboardDockedForLayout(layout);
 }
 
-// Docks the keyboard by swiping it down. Does nothing if already docked.  Only
-// works on iOS 12; it is an error to call this method on iOS 13.
+// Docks the keyboard by swiping it down. Does nothing if already docked.
 void DockKeyboard() {
   if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }
-
-  // TODO(crbug.com/985977): Remove this DCHECK once this method is updated to
-  // support iOS 13.
-  DCHECK(!base::ios::IsRunningOnIOS13OrLater())
-      << "Docking the keyboard via this method does not work on iOS 13";
 
   UITextField* textField = ShowKeyboard();
 
@@ -262,30 +250,39 @@ void DockKeyboard() {
   }
 
   // Swipe it down.
-  id<GREYMatcher> classMatcher = grey_kindOfClass([UIWindow class]);
   UIAccessibilityElement* key = KeyboardDismissKeyInLayout(layout);
-  id<GREYMatcher> parentMatcher =
-      grey_descendant(grey_accessibilityLabel(key.accessibilityLabel));
-  id matcher = grey_allOf(classMatcher, parentMatcher, nil);
 
-  CGRect keyFrame = [key accessibilityFrame];
-  GREYAssertFalse(CGRectEqualToRect(keyFrame, CGRectZero),
+  CGRect keyFrameInScreen = [key accessibilityFrame];
+  CGRect keyFrameInWindow = [UIScreen.mainScreen.coordinateSpace
+            convertRect:keyFrameInScreen
+      toCoordinateSpace:layout.window.coordinateSpace];
+  CGRect windowBounds = layout.window.bounds;
+
+  GREYAssertFalse(CGRectEqualToRect(keyFrameInWindow, CGRectZero),
                   @"The dismiss key accessibility frame musn't be zero");
-  CGPoint startPoint =
-      CGPointMake((keyFrame.origin.x + keyFrame.size.width / 2.0) /
-                      [UIScreen mainScreen].bounds.size.width,
-                  (keyFrame.origin.y + keyFrame.size.height / 2.0) /
-                      [UIScreen mainScreen].bounds.size.height);
+  CGPoint startPoint = CGPointMake(
+      (keyFrameInWindow.origin.x + keyFrameInWindow.size.width / 2.0) /
+          windowBounds.size.width,
+      (keyFrameInWindow.origin.y + keyFrameInWindow.size.height / 2.0) /
+          windowBounds.size.height);
   id<GREYAction> action = grey_swipeFastInDirectionWithStartPoint(
       kGREYDirectionDown, startPoint.x, startPoint.y);
 
-  [[EarlGrey selectElementWithMatcher:matcher] performAction:action];
+  [[EarlGrey selectElementWithMatcher:KeyboardWindow(layout)]
+      performAction:action];
 
   // If we created a dummy textfield for this, remove it.
   [textField removeFromSuperview];
 
-  GREYAssertTrue(IsKeyboardDockedForLayout(layout),
-                 @"Keyboard should be docked");
+  GREYCondition* waitForDockedKeyboard =
+      [GREYCondition conditionWithName:@"Wait For Docked Keyboard Animations"
+                                 block:^BOOL {
+                                   return IsKeyboardDockedForLayout(layout);
+                                 }];
+
+  GREYAssertTrue([waitForDockedKeyboard
+                     waitWithTimeout:base::test::ios::kWaitForActionTimeout],
+                 @"Keyboard animations still present.");
 }
 
 }  // namespace
@@ -381,11 +378,6 @@ void DockKeyboard() {
     // Verify the table view is not visible.
     [[EarlGrey selectElementWithMatcher:grey_kindOfClass([UITableView class])]
         assertWithMatcher:grey_notVisible()];
-  }
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    // TODO(crbug.com/985977): Remove this conditional once DockKeyboard() is
-    // updated to support iOS 13.
-    DockKeyboard();
   }
   [super tearDown];
 }
@@ -558,11 +550,6 @@ void DockKeyboard() {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
   }
 
-  // TODO(crbug.com/985977): Reenable once undocking is supported on iOS 13.
-  if (base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Undocking the keyboard does not work on iOS 13");
-  }
-
   // Add the profile to be used.
   AddAutofillProfile(_personalDataManager);
 
@@ -634,11 +621,6 @@ void DockKeyboard() {
 - (void)testInputAccessoryBarIsPresentAfterUndockingKeyboard {
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
-  }
-
-  // TODO(crbug.com/985977): Reenable once undocking is supported on iOS 13.
-  if (base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Undocking the keyboard does not work on iOS 13");
   }
 
   // Add the profile to use for verification.

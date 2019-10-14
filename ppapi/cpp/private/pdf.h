@@ -40,6 +40,13 @@ class PDF {
     FloatRect bounds;
   };
 
+  // C++ version of PP_PrivateAccessibilityPageObjects.
+  // Needs to stay in sync with the C version.
+  struct PrivateAccessibilityPageObjects {
+    std::vector<PrivateAccessibilityLinkInfo> links;
+    std::vector<PrivateAccessibilityImageInfo> images;
+  };
+
   // Returns true if the required interface is available.
   static bool IsAvailable();
 
@@ -95,8 +102,7 @@ class PDF {
       const PP_PrivateAccessibilityPageInfo* page_info,
       const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-      const std::vector<PrivateAccessibilityLinkInfo>& links,
-      const std::vector<PrivateAccessibilityImageInfo>& images);
+      const PrivateAccessibilityPageObjects& page_objects);
   static void SetCrashData(const InstanceHandle& instance,
                            const char* pdf_url,
                            const char* top_level_url);

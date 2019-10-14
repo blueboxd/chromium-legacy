@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "ui/events/event_constants.h"
+#include "ui/gfx/image/image_skia.h"
 
 ArcPlaystoreShortcutLauncherItemController::
     ArcPlaystoreShortcutLauncherItemController()

@@ -130,7 +130,7 @@ bool ClickToCallContextMenuObserver::IsCommandIdEnabled(int command_id) {
 
 void ClickToCallContextMenuObserver::ExecuteCommand(int command_id) {
   if (command_id == IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE) {
-    DCHECK(devices_.size() == 1);
+    DCHECK_EQ(1u, devices_.size());
     SendClickToCallMessage(0);
   }
 }
@@ -138,7 +138,7 @@ void ClickToCallContextMenuObserver::ExecuteCommand(int command_id) {
 void ClickToCallContextMenuObserver::SendClickToCallMessage(
     int chosen_device_index) {
   DCHECK(entry_point_);
-  if (chosen_device_index >= static_cast<int>(devices_.size()))
+  if (size_t{chosen_device_index} >= devices_.size())
     return;
 
   LogSharingSelectedDeviceIndex(controller_->GetFeatureMetricsPrefix(),

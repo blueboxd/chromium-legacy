@@ -1012,7 +1012,7 @@ interface NetworkContext {
 
   // Looks up what proxy to use for a particular URL.
   LookUpProxyForURL(url.mojom.Url url,
-                    ProxyLookupClient proxy_lookup_client);
+                    pending_remote<ProxyLookupClient> proxy_lookup_client);
 
   // Forces refetching the proxy configuration, and applying it.
   ForceReloadProxyConfig() => ();

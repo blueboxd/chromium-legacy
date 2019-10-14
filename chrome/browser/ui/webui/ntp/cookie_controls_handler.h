@@ -9,6 +9,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 
 class CookieControlsHandlerTest;
+class Profile;
 
 namespace base {
 class ListValue;
@@ -27,12 +28,20 @@ class CookieControlsHandler : public content::WebUIMessageHandler {
 
   void HandleCookieControlsToggleChanged(const base::ListValue* args);
 
-  void HandleObserveCookieControlsModeChange(const base::ListValue* args);
+  void HandleObserveCookieControlsSettingsChanges(const base::ListValue* args);
+
+  // Whether cookie controls UI should be hidden in incognito ntp.
+  static bool ShouldHideCookieControlsUI(const Profile* profile);
 
  private:
   friend class CookieControlsHandlerTest;
 
+  // Updates cookie controls UI when underlying setting has changed.
   void OnCookieControlsChanged();
+
+  // Updates cookie controls UI when third-party cookie blocking setting has
+  // changed.
+  void OnThirdPartyCookieBlockingChanged();
 
   PrefChangeRegistrar pref_change_registrar_;
 

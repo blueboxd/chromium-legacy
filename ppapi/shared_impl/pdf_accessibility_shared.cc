@@ -16,9 +16,6 @@ PdfAccessibilityLinkInfo::PdfAccessibilityLinkInfo(
       text_run_count(link.text_run_count),
       bounds(link.bounds) {}
 
-PdfAccessibilityLinkInfo::PdfAccessibilityLinkInfo(
-    PdfAccessibilityLinkInfo&& other) = default;
-
 PdfAccessibilityLinkInfo::~PdfAccessibilityLinkInfo() = default;
 
 PdfAccessibilityImageInfo::PdfAccessibilityImageInfo() = default;
@@ -29,9 +26,23 @@ PdfAccessibilityImageInfo::PdfAccessibilityImageInfo(
       text_run_index(image.text_run_index),
       bounds(image.bounds) {}
 
-PdfAccessibilityImageInfo::PdfAccessibilityImageInfo(
-    PdfAccessibilityImageInfo&& other) = default;
-
 PdfAccessibilityImageInfo::~PdfAccessibilityImageInfo() = default;
+
+PdfAccessibilityPageObjects::PdfAccessibilityPageObjects() = default;
+
+PdfAccessibilityPageObjects::PdfAccessibilityPageObjects(
+    const PP_PrivateAccessibilityPageObjects& page_objects) {
+  links.reserve(page_objects.link_count);
+  for (size_t i = 0; i < page_objects.link_count; i++) {
+    links.emplace_back(page_objects.links[i]);
+  }
+
+  images.reserve(page_objects.image_count);
+  for (size_t i = 0; i < page_objects.image_count; i++) {
+    images.emplace_back(page_objects.images[i]);
+  }
+}
+
+PdfAccessibilityPageObjects::~PdfAccessibilityPageObjects() = default;
 
 }  // namespace ppapi

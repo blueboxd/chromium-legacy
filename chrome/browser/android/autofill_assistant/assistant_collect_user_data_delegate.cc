@@ -156,6 +156,15 @@ void AssistantCollectUserDataDelegate::OnDateTimeRangeEndChanged(
                                             second);
 }
 
+void AssistantCollectUserDataDelegate::OnKeyValueChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaParamRef<jstring>& jkey,
+    const base::android::JavaParamRef<jstring>& jvalue) {
+  ui_controller_->OnKeyValueChanged(SafeConvertJavaStringToNative(env, jkey),
+                                    SafeConvertJavaStringToNative(env, jvalue));
+}
+
 base::android::ScopedJavaGlobalRef<jobject>
 AssistantCollectUserDataDelegate::GetJavaObject() {
   return java_assistant_collect_user_data_delegate_;

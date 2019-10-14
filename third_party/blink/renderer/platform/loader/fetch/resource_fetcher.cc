@@ -353,7 +353,9 @@ void SetSecFetchHeaders(
       destination_value = "empty";
 
     // We'll handle adding these headers to navigations outside of Blink.
-    if (strncmp(destination_value, "document", 8) != 0 &&
+    if ((strncmp(destination_value, "document", 8) != 0 ||
+         strncmp(destination_value, "iframe", 6) != 0 ||
+         strncmp(destination_value, "frame", 5) != 0) &&
         request.GetRequestContext() != mojom::RequestContextType::INTERNAL) {
       if (blink::RuntimeEnabledFeatures::FetchMetadataDestinationEnabled()) {
         request.SetHttpHeaderField("Sec-Fetch-Dest", destination_value);

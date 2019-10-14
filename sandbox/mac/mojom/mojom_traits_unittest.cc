@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "sandbox/mac/mojom/seatbelt_extension_token_mojom_traits.h"
 #include "sandbox/mac/mojom/traits_test_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,12 +15,9 @@ namespace {
 class StructTraitsTest : public testing::Test,
                          public sandbox::mac::mojom::TraitsTestService {
  public:
-  StructTraitsTest()
-      : interface_ptr_(), binding_(this, mojo::MakeRequest(&interface_ptr_)) {}
+  StructTraitsTest() : receiver_(this, remote_.BindNewPipeAndPassReceiver()) {}
 
-  sandbox::mac::mojom::TraitsTestService* interface() {
-    return interface_ptr_.get();
-  }
+  sandbox::mac::mojom::TraitsTestService* interface() { return remote_.get(); }
 
  private:
   // TraitsTestService:
@@ -31,8 +29,8 @@ class StructTraitsTest : public testing::Test,
 
   base::test::TaskEnvironment task_environment_;
 
-  sandbox::mac::mojom::TraitsTestServicePtr interface_ptr_;
-  mojo::Binding<sandbox::mac::mojom::TraitsTestService> binding_;
+  mojo::Remote<sandbox::mac::mojom::TraitsTestService> remote_;
+  mojo::Receiver<sandbox::mac::mojom::TraitsTestService> receiver_;
 };
 
 TEST_F(StructTraitsTest, SeatbeltExtensionToken) {

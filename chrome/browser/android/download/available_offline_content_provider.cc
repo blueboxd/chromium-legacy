@@ -17,6 +17,7 @@
 #include "chrome/browser/android/download/download_utils.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/common/chrome_features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"

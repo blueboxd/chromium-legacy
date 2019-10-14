@@ -352,12 +352,13 @@ void Sensor::NotifyActivated() {
   state_ = SensorState::kActivated;
 
   if (hasReading()) {
-    // If reading has already arrived, send initial 'reading' notification
-    // right away.
+    // If reading has already arrived, process the reading values (a subclass
+    // may do some filtering, for example) and then send an initial "reading"
+    // event right away.
     DCHECK(!pending_reading_notification_.IsActive());
     pending_reading_notification_ = PostCancellableTask(
         *GetExecutionContext()->GetTaskRunner(TaskType::kSensor), FROM_HERE,
-        WTF::Bind(&Sensor::NotifyReading, WrapWeakPersistent(this)));
+        WTF::Bind(&Sensor::OnSensorReadingChanged, WrapWeakPersistent(this)));
   }
 
   DispatchEvent(*Event::Create(event_type_names::kActivate));

@@ -69,7 +69,7 @@ class ScriptExecutorTest : public testing::Test,
         .WillByDefault(RunOnceCallback<1>(ClientStatus(OTHER_ACTION_STATUS)));
 
     ON_CALL(mock_web_controller_, OnElementCheck(_, _))
-        .WillByDefault(RunOnceCallback<1>(true));
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
     ON_CALL(mock_web_controller_, OnFocusElement(_, _, _))
         .WillByDefault(RunOnceCallback<2>(OkClientStatus()));
   }
@@ -524,12 +524,12 @@ TEST_F(ScriptExecutorTest, WaitForDomWaitUntil) {
   // element is found, and the action succeeds.
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillOnce(RunOnceCallback<1>(false));
+      .WillOnce(RunOnceCallback<1>(ClientStatus()));
   executor_->Run(executor_callback_.Get());
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
   EXPECT_CALL(executor_callback_, Run(_));
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
@@ -553,12 +553,12 @@ TEST_F(ScriptExecutorTest, WaitForDomWaitWhile) {
   // disappears, and the action succeeds.
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillOnce(RunOnceCallback<1>(true));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
   executor_->Run(executor_callback_.Get());
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<1>(false));
+      .WillRepeatedly(RunOnceCallback<1>(ClientStatus()));
   EXPECT_CALL(executor_callback_, Run(_));
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
@@ -724,10 +724,10 @@ TEST_F(ScriptExecutorTest, DoNotRunInterruptIfPreconditionsDontMatch) {
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"interrupt_trigger"})), _))
-      .WillRepeatedly(RunOnceCallback<1>(false));
+      .WillRepeatedly(RunOnceCallback<1>(ClientStatus()));
 
   EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
       .WillRepeatedly(RunOnceCallback<4>(true, ""));
@@ -1002,7 +1002,7 @@ TEST_F(ScriptExecutorTest, PauseWaitForDomWhileNavigating) {
   // First check does not find the element, wait for dom waits 1s.
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillOnce(RunOnceCallback<1>(false));
+      .WillOnce(RunOnceCallback<1>(ClientStatus()));
   executor_->Run(executor_callback_.Get());
 
   // Navigation starts while WaitForDom is waiting. The action doesn't fail,
@@ -1016,7 +1016,7 @@ TEST_F(ScriptExecutorTest, PauseWaitForDomWhileNavigating) {
   // The end of navigation un-pauses WaitForDom.
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
   EXPECT_CALL(executor_callback_, Run(_));
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
 
@@ -1156,14 +1156,14 @@ TEST_F(ScriptExecutorTest, ReportNavigationEnd) {
   // fails.
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillOnce(RunOnceCallback<1>(false));
+      .WillOnce(RunOnceCallback<1>(ClientStatus()));
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
 
   // Checking for the element succeeds on the second try. Waiting avoids
   // depending on the order at which the listeners are called.
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillOnce(RunOnceCallback<1>(true));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   ASSERT_THAT(processed_actions_capture, SizeIs(1));
@@ -1187,7 +1187,7 @@ TEST_F(ScriptExecutorTest, ReportUnexpectedNavigationStart) {
   // As the element doesn't exist, WaitForDom returns and waits for 1s.
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillOnce(RunOnceCallback<1>(false));
+      .WillOnce(RunOnceCallback<1>(ClientStatus()));
   EXPECT_CALL(executor_callback_, Run(_));
   executor_->Run(executor_callback_.Get());
 
@@ -1196,7 +1196,7 @@ TEST_F(ScriptExecutorTest, ReportUnexpectedNavigationStart) {
   // Navigation end forces a re-check, which succeeds
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
 
   ASSERT_THAT(processed_actions_capture, SizeIs(1));
@@ -1221,7 +1221,7 @@ TEST_F(ScriptExecutorTest, ReportExpectedNavigationStart) {
   // As the element doesn't exist, WaitForDom returns and waits for 1s.
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillOnce(RunOnceCallback<1>(false));
+      .WillOnce(RunOnceCallback<1>(ClientStatus()));
   EXPECT_CALL(executor_callback_, Run(_));
   executor_->Run(executor_callback_.Get());
 
@@ -1230,7 +1230,7 @@ TEST_F(ScriptExecutorTest, ReportExpectedNavigationStart) {
   // Navigation end forces a re-check, which succeeds
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
 
   ASSERT_THAT(processed_actions_capture, SizeIs(2));

@@ -7,6 +7,11 @@ package org.chromium.chrome.browser.autofill_assistant.user_data;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionFactory;
+import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantStaticTextSection;
+import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputSection;
+import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputSection.TextInputFactory;
+import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputType;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.AutofillContact;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
@@ -119,6 +124,12 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableObjectPropertyKey<String> DATE_RANGE_END_LABEL =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<List<AssistantAdditionalSectionFactory>>
+            PREPENDED_SECTIONS = new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<List<AssistantAdditionalSectionFactory>>
+            APPENDED_SECTIONS = new WritableObjectPropertyKey<>();
+
     public AssistantCollectUserDataModel() {
         super(DELEGATE, WEB_CONTENTS, VISIBLE, SHIPPING_ADDRESS, PAYMENT_METHOD, CONTACT_DETAILS,
                 LOGIN_SECTION_TITLE, SELECTED_LOGIN, TERMS_STATUS, DEFAULT_EMAIL, REQUEST_NAME,
@@ -128,7 +139,7 @@ public class AssistantCollectUserDataModel extends PropertyModel {
                 SUPPORTED_BASIC_CARD_NETWORKS, SUPPORTED_PAYMENT_METHODS, AVAILABLE_LOGINS,
                 EXPANDED_SECTION, REQUIRE_BILLING_POSTAL_CODE, BILLING_POSTAL_CODE_MISSING_TEXT,
                 REQUEST_DATE_RANGE, DATE_RANGE_START, DATE_RANGE_START_LABEL, DATE_RANGE_END,
-                DATE_RANGE_END_LABEL);
+                DATE_RANGE_END_LABEL, PREPENDED_SECTIONS, APPENDED_SECTIONS);
 
         /**
          * Set initial state for basic type properties (others are implicitly null).
@@ -146,6 +157,8 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         set(DEFAULT_EMAIL, "");
         set(DATE_RANGE_START_LABEL, "");
         set(DATE_RANGE_END_LABEL, "");
+        set(PREPENDED_SECTIONS, new ArrayList<>());
+        set(APPENDED_SECTIONS, new ArrayList<>());
     }
 
     @CalledByNative
@@ -285,5 +298,45 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     @CalledByNative
     private void setDateTimeRangeEndLabel(String label) {
         set(DATE_RANGE_END_LABEL, label);
+    }
+
+    @CalledByNative
+    private static List<AssistantAdditionalSectionFactory> createAdditionalSectionsList() {
+        return new ArrayList<>();
+    }
+
+    @CalledByNative
+    private static void appendStaticTextSection(
+            List<AssistantAdditionalSectionFactory> sections, String title, String text) {
+        sections.add(new AssistantStaticTextSection.Factory(title, text));
+    }
+
+    @CalledByNative
+    private static void appendTextInputSection(List<AssistantAdditionalSectionFactory> sections,
+            String title, List<TextInputFactory> inputs) {
+        sections.add(new AssistantTextInputSection.Factory(title, inputs));
+    }
+
+    @CalledByNative
+    private static List<TextInputFactory> createTextInputList() {
+        return new ArrayList<>();
+    }
+
+    @CalledByNative
+    private static void appendTextInput(List<TextInputFactory> inputs,
+            @AssistantTextInputType int type, String hint, String value, String key) {
+        inputs.add(new TextInputFactory(type, hint, value, key));
+    }
+
+    /** Configures the list of prepended sections. */
+    @CalledByNative
+    private void setPrependedSections(List<AssistantAdditionalSectionFactory> sections) {
+        set(PREPENDED_SECTIONS, sections);
+    }
+
+    /** Configures the list of appended sections. */
+    @CalledByNative
+    private void setAppendedSections(List<AssistantAdditionalSectionFactory> sections) {
+        set(APPENDED_SECTIONS, sections);
     }
 }

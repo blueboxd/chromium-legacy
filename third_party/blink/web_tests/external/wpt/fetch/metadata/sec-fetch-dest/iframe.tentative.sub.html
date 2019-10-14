@@ -53,7 +53,7 @@
       if (e.source != i.contentWindow)
         return;
 
-      assert_header_dest_equals(e.data, "nested-document");
+      assert_header_dest_equals(e.data, "iframe");
       t.done();
     }));
 

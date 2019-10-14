@@ -37,9 +37,9 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
 
   const String& recordType() const;
   const String& mediaType() const;
-  String toText() const;
-  DOMArrayBuffer* toArrayBuffer() const;
-  ScriptValue toJSON(ScriptState*, ExceptionState&) const;
+  String text() const;
+  DOMArrayBuffer* arrayBuffer() const;
+  ScriptValue json(ScriptState*, ExceptionState&) const;
 
   const WTF::Vector<uint8_t>& data() const;
 

@@ -5735,7 +5735,7 @@ void WebGLRenderingContextBase::TexImageHelperImageBitmap(
 
   SkPixmap pixmap;
   uint8_t* pixel_data_ptr = nullptr;
-  scoped_refptr<Uint8Array> pixel_data;
+  Vector<uint8_t> pixel_data;
   // In the case where an ImageBitmap is not texture backed, peekPixels() always
   // succeed.  However, when it is texture backed and !canUseTexImageByGPU, we
   // do a GPU read back.
@@ -5745,7 +5745,7 @@ void WebGLRenderingContextBase::TexImageHelperImageBitmap(
   } else {
     pixel_data = bitmap->CopyBitmapData(
         bitmap->IsPremultiplied() ? kPremultiplyAlpha : kUnpremultiplyAlpha);
-    pixel_data_ptr = pixel_data->Data();
+    pixel_data_ptr = pixel_data.data();
   }
   Vector<uint8_t> data;
   bool need_conversion = true;

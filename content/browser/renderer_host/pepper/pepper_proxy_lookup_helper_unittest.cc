@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "services/network/public/mojom/proxy_lookup_client.mojom.h"
@@ -51,10 +52,10 @@ class PepperProxyLookupHelperTest : public testing::Test {
       EXPECT_TRUE(proxy_lookup_client_);
   }
 
-  // Takes the |ProxyLookupClientPtr| passed by |lookup_helper_| to
+  // Takes the |mojo::Remote<ProxyLookupClient>| passed by |lookup_helper_| to
   // LookUpProxyForURLOnUIThread(). May only be called after |lookup_helper_|
   // has successfully called into LookUpProxyForURLOnUIThread().
-  network::mojom::ProxyLookupClientPtr ClaimProxyLookupClient() {
+  mojo::Remote<network::mojom::ProxyLookupClient> ClaimProxyLookupClient() {
     EXPECT_TRUE(proxy_lookup_client_);
     return std::move(proxy_lookup_client_);
   }
@@ -112,7 +113,8 @@ class PepperProxyLookupHelperTest : public testing::Test {
   bool LookUpProxyForURLOnUIThread(
       base::OnceClosure closure,
       const GURL& url,
-      network::mojom::ProxyLookupClientPtr proxy_lookup_client) {
+      mojo::PendingRemote<network::mojom::ProxyLookupClient>
+          proxy_lookup_client) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     std::move(closure).Run();
@@ -121,7 +123,7 @@ class PepperProxyLookupHelperTest : public testing::Test {
       return false;
 
     EXPECT_EQ(GURL(kTestURL), url);
-    proxy_lookup_client_ = std::move(proxy_lookup_client);
+    proxy_lookup_client_.Bind(std::move(proxy_lookup_client));
     return true;
   }
 
@@ -147,7 +149,7 @@ class PepperProxyLookupHelperTest : public testing::Test {
   std::unique_ptr<PepperProxyLookupHelper> lookup_helper_;
 
   base::Optional<net::ProxyInfo> proxy_info_;
-  network::mojom::ProxyLookupClientPtr proxy_lookup_client_;
+  mojo::Remote<network::mojom::ProxyLookupClient> proxy_lookup_client_;
 
   base::RunLoop lookup_complete_run_loop_;
 };
@@ -196,9 +198,9 @@ TEST_F(PepperProxyLookupHelperTest, FailToStartRequest) {
 TEST_F(PepperProxyLookupHelperTest, DestroyBeforeComplete) {
   StartLookup();
   base::RunLoop run_loop;
-  network::mojom::ProxyLookupClientPtr proxy_lookup_client =
+  mojo::Remote<network::mojom::ProxyLookupClient> proxy_lookup_client =
       ClaimProxyLookupClient();
-  proxy_lookup_client.set_connection_error_handler(run_loop.QuitClosure());
+  proxy_lookup_client.set_disconnect_handler(run_loop.QuitClosure());
   DestroyLookupHelper();
   run_loop.Run();
 }

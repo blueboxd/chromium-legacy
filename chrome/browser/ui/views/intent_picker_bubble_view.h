@@ -92,6 +92,8 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   bool ShouldShowCloseButton() const override;
   int GetDialogButtons() const override;
 
+  PageActionIconType icon_type() const { return icon_type_; }
+
  protected:
   // LocationBarBubbleDelegateView overrides:
   base::string16 GetWindowTitle() const override;

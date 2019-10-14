@@ -28,20 +28,20 @@ class ElementPreconditionTest : public testing::Test {
  public:
   void SetUp() override {
     ON_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"exists"})), _))
-        .WillByDefault(RunOnceCallback<1>(true));
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
     ON_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"empty"})), _))
-        .WillByDefault(RunOnceCallback<1>(true));
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
     ON_CALL(mock_web_controller_,
             OnElementCheck(Eq(Selector({"does_not_exist"})), _))
-        .WillByDefault(RunOnceCallback<1>(false));
+        .WillByDefault(RunOnceCallback<1>(ClientStatus()));
 
     ON_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"exists"})), _))
-        .WillByDefault(RunOnceCallback<1>(true, "foo"));
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "foo"));
     ON_CALL(mock_web_controller_,
             OnGetFieldValue(Eq(Selector({"does_not_exist"})), _))
-        .WillByDefault(RunOnceCallback<1>(false, ""));
+        .WillByDefault(RunOnceCallback<1>(ClientStatus(), ""));
     ON_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"empty"})), _))
-        .WillByDefault(RunOnceCallback<1>(true, ""));
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus(), ""));
   }
 
  protected:

@@ -10,3 +10,10 @@ include_rules = [
     "+third_party/blink/renderer/modules/modules_export.h",
     "+third_party/blink/renderer/modules/sensor",
 ]
+
+specific_include_rules = {
+  "sensor_test_utils\.(cc|h)|.+test\.cc": [
+    "+base/run_loop.h",
+    "+services/device/public/cpp/test/fake_sensor_and_provider.h",
+  ],
+}

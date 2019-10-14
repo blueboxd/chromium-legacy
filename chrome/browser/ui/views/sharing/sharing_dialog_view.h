@@ -59,6 +59,9 @@ class SharingDialogView : public SharingDialog,
 
   static views::BubbleDialogDelegateView* GetAsBubble(SharingDialog* dialog);
 
+  static views::BubbleDialogDelegateView* GetAsBubbleForClickToCall(
+      SharingDialog* dialog);
+
  private:
   friend class SharingDialogViewTest;
   FRIEND_TEST_ALL_PREFIXES(SharingDialogViewTest, PopulateDialogView);

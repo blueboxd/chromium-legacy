@@ -16,6 +16,7 @@
 #include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/keyed_service/core/service_access_type.h"

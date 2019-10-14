@@ -524,9 +524,10 @@ void WebController::OnDispatchTouchEventEnd(
   std::move(callback).Run(OkClientStatus());
 }
 
-void WebController::ElementCheck(const Selector& selector,
-                                 bool strict,
-                                 base::OnceCallback<void(bool)> callback) {
+void WebController::ElementCheck(
+    const Selector& selector,
+    bool strict,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   DCHECK(!selector.empty());
   FindElement(
       selector, strict,
@@ -535,13 +536,13 @@ void WebController::ElementCheck(const Selector& selector,
 }
 
 void WebController::OnFindElementForCheck(
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     const ClientStatus& status,
     std::unique_ptr<ElementFinder::Result> result) {
   DVLOG_IF(1,
            !status.ok() && status.proto_status() != ELEMENT_RESOLUTION_FAILED)
       << __func__ << ": " << status;
-  std::move(callback).Run(status.ok());
+  std::move(callback).Run(status);
 }
 
 void WebController::WaitForWindowHeightChange(
@@ -939,7 +940,8 @@ void WebController::FocusElement(
 
 void WebController::GetFieldValue(
     const Selector& selector,
-    base::OnceCallback<void(bool, const std::string&)> callback) {
+    base::OnceCallback<void(const ClientStatus&, const std::string&)>
+        callback) {
   FindElement(
       selector,
       /* strict_mode= */ true,
@@ -948,12 +950,12 @@ void WebController::GetFieldValue(
 }
 
 void WebController::OnFindElementForGetFieldValue(
-    base::OnceCallback<void(bool, const std::string&)> callback,
+    base::OnceCallback<void(const ClientStatus&, const std::string&)> callback,
     const ClientStatus& status,
     std::unique_ptr<ElementFinder::Result> element_result) {
   const std::string object_id = element_result->object_id;
   if (!status.ok()) {
-    std::move(callback).Run(/* exists= */ false, "");
+    std::move(callback).Run(status, "");
     return;
   }
 
@@ -969,7 +971,8 @@ void WebController::OnFindElementForGetFieldValue(
 }
 
 void WebController::OnGetValueAttribute(
-    base::OnceCallback<void(bool, const std::string&)> callback,
+    base::OnceCallback<void(const ClientStatus& element_status,
+                            const std::string&)> callback,
     const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   std::string value;
@@ -979,7 +982,7 @@ void WebController::OnGetValueAttribute(
   DVLOG_IF(1, !status.ok())
       << __func__ << "Failed to get attribute value: " << status;
   SafeGetStringValue(result->GetResult(), &value);
-  std::move(callback).Run(/* exists= */ true, value);
+  std::move(callback).Run(status, value);
 }
 
 void WebController::SetFieldValue(

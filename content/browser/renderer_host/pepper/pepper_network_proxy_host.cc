@@ -17,6 +17,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/socket_permission_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -33,7 +34,8 @@ bool LookUpProxyForURLCallback(
     int render_process_host_id,
     int render_frame_host_id,
     const GURL& url,
-    network::mojom::ProxyLookupClientPtr proxy_lookup_client) {
+    mojo::PendingRemote<network::mojom::ProxyLookupClient>
+        proxy_lookup_client) {
   RenderFrameHost* render_frame_host =
       RenderFrameHost::FromID(render_process_host_id, render_frame_host_id);
   if (!render_frame_host)

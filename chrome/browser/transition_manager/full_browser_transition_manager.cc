@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 
 FullBrowserTransitionManager::FullBrowserTransitionManager() = default;
 FullBrowserTransitionManager::~FullBrowserTransitionManager() = default;

@@ -1327,7 +1327,6 @@ TEST_F(PersonalDataManagerTest, AddFullCardAsMaskedCard) {
                           "378282246310005" /* American Express */, "04",
                           "2999", "1");
 
-
   personal_data_->AddFullServerCreditCard(server_card);
 
   WaitForOnPersonalDataChanged();
@@ -2762,7 +2761,7 @@ TEST_F(PersonalDataManagerTest,
   profile2.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(10));
   profile2.set_use_count(1);
 
-  EXPECT_TRUE(profile1.HasGreaterFrecencyThan(&profile2, base::Time::Now()));
+  EXPECT_TRUE(profile1.HasGreaterFrecencyThan(&profile2, AutofillClock::Now()));
 
   AddProfileToPersonalDataManager(profile1);
   AddProfileToPersonalDataManager(profile2);

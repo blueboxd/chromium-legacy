@@ -58,10 +58,10 @@ class ScriptPreconditionTest : public testing::Test {
  public:
   void SetUp() override {
     ON_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"exists"})), _))
-        .WillByDefault(RunOnceCallback<1>(true));
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
     ON_CALL(mock_web_controller_,
             OnElementCheck(Eq(Selector({"does_not_exist"})), _))
-        .WillByDefault(RunOnceCallback<1>(false));
+        .WillByDefault(RunOnceCallback<1>(ClientStatus()));
 
     SetUrl("http://www.example.com/path");
 
@@ -177,7 +177,7 @@ TEST_F(ScriptPreconditionTest, BadPathPattern) {
 
 TEST_F(ScriptPreconditionTest, IgnoreEmptyElementsExist) {
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"exists"})), _))
-      .WillOnce(RunOnceCallback<1>(true));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
 
   ScriptPreconditionProto proto;
   proto.add_elements_exist()->add_selectors("exists");

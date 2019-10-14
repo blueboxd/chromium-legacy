@@ -17,6 +17,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/resource_type.h"
+#include "net/base/mime_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"

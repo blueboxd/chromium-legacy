@@ -51,6 +51,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
@@ -75,13 +76,13 @@ const char kTestNumber[] = "4234567890123456";  // Visa
 
 std::string NextYear() {
   base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
+  AutofillClock::Now().LocalExplode(&now);
   return base::NumberToString(now.year + 1);
 }
 
 std::string NextMonth() {
   base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
+  AutofillClock::Now().LocalExplode(&now);
   return base::NumberToString(now.month % 12 + 1);
 }
 
@@ -165,7 +166,7 @@ TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardSuccess) {
 
   cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
                                    &personal_data_manager_,
-                                   base::TimeTicks::Now());
+                                   AutofillTickClock::NowTicks());
 
   OnDidGetRealPan(AutofillClient::SUCCESS, kTestNumber);
   EXPECT_TRUE(requester_->did_succeed());
@@ -177,7 +178,7 @@ TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardNetworkError) {
 
   cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
                                    &personal_data_manager_,
-                                   base::TimeTicks::Now());
+                                   AutofillTickClock::NowTicks());
 
   OnDidGetRealPan(AutofillClient::NETWORK_ERROR, std::string());
   EXPECT_FALSE(requester_->did_succeed());
@@ -188,7 +189,7 @@ TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardPermanentFailure) {
 
   cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
                                    &personal_data_manager_,
-                                   base::TimeTicks::Now());
+                                   AutofillTickClock::NowTicks());
 
   OnDidGetRealPan(AutofillClient::PERMANENT_FAILURE, std::string());
   EXPECT_FALSE(requester_->did_succeed());
@@ -199,7 +200,7 @@ TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardTryAgainFailure) {
 
   cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
                                    &personal_data_manager_,
-                                   base::TimeTicks::Now());
+                                   AutofillTickClock::NowTicks());
 
   OnDidGetRealPan(AutofillClient::TRY_AGAIN_FAILURE, std::string());
   EXPECT_FALSE(requester_->did_succeed());

@@ -382,15 +382,16 @@ void HandleDeviceSelection(
   if (!web_contents)
     return;
 
-  for (const auto& device : devices) {
-    if (device->guid() == device_guid) {
-      ClickToCallUiController::GetOrCreateFromWebContents(web_contents)
-          ->OnDeviceSelected(GetUnescapedURLContent(url), *device,
-                             SharingClickToCallEntryPoint::kLeftClickLink);
-      return;
-    }
-  }
-  NOTREACHED();
+  const auto it = std::find_if(devices.begin(), devices.end(),
+                               [&device_guid](const auto& device) {
+                                 return device->guid() == device_guid;
+                               });
+  DCHECK(it != devices.end());
+  auto* device = it->get();
+
+  ClickToCallUiController::GetOrCreateFromWebContents(web_contents)
+      ->OnDeviceSelected(GetUnescapedURLContent(url), *device,
+                         SharingClickToCallEntryPoint::kLeftClickLink);
 }
 
 // Handles |url| if possible. Returns true if it is actually handled.

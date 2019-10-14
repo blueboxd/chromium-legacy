@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -282,7 +283,7 @@ class PaymentsClientTest : public testing::Test {
   void IssueOAuthToken() {
     identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
         "totally_real_token",
-        base::Time::Now() + base::TimeDelta::FromDays(10));
+        AutofillClock::Now() + base::TimeDelta::FromDays(10));
 
     // Verify the auth header.
     std::string auth_header_value;
@@ -820,7 +821,7 @@ TEST_F(PaymentsClientTest, GetUploadAccountFromSyncTest) {
   // Issue a token for the secondary account.
   identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       secondary_account_info.account_id, "secondary_account_token",
-      base::Time::Now() + base::TimeDelta::FromDays(10));
+      AutofillClock::Now() + base::TimeDelta::FromDays(10));
 
   // Verify the auth header.
   std::string auth_header_value;

@@ -78,6 +78,64 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaDateTime(
       proto.time().hour(), proto.time().minute(), proto.time().second());
 }
 
+// Creates the java equivalent to the text inputs specified in |section|.
+base::android::ScopedJavaLocalRef<jobject> CreateJavaTextInputsForSection(
+    JNIEnv* env,
+    const TextInputSectionProto& section) {
+  auto jinput_list =
+      Java_AssistantCollectUserDataModel_createTextInputList(env);
+  for (const auto& input : section.input_fields()) {
+    TextInputType type;
+    switch (input.input_type()) {
+      case TextInputProto::INPUT_TEXT:
+        type = TextInputType::INPUT_TEXT;
+        break;
+      case TextInputProto::INPUT_ALPHANUMERIC:
+        type = TextInputType::INPUT_ALPHANUMERIC;
+        break;
+      case TextInputProto::UNDEFINED:
+        NOTREACHED();
+        continue;
+    }
+    Java_AssistantCollectUserDataModel_appendTextInput(
+        env, jinput_list, type,
+        base::android::ConvertUTF8ToJavaString(env, input.hint()),
+        base::android::ConvertUTF8ToJavaString(env, input.value()),
+        base::android::ConvertUTF8ToJavaString(env, input.client_memory_key()));
+  }
+  return jinput_list;
+}
+
+// Creates the java equivalent to |sections|.
+base::android::ScopedJavaLocalRef<jobject> CreateJavaAdditionalSections(
+    JNIEnv* env,
+    const std::vector<UserFormSectionProto>& sections) {
+  auto jsection_list =
+      Java_AssistantCollectUserDataModel_createAdditionalSectionsList(env);
+  for (const auto& section : sections) {
+    switch (section.section_case()) {
+      case UserFormSectionProto::kStaticTextSection:
+        Java_AssistantCollectUserDataModel_appendStaticTextSection(
+            env, jsection_list,
+            base::android::ConvertUTF8ToJavaString(env, section.title()),
+            base::android::ConvertUTF8ToJavaString(
+                env, section.static_text_section().text()));
+        break;
+      case UserFormSectionProto::kTextInputSection: {
+        Java_AssistantCollectUserDataModel_appendTextInputSection(
+            env, jsection_list,
+            base::android::ConvertUTF8ToJavaString(env, section.title()),
+            CreateJavaTextInputsForSection(env, section.text_input_section()));
+        break;
+      }
+      case UserFormSectionProto::SECTION_NOT_SET:
+        NOTREACHED();
+        break;
+    }
+  }
+  return jsection_list;
+}
+
 }  // namespace
 
 // static
@@ -543,7 +601,14 @@ void UiControllerAndroid::OnCancelButtonClicked(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     jint index) {
-  CloseOrCancel(index, TriggerContext::CreateEmpty());
+  // If the keyboard is currently shown, clicking the cancel button should
+  // hide the keyboard rather than close autofill assistant, because the cancel
+  // chip will be displayed right above the keyboard.
+  if (Java_AutofillAssistantUiController_isKeyboardShown(env, java_object_)) {
+    Java_AutofillAssistantUiController_hideKeyboard(env, java_object_);
+  } else {
+    CloseOrCancel(index, TriggerContext::CreateEmpty());
+  }
 }
 
 void UiControllerAndroid::OnCloseButtonClicked(
@@ -734,6 +799,11 @@ void UiControllerAndroid::OnDateTimeRangeEndChanged(int year,
   ui_delegate_->SetDateTimeRangeEnd(year, month, day, hour, minute, second);
 }
 
+void UiControllerAndroid::OnKeyValueChanged(const std::string& key,
+                                            const std::string& value) {
+  ui_delegate_->SetAdditionalValue(key, value);
+}
+
 void UiControllerAndroid::OnCollectUserDataOptionsChanged(
     const CollectUserDataOptions* collect_user_data_options) {
   JNIEnv* env = AttachCurrentThread();
@@ -810,6 +880,15 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
         base::android::ConvertUTF8ToJavaString(
             env, collect_user_data_options->date_time_range.end_label()));
   }
+
+  Java_AssistantCollectUserDataModel_setPrependedSections(
+      env, jmodel,
+      CreateJavaAdditionalSections(
+          env, collect_user_data_options->additional_prepended_sections));
+  Java_AssistantCollectUserDataModel_setAppendedSections(
+      env, jmodel,
+      CreateJavaAdditionalSections(
+          env, collect_user_data_options->additional_appended_sections));
 
   Java_AssistantCollectUserDataModel_setVisible(env, jmodel, true);
 }
@@ -1015,4 +1094,4 @@ void UiControllerAndroid::OnFatalError(
       base::android::ConvertJavaStringToUTF8(env, jmessage),
       static_cast<Metrics::DropOutReason>(jreason));
 }
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant

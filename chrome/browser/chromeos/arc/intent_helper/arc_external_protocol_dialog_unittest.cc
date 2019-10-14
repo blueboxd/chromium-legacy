@@ -86,23 +86,19 @@ class MockSharingService : public SharingService {
  public:
   MockSharingService()
       : SharingService(
-            /*sync_prefs=*/nullptr,
-            /*vapid_key_manager=*/nullptr,
-            std::make_unique<SharingDeviceRegistration>(
-                /*pref_service=*/nullptr,
-                /*sync_preference=*/nullptr,
-                /*instance_id_driver=*/nullptr,
-                /*vapid_key_manager=*/nullptr),
-            /*fcm_sender=*/nullptr,
-            std::make_unique<SharingFCMHandler>(
-                /*gcm_driver=*/nullptr,
-                /*sharing_fcm_sender=*/nullptr,
-                /*sync_preference=*/nullptr),
-            /*gcm_driver=*/nullptr,
-            /*device_info_tracker=*/nullptr,
-            /*local_device_info_provider=*/nullptr,
-            /*sync_service=*/nullptr,
-            /*notification_display_service=*/nullptr) {}
+            nullptr,
+            nullptr,
+            std::make_unique<SharingDeviceRegistration>(nullptr,
+                                                        nullptr,
+                                                        nullptr,
+                                                        nullptr),
+            nullptr,
+            std::make_unique<SharingFCMHandler>(nullptr, nullptr, nullptr),
+            nullptr,
+            nullptr,
+            nullptr,
+            nullptr,
+            nullptr) {}
 
   ~MockSharingService() override = default;
 
@@ -1018,7 +1014,7 @@ TEST_F(ArcExternalProtocolDialogTestUtils, TestSelectDeviceForTelLink) {
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
 
-  devices.emplace_back(std::make_unique<syncer::DeviceInfo>(
+  devices.push_back(std::make_unique<syncer::DeviceInfo>(
       device_guid, "device_name", "chrome_version", "user_agent",
       sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
       base::SysInfo::HardwareInfo(),

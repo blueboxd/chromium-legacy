@@ -185,16 +185,31 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
   available_width_ = ComputeAvailableWidth();
   break_iterator_.SetBreakSpace(BreakSpaceType::kBeforeSpaceRun);
 
-  if (break_token) {
-    item_index_ = break_token->ItemIndex();
-    offset_ = break_token->TextOffset();
-    break_iterator_.SetStartOffset(offset_);
-    is_after_forced_break_ = break_token->IsForcedBreak();
-    items_data_.AssertOffset(item_index_, offset_);
-    // TODO(crbug.com/1013040): |break_token->Style()| should not be nullptr.
-    if (const ComputedStyle* line_initial_style = break_token->Style())
-      SetCurrentStyle(*line_initial_style);
+  if (!break_token)
+    return;
+
+  const ComputedStyle* line_initial_style = break_token->Style();
+  if (UNLIKELY(!line_initial_style)) {
+    // Usually an inline break token has the line initial style, but class C
+    // breaks and last-resort breaks require a break token to start from the
+    // beginning of the block. In that case, the line is still the first
+    // formatted line, and the line initial style should be computed from the
+    // containing block.
+    DCHECK_EQ(break_token->ItemIndex(), 0u);
+    DCHECK_EQ(break_token->TextOffset(), 0u);
+    DCHECK(!break_token->IsForcedBreak());
+    DCHECK_EQ(item_index_, break_token->ItemIndex());
+    DCHECK_EQ(offset_, break_token->TextOffset());
+    DCHECK_EQ(is_after_forced_break_, break_token->IsForcedBreak());
+    return;
   }
+
+  item_index_ = break_token->ItemIndex();
+  offset_ = break_token->TextOffset();
+  break_iterator_.SetStartOffset(offset_);
+  is_after_forced_break_ = break_token->IsForcedBreak();
+  items_data_.AssertOffset(item_index_, offset_);
+  SetCurrentStyle(*line_initial_style);
 }
 
 // Define the destructor here, so that we can forward-declare more in the

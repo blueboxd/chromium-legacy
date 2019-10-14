@@ -834,6 +834,11 @@ cca.views.camera.Square = function(stream, doSavePhoto, captureResolution) {
   Object.seal(this);
 
   this.doSavePhoto_ = async (result, ...args) => {
+    // Since the image blob after square cut will lose its EXIF including
+    // orientation information. Corrects the orientation before the square cut.
+    result.blob = await new Promise(
+        (resolve, reject) =>
+            cca.util.orientPhoto(result.blob, resolve, reject));
     result.blob = await this.cropSquare(result.blob);
     await this.doAscentSave_(result, ...args);
   };

@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 #include "chrome/browser/supervised_user/permission_request_creator_mock.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"

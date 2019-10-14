@@ -82,9 +82,10 @@ void PrefChangeRegistrar::OnPreferenceChanged(PrefService* service,
     observers_[pref].Run(pref);
 }
 
-void PrefChangeRegistrar::InvokeUnnamedCallback(base::OnceClosure callback,
-                                                const std::string& pref_name) {
-  std::move(callback).Run();
+void PrefChangeRegistrar::InvokeUnnamedCallback(
+    const base::RepeatingClosure& callback,
+    const std::string& pref_name) {
+  callback.Run();
 }
 
 PrefService* PrefChangeRegistrar::prefs() {

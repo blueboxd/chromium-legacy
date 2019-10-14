@@ -73,6 +73,10 @@ class AssistantCoordinator {
         return mBottomBarCoordinator;
     }
 
+    AssistantKeyboardCoordinator getKeyboardCoordinator() {
+        return mKeyboardCoordinator;
+    }
+
     /**
      * Show the Chrome feedback form.
      */

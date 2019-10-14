@@ -19,6 +19,7 @@
 #include "chrome/browser/ssl/ssl_error_assistant.pb.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/ssl_errors/error_classification.h"
+#include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/restore_type.h"

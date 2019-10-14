@@ -68,6 +68,9 @@ class InstallationTracker : public ExtensionRegistryObserver {
   // Set of not yet loaded force installed extensions.
   std::set<std::string> pending_forced_extensions_;
 
+  // Tracks whether non-empty forcelist policy was received at least once.
+  bool loaded_ = false;
+
   // Tracks whether stats were already reported for the session.
   bool reported_ = false;
 

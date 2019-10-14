@@ -66,11 +66,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "allow-remote-context-for-notifications",
-    "owners": [ "pshmakov", "peter" ],
-    "expiry_milestone": 74
-  },
-  {
     "name": "allow-sxg-certs-without-extension",
     "owners": [ "//content/browser/web_package/OWNERS" ],
     // Used by developers for testing signed exchange loading using normal
@@ -105,12 +100,12 @@
   {
     "name": "animated-avatar-button",
     "owners": ["jkrcal"],
-    "expiry_milestone": 78
+    "expiry_milestone": 79
   },
   {
     "name": "app-management",
     "owners": [ "//chrome/browser/resources/app_management/OWNERS" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 81
   },
   {
     "name": "app-service-ash",
@@ -232,11 +227,6 @@
     "name": "autofill-always-return-cloud-tokenized-card",
     "owners": [ "aneeshali@google.com", "annelim@google.com", "jsaul@google.com" ],
     "expiry_milestone": 87
-  },
-  {
-    "name": "autofill-always-show-server-cards-in-sync-transport",
-    "owners": [ "sebsg" ],
-    "expiry_milestone": 74
   },
   {
     "name": "autofill-assistant-chrome-entry",
@@ -453,22 +443,22 @@
   {
     "name": "click-to-call-context-menu-selected-text",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "click-to-call-open-dialer-directly",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 82
   },
 	{
     "name": "click-to-call-receiver",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 82
   },
   {
     "name": "click-to-call-ui",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 82
   },
   {
     "name": "click-to-open-pdf",
@@ -1340,7 +1330,7 @@
   {
     "name": "enable-history-favicons-google-server-query",
     "owners": ["victorvianna", "jkrcal"],
-    "expiry_milestone": 78
+    "expiry_milestone": 79
   },
   {
     "name": "enable-history-manipulation-intervention",
@@ -1460,7 +1450,7 @@
   {
     "name": "enable-native-notifications",
     "owners": [ "peter", "finnur" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 84
   },
   {
     "name": "enable-navigation-tracing",
@@ -1478,11 +1468,6 @@
     "name": "enable-new-download-backend",
     "owners": [ "shaktisahu", "dtrainor" ],
     "expiry_milestone": 80
-  },
-  {
-    "name": "enable-new-photo-picker",
-    "owners": [ "finnur", "peter" ],
-    "expiry_milestone": 72
   },
   {
     "name": "enable-new-print-preview-layout",
@@ -1696,7 +1681,7 @@
   {
     "name": "enable-sharing-device-registration",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 82
   },
   {
     "name": "enable-shill-sandboxing",
@@ -1787,12 +1772,12 @@
   {
     "name": "enable-sync-uss-nigori",
     "owners": [ "mmoskvitin@google.com", "//components/sync/OWNERS" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 80
   },
   {
     "name": "enable-sync-uss-passwords",
     "owners": [ "mamir", "//components/sync/OWNERS" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 80
   },
   {
     "name": "enable-system-webapps",
@@ -2008,7 +1993,7 @@
   {
     "name": "enable-webrtc-new-encode-cpu-load-estimator",
     "owners": [ "nisse" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 85
   },
   {
     "name": "enable-webrtc-pipewire-capturer",
@@ -2107,11 +2092,6 @@
     "name": "extensions-toolbar-menu",
     "owners": [ "//extensions/OWNERS", "pbos" ],
     "expiry_milestone": 82
-  },
-  {
-    "name": "fcm-invalidations",
-    "owners": [ "melandory", "chrome-sync-dev@google.com" ],
-    "expiry_milestone": 76
   },
   {
     "name": "file-handling-api",
@@ -3028,25 +3008,25 @@
     "owners": [ "binji" ],
     "expiry_milestone": 78
   },
-	{
+  {
     "name": "shared-clipboard-receiver",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "shared-clipboard-ui",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "sharing-derive-vapid-key",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 82
   },
   {
     "name": "sharing-use-device-info",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 82
   },
   {
     "name": "shelf-hotseat",

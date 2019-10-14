@@ -42,6 +42,7 @@
 #include "net/base/url_util.h"
 #include "net/cert/x509_certificate.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 
 namespace {

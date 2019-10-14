@@ -76,7 +76,7 @@ std::unique_ptr<ProofVerifier> CreateDefaultProofVerifierImpl(
     const std::string& host) {
   std::unique_ptr<net::CertVerifier> cert_verifier =
       net::CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr);
-  return QuicMakeUnique<ProofVerifierChromiumWithOwnership>(
+  return std::make_unique<ProofVerifierChromiumWithOwnership>(
       std::move(cert_verifier), host);
 }
 

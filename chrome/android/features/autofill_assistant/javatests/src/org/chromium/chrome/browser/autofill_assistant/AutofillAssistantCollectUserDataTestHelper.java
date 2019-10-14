@@ -30,7 +30,9 @@ import org.chromium.chrome.browser.payments.AutofillContact;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -102,6 +104,7 @@ public class AutofillAssistantCollectUserDataTestHelper {
         int mTermsStatus;
         @Nullable
         Integer mLastLinkClicked;
+        Map<String, String> mAdditionalValues = new HashMap<>();
 
         @Override
         public void onContactInfoChanged(@Nullable AutofillContact contact) {
@@ -143,6 +146,11 @@ public class AutofillAssistantCollectUserDataTestHelper {
         public void onDateTimeRangeEndChanged(
                 int year, int month, int day, int hour, int minute, int second) {
             mDateRangeEnd = new AssistantDateTime(year, month, day, hour, minute, second);
+        }
+
+        @Override
+        public void onKeyValueChanged(String key, String value) {
+            mAdditionalValues.put(key, value);
         }
     }
 

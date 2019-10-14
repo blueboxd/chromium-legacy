@@ -14,6 +14,7 @@ import android.widget.LinearLayout;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting;
+import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionContainer;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 import java.text.DateFormat;
@@ -72,6 +73,9 @@ public class AssistantCollectUserDataCoordinator {
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
+        AssistantAdditionalSectionContainer prependedSections =
+                new AssistantAdditionalSectionContainer(mActivity, paymentRequestExpanderAccordion);
+
         AssistantLoginSection loginSection =
                 new AssistantLoginSection(mActivity, paymentRequestExpanderAccordion);
         createSeparator(paymentRequestExpanderAccordion);
@@ -92,6 +96,10 @@ public class AssistantCollectUserDataCoordinator {
         AssistantShippingAddressSection shippingAddressSection =
                 new AssistantShippingAddressSection(mActivity, paymentRequestExpanderAccordion);
         createSeparator(paymentRequestExpanderAccordion);
+
+        AssistantAdditionalSectionContainer appendedSections =
+                new AssistantAdditionalSectionContainer(mActivity, paymentRequestExpanderAccordion);
+
         AssistantTermsSection termsSection = new AssistantTermsSection(
                 mActivity, paymentRequestExpanderAccordion, /* showAsSingleCheckbox= */ false);
         AssistantTermsSection termsAsCheckboxSection =
@@ -117,7 +125,7 @@ public class AssistantCollectUserDataCoordinator {
                 paymentRequestExpanderAccordion, sectionToSectionPadding, loginSection,
                 contactDetailsSection, dateRangeStartSection, dateRangeEndSection,
                 paymentMethodSection, shippingAddressSection, termsSection, termsAsCheckboxSection,
-                DIVIDER_TAG, activity);
+                prependedSections, appendedSections, DIVIDER_TAG, activity);
         AssistantCollectUserDataBinder binder = new AssistantCollectUserDataBinder();
         PropertyModelChangeProcessor.create(model, mViewHolder, binder);
 

@@ -37,6 +37,7 @@
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/logging/log_buffer.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/google/core/common/google_util.h"
@@ -907,7 +908,7 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
       url_loader_factory.get(),
       base::BindOnce(&AutofillDownloadManager::OnSimpleLoaderComplete,
                      base::Unretained(this), std::move(--url_loaders_.end()),
-                     std::move(request_data), base::TimeTicks::Now()));
+                     std::move(request_data), AutofillTickClock::NowTicks()));
   return true;
 }
 
@@ -998,7 +999,7 @@ void AutofillDownloadManager::OnSimpleLoaderComplete(
 
   LogHttpResponseData(request_data.request_type, response_code,
                       simple_loader->NetError(),
-                      base::TimeTicks::Now() - request_start);
+                      AutofillTickClock::NowTicks() - request_start);
 
   // Handle error if there is and return.
   if (!success) {

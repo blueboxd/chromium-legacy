@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"

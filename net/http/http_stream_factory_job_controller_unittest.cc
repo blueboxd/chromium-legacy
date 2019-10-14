@@ -1171,7 +1171,7 @@ TEST_F(HttpStreamFactoryJobControllerTest,
        AltJobSucceedsMainJobBlockedControllerDestroyed) {
   quic_data_ = std::make_unique<MockQuicData>(
       HttpNetworkSession::Params().quic_params.supported_versions.front());
-  if (VersionUsesQpack(HttpNetworkSession::Params()
+  if (VersionUsesHttp3(HttpNetworkSession::Params()
                            .quic_params.supported_versions.front()
                            .transport_version)) {
     quic_data_->AddWrite(SYNCHRONOUS,
@@ -2456,7 +2456,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, PreconnectToHostWithValidAltSvc) {
   auto version =
       HttpNetworkSession::Params().quic_params.supported_versions.front();
   quic_data_ = std::make_unique<MockQuicData>(version);
-  if (VersionUsesQpack(version.transport_version)) {
+  if (VersionUsesHttp3(version.transport_version)) {
     quic_data_->AddWrite(SYNCHRONOUS,
                          client_maker_.MakeInitialSettingsPacket(1));
   }
@@ -3145,7 +3145,7 @@ TEST_P(HttpStreamFactoryJobControllerMisdirectedRequestRetry,
         HttpNetworkSession::Params().quic_params.supported_versions.front();
     quic_data_ = std::make_unique<MockQuicData>(version);
     quic_data_->AddConnect(SYNCHRONOUS, OK);
-    if (VersionUsesQpack(version.transport_version)) {
+    if (VersionUsesHttp3(version.transport_version)) {
       quic_data_->AddWrite(SYNCHRONOUS,
                            client_maker_.MakeInitialSettingsPacket(1));
     }

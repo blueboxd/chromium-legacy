@@ -13,6 +13,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 DomainReliabilityInternalsUI::DomainReliabilityInternalsUI(
     content::WebUI* web_ui)

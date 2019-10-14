@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.replaceText;
+import static android.support.test.espresso.assertion.PositionAssertions.isAbove;
+import static android.support.test.espresso.assertion.PositionAssertions.isBelow;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.PickerActions.setDate;
@@ -13,11 +16,13 @@ import static android.support.test.espresso.contrib.PickerActions.setTime;
 import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withTagValue;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -50,13 +55,20 @@ import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantDateCho
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantDateTime;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantLoginChoice;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantTermsAndConditionsState;
+import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionFactory;
+import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantStaticTextSection;
+import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputSection;
+import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputSection.TextInputFactory;
+import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputType;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -131,6 +143,8 @@ public class AutofillAssistantCollectUserDataUiTest {
         assertThat(model.get(AssistantCollectUserDataModel.TERMS_STATUS),
                 is(AssistantTermsAndConditionsState.NOT_SELECTED));
         assertThat(model.get(AssistantCollectUserDataModel.SELECTED_LOGIN), nullValue());
+        assertThat(model.get(AssistantCollectUserDataModel.APPENDED_SECTIONS), empty());
+        assertThat(model.get(AssistantCollectUserDataModel.PREPENDED_SECTIONS), empty());
 
         /* Test initial UI state. */
         AutofillAssistantCollectUserDataTestHelper
@@ -226,6 +240,26 @@ public class AutofillAssistantCollectUserDataUiTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE, true));
         onView(is(viewHolder.mLoginsSection)).check(matches(isDisplayed()));
+
+        /* Prepended section visibility test. */
+        List<AssistantAdditionalSectionFactory> prependedSections = new ArrayList<>();
+        prependedSections.add(
+                new AssistantStaticTextSection.Factory("Prepended section", "Lorem ipsum."));
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> model.set(AssistantCollectUserDataModel.PREPENDED_SECTIONS,
+                                prependedSections));
+        /* Login section is top-most regular section. */
+        onView(withText("Prepended section")).check(isAbove(is(viewHolder.mLoginsSection)));
+
+        /* Appended section visibility test. */
+        List<AssistantAdditionalSectionFactory> appendedSections = new ArrayList<>();
+        appendedSections.add(
+                new AssistantStaticTextSection.Factory("Appended section", "Lorem ipsum."));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantCollectUserDataModel.APPENDED_SECTIONS, appendedSections));
+        /* Shipping address is bottom-most regular section. */
+        onView(withText("Appended section")).check(isBelow(is(viewHolder.mShippingSection)));
     }
 
     /**
@@ -266,8 +300,8 @@ public class AutofillAssistantCollectUserDataUiTest {
         onView(allOf(withId(R.id.section_title_add_button),
                        isDescendantOfA(is(viewHolder.mShippingSection))))
                 .check(matches(isDisplayed()));
-        /* ... Except for the logins and date/time section, which currently does not support adding
-         * items.*/
+        /* ... Except for logins, date/time and additional sections, which currently do not support
+         * adding items.*/
         onView(allOf(withId(R.id.section_title_add_button),
                        isDescendantOfA(is(viewHolder.mLoginsSection))))
                 .check(matches(not(isDisplayed())));
@@ -954,6 +988,79 @@ public class AutofillAssistantCollectUserDataUiTest {
                 is(newStartTime.getTimeInUtcMillis()));
         assertThat(
                 delegate.mDateRangeEnd.getTimeInUtcMillis(), is(newEndTime.getTimeInUtcMillis()));
+    }
+
+    @Test
+    @MediumTest
+    public void testAdditionalStaticSections() throws Exception {
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+
+        List<AssistantAdditionalSectionFactory> prependedSections = new ArrayList<>();
+        prependedSections.add(
+                new AssistantStaticTextSection.Factory("Prepended section 1", "Lorem ipsum."));
+        prependedSections.add(
+                new AssistantStaticTextSection.Factory("Prepended section 2", "Lorem ipsum."));
+
+        List<AssistantAdditionalSectionFactory> appendedSections = new ArrayList<>();
+        appendedSections.add(
+                new AssistantStaticTextSection.Factory("Appended section 1", "Lorem ipsum."));
+        appendedSections.add(
+                new AssistantStaticTextSection.Factory("Appended section 2", "Lorem ipsum."));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.PREPENDED_SECTIONS, prependedSections);
+            model.set(AssistantCollectUserDataModel.APPENDED_SECTIONS, appendedSections);
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
+        });
+
+        onView(withText("Prepended section 1")).check(matches(isDisplayed()));
+        onView(withText("Prepended section 2")).check(matches(isDisplayed()));
+        onView(withText("Appended section 1")).check(matches(isDisplayed()));
+        onView(withText("Appended section 2")).check(matches(isDisplayed()));
+
+        onView(withText("Prepended section 1")).check(isAbove(withText("Prepended section 2")));
+        onView(withText("Prepended section 2")).check(isAbove(withText("Appended section 1")));
+        onView(withText("Appended section 1")).check(isAbove(withText("Appended section 2")));
+    }
+
+    @Test
+    @MediumTest
+    public void testAdditionalTextInputSections() throws Exception {
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
+                new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
+
+        List<AssistantAdditionalSectionFactory> prependedSections = new ArrayList<>();
+        List<AssistantTextInputSection.TextInputFactory> textInputs = new ArrayList<>();
+        textInputs.add(new TextInputFactory(AssistantTextInputType.INPUT_ALPHANUMERIC,
+                "Discount code", "123456789", "discount"));
+        textInputs.add(new TextInputFactory(
+                AssistantTextInputType.INPUT_ALPHANUMERIC, "Loyalty code", "", "loyalty"));
+        textInputs.add(
+                new TextInputFactory(AssistantTextInputType.INPUT_TEXT, "Comment", "", "comment"));
+        prependedSections.add(
+                new AssistantTextInputSection.Factory("Discount codes title", textInputs));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
+            model.set(AssistantCollectUserDataModel.PREPENDED_SECTIONS, prependedSections);
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
+        });
+
+        // Expand section
+        onView(withText("Discount codes title")).perform(click());
+
+        onView(withContentDescription("Discount code")).check(matches(isDisplayed()));
+        onView(withContentDescription("Loyalty code")).check(matches(isDisplayed()));
+        assertThat(delegate.mAdditionalValues.get("discount"), is("123456789"));
+        assertThat(delegate.mAdditionalValues.get("loyalty"), is(""));
+
+        onView(withContentDescription("Discount code")).perform(replaceText("D-742394"));
+        onView(withContentDescription("Loyalty code")).perform(replaceText("L-394834"));
+        assertThat(delegate.mAdditionalValues.get("discount"), is("D-742394"));
+        assertThat(delegate.mAdditionalValues.get("loyalty"), is("L-394834"));
     }
 
     private View getPaymentSummaryErrorView(ViewHolder viewHolder) {

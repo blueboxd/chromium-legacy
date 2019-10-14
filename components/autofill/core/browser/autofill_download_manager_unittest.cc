@@ -34,6 +34,7 @@
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
@@ -229,8 +230,9 @@ class AutofillDownloadManagerTest : public AutofillDownloadManager::Observer,
     response.signature = form_signature;
     response.error = http_error;
     response.type_of_response =
-        request_type == AutofillDownloadManager::REQUEST_QUERY ?
-            REQUEST_QUERY_FAILED : REQUEST_UPLOAD_FAILED;
+        request_type == AutofillDownloadManager::REQUEST_QUERY
+            ? REQUEST_QUERY_FAILED
+            : REQUEST_UPLOAD_FAILED;
     responses_.push_back(response);
   }
 
@@ -393,7 +395,8 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
       "<field autofilltype=\"31\" />"
       "<field autofilltype=\"33\" />"
       "</autofillqueryresponse>",
-      "", "<html></html>",
+      "",
+      "<html></html>",
   };
 
   // Return them out of sequence.
@@ -1203,25 +1206,25 @@ TEST_F(AutofillDownloadManagerTest, CacheQueryTest) {
   // Limit cache to two forms.
   LimitCache(2);
 
-  const char *responses[] = {
-    "<autofillqueryresponse>"
+  const char* responses[] = {
+      "<autofillqueryresponse>"
       "<field autofilltype=\"0\" />"
       "<field autofilltype=\"3\" />"
       "<field autofilltype=\"5\" />"
-    "</autofillqueryresponse>",
-    "<autofillqueryresponse>"
-      "<field autofilltype=\"0\" />"
-      "<field autofilltype=\"3\" />"
-      "<field autofilltype=\"5\" />"
-      "<field autofilltype=\"9\" />"
-    "</autofillqueryresponse>",
-    "<autofillqueryresponse>"
+      "</autofillqueryresponse>",
+      "<autofillqueryresponse>"
       "<field autofilltype=\"0\" />"
       "<field autofilltype=\"3\" />"
       "<field autofilltype=\"5\" />"
       "<field autofilltype=\"9\" />"
+      "</autofillqueryresponse>",
+      "<autofillqueryresponse>"
       "<field autofilltype=\"0\" />"
-    "</autofillqueryresponse>",
+      "<field autofilltype=\"3\" />"
+      "<field autofilltype=\"5\" />"
+      "<field autofilltype=\"9\" />"
+      "<field autofilltype=\"0\" />"
+      "</autofillqueryresponse>",
   };
 
   base::HistogramTester histogram;
@@ -2176,7 +2179,7 @@ TEST_P(AutofillUploadTest, PeriodicReset) {
   base::HistogramTester histogram_tester;
 
   TestAutofillClock test_clock;
-  test_clock.SetNow(base::Time::Now());
+  test_clock.SetNow(AutofillClock::Now());
 
   // The first attempt should succeed.
   EXPECT_TRUE(SendUploadRequest(form_structure, true, {}, "", true));
@@ -2234,7 +2237,7 @@ TEST_P(AutofillUploadTest, ResetOnClearUploadHisotry) {
   base::HistogramTester histogram_tester;
 
   TestAutofillClock test_clock;
-  test_clock.SetNow(base::Time::Now());
+  test_clock.SetNow(AutofillClock::Now());
 
   // The first attempt should succeed.
   EXPECT_TRUE(SendUploadRequest(form_structure, true, {}, "", true));

@@ -46,6 +46,7 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/prefs/pref_service.h"
@@ -1840,7 +1841,7 @@ TEST_F(AutofillMetricsTest, TimingMetrics) {
   // Simulate a OnFormsSeen() call that should trigger the recording.
   std::vector<FormData> forms;
   forms.push_back(form);
-  autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+  autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
 
   // Because these metrics are related to timing, it is not possible to know in
   // advance which bucket the sample will fall into, so we just need to make
@@ -2686,7 +2687,7 @@ TEST_F(AutofillMetricsTest,
     base::test::ScopedFeatureList features;
     features.InitAndEnableFeature(
         kAutofillEnforceMinRequiredFieldsForHeuristics);
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
     autofill_manager_->Reset();
 
     EXPECT_EQ(0ul, test_ukm_recorder_->entries_count());
@@ -2699,7 +2700,7 @@ TEST_F(AutofillMetricsTest,
   // Expect the "form parsed without field type hints" metric and the
   // "form loaded" form interaction event to be logged.
   {
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
     autofill_manager_->Reset();
 
     VerifyDeveloperEngagementUkm(
@@ -2749,7 +2750,7 @@ TEST_F(AutofillMetricsTest,
   // Expect the "form parsed without field type hints" metric and the
   // "form loaded" form interaction event to be logged.
   {
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
     autofill_manager_->Reset();
 
     VerifyDeveloperEngagementUkm(
@@ -2791,7 +2792,7 @@ TEST_F(AutofillMetricsTest, UkmDeveloperEngagement_LogUpiVpaTypeHint) {
   // interaction event to be logged.
   {
     SCOPED_TRACE("VPA is the only hint");
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
 
     VerifyDeveloperEngagementUkm(
         test_ukm_recorder_, forms.back(), /*is_for_credit_card=*/false,
@@ -2808,7 +2809,7 @@ TEST_F(AutofillMetricsTest, UkmDeveloperEngagement_LogUpiVpaTypeHint) {
 
   {
     SCOPED_TRACE("VPA and other autocomplete hint present");
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
 
     VerifyDeveloperEngagementUkm(
         test_ukm_recorder_, forms.back(), /*is_for_credit_card=*/false,
@@ -3285,7 +3286,7 @@ TEST_F(AutofillMetricsTest, UpiVpaUkmTest) {
   std::vector<FormData> forms(1, form);
 
   {
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
 
     VerifySubmitFormUkm(test_ukm_recorder_, forms.back(),
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
@@ -6661,7 +6662,8 @@ TEST_F(AutofillMetricsTest, AutofillIsDisabledAtPageLoad) {
 TEST_F(AutofillMetricsTest, DaysSinceLastUse_CreditCard) {
   base::HistogramTester histogram_tester;
   CreditCard credit_card;
-  credit_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(21));
+  credit_card.set_use_date(AutofillClock::Now() -
+                           base::TimeDelta::FromDays(21));
   credit_card.RecordAndLogUse();
   histogram_tester.ExpectBucketCount("Autofill.DaysSinceLastUse.CreditCard", 21,
                                      1);
@@ -6671,7 +6673,7 @@ TEST_F(AutofillMetricsTest, DaysSinceLastUse_CreditCard) {
 TEST_F(AutofillMetricsTest, DaysSinceLastUse_Profile) {
   base::HistogramTester histogram_tester;
   AutofillProfile profile;
-  profile.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(13));
+  profile.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(13));
   profile.RecordAndLogUse();
   histogram_tester.ExpectBucketCount("Autofill.DaysSinceLastUse.Profile", 13,
                                      1);
@@ -6700,7 +6702,7 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
   // Expect no notifications when the form is first seen.
   {
     base::HistogramTester histogram_tester;
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
     histogram_tester.ExpectTotalCount("Autofill.FormSubmittedState", 0);
 
     VerifyDeveloperEngagementUkm(
@@ -7006,7 +7008,7 @@ TEST_F(
   {
     base::HistogramTester histogram_tester;
     base::UserActionTester user_action_tester;
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
     VerifyDeveloperEngagementUkm(
         test_ukm_recorder_, form, /*is_for_credit_card=*/false,
         {FormType::ADDRESS_FORM},
@@ -7600,7 +7602,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   {
     SCOPED_TRACE("Test 1");
     base::HistogramTester histogram_tester;
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
     autofill_manager_->OnFormSubmitted(form, false,
                                        SubmissionSource::FORM_SUBMISSION);
 
@@ -7620,7 +7622,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   {
     SCOPED_TRACE("Test 2");
     base::HistogramTester histogram_tester;
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
     base::TimeTicks parse_time = autofill_manager_->form_structures()
                                      .begin()
                                      ->second->form_parsed_timestamp();
@@ -7648,7 +7650,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   {
     SCOPED_TRACE("Test 3");
     base::HistogramTester histogram_tester;
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
     base::TimeTicks parse_time = autofill_manager_->form_structures()
                                      .begin()
                                      ->second->form_parsed_timestamp();
@@ -7677,12 +7679,13 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     SCOPED_TRACE("Test 4");
     base::HistogramTester histogram_tester;
 
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
     base::TimeTicks parse_time = autofill_manager_->form_structures()
                                      .begin()
                                      ->second->form_parsed_timestamp();
     autofill_manager_->OnDidFillAutofillFormData(
         form, parse_time + base::TimeDelta::FromMicroseconds(5));
+
     autofill_manager_->OnTextFieldDidChange(
         form, form.fields.front(), gfx::RectF(),
         parse_time + base::TimeDelta::FromMicroseconds(3));
@@ -7707,11 +7710,11 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   {
     SCOPED_TRACE("Test 5");
     base::HistogramTester histogram_tester;
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
     base::TimeTicks parse_time = autofill_manager_->form_structures()
                                      .begin()
                                      ->second->form_parsed_timestamp();
-    autofill_manager_->OnFormsSeen(second_forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(second_forms, AutofillTickClock::NowTicks());
     autofill_manager_->OnDidFillAutofillFormData(
         form, parse_time + base::TimeDelta::FromMicroseconds(5));
     autofill_manager_->OnTextFieldDidChange(
@@ -7738,8 +7741,8 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   {
     SCOPED_TRACE("Test 6");
     base::HistogramTester histogram_tester;
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
-    autofill_manager_->OnFormsSeen(second_forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
+    autofill_manager_->OnFormsSeen(second_forms, AutofillTickClock::NowTicks());
     base::TimeTicks parse_time{};
     for (const auto& kv : autofill_manager_->form_structures()) {
       if (kv.second->form_parsed_timestamp() > parse_time)
@@ -8043,7 +8046,7 @@ TEST_F(AutofillMetricsTest, ProfileActionOnFormSubmitted) {
 
   // Expect to log NEW_PROFILE_CREATED for the metric since a new profile is
   // submitted.
-  autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+  autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
   autofill_manager_->OnFormSubmitted(form, false,
                                      SubmissionSource::FORM_SUBMISSION);
   histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
@@ -8056,7 +8059,7 @@ TEST_F(AutofillMetricsTest, ProfileActionOnFormSubmitted) {
 
   // Expect to log EXISTING_PROFILE_USED for the metric since the same profile
   // is submitted.
-  autofill_manager_->OnFormsSeen(second_forms, TimeTicks::Now());
+  autofill_manager_->OnFormsSeen(second_forms, AutofillTickClock::NowTicks());
   autofill_manager_->OnFormSubmitted(second_form, false,
                                      SubmissionSource::FORM_SUBMISSION);
   histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
@@ -8069,7 +8072,7 @@ TEST_F(AutofillMetricsTest, ProfileActionOnFormSubmitted) {
 
   // Expect to log NEW_PROFILE_CREATED for the metric since a new profile is
   // submitted.
-  autofill_manager_->OnFormsSeen(third_forms, TimeTicks::Now());
+  autofill_manager_->OnFormsSeen(third_forms, AutofillTickClock::NowTicks());
   autofill_manager_->OnFormSubmitted(third_form, false,
                                      SubmissionSource::FORM_SUBMISSION);
   histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
@@ -8082,7 +8085,7 @@ TEST_F(AutofillMetricsTest, ProfileActionOnFormSubmitted) {
 
   // Expect to log EXISTING_PROFILE_UPDATED for the metric since the profile was
   // updated.
-  autofill_manager_->OnFormsSeen(fourth_forms, TimeTicks::Now());
+  autofill_manager_->OnFormsSeen(fourth_forms, AutofillTickClock::NowTicks());
   autofill_manager_->OnFormSubmitted(fourth_form, false,
                                      SubmissionSource::FORM_SUBMISSION);
   histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
@@ -9014,7 +9017,7 @@ TEST_F(AutofillMetricsTest, FormEventMetrics_BySyncState) {
   FormData form;
   FormStructure form_structure(form);
   std::vector<FormData> forms(1, form);
-  autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+  autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
   autofill_manager_->Reset();
 
   {

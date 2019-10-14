@@ -31,6 +31,7 @@
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
@@ -350,7 +351,7 @@ void AutofillAgent::OnTextFieldDidChange(const WebInputElement& element) {
                                                        &field)) {
     GetAutofillDriver()->TextFieldDidChange(
         form, field, render_frame()->ElementBoundsInWindow(element),
-        base::TimeTicks::Now());
+        AutofillTickClock::NowTicks());
   }
 }
 
@@ -427,7 +428,7 @@ void AutofillAgent::TriggerRefillIfNeeded(const FormData& form) {
   if (form_util::FindFormAndFieldForFormControlElement(element_, &updated_form,
                                                        &field) &&
       (!element_.IsAutofilled() || !form.DynamicallySameFormAs(updated_form))) {
-    base::TimeTicks forms_seen_timestamp = base::TimeTicks::Now();
+    base::TimeTicks forms_seen_timestamp = AutofillTickClock::NowTicks();
     WebLocalFrame* frame = render_frame()->GetWebFrame();
     std::vector<FormData> forms;
     forms.push_back(updated_form);
@@ -457,7 +458,8 @@ void AutofillAgent::FillForm(int32_t id, const FormData& form) {
   if (!element_.Form().IsNull())
     UpdateLastInteractedForm(element_.Form());
 
-  GetAutofillDriver()->DidFillAutofillFormData(form, base::TimeTicks::Now());
+  GetAutofillDriver()->DidFillAutofillFormData(form,
+                                               AutofillTickClock::NowTicks());
 
   TriggerRefillIfNeeded(form);
 }
@@ -757,8 +759,7 @@ void AutofillAgent::QueryAutofillSuggestions(
   const WebInputElement* input_element = ToWebInputElement(&element);
   if (input_element) {
     // Find the datalist values and send them to the browser process.
-    GetDataListSuggestions(*input_element,
-                           &data_list_values,
+    GetDataListSuggestions(*input_element, &data_list_values,
                            &data_list_labels);
     TrimStringVectorForIPC(&data_list_values);
     TrimStringVectorForIPC(&data_list_labels);
@@ -793,7 +794,7 @@ void AutofillAgent::DoPreviewFieldWithValue(const base::string16& value,
 void AutofillAgent::ProcessForms() {
   // Record timestamp of when the forms are first seen. This is used to
   // measure the overhead of the Autofill feature.
-  base::TimeTicks forms_seen_timestamp = base::TimeTicks::Now();
+  base::TimeTicks forms_seen_timestamp = AutofillTickClock::NowTicks();
 
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   std::vector<FormData> forms = form_cache_.ExtractNewForms();

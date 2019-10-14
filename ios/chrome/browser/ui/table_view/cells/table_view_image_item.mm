@@ -195,4 +195,13 @@
   return accessibilityTraits;
 }
 
+- (NSArray<NSString*>*)accessibilityUserInputLabels {
+  NSMutableArray<NSString*>* userInputLabels = [[NSMutableArray alloc] init];
+  if (self.textLabel.text) {
+    [userInputLabels addObject:self.textLabel.text];
+  }
+
+  return userInputLabels;
+}
+
 @end

@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/test_blacklist.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"

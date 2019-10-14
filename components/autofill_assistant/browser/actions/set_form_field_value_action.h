@@ -50,11 +50,11 @@ class SetFormFieldValueAction : public Action {
   // Overrides Action:
   void InternalProcessAction(ProcessActionCallback callback) override;
 
-  void OnWaitForElement(bool element_found);
+  void OnWaitForElement(const ClientStatus& element_status);
 
   void OnGetFieldValue(int field_index,
                        const std::string& requested_value,
-                       bool status,
+                       const ClientStatus& element_status,
                        const std::string& actual_value);
 
   void OnSetFieldValue(int next, const ClientStatus& status);

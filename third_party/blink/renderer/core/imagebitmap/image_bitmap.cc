@@ -191,35 +191,29 @@ SkImageInfo GetSkImageInfo(const scoped_refptr<StaticBitmapImage>& input) {
 // This function results in a readback due to using SkImage::readPixels().
 // Returns transparent black pixels if the input SkImageInfo.bounds() does
 // not intersect with the input image boundaries.
-scoped_refptr<Uint8Array> CopyImageData(
-    const scoped_refptr<StaticBitmapImage>& input,
-    const SkImageInfo& info,
-    const unsigned x = 0,
-    const unsigned y = 0) {
+Vector<uint8_t> CopyImageData(const scoped_refptr<StaticBitmapImage>& input,
+                              const SkImageInfo& info,
+                              const unsigned x = 0,
+                              const unsigned y = 0) {
   if (info.isEmpty())
-    return nullptr;
+    return {};
   sk_sp<SkImage> sk_image = input->PaintImageForCurrentFrame().GetSkImage();
   if (sk_image->bounds().isEmpty())
-    return nullptr;
-  scoped_refptr<ArrayBuffer> dst_buffer =
-      ArrayBuffer::CreateOrNull(info.computeMinByteSize(), 1);
-  if (!dst_buffer)
-    return nullptr;
-  unsigned byte_length = dst_buffer->ByteLength();
-  scoped_refptr<Uint8Array> dst_pixels =
-      Uint8Array::Create(std::move(dst_buffer), 0, byte_length);
-  if (!dst_pixels)
-    return nullptr;
+    return {};
+
+  wtf_size_t byte_length =
+      base::checked_cast<wtf_size_t>(info.computeMinByteSize());
+  Vector<uint8_t> dst_buffer(byte_length);
+
   bool read_pixels_successful =
-      sk_image->readPixels(info, dst_pixels->Data(), info.minRowBytes(), x, y);
+      sk_image->readPixels(info, dst_buffer.data(), info.minRowBytes(), x, y);
   DCHECK(read_pixels_successful);
   if (!read_pixels_successful)
-    return nullptr;
-  return dst_pixels;
+    return {};
+  return dst_buffer;
 }
 
-scoped_refptr<Uint8Array> CopyImageData(
-    const scoped_refptr<StaticBitmapImage>& input) {
+Vector<uint8_t> CopyImageData(const scoped_refptr<StaticBitmapImage>& input) {
   SkImageInfo info = GetSkImageInfo(input);
   return CopyImageData(std::move(input), info);
 }
@@ -1063,9 +1057,8 @@ CanvasColorParams ImageBitmap::GetCanvasColorParams() {
   return CanvasColorParams(GetSkImageInfo(image_));
 }
 
-scoped_refptr<Uint8Array> ImageBitmap::CopyBitmapData(
-    AlphaDisposition alpha_op,
-    DataU8ColorType u8_color_type) {
+Vector<uint8_t> ImageBitmap::CopyBitmapData(AlphaDisposition alpha_op,
+                                            DataU8ColorType u8_color_type) {
   DCHECK(alpha_op != kDontChangeAlpha);
   SkImageInfo info = GetSkImageInfo(image_);
   auto color_type = info.colorType();
@@ -1079,7 +1072,7 @@ scoped_refptr<Uint8Array> ImageBitmap::CopyBitmapData(
   return CopyImageData(image_, info);
 }
 
-scoped_refptr<Uint8Array> ImageBitmap::CopyBitmapData() {
+Vector<uint8_t> ImageBitmap::CopyBitmapData() {
   return CopyImageData(image_);
 }
 

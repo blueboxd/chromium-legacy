@@ -44,7 +44,7 @@ class SetFormFieldValueActionTest : public testing::Test {
     ON_CALL(mock_action_delegate_, GetWebsiteLoginFetcher)
         .WillByDefault(Return(&mock_website_login_fetcher_));
     ON_CALL(mock_action_delegate_, OnShortWaitForElement(_, _))
-        .WillByDefault(RunOnceCallback<1>(true));
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
     ON_CALL(mock_action_delegate_, OnSetFieldValue(_, _, _, _, _))
         .WillByDefault(RunOnceCallback<4>(OkClientStatus()));
 
@@ -118,7 +118,7 @@ TEST_F(SetFormFieldValueActionTest, Username) {
   value->set_use_username(true);
   SetFormFieldValueAction action(&mock_action_delegate_, proto_);
   ON_CALL(mock_action_delegate_, OnGetFieldValue(_, _))
-      .WillByDefault(RunOnceCallback<1>(true, kFakeUsername));
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), kFakeUsername));
   EXPECT_CALL(mock_action_delegate_,
               OnSetFieldValue(fake_selector_, kFakeUsername, _, _, _))
       .WillOnce(RunOnceCallback<4>(OkClientStatus()));
@@ -134,7 +134,7 @@ TEST_F(SetFormFieldValueActionTest, Password) {
   value->set_use_password(true);
   SetFormFieldValueAction action(&mock_action_delegate_, proto_);
   ON_CALL(mock_action_delegate_, OnGetFieldValue(_, _))
-      .WillByDefault(RunOnceCallback<1>(true, kFakePassword));
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), kFakePassword));
   EXPECT_CALL(mock_action_delegate_,
               OnSetFieldValue(fake_selector_, kFakePassword, _, _, _))
       .WillOnce(RunOnceCallback<4>(OkClientStatus()));
@@ -180,7 +180,7 @@ TEST_F(SetFormFieldValueActionTest, Text) {
   value->set_text("SomeText𠜎");
   SetFormFieldValueAction action(&mock_action_delegate_, proto_);
   ON_CALL(mock_action_delegate_, OnGetFieldValue(_, _))
-      .WillByDefault(RunOnceCallback<1>(true, "SomeText𠜎"));
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "SomeText𠜎"));
   EXPECT_CALL(mock_action_delegate_,
               OnSetFieldValue(fake_selector_, "SomeText𠜎", _, _, _))
       .WillOnce(RunOnceCallback<4>(OkClientStatus()));
@@ -191,6 +191,33 @@ TEST_F(SetFormFieldValueActionTest, Text) {
   action.ProcessAction(callback_.Get());
 }
 
+TEST_F(SetFormFieldValueActionTest, ClientMemoryKey) {
+  auto* value = set_form_field_proto_->add_value();
+  value->set_client_memory_key("key");
+  client_memory_.set_additional_value("key", "SomeText𠜎");
+  SetFormFieldValueAction action(&mock_action_delegate_, proto_);
+  ON_CALL(mock_action_delegate_, OnGetFieldValue(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "SomeText𠜎"));
+  EXPECT_CALL(mock_action_delegate_,
+              OnSetFieldValue(fake_selector_, "SomeText𠜎", _, _, _))
+      .WillOnce(RunOnceCallback<4>(OkClientStatus()));
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(SetFormFieldValueActionTest, ClientMemoryKeyFailsIfNotInClientMemory) {
+  auto* value = set_form_field_proto_->add_value();
+  value->set_client_memory_key("key");
+  SetFormFieldValueAction action(&mock_action_delegate_, proto_);
+
+  EXPECT_CALL(callback_, Run(Pointee(Property(&ProcessedActionProto::status,
+                                              PRECONDITION_FAILED))));
+  action.ProcessAction(callback_.Get());
+}
+
 // Test that automatic fallback to simulate keystrokes works.
 TEST_F(SetFormFieldValueActionTest, Fallback) {
   auto* value = set_form_field_proto_->add_value();
@@ -198,7 +225,7 @@ TEST_F(SetFormFieldValueActionTest, Fallback) {
   SetFormFieldValueAction action(&mock_action_delegate_, proto_);
 
   ON_CALL(mock_action_delegate_, OnGetFieldValue(_, _))
-      .WillByDefault(RunOnceCallback<1>(true, ""));
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), ""));
 
   {
     InSequence seq;
@@ -226,7 +253,7 @@ TEST_F(SetFormFieldValueActionTest, PasswordIsClearedFromMemory) {
   value->set_use_password(true);
   SetFormFieldValueAction action(&mock_action_delegate_, proto_);
   ON_CALL(mock_action_delegate_, OnGetFieldValue(_, _))
-      .WillByDefault(RunOnceCallback<1>(true, kFakePassword));
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), kFakePassword));
   action.ProcessAction(callback_.Get());
   EXPECT_TRUE(action.field_inputs_.empty());
 }

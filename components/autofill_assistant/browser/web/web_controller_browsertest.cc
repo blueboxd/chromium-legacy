@@ -128,8 +128,8 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
                                    const Selector& selector,
                                    size_t* pending_number_of_checks_output,
                                    bool expected_result,
-                                   bool result) {
-    EXPECT_EQ(expected_result, result) << "selector: " << selector;
+                                   const ClientStatus& result) {
+    EXPECT_EQ(expected_result, result.ok()) << "selector: " << selector;
     *pending_number_of_checks_output -= 1;
     if (*pending_number_of_checks_output == 0) {
       done_callback.Run();
@@ -164,9 +164,9 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
 
   void OnWaitForElementRemove(const base::Closure& done_callback,
                               const Selector& selector,
-                              bool result) {
+                              const ClientStatus& result) {
     done_callback.Run();
-    if (result) {
+    if (result.ok()) {
       WaitForElementRemove(selector);
     }
   }
@@ -329,7 +329,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   void OnGetFieldValue(const base::Closure& done_callback,
                        size_t* pending_number_of_checks_output,
                        const std::string& expected_value,
-                       bool exists,
+                       const ClientStatus& status,
                        const std::string& value) {
     // Don't use ASSERT_EQ here: if the check fails, this would result in
     // an endless loop without meaningful test results.

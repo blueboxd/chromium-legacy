@@ -72,6 +72,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
@@ -674,8 +675,8 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
       base::BindOnce(&AutofillManager::UploadFormDataAsyncCallback,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Owned(form_structure.release()),
-                     initial_interaction_timestamp_, base::TimeTicks::Now(),
-                     observed_submission));
+                     initial_interaction_timestamp_,
+                     AutofillTickClock::NowTicks(), observed_submission));
   return true;
 }
 
@@ -941,7 +942,7 @@ void AutofillManager::FillOrPreviewProfileForm(
       auto filling_context = std::make_unique<FillingContext>();
       filling_context->temp_data_model = profile;
       filling_context->filled_field_name = autofill_field->unique_name();
-      filling_context->original_fill_time = base::TimeTicks::Now();
+      filling_context->original_fill_time = AutofillTickClock::NowTicks();
       entry = std::move(filling_context);
     }
   }
@@ -2213,7 +2214,7 @@ bool AutofillManager::ShouldTriggerRefill(const FormStructure& form_structure) {
                                                           form_structure);
 
   FillingContext* filling_context = itr->second.get();
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now = AutofillTickClock::NowTicks();
   base::TimeDelta delta = now - filling_context->original_fill_time;
 
   if (filling_context->attempted_refill &&

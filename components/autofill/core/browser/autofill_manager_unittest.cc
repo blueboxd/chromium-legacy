@@ -58,6 +58,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -5816,8 +5817,8 @@ TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndUnfocus_Upload) {
   form.fields[1].value = ASCIIToUTF16("Presley");
   form.fields[2].value = ASCIIToUTF16("theking@gmail.com");
   // Simulate editing a field.
-  autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
-                                          gfx::RectF(), base::TimeTicks::Now());
+  autofill_manager_->OnTextFieldDidChange(
+      form, form.fields.front(), gfx::RectF(), AutofillTickClock::NowTicks());
 
   // Simulate lost of focus on the form.
   autofill_manager_->OnFocusNoLongerOnForm();
@@ -5866,8 +5867,8 @@ TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndNavigation_Upload) {
   form.fields[1].value = ASCIIToUTF16("Presley");
   form.fields[2].value = ASCIIToUTF16("theking@gmail.com");
   // Simulate editing a field.
-  autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
-                                          gfx::RectF(), base::TimeTicks::Now());
+  autofill_manager_->OnTextFieldDidChange(
+      form, form.fields.front(), gfx::RectF(), AutofillTickClock::NowTicks());
 
   // Simulate a navigation so that the pending form is uploaded.
   autofill_manager_->Reset();
@@ -5915,7 +5916,8 @@ TEST_F(AutofillManagerTest, OnDidFillAutofillFormDataAndUnfocus_Upload) {
   form.fields[0].value = ASCIIToUTF16("Elvis");
   form.fields[1].value = ASCIIToUTF16("Presley");
   form.fields[2].value = ASCIIToUTF16("theking@gmail.com");
-  autofill_manager_->OnDidFillAutofillFormData(form, base::TimeTicks::Now());
+  autofill_manager_->OnDidFillAutofillFormData(form,
+                                               AutofillTickClock::NowTicks());
 
   // Simulate lost of focus on the form.
   autofill_manager_->OnFocusNoLongerOnForm();

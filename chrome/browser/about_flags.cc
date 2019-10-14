@@ -1448,9 +1448,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"clear-old-browsing-data", flag_descriptions::kClearOldBrowsingDataName,
      flag_descriptions::kClearOldBrowsingDataDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kClearOldBrowsingData)},
-    {"enable-new-photo-picker", flag_descriptions::kNewPhotoPickerName,
-     flag_descriptions::kNewPhotoPickerDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kNewPhotoPicker)},
     {"enable-surfacecontrol", flag_descriptions::kAndroidSurfaceControl,
      flag_descriptions::kAndroidSurfaceControlDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kAndroidSurfaceControl)},
@@ -3805,14 +3802,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableDiscoverAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kDiscoverApp)},
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_ANDROID)
-    {"allow-remote-context-for-notifications",
-     flag_descriptions::kAllowRemoteContextForNotificationsName,
-     flag_descriptions::kAllowRemoteContextForNotificationsDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAllowRemoteContextForNotifications)},
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
     {"ash-enable-pip-rounded-corners",

@@ -303,6 +303,15 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
   }
 }
 
+- (NSArray<NSString*>*)accessibilityUserInputLabels {
+  NSMutableArray<NSString*>* userInputLabels = [[NSMutableArray alloc] init];
+  if (self.titleLabel.text) {
+    [userInputLabels addObject:self.titleLabel.text];
+  }
+
+  return userInputLabels;
+}
+
 - (NSString*)accessibilityIdentifier {
   return self.titleLabel.text;
 }

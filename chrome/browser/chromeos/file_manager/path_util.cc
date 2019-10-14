@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/download/download_dir_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -494,36 +495,15 @@ std::string GetPathDisplayTextForSettings(Profile* profile,
                                .Append(l10n_util::GetStringUTF8(
                                    IDS_FILE_BROWSER_DRIVE_MY_DRIVE_LABEL))
                                .value())) {
-  } else if (drive_integration_service &&
-             ReplacePrefix(&result,
-                           drive_integration_service->GetMountPointPath()
-                               .Append(kDriveFsDirTeamDrives)
-                               .value(),
-                           base::FilePath(kDisplayNameGoogleDrive)
-                               .Append(l10n_util::GetStringUTF8(
-                                   IDS_FILE_BROWSER_DRIVE_SHARED_DRIVES_LABEL))
-                               .value())) {
-  } else if (drive_integration_service &&
-             ReplacePrefix(&result,
-                           drive_integration_service->GetMountPointPath()
-                               .Append(kDriveFsDirComputers)
-                               .value(),
-                           base::FilePath(kDisplayNameGoogleDrive)
-                               .Append(l10n_util::GetStringUTF8(
-                                   IDS_FILE_BROWSER_DRIVE_COMPUTERS_LABEL))
-                               .value())) {
-  } else if (drive_integration_service &&
-             ReplacePrefix(&result,
-                           drive::util::GetDriveMountPointPath(profile)
-                               .Append(kDriveFsDirRoot)
-                               .value(),
+  } else if (ReplacePrefix(&result,
+                           download_dir_util::kDriveNamePolicyVariableName,
                            base::FilePath(kDisplayNameGoogleDrive)
                                .Append(l10n_util::GetStringUTF8(
                                    IDS_FILE_BROWSER_DRIVE_MY_DRIVE_LABEL))
                                .value())) {
   } else if (drive_integration_service &&
              ReplacePrefix(&result,
-                           drive::util::GetDriveMountPointPath(profile)
+                           drive_integration_service->GetMountPointPath()
                                .Append(kDriveFsDirTeamDrives)
                                .value(),
                            base::FilePath(kDisplayNameGoogleDrive)
@@ -532,7 +512,7 @@ std::string GetPathDisplayTextForSettings(Profile* profile,
                                .value())) {
   } else if (drive_integration_service &&
              ReplacePrefix(&result,
-                           drive::util::GetDriveMountPointPath(profile)
+                           drive_integration_service->GetMountPointPath()
                                .Append(kDriveFsDirComputers)
                                .value(),
                            base::FilePath(kDisplayNameGoogleDrive)

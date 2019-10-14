@@ -84,9 +84,9 @@ void BatchElementChecker::Run(WebController* web_controller) {
 
 void BatchElementChecker::OnElementChecked(
     std::vector<ElementCheckCallback>* callbacks,
-    bool exists) {
+    const ClientStatus& element_status) {
   for (auto& callback : *callbacks) {
-    std::move(callback).Run(exists);
+    std::move(callback).Run(element_status);
   }
   callbacks->clear();
   CheckDone();
@@ -94,10 +94,10 @@ void BatchElementChecker::OnElementChecked(
 
 void BatchElementChecker::OnGetFieldValue(
     std::vector<GetFieldValueCallback>* callbacks,
-    bool exists,
+    const ClientStatus& element_status,
     const std::string& value) {
   for (auto& callback : *callbacks) {
-    std::move(callback).Run(exists, value);
+    std::move(callback).Run(element_status, value);
   }
   callbacks->clear();
   CheckDone();

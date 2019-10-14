@@ -8,7 +8,7 @@
 // used to programmatically interact with a page by examining names, roles, and
 // states, listening for events, and performing actions on nodes.
 [nocompile] namespace automation {
-  // Keep the following enums in sync with 'ui/accessibility/ax_enums.idl'.
+  // Keep the following enums in sync with 'ui/accessibility/ax_enums.mojom'.
   // They are kept here purely for extension docs generation.
 
   // Possible events fired on an $(ref:automation.AutomationNode).

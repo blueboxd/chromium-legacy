@@ -36,10 +36,10 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
     delegate_.SetCurrentURL(GURL("http://www.example.com/"));
 
     ON_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"exists"})), _))
-        .WillByDefault(RunOnceCallback<1>(true));
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
     ON_CALL(mock_web_controller_,
             OnElementCheck(Eq(Selector({"does_not_exist"})), _))
-        .WillByDefault(RunOnceCallback<1>(false));
+        .WillByDefault(RunOnceCallback<1>(ClientStatus()));
 
     // Scripts run, but have no actions.
     ON_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
@@ -153,7 +153,6 @@ TEST_F(ScriptTrackerTest, SomeRunnableScripts) {
 }
 
 TEST_F(ScriptTrackerTest, DoNotCheckInterruptWithNoName) {
-
   // The interrupt's preconditions would all be met, but it won't be reported
   // since it doesn't have a name.
   auto* no_name = AddScript("", "path1", "exists");
@@ -264,7 +263,7 @@ TEST_F(ScriptTrackerTest, CheckScriptsAgainAfterScriptEnd) {
 TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"maybe_exists"})), _))
-      .WillOnce(RunOnceCallback<1>(false));
+      .WillOnce(RunOnceCallback<1>(ClientStatus()));
 
   AddScript("script name", "script path", "maybe_exists");
   SetAndCheckScripts();
@@ -272,10 +271,10 @@ TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
   // No scripts are runnable.
   EXPECT_THAT(runnable_scripts(), IsEmpty());
 
-  // DOM has changed; OnElementExists now returns true.
+  // DOM has changed; OnElementExists now returns truthy.
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"maybe_exists"})), _))
-      .WillOnce(RunOnceCallback<1>(true));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
   tracker_.CheckScripts();
 
   // The script can now run

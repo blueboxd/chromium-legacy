@@ -29,6 +29,8 @@ jumbo_static_library("common") {
     "autofill_regexes.h",
     "autofill_switches.cc",
     "autofill_switches.h",
+    "autofill_tick_clock.cc",
+    "autofill_tick_clock.h",
     "autofill_util.cc",
     "autofill_util.h",
     "form_data.cc",

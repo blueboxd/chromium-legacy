@@ -306,17 +306,16 @@ std::unique_ptr<net::test_server::HttpResponse> CustomProxyResponse(
 // be received.
 class TestProxyLookupClient : public mojom::ProxyLookupClient {
  public:
-  TestProxyLookupClient() : binding_(this) {}
+  TestProxyLookupClient() = default;
   ~TestProxyLookupClient() override = default;
 
   void StartLookUpProxyForURL(const GURL& url,
                               mojom::NetworkContext* network_context) {
     // Make sure this method is called at most once.
-    EXPECT_FALSE(binding_.is_bound());
+    EXPECT_FALSE(receiver_.is_bound());
 
-    mojom::ProxyLookupClientPtr proxy_lookup_client;
-    binding_.Bind(mojo::MakeRequest(&proxy_lookup_client));
-    network_context->LookUpProxyForURL(url, std::move(proxy_lookup_client));
+    network_context->LookUpProxyForURL(url,
+                                       receiver_.BindNewPipeAndPassRemote());
   }
 
   void WaitForResult() { run_loop_.Run(); }
@@ -333,7 +332,7 @@ class TestProxyLookupClient : public mojom::ProxyLookupClient {
     is_done_ = true;
     proxy_info_ = proxy_info;
     net_error_ = net_error;
-    binding_.Close();
+    receiver_.reset();
     run_loop_.Quit();
   }
 
@@ -345,7 +344,7 @@ class TestProxyLookupClient : public mojom::ProxyLookupClient {
   bool is_done() const { return is_done_; }
 
  private:
-  mojo::Binding<mojom::ProxyLookupClient> binding_;
+  mojo::Receiver<mojom::ProxyLookupClient> receiver_{this};
 
   bool is_done_ = false;
   base::Optional<net::ProxyInfo> proxy_info_;

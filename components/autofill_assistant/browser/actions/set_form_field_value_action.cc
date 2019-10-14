@@ -100,6 +100,24 @@ void SetFormFieldValueAction::InternalProcessAction(
         // Currently no check required.
         field_inputs_.emplace_back(/* value = */ keypress.text());
         break;
+      case SetFormFieldValueProto_KeyPress::kClientMemoryKey:
+        if (keypress.client_memory_key().empty()) {
+          DVLOG(1) << "SetFormFieldValueAction: empty |client_memory_key|";
+          EndAction(ClientStatus(INVALID_ACTION));
+          return;
+        }
+        if (!delegate_->GetClientMemory()->has_additional_value(
+                keypress.client_memory_key())) {
+          DVLOG(1) << "SetFormFieldValueAction: requested key '"
+                   << keypress.client_memory_key()
+                   << "' not available in client memory";
+          EndAction(ClientStatus(PRECONDITION_FAILED));
+          return;
+        }
+        field_inputs_.emplace_back(
+            /* value = */ *delegate_->GetClientMemory()->additional_value(
+                keypress.client_memory_key()));
+        break;
       default:
         DVLOG(1) << "Unrecognized field for SetFormFieldValueProto_KeyPress";
         EndAction(ClientStatus(INVALID_ACTION));
@@ -112,9 +130,10 @@ void SetFormFieldValueAction::InternalProcessAction(
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SetFormFieldValueAction::OnWaitForElement(bool element_found) {
-  if (!element_found) {
-    EndAction(ClientStatus(ELEMENT_RESOLUTION_FAILED));
+void SetFormFieldValueAction::OnWaitForElement(
+    const ClientStatus& element_status) {
+  if (!element_status.ok()) {
+    EndAction(ClientStatus(element_status.proto_status()));
     return;
   }
   // Start with first value, then call OnSetFieldValue() recursively until done.
@@ -181,10 +200,10 @@ void SetFormFieldValueAction::OnSetFieldValueAndCheckFallback(
 void SetFormFieldValueAction::OnGetFieldValue(
     int field_index,
     const std::string& requested_value,
-    bool get_value_status,
+    const ClientStatus& element_status,
     const std::string& actual_value) {
   // Move to next value if |GetFieldValue| failed.
-  if (!get_value_status) {
+  if (!element_status.ok()) {
     OnSetFieldValue(field_index + 1, OkClientStatus());
     return;
   }

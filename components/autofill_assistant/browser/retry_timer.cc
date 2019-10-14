@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "components/autofill_assistant/browser/client_status.h"
 
 namespace autofill_assistant {
 
@@ -14,8 +15,9 @@ RetryTimer::~RetryTimer() = default;
 
 void RetryTimer::Start(
     base::TimeDelta max_wait_time,
-    base::RepeatingCallback<void(base::OnceCallback<void(bool)>)> task,
-    base::OnceCallback<void(bool)> on_done) {
+    base::RepeatingCallback<void(base::OnceCallback<void(const ClientStatus&)>)>
+        task,
+    base::OnceCallback<void(const ClientStatus&)> on_done) {
   Reset();
   task_ = std::move(task);
   on_done_ = std::move(on_done);
@@ -47,15 +49,15 @@ void RetryTimer::RunTask() {
                            weak_ptr_factory_.GetWeakPtr(), task_id_));
 }
 
-void RetryTimer::OnTaskDone(int64_t task_id, bool success) {
+void RetryTimer::OnTaskDone(int64_t task_id, const ClientStatus& status) {
   if (task_id != task_id_)  // Ignore callbacks from cancelled tasks
     return;
 
   remaining_attempts_--;
-  if (success || remaining_attempts_ <= 0) {
+  if (status.ok() || remaining_attempts_ <= 0) {
     CHECK_GE(remaining_attempts_, 0);
     task_.Reset();  // release any resources held by the callback
-    std::move(on_done_).Run(success);
+    std::move(on_done_).Run(status);
     // Don't do anything after calling on_done_, as it could have deleted this.
     return;
   }

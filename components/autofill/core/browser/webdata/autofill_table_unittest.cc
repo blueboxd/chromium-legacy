@@ -161,7 +161,7 @@ class AutofillTableTest : public testing::Test {
 };
 
 TEST_F(AutofillTableTest, Autofill) {
-  Time t1 = Time::Now();
+  Time t1 = AutofillClock::Now();
 
   // Simulate the submission of a handful of entries in a field called "Name",
   // some more often than others.
@@ -169,7 +169,7 @@ TEST_F(AutofillTableTest, Autofill) {
   FormFieldData field;
   field.name = ASCIIToUTF16("Name");
   field.value = ASCIIToUTF16("Superman");
-  base::Time now = base::Time::Now();
+  base::Time now = AutofillClock::Now();
   base::TimeDelta two_seconds = base::TimeDelta::FromSeconds(2);
   EXPECT_TRUE(table_->AddFormFieldValue(field, &changes));
   std::vector<AutofillEntry> v;
@@ -330,7 +330,7 @@ TEST_F(AutofillTableTest, Autofill_GetCountOfValuesContainedBetween) {
   // This test makes time comparisons that are precise to a microsecond, but the
   // database uses the time_t format which is only precise to a second.
   // Make sure we use timestamps rounded to a second.
-  Time begin = Time::FromTimeT(Time::Now().ToTimeT());
+  Time begin = Time::FromTimeT(AutofillClock::Now().ToTimeT());
   Time now = begin;
   TimeDelta second = TimeDelta::FromSeconds(1);
 
@@ -392,7 +392,7 @@ TEST_F(AutofillTableTest, Autofill_GetCountOfValuesContainedBetween) {
 
 TEST_F(AutofillTableTest, Autofill_RemoveBetweenChanges) {
   TimeDelta one_day(TimeDelta::FromDays(1));
-  Time t1 = Time::Now();
+  Time t1 = AutofillClock::Now();
   Time t2 = t1 + one_day;
 
   AutofillChangeList changes;
@@ -422,7 +422,7 @@ TEST_F(AutofillTableTest, Autofill_RemoveBetweenChanges) {
 
 TEST_F(AutofillTableTest, Autofill_AddChanges) {
   TimeDelta one_day(TimeDelta::FromDays(1));
-  Time t1 = Time::Now();
+  Time t1 = AutofillClock::Now();
   Time t2 = t1 + one_day;
 
   AutofillChangeList changes;
@@ -548,7 +548,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateReplace) {
 }
 
 TEST_F(AutofillTableTest, Autofill_UpdateDontReplace) {
-  Time t = Time::Now();
+  Time t = AutofillClock::Now();
   AutofillEntry existing(
       MakeAutofillEntry("Name", "Superman", t.ToTimeT(), -1));
 
@@ -573,7 +573,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateDontReplace) {
 }
 
 TEST_F(AutofillTableTest, Autofill_AddFormFieldValues) {
-  Time t = Time::Now();
+  Time t = AutofillClock::Now();
 
   // Add multiple values for "firstname" and "lastname" names.  Test that only
   // first value of each gets added. Related to security issue:
@@ -768,7 +768,7 @@ TEST_F(AutofillTableTest,
 
 TEST_F(AutofillTableTest,
        Autofill_RemoveFormElementsAddedBetween_OlderThan30Days) {
-  const base::Time kNow = base::Time::Now();
+  const base::Time kNow = AutofillClock::Now();
   const base::Time k29DaysOld = kNow - base::TimeDelta::FromDays(29);
   const base::Time k30DaysOld = kNow - base::TimeDelta::FromDays(30);
   const base::Time k31DaysOld = kNow - base::TimeDelta::FromDays(31);
@@ -865,9 +865,9 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   home_profile.SetClientValidityFromBitfieldValue(6);
   home_profile.set_is_client_validity_states_updated(true);
 
-  Time pre_creation_time = Time::Now();
+  Time pre_creation_time = AutofillClock::Now();
   EXPECT_TRUE(table_->AddAutofillProfile(home_profile));
-  Time post_creation_time = Time::Now();
+  Time post_creation_time = AutofillClock::Now();
 
   // Get the 'Home' profile.
   std::unique_ptr<AutofillProfile> db_profile =
@@ -892,9 +892,9 @@ TEST_F(AutofillTableTest, AutofillProfile) {
                              ASCIIToUTF16("5678 Bottom Street"));
   billing_profile.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("suite 3"));
 
-  pre_creation_time = Time::Now();
+  pre_creation_time = AutofillClock::Now();
   EXPECT_TRUE(table_->AddAutofillProfile(billing_profile));
-  post_creation_time = Time::Now();
+  post_creation_time = AutofillClock::Now();
 
   // Get the 'Billing' profile.
   db_profile = table_->GetAutofillProfile(billing_profile.guid());
@@ -911,9 +911,9 @@ TEST_F(AutofillTableTest, AutofillProfile) {
 
   // Update the 'Billing' profile, name only.
   billing_profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Jane"));
-  Time pre_modification_time = Time::Now();
+  Time pre_modification_time = AutofillClock::Now();
   EXPECT_TRUE(table_->UpdateAutofillProfile(billing_profile));
-  Time post_modification_time = Time::Now();
+  Time post_modification_time = AutofillClock::Now();
   db_profile = table_->GetAutofillProfile(billing_profile.guid());
   ASSERT_TRUE(db_profile);
   EXPECT_EQ(billing_profile, *db_profile);
@@ -948,9 +948,9 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   billing_profile.SetClientValidityFromBitfieldValue(54);
   billing_profile.set_is_client_validity_states_updated(true);
 
-  Time pre_modification_time_2 = Time::Now();
+  Time pre_modification_time_2 = AutofillClock::Now();
   EXPECT_TRUE(table_->UpdateAutofillProfile(billing_profile));
-  Time post_modification_time_2 = Time::Now();
+  Time post_modification_time_2 = AutofillClock::Now();
   db_profile = table_->GetAutofillProfile(billing_profile.guid());
   ASSERT_TRUE(db_profile);
   EXPECT_EQ(billing_profile, *db_profile);
@@ -984,9 +984,9 @@ TEST_F(AutofillTableTest, CreditCard) {
   work_creditcard.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
                              ASCIIToUTF16("2013"));
 
-  Time pre_creation_time = Time::Now();
+  Time pre_creation_time = AutofillClock::Now();
   EXPECT_TRUE(table_->AddCreditCard(work_creditcard));
-  Time post_creation_time = Time::Now();
+  Time post_creation_time = AutofillClock::Now();
 
   // Get the 'Work' credit card.
   std::unique_ptr<CreditCard> db_creditcard =
@@ -1015,9 +1015,9 @@ TEST_F(AutofillTableTest, CreditCard) {
   target_creditcard.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
                                ASCIIToUTF16("2012"));
 
-  pre_creation_time = Time::Now();
+  pre_creation_time = AutofillClock::Now();
   EXPECT_TRUE(table_->AddCreditCard(target_creditcard));
-  post_creation_time = Time::Now();
+  post_creation_time = AutofillClock::Now();
   db_creditcard = table_->GetCreditCard(target_creditcard.guid());
   ASSERT_TRUE(db_creditcard);
   EXPECT_EQ(target_creditcard, *db_creditcard);
@@ -1036,9 +1036,9 @@ TEST_F(AutofillTableTest, CreditCard) {
   target_creditcard.set_origin("Interactive Autofill dialog");
   target_creditcard.SetRawInfo(CREDIT_CARD_NAME_FULL,
                                ASCIIToUTF16("Charles Grady"));
-  Time pre_modification_time = Time::Now();
+  Time pre_modification_time = AutofillClock::Now();
   EXPECT_TRUE(table_->UpdateCreditCard(target_creditcard));
-  Time post_modification_time = Time::Now();
+  Time post_modification_time = AutofillClock::Now();
   db_creditcard = table_->GetCreditCard(target_creditcard.guid());
   ASSERT_TRUE(db_creditcard);
   EXPECT_EQ(target_creditcard, *db_creditcard);
@@ -1096,7 +1096,7 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
   table_->AddAutofillProfile(profile);
 
   // Set a mocked value for the profile's creation time.
-  const time_t kMockCreationDate = Time::Now().ToTimeT() - 13;
+  const time_t kMockCreationDate = AutofillClock::Now().ToTimeT() - 13;
   sql::Statement s_mock_creation_date(
       db_->GetSQLConnection()->GetUniqueStatement(
           "UPDATE autofill_profiles SET date_modified = ?"));
@@ -1133,7 +1133,7 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
   EXPECT_FALSE(s_updated.Step());
 
   // Set a mocked value for the profile's modification time.
-  const time_t mock_modification_date = Time::Now().ToTimeT() - 7;
+  const time_t mock_modification_date = AutofillClock::Now().ToTimeT() - 7;
   sql::Statement s_mock_modification_date(
       db_->GetSQLConnection()->GetUniqueStatement(
           "UPDATE autofill_profiles SET date_modified = ?"));
@@ -1167,7 +1167,7 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
   table_->AddCreditCard(credit_card);
 
   // Set a mocked value for the credit card's creation time.
-  const time_t kMockCreationDate = Time::Now().ToTimeT() - 13;
+  const time_t kMockCreationDate = AutofillClock::Now().ToTimeT() - 13;
   sql::Statement s_mock_creation_date(
       db_->GetSQLConnection()->GetUniqueStatement(
           "UPDATE credit_cards SET date_modified = ?"));
@@ -1204,7 +1204,7 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
   EXPECT_FALSE(s_updated.Step());
 
   // Set a mocked value for the credit card's modification time.
-  const time_t mock_modification_date = Time::Now().ToTimeT() - 7;
+  const time_t mock_modification_date = AutofillClock::Now().ToTimeT() - 7;
   sql::Statement s_mock_modification_date(
       db_->GetSQLConnection()->GetUniqueStatement(
           "UPDATE credit_cards SET date_modified = ?"));
@@ -1246,7 +1246,7 @@ TEST_F(AutofillTableTest, UpdateProfileOriginOnly) {
   table_->AddAutofillProfile(profile);
 
   // Set a mocked value for the profile's creation time.
-  const time_t kMockCreationDate = Time::Now().ToTimeT() - 13;
+  const time_t kMockCreationDate = AutofillClock::Now().ToTimeT() - 13;
   sql::Statement s_mock_creation_date(
       db_->GetSQLConnection()->GetUniqueStatement(
           "UPDATE autofill_profiles SET date_modified = ?"));
@@ -1293,7 +1293,7 @@ TEST_F(AutofillTableTest, UpdateCreditCardOriginOnly) {
   table_->AddCreditCard(credit_card);
 
   // Set a mocked value for the credit card's creation time.
-  const time_t kMockCreationDate = Time::Now().ToTimeT() - 13;
+  const time_t kMockCreationDate = AutofillClock::Now().ToTimeT() - 13;
   sql::Statement s_mock_creation_date(
       db_->GetSQLConnection()->GetUniqueStatement(
           "UPDATE credit_cards SET date_modified = ?"));
@@ -1918,7 +1918,7 @@ TEST_F(AutofillTableTest, SetGetRemoveServerCardMetadata) {
   AutofillMetadata input;
   input.id = "server id";
   input.use_count = 50;
-  input.use_date = Time::Now();
+  input.use_date = AutofillClock::Now();
   input.billing_address_id = "billing id";
   EXPECT_TRUE(table_->AddServerCardMetadata(input));
 
@@ -1941,7 +1941,7 @@ TEST_F(AutofillTableTest, SetGetRemoveServerAddressMetadata) {
   AutofillMetadata input;
   input.id = "server id";
   input.use_count = 50;
-  input.use_date = Time::Now();
+  input.use_date = AutofillClock::Now();
   input.has_converted = true;
   table_->AddServerAddressMetadata(input);
 
@@ -1964,7 +1964,7 @@ TEST_F(AutofillTableTest, AddUpdateServerAddressMetadata) {
   AutofillMetadata input;
   input.id = "server id";
   input.use_count = 50;
-  input.use_date = Time::Now();
+  input.use_date = AutofillClock::Now();
   input.has_converted = true;
   ASSERT_TRUE(table_->AddServerAddressMetadata(input));
 
@@ -1995,7 +1995,7 @@ TEST_F(AutofillTableTest, AddUpdateServerCardMetadata) {
   AutofillMetadata input;
   input.id = "server id";
   input.use_count = 50;
-  input.use_date = Time::Now();
+  input.use_date = AutofillClock::Now();
   input.billing_address_id = "billing id";
   ASSERT_TRUE(table_->AddServerCardMetadata(input));
 
@@ -2091,7 +2091,7 @@ TEST_F(AutofillTableTest, RemoveWrongServerCardMetadata) {
   AutofillMetadata input;
   input.id = "server id";
   input.use_count = 50;
-  input.use_date = Time::Now();
+  input.use_date = AutofillClock::Now();
   input.billing_address_id = "billing id";
   table_->AddServerCardMetadata(input);
 
@@ -2160,7 +2160,7 @@ TEST_F(AutofillTableTest, SetServerCardsData_ExistingMetadata) {
   AutofillMetadata input;
   input.id = "server id";
   input.use_count = 50;
-  input.use_date = Time::Now();
+  input.use_date = AutofillClock::Now();
   input.billing_address_id = "billing id";
   table_->AddServerCardMetadata(input);
 
@@ -2217,7 +2217,7 @@ TEST_F(AutofillTableTest, SetServerAddressesData_ExistingMetadata) {
   AutofillMetadata input;
   input.id = "server id";
   input.use_count = 50;
-  input.use_date = Time::Now();
+  input.use_date = AutofillClock::Now();
   input.has_converted = true;
   table_->AddServerAddressMetadata(input);
 
@@ -2239,7 +2239,7 @@ TEST_F(AutofillTableTest, RemoveWrongServerAddressMetadata) {
   AutofillMetadata input;
   input.id = "server id";
   input.use_count = 50;
-  input.use_date = Time::Now();
+  input.use_date = AutofillClock::Now();
   input.has_converted = true;
   table_->AddServerAddressMetadata(input);
 
@@ -2499,7 +2499,7 @@ TEST_F(AutofillTableTest, SetServerProfileUpdateUsageStats) {
 
   // Update the usage stats; make sure they're reflected in GetServerProfiles.
   inputs.back().set_use_count(4U);
-  inputs.back().set_use_date(base::Time::Now());
+  inputs.back().set_use_date(AutofillClock::Now());
   table_->UpdateServerAddressMetadata(inputs.back());
   table_->GetServerProfiles(&outputs);
   ASSERT_EQ(1u, outputs.size());
@@ -2525,7 +2525,7 @@ TEST_F(AutofillTableTest, SetServerProfileUpdateUsageStats) {
 TEST_F(AutofillTableTest, DeleteUnmaskedCard) {
   // This isn't the exact unmasked time, since the database will use the
   // current time that it is called. The code below has to be approximate.
-  base::Time unmasked_time = base::Time::Now();
+  base::Time unmasked_time = AutofillClock::Now();
 
   // Add a masked card.
   base::string16 masked_number = ASCIIToUTF16("1111");
@@ -2564,7 +2564,7 @@ TEST_F(AutofillTableTest, DeleteUnmaskedCard) {
   // Delete data in the range of the last 24 hours.
   // Fudge |now| to make sure it's strictly greater than the |now| that
   // the database uses.
-  base::Time now = base::Time::Now() + base::TimeDelta::FromSeconds(1);
+  base::Time now = AutofillClock::Now() + base::TimeDelta::FromSeconds(1);
   ASSERT_TRUE(table_->RemoveAutofillDataModifiedBetween(
       now - base::TimeDelta::FromDays(1), now, &profiles, &credit_cards));
 
@@ -2673,7 +2673,7 @@ TEST_P(GetFormValuesTest, GetFormValuesForElementName_SubstringMatchEnabled) {
                << "suggestion = " << test_case.field_suggestion[0]
                << ", contents = " << test_case.field_contents);
 
-  Time t1 = Time::Now();
+  Time t1 = AutofillClock::Now();
 
   // Simulate the submission of a handful of entries in a field called "Name".
   AutofillChangeList changes;

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/process/process.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"

@@ -57,6 +57,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/ntp/ntp_snippets_launcher.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "components/feed/feed_feature_list.h"
 #endif
 

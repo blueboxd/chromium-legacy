@@ -47,6 +47,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_regex_constants.h"
 #include "components/autofill/core/common/autofill_regexes.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
@@ -570,7 +571,10 @@ FormStructure::FormStructure(const FormData& form)
       is_form_tag_(form.is_form_tag),
       is_formless_checkout_(form.is_formless_checkout),
       all_fields_are_passwords_(!form.fields.empty()),
-      form_parsed_timestamp_(base::TimeTicks::Now()),
+      form_parsed_timestamp_(AutofillTickClock::NowTicks()),
+      passwords_were_revealed_(false),
+      password_symbol_vote_(0),
+      developer_engagement_metrics_(0),
       unique_renderer_id_(form.unique_renderer_id) {
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
@@ -608,7 +612,8 @@ FormStructure::FormStructure(
 FormStructure::~FormStructure() = default;
 
 void FormStructure::DetermineHeuristicTypes(LogManager* log_manager) {
-  const auto determine_heuristic_types_start_time = base::TimeTicks::Now();
+  const auto determine_heuristic_types_start_time =
+      AutofillTickClock::NowTicks();
 
   // First, try to detect field types based on each field's |autocomplete|
   // attribute value.
@@ -652,7 +657,7 @@ void FormStructure::DetermineHeuristicTypes(LogManager* log_manager) {
   RationalizeFieldTypePredictions();
 
   AutofillMetrics::LogDetermineHeuristicTypesTiming(
-      base::TimeTicks::Now() - determine_heuristic_types_start_time);
+      AutofillTickClock::NowTicks() - determine_heuristic_types_start_time);
 }
 
 bool FormStructure::EncodeUploadRequest(

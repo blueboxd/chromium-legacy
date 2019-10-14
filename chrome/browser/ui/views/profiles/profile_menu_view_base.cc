@@ -10,6 +10,7 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -202,29 +203,17 @@ void ProfileMenuViewBase::ShowBubble(
 
   ProfileMenuViewBase* bubble;
 
-  if (base::FeatureList::IsEnabled(features::kProfileMenuRevamp)) {
-#if !defined(OS_CHROMEOS)
-    // On Desktop, all modes(regular, guest, incognito) are handled within
-    // ProfileMenuView.
-    bubble = new ProfileMenuView(anchor_button, browser, access_point);
-#else
-    // On ChromeOS, only the incognito menu is implemented.
+  if (view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO) {
     DCHECK(browser->profile()->IsIncognitoProfile());
     bubble = new IncognitoMenuView(anchor_button, browser);
-#endif
   } else {
-    if (view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO) {
-      DCHECK(browser->profile()->IsIncognitoProfile());
-      bubble = new IncognitoMenuView(anchor_button, browser);
-    } else {
-      DCHECK_EQ(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, view_mode);
+    DCHECK_EQ(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, view_mode);
 #if !defined(OS_CHROMEOS)
-      bubble = new ProfileMenuView(anchor_button, browser, access_point);
+    bubble = new ProfileMenuView(anchor_button, browser, access_point);
 #else
-      NOTREACHED();
-      return;
+    NOTREACHED();
+    return;
 #endif
-    }
   }
 
   views::BubbleDialogDelegateView::CreateBubble(bubble)->Show();
@@ -525,6 +514,11 @@ gfx::ImageSkia ProfileMenuViewBase::ColoredImageForMenu(
     const gfx::VectorIcon& icon,
     SkColor color) {
   return gfx::CreateVectorIcon(icon, kMaxImageSize, color);
+}
+
+void ProfileMenuViewBase::RecordClick(ActionableItem item) {
+  // TODO(tangltom): Separate metrics for incognito and guest menu.
+  base::UmaHistogramEnumeration("Profile.Menu.ClickedActionableItem", item);
 }
 
 ax::mojom::Role ProfileMenuViewBase::GetAccessibleWindowRole() {

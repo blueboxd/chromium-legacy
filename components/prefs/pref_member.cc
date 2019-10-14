@@ -54,37 +54,37 @@ void PrefMemberBase::MoveToSequence(
   VerifyValuePrefName();
   // Load the value from preferences if it hasn't been loaded so far.
   if (!internal())
-    UpdateValueFromPref(base::Closure());
+    UpdateValueFromPref(base::OnceClosure());
   internal()->MoveToSequence(std::move(task_runner));
 }
 
 void PrefMemberBase::OnPreferenceChanged(PrefService* service,
                                          const std::string& pref_name) {
   VerifyValuePrefName();
-  UpdateValueFromPref((!setting_value_ && !observer_.is_null()) ?
-      base::Bind(observer_, pref_name) : base::Closure());
+  UpdateValueFromPref((!setting_value_ && !observer_.is_null())
+                          ? base::BindOnce(observer_, pref_name)
+                          : base::OnceClosure());
 }
 
-void PrefMemberBase::UpdateValueFromPref(const base::Closure& callback) const {
+void PrefMemberBase::UpdateValueFromPref(base::OnceClosure callback) const {
   VerifyValuePrefName();
   const PrefService::Preference* pref = prefs_->FindPreference(pref_name_);
   DCHECK(pref);
   if (!internal())
     CreateInternal();
-  internal()->UpdateValue(pref->GetValue()->DeepCopy(),
-                          pref->IsManaged(),
-                          pref->IsUserModifiable(),
-                          callback);
+  internal()->UpdateValue(pref->GetValue()->DeepCopy(), pref->IsManaged(),
+                          pref->IsUserModifiable(), std::move(callback));
 }
 
 void PrefMemberBase::VerifyPref() const {
   VerifyValuePrefName();
   if (!internal())
-    UpdateValueFromPref(base::Closure());
+    UpdateValueFromPref(base::OnceClosure());
 }
 
-void PrefMemberBase::InvokeUnnamedCallback(const base::Closure& callback,
-                                           const std::string& pref_name) {
+void PrefMemberBase::InvokeUnnamedCallback(
+    const base::RepeatingClosure& callback,
+    const std::string& pref_name) {
   callback.Run();
 }
 

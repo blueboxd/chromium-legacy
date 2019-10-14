@@ -122,9 +122,9 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
   static ImageBitmap* Take(ScriptPromiseResolver*, sk_sp<SkImage>);
 
   scoped_refptr<StaticBitmapImage> BitmapImage() const { return image_; }
-  scoped_refptr<Uint8Array> CopyBitmapData();
-  scoped_refptr<Uint8Array> CopyBitmapData(AlphaDisposition,
-                                           DataU8ColorType = kRGBAColorType);
+  Vector<uint8_t> CopyBitmapData();
+  Vector<uint8_t> CopyBitmapData(AlphaDisposition,
+                                 DataU8ColorType = kRGBAColorType);
   unsigned width() const;
   unsigned height() const;
   IntSize Size() const;

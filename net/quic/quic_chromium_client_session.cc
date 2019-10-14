@@ -766,7 +766,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
                                        connection_description,
                                        std::move(socket_performance_watcher),
                                        net_log_)),
-      http3_logger_(VersionHasStreamType(connection->transport_version())
+      http3_logger_(VersionUsesHttp3(connection->transport_version())
                         ? new QuicHttp3Logger(net_log_)
                         : nullptr),
       going_away_(false),
@@ -803,7 +803,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
           std::make_unique<ProofVerifyContextChromium>(cert_verify_flags,
                                                        net_log_),
           crypto_config_->GetConfig()));
-  if (VersionHasStreamType(transport_version()))
+  if (VersionUsesHttp3(transport_version()))
     set_debug_visitor(http3_logger_.get());
   connection->set_debug_visitor(logger_.get());
   connection->set_creator_debug_delegate(logger_.get());
@@ -982,11 +982,11 @@ void QuicChromiumClientSession::UpdateStreamPriority(
     quic::QuicStreamId id,
     const spdy::SpdyStreamPrecedence& new_precedence) {
   if (headers_include_h2_stream_dependency_ ||
-      VersionHasStreamType(connection()->transport_version())) {
+      VersionUsesHttp3(connection()->transport_version())) {
     auto updates = priority_dependency_state_.OnStreamUpdate(
         id, new_precedence.spdy3_priority());
     for (auto update : updates) {
-      if (!VersionHasStreamType(connection()->transport_version())) {
+      if (!VersionUsesHttp3(connection()->transport_version())) {
         WritePriority(update.id, update.parent_stream_id, update.weight,
                       update.exclusive);
       } else if (FLAGS_quic_allow_http3_priority) {
@@ -3110,7 +3110,7 @@ bool QuicChromiumClientSession::HandlePromised(
                              net_log_);
     }
     if (headers_include_h2_stream_dependency_ ||
-        VersionHasStreamType(connection()->transport_version())) {
+        VersionUsesHttp3(connection()->transport_version())) {
       // Even though the promised stream will not be created until after the
       // push promise headers are received, send a PRIORITY frame for the
       // promised stream ID. Send |kDefaultPriority| since that will be the
@@ -3121,7 +3121,7 @@ bool QuicChromiumClientSession::HandlePromised(
       bool exclusive = false;
       priority_dependency_state_.OnStreamCreation(
           promised_id, priority, &parent_stream_id, &weight, &exclusive);
-      if (!VersionHasStreamType(connection()->transport_version())) {
+      if (!VersionUsesHttp3(connection()->transport_version())) {
         WritePriority(promised_id, parent_stream_id, weight, exclusive);
       } else if (FLAGS_quic_allow_http3_priority) {
         quic::PriorityFrame frame;

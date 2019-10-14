@@ -216,7 +216,7 @@ int64_t BidirectionalStreamQuicImpl::GetTotalReceivedBytes() const {
   // When QPACK is enabled, headers are sent and received on the stream, so
   // the headers bytes do not need to be accounted for independently.
   int64_t total_received_bytes =
-      quic::VersionUsesQpack(session_->GetQuicVersion())
+      quic::VersionUsesHttp3(session_->GetQuicVersion())
           ? 0
           : headers_bytes_received_;
   if (stream_) {
@@ -232,7 +232,7 @@ int64_t BidirectionalStreamQuicImpl::GetTotalReceivedBytes() const {
 int64_t BidirectionalStreamQuicImpl::GetTotalSentBytes() const {
   // When QPACK is enabled, headers are sent and received on the stream, so
   // the headers bytes do not need to be accounted for independently.
-  int64_t total_sent_bytes = quic::VersionUsesQpack(session_->GetQuicVersion())
+  int64_t total_sent_bytes = quic::VersionUsesHttp3(session_->GetQuicVersion())
                                  ? 0
                                  : headers_bytes_sent_;
   if (stream_) {

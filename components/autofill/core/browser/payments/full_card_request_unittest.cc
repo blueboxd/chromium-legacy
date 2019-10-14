@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -325,7 +326,7 @@ TEST_F(FullCardRequestTest, GetFullCardPanAndCvcForExpiredFullServerCard) {
               OnUnmaskVerificationResult(AutofillClient::SUCCESS));
 
   base::Time::Exploded today;
-  base::Time::Now().LocalExplode(&today);
+  AutofillClock::Now().LocalExplode(&today);
   CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "server_id");
   test::SetCreditCardInfo(&full_server_card, nullptr, "4111", "12",
                           base::StringPrintf("%d", today.year - 1).c_str(),
@@ -555,7 +556,7 @@ TEST_F(FullCardRequestTest, UpdateExpDateForLocalCard) {
               OnUnmaskVerificationResult(AutofillClient::SUCCESS));
 
   base::Time::Exploded today;
-  base::Time::Now().LocalExplode(&today);
+  AutofillClock::Now().LocalExplode(&today);
   CreditCard card;
   test::SetCreditCardInfo(&card, nullptr, "4111", "10",
                           base::StringPrintf("%d", today.year - 1).c_str(),

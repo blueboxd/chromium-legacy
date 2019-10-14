@@ -77,51 +77,39 @@ std::ostream& operator<<(std::ostream& out,
     case ProcessedActionStatusProto::USER_ABORTED_ACTION:
       out << "USER_ABORTED_ACTION";
       break;
-
     case ProcessedActionStatusProto::GET_FULL_CARD_FAILED:
       out << "GET_FULL_CARD_FAILED";
       break;
-
     case ProcessedActionStatusProto::PRECONDITION_FAILED:
       out << "PRECONDITION_FAILED";
       break;
-
     case ProcessedActionStatusProto::INVALID_ACTION:
       out << "INVALID_ACTION";
       break;
-
     case ProcessedActionStatusProto::UNSUPPORTED:
       out << "UNSUPPORTED";
       break;
-
     case ProcessedActionStatusProto::TIMED_OUT:
       out << "TIMED_OUT";
       break;
-
     case ProcessedActionStatusProto::ELEMENT_UNSTABLE:
       out << "ELEMENT_UNSTABLE";
       break;
-
     case ProcessedActionStatusProto::INVALID_SELECTOR:
       out << "INVALID_SELECTOR";
       break;
-
     case ProcessedActionStatusProto::OPTION_VALUE_NOT_FOUND:
       out << "OPTION_VALUE_NOT_FOUND";
       break;
-
     case ProcessedActionStatusProto::UNEXPECTED_JS_ERROR:
       out << "UNEXPECTED_JS_ERROR";
       break;
-
     case ProcessedActionStatusProto::TOO_MANY_ELEMENTS:
       out << "TOO_MANY_ELEMENTS";
       break;
-
     case ProcessedActionStatusProto::NAVIGATION_ERROR:
       out << "NAVIGATION_ERROR";
       break;
-
     case ProcessedActionStatusProto::AUTOFILL_INFO_NOT_AVAILABLE:
       out << "AUTOFILL_INFO_NOT_AVAILABLE";
       break;

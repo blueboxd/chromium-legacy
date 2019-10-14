@@ -1018,6 +1018,23 @@ void Controller::SetDateTimeRangeEnd(int year,
   UpdateCollectUserDataActions();
 }
 
+void Controller::SetAdditionalValue(const std::string& client_memory_key,
+                                    const std::string& value) {
+  if (!user_data_)
+    return;
+  auto it = user_data_->additional_values_to_store.find(client_memory_key);
+  if (it == user_data_->additional_values_to_store.end()) {
+    NOTREACHED() << client_memory_key << " not found";
+    return;
+  }
+  it->second.assign(value);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnUserDataChanged(user_data_.get());
+  }
+  // It is currently not necessary to call |UpdateCollectUserDataActions|
+  // because all additional values are optional.
+}
+
 void Controller::SetShippingAddress(
     std::unique_ptr<autofill::AutofillProfile> address) {
   if (!user_data_)

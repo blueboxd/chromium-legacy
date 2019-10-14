@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/enterprise/cert_store/arc_cert_installer_utils.h"
 #include "chrome/browser/chromeos/policy/remote_commands/user_command_arc_job.h"
 #include "chrome/browser/net/nss_context.h"

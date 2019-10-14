@@ -10,7 +10,6 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
@@ -178,8 +177,6 @@ void ProfileMenuView::BuildMenu() {
     BuildSyncInfo();
     BuildFeatureButtons();
     BuildAutofillButtons();
-  } else if (profile->IsIncognitoProfile()) {
-    BuildIncognitoIdentity();
   } else if (profile->IsGuestSession()) {
     BuildGuestIdentity();
   } else {
@@ -403,10 +400,6 @@ void ProfileMenuView::OnAddNewProfileButtonClicked() {
                     profiles::USER_MANAGER_OPEN_CREATE_USER_PAGE);
 }
 
-void ProfileMenuView::RecordClick(ActionableItem item) {
-  base::UmaHistogramEnumeration("Profile.Menu.ClickedActionableItem", item);
-}
-
 void ProfileMenuView::BuildIdentity() {
   Profile* profile = browser()->profile();
   signin::IdentityManager* identity_manager =
@@ -436,19 +429,6 @@ void ProfileMenuView::BuildIdentity() {
 void ProfileMenuView::BuildGuestIdentity() {
   SetIdentityInfo(profiles::GetGuestAvatar(), GetSyncIcon(),
                   l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME));
-}
-
-void ProfileMenuView::BuildIncognitoIdentity() {
-  int incognito_window_count =
-      BrowserList::GetIncognitoSessionsActiveForProfile(browser()->profile());
-
-  SetIdentityInfo(
-      ImageForMenu(kIncognitoProfileIcon), GetSyncIcon(),
-      l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_TITLE),
-      incognito_window_count > 1
-          ? l10n_util::GetPluralStringFUTF16(IDS_INCOGNITO_WINDOW_COUNT_MESSAGE,
-                                             incognito_window_count)
-          : base::string16());
 }
 
 gfx::ImageSkia ProfileMenuView::GetSyncIcon() {

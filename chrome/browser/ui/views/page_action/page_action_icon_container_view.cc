@@ -57,7 +57,7 @@ PageActionIconContainerView::PageActionIconContainerView(const Params& params)
                   ClickToCallUiController::GetOrCreateFromWebContents(
                       contents));
             }),
-            base::BindRepeating(SharingDialogView::GetAsBubble));
+            base::BindRepeating(SharingDialogView::GetAsBubbleForClickToCall));
         page_action_icons_.push_back(click_to_call_icon_);
         break;
       case PageActionIconType::kCookieControls:

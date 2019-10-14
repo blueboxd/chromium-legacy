@@ -11,7 +11,8 @@
 #include "gpu/ipc/common/gpu_feature_info.mojom.h"
 #include "gpu/ipc/common/gpu_feature_info_mojom_traits.h"
 #include "gpu/ipc/common/traits_test_service.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -23,10 +24,10 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   StructTraitsTest() = default;
 
  protected:
-  mojom::TraitsTestServicePtr GetTraitsTestProxy() {
-    mojom::TraitsTestServicePtr proxy;
-    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
-    return proxy;
+  mojo::Remote<mojom::TraitsTestService> GetTraitsTestRemote() {
+    mojo::Remote<mojom::TraitsTestService> remote;
+    traits_test_receivers_.Add(this, remote.BindNewPipeAndPassReceiver());
+    return remote;
   }
 
  private:
@@ -83,7 +84,7 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   }
 
   base::test::TaskEnvironment task_environment_;
-  mojo::BindingSet<TraitsTestService> traits_test_bindings_;
+  mojo::ReceiverSet<TraitsTestService> traits_test_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(StructTraitsTest);
 };
@@ -93,9 +94,9 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 TEST_F(StructTraitsTest, DxDiagNode) {
   gpu::DxDiagNode input;
   input.values["abc"] = "123";
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   gpu::DxDiagNode output;
-  proxy->EchoDxDiagNode(input, &output);
+  remote->EchoDxDiagNode(input, &output);
 
   gpu::DxDiagNode test_dx_diag_node;
   test_dx_diag_node.values["abc"] = "123";
@@ -123,9 +124,9 @@ TEST_F(StructTraitsTest, GPUDevice) {
   input.vendor_string = vendor_string;
   input.device_string = device_string;
   input.active = false;
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   gpu::GPUInfo::GPUDevice output;
-  proxy->EchoGpuDevice(input, &output);
+  remote->EchoGpuDevice(input, &output);
 
   EXPECT_EQ(vendor_id, output.vendor_id);
   EXPECT_EQ(device_id, output.device_id);
@@ -225,9 +226,9 @@ TEST_F(StructTraitsTest, GpuInfo) {
   input.rgba_visual = rgba_visual;
 #endif
 
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   gpu::GPUInfo output;
-  proxy->EchoGpuInfo(input, &output);
+  remote->EchoGpuInfo(input, &output);
 
   EXPECT_EQ(optimus, output.optimus);
   EXPECT_EQ(amd_switchable, output.amd_switchable);
@@ -309,9 +310,9 @@ TEST_F(StructTraitsTest, GpuInfo) {
 
 TEST_F(StructTraitsTest, EmptyGpuInfo) {
   gpu::GPUInfo input;
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   gpu::GPUInfo output;
-  proxy->EchoGpuInfo(input, &output);
+  remote->EchoGpuInfo(input, &output);
 }
 
 TEST_F(StructTraitsTest, Mailbox) {
@@ -319,9 +320,9 @@ TEST_F(StructTraitsTest, Mailbox) {
       0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2};
   gpu::Mailbox input;
   input.SetName(mailbox_name);
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   gpu::Mailbox output;
-  proxy->EchoMailbox(input, &output);
+  remote->EchoMailbox(input, &output);
   gpu::Mailbox test_mailbox;
   test_mailbox.SetName(mailbox_name);
   EXPECT_EQ(test_mailbox, output);
@@ -348,9 +349,9 @@ TEST_F(StructTraitsTest, MailboxHolder) {
   input.sync_token = sync_token;
   input.texture_target = texture_target;
 
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   gpu::MailboxHolder output;
-  proxy->EchoMailboxHolder(input, &output);
+  remote->EchoMailboxHolder(input, &output);
   EXPECT_EQ(mailbox, output.mailbox);
   EXPECT_EQ(sync_token, output.sync_token);
   EXPECT_EQ(texture_target, output.texture_target);
@@ -363,9 +364,9 @@ TEST_F(StructTraitsTest, SyncToken) {
   const uint64_t release_count = 0xdeadbeefdead;
   gpu::SyncToken input(namespace_id, command_buffer_id, release_count);
   input.SetVerifyFlush();
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   gpu::SyncToken output;
-  proxy->EchoSyncToken(input, &output);
+  remote->EchoSyncToken(input, &output);
   EXPECT_EQ(namespace_id, output.namespace_id());
   EXPECT_EQ(command_buffer_id, output.command_buffer_id());
   EXPECT_EQ(release_count, output.release_count());
@@ -388,9 +389,9 @@ TEST_F(StructTraitsTest, VideoDecodeAcceleratorSupportedProfile) {
   input.min_resolution = min_resolution;
   input.encrypted_only = false;
 
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   gpu::VideoDecodeAcceleratorSupportedProfile output;
-  proxy->EchoVideoDecodeAcceleratorSupportedProfile(input, &output);
+  remote->EchoVideoDecodeAcceleratorSupportedProfile(input, &output);
   EXPECT_EQ(profile, output.profile);
   EXPECT_EQ(max_resolution, output.max_resolution);
   EXPECT_EQ(min_resolution, output.min_resolution);
@@ -407,9 +408,9 @@ TEST_F(StructTraitsTest, VideoDecodeAcceleratorCapabilities) {
   input.supported_profiles.push_back(
       gpu::VideoDecodeAcceleratorSupportedProfile());
 
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   gpu::VideoDecodeAcceleratorCapabilities output;
-  proxy->EchoVideoDecodeAcceleratorCapabilities(input, &output);
+  remote->EchoVideoDecodeAcceleratorCapabilities(input, &output);
   EXPECT_EQ(flags, output.flags);
   EXPECT_EQ(input.supported_profiles.size(), output.supported_profiles.size());
 }
@@ -428,9 +429,9 @@ TEST_F(StructTraitsTest, VideoEncodeAcceleratorSupportedProfile) {
   input.max_framerate_numerator = max_framerate_numerator;
   input.max_framerate_denominator = max_framerate_denominator;
 
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   gpu::VideoEncodeAcceleratorSupportedProfile output;
-  proxy->EchoVideoEncodeAcceleratorSupportedProfile(input, &output);
+  remote->EchoVideoEncodeAcceleratorSupportedProfile(input, &output);
   EXPECT_EQ(profile, output.profile);
   EXPECT_EQ(min_resolution, output.min_resolution);
   EXPECT_EQ(max_resolution, output.max_resolution);
@@ -444,9 +445,9 @@ TEST_F(StructTraitsTest, GpuPreferences) {
   prefs.disable_gpu_watchdog = true;
   prefs.enable_gpu_driver_debug_logging = true;
 
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   GpuPreferences echo;
-  proxy->EchoGpuPreferences(prefs, &echo);
+  remote->EchoGpuPreferences(prefs, &echo);
   EXPECT_TRUE(echo.gpu_startup_dialog);
   EXPECT_TRUE(echo.disable_gpu_watchdog);
   EXPECT_TRUE(echo.enable_gpu_driver_debug_logging);

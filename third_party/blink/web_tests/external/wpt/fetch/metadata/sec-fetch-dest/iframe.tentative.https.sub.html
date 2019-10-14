@@ -41,15 +41,15 @@
     }, `{{host}} -> ${host} iframe: ${user_activated ? "user-activated" : "forced"}`);
   }
 
-  create_test("{{host}}:{{ports[https][0]}}", FORCED, "nested-document");
+  create_test("{{host}}:{{ports[https][0]}}", FORCED, "iframe");
 
-  create_test("{{hosts[][www]}}:{{ports[https][0]}}", FORCED, "nested-document");
+  create_test("{{hosts[][www]}}:{{ports[https][0]}}", FORCED, "iframe");
 
-  create_test("{{hosts[alt][www]}}:{{ports[https][0]}}", FORCED, "nested-document");
+  create_test("{{hosts[alt][www]}}:{{ports[https][0]}}", FORCED, "iframe");
 
-  create_test("{{host}}:{{ports[https][0]}}", USER, "nested-document");
+  create_test("{{host}}:{{ports[https][0]}}", USER, "iframe");
 
-  create_test("{{hosts[][www]}}:{{ports[https][0]}}", USER, "nested-document");
+  create_test("{{hosts[][www]}}:{{ports[https][0]}}", USER, "iframe");
 
-  create_test("{{hosts[alt][www]}}:{{ports[https][0]}}", USER, "nested-document");
+  create_test("{{hosts[alt][www]}}:{{ports[https][0]}}", USER, "iframe");
 </script>

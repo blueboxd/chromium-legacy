@@ -304,9 +304,17 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32Enum(ImageSerializationTag::kEndTag);
     WriteUint32(image_bitmap->width());
     WriteUint32(image_bitmap->height());
-    scoped_refptr<Uint8Array> pixels = image_bitmap->CopyBitmapData();
-    WriteUint32(pixels->length());
-    WriteRawBytes(pixels->Data(), pixels->length());
+    Vector<uint8_t> pixels = image_bitmap->CopyBitmapData();
+    // Check if we succeeded to copy the BitmapData.
+    if (image_bitmap->width() * image_bitmap->height() != 0 &&
+        pixels.size() == 0) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kDataCloneError,
+          "An ImageBitmap could not be read successfully.");
+      return false;
+    }
+    WriteUint32(pixels.size());
+    WriteRawBytes(pixels.data(), pixels.size());
     return true;
   }
   if (wrapper_type_info == V8ImageData::GetWrapperTypeInfo()) {

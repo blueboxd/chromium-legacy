@@ -20,6 +20,10 @@ namespace autofill_assistant {
 
 namespace {
 
+MATCHER_P(EqualsStatus, status, "") {
+  return arg.proto_status() == status.proto_status();
+}
+
 class RetryTimerTest : public testing::Test {
  protected:
   RetryTimerTest()
@@ -29,37 +33,38 @@ class RetryTimerTest : public testing::Test {
     task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   }
 
-  base::RepeatingCallback<void(base::OnceCallback<void(bool)>)>
+  base::RepeatingCallback<void(base::OnceCallback<void(const ClientStatus&)>)>
   AlwaysFailsCallback() {
     return base::BindRepeating(&RetryTimerTest::AlwaysFails,
                                base::Unretained(this));
   }
 
-  void AlwaysFails(base::OnceCallback<void(bool)> callback) {
+  void AlwaysFails(base::OnceCallback<void(const ClientStatus&)> callback) {
     try_count_++;
-    std::move(callback).Run(false);
+    std::move(callback).Run(ClientStatus());
   }
 
-  base::RepeatingCallback<void(base::OnceCallback<void(bool)>)>
+  base::RepeatingCallback<void(base::OnceCallback<void(const ClientStatus&)>)>
   SucceedsOnceCallback(int succeds_at) {
     return base::BindRepeating(&RetryTimerTest::SucceedsOnce,
                                base::Unretained(this), succeds_at);
   }
 
-  void SucceedsOnce(int succeeds_at, base::OnceCallback<void(bool)> callback) {
+  void SucceedsOnce(int succeeds_at,
+                    base::OnceCallback<void(const ClientStatus&)> callback) {
     EXPECT_GE(succeeds_at, try_count_);
     bool success = succeeds_at == try_count_;
     try_count_++;
-    std::move(callback).Run(success);
+    std::move(callback).Run(success ? OkClientStatus() : ClientStatus());
   }
 
-  base::RepeatingCallback<void(base::OnceCallback<void(bool)>)>
+  base::RepeatingCallback<void(base::OnceCallback<void(const ClientStatus&)>)>
   CaptureCallback() {
     return base::BindRepeating(&RetryTimerTest::Capture,
                                base::Unretained(this));
   }
 
-  void Capture(base::OnceCallback<void(bool)> callback) {
+  void Capture(base::OnceCallback<void(const ClientStatus&)> callback) {
     try_count_++;
     captured_callback_ = std::move(callback);
   }
@@ -69,13 +74,14 @@ class RetryTimerTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 
   int try_count_ = 0;
-  base::OnceCallback<void(bool)> captured_callback_;
-  base::MockCallback<base::OnceCallback<void(bool)>> done_callback_;
+  base::OnceCallback<void(const ClientStatus&)> captured_callback_;
+  base::MockCallback<base::OnceCallback<void(const ClientStatus&)>>
+      done_callback_;
 };
 
 TEST_F(RetryTimerTest, TryOnceAndSucceed) {
   RetryTimer retry_timer(base::TimeDelta::FromSeconds(1));
-  EXPECT_CALL(done_callback_, Run(true));
+  EXPECT_CALL(done_callback_, Run(EqualsStatus(OkClientStatus())));
   retry_timer.Start(base::TimeDelta::FromSeconds(10), SucceedsOnceCallback(0),
                     done_callback_.Get());
   EXPECT_EQ(1, try_count_);
@@ -83,7 +89,7 @@ TEST_F(RetryTimerTest, TryOnceAndSucceed) {
 
 TEST_F(RetryTimerTest, TryOnceAndFail) {
   RetryTimer retry_timer(base::TimeDelta::FromSeconds(1));
-  EXPECT_CALL(done_callback_, Run(false));
+  EXPECT_CALL(done_callback_, Run(EqualsStatus(ClientStatus())));
   retry_timer.Start(base::TimeDelta::FromSeconds(0), AlwaysFailsCallback(),
                     done_callback_.Get());
   EXPECT_EQ(1, try_count_);
@@ -96,7 +102,7 @@ TEST_F(RetryTimerTest, TryMultipleTimesAndSucceed) {
   EXPECT_EQ(1, try_count_);
   FastForwardOneSecond();
   EXPECT_EQ(2, try_count_);
-  EXPECT_CALL(done_callback_, Run(true));
+  EXPECT_CALL(done_callback_, Run(EqualsStatus(OkClientStatus())));
   FastForwardOneSecond();
   EXPECT_EQ(3, try_count_);
 }
@@ -108,7 +114,7 @@ TEST_F(RetryTimerTest, TryMultipleTimesAndFail) {
   EXPECT_EQ(1, try_count_);
   FastForwardOneSecond();
   EXPECT_EQ(2, try_count_);
-  EXPECT_CALL(done_callback_, Run(false));
+  EXPECT_CALL(done_callback_, Run(EqualsStatus(ClientStatus())));
   FastForwardOneSecond();
   EXPECT_EQ(3, try_count_);
 }
@@ -130,7 +136,7 @@ TEST_F(RetryTimerTest, CancelWithPendingCallbacks) {
                     done_callback_.Get());
   ASSERT_TRUE(captured_callback_);
   retry_timer.Cancel();
-  std::move(captured_callback_).Run(true);  // Should do nothing
+  std::move(captured_callback_).Run(OkClientStatus());  // Should do nothing
 }
 
 TEST_F(RetryTimerTest, GiveUpWhenLeavingScope) {
@@ -152,7 +158,7 @@ TEST_F(RetryTimerTest, GiveUpWhenLeavingScopeWithPendingCallback) {
                       done_callback_.Get());
     ASSERT_TRUE(captured_callback_);
   }
-  std::move(captured_callback_).Run(true);  // Should do nothing
+  std::move(captured_callback_).Run(OkClientStatus());  // Should do nothing
 }
 
 TEST_F(RetryTimerTest, RestartOverridesFirstCall) {
@@ -161,11 +167,12 @@ TEST_F(RetryTimerTest, RestartOverridesFirstCall) {
   RetryTimer retry_timer(base::TimeDelta::FromSeconds(1));
   retry_timer.Start(base::TimeDelta::FromSeconds(1), AlwaysFailsCallback(),
                     done_callback_.Get());
-  base::MockCallback<base::OnceCallback<void(bool)>> done_callback2;
+  base::MockCallback<base::OnceCallback<void(const ClientStatus&)>>
+      done_callback2;
   retry_timer.Start(base::TimeDelta::FromSeconds(1), AlwaysFailsCallback(),
                     done_callback2.Get());
   EXPECT_EQ(2, try_count_);
-  EXPECT_CALL(done_callback2, Run(false));
+  EXPECT_CALL(done_callback2, Run(EqualsStatus(ClientStatus())));
   FastForwardOneSecond();
   EXPECT_EQ(3, try_count_);
 }
@@ -178,13 +185,14 @@ TEST_F(RetryTimerTest, RestartOverridesFirstCallWithPendingTask) {
                     done_callback_.Get());
   ASSERT_TRUE(captured_callback_);
 
-  base::MockCallback<base::OnceCallback<void(bool)>> done_callback2;
+  base::MockCallback<base::OnceCallback<void(const ClientStatus&)>>
+      done_callback2;
   retry_timer.Start(base::TimeDelta::FromSeconds(1), AlwaysFailsCallback(),
                     done_callback2.Get());
 
-  std::move(captured_callback_).Run(true);  // Should do nothing
+  std::move(captured_callback_).Run(OkClientStatus());  // Should do nothing
 
-  EXPECT_CALL(done_callback2, Run(false));
+  EXPECT_CALL(done_callback2, Run(EqualsStatus(ClientStatus())));
   FastForwardOneSecond();
   EXPECT_EQ(3, try_count_);
 }
@@ -197,7 +205,7 @@ TEST_F(RetryTimerTest, Running) {
                     done_callback_.Get());
   EXPECT_TRUE(retry_timer.running());
 
-  EXPECT_CALL(done_callback_, Run(true));
+  EXPECT_CALL(done_callback_, Run(EqualsStatus(OkClientStatus())));
   FastForwardOneSecond();
   EXPECT_FALSE(retry_timer.running());
 }

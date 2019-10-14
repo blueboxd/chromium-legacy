@@ -274,6 +274,7 @@ body.should-handle-intent-result #modes-group {
   width: 72px;
 }
 
+body.review-result #switch-device,
 body.review-result #preview-video,
 body:not(.review-result) #confirm-result-groups,
 body:not(.review-photo-result) #review-photo-result,

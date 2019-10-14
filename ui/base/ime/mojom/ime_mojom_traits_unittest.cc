@@ -8,7 +8,8 @@
 
 #include "base/stl_util.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/mojom/ime_mojom_traits_test.mojom.h"
 
@@ -22,10 +23,10 @@ class IMEStructTraitsTest : public testing::Test,
   IMEStructTraitsTest() {}
 
  protected:
-  mojom::IMEStructTraitsTestPtr GetTraitsTestProxy() {
-    mojom::IMEStructTraitsTestPtr proxy;
-    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
-    return proxy;
+  mojo::Remote<mojom::IMEStructTraitsTest> GetTraitsTestRemote() {
+    mojo::Remote<mojom::IMEStructTraitsTest> remote;
+    traits_test_receivers_.Add(this, remote.BindNewPipeAndPassReceiver());
+    return remote;
   }
 
  private:
@@ -37,7 +38,7 @@ class IMEStructTraitsTest : public testing::Test,
 
   base::test::TaskEnvironment task_environment_;  // A MessageLoop is needed for
                                                   // Mojo IPC to work.
-  mojo::BindingSet<mojom::IMEStructTraitsTest> traits_test_bindings_;
+  mojo::ReceiverSet<mojom::IMEStructTraitsTest> traits_test_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEStructTraitsTest);
 };
@@ -65,10 +66,10 @@ TEST_F(IMEStructTraitsTest, TextInputType) {
       ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD,
   };
 
-  mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::IMEStructTraitsTest> remote = GetTraitsTestRemote();
   for (size_t i = 0; i < base::size(kTextInputTypes); i++) {
     ui::TextInputType type_out;
-    ASSERT_TRUE(proxy->EchoTextInputType(kTextInputTypes[i], &type_out));
+    ASSERT_TRUE(remote->EchoTextInputType(kTextInputTypes[i], &type_out));
     EXPECT_EQ(kTextInputTypes[i], type_out);
   }
 }

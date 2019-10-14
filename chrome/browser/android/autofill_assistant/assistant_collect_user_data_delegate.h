@@ -66,6 +66,11 @@ class AssistantCollectUserDataDelegate {
       jint minute,
       jint second);
 
+  void OnKeyValueChanged(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& jcaller,
+                         const base::android::JavaParamRef<jstring>& jkey,
+                         const base::android::JavaParamRef<jstring>& jvalue);
+
   base::android::ScopedJavaGlobalRef<jobject> GetJavaObject();
 
  private:

@@ -122,7 +122,8 @@ class WebController {
   // Normally done through BatchElementChecker.
   virtual void GetFieldValue(
       const Selector& selector,
-      base::OnceCallback<void(bool, const std::string&)> callback);
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback);
 
   // Set the |value| of field |selector| and return the result through
   // |callback|. If |simulate_key_presses| is true, the value will be set by
@@ -180,9 +181,10 @@ class WebController {
   // pass. Otherwise, there must be at least one.
   //
   // To check multiple elements, use a BatchElementChecker.
-  virtual void ElementCheck(const Selector& selector,
-                            bool strict,
-                            base::OnceCallback<void(bool)> callback);
+  virtual void ElementCheck(
+      const Selector& selector,
+      bool strict,
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Calls the callback once the main document window has been resized.
   virtual void WaitForWindowHeightChange(
@@ -272,9 +274,10 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<input::DispatchTouchEventResult> result);
-  void OnFindElementForCheck(base::OnceCallback<void(bool)> callback,
-                             const ClientStatus& status,
-                             std::unique_ptr<ElementFinder::Result> result);
+  void OnFindElementForCheck(
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& status,
+      std::unique_ptr<ElementFinder::Result> result);
   void OnWaitForWindowHeightChange(
       base::OnceCallback<void(const ClientStatus&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
@@ -332,11 +335,13 @@ class WebController {
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForGetFieldValue(
-      base::OnceCallback<void(bool, const std::string&)> callback,
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback,
       const ClientStatus& status,
       std::unique_ptr<ElementFinder::Result> element_result);
   void OnGetValueAttribute(
-      base::OnceCallback<void(bool, const std::string&)> callback,
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void InternalSetFieldValue(

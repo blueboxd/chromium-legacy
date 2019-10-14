@@ -103,6 +103,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
 
   # Disable for accessing private API of _OilpanGCTimesBase.
   # pylint: disable=protected-access
+  @decorators.Disabled('all')  # crbug.com/1011787
   def testForParsingOldFormat(self):
     def getMetric(results, name):
       metrics = results.FindAllPageSpecificValuesNamed(name)
@@ -127,6 +128,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
 
   # Disable for accessing private API of _OilpanGCTimesBase.
   # pylint: disable=protected-access
+  @decorators.Disabled('all')  # crbug.com/1011787
   def testForParsing(self):
     def getMetric(results, name):
       metrics = results.FindAllPageSpecificValuesNamed(name)

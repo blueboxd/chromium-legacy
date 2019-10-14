@@ -16,8 +16,8 @@
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "media/mojo/mojom/traits_test_service.mojom.h"
 #include "media/video/fake_gpu_memory_buffer.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
@@ -38,16 +38,16 @@ class VideoFrameStructTraitsTest : public testing::Test,
   VideoFrameStructTraitsTest() = default;
 
  protected:
-  media::mojom::TraitsTestServicePtr GetTraitsTestProxy() {
-    media::mojom::TraitsTestServicePtr proxy;
-    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
-    return proxy;
+  mojo::Remote<mojom::TraitsTestService> GetTraitsTestRemote() {
+    mojo::Remote<mojom::TraitsTestService> remote;
+    traits_test_receivers_.Add(this, remote.BindNewPipeAndPassReceiver());
+    return remote;
   }
 
   bool RoundTrip(scoped_refptr<VideoFrame>* frame) {
     scoped_refptr<VideoFrame> input = std::move(*frame);
-    media::mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-    return proxy->EchoVideoFrame(std::move(input), frame);
+    mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
+    return remote->EchoVideoFrame(std::move(input), frame);
   }
 
  private:
@@ -57,7 +57,7 @@ class VideoFrameStructTraitsTest : public testing::Test,
   }
 
   base::test::TaskEnvironment task_environment_;
-  mojo::BindingSet<TraitsTestService> traits_test_bindings_;
+  mojo::ReceiverSet<TraitsTestService> traits_test_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameStructTraitsTest);
 };

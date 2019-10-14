@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -1435,7 +1436,6 @@ TEST(AutofillProfileTest, IsAnInvalidPhoneNumber) {
   }
 }
 
-
 TEST(AutofillProfileTest, ValidityStatesClients) {
   AutofillProfile profile;
 
@@ -2186,7 +2186,7 @@ TEST_P(HasGreaterFrescocencyTest, HasGreaterFrescocency) {
                              test_case.server_validity_state_b,
                              AutofillDataModel::SERVER);
 
-  const base::Time now = base::Time::Now();
+  const base::Time now = AutofillClock::Now();
 
   if (test_case.expectation == EQUAL) {
     EXPECT_EQ(profile_a.HasGreaterFrecencyThan(&profile_b, now),
@@ -2225,7 +2225,7 @@ TEST_P(HasGreaterFrescocencyTest, PriorityCheck) {
   profile_invalid.set_use_count(100);
   profile_valid.set_use_count(10);
 
-  const base::Time now = base::Time::Now();
+  const base::Time now = AutofillClock::Now();
   const base::Time past = now - base::TimeDelta::FromDays(1);
 
   profile_invalid.set_use_date(now);

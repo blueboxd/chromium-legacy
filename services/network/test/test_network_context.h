@@ -159,7 +159,8 @@ class TestNetworkContext : public mojom::NetworkContext {
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) override {}
   void LookUpProxyForURL(
       const GURL& url,
-      ::network::mojom::ProxyLookupClientPtr proxy_lookup_client) override {}
+      mojo::PendingRemote<::network::mojom::ProxyLookupClient>
+          proxy_lookup_client) override {}
   void CreateNetLogExporter(
       mojo::PendingReceiver<mojom::NetLogExporter> receiver) override {}
   void ResolveHost(const net::HostPortPair& host,

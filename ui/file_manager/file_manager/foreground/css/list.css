@@ -44,6 +44,11 @@ grid > [selected] {
   z-index: 2;
 }
 
+html[class*='col-resize'] list,
+html[class*='col-resize'] grid {
+  overflow-y: hidden !important;
+}
+
 list > .spacer,
 grid > .spacer {
   box-sizing: border-box;

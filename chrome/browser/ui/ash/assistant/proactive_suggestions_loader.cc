@@ -7,6 +7,7 @@
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/public/cpp/assistant/util/histogram_util.h"
 #include "base/i18n/rtl.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "content/public/browser/browser_context.h"

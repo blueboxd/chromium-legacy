@@ -13,6 +13,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/common/available_offline_content.mojom-test-utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"

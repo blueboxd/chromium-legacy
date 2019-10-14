@@ -152,8 +152,10 @@ void PromptAction::CheckAutoSelect() {
   delegate_->RunElementChecks(auto_select_checker_.get());
 }
 
-void PromptAction::OnAutoSelectElementExists(int choice_index, bool exists) {
-  if (exists)
+void PromptAction::OnAutoSelectElementExists(
+    int choice_index,
+    const ClientStatus& element_status) {
+  if (element_status.ok())
     auto_select_choice_index_ = choice_index;
 
   // Calling OnSuggestionChosen() is delayed until try_done, as it indirectly

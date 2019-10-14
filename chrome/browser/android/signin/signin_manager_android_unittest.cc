@@ -19,6 +19,7 @@
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_core_service_impl.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"

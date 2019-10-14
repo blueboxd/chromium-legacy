@@ -566,5 +566,172 @@ TEST_F(CollectUserDataActionTest, SelectDateTimeRange) {
   action.ProcessAction(callback_.Get());
 }
 
+TEST_F(CollectUserDataActionTest, StaticSectionValid) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke(
+          [](std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+             std::unique_ptr<UserData> user_data) {
+            user_data->succeed = true;
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(std::move(user_data));
+          }));
+
+  auto* static_section =
+      collect_user_data_proto->add_additional_prepended_sections();
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+    action.ProcessAction(callback_.Get());
+  }
+
+  static_section->set_title("Static section");
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+    action.ProcessAction(callback_.Get());
+  }
+
+  static_section->mutable_static_text_section()->set_text("Lorem ipsum.");
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+    action.ProcessAction(callback_.Get());
+  }
+}
+
+TEST_F(CollectUserDataActionTest, TextInputSectionValid) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke(
+          [](std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+             std::unique_ptr<UserData> user_data) {
+            user_data->succeed = true;
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(std::move(user_data));
+          }));
+
+  auto* text_input_section =
+      collect_user_data_proto->add_additional_prepended_sections();
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+    action.ProcessAction(callback_.Get());
+  }
+
+  text_input_section->set_title("Text input section");
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+    action.ProcessAction(callback_.Get());
+  }
+
+  auto* input_field =
+      text_input_section->mutable_text_input_section()->add_input_fields();
+  input_field->set_value("12345");
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+    action.ProcessAction(callback_.Get());
+  }
+
+  input_field->set_input_type(TextInputProto::INPUT_ALPHANUMERIC);
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+    action.ProcessAction(callback_.Get());
+  }
+
+  input_field->set_client_memory_key("code");
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+    action.ProcessAction(callback_.Get());
+  }
+
+  // Duplicate input field fails due to duplicate memory key.
+  *text_input_section->mutable_text_input_section()->add_input_fields() =
+      *input_field;
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+    action.ProcessAction(callback_.Get());
+  }
+
+  text_input_section->mutable_text_input_section()
+      ->mutable_input_fields(1)
+      ->set_client_memory_key("something else");
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+    action.ProcessAction(callback_.Get());
+  }
+}
+
+TEST_F(CollectUserDataActionTest, TextInputSectionWritesToClientMemory) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke(
+          [](std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+             std::unique_ptr<UserData> user_data) {
+            user_data->succeed = true;
+            user_data->additional_values_to_store["key2"] = "modified";
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(std::move(user_data));
+          }));
+
+  auto* text_input_section =
+      collect_user_data_proto->add_additional_prepended_sections();
+  text_input_section->set_title("Text input section");
+
+  auto* input_field_1 =
+      text_input_section->mutable_text_input_section()->add_input_fields();
+  input_field_1->set_value("initial");
+  input_field_1->set_input_type(TextInputProto::INPUT_ALPHANUMERIC);
+  input_field_1->set_client_memory_key("key1");
+
+  auto* input_field_2 =
+      text_input_section->mutable_text_input_section()->add_input_fields();
+  input_field_2->set_value("initial");
+  input_field_2->set_input_type(TextInputProto::INPUT_ALPHANUMERIC);
+  input_field_2->set_client_memory_key("key2");
+
+  EXPECT_FALSE(client_memory_.has_additional_value("key1"));
+  EXPECT_FALSE(client_memory_.has_additional_value("key2"));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+  action.ProcessAction(callback_.Get());
+  EXPECT_EQ(*client_memory_.additional_value("key1"), "initial");
+  EXPECT_EQ(*client_memory_.additional_value("key2"), "modified");
+}
+
 }  // namespace
 }  // namespace autofill_assistant

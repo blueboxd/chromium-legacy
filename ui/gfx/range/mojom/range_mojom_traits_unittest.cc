@@ -5,7 +5,8 @@
 #include <utility>
 
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/range/mojom/range_traits_test_service.mojom.h"
 
@@ -19,10 +20,10 @@ class RangeStructTraitsTest : public testing::Test,
   RangeStructTraitsTest() {}
 
  protected:
-  mojom::RangeTraitsTestServicePtr GetTraitsTestProxy() {
-    mojom::RangeTraitsTestServicePtr proxy;
-    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
-    return proxy;
+  mojo::Remote<mojom::RangeTraitsTestService> GetTraitsTestRemote() {
+    mojo::Remote<mojom::RangeTraitsTestService> remote;
+    traits_test_receivers_.Add(this, remote.BindNewPipeAndPassReceiver());
+    return remote;
   }
 
  private:
@@ -36,7 +37,7 @@ class RangeStructTraitsTest : public testing::Test,
   }
 
   base::test::TaskEnvironment task_environment_;
-  mojo::BindingSet<RangeTraitsTestService> traits_test_bindings_;
+  mojo::ReceiverSet<RangeTraitsTestService> traits_test_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(RangeStructTraitsTest);
 };
@@ -47,9 +48,9 @@ TEST_F(RangeStructTraitsTest, Range) {
   const uint32_t start = 1234;
   const uint32_t end = 5678;
   gfx::Range input(start, end);
-  mojom::RangeTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::RangeTraitsTestService> remote = GetTraitsTestRemote();
   gfx::Range output;
-  proxy->EchoRange(input, &output);
+  remote->EchoRange(input, &output);
   EXPECT_EQ(start, output.start());
   EXPECT_EQ(end, output.end());
 }
@@ -58,9 +59,9 @@ TEST_F(RangeStructTraitsTest, RangeF) {
   const float start = 1234.5f;
   const float end = 6789.6f;
   gfx::RangeF input(start, end);
-  mojom::RangeTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::RangeTraitsTestService> remote = GetTraitsTestRemote();
   gfx::RangeF output;
-  proxy->EchoRangeF(input, &output);
+  remote->EchoRangeF(input, &output);
   EXPECT_EQ(start, output.start());
   EXPECT_EQ(end, output.end());
 }

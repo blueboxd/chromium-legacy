@@ -20,7 +20,7 @@ const autofill::CreditCard* ClientMemory::selected_card() const {
 }
 
 bool ClientMemory::has_selected_card() const {
-  return selected_card_.has_value();
+  return selected_card() != nullptr;
 }
 
 const autofill::AutofillProfile* ClientMemory::selected_address(
@@ -44,7 +44,7 @@ void ClientMemory::set_selected_address(
 }
 
 bool ClientMemory::has_selected_address(const std::string& name) const {
-  return selected_addresses_.find(name) != selected_addresses_.end();
+  return selected_address(name) != nullptr;
 }
 
 void ClientMemory::set_selected_login(const WebsiteLoginFetcher::Login& login) {
@@ -52,7 +52,7 @@ void ClientMemory::set_selected_login(const WebsiteLoginFetcher::Login& login) {
 }
 
 bool ClientMemory::has_selected_login() const {
-  return selected_login_.has_value();
+  return selected_login() != nullptr;
 }
 
 const WebsiteLoginFetcher::Login* ClientMemory::selected_login() const {
@@ -60,6 +60,23 @@ const WebsiteLoginFetcher::Login* ClientMemory::selected_login() const {
     return &(*selected_login_);
   }
   return nullptr;
+}
+
+const std::string* ClientMemory::additional_value(const std::string& key) {
+  auto it = additional_values_.find(key);
+  if (it == additional_values_.end()) {
+    return nullptr;
+  }
+  return &it->second;
+}
+
+bool ClientMemory::has_additional_value(const std::string& key) {
+  return additional_values_.find(key) != additional_values_.end();
+}
+
+void ClientMemory::set_additional_value(const std::string& key,
+                                        const std::string& value) {
+  additional_values_[key] = value;
 }
 
 std::string ClientMemory::GetAllAddressKeyNames() const {

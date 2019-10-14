@@ -101,7 +101,7 @@ DeviceFactoryMediaToMojoAdapter::~DeviceFactoryMediaToMojoAdapter() = default;
 void DeviceFactoryMediaToMojoAdapter::GetDeviceInfos(
     GetDeviceInfosCallback callback) {
   capture_system_->GetDeviceInfosAsync(
-      base::Bind(&TranslateDeviceInfos, base::Passed(&callback)));
+      base::BindOnce(&TranslateDeviceInfos, std::move(callback)));
   has_called_get_device_infos_ = true;
 }
 
@@ -117,7 +117,7 @@ void DeviceFactoryMediaToMojoAdapter::CreateDevice(
     device_entry.binding->Unbind();
     device_entry.device->Stop();
     device_entry.binding->Bind(std::move(device_request));
-    device_entry.binding->set_connection_error_handler(base::Bind(
+    device_entry.binding->set_connection_error_handler(base::BindOnce(
         &DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose,
         base::Unretained(this), device_id));
     std::move(callback).Run(mojom::DeviceAccessResultCode::SUCCESS);
@@ -135,8 +135,8 @@ void DeviceFactoryMediaToMojoAdapter::CreateDevice(
   }
 
   capture_system_->GetDeviceInfosAsync(
-      base::Bind(&DiscardDeviceInfosAndCallContinuation,
-                 base::Passed(&create_and_add_new_device_cb)));
+      base::BindOnce(&DiscardDeviceInfosAndCallContinuation,
+                     std::move(create_and_add_new_device_cb)));
   has_called_get_device_infos_ = true;
 }
 
@@ -185,7 +185,7 @@ void DeviceFactoryMediaToMojoAdapter::CreateAndAddNewDevice(
 #endif  // defined(OS_CHROMEOS)
   device_entry.binding = std::make_unique<mojo::Binding<mojom::Device>>(
       device_entry.device.get(), std::move(device_request));
-  device_entry.binding->set_connection_error_handler(base::Bind(
+  device_entry.binding->set_connection_error_handler(base::BindOnce(
       &DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose,
       base::Unretained(this), device_id));
   active_devices_by_id_[device_id] = std::move(device_entry);

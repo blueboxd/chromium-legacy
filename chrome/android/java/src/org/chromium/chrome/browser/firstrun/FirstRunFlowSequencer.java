@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager
 import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -100,7 +99,7 @@ public abstract class FirstRunFlowSequencer  {
     @VisibleForTesting
     protected boolean isSyncAllowed() {
         SigninManager signinManager = IdentityServicesProvider.getSigninManager();
-        return FeatureUtilities.canAllowSync() && !signinManager.isSigninDisabledByPolicy()
+        return FirstRunUtils.canAllowSync() && !signinManager.isSigninDisabledByPolicy()
                 && signinManager.isSigninSupported();
     }
 

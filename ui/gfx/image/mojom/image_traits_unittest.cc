@@ -7,7 +7,8 @@
 
 #include "base/macros.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
@@ -47,10 +48,10 @@ class ImageTraitsTest : public testing::Test,
 
   // testing::Test:
   void SetUp() override {
-    bindings_.AddBinding(this, mojo::MakeRequest(&service_));
+    receivers_.Add(this, service_.BindNewPipeAndPassReceiver());
   }
 
-  mojom::ImageTraitsTestServicePtr& service() { return service_; }
+  mojo::Remote<mojom::ImageTraitsTestService>& service() { return service_; }
 
  private:
   // mojom::ImageTraitsTestService:
@@ -64,8 +65,8 @@ class ImageTraitsTest : public testing::Test,
   }
 
   base::test::TaskEnvironment task_environment_;
-  mojo::BindingSet<ImageTraitsTestService> bindings_;
-  mojom::ImageTraitsTestServicePtr service_;
+  mojo::ReceiverSet<ImageTraitsTestService> receivers_;
+  mojo::Remote<mojom::ImageTraitsTestService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageTraitsTest);
 };

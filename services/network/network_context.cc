@@ -1053,7 +1053,7 @@ void NetworkContext::CreateProxyResolvingSocketFactory(
 
 void NetworkContext::LookUpProxyForURL(
     const GURL& url,
-    mojom::ProxyLookupClientPtr proxy_lookup_client) {
+    mojo::PendingRemote<mojom::ProxyLookupClient> proxy_lookup_client) {
   DCHECK(proxy_lookup_client);
   std::unique_ptr<ProxyLookupRequest> proxy_lookup_request(
       std::make_unique<ProxyLookupRequest>(std::move(proxy_lookup_client),

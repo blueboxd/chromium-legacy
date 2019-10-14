@@ -28,6 +28,7 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/font_list_async.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -66,7 +67,7 @@ const int kTimeoutSeconds = 4;
 
 // Returns the delta between the local timezone and UTC.
 base::TimeDelta GetTimezoneOffset() {
-  const base::Time utc = base::Time::Now();
+  const base::Time utc = AutofillClock::Now();
 
   base::Time::Exploded local;
   utc.LocalExplode(&local);
@@ -82,7 +83,7 @@ base::TimeDelta GetTimezoneOffset() {
 // "Mac OS X 10.6.8".
 std::string GetOperatingSystemVersion() {
   return base::SysInfo::OperatingSystemName() + " " +
-      base::SysInfo::OperatingSystemVersion();
+         base::SysInfo::OperatingSystemVersion();
 }
 
 // Adds the list of |fonts| to the |machine|.
@@ -107,8 +108,7 @@ void AddFontsToFingerprint(const base::ListValue& fonts,
 void AddPluginsToFingerprint(const std::vector<content::WebPluginInfo>& plugins,
                              Fingerprint::MachineCharacteristics* machine) {
   for (const content::WebPluginInfo& it : plugins) {
-    Fingerprint::MachineCharacteristics::Plugin* plugin =
-        machine->add_plugin();
+    Fingerprint::MachineCharacteristics::Plugin* plugin = machine->add_plugin();
     plugin->set_name(base::UTF16ToUTF8(it.name));
     plugin->set_description(base::UTF16ToUTF8(it.desc));
     for (const content::WebPluginMimeType& mime_type : it.mime_types)
@@ -433,7 +433,7 @@ void FingerprintDataLoader::FillFingerprint() {
 
   Fingerprint::Metadata* metadata = fingerprint->mutable_metadata();
   metadata->set_timestamp_ms(
-      (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds());
+      (AutofillClock::Now() - base::Time::UnixEpoch()).InMilliseconds());
   metadata->set_obfuscated_gaia_id(obfuscated_gaia_id_);
   metadata->set_fingerprinter_version(kFingerprinterVersion);
 

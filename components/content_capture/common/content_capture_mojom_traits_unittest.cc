@@ -6,7 +6,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "components/content_capture/common/traits_test_service.test-mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content_capture {
@@ -18,10 +19,10 @@ class ContentCaptureStructTraitsTest : public testing::Test,
   ContentCaptureStructTraitsTest() = default;
 
  protected:
-  mojom::TraitsTestServicePtr GetTraitsTestProxy() {
-    mojom::TraitsTestServicePtr proxy;
-    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
-    return proxy;
+  mojo::Remote<mojom::TraitsTestService> GetTraitsTestRemote() {
+    mojo::Remote<mojom::TraitsTestService> remote;
+    traits_test_receivers_.Add(this, remote.BindNewPipeAndPassReceiver());
+    return remote;
   }
 
  private:
@@ -33,7 +34,7 @@ class ContentCaptureStructTraitsTest : public testing::Test,
   }
 
   base::test::TaskEnvironment task_environment_;
-  mojo::BindingSet<TraitsTestService> traits_test_bindings_;
+  mojo::ReceiverSet<TraitsTestService> traits_test_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentCaptureStructTraitsTest);
 };
@@ -49,9 +50,9 @@ TEST_F(ContentCaptureStructTraitsTest, ContentCaptureData) {
   input.bounds = gfx::Rect(10, 10);
   input.children.push_back(child);
 
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   ContentCaptureData output;
-  proxy->EchoContentCaptureData(input, &output);
+  remote->EchoContentCaptureData(input, &output);
   EXPECT_EQ(input, output);
 }
 

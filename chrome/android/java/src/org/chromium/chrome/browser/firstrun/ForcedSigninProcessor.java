@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.preferences.sync.AccountManagementFragment;
 import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChildAccountStatus;
 
@@ -69,7 +68,7 @@ public final class ForcedSigninProcessor {
         final SigninManager signinManager = IdentityServicesProvider.getSigninManager();
         // By definition we have finished all the checks for first run.
         signinManager.onFirstRunCheckDone();
-        if (!FeatureUtilities.canAllowSync() || !signinManager.isSignInAllowed()) {
+        if (!FirstRunUtils.canAllowSync() || !signinManager.isSignInAllowed()) {
             Log.d(TAG, "Sign in disallowed");
             return;
         }

@@ -24,7 +24,7 @@ void WaitForDocumentAction::InternalProcessAction(
   Selector selector(proto_.wait_for_document().frame());
   if (selector.empty()) {
     // No element to wait for.
-    OnShortWaitForElement(/* element_found= */ true);
+    OnShortWaitForElement(ClientStatus(ACTION_APPLIED));
     return;
   }
   delegate_->ShortWaitForElement(
@@ -32,10 +32,10 @@ void WaitForDocumentAction::InternalProcessAction(
                                weak_ptr_factory_.GetWeakPtr()));
 }
 
-void WaitForDocumentAction::OnShortWaitForElement(bool element_found) {
-  if (!element_found) {
-    SendResult(ClientStatus(ELEMENT_RESOLUTION_FAILED),
-               DOCUMENT_UNKNOWN_READY_STATE);
+void WaitForDocumentAction::OnShortWaitForElement(
+    const ClientStatus& element_status) {
+  if (!element_status.ok()) {
+    SendResult(element_status, DOCUMENT_UNKNOWN_READY_STATE);
     return;
   }
   delegate_->GetDocumentReadyState(

@@ -1387,6 +1387,25 @@
             ]
         }
     ],
+    "BlockPromptsIfIgnoredOften": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "BlockPromptsIfIgnoredOften",
+                    "enable_features": [
+                        "BlockPromptsIfIgnoredOften"
+                    ]
+                }
+            ]
+        }
+    ],
     "BookmarkInProductHelp": [
         {
             "platforms": [

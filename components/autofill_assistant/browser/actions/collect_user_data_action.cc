@@ -5,6 +5,7 @@
 #include "components/autofill_assistant/browser/actions/collect_user_data_action.h"
 
 #include <algorithm>
+#include <set>
 #include <utility>
 
 #include "base/android/locale_utils.h"
@@ -179,6 +180,46 @@ bool IsValidDateTimeRange(
          CompareDateTimes(start, end) < 0;
 }
 
+bool IsValidUserFormSection(
+    const autofill_assistant::UserFormSectionProto& proto) {
+  if (proto.title().empty()) {
+    DVLOG(2) << "UserFormSectionProto: Empty title not allowed.";
+    return false;
+  }
+  switch (proto.section_case()) {
+    case autofill_assistant::UserFormSectionProto::kStaticTextSection:
+      if (proto.static_text_section().text().empty()) {
+        DVLOG(2) << "StaticTextSectionProto: Empty text not allowed.";
+        return false;
+      }
+      break;
+    case autofill_assistant::UserFormSectionProto::kTextInputSection: {
+      if (proto.text_input_section().input_fields().empty()) {
+        DVLOG(2) << "TextInputProto: At least one input must be specified.";
+        return false;
+      }
+      std::set<std::string> memory_keys;
+      for (const auto& input_field :
+           proto.text_input_section().input_fields()) {
+        if (input_field.client_memory_key().empty()) {
+          DVLOG(2) << "TextInputProto: Memory key must be specified.";
+          return false;
+        }
+        if (!memory_keys.insert(input_field.client_memory_key()).second) {
+          DVLOG(2) << "TextInputProto: Duplicate memory keys ("
+                   << input_field.client_memory_key() << ").";
+          return false;
+        }
+      }
+      break;
+    }
+    case autofill_assistant::UserFormSectionProto::SECTION_NOT_SET:
+      DVLOG(2) << "UserFormSectionProto: section oneof not set.";
+      return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 namespace autofill_assistant {
@@ -304,6 +345,28 @@ void CollectUserDataAction::ShowToUser(
     case CollectUserDataProto::REVIEW_REQUIRED:
       user_data->terms_and_conditions = REQUIRES_REVIEW;
       break;
+  }
+  for (const auto& additional_section :
+       collect_user_data.additional_prepended_sections()) {
+    if (additional_section.section_case() ==
+        UserFormSectionProto::kTextInputSection) {
+      for (const auto& text_input :
+           additional_section.text_input_section().input_fields()) {
+        user_data->additional_values_to_store.emplace(
+            text_input.client_memory_key(), text_input.value());
+      }
+    }
+  }
+  for (const auto& additional_section :
+       collect_user_data.additional_appended_sections()) {
+    if (additional_section.section_case() ==
+        UserFormSectionProto::kTextInputSection) {
+      for (const auto& text_input :
+           additional_section.text_input_section().input_fields()) {
+        user_data->additional_values_to_store.emplace(
+            text_input.client_memory_key(), text_input.value());
+      }
+    }
   }
 
   if (collect_user_data_options->request_login_choice &&
@@ -436,6 +499,11 @@ void CollectUserDataAction::OnGetUserData(
            ->mutable_date_time_end() = user_data->date_time_range_end;
     }
 
+    for (const auto& value : user_data->additional_values_to_store) {
+      delegate_->GetClientMemory()->set_additional_value(value.first,
+                                                         value.second);
+    }
+
     processed_action_proto_->mutable_collect_user_data_result()
         ->set_is_terms_and_conditions_accepted(
             user_data->terms_and_conditions ==
@@ -547,6 +615,26 @@ CollectUserDataAction::CreateOptionsFromProto() {
     collect_user_data_options->request_date_time_range = true;
     collect_user_data_options->date_time_range =
         collect_user_data.date_time_range();
+  }
+
+  for (const auto& section :
+       collect_user_data.additional_prepended_sections()) {
+    if (!IsValidUserFormSection(section)) {
+      DVLOG(1)
+          << "Invalid UserFormSectionProto in additional_prepended_sections";
+      return nullptr;
+    }
+    collect_user_data_options->additional_prepended_sections.emplace_back(
+        section);
+  }
+  for (const auto& section : collect_user_data.additional_appended_sections()) {
+    if (!IsValidUserFormSection(section)) {
+      DVLOG(1)
+          << "Invalid UserFormSectionProto in additional_appended_sections";
+      return nullptr;
+    }
+    collect_user_data_options->additional_appended_sections.emplace_back(
+        section);
   }
 
   // TODO(crbug.com/806868): Maybe we could refactor this to make the confirm

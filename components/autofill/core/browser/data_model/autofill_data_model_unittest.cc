@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -120,7 +121,7 @@ struct HasGreaterFrecencyThanTestCase {
   Expectation expectation;
 };
 
-base::Time now = base::Time::Now();
+base::Time now = AutofillClock::Now();
 
 class HasGreaterFrecencyThanTest
     : public testing::TestWithParam<HasGreaterFrecencyThanTestCase> {};

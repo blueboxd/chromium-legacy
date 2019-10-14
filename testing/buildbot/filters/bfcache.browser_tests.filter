@@ -18,3 +18,9 @@
 
 # Flaky on the bots, need to be investigated, see https://crbug.com/1010870.
 -BookmarksCommandManagerTest.All
+
+# Time out since the removal of bfcache timed eviction. Probably waiting on the
+# RenderFrameHost deletion.
+-CredentialManagerBrowserTest.StoreInUnloadHandler_CrossSite_OnDemandMojoPipe
+-CredentialManagerBrowserTest.StoreInUnloadHandler_CrossSite_PreestablishedPipe
+

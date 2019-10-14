@@ -6,7 +6,8 @@
 
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/mojom/accelerated_widget_mojom_traits.h"
@@ -36,10 +37,10 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   StructTraitsTest() {}
 
  protected:
-  mojom::TraitsTestServicePtr GetTraitsTestProxy() {
-    mojom::TraitsTestServicePtr proxy;
-    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
-    return proxy;
+  mojo::Remote<mojom::TraitsTestService> GetTraitsTestRemote() {
+    mojo::Remote<mojom::TraitsTestService> remote;
+    traits_test_receivers_.Add(this, remote.BindNewPipeAndPassReceiver());
+    return remote;
   }
 
  private:
@@ -65,7 +66,7 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   }
 
   base::test::TaskEnvironment task_environment_;
-  mojo::BindingSet<TraitsTestService> traits_test_bindings_;
+  mojo::ReceiverSet<TraitsTestService> traits_test_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(StructTraitsTest);
 };
@@ -81,9 +82,9 @@ TEST_F(StructTraitsTest, SelectionBound) {
   input.set_type(type);
   input.SetEdge(edge_top, edge_bottom);
   input.set_visible(visible);
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   gfx::SelectionBound output;
-  proxy->EchoSelectionBound(input, &output);
+  remote->EchoSelectionBound(input, &output);
   EXPECT_EQ(type, output.type());
   EXPECT_EQ(edge_top, output.edge_top());
   EXPECT_EQ(edge_bottom, output.edge_bottom());
@@ -113,9 +114,9 @@ TEST_F(StructTraitsTest, Transform) {
                        col2row2, col3row2, col4row2, col1row3, col2row3,
                        col3row3, col4row3, col1row4, col2row4, col3row4,
                        col4row4);
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   gfx::Transform output;
-  proxy->EchoTransform(input, &output);
+  remote->EchoTransform(input, &output);
   EXPECT_EQ(col1row1, output.matrix().get(0, 0));
   EXPECT_EQ(col2row1, output.matrix().get(0, 1));
   EXPECT_EQ(col3row1, output.matrix().get(0, 2));
@@ -158,9 +159,9 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
   handle.offset = kOffset;
   handle.stride = kStride;
 
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   gfx::GpuMemoryBufferHandle output;
-  proxy->EchoGpuMemoryBufferHandle(std::move(handle), &output);
+  remote->EchoGpuMemoryBufferHandle(std::move(handle), &output);
   EXPECT_EQ(gfx::SHARED_MEMORY_BUFFER, output.type);
   EXPECT_EQ(kId, output.id);
   EXPECT_EQ(kOffset, output.offset);
@@ -189,7 +190,7 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
 #endif
   handle2.native_pixmap_handle.planes.emplace_back(kOffset, kStride, kSize,
                                                    std::move(buffer_handle));
-  proxy->EchoGpuMemoryBufferHandle(std::move(handle2), &output);
+  remote->EchoGpuMemoryBufferHandle(std::move(handle2), &output);
   EXPECT_EQ(gfx::NATIVE_PIXMAP, output.type);
 #if defined(OS_LINUX)
   EXPECT_EQ(kModifier, output.native_pixmap_handle.modifier);
@@ -207,9 +208,9 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
 }
 
 TEST_F(StructTraitsTest, NullGpuMemoryBufferHandle) {
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   GpuMemoryBufferHandle output;
-  proxy->EchoGpuMemoryBufferHandle(GpuMemoryBufferHandle(), &output);
+  remote->EchoGpuMemoryBufferHandle(GpuMemoryBufferHandle(), &output);
   EXPECT_TRUE(output.is_null());
 }
 
@@ -217,7 +218,7 @@ TEST_F(StructTraitsTest, BufferFormat) {
   using BufferFormatTraits =
       mojo::EnumTraits<gfx::mojom::BufferFormat, gfx::BufferFormat>;
   BufferFormat output;
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   for (int i = 0; i <= static_cast<int>(BufferFormat::LAST); ++i) {
     BufferFormat input = static_cast<BufferFormat>(i);
     BufferFormatTraits::FromMojom(BufferFormatTraits::ToMojom(input), &output);
@@ -229,7 +230,7 @@ TEST_F(StructTraitsTest, BufferUsage) {
   using BufferUsageTraits =
       mojo::EnumTraits<gfx::mojom::BufferUsage, gfx::BufferUsage>;
   BufferUsage output;
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   for (int i = 0; i <= static_cast<int>(BufferUsage::LAST); ++i) {
     BufferUsage input = static_cast<BufferUsage>(i);
     BufferUsageTraits::FromMojom(BufferUsageTraits::ToMojom(input), &output);
@@ -258,35 +259,35 @@ TEST_F(StructTraitsTest, RRectF) {
   input.SetCornerRadii(RRectF::Corner::kLowerRight, 5, 6);
   input.SetCornerRadii(RRectF::Corner::kLowerLeft, 7, 8);
   EXPECT_EQ(input.GetType(), RRectF::Type::kComplex);
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   gfx::RRectF output;
-  proxy->EchoRRectF(input, &output);
+  remote->EchoRRectF(input, &output);
   EXPECT_EQ(input, output);
   input = gfx::RRectF(40, 50, 0, 70, 0);
   EXPECT_EQ(input.GetType(), RRectF::Type::kEmpty);
-  proxy->EchoRRectF(input, &output);
+  remote->EchoRRectF(input, &output);
   EXPECT_EQ(input, output);
   input = RRectF(40, 50, 60, 70, 0);
   EXPECT_EQ(input.GetType(), RRectF::Type::kRect);
-  proxy->EchoRRectF(input, &output);
+  remote->EchoRRectF(input, &output);
   EXPECT_EQ(input, output);
   input = RRectF(40, 50, 60, 70, 5);
   EXPECT_EQ(input.GetType(), RRectF::Type::kSingle);
-  proxy->EchoRRectF(input, &output);
+  remote->EchoRRectF(input, &output);
   EXPECT_EQ(input, output);
   input = RRectF(40, 50, 60, 70, 6, 3);
   EXPECT_EQ(input.GetType(), RRectF::Type::kSimple);
-  proxy->EchoRRectF(input, &output);
+  remote->EchoRRectF(input, &output);
   EXPECT_EQ(input, output);
   input = RRectF(40, 50, 60, 70, 30, 35);
   EXPECT_EQ(input.GetType(), RRectF::Type::kOval);
-  proxy->EchoRRectF(input, &output);
+  remote->EchoRRectF(input, &output);
   EXPECT_EQ(input, output);
   input.SetCornerRadii(RRectF::Corner::kUpperLeft, 50, 50);
   input.SetCornerRadii(RRectF::Corner::kUpperRight, 20, 20);
   input.SetCornerRadii(RRectF::Corner::kLowerRight, 0, 0);
   input.SetCornerRadii(RRectF::Corner::kLowerLeft, 0, 0);
-  proxy->EchoRRectF(input, &output);
+  remote->EchoRRectF(input, &output);
   EXPECT_EQ(input, output);
 }
 

@@ -268,9 +268,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       CreateTCPBoundSocketCallback callback) override;
   void CreateProxyResolvingSocketFactory(
       mojom::ProxyResolvingSocketFactoryRequest request) override;
-  void LookUpProxyForURL(
-      const GURL& url,
-      mojom::ProxyLookupClientPtr proxy_lookup_client) override;
+  void LookUpProxyForURL(const GURL& url,
+                         mojo::PendingRemote<mojom::ProxyLookupClient>
+                             proxy_lookup_client) override;
   void ForceReloadProxyConfig(ForceReloadProxyConfigCallback callback) override;
   void ClearBadProxiesCache(ClearBadProxiesCacheCallback callback) override;
   void CreateWebSocket(

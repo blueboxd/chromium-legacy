@@ -29,6 +29,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/download/network/android/network_status_listener_android.h"

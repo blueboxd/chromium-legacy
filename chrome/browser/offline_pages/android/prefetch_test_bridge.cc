@@ -11,6 +11,7 @@
 #include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"

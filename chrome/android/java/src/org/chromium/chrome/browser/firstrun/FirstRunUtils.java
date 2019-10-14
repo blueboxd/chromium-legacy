@@ -4,15 +4,24 @@
 
 package org.chromium.chrome.browser.firstrun;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.UserManager;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.components.signin.AccountManagerFacade;
 
 /** Provides first run related utility functions. */
 public class FirstRunUtils {
     public static final String CACHED_TOS_ACCEPTED_PREF = "first_run_tos_accepted";
+    private static Boolean sHasGoogleAccountAuthenticator;
 
     /**
      * Synchronizes first run native and Java preferences.
@@ -62,5 +71,38 @@ public class FirstRunUtils {
                 .putBoolean(CACHED_TOS_ACCEPTED_PREF, true)
                 .apply();
         PrefServiceBridge.getInstance().setEulaAccepted();
+    }
+
+    /**
+     * Determines whether or not the user has a Google account (so we can sync) or can add one.
+     * @return Whether or not sync is allowed on this device.
+     */
+    static boolean canAllowSync() {
+        return (hasGoogleAccountAuthenticator() && hasSyncPermissions()) || hasGoogleAccounts();
+    }
+
+    @VisibleForTesting
+    static boolean hasGoogleAccountAuthenticator() {
+        if (sHasGoogleAccountAuthenticator == null) {
+            AccountManagerFacade accountHelper = AccountManagerFacade.get();
+            sHasGoogleAccountAuthenticator = accountHelper.hasGoogleAccountAuthenticator();
+        }
+        return sHasGoogleAccountAuthenticator;
+    }
+
+    @VisibleForTesting
+    static boolean hasGoogleAccounts() {
+        return AccountManagerFacade.get().hasGoogleAccounts();
+    }
+
+    @SuppressLint("InlinedApi")
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private static boolean hasSyncPermissions() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) return true;
+
+        UserManager manager = (UserManager) ContextUtils.getApplicationContext().getSystemService(
+                Context.USER_SERVICE);
+        Bundle userRestrictions = manager.getUserRestrictions();
+        return !userRestrictions.getBoolean(UserManager.DISALLOW_MODIFY_ACCOUNTS, false);
     }
 }

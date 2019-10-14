@@ -1180,6 +1180,20 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
     builder.SetInitialFragmentGeometry(fragment_geometry);
     builder.SetIsLegacyLayoutRoot();
 
+    // If we're block-fragmented, we can only handle monolithic content, since
+    // the two block fragmentation machineries (NG and legacy) cannot cooperate.
+    DCHECK(!constraint_space.HasBlockFragmentation() || IsMonolithic());
+
+    if (constraint_space.IsInitialColumnBalancingPass()) {
+      // In the initial column balancing pass we need to provide the tallest
+      // unbreakable block-size. However, since the content is monolithic,
+      // that's already handled by the parent algorithm (so we don't need to
+      // propagate anything here). We still have to tell the builder that we're
+      // in this layout pass, though, so that the layout result is set up
+      // correctly.
+      builder.SetIsInitialColumnBalancingPass();
+    }
+
     CopyBaselinesFromLegacyLayout(constraint_space, &builder);
     layout_result = builder.ToBoxFragment();
 

@@ -588,6 +588,7 @@ message AutofillErrorInfoProto {
   optional bool address_pointee_was_null = 3;
 }
 
+// Next: 22
 enum ProcessedActionStatusProto {
   UNKNOWN_ACTION_STATUS = 0;
 
@@ -1210,6 +1211,45 @@ message DateTimeRangeProto {
   optional string end_label = 6;
 }
 
+// A section showing a simple text message.
+message StaticTextSectionProto {
+  // The text to display. Can contain markup tags like <b>.
+  optional string text = 1;
+}
+
+// A single text input.
+message TextInputProto {
+  optional string hint = 1;
+  enum InputType {
+    UNDEFINED = 0;
+    // Regular text, no special formatting rules.
+    INPUT_TEXT = 1;
+    // An alphanumeric input, e.g. postal code or discount code.
+    INPUT_ALPHANUMERIC = 2;
+  }
+  optional InputType input_type = 2;
+
+  // The client memory key to store the result in.
+  optional string client_memory_key = 3;
+
+  // The initial value of the text input.
+  optional string value = 4;
+}
+
+// A section containing one or multiple text inputs.
+message TextInputSectionProto {
+  repeated TextInputProto input_fields = 1;
+}
+
+message UserFormSectionProto {
+  optional string title = 1;
+
+  oneof section {
+    StaticTextSectionProto static_text_section = 2;
+    TextInputSectionProto text_input_section = 3;
+  }
+}
+
 // Asks to provide the data used by UseAddressAction and
 // UseCreditCardAction.
 message CollectUserDataProto {
@@ -1270,6 +1310,10 @@ message CollectUserDataProto {
   optional LoginDetailsProto login_details = 16;
   // The date/time range that should be gathered.
   optional DateTimeRangeProto date_time_range = 17;
+  // An optional list of additional sections, which is above all other sections.
+  repeated UserFormSectionProto additional_prepended_sections = 18;
+  // An optional list of additional sections, which is below all other sections.
+  repeated UserFormSectionProto additional_appended_sections = 19;
 }
 
 // Resets Autofill Assistant: clears any state and server payload.
@@ -1419,6 +1463,8 @@ message SetFormFieldValueProto {
       // Use the password from the Chrome password manager login previously
       // selected in a CollectUserDataAction.
       bool use_password = 5;
+      // Use the value stored at the specified memory location.
+      string client_memory_key = 6;
     }
   }
 

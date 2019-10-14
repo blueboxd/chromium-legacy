@@ -27,7 +27,7 @@ class SelectOptionAction : public Action {
 
   void OnWaitForElement(ProcessActionCallback callback,
                         const Selector& selector,
-                        bool element_found);
+                        const ClientStatus& element_status);
   void OnSelectOption(ProcessActionCallback callback,
                       const ClientStatus& status);
 

@@ -42,6 +42,30 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                             public views::StyledLabelListener,
                             public views::LinkListener {
  public:
+  // Enumeration of all actionable items in the profile menu.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class ActionableItem {
+    kManageGoogleAccountButton = 0,
+    kPasswordsButton = 1,
+    kCreditCardsButton = 2,
+    kAddressesButton = 3,
+    kGuestProfileButton = 4,
+    kManageProfilesButton = 5,
+    kLockButton = 6,
+    kExitProfileButton = 7,
+    kSyncErrorButton = 8,
+    kCurrentProfileCard = 9,
+    kSigninButton = 10,
+    kSigninAccountButton = 11,
+    kSignoutButton = 12,
+    kOtherProfileButton = 13,
+    kCookiesClearedOnExitLink = 14,
+    kAddNewProfileButton = 15,
+    kSyncSettingsButton = 16,
+    kMaxValue = kSyncSettingsButton,
+  };
+
   // MenuItems struct keeps the menu items and meta data for a group of items in
   // a menu. It takes the ownership of views and passes it to the menu when menu
   // is constructed.
@@ -127,6 +151,8 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                               float icon_to_image_ratio = 1.0f);
   gfx::ImageSkia ColoredImageForMenu(const gfx::VectorIcon& icon,
                                      SkColor color);
+  // Should be called inside each button/link action.
+  void RecordClick(ActionableItem item);
 
   // Initializes a new group of menu items. A separator is added before them if
   // |add_separator| is true.

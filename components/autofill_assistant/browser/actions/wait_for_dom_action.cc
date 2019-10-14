@@ -35,14 +35,14 @@ void WaitForDomAction::InternalProcessAction(ProcessActionCallback callback) {
   AddConditionsFromProto();
   if (conditions_.empty()) {
     DVLOG(2) << "WaitForDomAction: no selectors specified";
-    OnCheckDone(std::move(callback), INVALID_ACTION);
+    OnCheckDone(std::move(callback), ClientStatus(INVALID_ACTION));
     return;
   }
   for (size_t i = 0; i < conditions_.size(); i++) {
     if (conditions_[i].selector.empty()) {
       DVLOG(2) << "WaitForDomAction: selector for condition " << i
                << " is empty";
-      OnCheckDone(std::move(callback), INVALID_SELECTOR);
+      OnCheckDone(std::move(callback), ClientStatus(INVALID_SELECTOR));
       return;
     }
   }
@@ -112,8 +112,9 @@ void WaitForDomAction::AddCondition(SelectorPredicate predicate,
   condition.server_payload = server_payload;
 }
 
-void WaitForDomAction::CheckElements(BatchElementChecker* checker,
-                                     base::OnceCallback<void(bool)> callback) {
+void WaitForDomAction::CheckElements(
+    BatchElementChecker* checker,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   for (size_t i = 0; i < conditions_.size(); i++) {
     checker->AddElementCheck(
         conditions_[i].selector,
@@ -125,32 +126,53 @@ void WaitForDomAction::CheckElements(BatchElementChecker* checker,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void WaitForDomAction::OnSingleElementCheckDone(size_t condition_index,
-                                                bool found) {
+void WaitForDomAction::OnSingleElementCheckDone(
+    size_t condition_index,
+    const ClientStatus& element_status) {
   DCHECK(condition_index < conditions_.size());
   Condition& condition = conditions_[condition_index];
-  condition.match =
-      condition.predicate == SelectorPredicate::kMatch ? found : !found;
+  condition.status_proto = element_status.proto_status();
+  condition.match = condition.predicate == SelectorPredicate::kMatch
+                        ? element_status.ok()
+                        : !element_status.ok();
   // We can't stop here since the batch checker does not support stopping from a
   // single element callback.
 }
 
 void WaitForDomAction::OnAllElementChecksDone(
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   size_t match_count = 0;
+  ProcessedActionStatusProto last_error = UNKNOWN_ACTION_STATUS;
   for (auto& condition : conditions_) {
     if (condition.match) {
       match_count++;
+    } else {
+      switch (condition.predicate) {
+        case SelectorPredicate::kMatch:
+          // For an expected match, return the status.
+          last_error = condition.status_proto;
+          break;
+        case SelectorPredicate::kNoMatch:
+          // For an expected non-match, return an ELEMENT_RESOLUTION_FAILED for
+          // lack of better status. We're expecting the element to not be there,
+          // but it is.
+          last_error = ELEMENT_RESOLUTION_FAILED;
+          break;
+
+          // Intentionally no default case to make compilation fail if a new
+          // value was added to the enum that is not treated not here.
+      }
     }
   }
   bool success =
       require_all_ ? match_count == conditions_.size() : match_count > 0;
-  std::move(callback).Run(success);
+  std::move(callback).Run(success ? OkClientStatus()
+                                  : ClientStatus(last_error));
 }
 
 void WaitForDomAction::OnCheckDone(ProcessActionCallback callback,
-                                   ProcessedActionStatusProto status) {
-  UpdateProcessedAction(status);
+                                   const ClientStatus& status) {
+  UpdateProcessedAction(status.proto_status());
   for (auto& condition : conditions_) {
     if (condition.match && !condition.server_payload.empty()) {
       processed_action_proto_->mutable_wait_for_dom_result()

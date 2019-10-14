@@ -30,7 +30,8 @@ class WaitForDomActionTest : public testing::Test {
 
   void SetUp() override {
     ON_CALL(mock_web_controller_, OnElementCheck(_, _))
-        .WillByDefault(RunOnceCallback<1>(false));
+        .WillByDefault(
+            RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED)));
 
     EXPECT_CALL(mock_action_delegate_, OnWaitForDom(_, _, _, _))
         .WillRepeatedly(Invoke(this, &WaitForDomActionTest::FakeWaitForDom));
@@ -41,10 +42,10 @@ class WaitForDomActionTest : public testing::Test {
   void FakeWaitForDom(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
-      base::RepeatingCallback<void(BatchElementChecker*,
-                                   base::OnceCallback<void(bool)>)>&
-          check_elements,
-      base::OnceCallback<void(ProcessedActionStatusProto)>& callback) {
+      base::RepeatingCallback<
+          void(BatchElementChecker*,
+               base::OnceCallback<void(const ClientStatus&)>)>& check_elements,
+      base::OnceCallback<void(const ClientStatus&)>& callback) {
     checker_ = std::make_unique<BatchElementChecker>();
     has_check_elements_result_ = false;
     check_elements.Run(
@@ -58,7 +59,7 @@ class WaitForDomActionTest : public testing::Test {
   }
 
   // Called from the check_elements callback passed to FakeWaitForDom.
-  void OnCheckElementsDone(bool result) {
+  void OnCheckElementsDone(const ClientStatus& result) {
     ASSERT_FALSE(has_check_elements_result_);  // Duplicate calls
     has_check_elements_result_ = true;
     check_elements_result_ = result;
@@ -67,11 +68,10 @@ class WaitForDomActionTest : public testing::Test {
   // Called by |checker_| once it's done. This ends the call to
   // FakeWaitForDom().
   void OnWaitForDomDone(
-      base::OnceCallback<void(ProcessedActionStatusProto)> callback) {
+      base::OnceCallback<void(const ClientStatus&)> callback) {
     ASSERT_TRUE(
         has_check_elements_result_);  // OnCheckElementsDone() not called
-    std::move(callback).Run(check_elements_result_ ? ACTION_APPLIED
-                                                   : ELEMENT_RESOLUTION_FAILED);
+    std::move(callback).Run(check_elements_result_);
   }
 
   // Runs the action defined in |proto_| and reports the result to |callback_|.
@@ -88,7 +88,7 @@ class WaitForDomActionTest : public testing::Test {
   WaitForDomProto proto_;
   std::unique_ptr<BatchElementChecker> checker_;
   bool has_check_elements_result_ = false;
-  bool check_elements_result_ = false;
+  ClientStatus check_elements_result_;
 };
 
 TEST_F(WaitForDomActionTest, NoSelectors) {
@@ -100,7 +100,7 @@ TEST_F(WaitForDomActionTest, NoSelectors) {
 
 TEST_F(WaitForDomActionTest, MatchOneElementFound) {
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Selector({"#element"}), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
 
   proto_.mutable_wait_until()->add_selectors("#element");
   EXPECT_CALL(
@@ -118,7 +118,7 @@ TEST_F(WaitForDomActionTest, MatchOneElementNotFound) {
 
 TEST_F(WaitForDomActionTest, NoMatchOneElementFound) {
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Selector({"#element"}), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
 
   proto_.mutable_wait_while()->add_selectors("#element");
   EXPECT_CALL(callback_, Run(Pointee(Property(&ProcessedActionProto::status,
@@ -136,9 +136,9 @@ TEST_F(WaitForDomActionTest, NoMatchOneElementNotFound) {
 
 TEST_F(WaitForDomActionTest, AllConditionsMetWantAll) {
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Selector({"#element1"}), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Selector({"#element2"}), _))
-      .WillRepeatedly(RunOnceCallback<1>(false));
+      .WillRepeatedly(RunOnceCallback<1>(ClientStatus()));
   proto_.mutable_wait_for_all()
       ->add_conditions()
       ->mutable_must_match()
@@ -155,9 +155,9 @@ TEST_F(WaitForDomActionTest, AllConditionsMetWantAll) {
 
 TEST_F(WaitForDomActionTest, AllConditionsMetWantSome) {
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Selector({"#element1"}), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Selector({"#element2"}), _))
-      .WillRepeatedly(RunOnceCallback<1>(false));
+      .WillRepeatedly(RunOnceCallback<1>(ClientStatus()));
   proto_.mutable_wait_for_any()
       ->add_conditions()
       ->mutable_must_match()
@@ -234,13 +234,13 @@ TEST_F(WaitForDomActionTest, OnConditionMetWantSome) {
 
 TEST_F(WaitForDomActionTest, ReportMatchesToServer) {
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Selector({"#element1"}), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Selector({"#element2"}), _))
-      .WillRepeatedly(RunOnceCallback<1>(false));
+      .WillRepeatedly(RunOnceCallback<1>(ClientStatus()));
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Selector({"#element3"}), _))
-      .WillRepeatedly(RunOnceCallback<1>(false));
+      .WillRepeatedly(RunOnceCallback<1>(ClientStatus()));
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Selector({"#element4"}), _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
 
   auto* condition1 = proto_.mutable_wait_for_any()->add_conditions();
   condition1->mutable_must_match()->add_selectors("#element1");

@@ -140,6 +140,13 @@ void CrostiniApps::Launch(const std::string& app_id,
   crostini::LaunchCrostiniApp(profile_, app_id, display_id);
 }
 
+void CrostiniApps::LaunchAppWithIntent(const std::string& app_id,
+                                       apps::mojom::IntentPtr intent,
+                                       apps::mojom::LaunchSource launch_source,
+                                       int64_t display_id) {
+  NOTIMPLEMENTED();
+}
+
 void CrostiniApps::SetPermission(const std::string& app_id,
                                  apps::mojom::PermissionPtr permission) {
   NOTIMPLEMENTED();

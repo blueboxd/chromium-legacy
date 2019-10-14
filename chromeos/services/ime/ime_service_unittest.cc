@@ -52,7 +52,6 @@ class TestClientChannel : mojom::InputChannel {
   }
 
   // mojom::InputChannel implementation.
-  MOCK_METHOD2(ProcessText, void(const std::string&, ProcessTextCallback));
   MOCK_METHOD2(ProcessMessage,
                void(const std::vector<uint8_t>& message,
                     ProcessMessageCallback));

@@ -17,6 +17,7 @@
 #include "chrome/chrome_cleaner/constants/quarantine_constants.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
 #include "chrome/chrome_cleaner/os/file_path_sanitization.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace chrome_cleaner {
@@ -61,15 +62,15 @@ bool GetSanitizedFileName(const base::FilePath& path,
   return true;
 }
 
-void RunArchiver(mojom::ZipArchiverPtr* zip_archiver_ptr,
+void RunArchiver(mojo::Remote<mojom::ZipArchiver>* zip_archiver,
                  mojo::ScopedHandle mojo_src_handle,
                  mojo::ScopedHandle mojo_zip_handle,
                  const std::string& filename,
                  const std::string& password,
                  mojom::ZipArchiver::ArchiveCallback callback) {
-  DCHECK(zip_archiver_ptr);
+  DCHECK(zip_archiver);
 
-  (*zip_archiver_ptr)
+  (*zip_archiver)
       ->Archive(std::move(mojo_src_handle), std::move(mojo_zip_handle),
                 filename, password, std::move(callback));
 }
@@ -125,15 +126,15 @@ base::string16 ConstructZipArchiveFileName(const base::string16& filename,
 
 SandboxedZipArchiver::SandboxedZipArchiver(
     scoped_refptr<MojoTaskRunner> mojo_task_runner,
-    UniqueZipArchiverPtr zip_archiver_ptr,
+    RemoteZipArchiverPtr zip_archiver,
     const base::FilePath& dst_archive_folder,
     const std::string& zip_password)
     : mojo_task_runner_(mojo_task_runner),
-      zip_archiver_ptr_(std::move(zip_archiver_ptr)),
+      zip_archiver_(std::move(zip_archiver)),
       dst_archive_folder_(dst_archive_folder),
       zip_password_(zip_password) {
-  // Make sure the |zip_archiver_ptr| is bound with the |mojo_task_runner|.
-  DCHECK(zip_archiver_ptr_.get_deleter().task_runner_ == mojo_task_runner);
+  // Make sure the |zip_archiver| is bound with the |mojo_task_runner|.
+  DCHECK(zip_archiver_.get_deleter().task_runner_ == mojo_task_runner);
 
   int max_component_length =
       base::GetMaximumPathComponentLength(dst_archive_folder_);
@@ -241,14 +242,14 @@ void SandboxedZipArchiver::Archive(const base::FilePath& src_file_path,
 
   const std::string filename_in_zip = base::UTF16ToUTF8(sanitized_src_filename);
   // Do archive.
-  // Unretained pointer of |zip_archiver_ptr_| is safe because its deleter
-  // is run on the same task runner. If |zip_archiver_ptr_| is destructed later,
-  // the deleter will be scheduled after this task.
+  // Unretained pointer of |zip_archiver_| is safe because its deleter is run on
+  // the same task runner. If |zip_archiver_| is destructed later, the deleter
+  // will be scheduled after this task.
   auto done_callback =
       base::BindOnce(OnArchiveDone, zip_file_path, std::move(result_callback));
   mojo_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(RunArchiver, base::Unretained(zip_archiver_ptr_.get()),
+      base::BindOnce(RunArchiver, base::Unretained(zip_archiver_.get()),
                      mojo::WrapPlatformFile(src_file.TakePlatformFile()),
                      mojo::WrapPlatformFile(zip_file.TakePlatformFile()),
                      filename_in_zip, zip_password_, std::move(done_callback)));
@@ -295,8 +296,8 @@ ResultCode SpawnZipArchiverSandbox(
       SpawnSandbox(&setup_hooks, SandboxType::kZipArchiver);
   if (result_code == RESULT_CODE_SUCCESS) {
     *sandboxed_zip_archiver = std::make_unique<SandboxedZipArchiver>(
-        mojo_task_runner, setup_hooks.TakeZipArchiverPtr(), dst_archive_folder,
-        zip_password);
+        mojo_task_runner, setup_hooks.TakeZipArchiverRemote(),
+        dst_archive_folder, zip_password);
   }
 
   return result_code;

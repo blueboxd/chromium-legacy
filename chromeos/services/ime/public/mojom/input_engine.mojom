@@ -84,9 +84,6 @@ interface InputEngineManager {
 // closed-sourced input engine with decoders), implement the method that takes
 // a serialized protobuf message (instead of a plaintext) as its argument.
 interface InputChannel {
-  // Returns a plaintext result after processing a plaintext message.
-  ProcessText(string message) => (string result);
-
   // Returns a serialized protobuf result after processing a serialized
   // protobuf message.
   ProcessMessage(array<uint8> message) => (array<uint8> result);

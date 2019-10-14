@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL CSS Logical Properties and Values: inset-block and inset-inline set longhands Uncaught ReferenceError: test_shorthand_value is not defined
+Harness: the test ran to completion.
+

@@ -9,7 +9,7 @@
 
   await TestRunner.navigatePromise('../bindings/resources/inline-style.html');
   const source = await TestRunner.waitForUISourceCode('inline-style.html', Workspace.projectTypes.Network);
-  const content = await source.requestContent();
+  const { content } = await source.requestContent();
   TestRunner.addResult(`Content:\n${content}`);
   const sourceText = new TextUtils.Text(content);
 
@@ -20,7 +20,7 @@
 
   const formatData = await Sources.sourceFormatter.format(source);
   const formattedSource = formatData.formattedSourceCode;
-  var formattedContent = await formatData.formattedSourceCode.requestContent();
+  var formattedContent = (await formatData.formattedSourceCode.requestContent()).content;
   TestRunner.addResult(`Formatted Content:\n${formattedContent}`);
   const formattedSourceText = new TextUtils.Text(formattedContent);
   await dumpLocations("css", formattedSourceText.lineCount(), formattedSource);

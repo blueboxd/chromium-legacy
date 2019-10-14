@@ -173,6 +173,30 @@ void AppServiceProxy::Launch(const std::string& app_id,
   }
 }
 
+void AppServiceProxy::LaunchAppWithIntent(
+    const std::string& app_id,
+    apps::mojom::IntentPtr intent,
+    apps::mojom::LaunchSource launch_source,
+    int64_t display_id) {
+  if (app_service_.is_connected()) {
+    cache_.ForOneApp(app_id, [this, &intent, launch_source,
+                              display_id](const apps::AppUpdate& update) {
+      RecordAppLaunch(update.AppId(), launch_source);
+      app_service_->LaunchAppWithIntent(update.AppType(), update.AppId(),
+                                        std::move(intent), launch_source,
+                                        display_id);
+    });
+  }
+}
+
+void AppServiceProxy::LaunchAppWithUrl(const std::string& app_id,
+                                       GURL url,
+                                       apps::mojom::LaunchSource launch_source,
+                                       int64_t display_id) {
+  LaunchAppWithIntent(app_id, apps_util::CreateIntentFromUrl(url),
+                      launch_source, display_id);
+}
+
 void AppServiceProxy::SetPermission(const std::string& app_id,
                                     apps::mojom::PermissionPtr permission) {
   if (app_service_.is_connected()) {

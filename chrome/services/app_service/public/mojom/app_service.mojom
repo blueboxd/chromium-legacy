@@ -39,6 +39,15 @@ interface AppService {
       LaunchSource launch_source,
       int64 display_id);
 
+  // Launches an app with |app_id| and Chrome OS generic |intent| irrespective
+  // of app platform.
+  LaunchAppWithIntent(
+      AppType app_type,
+      string app_id,
+      Intent intent,
+      LaunchSource launch_source,
+      int64 display_id);
+
   SetPermission(
       AppType app_type,
       string app_id,
@@ -71,6 +80,14 @@ interface Publisher {
       int32 event_flags,
       LaunchSource launch_source,
       int64 display_id);
+
+  // Launches an app with |app_id| and Chrome OS generic |intent| irrespective
+  // of app platform.
+  LaunchAppWithIntent(
+    string app_id,
+    Intent intent,
+    LaunchSource launch_source,
+    int64 display_id);
 
   SetPermission(
       string app_id,

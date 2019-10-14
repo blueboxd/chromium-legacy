@@ -321,6 +321,13 @@ void ExtensionApps::Launch(const std::string& app_id,
   apps::LaunchService::Get(profile_)->OpenApplication(params);
 }
 
+void ExtensionApps::LaunchAppWithIntent(const std::string& app_id,
+                                        apps::mojom::IntentPtr intent,
+                                        apps::mojom::LaunchSource launch_source,
+                                        int64_t display_id) {
+  NOTIMPLEMENTED();
+}
+
 void ExtensionApps::SetPermission(const std::string& app_id,
                                   apps::mojom::PermissionPtr permission) {
   if (!profile_) {

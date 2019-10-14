@@ -22,6 +22,8 @@ WebArea
 }
 
 WebArea
+  img
+    *Ignored
 {
   "nodeId": "<string>",
   "ignored": true,
@@ -46,6 +48,8 @@ WebArea
 }
 
 WebArea
+  button "Buttons are leaf nodes"
+    *Ignored
 {
   "nodeId": "<string>",
   "ignored": true,
@@ -162,7 +166,8 @@ WebArea
 }
 
 WebArea
-  GenericContainer
+  *GenericContainer
+    text "Div in list isn't presentational"
 {
   "nodeId": "<string>",
   "ignored": false,
@@ -340,7 +345,11 @@ WebArea
 }
 
 WebArea
-  GenericContainer
+  *combobox
+    MenuListPopup
+      menuitem "Options should be"
+      menuitem "sent down even though"
+      menuitem "they are grandchildren"
 {
   "nodeId": "<string>",
   "ignored": false,
@@ -401,6 +410,9 @@ WebArea
 }
 
 WebArea
+  combobox
+    MenuListPopup
+      *menuitem "Options should be"
 {
   "nodeId": "<string>",
   "ignored": false,
@@ -496,7 +508,8 @@ WebArea
 }
 
 WebArea
-  GenericContainer
+  *GenericContainer "span with ARIA label"
+    text "should not be ignored"
 {
   "nodeId": "<string>",
   "ignored": false,
@@ -557,7 +570,8 @@ WebArea
 }
 
 WebArea
-  GenericContainer
+  *GenericContainer
+    text "summary element without details parent is ignored"
 {
   "nodeId": "<string>",
   "ignored": false,
@@ -589,5 +603,63 @@ WebArea
   },
   "properties": [],
   "domNode": "summary"
+}
+
+WebArea
+  *button "Ignored parent shouldn't cause descendant to be missing from the tree"
+{
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Ignored parent shouldn't cause descendant to be missing from the tree",
+    "sources": [
+      {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "relatedElement",
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
+          "type": "computedString",
+          "value": "Ignored parent shouldn't cause descendant to be missing from the tree"
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
+    }
+  ],
+  "domNode": "button"
 }
 

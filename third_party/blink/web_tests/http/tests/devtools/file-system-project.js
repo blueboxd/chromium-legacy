@@ -27,7 +27,7 @@
 
     function didRequestContent(content, contentEncoded) {
       TestRunner.addResult('Highlighter type: ' + uiSourceCode.mimeType());
-      TestRunner.addResult('UISourceCode content: ' + content);
+      TestRunner.addResult('UISourceCode content: ' + content.content);
       callback();
     }
   }

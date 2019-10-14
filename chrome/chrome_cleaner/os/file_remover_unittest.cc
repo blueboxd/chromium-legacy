@@ -416,8 +416,8 @@ class FileRemoverQuarantineTest : public base::MultiProcessTest,
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     auto zip_archiver = std::make_unique<SandboxedZipArchiver>(
-        mojo_task_runner, setup_hooks.TakeZipArchiverPtr(), temp_dir_.GetPath(),
-        kTestPassword);
+        mojo_task_runner, setup_hooks.TakeZipArchiverRemote(),
+        temp_dir_.GetPath(), kTestPassword);
     file_remover_ = std::make_unique<FileRemover>(
         /*digest_verifier=*/nullptr, std::move(zip_archiver),
         LayeredServiceProviderWrapper(), base::DoNothing::Repeatedly());

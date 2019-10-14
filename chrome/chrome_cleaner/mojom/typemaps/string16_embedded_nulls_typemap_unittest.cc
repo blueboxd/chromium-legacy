@@ -2,17 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/chrome_cleaner/mojom/string16_embedded_nulls.mojom.h"
-#include "chrome/chrome_cleaner/mojom/test_string16_embedded_nulls.mojom.h"
 #include "chrome/chrome_cleaner/ipc/ipc_test_util.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
+#include "chrome/chrome_cleaner/mojom/string16_embedded_nulls.mojom.h"
+#include "chrome/chrome_cleaner/mojom/test_string16_embedded_nulls.mojom.h"
 #include "chrome/chrome_cleaner/strings/string16_embedded_nulls.h"
 #include "chrome/chrome_cleaner/strings/string_test_helpers.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
 #include "mojo/core/embedder/embedder.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -26,15 +33,15 @@ using base::WaitableEvent;
 class TestString16EmbeddedNullsImpl : public mojom::TestString16EmbeddedNulls {
  public:
   explicit TestString16EmbeddedNullsImpl(
-      mojom::TestString16EmbeddedNullsRequest request)
-      : binding_(this, std::move(request)) {}
+      mojo::PendingReceiver<mojom::TestString16EmbeddedNulls> receiver)
+      : receiver_(this, std::move(receiver)) {}
 
   void Echo(const String16EmbeddedNulls& path, EchoCallback callback) override {
     std::move(callback).Run(path);
   }
 
  private:
-  mojo::Binding<mojom::TestString16EmbeddedNulls> binding_;
+  mojo::Receiver<mojom::TestString16EmbeddedNulls> receiver_;
 };
 
 class SandboxParentProcess : public chrome_cleaner::ParentProcess {
@@ -44,8 +51,10 @@ class SandboxParentProcess : public chrome_cleaner::ParentProcess {
 
  protected:
   void CreateImpl(mojo::ScopedMessagePipeHandle mojo_pipe) override {
-    mojom::TestString16EmbeddedNullsRequest request(std::move(mojo_pipe));
-    impl_ = std::make_unique<TestString16EmbeddedNullsImpl>(std::move(request));
+    mojo::PendingReceiver<mojom::TestString16EmbeddedNulls> receiver(
+        std::move(mojo_pipe));
+    impl_ =
+        std::make_unique<TestString16EmbeddedNullsImpl>(std::move(receiver));
   }
 
   void DestroyImpl() override { impl_.reset(); }
@@ -60,12 +69,14 @@ class SandboxChildProcess : public chrome_cleaner::ChildProcess {
  public:
   explicit SandboxChildProcess(scoped_refptr<MojoTaskRunner> mojo_task_runner)
       : ChildProcess(mojo_task_runner),
-        ptr_(std::make_unique<mojom::TestString16EmbeddedNullsPtr>()) {}
+        remote_(std::make_unique<
+                mojo::Remote<mojom::TestString16EmbeddedNulls>>()) {}
 
   void BindToPipe(mojo::ScopedMessagePipeHandle mojo_pipe,
                   WaitableEvent* event) {
-    ptr_->Bind(chrome_cleaner::mojom::TestString16EmbeddedNullsPtrInfo(
-        std::move(mojo_pipe), 0));
+    remote_->Bind(
+        mojo::PendingRemote<chrome_cleaner::mojom::TestString16EmbeddedNulls>(
+            std::move(mojo_pipe), 0));
     event->Signal();
   }
 
@@ -87,10 +98,9 @@ class SandboxChildProcess : public chrome_cleaner::ChildProcess {
     mojo_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
-            [](std::unique_ptr<mojom::TestString16EmbeddedNullsPtr> ptr) {
-              ptr.reset();
-            },
-            base::Passed(&ptr_)));
+            [](std::unique_ptr<mojo::Remote<mojom::TestString16EmbeddedNulls>>
+                   remote) { remote.reset(); },
+            std::move(remote_)));
   }
 
   template <typename EchoedType>
@@ -108,10 +118,10 @@ class SandboxChildProcess : public chrome_cleaner::ChildProcess {
 
   void RunEcho(const String16EmbeddedNulls& input,
                mojom::TestString16EmbeddedNulls::EchoCallback callback) {
-    (*ptr_)->Echo(input, std::move(callback));
+    (*remote_)->Echo(input, std::move(callback));
   }
 
-  std::unique_ptr<mojom::TestString16EmbeddedNullsPtr> ptr_;
+  std::unique_ptr<mojo::Remote<mojom::TestString16EmbeddedNulls>> remote_;
 };
 
 scoped_refptr<SandboxChildProcess> InitChildProcess() {

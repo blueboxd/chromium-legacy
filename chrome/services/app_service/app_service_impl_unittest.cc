@@ -68,6 +68,11 @@ class FakePublisher : public apps::mojom::Publisher {
               apps::mojom::LaunchSource launch_source,
               int64_t display_id) override {}
 
+  void LaunchAppWithIntent(const std::string& app_id,
+                           apps::mojom::IntentPtr intent,
+                           apps::mojom::LaunchSource launch_source,
+                           int64_t display_id) override {}
+
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override {}
 

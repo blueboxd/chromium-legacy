@@ -35,6 +35,11 @@ using base::UserMetricsAction;
 CriticalNotificationBubbleView::CriticalNotificationBubbleView(
     views::View* anchor_view)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_RESTART));
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   l10n_util::GetStringUTF16(IDS_CANCEL));
   set_close_on_deactivate(false);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CRITICAL_NOTIFICATION);
 }
@@ -103,13 +108,6 @@ bool CriticalNotificationBubbleView::Accept() {
   base::RecordAction(UserMetricsAction("CriticalNotification_Restart"));
   chrome::AttemptRestart();
   return true;
-}
-
-base::string16 CriticalNotificationBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_CANCEL
-                                       ? IDS_CANCEL
-                                       : IDS_CRITICAL_NOTIFICATION_RESTART);
 }
 
 void CriticalNotificationBubbleView::Init() {

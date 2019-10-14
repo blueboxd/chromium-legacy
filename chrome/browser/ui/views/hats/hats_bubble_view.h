@@ -53,7 +53,6 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
   bool ShouldShowWindowIcon() const override;
 
   // views::DialogDelegate:
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Cancel() override;
   bool Accept() override;
 

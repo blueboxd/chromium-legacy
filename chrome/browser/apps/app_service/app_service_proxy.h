@@ -64,6 +64,14 @@ class AppServiceProxy : public KeyedService,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
               int64_t display_id);
+  void LaunchAppWithIntent(const std::string& app_id,
+                           apps::mojom::IntentPtr intent,
+                           apps::mojom::LaunchSource launch_source,
+                           int64_t display_id);
+  void LaunchAppWithUrl(const std::string& app_id,
+                        GURL url,
+                        apps::mojom::LaunchSource launch_source,
+                        int64_t display_id);
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission);
   void Uninstall(const std::string& app_id);

@@ -18,6 +18,7 @@ static_library("common") {
     "//chrome/chrome_cleaner/ipc:sandbox",
     "//chrome/chrome_cleaner/mojom:zip_archiver_interface",
     "//components/chrome_cleaner/public/constants:constants",
+    "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system:system",
     "//sandbox/win:sandbox",
   ]
@@ -37,6 +38,7 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/mojom:zip_archiver_interface",
     "//chrome/chrome_cleaner/zip_archiver:test_support",
     "//chrome/chrome_cleaner/zip_archiver/target:common",
+    "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system:system",
     "//sandbox/win:sandbox",
     "//testing/gtest",

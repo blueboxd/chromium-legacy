@@ -98,11 +98,6 @@ bool InputEngine::IsImeSupportedByRulebased(const std::string& ime_spec) {
   return rulebased::Engine::IsImeSupported(GetIdFromImeSpec(ime_spec));
 }
 
-void InputEngine::ProcessText(const std::string& message,
-                              ProcessTextCallback callback) {
-  NOTIMPLEMENTED();  // Text message not used in the rulebased engine.
-}
-
 void InputEngine::ProcessMessage(const std::vector<uint8_t>& message,
                                  ProcessMessageCallback callback) {
   NOTIMPLEMENTED();  // Protobuf message is not used in the rulebased engine.

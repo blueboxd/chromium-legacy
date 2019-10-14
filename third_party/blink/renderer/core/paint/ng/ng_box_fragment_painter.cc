@@ -1236,6 +1236,8 @@ PhysicalRect NGBoxFragmentPainter::AdjustRectForScrolledContent(
 }
 
 LayoutRectOutsets NGBoxFragmentPainter::ComputeBorders() const {
+  if (box_fragment_.GetLayoutObject()->IsTableCell())
+    return ToLayoutBox(box_fragment_.GetLayoutObject())->BorderBoxOutsets();
   return BoxStrutToLayoutRectOutsets(PhysicalFragment().BorderWidths());
 }
 

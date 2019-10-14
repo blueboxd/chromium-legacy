@@ -32,7 +32,7 @@ base::string16 ConstructZipArchiveFileName(const base::string16& filename,
 class SandboxedZipArchiver : public ZipArchiver {
  public:
   SandboxedZipArchiver(scoped_refptr<MojoTaskRunner> mojo_task_runner,
-                       UniqueZipArchiverPtr zip_archiver_ptr,
+                       RemoteZipArchiverPtr zip_archiver,
                        const base::FilePath& dst_archive_folder,
                        const std::string& zip_password);
   ~SandboxedZipArchiver() override;
@@ -44,7 +44,7 @@ class SandboxedZipArchiver : public ZipArchiver {
   mojom::ZipArchiverResultCode CheckFileSize(base::File* file);
 
   scoped_refptr<MojoTaskRunner> mojo_task_runner_;
-  UniqueZipArchiverPtr zip_archiver_ptr_;
+  RemoteZipArchiverPtr zip_archiver_;
   const base::FilePath dst_archive_folder_;
   const std::string zip_password_;
   size_t dst_max_component_length_;

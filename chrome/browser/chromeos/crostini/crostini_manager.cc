@@ -160,6 +160,8 @@ class CrostiniManager::CrostiniRestarter
   }
 
   void RunCallback(CrostiniResult result) {
+    // Observer should not be called if we have completed.
+    observer_list_.Clear();
     std::move(completed_callback_).Run(result);
   }
 
@@ -174,6 +176,7 @@ class CrostiniManager::CrostiniRestarter
   void Abort(base::OnceClosure callback) {
     is_aborted_ = true;
     observer_list_.Clear();
+    completed_callback_.Reset();
     abort_callback_ = std::move(callback);
     ReportRestarterResult(CrostiniResult::RESTART_ABORTED);
   }
@@ -213,6 +216,7 @@ class CrostiniManager::CrostiniRestarter
   }
 
   void FinishRestart(CrostiniResult result) {
+    DCHECK(!is_aborted_);
     ReportRestarterResult(result);
 
     // FinishRestart will delete this, so it's not safe to call any methods
@@ -460,6 +464,10 @@ class CrostiniManager::CrostiniRestarter
                  << ", mount_path=" << mount_info.mount_path
                  << ", mount_type=" << mount_info.mount_type
                  << ", mount_condition=" << mount_info.mount_condition;
+      if (is_aborted_) {
+        std::move(abort_callback_).Run();
+        return;
+      }
       FinishRestart(CrostiniResult::SSHFS_MOUNT_ERROR);
       return;
     }
@@ -478,8 +486,8 @@ class CrostiniManager::CrostiniRestarter
     if (auto* vmgr = file_manager::VolumeManager::Get(profile_))
       vmgr->AddSshfsCrostiniVolume(mount_path);
 
-    // Abort not checked until end of function.  On abort, do not continue,
-    // but still remove observer and add volume as per above.
+    // Abort not checked until exiting this function.  On abort, do not
+    // continue, but still remove observer and add volume as per above.
     if (is_aborted_) {
       std::move(abort_callback_).Run();
       return;

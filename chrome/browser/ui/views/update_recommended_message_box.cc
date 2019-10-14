@@ -38,6 +38,10 @@ void UpdateRecommendedMessageBox::Show(gfx::NativeWindow parent_window) {
 // UpdateRecommendedMessageBox, private:
 
 UpdateRecommendedMessageBox::UpdateRecommendedMessageBox() {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_RELAUNCH_AND_UPDATE));
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   l10n_util::GetStringUTF16(IDS_NOT_NOW));
   views::MessageBoxView::InitParams params(
       l10n_util::GetStringUTF16(IDS_UPDATE_RECOMMENDED));
   params.message_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -58,12 +62,6 @@ bool UpdateRecommendedMessageBox::Accept() {
 
   chrome::AttemptRelaunch();
   return true;
-}
-
-base::string16 UpdateRecommendedMessageBox::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK) ?
-      IDS_RELAUNCH_AND_UPDATE : IDS_NOT_NOW);
 }
 
 bool UpdateRecommendedMessageBox::ShouldShowWindowTitle() const {

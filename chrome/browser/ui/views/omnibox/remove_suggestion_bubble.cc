@@ -34,6 +34,11 @@ class RemoveSuggestionBubbleDialogDelegateView
     DCHECK(template_url_service);
     DCHECK(match_.SupportsDeletion());
 
+    DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                     l10n_util::GetStringUTF16(IDS_REMOVE));
+    DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                     l10n_util::GetStringUTF16(IDS_CANCEL));
+
     auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical));
     layout_manager->set_cross_axis_alignment(
@@ -74,10 +79,6 @@ class RemoveSuggestionBubbleDialogDelegateView
   // views::DialogDelegateView:
   int GetDialogButtons() const override {
     return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-  }
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override {
-    return l10n_util::GetStringUTF16(
-        button == ui::DIALOG_BUTTON_OK ? IDS_REMOVE : IDS_CANCEL);
   }
   bool Accept() override {
     std::move(remove_closure_).Run();

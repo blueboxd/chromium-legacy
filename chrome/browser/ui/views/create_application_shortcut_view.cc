@@ -44,6 +44,9 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
     const extensions::Extension* app,
     const base::Callback<void(bool)>& close_callback)
     : profile_(profile), close_callback_(close_callback) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_COMMIT));
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
   InitControls();
@@ -148,13 +151,6 @@ gfx::Size CreateChromeApplicationShortcutView::CalculatePreferredSize() const {
   int height = GetLayoutManager()->GetPreferredHeightForWidth(this,
       kDialogWidth);
   return gfx::Size(kDialogWidth, height);
-}
-
-base::string16 CreateChromeApplicationShortcutView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_COMMIT);
-  return views::DialogDelegateView::GetDialogButtonLabel(button);
 }
 
 bool CreateChromeApplicationShortcutView::IsDialogButtonEnabled(

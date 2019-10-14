@@ -161,6 +161,14 @@ void BuiltInChromeOsApps::Launch(const std::string& app_id,
   app_list::OpenInternalApp(app_id, profile_, event_flags);
 }
 
+void BuiltInChromeOsApps::LaunchAppWithIntent(
+    const std::string& app_id,
+    apps::mojom::IntentPtr intent,
+    apps::mojom::LaunchSource launch_source,
+    int64_t display_id) {
+  NOTIMPLEMENTED();
+}
+
 void BuiltInChromeOsApps::SetPermission(const std::string& app_id,
                                         apps::mojom::PermissionPtr permission) {
   NOTIMPLEMENTED();

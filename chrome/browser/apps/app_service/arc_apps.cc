@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
@@ -91,6 +93,69 @@ void UpdateAppPermissions(
 
     permissions->push_back(std::move(permission));
   }
+}
+
+base::Optional<arc::UserInteractionType> GetUserInterationType(
+    apps::mojom::LaunchSource launch_source) {
+  auto user_interaction_type = arc::UserInteractionType::NOT_USER_INITIATED;
+  switch (launch_source) {
+    // kUnknown is not set anywhere, this case is not valid.
+    case apps::mojom::LaunchSource::kUnknown:
+      return base::nullopt;
+    case apps::mojom::LaunchSource::kFromAppListGrid:
+      user_interaction_type =
+          arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER;
+      break;
+    case apps::mojom::LaunchSource::kFromAppListGridContextMenu:
+      user_interaction_type =
+          arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER_CONTEXT_MENU;
+      break;
+    case apps::mojom::LaunchSource::kFromAppListQuery:
+      user_interaction_type =
+          arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER_SEARCH;
+      break;
+    case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
+      user_interaction_type = arc::UserInteractionType::
+          APP_STARTED_FROM_LAUNCHER_SEARCH_CONTEXT_MENU;
+      break;
+    case apps::mojom::LaunchSource::kFromAppListRecommendation:
+      user_interaction_type =
+          arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER_SUGGESTED_APP;
+      break;
+    case apps::mojom::LaunchSource::kFromParentalControls:
+      user_interaction_type =
+          arc::UserInteractionType::APP_STARTED_FROM_SETTINGS;
+      break;
+    case apps::mojom::LaunchSource::kFromShelf:
+      user_interaction_type = arc::UserInteractionType::APP_STARTED_FROM_SHELF;
+      break;
+    case apps::mojom::LaunchSource::kFromFileManager:
+      user_interaction_type =
+          arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER;
+      break;
+    default:
+      NOTREACHED();
+      return base::nullopt;
+  }
+  return user_interaction_type;
+}
+
+arc::mojom::IntentInfoPtr CreateArcViewIntent(apps::mojom::IntentPtr intent) {
+  arc::mojom::IntentInfoPtr arc_intent;
+  if (!intent->scheme.has_value() || !intent->host.has_value() ||
+      !intent->path.has_value()) {
+    return arc_intent;
+  }
+
+  arc_intent = arc::mojom::IntentInfo::New();
+  auto uri_components = arc::mojom::UriComponents::New();
+  constexpr char kAndroidIntentActionView[] = "android.intent.action.VIEW";
+  uri_components->scheme = intent->scheme.value();
+  uri_components->authority = intent->host.value();
+  uri_components->path = intent->path.value();
+  arc_intent->action = kAndroidIntentActionView;
+  arc_intent->uri_components = std::move(uri_components);
+  return arc_intent;
 }
 
 }  // namespace
@@ -232,38 +297,63 @@ void ArcApps::Launch(const std::string& app_id,
                      int32_t event_flags,
                      apps::mojom::LaunchSource launch_source,
                      int64_t display_id) {
-  auto uit = arc::UserInteractionType::NOT_USER_INITIATED;
-  switch (launch_source) {
-    case apps::mojom::LaunchSource::kUnknown:
-      return;
-    case apps::mojom::LaunchSource::kFromAppListGrid:
-      uit = arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER;
-      break;
-    case apps::mojom::LaunchSource::kFromAppListGridContextMenu:
-      uit = arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER_CONTEXT_MENU;
-      break;
-    case apps::mojom::LaunchSource::kFromAppListQuery:
-      uit = arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER_SEARCH;
-      break;
-    case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
-      uit = arc::UserInteractionType::
-          APP_STARTED_FROM_LAUNCHER_SEARCH_CONTEXT_MENU;
-      break;
-    case apps::mojom::LaunchSource::kFromAppListRecommendation:
-      uit = arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER_SUGGESTED_APP;
-      break;
-    case apps::mojom::LaunchSource::kFromParentalControls:
-      uit = arc::UserInteractionType::APP_STARTED_FROM_SETTINGS;
-      break;
-    case apps::mojom::LaunchSource::kFromShelf:
-      uit = arc::UserInteractionType::APP_STARTED_FROM_SHELF;
-      break;
-    case apps::mojom::LaunchSource::kFromFileManager:
-      uit = arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER;
-      break;
+  auto user_interaction_type = GetUserInterationType(launch_source);
+  if (!user_interaction_type.has_value()) {
+    return;
   }
 
-  arc::LaunchApp(profile_, app_id, event_flags, uit, display_id);
+  arc::LaunchApp(profile_, app_id, event_flags, user_interaction_type.value(),
+                 display_id);
+}
+
+void ArcApps::LaunchAppWithIntent(const std::string& app_id,
+                                  apps::mojom::IntentPtr intent,
+                                  apps::mojom::LaunchSource launch_source,
+                                  int64_t display_id) {
+  auto user_interaction_type = GetUserInterationType(launch_source);
+  if (!user_interaction_type.has_value()) {
+    return;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction",
+                            user_interaction_type.value());
+
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  arc::mojom::IntentHelperInstance* instance = nullptr;
+  if (arc_service_manager) {
+    instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_service_manager->arc_bridge_service()->intent_helper(),
+        HandleIntent);
+  }
+  if (!instance) {
+    return;
+  }
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
+    return;
+  }
+  const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      prefs->GetApp(app_id);
+  if (!app_info) {
+    LOG(ERROR) << "Launch App failed, could not find app with id " << app_id;
+    return;
+  }
+
+  arc::mojom::ActivityNamePtr activity = arc::mojom::ActivityName::New();
+  activity->package_name = app_info->package_name;
+  activity->activity_name = app_info->activity;
+
+  auto arc_intent = CreateArcViewIntent(std::move(intent));
+
+  if (!arc_intent) {
+    LOG(ERROR) << "Launch App failed, launch intent is not valid";
+    return;
+  }
+
+  instance->HandleIntent(std::move(arc_intent), std::move(activity));
+
+  prefs->SetLastLaunchTime(app_id);
 }
 
 void ArcApps::SetPermission(const std::string& app_id,

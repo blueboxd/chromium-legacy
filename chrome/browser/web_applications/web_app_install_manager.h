@@ -80,6 +80,8 @@ class WebAppInstallManager final : public InstallManager,
   bool has_web_contents_for_testing() const { return web_contents_ != nullptr; }
 
  private:
+  void EnqueueTask(std::unique_ptr<WebAppInstallTask> task,
+                   base::OnceClosure start_task);
   void MaybeStartQueuedTask();
   void OnTaskCompleted(WebAppInstallTask* task,
                        OnceInstallCallback callback,
@@ -90,7 +92,7 @@ class WebAppInstallManager final : public InstallManager,
                              const AppId& app_id,
                              InstallResultCode code);
 
-  void CreateWebContentsIfNecessary();
+  content::WebContents* EnsureWebContentsCreated();
   void OnWebContentsReady(WebAppUrlLoader::Result result);
 
   DataRetrieverFactory data_retriever_factory_;

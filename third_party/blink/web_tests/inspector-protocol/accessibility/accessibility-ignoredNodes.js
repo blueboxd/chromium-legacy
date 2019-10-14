@@ -47,6 +47,10 @@
     <div data-dump style="display: contents">div with display contents - should be ignored, but text should be included</div>
 
     <summary data-dump>summary element without details parent is ignored</summary>
+
+    <div role='presentation'>
+      <button data-dump>Ignored parent shouldn't cause descendant to be missing from the tree</button>
+    </div>
   </html>
   `, 'Tests accessibility values of ignored nodes.');
 

@@ -101,6 +101,11 @@ HatsBubbleView::HatsBubbleView(Browser* browser,
       consent_callback_(std::move(consent_callback)) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::HATS_BUBBLE);
 
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_HATS_BUBBLE_OK_LABEL));
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   l10n_util::GetStringUTF16(IDS_NO_THANKS));
   set_close_on_deactivate(false);
   set_parent_window(parent_view);
 
@@ -136,13 +141,6 @@ gfx::ImageSkia HatsBubbleView::GetWindowIcon() {
 
 bool HatsBubbleView::ShouldShowWindowIcon() const {
   return true;
-}
-
-base::string16 HatsBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return button == ui::DIALOG_BUTTON_OK
-             ? l10n_util::GetStringUTF16(IDS_HATS_BUBBLE_OK_LABEL)
-             : l10n_util::GetStringUTF16(IDS_NO_THANKS);
 }
 
 bool HatsBubbleView::Cancel() {

@@ -15772,6 +15772,29 @@ Called by update_net_error_codes.py.-->
   <int value="11" label="PDF"/>
 </enum>
 
+<enum name="DriveFileError">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="FILE_ERROR_OK"/>
+  <int value="2" label="FILE_ERROR_FAILED"/>
+  <int value="3" label="FILE_ERROR_IN_USE"/>
+  <int value="4" label="FILE_ERROR_EXISTS"/>
+  <int value="5" label="FILE_ERROR_NOT_FOUND"/>
+  <int value="6" label="FILE_ERROR_ACCESS_DENIED"/>
+  <int value="7" label="FILE_ERROR_TOO_MANY_OPENED"/>
+  <int value="8" label="FILE_ERROR_NO_MEMORY"/>
+  <int value="9" label="FILE_ERROR_NO_SERVER_SPACE"/>
+  <int value="10" label="FILE_ERROR_NOT_A_DIRECTORY"/>
+  <int value="11" label="FILE_ERROR_INVALID_OPERATION"/>
+  <int value="12" label="FILE_ERROR_SECURITY"/>
+  <int value="13" label="FILE_ERROR_ABORT"/>
+  <int value="14" label="FILE_ERROR_NOT_A_FILE"/>
+  <int value="15" label="FILE_ERROR_NOT_EMPTY"/>
+  <int value="16" label="FILE_ERROR_INVALID_URL"/>
+  <int value="17" label="FILE_ERROR_NO_CONNECTION"/>
+  <int value="18" label="FILE_ERROR_NO_LOCAL_SPACE"/>
+  <int value="19" label="FILE_ERROR_SERVICE_UNAVAILABLE"/>
+</enum>
+
 <enum name="DriveFileFormat">
   <int value="0" label="AAC"/>
   <int value="1" label="ASF"/>

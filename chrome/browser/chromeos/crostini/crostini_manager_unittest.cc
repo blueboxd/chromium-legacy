@@ -687,9 +687,11 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
                   const std::vector<std::string>& mount_options,
                   chromeos::MountType type,
                   chromeos::MountAccessMode access_mode) {
+    if (abort_on_mount_event_) {
+      Abort();
+    }
     disk_mount_manager_mock_->NotifyMountEvent(
-        chromeos::disks::DiskMountManager::MountEvent::MOUNTING,
-        chromeos::MountError::MOUNT_ERROR_NONE,
+        chromeos::disks::DiskMountManager::MountEvent::MOUNTING, mount_error_,
         chromeos::disks::DiskMountManager::MountPointInfo(
             source_path, "/media/fuse/" + mount_label,
             chromeos::MountType::MOUNT_TYPE_NETWORK_STORAGE,
@@ -708,6 +710,11 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
   bool abort_on_container_started_ = false;
   bool abort_on_container_setup_ = false;
   bool abort_on_ssh_keys_fetched_ = false;
+
+  // Used by SshfsMount().
+  bool abort_on_mount_event_ = false;
+  chromeos::MountError mount_error_ = chromeos::MountError::MOUNT_ERROR_NONE;
+
   int restart_crostini_callback_count_ = 0;
   int remove_crostini_callback_count_ = 0;
   chromeos::disks::MockDiskMountManager* disk_mount_manager_mock_;
@@ -846,6 +853,74 @@ TEST_F(CrostiniManagerRestartTest, AbortOnContainerSetup) {
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
   EXPECT_EQ(0, restart_crostini_callback_count_);
+}
+
+TEST_F(CrostiniManagerRestartTest, AbortOnSshKeysFetched) {
+  abort_on_ssh_keys_fetched_ = true;
+  // Use termina/penguin names to allow fetch ssh keys.
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  run_loop()->Run();
+  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  EXPECT_TRUE(fake_concierge_client_->get_container_ssh_keys_called());
+  EXPECT_EQ(0, restart_crostini_callback_count_);
+}
+
+TEST_F(CrostiniManagerRestartTest, AbortOnMountEvent) {
+  abort_on_mount_event_ = true;
+
+  disk_mount_manager_mock_ = new chromeos::disks::MockDiskMountManager;
+  chromeos::disks::DiskMountManager::InitializeForTesting(
+      disk_mount_manager_mock_);
+  EXPECT_CALL(*disk_mount_manager_mock_, MountPath)
+      .WillOnce(Invoke(
+          this,
+          &CrostiniManagerRestartTest_AbortOnMountEvent_Test::SshfsMount));
+
+  // Use termina/penguin names to allow fetch ssh keys.
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  run_loop()->Run();
+  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  EXPECT_TRUE(fake_concierge_client_->get_container_ssh_keys_called());
+  EXPECT_EQ(0, restart_crostini_callback_count_);
+
+  chromeos::disks::DiskMountManager::Shutdown();
+}
+
+TEST_F(CrostiniManagerRestartTest, AbortOnMountEventWithError) {
+  mount_error_ = chromeos::MountError::MOUNT_ERROR_INSUFFICIENT_PERMISSIONS;
+  abort_on_mount_event_ = true;
+
+  disk_mount_manager_mock_ = new chromeos::disks::MockDiskMountManager;
+  chromeos::disks::DiskMountManager::InitializeForTesting(
+      disk_mount_manager_mock_);
+  EXPECT_CALL(*disk_mount_manager_mock_, MountPath)
+      .WillOnce(Invoke(
+          this, &CrostiniManagerRestartTest_AbortOnMountEventWithError_Test::
+                    SshfsMount));
+
+  // Use termina/penguin names to allow fetch ssh keys.
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  run_loop()->Run();
+  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  EXPECT_TRUE(fake_concierge_client_->get_container_ssh_keys_called());
+  EXPECT_EQ(0, restart_crostini_callback_count_);
+
+  chromeos::disks::DiskMountManager::Shutdown();
 }
 
 TEST_F(CrostiniManagerRestartTest, OnlyMountTerminaPenguin) {

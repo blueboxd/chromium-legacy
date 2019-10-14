@@ -8,16 +8,16 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "third_party/hunspell/src/hunspell/hunspell.hxx"
 #include "third_party/hunspell/fuzz/hunspell_fuzzer_hunspell_dictionary.h"
+#include "third_party/hunspell/src/hunspell/hunspell.hxx"
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (!size)
     return 0;
-  
-  static Hunspell* hunspell = new Hunspell(kHunspellDictionary,
-                                           sizeof(kHunspellDictionary));
+
+  static Hunspell* hunspell =
+      new Hunspell(kHunspellDictionary, sizeof(kHunspellDictionary));
 
   std::string data_string(reinterpret_cast<const char*>(data), size);
 
@@ -26,10 +26,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::string16 utf16_string = base::UTF8ToUTF16(data_string);
   data_string = base::UTF16ToUTF8(utf16_string);
 
-  hunspell->spell(data_string);
-
-  std::vector<std::string> suggestions =
-      hunspell->suggest(data_string);
+  std::vector<std::string> suggestions = hunspell->suggest(data_string);
 
   return 0;
 }

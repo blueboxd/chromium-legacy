@@ -116,26 +116,18 @@ void WebAppInstallManager::InstallOrUpdateWebAppFromSync(
   is_locally_installed = true;
 #endif
 
-  CreateWebContentsIfNecessary();
-  DCHECK(web_contents_);
-
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), finalizer(), data_retriever_factory_.Run());
 
-  base::OnceClosure task_closure = base::BindOnce(
+  base::OnceClosure start_task = base::BindOnce(
       &WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons,
-      base::Unretained(task.get()), web_contents_.get(),
+      base::Unretained(task.get()), EnsureWebContentsCreated(),
       std::move(web_application_info), is_locally_installed,
       WebappInstallSource::SYNC,
       base::BindOnce(&WebAppInstallManager::OnQueuedTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
 
-  task_queue_.push(std::move(task_closure));
-
-  tasks_.insert(std::move(task));
-
-  if (web_contents_ready_)
-    MaybeStartQueuedTask();
+  EnqueueTask(std::move(task), std::move(start_task));
 }
 
 void WebAppInstallManager::UpdateWebAppFromManifest(
@@ -170,6 +162,17 @@ void WebAppInstallManager::UninstallWebAppsAfterSync(
 void WebAppInstallManager::SetUrlLoaderForTesting(
     std::unique_ptr<WebAppUrlLoader> url_loader) {
   url_loader_ = std::move(url_loader);
+}
+
+void WebAppInstallManager::EnqueueTask(std::unique_ptr<WebAppInstallTask> task,
+                                       base::OnceClosure start_task) {
+  DCHECK(web_contents_);
+
+  tasks_.insert(std::move(task));
+  task_queue_.push(std::move(start_task));
+
+  if (web_contents_ready_)
+    MaybeStartQueuedTask();
 }
 
 void WebAppInstallManager::MaybeStartQueuedTask() {
@@ -220,9 +223,9 @@ void WebAppInstallManager::OnQueuedTaskCompleted(WebAppInstallTask* task,
   }
 }
 
-void WebAppInstallManager::CreateWebContentsIfNecessary() {
+content::WebContents* WebAppInstallManager::EnsureWebContentsCreated() {
   if (web_contents_)
-    return;
+    return web_contents_.get();
 
   DCHECK(!web_contents_ready_);
 
@@ -233,6 +236,8 @@ void WebAppInstallManager::CreateWebContentsIfNecessary() {
   url_loader_->LoadUrl(GURL("about:blank"), web_contents_.get(),
                        base::BindOnce(&WebAppInstallManager::OnWebContentsReady,
                                       weak_ptr_factory_.GetWeakPtr()));
+
+  return web_contents_.get();
 }
 
 void WebAppInstallManager::OnWebContentsReady(WebAppUrlLoader::Result result) {

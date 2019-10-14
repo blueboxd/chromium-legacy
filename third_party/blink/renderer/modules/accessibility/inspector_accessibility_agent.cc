@@ -566,9 +566,15 @@ void InspectorAccessibilityAgent::AddAncestors(
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
   AXObject* ancestor = &first_ancestor;
+  AXObject* child = inspected_ax_object;
   while (ancestor) {
-    nodes->emplace_back(BuildProtocolAXObject(*ancestor, inspected_ax_object,
-                                              true, nodes, cache));
+    std::unique_ptr<AXNode> parent_node_object = BuildProtocolAXObject(
+        *ancestor, inspected_ax_object, true, nodes, cache);
+    auto child_ids = std::make_unique<protocol::Array<AXNodeId>>();
+    child_ids->emplace_back(String::Number(child->AXObjectID()));
+    parent_node_object->setChildIds(std::move(child_ids));
+    nodes->emplace_back(std::move(parent_node_object));
+    child = ancestor;
     ancestor = ancestor->ParentObjectUnignored();
   }
 }

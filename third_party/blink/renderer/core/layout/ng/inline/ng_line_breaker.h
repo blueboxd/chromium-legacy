@@ -47,7 +47,7 @@ class CORE_EXPORT NGLineBreaker {
   // Compute the next line break point and produces NGInlineItemResults for
   // the line.
   inline void NextLine(NGLineInfo* line_info) {
-    NextLine(kIndefiniteSize, nullptr, line_info);
+    NextLine(kIndefiniteSize, line_info);
   }
 
   // During the min/max size calculation we need a special percentage
@@ -56,7 +56,6 @@ class CORE_EXPORT NGLineBreaker {
   // better yet, subclass or templetize the line-breaker for Min/Max computation
   // if we can do that without incurring a performance penalty
   void NextLine(LayoutUnit percentage_resolution_block_size_for_min_max,
-                Vector<LayoutObject*>* out_floats_for_min_max,
                 NGLineInfo*);
 
   bool IsFinished() const { return item_index_ >= Items().size(); }
@@ -104,7 +103,6 @@ class CORE_EXPORT NGLineBreaker {
                                 NGLineInfo*);
 
   void BreakLine(LayoutUnit percentage_resolution_block_size_for_min_max,
-                 Vector<LayoutObject*>* out_floats_for_min_max,
                  NGLineInfo*);
   void PrepareNextLine(NGLineInfo*);
 
@@ -173,7 +171,6 @@ class CORE_EXPORT NGLineBreaker {
   bool IsAtomicInlineBeforeNoBreakSpace(
       const NGInlineItemResult& item_result) const;
   void HandleFloat(const NGInlineItem&,
-                   Vector<LayoutObject*>* out_floats_for_min_max,
                    NGLineInfo*);
 
   void HandleOpenTag(const NGInlineItem&, NGLineInfo*);

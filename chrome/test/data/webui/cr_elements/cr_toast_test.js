@@ -4,7 +4,7 @@
 
 // clang-format off
 // #import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
-// #import {MockTimer} from 'chrome://test/mock_timer.m.js';
+// #import {MockTimer} from '../mock_timer.m.js';
 // clang-format on
 
 suite('cr-toast', function() {

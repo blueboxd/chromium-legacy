@@ -4,7 +4,7 @@
 
 // clang-format off
 // #import {getInstance} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
-// #import {eventToPromise} from 'chrome://test/test_util.m.js';
+// #import {eventToPromise} from '../test_util.m.js';
 // clang-format on
 
 suite('cr-toast-manager', () => {

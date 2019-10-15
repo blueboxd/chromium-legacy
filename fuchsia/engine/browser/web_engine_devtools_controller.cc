@@ -282,7 +282,8 @@ WebEngineDevToolsController::CreateFromCommandLine(
 
     // The command-line option can only be provided by the ContextProvider
     // process, it should not fail to parse to an int.
-    DCHECK(base::StringToInt(command_line_port_value, &parsed_port));
+    bool parsed = base::StringToInt(command_line_port_value, &parsed_port);
+    DCHECK(parsed);
 
     if (parsed_port != 0 &&
         (!net::IsPortValid(parsed_port) || net::IsWellKnownPort(parsed_port))) {

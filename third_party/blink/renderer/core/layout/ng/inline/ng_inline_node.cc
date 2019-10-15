@@ -1692,13 +1692,9 @@ static LayoutUnit ComputeContentSize(
   MaxSizeFromMinSize max_size_from_min_size(items_data, *max_size_cache,
                                             &floats_max_size);
 
-  Vector<LayoutObject*> floats_for_min_max;
   do {
-    floats_for_min_max.Shrink(0);
-
     NGLineInfo line_info;
-    line_breaker.NextLine(input.percentage_resolution_block_size,
-                          &floats_for_min_max, &line_info);
+    line_breaker.NextLine(input.percentage_resolution_block_size, &line_info);
     if (line_info.Results().IsEmpty())
       break;
 
@@ -1708,8 +1704,13 @@ static LayoutUnit ComputeContentSize(
     DCHECK_EQ(inline_size.Round(),
               line_info.ComputeWidth().ClampNegativeToZero().Round());
 
-    for (auto* floating_object : floats_for_min_max) {
-      DCHECK(floating_object->IsFloating());
+    for (const NGInlineItemResult& item_result : line_info.Results()) {
+      DCHECK(item_result.item);
+      const NGInlineItem& item = *item_result.item;
+      if (item.Type() != NGInlineItem::kFloating)
+        continue;
+      LayoutObject* floating_object = item.GetLayoutObject();
+      DCHECK(floating_object && floating_object->IsFloating());
 
       NGBlockNode float_node(ToLayoutBox(floating_object));
       const ComputedStyle& float_style = float_node.Style();

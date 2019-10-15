@@ -5,7 +5,7 @@
 // clang-format off
 // #import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
 // #import {assert} from 'chrome://resources/js/assert.m.js';
-// #import {isVisible} from 'chrome://test/test_util.m.js';
+// #import {isVisible} from '../test_util.m.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for cr-view-manager. */

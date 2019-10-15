@@ -5,7 +5,7 @@
 // clang-format off
 // #import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 //
-// #import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
+// #import {eventToPromise, flushTasks} from '../test_util.m.js';
 // #import {keyDownOn, keyEventOn, tap} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 // #import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // clang-format on

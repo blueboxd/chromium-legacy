@@ -6,7 +6,7 @@
 // #import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.m.js';
 //
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {flushTasks} from 'chrome://test/test_util.m.js';
+// #import {flushTasks} from '../test_util.m.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for cr-search-field. */

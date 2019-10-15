@@ -323,16 +323,9 @@ void NGLineBreaker::PrepareNextLine(NGLineInfo* line_info) {
 
 void NGLineBreaker::NextLine(
     LayoutUnit percentage_resolution_block_size_for_min_max,
-    Vector<LayoutObject*>* out_floats_for_min_max,
     NGLineInfo* line_info) {
-  // out_floats_for_min_max is required for min/max and prohibited for regular
-  // content mode.
-  DCHECK(mode_ == NGLineBreakerMode::kContent || out_floats_for_min_max);
-  DCHECK(!(mode_ == NGLineBreakerMode::kContent && out_floats_for_min_max));
-
   PrepareNextLine(line_info);
-  BreakLine(percentage_resolution_block_size_for_min_max,
-            out_floats_for_min_max, line_info);
+  BreakLine(percentage_resolution_block_size_for_min_max, line_info);
   RemoveTrailingCollapsibleSpace(line_info);
 
   const NGInlineItemResults& item_results = line_info->Results();
@@ -365,7 +358,6 @@ void NGLineBreaker::NextLine(
 
 void NGLineBreaker::BreakLine(
     LayoutUnit percentage_resolution_block_size_for_min_max,
-    Vector<LayoutObject*>* out_floats_for_min_max,
     NGLineInfo* line_info) {
   DCHECK(!line_info->IsLastLine());
   const Vector<NGInlineItem>& items = Items();
@@ -422,7 +414,7 @@ void NGLineBreaker::BreakLine(
       continue;
     }
     if (item.Type() == NGInlineItem::kFloating) {
-      HandleFloat(item, out_floats_for_min_max, line_info);
+      HandleFloat(item, line_info);
       continue;
     }
     if (item.Type() == NGInlineItem::kBidiControl) {
@@ -1358,7 +1350,6 @@ void NGLineBreaker::HandleAtomicInline(
 // allowed to position a float "above" another float which has come before us
 // in the document.
 void NGLineBreaker::HandleFloat(const NGInlineItem& item,
-                                Vector<LayoutObject*>* out_floats_for_min_max,
                                 NGLineInfo* line_info) {
   // When rewind occurs, an item may be handled multiple times.
   // Since floats are put into a separate list, avoid handling same floats
@@ -1373,13 +1364,10 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
   item_result->can_break_after = auto_wrap_;
   MoveToNextOf(item);
 
-  // If we are currently computing our min/max-content size simply append to
-  // the unpositioned floats list and abort.
-  if (mode_ != NGLineBreakerMode::kContent) {
-    DCHECK(out_floats_for_min_max);
-    out_floats_for_min_max->push_back(item.GetLayoutObject());
+  // If we are currently computing our min/max-content size, simply append the
+  // unpositioned floats to |NGLineInfo| and abort.
+  if (mode_ != NGLineBreakerMode::kContent)
     return;
-  }
 
   // Make sure we populate the positioned_float inside the |item_result|.
   if (item_index_ <= handled_leading_floats_index_ &&

@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
 import {navigateTo, navigateToNextStep, NavigationBehavior, Routes} from 'chrome://welcome/navigation_behavior.js';
+
+import {eventToPromise} from '../test_util.m.js';
 
 suite('NavigationBehaviorTest', function() {
   let elements = [];

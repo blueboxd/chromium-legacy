@@ -16,6 +16,18 @@ const WelcomeBrowserTest = class extends PolymerTest {
     throw 'this is abstract and should be overridden by subclasses';
   }
 
+  /**
+   * Override default |extraLibraries| since PolymerTest includes more than are
+   * needed in JS Module based tests.
+   * @override
+   */
+  get extraLibraries() {
+    return [
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
+    ];
+  }
+
   /** @override */
   get webuiHost() {
     return 'welcome';

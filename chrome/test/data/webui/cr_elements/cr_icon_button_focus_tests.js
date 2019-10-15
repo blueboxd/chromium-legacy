@@ -5,7 +5,7 @@
 // clang-format off
 // #import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 //
-// #import {flushTasks} from 'chrome://test/test_util.m.js';
+// #import {flushTasks} from '../test_util.m.js';
 // clang-format on
 
 suite('cr-icon-button-focus-tests', function() {
